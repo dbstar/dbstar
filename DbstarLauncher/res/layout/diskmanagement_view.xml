@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/view_background" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="60dp"
+        android:layout_marginLeft="80dp"
+        android:layout_marginTop="90dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal" >
+
+        <TableLayout
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="0dp"
+            android:stretchColumns="1" >
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="40dp"
+                    android:text="@string/diskmanagement_disksize"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/text_disksize"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:padding="2dp"
+                    android:paddingLeft="10dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/diskmanagement_usedspace"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/text_diskused"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:padding="2dp"
+                    android:paddingLeft="10dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/diskmanagement_emptyspace"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/text_diskempty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:padding="2dp"
+                    android:paddingLeft="10dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/diskmanagement_gaurdspace"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/text_diskguard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:padding="2dp"
+                    android:paddingLeft="10dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20sp" />
+            </TableRow>
+        </TableLayout>
+
+        <LinearLayout
+            android:id="@+id/chart_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal" />
+    </LinearLayout>
+
+	<include
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        layout="@layout/footerview" />
+
+</RelativeLayout>

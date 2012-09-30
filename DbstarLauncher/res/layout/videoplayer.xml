@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+    
+	<!-- video view -->
+    <com.dbstar.guodian.widget.GDVideoView android:id="@+id/player_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"/>
+    
+</RelativeLayout>

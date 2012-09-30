@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar.guodian"
+    android:layout_width="1280dp"
+    android:layout_height="720dp"
+    android:background="@drawable/mainview_background" >
+
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="120dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+
+        <TextView
+            android:id="@+id/custom_service_hotline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="40dp"
+            android:gravity="center_vertical"
+            android:text="@string/hotline"
+            android:textColor="#ffffff"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+    <!-- video view -->
+
+    <RelativeLayout
+        android:layout_width="635dp"
+        android:layout_height="364dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="105dp"
+        android:layout_marginTop="123dp" >
+
+        <com.dbstar.guodian.widget.GDVideoView
+            android:id="@+id/player_view"
+            android:layout_width="621dp"
+            android:layout_height="350dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="7dp"
+            android:layout_marginTop="7dp" />
+    </RelativeLayout>
+
+    <!-- context view -->
+
+    <RelativeLayout
+        android:id="@+id/context_view"
+        android:layout_width="425dp"
+        android:layout_height="364dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="105dp"
+        android:layout_marginTop="123dp" >
+
+        <!-- celander view -->
+        <LinearLayout
+            android:id="@+id/time_part"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/time_view"
+                android:layout_width="123dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:textColor="#ffffffff"
+                android:textSize="34sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/date_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="3dp"
+                    android:ellipsize="end"
+                    android:gravity="right|center_vertical"
+                    android:maxLines="1"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:textColor="#ffffffff"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/week_view"
+                    android:layout_width="123dp"
+                    android:layout_height="30dp"
+                    android:layout_marginRight="10dp"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:textColor="#ffffffff"
+                    android:textSize="20sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/mypower_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="12dp"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/mypower_degree"
+                android:layout_width="400dp"
+                android:layout_height="34dp"
+                android:layout_gravity="left"
+                android:background="@drawable/power_panel_text_bg"
+                android:ellipsize="end"
+                android:gravity="left|center_vertical"
+                android:maxLines="1"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:textColor="#ffffffff"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/mypower_cost"
+                android:layout_width="400dp"
+                android:layout_height="34dp"
+                android:layout_gravity="left"
+                android:background="@drawable/power_panel_text_bg"
+                android:ellipsize="end"
+                android:gravity="left|center_vertical"
+                android:maxLines="1"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:textColor="#ffffffff"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="237dp"
+            android:layout_height="163dp"
+            android:layout_above="@id/mypower_text"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/power_panel" >
+
+            <TextView
+                android:id="@+id/mypower_paneltext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="55dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:textColor="#ffffffff"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/mypower_pointer"
+                android:layout_width="108dp"
+                android:layout_height="108dp"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:rotation="90"
+                android:scaleType="fitXY"
+                android:src="@drawable/power_pointer" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <!-- main menu list -->
+
+    <ImageView
+        android:id="@+id/main_menu_right_arrow"
+        android:layout_width="30dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="74dp"
+        android:layout_marginRight="50dp"
+        android:background="#00000000"
+        android:scaleType="fitXY"
+        android:src="@drawable/home_arrow_right" />
+
+    <ImageView
+        android:id="@+id/main_menu_left_arrow"
+        android:layout_width="30dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="74dp"
+        android:layout_marginLeft="50dp"
+        android:background="#00000000"
+        android:scaleType="fitXY"
+        android:src="@drawable/home_arrow_left" />
+
+    <ImageView
+        android:id="@+id/focus_item_bg"
+        android:layout_width="145dp"
+        android:layout_height="138dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="66dp"
+        android:layout_marginLeft="104dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/menulevel1_focuseditem_bg" />
+    
+    <com.dbstar.guodian.widget.GDMenuGallery
+        android:id="@+id/menu_level_1"
+        android:layout_width="1072dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="82dp"
+        android:layout_marginRight="104dp"
+        android:background="#00000000"
+        android:gravity="bottom|left"
+        app:spacing="0dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:layoutAnimation="@anim/gallery_slide_to_right" />
+
+    <!-- level 2 menu -->
+	<LinearLayout
+        android:id="@+id/menulevel2_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="206dp"
+        android:layout_marginLeft="96dp"
+        android:orientation="vertical"
+        android:focusable="false"
+        android:visibility="gone" >
+        
+	    <ImageView
+            android:id="@+id/menulevel2_bg_top"
+            android:layout_width="164dp"
+            android:layout_height="26dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/meulevel2_background_top" />
+
+	    <ListView
+            android:id="@+id/menu_level_2"
+            android:layout_width="164dp"
+            android:layout_height="wrap_content"
+            android:cacheColorHint="#00000000"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="4.0dp"
+            android:listSelector="#00000000"
+            android:background="@drawable/meulevel2_background" />
+	    
+        <ImageView
+            android:id="@+id/menulevel2_bg_bottom"
+            android:layout_width="164dp"
+            android:layout_height="36dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/meulevel2_background_bottom" />
+
+	</LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/view_Footer"
+        android:layout_width="fill_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+
+        <LinearLayout
+            android:id="@+id/menupath_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="105dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="visible" >
+
+            <ImageView
+                android:layout_width="46dp"
+                android:layout_height="40dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/menupath_home_icon" />
+
+            <ImageView
+                android:id="@+id/menupath_level1_delimiter"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/menupath_delimiter"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/menupath_level1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="#ffffffff"
+                android:textSize="16sp"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/menupath_level2_delimiter"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/menupath_delimiter"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/menupath_level2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="#ffffffff"
+                android:textSize="16sp"
+                android:visibility="invisible" />
+
+            <ImageView
+                android:id="@+id/menupath_level3_delimiter"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/menupath_delimiter"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/menupath_level3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="#ffffffff"
+                android:textSize="16sp"
+                android:visibility="invisible" />
+        </LinearLayout>
+
+        <com.dbstar.guodian.widget.GDMarqeeTextView
+            android:id="@+id/marqeeView"
+            android:layout_width="1080dp"
+            android:layout_height="68dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="105dp"
+            android:visibility="gone"
+            app:textColor="#ffffffff"
+            app:textSize="16sp" />
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/view_background" >
+
+    <TextView
+        android:id="@+id/userinfo_view_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        android:gravity="center"
+        android:textColor="#ffffff"
+        android:textSize="28sp"
+        android:text="@string/systemsettings_userinfo" />
+
+    <TableLayout
+        android:layout_width="800dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/userinfo_view_title"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp" 
+        android:stretchColumns="1" >
+
+        <TableRow>
+            <TextView
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:text="@string/userinfo_system_version"
+                android:textColor="#ffffff"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:text="@string/userinfo_user_card_number"
+                android:textColor="#ffffff"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_usercardnumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:text="@string/userinfo_macaddress"
+                android:textColor="#ffffff"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_macaddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:text="@string/userinfo_user_card_validity_term"
+                android:textColor="#ffffff"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_usercard_validityterm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:text="@string/userinfo_user_bussiness"
+                android:textColor="#ffffff"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_user_bussiness"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right|center_vertical"
+                android:text="@string/userinfo_user_residual_amount"
+                android:textColor="#ffffff"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/text_user_residual_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </TableRow>
+    </TableLayout>
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        layout="@layout/footerview" />
+        
+</RelativeLayout>

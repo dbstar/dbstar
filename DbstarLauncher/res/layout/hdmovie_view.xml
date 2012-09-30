@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar.guodian"
+    android:layout_width="1280dp"
+    android:layout_height="720dp" 
+    android:background="@drawable/view_background">
+
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="108dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+
+        <TextView
+            android:id="@+id/pageNumberView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="1186dp"
+            android:layout_marginTop="80dp"
+            android:gravity="top|center_horizontal"
+            android:textColor="#ffffff"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+    <com.dbstar.guodian.widget.GDGridView
+        android:id="@+id/gridview"
+        android:layout_width="1104dp"
+        android:layout_height="536dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="108dp"
+        android:layout_marginLeft="88dp"
+        android:gravity="center"
+        app:columnWidth="184dp"
+        app:columnHeight="268dp"
+        app:horizontalSpacing="0dp"
+        app:verticalSpacing="0dp"
+        app:listSelector="#0000ff"
+        app:numColumns="6"
+        app:stretchMode="columnWidth" />
+    
+    <com.dbstar.guodian.widget.GDScrollBar
+        android:id="@+id/scrollbar"
+        android:layout_width="10dp"
+        android:layout_height="494dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="123dp"
+        android:layout_marginRight="70dp"
+        android:focusable="false"
+        app:background="@drawable/vertical_scrollbar"
+        app:tracker="@drawable/vertical_tracker"/>
+    
+	<include
+        android:layout_width="fill_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        layout="@layout/footerview" />
+
+</RelativeLayout>

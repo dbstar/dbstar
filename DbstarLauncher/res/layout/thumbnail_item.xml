@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="184dp"
+    android:layout_height="268dp" >
+
+    <RelativeLayout
+        android:id="@+id/normal"
+        android:layout_width="163dp"
+        android:layout_height="242dp"
+        android:background="@drawable/thumbnail_normal_bg" >
+
+        <ImageView
+            android:id="@+id/normal_thumbnail"
+            android:layout_width="155dp"
+            android:layout_height="184dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="4dp"
+            android:scaleType="fitXY" />
+
+        <TextView
+            android:id="@+id/normal_item_text"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="4dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="#000000"
+            android:textSize="22sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/focused"
+        android:layout_width="184dp"
+        android:layout_height="268dp"
+        android:background="@drawable/thumbnail_focused_bg" >
+
+        <ImageView
+            android:id="@+id/focused_thumbnail"
+            android:layout_width="164dp"
+            android:layout_height="201dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:scaleType="fitXY" />
+
+        <TextView
+            android:id="@+id/focused_item_text"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="4dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="#ffffffff"
+            android:textSize="22sp" />
+    </RelativeLayout>
+
+</ViewSwitcher>

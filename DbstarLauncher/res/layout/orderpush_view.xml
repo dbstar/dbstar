@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar.guodian"
+    android:layout_width="1280dp"
+    android:layout_height="720dp"
+    android:background="@drawable/view_background" >
+
+    <ImageView
+        android:layout_width="1097dp"
+        android:layout_height="8dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="193dp"
+        android:focusable="false"
+        android:src="@drawable/timeline_line" />
+
+    <com.dbstar.guodian.widget.GDGridView
+        android:id="@+id/timeline"
+        android:layout_width="1097dp"
+        android:layout_height="100dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="122dp"
+        android:background="@drawable/timeline_bg"
+        android:gravity="center"
+        android:nextFocusDown="@+id/receive_list"
+        app:columnHeight="100dp"
+        app:columnWidth="108dp"
+        app:horizontalSpacing="65dp"
+        app:listSelector="#00000000"
+        app:numColumns="7"
+        app:stretchMode="columnWidth"
+        app:verticalSpacing="0dp" />
+
+    <com.dbstar.guodian.widget.GDGridView
+        android:id="@+id/receive_list"
+        android:layout_width="1064dp"
+        android:layout_height="368dp"
+        android:layout_below="@id/timeline"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="22dp"
+        android:gravity="center"
+        android:nextFocusUp="@id/timeline"
+        app:columnHeight="46dp"
+        app:columnWidth="1064dp"
+        app:horizontalSpacing="0dp"
+        app:listSelector="#00000000"
+        app:numColumns="1"
+        app:stretchMode="columnWidth"
+        app:verticalSpacing="0dp" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="105dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center_vertical"
+                android:scaleType="fitXY"
+                android:src="@drawable/functionkey_search_icon" />
+
+            <ImageView
+                android:layout_width="13dp"
+                android:layout_height="27dp"
+                android:layout_gravity="center_vertical"
+                android:scaleType="fitXY"
+                android:src="@drawable/functionkey_arrow" />
+
+            <Space
+                android:layout_width="39dp"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center_vertical"
+                android:scaleType="fitXY"
+                android:src="@drawable/functionkey_checked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/checher_receive"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="120dp"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center_vertical"
+                android:scaleType="fitXY"
+                android:src="@drawable/functionkey_unchecked" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/checher_not_receive"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="120dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/ok_key"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+            
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/checher_switch_receive_status"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="120dp"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center_vertical"
+                android:scaleType="fitXY"
+                android:src="@drawable/functionkey_return_icon" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/back_to_home_and_save"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="120dp"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center_vertical"
+                android:scaleType="fitXY"
+                android:src="@drawable/functionkey_home" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/back_to_home"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

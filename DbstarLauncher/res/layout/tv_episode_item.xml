@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_episode_text"
+    android:layout_width="78dp"
+    android:layout_height="34dp"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:textColor="#000000"
+    android:textSize="16sp"
+    android:background="@drawable/tv_episode_normal_bg" />

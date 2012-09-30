@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="1129dp"
+    android:layout_height="406dp"
+    android:background="@drawable/movie_info_view_bg" >
+
+    <TextView
+        android:id="@+id/title_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="38dp"
+        android:textColor="#ffffff"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/timeout_view"
+        android:layout_width="43dp"
+        android:layout_height="43dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="38dp"
+        android:background="@drawable/timeout_view_bg"
+        android:textColor="#ffffff"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:id="@+id/metadata_view"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/title_view"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="30dp"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/director_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="20dp"
+                android:layout_height="fill_parent" />
+
+            <TextView
+                android:id="@+id/actor_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/type_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/description_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button_container"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/metadata_view"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="30dp"
+        android:ellipsize="end"
+        android:lineSpacingMultiplier="1.2"
+        android:maxLines="3"
+        android:textColor="#ffffff"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:id="@+id/button_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="60dp"
+        android:layout_marginLeft="160dp"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/close_button"
+            android:layout_width="153dp"
+            android:layout_height="47dp"
+            android:background="@drawable/bluebutton_bg_selector"
+            android:text="@string/close_button_text" />
+
+        <Space
+            android:layout_width="40dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/replay_button"
+            android:layout_width="153dp"
+            android:layout_height="47dp"
+            android:background="@drawable/bluebutton_bg_selector"
+            android:text="@string/replay_button_text" />
+
+        <Space
+            android:layout_width="160dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/add_favourite_button"
+            android:layout_width="153dp"
+            android:layout_height="47dp"
+            android:background="@drawable/greenbutton_bg_selector"
+            android:text="@string/add_favourite_button_text" />
+
+        <Space
+            android:layout_width="40dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="153dp"
+            android:layout_height="47dp"
+            android:background="@drawable/greenbutton_bg_selector"
+            android:text="@string/delete_button_text" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="20dp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="#ffffff"
+        android:textSize="16sp" />
+
+</RelativeLayout>
