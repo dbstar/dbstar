@@ -12,11 +12,13 @@
 #include "multicast.h"
 #include "timeprint.h"
 
+#define DVB_TEST_ENABLE 0
+
 static pthread_t tid_main;
 static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
 
-void *main_thread(int argc, char **argv)
+void *main_thread(void *data)
 {	
 	DEBUG("main thread start...\n");
 	compile_timeprint();
@@ -84,13 +86,6 @@ void *main_thread(int argc, char **argv)
 	return NULL;
 }
 
-#if 1
-int main(int argc, char **argv)
-{
-	main_thread(argc, argv);
-	return 0;
-}
-#else
 int dvbpush_start()
 {
 	DEBUG("dvbpush start...\n");
@@ -123,6 +118,19 @@ int dvbpush_stop()
 	pthread_join(tid_main, NULL);
 	
 	DEBUG("dvbpush over\n");
+	return 0;
+}
+
+#if DVB_TEST_ENABLE
+void *main_thread_test(int argc, char **argv)
+{
+	main_thread(NULL);
+	return NULL;
+}
+
+int main(int argc, char **argv)
+{
+	main_thread_test(argc, argv);
 	return 0;
 }
 #endif
