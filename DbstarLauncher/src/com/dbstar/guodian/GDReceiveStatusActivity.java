@@ -1,5 +1,6 @@
 package com.dbstar.guodian;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -32,7 +33,6 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	private static final int UpdatePeriodInMills = 5000;
 	private static final int UpdatePeriodInSecs = 5;
-	private boolean mReachPageEnd = false;
 	private int mPageNumber = 0;
 	private int mPageCount = 0;
 
@@ -53,7 +53,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			switch (msg.what) {
 			case MSG_UPDATEPROGRESS: {
 				if (mService != null && mBound) {
-					mService.getDownloadStatus(mObserver, mPageNumber, PageSize);
+					mService.getDownloadStatus(mObserver);
 				}
 				break;
 			}
@@ -64,28 +64,28 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	};
 
 	Timer mTimer = new Timer();
-	TimerTask mTask = new TimerTask() {
-		public void run() {
-			mUIUpdateHandler.sendEmptyMessage(MSG_UPDATEPROGRESS);
-		}
-	};
+	TimerTask mTask = null;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		mObserver = this;
 
-		//mMenuPath = getResources().getString(R.string.systemsettings_settings);
-
 		setContentView(R.layout.download_status_view);
 
 		mPageDatas = new LinkedList<ReceiveEntry[]>();
-		
+
 		initializeView();
-		
+
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		
+		mTask = new TimerTask() {
+			public void run() {
+				mUIUpdateHandler.sendEmptyMessage(MSG_UPDATEPROGRESS);
+			}
+		};
 	}
 
 	public void onStart() {
@@ -104,20 +104,16 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	public void onServiceStart() {
 		super.onServiceStart();
 
+		mService.startGetTaskInfo();
 		mTimer.schedule(mTask, 0, UpdatePeriodInMills);
 	}
 
 	public void onServiceStop() {
 		super.onServiceStop();
 
+		mService.stopGetTaskInfo();
 		mTimer.cancel();
 		mTimer.purge();
-	}
-
-	private void requestNewPage() {
-		if (mService != null && mBound) {
-			mService.getDownloadStatus(mObserver, mPageNumber + 1, PageSize);
-		}
 	}
 
 	private void loadPrevPage() {
@@ -151,78 +147,155 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			mListView.clearChoices();
 			mListView.setSelection(0);
 			mAdapter.notifyDataSetChanged();
+		}
+	}
 
-			// maybe can send request here
+	void updateEntryData(ReceiveEntry oldEntry, ReceiveEntry newEntry) {
+		oldEntry.RawProgress = newEntry.RawProgress;
+		oldEntry.RawTotal = newEntry.RawTotal;
+		oldEntry.ConverSize();
+	}
 
-		} else {
-			if (!mReachPageEnd) {
-				requestNewPage();
+	void updatePageData(ReceiveEntry[] pageEntries,
+			ArrayList<ReceiveEntry> allEntries) {
+		for (int i = 0; i < pageEntries.length; i++) {
+			for (int j = 0; j < allEntries.size(); j++) {
+				if (pageEntries[i].Id.equals(allEntries.get(j).Id)) {
+					updateEntryData(pageEntries[i], allEntries.get(j));
+					// remove not used items
+					allEntries.remove(j);
+				}
 			}
 		}
 	}
 
-	public void updateData(int type, int param1, int param2, Object data) {
+	void addNewPageDatas(ArrayList<ReceiveEntry> entries) {
+		while (entries.size() > 0) {
+			int pageSize = 0;
+			if (entries.size() >= PageSize) {
+				pageSize = PageSize;
+			} else {
+				pageSize = entries.size();
+			}
+
+			if (pageSize > 0) {
+				ReceiveEntry[] newEntries = new ReceiveEntry[pageSize];
+				for (int j = 0; j < pageSize; j++) {
+					newEntries[j] = entries.get(j);
+					entries.remove(j);
+				}
+				mPageDatas.add(newEntries);
+			}
+		}
+	}
+
+	void updatePagesData(ArrayList<ReceiveEntry> entries) {
+		for (int i = 0; i < mPageDatas.size(); i++) {
+			ReceiveEntry[] oldEntries = mPageDatas.get(i);
+			if (oldEntries.length == PageSize) {
+				updatePageData(oldEntries, entries);
+			} else {
+				// last page is not full
+				break;
+			}
+		}
+
+		if (mPageDatas.get(mPageDatas.size() - 1).length < PageSize) {
+			// the old last page is not full, update it
+			int pageNumber = mPageDatas.size() - 1;
+			ReceiveEntry[] lastEntries = mPageDatas.get(pageNumber);
+			mPageDatas.remove(pageNumber);
+			updatePageData(lastEntries, entries);
+
+			int pageSize = lastEntries.length + entries.size();
+			pageSize = pageSize < PageSize ? pageSize : PageSize;
+
+			ReceiveEntry[] newEntries = new ReceiveEntry[pageSize];
+			int i = 0;
+			for (i = 0; i < lastEntries.length; i++) {
+				newEntries[i] = lastEntries[i];
+			}
+
+			if (i < PageSize && newEntries.length == PageSize) {
+				for (int j = i; j < newEntries.length; i++) {
+					newEntries[j] = entries.get(j);
+					entries.remove(j);
+				}
+			}
+			
+			addNewPageDatas(entries);
+
+		}
+
+	}
+	
+	long computeEntriesSize(ReceiveEntry[] entries) {
+		long size = 0;
+		for(int i=0; i<entries.length ; i++) {
+			size += entries[i].RawProgress;
+		}
+		
+		return size;
+	}
+	
+	long computeAllPagesSize(List<ReceiveEntry[]> pages) {
+		long size = 0;
+		for (int i=0; i<pages.size(); i++) {
+			size += computeEntriesSize(pages.get(i));
+		}
+		return size;
+	}
+
+	public void updateData(int type, Object key, Object data) {
 		if (type != GDDataProviderService.REQUESTTYPE_GETDOWNLOADSTATUS)
 			return;
 
-		int pageNumber = param1;
-		int pageSize = param2;
-
 		ReceiveEntry[] entries = (ReceiveEntry[]) data;
-		ReceiveEntry[] preEntries = null;
 
 		if (entries != null && entries.length > 0) {
-			if (entries.length < pageSize) {
-				mReachPageEnd = true;
+
+			long preSize = 0;
+			long curSize = 0;
+			
+			preSize = computeAllPagesSize(mPageDatas);
+			curSize = computeEntriesSize(entries);
+			
+			float speed = (float) ((curSize - preSize) / 1024)
+					/ (float) UpdatePeriodInSecs;
+			String strSpeed = StringUtil.formatFloatValue(speed)
+					+ "KB/s";
+			mDownloadSpeedView.setText(strSpeed);
+			
+			ArrayList<ReceiveEntry> entriesList = new ArrayList<ReceiveEntry>();
+			for (int i = 0; i < entries.length; i++) {
+				entriesList.add(entries[i]);
+			}
+			
+			if (mPageDatas.size() > 0) {
+				updatePagesData(entriesList);
+			} else {
+				addNewPageDatas(entriesList);
 			}
 
-			if (pageNumber < mPageDatas.size()) {
-				preEntries = mPageDatas.get(pageNumber);
-				// update old page
-				mPageDatas.set(pageNumber, entries);
-			} else {
-				// new page
-				mPageDatas.add(pageNumber, entries);
-				mPageCount++;
-			}
+			mPageCount = mPageDatas.size();
 
 			// update current page
-			if (pageNumber == mPageNumber) {
-				mPageNumberView.setText(formPageText(mPageNumber));
-				mAdapter.setDataSet(entries);
-				mAdapter.notifyDataSetChanged();
+			mPageNumberView.setText(formPageText(mPageNumber));
+			mAdapter.setDataSet(mPageDatas.get(mPageNumber));
+			mAdapter.notifyDataSetChanged();
 
-				if (preEntries != null) {
-					long preSize = 0;
-					long curSize = 0;
-					for (int i = 0; i < preEntries.length; i++) {
-						preSize += preEntries[i].RawProgress;
-						curSize += entries[i].RawProgress;
-					}
-
-					float speed = (float) ((curSize - preSize) / 1024)
-							/ (float) UpdatePeriodInSecs;
-					String strSpeed = StringUtil.formatFloatValue(speed)
-							+ "KB/s";
-					mDownloadSpeedView.setText(strSpeed);
-				}
-
-				GDDiskInfo.DiskInfo diskInfo = null;
-				if (mBound) {
-					diskInfo = GDDiskInfo.getDiskInfo(mService.getStorageDisk(), true);
-					if (diskInfo != null) {
-						String diskSpaceStr = diskInfo.DiskSpace + "/"
-								+ diskInfo.DiskSize;
-						Log.d(TAG, " disk space = " + diskSpaceStr);
-						mDiskInfoView.setText(diskSpaceStr);
-					}
+			GDDiskInfo.DiskInfo diskInfo = null;
+			if (mBound) {
+				diskInfo = GDDiskInfo.getDiskInfo(
+						mService.getStorageDisk(), true);
+				if (diskInfo != null) {
+					String diskSpaceStr = diskInfo.DiskSpace + "/"
+							+ diskInfo.DiskSize;
+					Log.d(TAG, " disk space = " + diskSpaceStr);
+					mDiskInfoView.setText(diskSpaceStr);
 				}
 			}
 
-		} else {
-			if (pageNumber > (mPageDatas.size() - 1)) {
-				mReachPageEnd = true;
-			}
 		}
 	}
 

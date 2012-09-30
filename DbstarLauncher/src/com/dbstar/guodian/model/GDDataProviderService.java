@@ -47,6 +47,8 @@ public class GDDataProviderService extends Service {
 
 	public static final int REQUESTTYPE_GETALLPUBLICATIONS = 13;
 	public static final int REQUESTTYPE_GETTVDATA = 14;
+	public static final int REQUESTTYPE_STARTGETTASKINFO = 15;
+	public static final int REQUESTTYPE_STOPGETTASKINFO = 16;
 
 	private static final String PARAMETER_COLUMN_ID = "column_id";
 	private static final String PARAMETER_PAGENUMBER = "page_number";
@@ -366,8 +368,9 @@ public class GDDataProviderService extends Service {
 
 		case REQUESTTYPE_GETDOWNLOADSTATUS: {
 			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, task.PageNumber,
-						task.PageSize, task.Data);
+//				task.Observer.updateData(task.Type, task.PageNumber,
+//						task.PageSize, task.Data);
+				task.Observer.updateData(task.Type, null, task.Data);
 			}
 			break;
 		}
@@ -695,10 +698,21 @@ public class GDDataProviderService extends Service {
 					taskFinished(task);
 					break;
 				}
+				
+				case REQUESTTYPE_STARTGETTASKINFO: {
+					mDBStarClient.startTaskInfo();
+					break;
+				}
+				
+				case REQUESTTYPE_STOPGETTASKINFO: {
+					mDBStarClient.stopTaskInfo();
+					break;
+				}
 
 				case REQUESTTYPE_GETDOWNLOADSTATUS: {
-					ReceiveEntry[] entries = mModel.getDownloadStatus(
-							task.PageNumber, task.PageSize);
+					ReceiveEntry[] entries = mDBStarClient.getTaskInfo(); 
+//							mModel.getDownloadStatus(
+//							task.PageNumber, task.PageSize);
 					task.Data = entries;
 					taskFinished(task);
 					break;
@@ -867,15 +881,14 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
-	public void getDownloadStatus(ClientObserver observer, int pageNumber,
-			int pageSize) {
+	public void getDownloadStatus(ClientObserver observer) {
 		RequestTask task = new RequestTask();
 		task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETDOWNLOADSTATUS;
 
-		task.PageNumber = pageNumber;
-		task.PageSize = pageSize;
+//		task.PageNumber = pageNumber;
+//		task.PageSize = pageSize;
 		enqueueTask(task);
 	}
 
@@ -938,6 +951,25 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
+	public void startGetTaskInfo() {
+
+		RequestTask task = new RequestTask();
+		task.Observer = null;
+		task.Id = System.currentTimeMillis();
+		task.Type = REQUESTTYPE_STARTGETTASKINFO;
+
+		enqueueTask(task);
+	}
+	
+	public void stopGetTaskInfo() {
+		RequestTask task = new RequestTask();
+		task.Observer = null;
+		task.Id = System.currentTimeMillis();
+		task.Type = REQUESTTYPE_STOPGETTASKINFO;
+
+		enqueueTask(task);
+	}
+	
 	public void getWeatherData(ClientObserver observer, String location) {
 
 		if (!mNetworkIsReady)
