@@ -132,6 +132,10 @@ public class GDDBStarClient {
 	// "1001|taska|23932|23523094823\n1002|хннЯ2|234239|12349320\n"
 	public ReceiveEntry[] getTaskInfo() {
 		ReceiveEntry[] entries = null;
+		
+		if (mDbstarService == null)
+			return entries;
+		
 		try {
 			Intent it = mDbstarService.getTaskInfo();
 			byte[] bytes = it.getByteArrayExtra("taskinfo");
