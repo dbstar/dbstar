@@ -50,25 +50,26 @@ static void settingDefault_set(void)
 }
 
 /*
-判断配置项（含有以“=”分割的“配置项——值”组合的一行）是否合法，主要包括以下内容：
+判断配置项（含有以separator（例如：“=”、“:”）分割的“item——value”组合的一行）是否合法，主要包括以下内容：
 1、去除所有的不可显字符，只留下isgraph判断通过的；
 2、如果是“#”打头则视为注释，不用解析；
-3、有“=”才算有效。
+3、有分隔符separator才算有效。
 4、buf的数据可能会被改变，不可显字符都将去掉，且如果是有效的配置项，将会用'\0'替换“=”截断buf。
 	所以如果需要原始字符串，则应在调用此函数前自行备份。
 
-返回值：相当于配置项中“=”的位置，实际上是strchr(buf, '=')的返回值再加一（跳过“=”，指向value的地址）。
+返回值：相当于配置项中separator后的位置，实际上是strchr(buf, '=')的返回值再加一（跳过“=”，指向value的地址）。
 		因此，NULL表示此配置项无效，其他值则表示是value的指针
+输出：	函数返回时，buf指向分隔符前的item
 */
-char *setting_item_value(char *buf, unsigned int len)
+char *setting_item_value(char *buf, unsigned int buf_len, char separator)
 {
-	if(NULL==buf || 0==len || '#'==buf[0]){
+	if(NULL==buf || 0==buf_len || '#'==buf[0]){
 		DEBUG("this line is ignored as explain\n");
 		return NULL;
 	}
 //	DEBUG("read line: %s\n", buf);
 	unsigned int i=0, j = 0;
-	for(i=0; i<len; i++){
+	for(i=0; i<buf_len; i++){
 #if 0
 		if( (buf[i]>'0'&&buf[i]<'9')
 			||(buf[i]>'A'&&buf[i]<'Z')
@@ -89,7 +90,7 @@ char *setting_item_value(char *buf, unsigned int len)
 		DEBUG("ignore a line because of explain\n");
 		return NULL;
 	}
-	char *p_value = strchr(buf, ':');
+	char *p_value = strchr(buf, separator);
 	if(p_value){
 		*p_value = '\0';
 		p_value ++;
@@ -120,7 +121,7 @@ int setting_init(void)
 	memset(tmp_buf, 0, sizeof(tmp_buf));
 	
 	while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
-		p_value = setting_item_value(tmp_buf, strlen(tmp_buf));
+		p_value = setting_item_value(tmp_buf, strlen(tmp_buf), ':');
 		if(NULL!=p_value)
 		{
 			//DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
@@ -158,13 +159,18 @@ int setting_uninit()
 	return 0;
 }
 
-int service_id_get(char *id, unsigned int len)
+/*
+ 检查指定的产品id是否在特殊产品之列。
+*/
+int special_productid_check(char *productid)
 {
-	if(NULL==id || 0==len)
+	if(NULL==productid)
 		return -1;
 
-	strncpy(id, s_service_id, len);
-	return 0;
+	if(0==strcmp(productid, "special_product_001"))
+		return 1;
+	else
+		return 0;
 }
 
 int root_channel_get(void)
@@ -244,6 +250,13 @@ int alarm_ring(void)
 	return -1;
 }
 
+int special_product_id_get(char *id, unsigned int id_size)
+{
+	/*
+	临时测试使用
+	*/
+	return snprintf(id, id_size, "1003");
+}
 
 
 #ifdef SOLARIS

@@ -24,7 +24,7 @@ static void closeDatabase();
 static int createDatabase()
 {
 	char	*errmsgOpen=NULL;
-	int		ret = -1;
+	int		ret = 0;
 	
 	if(g_db!=NULL){
 		DEBUG("the database has opened\n");
@@ -45,7 +45,7 @@ static int createDatabase()
 
 		if(SQLITE_OK!=sqlite3_open(database_uri,&g_db)){
 			ERROROUT("can't open database: %s\n", database_uri);
-			ret = -1;
+			ret += -1;
 		}
 		else{
 			/// open foreign key support
@@ -53,76 +53,196 @@ static int createDatabase()
 				|| NULL!=errmsgOpen){
 				ERROROUT("can't open foreign_keys\n");
 				DEBUG("database errmsg: %s\n", errmsgOpen);
-				ret = -1;
+				ret += -1;
 			}
 			else{
-				if(createTable("allpid")){
-					ERROROUT("can not create table \"allpid\"\n");
-					ret = -1;
+				if(createTable("Global")){
+					ERROROUT("can not create table \"Global\"\n");
+					ret += -1;
 				}
 				else{
-					DEBUG("create table \"allpid\" OK\n");
-					ret = 0;
+					DEBUG("create table \"Global\" OK\n");
+					ret += 0;
 				}
 				
-				if(createTable("product")){
-					ERROROUT("can not create table \"product\"\n");
-					ret = -1;
+				if(createTable("Initialize")){
+					ERROROUT("can not create table \"Initialize\"\n");
+					ret += -1;
 				}
 				else{
-					DEBUG("create table \"product\" OK\n");
-					ret = 0;
+					DEBUG("create table \"Initialize\" OK\n");
+					ret += 0;
+				}
+				if(createTable("Channel")){
+					ERROROUT("can not create table \"Channel\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"Channel\" OK\n");
+					ret += 0;
 				}
 				
-				if(createTable("grouptag")){
-					ERROROUT("can not create table \"grouptag\"\n");
-					ret = -1;
+				if(createTable("Service")){
+					ERROROUT("can not create table \"Service\"\n");
+					ret += -1;
 				}
 				else{
-					DEBUG("create table \"grouptag\" OK\n");
-					ret = 0;
+					DEBUG("create table \"Service\" OK\n");
+					ret += 0;
 				}
 				
-				if(createTable("column")){
-					ERROROUT("can not create table \"column\"\n");
-					ret = -1;
+				if(createTable("ResStr")){
+					ERROROUT("can not create table \"ResStr\"\n");
+					ret += -1;
 				}
 				else{
-					DEBUG("create table \"column\" OK\n");
-					ret = 0;
+					DEBUG("create table \"ResStr\" OK\n");
+					ret += 0;
 				}
 				
-				if(createTable("content")){
-					ERROROUT("can not create table \"content\"\n");
-					ret = -1;
+				if(createTable("ResPoster")){
+					ERROROUT("can not create table \"ResPoster\"\n");
+					ret += -1;
 				}
 				else{
-					DEBUG("create table \"content\" OK\n");
-					ret = 0;
+					DEBUG("create table \"ResPoster\" OK\n");
+					ret += 0;
 				}
-				if(createTable("brand")){
-					ERROROUT("can not create table \"brand\"\n");
-					ret = -1;
-				}
-				else{
-					DEBUG("create table \"brand\" OK\n");
-					ret = 0;
-				}
-				if(createTable("preproduct")){
-					ERROROUT("can not create table \"preproduct\"\n");
-					ret = -1;
+				if(createTable("ResTrailer")){
+					ERROROUT("can not create table \"ResTrailer\"\n");
+					ret += -1;
 				}
 				else{
-					DEBUG("create table \"preproduct\" OK\n");
-					ret = 0;
+					DEBUG("create table \"ResTrailer\" OK\n");
+					ret += 0;
 				}
-				if(createTable("communication")){
-					ERROROUT("can not create table \"communication\"\n");
-					ret = -1;
+				if(createTable("ResSubTitle")){
+					ERROROUT("can not create table \"ResSubTitle\"\n");
+					ret += -1;
 				}
 				else{
-					DEBUG("create table \"communication\" OK\n");
-					ret = 0;
+					DEBUG("create table \"ResSubTitle\" OK\n");
+					ret += 0;
+				}
+				if(createTable("ResExtension")){
+					ERROROUT("can not create table \"ResExtension\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"ResExtension\" OK\n");
+					ret += 0;
+				}
+				if(createTable("ResExtensionFile")){
+					ERROROUT("can not create table \"ResExtensionFile\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"ResExtensionFile\" OK\n");
+					ret += 0;
+				}
+				if(createTable("Column")){
+					ERROROUT("can not create table \"Column\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"Column\" OK\n");
+					ret += 0;
+				}
+				if(createTable("ColumnEntity")){
+					ERROROUT("can not create table \"ColumnEntity\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"ColumnEntity\" OK\n");
+					ret += 0;
+				}
+				if(createTable("Product")){
+					ERROROUT("can not create table \"Product\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"Product\" OK\n");
+					ret += 0;
+				}
+				if(createTable("PublicationsSet")){
+					ERROROUT("can not create table \"PublicationsSet\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"PublicationsSet\" OK\n");
+					ret += 0;
+				}
+				if(createTable("Publication")){
+					ERROROUT("can not create table \"Publication\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"Publication\" OK\n");
+					ret += 0;
+				}
+				if(createTable("MultipleLanguageInfoVA")){
+					ERROROUT("can not create table \"MultipleLanguageInfoVA\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"MultipleLanguageInfoVA\" OK\n");
+					ret += 0;
+				}
+				if(createTable("MultipleLanguageInfoRM")){
+					ERROROUT("can not create table \"MultipleLanguageInfoRM\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"MultipleLanguageInfoRM\" OK\n");
+					ret += 0;
+				}
+				if(createTable("MultipleLanguageInfoApp")){
+					ERROROUT("can not create table \"MultipleLanguageInfoApp\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"MultipleLanguageInfoApp\" OK\n");
+					ret += 0;
+				}
+				if(createTable("MFile")){
+					ERROROUT("can not create table \"MFile\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"MFile\" OK\n");
+					ret += 0;
+				}
+				if(createTable("Message")){
+					ERROROUT("can not create table \"Message\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"Message\" OK\n");
+					ret += 0;
+				}
+				if(createTable("GuideList")){
+					ERROROUT("can not create table \"GuideList\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"GuideList\" OK\n");
+					ret += 0;
+				}
+				if(createTable("ProductDesc")){
+					ERROROUT("can not create table \"ProductDesc\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"ProductDesc\" OK\n");
+					ret += 0;
+				}
+				if(createTable("Preview")){
+					ERROROUT("can not create table \"Preview\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"Preview\" OK\n");
+					ret += 0;
 				}
 			}
 			sqlite3_free(errmsgOpen);
@@ -130,12 +250,12 @@ static int createDatabase()
 		closeDatabase();
 	}
 	
-	return ret;
+	return (ret<0?-1:0);
 }
 
 static int openDatabase()
 {
-	int		ret = -1;
+	int ret = -1;
 	
 	if(g_db!=NULL){
 		DEBUG("the database has opened\n");
@@ -183,7 +303,6 @@ static int createTable(char* name)
 	char sqlite_cmd[512];
 	int ret = -1;
 	
-	DEBUG("creating table: %s\n", name);
 	memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "SELECT name FROM sqlite_master WHERE type='table' AND name='%s';", name);
 	if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg))
@@ -199,135 +318,333 @@ static int createTable(char* name)
 		else{
 			sqlite3_free(errmsg);
 			ret = 0;
-			/*这里建立表的目的是查询，不是存储，所以不能用于查询的图片、结构体、描述等，不存入数据库*/
-			if(!strcmp(name,"product"))
+			/*这里建立表的目的是查询，不是存储，所以不能用于查询的图片、结构体、描述等*/
+			if(!strcmp(name,"Global"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
-					"CREATE TABLE product(\
-id		NVARCHAR(32) PRIMARY KEY,\
-version	NVARCHAR(32),\
-name	NVARCHAR(128),\
-path	NVARCHAR(128));");
-				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
-				{
-					ERROROUT("create 'product' failed\n");
-					DEBUG("sqlite errmsg: %s\n", errmsg);
-					ret = -1;
-				}
+					"CREATE TABLE %s(\
+Name	NVARCHAR(64) PRIMARY KEY,\
+Value	NVARCHAR(128),\
+Param	NVARCHAR(256));", name);
 			}
-			else if(!strcmp(name,"grouptag"))
+			else if(!strcmp(name,"Initialize"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
-					"CREATE TABLE grouptag(\
-version		NVARCHAR(32) PRIMARY KEY,\
-senduser	NVARCHAR(32),\
-sendtime	NVARCHAR(32),\
-id			NVARCHAR(32),\
-mode		NVARCHAR(32),\
-groupname	NVARCHAR(32),\
-grouptype	NVARCHAR(32));");
-				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
-				{
-					ERROROUT("create 'grouptag' failed\n");
-					DEBUG("sqlite errmsg: %s\n", errmsg);
-					ret = -1;
-				}
+					"CREATE TABLE %s(\
+XMLName	NVARCHAR(64) PRIMARY KEY,\
+Version	NVARCHAR(64),\
+StandardVersion	NVARCHAR(32),\
+URI		NVARCHAR(256));", name);
 			}
-			else if(!strcmp(name,"column"))
+			else if(!strcmp(name,"Channel"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
-					"CREATE TABLE column(\
-id			NVARCHAR(32) PRIMARY KEY,\
-name		NVARCHAR(128),\
-type		NVARCHAR(16), \
-parent_id	NVARCHAR(32));");
-				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
-				{
-					ERROROUT("create 'column' failed\n");
-					DEBUG("sqlite errmsg: %s\n", errmsg);
-					ret = -1;
-				}
+					"CREATE TABLE %s(\
+pid	NVARCHAR(64) PRIMARY KEY,\
+pidType	NVARCHAR(64),\
+multParamSet	NVARCHAR(64));", name);
 			}
-			else if(!strcmp(name,"brand"))
+			else if(!strcmp(name,"Service"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
-					"CREATE TABLE brand(\
-id			NVARCHAR(32) PRIMARY KEY,\
-regist_dir	NVARCHAR(256),\
-download	BIGINT,\
-totalsize	BIGINT,\
-cname		NVARCHAR(128));");
-				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
-				{
-					ERROROUT("create 'column' failed\n");
-					DEBUG("sqlite errmsg: %s\n", errmsg);
-					ret = -1;
-				}
+					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) PRIMARY KEY,\
+RegionCode	NVARCHAR(64),\
+OnlineTime	RCHAR(32),\
+OfflineTime	RCHAR(32));", name);
 			}
-			else if (!strcmp(name,"content"))
-			{
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),\
-					"CREATE TABLE content(\
-id			NVARCHAR(32),\
-ready		INTEGER,\
-senduser	NVARCHAR(32),\
-sendtime	NVARCHAR(32),\
-contentname	NVARCHAR(128),\
-path		NVARCHAR(256),\
-column_id	NVARCHAR(32),\
-coretag_id	NVARCHAR(32),\
-chineseName	NVARCHAR(128),\
-englishName	NVARCHAR(128),\
-director	NVARCHAR(64),\
-actor		NVARCHAR(64),\
-favorite	NVARCHAR(16),\
-bookmark	NVARCHAR(16));");
-				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
-				{
-					ERROROUT("create 'content' failed\n");
-					DEBUG("sqlite errmsg: %s\n", errmsg);
-					ret = -1;
-				}	
-			}
-			else if (!strcmp(name,"preproduct"))
-			{
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),\
-					"CREATE TABLE preproduct(\
-id			NVARCHAR(32) PRIMARY KEY,\
-download	BIGINT,\
-preentry	NVARCHAR(32),\
-prename		NVARCHAR(128),\
-xmlpath		NVARCHAR(256),\
-column_id	NVARCHAR(32));");
-				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
-				{
-					ERROROUT("create 'content' failed\n");
-					DEBUG("sqlite errmsg: %s\n", errmsg);
-					ret = -1;
-				}	
-			}
-			else if(!strcmp(name,"allpid"))
+			else if(!strcmp(name,"ResStr"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
-					"CREATE TABLE allpid(\
-id		NVARCHAR(32) PRIMARY KEY);");
-				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
-				{
-					ERROROUT("create 'product' failed\n");
-					DEBUG("sqlite errmsg: %s\n", errmsg);
-					ret = -1;
-				}
+					"CREATE TABLE %s(\
+ObjectName	NVARCHAR(64),\
+EntityID	NVARCHAR(64),\
+StrLang		NVARCHAR(32),\
+StrName		NVARCHAR(64),\
+Extension	NVARCHAR(64),\
+StrValue	NVARCHAR(1024),\
+PRIMARY KEY (ObjectName,EntityID,StrLang,StrName,Extension));", name);
 			}
-			else if(!strcmp(name,"communication"))
+			else if(!strcmp(name,"ResPoster"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
-					"CREATE TABLE communication(\
-name		NVARCHAR(128),\
-value		NVARCHAR(128),\
-arg			NVARCHAR(256));");
+					"CREATE TABLE %s(\
+ObjectName	NVARCHAR(64),\
+EntityID	NVARCHAR(64),\
+PosterID	NVARCHAR(64),\
+PosterName	NVARCHAR(64),\
+PosterURI	NVARCHAR(256),\
+PRIMARY KEY (ObjectName,EntityID,PosterID));", name);
+			}
+			else if(!strcmp(name,"ResTrailer"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ObjectName	NVARCHAR(64),\
+EntityID	NVARCHAR(64),\
+TrailerID	NVARCHAR(64),\
+TrailerName	NVARCHAR(64),\
+TrailerURI	NVARCHAR(256),\
+PRIMARY KEY (ObjectName,EntityID,TrailerID));", name);
+			}
+			else if(!strcmp(name,"ResSubTitle"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ObjectName	NVARCHAR(64),\
+EntityID	NVARCHAR(64),\
+SubTitleID	NVARCHAR(64),\
+SubTitleName	NVARCHAR(64),\
+SubTitleLanguage	NVARCHAR(64),\
+SubTitleURI	NVARCHAR(256),\
+PRIMARY KEY (ObjectName,EntityID,SubTitleID));", name);
+			}
+			else if(!strcmp(name,"ResExtension"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ObjectName	NVARCHAR(256),\
+EntityID	NVARCHAR(64),\
+Name	NVARCHAR(64),\
+Type	NVARCHAR(64),\
+PRIMARY KEY (ObjectName,EntityID,Name));", name);
+			}
+			else if(!strcmp(name,"ResExtensionFile"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ObjectName	NVARCHAR(256),\
+EntityID	NVARCHAR(64),\
+FileID	NVARCHAR(64),\
+FileName	NVARCHAR(64),\
+FileURI	NVARCHAR(256),\
+PRIMARY KEY (ObjectName,EntityID,FileID));", name);
+			}
+			else if(!strcmp(name,"Column"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ColumnID	NVARCHAR(64) PRIMARY KEY,\
+ParentID	NVARCHAR(64),\
+Path	NVARCHAR(256),\
+ColumnType	NVARCHAR(256),\
+ColumnIcon_losefocus	NVARCHAR(256),\
+ColumnIcon_getfocus	NVARCHAR(256),\
+ColumnIcon_onclick	NVARCHAR(256));", name);
+			}
+			else if(!strcmp(name,"ColumnEntity"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ColumnID	NVARCHAR(64),\
+EntityID	NVARCHAR(64),\
+EntityType	NVARCHAR(64));", name);
+			}
+			else if(!strcmp(name,"Product"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ProductID	NVARCHAR(64) PRIMARY KEY,\
+ProductType	NVARCHAR(64),\
+Flag	NVARCHAR(64),\
+OnlineDate	CHAR(32),\
+OfflineDate	CHAR(32),\
+IsReserved	CHAR(32),\
+Price	NVARCHAR(32),\
+CurrencyType	NVARCHAR(32),\
+DRMFile	NVARCHAR(256),\
+ColumnID	NVARCHAR(64),\
+IsAuthorized	NVARCHAR(64),\
+VODNum	NVARCHAR(64),\
+VODPlatform	NVARCHAR(256));", name);
+			}
+			else if(!strcmp(name,"PublicationsSet"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+SetID	NVARCHAR(64) PRIMARY KEY,\
+ColumnID	NVARCHAR(64),\
+ProductID	NVARCHAR(64),\
+URI	NVARCHAR(256),\
+TotalSize	NVARCHAR(64),\
+ProductDescID	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64),\
+PushTime	NVARCHAR(128),\
+IsReserved	NVARCHAR(64),\
+Visible	NVARCHAR(64),\
+Favorite	NVARCHAR(64),\
+IsAuthorized	NVARCHAR(64),\
+VODNum	NVARCHAR(64),\
+VODPlatform	NVARCHAR(256));", name);
+			}
+			else if(!strcmp(name,"Publication"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+PublicationID	NVARCHAR(64) PRIMARY KEY,\
+ColumnID	NVARCHAR(64),\
+ProductID	NVARCHAR(64),\
+URI	NVARCHAR(256),\
+TotalSize	NVARCHAR(64),\
+ProductDescID	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64),\
+PushTime	NVARCHAR(128),\
+PublicationType	NVARCHAR(64),\
+IsReserved	CHAR(32),\
+Visible	CHAR(32),\
+DRMFile	NVARCHAR(256),\
+SetID	NVARCHAR(64),\
+IndexInSet	NVARCHAR(32),\
+Favorite	NVARCHAR(32),\
+Bookmark	NVARCHAR(32),\
+IsAuthorized	NVARCHAR(64),\
+VODNum	NVARCHAR(64),\
+VODPlatform	NVARCHAR(256));", name);
+			}
+			else if(!strcmp(name,"MultipleLanguageInfoVA"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+PublicationID	NVARCHAR(64),\
+infolang	NVARCHAR(64),\
+PublicationDesc	NVARCHAR(1024),\
+ImageDefinition	NVARCHAR(32),\
+Keywords	NVARCHAR(256),\
+Area	NVARCHAR(64),\
+Language	NVARCHAR(64),\
+Episode	NVARCHAR(32),\
+AspectRatio	NVARCHAR(32),\
+AudioChannel	NVARCHAR(32),\
+Director	NVARCHAR(128),\
+Actor	NVARCHAR(256),\
+Audience	NVARCHAR(64),\
+Model	NVARCHAR(32),\
+PRIMARY KEY (PublicationID,infolang));", name);
+			}
+			else if(!strcmp(name,"MultipleLanguageInfoRM"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+PublicationID	NVARCHAR(64),\
+infolang	NVARCHAR(64),\
+PublicationDesc	NVARCHAR(1024),\
+Keywords	NVARCHAR(256),\
+Publisher	NVARCHAR(128),\
+Area	NVARCHAR(64),\
+Language	NVARCHAR(64),\
+Episode	NVARCHAR(32),\
+AspectRatio	NVARCHAR(32),\
+VolNum	NVARCHAR(64),\
+ISSN	NVARCHAR(64),\
+PRIMARY KEY (PublicationID,infolang));", name);
+			}
+			else if(!strcmp(name,"MultipleLanguageInfoApp"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+PublicationID	NVARCHAR(64) PRIMARY KEY,\
+infolang	NVARCHAR(64),\
+Category	NVARCHAR(64),\
+Released	NVARCHAR(64),\
+AppVersion	NVARCHAR(64),\
+Language	NVARCHAR(64),\
+Developer	NVARCHAR(64),\
+Rated	NVARCHAR(64),\
+PublicationDesc	NVARCHAR(1024),\
+Keywords	NVARCHAR(256),\
+Requirements	NVARCHAR(64));", name);
+			}
+			else if(!strcmp(name,"MFile"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+FileID	NVARCHAR(64) PRIMARY KEY,\
+PublicationID	NVARCHAR(64),\
+FileSize	NVARCHAR(64),\
+FileURI	NVARCHAR(256),\
+FileType	NVARCHAR(64),\
+FileFormat	NVARCHAR(32),\
+Duration	NVARCHAR(32),\
+Resolution	NVARCHAR(32),\
+BitRate	NVARCHAR(32),\
+CodeFormat	NVARCHAR(32));", name);
+			}
+			else if(!strcmp(name,"Message"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+MessageID	NVARCHAR(64),\
+type	NVARCHAR(64),\
+displayForm	NVARCHAR(64),\
+StartTime	CHAR(32),\
+EndTime		CHAR(32),\
+Interval	CHAR(32));", name);
+			}
+			else if(!strcmp(name,"GuideList"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+DateValue	NVARCHAR(64),\
+PublicationID	NVARCHAR(64),\
+GuideListID	NVARCHAR(64),\
+URI	NVARCHAR(256),\
+TotalSize	NVARCHAR(64),\
+ProductDescID	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64),\
+PushTime	NVARCHAR(128),\
+PosterID	NVARCHAR(64),\
+PosterName	NVARCHAR(64),\
+PosterURI	NVARCHAR(64),\
+TrailerID	NVARCHAR(64),\
+TrailerName	NVARCHAR(64),\
+TrailerURI	NVARCHAR(64),\
+PRIMARY KEY (DateValue,PublicationID));", name);
+			}
+			else if(!strcmp(name,"ProductDesc"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ReceiveType	NVARCHAR(64),\
+ProductDescID	NVARCHAR(64),\
+ID	NVARCHAR(64),\
+TotalSize	NVARCHAR(64),\
+URI	NVARCHAR(256),\
+ReceiveStatus	NVARCHAR(64),\
+PushTime	NVARCHAR(64),\
+PRIMARY KEY (ReceiveType,ID));", name);
+			}
+			else if(!strcmp(name,"Preview"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+PreviewID	NVARCHAR(64) PRIMARY KEY,\
+ProductID	NVARCHAR(64),\
+PreviewType	NVARCHAR(64),\
+PreviewSize	NVARCHAR(64),\
+ShowTime	NVARCHAR(64),\
+PreviewURI	NVARCHAR(256),\
+PreviewFormat	NVARCHAR(64),\
+Duration	NVARCHAR(64),\
+Resolution	NVARCHAR(64),\
+BitRate	NVARCHAR(64),\
+CodeFormat	NVARCHAR(64),\
+URI	NVARCHAR(256),\
+TotalSize	NVARCHAR(64),\
+ProductDescID	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64),\
+PushTime	NVARCHAR(128),\
+StartTime	CHAR(32),\
+EndTime	CHAR(32),\
+PlayMode	NVARCHAR(64));", name);
+			}
+			
+			else
+				memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
+			
+			if(strlen(sqlite_cmd)>0){
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("create 'communication' failed\n");
+					ERROROUT("create '%s' failed: %s\n", name, sqlite_cmd);
 					DEBUG("sqlite errmsg: %s\n", errmsg);
 					ret = -1;
 				}
@@ -379,9 +696,8 @@ int sqlite_execute(char *exec_str)
 		ret = -1;
 	}
 	else{
-		//DEBUG("sqlite cmd: %s\n", exec_str);
+		DEBUG("%s\n", exec_str);
 		if(sqlite3_exec(g_db,exec_str,NULL,NULL,&errmsg)){
-			ERROROUT("sqlite3_exec failed\n");
 			DEBUG("sqlite3 errmsg: %s\n", errmsg);
 			ret = -1;
 		}
@@ -413,7 +729,7 @@ int sqlite_read(char *sqlite_cmd, void *receiver, int (*sqlite_read_callback)(ch
 	int ret = 0;
 	int (*sqlite_callback)(char **,int,int,void *) = sqlite_read_callback;
 
-	//DEBUG("sqlite cmd str: %s\n", sqlite_cmd);
+	DEBUG("sqlite read: %s\n", sqlite_cmd);
 	
 	///open database
 	if(-1==openDatabase())
@@ -439,14 +755,14 @@ int sqlite_read(char *sqlite_cmd, void *receiver, int (*sqlite_read_callback)(ch
 				printf("\n");
 			}
 			else{
-				DEBUG("sqlite select OK. %s\n", NULL==sqlite_callback?"there is no callback fun":"do callback fun");
+				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
 				if(sqlite_callback)
 					sqlite_callback(l_result, l_row, l_column, receiver);
 				else{
 					DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
-					int i = 0;
-					for(i=0;i<l_column;i++)
-						printf("\t\t%s\n", l_result[i]);
+//					int i = 0;
+//					for(i=0;i<(l_column+1);i++)
+//						printf("\t\t%s\n", l_result[i]);
 				}
 			}
 			ret = l_row;
@@ -456,7 +772,6 @@ int sqlite_read(char *sqlite_cmd, void *receiver, int (*sqlite_read_callback)(ch
 		closeDatabase();
 	}
 	
-	///return
 	return ret;
 }
 
@@ -471,7 +786,7 @@ int sqlite_table_clear(char *table_name)
 
 	int ret = sqlite_execute(sqlite_cmd);
 	if(0==ret){
-		DEBUG("table '%s' clear success\n", table_name);
+		DEBUG("table '%s' clear successfully\n", table_name);
 		return 0;
 	}
 	else{
@@ -480,3 +795,214 @@ int sqlite_table_clear(char *table_name)
 	}
 }
 
+#if 0
+/*
+ 将一系列sqlite语句封装为一个事务，各个语句间用'\n'结尾。
+*/
+int sqlite_transaction(char *sqlite_cmd)
+{
+	if(NULL==sqlite_cmd || 0==strlen(sqlite_cmd)){
+		DEBUG("invalid argument\n");
+		return -1;
+	}
+	DEBUG("%s\n", sqlite_cmd);
+	int ret = -1;
+	
+	if(-1==openDatabase())
+	{
+		ERROROUT("Open database failed\n");
+		ret = -1;
+	}
+	else{
+		ret = sqlite3_exec(g_db, "begin transaction", NULL, NULL, NULL);
+		if(SQLITE_OK == ret){
+			char *p_cmd = sqlite_cmd;
+			char *p = NULL;
+			unsigned int killed_len = 0;
+			do{
+				killed_len = 0;
+				p = strchr(p_cmd, '\n');
+				if(p){
+					*p = '\0';
+					killed_len += 1;
+				}
+				killed_len += strlen(p_cmd);
+				
+				DEBUG("sqlite cmd: %s, p=%s, killed_len=%d\n", p_cmd, p, killed_len);
+				if(strlen(p_cmd)>0){
+					ret = sqlite3_exec(g_db, p_cmd, NULL, NULL, NULL);
+					if(SQLITE_OK == ret){
+						;
+					}
+					else{
+						DEBUG("sqlite3 errmsg: %s\n", sqlite3_errmsg(g_db));
+						ret = -1;
+						break;
+					}
+				}
+				p_cmd += killed_len;
+			}while(p_cmd && strlen(p_cmd)>0);
+			
+			if(SQLITE_OK == ret){
+				ret = sqlite3_exec(g_db, "commit transaction", NULL, NULL, NULL);
+			}
+			else{
+				DEBUG("rollback transaction\n");
+				ret = sqlite3_exec(g_db, "rollback transaction", NULL, NULL, NULL);
+			}
+			
+			if(SQLITE_OK == ret){
+				ret = 0;
+			}
+			else{
+				DEBUG("%s\n", sqlite3_errmsg(g_db));
+				ret = -1;
+			}
+		}
+		else{
+			DEBUG("sqlite3 errmsg: %s\n", sqlite3_errmsg(g_db));
+			ret = -1;
+		}
+		
+		closeDatabase();									///	close database
+	}
+	
+	return ret;
+}
+#endif
+
+/*
+ 数据库事务使用规则：
+ 1、事务的开始和结束必须是成对出现的。事务不允许嵌套。
+ 2、对于整体替换的数据表，应将数据表清除、数据录入工作封装在一个事务中。
+ 3、所有Res开头的数据表，它们的数据都是依存于其他数据表才有意义，
+ 	因此这些数据表的插入、删除、更新等动作，均是某个宿主事务的一部分，它们自身不构成一个单独的事务。
+*/
+typedef enum{
+	SQL_TRAN_STATUS_END = 0,
+	SQL_TRAN_STATUS_BEGIN,
+	SQL_TRAN_STATUS_LOADING
+}SQL_TRAN_STATUS_E;
+static SQL_TRAN_STATUS_E s_sql_tran_status = SQL_TRAN_STATUS_END;
+
+
+/*
+ 函数1：事务开始
+*/
+int sqlite_transaction_begin()
+{
+	int ret = -1;
+	
+	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
+		DEBUG("######### SQLITE TRANSACTION STATUS is abnormally #########\n");
+		DEBUG("expect SQL_TRAN_STATUS_END but %d\n", s_sql_tran_status);
+		DEBUG("###########################################################\n");
+		return -1;
+		// ret = sqlite_transaction_end(0);
+	}
+	
+	if(SQL_TRAN_STATUS_END == s_sql_tran_status){
+		if(-1==openDatabase())
+		{
+			ERROROUT("Open database failed\n");
+			ret = -1;
+		}
+		else{
+			ret = sqlite3_exec(g_db, "begin transaction", NULL, NULL, NULL);
+			if(SQLITE_OK == ret){
+				s_sql_tran_status = SQL_TRAN_STATUS_BEGIN;
+				ret = 0;
+				//DEBUG(">>>>>>>>>>>>>>>> 	ok\n");
+			}
+			else{
+				DEBUG("sqlite3 errmsg: %s\n", sqlite3_errmsg(g_db));
+				ret = -1;
+			}
+		}
+	}
+	
+	return ret;
+}
+/*
+ 函数2：事务中的sqlite语句。
+*/
+int sqlite_transaction_exec(char *sqlite_cmd)
+{
+	if(NULL==sqlite_cmd || 0==strlen(sqlite_cmd)){
+		DEBUG("invalid argument\n");
+		return -1;
+	}
+	DEBUG("%s\n", sqlite_cmd);
+	
+	int ret = -1;
+	
+	if(SQL_TRAN_STATUS_END == s_sql_tran_status){
+		DEBUG("######### SQLITE TRANSACTION STATUS is abnormally #########\n");
+		DEBUG("expect SQL_TRAN_STATUS_BEGIN but %d\n", s_sql_tran_status);
+		DEBUG("###########################################################\n");
+		return -1;
+		//ret = sqlite_transaction_begin();
+	}
+	
+	if(SQL_TRAN_STATUS_BEGIN == s_sql_tran_status || SQL_TRAN_STATUS_LOADING == s_sql_tran_status){
+		ret = sqlite3_exec(g_db, sqlite_cmd, NULL, NULL, NULL);
+		if(SQLITE_OK == ret){
+			s_sql_tran_status = SQL_TRAN_STATUS_LOADING;
+			ret = 0;
+		}
+		else{
+			DEBUG("sqlite3 errmsg: %s\n", sqlite3_errmsg(g_db));
+			ret = -1;
+		}
+	}
+	
+	return ret;
+}
+/*
+ 函数3：清理数据表，在事务中执行。
+*/
+int sqlite_transaction_table_clear(char *table_name)
+{
+	DEBUG("CAUTION: will clear table '%s'\n", table_name);
+	char sqlite_cmd[256];	
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM %s;", table_name);
+	
+	return sqlite_transaction_exec(sqlite_cmd);
+}
+
+/*
+ 函数4：事务结束。
+ 参数：commin_flag——0：提交事务；-1：回滚事务。
+*/
+int sqlite_transaction_end(int commit_flag)
+{
+	int ret = -1;
+	
+	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
+		if(1==commit_flag){
+			ret = sqlite3_exec(g_db, "commit transaction", NULL, NULL, NULL);
+		}
+		else{
+			DEBUG("rollback transaction\n");
+			ret = sqlite3_exec(g_db, "rollback transaction", NULL, NULL, NULL);
+		}
+		
+		if(SQLITE_OK == ret){
+			s_sql_tran_status = SQL_TRAN_STATUS_END;
+			ret = 0;
+			//DEBUG("<<<<<<<<<<<<<<<<<<<< 	ok\n");
+		}
+		else{
+			DEBUG("%s\n", sqlite3_errmsg(g_db));
+			ret = -1;
+		}
+		closeDatabase();
+	}
+	else{
+		DEBUG("sqlite transaction is end, do nothing\n");
+		ret = -1;
+	}
+	
+	return ret;
+}

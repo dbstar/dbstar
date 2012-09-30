@@ -29,7 +29,7 @@
 #include "sqlite.h"
 
 #define MAX_PACK_LEN (1500)
-#define MAX_PACK_BUF (200000)		//å®šä¹‰ç¼“å†²åŒºå¤§å°ï¼Œå•ä½ï¼šåŒ…	1500*200000=280M
+#define MAX_PACK_BUF (200000)		//¶¨Òå»º³åÇø´óĞ¡£¬µ¥Î»£º°ü	1500*200000=280M
 
 
 #define XML_NUM			8
@@ -40,7 +40,7 @@ static pthread_cond_t cond_xml = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mtx_push_monitor = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_push_monitor = PTHREAD_COND_INITIALIZER;
 
-//æ•°æ®åŒ…ç»“æ„
+//Êı¾İ°ü½á¹¹
 typedef struct tagDataBuffer
 {
     short	m_len;
@@ -61,7 +61,7 @@ static int push_monitor_regist(int regist_flag);
 #define PROGS_NUM 64
 static PROG_S s_prgs[PROGS_NUM];
 static char s_push_data_dir[256];
-/*************æ¥æ”¶ç¼“å†²åŒºå®šä¹‰***********/
+/*************½ÓÊÕ»º³åÇø¶¨Òå***********/
 DataBuffer *g_recvBuffer;	//[MAX_PACK_BUF]
 static int g_wIndex = 0;
 static int g_rIndex = 0;
@@ -72,12 +72,13 @@ static int s_xmlparse_running = 0;
 static int s_monitor_running = 0;
 static int s_decoder_running = 0;
 static char *s_dvbpush_info = NULL;
-static int s_dvbpush_info_readed = 0;
+static time_t s_recv_status_refresh_pin = 0;
+static int s_push_monitor_active = 0;
 
 /*
-å½“å‘pushä¸­å†™æ•°æ®æ—¶æ‰æœ‰å¿…è¦ç›‘å¬è¿›åº¦ï¼Œå¦åˆ™ç›´æ¥ä½¿ç”¨æ•°æ®åº“ä¸­è®°å½•çš„è¿›åº¦å³å¯ã€‚
-è€ƒè™‘åˆ°ç¼“å†²ï¼Œåœ¨æ— æ•°æ®åå¤šæŸ¥è¯¢å‡ è½®å†åœæ­¢æŸ¥è¯¢ï¼Œå› æ­¤pushæ•°æ®æ—¶ï¼Œç½®æ­¤å€¼ä¸º3ã€‚
-è€ƒè™‘åˆ°å¼€æœºæœ€å¥½ç»™ä¸€æ¬¡æ˜¾ç¤ºçš„æœºä¼šï¼Œåˆå§‹åŒ–ä¸º1ã€‚
+µ±ÏòpushÖĞĞ´Êı¾İÊ±²ÅÓĞ±ØÒª¼àÌı½ø¶È£¬·ñÔòÖ±½ÓÊ¹ÓÃÊı¾İ¿âÖĞ¼ÇÂ¼µÄ½ø¶È¼´¿É¡£
+¿¼ÂÇµ½»º³å£¬ÔÚÎŞÊı¾İºó¶à²éÑ¯¼¸ÂÖÔÙÍ£Ö¹²éÑ¯£¬Òò´ËpushÊı¾İÊ±£¬ÖÃ´ËÖµÎª3¡£
+¿¼ÂÇµ½¿ª»ú×îºÃ¸øÒ»´ÎÏÔÊ¾µÄ»ú»á£¬³õÊ¼»¯Îª1¡£
 */
 static int s_push_has_data = 0;
 
@@ -204,8 +205,8 @@ void *push_decoder_thread()
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
-			* è°ƒç”¨PUSHæ•°æ®è§£ææ¥å£è§£ææ•°æ®ï¼Œè¯¥å‡½æ•°æ˜¯é˜»å¡çš„ï¼Œæ‰€ä»¥åº”è¯¥ä½¿ç”¨ä¸€ä¸ªè¾ƒå¤§
-			* çš„ç¼“å†²åŒºæ¥æš‚æ—¶å­˜å‚¨æºæºä¸æ–­çš„æ•°æ®ã€‚
+			* µ÷ÓÃPUSHÊı¾İ½âÎö½Ó¿Ú½âÎöÊı¾İ£¬¸Ãº¯ÊıÊÇ×èÈûµÄ£¬ËùÒÔÓ¦¸ÃÊ¹ÓÃÒ»¸ö½Ï´ó
+			* µÄ»º³åÇøÀ´ÔİÊ±´æ´¢Ô´Ô´²»¶ÏµÄÊı¾İ¡£
 			*/
 			push_parse((char *)pBuf, len);
 			s_push_has_data = 3;
@@ -251,81 +252,115 @@ static void push_progs_process_refresh(char *regist_dir, long long cur_size)
 }
 #endif
 
-static time_t s_recv_status_refresh_pin = 0;
-static int push_monitor_resume()
+static int push_monitor_frequency_limit()
 {
-	pthread_mutex_lock(&mtx_push_monitor);
-	if(time(NULL)-s_recv_status_refresh_pin>=5){
-		pthread_cond_signal(&cond_push_monitor); //send sianal
-		s_recv_status_refresh_pin = time(NULL);
+	time_t now_sec = time(NULL);
+	if(now_sec-s_recv_status_refresh_pin>=5){
+		DEBUG("time now=%ld, s_recv_status_refresh_pin=%ld\n", now_sec, s_recv_status_refresh_pin);
+		s_recv_status_refresh_pin = now_sec;
+		return 0;
 	}
-	pthread_mutex_unlock(&mtx_push_monitor);
-	return 0;
+	else{
+		DEBUG("time now=%ld, s_recv_status_refresh_pin=%ld, too frequent\n", now_sec, s_recv_status_refresh_pin);
+		return -1;
+	}
+}
+
+/*
+ ¹¦ÄÜÅĞ¶ÏÊÇ·ñÊÇºÏ·¨½ÚÄ¿
+ ·µ»ØÖµ£º	-1±íÊ¾·Ç·¨£¬1±íÊ¾ºÏ·¨¡£
+*/
+static int prog_is_valid(PROG_S *prog)
+{
+	if(NULL==prog)
+		return -1;
+		
+	if(strlen(prog->prog_uri)>0 || (prog->total)>0LL){
+		//DEBUG("valid prog\n");
+		return 1;
+	}
+	else
+		return -1;
 }
 
 void dvbpush_getinfo_start()
 {
-	DEBUG("here start\n");
+	DEBUG("start.........\n");
+	sleep(1);
+	s_push_monitor_active = push_monitor_regist(1);
+	DEBUG("here start %d progs\n", s_push_monitor_active);
 }
 
 void dvbpush_getinfo_stop()
 {
+	push_monitor_regist(0);
+	
+	if(NULL!=s_dvbpush_info){
+		DEBUG("FREE s_dvbpush_info\n");
+		free(s_dvbpush_info);
+		s_dvbpush_info = NULL;
+	}
 	DEBUG("here stop\n");
 }
 
 int dvbpush_getinfo(char **p, unsigned int *len)
 {
-#define OLNY_FOR_DEBUG 1
-#if OLNY_FOR_DEBUG
-	static char buff[] = "1001|taska|23932|23523094823\n1002|ä»»åŠ¡2|234239|12349320\n";
-	unsigned int bufflen = sizeof(buff);
-
-	*p = buff;
-	*len = bufflen;
-	return 0;
-#endif
-
 	if(NULL!=s_dvbpush_info){
+		DEBUG("FREE s_dvbpush_info\n");
 		free(s_dvbpush_info);
 		s_dvbpush_info = NULL;
 	}
-	s_dvbpush_info_readed = 0;
-	push_monitor_resume();
 	
-	int i = 0;
-	for(i=0; i<32; i++){
-		if(s_dvbpush_info_readed>0)
-			break;
-		else
-			usleep(100000);
-	}
-	if(32==i)
+	if(-1==push_monitor_frequency_limit())
 		return -1;
 	
-	/* å½¢å¦‚ï¼š1001|aaaaaaname|23932|23523094823\n1002|bbbbbbname|234239|12349320\n1003|cccccname|0|213984902943
-	 æ¯æ¡è®°å½•é¢„ç•™é•¿åº¦ï¼š64ä½id + strlen(prog_uri) + 20ä½å½“å‰é•¿åº¦ + 20ä½æ€»é•¿ + 4ä½åˆ†éš”ç¬¦
-	 å…¶ä¸­ï¼šlong longå‹è½¬ä¸º10è¿›åˆ¶åæœ€å¤§é•¿åº¦ä¸º20
+	int info_size;
+	int i = 0;
+	/*
+	 ĞÎÈç£º1001|aaaaaaname|23932|23523094823\n1002|bbbbbbname|234239|12349320\n1003|cccccname|0|213984902943
+	 Ã¿Ìõ¼ÇÂ¼Ô¤Áô³¤¶È£º64Î»id + strlen(prog_uri) + 20Î»µ±Ç°³¤¶È + 20Î»×Ü³¤ + 4Î»·Ö¸ô·û
+	 ÆäÖĞ£ºlong longĞÍ×ªÎª10½øÖÆºó×î´ó³¤¶ÈÎª20
 	*/
-	unsigned int info_len = 0;
-	for(i=0; i<PROGS_NUM; i++)
-	{
-		//å¾ªç¯ç»“æŸçš„æ¡ä»¶æ˜¯é‡åˆ°èŠ‚ç›®è·¯å¾„ä¸ºç©ºä¸²æ—¶ã€‚
-		if(strlen(s_prgs[i].prog_uri)>0 && s_prgs[i].total>0LL)
-			info_len += (strlen(s_prgs[i].prog_uri)+64+20+20+4);
-		else
-			break;
-	}
-	if(i>0){
-		int progs_num = i;
+	if(1 && (s_push_monitor_active>0)){	// TRUE is only for test, here should be: s_push_has_data>0
+		info_size = s_push_monitor_active*(256+64+20+20+4) + 1;
+		s_dvbpush_info = malloc(info_size);
 		
-		info_len ++;
-		s_dvbpush_info = malloc(info_len);
 		if(s_dvbpush_info){
-			DEBUG("malloc %d Bs for push info\n", info_len);
-			memset(s_dvbpush_info, 0, info_len);
-			for(i=0; i<progs_num; i++){
-				snprintf(s_dvbpush_info+strlen(s_dvbpush_info), info_len-strlen(s_dvbpush_info),
-					"%s%s|%s|%lld|%lld", strlen(s_dvbpush_info)>0?"\n":"",s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
+			DEBUG("malloc %d Bs for push info\n", info_size);
+			s_dvbpush_info[0]='\0';
+			/*
+			¼à²â½ÚÄ¿½ÓÊÕ½ø¶È
+			*/
+			for(i=0; i<PROGS_NUM; i++)
+			{
+				if(-1==prog_is_valid(&s_prgs[i]))
+					break;
+				/*
+				* »ñÈ¡Ö¸¶¨½ÚÄ¿µÄÒÑ½ÓÊÕ×Ö½Ú´óĞ¡£¬¿ÉËã³ö°Ù·Ö±È
+				*/
+				long long rxb = push_dir_get_single(s_prgs[i].prog_uri);
+				
+				DEBUG("PROG_S:%s %s %lld/%lld %-3lld%%\n",
+					s_prgs[i].id,
+					s_prgs[i].prog_uri,
+					rxb,
+					s_prgs[i].total,
+					rxb*100/s_prgs[i].total);
+					
+				s_prgs[i].cur += 10*1024*1024;
+				if(0==i){
+					snprintf(s_dvbpush_info, info_size,
+						"%s|%s|%lld|%lld", s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
+				}
+				else{
+					snprintf(s_dvbpush_info+strlen(s_dvbpush_info), info_size-strlen(s_dvbpush_info),
+						"%s%s|%s|%lld|%lld", "\n",s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
+				}
+				
+				if(rxb>=s_prgs[i].total){
+					DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", s_prgs[i].prog_uri);
+					push_progs_finish(s_prgs[i].id);
+				}
 			}
 			*p = s_dvbpush_info;
 			*len = strlen(s_dvbpush_info);
@@ -333,82 +368,32 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 			return 0;
 		}
 		else
-			DEBUG("can not malloc %d Bs for push info\n", info_len);
+			DEBUG("malloc %d Bs for push info failed\n", info_size);
+		
+		s_push_has_data --;
 	}
 	return -1;
 }
 
 /*
-ä¸ºé¿å…æ— æ„ä¹‰çš„æŸ¥è¯¢ç¡¬ç›˜ï¼Œåº”å®Œæˆä¸‹é¢ä¸¤ä¸ªå·¥ä½œï¼š
-1ã€å½“èŠ‚ç›®æ¥æ”¶å®Œæ¯•åä¸åº”å†æŸ¥è¯¢ï¼Œæ•°æ®åº“ä¸­è®°å½•çš„æ˜¯100%
-2ã€åªæœ‰UIä¸Šè¿›å…¥æŸ¥çœ‹è¿›åº¦çš„ç•Œé¢åï¼Œé€šçŸ¥åº•å±‚å»æŸ¥è¯¢ï¼Œå…¶ä»–æ—¶é—´æŸ¥è¯¢æ²¡æœ‰æ„ä¹‰ã€‚
-3ã€å½“pushæ— æ•°æ®åï¼Œå†è½®è¯¢è‹¥å¹²éï¼ˆç­‰å¾…ç¼“å†²æ•°æ®å†™å…¥ç¡¬ç›˜ï¼‰åå°±ä¸å†è½®è¯¢ã€‚
+Îª±ÜÃâÎŞÒâÒåµÄ²éÑ¯Ó²ÅÌ£¬Ó¦Íê³ÉÏÂÃæÁ½¸ö¹¤×÷£º
+1¡¢µ±½ÚÄ¿½ÓÊÕÍê±Ïºó²»Ó¦ÔÙ²éÑ¯£¬Êı¾İ¿âÖĞ¼ÇÂ¼µÄÊÇ100%
+2¡¢Ö»ÓĞUIÉÏ½øÈë²é¿´½ø¶ÈµÄ½çÃæºó£¬Í¨Öªµ×²ãÈ¥²éÑ¯£¬ÆäËûÊ±¼ä²éÑ¯Ã»ÓĞÒâÒå¡£
+3¡¢µ±pushÎŞÊı¾İºó£¬ÔÙÂÖÑ¯Èô¸É±é£¨µÈ´ı»º³åÊı¾İĞ´ÈëÓ²ÅÌ£©ºó¾Í²»ÔÙÂÖÑ¯¡£
 */
 void *push_monitor_thread()
 {
-	int i;
+	char *p = NULL;
+	unsigned int len = 0;
 	
 	s_monitor_running = 1;
+	//dvbpush_getinfo_start();
 	while (1==s_monitor_running)
 	{
-		/*
-		éœ€è¦ä»¥è¾ƒä½çš„é¢‘ç‡è§£é”ï¼ŒåŸå› ï¼š
-		1ã€è§£é”åå°†å…ˆæ³¨å†Œå„ä¸ªç›‘æ§æ–‡ä»¶ï¼Œç„¶åæŸ¥è¯¢çŠ¶æ€ï¼Œæœ€ååæ³¨å†Œå„ä¸ªç›‘æ§æ–‡ä»¶
-			ï¼ˆä¹‹æ‰€ä»¥è¦æ¯æ¬¡æŸ¥è¯¢å‰åéƒ½è¿›è¡Œæ³¨å†Œã€åæ³¨å†Œï¼Œæ˜¯ç”±äºpushæ¨¡å—å¯¼è‡´çš„ï¼›å³ä½¿æ³¨å†Œä»¥åä¸ä¸»åŠ¨æŸ¥è¯¢ï¼Œpushæ¨¡å—å†…éƒ¨ä¹Ÿè¦15ç§’æŸ¥è¯¢ä¸€æ¬¡ï¼ŒåŠ é‡ç¡¬ç›˜è´Ÿæ‹…ï¼‰ï¼›
-		2ã€æŸ¥è¯¢æ¥æ”¶çŠ¶æ€æ¶‰åŠåˆ°ç¡¬ç›˜æ‰«æï¼Œç¡¬é¿å…è¿‡äºé¢‘ç¹çš„ç¡¬ç›˜æ‰«æåŠ¨ä½œã€‚
-		*/
-		pthread_mutex_lock(&mtx_push_monitor);
-		/*
-		éœ€è¦æœ¬çº¿ç¨‹å…ˆè¿è¡Œåˆ°è¿™é‡Œï¼Œå†åœ¨å…¶ä»–éçˆ¶çº¿ç¨‹ä¸­æ‰§è¡Œpthread_cond_signal(&cond_push_monitor)æ‰èƒ½ç”Ÿæ•ˆã€‚
-		*/
-		pthread_cond_wait(&cond_push_monitor,&mtx_push_monitor); //wait
-		if(1==s_monitor_running && s_push_has_data>0){
-			if(0==push_monitor_regist(1)){
-				/*
-				ç›‘æµ‹èŠ‚ç›®æ¥æ”¶è¿›åº¦
-				*/
-				for(i=0; i<PROGS_NUM; i++)
-				{
-					if(strlen(s_prgs[i].prog_uri)<=0 || s_prgs[i].total<=0LL)
-						break;
-					/*
-					* è·å–æŒ‡å®šèŠ‚ç›®çš„å·²æ¥æ”¶å­—èŠ‚å¤§å°ï¼Œå¯ç®—å‡ºç™¾åˆ†æ¯”
-					*/
-					long long rxb = push_dir_get_single(s_prgs[i].prog_uri);
-					
-					DEBUG("PROG_S:%s %s %lld/%lld %-3lld%%\n",
-						s_prgs[i].id,
-						s_prgs[i].prog_uri,
-						rxb,
-						s_prgs[i].total,
-						rxb*100/s_prgs[i].total);
-					
-					if(s_prgs[i].cur != rxb){
-						/*
-						é‡‡ç”¨JNIæ¥å£è¯»å–ï¼Œä¸å†å†™å…¥æ•°æ®åº“
-						push_progs_process_refresh(s_prgs[i].prog_uri, rxb);
-						*/
-					
-						if(rxb>=s_prgs[i].total){
-							DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", s_prgs[i].prog_uri);
-							push_progs_finish(s_prgs[i].id);
-							push_dir_unregister(s_prgs[i].prog_uri);
-						}
-						
-						s_prgs[i].cur = rxb;
-					}
-				}
-				
-				push_monitor_regist(0);
-			}
-			
-			s_push_has_data --;
-		}
-		
-		pthread_mutex_unlock(&mtx_push_monitor);
-		s_dvbpush_info_readed = 1;
-		//sleep(5);// åœ¨è§¦å‘æ§åˆ¶ä¿¡å·å¤„è¿›è¡Œæ—¶é—´é™åˆ¶ã€‚
+		sleep(5);
+		//dvbpush_getinfo(&p, &len);
 	}
+	//dvbpush_getinfo_stop();
 	DEBUG("exit from push monitor thread\n");
 	
 	return NULL;
@@ -431,8 +416,6 @@ void *push_xml_parse_thread()
 			}
 		}
 		pthread_mutex_unlock(&mtx_xml);
-		if(1==s_xmlparse_running)
-			push_monitor_resume();
 	}
 	DEBUG("exit from xml parse thread\n");
 	
@@ -448,7 +431,7 @@ void usage()
 	exit(0);
 }
 
-int push_data_root_dir_get(char *buf, unsigned int size)
+int pushdata_rootdir_get(char *buf, unsigned int size)
 {
 	if(NULL==buf || 0==size){
 		DEBUG("some arguments are invalid\n");
@@ -465,13 +448,13 @@ void callback(const char *path, long long size, int flag)
 	
 	char xml_absolute_name[256+128];
 	snprintf(xml_absolute_name, sizeof(xml_absolute_name), "%s/%s", s_push_data_dir, path);
-	/* ç”±äºæ¶‰åŠåˆ°è§£æå’Œæ•°æ®åº“æ“ä½œï¼Œè¿™é‡Œä¸ç›´æ¥è°ƒç”¨parseDocï¼Œé¿å…è€½è¯¯pushä»»åŠ¡çš„è¿è¡Œæ•ˆç‡ */
+	/* ÓÉÓÚÉæ¼°µ½½âÎöºÍÊı¾İ¿â²Ù×÷£¬ÕâÀï²»Ö±½Óµ÷ÓÃparseDoc£¬±ÜÃâµ¢ÎópushÈÎÎñµÄÔËĞĞĞ§ÂÊ */
 	// settings/allpid/allpid.xml
-	if(	0==filename_check(path, "allpid.xml")
-		|| 0==filename_check(path, "column.xml")
-		|| 0==filename_check(path, "ProductTag.xml")
-		|| 0==filename_check(path, "brand_0001.xml")
-		|| 0==filename_check(path, "PreProductTag.xml")){
+	if(	strrstr_s(path, "allpid.xml", '/')
+		|| strrstr_s(path, "column.xml", '/')
+		|| strrstr_s(path, "ProductTag.xml", '/')
+		|| strrstr_s(path, "brand_0001.xml", '/')
+		|| strrstr_s(path, "PreProductTag.xml", '/')){
 			
 		pthread_mutex_lock(&mtx_xml);
 		
@@ -492,9 +475,10 @@ void callback(const char *path, long long size, int flag)
 }
 
 /*
-å¦‚æœä¼ å…¥å‚æ•°ä¸ºç©ºï¼Œåˆ™å¯»æ‰¾â€œ/etc/push.confâ€æ–‡ä»¶ã€‚è¯¦ç»†çº¦æŸå‚è€ƒpush_init()è¯´æ˜
+ Èç¹û´«Èë²ÎÊıÎª¿Õ£¬ÔòÑ°ÕÒ¡°/etc/push.conf¡±ÎÄ¼ş¡£ÏêÏ¸Ô¼Êø²Î¿¼push_init()ËµÃ÷
+ ´Ëº¯ÊıĞèÒª¼°Ôçµ÷ÓÃ£¬xml½âÎöÄ£¿éÒ²ĞèÒª´ËÖµ¡£
 */
-static void push_root_dir_init(char *push_conf)
+void push_root_dir_init(char *push_conf)
 {
 	FILE* fp = NULL;
 	char tmp_buf[256];
@@ -513,10 +497,9 @@ static void push_root_dir_init(char *push_conf)
 	else{
 		memset(tmp_buf, 0, sizeof(tmp_buf));
 		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
-			p_value = setting_item_value(tmp_buf, strlen(tmp_buf));
+			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), '=');
 			if(NULL!=p_value)
 			{
-				DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
 				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
 					if(0==strcmp(tmp_buf, "DATA_DIR")){
 						strncpy(s_push_data_dir, p_value, sizeof(s_push_data_dir)-1);
@@ -531,21 +514,24 @@ static void push_root_dir_init(char *push_conf)
 }
 
 /*
-æ ¹æ®s_prgsæ•°ç»„å¯¹pushæ¥æ”¶è¿›åº¦æŸ¥è¯¢è¿›è¡Œæ³¨å†Œå’Œåæ³¨å†Œã€‚
-regist_flag: 1è¡¨ç¤ºæ³¨å†Œï¼›0è¡¨ç¤ºåæ³¨å†Œã€‚
-æ³¨æ„ï¼šå¿…é¡»é™ä½pushæ¥æ”¶è¿›åº¦æŸ¥è¯¢ï¼Œå› ä¸ºåœ¨å¤§é‡æ•°æ®æ¥æ”¶æ—¶ï¼Œç¡¬ç›˜æœ¬èº«æœ‰å¾ˆå¤§çš„å†™æ•°æ®å‹åŠ›ã€‚
-åŒæ—¶ï¼Œå¦‚æœæ³¨å†Œäº†æ¥æ”¶è¿›åº¦æŸ¥è¯¢ï¼Œä½†æ˜¯æ²¡æœ‰ä¸»åŠ¨æŸ¥è¯¢æ—¶ï¼Œpushæ¨¡å—è‡ªèº«ä¼š15ç§’å·¦å³æŸ¥è¯¢ä¸€æ¬¡ï¼Œè¿™åº”å½“é¿å…ã€‚
-å› æ­¤ï¼Œæ¯æ¬¡æŸ¥è¯¢å‰æ³¨å†Œï¼ŒæŸ¥è¯¢åç«‹å³åæ³¨å†Œã€‚
+¸ù¾İs_prgsÊı×é¶Ôpush½ÓÊÕ½ø¶È²éÑ¯½øĞĞ×¢²áºÍ·´×¢²á¡£
+regist_flag: 1±íÊ¾×¢²á£»0±íÊ¾·´×¢²á¡£
+×¢Òâ£º±ØĞë½µµÍpush½ÓÊÕ½ø¶È²éÑ¯£¬ÒòÎªÔÚ´óÁ¿Êı¾İ½ÓÊÕÊ±£¬Ó²ÅÌ±¾ÉíÓĞºÜ´óµÄĞ´Êı¾İÑ¹Á¦¡£
+Í¬Ê±£¬Èç¹û×¢²áÁË½ÓÊÕ½ø¶È²éÑ¯£¬µ«ÊÇÃ»ÓĞÖ÷¶¯²éÑ¯Ê±£¬pushÄ£¿é×ÔÉí»á15Ãë×óÓÒ²éÑ¯Ò»´Î£¬ÕâÓ¦µ±±ÜÃâ¡£
+Òò´Ë£¬Ã¿´Î²éÑ¯Ç°×¢²á£¬²éÑ¯ºóÁ¢¼´·´×¢²á¡£
+
+·µ»ØÖµ£º·µ»Ø×¢²á»ò·´×¢²áµÄ½ÚÄ¿¸öÊı£¬Òì³£Ê±·µ»Ø-1
 */
 static int push_monitor_regist(int regist_flag)
 {
 	int i = 0;
-	int ret = -1;
+	int ret = 0;
 	
 	if(1==regist_flag || 0==regist_flag){
 		for(i=0; i<PROGS_NUM; i++){
-			if(strlen(s_prgs[i].prog_uri)>0 && s_prgs[i].total>0LL){
-				ret = 0;
+			//DEBUG("s_prgs[%d]=%s\n", i, s_prgs[i].prog_uri);
+			if(1==prog_is_valid(&s_prgs[i])){
+				ret ++;
 				if(1==regist_flag)
 					push_dir_register(s_prgs[i].prog_uri, s_prgs[i].total, 0);
 				else if(0==regist_flag)
@@ -553,8 +539,10 @@ static int push_monitor_regist(int regist_flag)
 			}
 		}
 	}
-	else
+	else{
 		DEBUG("invalid regist flag: %d\n", regist_flag);
+		ret = -1;
+	}
 	
 	return ret;
 }
@@ -580,9 +568,9 @@ static int brand_sqlite_callback(char **result, int row, int column, void *recei
 }
 
 /*
-åˆå§‹åŒ–push monitoræ•°ç»„ï¼Œä¸€èˆ¬æƒ…å†µæ˜¯ä»æ•°æ®åº“brandè¡¨ä¸­è¯»å–éœ€è¦ç›‘æ§çš„èŠ‚ç›®ã€‚
-å¦‚æœä¸‹å‘äº†æ–°çš„brand.xmlï¼Œè§£æxmlå¹¶å…¥åº“åï¼Œéœ€è¦è°ƒç”¨æ­¤å‡½æ•°åˆ·æ–°æ•°ç»„ã€‚
-éœ€è¦ç¡®ä¿åˆ·æ–°æ•°ç»„å‰å°±å·²ç»å°†æ•°ç»„ä¸­éç©ºæ¡ç›®ä»pushæ¨¡å—ä¸­åæ³¨å†Œï¼Œé¿å…ç›‘æ§åƒåœ¾ä¿¡æ¯ã€‚
+³õÊ¼»¯push monitorÊı×é£¬Ò»°ãÇé¿öÊÇ´ÓÊı¾İ¿âbrand±íÖĞ¶ÁÈ¡ĞèÒª¼à¿ØµÄ½ÚÄ¿¡£
+Èç¹ûÏÂ·¢ÁËĞÂµÄbrand.xml£¬½âÎöxml²¢Èë¿âºó£¬ĞèÒªµ÷ÓÃ´Ëº¯ÊıË¢ĞÂÊı×é¡£
+ĞèÒªÈ·±£Ë¢ĞÂÊı×éÇ°¾ÍÒÑ¾­½«Êı×éÖĞ·Ç¿ÕÌõÄ¿´ÓpushÄ£¿éÖĞ·´×¢²á£¬±ÜÃâ¼à¿ØÀ¬»øĞÅÏ¢¡£
 */
 int push_monitor_reset()
 {
@@ -591,10 +579,22 @@ int push_monitor_reset()
 	int (*sqlite_callback)(char **, int, int, void *) = brand_sqlite_callback;
 
 	pthread_mutex_lock(&mtx_push_monitor);
-#ifdef PUSH_LOCAL_TEST	
-	mid_push_regist("1","prog/video", 206237980LL);
-	mid_push_regist("2","prog/file", 18816360LL);
-	mid_push_regist("3","prog/audio", 38729433LL);
+#if 1	// only for test	
+	mid_push_regist("1","prog/video/1", 206237980LL);
+	mid_push_regist("2","prog/file/2", 18816360LL);
+	mid_push_regist("3","prog/audio/3", 38729433LL);
+	mid_push_regist("4","prog/video/4", 2206237980LL);
+	mid_push_regist("5","prog/file/5", 11118816360LL);
+	mid_push_regist("6","prog/audio/6", 30338729433LL);
+	mid_push_regist("7","prog/video/7", 21206237980LL);
+	mid_push_regist("8","prog/file/8", 1882316360LL);
+	mid_push_regist("9","prog/audio/9", 3872439433LL);
+	mid_push_regist("10","prog/video/10", 20625337980LL);
+	mid_push_regist("11","prog/file/11", 18816323460LL);
+	mid_push_regist("12","prog/audio/12", 38729423433LL);
+	mid_push_regist("13","prog/video/13", 206237942380LL);
+	mid_push_regist("14","prog/file/14", 1881636043LL);
+	mid_push_regist("15","prog/audio/15", 3872943433LL);
 	ret = 0;
 #else
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT id, regist_dir, totalsize FROM brand;");
@@ -628,9 +628,8 @@ int mid_push_init(char *push_conf)
 	for(i=0;i<MAX_PACK_BUF;i++)
 		g_recvBuffer[i].m_len = 0;
 	
-	push_root_dir_init(push_conf);
 	/*
-	* åˆå§‹åŒ–PUSHåº“
+	* ³õÊ¼»¯PUSH¿â
 	 */
 	if (push_init(push_conf) != 0)
 	{
@@ -639,22 +638,22 @@ int mid_push_init(char *push_conf)
 	}
 	
 	/*
-	ç¡®ä¿å¼€æœºåè‡³å°‘æœ‰ä¸€æ¬¡æ‰«ææœºä¼šï¼Œè·å¾—å‡†ç¡®çš„ä¸‹è½½è¿›åº¦ã€‚
+	È·±£¿ª»úºóÖÁÉÙÓĞÒ»´ÎÉ¨Ãè»ú»á£¬»ñµÃ×¼È·µÄÏÂÔØ½ø¶È¡£
 	*/
 	s_push_has_data = 1;
 	
 	push_set_notice_callback(callback);
 	
-	//åˆ›å»ºæ•°æ®è§£ç çº¿ç¨‹
+	//´´½¨Êı¾İ½âÂëÏß³Ì
 	pthread_create(&tidDecodeData, NULL, push_decoder_thread, NULL);
 	//pthread_detach(tidDecodeData);
 	
-	//åˆ›å»ºç›‘è§†çº¿ç¨‹
+	//´´½¨¼àÊÓÏß³Ì
 	pthread_t tidMonitor;
 	pthread_create(&tidMonitor, NULL, push_monitor_thread, NULL);
 	pthread_detach(tidMonitor);
 	
-	//åˆ›å»ºxmlè§£æçº¿ç¨‹
+	//´´½¨xml½âÎöÏß³Ì
 	pthread_t tidxmlphase;
 	pthread_create(&tidxmlphase, NULL, push_xml_parse_thread, NULL);
 	pthread_detach(tidxmlphase);
@@ -687,7 +686,7 @@ int mid_push_uninit()
 	return 0;
 }
 
-//æ³¨å†ŒèŠ‚ç›®
+//×¢²á½ÚÄ¿
 static int mid_push_regist(char *id, char *content_uri, long long content_len)
 {
 	if(NULL==id || NULL==content_uri || 0==strlen(content_uri) || content_len<=0LL){
@@ -696,11 +695,11 @@ static int mid_push_regist(char *id, char *content_uri, long long content_len)
 	}
 	
 	/*
-	* Notice:èŠ‚ç›®è·¯å¾„æ˜¯ä¸€ä¸ªç›¸å¯¹è·¯å¾„ï¼Œä¸è¦ä»¥'/'å¼€å¤´ï¼›
-	* è‹¥èŠ‚ç›®å•ä¸­ç»™å‡ºçš„è·¯å¾„æ˜¯"/vedios/pushvod/1944"ï¼Œåˆ™å»æ‰æœ€å¼€å§‹çš„'/'ï¼Œ
-	* ç”¨"vedios/pushvod/1944"è¿›è¡Œæ³¨å†Œã€‚
+	* Notice:½ÚÄ¿Â·¾¶ÊÇÒ»¸öÏà¶ÔÂ·¾¶£¬²»ÒªÒÔ'/'¿ªÍ·£»
+	* Èô½ÚÄ¿µ¥ÖĞ¸ø³öµÄÂ·¾¶ÊÇ"/vedios/pushvod/1944"£¬ÔòÈ¥µô×î¿ªÊ¼µÄ'/'£¬
+	* ÓÃ"vedios/pushvod/1944"½øĞĞ×¢²á¡£
 	*
-	* æ­¤å¤„PRGè¿™ä¸ªç»“æ„ä½“æ˜¯å‡ºäºç¤ºä¾‹æ–¹ä¾¿å®šä¹‰çš„ï¼Œä¸ä¸€å®šé€‚ç”¨äºæ‚¨çš„ç¨‹åºä¸­
+	* ´Ë´¦PRGÕâ¸ö½á¹¹ÌåÊÇ³öÓÚÊ¾Àı·½±ã¶¨ÒåµÄ£¬²»Ò»¶¨ÊÊÓÃÓÚÄúµÄ³ÌĞòÖĞ
 	*/
 	int i;
 	for(i=0; i<PROGS_NUM; i++)
@@ -712,10 +711,10 @@ static int mid_push_regist(char *id, char *content_uri, long long content_len)
 			s_prgs[i].total = content_len;
 			
 			/*
-			åªåœ¨éœ€è¦æŸ¥è¯¢æ—¶æ‰æ³¨å†Œï¼Œå¹¶åœ¨æŸ¥è¯¢ååæ³¨å†Œã€‚é¿å…pushæ¨¡å—è‡ªèº«æ— æ„ä¹‰çš„æŸ¥è¯¢
+			Ö»ÔÚĞèÒª²éÑ¯Ê±²Å×¢²á£¬²¢ÔÚ²éÑ¯ºó·´×¢²á¡£±ÜÃâpushÄ£¿é×ÔÉíÎŞÒâÒåµÄ²éÑ¯
 			push_dir_register(s_prgs[i].prog_uri, s_prgs[i].total, 0);
 			*/
-			DEBUG("regist to push %s %lld\n", s_prgs[i].prog_uri, s_prgs[i].total);
+			DEBUG("regist to push %d: %s %lld\n", i, s_prgs[i].prog_uri, s_prgs[i].total);
 			break;
 		}
 	}

@@ -16,8 +16,8 @@ static pthread_t tid_main;
 static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
 
-void *main_thread()
-{
+void *main_thread(int argc, char **argv)
+{	
 	DEBUG("main thread start...\n");
 	compile_timeprint();
 	
@@ -31,28 +31,41 @@ void *main_thread()
 		return NULL;
 	}
 	
+	push_root_dir_init(PUSH_CONF);
+	
 	if(-1==xmlparser_init()){
 		DEBUG("xmlparser init failed\n");
 		return NULL;
 	}
-
-	// 可以开始解析指定的xml文件
-	//parseDoc(xxxxx.xml);
+	
+//	if(argc<2){
+//		// 可以开始解析指定的xml文件
+//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/initialize/Initialize.xml");
+//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/channel/Channel.xml");
+//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/servicegroup/01/101/desc/Product_preview.xml");
+//		return parseDoc("/mnt/sda1/dbstar/pushinfo/servicegroup/01/101/setdesc/PulicationsSets.xml");
+//	}
+//	else{
+//		char xmlname[128];
+//		snprintf(xmlname, sizeof(xmlname), "/mnt/sda1/dbstar/pushinfo/%s", argv[1]);
+//		parseDoc(xmlname);
+//		return NULL;
+//	}
 	
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
 		return NULL;
 	}
 	
-	if(-1==igmp_init()){
-		DEBUG("igmp init failed\n");
-		return NULL;
-	}
-	
-	if(-1==softdvb_init()){
-		DEBUG("dvb init with failed\n");
-		return NULL;
-	}
+//	if(-1==igmp_init()){
+//		DEBUG("igmp init failed\n");
+//		return NULL;
+//	}
+//	
+//	if(-1==softdvb_init()){
+//		DEBUG("dvb init with failed\n");
+//		return NULL;
+//	}
 	
 	int main_running = 1;
 	while(1==main_running)
@@ -71,6 +84,13 @@ void *main_thread()
 	return NULL;
 }
 
+#if 1
+int main(int argc, char **argv)
+{
+	main_thread(argc, argv);
+	return 0;
+}
+#else
 int dvbpush_start()
 {
 	DEBUG("dvbpush start...\n");
@@ -105,3 +125,4 @@ int dvbpush_stop()
 	DEBUG("dvbpush over\n");
 	return 0;
 }
+#endif

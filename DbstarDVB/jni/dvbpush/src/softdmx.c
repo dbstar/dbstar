@@ -34,7 +34,6 @@ static void* loader_thread(void *arg)
 			//close sysem, reboot
 		}
 	}
-	return NULL;
 }
 
 int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char priority)

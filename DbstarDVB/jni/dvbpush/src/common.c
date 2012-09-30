@@ -162,46 +162,64 @@ int phony_div(unsigned int div_father, unsigned int div_son)
 }
 
 /* 
-检查字符串pathname中是否有指定的文件名filename，如：settings/allpid/allpid.xml中是否含有allpid.xml
-另：1、必须是全文件名匹配，llpid.xml就应判断为不存在，aallpid.xml也应判断为不存在。
-	2、如果待比对字符串直接就是allpid.xml则判断为存在。
-	3、文件名必须出现在末尾，setting/allpid.xml/allp.xml则不存在文件allpid.xml
+检查字符串str_dad的尾部是否有str_son，并且str_son要么紧跟在指定的signchr字符后面，要么str_dad完全等于str_son，
+场景：	检查全路径settings/allpid/allpid.xml中是否含有文件名allpid.xml，指定分隔符为“/”。
+			
+		strrstr_s("settings/allpid/allpid.xml", STR_SON, '/');
+		
+		STR_SON规则：
+			1、必须是全字匹配，llpid.xml不存在，aallpid.xml也不存在；
+			2、如果str_dad完全等于str_son，则判断为存在；即：settings/allpid/allpid.xml存在
+			3、子串必须出现在父串末尾，allpid不存在，因为其在中间；	
+			4、子串允许有分隔符，allpid/allpid.xml存在，
+		
+返回值：参考strrstr
  */
-int filename_check(const char *pathname, char *filename)
+char *strrstr_s(const char *str_dad, char *str_son, char separater_sign)
 {
-	if(NULL==pathname || NULL==filename){
-		DEBUG("can not check filename between NULL string\n");
-		return -1;
+	if(NULL==str_dad || NULL==str_son || strlen(str_dad)<strlen(str_son)){
+		//DEBUG("can not compared between invalid string\n");
+		return NULL;
 	}
 	
-	if(0==strcmp(pathname, filename))
-		return 0;
+	if(0==strcmp(str_dad, str_son))
+		return (char *)str_dad;
 	
-	char *p_tmp = (char *)pathname;
-	char *p_slash = (char *)pathname;
+	
 	int i = 0;
-	int check_deadline_count = 256;
-	for(i=0; i<check_deadline_count; i++){
-		//DEBUG("p_tmp: %s, filename: %s, p_slash: %s\n", p_tmp, filename, p_slash);
-		p_slash = strchr(p_tmp, '/');
-		if(NULL==p_slash){
-			p_slash = p_tmp;
-			break;
+	char *p_dad = str_dad;
+	char *p = NULL;
+	for(i=0; i<256; i++){
+		p = strchr(p_dad, separater_sign);
+		//DEBUG("p_dad: %s, p: %s\n", p_dad, p);
+		if(p && strlen(p)>=(strlen(str_son)+1)){
+			p++;
+			if(0==strcmp(p, str_son))
+				return p;
+			else
+				p_dad = p;
 		}
-		else{
-			p_tmp = p_slash + 1;
-		}
-	}
-	if(i>=check_deadline_count){
-		DEBUG("Shit! What a fucking string you check, it has %d slashs at least\n", check_deadline_count);
-		return -1;
+		else
+			return NULL;
 	}
 	
-	if(0==strcmp(p_slash, filename)){
-		return 0;
-	}
-	else
-		return -1;
+	if(256==i)
+		DEBUG("what a fucking string you check for, it has 256 separater sign at least.\n");
+	
+	return NULL;
+}
+
+/*
+以秒数加毫秒数生成唯一代码。当没有同步时间时，有可能得到相同的值，但是在毫秒级别上概率微乎其微。
+*/
+static char s_time_serial[32];
+char *time_serial()
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	snprintf(s_time_serial, sizeof(s_time_serial),"%ld%ld", tv.tv_sec, tv.tv_usec);
+	//DEBUG("tv.tv_sec=%ld, tv.tv_usec=%ld, s_time_serial=%s\n", tv.tv_sec, tv.tv_usec, s_time_serial);
+	return s_time_serial;
 }
 
 /*
