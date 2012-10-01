@@ -163,12 +163,6 @@ public class GDDataProviderService extends Service {
 		mDBStarClient = new GDDBStarClient(this);
 		mDBStarClient.start();
 	}
-	
-	public void onStart(Intent intent, int startId) {
-		super.onStart(intent, startId);
-		
-//		mDBStarClient.start();
-	}
 
 	public void onDestroy() {
 		super.onDestroy();
@@ -257,33 +251,28 @@ public class GDDataProviderService extends Service {
 				Bundle data = msg.getData();
 				String disk = data.getString("disk");
 				// Log.d(TAG, "mount storage = " + disk);
-				Log.d(TAG, " ++++++++++++++++ mount storage +++++++++++++++");
+				Log.d(TAG, " ++++++++++++++++ mount storage +++++++++++++++ " + disk);
 
 				String storage = mDataAccessor.getStorageDisk();
 
 				if (storage.equals("")) {
 					mDataAccessor.configure();
+					storage = mDataAccessor.getStorageDisk();
 					if (storage.equals("")) {
-						storage = mDataAccessor.getDefaultStorageDisk();
+						break;
 					}
 				}
-				boolean isStorageDisk = false;
-				if (!storage.equals("") && disk.equals(storage)) {
-					isStorageDisk = true;
-				}
-
-				if (isStorageDisk && mApplicationObserver != null) {
+				
+				if (disk.equals(storage) && mApplicationObserver != null) {
 					mDiskIsReady = true;
 					mDataAccessor.configure();
 					mApplicationObserver.initializeApp();
 
-					disk = mDataAccessor.getStorageDisk();
-					Log.d(TAG, " +++++++++++ monitor disk " + disk);
-					if (!disk.isEmpty()) {
-						mDiskMonitor.removeDiskFromMonitor(disk);
-						mDiskMonitor.addDiskToMonitor(disk);
-						mDiskMonitor.startMonitor();
-					}
+//					disk = mDataAccessor.getStorageDisk();
+					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
+					mDiskMonitor.removeDiskFromMonitor(disk);
+					mDiskMonitor.addDiskToMonitor(disk);
+					mDiskMonitor.startMonitor();
 
 					if (mDiskIsReady && mNetworkIsReady) {
 						startDbStarService();
