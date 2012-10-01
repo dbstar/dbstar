@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.dbstar.guodian"
+    package="com.dbstar"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -20,7 +19,7 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         <activity
-            android:name=".GDLauncherActivity"
+            android:name=".app.GDLauncherActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape" >
             <intent-filter>
@@ -32,26 +31,30 @@
                 <category android:name="android.intent.category.MONKEY" />
             </intent-filter>
         </activity>
-        <activity android:name=".GDEReaderActivity" />
-        <activity android:name=".GDHDMovieActivity" />
-        <activity android:name=".GDTVActivity" />
-        <activity android:name=".GDWebBrowserActivity" />
-        <activity android:name=".GDVideoPlayer" />
-        <activity android:name=".GDReceiveStatusActivity" />
-        <activity android:name=".GDDiskManagementActivity" />
-        <activity android:name=".GDSystemSettingsActivity" />
-        <activity android:name=".GDGuodianSettingsActivity" />
-        <activity android:name=".GDUserInfoActivity" />
-        <activity android:name=".GDOrderPushActivity" />
+        <activity android:name=".app.GDEReaderActivity" />
+        <activity android:name=".app.GDHDMovieActivity" />
+        <activity android:name=".app.GDTVActivity" />
+        <activity android:name=".app.GDWebBrowserActivity" />
+        <activity android:name=".app.GDVideoPlayer" />
+        <activity android:name=".app.GDReceiveStatusActivity" />
+        <activity android:name=".app.GDDiskManagementActivity" />
+        <activity android:name=".app.GDSystemSettingsActivity" />
+        <activity android:name=".app.GDGuodianSettingsActivity" />
+        <activity android:name=".app.GDUserInfoActivity" />
+        <activity android:name=".app.GDOrderPushActivity" />
 
-        <service android:name=".model.GDDataProviderService" />
+        <service
+            android:name=".service.GDDataProviderService"
+            android:exported="false" />
 
         <provider
             android:name=".model.GDDVBDataProvider"
-            android:authorities="com.dbstar.guodian.provider" />
+            android:authorities="com.dbstar.provider"
+            android:exported="false" />
         <provider
             android:name=".model.GDSmartHomeProvider"
-            android:authorities="com.dbstar.guodian.smarthome.provider" />
+            android:authorities="com.dbstar.smarthome.provider"
+            android:exported="false" />
     </application>
 
 </manifest>

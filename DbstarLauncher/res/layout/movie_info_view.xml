@@ -151,6 +151,7 @@
         android:layout_marginLeft="20dp"
         android:ellipsize="end"
         android:singleLine="true"
+        android:text="@string/movie_info_view_notes"
         android:textColor="#ffffff"
         android:textSize="16sp" />
 

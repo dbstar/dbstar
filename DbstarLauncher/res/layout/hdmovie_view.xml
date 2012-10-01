@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.dbstar.guodian"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
     android:layout_height="720dp" 
     android:background="@drawable/view_background">
@@ -27,7 +27,7 @@
             android:textSize="16sp" />
     </RelativeLayout>
 
-    <com.dbstar.guodian.widget.GDGridView
+    <com.dbstar.widget.GDGridView
         android:id="@+id/gridview"
         android:layout_width="1104dp"
         android:layout_height="536dp"
@@ -44,7 +44,7 @@
         app:numColumns="6"
         app:stretchMode="columnWidth" />
     
-    <com.dbstar.guodian.widget.GDScrollBar
+    <com.dbstar.widget.GDScrollBar
         android:id="@+id/scrollbar"
         android:layout_width="10dp"
         android:layout_height="494dp"
