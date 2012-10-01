@@ -5,12 +5,30 @@
 #include <errno.h>
 
 extern int debug_level_get(void);
+
+#define DVBPUSH_DEBUG_ANDROID 1
+#if DVBPUSH_DEBUG_ANDROID
+#include <android/log.h>
+#define LOG_TAG "dvbpush"
+#define DEBUG(x...) do { \
+	printf("[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__); \
+	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__); \
+	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, x); \
+} while(0)
+#define ERROROUT(x...) do { \
+	__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__); \
+	if (errno != 0) \
+		__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "[err note: %s]",strerror(errno)); \
+	__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, x); \
+} while(0)
+#else
 #define DEBUG(x...) do{printf("[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);printf(x);}while(0)
 
 #define ERROROUT(ERRSTR...) \
 			do{printf("[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);\
 			if(errno!=0) printf("[err note: %s]",strerror(errno));\
 			printf(ERRSTR);}while(0)
+#endif
 
 #define MIN_LOCAL(a,b) ((a)>(b)?(b):(a))
 

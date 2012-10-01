@@ -1,0 +1,1 @@
+logcat -s GDDataProviderService GDDBStarClient GDBaseActivity GDDataProviderService GDDataModel GDNetworkUtil DbstarService
