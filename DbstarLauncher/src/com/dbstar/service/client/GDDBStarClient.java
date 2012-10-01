@@ -185,7 +185,7 @@ public class GDDBStarClient {
 		if (data == null || data.isEmpty())
 			return entry;
 		
-		String[] items = data.split("|");
+		String[] items = data.split("\t");
 		
 		for(int i=0 ; i<items.length ; i++) {
 			Log.d(TAG, "item " + i + " = " + items[i]);
