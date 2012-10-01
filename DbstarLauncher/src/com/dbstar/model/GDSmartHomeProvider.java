@@ -2,6 +2,7 @@ package com.dbstar.model;
 
 import java.io.File;
 
+import com.dbstar.model.GDDVBDataProvider.Tables;
 import com.dbstar.model.GDSmartHomeContract.Global;
 
 import android.content.ContentProvider;
@@ -48,106 +49,115 @@ public class GDSmartHomeProvider extends ContentProvider {
 		int VALUE = 2;
 	}
 
-	@Override
-	public boolean onCreate() {
-		boolean ret = true;
-		mDataAccessor.configure();
-
-		String dbFile = mDataAccessor.getSmartHomeDBFile();
-		File file = new File(dbFile);
-		if (!file.exists()) {
-			return true;
-		}
+SQLiteDatabase openDatabase (String dbFile, boolean isReadOnly) {
 		
-		Log.d(TAG, "mDBFile = " + dbFile);
+		Log.d(TAG, "open dbFile = " + dbFile);
+		
+		SQLiteDatabase db = null;
 		try {
-			mDataBase = SQLiteDatabase.openDatabase(dbFile, null,
-					SQLiteDatabase.CREATE_IF_NECESSARY
-					| SQLiteDatabase.OPEN_READWRITE
-					| SQLiteDatabase.NO_LOCALIZED_COLLATORS);
-			// mActiveDb.set(mDataBase);
-			mDataBase.execSQL(CREATE_GLOBAL_TABLE_STATEMENT);
-
-		} catch (Exception e) {
-			ret = false;
-			e.printStackTrace();
-		}
-
-		return ret;
-	}
-
-	private boolean reOpenDb() {
-		if (mDataBase != null) {
-			return true;
-		}
-		
-		boolean ret = false;
-		mDataAccessor.configure();
-
-		String dbFile = mDataAccessor.getSmartHomeDBFile();
-		File file = new File(dbFile);
-		if (!file.exists()) {
-			return ret;
-		}
-		
-		Log.d(TAG, "mDBFile = " + dbFile);
-		try {
-			mDataBase = SQLiteDatabase.openDatabase(dbFile, null,
-					SQLiteDatabase.CREATE_IF_NECESSARY
-					| SQLiteDatabase.OPEN_READWRITE
-					| SQLiteDatabase.NO_LOCALIZED_COLLATORS);
-			// mActiveDb.set(mDataBase);
-			mDataBase.execSQL(CREATE_GLOBAL_TABLE_STATEMENT);
 			
-			ret = true;
-
+			int flags = (isReadOnly ? SQLiteDatabase.OPEN_READONLY : SQLiteDatabase.OPEN_READWRITE) | SQLiteDatabase.NO_LOCALIZED_COLLATORS;
+			db = SQLiteDatabase.openDatabase(dbFile, null, flags);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ret;
 		}
 		
-		return ret;
+		return db;
+	} 
+	
+	boolean isFileExist(String filePath) {
+		boolean exist = false;
+		
+		if (filePath == null || filePath.isEmpty())
+			return false;
+		
+		File file = new File(filePath);
+		if (file != null && file.exists()) {
+			exist = true;
+		}
+		
+		return exist;
 	}
 	
-	@Override
-	public String getType(Uri uri) {
-		int match = sURIMatcher.match(uri);
-		String typeStr;
-		switch (match) {
+	SQLiteDatabase getReadableDatabase() {
+		String dbFile = mDataAccessor.getSmartHomeDBFile();
+		if (dbFile == null || dbFile.isEmpty()) {
+			// configure again here
+			if (mDataAccessor.configure()) {
+				dbFile = mDataAccessor.getDatabaseFile();
+				if (!isFileExist(dbFile))
+					return null;
+			}
+		}
+		
+		SQLiteDatabase db = openDatabase(dbFile, true);
+		
+		return db;
+	}
+	
+	SQLiteDatabase getWriteableDatabase() {
+		String dbFile = mDataAccessor.getSmartHomeDBFile();
+		if (dbFile == null || dbFile.isEmpty()) {
+			// configure again here
+			if (mDataAccessor.configure()) {
+				dbFile = mDataAccessor.getDatabaseFile();
+				if (!isFileExist(dbFile))
+					return null;
+			}
+		}
+		
+		SQLiteDatabase db = openDatabase(dbFile, false);
+		
+		return db;
+	}
+	
+	private SQLiteDatabase reOpenDb() {
+		SQLiteDatabase db = getWriteableDatabase();
+		if (db != null && db.isOpen()) {
+			db.execSQL(CREATE_GLOBAL_TABLE_STATEMENT);
+		}
+		return db;
+	}
+	
+	String getTableName(int uri) {
+		String table = "";
+		switch (uri) {
+
 		case GLOBAL:
-			typeStr = GDSmartHomeContract.Global.CONTENT_TYPE;
-			break;
-		default:
-			typeStr = null;
+			table = Tables.GLOBAL;
 			break;
 		}
+		
+		return table;
+	}
 
-		return typeStr;
+	@Override
+	public boolean onCreate() {
+		Log.d(TAG, "onCreate");
+
+		if (!mDataAccessor.configure()) {
+			// if configure failed, we return, but the content provider 
+			// will be created, and it will configure again when client 
+			// try to query data.
+			return true;
+		}
+		
+		return true;
 	}
 
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-		
+
+		SQLiteDatabase db = getReadableDatabase();
+		if (db == null || !db.isOpen()) {
+			return null;
+		}
+			
 		Cursor curosr = null;
-		String table = null;
+		String table = getTableName(sURIMatcher.match(uri));
 		
-		if (!reOpenDb()) {
-			return curosr;
-		}
-
-		int match = sURIMatcher.match(uri);
-		switch (match) {
-		case GLOBAL:
-			table = Tables.GLOBAL;
-			break;
-		default:
-			break;
-		}
-
-		SQLiteDatabase db = mDataBase;
-
-		if (table != null && db != null && db.isOpen()) {
+		if (table != null && !table.isEmpty()) {
 			Log.d(TAG, " query");
 
 			curosr = db.query(table, projection, selection, selectionArgs,
@@ -159,24 +169,15 @@ public class GDSmartHomeProvider extends ContentProvider {
 
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		String table = null;
 
-		if (!reOpenDb()) {
+		SQLiteDatabase db = getWriteableDatabase();
+		if (db == null || !db.isOpen()) {
 			return -1;
 		}
-		
-		int match = sURIMatcher.match(uri);
-		switch (match) {
-		case GLOBAL:
-			table = Tables.GLOBAL;
-			break;
-		default:
-			break;
-		}
-
+			
+		String table = getTableName(sURIMatcher.match(uri));
 		int count = 0;
-		SQLiteDatabase db = mDataBase;
-		if (table != null && db != null && db.isOpen()) {
+		if (table != null && !table.isEmpty()) {
 			count = db.delete(table, selection, selectionArgs);
 			
 			Log.d(TAG, " delete count " + count);
@@ -192,25 +193,16 @@ public class GDSmartHomeProvider extends ContentProvider {
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
 
-		if (!reOpenDb()) {
+		SQLiteDatabase db = reOpenDb();
+		if (db == null || !db.isOpen()) {
 			return null;
 		}
-		
-		String table = null;
-
-		int match = sURIMatcher.match(uri);
-		switch (match) {
-		case GLOBAL:
-			table = Tables.GLOBAL;
-			break;
-		default:
-			break;
-		}
+			
+		String table = getTableName(sURIMatcher.match(uri));
 
 		long rowId = -1;
-		SQLiteDatabase db = mDataBase;
 		Uri retUri;
-		if (table != null && db != null && db.isOpen()) {
+		if (table != null && !table.isEmpty()) {
 			Log.d(TAG, " insert");
 
 			rowId = db.insert(table, null, values);
@@ -229,24 +221,15 @@ public class GDSmartHomeProvider extends ContentProvider {
 	public int update(Uri uri, ContentValues values, String selection,
 			String[] selectionArgs) {
 
-		if (!reOpenDb()) {
+		SQLiteDatabase db = reOpenDb();
+		if (db == null || !db.isOpen()) {
 			return -1;
 		}
-		
-		String table = null;
-
-		int match = sURIMatcher.match(uri);
-		switch (match) {
-		case GLOBAL:
-			table = Tables.GLOBAL;
-			break;
-		default:
-			break;
-		}
+			
+		String table = getTableName(sURIMatcher.match(uri));
 
 		int count = 0;
-		SQLiteDatabase db = mDataBase;
-		if (table != null && db != null && db.isOpen()) {
+		if (table != null && !table.isEmpty()) {
 			count = db.update(table, values, selection, selectionArgs);
 			Log.d(TAG, " update count " + count);
 			
@@ -255,6 +238,22 @@ public class GDSmartHomeProvider extends ContentProvider {
 			}
 		}
 		return 0;
+	}
+
+	@Override
+	public String getType(Uri uri) {
+		int match = sURIMatcher.match(uri);
+		String typeStr;
+		switch (match) {
+		case GLOBAL:
+			typeStr = GDSmartHomeContract.Global.CONTENT_TYPE;
+			break;
+		default:
+			typeStr = null;
+			break;
+		}
+
+		return typeStr;
 	}
 
 }

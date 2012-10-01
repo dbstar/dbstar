@@ -1,5 +1,7 @@
 package com.dbstar.model;
 
+import java.io.File;
+
 import com.dbstar.model.GDDVBDataContract.Column;
 import com.dbstar.model.GDDVBDataContract.ColumnEntity;
 import com.dbstar.model.GDDVBDataContract.GuideList;
@@ -363,31 +365,83 @@ public class GDDVBDataProvider extends ContentProvider {
 		int SUBTITLEURI = 0;
 	}
 
+	
+	SQLiteDatabase openDatabase (String dbFile, boolean isReadOnly) {
+		
+		Log.d(TAG, "open dbFile = " + dbFile);
+		
+		SQLiteDatabase db = null;
+		try {
+			
+			int flags = (isReadOnly ? SQLiteDatabase.OPEN_READONLY : SQLiteDatabase.OPEN_READWRITE) | SQLiteDatabase.NO_LOCALIZED_COLLATORS;
+			db = SQLiteDatabase.openDatabase(dbFile, null, flags);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return db;
+	} 
+	
+	boolean isFileExist(String filePath) {
+		boolean exist = false;
+		
+		if (filePath == null || filePath.isEmpty())
+			return false;
+		
+		File file = new File(filePath);
+		if (file != null && file.exists()) {
+			exist = true;
+		}
+		
+		return exist;
+	}
+	
+	SQLiteDatabase getReadableDatabase() {
+		String dbFile = mDataAccessor.getDatabaseFile();
+		if (dbFile == null || dbFile.isEmpty()) {
+			// configure again here
+			if (mDataAccessor.configure()) {
+				dbFile = mDataAccessor.getDatabaseFile();
+				if (!isFileExist(dbFile))
+					return null;
+			}
+		}
+		
+		SQLiteDatabase db = openDatabase(dbFile, true);
+		
+		return db;
+	}
+	
+	SQLiteDatabase getWriteableDatabase() {
+		String dbFile = mDataAccessor.getDatabaseFile();
+		if (dbFile == null || dbFile.isEmpty()) {
+			// configure again here
+			if (mDataAccessor.configure()) {
+				dbFile = mDataAccessor.getDatabaseFile();
+				if (!isFileExist(dbFile))
+					return null;
+			}
+		}
+		
+		SQLiteDatabase db = openDatabase(dbFile, false);
+		
+		return db;
+	}
+	
+	
 	@Override
 	public boolean onCreate() {
 
 		Log.d(TAG, "onCreate");
 
-		boolean ret = true;
-		mDataAccessor.configure();
-
-		String dbFile = mDataAccessor.getDatabaseFile();
-		if (dbFile == null || dbFile.isEmpty()) {
-			return false;
+		if (!mDataAccessor.configure()) {
+			// if configure failed, we return, but the content provider 
+			// will be created, and it will configure again when client 
+			// try to query data.
+			return true;
 		}
-
-		Log.d(TAG, "mDBFile = " + dbFile + " mDBFile length=" + dbFile.length());
-		try {
-			mDataBase = SQLiteDatabase.openDatabase(dbFile, null,
-					SQLiteDatabase.OPEN_READONLY
-							| SQLiteDatabase.NO_LOCALIZED_COLLATORS);
-			// mActiveDb.set(mDataBase);
-		} catch (Exception e) {
-			ret = false;
-			e.printStackTrace();
-		}
-
-		return ret;
+		
+		return true;
 	}
 
 	@Override
@@ -404,46 +458,20 @@ public class GDDVBDataProvider extends ContentProvider {
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
 
-		if (mDataBase == null) {
-			mDataAccessor.configure();
-
-			String dbFile = mDataAccessor.getDatabaseFile();
-			Log.d(TAG,
-					"mDBFile = " + dbFile + " mDBFile length="
-							+ dbFile.length());
-			
-			if (dbFile.isEmpty())
-				return null;
-			
-			try {
-				mDataBase = SQLiteDatabase.openDatabase(dbFile, null,
-						SQLiteDatabase.OPEN_READONLY
-								| SQLiteDatabase.NO_LOCALIZED_COLLATORS);
-				// mActiveDb.set(mDataBase);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		SQLiteDatabase db = getReadableDatabase();
+		
+		if (db == null || !db.isOpen())
+			return null;
 
 		Cursor curosr = null;
-		String table = null;
 
-		int match = sURIMatcher.match(uri);
-		table = getTableName(match);
+		String table = getTableName(sURIMatcher.match(uri));
 		
-//		Log.d(TAG, "query " + uri + " " + selection);
-
 		if (table.isEmpty())
-			return curosr;
+			return null;
 
-		SQLiteDatabase db = mDataBase;// mActiveDb.get();
-
-		if (table != null && db != null && db.isOpen()) {
-//			Log.d(TAG, " query " + selection + " " + selectionArgs);
-
-			curosr = db.query(table, projection, selection, selectionArgs,
-					null, null, sortOrder);
-		}
+		curosr = db.query(table, projection, selection, selectionArgs,
+				null, null, sortOrder);
 
 		return curosr;
 	}

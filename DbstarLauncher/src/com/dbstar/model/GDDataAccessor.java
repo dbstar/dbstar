@@ -23,7 +23,7 @@ public class GDDataAccessor {
 
 	public static final String CONFIGURE_File = "dbstar.conf";
 	public static final String SMARTHOMEDATABASE = "/data/dbstar/smarthome/database/smarthome.db";
-	
+
 	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
 	private static final String WEATHER_CITYCODE_DATABASE = "/data/dbstar/weather_citycode.db";
 	private static final String DefaultPushPath = "/videos1/pushvod/";
@@ -67,34 +67,57 @@ public class GDDataAccessor {
 
 	List<String> mPushedMessage = null;
 
-	public void configure() {
-		mStorageDir = "";
+	public boolean configure() {
 
 		File configureFile = new File(ConfigureFile);
-		if (configureFile != null && configureFile.exists()) {
-			parseConfigure(configureFile);
+		if (configureFile == null || !configureFile.exists()) {
+			return false;
 		}
 
+		// clear the cached path value
+		mStorageDir = "";
+
+		// read configures
+		if (!parseConfigure(configureFile)) {
+			return false;
+		}
+
+		// not set in configure, use default
 		if (mPushPath.equals("")) {
 			mPushPath = DefaultPushPath;
 		}
 
-		String paths[] = getMountedDisks();
-		for (String path : paths) {
-			File dbstarFolder = new File(path + "/dbstar");
+		// not set in configure
+		if (mStorageDir.equals("")) {
+			// get default disk
+			File defaultDisk = new File(DefaultStorageDisk + "/dbstar");
+			if (defaultDisk.exists()) {
+				mStorageDisk = DefaultStorageDisk;
+				mStorageDir = DefaultStorageDisk + "/dbstar";
+			} else {
+				// get from mounted disks
+				String paths[] = getMountedDisks();
+				for (String path : paths) {
+					File dbstarFolder = new File(path + "/dbstar");
 
-			if (dbstarFolder != null && dbstarFolder.exists()) {
-				File[] files = dbstarFolder.listFiles();
-				if (files != null && files.length > 0) {
-					if (mStorageDir.equals("")) {
-						mStorageDisk = path;
-						mStorageDir = path + "/dbstar";
-						Log.d(TAG, "root dir = " + mStorageDir);
+					if (dbstarFolder.exists()) {
+						File[] files = dbstarFolder.listFiles();
+						if (files != null && files.length > 0) {
+							mStorageDisk = path;
+							mStorageDir = path + "/dbstar";
+							Log.d(TAG, "root dir = " + mStorageDir);
+							break;
+						}
 					}
-					break;
 				}
 			}
 		}
+		
+		if (mStorageDir.isEmpty()) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	public boolean isStorageDisk(String disk) {
@@ -130,21 +153,11 @@ public class GDDataAccessor {
 			return "";
 
 		String dbFile = new String(mStorageDir + "/" + DVBDATABASE_File);
-
-//		File file = new File(dbFile);
-//		if (!file.exists()) {
-//			dbFile = "";
-//		}
 		return dbFile;
 	}
 
 	public String getSmartHomeDBFile() {
 		String dbFile = SMARTHOMEDATABASE;
-
-//		File file = new File(dbFile);
-//		if (!file.exists()) {
-//			dbFile = "";
-//		}
 
 		return dbFile;
 	}
@@ -286,7 +299,8 @@ public class GDDataAccessor {
 		return file;
 	}
 
-	private void parseConfigure(File configureFile) {
+	private boolean parseConfigure(File configureFile) {
+
 		try {
 			String UTF8 = "utf8";
 			int BUFFER_SIZE = 8192;
@@ -379,7 +393,10 @@ public class GDDataAccessor {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
+
+		return true;
 	}
 
 	private String[] getMountedDisks() {
