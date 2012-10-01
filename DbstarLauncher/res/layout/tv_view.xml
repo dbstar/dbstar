@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.dbstar.guodian"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:background="@drawable/view_background" >
@@ -48,7 +48,7 @@
         android:focusable="false"
         android:src="@drawable/tv_gallery_right_arrow" />
 
-    <com.dbstar.guodian.widget.GDGridView
+    <com.dbstar.widget.GDGridView
         android:id="@+id/gridview"
         android:layout_width="1200dp"
         android:layout_height="277dp"
@@ -281,7 +281,7 @@
         -->
     </RelativeLayout>
 
-    <com.dbstar.guodian.widget.GDGridView
+    <com.dbstar.widget.GDGridView
         android:id="@+id/tv_episodes_view"
         android:layout_width="422dp"
         android:layout_height="160dp"
@@ -301,7 +301,7 @@
         app:stretchMode="columnWidth"
         app:verticalSpacing="8dp" />
 
-    <com.dbstar.guodian.widget.GDScrollBar
+    <com.dbstar.widget.GDScrollBar
         android:id="@+id/scrollbar"
         android:layout_width="7dp"
         android:layout_height="159dp"

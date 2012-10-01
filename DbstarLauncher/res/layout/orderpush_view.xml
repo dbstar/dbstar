@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.dbstar.guodian"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:background="@drawable/view_background" >
@@ -14,7 +14,7 @@
         android:focusable="false"
         android:src="@drawable/timeline_line" />
 
-    <com.dbstar.guodian.widget.GDGridView
+    <com.dbstar.widget.GDGridView
         android:id="@+id/timeline"
         android:layout_width="1097dp"
         android:layout_height="100dp"
@@ -32,7 +32,7 @@
         app:stretchMode="columnWidth"
         app:verticalSpacing="0dp" />
 
-    <com.dbstar.guodian.widget.GDGridView
+    <com.dbstar.widget.GDGridView
         android:id="@+id/receive_list"
         android:layout_width="1064dp"
         android:layout_height="368dp"

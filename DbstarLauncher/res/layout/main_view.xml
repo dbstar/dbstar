@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.dbstar.guodian"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:background="@drawable/mainview_background" >
@@ -37,7 +37,7 @@
         android:layout_marginRight="105dp"
         android:layout_marginTop="123dp" >
 
-        <com.dbstar.guodian.widget.GDVideoView
+        <com.dbstar.widget.GDVideoView
             android:id="@+id/player_view"
             android:layout_width="621dp"
             android:layout_height="350dp"
@@ -232,7 +232,7 @@
         android:scaleType="fitXY"
         android:src="@drawable/menulevel1_focuseditem_bg" />
     
-    <com.dbstar.guodian.widget.GDMenuGallery
+    <com.dbstar.widget.GDMenuGallery
         android:id="@+id/menu_level_1"
         android:layout_width="1072dp"
         android:layout_height="wrap_content"
@@ -367,7 +367,7 @@
                 android:visibility="invisible" />
         </LinearLayout>
 
-        <com.dbstar.guodian.widget.GDMarqeeTextView
+        <com.dbstar.widget.GDMarqeeTextView
             android:id="@+id/marqeeView"
             android:layout_width="1080dp"
             android:layout_height="68dp"

@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(call all-subdir-java-files) \
-	src/com/dbstar/guodian/service/IDbstarService.aidl 
+	src/com/dbstar/DbstarDVB/IDbstarService.aidl 
 
 LOCAL_STATIC_JAVA_LIBRARIES := achartengine ksoap2
 
