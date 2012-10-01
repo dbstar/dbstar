@@ -90,7 +90,8 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 	}
 	ret = stat(s_drmvod.filename_media, &st);
 	if (ret == 0) {
-		s_drmvod.length = st.st_size;
+		//s_drmvod.length = st.st_size;
+		s_drmvod.length = st.st_size - 55;
 		s_drmvod.curpos = 0;
 	} else {
 		LOGD("########## stat() ERROR. %s\n", strerror(errno));
@@ -129,9 +130,9 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	if (len <= 0) {
 		return 0;
 	}
-	LOGD("########## %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
+	//LOGD("########## 1. %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
 	if (s_drmvod.inited == 1) {
-		ret = drm_read(drmvod->fd_media, buf, size);
+		ret = drm_read(drmvod->fd_media, buf, len);
 	} else {
 		ret = fread(buf, 1, len, drmvod->fd_media);
 	}
@@ -139,7 +140,7 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	if (ret > 0) {
 		drmvod->curpos += ret;
 	}
-	LOGD("########## %s(size=%d)=%d, curpos=%lld\n", __FUNCTION__, size, ret, drmvod->curpos);
+	//LOGD("########## 2. %s(size=%d)=%d, curpos=%lld\n", __FUNCTION__, size, ret, drmvod->curpos);
 	return ret;
 }
 
@@ -262,7 +263,7 @@ static int drm_read(FILE *fd, unsigned char *buf, int size)
 	int ret = 0;
 	int rdsize = size;
 	ret = CDCASTB_DRM_ReadFile((const void*)fd, buf, &rdsize);
-	LOGD("DRM_READ(size=%d)=%d, rdsize=%d\n", size, ret, rdsize);
+	//LOGD("DRM_READ(size=%d)=%d, rdsize=%d\n", size, ret, rdsize);
 
 	return rdsize;
 }
@@ -290,5 +291,6 @@ static int64_t drm_seek(FILE *fd, int pos, int whence)
 static void drm_close(FILE *fd)
 {
 	CDCASTB_DRM_CloseFile((const void*)fd);
+	CDCASTB_Close();
 	LOGD("DRM_CLOSE()\n");
 }
