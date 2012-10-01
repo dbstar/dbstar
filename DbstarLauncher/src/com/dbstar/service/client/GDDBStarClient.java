@@ -186,6 +186,11 @@ public class GDDBStarClient {
 			return entry;
 		
 		String[] items = data.split("|");
+		
+		for(int i=0 ; i<items.length ; i++) {
+			Log.d(TAG, "item " + i + " = " + items[i]);
+		}
+		
 		entry = new ReceiveEntry();
 		entry.Id = items[0];
 		entry.Name = items[1];

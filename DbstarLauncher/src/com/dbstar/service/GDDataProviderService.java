@@ -280,8 +280,10 @@ public class GDDataProviderService extends Service {
 				}
 				break;
 			}
-			case GDCommon.MSG_MEDIA_REMOVED:
+			
+			case GDCommon.MSG_MEDIA_REMOVED: {
 				break;
+			}
 
 			case GDCommon.MSG_NETWORK_CONNECT:
 				getMacAddress();
