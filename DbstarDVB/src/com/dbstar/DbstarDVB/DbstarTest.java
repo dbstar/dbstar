@@ -151,14 +151,18 @@ public class DbstarTest extends Activity implements OnClickListener {
 				try {
 					Intent it = mDbstarService.getTaskInfo();
 					byte[] bytes = it.getByteArrayExtra("taskinfo");
-					try {
-						String info = new String(bytes, "utf-8");
-						String info2 = new String(bytes, "GB2312");
-						Log.d(TAG, "TaskInfo: " + info);
-						Log.d(TAG, "TaskInfo: " + info2);
-						taskInfo.setText(this.getString(R.string.taskInfo) + ": "+ info);
-					} catch (UnsupportedEncodingException e) {
-						 e.printStackTrace();
+					if (bytes == null) {
+						Log.e(TAG, "TaskInfo: null");
+					} else {
+						try {
+							String info = new String(bytes, "utf-8");
+							String info2 = new String(bytes, "GB2312");
+							Log.d(TAG, "TaskInfo: " + info);
+							Log.d(TAG, "TaskInfo: " + info2);
+							taskInfo.setText(this.getString(R.string.taskInfo) + ": "+ info);
+						} catch (UnsupportedEncodingException e) {
+							 e.printStackTrace();
+						}
 					}
 				} catch (RemoteException e) {
 					 e.printStackTrace();

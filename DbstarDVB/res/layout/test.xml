@@ -11,7 +11,7 @@
     android:layout_height="wrap_content"
     android:text="@string/hello"
 	android:gravity="center_horizontal"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <Button
     android:id="@+id/Button01"
@@ -19,7 +19,7 @@
     android:layout_height="wrap_content"
     android:text="@string/Button01"
 	android:gravity="center_horizontal"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <Button
     android:id="@+id/Button02"
@@ -27,7 +27,7 @@
     android:layout_height="wrap_content"
     android:text="@string/Button02"
 	android:gravity="center_horizontal"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <Button
     android:id="@+id/Button03"
@@ -35,7 +35,7 @@
     android:layout_height="wrap_content"
     android:text="@string/Button03"
 	android:gravity="center_horizontal"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <Button
     android:id="@+id/Button04"
@@ -43,7 +43,7 @@
     android:layout_height="wrap_content"
     android:text="@string/Button04"
 	android:gravity="center_horizontal"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <Button
     android:id="@+id/Button05"
@@ -51,7 +51,7 @@
     android:layout_height="wrap_content"
     android:text="@string/Button05"
     android:gravity="center_horizontal"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <TextView
     android:id="@+id/taskID"
@@ -59,14 +59,14 @@
     android:layout_height="wrap_content"
     android:text="@string/taskID"
     android:gravity="left" android:paddingLeft="100px"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <TextView
     android:id="@+id/taskName"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:text="@string/taskName"
-	android:textSize="20sp"
+	android:textSize="18sp"
     android:gravity="left" android:paddingLeft="100px"
     />
     <TextView
@@ -75,7 +75,7 @@
     android:layout_height="wrap_content"
     android:text="@string/totalSize"
     android:gravity="left" android:paddingLeft="100px"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <TextView
     android:id="@+id/downloadSize"
@@ -83,13 +83,13 @@
     android:layout_height="wrap_content"
     android:text="@string/downloadSize"
     android:gravity="left" android:paddingLeft="100px"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
 	<ProgressBar
 	android:id="@+id/progress"
 	android:layout_height="wrap_content"
 	android:layout_width="fill_parent"
-	android:textSize="26sp"
+	android:textSize="18sp"
 	style="?android:attr/progressBarStyleHorizontal"
 	/>
 
@@ -99,7 +99,7 @@
     android:layout_height="wrap_content"
     android:text="@string/taskInfo"
     android:gravity="left" android:paddingLeft="100px"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
     <Button
     android:id="@+id/Button06"
@@ -107,6 +107,6 @@
     android:layout_height="wrap_content"
     android:text="@string/Button06"
     android:gravity="center_horizontal"
-    android:textSize="20sp"
+    android:textSize="18sp"
     />
 </LinearLayout>
