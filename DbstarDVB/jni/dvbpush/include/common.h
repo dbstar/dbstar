@@ -11,7 +11,6 @@ extern int debug_level_get(void);
 #include <android/log.h>
 #define LOG_TAG "dvbpush"
 #define DEBUG(x...) do { \
-	printf("[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__); \
 	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__); \
 	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, x); \
 } while(0)

@@ -286,7 +286,7 @@ static int prog_is_valid(PROG_S *prog)
 void dvbpush_getinfo_start()
 {
 	DEBUG("start.........\n");
-	sleep(1);
+//	sleep(1);
 	s_push_monitor_active = push_monitor_regist(1);
 	DEBUG("here start %d progs\n", s_push_monitor_active);
 }
@@ -350,11 +350,11 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 				s_prgs[i].cur += 10*1024*1024;
 				if(0==i){
 					snprintf(s_dvbpush_info, info_size,
-						"%s|%s|%lld|%lld", s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
+						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
 				}
 				else{
 					snprintf(s_dvbpush_info+strlen(s_dvbpush_info), info_size-strlen(s_dvbpush_info),
-						"%s%s|%s|%lld|%lld", "\n",s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
+						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
 				}
 				
 				if(rxb>=s_prgs[i].total){
