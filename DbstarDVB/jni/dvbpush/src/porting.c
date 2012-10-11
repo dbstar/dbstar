@@ -26,6 +26,7 @@ static int			s_prog_data_pid = 0;
 
 static char			s_database_uri[64];
 static int			s_debug_level = 0;
+static char			s_xml[128];
 
 /* define some general interface function here */
 
@@ -45,6 +46,7 @@ static void settingDefault_set(void)
 	
 	snprintf(s_database_uri, sizeof(s_database_uri), "%s", DATABASE);
 	s_debug_level = 0;
+	memset(s_xml, 0, sizeof(s_xml));
 	
 	return;
 }
@@ -142,6 +144,8 @@ int setting_init(void)
 					strncpy(s_database_uri, p_value, sizeof(s_database_uri)-1);
 				else if(0==strcmp(tmp_buf, "dbstar_debug_level"))
 					s_debug_level = atoi(p_value);
+				else if(0==strcmp(tmp_buf, "parse_xml"))
+					strncpy(s_xml, p_value, sizeof(s_xml)-1);
 			}
 		}
 		memset(tmp_buf, 0, sizeof(tmp_buf));
@@ -219,6 +223,15 @@ int database_uri_get(char *database_uri, unsigned int size)
 int debug_level_get(void)
 {
 	return s_debug_level;
+}
+
+int parse_xml_get(char *xml_uri, unsigned int size)
+{
+	if(NULL==xml_uri || 0==size)
+		return -1;
+	
+	strncpy(xml_uri, s_xml, size);
+	return 0;
 }
 
 int factory_renew(void)

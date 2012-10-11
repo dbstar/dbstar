@@ -40,19 +40,18 @@ void *main_thread(void *data)
 		return NULL;
 	}
 	
-//	if(argc<2){
-//		// 可以开始解析指定的xml文件
-//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/initialize/Initialize.xml");
-//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/channel/Channel.xml");
-//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/servicegroup/01/101/desc/Product_preview.xml");
-//		return parseDoc("/mnt/sda1/dbstar/pushinfo/servicegroup/01/101/setdesc/PulicationsSets.xml");
-//	}
-//	else{
-//		char xmlname[128];
-//		snprintf(xmlname, sizeof(xmlname), "/mnt/sda1/dbstar/pushinfo/%s", argv[1]);
-//		parseDoc(xmlname);
-//		return NULL;
-//	}
+	char xml_uri[128];
+	memset(xml_uri, 0, sizeof(xml_uri));
+	parse_xml_get(xml_uri, sizeof(xml_uri));
+	DEBUG("parse_xml: %s\n", xml_uri);
+	if(strlen(xml_uri)>0)
+	{
+		// 可以开始解析指定的xml文件
+		//return parseDoc("/mnt/sda1/dbstar/pushinfo/initialize/Initialize.xml");
+		//return parseDoc("/mnt/sda1/dbstar/pushinfo/channel/Channel.xml");
+		//return parseDoc("/mnt/sda1/dbstar/pushinfo/servicegroup/01/101/desc/Product_preview.xml");
+		return parseDoc(xml_uri);
+	}
 	
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);

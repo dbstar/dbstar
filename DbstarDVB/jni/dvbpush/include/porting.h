@@ -10,7 +10,7 @@ int root_push_file_get(char *filename, unsigned int len);
 int root_push_file_size_get(void);
 int data_source_get(char *data_source, unsigned int len);
 int database_uri_get(char *database_uri, unsigned int size);
-
+int parse_xml_get(char *xml_uri, unsigned int size);
 int prog_data_pid_get(void);
 
 int ifconfig_get(char *interface_name, char *ip, char *status, char *mac);

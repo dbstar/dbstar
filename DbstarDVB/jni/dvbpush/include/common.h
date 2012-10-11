@@ -291,11 +291,11 @@ typedef struct{
 	char	infolang[64];
 	char	*PublicationDesc;
 	char	Keywords[256];
+	char	Publisher[128];
 	char	Area[64];
 	char	Language[64];
-	char	Publisher[128];
-	char	Episode[32];
-	char	AspectRatio[32];
+	char	Episode[64];
+	char	AspectRatio[64];
 	char	VolNum[64];
 	char	ISSN[64];
 }DBSTAR_MULTIPLELANGUAGEINFORM_S;
@@ -305,14 +305,12 @@ typedef struct{
 	char	infolang[64];
 	char	*PublicationDesc;
 	char	Keywords[256];
-	char	Area[64];
-	char	Language[64];
 	char	Category[64];
 	char	Released[64];
 	char	AppVersion[64];
+	char	Language[64];
 	char	Developer[64];
 	char	Rated[64];
-	char	Requirements[64];
 }DBSTAR_MULTIPLELANGUAGEINFOAPP_S;
 
 

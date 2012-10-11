@@ -35,6 +35,9 @@ static int entityid_read_cb(char **result, int row, int column, void *entity_id)
 	return 0;
 }
 
+/*
+ 初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
+*/
 int xmlparser_init(void)
 {
 	char sqlite_cmd[512];
@@ -57,7 +60,9 @@ int xmlparser_init(void)
 		memset(&global_s, 0, sizeof(global_s));
 		strncpy(global_s.Name, GLB_NAME_PUSHDATADIR, sizeof(global_s.Name));
 		strncpy(global_s.Value, pushdata_rootdir, sizeof(global_s.Value));
+		sqlite_transaction_begin();
 		global_insert(&global_s);
+		sqlite_transaction_end(1);
 	}
 	
 	return 0;
@@ -73,6 +78,10 @@ char *serviceID_get()
 	return s_serviceID;
 }
 
+/*
+ 向全局信息表Global中插入或更新数据
+ 此函数调用处应当封装为事务。
+*/
 static int global_insert(DBSTAR_GLOBAL_S *p)
 {
 	if(NULL==p || 0==strlen(p->Name) || 0==strlen(p->Value)){
@@ -85,9 +94,13 @@ static int global_insert(DBSTAR_GLOBAL_S *p)
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','%s');",
 		p->Name, p->Value, p->Param);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 向字符串资源表ResStr中插入数据。
+ 由于Res表都是依存于宿主表的寄生表，因此它们自身不能独立封装为事务，应为某事务的一部分。
+*/
 static int resstr_insert(DBSTAR_RESSTR_S *p)
 {
 	if(NULL==p || 0==strlen(p->ObjectName) || 0==strlen(p->EntityID) || 0==strlen(p->StrLang) || 0==strlen(p->StrName)){
@@ -101,7 +114,7 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 	if(sqlite_cmd){
 		snprintf(sqlite_cmd, cmd_size, "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 			p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
-		sqlite_execute(sqlite_cmd);
+		sqlite_transaction_exec(sqlite_cmd);
 		free(sqlite_cmd);
 			
 		return 0;
@@ -113,7 +126,8 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 }
 
 /*
-	效率比较低，应转换为事务处理。
+ 向初始化表Initialize插入xml文件的信息，既有可能是解析Initialize.xml时插入，也有可能是解析每个xml时插入版本信息
+ 效率比较低，应转换为事务处理。
 */
 static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 {
@@ -124,25 +138,28 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 		char sqlite_cmd[512];
 		
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Initialize(XMLName) VALUES('%s');", xmlinfo->XMLName);
-		sqlite_execute(sqlite_cmd);
+		sqlite_transaction_exec(sqlite_cmd);
 		
 		if(strlen(xmlinfo->Version)>0){
 			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET Version='%s'WHERE XMLName='%s';", xmlinfo->Version, xmlinfo->XMLName);
-			sqlite_execute(sqlite_cmd);
+			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->StandardVersion)>0){
 			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET StandardVersion='%s'WHERE XMLName='%s';", xmlinfo->StandardVersion, xmlinfo->XMLName);
-			sqlite_execute(sqlite_cmd);
+			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->URI)>0){
 			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET URI='%s'WHERE XMLName='%s';", xmlinfo->URI, xmlinfo->XMLName);
-			sqlite_execute(sqlite_cmd);
+			sqlite_transaction_exec(sqlite_cmd);
 		}
 	}
 	
 	return 0;
 }
 
+/*
+ 向业务表Service中插入业务信息，实际上本表只有一条记录
+*/
 static int service_insert(DBSTAR_SERVICE_S *p)
 {
 	if(NULL==p || 0==strlen(p->ServiceID)){
@@ -155,9 +172,12 @@ static int service_insert(DBSTAR_SERVICE_S *p)
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Service(ServiceID,RegionCode,OnlineTime,OfflineTime) VALUES('%s','%s','%s','%s');",
 		p->ServiceID,p->RegionCode,p->OnlineTime,p->OfflineTime);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 向产品表Product插入产品信息
+*/
 static int product_insert(DBSTAR_PRODUCT_S *p)
 {
 	if(NULL==p || 0==strlen(p->ProductID)){
@@ -166,18 +186,10 @@ static int product_insert(DBSTAR_PRODUCT_S *p)
 	}
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductID FROM Product WHERE ProductID='%s';", p->ProductID);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Product(ProductID,ProductType,Flag,OnlineDate,OfflineDate,IsReserved,Price,CurrencyType) VALUES('%s','%s','%s','%s','%s','%s','%s','%s');",
+		p->ProductID,p->ProductType,p->Flag,p->OnlineDate,p->OfflineDate,p->IsReserved,p->Price,p->CurrencyType);
 	
-	int ret_sqlexec = sqlite_read(sqlite_cmd, NULL, NULL);
-	if(ret_sqlexec<=0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Product(ProductID,ProductType,Flag,OnlineDate,OfflineDate,IsReserved,Price,CurrencyType) VALUES('%s','%s','%s','%s','%s','%s','%s','%s');",
-			p->ProductID,p->ProductType,p->Flag,p->OnlineDate,p->OfflineDate,p->IsReserved,p->Price,p->CurrencyType);
-	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Product SET ProductType='%s',Flag='%s',OnlineDate='%s',OfflineDate='%s',IsReserved='%s',Price='%s',CurrencyType='%s' WHERE ProductID='%s';",
-			p->ProductType,p->Flag,p->OnlineDate,p->OfflineDate,p->IsReserved,p->Price,p->CurrencyType,p->ProductID);
-	}
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
@@ -187,19 +199,38 @@ static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT SetID FROM PublicationsSet WHERE SetID='%s';", p->SetID);
+	char sqlite_cmd[1024*3];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO PublicationsSet(SetID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,IsReserved,Visible,Favorite,IsAuthorized,VODNum,VODPlatform) \
+	VALUES('%s',\
+	(select ColumnID from PublicationsSet where SetID='%s'),\
+	'%s',\
+	(select URI from PublicationsSet where SetID='%s'),\
+	(select TotalSize from PublicationsSet where SetID='%s'),\
+	(select ProductDescID from PublicationsSet where SetID='%s'),\
+	(select ReceiveStatus from PublicationsSet where SetID='%s'),\
+	(select PushTime from PublicationsSet where SetID='%s'),\
+	(select IsReserved from PublicationsSet where SetID='%s'),\
+	(select Visible from PublicationsSet where SetID='%s'),\
+	(select Favorite from PublicationsSet where SetID='%s'),\
+	(select IsAuthorized from PublicationsSet where SetID='%s'),\
+	(select VODNum from PublicationsSet where SetID='%s'),\
+	(select VODPlatform from PublicationsSet where SetID='%s'));",
+		p->SetID,
+		p->SetID,
+		p->ProductID,
+		p->SetID,
+		p->SetID,
+		p->SetID,
+		p->SetID,
+		p->SetID,
+		p->SetID,
+		p->SetID,
+		p->SetID,
+		p->SetID,
+		p->SetID,
+		p->SetID);
 	
-	int ret_sqlexec = sqlite_read(sqlite_cmd, NULL, NULL);
-	if(ret_sqlexec<=0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO PublicationsSet(SetID,ProductID) VALUES('%s','%s');",
-			p->SetID,p->ProductID);
-	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE PublicationsSet SET ProductID='%s' WHERE SetID='%s';",
-			p->ProductID,p->SetID);
-	}
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 static int publication_insert_setinfo(DBSTAR_PUBLICATIONSSET_S *p)
@@ -209,19 +240,48 @@ static int publication_insert_setinfo(DBSTAR_PUBLICATIONSSET_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM Publication WHERE PublicationID='%s';", p->PublicationID);
+	char sqlite_cmd[1024*4];
 	
-	int ret_sqlexec = sqlite_read(sqlite_cmd, NULL, NULL);
-	if(ret_sqlexec<=0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Publication(PublicationID,SetID,IndexInSet) VALUES('%s','%s','%s');",
-			p->PublicationID,p->SetID,p->IndexInSet);
-	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Publication SET SetID='%s',IndexInSet='%s' WHERE PublicationID='%s';",
-			p->SetID,p->IndexInSet,p->PublicationID);
-	}
-	return sqlite_execute(sqlite_cmd);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
+	VALUES('%s',\
+	(select ColumnID from Publication where PublicationID='%s'),\
+	(select ProductID from Publication where PublicationID='%s'),\
+	(select URI from Publication where PublicationID='%s'),\
+	(select TotalSize from Publication where PublicationID='%s'),\
+	(select ProductDescID from Publication where PublicationID='%s'),\
+	(select ReceiveStatus from Publication where PublicationID='%s'),\
+	(select PushTime from Publication where PublicationID='%s'),\
+	(select PublicationType from Publication where PublicationID='%s'),\
+	(select IsReserved from Publication where PublicationID='%s'),\
+	(select Visible from Publication where PublicationID='%s'),\
+	(select DRMFile from Publication where PublicationID='%s'),\
+	'%s',\
+	'%s',\
+	(select Favorite from Publication where PublicationID='%s'),\
+	(select Bookmark from Publication where PublicationID='%s'),\
+	(select IsAuthorized from Publication where PublicationID='%s'),\
+	(select VODNum from Publication where PublicationID='%s'),\
+	(select VODPlatform from Publication where PublicationID='%s'));",
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->SetID,
+		p->IndexInSet,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 /*
@@ -235,10 +295,10 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	}
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s','%s','%s');",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s','%s','%s');",
 		ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,ptr->ColumnIcon_losefocus,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 /*
@@ -256,13 +316,13 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 	if(strlen(ptr->DateValue)>0){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE GuideList SET DateValue='%s' WHERE DateValue='';",
 			ptr->DateValue);
-		sqlite_execute(sqlite_cmd);
+		sqlite_transaction_exec(sqlite_cmd);
 	}
 	
 	if(strlen(ptr->GuideListID)>0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO GuideList(DateValue,GuideListID,PublicationID,PosterID,PosterName,PosterURI,TrailerID,TrailerName,TrailerURI) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(DateValue,GuideListID,PublicationID,PosterID,PosterName,PosterURI,TrailerID,TrailerName,TrailerURI) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s');",
 			ptr->DateValue,ptr->GuideListID,ptr->PublicationID,ptr->PosterID,ptr->PosterName,ptr->PosterURI,ptr->TrailerID,ptr->TrailerName,ptr->TrailerURI);
-		sqlite_execute(sqlite_cmd);
+		sqlite_transaction_exec(sqlite_cmd);
 	}
 	
 	return 0;
@@ -285,6 +345,9 @@ static void guidelist_clear_without_datavalue(DBSTAR_GUIDELIST_S *p_guidelist){
 	memset(p_guidelist->TrailerURI, 0, sizeof(p_guidelist->TrailerURI));
 }
 
+/*
+ 当新的播发单ProductDesc.xml到来时，将旧播发单对应在数据库中的正在下载的记录的ReceiveStatus由'0'标记为'-1'，表明下载失败
+*/
 static int productdesc_history_clear(DBSTAR_PRODUCTDESC_S *ptr)
 {
 	if(NULL==ptr){
@@ -308,11 +371,11 @@ static int productdesc_history_clear(DBSTAR_PRODUCTDESC_S *ptr)
 		memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
 	}
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 /*
- ProductDesc.xml
+ 播发单ProductDesc.xml，成品Publication和成品集PublicationsSet直接存放到对应表中，而小片Preview和预告单GuideList则存放在播发单表ProductDesc中
 */
 static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 {
@@ -325,7 +388,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	time_t timep;
 	time (&timep);
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[1024*4];
 	char total_uri[512];
 	char time_str[64];
 	snprintf(total_uri, sizeof(total_uri), "%s/%s", ptr->rootPath,ptr->URI);
@@ -334,44 +397,88 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		time_str[strlen(time_str)-1] = '\0';
 	snprintf(time_str+strlen(time_str), sizeof(time_str)-strlen(time_str), "#%ld", timep);
 	
-	if(		0==strcmp(ptr->ReceiveType, "ReceivePublications")
-		||	0==strcmp(ptr->ReceiveType, "ReceiveSets")){
+	if(0==strcmp(ptr->ReceiveType, "ReceivePublications")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
+	VALUES('%s',\
+	(select ColumnID from Publication where PublicationID='%s'),\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	(select ReceiveStatus from Publication where PublicationID='%s'),\
+	'%s',\
+	(select PublicationType from Publication where PublicationID='%s'),\
+	(select IsReserved from Publication where PublicationID='%s'),\
+	(select Visible from Publication where PublicationID='%s'),\
+	(select DRMFile from Publication where PublicationID='%s'),\
+	(select SetID from Publication where PublicationID='%s'),\
+	(select IndexInSet from Publication where PublicationID='%s'),\
+	(select Favorite from Publication where PublicationID='%s'),\
+	(select Bookmark from Publication where PublicationID='%s'),\
+	(select IsAuthorized from Publication where PublicationID='%s'),\
+	(select VODNum from Publication where PublicationID='%s'),\
+	(select VODPlatform from Publication where PublicationID='%s'));",
+		ptr->ID,
+		ptr->ID,
+		ptr->productID,
+		total_uri,
+		ptr->TotalSize,
+		ptr->ProductDescID,
+		ptr->ID,
+		time_str,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID);
 		
-		char table_name[64];
-		char id_name[64];
-		if(0==strcmp(ptr->ReceiveType, "ReceivePublications")){
-			snprintf(table_name, sizeof(table_name), "%s", "Publication");
-			snprintf(id_name, sizeof(id_name), "%s", "PublicationID");
-		}
-		else if(0==strcmp(ptr->ReceiveType, "ReceiveSets")){
-			snprintf(table_name, sizeof(table_name), "%s", "PublicationsSet");
-			snprintf(id_name, sizeof(id_name), "%s", "SetID");
-		}
-		else{
-			DEBUG("args error\n");
-			return -1;
-		}
+		return sqlite_transaction_exec(sqlite_cmd);
+	}
+	else if(0==strcmp(ptr->ReceiveType, "ReceiveSets")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO PublicationsSet(SetID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,IsReserved,Visible,Favorite,IsAuthorized,VODNum,VODPlatform) \
+	VALUES('%s',\
+	(select ColumnID from PublicationsSet where SetID='%s'),\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	(select ReceiveStatus from PublicationsSet where SetID='%s'),\
+	'%s',\
+	(select IsReserved from PublicationsSet where SetID='%s'),\
+	(select Visible from PublicationsSet where SetID='%s'),\
+	(select Favorite from PublicationsSet where SetID='%s'),\
+	(select IsAuthorized from PublicationsSet where SetID='%s'),\
+	(select VODNum from PublicationsSet where SetID='%s'),\
+	(select VODPlatform from PublicationsSet where SetID='%s'));",
+		ptr->ID,
+		ptr->ID,
+		ptr->productID,
+		total_uri,
+		ptr->TotalSize,
+		ptr->ProductDescID,
+		ptr->ID,
+		time_str,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID,
+		ptr->ID);
 		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT %s FROM %s WHERE %s='%s';", id_name,table_name,id_name,ptr->ID);
-		
-		int ret_sqlexec = sqlite_read(sqlite_cmd, NULL, NULL);
-		if(ret_sqlexec<=0){
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO %s(%s,productID,ProductDescID,URI,TotalSize,ReceiveStatus,PushTime) VALUES('%s','%s','%s','%s','%s','0','%s');",
-				table_name, id_name,
-				ptr->ID,ptr->productID,ptr->ProductDescID,total_uri,ptr->TotalSize,time_str);
-		}
-		else{
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE %s SET ProductID='%s',ProductDescID='%s',URI='%s',TotalSize='%s',ReceiveStatus='0',PushTime='%s' WHERE %s='%s';",
-				table_name,
-				ptr->productID,ptr->ProductDescID,total_uri,ptr->TotalSize,time_str,id_name,ptr->ID);
-		}
-		sqlite_execute(sqlite_cmd);
+		return sqlite_transaction_exec(sqlite_cmd);
 	}
 	else if(	0==strcmp(ptr->ReceiveType, "ReceiveGuideList")
 			||	0==strcmp(ptr->ReceiveType, "ReceivePreview")){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO ProductDesc(ReceiveType,ProductDescID,URI,TotalSize,ReceiveStatus,PushTime) VALUES('%s','%s','%s','%s','0','%s');",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ProductDesc(ReceiveType,ProductDescID,URI,TotalSize,ReceiveStatus,PushTime) VALUES('%s','%s','%s','%s','0','%s');",
 			ptr->ReceiveType,ptr->ProductDescID,total_uri,ptr->TotalSize,time_str);
-		sqlite_execute(sqlite_cmd);
+		
+		return sqlite_transaction_exec(sqlite_cmd);
 	}
 	else{
 		DEBUG("can not distinguish such ReceiveType: %s", ptr->ReceiveType);
@@ -408,10 +515,10 @@ static int column_entity_insert(DBSTAR_COLUMNENTITY_S *p, char *entity_type)
 	}
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO ColumnEntity(ColumnID,EntityID,EntityType) VALUES('%s','%s','%s');",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ColumnEntity(ColumnID,EntityID,EntityType) VALUES('%s','%s','%s');",
 		p->columnID,p->EntityID, entity_type);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 
@@ -425,19 +532,48 @@ static int publication_insert_productid(char *PublicationID, char *ProductID)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM Publication WHERE PublicationID='%s';", PublicationID);
+	char sqlite_cmd[1024*4];
 	
-	int ret_sqlexec = sqlite_read(sqlite_cmd, NULL, NULL);
-	if(ret_sqlexec<=0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Publication(PublicationID,ProductID) VALUES('%s','%s');",
-			PublicationID, ProductID);
-	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Publication SET ProductID='%s' WHERE PublicationID='%s';",
-			ProductID,PublicationID);
-	}
-	return sqlite_execute(sqlite_cmd);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
+	VALUES('%s',\
+	(select ColumnID from Publication where PublicationID='%s'),\
+	'%s',\
+	(select URI from Publication where PublicationID='%s'),\
+	(select TotalSize from Publication where PublicationID='%s'),\
+	(select ProductDescID from Publication where PublicationID='%s'),\
+	(select ReceiveStatus from Publication where PublicationID='%s'),\
+	(select PushTime from Publication where PublicationID='%s'),\
+	(select PublicationType from Publication where PublicationID='%s'),\
+	(select IsReserved from Publication where PublicationID='%s'),\
+	(select Visible from Publication where PublicationID='%s'),\
+	(select DRMFile from Publication where PublicationID='%s'),\
+	(select SetID from Publication where PublicationID='%s'),\
+	(select IndexInSet from Publication where PublicationID='%s'),\
+	(select Favorite from Publication where PublicationID='%s'),\
+	(select Bookmark from Publication where PublicationID='%s'),\
+	(select IsAuthorized from Publication where PublicationID='%s'),\
+	(select VODNum from Publication where PublicationID='%s'),\
+	(select VODPlatform from Publication where PublicationID='%s'));",
+		PublicationID,
+		PublicationID,
+		ProductID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID,
+		PublicationID);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 /*
@@ -450,19 +586,47 @@ static int preview_insert_productid(char *PreviewID, char *ProductID)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PreviewID FROM Preview WHERE PreviewID='%s';", PreviewID);
-	
-	int ret_sqlexec = sqlite_read(sqlite_cmd, NULL, NULL);
-	if(ret_sqlexec<=0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Preview(PreviewID,ProductID) VALUES('%s','%s');",
-			PreviewID, ProductID);
-	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Preview SET ProductID='%s' WHERE PreviewID='%s';",
-			ProductID,PreviewID);
-	}
-	return sqlite_execute(sqlite_cmd);
+	char sqlite_cmd[1024*4];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,StartTime,EndTime,PlayMode) \
+	VALUES('%s',\
+	'%s',\
+	(select PreviewType from Preview where PreviewID='%s'),\
+	(select PreviewSize from Preview where PreviewID='%s'),\
+	(select ShowTime from Preview where PreviewID='%s'),\
+	(select PreviewURI from Preview where PreviewID='%s'),\
+	(select PreviewFormat from Preview where PreviewID='%s'),\
+	(select Duration from Preview where PreviewID='%s'),\
+	(select Resolution from Preview where PreviewID='%s'),\
+	(select BitRate from Preview where PreviewID='%s'),\
+	(select CodeFormat from Preview where PreviewID='%s'),\
+	(select URI from Preview where PreviewID='%s'),\
+	(select TotalSize from Preview where PreviewID='%s'),\
+	(select ProductDescID from Preview where PreviewID='%s'),\
+	(select ReceiveStatus from Preview where PreviewID='%s'),\
+	(select PushTime from Preview where PreviewID='%s'),\
+	(select StartTime from Preview where PreviewID='%s'),\
+	(select EndTime from Preview where PreviewID='%s'),\
+	(select PlayMode from Preview where PreviewID='%s'));",
+		PreviewID,
+		ProductID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID,
+		PreviewID);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 
@@ -475,32 +639,67 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 		return -1;
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Channel(pid,pidType,multParamSet) VALUES('%s','%s','%s');",p->pid,p->pidType,p->multParamSet);
-	return sqlite_execute(sqlite_cmd);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Channel(pid,pidType,multParamSet) VALUES('%s','%s','%s');",p->pid,p->pidType,p->multParamSet);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
-static int publication_insert(DBSTAR_PUBLICATION_S *ptr)
+/*
+ 向成品表Publication插入成品信息，需要先判断是否存在，然后才能决定是Insert还是Update
+*/
+static int publication_insert(DBSTAR_PUBLICATION_S *p)
 {
-	if(NULL==ptr || 0==strlen(ptr->PublicationID)){
+	if(NULL==p || 0==strlen(p->PublicationID)){
 		DEBUG("invalid argument\n");
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM Publication WHERE PublicationID='%s';", ptr->PublicationID);
+	char sqlite_cmd[1024*4];
 	
-	int ret_sqlexec = sqlite_read(sqlite_cmd, NULL, NULL);
-	if(ret_sqlexec<=0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Publication(PublicationID,PublicationType,IsReserved,Visible,DRMFile) VALUES('%s','%s','%s','%s','%s');", \
-			ptr->PublicationID, ptr->PublicationType, ptr->IsReserved, ptr->Visible, ptr->DRMFile);
-	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Publication SET PublicationType='%s',IsReserved='%s',Visible='%s',DRMFile='%s' WHERE PublicationID='%s';", \
-			ptr->PublicationType, ptr->IsReserved, ptr->Visible, ptr->DRMFile, ptr->PublicationID);
-	}
-	return sqlite_execute(sqlite_cmd);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
+	VALUES('%s',\
+	(select ColumnID from Publication where PublicationID='%s'),\
+	(select ProductID from Publication where PublicationID='%s'),\
+	(select URI from Publication where PublicationID='%s'),\
+	(select TotalSize from Publication where PublicationID='%s'),\
+	(select ProductDescID from Publication where PublicationID='%s'),\
+	(select ReceiveStatus from Publication where PublicationID='%s'),\
+	(select PushTime from Publication where PublicationID='%s'),\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	(select SetID from Publication where PublicationID='%s'),\
+	(select IndexInSet from Publication where PublicationID='%s'),\
+	(select Favorite from Publication where PublicationID='%s'),\
+	(select Bookmark from Publication where PublicationID='%s'),\
+	(select IsAuthorized from Publication where PublicationID='%s'),\
+	(select VODNum from Publication where PublicationID='%s'),\
+	(select VODPlatform from Publication where PublicationID='%s'));",
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationType,
+		p->IsReserved,
+		p->Visible,
+		p->DRMFile,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID,
+		p->PublicationID);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 插入视音频类成品的信息到MultipleLanguageInfoVA中。
+*/
 static int publicationva_info_insert(DBSTAR_MULTIPLELANGUAGEINFOVA_S *p)
 {
 	if(NULL==p || 0==strlen(p->PublicationID) || 0==strlen(p->infolang)){
@@ -509,16 +708,50 @@ static int publicationva_info_insert(DBSTAR_MULTIPLELANGUAGEINFOVA_S *p)
 	}
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM MultipleLanguageInfoVA WHERE (PublicationID='%s' AND infolang='%s');", \
-		p->PublicationID, p->infolang);
-	sqlite_execute(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO MultipleLanguageInfoVA(PublicationID,infolang,Keywords,ImageDefinition,Director,Episode,Actor,AudioChannel,AspectRatio,Audience,Model,Language,Area) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO MultipleLanguageInfoVA(PublicationID,infolang,Keywords,ImageDefinition,Director,Episode,Actor,AudioChannel,AspectRatio,Audience,Model,Language,Area) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
 		p->PublicationID,p->infolang,p->Keywords,p->ImageDefinition,p->Director,p->Episode,p->Actor,p->AudioChannel,p->AspectRatio,p->Audience,p->Model,p->Language,p->Area);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 插入富媒体类成品的信息到MultipleLanguageInfoRM中。
+*/
+static int publicationrm_info_insert(DBSTAR_MULTIPLELANGUAGEINFORM_S *p)
+{
+	if(NULL==p || 0==strlen(p->PublicationID) || 0==strlen(p->infolang)){
+		DEBUG("invalid argument\n");
+		return -1;
+	}
+	
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO MultipleLanguageInfoRM(PublicationID,infolang,Keywords,Publisher,Area,Language,Episode,AspectRatio,VolNum,ISSN) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+		p->PublicationID,p->infolang,p->Keywords,p->Publisher,p->Area,p->Language,p->Episode,p->AspectRatio,p->VolNum,p->ISSN);
+	
+	return sqlite_transaction_exec(sqlite_cmd);
+}
+
+/*
+ 插入应用类成品的信息到MultipleLanguageInfoApp中。
+*/
+static int publicationapp_info_insert(DBSTAR_MULTIPLELANGUAGEINFOAPP_S *p)
+{
+	if(NULL==p || 0==strlen(p->PublicationID) || 0==strlen(p->infolang)){
+		DEBUG("invalid argument\n");
+		return -1;
+	}
+	
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO MultipleLanguageInfoApp(PublicationID,infolang,Keywords,Category,Released,AppVersion,Language,Developer,Rated) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+		p->PublicationID,p->infolang,p->Keywords,p->Category,p->Released,p->AppVersion,p->Language,p->Developer,p->Rated);
+	
+	return sqlite_transaction_exec(sqlite_cmd);
+}
+
+/*
+ 向字幕资源表ResSubTitle中插入字幕信息
+ 由于Res表都是依存于宿主表的寄生表，因此它们自身不能独立封装为事务，应为某事务的一部分。
+*/
 static int subtitle_insert(DBSTAR_RESSUBTITLE_S *p)
 {
 	if(NULL==p || 0==strlen(p->ObjectName) || 0==strlen(p->EntityID)){
@@ -527,16 +760,16 @@ static int subtitle_insert(DBSTAR_RESSUBTITLE_S *p)
 	}
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ResSubTitle WHERE (ObjectName='%s' AND EntityID='%s');", \
-		p->ObjectName, p->EntityID);
-	sqlite_execute(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO ResSubTitle(ObjectName,EntityID,SubTitleID,SubTitleName,SubTitleLanguage,SubTitleURI) VALUES('%s','%s','%s','%s','%s','%s');",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResSubTitle(ObjectName,EntityID,SubTitleID,SubTitleName,SubTitleLanguage,SubTitleURI) VALUES('%s','%s','%s','%s','%s','%s');",
 		p->ObjectName,p->EntityID,p->SubTitleID,p->SubTitleName,p->SubTitleLanguage,p->SubTitleURI);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 向海报资源表ResPoster中插入海报信息
+ 由于Res表都是依存于宿主表的寄生表，因此它们自身不能独立封装为事务，应为某事务的一部分。
+*/
 static int poster_insert(DBSTAR_RESPOSTER_S *p)
 {
 	if(NULL==p || 0==strlen(p->ObjectName) || 0==strlen(p->EntityID) || 0==strlen(p->PosterID) || 0==strlen(p->PosterURI)){
@@ -545,16 +778,16 @@ static int poster_insert(DBSTAR_RESPOSTER_S *p)
 	}
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ResPoster WHERE (ObjectName='%s' AND EntityID='%s' AND PosterID='%s');", \
-		p->ObjectName, p->EntityID, p->PosterID);
-	sqlite_execute(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO ResPoster(ObjectName,EntityID,PosterID,PosterName,PosterURI) VALUES('%s','%s','%s','%s','%s');",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResPoster(ObjectName,EntityID,PosterID,PosterName,PosterURI) VALUES('%s','%s','%s','%s','%s');",
 		p->ObjectName, p->EntityID, p->PosterID, p->PosterName, p->PosterURI);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 向片花资源表ResTrailer中插入片花信息
+ 由于Res表都是依存于宿主表的寄生表，因此它们自身不能独立封装为事务，应为某事务的一部分。
+*/
 static int trailer_insert(DBSTAR_RESTRAILER_S *p)
 {
 	if(NULL==p || 0==strlen(p->ObjectName) || 0==strlen(p->EntityID) || 0==strlen(p->TrailerID) || 0==strlen(p->TrailerURI)){
@@ -563,16 +796,16 @@ static int trailer_insert(DBSTAR_RESTRAILER_S *p)
 	}
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ResTrailer WHERE (ObjectName='%s' AND EntityID='%s' AND TrailerID='%s');", \
-		p->ObjectName, p->EntityID, p->TrailerID);
-	sqlite_execute(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO ResTrailer(ObjectName,EntityID,TrailerID,TrailerName,TrailerURI) VALUES('%s','%s','%s','%s','%s');",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResTrailer(ObjectName,EntityID,TrailerID,TrailerName,TrailerURI) VALUES('%s','%s','%s','%s','%s');",
 		p->ObjectName, p->EntityID, p->TrailerID, p->TrailerName, p->TrailerURI);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 向主文件表MFile中插入主文件信息
+ 主文件表是依存于宿主表的寄生表，因此它们自身不能独立封装为事务，应为某事务的一部分。
+*/
 static int mfile_insert(DBSTAR_MFILE_S *p)
 {
 	if(NULL==p || 0==strlen(p->PublicationID) || 0==strlen(p->FileID)){
@@ -581,16 +814,15 @@ static int mfile_insert(DBSTAR_MFILE_S *p)
 	}
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM MFile WHERE (PublicationID='%s' AND FileID='%s');", \
-		p->PublicationID, p->FileID);
-	sqlite_execute(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO MFile(FileID,PublicationID,FileType,FileSize,Duration,FileURI,Resolution,BitRate,FileFormat,CodeFormat) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO MFile(FileID,PublicationID,FileType,FileSize,Duration,FileURI,Resolution,BitRate,FileFormat,CodeFormat) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
 		p->FileID,p->PublicationID,p->FileType,p->FileSize,p->Duration,p->FileURI,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 向消息表Message中插入消息
+*/
 static int message_insert(DBSTAR_MESSAGE_S *p)
 {
 	if(NULL==p || 0==strlen(p->MessageID)|| 0==strlen(p->type)|| 0==strlen(p->displayForm)){
@@ -600,16 +832,15 @@ static int message_insert(DBSTAR_MESSAGE_S *p)
 	
 	char sqlite_cmd[512];
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM Message WHERE (type='%s' AND displayForm='%s' AND StartTime='%s' AND EndTime='%s' AND Interval='%s');", \
-		p->type, p->displayForm, p->StartTime, p->EndTime, p->Interval);
-	sqlite_execute(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Message(MessageID,type,displayForm,StartTime,EndTime,Interval) VALUES('%s','%s','%s','%s','%s','%s');",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Message(MessageID,type,displayForm,StartTime,EndTime,Interval) VALUES('%s','%s','%s','%s','%s','%s');",
 		p->MessageID, p->type, p->displayForm, p->StartTime, p->EndTime, p->Interval);
 	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+/*
+ 向小片表Preview中插入小片
+*/
 static int preview_insert(DBSTAR_PREVIEW_S *p)
 {
 	if(NULL==p || 0==strlen(p->PreviewID)){
@@ -617,16 +848,47 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
-	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM Preview WHERE (PreviewID='%s');", \
+	char sqlite_cmd[1024*4];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,StartTime,EndTime,PlayMode) \
+	VALUES('%s',\
+	(select ProductID from Preview where PreviewID='%s'),\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	'%s',\
+	(select URI from Preview where PreviewID='%s'),\
+	(select TotalSize from Preview where PreviewID='%s'),\
+	(select ProductDescID from Preview where PreviewID='%s'),\
+	(select ReceiveStatus from Preview where PreviewID='%s'),\
+	(select PushTime from Preview where PreviewID='%s'),\
+	(select StartTime from Preview where PreviewID='%s'),\
+	(select EndTime from Preview where PreviewID='%s'),\
+	(select PlayMode from Preview where PreviewID='%s'));",
+		p->PreviewID,
+		p->PreviewID,
+		p->PreviewType,
+		p->PreviewSize,
+		p->ShowTime,
+		p->PreviewURI,
+		p->PreviewFormat,
+		p->Duration,
+		p->Resolution,
+		p->BitRate,
+		p->CodeFormat,
+		p->PreviewID,
+		p->PreviewID,
+		p->PreviewID,
+		p->PreviewID,
+		p->PreviewID,
+		p->PreviewID,
+		p->PreviewID,
 		p->PreviewID);
-	sqlite_execute(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "INSERT INTO Preview(PreviewID,PreviewType,PreviewSize,ShowTime,Duration,PreviewURI,Resolution,BitRate,PreviewFormat,CodeFormat) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-		p->PreviewID,p->PreviewType,p->PreviewSize,p->ShowTime,p->Duration,p->PreviewURI,p->Resolution,p->BitRate,p->PreviewFormat,p->CodeFormat);
-	
-	return sqlite_execute(sqlite_cmd);
+	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 /*
@@ -954,7 +1216,7 @@ static void parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr,
 					parseProperty(cur, new_xmlroute, (void *)serviceID);
 					if(0==strcmp(serviceID, serviceID_get())){
 						DEBUG("detect valid productID: %s\n", serviceID);
-						sqlite_table_clear("Channel");
+						sqlite_transaction_table_clear("Channel");
 						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL);
 						process_over = 1;
 					}
@@ -2496,6 +2758,7 @@ int parseDoc(char *docname)
 		else
 			snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "%s", docname);
 		
+		sqlite_transaction_begin();
 // Initialize.xml
 		if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
 			parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL);
@@ -2571,6 +2834,8 @@ int parseDoc(char *docname)
 		}
 		
 		xmlinfo_insert(&xmlinfo);
+		
+		sqlite_transaction_end(1);
 	}
 	
 	xmlFreeDoc(doc);
