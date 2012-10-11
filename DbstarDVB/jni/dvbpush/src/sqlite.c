@@ -544,14 +544,14 @@ PRIMARY KEY (PublicationID,infolang));", name);
 					"CREATE TABLE %s(\
 PublicationID	NVARCHAR(64) PRIMARY KEY,\
 infolang	NVARCHAR(64),\
+PublicationDesc	NVARCHAR(1024),\
+Keywords	NVARCHAR(256),\
 Category	NVARCHAR(64),\
 Released	NVARCHAR(64),\
 AppVersion	NVARCHAR(64),\
 Language	NVARCHAR(64),\
 Developer	NVARCHAR(64),\
 Rated	NVARCHAR(64),\
-PublicationDesc	NVARCHAR(1024),\
-Keywords	NVARCHAR(256),\
 Requirements	NVARCHAR(64));", name);
 			}
 			else if(!strcmp(name,"MFile"))
@@ -981,6 +981,7 @@ int sqlite_transaction_end(int commit_flag)
 	
 	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
 		if(1==commit_flag){
+			DEBUG("commit transaction\n");
 			ret = sqlite3_exec(g_db, "commit transaction", NULL, NULL, NULL);
 		}
 		else{

@@ -317,7 +317,7 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 	int info_size;
 	int i = 0;
 	/*
-	 形如：1001|aaaaaaname|23932|23523094823\n1002|bbbbbbname|234239|12349320\n1003|cccccname|0|213984902943
+	 形如：1001\taaaaaaname\t23932\t23523094823\n1002\tbbbbbbname\t234239\t12349320\n1003\tcccccname\t0\t213984902943
 	 每条记录预留长度：64位id + strlen(prog_uri) + 20位当前长度 + 20位总长 + 4位分隔符
 	 其中：long long型转为10进制后最大长度为20
 	*/
@@ -348,6 +348,9 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 					rxb*100/s_prgs[i].total);
 					
 				s_prgs[i].cur += 10*1024*1024;
+				if(s_prgs[i].cur>s_prgs[i].total)
+					s_prgs[i].cur = s_prgs[i].total;
+					
 				if(0==i){
 					snprintf(s_dvbpush_info, info_size,
 						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
@@ -547,7 +550,7 @@ static int push_monitor_regist(int regist_flag)
 	return ret;
 }
 
-static int brand_sqlite_callback(char **result, int row, int column, void *receiver)
+static int pushlist_sqlite_cb(char **result, int row, int column, void *receiver)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr: %p\n", row, column, receiver);
 	if(row<1){
@@ -576,10 +579,10 @@ int push_monitor_reset()
 {
 	int ret = -1;
 	char sqlite_cmd[256+128];
-	int (*sqlite_callback)(char **, int, int, void *) = brand_sqlite_callback;
+	int (*sqlite_callback)(char **, int, int, void *) = pushlist_sqlite_cb;
 
 	pthread_mutex_lock(&mtx_push_monitor);
-#if 1	// only for test	
+#if 0	// only for test	
 	mid_push_regist("1","prog/video/1", 206237980LL);
 	mid_push_regist("2","prog/file/2", 18816360LL);
 	mid_push_regist("3","prog/audio/3", 38729433LL);
@@ -587,17 +590,17 @@ int push_monitor_reset()
 	mid_push_regist("5","prog/file/5", 11118816360LL);
 	mid_push_regist("6","prog/audio/6", 30338729433LL);
 	mid_push_regist("7","prog/video/7", 21206237980LL);
-	mid_push_regist("8","prog/file/8", 1882316360LL);
+	mid_push_regist("8","prog/file/这是中文测试文件名", 1882316360LL);
 	mid_push_regist("9","prog/audio/9", 3872439433LL);
 	mid_push_regist("10","prog/video/10", 20625337980LL);
 	mid_push_regist("11","prog/file/11", 18816323460LL);
 	mid_push_regist("12","prog/audio/12", 38729423433LL);
 	mid_push_regist("13","prog/video/13", 206237942380LL);
 	mid_push_regist("14","prog/file/14", 1881636043LL);
-	mid_push_regist("15","prog/audio/15", 3872943433LL);
+	mid_push_regist("15","中文长文件名测试，中文English混排，长文件名", 3872943433LL);
 	ret = 0;
 #else
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT id, regist_dir, totalsize FROM brand;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM ProductDesc;");
 	ret = sqlite_read(sqlite_cmd, NULL, sqlite_callback);
 #endif
 	pthread_mutex_unlock(&mtx_push_monitor);
