@@ -25,8 +25,9 @@ import java.util.ArrayList;
 
 public class DbstarService extends Service {
 	private static final String TAG = "DbstarService";
-
+	private static final String NOTIFY_ACTION = "com.dbstar.DbstarDVB.NOTIFY";
 	private static String mDownloadName = "";
+	private static Context mContext = null;
 
 	public void onCreate() {
 		Log.d(TAG, "----- onCreate ----");
@@ -38,8 +39,8 @@ public class DbstarService extends Service {
 		if (null == intent) {
 			return;
 		}
+		DbstarService.mContext = this.getApplicationContext();
 		Bundle extras = intent.getExtras();
-
 		if (null != extras) {
 			DbstarService.mDownloadName = extras.getString("extrasInfo");
 		}
@@ -63,6 +64,7 @@ public class DbstarService extends Service {
 	private native int taskinfoStart();
 	private native int taskinfoStop();
 	private native byte[] taskinfoGet();
+	private native byte[] command(int cmd, String buf, int len);
 	
 	private final IDbstarService.Stub mBinder = new IDbstarService.Stub() {
 		public int startDvbpush() throws RemoteException {
@@ -85,7 +87,7 @@ public class DbstarService extends Service {
 			return taskinfoStop();
 		}
 
-        public Intent getTaskInfo() throws RemoteException { 
+		public Intent getTaskInfo() throws RemoteException { 
 			Log.d(TAG, "getTaskInfo()");
 
 			byte[] bytes = taskinfoGet();
@@ -94,7 +96,32 @@ public class DbstarService extends Service {
 
 			return it;
 		}
+
+        public Intent sendCommand(int cmd, String buf, int len) throws RemoteException { 
+			Log.d(TAG, "sendCommand()");
+			byte[] bytes = command(cmd, buf, len);
+			Intent it = new Intent();
+			it.putExtra("result", bytes);
+
+			return it;
+		}
 	};
+
+	public static void postNotifyMessage(int type, byte[] bytes) {
+		try {
+			String  buf = new String(bytes, "utf-8");
+			Log.i(TAG, "postNotifyMessage(" + type + ", [" + buf + "].");
+			Intent it = new Intent();
+			it.setAction(NOTIFY_ACTION);
+			it.putExtra("type", type);
+			it.putExtra("message", bytes);
+			if (DbstarService.mContext != null) {
+				DbstarService.mContext.sendBroadcast(it);
+			}
+		} catch (UnsupportedEncodingException e) {
+			 e.printStackTrace();
+		}
+	}
 
 	static {
 		System.loadLibrary("dvbpushjni");

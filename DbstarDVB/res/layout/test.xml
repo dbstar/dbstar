@@ -53,6 +53,8 @@
     android:gravity="center_horizontal"
     android:textSize="18sp"
     />
+
+<!--
     <TextView
     android:id="@+id/taskID"
     android:layout_width="fill_parent"
@@ -85,6 +87,7 @@
     android:gravity="left" android:paddingLeft="100px"
     android:textSize="18sp"
     />
+-->
 	<ProgressBar
 	android:id="@+id/progress"
 	android:layout_height="wrap_content"
@@ -98,6 +101,14 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:text="@string/taskInfo"
+    android:gravity="left" android:paddingLeft="100px"
+    android:textSize="18sp"
+    />
+    <TextView
+    android:id="@+id/command"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/command"
     android:gravity="left" android:paddingLeft="100px"
     android:textSize="18sp"
     />

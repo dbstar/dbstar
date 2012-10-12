@@ -6,7 +6,7 @@
     <string name="Button01">Start Dvbpush </string>
     <string name="Button02">Stop Dvbpush</string>
     <string name="Button03">Start Taskinfo </string>
-    <string name="Button04">Stop Taskinfo</string>
+    <string name="Button04">SendCommand</string>
     <string name="Button05">Get Taskinfo</string>
     <string name="Button06">PLAY</string>
 
@@ -15,6 +15,7 @@
     <string name="downloadSize">已下载字节数</string>
 	<string name="totalSize">文件总字节数</string>
 	<string name="taskInfo">任务信息</string>
+	<string name="command">Command</string>
 	<string name="progress">进度</string>
 
 	<string name="status_inited">任务已添加</string>

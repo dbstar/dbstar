@@ -60,8 +60,8 @@ import java.io.FileNotFoundException;
 
 import com.dbstar.DbstarDVB.R;
 
-public class playermenu extends Activity {
-	private static String TAG = "playermenu";
+public class PlayerMenu extends Activity {
+	private static String TAG = "PlayerMenu";
 	private static String codec_mips = null;
 	private static String InputFile = "/sys/class/audiodsp/codec_mips";
 	private static String OutputFile = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq";
@@ -928,7 +928,7 @@ public class playermenu extends Activity {
 				}
                 SimpleAdapter audioarray = getMorebarListAdapter(AUDIOTRACK, cur_audio_stream);
                 if((audio_flag == Errorno.PLAYER_NO_AUDIO) || (audioarray.getCount() <= 0) ) {
-    				Toast toast =Toast.makeText(playermenu.this, R.string.file_have_no_audio,Toast.LENGTH_SHORT );
+    				Toast toast =Toast.makeText(PlayerMenu.this, R.string.file_have_no_audio,Toast.LENGTH_SHORT );
     				toast.setGravity(Gravity.BOTTOM,110,0);
     				toast.setDuration(0x00000001);
     				toast.show();
@@ -985,7 +985,7 @@ public class playermenu extends Activity {
     	subtitle.setOnClickListener(new View.OnClickListener() {
     		public void onClick(View v) {
     			if(sub_para.totalnum<=0) {
-    				Toast toast =Toast.makeText(playermenu.this, R.string.sub_no_subtitle,Toast.LENGTH_SHORT );
+    				Toast toast =Toast.makeText(PlayerMenu.this, R.string.sub_no_subtitle,Toast.LENGTH_SHORT );
     				toast.setGravity(Gravity.BOTTOM,110,0);
     				toast.setDuration(0x00000001);
     				toast.show();
@@ -1006,9 +1006,9 @@ public class playermenu extends Activity {
     		}
 
 			String color_text[]={ 
-				playermenu.this.getResources().getString(R.string.color_white),
-				playermenu.this.getResources().getString(R.string.color_yellow),
-				playermenu.this.getResources().getString(R.string.color_blue)
+				PlayerMenu.this.getResources().getString(R.string.color_white),
+				PlayerMenu.this.getResources().getString(R.string.color_yellow),
+				PlayerMenu.this.getResources().getString(R.string.color_blue)
 			};
     		
     		private void subtitle_control() {
@@ -1369,7 +1369,7 @@ public class playermenu extends Activity {
     				ListView listView = (ListView)findViewById(R.id.AudioListView);
     				int mBrightness = 0;
     				try {
-    					mBrightness = Settings.System.getInt(playermenu.this.getContentResolver(), 
+    					mBrightness = Settings.System.getInt(PlayerMenu.this.getContentResolver(), 
 						   Settings.System.SCREEN_BRIGHTNESS);
     				} 
     				catch (SettingNotFoundException e) {
@@ -1420,7 +1420,7 @@ public class playermenu extends Activity {
     							IPowerManager power = IPowerManager.Stub.asInterface(ServiceManager.getService("power"));
     							if (power != null) {
     								power.setBacklightBrightness(brightness);
-    								Settings.System.putInt(playermenu.this.getContentResolver(), 
+    								Settings.System.putInt(PlayerMenu.this.getContentResolver(), 
 				                    	Settings.System.SCREEN_BRIGHTNESS, brightness);
     							}
     						} 
@@ -1471,27 +1471,27 @@ public class playermenu extends Activity {
 					
 				String fileinf = null;
 				TextView filename = (TextView)findViewById(R.id.filename);
-                fileinf = playermenu.this.getResources().getString(R.string.str_file_name)
+                fileinf = PlayerMenu.this.getResources().getString(R.string.str_file_name)
         			+ "\t: " + bMediaInfo.getFileName(PlayList.getinstance().getcur());
 				filename.setText(fileinf);
 
 				TextView filetype = (TextView)findViewById(R.id.filetype);
-                fileinf = playermenu.this.getResources().getString(R.string.str_file_format)
+                fileinf = PlayerMenu.this.getResources().getString(R.string.str_file_format)
         			+ "\t: " + bMediaInfo.getFileType();
 				filetype.setText(fileinf);
 					
 				TextView filesize = (TextView)findViewById(R.id.filesize);
-                fileinf = playermenu.this.getResources().getString(R.string.str_file_size)
+                fileinf = PlayerMenu.this.getResources().getString(R.string.str_file_size)
         			+ "\t: " + bMediaInfo.getFileSize();
 				filesize.setText(fileinf);
 					
 				TextView resolution = (TextView)findViewById(R.id.resolution);
-                fileinf = playermenu.this.getResources().getString(R.string.str_file_resolution)
+                fileinf = PlayerMenu.this.getResources().getString(R.string.str_file_resolution)
         			+ "\t: " + bMediaInfo.getResolution();
                 resolution.setText(fileinf);
 					
 				TextView duration = (TextView)findViewById(R.id.duration);
-                fileinf = playermenu.this.getResources().getString(R.string.str_file_duration)
+                fileinf = PlayerMenu.this.getResources().getString(R.string.str_file_duration)
         			+ "\t: " + secToTime(bMediaInfo.duration, true);
 				duration.setText(fileinf);
 					
@@ -1660,7 +1660,7 @@ public class playermenu extends Activity {
 			    bundle.putInt("fromtop_piexl", fromtop_piexl);
 			    bundle.putIntegerArrayList("fileDirectory_position_selected", fileDirectory_position_selected);
 			    bundle.putIntegerArrayList("fileDirectory_position_piexl", fileDirectory_position_piexl);
-				selectFileIntent.setClass(playermenu.this, FileList.class);
+				selectFileIntent.setClass(PlayerMenu.this, FileList.class);
 				selectFileIntent.putExtras(bundle);
 				//close sub;
 				if(subTitleView!=null){
@@ -1688,7 +1688,7 @@ public class playermenu extends Activity {
 				if(!backToOtherAPK){
 					startActivity(selectFileIntent);
 				}
-				playermenu.this.finish();
+				PlayerMenu.this.finish();
 				return true;
     		}
     	}
@@ -2045,7 +2045,7 @@ public class playermenu extends Activity {
     			SystemProperties.set("vplayer.playing","false");
     			  
     			Intent selectFileIntent = new Intent();
-				selectFileIntent.setClass(playermenu.this, FileList.class);
+				selectFileIntent.setClass(PlayerMenu.this, FileList.class);
 				if(SettingsVP.chkEnableOSD2XScale() == true) {
 					if(infobar != null) {
 						infobar.setVisibility(View.GONE);
@@ -2091,7 +2091,7 @@ public class playermenu extends Activity {
         outputmode = SystemProperties.get(STR_OUTPUT_MODE);
         if(m1080scale == 2 || (m1080scale == 1 && (outputmode.equals("1080p") || outputmode.equals("1080i") || outputmode.equals("720p")))){
 	 			 	Intent intent_video_on = new Intent(ACTION_REALVIDEO_ON);
-					playermenu.this.sendBroadcast(intent_video_on);
+					PlayerMenu.this.sendBroadcast(intent_video_on);
 					SystemProperties.set("vplayer.hideStatusBar.enable","true");
         }
         if(AmPlayer.getProductType() == 1)
@@ -2108,8 +2108,8 @@ public class playermenu extends Activity {
             setContentView(R.layout.infobar);
         }
 
-        toast = Toast.makeText(playermenu.this, "", Toast.LENGTH_SHORT);
-        ff_fb =Toast.makeText(playermenu.this, "",Toast.LENGTH_SHORT );
+        toast = Toast.makeText(PlayerMenu.this, "", Toast.LENGTH_SHORT);
+        ff_fb =Toast.makeText(PlayerMenu.this, "",Toast.LENGTH_SHORT );
         ff_fb.setGravity(Gravity.TOP | Gravity.RIGHT,10,10);
 		ff_fb.setDuration(0x00000001);
 
@@ -2162,7 +2162,7 @@ public class playermenu extends Activity {
         SettingsVP.setVideoLayoutMode();
 		if(m1080scale == 2){            //set video position for MBX 
 		Intent intent_videoposition_change = new Intent(ACTION_VIDEOPOSITION_CHANGE);
-		playermenu.this.sendBroadcast(intent_videoposition_change);
+		PlayerMenu.this.sendBroadcast(intent_videoposition_change);
 		}
         SettingsVP.enableVideoLayout();
 //        if(AmPlayer.getProductType() == 1){
@@ -2199,12 +2199,12 @@ public class playermenu extends Activity {
     	        	if (mHdmiPlugged != plugged) {
     	                mHdmiPlugged = plugged;
     	                Intent selectFileIntent = new Intent();
-    	                selectFileIntent.setClass(playermenu.this, FileList.class);	
+    	                selectFileIntent.setClass(PlayerMenu.this, FileList.class);	
     	                backToFileList = true;
     	                PlayList.getinstance().rootPath=null;
     	                if(!backToOtherAPK)
     	                	startActivity(selectFileIntent);
-    	                playermenu.this.finish();
+    	                PlayerMenu.this.finish();
     	        	}
                 }
 	            
@@ -2486,7 +2486,7 @@ public class playermenu extends Activity {
 			    bundle.putInt("fromtop_piexl", fromtop_piexl);
 			    bundle.putIntegerArrayList("fileDirectory_position_selected", fileDirectory_position_selected);
 			    bundle.putIntegerArrayList("fileDirectory_position_piexl", fileDirectory_position_piexl);
-				selectFileIntent.setClass(playermenu.this, FileList.class);
+				selectFileIntent.setClass(PlayerMenu.this, FileList.class);
 				selectFileIntent.putExtras(bundle);
 				//close sub;
 				if(subTitleView!=null){
@@ -2503,7 +2503,7 @@ public class playermenu extends Activity {
 					Amplayer_stop();
 				if(!backToOtherAPK)
 					startActivity(selectFileIntent);
-				playermenu.this.finish();
+				PlayerMenu.this.finish();
 			}
 		});
         
@@ -2978,7 +2978,7 @@ public class playermenu extends Activity {
                 case 0x3d:
                 	if(confirm_dialog.isShowing()) {
 	                	if(resumeSecond > 0) {
-	                		String cancel = playermenu.this.getResources().getString(R.string.str_cancel);
+	                		String cancel = PlayerMenu.this.getResources().getString(R.string.str_cancel);
 	                		confirm_dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
 	                			.setText(cancel+" ( "+(--resumeSecond)+" )");
 	                		ResumeCountdown();
@@ -3179,7 +3179,7 @@ public class playermenu extends Activity {
         if(m1080scale == 2 || (m1080scale == 1 && (outputmode.equals("1080p") || outputmode.equals("1080i") || outputmode.equals("720p")))){
         	writeFile(Fb0Blank,"1");
 			Intent intent_video_off = new Intent(ACTION_REALVIDEO_OFF);
-			playermenu.this.sendBroadcast(intent_video_off);
+			PlayerMenu.this.sendBroadcast(intent_video_off);
         }
         
 		writeFile(FormatMVC,FormatMVC_3doff);
@@ -3274,9 +3274,11 @@ public class playermenu extends Activity {
 						play.setImageResource(R.drawable.play);
 						break;
 					case VideoInfo.PLAYER_EXIT:	
+						Log.d(TAG, "VideoInfo.PLAYER_EXIT");
 						audio_flag = 0;
 						if(PRE_NEXT_FLAG == 1 && !backToFileList) {
     						Log.d(TAG,"to play another file!");
+    						Log.d(TAG,"PRE_NEXT_FLAG == " + PRE_NEXT_FLAG + "backToFileList==" + backToFileList);
 							//new PlayThread().start();
 							if(SettingsVP.getParaBoolean(SettingsVP.RESUME_MODE)) {
 								if (resumePlay() == 0)
@@ -3357,7 +3359,7 @@ public class playermenu extends Activity {
 						String InfoStr = null;
 						InfoStr = Errorno.getErrorInfo(msg.arg2);
 						if(tp == null){
-							tp = Toast.makeText(playermenu.this, "Status Error:"+InfoStr, Toast.LENGTH_SHORT);															
+							tp = Toast.makeText(PlayerMenu.this, "Status Error:"+InfoStr, Toast.LENGTH_SHORT);															
 						}else{
 							tp.cancel();
 							tp.setText("Status Error:"+InfoStr);
@@ -3493,13 +3495,13 @@ public class playermenu extends Activity {
 						try {
 						    DivxInfo divxInfo;
 							divxInfo = m_Amplayer.GetDivxInfo();
-							new AlertDialog.Builder(playermenu.this)
+							new AlertDialog.Builder(PlayerMenu.this)
 							.setTitle("Authorization Error")
 							.setMessage("This player is not authorized to play this DivX protected video")
 							.setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
 							    public void onClick(DialogInterface dialog, int whichButton) {
 								    Intent selectFileIntent = new Intent();
-									selectFileIntent.setClass(playermenu.this, FileList.class);
+									selectFileIntent.setClass(PlayerMenu.this, FileList.class);
 									// close sub;
 									if(subTitleView != null)
 									    subTitleView.closeSubtitle();
@@ -3528,7 +3530,7 @@ public class playermenu extends Activity {
 									PlayList.getinstance().rootPath =null;
 									if(!backToOtherAPK)
 										startActivity(selectFileIntent);
-									playermenu.this.finish();
+									PlayerMenu.this.finish();
 								}
 							}).show();
 						} 
@@ -3545,13 +3547,13 @@ public class playermenu extends Activity {
                                 + msg.arg2
                                 + " views left\nDo you want to use one of your "
                                 + msg.arg2 + " views now";
-                            new AlertDialog.Builder(playermenu.this)
+                            new AlertDialog.Builder(PlayerMenu.this)
 							.setTitle("View DivX(R) VOD Rental")
 							.setMessage(s)
 							.setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int whichButton) {
                                     Intent selectFileIntent = new Intent();
-                                    selectFileIntent.setClass(playermenu.this, FileList.class);
+                                    selectFileIntent.setClass(PlayerMenu.this, FileList.class);
                                     // close sub;
                                     if(subTitleView != null)
                                         subTitleView.closeSubtitle();
@@ -3581,7 +3583,7 @@ public class playermenu extends Activity {
                                     PlayList.getinstance().rootPath =null;
                                     if(!backToOtherAPK)
                                     	startActivity(selectFileIntent);
-                                    playermenu.this.finish();
+                                    PlayerMenu.this.finish();
                                 }
                             }).show();
                         } 
@@ -3598,7 +3600,7 @@ public class playermenu extends Activity {
                                 + msg.arg2
                                 + " views left\nDo you want to use one of your "
                                 + msg.arg2 + " views now?";
-                            new AlertDialog.Builder(playermenu.this)
+                            new AlertDialog.Builder(PlayerMenu.this)
 							.setTitle("View DivX(R) VOD Rental")
 							.setMessage(s)
 							.setPositiveButton(R.string.str_ok, new DialogInterface.OnClickListener() {
@@ -3615,7 +3617,7 @@ public class playermenu extends Activity {
 							.setNegativeButton(R.string.str_cancel, new DialogInterface.OnClickListener() {
 							    public void onClick(DialogInterface dialog, int whichButton) {
                                     Intent selectFileIntent = new Intent();
-                                    selectFileIntent.setClass(playermenu.this, FileList.class);
+                                    selectFileIntent.setClass(PlayerMenu.this, FileList.class);
                                     // close sub;
                                     if(subTitleView != null)
                                         subTitleView.closeSubtitle();
@@ -3644,7 +3646,7 @@ public class playermenu extends Activity {
                                    	PlayList.getinstance().rootPath =null;
                                    	if(!backToOtherAPK)
                                     	startActivity(selectFileIntent);
-                                    playermenu.this.finish();
+                                    PlayerMenu.this.finish();
                                 }
                             }).show();
                         } 
@@ -3665,7 +3667,7 @@ public class playermenu extends Activity {
 					errStr = Errorno.getErrorInfo(msg.arg2);
     				audio_flag = msg.arg2;
 					if(tp == null){
-						tp = Toast.makeText(playermenu.this, errStr, Toast.LENGTH_SHORT);						
+						tp = Toast.makeText(PlayerMenu.this, errStr, Toast.LENGTH_SHORT);						
 					}else{
 						tp.cancel();
 						tp.setText(errStr);
@@ -3942,7 +3944,7 @@ public class playermenu extends Activity {
 			                playPosition = pos;
 			            }  
 			        })  
-			    .setNegativeButton(playermenu.this.getResources().getString(R.string.str_cancel) + " ( "+resumeSecond+" )",  
+			    .setNegativeButton(PlayerMenu.this.getResources().getString(R.string.str_cancel) + " ( "+resumeSecond+" )",  
 				    new DialogInterface.OnClickListener() {  
 				        public void onClick(DialogInterface dialog, int whichButton) {  
 				        	playPosition = 0;
@@ -3984,7 +3986,7 @@ public class playermenu extends Activity {
 //				if(PlayList.getinstance().rootPath!=null) {
 //					if(PlayList.getinstance().rootPath.startsWith(path)) {
 //						Intent selectFileIntent = new Intent();
-//						selectFileIntent.setClass(playermenu.this, FileList.class);
+//						selectFileIntent.setClass(PlayerMenu.this, FileList.class);
 //						//close sub;
 //						if(subTitleView!=null)
 //							subTitleView.closeSubtitle();		
@@ -3998,7 +4000,7 @@ public class playermenu extends Activity {
 //							Amplayer_stop();
 //						PlayList.getinstance().rootPath=null;
 //						startActivity(selectFileIntent);
-//						playermenu.this.finish();
+//						PlayerMenu.this.finish();
 //					}
 //				}
 //			}
@@ -4019,7 +4021,7 @@ public class playermenu extends Activity {
 				if(PlayList.getinstance().getcur()!=null) {
 					if(PlayList.getinstance().getcur().startsWith(path)) {
 						Intent selectFileIntent = new Intent();
-						selectFileIntent.setClass(playermenu.this, FileList.class);
+						selectFileIntent.setClass(PlayerMenu.this, FileList.class);
 						//close sub;
 						if(subTitleView!=null)
 							subTitleView.closeSubtitle();		
@@ -4034,7 +4036,7 @@ public class playermenu extends Activity {
 						PlayList.getinstance().rootPath=null;
 						if(!backToOtherAPK)
 							startActivity(selectFileIntent);
-						playermenu.this.finish();
+						PlayerMenu.this.finish();
 					}
 				}				
             } else if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {          	

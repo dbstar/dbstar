@@ -25,16 +25,17 @@ import java.io.UnsupportedEncodingException;
 
 public class DbstarTest extends Activity implements OnClickListener {
 	private static final String TAG = "DbsterTest";
-	private static final String DOWNLOAD_FINISH_ACTION = "com.dbstar.DbstarDVB.DOWNLOAD_FINISHED";
+	private static final String NOTIFY_ACTION = "com.dbstar.DbstarDVB.NOTIFY";
 
 	private int mUpdateType = 0;
 	private Toast mToast = null;
 	private View Button01, Button02, Button03, Button04, Button05, Button06;
-	private TextView taskID = null;
-	private TextView taskName = null;
-	private TextView downloadSize = null;
-	private TextView totalSize = null;
+	//private TextView taskID = null;
+	//private TextView taskName = null;
+	//private TextView downloadSize = null;
+	//private TextView totalSize = null;
 	private TextView taskInfo = null;
+	private TextView command = null;
 	private ProgressBar progressBar = null;
 
 	private Intent mIntent = new Intent();
@@ -68,12 +69,13 @@ public class DbstarTest extends Activity implements OnClickListener {
 		Button06 = this.findViewById(R.id.Button06);
 		Button06.setOnClickListener(this);
 
-		taskID = (TextView) findViewById(R.id.taskID);
-		taskName = (TextView) findViewById(R.id.taskName);
-		downloadSize = (TextView) findViewById(R.id.downloadSize);
-		totalSize = (TextView) findViewById(R.id.totalSize);
+		//taskID = (TextView) findViewById(R.id.taskID);
+		//taskName = (TextView) findViewById(R.id.taskName);
+		//downloadSize = (TextView) findViewById(R.id.downloadSize);
+		//totalSize = (TextView) findViewById(R.id.totalSize);
 		progressBar = (ProgressBar) findViewById(R.id.progress);
 		taskInfo = (TextView) findViewById(R.id.taskInfo);
+		command = (TextView) findViewById(R.id.command);
 
 		/* start service */
 		Log.d(TAG, "startService");
@@ -82,7 +84,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 
 		/* register broadcast receiver */
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(DOWNLOAD_FINISH_ACTION);
+		filter.addAction(NOTIFY_ACTION);
 		registerReceiver(mReceiver, filter);
 
 		//mThread.start();
@@ -139,12 +141,32 @@ public class DbstarTest extends Activity implements OnClickListener {
 		case R.id.Button04:
 			if (mDbstarService != null) {
 				try {
-					mDbstarService.stopTaskInfo();
+					Intent it = mDbstarService.sendCommand(3, null, 0);
+					byte[] bytes = it.getByteArrayExtra("result");
+					if (bytes == null) {
+						Log.e(TAG, "result: null");
+					} else {
+						try {
+							String buf = new String(bytes, "utf-8");
+							Log.d(TAG, "Result: " + buf);
+							taskInfo.setText(this.getString(R.string.taskInfo) + "\n"+ buf);
+						} catch (UnsupportedEncodingException e) {
+							 e.printStackTrace();
+						}
+					}
 				} catch (RemoteException e) {
 					 e.printStackTrace();
 				}
 			}
-			showToast("stopTaskInfo");
+
+			if (mDbstarService != null) {
+				try {
+					mDbstarService.sendCommand(3, null, 0);
+				} catch (RemoteException e) {
+					 e.printStackTrace();
+				}
+			}
+			showToast("sendCommand");
 			break;
 		case R.id.Button05:
 			if (mDbstarService != null) {
@@ -197,9 +219,18 @@ public class DbstarTest extends Activity implements OnClickListener {
 
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
-			Log.d(TAG, "got broadcast: ACTION=" + action);
-			Toast.makeText(context, "got broadcast:" + action, 2000).show();
+			try {
+				String action = intent.getAction();
+				int type = intent.getIntExtra("type", 0);
+				byte[] bytes = intent.getByteArrayExtra("message");
+				String msg = new String(bytes, "utf-8");
+				Log.d(TAG, "got broadcast: ACTION=" + action);
+				Log.d(TAG, "got broadcast: type=" + type);
+				Log.d(TAG, "got broadcast: message=" + msg);
+				Toast.makeText(context, action + "(" + type + ", " + msg + ")", 2000).show();
+			} catch (UnsupportedEncodingException e) {
+				 e.printStackTrace();
+			}
 		}
 	};
 

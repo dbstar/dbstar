@@ -318,6 +318,7 @@ on boot
     chmod 0666 /sys/class/tsync/mode
     chmod 0666 /sys/class/tsync/enable
     chmod 0666 /sys/class/graphics/fb0/blank
+    chmod 0666 /sys/class/graphics/fb0/block_mode
     chmod 0666 /sys/class/graphics/fb0/order
     chmod 0666 /sys/class/graphics/fb1/blank
     chmod 0666 /sys/class/graphics/fb1/order
@@ -358,6 +359,7 @@ on boot
     chmod 0666 /dev/dvb0.dvr0
     chmod 0666 /dev/dvb0.dvr1
     chmod 0666 /dev/dvb0.dvr2
+    chmod 0666 /dev/smc0
     chmod 0666 /sys/class/stb/demux0_source
     chmod 0666 /sys/class/stb/demux1_source
     chmod 0666 /sys/class/stb/demux2_source

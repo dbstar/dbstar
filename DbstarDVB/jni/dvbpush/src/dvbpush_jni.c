@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <android/log.h>
 #include <jni.h>
+#include <pthread.h>
 
 #include "dvbpush_api.h"
 
@@ -19,7 +20,180 @@
 #define  LOGE(...)
 #endif
 
+#define NOTIFY_METHOD "postNotifyMessage"
+#define NOTIFY_METHOD_DEC "(I[B)V"
 static JavaVM* g_java_vm = NULL;
+static jclass g_server_clz = NULL;
+static jmethodID g_notify_mid = NULL;
+
+
+/* test code. */
+#define NOTIFY_TYPE_UPGRADE 1
+#define NOTIFY_TYPE_STATUS 2
+#define NOTIFY_TYPE_STATUS 3
+#define NOTIFY_MSG_UPGRADE "Upgrade Right Now!"
+
+static pthread_t s_task_tid;
+static int s_task_running = 0;
+typedef int (* dvbpush_notify_t)(int type, char *msg, int len);
+static dvbpush_notify_t dvbpush_notify;
+
+static void *task_run()
+{
+	int delay = 1000;
+	int looper = 1000;
+	static int cnt = 0;
+	int type = NOTIFY_TYPE_UPGRADE;
+	char *msg = NOTIFY_MSG_UPGRADE;
+
+	LOGD("task_run ...\n");
+	while(s_task_running) {
+		usleep(delay);
+		cnt++;
+		if (cnt >= looper) {
+			cnt = 0;
+			if (dvbpush_notify != NULL) {
+				dvbpush_notify(type, msg, strlen(msg));
+			}
+		}
+	}
+	LOGD("task_run exit!\n");
+
+	return NULL;
+}
+
+int dvbpush_task_run()
+{
+	LOGD("dvbpush_task_run()\n");
+	s_task_running = 1;
+	pthread_create(&s_task_tid, NULL, task_run, NULL);
+
+	return 0;
+}
+
+int dvbpush_task_stop()
+{
+	LOGD("dvbpush_task_stop()\n");
+	s_task_running = 0;
+
+	return 0;
+}
+
+/**
+ * cmd: 1 start taskinfo
+ * cmd: 2 stop taskinfo
+ * cmd: 3 get taskinfo
+ */
+static char *task_info = "1001\ttask_1\t19889\t200000\n" \
+	"1002\ttask_2\t299999\t4000000\n" \
+	"1003\ttask_3\t299999\t5000000\n";
+/**
+ * need implement this func in dvbpush module.
+ */
+int dvbpush_command(int cmd, char **buf, int *len)
+{
+	int ret = 0;
+
+	LOGI("dvbpush_command()\n");
+	switch (cmd) {
+	case 1:
+		LOGD("cmd:1, start taskinfo.\n");
+		break;
+	case 2:
+		LOGD("cmd:2, stop taskinfo.\n");
+		break;
+	case 3:
+		LOGD("cmd:3, get taskinfo.\n");
+		*buf = task_info;
+		*len = strlen(task_info);
+		break;
+	default:
+		break;
+	}
+
+	return ret;
+}
+
+/**
+ * need implement this func in dvbpush module.
+ */
+int dvbpush_register_notify(void *func)
+{
+	LOGD("dvbpush_register_notify\n");
+	if (func != NULL)
+		dvbpush_notify = (dvbpush_notify_t)func;
+
+	return 0;
+}
+
+int dvbpush_notify_cb(int type, char *msg, int len)
+{
+	int ret = 0;
+	int is_attached = -1;
+	JNIEnv *env = NULL;
+	int length = 0;
+	char *buffer = NULL;
+	jbyteArray bytes = NULL;
+
+	LOGI("dvbpush_notify_cb()\n");
+	ret = (*g_java_vm)->GetEnv(g_java_vm, (void**)&env, JNI_VERSION_1_6);
+	if (ret < 0) {
+		ret = (*g_java_vm)->AttachCurrentThread(g_java_vm, &env, NULL);
+		if (ret < 0) {
+			LOGE("callback handler:failed to attach current thread\n");
+			return -2;
+		}
+		is_attached = 1;
+	}
+
+	if (g_server_clz != NULL && g_notify_mid != NULL) {
+		if ((msg != NULL) && (len > 0)) {
+			buffer = msg;
+			length = len;
+			bytes = (*env)->NewByteArray(env, length);
+			(*env)->SetByteArrayRegion(env, bytes, 0, length, (jbyte *)buffer);
+		}
+		(*env)->CallStaticVoidMethod(env, g_server_clz, g_notify_mid, type, bytes);
+		//LOGD("%p[len=%d]", buffer, length);
+	}
+
+	if (is_attached > 0) {
+		(*g_java_vm)->DetachCurrentThread(g_java_vm);
+	}
+
+	return ret;
+}
+
+/*
+ * Class:     com_dbstar_DbstarDVB_DbstarService
+ * Method:    command
+ * Signature: (ILjava/lang/String;I)[B
+ */
+JNIEXPORT jbyteArray JNICALL Java_com_dbstar_DbstarDVB_DbstarService_command
+  (JNIEnv *env, jobject obj, jint cmd, jstring buf, jint len)
+{
+	int ret = 0;
+	int length = len;
+	char *buffer = NULL;
+	jbyteArray bytes = NULL;
+
+	LOGD("command(cmd=%d, buf=%p, len=%d)\n", cmd, buf, len);
+	if (NULL != buf)
+		buffer = (*env)->GetStringUTFChars(env, buf, NULL);
+
+	ret = dvbpush_command(cmd, &buffer, &length);
+	if ((ret == 0) && (length > 0)) {
+		bytes = (*env)->NewByteArray(env, length);
+		(*env)->SetByteArrayRegion(env, bytes, 0, length, (jbyte *)buffer);
+	} else {
+		bytes = NULL;
+	}
+
+	if (NULL != buf)
+		(*env)->ReleaseStringUTFChars(env, buf, buffer);
+
+	return bytes;
+}
 
 /*
  * Class:     com_dbstar_DbstarDVB_DbstarService
@@ -32,7 +206,22 @@ JNIEXPORT jint JNICALL Java_com_dbstar_DbstarDVB_DbstarService_dvbpushStart
 	int ret = 0;
 
 	LOGI("dvbpushStart()\n");
+
+	jclass clz = (*env)->GetObjectClass(env, obj);
+	g_server_clz = (*env)->NewGlobalRef(env, clz);
+	if (NULL == g_server_clz) {
+		LOGI("get server class Failed");
+		return -1;
+	}
+	g_notify_mid = (*env)->GetStaticMethodID(env, g_server_clz, NOTIFY_METHOD, NOTIFY_METHOD_DEC);
+	if (NULL == g_notify_mid) {
+		LOGI("get notify class Failed");
+		return -2;
+	}
+
 	ret = dvbpush_start();
+	ret = dvbpush_register_notify((void *)&dvbpush_notify_cb);
+	ret = dvbpush_task_run();
 
 	return ret;
 }
@@ -48,6 +237,7 @@ JNIEXPORT jint JNICALL Java_com_dbstar_DbstarDVB_DbstarService_dvbpushStop
 	int ret = 0;
 
 	LOGI("dvbpushStop()\n");
+	ret = dvbpush_task_stop();
 	ret = dvbpush_stop();
 
 	return ret;
@@ -124,4 +314,20 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 	ret = JNI_VERSION_1_6;
 
 	return ret;
+}
+
+void JNI_OnUnLoad(JavaVM* vm, void* reserved)
+{
+	JNIEnv* env = NULL;
+
+	if ((*vm)->GetEnv(vm, (void**) &env, JNI_VERSION_1_6) != JNI_OK) {
+		LOGE("OnUnLoad(), get env filed\n");
+		return;
+	}
+	LOGI("OnUnLoad() OK\n");
+
+	if (g_server_clz != NULL) {
+		(*env)->DeleteLocalRef(env, g_server_clz);
+	}
+	return;
 }

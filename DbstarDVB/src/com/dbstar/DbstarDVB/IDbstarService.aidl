@@ -7,4 +7,5 @@ interface IDbstarService{
 	int startTaskInfo();
 	int stopTaskInfo();
 	Intent getTaskInfo();
+	Intent sendCommand(int cmd, String buf, int len);
 }

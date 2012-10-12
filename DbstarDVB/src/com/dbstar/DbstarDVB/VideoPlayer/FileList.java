@@ -565,7 +565,7 @@ public class FileList extends ListActivity {
 	    bundle.putIntegerArrayList("fileDirectory_position_selected", fileDirectory_position_selected);
 	    bundle.putIntegerArrayList("fileDirectory_position_piexl", fileDirectory_position_piexl);
 	    bundle.putBoolean("backToOtherAPK", false);
-		intent.setClass(FileList.this, playermenu.class);
+		intent.setClass(FileList.this, PlayerMenu.class);
 		intent.putExtras(bundle);
 
 		if(SettingsVP.chkEnableOSD2XScale() == true)
