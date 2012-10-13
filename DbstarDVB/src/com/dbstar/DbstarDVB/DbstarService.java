@@ -25,7 +25,6 @@ import java.util.ArrayList;
 
 public class DbstarService extends Service {
 	private static final String TAG = "DbstarService";
-	private static final String NOTIFY_ACTION = "com.dbstar.DbstarDVB.NOTIFY";
 	private static String mDownloadName = "";
 	private static Context mContext = null;
 
@@ -88,10 +87,14 @@ public class DbstarService extends Service {
 
 	public static void postNotifyMessage(int type, byte[] bytes) {
 		try {
-			String buf = new String(bytes, "utf-8");
-			Log.i(TAG, "postNotifyMessage(" + type + ", [" + buf + "].");
+			if (bytes != null) {
+				String buf = new String(bytes, "utf-8");
+				Log.i(TAG, "postNotifyMessage(" + type + ", [" + buf + "].");
+			} else {
+				Log.i(TAG, "postNotifyMessage(" + type + " message==null");
+			}
 			Intent it = new Intent();
-			it.setAction(NOTIFY_ACTION);
+			it.setAction(DbstarServiceApi.ACTION_NOTIFY);
 			it.putExtra("type", type);
 			it.putExtra("message", bytes);
 			if (DbstarService.mContext != null) {

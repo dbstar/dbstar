@@ -1,6 +1,10 @@
 package com.dbstar.DbstarDVB;
 
 public class DbstarServiceApi {
+	
+	public static final String ACTION_NOTIFY = "com.dbstar.DbstarDVB.NOTIFY";
+	
+	
 	/* send command from UI to server */
 	public static final int DBSTAR_COMMAND                  = 0x00000;
 	/* receive notification from server to UI */

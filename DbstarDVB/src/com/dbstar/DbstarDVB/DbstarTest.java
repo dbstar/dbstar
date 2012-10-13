@@ -25,7 +25,6 @@ import java.io.UnsupportedEncodingException;
 
 public class DbstarTest extends Activity implements OnClickListener {
 	private static final String TAG = "DbsterTest";
-	private static final String NOTIFY_ACTION = "com.dbstar.DbstarDVB.NOTIFY";
 
 	private int mUpdateType = 0;
 	private Toast mToast = null;
@@ -88,7 +87,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 
 		/* register broadcast receiver */
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(NOTIFY_ACTION);
+		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
 		registerReceiver(mReceiver, filter);
 
 		// mThread.start();
@@ -189,7 +188,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 
 	private void registerReceiver() {
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(NOTIFY_ACTION);
+		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
 
 		registerReceiver(mReceiver, filter);
 	}
@@ -198,7 +197,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 		public void onReceive(Context context, Intent intent) {
 			try {
 				String action = intent.getAction();
-				if (action.equals(NOTIFY_ACTION)) {
+				if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
 					int type = intent.getIntExtra("type", 0);
 					byte[] bytes = intent.getByteArrayExtra("message");
 					String msg = new String(bytes, "utf-8");
