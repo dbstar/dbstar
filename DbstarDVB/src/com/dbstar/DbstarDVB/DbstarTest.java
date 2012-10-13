@@ -135,7 +135,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 		case R.id.Button03:
 			if (mDbstarService != null) {
 				try {
-					mDbstarService.sendCommand(1, null, 0);
+					mDbstarService.startTaskInfo();
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
@@ -145,7 +145,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 		case R.id.Button04:
 			if (mDbstarService != null) {
 				try {
-					mDbstarService.sendCommand(2, null, 0);
+					mDbstarService.stopTaskInfo();
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
@@ -155,7 +155,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 		case R.id.Button05:
 			if (mDbstarService != null) {
 				try {
-					Intent it = mDbstarService.sendCommand(3, null, 0);
+					Intent it = mDbstarService.getTaskInfo();
 					byte[] bytes = it.getByteArrayExtra("result");
 					if (bytes == null) {
 						Log.e(TAG, "result: null");
