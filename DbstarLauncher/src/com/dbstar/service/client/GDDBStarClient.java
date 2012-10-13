@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.IDbstarService;
 import com.dbstar.model.ReceiveEntry;
 
@@ -39,10 +40,10 @@ public class GDDBStarClient {
 
 			if (mDbStarServiceTargetState == DBSTARSERVICE_START
 					&& mDbStarServiceState != DBSTARSERVICE_START) {
-				startDvbpush();
+				initDvbpush();
 			} else if (mDbStarServiceTargetState == DBSTARSERVICE_STOP
 					&& mDbStarServiceState != DBSTARSERVICE_STOP) {
-				stopDvbpush();
+				uninitDvbpush();
 			}
 		}
 
@@ -73,7 +74,7 @@ public class GDDBStarClient {
 	public void startDvbpush() {
 		if (mDbstarService != null) {
 			try {
-				mDbstarService.startDvbpush();
+				mDbstarService.initDvbpush();
 				mDbStarServiceState = DBSTARSERVICE_START;
 
 				Log.d(TAG, "+++++++++++startDvbpush+++++++++++");
@@ -89,7 +90,7 @@ public class GDDBStarClient {
 	public void stopDvbpush() {
 		if (mDbstarService != null) {
 			try {
-				mDbstarService.stopDvbpush();
+				mDbstarService.uninitDvbpush();
 				mDbStarServiceState = DBSTARSERVICE_STOP;
 				Log.d(TAG, "+++++++++++ stopDvbpush +++++++++++");
 			} catch (RemoteException e) {
@@ -104,7 +105,7 @@ public class GDDBStarClient {
 		boolean result = false;
 		if (mDbstarService != null) {
 			try {
-				mDbstarService.startTaskInfo();
+				Intent it = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO_START, null, 0);
 				result = true;
 				Log.d(TAG, "+++++++++++ startTaskInfo +++++++++++");
 			} catch (RemoteException e) {
@@ -119,7 +120,7 @@ public class GDDBStarClient {
 		boolean result = false;
 		if (mDbstarService != null) {
 			try {
-				mDbstarService.stopTaskInfo();
+				Intent it = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO_STOP, null, 0);
 				result = true;
 				Log.d(TAG, "+++++++++++ stopTaskInfo +++++++++++");
 			} catch (RemoteException e) {
@@ -137,43 +138,43 @@ public class GDDBStarClient {
 
 		Log.d(TAG, "+++++++++++ getTaskInfo +++++++++++");
 
-//		if (mDbstarService == null)
-//			return entries;
-//
-//		try {
-//			Intent intent = mDbstarService.getTaskInfo();
-//
-//			byte[] bytes = intent.getByteArrayExtra("taskinfo");
-//
-//			if (bytes != null) {
-//				String info = null;
-//				try {
-//					info = new String(bytes, "utf-8");
-//					// Log.d(TAG, "TaskInfo: " + info);
-//				} catch (UnsupportedEncodingException e) {
-//					e.printStackTrace();
-//				}
-//
-//				String[] items = null;
-//				if (info != null) {
-//					items = info.split("\n");
-//				}
-//
-//				if (items != null) {
-//					entries = new ReceiveEntry[items.length];
-//
-//					for (int i = 0; i < items.length; i++) {
-//						entries[i] = createEntry(items[i]);
-//					}
-//
-//				}
-//
-//			}
-//		} catch (RemoteException e) {
-//			e.printStackTrace();
-//		}
+		if (mDbstarService == null)
+			return entries;
 
-		entries = test();
+		try {
+			Intent intent = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO, null, 0);
+
+			byte[] bytes = intent.getByteArrayExtra("result");
+
+			if (bytes != null) {
+				String info = null;
+				try {
+					info = new String(bytes, "utf-8");
+					// Log.d(TAG, "TaskInfo: " + info);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+
+				String[] items = null;
+				if (info != null) {
+					items = info.split("\n");
+				}
+
+				if (items != null) {
+					entries = new ReceiveEntry[items.length];
+
+					for (int i = 0; i < items.length; i++) {
+						entries[i] = createEntry(items[i]);
+					}
+
+				}
+
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+//		entries = test();
 
 		return entries;
 	}
