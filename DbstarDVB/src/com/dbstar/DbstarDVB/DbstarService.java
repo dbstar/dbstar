@@ -86,16 +86,20 @@ public class DbstarService extends Service {
 		public int startTaskInfo() throws RemoteException {
 			Log.d(TAG, "startTaskInfoGet()");
 			byte[] bytes = command(1, null, 0);
-			int ret = Integer.valueOf(new String(bytes));
-
+			int ret = 0;
+			if (bytes != null) {
+				ret = Integer.valueOf(new String(bytes));
+			}
 			return ret;
 		}
 
 		public int stopTaskInfo() throws RemoteException {
 			Log.d(TAG, "stopTaskInfoGet()");
 			byte[] bytes = command(2, null, 0);
-			int ret = Integer.valueOf(new String(bytes));
-
+			int ret = 0;
+			if (bytes != null) {
+				ret = Integer.valueOf(new String(bytes));
+			}
 			return ret;
 		}
 
