@@ -40,10 +40,10 @@ public class GDDBStarClient {
 
 			if (mDbStarServiceTargetState == DBSTARSERVICE_START
 					&& mDbStarServiceState != DBSTARSERVICE_START) {
-				initDvbpush();
+				startDvbpush();
 			} else if (mDbStarServiceTargetState == DBSTARSERVICE_STOP
 					&& mDbStarServiceState != DBSTARSERVICE_STOP) {
-				uninitDvbpush();
+				stopDvbpush();
 			}
 		}
 
@@ -105,7 +105,8 @@ public class GDDBStarClient {
 		boolean result = false;
 		if (mDbstarService != null) {
 			try {
-				Intent it = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO_START, null, 0);
+				Intent it = mDbstarService.sendCommand(
+						DbstarServiceApi.CMD_DVBPUSH_GETINFO_START, null, 0);
 				result = true;
 				Log.d(TAG, "+++++++++++ startTaskInfo +++++++++++");
 			} catch (RemoteException e) {
@@ -120,7 +121,8 @@ public class GDDBStarClient {
 		boolean result = false;
 		if (mDbstarService != null) {
 			try {
-				Intent it = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO_STOP, null, 0);
+				Intent it = mDbstarService.sendCommand(
+						DbstarServiceApi.CMD_DVBPUSH_GETINFO_STOP, null, 0);
 				result = true;
 				Log.d(TAG, "+++++++++++ stopTaskInfo +++++++++++");
 			} catch (RemoteException e) {
@@ -142,7 +144,8 @@ public class GDDBStarClient {
 			return entries;
 
 		try {
-			Intent intent = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO, null, 0);
+			Intent intent = mDbstarService.sendCommand(
+					DbstarServiceApi.CMD_DVBPUSH_GETINFO, null, 0);
 
 			byte[] bytes = intent.getByteArrayExtra("result");
 
@@ -174,7 +177,7 @@ public class GDDBStarClient {
 			e.printStackTrace();
 		}
 
-//		entries = test();
+		// entries = test();
 
 		return entries;
 	}
@@ -201,7 +204,7 @@ public class GDDBStarClient {
 			}
 
 		}
-		
+
 		return entries;
 	}
 
