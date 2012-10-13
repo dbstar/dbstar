@@ -131,7 +131,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 		case R.id.Button03:
 			if (mDbstarService != null) {
 				try {
-					mDbstarService.startTaskInfo();
+					mDbstarService.sendCommand(1, null, 0);
 				} catch (RemoteException e) {
 					 e.printStackTrace();
 				}
@@ -139,6 +139,16 @@ public class DbstarTest extends Activity implements OnClickListener {
 			showToast("startTaskInfo");
 			break;
 		case R.id.Button04:
+			if (mDbstarService != null) {
+				try {
+					mDbstarService.sendCommand(2, null, 0);
+				} catch (RemoteException e) {
+					 e.printStackTrace();
+				}
+			}
+			showToast("stopTaskInfo");
+			break;
+		case R.id.Button05:
 			if (mDbstarService != null) {
 				try {
 					Intent it = mDbstarService.sendCommand(3, null, 0);
@@ -150,38 +160,6 @@ public class DbstarTest extends Activity implements OnClickListener {
 							String buf = new String(bytes, "utf-8");
 							Log.d(TAG, "Result: " + buf);
 							taskInfo.setText(this.getString(R.string.taskInfo) + "\n"+ buf);
-						} catch (UnsupportedEncodingException e) {
-							 e.printStackTrace();
-						}
-					}
-				} catch (RemoteException e) {
-					 e.printStackTrace();
-				}
-			}
-
-			if (mDbstarService != null) {
-				try {
-					mDbstarService.sendCommand(3, null, 0);
-				} catch (RemoteException e) {
-					 e.printStackTrace();
-				}
-			}
-			showToast("sendCommand");
-			break;
-		case R.id.Button05:
-			if (mDbstarService != null) {
-				try {
-					Intent it = mDbstarService.getTaskInfo();
-					byte[] bytes = it.getByteArrayExtra("taskinfo");
-					if (bytes == null) {
-						Log.e(TAG, "TaskInfo: null");
-					} else {
-						try {
-							String info = new String(bytes, "utf-8");
-							String info2 = new String(bytes, "GB2312");
-							Log.d(TAG, "TaskInfo: " + info);
-							Log.d(TAG, "TaskInfo: " + info2);
-							taskInfo.setText(this.getString(R.string.taskInfo) + ": "+ info);
 						} catch (UnsupportedEncodingException e) {
 							 e.printStackTrace();
 						}
