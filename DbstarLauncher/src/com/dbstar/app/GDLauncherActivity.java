@@ -1521,6 +1521,20 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		return builder.create();
 	}
 
+	Handler mHanlder = new Handler();
+	
+	void showAlertDlg() {
+		mHanlder.post(new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				mUpgradeAlertDlg.show();
+			}
+			
+		});
+	}
+	
 	void notifyUpgrade() {
 		if (mUpgradePackageFile == null || mUpgradePackageFile.isEmpty())
 			return;
@@ -1531,7 +1545,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		if (mUpgradeAlertDlg != null) {
 			Log.d(TAG, "++++++show alert dlg");
-			mUpgradeAlertDlg.show();
+//			mUpgradeAlertDlg.show();
+			showAlertDlg();
 		}
 	}
 
