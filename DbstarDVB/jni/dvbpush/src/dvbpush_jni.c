@@ -98,14 +98,16 @@ int dvbpush_command(int cmd, char **buf, int *len)
 	switch (cmd) {
 	case 1:
 		LOGD("cmd:1, start taskinfo.\n");
+		dvbpush_getinfo_start();
 		break;
 	case 2:
 		LOGD("cmd:2, stop taskinfo.\n");
+		dvbpush_getinfo_stop();
 		break;
 	case 3:
 		LOGD("cmd:3, get taskinfo.\n");
-		*buf = task_info;
-		*len = strlen(task_info);
+		dvbpush_getinfo(buf, len);
+		LOGD("addr of buf: %p, len=%d\n", *buf, *len);
 		break;
 	default:
 		break;
