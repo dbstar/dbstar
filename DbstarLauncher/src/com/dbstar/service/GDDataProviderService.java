@@ -169,12 +169,13 @@ public class GDDataProviderService extends Service {
 		mMainThreadId = Process.myTid();
 		mMainThreadPriority = Process.getThreadPriority(mMainThreadId);
 
+		mHandler = new SystemEventHandler();
+
 		mConfigure = new GDSystemConfigure();
 		mDataModel = new GDDataModel();
 		mNetModel = new GDNetModel();
 		mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
 		mDBStarClient = new GDDBStarClient(this);
-		mHandler = new SystemEventHandler();
 
 		mTaskQueue = new LinkedList<RequestTask>();
 		mFinishedTaskQueue = new LinkedList<RequestTask>();
