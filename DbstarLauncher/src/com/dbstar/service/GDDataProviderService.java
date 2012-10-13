@@ -1231,7 +1231,7 @@ public class GDDataProviderService extends Service {
 					Log.d(TAG, "onReceive type " + type);
 
 					switch (type) {
-					case DbstarServiceApi.MSG_UPGRADE: {
+					case DbstarServiceApi.UPGRADE_NEW_VER: {
 						byte[] bytes = intent.getByteArrayExtra("message");
 						if (bytes != null) {
 							String packageFile = "";
