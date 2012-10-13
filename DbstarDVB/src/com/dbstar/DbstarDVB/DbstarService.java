@@ -52,20 +52,26 @@ public class DbstarService extends Service {
 
 	public IBinder onBind(Intent intent) {
 		Log.d(TAG, "onBind");
-        return mBinder;
-    }
+		return mBinder;
+	}
+
 	public boolean onUnbind(Intent intent) {
 		Log.d(TAG, "onUnbind");
 		return true;
 	}
 
 	private native int dvbpushStart();
+
 	private native int dvbpushStop();
+
 	private native int taskinfoStart();
+
 	private native int taskinfoStop();
+
 	private native byte[] taskinfoGet();
+
 	private native byte[] command(int cmd, String buf, int len);
-	
+
 	private final IDbstarService.Stub mBinder = new IDbstarService.Stub() {
 		public int startDvbpush() throws RemoteException {
 			Log.d(TAG, "startDvbpush()");
@@ -79,25 +85,32 @@ public class DbstarService extends Service {
 
 		public int startTaskInfo() throws RemoteException {
 			Log.d(TAG, "startTaskInfoGet()");
-			return taskinfoStart();
+			byte[] bytes = command(1, null, 0);
+			int ret = Integer.valueOf(new String(bytes));
+
+			return ret;
 		}
 
 		public int stopTaskInfo() throws RemoteException {
 			Log.d(TAG, "stopTaskInfoGet()");
-			return taskinfoStop();
+			byte[] bytes = command(2, null, 0);
+			int ret = Integer.valueOf(new String(bytes));
+
+			return ret;
 		}
 
-		public Intent getTaskInfo() throws RemoteException { 
+		public Intent getTaskInfo() throws RemoteException {
 			Log.d(TAG, "getTaskInfo()");
 
-			byte[] bytes = taskinfoGet();
+			byte[] bytes = command(3, null, 0);
 			Intent it = new Intent();
-			it.putExtra("taskinfo", bytes);
+			it.putExtra("result", bytes);
 
 			return it;
 		}
 
-        public Intent sendCommand(int cmd, String buf, int len) throws RemoteException { 
+		public Intent sendCommand(int cmd, String buf, int len)
+				throws RemoteException {
 			Log.d(TAG, "sendCommand()");
 			byte[] bytes = command(cmd, buf, len);
 			Intent it = new Intent();
@@ -109,7 +122,7 @@ public class DbstarService extends Service {
 
 	public static void postNotifyMessage(int type, byte[] bytes) {
 		try {
-			String  buf = new String(bytes, "utf-8");
+			String buf = new String(bytes, "utf-8");
 			Log.i(TAG, "postNotifyMessage(" + type + ", [" + buf + "].");
 			Intent it = new Intent();
 			it.setAction(NOTIFY_ACTION);
@@ -119,7 +132,7 @@ public class DbstarService extends Service {
 				DbstarService.mContext.sendBroadcast(it);
 			}
 		} catch (UnsupportedEncodingException e) {
-			 e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 
