@@ -380,6 +380,14 @@ public class GDDataProviderService extends Service {
 				}
 				break;
 			}
+			
+			case GDCommon.MSG_SYSTEM_UPGRADE: {
+				String packageFile = msg.getData().getString(GDCommon.KeyPackgeFile);
+				mApplicationObserver.handleNotifiy(
+						GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
+				
+				break;
+			}
 
 			default:
 				break;
@@ -1243,8 +1251,16 @@ public class GDDataProviderService extends Service {
 							}
 
 							Log.d(TAG, "onReceive packageFile " + packageFile);
-							mApplicationObserver.handleNotifiy(
-									GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
+//							mApplicationObserver.handleNotifiy(
+//									GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
+							
+							Bundle data = new Bundle();
+							data.putString(GDCommon.KeyPackgeFile, packageFile);
+							
+							Message msg = mHandler.obtainMessage(GDCommon.MSG_SYSTEM_UPGRADE);
+							msg.setData(data);
+							mHandler.sendMessage(msg);
+							
 						}
 						break;
 					}
