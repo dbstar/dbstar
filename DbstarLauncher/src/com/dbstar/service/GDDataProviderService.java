@@ -1,5 +1,6 @@
 package com.dbstar.service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -1142,7 +1143,7 @@ public class GDDataProviderService extends Service {
 
 	private void reqisterSystemMessageReceiver() {
 		IntentFilter filter = new IntentFilter();
-		filter.addAction("");
+		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
 
@@ -1221,18 +1222,30 @@ public class GDDataProviderService extends Service {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 
+			Log.d(TAG, "onReceive System msg " + action);
+
 			if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
 
 				if (mApplicationObserver != null) {
 					int type = intent.getIntExtra("type", 0);
+					Log.d(TAG, "onReceive type " + type);
 
 					switch (type) {
 					case DbstarServiceApi.MSG_UPGRADE: {
 						byte[] bytes = intent.getByteArrayExtra("message");
-						String packageFile = new String(bytes);
+						if (bytes != null) {
+							String packageFile = "";
 
-						mApplicationObserver.handleNotifiy(
-								GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
+							try {
+								packageFile = new String(bytes, "utf-8");
+							} catch (UnsupportedEncodingException e) {
+								e.printStackTrace();
+							}
+
+							Log.d(TAG, "onReceive packageFile " + packageFile);
+							mApplicationObserver.handleNotifiy(
+									GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
+						}
 						break;
 					}
 					default:
