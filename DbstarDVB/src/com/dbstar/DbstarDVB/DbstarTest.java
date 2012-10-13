@@ -55,8 +55,6 @@ public class DbstarTest extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
 
-		registerReceiver();
-		
 		Button01 = this.findViewById(R.id.Button01);
 		Button01.setOnClickListener(this);
 		Button02 = this.findViewById(R.id.Button02);
@@ -132,15 +130,55 @@ public class DbstarTest extends Activity implements OnClickListener {
 			showToast("uninitDvbpush");
 			break;
 		case R.id.Button03:
-			showToast("Button03");
+			showToast("start getTaskinfo");
+			if (mDbstarService != null) {
+				try {
+					Intent it = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO_START, null, 0);
+					byte[] bytes = it.getByteArrayExtra("result");
+					if (bytes == null) {
+						Log.e(TAG, "result: null");
+					} else {
+						try {
+							String buf = new String(bytes, "utf-8");
+							Log.d(TAG, "Result: " + buf);
+							taskInfo.setText(this.getString(R.string.taskInfo)
+									+ "\n" + buf);
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						}
+					}
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			}
 			break;
 		case R.id.Button04:
-			showToast("Button04");
+			showToast("stop getTaskinfo");
+			if (mDbstarService != null) {
+				try {
+					Intent it = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO_STOP, null, 0);
+					byte[] bytes = it.getByteArrayExtra("result");
+					if (bytes == null) {
+						Log.e(TAG, "result: null");
+					} else {
+						try {
+							String buf = new String(bytes, "utf-8");
+							Log.d(TAG, "Result: " + buf);
+							taskInfo.setText(this.getString(R.string.taskInfo)
+									+ "\n" + buf);
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						}
+					}
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			}
 			break;
 		case R.id.Button05:
 			if (mDbstarService != null) {
 				try {
-					Intent it = mDbstarService.sendCommand(0x32, null, 0);
+					Intent it = mDbstarService.sendCommand(DbstarServiceApi.CMD_DVBPUSH_GETINFO, null, 0);
 					byte[] bytes = it.getByteArrayExtra("result");
 					if (bytes == null) {
 						Log.e(TAG, "result: null");
@@ -184,13 +222,6 @@ public class DbstarTest extends Activity implements OnClickListener {
 			mToast = Toast.makeText(this, null, Toast.LENGTH_SHORT);
 		mToast.setText(text);
 		mToast.show();
-	}
-
-	private void registerReceiver() {
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
-
-		registerReceiver(mReceiver, filter);
 	}
 
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {

@@ -3,8 +3,8 @@
 
 <string name="hello">DbstarTest</string>
 
-    <string name="Button01">Start Dvbpush </string>
-    <string name="Button02">Stop Dvbpush</string>
+    <string name="Button01">Init Dvbpush </string>
+    <string name="Button02">Uninit Dvbpush</string>
     <string name="Button03">Start Taskinfo </string>
     <string name="Button04">Stop Taskinfo</string>
     <string name="Button05">Get Taskinfo</string>
