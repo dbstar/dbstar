@@ -1436,6 +1436,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mVideoView.setBackgroundDrawable(d);
 
 		updatePowerView(mPowerConsumption, mPowerCost);
+
+		mUpgradeAlertDlg = createAlertDlg();
 	}
 
 	private void initializeEngine() {
@@ -1487,17 +1489,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 	}
 
-	void notifyUpgrade() {
-		if (mUpgradePackageFile == null || mUpgradePackageFile.isEmpty())
-			return;
+	AlertDialog mUpgradeAlertDlg = null;
 
-		File packageFile = new File(mUpgradePackageFile);
-		if (packageFile == null || !packageFile.exists())
-			return;
-
+	AlertDialog createAlertDlg() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(R.string.dialog_upgrade_title);
-		builder.setMessage(R.string.dialog_upgrade_notes + " " + mUpgradePackageFile);
+		builder.setMessage(R.string.dialog_upgrade_notes + " "
+				+ mUpgradePackageFile);
 
 		builder.setPositiveButton(R.string.button_text_ok,
 				new OnClickListener() {
@@ -1520,7 +1518,21 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 				});
 
-		builder.create().show();
+		return builder.create();
+	}
+
+	void notifyUpgrade() {
+		if (mUpgradePackageFile == null || mUpgradePackageFile.isEmpty())
+			return;
+
+		File packageFile = new File(mUpgradePackageFile);
+		if (packageFile == null || !packageFile.exists())
+			return;
+
+		if (mUpgradeAlertDlg != null) {
+			Log.d(TAG, "++++++show alert dlg");
+			mUpgradeAlertDlg.show();
+		}
 	}
 
 	void rebootInstallPackage(String packageFile) {
