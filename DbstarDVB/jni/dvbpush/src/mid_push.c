@@ -368,6 +368,7 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 			*p = s_dvbpush_info;
 			*len = strlen(s_dvbpush_info);
 			DEBUG("%s\n", s_dvbpush_info);
+			
 			return 0;
 		}
 		else

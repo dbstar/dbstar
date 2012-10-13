@@ -29,47 +29,45 @@ static jmethodID g_notify_mid = NULL;
 
 /* test code. */
 #define NOTIFY_TYPE_UPGRADE 1
-#define NOTIFY_TYPE_STATUS 2
-#define NOTIFY_TYPE_STATUS 3
 #define NOTIFY_MSG_UPGRADE "Upgrade Right Now!"
 
 static pthread_t s_task_tid;
 static int s_task_running = 0;
-typedef int (* dvbpush_notify_t)(int type, char *msg, int len);
-static dvbpush_notify_t dvbpush_notify;
+//typedef int (* dvbpush_notify_t)(int type, char *msg, int len);
+//static dvbpush_notify_t dvbpush_notify;
 
-static void *task_run()
-{
-	int delay = 1000;
-	int looper = 1000;
-	static int cnt = 0;
-	int type = NOTIFY_TYPE_UPGRADE;
-	char *msg = NOTIFY_MSG_UPGRADE;
+//static void *task_run()
+//{
+//	int delay = 1000;
+//	int looper = 1000;
+//	static int cnt = 0;
+//	int type = NOTIFY_TYPE_UPGRADE;
+//	char *msg = NOTIFY_MSG_UPGRADE;
+//
+//	LOGD("task_run ...\n");
+//	while(s_task_running) {
+//		usleep(delay);
+//		cnt++;
+//		if (cnt >= looper) {
+//			cnt = 0;
+//			if (dvbpush_notify != NULL) {
+//				dvbpush_notify(type, msg, strlen(msg));
+//			}
+//		}
+//	}
+//	LOGD("task_run exit!\n");
+//
+//	return NULL;
+//}
 
-	LOGD("task_run ...\n");
-	while(s_task_running) {
-		usleep(delay);
-		cnt++;
-		if (cnt >= looper) {
-			cnt = 0;
-			if (dvbpush_notify != NULL) {
-				dvbpush_notify(type, msg, strlen(msg));
-			}
-		}
-	}
-	LOGD("task_run exit!\n");
-
-	return NULL;
-}
-
-int dvbpush_task_run()
-{
-	LOGD("dvbpush_task_run()\n");
-	s_task_running = 1;
-	pthread_create(&s_task_tid, NULL, task_run, NULL);
-
-	return 0;
-}
+//int dvbpush_task_run()
+//{
+//	LOGD("dvbpush_task_run()\n");
+//	s_task_running = 1;
+//	pthread_create(&s_task_tid, NULL, task_run, NULL);
+//
+//	return 0;
+//}
 
 int dvbpush_task_stop()
 {
@@ -95,23 +93,23 @@ int dvbpush_command(int cmd, char **buf, int *len)
 	int ret = 0;
 
 	LOGI("dvbpush_command()\n");
-	switch (cmd) {
-	case 1:
-		LOGD("cmd:1, start taskinfo.\n");
-		dvbpush_getinfo_start();
-		break;
-	case 2:
-		LOGD("cmd:2, stop taskinfo.\n");
-		dvbpush_getinfo_stop();
-		break;
-	case 3:
-		LOGD("cmd:3, get taskinfo.\n");
-		dvbpush_getinfo(buf, len);
-		LOGD("addr of buf: %p, len=%d\n", *buf, *len);
-		break;
-	default:
-		break;
-	}
+//	switch (cmd) {
+//	case 1:
+//		LOGD("cmd:1, start taskinfo.\n");
+//		dvbpush_getinfo_start();
+//		break;
+//	case 2:
+//		LOGD("cmd:2, stop taskinfo.\n");
+//		dvbpush_getinfo_stop();
+//		break;
+//	case 3:
+//		LOGD("cmd:3, get taskinfo.\n");
+//		dvbpush_getinfo(buf, len);
+//		LOGD("addr of buf: %p, len=%d\n", *buf, *len);
+//		break;
+//	default:
+//		break;
+//	}
 
 	return ret;
 }
@@ -119,14 +117,14 @@ int dvbpush_command(int cmd, char **buf, int *len)
 /**
  * need implement this func in dvbpush module.
  */
-int dvbpush_register_notify(void *func)
-{
-	LOGD("dvbpush_register_notify\n");
-	if (func != NULL)
-		dvbpush_notify = (dvbpush_notify_t)func;
-
-	return 0;
-}
+//int dvbpush_register_notify(void *func)
+//{
+//	LOGD("dvbpush_register_notify\n");
+//	if (func != NULL)
+//		dvbpush_notify = (dvbpush_notify_t)func;
+//
+//	return 0;
+//}
 
 int dvbpush_notify_cb(int type, char *msg, int len)
 {
@@ -221,9 +219,10 @@ JNIEXPORT jint JNICALL Java_com_dbstar_DbstarDVB_DbstarService_dvbpushStart
 		return -2;
 	}
 
-	ret = dvbpush_start();
+	ret = dvbpush_init();
+	LOGI("set notify callback function\n");
 	ret = dvbpush_register_notify((void *)&dvbpush_notify_cb);
-	ret = dvbpush_task_run();
+	//ret = dvbpush_task_run();
 
 	return ret;
 }
@@ -240,7 +239,7 @@ JNIEXPORT jint JNICALL Java_com_dbstar_DbstarDVB_DbstarService_dvbpushStop
 
 	LOGI("dvbpushStop()\n");
 	ret = dvbpush_task_stop();
-	ret = dvbpush_stop();
+	ret = dvbpush_uninit();
 
 	return ret;
 }

@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 
 #include "common.h"
+#include "dvbpush_api.h"
 
 static int 			s_settingInitFlag = 0;
 
@@ -27,6 +28,8 @@ static int			s_prog_data_pid = 0;
 static char			s_database_uri[64];
 static int			s_debug_level = 0;
 static char			s_xml[128];
+
+static dvbpush_notify_t dvbpush_notify;
 
 /* define some general interface function here */
 
@@ -450,3 +453,28 @@ int ifconfig_get(char *interface_name, char *ip, char *status, char *mac)
 }
 
 
+/*
+ 通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
+ 实际调用参见dvbpush_jni.c
+*/
+int dvbpush_register_notify(void *func)
+{
+	DEBUG("dvbpush_register_notify\n");
+	if (func != NULL)
+		dvbpush_notify = (dvbpush_notify_t)func;
+
+	return 0;
+}
+
+/*
+ 底层通过此函数发送消息到上层。
+ 
+*/
+int msg_send2_UI(int type, char *msg, int len)
+{
+	if (dvbpush_notify != NULL){
+		return dvbpush_notify(type, msg, len);
+	}
+	else
+		return -1;
+}

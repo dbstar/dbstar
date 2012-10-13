@@ -85,7 +85,7 @@ void *main_thread(void *data)
 	return NULL;
 }
 
-int dvbpush_start()
+int dvbpush_init()
 {
 	DEBUG("dvbpush start...\n");
 	pthread_create(&tid_main, NULL, main_thread, NULL);
@@ -94,7 +94,7 @@ int dvbpush_start()
 	return 0;
 }
 
-int dvbpush_stop()
+int dvbpush_uninit()
 {
 	DEBUG("dvbpush stop...\n");
 	
