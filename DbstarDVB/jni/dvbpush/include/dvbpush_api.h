@@ -2,53 +2,42 @@
 #ifndef __DVBPUSH_API_H__
 #define __DVBPUSH_API_H__
 
-/*
- 小于0x1000的信息属于全局信息，不属于某个模块。
- 属于模块的信息由四个16进制数字组成，前两位标识模块，后两位区分消息。
-*/
+typedef enum {
+	DBSTAR_COMMAND                  = 0x00000,
+	DBSTAR_NOTIFY                   = 0xF0000,
 
-typedef enum{
-	DBSTAR_JNI_CMD_MIN					= -1,
+	CMD_NETWORK_DISCONNECT	        = 0x00010,    // 网络断开
+	CMD_NETWORK_CONNECT             = 0x00011,    // 网络恢复连接
 	
-	DBSTAR_JNI_CMD_NETWORK_DISCONNECT	= 0x10,		// 网络断开
-	DBSTAR_JNI_CMD_NETWORK_CONNECT		= 0x11,		// 网络恢复连接
+	CMD_DISK_MOUNT                  = 0x00021,    // 硬盘插上可用
+	CMD_DISK_UNMOUNT                = 0x00022,    // 硬盘拔掉
 	
-	DBSTAR_JNI_CMD_HD_UNMOUNT			= 0x20,		// 硬盘拔掉
-	DBSTAR_JNI_CMD_HD_MOUNT				= 0x21,		// 硬盘插上可用
+	CMD_DVBPUSH_GETINFO_START       = 0x00031,    // 开始获取push下载状态
+	CMD_DVBPUSH_GETINFO				= 0x00032,    // 获取push下载状态
+	CMD_DVBPUSH_GETINFO_STOP        = 0x00033,    // 停止获取push下载状态
 	
-	DVBPUSH_GETINFO_STOP				= 0x1000,	// 停止获取push下载状态
-	DVBPUSH_GETINFO_START				= 0x1001, 	// 开始获取push下载状态
-	DVBPUSH_GETINFO						= 0x1002, 	// 获取push下载状态
+	CMD_UPGRADE_CANCEL              = 0x00041,    // 用户取消升级
+	CMD_UPGRADE_CONFIRM             = 0x00042,    // 用户确认升级
+	CMD_UPGRADE_TIMEOUT             = 0x00043,    // 对用操作对话框超时
 	
-	UPGRADE_CANCEL						= 0x1100,	// 用户取消升级
-	UPGRADE_CONFIRM						= 0x1101,	// 用户确认升级
-	UPGRADE_TIMEOUT						= 0x1102,	// 对用操作对话框超时
-	
-	PUSH_REJECT							= 0x1200,	 // 用户拒绝接收的成品Publication
-	
-	DBSTAR_JNI_CMD_MAX
-}DBSTAR_JNI_CMD_E;
+	CMD_PUSH_REJECT                 = 0x00051,    // 用户拒绝接收的成品Publication
+	CMD_MAX                         = 0x0FFFF,
 
+	MSG_MARQUEE                     = 0x10000,    // 跑马灯
+	MSG_UPGRADE                     = 0x20000,    // 升级成功
+	MSG_STATUS						= 0x30000,    // 信息状态提示
+	MSG_ERROR                       = 0x40000,    // 错误提示
 
-typedef enum{
-	DBSTAR_JNI_NTF_MIN					= -1,
+	STATUS_DVBPUSH_INIT_FAILED      = 0x30010,    // dvbpush初始化失败
+	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011,    // dvbpush初始化成功
 	
-	DBSTAR_DVBPUSH_INIT_FAILED			= 0x10,		// dvbpush初始化失败
-	DBSTAR_DVBPUSH_INIT_SUCCESS			= 0x11,		// dvbpush初始化成功
-	
-	DBSTAR_MARQUEE						= 0x100,	// 跑马灯
-	DBSTAR_ERROR						= 0x101,	// 错误提示
-	DBSTAR_STATUS						= 0x102,	// 信息状态提示
-	
-	UPGRADE_NEW_VER_FORCE				= 0x1100,	// 有新版本到来，强制升级
-	UPGRADE_NEW_VER						= 0x1101,	// 有新版本到来，用户选择升级
-	UPGRADE_START						= 0x1102,	// 开始升级
-	UPGRADE_PERCENT						= 0x1103,	// 升级进度百分比
-	UPGRADE_FAILED						= 0x1104,	// 升级失败
-	UPGRADE_SUCCESS						= 0x1105,	// 升级成功
-	
-	DBSTAR_JNI_NTF_MAX
-}DBSTAR_JNI_NTF_E;
+	UPGRADE_NEW_VER                 = 0x20001,     // 有新版本到来，用户选择升级
+	UPGRADE_NEW_VER_FORCE           = 0x20002,     // 有新版本到来，强制升级
+	UPGRADE_START                   = 0x20003,     // 开始升级
+	UPGRADE_PERCENT                 = 0x20004,     // 升级进度百分比
+	UPGRADE_SUCCESS                 = 0x21000,     // 升级成功
+	UPGRADE_FAILED                  = 0x21001,     // 升级失败
+}DBSTAR_CMD_MSG_E;
 
 typedef int (* dvbpush_notify_t)(int type, char *msg, int len);
 

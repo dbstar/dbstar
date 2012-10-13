@@ -478,3 +478,19 @@ int msg_send2_UI(int type, char *msg, int len)
 	else
 		return -1;
 }
+
+int dvbpush_command(int cmd, char **buf, int *len)
+{
+	int ret = 0;
+
+	DEBUG("dvbpush_command(cmd=%d)\n", cmd);
+	switch (cmd) {
+	case CMD_DVBPUSH_GETINFO:
+		dvbpush_getinfo(buf, len);
+		break;
+	default:
+		break;
+	}
+
+	return ret;
+}

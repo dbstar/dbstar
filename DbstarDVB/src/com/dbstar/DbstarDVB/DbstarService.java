@@ -60,57 +60,19 @@ public class DbstarService extends Service {
 		return true;
 	}
 
-	private native int dvbpushStart();
-
-	private native int dvbpushStop();
-
-	private native int taskinfoStart();
-
-	private native int taskinfoStop();
-
-	private native byte[] taskinfoGet();
-
+	private native int init();
+	private native int uninit();
 	private native byte[] command(int cmd, String buf, int len);
 
 	private final IDbstarService.Stub mBinder = new IDbstarService.Stub() {
-		public int startDvbpush() throws RemoteException {
-			Log.d(TAG, "startDvbpush()");
-			return dvbpushStart();
+		public int initDvbpush() throws RemoteException {
+			Log.d(TAG, "initDvbpush()");
+			return init();
 		}
 
-		public int stopDvbpush() throws RemoteException {
+		public int uninitDvbpush() throws RemoteException {
 			Log.d(TAG, "stopDvbpush()");
-			return dvbpushStop();
-		}
-
-		public int startTaskInfo() throws RemoteException {
-			Log.d(TAG, "startTaskInfoGet()");
-			byte[] bytes = command(1, null, 0);
-			int ret = 0;
-			if (bytes != null) {
-				ret = Integer.valueOf(new String(bytes));
-			}
-			return ret;
-		}
-
-		public int stopTaskInfo() throws RemoteException {
-			Log.d(TAG, "stopTaskInfoGet()");
-			byte[] bytes = command(2, null, 0);
-			int ret = 0;
-			if (bytes != null) {
-				ret = Integer.valueOf(new String(bytes));
-			}
-			return ret;
-		}
-
-		public Intent getTaskInfo() throws RemoteException {
-			Log.d(TAG, "getTaskInfo()");
-
-			byte[] bytes = command(3, null, 0);
-			Intent it = new Intent();
-			it.putExtra("result", bytes);
-
-			return it;
+			return uninit();
 		}
 
 		public Intent sendCommand(int cmd, String buf, int len)

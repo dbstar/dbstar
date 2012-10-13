@@ -115,47 +115,33 @@ public class DbstarTest extends Activity implements OnClickListener {
 		case R.id.Button01:
 			if (mDbstarService != null) {
 				try {
-					mDbstarService.startDvbpush();
+					mDbstarService.initDvbpush();
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
 			}
-			showToast("startDvbpush");
+			showToast("initDvbpush");
 			break;
 		case R.id.Button02:
 			if (mDbstarService != null) {
 				try {
-					mDbstarService.stopDvbpush();
+					mDbstarService.uninitDvbpush();
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
 			}
-			showToast("stopDvbpush");
+			showToast("uninitDvbpush");
 			break;
 		case R.id.Button03:
-			if (mDbstarService != null) {
-				try {
-					mDbstarService.startTaskInfo();
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-			}
-			showToast("startTaskInfo");
+			showToast("Button03");
 			break;
 		case R.id.Button04:
-			if (mDbstarService != null) {
-				try {
-					mDbstarService.stopTaskInfo();
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-			}
-			showToast("stopTaskInfo");
+			showToast("Button04");
 			break;
 		case R.id.Button05:
 			if (mDbstarService != null) {
 				try {
-					Intent it = mDbstarService.getTaskInfo();
+					Intent it = mDbstarService.sendCommand(0x32, null, 0);
 					byte[] bytes = it.getByteArrayExtra("result");
 					if (bytes == null) {
 						Log.e(TAG, "result: null");
