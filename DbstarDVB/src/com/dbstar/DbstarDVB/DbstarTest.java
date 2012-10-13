@@ -30,21 +30,23 @@ public class DbstarTest extends Activity implements OnClickListener {
 	private int mUpdateType = 0;
 	private Toast mToast = null;
 	private View Button01, Button02, Button03, Button04, Button05, Button06;
-	//private TextView taskID = null;
-	//private TextView taskName = null;
-	//private TextView downloadSize = null;
-	//private TextView totalSize = null;
+	// private TextView taskID = null;
+	// private TextView taskName = null;
+	// private TextView downloadSize = null;
+	// private TextView totalSize = null;
 	private TextView taskInfo = null;
 	private TextView command = null;
 	private ProgressBar progressBar = null;
 
 	private Intent mIntent = new Intent();
 	private IDbstarService mDbstarService = null;
-	private ComponentName mComponentName = new ComponentName("com.dbstar.DbstarDVB", "com.dbstar.DbstarDVB.DbstarService");
+	private ComponentName mComponentName = new ComponentName(
+			"com.dbstar.DbstarDVB", "com.dbstar.DbstarDVB.DbstarService");
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
 			mDbstarService = IDbstarService.Stub.asInterface(service);
 		}
+
 		public void onServiceDisconnected(ComponentName className) {
 			mDbstarService = null;
 		}
@@ -54,6 +56,8 @@ public class DbstarTest extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test);
 
+		registerReceiver();
+		
 		Button01 = this.findViewById(R.id.Button01);
 		Button01.setOnClickListener(this);
 		Button02 = this.findViewById(R.id.Button02);
@@ -69,10 +73,10 @@ public class DbstarTest extends Activity implements OnClickListener {
 		Button06 = this.findViewById(R.id.Button06);
 		Button06.setOnClickListener(this);
 
-		//taskID = (TextView) findViewById(R.id.taskID);
-		//taskName = (TextView) findViewById(R.id.taskName);
-		//downloadSize = (TextView) findViewById(R.id.downloadSize);
-		//totalSize = (TextView) findViewById(R.id.totalSize);
+		// taskID = (TextView) findViewById(R.id.taskID);
+		// taskName = (TextView) findViewById(R.id.taskName);
+		// downloadSize = (TextView) findViewById(R.id.downloadSize);
+		// totalSize = (TextView) findViewById(R.id.totalSize);
 		progressBar = (ProgressBar) findViewById(R.id.progress);
 		taskInfo = (TextView) findViewById(R.id.taskInfo);
 		command = (TextView) findViewById(R.id.command);
@@ -87,7 +91,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 		filter.addAction(NOTIFY_ACTION);
 		registerReceiver(mReceiver, filter);
 
-		//mThread.start();
+		// mThread.start();
 	}
 
 	public void onResume() {
@@ -113,7 +117,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 				try {
 					mDbstarService.startDvbpush();
 				} catch (RemoteException e) {
-					 e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
 			showToast("startDvbpush");
@@ -123,7 +127,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 				try {
 					mDbstarService.stopDvbpush();
 				} catch (RemoteException e) {
-					 e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
 			showToast("stopDvbpush");
@@ -133,7 +137,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 				try {
 					mDbstarService.sendCommand(1, null, 0);
 				} catch (RemoteException e) {
-					 e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
 			showToast("startTaskInfo");
@@ -143,7 +147,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 				try {
 					mDbstarService.sendCommand(2, null, 0);
 				} catch (RemoteException e) {
-					 e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
 			showToast("stopTaskInfo");
@@ -159,13 +163,14 @@ public class DbstarTest extends Activity implements OnClickListener {
 						try {
 							String buf = new String(bytes, "utf-8");
 							Log.d(TAG, "Result: " + buf);
-							taskInfo.setText(this.getString(R.string.taskInfo) + "\n"+ buf);
+							taskInfo.setText(this.getString(R.string.taskInfo)
+									+ "\n" + buf);
 						} catch (UnsupportedEncodingException e) {
-							 e.printStackTrace();
+							e.printStackTrace();
 						}
 					}
 				} catch (RemoteException e) {
-					 e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
 			showToast("getTaskInfo");
@@ -173,7 +178,8 @@ public class DbstarTest extends Activity implements OnClickListener {
 		case R.id.Button06:
 			Log.d(TAG, "Exit()");
 			Intent it = new Intent();
-			it.setComponent(new ComponentName("com.dbstar.DbstarDVB", "com.dbstar.DbstarDVB.VideoPlayer.FileList"));
+			it.setComponent(new ComponentName("com.dbstar.DbstarDVB",
+					"com.dbstar.DbstarDVB.VideoPlayer.FileList"));
 			it.setAction("android.intent.action.MAIN");
 			startActivity(it);
 			break;
@@ -195,19 +201,30 @@ public class DbstarTest extends Activity implements OnClickListener {
 		mToast.show();
 	}
 
+	private void registerReceiver() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(NOTIFY_ACTION);
+
+		registerReceiver(mReceiver, filter);
+	}
+
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
 			try {
 				String action = intent.getAction();
-				int type = intent.getIntExtra("type", 0);
-				byte[] bytes = intent.getByteArrayExtra("message");
-				String msg = new String(bytes, "utf-8");
-				Log.d(TAG, "got broadcast: ACTION=" + action);
-				Log.d(TAG, "got broadcast: type=" + type);
-				Log.d(TAG, "got broadcast: message=" + msg);
-				Toast.makeText(context, action + "(" + type + ", " + msg + ")", 2000).show();
+				if (action.equals(NOTIFY_ACTION)) {
+					int type = intent.getIntExtra("type", 0);
+					byte[] bytes = intent.getByteArrayExtra("message");
+					String msg = new String(bytes, "utf-8");
+					Log.d(TAG, "got broadcast: ACTION=" + action);
+					Log.d(TAG, "got broadcast: type=" + type);
+					Log.d(TAG, "got broadcast: message=" + msg);
+					Toast.makeText(context,
+							action + "(" + type + ", " + msg + ")", 2000)
+							.show();
+				}
 			} catch (UnsupportedEncodingException e) {
-				 e.printStackTrace();
+				e.printStackTrace();
 			}
 		}
 	};
