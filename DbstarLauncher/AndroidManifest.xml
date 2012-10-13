@@ -60,15 +60,6 @@
         <service
             android:name=".service.GDDataProviderService"
             android:exported="false" />
-
-        <provider
-            android:name=".model.GDDVBDataProvider"
-            android:authorities="com.dbstar.provider"
-            android:exported="false" />
-        <provider
-            android:name=".model.GDSmartHomeProvider"
-            android:authorities="com.dbstar.smarthome.provider"
-            android:exported="false" />
     </application>
 
 </manifest>

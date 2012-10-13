@@ -202,13 +202,17 @@ public class DbstarTest extends Activity implements OnClickListener {
 					byte[] bytes = intent.getByteArrayExtra("message");
 					Log.d(TAG, "got broadcast: ACTION=" + action);
 					Log.d(TAG, "got broadcast: type=" + type);
-					if (bygtes != null) {
+					if (bytes != null) {
 						String msg = new String(bytes, "utf-8");
 						Log.d(TAG, "got broadcast: message=" + msg);
+						Toast.makeText(context,
+								action + "(" + type + ", " + msg + ")", 2000)
+								.show();
+					} else {
+						Toast.makeText(context,
+								action + "(" + type + ")", 2000)
+								.show();
 					}
-					Toast.makeText(context,
-							action + "(" + type + ", " + msg + ")", 2000)
-							.show();
 				}
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
