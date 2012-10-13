@@ -4,8 +4,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.dbstar.R;
+import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.ContentData;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.model.GDCommon;
 import com.dbstar.model.Movie;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.widget.GDAdapterView;
@@ -36,8 +38,6 @@ import android.widget.TextView;
 
 public class GDHDMovieActivity extends GDBaseActivity {
 	private static final String TAG = "GDHDMovieActivity";
-
-	// private static final int DIALOG_MOVIEINFO_ID = 0;
 
 	private static final int COLUMN_ITEMS = 6;
 	private static final int PAGE_ITEMS = 12;
@@ -84,115 +84,14 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		mSmallThumbnailView = (GDGridView) findViewById(R.id.gridview);
 
 		mSmallThumbnailView
-				.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-					@Override
-					public void onItemSelected(GDAdapterView<?> parent,
-							View view, int position, long id) {
-						Log.d(TAG, "mSmallThumbnailView selected = " + position);
-
-						mSeletedItemIndex = position;
-					}
-
-					@Override
-					public void onNothingSelected(GDAdapterView<?> parent) {
-
-					}
-
-				});
+				.setOnItemSelectedListener(mThumbnailSelectedListener);
 
 		mAdapter = new MovieAdapter(this);
 		mSmallThumbnailView.setAdapter(mAdapter);
-		mSmallThumbnailView.setOnKeyListener(new View.OnKeyListener() {
-
-			@Override
-			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				Log.d(TAG, "onKey " + keyCode);
-				boolean ret = false;
-				int action = event.getAction();
-				if (action == KeyEvent.ACTION_DOWN) {
-					switch (keyCode) {
-
-					// case KeyEvent.KEYCODE_F1: // for debug with keyboard
-					// case KeyEvent.KEYCODE_F2:
-					// case KeyEvent.KEYCODE_INFO:
-					// case KeyEvent.KEYCODE_NOTIFICATION:
-					// case KeyEvent.KEYCODE_MENU:
-					// ret = true;
-					// showMovieInfoView();
-					// break;
-
-					case KeyEvent.KEYCODE_DPAD_LEFT: {
-						int currentItem = mSmallThumbnailView
-								.getSelectedItemPosition();
-						if (currentItem == PAGE_ITEMS / 2) {
-							mSmallThumbnailView.setSelection(currentItem - 1);
-							ret = true;
-						} else if (currentItem == 0) {
-							mSmallThumbnailView.setSelection(mAdapter
-									.getCount() - 1);
-							ret = true;
-						} else {
-						}
-						break;
-					}
-					case KeyEvent.KEYCODE_DPAD_RIGHT: {
-
-						int currentItem = mSmallThumbnailView
-								.getSelectedItemPosition();
-
-						if (currentItem == (PAGE_ITEMS / 2 - 1)) {
-							if ((currentItem + 1) < (mAdapter.getCount() - 1)) {
-								mSmallThumbnailView
-										.setSelection(currentItem + 1);
-								ret = true;
-							}
-						} else if (currentItem == (mAdapter.getCount() - 1)) {
-							mSmallThumbnailView.setSelection(0);
-							ret = true;
-						} else {
-						}
-						break;
-					}
-
-					case KeyEvent.KEYCODE_DPAD_UP: {
-						int currentItem = mSmallThumbnailView
-								.getSelectedItemPosition();
-						if (currentItem < COLUMN_ITEMS) {
-							loadPrevPage();
-							ret = true;
-						}
-						break;
-					}
-
-					case KeyEvent.KEYCODE_DPAD_DOWN: {
-						int currentItem = mSmallThumbnailView
-								.getSelectedItemPosition();
-						if (currentItem >= (PAGE_ITEMS - COLUMN_ITEMS)) {
-							loadNextPage();
-							ret = true;
-						}
-						break;
-					}
-
-					case KeyEvent.KEYCODE_DPAD_CENTER:
-					case KeyEvent.KEYCODE_ENTER: {
-						playMovie();
-						ret = true;
-						break;
-					}
-
-					default:
-						break;
-					}
-
-				}
-				return ret;
-			}
-		});
+		mSmallThumbnailView.setOnKeyListener(mThumbnailOnKeyListener);
 
 		mSmallThumbnailView.requestFocus();
-		mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+		mPageNumberView.setText(formPageText(0, 0));
 	}
 
 	public void onStart() {
@@ -447,6 +346,133 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			holder.titleView.setText(mDataSet[position].Content.Name);
 
 			return convertView;
+		}
+	}
+	
+	OnItemSelectedListener mThumbnailSelectedListener = new OnItemSelectedListener() {
+
+		@Override
+		public void onItemSelected(GDAdapterView<?> parent,
+				View view, int position, long id) {
+			Log.d(TAG, "mSmallThumbnailView selected = " + position);
+
+			mSeletedItemIndex = position;
+		}
+
+		@Override
+		public void onNothingSelected(GDAdapterView<?> parent) {
+
+		}
+
+	};
+	
+	View.OnKeyListener mThumbnailOnKeyListener = new View.OnKeyListener() {
+		
+		@Override
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+			Log.d(TAG, "onKey " + keyCode);
+			boolean ret = false;
+			int action = event.getAction();
+			if (action == KeyEvent.ACTION_DOWN) {
+				switch (keyCode) {
+
+				 case KeyEvent.KEYCODE_F2: {
+					 ret = true;
+					 testPopup();
+					 break;
+				 }
+				
+				case KeyEvent.KEYCODE_DPAD_LEFT: {
+					int currentItem = mSmallThumbnailView
+							.getSelectedItemPosition();
+					if (currentItem == PAGE_ITEMS / 2) {
+						mSmallThumbnailView.setSelection(currentItem - 1);
+						ret = true;
+					} else if (currentItem == 0) {
+						mSmallThumbnailView.setSelection(mAdapter
+								.getCount() - 1);
+						ret = true;
+					} else {
+					}
+					break;
+				}
+				case KeyEvent.KEYCODE_DPAD_RIGHT: {
+
+					int currentItem = mSmallThumbnailView
+							.getSelectedItemPosition();
+
+					if (currentItem == (PAGE_ITEMS / 2 - 1)) {
+						if (currentItem < (mAdapter.getCount() - 1)) {
+							mSmallThumbnailView
+									.setSelection(currentItem + 1);
+							ret = true;
+						}
+					} else if (currentItem == (mAdapter.getCount() - 1)) {
+						mSmallThumbnailView.setSelection(0);
+						ret = true;
+					} else {
+					}
+					break;
+				}
+
+				case KeyEvent.KEYCODE_DPAD_UP: {
+					int currentItem = mSmallThumbnailView
+							.getSelectedItemPosition();
+					if (currentItem < COLUMN_ITEMS) {
+						loadPrevPage();
+						ret = true;
+					}
+					break;
+				}
+
+				case KeyEvent.KEYCODE_DPAD_DOWN: {
+					int currentItem = mSmallThumbnailView
+							.getSelectedItemPosition();
+					if (currentItem >= (PAGE_ITEMS - COLUMN_ITEMS)) {
+						loadNextPage();
+						ret = true;
+					}
+					break;
+				}
+
+				case KeyEvent.KEYCODE_DPAD_CENTER:
+				case KeyEvent.KEYCODE_ENTER: {
+					playMovie();
+					ret = true;
+					break;
+				}
+
+				default:
+					break;
+				}
+
+			}
+			return ret;
+		}
+	};
+
+	void testPopup() {
+
+		Movie movie = getSelectedMovie();
+		String file = mService.getMediaFile(movie.Content);
+		Log.d(TAG, "file = " + file);
+		if (!file.equals("")) {
+
+			Intent intent = new Intent();
+
+			MediaData data = new MediaData();
+			data.mediaURL = file;
+			data.ColumnType = GDCommon.ColumnTypeMovie;
+			data.PublicationID = movie.Content.Id;
+			data.URI = movie.Content.XMLFilePath;
+
+			intent.putExtra(GDCommon.KeyMediaData, data);
+
+			intent.setComponent(new ComponentName("com.dbstar.DbstarDVB",
+					"com.dbstar.DbstarDVB.TestActivity"));
+			intent.setAction("android.intent.action.View");
+
+			startActivity(intent);
 		}
 	}
 

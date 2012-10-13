@@ -1,7 +1,6 @@
 package com.dbstar.app;
 
 import com.dbstar.R;
-import com.dbstar.util.GDNetworkUtil;
 
 import android.content.Intent;
 import android.os.Bundle;

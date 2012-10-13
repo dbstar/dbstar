@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.dbstar.R;
-import com.dbstar.model.ContentData;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.model.TV;
 import com.dbstar.model.GDDVBDataContract.Content;
@@ -14,11 +13,12 @@ import com.dbstar.widget.GDGridView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 import com.dbstar.widget.GDScrollBar;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -26,9 +26,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class GDTVActivity extends GDBaseActivity {
@@ -136,96 +134,9 @@ public class GDTVActivity extends GDBaseActivity {
 		mSmallThumbnailView = (GDGridView) findViewById(R.id.gridview);
 
 		mSmallThumbnailView
-				.setOnItemSelectedListener(new OnItemSelectedListener() {
+				.setOnItemSelectedListener(mThumbnailSelectedListener);
 
-					@Override
-					public void onItemSelected(GDAdapterView<?> parent,
-							View view, int position, long id) {
-
-						Log.d(TAG, "mSmallThumbnailView item " + position
-								+ " seletected!");
-
-						showSelectedTV(position);
-					}
-
-					@Override
-					public void onNothingSelected(GDAdapterView<?> parent) {
-
-					}
-
-				});
-
-		mSmallThumbnailView.setOnKeyListener(new View.OnKeyListener() {
-
-			@Override
-			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				Log.d(TAG, "mSmallThumbnailView onKey " + keyCode);
-				int action = event.getAction();
-				if (action == KeyEvent.ACTION_DOWN) {
-					switch (keyCode) {
-					case KeyEvent.KEYCODE_DPAD_LEFT: {
-						int currentItem = mSmallThumbnailView
-								.getSelectedItemPosition();
-						if (currentItem == 0) {
-							loadPrevPage();
-							return true;
-						}
-						break;
-					}
-					case KeyEvent.KEYCODE_DPAD_RIGHT: {
-						int currentItem = mSmallThumbnailView
-								.getSelectedItemPosition();
-						if (currentItem == (PAGE_ITEMS - 1)) {
-							loadNextPage();
-							return true;
-						}
-						break;
-
-					}
-
-					default:
-						break;
-					}
-
-				}
-
-				if (action == KeyEvent.ACTION_UP) {
-					switch (keyCode) {
-					case KeyEvent.KEYCODE_DPAD_CENTER:
-					case KeyEvent.KEYCODE_ENTER:
-					case 82: {
-						// mSmallThumbnailView.requestFocus(View.FOCUS_DOWN);
-						if (mEpisodesAdapter.getCount() > 0) {
-							mInTVView = false;
-							boolean ret = mEpisodesView.requestFocus();
-							// mEpisodesView.setSelection(0);
-							Log.d(TAG, "mEpisodesAdapter.getCount() "
-									+ mEpisodesAdapter.getCount() + " ret "
-									+ ret);
-							return true;
-						}
-						break;
-					}
-					}
-				}
-
-				return false;
-			}
-		});
-
-		mSmallThumbnailView
-				.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-
-					@Override
-					public void onFocusChange(View v, boolean hasFocus) {
-						if (hasFocus) {
-							Log.d(TAG, "mSmallThumbnailView get focus");
-						} else {
-							Log.d(TAG, "mSmallThumbnailView lose focus");
-						}
-
-					}
-				});
+		mSmallThumbnailView.setOnKeyListener(mThumbnailOnKeyListener);
 
 		mAdapter = new TVAdapter(this);
 		mSmallThumbnailView.setAdapter(mAdapter);
@@ -233,50 +144,11 @@ public class GDTVActivity extends GDBaseActivity {
 		mEpisodesAdapter = new EpisodesAdapter(this);
 		mEpisodesView.setAdapter(mEpisodesAdapter);
 
-		mEpisodesView
-				.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+		mEpisodesView.setOnFocusChangeListener(mEpisodeViewOnFocusListener);
 
-					@Override
-					public void onFocusChange(View v, boolean hasFocus) {
-						if (hasFocus) {
-							if (mEpisodesAdapter.getCount() > 0) {
-								Log.d(TAG, "mEpisodesView get focus!");
-								mEpisodesView.setSelection(0);
-							}
-						} else {
-							Log.d(TAG, "mEpisodesView lose focus");
-						}
+		mEpisodesView.setOnItemSelectedListener(mOnEpisodeSelectedListener);
 
-					}
-				});
-
-		mEpisodesView.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-			@Override
-			public void onItemSelected(GDAdapterView<?> parent, View view,
-					int position, long id) {
-				Log.d(TAG, "mEpisodesView item " + position + " seletected!");
-
-				TV.EpisodeItem[] items = mTV.EpisodesPages
-						.get(mTV.EpisodesPageNumber);
-				View oldSel = mEpisodesView.getChildAt(mSelectedEpisodeIndex);
-				if (items[mSelectedEpisodeIndex].Watched) {
-					oldSel.setBackgroundDrawable(mEpisodesWatchedBackground);
-				} else {
-					oldSel.setBackgroundDrawable(mEpisodesNormalBackground);
-				}
-				view.setBackgroundDrawable(mEpisodesFocusedBackground);
-				mSelectedEpisodeIndex = position;
-			}
-
-			@Override
-			public void onNothingSelected(GDAdapterView<?> parent) {
-
-			}
-
-		});
-
-		mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+		mPageNumberView.setText(formPageText(0, 0));
 
 		mSmallThumbnailView.setFocusable(true);
 		mSmallThumbnailView.requestFocus();
@@ -284,77 +156,6 @@ public class GDTVActivity extends GDBaseActivity {
 		mEpisodesView.setFocusable(true);
 		mEpisodesView.setOnKeyListener(mEpisodesKeyListenter);
 	}
-
-	View.OnKeyListener mEpisodesKeyListenter = new View.OnKeyListener() {
-
-		@Override
-		public boolean onKey(View v, int keyCode, KeyEvent event) {
-			Log.d(TAG, "mEpisodesView onKey " + keyCode);
-
-			boolean ret = false;
-			int action = event.getAction();
-			if (action == KeyEvent.ACTION_DOWN) {
-				switch (keyCode) {
-				case KeyEvent.KEYCODE_DPAD_LEFT: {
-					int currentItem = mEpisodesView.getSelectedItemPosition();
-					if ((currentItem % EPISODES_VIEW_COLUMN) == 0) {
-						if (currentItem > 0) {
-							// focus to last row
-							mEpisodesView.setSelection(currentItem - 1);
-							return true;
-						} else {
-							// navigate to previous page
-							if (mTV.EpisodesPageNumber > 0) {
-								mTV.EpisodesPageNumber--;
-								TV.EpisodeItem[] items = mTV.EpisodesPages
-										.get(mTV.EpisodesPageNumber);
-								mEpisodesAdapter.setDataSet(items);
-								mEpisodesView.setSelection(items.length - 1);
-								mEpisodesAdapter.notifyDataSetChanged();
-								mScrollBar.setPosition(mTV.EpisodesPageNumber);
-								return true;
-							}
-
-						}
-
-					}
-
-					break;
-				}
-				case KeyEvent.KEYCODE_DPAD_RIGHT: {
-					int currentItem = mEpisodesView.getSelectedItemPosition();
-					if ((currentItem % EPISODES_VIEW_COLUMN) == (EPISODES_VIEW_COLUMN - 1)) {
-						if (currentItem < (mEpisodesAdapter.getCount() - 1)) {
-							mEpisodesView.setSelection(currentItem + 1);
-							return true;
-						} else {
-							// navigate to next page
-							if (mTV.EpisodesPageNumber < mTV.EpisodesPageCount - 1) {
-								mTV.EpisodesPageNumber++;
-								TV.EpisodeItem[] items = mTV.EpisodesPages
-										.get(mTV.EpisodesPageNumber);
-								mEpisodesAdapter.setDataSet(items);
-								mEpisodesView.setSelection(0);
-								mEpisodesAdapter.notifyDataSetChanged();
-								mScrollBar.setPosition(mTV.EpisodesPageNumber);
-								return true;
-							}
-						}
-
-					}
-					break;
-				}
-
-				case KeyEvent.KEYCODE_ENTER:
-					ret = true;
-					playTV();
-					break;
-				}
-			}
-
-			return ret;
-		}
-	};
 
 	public void updateData(int type, Object key, Object data) {
 		if (type == GDDataProviderService.REQUESTTYPE_GETTVDATA) {
@@ -390,9 +191,11 @@ public class GDTVActivity extends GDBaseActivity {
 
 				// update views
 				mPageNumber = 0;
+
 				mAdapter.setDataSet(mPageDatas.get(mPageNumber));
 				mSmallThumbnailView.setSelection(0);
 				mAdapter.notifyDataSetChanged();
+				mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
 
 				// request thumbnails
 				for (int i = 0; i < mPageCount; i++) {
@@ -477,7 +280,7 @@ public class GDTVActivity extends GDBaseActivity {
 			tv.EpisodesPageCount = tv.Episodes.length / EpisodesPageSize;
 			tv.EpisodesPageNumber = 0;
 			tv.EpisodesPages = new ArrayList<TV.EpisodeItem[]>();
-			
+
 			int index = 0;
 			for (int i = 0; i < tv.EpisodesPageCount; i++) {
 				TV.EpisodeItem[] items = new TV.EpisodeItem[EpisodesPageSize];
@@ -509,16 +312,28 @@ public class GDTVActivity extends GDBaseActivity {
 	}
 
 	void playTV() {
+
 		TV.EpisodeItem[] items = mTV.EpisodesPages.get(mTV.EpisodesPageNumber);
 
 		TV.EpisodeItem item = items[mSelectedEpisodeIndex];
 		item.Watched = true;
 
 		String file = mService.getMediaFile(item.Content);
+
+		Log.d(TAG, "playTV file =" + file);
+
 		if (!file.equals("")) {
 			Intent intent = new Intent();
-			intent.putExtra("Uri", file);
-			intent.setClass(this, GDVideoPlayer.class);
+			// intent.putExtra("Uri", file);
+			// intent.setClass(this, GDVideoPlayer.class);
+
+			Uri uri = Uri.parse("file://" + file);
+			Log.d(TAG, "play = " + uri.toString());
+
+			intent.setData(uri);
+			intent.setComponent(new ComponentName("com.farcore.videoplayer",
+					"com.farcore.videoplayer.playermenu"));
+			intent.setAction("android.intent.action.View");
 			startActivity(intent);
 		}
 	}
@@ -681,13 +496,212 @@ public class GDTVActivity extends GDBaseActivity {
 
 			final TV.EpisodeItem[] items = mDataset;
 			holder.text.setText(formEpisodesText(items[position].Number));
-			if (items[position].Watched) {
-				convertView.setBackgroundDrawable(mEpisodesWatchedBackground);
+			if (position == mEpisodesView.getSelectedItemPosition()) {
+				convertView.setBackgroundDrawable(mEpisodesFocusedBackground);
 			} else {
-				convertView.setBackgroundDrawable(mEpisodesNormalBackground);
+
+				if (items[position].Watched) {
+					convertView
+							.setBackgroundDrawable(mEpisodesWatchedBackground);
+				} else {
+					convertView
+							.setBackgroundDrawable(mEpisodesNormalBackground);
+				}
 			}
 
 			return convertView;
 		}
 	}
+
+	OnItemSelectedListener mThumbnailSelectedListener = new OnItemSelectedListener() {
+
+		@Override
+		public void onItemSelected(GDAdapterView<?> parent, View view,
+				int position, long id) {
+
+			Log.d(TAG, "mSmallThumbnailView item " + position + " seletected!");
+
+			showSelectedTV(position);
+		}
+
+		@Override
+		public void onNothingSelected(GDAdapterView<?> parent) {
+
+		}
+
+	};
+
+	View.OnKeyListener mThumbnailOnKeyListener = new View.OnKeyListener() {
+
+		@Override
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+			Log.d(TAG, "mSmallThumbnailView onKey " + keyCode);
+			int action = event.getAction();
+			if (action == KeyEvent.ACTION_DOWN) {
+				switch (keyCode) {
+				case KeyEvent.KEYCODE_DPAD_LEFT: {
+					int currentItem = mSmallThumbnailView
+							.getSelectedItemPosition();
+					if (currentItem == 0) {
+						loadPrevPage();
+						return true;
+					}
+					break;
+				}
+				case KeyEvent.KEYCODE_DPAD_RIGHT: {
+					int currentItem = mSmallThumbnailView
+							.getSelectedItemPosition();
+					if (currentItem == (PAGE_ITEMS - 1)) {
+						loadNextPage();
+						return true;
+					}
+					break;
+
+				}
+
+				default:
+					break;
+				}
+
+			}
+
+			if (action == KeyEvent.ACTION_UP) {
+				switch (keyCode) {
+				case KeyEvent.KEYCODE_DPAD_CENTER:
+				case KeyEvent.KEYCODE_ENTER:
+				case 82: {
+					// mSmallThumbnailView.requestFocus(View.FOCUS_DOWN);
+					if (mEpisodesAdapter.getCount() > 0) {
+						mInTVView = false;
+						boolean ret = mEpisodesView.requestFocus();
+						// mEpisodesView.setSelection(0);
+						Log.d(TAG, "mEpisodesAdapter.getCount() "
+								+ mEpisodesAdapter.getCount() + " ret " + ret);
+						return true;
+					}
+					break;
+				}
+				}
+			}
+
+			return false;
+		}
+	};
+
+	View.OnFocusChangeListener mEpisodeViewOnFocusListener = new View.OnFocusChangeListener() {
+
+		@Override
+		public void onFocusChange(View v, boolean hasFocus) {
+			if (hasFocus) {
+				if (mEpisodesAdapter.getCount() > 0) {
+					Log.d(TAG, "mEpisodesView get focus!");
+					mEpisodesView.setSelection(0);
+				}
+			} else {
+				Log.d(TAG, "mEpisodesView lose focus");
+				mEpisodesView.clearSelection();
+			}
+
+		}
+	};
+
+	OnItemSelectedListener mOnEpisodeSelectedListener = new OnItemSelectedListener() {
+
+		@Override
+		public void onItemSelected(GDAdapterView<?> parent, View view,
+				int position, long id) {
+			Log.d(TAG, "mEpisodesView item " + position + " seletected!");
+
+			// TV.EpisodeItem[] items = mTV.EpisodesPages
+			// .get(mTV.EpisodesPageNumber);
+			// View oldSel = mEpisodesView.getChildAt(mSelectedEpisodeIndex);
+			// if (items[mSelectedEpisodeIndex].Watched) {
+			// oldSel.setBackgroundDrawable(mEpisodesWatchedBackground);
+			// } else {
+			// oldSel.setBackgroundDrawable(mEpisodesNormalBackground);
+			// }
+			// view.setBackgroundDrawable(mEpisodesFocusedBackground);
+			mSelectedEpisodeIndex = position;
+		}
+
+		@Override
+		public void onNothingSelected(GDAdapterView<?> parent) {
+
+		}
+
+	};
+
+	View.OnKeyListener mEpisodesKeyListenter = new View.OnKeyListener() {
+
+		@Override
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+			Log.d(TAG, "mEpisodesView onKey " + keyCode);
+
+			boolean ret = false;
+			int action = event.getAction();
+			if (action == KeyEvent.ACTION_DOWN) {
+				switch (keyCode) {
+				case KeyEvent.KEYCODE_DPAD_LEFT: {
+					int currentItem = mEpisodesView.getSelectedItemPosition();
+					if ((currentItem % EPISODES_VIEW_COLUMN) == 0) {
+						if (currentItem > 0) {
+							// focus to last row
+							mEpisodesView.setSelection(currentItem - 1);
+							return true;
+						} else {
+							// navigate to previous page
+							if (mTV.EpisodesPageNumber > 0) {
+								mTV.EpisodesPageNumber--;
+								TV.EpisodeItem[] items = mTV.EpisodesPages
+										.get(mTV.EpisodesPageNumber);
+								mEpisodesAdapter.setDataSet(items);
+								mEpisodesView.setSelection(items.length - 1);
+								mEpisodesAdapter.notifyDataSetChanged();
+								mScrollBar.setPosition(mTV.EpisodesPageNumber);
+								return true;
+							}
+
+						}
+
+					}
+
+					break;
+				}
+				case KeyEvent.KEYCODE_DPAD_RIGHT: {
+					int currentItem = mEpisodesView.getSelectedItemPosition();
+					if ((currentItem % EPISODES_VIEW_COLUMN) == (EPISODES_VIEW_COLUMN - 1)) {
+						if (currentItem < (mEpisodesAdapter.getCount() - 1)) {
+							mEpisodesView.setSelection(currentItem + 1);
+							return true;
+						} else {
+							// navigate to next page
+							if (mTV.EpisodesPageNumber < mTV.EpisodesPageCount - 1) {
+								mTV.EpisodesPageNumber++;
+								TV.EpisodeItem[] items = mTV.EpisodesPages
+										.get(mTV.EpisodesPageNumber);
+								mEpisodesAdapter.setDataSet(items);
+								mEpisodesView.setSelection(0);
+								mEpisodesAdapter.notifyDataSetChanged();
+								mScrollBar.setPosition(mTV.EpisodesPageNumber);
+								return true;
+							}
+						}
+
+					}
+					break;
+				}
+
+				case 82:
+				case KeyEvent.KEYCODE_DPAD_CENTER:
+				case KeyEvent.KEYCODE_ENTER:
+					ret = true;
+					playTV();
+					break;
+				}
+			}
+
+			return ret;
+		}
+	};
+
 }

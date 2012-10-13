@@ -782,6 +782,7 @@ public class GDLoopGallery extends GDAbsSpinner {
     
     boolean movePrevious() {
     	if (getCount() > 0) {
+//    		Log.d(TAG, "movePrevious " + mSelectedPosition + " " + mFirstPosition);
             scrollToChild(mSelectedPosition - mFirstPosition - 1);
             return true;
         } else {
@@ -791,6 +792,7 @@ public class GDLoopGallery extends GDAbsSpinner {
 
     boolean moveNext() {
         if (getCount() > 0) {
+//        	Log.d(TAG, "moveNext " + mSelectedPosition + " " + mFirstPosition);
             scrollToChild(mSelectedPosition - mFirstPosition + 1);
             return true;
         } else {

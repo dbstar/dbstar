@@ -1,7 +1,5 @@
 package com.dbstar.model;
 
-import java.io.File;
-
 import com.dbstar.model.GDDVBDataContract.Column;
 import com.dbstar.model.GDDVBDataContract.ColumnEntity;
 import com.dbstar.model.GDDVBDataContract.GuideList;
@@ -17,7 +15,6 @@ import com.dbstar.model.GDDVBDataContract.ResStr;
 import com.dbstar.model.GDDVBDataContract.ResSubTitle;
 import com.dbstar.model.GDDVBDataContract.ResTrailer;
 
-import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -25,7 +22,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
 
-public class GDDVBDataProvider extends ContentProvider {
+public class GDDVBDataProvider  extends GDDBProvider {
 
 	private static final String TAG = "DVBDataProvider";
 
@@ -49,13 +46,6 @@ public class GDDVBDataProvider extends ContentProvider {
 
 	private static final int COLUMNENTITYTABLE = 1017;
 
-	private SQLiteDatabase mDataBase = null;
-	// private final ThreadLocal<SQLiteDatabase> mActiveDb = new
-	// ThreadLocal<SQLiteDatabase>();
-	GDDataAccessor mDataAccessor = new GDDataAccessor();
-
-	private static final UriMatcher sURIMatcher = new UriMatcher(
-			UriMatcher.NO_MATCH);
 	static {
 		sURIMatcher.addURI(GDDVBDataContract.AUTHORITY,
 				GDDVBDataContract.COLUMNTABLE, COLUMNTABLE);
@@ -151,18 +141,20 @@ public class GDDVBDataProvider extends ContentProvider {
 				GuideList.TRAILERID, GuideList.TRAILERNAME,
 				GuideList.TRAILERURI };
 
-		int GUIDELISTID = 0;
-		int PUBLICATIONID = 1;
-		int URI = 2;
-		int TOTALSIZE = 3;
-		int PRODUCTDESCID = 4;
-		int RECEIVESTATUS = 5;
-		int PUSHTIME = 6;
-		int POSTERID = 7;
-		int POSTERURI = 8;
-		int TRAILERID = 9;
-		int TRAILERNAME = 10;
-		int TRAILERURI = 11;
+		int DATEVALUE = 0;
+		int GUIDELISTID = 1;
+		int PUBLICATIONID = 2;
+		int URI = 3;
+		int TOTALSIZE = 4;
+		int PRODUCTDESCID = 5;
+		int RECEIVESTATUS = 6;
+		int PUSHTIME = 7;
+		int POSTERID = 8;
+		int POSTERNAME = 9;
+		int POSTERURI = 10;
+		int TRAILERID = 11;
+		int TRAILERNAME = 12;
+		int TRAILERURI = 13;
 	}
 
 	public interface ProductQuery {
@@ -366,123 +358,25 @@ public class GDDVBDataProvider extends ContentProvider {
 	}
 
 	
-	SQLiteDatabase openDatabase (String dbFile, boolean isReadOnly) {
+	// @Override
+	public boolean initialize(GDSystemConfigure configure) {
+		super.initialize(configure);
 		
-		Log.d(TAG, "open dbFile = " + dbFile);
-		
-		SQLiteDatabase db = null;
-		try {
-			
-			int flags = (isReadOnly ? SQLiteDatabase.OPEN_READONLY : SQLiteDatabase.OPEN_READWRITE) | SQLiteDatabase.NO_LOCALIZED_COLLATORS;
-			db = SQLiteDatabase.openDatabase(dbFile, null, flags);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return db;
-	} 
-	
-	boolean isFileExist(String filePath) {
-		boolean exist = false;
-		
-		if (filePath == null || filePath.isEmpty())
+		String dbFile = mConfigure.getDVBDatabaseFile();
+		if (!isFileExist(dbFile)) {
 			return false;
-		
-		File file = new File(filePath);
-		if (file != null && file.exists()) {
-			exist = true;
 		}
 		
-		return exist;
-	}
-	
-	SQLiteDatabase getReadableDatabase() {
-		String dbFile = mDataAccessor.getDatabaseFile();
-		if (dbFile == null || dbFile.isEmpty()) {
-			// configure again here
-			if (mDataAccessor.configure()) {
-				dbFile = mDataAccessor.getDatabaseFile();
-				if (!isFileExist(dbFile))
-					return null;
-			}
-		}
-		
-		SQLiteDatabase db = openDatabase(dbFile, true);
-		
-		return db;
-	}
-	
-	SQLiteDatabase getWriteableDatabase() {
-		String dbFile = mDataAccessor.getDatabaseFile();
-		if (dbFile == null || dbFile.isEmpty()) {
-			// configure again here
-			if (mDataAccessor.configure()) {
-				dbFile = mDataAccessor.getDatabaseFile();
-				if (!isFileExist(dbFile))
-					return null;
-			}
-		}
-		
-		SQLiteDatabase db = openDatabase(dbFile, false);
-		
-		return db;
-	}
-	
-	
-	@Override
-	public boolean onCreate() {
-
-		Log.d(TAG, "onCreate");
-
-		if (!mDataAccessor.configure()) {
-			// if configure failed, we return, but the content provider 
-			// will be created, and it will configure again when client 
-			// try to query data.
-			return true;
-		}
+		mDbFile = dbFile;
 		
 		return true;
 	}
-
-	@Override
-	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		return 0;
+	
+	public void deinitialize() {
+		super.deinitialize();
 	}
 
-	@Override
-	public Uri insert(Uri uri, ContentValues values) {
-		return null;
-	}
-
-	@Override
-	public Cursor query(Uri uri, String[] projection, String selection,
-			String[] selectionArgs, String sortOrder) {
-
-		SQLiteDatabase db = getReadableDatabase();
-		
-		if (db == null || !db.isOpen())
-			return null;
-
-		Cursor curosr = null;
-
-		String table = getTableName(sURIMatcher.match(uri));
-		
-		if (table.isEmpty())
-			return null;
-
-		curosr = db.query(table, projection, selection, selectionArgs,
-				null, null, sortOrder);
-
-		return curosr;
-	}
-
-	@Override
-	public int update(Uri uri, ContentValues values, String selection,
-			String[] selectionArgs) {
-		return 0;
-	}
-
-	@Override
+	// @Override
 	public String getType(Uri uri) {
 		int match = sURIMatcher.match(uri);
 		String typeStr;
@@ -548,7 +442,7 @@ public class GDDVBDataProvider extends ContentProvider {
 		return typeStr;
 	}
 
-	String getTableName(int uri) {
+	public String getTableName(int uri) {
 		String table = "";
 		switch (uri) {
 

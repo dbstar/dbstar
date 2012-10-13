@@ -70,7 +70,7 @@ public class StringUtil {
 		//String str = d.toString();
 		String str = String.valueOf(value);
 
-		Log.d("", " formatFloatValue" + str);
+//		Log.d("", " formatFloatValue" + str);
 		int index = str.indexOf('.');
 		
 		if (index < 0) {

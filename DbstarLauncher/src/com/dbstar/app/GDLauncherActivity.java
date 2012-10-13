@@ -1,5 +1,6 @@
 package com.dbstar.app;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +12,15 @@ import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.upgrade.RebootUtils;
 import com.dbstar.widget.*;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -45,14 +50,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private static final String TAG = "GDLauncherActivity";
 
-	private static final String ColumnTypeTV = "2";
-	private static final String ColumnTypeMovie = "1";
-	private static final String ColumnTypePreview = "3";
-	private static final String ColumnTypeGuodian = "5";
-	private static final String ColumnTypeSettings = "4";
-	private static final String ColumnTypeUserCenter = "6";
-	private static final String ColumnTypeMyFavourites = "7";
-
 	private static final int COLUMN_LEVEL_1 = 1;
 	private static final String ROOT_COLUMN_PARENTID = "-1";
 
@@ -69,14 +66,18 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final int USERCENTER_LEVEL3_TV = 1;
 	private static final int USERCENTER_LEVEL3_RECORD = 2;
 	private static final int USERCENTER_LEVEL3_ENTERTAINMENT = 3;
+	// private static final int USERCENTER_LEVEL3_COUNT = 4;
 
-	public static final int SystemSettingsUserInfo = 0;
-	public static final int SystemSettingsDiskSpace = 1;
-	public static final int SystemSettingsSettings = 2;
-	public static final int SystemSettingsGuodian = 3;
-	public static final int SystemSettingsFileBrowser = 4;
-	public static final int SystemSettingsAdvanced = 5;
-	public static final int SystemSettingsCount = 6;
+	public static final int SettingsHelp = 0;
+	public static final int SettingsDeviceInfo = 1;
+	public static final int SettingsUserInfo = 2;
+	public static final int SettingsAudioVideo = 3;
+	public static final int SettingsSystemSettings = 4;
+	public static final int SettingsGuodian = 5;
+	public static final int SettingsDiskSpace = 6;
+	public static final int SettingsFileBrowser = 7;
+	public static final int SettingsAdvanced = 8;
+	public static final int SettingsCount = 9;
 
 	// message from engine
 	public static final int MSG_UPDATE_POWERCONSUMPTION = 0;
@@ -206,6 +207,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public void onResume() {
 		super.onResume();
+
+		mMainMenu.requestFocus();
 	}
 
 	public void onPause() {
@@ -229,10 +232,21 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMediaScheduler.stopMediaPlay();
 	}
 
+	public void onAttachedToWindow() {
+		super.onAttachedToWindow();
+
+		mMainMenu.requestFocus();
+	}
+
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		Log.d(TAG, "onKeyDown " + keyCode);
 
 		switch (keyCode) {
+		case KeyEvent.KEYCODE_DPAD_RIGHT:
+		case KeyEvent.KEYCODE_DPAD_LEFT: {
+			return mMainMenu.onKeyDown(keyCode, event);
+		}
+
 		case 82: // just for test on emulator
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER: {
@@ -250,6 +264,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		switch (keyCode) {
+		case KeyEvent.KEYCODE_DPAD_RIGHT:
+		case KeyEvent.KEYCODE_DPAD_LEFT: {
+			return mMainMenu.onKeyUp(keyCode, event);
+		}
 		case 82: // just for test on emulator
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER:
@@ -288,6 +306,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private boolean onItemSelected() {
 		boolean ret = true;
 
+		if (mMenuStack.size() == 0)
+			return ret;
+
 		Menu menu = mMenuStack.peek();
 		int index = menu.FocusedPosition;
 		MenuItem[] menuItems = menu.Items;
@@ -314,7 +335,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Log.d(TAG, "column id=" + menuItem.ColumnId() + " column type="
 				+ menuItem.Type());
 
-		if (menuItem.Type().equals(ColumnTypeMovie)) {
+		if (menuItem.Type().equals(GDCommon.ColumnTypeMovie)) {
 
 			Intent intent = new Intent();
 			intent.putExtra(Content.COLUMN_ID, menuItem.ColumnId());
@@ -322,7 +343,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent.setClass(this, GDHDMovieActivity.class);
 			startActivity(intent);
 
-		} else if (menuItem.Type().equals(ColumnTypeTV)) {
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeTV)) {
 
 			// Has no sub-menu, only level1
 			Intent intent = new Intent();
@@ -332,7 +353,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent.setClass(this, GDTVActivity.class);
 			startActivity(intent);
 
-		} else if (menuItem.Type().equals(ColumnTypeGuodian)) {
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeGuodian)) {
 
 			if (index == MENULEVEL2_GUOWANG_KUAIXUNINDEX) {
 				String category = menuItem.MenuText();
@@ -355,7 +376,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				// show baozhi
 			}
 
-		} else if (menuItem.Type().equals(ColumnTypeGuodian)) {
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeGuodian)) {
 			String category = menuItem.MenuText();
 			String url = mService.getCategoryContent(category);
 			Log.d(TAG, category + " url = " + url);
@@ -367,19 +388,19 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				startActivity(intent);
 			}
 
-		} else if (menuItem.Type().equals(ColumnTypeSettings)) {
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSettings)) {
 			int menuLevel2ItemIndex = menu.FocusedPosition;
 			if (menuLevel2ItemIndex >= 0
 					&& menuLevel2ItemIndex < menu.Items.length) {
 				showSettingView(menuLevel2ItemIndex);
 			}
-		} else if (menuItem.Type().equals(ColumnTypeUserCenter)) {
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeUserCenter)) {
 			int menuLevel2ItemIndex = menu.FocusedPosition;
 			if (menuLevel2ItemIndex >= 0
 					&& menuLevel2ItemIndex < menu.Items.length) {
 				showUserCenter(menuLevel2ItemIndex);
 			}
-		} else if (menuItem.Type().equals(ColumnTypeMyFavourites)) {
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeMyFavourites)) {
 			int menuLevel2ItemIndex = menu.FocusedPosition;
 			if (menuLevel2ItemIndex >= 0
 					&& menuLevel2ItemIndex < menu.Items.length) {
@@ -430,7 +451,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mSelectedView = mMainMenu.getSelectedView();
 		if (mSelectedView != null) {
 			holder = (MainMenuAdapter.ItemHolder) mSelectedView.getTag();
-			holder.icon.setImageBitmap(menuItem.MenuIconFocused());
+			// holder.icon.setImageBitmap(menuItem.MenuIconFocused());
 			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
 			mSelectedView.invalidate();
 		}
@@ -497,24 +518,44 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void showMyFavourite(int item) {
+		Intent intent = null;
 
+		switch (item) {
+		case USERCENTER_LEVEL3_MOVIE:
+			intent = new Intent();
+			intent.putExtra(Content.COLUMN_ID, "");
+			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+			intent.setClass(this, GDFavoriteMovieActivity.class);
+			break;
+
+		case USERCENTER_LEVEL3_TV:
+		case USERCENTER_LEVEL3_RECORD:
+		case USERCENTER_LEVEL3_ENTERTAINMENT:
+			break;
+		default:
+			break;
+		}
+
+		if (intent != null) {
+			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+			startActivity(intent);
+		}
 	}
 
 	void showSettingView(int settingsItemIndex) {
-		if (settingsItemIndex < 0
-				|| settingsItemIndex > SystemSettingsCount - 1) {
+		if (settingsItemIndex < 0 || settingsItemIndex > SettingsCount - 1) {
 			return;
 		}
 
 		Intent intent = null;
 
 		switch (settingsItemIndex) {
-		case SystemSettingsUserInfo:
+		case SettingsUserInfo:
 			intent = new Intent();
 			intent.setClass(this, GDUserInfoActivity.class);
 			break;
 
-		case SystemSettingsDiskSpace:
+		case SettingsDiskSpace:
 			String disk = null;
 			if (mBound && mService != null) {
 				disk = mService.getStorageDisk();
@@ -527,24 +568,24 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			}
 			break;
 
-		case SystemSettingsSettings:
+		case SettingsSystemSettings:
 			// intent = new Intent();
-			// intent.setClass(this, GDSystemSettingsActivity.class);
+			// intent.setClass(this, GDSettingsActivity.class);
 			break;
 
-		case SystemSettingsGuodian:
+		case SettingsGuodian:
 			intent = new Intent();
 			intent.setClass(this, GDGuodianSettingsActivity.class);
 			break;
 
-		case SystemSettingsFileBrowser:
+		case SettingsFileBrowser:
 			intent = new Intent();
 			intent.setComponent(new ComponentName("com.fb.FileBrower",
 					"com.fb.FileBrower.FileBrower"));
 			intent.setAction("android.intent.action.MAIN");
 			break;
 
-		case SystemSettingsAdvanced:
+		case SettingsAdvanced:
 			intent = new Intent();
 			intent.setComponent(new ComponentName("com.android.settings",
 					"com.android.settings.Settings"));
@@ -1079,7 +1120,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	MenuItem[] mSubMenuItems;
 
 	Stack<Menu> mMenuStack;
-	MenuItem mSettingsMenuItem, mUserCenterMenuItem;
+
+	// MenuItem mSettingsMenuItem, mUserCenterMenuItem, mFavouritesMenuItem;
 
 	void setRootMenu(MenuItem[] items) {
 		mMainMenuItems = items;
@@ -1125,7 +1167,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				// root columns, create root menu
 				mMenuStack.clear();
 				int count = columns.length;
-				MenuItem[] items = new MenuItem[count + 2];
+				MenuItem[] items = new MenuItem[count];
 
 				Menu menu = new Menu();
 				menu.Items = items;
@@ -1146,8 +1188,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					}
 				}
 
-				items[count] = mUserCenterMenuItem;
-				items[count + 1] = mSettingsMenuItem;
+				// items[count] = mUserCenterMenuItem;
+				// items[count + 1] = mSettingsMenuItem;
 
 				setRootMenu(items);
 				return;
@@ -1176,14 +1218,18 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				subMenu.MenuLevel = columnLevel;
 				menuItem.SubMenu = subMenu;
 
-				// try to show the popup menu
-				if (!mIsPopupMenuHided) {
-					displayPopupMenu(true);
+				Menu topMenu = mMenuStack.peek();
+				if (index == topMenu.FocusedPosition) {
+					// try to show the popup menu
+					if (!mIsPopupMenuHided) {
+						displayPopupMenu(true);
+					}
+
+					mPopupMenu.clearChoices();
+					mPopupMenuAdapter.setDataSet(columns);
+					mPopupMenuAdapter.notifyDataSetChanged();
+					// TODO: add animation
 				}
-				mPopupMenu.clearChoices();
-				mPopupMenuAdapter.setDataSet(columns);
-				mPopupMenuAdapter.notifyDataSetChanged();
-				// TODO: add animation
 
 			} else {
 				menuItem.HasSubMenu = NO_SUBCOLUMNS;
@@ -1210,89 +1256,123 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void initializeMenu() {
-		ColumnData column = null;
-		ColumnData[] subColumns = null;
-		MenuItem[] items = null;
-		Menu subMenu = null;
-
-		// Settings
-		mSettingsMenuItem = new MenuItem();
-		column = new ColumnData();
-		column.Id = "";
-		column.Name = getResources().getString(
-				R.string.menulevel1_item_settings);
-		column.IconNormal = BitmapFactory.decodeResource(getResources(),
-				R.drawable.menulevel1_item_settings);
-		column.IconFocused = BitmapFactory.decodeResource(getResources(),
-				R.drawable.menulevel1_item_settings_focused);
-		mSettingsMenuItem.ItemData = column;
-
-		subColumns = new ColumnData[SystemSettingsCount];
-		for (int i = 0; i < subColumns.length; i++) {
-			subColumns[i] = new ColumnData();
-			subColumns[i].Type = ColumnTypeSettings;
-		}
-
-		subColumns[SystemSettingsUserInfo].Name = getResources().getString(
-				R.string.systemsettings_userinfo);
-		subColumns[SystemSettingsDiskSpace].Name = getResources().getString(
-				R.string.systemsettings_diskspace);
-		subColumns[SystemSettingsSettings].Name = getResources().getString(
-				R.string.systemsettings_settings);
-		subColumns[SystemSettingsGuodian].Name = getResources().getString(
-				R.string.systemsettings_guodian);
-		subColumns[SystemSettingsFileBrowser].Name = getResources().getString(
-				R.string.systemsettings_filebrowser);
-		subColumns[SystemSettingsAdvanced].Name = getResources().getString(
-				R.string.systemsettings_advanced);
-
-		subMenu = createMenu(subColumns, COLUMN_LEVEL_1 + 1);
-
-		mSettingsMenuItem.HasSubMenu = HAS_SUBCOLUMNS;
-		mSettingsMenuItem.SubMenu = subMenu;
-
-		// User center
-		mUserCenterMenuItem = new MenuItem();
-		column = new ColumnData();
-		column.Id = "";
-		column.Name = getResources().getString(
-				R.string.menulevel1_item_usercenter);
-		column.IconNormal = BitmapFactory.decodeResource(getResources(),
-				R.drawable.menulevel1_item_settings);
-		column.IconFocused = BitmapFactory.decodeResource(getResources(),
-				R.drawable.menulevel1_item_settings_focused);
-		mUserCenterMenuItem.ItemData = column;
-
-		subColumns = new ColumnData[USERCENTER_LEVEL2_COUNT];
-		for (int i = 0; i < subColumns.length; i++) {
-			subColumns[i] = new ColumnData();
-			subColumns[i].Type = ColumnTypeUserCenter;
-		}
-		subColumns[USERCENTER_LEVEL2_MYFAVOURITES].Name = getResources()
-				.getString(R.string.menulevel2_item_myfavourites);
-		subColumns[USERCENTER_LEVEL2_RECEIVECHECK].Name = getResources()
-				.getString(R.string.menulevel2_item_receivecheck);
-		subColumns[USERCENTER_LEVEL2_MYORDER].Name = getResources().getString(
-				R.string.menulevel2_item_myorder);
-		subColumns[USERCENTER_LEVEL2_DOWNLOADSTATUS].Name = getResources()
-				.getString(R.string.systemsettings_receivestatus);
-
-		subMenu = createMenu(subColumns, COLUMN_LEVEL_1 + 1);
-
-		mUserCenterMenuItem.HasSubMenu = HAS_SUBCOLUMNS;
-		mUserCenterMenuItem.SubMenu = subMenu;
-
-		Menu defaultMenu = new Menu();
-		items = new MenuItem[2];
-		items[0] = mUserCenterMenuItem;
-		items[1] = mSettingsMenuItem;
-		defaultMenu.Items = items;
-		defaultMenu.MenuLevel = COLUMN_LEVEL_1;
+		// ColumnData column = null;
+		// ColumnData[] subColumns = null;
+		// MenuItem[] items = null;
+		// Menu subMenu = null;
+		//
+		// // Settings
+		// mSettingsMenuItem = new MenuItem();
+		// column = new ColumnData();
+		// column.Id = "";
+		// column.Name = getResources().getString(
+		// R.string.menulevel1_item_settings);
+		// column.IconNormal = BitmapFactory.decodeResource(getResources(),
+		// R.drawable.menulevel1_item_settings);
+		// column.IconFocused = BitmapFactory.decodeResource(getResources(),
+		// R.drawable.menulevel1_item_settings_focused);
+		// mSettingsMenuItem.ItemData = column;
+		//
+		// subColumns = new ColumnData[SettingsCount];
+		// for (int i = 0; i < subColumns.length; i++) {
+		// subColumns[i] = new ColumnData();
+		// subColumns[i].Type = GDCommon.ColumnTypeSettings;
+		// }
+		//
+		// subColumns[SettingsUserInfo].Name = getResources().getString(
+		// R.string.Settings_userinfo);
+		// subColumns[SettingsDiskSpace].Name = getResources().getString(
+		// R.string.Settings_diskspace);
+		// subColumns[SettingsSettings].Name = getResources().getString(
+		// R.string.Settings_settings);
+		// subColumns[SettingsGuodian].Name = getResources().getString(
+		// R.string.Settings_guodian);
+		// subColumns[SettingsFileBrowser].Name = getResources().getString(
+		// R.string.Settings_filebrowser);
+		// subColumns[SettingsAdvanced].Name = getResources().getString(
+		// R.string.Settings_advanced);
+		//
+		// subMenu = createMenu(subColumns, COLUMN_LEVEL_1 + 1);
+		//
+		// mSettingsMenuItem.HasSubMenu = HAS_SUBCOLUMNS;
+		// mSettingsMenuItem.SubMenu = subMenu;
+		//
+		// // User center
+		// mUserCenterMenuItem = new MenuItem();
+		// column = new ColumnData();
+		// column.Id = "";
+		// column.Name = getResources().getString(
+		// R.string.menulevel1_item_usercenter);
+		// column.IconNormal = BitmapFactory.decodeResource(getResources(),
+		// R.drawable.menulevel1_item_settings);
+		// column.IconFocused = BitmapFactory.decodeResource(getResources(),
+		// R.drawable.menulevel1_item_settings_focused);
+		// mUserCenterMenuItem.ItemData = column;
+		//
+		// //user center level2 menu
+		// subColumns = new ColumnData[USERCENTER_LEVEL2_COUNT];
+		// for (int i = 0; i < subColumns.length; i++) {
+		// subColumns[i] = new ColumnData();
+		// subColumns[i].Type = GDCommon.ColumnTypeUserCenter;
+		// }
+		// subColumns[USERCENTER_LEVEL2_MYFAVOURITES].Name = getResources()
+		// .getString(R.string.menulevel2_item_myfavourites);
+		// subColumns[USERCENTER_LEVEL2_MYFAVOURITES].Type =
+		// GDCommon.ColumnTypeMyFavourites;
+		// subColumns[USERCENTER_LEVEL2_RECEIVECHECK].Name = getResources()
+		// .getString(R.string.menulevel2_item_receivecheck);
+		// subColumns[USERCENTER_LEVEL2_MYORDER].Name =
+		// getResources().getString(
+		// R.string.menulevel2_item_myorder);
+		// subColumns[USERCENTER_LEVEL2_DOWNLOADSTATUS].Name = getResources()
+		// .getString(R.string.Settings_receivestatus);
+		//
+		// subMenu = createMenu(subColumns, COLUMN_LEVEL_1 + 1);
+		//
+		// mUserCenterMenuItem.HasSubMenu = HAS_SUBCOLUMNS;
+		// mUserCenterMenuItem.SubMenu = subMenu;
+		//
+		//
+		// // my favorite menu
+		// mFavouritesMenuItem =
+		// mUserCenterMenuItem.SubMenu.Items[USERCENTER_LEVEL2_MYFAVOURITES];
+		// mFavouritesMenuItem.ItemData =
+		// mUserCenterMenuItem.SubMenu.Columns[USERCENTER_LEVEL2_MYFAVOURITES];
+		// mFavouritesMenuItem.HasSubMenu = HAS_SUBCOLUMNS;
+		//
+		// // user center level3 menu
+		// subColumns = new ColumnData[USERCENTER_LEVEL3_COUNT];
+		// for (int i = 0; i < subColumns.length; i++) {
+		// subColumns[i] = new ColumnData();
+		// // subColumns[i].Type = ColumnTypeMyFavourites;
+		// }
+		//
+		// subColumns[USERCENTER_LEVEL3_MOVIE].Name = getResources()
+		// .getString(R.string.menulevel3_item_movie);
+		// subColumns[USERCENTER_LEVEL3_TV].Name = getResources()
+		// .getString(R.string.menulevel3_item_tv);
+		// subColumns[USERCENTER_LEVEL3_RECORD].Name = getResources().getString(
+		// R.string.menulevel3_item_record);
+		// subColumns[USERCENTER_LEVEL3_ENTERTAINMENT].Name = getResources()
+		// .getString(R.string.menulevel3_item_entertainment);
+		//
+		// subMenu = createMenu(subColumns, COLUMN_LEVEL_1 + 2);
+		// mFavouritesMenuItem.SubMenu = subMenu;
+		//
+		//
+		// Menu defaultMenu = new Menu();
+		// items = new MenuItem[2];
+		// items[0] = mUserCenterMenuItem;
+		// items[1] = mSettingsMenuItem;
+		// defaultMenu.Items = items;
+		// defaultMenu.MenuLevel = COLUMN_LEVEL_1;
+		//
+		// mMenuStack = new Stack<Menu>();
+		// mMenuStack.add(defaultMenu);
+		//
+		// setRootMenu(items);
 
 		mMenuStack = new Stack<Menu>();
-		mMenuStack.add(defaultMenu);
-
-		setRootMenu(items);
 	}
 
 	protected void initializeView() {
@@ -1324,7 +1404,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMainMenuAdapter = new MainMenuAdapter(this);
 		mMainMenuAdapter.setDataSet(mMainMenuItems);
 		mMainMenu.setAdapter(mMainMenuAdapter);
-		mMainMenu.requestFocus();
+		// mMainMenu.requestFocus();
 
 		mMainMenu.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
@@ -1370,28 +1450,89 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	@Override
 	public void initializeApp() {
-		Log.d(TAG, "++++++++++==========initializeApp ================  =====");
+		Log.d(TAG, "++++++++++==========initializeApp ================");
 		// mMediaScheduler.start(mService);
 		startEngine();
 
 		initializeData();
 	}
 
+	@Override
+	public void deinitializeApp() {
+		Log.d(TAG, "++++++++++==========deinitializeApp ================");
+	}
+
+	String mUpgradePackageFile = "";
+
 	public void handleNotifiy(int what, Object data) {
-		if (what == GDCommon.MSG_DISK_SPACEWARNING) {
+		switch (what) {
+		case GDCommon.MSG_DISK_SPACEWARNING: {
 			String disk = (String) data;
 			if (disk != null && !disk.isEmpty()) {
 				Intent intent = new Intent();
 				intent.putExtra(GDCommon.KeyDisk, disk);
 				intent.setClass(this, GDDiskManagementActivity.class);
 			}
+			break;
 		}
+
+		case GDCommon.MSG_SYSTEM_UPGRADE: {
+			mUpgradePackageFile = (String) data;
+			notifyUpgrade();
+			break;
+		}
+
+		default:
+			break;
+		}
+	}
+
+	void notifyUpgrade() {
+		if (mUpgradePackageFile == null || mUpgradePackageFile.isEmpty())
+			return;
+
+		File packageFile = new File(mUpgradePackageFile);
+		if (packageFile == null || !packageFile.exists())
+			return;
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle(R.string.dialog_upgrade_title);
+		builder.setMessage(R.string.dialog_upgrade_notes + " " + mUpgradePackageFile);
+
+		builder.setPositiveButton(R.string.button_text_ok,
+				new OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						rebootInstallPackage(mUpgradePackageFile);
+						dialog.dismiss();
+					}
+
+				});
+
+		builder.setNegativeButton(R.string.button_text_cancel,
+				new OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+
+				});
+
+		builder.create().show();
+	}
+
+	void rebootInstallPackage(String packageFile) {
+		RebootUtils.rebootInstallPackage(this, packageFile);
 	}
 
 	private void startEngine() {
 		// mMediaScheduler.start(mService);
 		// mPowerController.start(mService);
 		// mWeatherController.start(mService);
+
+		// notifyUpgrade();
 	}
 
 	private void stopEngine() {

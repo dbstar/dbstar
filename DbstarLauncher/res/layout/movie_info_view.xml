@@ -24,9 +24,10 @@
         android:layout_alignParentTop="true"
         android:layout_marginRight="20dp"
         android:layout_marginTop="38dp"
+        android:gravity="center"
         android:background="@drawable/timeout_view_bg"
         android:textColor="#ffffff"
-        android:textSize="16sp" />
+        android:textSize="22sp" />
 
     <LinearLayout
         android:id="@+id/metadata_view"
@@ -138,7 +139,7 @@
             android:id="@+id/delete_button"
             android:layout_width="153dp"
             android:layout_height="47dp"
-            android:background="@drawable/greenbutton_bg_selector"
+            android:background="@drawable/redbutton_bg_selector"
             android:text="@string/delete_button_text" />
     </LinearLayout>
 

@@ -10,29 +10,22 @@ import java.util.List;
 
 import android.util.Log;
 
-public class GDDataAccessor {
-	private static final String TAG = "GDDataAccessor";
+public class GDSystemConfigure {
+	private static final String TAG = "GDSystemConfigure";
 
-	public static final String EBOOK_FOLDER = "ebook";
-	public static final String MOVIE_FOLDER = "movie";
-	public static final String MEDIA_FOLDER = "media";
-	public static final String TV_FOLDER = "tv";
-	public static final String DVBDATABASE_FOLDER = "database";
-	public static final String DVBDATABASE_File = "Dbstar.db";
-	public static final String DefaultStorageDisk = "/mnt/sda1";
-
-	public static final String CONFIGURE_File = "dbstar.conf";
-	public static final String SMARTHOMEDATABASE = "/data/dbstar/smarthome/database/smarthome.db";
-
-	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
-	private static final String WEATHER_CITYCODE_DATABASE = "/data/dbstar/weather_citycode.db";
-	private static final String DefaultPushPath = "/videos1/pushvod/";
+	public static final String EBooKFolder = "ebook";
 	private static final String GuodianServer = "GuodianServer";
+	
+	public static final String DefaultStorageDisk = "/mnt/sda1";
+	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
+	public static final String SmartHomeDatabase = "/data/dbstar/smarthome/database/smarthome.db";	
+	public static final String DVBDatabaseFile = "Dbstar.db";
+	public static final String UserDatabaseFile = "userdb.db";
+
+	public static final String DefaultDesFile = "/info/desc/Publication.xml";
 
 	private static final String PROPERTY_STORAGE_DIR = "storage";
-	private static final String PROPERTY_DEMO_MOVIE = "demo_movie";
-	private static final String PROPERTY_DEMO_PIC = "demo_pic";
-	private static final String PROPERTY_HOMEPAGE = "homepage";
+	private static final String PROPERTY_LOCALIZATION = "language";
 
 	private String Property_GuoWangDongTai;
 	private String Property_GuoWangKuaiXun;
@@ -50,13 +43,18 @@ public class GDDataAccessor {
 	private String Property_ZaZhi;
 	private String Property_BaoZhi;
 
+	// the storage disk:
+	// 1. it maybe set in the configure file
+	// 2. if not set in configure file, we will first get the default one,
+	//    if the default one is not available, try to get from the mounted disk
+	//    that has the "dbstar" folder.
 	private String mStorageDisk = "";
 	private String mStorageDir = "";
-	private String mPushPath = "";
-	private String mHomePage = "";
-	private String mGuodianServer = "";
 	private String mIconRootDir;
+		
+	private String mLocalization = GDCommon.LangCN;
 
+	// paramter used for Guodian urls
 	private String[][] mCategoryContents = { { Property_GuoWangDongTai, "" },
 			{ Property_GuoWangKuaiXun, "" }, { Property_ShiPinDongTai, "" },
 			{ Property_GuoJiaDianWangBao, "" }, { Property_DingShiRenWu, "" },
@@ -64,10 +62,14 @@ public class GDDataAccessor {
 			{ Property_HaoNengFenXi, "" }, { Property_WoDeYongDian, "" },
 			{ Property_YongDianMingXi, "" }, { Property_YongDianTiYan, "" },
 			{ Property_JieNengChangShi, "" } };
-
+	// demo data for push message
 	List<String> mPushedMessage = null;
 
-	public boolean configure() {
+	private String mGuodianServer = "";
+	
+	// read configure from file
+	// call this method every time the disk is mounted or unmounted
+	public boolean readConfigure() {
 
 		File configureFile = new File(ConfigureFile);
 		if (configureFile == null || !configureFile.exists()) {
@@ -82,37 +84,46 @@ public class GDDataAccessor {
 			return false;
 		}
 
-		// not set in configure, use default
-		if (mPushPath.equals("")) {
-			mPushPath = DefaultPushPath;
+		return true;
+	}
+
+	// get the storage directory
+	// call this method every time the disk is mounted or unmounted
+	public boolean configureStorage() {
+		// if this disk is already set, check whether it is valid
+
+		if (!mStorageDir.equals("")) {
+			File storageDir = new File(mStorageDir);
+			if (storageDir != null && storageDir.exists())
+				return true;
 		}
+		
+		// clear the cached disk path
+		mStorageDir = "";
+		
+		// get default disk
+		File defaultDir = new File(DefaultStorageDisk + "/dbstar");
+		if (defaultDir.exists()) {
+			mStorageDisk = DefaultStorageDisk;
+			mStorageDir = DefaultStorageDisk + "/dbstar";
+		} else {
+			// get from mounted disks
+			String paths[] = getMountedDisks();
+			for (String path : paths) {
+				File dbstarFolder = new File(path + "/dbstar");
 
-		// not set in configure
-		if (mStorageDir.equals("")) {
-			// get default disk
-			File defaultDisk = new File(DefaultStorageDisk + "/dbstar");
-			if (defaultDisk.exists()) {
-				mStorageDisk = DefaultStorageDisk;
-				mStorageDir = DefaultStorageDisk + "/dbstar";
-			} else {
-				// get from mounted disks
-				String paths[] = getMountedDisks();
-				for (String path : paths) {
-					File dbstarFolder = new File(path + "/dbstar");
-
-					if (dbstarFolder.exists()) {
-						File[] files = dbstarFolder.listFiles();
-						if (files != null && files.length > 0) {
-							mStorageDisk = path;
-							mStorageDir = path + "/dbstar";
-							Log.d(TAG, "root dir = " + mStorageDir);
-							break;
-						}
+				if (dbstarFolder.exists()) {
+					File[] files = dbstarFolder.listFiles();
+					if (files != null && files.length > 0) {
+						mStorageDisk = path;
+						mStorageDir = path + "/dbstar";
+						Log.d(TAG, "root dir = " + mStorageDir);
+						break;
 					}
 				}
 			}
 		}
-		
+
 		if (mStorageDir.isEmpty()) {
 			return false;
 		}
@@ -130,6 +141,20 @@ public class GDDataAccessor {
 
 		return ret;
 	}
+	
+	public boolean isDiskAvailable() {
+		boolean available = false;
+		Log.d(TAG, "check disk available " + mStorageDisk);
+
+		if(mStorageDisk == null || mStorageDisk.isEmpty())
+			return available;
+		
+		File file = new File(mStorageDisk);
+		if (file != null && file.exists())
+			available = true;
+		Log.d(TAG, "=" + available);
+		return available;
+	}
 
 	public String getStorageDisk() {
 		return mStorageDisk;
@@ -138,32 +163,44 @@ public class GDDataAccessor {
 	public String getStorageDir() {
 		return mStorageDir;
 	}
-
-	public String getDefaultStorageDisk() {
-		return DefaultStorageDisk;
-	}
-
+	
 	public String getIconRootDir() {
 		mIconRootDir = mStorageDir;
 		return mIconRootDir;
 	}
 
-	public String getDatabaseFile() {
+	public String getLocalization() {
+		return mLocalization;
+	}
+	
+	private void setLocalization(String localization) {
+		mLocalization = localization;
+	}
+	
+	public String getDVBDatabaseFile() {
 		if (mStorageDir == null || mStorageDir.isEmpty())
 			return "";
 
-		String dbFile = new String(mStorageDir + "/" + DVBDATABASE_File);
+		String dbFile = new String(mStorageDir + "/" + DVBDatabaseFile);
 		return dbFile;
 	}
 
 	public String getSmartHomeDBFile() {
-		String dbFile = SMARTHOMEDATABASE;
+		String dbFile = SmartHomeDatabase;
 
 		return dbFile;
 	}
+	
+	public String getUserDatabaseFile() {
+		if (mStorageDir == null || mStorageDir.isEmpty())
+			return "";
 
+		String dbFile = new String(mStorageDir + "/" + UserDatabaseFile);
+		return dbFile;
+	}
+	
 	public String getDetailsDataFile(ContentData content) {
-		String xmlFile = new String(mStorageDir + "/" + content.XMLFilePath);
+		String xmlFile = new String(mStorageDir + "/" + content.XMLFilePath + DefaultDesFile);
 
 		File file = new File(xmlFile);
 		if (!file.exists()) {
@@ -229,7 +266,7 @@ public class GDDataAccessor {
 	}
 
 	public String getEBookFolder() {
-		return new String(mStorageDir + "/" + EBOOK_FOLDER);
+		return new String(mStorageDir + "/" + EBooKFolder);
 	}
 
 	public String getEbookFile(String category) {
@@ -258,14 +295,6 @@ public class GDDataAccessor {
 		return content;
 	}
 
-	public String getWeatherCityCodeBDFile() {
-		return WEATHER_CITYCODE_DATABASE;
-	}
-
-	public String getHomePage() {
-		return mHomePage;
-	}
-
 	public String getGuodianServer() {
 		return mGuodianServer;
 	}
@@ -278,25 +307,6 @@ public class GDDataAccessor {
 		for (int i = 0; i < mPushedMessage.size(); i++) {
 			retMessages.add(mPushedMessage.get(i));
 		}
-	}
-
-	private String mDemoMovie;
-	private String mDemoPic;
-
-	public String getDemoMovie() {
-		String file = "";
-		if (!mDemoMovie.isEmpty()) {
-			file = mStorageDir + "/" + MEDIA_FOLDER + "/" + mDemoMovie;
-		}
-		return file;
-	}
-
-	public String getDemoPic() {
-		String file = "";
-		if (!mDemoPic.isEmpty()) {
-			file = mStorageDir + "/" + MEDIA_FOLDER + "/" + mDemoPic;
-		}
-		return file;
 	}
 
 	private boolean parseConfigure(File configureFile) {
@@ -332,12 +342,8 @@ public class GDDataAccessor {
 
 					if (property[0].equals(PROPERTY_STORAGE_DIR)) {
 						mStorageDir = property[1].trim();
-					} else if (property[0].equals(PROPERTY_DEMO_MOVIE)) {
-						mDemoMovie = property[1].trim();
-					} else if (property[0].equals(PROPERTY_DEMO_PIC)) {
-						mDemoPic = property[1].trim();
-					} else if (property[0].equals(PROPERTY_HOMEPAGE)) {
-						mHomePage = property[1].trim();
+					} else if (property[0].equals(PROPERTY_LOCALIZATION)) {
+						setLocalization(property[1].trim());
 					} else if (property[0].equals("Property_GuoWangDongTai")) {
 						mCategoryContents[0][0] = property[1].trim();
 					} else if (property[0].equals("Property_GuoWangKuaiXun")) {
@@ -366,8 +372,6 @@ public class GDDataAccessor {
 						Property_ZaZhi = property[1].trim();
 					} else if (property[0].equals("Property_BaoZhi")) {
 						Property_BaoZhi = property[1].trim();
-					} else if (property[0].equals("pushpath")) {
-						mPushPath = property[1].trim();
 					} else if (property[0].equals("GuodianServer")) {
 						mGuodianServer = property[1].trim();
 					} else if (property[0].equals("PushedMessage")) {
@@ -420,11 +424,6 @@ public class GDDataAccessor {
 					|| "/mnt/asec".equals(file.toString()) || "/mnt/secure"
 						.equals(file.toString())))// ||"/mnt/sdcard".equals(file.toString())))
 			{
-				/*
-				 * File[] disks = file.listFiles(); if (disks != null) { for
-				 * (File disk : disks) { list.add(disk.toString()); } }
-				 */
-
 				list.add(file.toString());
 			}
 		}

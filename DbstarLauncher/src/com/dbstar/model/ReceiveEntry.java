@@ -26,8 +26,12 @@ public class ReceiveEntry {
 
 	public void ConverSize() {
 		
-		float progress, total;
+		// normalize the value
+		if (RawProgress < 0) RawProgress = 0;
+		if (RawTotal < 0) RawTotal = 0;
 		
+		float progress, total;
+
 		StringUtil.SizePair progressPair = StringUtil.formatSize(RawProgress);
 		ProgressUnit = progressPair.Unit;
 		progress = progressPair.Value;

@@ -1095,7 +1095,9 @@ public abstract class GDAdapterView<T extends Adapter> extends ViewGroup {
      * @param position Our current position
      */
     void setSelectedPositionInt(int position) {
-    	
+    	mOldSelectedPosition = mSelectedPosition;
+    	mOldSelectedRowId = mSelectedRowId;
+  
         mSelectedPosition = position;
         mSelectedRowId = getItemIdAtPosition(position);
     }

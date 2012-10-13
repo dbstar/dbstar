@@ -21,7 +21,7 @@ public class GDMediaScheduler implements OnCompletionListener,
 		OnErrorListener, OnPreparedListener,
 		SurfaceHolder.Callback {
 
-	private static final String TAG = "GDMediaController";
+	private static final String TAG = "GDMediaScheduler";
 	
 	private static final int RNONE = 0;
 	private static final int RVideo = 1;
@@ -90,8 +90,8 @@ public class GDMediaScheduler implements OnCompletionListener,
 		mService = service;
 		
 		mResources = new String[2];
-		mResources[0] = mService.getDemoMovie();
-		mResources[1] = mService.getDemoPic();
+//		mResources[0] = mService.getDemoMovie();
+//		mResources[1] = mService.getDemoPic();
 		
 		if (!mResources[0].equals("") && !mResources[1].equals("")) {
 			mResourcesReady = true;

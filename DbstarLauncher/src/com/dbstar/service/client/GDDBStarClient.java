@@ -2,11 +2,9 @@ package com.dbstar.service.client;
 
 import java.io.UnsupportedEncodingException;
 
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -17,7 +15,6 @@ import com.dbstar.model.ReceiveEntry;
 
 public class GDDBStarClient {
 	private static final String TAG = "GDDBStarClient";
-	private static final String DOWNLOAD_FINISH_ACTION = "com.dbstar.DbstarDVB.DOWNLOAD_FINISHED";
 
 	private static final int DBSTARSERVICE_NONE = -1;
 	private static final int DBSTARSERVICE_START = 0;
@@ -36,8 +33,7 @@ public class GDDBStarClient {
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
 
-			Log.d(TAG,
-					"++++++++++++++++GDDBStarClient onServiceConnected++++++++++++++");
+			Log.d(TAG, "+++++++++++GDDBStarClient onServiceConnected+++++++++");
 
 			mDbstarService = IDbstarService.Stub.asInterface(service);
 
@@ -79,7 +75,7 @@ public class GDDBStarClient {
 			try {
 				mDbstarService.startDvbpush();
 				mDbStarServiceState = DBSTARSERVICE_START;
-				
+
 				Log.d(TAG, "+++++++++++startDvbpush+++++++++++");
 
 			} catch (RemoteException e) {
@@ -135,68 +131,100 @@ public class GDDBStarClient {
 	}
 
 	// data format: "1001|taska|23932|23523094823\n1002|任务2|234239|12349320\n"
-	
+
 	public ReceiveEntry[] getTaskInfo() {
 		ReceiveEntry[] entries = null;
 
 		Log.d(TAG, "+++++++++++ getTaskInfo +++++++++++");
-		
-		if (mDbstarService == null)
-			return entries;
 
-		try {
-			Intent intent = mDbstarService.getTaskInfo();
+//		if (mDbstarService == null)
+//			return entries;
+//
+//		try {
+//			Intent intent = mDbstarService.getTaskInfo();
+//
+//			byte[] bytes = intent.getByteArrayExtra("taskinfo");
+//
+//			if (bytes != null) {
+//				String info = null;
+//				try {
+//					info = new String(bytes, "utf-8");
+//					// Log.d(TAG, "TaskInfo: " + info);
+//				} catch (UnsupportedEncodingException e) {
+//					e.printStackTrace();
+//				}
+//
+//				String[] items = null;
+//				if (info != null) {
+//					items = info.split("\n");
+//				}
+//
+//				if (items != null) {
+//					entries = new ReceiveEntry[items.length];
+//
+//					for (int i = 0; i < items.length; i++) {
+//						entries[i] = createEntry(items[i]);
+//					}
+//
+//				}
+//
+//			}
+//		} catch (RemoteException e) {
+//			e.printStackTrace();
+//		}
 
-			byte[] bytes = intent.getByteArrayExtra("taskinfo");
-			if (bytes != null) {
-				String info = null;
-				try {
-					info = new String(bytes, "utf-8");
-					Log.d(TAG, "TaskInfo: " + info);
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				}
-				
-				String[] items = null;
-				if (info != null) {
-					items = info.split("\n");
-				}
-				
-				if (items != null) {
-					entries = new ReceiveEntry[items.length];
-					
-					for(int i=0; i<items.length; i++) {
-						entries[i] = createEntry(items[i]);
-					}
-					
-				}
-				
-			}
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+		entries = test();
 
 		return entries;
 	}
-	
-	ReceiveEntry createEntry(String data) {
-		ReceiveEntry entry = null;
-		
-		if (data == null || data.isEmpty())
-			return entry;
-		
-		String[] items = data.split("|");
-		
-		for(int i=0 ; i<items.length ; i++) {
-			Log.d(TAG, "item " + i + " = " + items[i]);
+
+	ReceiveEntry[] test() {
+		String info = "1001\ttaska\t23932\t23523094823\n1002\t任务2\t234239\t12349320\n";
+		info += "1003\ttaska\t23932\t23523094823\n1004\t任务2\t234239\t12349320\n";
+		info += "1005\ttaska\t23932\t23523094823\n1006\t任务2\t234239\t12349320\n";
+		info += "1007\ttaska\t23932\t23523094823\n1008\t任务2\t234239\t12349320\n";
+		info += "1009\ttaska\t23932\t23523094823\n1010\t任务2\t234239\t12349320\n";
+		info += "1011\ttaska\t23932\t23523094823\n1012\t任务2\t234239\t12349320\n";
+
+		String[] items = null;
+		if (info != null) {
+			items = info.split("\n");
+		}
+
+		ReceiveEntry[] entries = null;
+		if (items != null) {
+			entries = new ReceiveEntry[items.length];
+
+			for (int i = 0; i < items.length; i++) {
+				entries[i] = createEntry(items[i]);
+			}
+
 		}
 		
+		return entries;
+	}
+
+	ReceiveEntry createEntry(String data) {
+		ReceiveEntry entry = null;
+
+		if (data == null || data.isEmpty())
+			return entry;
+
+		String[] items = data.split("\t");
+
+		// for (int i = 0; i < items.length; i++) {
+		// Log.d(TAG, "item " + i + " = " + items[i]);
+		// }
+
 		entry = new ReceiveEntry();
 		entry.Id = items[0];
 		entry.Name = items[1];
 		entry.RawProgress = Long.valueOf(items[2]);
 		entry.RawTotal = Long.valueOf(items[3]);
-		
+		// Log.d(TAG, "progress = " + entry.RawProgress + " total = " +
+		// entry.RawTotal);
+		entry.ConverSize();
+
 		return entry;
 	}
 

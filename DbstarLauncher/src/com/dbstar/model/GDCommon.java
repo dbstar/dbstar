@@ -7,24 +7,25 @@ public class GDCommon {
 	public static final int MSG_NETWORK_CONNECT = 4;
 	public static final int MSG_NETWORK_DISCONNECT = 5;
 	public static final int MSG_DISK_SPACEWARNING = 6;
-	
+	public static final int MSG_SYSTEM_UPGRADE = 7;
 		
 	public static final String KeyDisk = "disk";
 	
 	public static final String LangCN = "chi";
 	public static final String LangEN = "eng";
 	
-	public static final int LocalizationEN = 0;
-	public static final int LocalizationCN = 1;
+	public static final String ColumnTypeTV = "2";
+	public static final String ColumnTypeMovie = "1";
+	public static final String ColumnTypePreview = "3";
+	public static final String ColumnTypeGuodian = "100";
+	public static final String ColumnTypeSettings = "5";
+	public static final String ColumnTypeUserCenter = "6";
+	public static final String ColumnTypeMyFavourites = "7";
+	public static final String ColumnTypeRecord = "8";
+	public static final String ColumnTypeEntertainment = "9";
 	
-	public static int getLocalizationType(String localization) {
-		if (localization.equals(LangEN)) {
-			return LocalizationEN;
-		} else if (localization.equals(LangCN)) {
-			return LocalizationCN;
-		} else {
-			return -1;
-		}
-	}
+	
+	public static final String KeyMediaData = "media_data";
+	public static final String KeyPackgeFile = "packge_file";
 	
 }

@@ -8,6 +8,7 @@ import java.util.TimerTask;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -44,10 +45,16 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	private ClientObserver mObserver = null;
 
-	TextView mPageNumberView;
 	ListView mListView;
 	TextView mDownloadSpeedView;
 	TextView mDiskInfoView;
+	TextView mPageItemsView;
+	TextView mPageNumberView;
+
+	String mStatusWaitting, mStatusDownloading, mStatusFinished, mStatusFailed;
+	String mTextDi, mTextYe, mTextGong, mTextTiao;
+
+	Drawable mReceiveItemLightBackground, mReceiveItemDarkBackground;
 
 	private Handler mUIUpdateHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -64,6 +71,10 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		}
 	};
 
+	private void callTask() {
+		mUIUpdateHandler.sendEmptyMessage(MSG_UPDATEPROGRESS);
+	}
+
 	Timer mTimer = new Timer();
 	TimerTask mTask = null;
 
@@ -78,13 +89,13 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 		initializeView();
 
-		Intent intent = getIntent();
-		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
-		
+		// Intent intent = getIntent();
+		// mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
+		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+
 		mTask = new TimerTask() {
 			public void run() {
-				mUIUpdateHandler.sendEmptyMessage(MSG_UPDATEPROGRESS);
+				callTask();
 			}
 		};
 	}
@@ -92,7 +103,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	public void onStart() {
 		super.onStart();
 
-		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 	}
 
 	public void onStop() {
@@ -100,29 +111,31 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 		mTimer.cancel();
 		mTimer.purge();
+
+		mService.stopGetTaskInfo();
 	}
 
 	public void onServiceStart() {
 		super.onServiceStart();
 
 		mService.startGetTaskInfo();
-		mTimer.schedule(mTask, 0, UpdatePeriodInMills);
+		mTimer.schedule(mTask, 1000, UpdatePeriodInMills);
 	}
 
 	public void onServiceStop() {
 		super.onServiceStop();
-
-		mService.stopGetTaskInfo();
-		mTimer.cancel();
-		mTimer.purge();
 	}
 
 	private void loadPrevPage() {
+		Log.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
+				+ mPageNumber);
+
 		if ((mPageNumber - 1) >= 0) {
 			Log.d(TAG, "loadPrevPage");
 
 			mPageNumber--;
-			mPageNumberView.setText(formPageText(mPageNumber));
+			// mPageNumberView.setText(formPageText(mPageNumber));
+			updatePageInfoView();
 
 			ReceiveEntry[] entries = mPageDatas.get(mPageNumber);
 			mAdapter.setDataSet(entries);
@@ -133,7 +146,8 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	}
 
 	private void loadNextPage() {
-		Log.d(TAG, "loadNextPage");
+		Log.d(TAG, "loadNextPage count=" + mPageCount + " number= "
+				+ mPageNumber);
 
 		if (mPageCount == 0)
 			return;
@@ -141,7 +155,8 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		if ((mPageNumber + 1) < mPageCount) {
 
 			mPageNumber++;
-			mPageNumberView.setText(formPageText(mPageNumber));
+			// mPageNumberView.setText(formPageText(mPageNumber));
+			updatePageInfoView();
 
 			ReceiveEntry[] entries = mPageDatas.get(mPageNumber);
 			mAdapter.setDataSet(entries);
@@ -151,22 +166,32 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		}
 	}
 
-	void updateEntryData(ReceiveEntry oldEntry, ReceiveEntry newEntry) {
-		oldEntry.RawProgress = newEntry.RawProgress;
-		oldEntry.RawTotal = newEntry.RawTotal;
-		oldEntry.ConverSize();
-	}
+	// void updateEntryData(ReceiveEntry oldEntry, ReceiveEntry newEntry) {
+	// oldEntry.RawProgress = newEntry.RawProgress;
+	// oldEntry.RawTotal = newEntry.RawTotal;
+	// oldEntry.ConverSize();
+	// }
 
 	void updatePageData(ReceiveEntry[] pageEntries,
 			ArrayList<ReceiveEntry> allEntries) {
+
+		Log.d(TAG, "update page size=" + pageEntries.length + " total = "
+				+ allEntries.size());
+
+		ArrayList<ReceiveEntry> toRemoves = new ArrayList<ReceiveEntry>();
 		for (int i = 0; i < pageEntries.length; i++) {
 			for (int j = 0; j < allEntries.size(); j++) {
 				if (pageEntries[i].Id.equals(allEntries.get(j).Id)) {
-					updateEntryData(pageEntries[i], allEntries.get(j));
+					// updateEntryData(pageEntries[i], allEntries.get(j));
+					pageEntries[i] = allEntries.get(j);
 					// remove not used items
-					allEntries.remove(j);
+					toRemoves.add(allEntries.get(j));
 				}
 			}
+		}
+
+		if (toRemoves.size() > 0) {
+			allEntries.removeAll(toRemoves);
 		}
 	}
 
@@ -182,9 +207,10 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			if (pageSize > 0) {
 				ReceiveEntry[] newEntries = new ReceiveEntry[pageSize];
 				for (int j = 0; j < pageSize; j++) {
-					newEntries[j] = entries.get(j);
-					entries.remove(j);
+					newEntries[j] = entries.get(0);
+					entries.remove(0);
 				}
+				Log.d(TAG, "add page size " + newEntries.length);
 				mPageDatas.add(newEntries);
 			}
 		}
@@ -201,47 +227,51 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			}
 		}
 
-		if (mPageDatas.get(mPageDatas.size() - 1).length < PageSize) {
+		int lastPageNumber = mPageDatas.size() - 1;
+
+		if (mPageDatas.get(lastPageNumber).length < PageSize) {
 			// the old last page is not full, update it
-			int pageNumber = mPageDatas.size() - 1;
-			ReceiveEntry[] lastEntries = mPageDatas.get(pageNumber);
-			mPageDatas.remove(pageNumber);
+			ReceiveEntry[] lastEntries = mPageDatas.get(lastPageNumber);
+			mPageDatas.remove(lastPageNumber);
 			updatePageData(lastEntries, entries);
 
-			int pageSize = lastEntries.length + entries.size();
-			pageSize = pageSize < PageSize ? pageSize : PageSize;
+			ReceiveEntry[] newEntries = null;
+			if (entries.size() > 0) {
+				int pageSize = lastEntries.length + entries.size();
+				pageSize = pageSize < PageSize ? pageSize : PageSize;
 
-			ReceiveEntry[] newEntries = new ReceiveEntry[pageSize];
-			int i = 0;
-			for (i = 0; i < lastEntries.length; i++) {
-				newEntries[i] = lastEntries[i];
-			}
-
-			if (i < PageSize && newEntries.length == PageSize) {
-				for (int j = i; j < newEntries.length; i++) {
-					newEntries[j] = entries.get(j);
-					entries.remove(j);
+				newEntries = new ReceiveEntry[pageSize];
+				int i = 0;
+				for (i = 0; i < lastEntries.length; i++) {
+					newEntries[i] = lastEntries[i];
 				}
-			}
-			
-			addNewPageDatas(entries);
 
+				for (; i < newEntries.length; i++) {
+					newEntries[i] = entries.get(0);
+					entries.remove(0);
+				}
+			} else {
+				newEntries = lastEntries;
+			}
+
+			mPageDatas.add(newEntries);
 		}
 
+		addNewPageDatas(entries);
 	}
-	
+
 	long computeEntriesSize(ReceiveEntry[] entries) {
 		long size = 0;
-		for(int i=0; i<entries.length ; i++) {
+		for (int i = 0; i < entries.length; i++) {
 			size += entries[i].RawProgress;
 		}
-		
+
 		return size;
 	}
-	
+
 	long computeAllPagesSize(List<ReceiveEntry[]> pages) {
 		long size = 0;
-		for (int i=0; i<pages.size(); i++) {
+		for (int i = 0; i < pages.size(); i++) {
 			size += computeEntriesSize(pages.get(i));
 		}
 		return size;
@@ -257,21 +287,22 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 			long preSize = 0;
 			long curSize = 0;
-			
+
 			preSize = computeAllPagesSize(mPageDatas);
 			curSize = computeEntriesSize(entries);
-			
+
 			float speed = (float) ((curSize - preSize) / 1024)
 					/ (float) UpdatePeriodInSecs;
-			String strSpeed = StringUtil.formatFloatValue(speed)
-					+ "KB/s";
+			String strSpeed = StringUtil.formatFloatValue(speed) + "KB/s";
 			mDownloadSpeedView.setText(strSpeed);
-			
+
 			ArrayList<ReceiveEntry> entriesList = new ArrayList<ReceiveEntry>();
 			for (int i = 0; i < entries.length; i++) {
 				entriesList.add(entries[i]);
 			}
-			
+
+			// Log.d(TAG, "1 page size=" + mPageDatas.size() + " entry size="
+			// + entriesList.size());
 			if (mPageDatas.size() > 0) {
 				updatePagesData(entriesList);
 			} else {
@@ -280,32 +311,85 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 			mPageCount = mPageDatas.size();
 
+			if (mPageNumber > (mPageCount - 1)) {
+				mPageNumber = mPageCount - 1;
+			}
+
 			// update current page
-			mPageNumberView.setText(formPageText(mPageNumber));
+			// mPageNumberView.setText(formPageText(mPageNumber));
 			mAdapter.setDataSet(mPageDatas.get(mPageNumber));
 			mAdapter.notifyDataSetChanged();
 
 			GDDiskInfo.DiskInfo diskInfo = null;
 			if (mBound) {
-				diskInfo = GDDiskInfo.getDiskInfo(
-						mService.getStorageDisk(), true);
+				String disk = mService.getStorageDisk();
+				if (disk == null || disk.isEmpty())
+					return;
+
+				diskInfo = GDDiskInfo.getDiskInfo(disk, true);
 				if (diskInfo != null) {
-					String diskSpaceStr = diskInfo.DiskSpace + "/"
-							+ diskInfo.DiskSize;
-					Log.d(TAG, " disk space = " + diskSpaceStr);
-					mDiskInfoView.setText(diskSpaceStr);
+					// String diskSpaceStr = diskInfo.DiskSpace + "/"
+					// + diskInfo.DiskSize;
+					// Log.d(TAG, " disk space = " + diskSpaceStr);
+					mDiskInfoView.setText(diskInfo.DiskSpace);
 				}
 			}
 
+			updatePageInfoView();
 		}
 	}
 
-	public void initializeView() {
-		super.initializeView();
+	void updatePageInfoView() {
+		int pageNumber = mPageCount > 0 ? (mPageNumber + 1) : 0;
+		String pagesInfo = mTextDi + pageNumber + mTextYe;
+		pagesInfo += "/" + mTextGong + (mPageCount) + mTextYe;
 
+		mPageNumberView.setText(pagesInfo);
+
+		int startItem = 0;
+		int endItem = 0;
+		int totalItems = 0;
+
+		if (mPageCount > 0) {
+			startItem = mPageNumber * PageSize + 1;
+			endItem = startItem + mPageDatas.get(mPageNumber).length - 1;
+			totalItems = (mPageCount - 1) * PageSize;
+			totalItems += mPageDatas.get(mPageCount - 1).length;
+		}
+
+		String itemsInfo = mTextDi + startItem + "~" + endItem + mTextTiao;
+		itemsInfo += "/" + mTextGong + totalItems + mTextTiao;
+		mPageItemsView.setText(itemsInfo);
+	}
+
+	public void initializeView() {
+		// super.initializeView();
+
+		mReceiveItemLightBackground = getResources().getDrawable(
+				R.drawable.receive_item_light_bg);
+		mReceiveItemDarkBackground = getResources().getDrawable(
+				R.drawable.receive_item_dark_bg);
+		
+		mStatusWaitting = getResources().getString(
+				R.string.receivestatus_status_waitting);
+		mStatusDownloading = getResources().getString(
+				R.string.receivestatus_status_downloading);
+		mStatusFinished = getResources().getString(
+				R.string.receivestatus_status_finished);
+		
+		mStatusFailed = getResources().getString(
+				R.string.receivestatus_status_failed);
+		
+		mTextDi = getResources().getString(R.string.text_di);
+		mTextYe = getResources().getString(R.string.text_ye);
+		mTextGong = getResources().getString(R.string.text_gong);
+		mTextTiao = getResources().getString(R.string.text_tiao);
+		
 		mDownloadSpeedView = (TextView) findViewById(R.id.download_speed);
 		mDiskInfoView = (TextView) findViewById(R.id.disk_info);
-		mPageNumberView = (TextView) findViewById(R.id.pageNumberView);
+		mPageNumberView = (TextView) findViewById(R.id.download_pages);
+		mPageItemsView = (TextView) findViewById(R.id.download_items);
+
 		mAdapter = new DownloadProgressAdapter(this);
 		mListView = (ListView) findViewById(R.id.download_view);
 		mListView.setAdapter(mAdapter);
@@ -350,6 +434,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		private class ItemHolder {
 			TextView Name;
 			ProgressBar ProgressView;
+			TextView Status;
 			TextView Progress;
 			TextView PercentView;
 		}
@@ -364,7 +449,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 				size = mDataSet.length;
 			}
 
-			Log.d(TAG, " DownloadProgressAdapter count = " + size);
+			// Log.d(TAG, " DownloadProgressAdapter count = " + size);
 			return size;
 		}
 
@@ -382,13 +467,16 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			if (convertView == null) {
 				holder = new ItemHolder();
 				convertView = getLayoutInflater().inflate(
-						R.layout.download_status_item, null);
+						R.layout.download_status_item, parent, false);
 
 				holder.Name = (TextView) convertView
 						.findViewById(R.id.text_name);
 
 				holder.ProgressView = (ProgressBar) convertView
 						.findViewById(R.id.progress_bar);
+
+				holder.Status = (TextView) convertView
+						.findViewById(R.id.text_status);
 
 				holder.Progress = (TextView) convertView
 						.findViewById(R.id.text_progress);
@@ -403,17 +491,26 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 			holder.Name.setText(mDataSet[position].Name);
 
+			holder.ProgressView.setProgress(mDataSet[position].nProgress);
+
+			String status = mDataSet[position].RawProgress > 0 ? mStatusDownloading
+					: mStatusWaitting;
+			holder.Status.setText(status);
+
 			String strProgress = mDataSet[position].Progress + "/"
 					+ mDataSet[position].Total;
 			holder.Progress.setText(strProgress);
 
-			holder.ProgressView.setProgress(mDataSet[position].nProgress);
-
 			holder.PercentView.setText(mDataSet[position].Percent);
+
+			if (position % 2 == 0) {
+				convertView.setBackgroundDrawable(mReceiveItemLightBackground);
+			} else {
+				convertView.setBackgroundDrawable(mReceiveItemDarkBackground);
+			}
 
 			return convertView;
 		}
-
 	}
 
 }

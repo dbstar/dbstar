@@ -12,7 +12,17 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="0dp"
-        android:layout_marginTop="0dp" >
+        android:layout_marginTop="0dp"
+        android:focusable="false" >
+
+        <ImageView
+            android:layout_width="269dp"
+            android:layout_height="70dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/logo_dbstar" />
 
         <TextView
             android:id="@+id/custom_service_hotline"
@@ -35,7 +45,8 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_marginRight="105dp"
-        android:layout_marginTop="123dp" >
+        android:layout_marginTop="123dp"
+        android:focusable="false" >
 
         <com.dbstar.widget.GDVideoView
             android:id="@+id/player_view"
@@ -56,9 +67,11 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="105dp"
-        android:layout_marginTop="123dp" >
+        android:layout_marginTop="123dp"
+        android:focusable="false" >
 
         <!-- celander view -->
+
         <LinearLayout
             android:id="@+id/time_part"
             android:layout_width="fill_parent"
@@ -117,6 +130,17 @@
                     android:textSize="20sp" />
             </LinearLayout>
         </LinearLayout>
+        
+        
+        <ImageView
+            android:layout_width="370dp"
+            android:layout_height="270dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="4dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/default_1" />
 
         <LinearLayout
             android:id="@+id/mypower_text"
@@ -126,7 +150,8 @@
             android:layout_alignParentLeft="true"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="12dp"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:visibility="gone" >
 
             <TextView
                 android:id="@+id/mypower_degree"
@@ -167,7 +192,8 @@
             android:layout_above="@id/mypower_text"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="20dp"
-            android:background="@drawable/power_panel" >
+            android:background="@drawable/power_panel"
+            android:visibility="gone" >
 
             <TextView
                 android:id="@+id/mypower_paneltext"
@@ -206,6 +232,7 @@
         android:layout_marginBottom="74dp"
         android:layout_marginRight="50dp"
         android:background="#00000000"
+        android:focusable="false"
         android:scaleType="fitXY"
         android:src="@drawable/home_arrow_right" />
 
@@ -218,6 +245,7 @@
         android:layout_marginBottom="74dp"
         android:layout_marginLeft="50dp"
         android:background="#00000000"
+        android:focusable="false"
         android:scaleType="fitXY"
         android:src="@drawable/home_arrow_left" />
 
@@ -229,9 +257,10 @@
         android:layout_alignParentLeft="true"
         android:layout_marginBottom="66dp"
         android:layout_marginLeft="104dp"
+        android:focusable="false"
         android:scaleType="fitXY"
         android:src="@drawable/menulevel1_focuseditem_bg" />
-    
+
     <com.dbstar.widget.GDMenuGallery
         android:id="@+id/menu_level_1"
         android:layout_width="1072dp"
@@ -241,14 +270,18 @@
         android:layout_marginBottom="82dp"
         android:layout_marginRight="104dp"
         android:background="#00000000"
-        android:gravity="bottom|left"
-        app:spacing="0dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:layoutAnimation="@anim/gallery_slide_to_right" />
+        android:gravity="bottom|left"
+        android:layoutAnimation="@anim/gallery_slide_to_right"
+        app:spacing="0dp" >
+
+        <requestFocus />
+    </com.dbstar.widget.GDMenuGallery>
 
     <!-- level 2 menu -->
-	<LinearLayout
+
+    <LinearLayout
         android:id="@+id/menulevel2_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -256,35 +289,34 @@
         android:layout_alignParentLeft="true"
         android:layout_marginBottom="206dp"
         android:layout_marginLeft="96dp"
-        android:orientation="vertical"
         android:focusable="false"
+        android:orientation="vertical"
         android:visibility="gone" >
-        
-	    <ImageView
+
+        <ImageView
             android:id="@+id/menulevel2_bg_top"
             android:layout_width="164dp"
             android:layout_height="26dp"
             android:scaleType="fitXY"
             android:src="@drawable/meulevel2_background_top" />
 
-	    <ListView
+        <ListView
             android:id="@+id/menu_level_2"
             android:layout_width="164dp"
             android:layout_height="wrap_content"
+            android:background="@drawable/meulevel2_background"
             android:cacheColorHint="#00000000"
             android:divider="@android:color/transparent"
             android:dividerHeight="4.0dp"
-            android:listSelector="#00000000"
-            android:background="@drawable/meulevel2_background" />
-	    
+            android:listSelector="#00000000" />
+
         <ImageView
             android:id="@+id/menulevel2_bg_bottom"
             android:layout_width="164dp"
             android:layout_height="36dp"
             android:scaleType="fitXY"
             android:src="@drawable/meulevel2_background_bottom" />
-
-	</LinearLayout>
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/view_Footer"
@@ -293,7 +325,8 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="0dp"
-        android:layout_marginTop="0dp" >
+        android:layout_marginTop="0dp"
+        android:focusable="false" >
 
         <LinearLayout
             android:id="@+id/menupath_view"
@@ -371,8 +404,8 @@
             android:id="@+id/marqeeView"
             android:layout_width="1080dp"
             android:layout_height="68dp"
-            android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
             android:layout_marginLeft="105dp"
             android:visibility="gone"
             app:textColor="#ffffffff"

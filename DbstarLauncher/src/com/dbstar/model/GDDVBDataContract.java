@@ -6,28 +6,29 @@ import android.provider.BaseColumns;
 public class GDDVBDataContract {
 	public static final String AUTHORITY = "com.dbstar.provider";
 	public static final Uri AUTHORITY_URI = Uri.parse("content://" + AUTHORITY);
-	
-	public static final String COLUMNTABLE="Column";
-	public static final String COLUMNENTITYTABLE="ColumnEntity";
-	public static final String PRODUCTTABLE="Product";
-	public static final String PUBLICATIONSETTABLE="PublicationsSet";
-	public static final String PUBLICATIONTABLE="Publication";
-	public static final String MULTIPLELANGUAGEINFOVATABLE="MultipleLanguageInfoVA";
-	public static final String MULTIPLELANGUAGEINFORMTABLE="MultipleLanguageInfoRM";
-	public static final String MULTIPLELANGUAGEINFOAPPTABLE="MultipleLanguageInfoApp";
-	public static final String MFILETABLE="MFile";
-	public static final String MESSAGETABLE="Message";
-	public static final String GUIDELISTTABLE="GuideList";
-	public static final String PRODUCTDESCTABLE="ProductDesc";
-	public static final String PREVIEWTABLE="Preview";
-	public static final String RESSTRTABLE="ResStr";
-	public static final String RESPOSTERTABLE="ResPoster";
-	public static final String RESTRAILERTABLE="ResTrailer";
-	public static final String RESSUBTITLETABLE="ResSubTitle";
-	
-	//TOTO: spell is error!!!!!
-	public static final String ObjectPublicationSet="PulicationsSet";
-	
+
+	public static final String COLUMNTABLE = "Column";
+	public static final String COLUMNENTITYTABLE = "ColumnEntity";
+	public static final String PRODUCTTABLE = "Product";
+	public static final String PUBLICATIONSETTABLE = "PublicationsSet";
+	public static final String PUBLICATIONTABLE = "Publication";
+	public static final String MULTIPLELANGUAGEINFOVATABLE = "MultipleLanguageInfoVA";
+	public static final String MULTIPLELANGUAGEINFORMTABLE = "MultipleLanguageInfoRM";
+	public static final String MULTIPLELANGUAGEINFOAPPTABLE = "MultipleLanguageInfoApp";
+	public static final String MFILETABLE = "MFile";
+	public static final String MESSAGETABLE = "Message";
+	public static final String GUIDELISTTABLE = "GuideList";
+	public static final String PRODUCTDESCTABLE = "ProductDesc";
+	public static final String PREVIEWTABLE = "Preview";
+	public static final String RESSTRTABLE = "ResStr";
+	public static final String RESPOSTERTABLE = "ResPoster";
+	public static final String RESTRAILERTABLE = "ResTrailer";
+	public static final String RESSUBTITLETABLE = "ResSubTitle";
+
+	// TOTO: spell is error!!!!!
+	public static final String ObjectPublicationSet = "PublicationsSet";
+	public static final String ObjectSetName = "SetName";
+	public static final String ObjectSetDesc = "SetDesc";
 
 	public static final class Column implements BaseColumns {
 
@@ -59,7 +60,7 @@ public class GDDVBDataContract {
 		public static final String COLUMNID = "ColumnID";
 		public static final String ENTITYID = "EntityID";
 		public static final String ENTITYTYPE = "EntityType";
-		
+
 		public static final String ENTITYCOUNT = "count(*)";
 	}
 
@@ -167,8 +168,7 @@ public class GDDVBDataContract {
 		public static final String AUDIENCE = "Audience";
 		public static final String MODEL = "Model";
 	}
-	
-	
+
 	public static final class MultipleLanguageInfoRM implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
@@ -193,7 +193,7 @@ public class GDDVBDataContract {
 		public static final String ISSN = "ISSN";
 
 	}
-	
+
 	public static final class MultipleLanguageInfoApp implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
@@ -219,8 +219,7 @@ public class GDDVBDataContract {
 		public static final String REQUIREMENTS = "Requirements";
 
 	}
-	
-	
+
 	public static final class MFile implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
@@ -259,8 +258,7 @@ public class GDDVBDataContract {
 		public static final String ENDTIME = "EndTime";
 		public static final String INTERVAL = "Interval";
 	}
-	
-	
+
 	public static final class GuideList implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
@@ -277,7 +275,7 @@ public class GDDVBDataContract {
 		public static final String TOTALSIZE = "TotalSize";
 		public static final String PRODUCTDESCID = "ProductDescID";
 		public static final String RECEIVESTATUS = "ReceiveStatus";
-		
+
 		public static final String PUSHTIME = "PushTime";
 		public static final String POSTERID = "PosterID";
 		public static final String POSTERNAME = "PosterName";
@@ -286,7 +284,7 @@ public class GDDVBDataContract {
 		public static final String TRAILERNAME = "TrailerName";
 		public static final String TRAILERURI = "TrailerURI";
 	}
-	
+
 	public static final class ProductDesc implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
@@ -303,10 +301,8 @@ public class GDDVBDataContract {
 		public static final String URI = "URI";
 		public static final String RECEIVESTATUS = "ReceiveStatus";
 		public static final String PUSHTIME = "PushTime";
-		//public static final String NAME = "__Name";
+		// public static final String NAME = "__Name";
 	}
-	
-	
 
 	public static final class Preview implements BaseColumns {
 
@@ -328,20 +324,20 @@ public class GDDVBDataContract {
 		public static final String RESOLUTION = "Resolution";
 		public static final String BITRATE = "BitRate";
 		public static final String CODEFORMAT = "CodeFormat";
-		
+
 		public static final String URI = "URI";
 		public static final String TOTALSIZE = "TotalSize";
 		public static final String PRODUCTDESCID = "ProductDescID";
-		
+
 		public static final String RECEIVESTATUS = "ReceiveStatus";
 		public static final String PUSHTIME = "PushTime";
 		public static final String STARTTIME = "StartTime";
-		
+
 		public static final String ENDTIME = "EndTime";
 		public static final String PLAYMODE = "PlayMode";
-		//public static final String FILEFORMAT = "PreviewName";
+		// public static final String FILEFORMAT = "PreviewName";
 	}
-	
+
 	public static final class ResStr implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
@@ -408,7 +404,6 @@ public class GDDVBDataContract {
 		public static final String SUBTITLEURI = "SubTitleURI";
 	}
 
-	
 	// not used
 	public static final class Content implements BaseColumns {
 

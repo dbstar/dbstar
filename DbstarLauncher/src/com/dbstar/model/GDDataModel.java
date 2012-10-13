@@ -2,41 +2,55 @@ package com.dbstar.model;
 
 import android.net.Uri;
 import android.util.Log;
-import android.util.Xml;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
+import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.GDDVBDataContract.*;
 import com.dbstar.model.GDDVBDataProvider.ColumnEntityQuery;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
 import com.dbstar.model.GDDVBDataProvider.ResStrQuery;
 import com.dbstar.model.GDSmartHomeContract.Global;
+import com.dbstar.model.GDUserDataContract.FavoritePublication;
+import com.dbstar.model.GDUserDataContract.FavoritePublicationSet;
 
 public class GDDataModel {
 	private static final String TAG = "GDDataModel";
 
-	private Context mContext = null;
-
-	public static final String DefaultDesFile = "/info/desc/Publication.xml";
-
 	private String mLocalization;
+
+	GDDVBDataProvider mDVBDataProvider;
+	GDSmartHomeProvider mSmartHomeProvider;
+	GDUserDataProvider mUserDataProvider;
+
+	public GDDataModel() {
+		mDVBDataProvider = new GDDVBDataProvider();
+		mSmartHomeProvider = new GDSmartHomeProvider();
+		mUserDataProvider = new GDUserDataProvider();
+	}
+
+	public void initialize(GDSystemConfigure configure) {
+		setLocalization(configure.getLocalization());
+		mDVBDataProvider.initialize(configure);
+		mSmartHomeProvider.initialize(configure);
+		mUserDataProvider.initialize(configure);
+	}
+
+	public void deInitialize() {
+		mDVBDataProvider.deinitialize();
+		mSmartHomeProvider.deinitialize();
+		mUserDataProvider.deinitialize();
+	}
 
 	public void setLocalization(String localization) {
 		mLocalization = localization;
@@ -46,27 +60,16 @@ public class GDDataModel {
 		return mLocalization;
 	}
 
-	public GDDataModel(Context context) {
-		mContext = context;
-	}
-
-	public void initialize() {
-
-	}
-
-	public void deInitialize() {
-
-	}
-
 	public ColumnData[] getColumns(String columnId) {
-//		Log.d(TAG, "getColumn id=" + columnId);
+		// Log.d(TAG, "getColumn id=" + columnId);
 		Cursor cursor = null;
 		ColumnData[] Columns = null;
 
 		String selection = Column.PARENT_ID + "=?";
 		String[] selectionArgs = new String[] { columnId };
 
-		cursor = mContext.getContentResolver().query(Column.CONTENT_URI,
+		// cursor = mContext.getContentResolver().query(Column.CONTENT_URI,
+		cursor = mDVBDataProvider.query(Column.CONTENT_URI,
 				ColumnQuery.COLUMNS, selection, selectionArgs, null);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
@@ -103,9 +106,9 @@ public class GDDataModel {
 		String selection = ResStr.OBJECTNAME + "=? and " + ResStr.ENTITYID
 				+ "=? and " + ResStr.STRLANG + "=?";
 		String[] selectionArgs = { GDDVBDataContract.COLUMNTABLE, columnId,
-				GDCommon.LangCN };
+				getLocalization() };
 
-		Cursor cursor = mContext.getContentResolver().query(ResStr.CONTENT_URI,
+		Cursor cursor = mDVBDataProvider.query(ResStr.CONTENT_URI,
 				ResStrQuery.COLUMNS, selection, selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
@@ -121,41 +124,58 @@ public class GDDataModel {
 		return columnName;
 	}
 
+	public String getPublicationResStr(String publicationId, String objectName) {
+		String resStr = "";
+		String selection = ResStr.OBJECTNAME + "=? and " + ResStr.ENTITYID
+				+ "=? and " + ResStr.STRLANG + "=?";
+		String[] selectionArgs = { objectName, publicationId, getLocalization() };
+
+		Cursor cursor = mDVBDataProvider.query(ResStr.CONTENT_URI,
+				ResStrQuery.COLUMNS, selection, selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				resStr = cursor.getString(ResStrQuery.STRVALUE);
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return resStr;
+	}
+
 	public ContentData[] getReadyPublications(String columnId) {
 
 		EntityObject[] entities = getAllEntities(columnId);
+		if (entities == null || entities.length == 0)
+			return null;
+
 		ArrayList<ContentData> contents = new ArrayList<ContentData>();
 
 		for (int i = 0; i < entities.length; i++) {
 			PublicationData data = getPublication(entities[i].Id);
 			if (data != null) {
 				ContentData content = new ContentData();
-				content.XMLFilePath = data.URI + DefaultDesFile;
+				content.XMLFilePath = data.URI;
 				content.Id = data.PublicationID;
-//				Log.d(TAG, "id = " + content.Id + "xml path="
-//						+ content.XMLFilePath);
+
 				contents.add(content);
 			}
 		}
-
-		// ContentData[] c = new ContentData[contents.size()];
-		// for (int i = 0 ; i<contents.size(); i++) {
-		// c[i]= contents.get(i);
-		// }
-		// return c;
 
 		return (ContentData[]) contents
 				.toArray(new ContentData[contents.size()]);
 	}
 
 	public EntityObject[] getAllEntities(String columnId) {
-		Cursor cursor = null;
 		EntityObject[] entities = null;
 
 		String selection = ColumnEntity.COLUMNID + "=?";
 		String[] selectionArgs = new String[] { columnId };
 
-		cursor = mContext.getContentResolver().query(ColumnEntity.CONTENT_URI,
+		Cursor cursor = mDVBDataProvider.query(ColumnEntity.CONTENT_URI,
 				ColumnEntityQuery.COLUMNS, selection, selectionArgs, null);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
@@ -171,6 +191,11 @@ public class GDDataModel {
 				} while (cursor.moveToNext());
 			}
 		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
 		return entities;
 	}
 
@@ -188,13 +213,14 @@ public class GDDataModel {
 				+ "=?";
 		String[] selectionArgs = new String[] { entityId, "1", "2", "true" };
 
-		cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
+		// cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
+		cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
 				ProjectionQueryPublicationsCount, selection, selectionArgs,
 				null);
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-//				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				// Log.d(TAG, "query cursor size = " + cursor.getCount());
 				publication = new PublicationData();
 				publication.PublicationID = entityId;
 				publication.URI = cursor.getString(PublicationURI);
@@ -217,7 +243,6 @@ public class GDDataModel {
 		tv.Content.Description = getPublicationSetDescription(entityId);
 		tv.Content.Posters = new ArrayList<ContentData.Poster>();
 		String posterUri = getPublicationPoster(entityId);
-		Log.d(TAG, "----- posterUri " + posterUri);
 		ContentData.Poster item = new ContentData.Poster();
 		item.URI = posterUri;
 		tv.Content.Posters.add(item);
@@ -226,8 +251,8 @@ public class GDDataModel {
 		return tv;
 	}
 
-	private static final String PublicationSetPropertyName = "SetName";
-	private static final String PublicationSetPropertyDescription = "SetDesc";
+	private static final String PublicationSetPropertyName = GDDVBDataContract.ObjectSetName;
+	private static final String PublicationSetPropertyDescription = GDDVBDataContract.ObjectSetDesc;
 
 	private static final String QuerySetPropertyProjection[] = { ResStr.STRVALUE };
 
@@ -243,16 +268,14 @@ public class GDDataModel {
 	public String getPublicationSetProperty(String setId, String propertyName) {
 		String propertyValue = "";
 
-		Cursor cursor = null;
-
 		String selection = ResStr.OBJECTNAME + "=? AND " + ResStr.ENTITYID
 				+ "=? AND " + ResStr.STRLANG + "=? AND " + ResStr.STRNAME
 				+ "=?";
-		//TODO PulicationsSet should be PublicationsSet
-		String[] selectionArgs = new String[] { "PulicationsSet", setId, GDCommon.LangCN,
-				propertyName };
 
-		cursor = mContext.getContentResolver().query(ResStr.CONTENT_URI,
+		String[] selectionArgs = new String[] { GDDVBDataContract.ObjectPublicationSet, setId,
+				GDCommon.LangCN, propertyName };
+
+		Cursor cursor = mDVBDataProvider.query(ResStr.CONTENT_URI,
 				QuerySetPropertyProjection, selection, selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
@@ -273,21 +296,17 @@ public class GDDataModel {
 	public String getPublicationPoster(String setId) {
 		String uri = "";
 
-		Cursor cursor = null;
+		String selection = ResPoster.OBJECTNAME + "=? AND "
+				+ ResPoster.ENTITYID + "=?";
+		String[] selectionArgs = new String[] {
+				GDDVBDataContract.ObjectPublicationSet, setId };
 
-		String selection = ResPoster.OBJECTNAME + "=? AND " + ResPoster.ENTITYID
-				+ "=?";
-		String[] selectionArgs = new String[] { GDDVBDataContract.ObjectPublicationSet, setId };
-
-//		Log.d(TAG, "getPublicationPoster setId " + setId);
-
-		cursor = mContext.getContentResolver().query(ResPoster.CONTENT_URI,
+		Cursor cursor = mDVBDataProvider.query(ResPoster.CONTENT_URI,
 				QueryPosterProjection, selection, selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				uri = cursor.getString(0);
-//				Log.d(TAG, "poster uri = " + uri);
 			}
 		}
 
@@ -304,15 +323,12 @@ public class GDDataModel {
 	private final static int EpisodesIndexInSet = 1;
 
 	public void getEpisodes(String setId, TV tv) {
-
-		Cursor cursor = null;
-
 		String selection = "(" + Publication.RECEIVESTATUS + "=? or "
 				+ Publication.RECEIVESTATUS + "=?) And " + Publication.VISIBLE
 				+ "=? AND " + Publication.SETID + "=?";
 		String[] selectionArgs = new String[] { "1", "2", "true", setId };
 
-		cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
+		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
 				ProjectionQueryEpisodes, selection, selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
@@ -323,7 +339,8 @@ public class GDDataModel {
 				do {
 					TV.EpisodeItem item = new TV.EpisodeItem();
 					item.Url = cursor.getString(EpisodesURI);
-					item.Number = cursor.getInt(EpisodesIndexInSet);
+					item.Number = Integer.valueOf(cursor
+							.getString(EpisodesIndexInSet));
 					tv.Episodes[i] = item;
 					i++;
 				} while (cursor.moveToNext());
@@ -349,13 +366,11 @@ public class GDDataModel {
 
 	public int getContentsCount(String columnId) {
 		int count = 0;
-		Cursor cursor = null;
-
 		String selection = Content.COLUMN_ID + "=?  AND " + Content.READY
 				+ "=1";
 		String[] selectionArgs = new String[] { columnId };
 
-		cursor = mContext.getContentResolver().query(Content.CONTENT_URI,
+		Cursor cursor = mDVBDataProvider.query(Content.CONTENT_URI,
 				ProjectionQueryContentCount, selection, selectionArgs, null);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
@@ -363,85 +378,127 @@ public class GDDataModel {
 				Log.d(TAG, "count = " + count);
 			}
 		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
 		return count;
 	}
 
-	private final static int QUERYBRAND_ID = 0;
-	private final static int QUERYBRAND_DOWNLOAD = 1;
-	private final static int QUERYBRAND_TOTALSIZE = 2;
-	private final static int QUERYBRAND_CNAME = 3;
+	// Query Guide list
+	private static final String[] ProjectionQueryGuideList = { GuideList.PUBLICATIONID };
+	private static final int QUERYGUIDELIST_PUBLICATIONID = 0;
 
-	public ContentData[] getContents(String columnId, int pageNumber,
-			int pageSize) {
+	private GuideListItem[] getGuideList(String selection,
+			String[] selectionArgs) {
 
-		Cursor cursor = null;
-		ContentData[] Contents = null;
+		Log.d(TAG, "getGuideList");
 
-		String selection = Content.COLUMN_ID + "=?  AND " + Content.READY
-				+ "=1" + " Limit ? Offset ?";
-		String[] selectionArgs = new String[] { columnId,
-				Integer.toString(pageSize),
-				Integer.toString(pageNumber * pageSize) };
+		GuideListItem[] items = null;
 
-		cursor = mContext.getContentResolver().query(Content.CONTENT_URI,
-				ProjectionQueryContent, selection, selectionArgs, null);
+		Cursor cursor = mDVBDataProvider.query(GuideList.CONTENT_URI,
+				ProjectionQueryGuideList, selection, selectionArgs, null);
+
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				Log.d(TAG, "query cursor size = " + cursor.getCount());
-				Contents = new ContentData[cursor.getCount()];
+				items = new GuideListItem[cursor.getCount()];
 				int i = 0;
 				do {
-					ContentData content = new ContentData();
-					content.Id = cursor.getString(QUERYCONTENT_ID);
-					content.XMLFilePath = cursor.getString(QUERYCONTENT_PATH);
-
-					Log.d(TAG, "coloumn " + columnId + " item " + i + " name="
-							+ content.XMLFilePath);
-
-					Contents[i] = content;
+					GuideListItem item = new GuideListItem();
+					item.PublicationID = cursor
+							.getString(QUERYGUIDELIST_PUBLICATIONID);
+					items[i] = item;
 					i++;
 				} while (cursor.moveToNext());
 			}
 		}
-		return Contents;
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		if (items != null && items.length > 0) {
+
+			for (int i = 0; i < items.length; i++) {
+				items[i].Name = getPublicationResStr(items[i].PublicationID,
+						GDDVBDataContract.PUBLICATIONTABLE);
+			}
+		}
+
+		return items;
 	}
 
-	public ReceiveEntry[] getDownloadStatus(int pageNumber, int pageSize) {
+	public GuideListItem[] getGuideList(String Date) {
+		String selection = GuideList.DATEVALUE + "=?";
+		String[] selectionArgs = { Date };
 
-		Log.d(TAG, "getDownloadStatus");
+		return getGuideList(selection, selectionArgs);
+	}
 
-		Cursor cursor = null;
-		ReceiveEntry[] Entries = null;
+	public GuideListItem[] getGuideList() {
+		return getGuideList(null, null);
+	}
+	
+	public boolean updateGuideList(GuideListItem[] item) {
+		boolean result = true;
+		
+		// update
+		String selection = "";
+		String[] selectionArgs = new String[] {  };
 
-		String sortOrder = Brand.ID + " Limit " + Integer.toString(pageSize)
-				+ " Offset " + Integer.toString(pageNumber * pageSize);
+		ContentValues values = new ContentValues();
+//		values.put(GuideList.);
 
-		cursor = mContext.getContentResolver().query(Brand.CONTENT_URI,
-				ProjectionQueryBrand, null, null, sortOrder);
+		int count = mDVBDataProvider.update(
+				GuideList.CONTENT_URI, values, selection,
+				selectionArgs);
+		if (count == item.length)
+			result = true;
+		
+		return result;
+	}
 
+	private static final String[] ProjectionQueryPreview = {
+			Preview.PREVIEWTYPE, Preview.SHOWTIME, Preview.PREVIEWURI,
+			Preview.DURATION, Preview.PLAYMODE };
+
+	private static final int QUERYPREVIEW_PREVIEWTYPE = 0;
+	private static final int QUERYPREVIEW_SHOWTIME = 1;
+	private static final int QUERYPREVIEW_PREVIEWURI = 2;
+	private static final int QUERYPREVIEW_DURATION = 3;
+	private static final int QUERYPREVIEW_PLAYMODE = 4;
+
+	public PreviewData[] getPreviews() {
+		PreviewData[] items = null;
+
+		Cursor cursor = mDVBDataProvider.query(Preview.CONTENT_URI,
+				ProjectionQueryPreview, null, null, null);
+		
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				Log.d(TAG, "query cursor size = " + cursor.getCount());
-				Entries = new ReceiveEntry[cursor.getCount()];
+				items = new PreviewData[cursor.getCount()];
 				int i = 0;
 				do {
-					ReceiveEntry entry = new ReceiveEntry();
-					entry.Id = cursor.getString(QUERYBRAND_ID);
-					entry.Name = cursor.getString(QUERYBRAND_CNAME);
-					entry.RawProgress = cursor.getLong(QUERYBRAND_DOWNLOAD);
-					entry.RawTotal = cursor.getLong(QUERYBRAND_TOTALSIZE);
-					entry.ConverSize();
-
-					Log.d(TAG, "Name " + entry.Name + " item " + i
-							+ " progress=" + entry.RawProgress + " total="
-							+ entry.RawTotal);
-
-					Entries[i] = entry;
+					PreviewData item = new PreviewData();
+					item.Type = cursor.getString(QUERYPREVIEW_PREVIEWTYPE);
+					item.URI = cursor.getString(QUERYPREVIEW_PREVIEWURI);
+					
+					item.ShowTime = Integer.valueOf(cursor.getString(QUERYPREVIEW_SHOWTIME));
+					item.Duration = Integer.valueOf(cursor.getString(QUERYPREVIEW_DURATION));
+					item.PlayMode = Integer.valueOf(cursor.getString(QUERYPREVIEW_PLAYMODE));
+					items[i] = item;
 					i++;
 				} while (cursor.moveToNext());
 			}
 		}
-		return Entries;
+		
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+		
+		return items;
 	}
 
 	private final static String[] ProjectionQueryGlobal = { Global.ID,
@@ -480,12 +537,10 @@ public class GDDataModel {
 		boolean ret = true;
 		int Id = -1;
 		String oldValue = "";
-		Cursor cursor = null;
-
 		String selection = Global.NAME + "=?";
 		String[] selectionArgs = new String[] { key };
 
-		cursor = mContext.getContentResolver().query(Global.CONTENT_URI,
+		Cursor cursor = mSmartHomeProvider.query(Global.CONTENT_URI,
 				ProjectionQueryGlobal, selection, selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
@@ -502,11 +557,9 @@ public class GDDataModel {
 		if (Id < 0) {
 			// insert
 			ContentValues values = new ContentValues();
-			// values.put(Global.ID, -1);
 			values.put(Global.NAME, key);
 			values.put(Global.VALUE, value);
-			Uri retUri = mContext.getContentResolver().insert(
-					Global.CONTENT_URI, values);
+			Uri retUri = mSmartHomeProvider.insert(Global.CONTENT_URI, values);
 			/*
 			 * long rowId = Long.valueOf(retUri.getLastPathSegment()); if (rowId
 			 * > 0)
@@ -523,8 +576,8 @@ public class GDDataModel {
 				values.put(Global.ID, Id);
 				values.put(Global.NAME, key);
 				values.put(Global.VALUE, value);
-				int count = mContext.getContentResolver().update(
-						Global.CONTENT_URI, values, selection, selectionArgs);
+				int count = mSmartHomeProvider.update(Global.CONTENT_URI,
+						values, selection, selectionArgs);
 				if (count == 1)
 					ret = true;
 			}
@@ -539,7 +592,7 @@ public class GDDataModel {
 		String selection = Global.NAME + "=?";
 		String[] selectionArgs = new String[] { key };
 
-		cursor = mContext.getContentResolver().query(Global.CONTENT_URI,
+		cursor = mSmartHomeProvider.query(Global.CONTENT_URI,
 				ProjectionQueryGlobal, selection, selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
@@ -568,33 +621,6 @@ public class GDDataModel {
 		return image;
 	}
 
-	public String getTextContent(String file) {
-		String text = "";
-		File descriptionFile = new File(file);
-		Log.d(TAG, "get Description path=" + descriptionFile.getAbsolutePath());
-
-		if (descriptionFile.exists() && descriptionFile.length() > 0) {
-			BufferedReader br = null;
-
-			try {
-				br = new BufferedReader(new FileReader(descriptionFile));
-
-				text = "";
-				String line;
-				while ((line = br.readLine()) != null) {
-					text += line;
-				}
-
-				Log.d(TAG, "text = " + text);
-				br.close();
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return text;
-	}
-
 	public void getDetailsData(String xmlFile, ContentData content) {
 
 		Log.d(TAG, "getDetailsData xmlFile " + xmlFile);
@@ -606,7 +632,9 @@ public class GDDataModel {
 			try {
 				in = new BufferedInputStream(new FileInputStream(file));
 
-				parseDetailData(in, content);
+				GDXMLDataAccessor xmlAccessor = new GDXMLDataAccessor(
+						getLocalization());
+				xmlAccessor.parseDetailData(in, content);
 
 				if (in != null) {
 					in.close();
@@ -618,509 +646,527 @@ public class GDDataModel {
 		}
 	}
 
-	private static final String ns = null;
-	private static final String TAGPublication = "Publication";
-	private static final String TAGVersion = "Version";
-	private static final String TAGStandardVersion = "StandardVersion";
-	private static final String TAGPublicationID = "PublicationID";
-	private static final String TAGPublicationNames = "PublicationNames";
-	private static final String TAGPublicationName = "PublicationName";
-	private static final String TAGPublicationType = "PublicationType";
-	private static final String TAGIsReserved = "IsReserved";
-	private static final String TAGVisible = "Visible";
-	private static final String TAGDRMFile = "DRMFile";
-	private static final String TAGPublicationVA = "PublicationVA";
-	private static final String TAGMultipleLanguageInfos = "MultipleLanguageInfos";
-	private static final String TAGMultipleLanguageInfo = "MultipleLanguageInfo";
-	private static final String TAGPublicationDesc = "PublicationDesc";
-	private static final String TAGKeywords = "Keywords";
-	private static final String TAGImageDefinition = "ImageDefinition";
-	private static final String TAGDirector = "Director";
-	private static final String TAGEpisode = "Episode";
-	private static final String TAGActor = "Actor";
-	private static final String TAGAudioChannel = "AudioChannel";
-	private static final String TAGAspectRatio = "AspectRatio";
-	private static final String TAGAudience = "Audience";
-	private static final String TAGModel = "Model";
-	private static final String TAGLanguage = "Language";
-	private static final String TAGArea = "Area";
-	private static final String TAGSubTitles = "SubTitles";
-	private static final String TAGSubTitle = "SubTitle";
-	private static final String TAGSubTitleID = "SubTitleID";
-	private static final String TAGSubTitleName = "SubTitleName";
-	private static final String TAGSubTitleLanguage = "SubTitleLanguage";
-	private static final String TAGSubTitleURI = "SubTitleURI";
-	private static final String TAGTrailers = "Trailers";
-	private static final String TAGTrailer = "Trailer";
-	private static final String TAGTrailerID = "TrailerID";
-	private static final String TAGTrailerName = "TrailerName";
-	private static final String TAGTrailerURI = "TrailerURI";
-	private static final String TAGPosters = "Posters";
-	private static final String TAGPoster = "Poster";
-	private static final String TAGPosterID = "PosterID";
-	private static final String TAGPosterName = "PosterName";
-	private static final String TAGPosterURI = "PosterURI";
-	private static final String TAGExtensions = "Extensions";
-	private static final String TAGExtension = "Extension";
-	private static final String TAGMFile = "MFile";
-	private static final String TAGFileID = "FileID";
-	private static final String TAGFileNames = "FileNames";
-	private static final String TAGFileName = "FileName";
-	private static final String TAGFileType = "FileType";
-	private static final String TAGFileSize = "FileSize";
-	private static final String TAGDuration = "Duration";
-	private static final String TAGFileURI = "FileURI";
-	private static final String TAGResolution = "Resolution";
-	private static final String TAGBitRate = "BitRate";
-	private static final String TAGFileFormat = "FileFormat";
-	private static final String TAGCodeFormat = "CodeFormat";
+	// user favorite
+	public ContentData[] getFavoriteMovie() {
+		ContentData[] contents = null;
 
-	private static final String AttributeValue = "value";
-	private static final String AttributeLanguage = "language";
+		FavoritePublicationData[] publications = getPublicationsByType(GDCommon.ColumnTypeMovie);
 
-	private void parseDetailData(InputStream in, ContentData content) {
-		try {
-			XmlPullParser parser = Xml.newPullParser();
-			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-			parser.setInput(in, null);
-			readData(parser, content);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+		if (publications != null && publications.length > 0) {
+			contents = new ContentData[publications.length];
 
-	String readPublicationNames(XmlPullParser parser) throws IOException,
-			XmlPullParserException {
-		String value = null;
-		parser.require(XmlPullParser.START_TAG, ns, TAGPublicationNames);
-		value = parseTag(parser, TAGPublicationName);
-		parser.require(XmlPullParser.END_TAG, ns, TAGPublicationNames);
-//		Log.d(TAG, "readPublicationNames " + value);
-		return value;
-	}
-
-	String readDRMFile(XmlPullParser parser) throws IOException,
-			XmlPullParserException {
-		String value = null;
-		parser.require(XmlPullParser.START_TAG, ns, TAGDRMFile);
-		value = parseTag(parser, TAGFileURI);
-		parser.require(XmlPullParser.END_TAG, ns, TAGDRMFile);
-
-//		Log.d(TAG, "readDRMFile " + value);
-
-		return value;
-	}
-
-	void readMultipleLanguageInfos(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGMultipleLanguageInfos);
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
+			for (int i = 0; i < publications.length; i++) {
+				FavoritePublicationData data = publications[i];
+				ContentData content = new ContentData();
+				content.XMLFilePath = data.URI;
+				content.Id = data.PublicationID;
+				contents[i] = content;
 			}
-			String name = parser.getName();
-//			Log.d(TAG, "tag 1 " + name + " event = " + parser.getEventType());
-			if (name.equals(TAGMultipleLanguageInfo)) {
-				readMultipleLanguageInfo(parser, content);
-			}
-		}
-		parser.require(XmlPullParser.END_TAG, ns, TAGMultipleLanguageInfos);
-	}
 
-	void readMultipleLanguageInfo(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-
-//		Log.d(TAG, "readMultipleLanguageInfo");
-		parser.require(XmlPullParser.START_TAG, ns, TAGMultipleLanguageInfo);
-//		Log.d(TAG, "readMultipleLanguageInfo 1");
-		String language = parser.getAttributeValue(ns, AttributeLanguage);
-//		Log.d(TAG, "language " + language);
-		if (language.equals(getLocalization())) {
-			while (parser.next() != XmlPullParser.END_TAG) {
-				if (parser.getEventType() != XmlPullParser.START_TAG) {
-					continue;
-				}
-				String name = parser.getName();
-//				Log.d(TAG, "tag 2 " + name);
-				if (name.equals(TAGPublicationDesc)) {
-					content.Description = readTag(parser, TAGPublicationDesc);
-				} else if (name.equals(TAGKeywords)) {
-					content.Keywords = readTag(parser, TAGKeywords);
-				} else if (name.equals(TAGImageDefinition)) {
-					content.ImageDefinition = readTag(parser,
-							TAGImageDefinition);
-				} else if (name.equals(TAGDirector)) {
-					content.Director = readTag(parser, TAGDirector);
-				} else if (name.equals(TAGActor)) {
-					content.Actors = readTag(parser, TAGActor);
-				} else if (name.equals(TAGAudioChannel)) {
-					content.AudioChannel = readTag(parser, TAGAudioChannel);
-				} else if (name.equals(TAGAspectRatio)) {
-					content.AspectRatio = readTag(parser, TAGAspectRatio);
-				} else if (name.equals(TAGAudience)) {
-					content.Audience = readTag(parser, TAGAudience);
-				} else if (name.equals(TAGModel)) {
-					content.Model = readTag(parser, TAGModel);
-				} else if (name.equals(TAGLanguage)) {
-					content.Language = readTag(parser, TAGLanguage);
-				} else if (name.equals(TAGArea)) {
-					content.Area = readTag(parser, TAGArea);
-				} else {
-					skip(parser);
-				}
-			}
-		} else {
-			skip(parser);
 		}
 
-		parser.require(XmlPullParser.END_TAG, ns, TAGMultipleLanguageInfo);
+		return contents;
 	}
 
-	void readSubTitles(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGSubTitles);
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-			if (name.equals(TAGSubTitle)) {
-				readSubTitle(parser, content);
-			}
-		}
-		parser.require(XmlPullParser.END_TAG, ns, TAGSubTitles);
-	}
+	public TV[] getFavoriteTV() {
+		TV[] tvs = null;
+		FavoritePublicationSetData[] sets = getPublicationsSetByType(GDCommon.ColumnTypeTV);
 
-	void readSubTitle(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGSubTitle);
+		if (sets != null && sets.length > 0) {
+			tvs = new TV[sets.length];
 
-		ContentData.SubTitle item = new ContentData.SubTitle();
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-			if (name.equals(TAGSubTitleID)) {
-				item.Id = readTag(parser, TAGSubTitleID);
-			} else if (name.equals(TAGSubTitleName)) {
-				item.Name = readTag(parser, TAGSubTitleName);
-			} else if (name.equals(TAGSubTitleLanguage)) {
-				item.Language = readTag(parser, TAGSubTitleLanguage);
-			} else if (name.equals(TAGSubTitleURI)) {
-				item.URI = readTag(parser, TAGSubTitleURI);
-			} else {
-				skip(parser);
-			}
-		}
-		if (content.SubTitles == null) {
-			content.SubTitles = new ArrayList<ContentData.SubTitle>();
-		}
-		content.SubTitles.add(item);
+			for (int i = 0; i < sets.length; i++) {
+				ContentData data = new ContentData();
 
-		parser.require(XmlPullParser.END_TAG, ns, TAGSubTitle);
-	}
+				data.Id = sets[i].SetID;
+				data.Name = sets[i].Name;
+				data.Description = sets[i].Description;
+				data.Posters = new LinkedList<ContentData.Poster>();
+				ContentData.Poster poster = new ContentData.Poster();
+				poster.URI = sets[i].PosterFile;
+				data.Posters.add(poster);
 
-	String readFileNames(XmlPullParser parser) throws IOException,
-			XmlPullParserException {
-		String value = null;
-		parser.require(XmlPullParser.START_TAG, ns, TAGFileNames);
-		value = parseTag(parser, TAGFileName);
-		parser.require(XmlPullParser.END_TAG, ns, TAGFileNames);
-		return value;
-	}
-
-	void readTrailers(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGTrailers);
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-			if (name.equals(TAGTrailer)) {
-				readTrailer(parser, content);
-			}
-		}
-		parser.require(XmlPullParser.END_TAG, ns, TAGTrailers);
-	}
-
-	void readTrailer(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGTrailer);
-
-		ContentData.Trailer item = new ContentData.Trailer();
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-			if (name.equals(TAG)) {
-				item.Id = readTag(parser, TAGTrailerID);
-			} else if (name.equals(TAGTrailerName)) {
-				item.Name = readTag(parser, TAGTrailerName);
-			} else if (name.equals(TAGTrailerURI)) {
-				item.URI = readTag(parser, TAGTrailerURI);
-			} else {
-				skip(parser);
-			}
-		}
-		parser.require(XmlPullParser.END_TAG, ns, TAGTrailer);
-
-		if (content.Trailers == null) {
-			content.Trailers = new ArrayList<ContentData.Trailer>();
-		}
-		content.Trailers.add(item);
-	}
-
-	void readPosters(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGPosters);
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-			if (name.equals(TAGPoster)) {
-				readPoster(parser, content);
-			}
-		}
-		parser.require(XmlPullParser.END_TAG, ns, TAGPosters);
-	}
-
-	void readPoster(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGPoster);
-
-		ContentData.Poster item = new ContentData.Poster();
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-			if (name.equals(TAG)) {
-				item.Id = readTag(parser, TAGPosterID);
-			} else if (name.equals(TAGPosterName)) {
-				item.Name = readTag(parser, TAGPosterName);
-			} else if (name.equals(TAGPosterURI)) {
-				item.URI = readTag(parser, TAGPosterURI);
-			} else {
-				skip(parser);
-			}
-		}
-		parser.require(XmlPullParser.END_TAG, ns, TAGPoster);
-
-		if (content.Posters == null) {
-			content.Posters = new ArrayList<ContentData.Poster>();
-		}
-		content.Posters.add(item);
-	}
-
-	void readMFile(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGMFile);
-
-		ContentData.MFile file = new ContentData.MFile();
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-			if (name.equals(TAGFileID)) {
-				file.FileID = readTag(parser, TAGFileID);
-			} else if (name.equals(TAGFileNames)) {
-				file.FileName = readFileNames(parser);
-			} else if (name.equals(TAGFileType)) {
-				file.FileType = readTag(parser, TAGFileType);
-			} else if (name.equals(TAGFileSize)) {
-				file.FileSize = readTag(parser, TAGFileSize);
-			} else if (name.equals(TAGDuration)) {
-				file.Duration = readTag(parser, TAGDuration);
-			} else if (name.equals(TAGFileURI)) {
-				file.FileURI = readTag(parser, TAGFileURI);
-			} else if (name.equals(TAGResolution)) {
-				file.Resolution = readTag(parser, TAGResolution);
-			} else if (name.equals(TAGBitRate)) {
-				file.BitRate = readTag(parser, TAGBitRate);
-			} else if (name.equals(TAGFileFormat)) {
-				file.FileFormat = readTag(parser, TAGFileFormat);
-			} else if (name.equals(TAGCodeFormat)) {
-				file.CodeFormat = readTag(parser, TAGCodeFormat);
-			} else {
-				skip(parser);
-			}
-		}
-		parser.require(XmlPullParser.END_TAG, ns, TAGMFile);
-		
-		content.MainFile = file;
-	}
-
-	String parseTag(XmlPullParser parser, String tag) throws IOException,
-			XmlPullParserException {
-
-		String value = null;
-		String parsedValue = null;
-
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-			if (name.equals(tag)) {
-				value = readTags(parser, tag);
-				if (value != null) {
-					parsedValue = value;
-				}
+				TV tv = new TV();
+				tv.Content = data;
+				tv.Episodes = getFavoriteEpisodes(sets[i].SetID);
 			}
 		}
 
-		return parsedValue;
+		return tvs;
 	}
 
-	private String readTags(XmlPullParser parser, String tag)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, tag);
-		String value = null;
-		if (tag.equals(TAGPublicationName)) {
-			value = readPublicationName(parser);
-		} else if (tag.equals(TAGFileURI)) {
-			value = readTag(parser, TAGFileURI);
-		} else if (tag.equals(TAGFileName)) {
-			value = readPublicationName(parser);
-		} else {
-			skip(parser);
-		}
-		parser.require(XmlPullParser.END_TAG, ns, tag);
+	public TV.EpisodeItem[] getFavoriteEpisodes(String setId) {
+		TV.EpisodeItem[] items = null;
 
-//		Log.d(TAG, "tag " + tag + " value = " + value);
-		return value;
-	}
-
-	String readPublicationName(XmlPullParser parser) throws IOException,
-			XmlPullParserException {
-		String name = null;
-		String language = parser.getAttributeValue(ns, AttributeLanguage);
-//		Log.d(TAG, "readPublicationName " + language);
-		if (language.equals(getLocalization())) {
-			name = parser.getAttributeValue(ns, AttributeValue);
-//			Log.d(TAG, "readPublicationName name " + name);
-		}
-		parser.nextTag();
-
-//		Log.d(TAG, "readPublicationName next tag " + parser.getName());
-		return name;
-	}
-
-	void readAVInfo(XmlPullParser parser, ContentData content)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, TAGPublicationVA);
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-
-//			Log.d(TAG, "tag name = " + name + " event=" + parser.getEventType());
-
-			if (name.equals(TAGMultipleLanguageInfos)) {
-				readMultipleLanguageInfos(parser, content);
-			} else if (name.equals(TAGSubTitles)) {
-				readSubTitles(parser, content);
-			} else if (name.equals(TAGTrailers)) {
-				readTrailers(parser, content);
-			} else if (name.equals(TAGPosters)) {
-				readPosters(parser, content);
-			} else if (name.equals(TAGMFile)) {
-				readMFile(parser, content);
-			} else {
-				skip(parser);
-			}
-		}
-		parser.require(XmlPullParser.END_TAG, ns, TAGPublicationVA);
-	}
-
-	private void readData(XmlPullParser parser, ContentData content)
-			throws XmlPullParserException, IOException {
-		parser.nextTag();
-		parser.require(XmlPullParser.START_TAG, ns, TAGPublication);
-
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-			String name = parser.getName();
-//			Log.d(TAG, "tag = " + name);
-
-			if (name.equals(TAGPublicationNames)) {
-				content.Name = readPublicationNames(parser);
-			} else if (name.equals(TAGDRMFile)) {
-				content.DRMFile = readDRMFile(parser);
-			} else if (name.equals(TAGPublicationVA)) {
-				readAVInfo(parser, content);
-			} else {
-				skip(parser);
-			}
-		}
-
-	}
-
-	private String readTag(XmlPullParser parser, String tag)
-			throws IOException, XmlPullParserException {
-		parser.require(XmlPullParser.START_TAG, ns, tag);
-		String value = readText(parser);
-		parser.require(XmlPullParser.END_TAG, ns, tag);
-		return value;
-	}
-
-	private String readText(XmlPullParser parser) throws IOException,
-			XmlPullParserException {
-		String result = "";
-		if (parser.next() == XmlPullParser.TEXT) {
-			result = parser.getText();
-			parser.nextTag();
-		}
-//		Log.d(TAG, "read text " + result);
-		return result;
-	}
-
-	private List<String> readList(XmlPullParser parser, String rootTag,
-			String tag) throws XmlPullParserException, IOException {
-		List<String> items = new LinkedList<String>();
-		parser.require(XmlPullParser.START_TAG, ns, rootTag);
-
-		while (parser.next() != XmlPullParser.END_TAG) {
-			if (parser.getEventType() != XmlPullParser.START_TAG) {
-				continue;
-			}
-
-			String name = parser.getName();
-			if (name.equals(tag)) {
-				String value = readTag(parser, tag);
-				items.add(value);
-			} else {
-				skip(parser);
+		FavoritePublicationData[] publications = getPublicationsExByType(setId);
+		if (publications != null && publications.length > 0) {
+			items = new TV.EpisodeItem[publications.length];
+			for (int i = 0; i < items.length; i++) {
+				TV.EpisodeItem item = new TV.EpisodeItem();
+				item.Url = publications[i].URI;
+				item.Number = publications[i].EpisodeIndex;
 			}
 		}
 
 		return items;
 	}
 
-	private void skip(XmlPullParser parser) throws XmlPullParserException,
-			IOException {
-		if (parser.getEventType() != XmlPullParser.START_TAG) {
-			throw new IllegalStateException();
-		}
-		int depth = 1;
-		while (depth != 0) {
-			switch (parser.next()) {
-			case XmlPullParser.END_TAG:
-				depth--;
-				break;
-			case XmlPullParser.START_TAG:
-				depth++;
-				break;
+	public ContentData[] getFavoriteRecord() {
+		ContentData[] contents = null;
+
+		FavoritePublicationSetData[] sets = getPublicationsSetByType(GDCommon.ColumnTypeRecord);
+
+		if (sets != null && sets.length > 0) {
+			contents = new ContentData[sets.length];
+
+			for (int i = 0; i < sets.length; i++) {
+				ContentData data = new ContentData();
+
+				data.Id = sets[i].SetID;
+				data.Name = sets[i].Name;
+				data.Description = sets[i].Description;
+				data.Posters = new LinkedList<ContentData.Poster>();
+				ContentData.Poster poster = new ContentData.Poster();
+				poster.URI = sets[i].PosterFile;
+				data.Posters.add(poster);
 			}
 		}
+		return contents;
+	}
+
+	public ContentData[] getFavoriteEntertainment() {
+		ContentData[] contents = null;
+		FavoritePublicationSetData[] sets = getPublicationsSetByType(GDCommon.ColumnTypeEntertainment);
+
+		if (sets != null && sets.length > 0) {
+			contents = new ContentData[sets.length];
+
+			for (int i = 0; i < sets.length; i++) {
+				ContentData data = new ContentData();
+
+				data.Id = sets[i].SetID;
+				data.Name = sets[i].Name;
+				data.Description = sets[i].Description;
+				data.Posters = new LinkedList<ContentData.Poster>();
+				ContentData.Poster poster = new ContentData.Poster();
+				poster.URI = sets[i].PosterFile;
+				data.Posters.add(poster);
+			}
+		}
+		return contents;
+	}
+
+	private FavoritePublicationData[] getPublicationsByType(String columnType) {
+		FavoritePublicationData[] publications = null;
+		Cursor cursor = null;
+
+		String selection = FavoritePublication.COLUMNTYPE + "=?";
+		String[] selectionArgs = new String[] { columnType };
+
+		// cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
+		cursor = mUserDataProvider.query(FavoritePublication.CONTENT_URI,
+				GDUserDataProvider.PublicationQuery.COLUMNS, selection,
+				selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				publications = new FavoritePublicationData[cursor.getCount()];
+				int i = 0;
+				do {
+					FavoritePublicationData publication = new FavoritePublicationData();
+					publication.PublicationID = cursor
+							.getString(GDUserDataProvider.PublicationQuery.PUBLICATIONID);
+					publication.URI = cursor
+							.getString(GDUserDataProvider.PublicationQuery.URI);
+
+					publications[i] = publication;
+					i++;
+				} while (cursor.moveToNext());
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return publications;
+	}
+
+	private FavoritePublicationData[] getPublicationsExByType(String columnType) {
+		FavoritePublicationData[] publications = null;
+		Cursor cursor = null;
+
+		String selection = FavoritePublication.COLUMNTYPE + "=?";
+		String[] selectionArgs = new String[] { columnType };
+
+		// cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
+		cursor = mUserDataProvider.query(FavoritePublication.CONTENT_URI,
+				GDUserDataProvider.PublicationQuery.COLUMNS, selection,
+				selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				publications = new FavoritePublicationData[cursor.getCount()];
+				int i = 0;
+				do {
+					FavoritePublicationData publication = new FavoritePublicationData();
+					publication.PublicationID = cursor
+							.getString(GDUserDataProvider.PublicationExQuery.PUBLICATIONID);
+					publication.URI = cursor
+							.getString(GDUserDataProvider.PublicationExQuery.URI);
+
+					publication.EpisodeIndex = Integer
+							.valueOf(cursor
+									.getString(GDUserDataProvider.PublicationExQuery.EPISODEINDEX));
+
+					publications[i] = publication;
+					i++;
+				} while (cursor.moveToNext());
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return publications;
+	}
+
+	class FavoritePublicationData {
+		public String PublicationID;
+		public String URI;
+		public int EpisodeIndex;
+	}
+
+	class FavoritePublicationSetData {
+		public String SetID;
+		public String Name;
+		public String Description;
+		public String PosterFile;
+		public String TrailerFile;
+	}
+
+	private FavoritePublicationSetData[] getPublicationsSetByType(
+			String columnType) {
+		FavoritePublicationSetData[] publicationSets = null;
+		Cursor cursor = null;
+
+		String selection = FavoritePublicationSet.COLUMNTYPE + "=?";
+		String[] selectionArgs = new String[] { columnType };
+
+		// cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
+		cursor = mUserDataProvider.query(FavoritePublicationSet.CONTENT_URI,
+				GDUserDataProvider.PublicationSetQuery.COLUMNS, selection,
+				selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				publicationSets = new FavoritePublicationSetData[cursor
+						.getCount()];
+				int i = 0;
+				do {
+					FavoritePublicationSetData set = new FavoritePublicationSetData();
+					set.SetID = cursor
+							.getString(GDUserDataProvider.PublicationSetQuery.SETID);
+					set.Name = cursor
+							.getString(GDUserDataProvider.PublicationSetQuery.NAME);
+					set.Description = cursor
+							.getString(GDUserDataProvider.PublicationSetQuery.DESCRIPTION);
+					set.PosterFile = cursor
+							.getString(GDUserDataProvider.PublicationSetQuery.POSTER);
+					set.TrailerFile = cursor
+							.getString(GDUserDataProvider.PublicationSetQuery.TRAILER);
+
+					publicationSets[i] = set;
+					i++;
+				} while (cursor.moveToNext());
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return publicationSets;
+	}
+
+	// save to favorite
+	public void addMeidaToFavorite(MediaData mediaData) {
+		if (mediaData == null)
+			return;
+
+		if (mediaData.ColumnType.equals(GDCommon.ColumnTypeMovie)) {
+			addToFavoritePublication(mediaData);
+		} else if (mediaData.ColumnType.equals(GDCommon.ColumnTypeTV)) {
+			addToFavoritePublicationSet(mediaData);
+			addToFavoritePublicationEx(mediaData);
+		}
+	}
+
+	public boolean addToFavoritePublication(MediaData mediaData) {
+		boolean result = false;
+
+		String columnType = mediaData.ColumnType;
+		String publicationId = mediaData.PublicationID;
+		String uri = mediaData.URI;
+
+		String[] projection = GDUserDataProvider.PublicationQuery.COLUMNS;
+		String selection = FavoritePublication.COLUMNTYPE + "=? AND "
+				+ FavoritePublication.PUBLICATIONID + "=?";
+		String[] selectionArgs = { columnType, publicationId };
+		Cursor cursor = mUserDataProvider.query(
+				FavoritePublication.CONTENT_URI, projection, selection,
+				selectionArgs, null);
+
+		String oldURI = "";
+		int id = -1;
+		if (cursor != null && cursor.getCount() > 0) {
+			id = cursor.getInt(GDUserDataProvider.PublicationQuery.ID);
+			oldURI = cursor.getString(GDUserDataProvider.PublicationQuery.URI);
+		}
+
+		if (id < 0) {
+			// insert
+			ContentValues values = new ContentValues();
+			values.put(FavoritePublication.COLUMNTYPE, columnType);
+			values.put(FavoritePublication.PUBLICATIONID, publicationId);
+			values.put(FavoritePublication.URI, uri);
+			Uri retUri = mUserDataProvider.insert(
+					FavoritePublication.CONTENT_URI, values);
+
+			if (retUri != null)
+				result = true;
+		} else {
+			if (oldURI == null || !oldURI.equals(uri)) {
+				// update
+				selection = FavoritePublication.ID + "=?";
+				selectionArgs = new String[] { String.valueOf(id) };
+
+				ContentValues values = new ContentValues();
+				values.put(FavoritePublication.COLUMNTYPE, columnType);
+				values.put(FavoritePublication.PUBLICATIONID, publicationId);
+				values.put(FavoritePublication.URI, uri);
+				int count = mUserDataProvider.update(
+						FavoritePublication.CONTENT_URI, values, selection,
+						selectionArgs);
+				if (count == 1)
+					result = true;
+			} else {
+				result = true;
+			}
+		}
+
+		return result;
+	}
+
+	public boolean addToFavoritePublicationEx(MediaData mediaData) {
+		boolean result = false;
+
+		String columnType = mediaData.ColumnType;
+		String publicationId = mediaData.PublicationID;
+		String uri = mediaData.URI;
+		int episodeIndex = mediaData.EpisodeIndex;
+
+		String[] projection = GDUserDataProvider.PublicationExQuery.COLUMNS;
+		String selection = FavoritePublication.COLUMNTYPE + "=? AND "
+				+ FavoritePublication.PUBLICATIONID + "=?";
+		String[] selectionArgs = { columnType, publicationId };
+		Cursor cursor = mUserDataProvider.query(
+				FavoritePublication.CONTENT_URI, projection, selection,
+				selectionArgs, null);
+
+		String oldURI = "";
+		int oldIndex = -1;
+		int id = -1;
+		if (cursor != null && cursor.getCount() > 0) {
+			id = cursor.getInt(GDUserDataProvider.PublicationExQuery.ID);
+			oldURI = cursor
+					.getString(GDUserDataProvider.PublicationExQuery.URI);
+			oldIndex = cursor
+					.getInt(GDUserDataProvider.PublicationExQuery.EPISODEINDEX);
+		}
+
+		if (id < 0) {
+			// insert
+			ContentValues values = new ContentValues();
+			values.put(FavoritePublication.COLUMNTYPE, columnType);
+			values.put(FavoritePublication.PUBLICATIONID, publicationId);
+			values.put(FavoritePublication.URI, uri);
+			values.put(FavoritePublication.EPISODEINDEX, episodeIndex);
+			Uri retUri = mUserDataProvider.insert(
+					FavoritePublication.CONTENT_URI, values);
+
+			if (retUri != null)
+				result = true;
+		} else {
+			if (oldURI == null || !oldURI.equals(uri)
+					|| oldIndex != episodeIndex) {
+				// update
+				selection = FavoritePublication.ID + "=?";
+				selectionArgs = new String[] { String.valueOf(id) };
+
+				ContentValues values = new ContentValues();
+				values.put(FavoritePublication.COLUMNTYPE, columnType);
+				values.put(FavoritePublication.PUBLICATIONID, publicationId);
+				values.put(FavoritePublication.URI, uri);
+				values.put(FavoritePublication.EPISODEINDEX, episodeIndex);
+				int count = mUserDataProvider.update(
+						FavoritePublication.CONTENT_URI, values, selection,
+						selectionArgs);
+				if (count == 1)
+					result = true;
+			} else {
+				result = true;
+			}
+		}
+
+		return result;
+	}
+
+	public boolean addToFavoritePublicationSet(MediaData mediaData) {
+		boolean result = false;
+
+		String setId = mediaData.SetID;
+		String name = mediaData.Name;
+		String description = mediaData.Description;
+		String poster = mediaData.Poster;
+		String trailer = mediaData.Trailer;
+
+		String[] projection = GDUserDataProvider.PublicationSetQuery.COLUMNS;
+		String selection = FavoritePublicationSet.SETID + "=?";
+		String[] selectionArgs = { setId };
+		Cursor cursor = mUserDataProvider.query(
+				FavoritePublicationSet.CONTENT_URI, projection, selection,
+				selectionArgs, null);
+
+		int id = -1;
+		String oldName = "";
+		if (cursor != null && cursor.getCount() > 0) {
+			id = cursor.getInt(GDUserDataProvider.PublicationSetQuery.ID);
+			oldName = cursor
+					.getString(GDUserDataProvider.PublicationSetQuery.NAME);
+		}
+
+		if (id < 0) {
+			// insert
+			ContentValues values = new ContentValues();
+			values.put(FavoritePublicationSet.SETID, setId);
+			values.put(FavoritePublicationSet.NAME, name);
+			values.put(FavoritePublicationSet.DESCRIPTION, description);
+			values.put(FavoritePublicationSet.POSTER, poster);
+			values.put(FavoritePublicationSet.TRAILER, trailer);
+			Uri retUri = mUserDataProvider.insert(
+					FavoritePublicationSet.CONTENT_URI, values);
+
+			if (retUri != null)
+				result = true;
+		} else {
+			if (oldName == null || !oldName.equals(name)) {
+				// update
+				selection = FavoritePublicationSet.ID + "=?";
+				selectionArgs = new String[] { String.valueOf(id) };
+
+				ContentValues values = new ContentValues();
+				values.put(FavoritePublicationSet.SETID, setId);
+				values.put(FavoritePublicationSet.NAME, name);
+				values.put(FavoritePublicationSet.DESCRIPTION, description);
+				values.put(FavoritePublicationSet.POSTER, poster);
+				values.put(FavoritePublicationSet.TRAILER, trailer);
+				int count = mUserDataProvider.update(
+						FavoritePublication.CONTENT_URI, values, selection,
+						selectionArgs);
+				if (count == 1)
+					result = true;
+			} else {
+				result = true;
+			}
+		}
+
+		return result;
+	}
+
+	private final static int QUERYBRAND_ID = 0;
+	private final static int QUERYBRAND_DOWNLOAD = 1;
+	private final static int QUERYBRAND_TOTALSIZE = 2;
+	private final static int QUERYBRAND_CNAME = 3;
+
+	public ContentData[] getContents(String columnId, int pageNumber,
+			int pageSize) {
+
+		ContentData[] Contents = null;
+
+		String selection = Content.COLUMN_ID + "=?  AND " + Content.READY
+				+ "=1" + " Limit ? Offset ?";
+		String[] selectionArgs = new String[] { columnId,
+				Integer.toString(pageSize),
+				Integer.toString(pageNumber * pageSize) };
+
+		Cursor cursor = mDVBDataProvider.query(Content.CONTENT_URI,
+				ProjectionQueryContent, selection, selectionArgs, null);
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				Contents = new ContentData[cursor.getCount()];
+				int i = 0;
+				do {
+					ContentData content = new ContentData();
+					content.Id = cursor.getString(QUERYCONTENT_ID);
+					content.XMLFilePath = cursor.getString(QUERYCONTENT_PATH);
+
+					Log.d(TAG, "coloumn " + columnId + " item " + i + " name="
+							+ content.XMLFilePath);
+
+					Contents[i] = content;
+					i++;
+				} while (cursor.moveToNext());
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return Contents;
+	}
+
+	public ReceiveEntry[] getDownloadStatus(int pageNumber, int pageSize) {
+
+		ReceiveEntry[] Entries = null;
+
+		String sortOrder = Brand.ID + " Limit " + Integer.toString(pageSize)
+				+ " Offset " + Integer.toString(pageNumber * pageSize);
+
+		Cursor cursor = mSmartHomeProvider.query(Brand.CONTENT_URI,
+				ProjectionQueryBrand, null, null, sortOrder);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				Entries = new ReceiveEntry[cursor.getCount()];
+				int i = 0;
+				do {
+					ReceiveEntry entry = new ReceiveEntry();
+					entry.Id = cursor.getString(QUERYBRAND_ID);
+					entry.Name = cursor.getString(QUERYBRAND_CNAME);
+					entry.RawProgress = cursor.getLong(QUERYBRAND_DOWNLOAD);
+					entry.RawTotal = cursor.getLong(QUERYBRAND_TOTALSIZE);
+					entry.ConverSize();
+
+					Log.d(TAG, "Name " + entry.Name + " item " + i
+							+ " progress=" + entry.RawProgress + " total="
+							+ entry.RawTotal);
+
+					Entries[i] = entry;
+					i++;
+				} while (cursor.moveToNext());
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return Entries;
 	}
 
 }

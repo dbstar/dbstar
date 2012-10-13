@@ -32,6 +32,8 @@
 	<string name="text_di">第</string>
 	<string name="text_ye">页</string>
 	<string name="text_ji">集</string>
+	<string name="text_tiao">条</string>
+	<string name="text_gong">共</string>
 	
 	<string name="property_semicolon">:</string>
 	<string name="property_space">&#160;</string>
@@ -74,6 +76,11 @@
 	<string name="menulevel2_item_myorder">我的排序</string>
 	<string name="menulevel2_item_downloadstatus">下载状态</string>
 	
+	<string name="menulevel3_item_movie">电影</string>
+	<string name="menulevel3_item_tv">剧集</string>
+	<string name="menulevel3_item_record">纪录</string>
+	<string name="menulevel3_item_entertainment">综艺</string>
+	
 	<string name="context_view_mypower_title">我的用电</string>
 	<string name="mypower_powerusage">本月用电:</string>
 	<string name="mypower_powercost">本月花费:</string>
@@ -93,10 +100,16 @@
 
 	<string name="receivestatus_filename">文件名</string>
 	<string name="receivestatus_downloadprogress">下载进度</string>
+	<string name="receivestatus_status">接收状态</string>
 	<string name="receivestatus_filesize">文件大小</string>
 	<string name="receivestatus_downloadpercent">百分比</string>
-	<string name="receivestatus_downloadspeed">下载速率</string>
-	<string name="receivestatus_diskspace">剩余空间/磁盘空间</string>
+	<string name="receivestatus_downloadspeed">下载速度</string>
+	<string name="receivestatus_diskspace">剩余空间</string>
+	
+	<string name="receivestatus_status_waitting">等待</string>
+	<string name="receivestatus_status_downloading">正在下载</string>
+	<string name="receivestatus_status_finished">下载完成</string>
+	<string name="receivestatus_status_failed">下载失败</string>
 	
 	<string name="userinfo_system_version">系统版本</string>
 	<string name="userinfo_user_card_number">用户卡号</string>
@@ -134,6 +147,11 @@
 	
 	<string name="button_text_ok">确定</string>
 	<string name="button_text_cancel">取消</string>
+	
+	<string name="dialog_upgrade_title">升级</string>
+	<string name="dialog_upgrade_notes">确认升级系统吗？</string>
+	
+	
 	<string name="diskmanagement_disksize">磁盘空间</string>
 	<string name="diskmanagement_usedspace">占用空间</string>
 	<string name="diskmanagement_emptyspace">剩余空间</string>

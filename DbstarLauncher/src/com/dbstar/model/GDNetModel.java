@@ -18,7 +18,6 @@ import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
-import android.content.Context;
 import android.util.Log;
 
 public class GDNetModel {
@@ -41,12 +40,16 @@ public class GDNetModel {
 
 	private DefaultHttpClient mHttpClient = null;
 
-	public GDNetModel(Context context) {
+	public GDNetModel() {
 
 	}
 
 	public void initialize() {
 		mHttpClient = new DefaultHttpClient();
+	}
+	
+	public void deinitialize() {
+		
 	}
 
 	public String getPowerConsumption(String cc_id, String date_start,

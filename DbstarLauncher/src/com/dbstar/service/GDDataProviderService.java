@@ -1,23 +1,22 @@
 package com.dbstar.service;
 
-
-import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import com.dbstar.util.GDNetworkUtil;
+import com.dbstar.DbstarDVB.DbstarServiceApi;
+import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EntityObject;
 import com.dbstar.model.GDCommon;
-import com.dbstar.model.GDDataAccessor;
+import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GDDataModel;
 import com.dbstar.model.GDNetModel;
 import com.dbstar.model.ReceiveEntry;
 import com.dbstar.model.TV;
-import com.dbstar.model.TV.EpisodeItem;
 import com.dbstar.service.client.GDDBStarClient;
 
 import android.app.Service;
@@ -45,14 +44,12 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_GETCOLUMNS = 1;
 	public static final int REQUESTTYPE_GETCONTENTS = 2;
 	public static final int REQUESTTYPE_GETCONTENTSCOUNT = 3;
-	public static final int REQUESTTYPE_GETDESCRIPTION = 4;
 	public static final int REQUESTTYPE_GETIMAGE = 5;
 	public static final int REQUESTTYPE_GETDETAILSDATA = 6;
 	public static final int REQUESTTYPE_GETDOWNLOADSTATUS = 7;
 
 	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 8;
 	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 9;
-	public static final int REQUESTTYPE_GETWEATHER = 10;
 
 	public static final int REQUESTTYPE_SETSETTINGS = 11;
 	public static final int REQUESTTYPE_GETSETTINGS = 12;
@@ -61,6 +58,13 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_GETTVDATA = 14;
 	public static final int REQUESTTYPE_STARTGETTASKINFO = 15;
 	public static final int REQUESTTYPE_STOPGETTASKINFO = 16;
+
+	public static final int REQUESTTYPE_GETFAVORITEMOVIE = 17;
+	public static final int REQUESTTYPE_GETFAVORITETV = 18;
+	public static final int REQUESTTYPE_GETFAVORITERECORD = 19;
+	public static final int REQUESTTYPE_GETFAVORITEENTERTAINMENT = 20;
+
+	public static final int REQUESTTYPE_ADDTOFAVORITE = 21;
 
 	private static final String PARAMETER_COLUMN_ID = "column_id";
 	private static final String PARAMETER_PAGENUMBER = "page_number";
@@ -75,32 +79,14 @@ public class GDDataProviderService extends Service {
 	private static final String PARAMETER_KEY = "key";
 	private static final String PARAMETER_VALUE = "value";
 
+	// private static final String DVBPrepertyName = "dbstar.dvbpush.started";
+	private static final String SmartHomePrepertyName = "dbstar.smarthome.started";
+
 	private Object mTaskQueueLock = new Object();
 	private LinkedList<RequestTask> mTaskQueue = null;
 
 	private Object mFinishedTaskQueueLock = new Object();
 	private LinkedList<RequestTask> mFinishedTaskQueue = null;
-
-	private GDDataModel mModel = null;
-	private GDNetModel mNetModel = null;
-	GDDataAccessor mDataAccessor = new GDDataAccessor();
-	ConnectivityManager mConnectManager;
-	GDDiskSpaceMonitor mDiskMonitor;
-
-	GDDBStarClient mDBStarClient;
-	GDApplicationObserver mApplicationObserver = null;
-
-	public void registerAppObserver(GDApplicationObserver observer) {
-		mApplicationObserver = observer;
-	}
-
-	public void unRegisterAppObserver(GDApplicationObserver observer) {
-		if (mApplicationObserver == observer) {
-			mApplicationObserver = null;
-		}
-	}
-
-	String mMacAddress = "";
 
 	private int mThreadCount = 2;
 	private List<WorkerThread> mThreadPool = new LinkedList<WorkerThread>();
@@ -108,301 +94,25 @@ public class GDDataProviderService extends Service {
 	private int mMainThreadId;
 	private int mMainThreadPriority;
 
+	GDSystemConfigure mConfigure = null;
+
+	GDDataModel mDataModel = null;
+	GDNetModel mNetModel = null;
+
+	ConnectivityManager mConnectManager;
+	GDDiskSpaceMonitor mDiskMonitor;
+
+	GDDBStarClient mDBStarClient;
+	GDApplicationObserver mApplicationObserver = null;
+
 	private final IBinder mBinder = new DataProviderBinder();
+	SystemEventHandler mHandler = null;
 
-	public class DataProviderBinder extends Binder {
-		public GDDataProviderService getService() {
-			return GDDataProviderService.this;
-		}
-	}
+	boolean mIsDbServiceStarted = false;
+	boolean mIsStorageReady = false;
+	boolean mIsNetworkReady = false;
 
-	public void onCreate() {
-		super.onCreate();
-		Log.d(TAG, "onCreate");
-
-		mMainThreadId = Process.myTid();
-		mMainThreadPriority = Process.getThreadPriority(mMainThreadId);
-		Log.d(TAG, "main thread id " + mMainThreadId + " priority "
-				+ mMainThreadPriority);
-
-		mDataAccessor.configure();
-
-		mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
-		String disk = mDataAccessor.getStorageDisk();
-		Log.d(TAG, "monitor disk " + disk);
-		if (!disk.isEmpty()) {
-			mDiskMonitor.addDiskToMonitor(disk);
-		}
-
-		mDiskMonitor.startMonitor();
-
-		mModel = new GDDataModel(this);
-		mModel.initialize();
-		// set localization
-		mModel.setLocalization(GDCommon.LangCN);
-
-		mNetModel = new GDNetModel(this);
-		mNetModel.initialize();
-
-		mTaskQueue = new LinkedList<RequestTask>();
-		mFinishedTaskQueue = new LinkedList<RequestTask>();
-
-		for (int i = 0; i < mThreadCount; i++) {
-			WorkerThread thread = new WorkerThread();
-			thread.start();
-
-			mThreadPool.add(thread);
-		}
-
-		registerUSBReceiver();
-		reqisterConnectReceiver();
-
-		mNetworkIsReady = isNetworkConnected();
-		Log.d(TAG, "network is connected " + mNetworkIsReady);
-		
-		mDBStarClient = new GDDBStarClient(this);
-		mDBStarClient.start();
-	}
-
-	public void onDestroy() {
-		super.onDestroy();
-		Log.d(TAG, "onDestroy");
-
-		mDBStarClient.stop();
-		mDiskMonitor.stopMonitor();
-
-		mModel.deInitialize();
-
-		unregisterReceiver(mNetworkReceiver);
-		unregisterReceiver(mUSBReceiver);
-
-		cancelAllRequests();
-
-		for (int i = 0; i < mThreadCount; i++) {
-			WorkerThread thread = mThreadPool.get(i);
-			thread.setExit(true);
-		}
-
-		synchronized (mTaskQueueLock) {
-			mTaskQueueLock.notifyAll();
-		}
-	}
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		return mBinder;
-	}
-
-	boolean mDiskIsReady = false;
-	boolean mNetworkIsReady = false;
-
-//	private static final String DVBPrepertyName = "dbstar.dvbpush.started";
-	private static final String SmartHomePrepertyName = "dbstar.smarthome.started";
-
-	private void startDbStarService() {
-		Log.d(TAG, "++++++++++++++++++startDbStarService++++++++++++++++++++");
-		SharedPreferences settings = null;
-		SharedPreferences.Editor editor = null;
-//		settings = getSharedPreferences(DVBPrepertyName, 0);
-//		SharedPreferences.Editor editor = settings.edit();
-//		editor.putInt(DVBPrepertyName, 1);
-//		editor.commit();
-
-		settings = getSharedPreferences(SmartHomePrepertyName, 0);
-		editor = settings.edit();
-		editor.putInt(SmartHomePrepertyName, 1);
-		editor.commit();
-		
-		mDBStarClient.startDvbpush();
-	}
-
-	private void stopDbStarService() {
-		Log.d(TAG, "stopDbStarService");
-
-		SharedPreferences settings = null;
-		SharedPreferences.Editor editor = null;
-		
-//		settings = getSharedPreferences(DVBPrepertyName, 0);
-//		editor = settings.edit();
-//		editor.putInt(DVBPrepertyName, 0);
-//		editor.commit();
-
-		settings = getSharedPreferences(SmartHomePrepertyName, 0);
-		editor = settings.edit();
-		editor.putInt(SmartHomePrepertyName, 0);
-		editor.commit();
-		
-		mDBStarClient.stopDvbpush();
-	}
-
-	private Handler mHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case GDCommon.MSG_TASK_FINISHED: {
-				RequestTask task = dequeueFinishedTask();
-
-				if (task != null) {
-					handleTaskFinished(task);
-				}
-				break;
-			}
-
-			case GDCommon.MSG_MEDIA_MOUNTED: {
-				Bundle data = msg.getData();
-				String disk = data.getString("disk");
-				// Log.d(TAG, "mount storage = " + disk);
-				Log.d(TAG, " ++++++++++++++++ mount storage +++++++++++++++ " + disk);
-
-				String storage = mDataAccessor.getStorageDisk();
-
-				if (storage.equals("")) {
-					mDataAccessor.configure();
-					storage = mDataAccessor.getStorageDisk();
-					if (storage.equals("")) {
-						break;
-					}
-				}
-				
-				if (disk.equals(storage) && mApplicationObserver != null) {
-					mDiskIsReady = true;
-					mDataAccessor.configure();
-					mApplicationObserver.initializeApp();
-
-//					disk = mDataAccessor.getStorageDisk();
-					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
-					mDiskMonitor.removeDiskFromMonitor(disk);
-					mDiskMonitor.addDiskToMonitor(disk);
-					mDiskMonitor.startMonitor();
-
-					if (mDiskIsReady && mNetworkIsReady) {
-						startDbStarService();
-					}
-				}
-				break;
-			}
-			
-			case GDCommon.MSG_MEDIA_REMOVED: {
-				break;
-			}
-
-			case GDCommon.MSG_NETWORK_CONNECT:
-				getMacAddress();
-				Log.d(TAG,
-						" ++++++++++++++++ network connected +++++++++++++++");
-				mNetworkIsReady = true;
-				if (mDiskIsReady && mNetworkIsReady) {
-					startDbStarService();
-				}
-
-				break;
-			case GDCommon.MSG_NETWORK_DISCONNECT:
-				Log.d(TAG,
-						" ++++++++++++++++ network disconnected +++++++++++++++");
-				mNetworkIsReady = false;
-				stopDbStarService();
-				break;
-
-			case GDCommon.MSG_DISK_SPACEWARNING: {
-				Bundle data = msg.getData();
-				String disk = (String) data.get(GDCommon.KeyDisk);
-				if (mApplicationObserver != null) {
-					mApplicationObserver.handleNotifiy(
-							GDCommon.MSG_DISK_SPACEWARNING, disk);
-				}
-				break;
-			}
-
-			default:
-				break;
-			}
-		}
-
-	};
-
-	private void handleTaskFinished(RequestTask task) {
-		Log.d(TAG, "handleTaskFinished type [" + task.Type + "]");
-
-		switch (task.Type) {
-		case REQUESTTYPE_GETCOLUMNS: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, task.ColumnLevel,
-						task.Index, task.Data);
-			}
-			break;
-		}
-
-		case REQUESTTYPE_GETALLPUBLICATIONS: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, null, task.Data);
-			}
-			break;
-		}
-
-		case REQUESTTYPE_GETTVDATA: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, null, task.Data);
-			}
-			break;
-		}
-
-		case REQUESTTYPE_GETCONTENTSCOUNT: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, null, task.Data);
-			}
-			break;
-		}
-		case REQUESTTYPE_GETCONTENTS: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, task.PageNumber,
-						task.PageSize, task.Data);
-			}
-			break;
-		}
-
-		case REQUESTTYPE_GETDETAILSDATA:
-		case REQUESTTYPE_GETDESCRIPTION:
-		case REQUESTTYPE_GETIMAGE: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, task.PageNumber,
-						task.Index, task.Data);
-			}
-			break;
-		}
-
-		case REQUESTTYPE_GETDOWNLOADSTATUS: {
-			if (task.Observer != null) {
-//				task.Observer.updateData(task.Type, task.PageNumber,
-//						task.PageSize, task.Data);
-				task.Observer.updateData(task.Type, null, task.Data);
-			}
-			break;
-		}
-
-		case REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE:
-		case REQUESTTYPE_GETPOWERCONSUMPTION: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, 0, 0, task.Data);
-			}
-			break;
-		}
-
-		case REQUESTTYPE_GETSETTINGS: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, task.Key, task.Data);
-			}
-			break;
-		}
-
-		case REQUESTTYPE_GETWEATHER: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, task.Key, task.Data);
-			}
-			break;
-		}
-		default:
-			break;
-		}
-	}
+	String mMacAddress = "";
 
 	private class RequestTask {
 		public static final int INVALID = 0;
@@ -429,6 +139,329 @@ public class GDDataProviderService extends Service {
 			Flag = ACTIVE;
 		}
 	};
+
+	public void registerAppObserver(GDApplicationObserver observer) {
+		mApplicationObserver = observer;
+	}
+
+	public void unRegisterAppObserver(GDApplicationObserver observer) {
+		if (mApplicationObserver == observer) {
+			mApplicationObserver = null;
+		}
+	}
+
+	public class DataProviderBinder extends Binder {
+		public GDDataProviderService getService() {
+			return GDDataProviderService.this;
+		}
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		return mBinder;
+	}
+
+	public void onCreate() {
+		super.onCreate();
+		Log.d(TAG, "onCreate");
+
+		mMainThreadId = Process.myTid();
+		mMainThreadPriority = Process.getThreadPriority(mMainThreadId);
+
+		mConfigure = new GDSystemConfigure();
+		mDataModel = new GDDataModel();
+		mNetModel = new GDNetModel();
+		mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
+		mDBStarClient = new GDDBStarClient(this);
+		mHandler = new SystemEventHandler();
+
+		mTaskQueue = new LinkedList<RequestTask>();
+		mFinishedTaskQueue = new LinkedList<RequestTask>();
+
+		for (int i = 0; i < mThreadCount; i++) {
+			WorkerThread thread = new WorkerThread();
+			thread.start();
+
+			mThreadPool.add(thread);
+		}
+
+		mDBStarClient.start();
+
+		mConfigure.readConfigure();
+		if (mConfigure.configureStorage()) {
+			String disk = mConfigure.getStorageDisk();
+			Log.d(TAG, "monitor disk " + disk);
+
+			if (!disk.isEmpty()) {
+				mIsStorageReady = true;
+				Log.d(TAG, "disk is ready " + disk);
+
+				mDiskMonitor.addDiskToMonitor(disk);
+			}
+		}
+
+		initializeDataEngine();
+		initializeNetEngine();
+
+		registerUSBReceiver();
+		reqisterConnectReceiver();
+		reqisterSystemMessageReceiver();
+
+		mIsNetworkReady = isNetworkConnected();
+		Log.d(TAG, "network is connected " + mIsNetworkReady);
+
+		mIsDbServiceStarted = false;
+		if (mIsStorageReady && mIsNetworkReady) {
+			startDbStarService();
+		}
+	}
+
+	void initializeDataEngine() {
+		mDataModel.initialize(mConfigure);
+	}
+
+	void deinitializeDataEngine() {
+		mDataModel.deInitialize();
+	}
+
+	void initializeNetEngine() {
+		mNetModel.initialize();
+	}
+
+	void deinitializeNetEngine() {
+		mNetModel.deinitialize();
+	}
+
+	public void onDestroy() {
+		super.onDestroy();
+		Log.d(TAG, "onDestroy");
+
+		stopDbStarService();
+		mDBStarClient.stop();
+		mDiskMonitor.stopMonitor();
+
+		deinitializeDataEngine();
+		deinitializeNetEngine();
+
+		unregisterReceiver(mNetworkReceiver);
+		unregisterReceiver(mUSBReceiver);
+		unregisterReceiver(mSystemMessageReceiver);
+
+		cancelAllRequests();
+
+		for (int i = 0; i < mThreadCount; i++) {
+			WorkerThread thread = mThreadPool.get(i);
+			thread.setExit(true);
+		}
+
+		synchronized (mTaskQueueLock) {
+			mTaskQueueLock.notifyAll();
+		}
+	}
+
+	private void startDbStarService() {
+		if (mIsDbServiceStarted)
+			return;
+		Log.d(TAG, "++++++++++++++++++startDbStarService++++++++++++++++++++");
+
+		SharedPreferences settings = null;
+		SharedPreferences.Editor editor = null;
+
+		settings = getSharedPreferences(SmartHomePrepertyName, 0);
+		editor = settings.edit();
+		editor.putInt(SmartHomePrepertyName, 1);
+		editor.commit();
+
+		mDBStarClient.startDvbpush();
+
+		mIsDbServiceStarted = true;
+	}
+
+	private void stopDbStarService() {
+		Log.d(TAG, "stopDbStarService");
+
+		if (!mIsDbServiceStarted)
+			return;
+
+		SharedPreferences settings = null;
+		SharedPreferences.Editor editor = null;
+
+		settings = getSharedPreferences(SmartHomePrepertyName, 0);
+		editor = settings.edit();
+		editor.putInt(SmartHomePrepertyName, 0);
+		editor.commit();
+
+		mDBStarClient.stopDvbpush();
+
+		mIsDbServiceStarted = false;
+	}
+
+	class SystemEventHandler extends Handler {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case GDCommon.MSG_TASK_FINISHED: {
+				RequestTask task = dequeueFinishedTask();
+
+				if (task != null) {
+					handleTaskFinished(task);
+				}
+				break;
+			}
+
+			case GDCommon.MSG_MEDIA_MOUNTED: {
+				Bundle data = msg.getData();
+				String disk = data.getString("disk");
+				// Log.d(TAG, "mount storage = " + disk);
+				Log.d(TAG, "++++++++ mount storage ++++++++" + disk);
+
+				String storage = "";
+				if (mConfigure.configureStorage()) {
+					storage = mConfigure.getStorageDisk();
+				}
+
+				if (disk.equals(storage) && mApplicationObserver != null) {
+					mIsStorageReady = true;
+					mConfigure.readConfigure();
+					mConfigure.configureStorage();
+
+					initializeDataEngine();
+
+					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
+					mDiskMonitor.removeDiskFromMonitor(disk);
+					mDiskMonitor.addDiskToMonitor(disk);
+
+					if (mIsStorageReady && mIsNetworkReady) {
+						startDbStarService();
+					}
+
+					// restart application
+					mApplicationObserver.initializeApp();
+				}
+				break;
+			}
+
+			case GDCommon.MSG_MEDIA_REMOVED: {
+				Bundle data = msg.getData();
+				String disk = data.getString("disk");
+
+				mDiskMonitor.removeDiskFromMonitor(disk);
+
+				String storage = mConfigure.getStorageDisk();
+				if (disk.equals(storage)) {
+					mIsStorageReady = false;
+					deinitializeDataEngine();
+					mApplicationObserver.deinitializeApp();
+				}
+				break;
+			}
+
+			case GDCommon.MSG_NETWORK_CONNECT:
+				getMacAddress();
+				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
+				mIsNetworkReady = true;
+				if (mIsStorageReady && mIsNetworkReady) {
+					startDbStarService();
+				}
+
+				break;
+			case GDCommon.MSG_NETWORK_DISCONNECT:
+				Log.d(TAG, "++++++++++++ network disconnected +++++++++++");
+				mIsNetworkReady = false;
+				stopDbStarService();
+				break;
+
+			case GDCommon.MSG_DISK_SPACEWARNING: {
+				Bundle data = msg.getData();
+				String disk = (String) data.get(GDCommon.KeyDisk);
+				if (mApplicationObserver != null) {
+					mApplicationObserver.handleNotifiy(
+							GDCommon.MSG_DISK_SPACEWARNING, disk);
+				}
+				break;
+			}
+
+			default:
+				break;
+			}
+		}
+
+	}
+
+	private void handleTaskFinished(RequestTask task) {
+		Log.d(TAG, "handleTaskFinished type [" + task.Type + "]");
+
+		switch (task.Type) {
+		case REQUESTTYPE_GETCOLUMNS: {
+			if (task.Observer != null) {
+				task.Observer.updateData(task.Type, task.ColumnLevel,
+						task.Index, task.Data);
+			}
+			break;
+		}
+
+		case REQUESTTYPE_GETFAVORITEMOVIE:
+		case REQUESTTYPE_GETFAVORITETV:
+		case REQUESTTYPE_GETFAVORITERECORD:
+		case REQUESTTYPE_GETFAVORITEENTERTAINMENT:
+		case REQUESTTYPE_GETALLPUBLICATIONS:
+		case REQUESTTYPE_GETTVDATA: {
+			if (task.Observer != null) {
+				task.Observer.updateData(task.Type, null, task.Data);
+			}
+			break;
+		}
+
+		case REQUESTTYPE_GETCONTENTSCOUNT: {
+			if (task.Observer != null) {
+				task.Observer.updateData(task.Type, null, task.Data);
+			}
+			break;
+		}
+		case REQUESTTYPE_GETCONTENTS: {
+			if (task.Observer != null) {
+				task.Observer.updateData(task.Type, task.PageNumber,
+						task.PageSize, task.Data);
+			}
+			break;
+		}
+
+		case REQUESTTYPE_GETDETAILSDATA:
+		case REQUESTTYPE_GETIMAGE: {
+			if (task.Observer != null) {
+				task.Observer.updateData(task.Type, task.PageNumber,
+						task.Index, task.Data);
+			}
+			break;
+		}
+
+		case REQUESTTYPE_GETDOWNLOADSTATUS: {
+			if (task.Observer != null) {
+				// task.Observer.updateData(task.Type, task.PageNumber,
+				// task.PageSize, task.Data);
+				task.Observer.updateData(task.Type, null, task.Data);
+			}
+			break;
+		}
+
+		case REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE:
+		case REQUESTTYPE_GETPOWERCONSUMPTION: {
+			if (task.Observer != null) {
+				task.Observer.updateData(task.Type, 0, 0, task.Data);
+			}
+			break;
+		}
+
+		case REQUESTTYPE_GETSETTINGS: {
+			if (task.Observer != null) {
+				task.Observer.updateData(task.Type, task.Key, task.Data);
+			}
+			break;
+		}
+
+		default:
+			break;
+		}
+	}
 
 	private void enqueueTask(RequestTask task) {
 		synchronized (mTaskQueueLock) {
@@ -576,17 +609,19 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					ColumnData[] coloumns = mModel.getColumns(columnId);
+					ColumnData[] coloumns = mDataModel.getColumns(columnId);
 
 					for (int i = 0; coloumns != null && i < coloumns.length; i++) {
 						ColumnData column = coloumns[i];
-						String iconRootPath = mDataAccessor.getIconRootDir();
-						coloumns[i].IconNormal = mModel.getImage(iconRootPath
-								+ "/" + column.IconNormalPath);
-						coloumns[i].IconFocused = mModel.getImage(iconRootPath
-								+ "/" + column.IconFocusedPath);
+						String iconRootPath = mConfigure.getIconRootDir();
+						coloumns[i].IconNormal = mDataModel
+								.getImage(iconRootPath + "/"
+										+ column.IconNormalPath);
+						coloumns[i].IconFocused = mDataModel
+								.getImage(iconRootPath + "/"
+										+ column.IconFocusedPath);
 						// coloumns[i].IconClicked =
-						// mModel.getImage(iconRootPath + "/" +
+						// mDataModel.getImage(iconRootPath + "/" +
 						// column.IconClickedPath);
 					}
 
@@ -601,7 +636,8 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					ContentData[] datas = mModel.getReadyPublications(columnId);
+					ContentData[] datas = mDataModel
+							.getReadyPublications(columnId);
 					task.Data = datas;
 
 					taskFinished(task);
@@ -613,22 +649,41 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					EntityObject[] entities = mModel.getAllEntities(columnId);
+					EntityObject[] entities = mDataModel
+							.getAllEntities(columnId);
 
 					TV[] tvs = new TV[entities.length];
 					for (int i = 0; i < entities.length; i++) {
-						tvs[i] = mModel.getTVData(entities[i].Id);
+						tvs[i] = mDataModel.getTVData(entities[i].Id);
 						TV.EpisodeItem[] items = tvs[i].Episodes;
 						for (int j = 0; j < items.length; j++) {
 							ContentData content = new ContentData();
-							content.XMLFilePath = items[j].Url + GDDataModel.DefaultDesFile;
+							content.XMLFilePath = items[j].Url;
 							String xmlFile = getDetailsDataFile(content);
-							mModel.getDetailsData(xmlFile, content);
+							mDataModel.getDetailsData(xmlFile, content);
 							Log.d(TAG, "xmlFile " + xmlFile);
-							Log.d(TAG, "content "+ content.MainFile);
+							Log.d(TAG, "content " + content.MainFile);
 							items[j].Content = content;
 						}
 					}
+					task.Data = tvs;
+
+					taskFinished(task);
+					break;
+				}
+
+				case REQUESTTYPE_GETFAVORITEMOVIE: {
+					ContentData[] contents = mDataModel.getFavoriteMovie();
+					task.Data = contents;
+
+					taskFinished(task);
+					break;
+				}
+
+				case REQUESTTYPE_GETFAVORITETV:
+				case REQUESTTYPE_GETFAVORITERECORD:
+				case REQUESTTYPE_GETFAVORITEENTERTAINMENT: {
+					TV[] tvs = mDataModel.getFavoriteTV();
 					task.Data = tvs;
 
 					taskFinished(task);
@@ -640,8 +695,8 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					int count = mModel.getContentsCount(columnId);
-					task.Data = new Integer(count);
+					int count = mDataModel.getContentsCount(columnId);
+					task.Data = Integer.valueOf(count);
 
 					taskFinished(task);
 					break;
@@ -656,7 +711,7 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_PAGESIZE);
 					int pageSize = ((Integer) value).intValue();
 
-					ContentData[] contents = mModel.getContents(columnId,
+					ContentData[] contents = mDataModel.getContents(columnId,
 							pageNumber, pageSize);
 					task.Data = contents;
 
@@ -669,21 +724,8 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_CONTENTDATA);
 					ContentData content = (ContentData) value;
 					String xmlFile = getDetailsDataFile(content);
-					mModel.getDetailsData(xmlFile, content);
+					mDataModel.getDetailsData(xmlFile, content);
 					task.Data = content;
-
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETDESCRIPTION: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_CONTENTDATA);
-					ContentData content = (ContentData) value;
-					String file = getDescritpionFile(content);
-
-					String text = mModel.getTextContent(file);
-					task.Data = text;
 
 					taskFinished(task);
 					break;
@@ -695,27 +737,25 @@ public class GDDataProviderService extends Service {
 					ContentData content = (ContentData) value;
 					String file = getThumbnailFile(content);
 
-					Bitmap image = mModel.getImage(file);
+					Bitmap image = mDataModel.getImage(file);
 					task.Data = image;
 
 					taskFinished(task);
 					break;
 				}
-				
+
 				case REQUESTTYPE_STARTGETTASKINFO: {
 					mDBStarClient.startTaskInfo();
 					break;
 				}
-				
+
 				case REQUESTTYPE_STOPGETTASKINFO: {
 					mDBStarClient.stopTaskInfo();
 					break;
 				}
 
 				case REQUESTTYPE_GETDOWNLOADSTATUS: {
-					ReceiveEntry[] entries = mDBStarClient.getTaskInfo(); 
-//							mModel.getDownloadStatus(
-//							task.PageNumber, task.PageSize);
+					ReceiveEntry[] entries = mDBStarClient.getTaskInfo();
 					task.Data = entries;
 					taskFinished(task);
 					break;
@@ -758,7 +798,7 @@ public class GDDataProviderService extends Service {
 				}
 
 				case REQUESTTYPE_GETSETTINGS: {
-					task.Data = mModel.getSettingValue((String) task.Key);
+					task.Data = mDataModel.getSettingValue((String) task.Key);
 					taskFinished(task);
 					break;
 				}
@@ -770,7 +810,13 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_VALUE);
 					String sValue = (String) value;
 
-					boolean ret = mModel.setSettingValue(key, sValue);
+					boolean ret = mDataModel.setSettingValue(key, sValue);
+					break;
+				}
+
+				case REQUESTTYPE_ADDTOFAVORITE: {
+					MediaData data = (MediaData) task.Data;
+					mDataModel.addMeidaToFavorite(data);
 					break;
 				}
 
@@ -845,19 +891,6 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
-	public void getDescription(ClientObserver observer, int pageNumber,
-			int index, ContentData content) {
-		RequestTask task = new RequestTask();
-		task.Id = System.currentTimeMillis();
-		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETDESCRIPTION;
-		task.PageNumber = pageNumber;
-		task.Index = index;
-		task.Parameters = new HashMap<String, Object>();
-		task.Parameters.put(PARAMETER_CONTENTDATA, content);
-		enqueueTask(task);
-	}
-
 	public void getDetailsData(ClientObserver observer, int pageNumber,
 			int index, ContentData content) {
 		RequestTask task = new RequestTask();
@@ -884,20 +917,9 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
-	public void getDownloadStatus(ClientObserver observer) {
-		RequestTask task = new RequestTask();
-		task.Id = System.currentTimeMillis();
-		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETDOWNLOADSTATUS;
-
-//		task.PageNumber = pageNumber;
-//		task.PageSize = pageSize;
-		enqueueTask(task);
-	}
-
 	public void getPowerConsumption(ClientObserver observer, String cc_id,
 			String date_start, String date_end) {
-		if (!mNetworkIsReady)
+		if (!mIsNetworkReady)
 			return;
 
 		RequestTask task = new RequestTask();
@@ -915,7 +937,7 @@ public class GDDataProviderService extends Service {
 
 	public void getTotalCostByChargeType(ClientObserver observer, String cc_id,
 			String date_start, String date_end, String charge_type) {
-		if (!mNetworkIsReady)
+		if (!mIsNetworkReady)
 			return;
 
 		RequestTask task = new RequestTask();
@@ -963,7 +985,18 @@ public class GDDataProviderService extends Service {
 
 		enqueueTask(task);
 	}
-	
+
+	public void getDownloadStatus(ClientObserver observer) {
+		RequestTask task = new RequestTask();
+		task.Id = System.currentTimeMillis();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETDOWNLOADSTATUS;
+
+		// task.PageNumber = pageNumber;
+		// task.PageSize = pageSize;
+		enqueueTask(task);
+	}
+
 	public void stopGetTaskInfo() {
 		RequestTask task = new RequestTask();
 		task.Observer = null;
@@ -972,43 +1005,53 @@ public class GDDataProviderService extends Service {
 
 		enqueueTask(task);
 	}
-	
-	public void getWeatherData(ClientObserver observer, String location) {
 
-		if (!mNetworkIsReady)
-			return;
-
+	// favorite
+	public void getFavoriteMovie(ClientObserver observer) {
 		RequestTask task = new RequestTask();
-		task.Observer = observer;
 		task.Id = System.currentTimeMillis();
-		task.Type = REQUESTTYPE_GETWEATHER;
-		task.Key = location;
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETFAVORITEMOVIE;
+
+		enqueueTask(task);
+	}
+
+	public void getFavoriteTV(ClientObserver observer) {
+		RequestTask task = new RequestTask();
+		task.Id = System.currentTimeMillis();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETFAVORITETV;
+
+		enqueueTask(task);
+	}
+
+	public void addMediaToFavorite(MediaData data) {
+		RequestTask task = new RequestTask();
+		task.Id = System.currentTimeMillis();
+		task.Data = data;
+		task.Type = REQUESTTYPE_ADDTOFAVORITE;
 
 		enqueueTask(task);
 	}
 
 	private String getThumbnailFile(ContentData content) {
-		return mDataAccessor.getThumbnailFile(content);
-	}
-
-	private String getDescritpionFile(ContentData content) {
-		return mDataAccessor.getDescritpionFile(content);
+		return mConfigure.getThumbnailFile(content);
 	}
 
 	private String getDetailsDataFile(ContentData content) {
-		return mDataAccessor.getDetailsDataFile(content);
+		return mConfigure.getDetailsDataFile(content);
 	}
 
 	public String getMediaFile(ContentData content) {
-		return mDataAccessor.getMediaFile(content);
+		return mConfigure.getMediaFile(content);
 	}
 
 	public String getEBookFile(String category) {
-		return mDataAccessor.getEbookFile(category);
+		return mConfigure.getEbookFile(category);
 	}
 
 	public String getStorageDisk() {
-		return mDataAccessor.getStorageDisk();
+		return mConfigure.getStorageDisk();
 	}
 
 	// cancel the requests from this observer
@@ -1037,6 +1080,23 @@ public class GDDataProviderService extends Service {
 		}
 	}
 
+	public String getCategoryContent(String category) {
+		return mConfigure.getCategoryContent(category);
+	}
+
+	public void getPushedMessage(List<String> retMessages) {
+		mConfigure.getPushedMessage(retMessages);
+	}
+
+	public String getMacAddress() {
+
+		if (mMacAddress.equals("")) {
+			mMacAddress = GDNetworkUtil.getMacAddress(this, mConnectManager);
+		}
+
+		return mMacAddress;
+	}
+
 	public void cancelAllRequests() {
 		Log.d(TAG, "cancelAllRequests!");
 
@@ -1052,47 +1112,6 @@ public class GDDataProviderService extends Service {
 		synchronized (mFinishedTaskQueueLock) {
 			mFinishedTaskQueue.clear();
 		}
-	}
-
-	public String getCategoryContent(String category) {
-		return mDataAccessor.getCategoryContent(category);
-	}
-
-	public String getDemoMovie() {
-		String file = mDataAccessor.getDemoMovie();
-		Log.d(TAG, "getDemoMovie file =" + file);
-		File f = new File(file);
-		if (f == null || !f.exists()) {
-			file = "";
-		}
-		return file;
-	}
-
-	public String getDemoPic() {
-		String file = mDataAccessor.getDemoPic();
-		Log.d(TAG, "getDemoPic file =" + file);
-		File f = new File(file);
-		if (f == null || !f.exists()) {
-			file = "";
-		}
-		return file;
-	}
-
-	public String getHomePage() {
-		return mDataAccessor.getHomePage();
-	}
-
-	public void getPushedMessage(List<String> retMessages) {
-		mDataAccessor.getPushedMessage(retMessages);
-	}
-
-	public String getMacAddress() {
-
-		if (mMacAddress.equals("")) {
-			mMacAddress = GDNetworkUtil.getMacAddress(this, mConnectManager);
-		}
-
-		return mMacAddress;
 	}
 
 	public boolean isNetworkConnected() {
@@ -1119,6 +1138,12 @@ public class GDDataProviderService extends Service {
 		/* receive connection change messages */
 		networkFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 		registerReceiver(mNetworkReceiver, networkFilter);
+	}
+
+	private void reqisterSystemMessageReceiver() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction("");
+		registerReceiver(mSystemMessageReceiver, filter);
 	}
 
 	private BroadcastReceiver mUSBReceiver = new BroadcastReceiver() {
@@ -1174,8 +1199,11 @@ public class GDDataProviderService extends Service {
 			// case 1: attempting to connect to another network, just wait for
 			// another broadcast
 			// case 2: connected
-			NetworkInfo networkInfo = (NetworkInfo) intent
-					.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+			// NetworkInfo networkInfo = (NetworkInfo) intent
+			// .getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+
+			NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
+
 			if (networkInfo != null) {
 				Log.d(TAG, "getTypeName() = " + networkInfo.getTypeName());
 				Log.d(TAG, "isConnected() = " + networkInfo.isConnected());
@@ -1184,6 +1212,35 @@ public class GDDataProviderService extends Service {
 					mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_CONNECT);
 				}
 			}
+		}
+
+	};
+
+	private BroadcastReceiver mSystemMessageReceiver = new BroadcastReceiver() {
+
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+
+			if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
+
+				if (mApplicationObserver != null) {
+					int type = intent.getIntExtra("type", 0);
+
+					switch (type) {
+					case DbstarServiceApi.MSG_UPGRADE: {
+						byte[] bytes = intent.getByteArrayExtra("message");
+						String packageFile = new String(bytes);
+
+						mApplicationObserver.handleNotifiy(
+								GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
+						break;
+					}
+					default:
+						break;
+					}
+				}
+			}
+
 		}
 
 	};

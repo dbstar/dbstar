@@ -26,7 +26,7 @@ public class GDMarqeeTextView extends View {
 	public static final int MarqeeForever = -1;
 	private Context mContext = null;
 
-	private String mText = null;
+//	private String mText = null;
 
 	private int mTextColor = 0x0000ff;
 	private float mTextSize = 22;
@@ -80,7 +80,7 @@ public class GDMarqeeTextView extends View {
 			TypedArray a = context.obtainStyledAttributes(attrs,
 					R.styleable.GDMarqeeTextView);
 
-			mText = a.getString(R.styleable.GDMarqeeTextView_text);
+//			mText = a.getString(R.styleable.GDMarqeeTextView_text);
 
 			mTextSize = a.getDimension(R.styleable.GDMarqeeTextView_textSize,
 					mTextSize);
@@ -112,14 +112,14 @@ public class GDMarqeeTextView extends View {
 		}
 	}
 
-	public void setText(int resId) {
-		mText = mContext.getResources().getString(resId);
-	}
-
-	public void setText(String text) {
-		mText = text;
-		Log.d(TAG, "text " + text);
-	}
+//	public void setText(int resId) {
+//		mText = mContext.getResources().getString(resId);
+//	}
+//
+//	public void setText(String text) {
+//		mText = text;
+//		Log.d(TAG, "text " + text);
+//	}
 
 	public void setTextColor(int color) {
 		mTextColor = color;
@@ -429,7 +429,7 @@ public class GDMarqeeTextView extends View {
                         mRepeatLimit--;
                     }
 					
-					Log.d(TAG, "restart marqee ......");
+//					Log.d(TAG, "restart marqee ......");
 					startMarqee(mRepeatLimit);
                     start(mRepeatLimit);
 				}
@@ -450,7 +450,7 @@ public class GDMarqeeTextView extends View {
 			if (mRestartMarqee) {
 				mRestartMarqee = false;
 				sendEmptyMessageDelayed(MESSAGE_RESTART, mCycleInterval);
-				Log.d(TAG, "need to restart marqee....");
+//				Log.d(TAG, "need to restart marqee....");
 				return;
 			}
 

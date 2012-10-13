@@ -346,7 +346,7 @@ public class GDGridView extends GDAdapterView<Adapter> {
 	}
 
 	protected void layoutChildren() {
-		//Log.d(TAG, "layoutChildren");
+		Log.d(TAG, "layoutChildren");
 
 		final boolean blockLayoutRequests = mBlockLayoutRequests;
 		if (!blockLayoutRequests) {
@@ -368,7 +368,7 @@ public class GDGridView extends GDAdapterView<Adapter> {
 			View sel = null;
 			// Remember stuff we will need down below
 			// Remember the previously selected view
-			int index = mSelectedPosition - mFirstPosition;
+//			int index = mSelectedPosition - mFirstPosition;
 
 			boolean dataChanged = mDataChanged;
 			if (dataChanged) {
@@ -381,8 +381,11 @@ public class GDGridView extends GDAdapterView<Adapter> {
 				resetList();
 				return;
 			}
+			
 			int oldSel = mSelectedPosition;
-			setSelectedPositionInt(mNextSelectedPosition);
+			if (mSelectedPosition != mNextSelectedPosition) {
+				setSelectedPositionInt(mNextSelectedPosition);
+			}
 
 			// Pull all children into the RecycleBin.
 			// These views will be reused if possible
@@ -418,9 +421,11 @@ public class GDGridView extends GDAdapterView<Adapter> {
 			mDataChanged = false;
 			
 			mNeedSync = false;
-            setNextSelectedPositionInt(mSelectedPosition);
+//            setNextSelectedPositionInt(mSelectedPosition);
             
 			if (mItemCount > 0) {
+		    	Log.d(TAG, " mOldSelectedPosition " + mOldSelectedPosition + " mSelectedPosition " + mSelectedPosition);
+
                 checkSelectionChanged();
             }
 
@@ -1084,6 +1089,13 @@ public class GDGridView extends GDAdapterView<Adapter> {
 		}
 	}
 	
+	public void clearSelection() {
+		mNextSelectedPosition = INVALID_POSITION;
+		mNextSelectedRowId = INVALID_ROW_ID;
+		
+		requestLayout();
+	}
+
 	/**
 	 * Sets the currently selected item
 	 * 
@@ -1106,13 +1118,6 @@ public class GDGridView extends GDAdapterView<Adapter> {
 		mLayoutMode = LAYOUT_SET_SELECTION;
 		requestLayout();
 	}
-	
-	@Override
-    public void requestLayout() {
-        if (!mBlockLayoutRequests && !mInLayout) {
-            super.requestLayout();
-        }
-    }
 
 	/**
 	 * Makes the item at the supplied position selected.
@@ -1121,17 +1126,24 @@ public class GDGridView extends GDAdapterView<Adapter> {
 	 *            the position of the new selection
 	 */
 	void setSelectionInt(int position) {
-		int previousSelectedPosition = mNextSelectedPosition;
+//		int previousSelectedPosition = mNextSelectedPosition;
 		setNextSelectedPositionInt(position);
 
 		//Log.d(TAG, " old pos=" + previousSelectedPosition + " new pos = " + position);
 
-		if (position != previousSelectedPosition) {
-			selectionChanged();
-		}
+//		if (position != previousSelectedPosition) {
+//			selectionChanged();
+//		}
 
 		layoutChildren();
 	}
+	
+	@Override
+    public void requestLayout() {
+        if (!mBlockLayoutRequests && !mInLayout) {
+            super.requestLayout();
+        }
+    }
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {

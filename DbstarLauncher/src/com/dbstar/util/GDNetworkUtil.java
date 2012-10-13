@@ -33,10 +33,10 @@ public class GDNetworkUtil {
 			} else if (type == ConnectivityManager.TYPE_ETHERNET || type == ConnectivityManager.TYPE_MOBILE) {
 				String addressFileName = "/sys/class/net/eth0/address";
 				File addressFile = new File(addressFileName);
-				Log.d(TAG, "1");
+//				Log.d(TAG, "1");
 				
 				if (addressFile.exists()) {
-					Log.d(TAG, "2");
+//					Log.d(TAG, "2");
 					macAddress = readString(addressFile);
 					Log.d(TAG, macAddress);
 				} else {
