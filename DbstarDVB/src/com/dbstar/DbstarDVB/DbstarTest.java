@@ -200,10 +200,12 @@ public class DbstarTest extends Activity implements OnClickListener {
 				if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
 					int type = intent.getIntExtra("type", 0);
 					byte[] bytes = intent.getByteArrayExtra("message");
-					String msg = new String(bytes, "utf-8");
 					Log.d(TAG, "got broadcast: ACTION=" + action);
 					Log.d(TAG, "got broadcast: type=" + type);
-					Log.d(TAG, "got broadcast: message=" + msg);
+					if (bygtes != null) {
+						String msg = new String(bytes, "utf-8");
+						Log.d(TAG, "got broadcast: message=" + msg);
+					}
 					Toast.makeText(context,
 							action + "(" + type + ", " + msg + ")", 2000)
 							.show();
