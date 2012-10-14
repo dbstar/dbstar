@@ -1436,8 +1436,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mVideoView.setBackgroundDrawable(d);
 
 		updatePowerView(mPowerConsumption, mPowerCost);
-
-		mUpgradeAlertDlg = createAlertDlg();
 	}
 
 	private void initializeEngine() {
@@ -1464,8 +1462,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Log.d(TAG, "++++++++++==========deinitializeApp ================");
 	}
 
-	String mUpgradePackageFile = "";
-
 	public void handleNotifiy(int what, Object data) {
 		switch (what) {
 		case GDCommon.MSG_DISK_SPACEWARNING: {
@@ -1479,8 +1475,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		case GDCommon.MSG_SYSTEM_UPGRADE: {
-			mUpgradePackageFile = (String) data;
-			notifyUpgrade();
+			notifyUpgrade((String)data);
 			break;
 		}
 
@@ -1489,77 +1484,33 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 	}
 
-	AlertDialog mUpgradeAlertDlg = null;
+	String mUpgradePackageFile = "";
 
-	AlertDialog createAlertDlg() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle(R.string.dialog_upgrade_title);
-		builder.setMessage(R.string.dialog_upgrade_notes + " "
-				+ mUpgradePackageFile);
+	void notifyUpgrade(String packageFile) {
 
-		builder.setPositiveButton(R.string.button_text_ok,
-				new OnClickListener() {
+		mUpgradePackageFile = packageFile;
+		if (mUpgradePackageFile == null) {
+			mUpgradePackageFile = "";
+		}
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						rebootInstallPackage(mUpgradePackageFile);
-						dialog.dismiss();
-					}
-
-				});
-
-		builder.setNegativeButton(R.string.button_text_cancel,
-				new OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-
-				});
-
-		return builder.create();
-	}
-
-	Handler mHanlder = new Handler();
-	
-	void showAlertDlg() {
-		mHanlder.post(new Runnable() {
+		mUIUpdateHandler.post(new Runnable() {
 
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
-				mUpgradeAlertDlg.show();
+				Intent intent = new Intent();
+				intent.putExtra(GDCommon.KeyPackgeFile, mUpgradePackageFile);
+				intent.setClass(GDLauncherActivity.this,
+						GDUpgradeActivity.class);
+				startActivity(intent);
 			}
-			
+
 		});
-	}
-	
-	void notifyUpgrade() {
-		if (mUpgradePackageFile == null || mUpgradePackageFile.isEmpty())
-			return;
-
-		File packageFile = new File(mUpgradePackageFile);
-		if (packageFile == null || !packageFile.exists())
-			return;
-
-		if (mUpgradeAlertDlg != null) {
-			Log.d(TAG, "++++++show alert dlg");
-//			mUpgradeAlertDlg.show();
-			showAlertDlg();
-		}
-	}
-
-	void rebootInstallPackage(String packageFile) {
-		RebootUtils.rebootInstallPackage(this, packageFile);
 	}
 
 	private void startEngine() {
 		// mMediaScheduler.start(mService);
 		// mPowerController.start(mService);
 		// mWeatherController.start(mService);
-
-		// notifyUpgrade();
 	}
 
 	private void stopEngine() {
