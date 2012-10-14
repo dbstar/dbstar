@@ -27,6 +27,7 @@
 #include "porting.h"
 #include "xmlparser.h"
 #include "sqlite.h"
+#include "dvbpush_api.h"
 
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (200000)		//定义缓冲区大小，单位：包	1500*200000=280M
@@ -286,9 +287,10 @@ static int prog_is_valid(PROG_S *prog)
 void dvbpush_getinfo_start()
 {
 	DEBUG("start.........\n");
-//	sleep(1);
 	s_push_monitor_active = push_monitor_regist(1);
 	DEBUG("here start %d progs\n", s_push_monitor_active);
+//	char *msg = "/mnt/sdb1/update.zip";
+//	msg_send2_UI(UPGRADE_NEW_VER, msg, strlen(msg));
 }
 
 void dvbpush_getinfo_stop()
