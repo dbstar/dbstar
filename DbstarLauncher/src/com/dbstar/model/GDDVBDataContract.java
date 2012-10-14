@@ -25,11 +25,13 @@ public class GDDVBDataContract {
 	public static final String RESTRAILERTABLE = "ResTrailer";
 	public static final String RESSUBTITLETABLE = "ResSubTitle";
 
-	// TOTO: spell is error!!!!!
 	public static final String ObjectPublicationSet = "PublicationsSet";
 	public static final String ObjectSetName = "SetName";
 	public static final String ObjectSetDesc = "SetDesc";
-
+	
+	public static final String ValuePublicationName = "PublicationName";
+	public static final String ValueColumnName = "ColumnName";
+	
 	public static final class Column implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
@@ -140,6 +142,7 @@ public class GDDVBDataContract {
 		public static final String ISAUTHORIZED = "IsAuthorized";
 		public static final String VODNUM = "VODNum";
 		public static final String VODPLATFORM = "VODPlatform";
+		public static final String DELETED  = "Deleted";
 	}
 
 	public static final class MultipleLanguageInfoVA implements BaseColumns {
@@ -276,6 +279,8 @@ public class GDDVBDataContract {
 		public static final String PRODUCTDESCID = "ProductDescID";
 		public static final String RECEIVESTATUS = "ReceiveStatus";
 
+		public static final String USERSTATUS = "UserStatus";
+		
 		public static final String PUSHTIME = "PushTime";
 		public static final String POSTERID = "PosterID";
 		public static final String POSTERNAME = "PosterName";

@@ -124,11 +124,14 @@ public class GDDataModel {
 		return columnName;
 	}
 
-	public String getPublicationResStr(String publicationId, String objectName) {
+	public String getPublicationResStr(String publicationId, String objectName,
+			String property) {
 		String resStr = "";
 		String selection = ResStr.OBJECTNAME + "=? and " + ResStr.ENTITYID
-				+ "=? and " + ResStr.STRLANG + "=?";
-		String[] selectionArgs = { objectName, publicationId, getLocalization() };
+				+ "=? and " + ResStr.STRLANG + "=? AND " + ResStr.STRNAME
+				+ "=?";
+		String[] selectionArgs = { objectName, publicationId,
+				getLocalization(), property };
 
 		Cursor cursor = mDVBDataProvider.query(ResStr.CONTENT_URI,
 				ResStrQuery.COLUMNS, selection, selectionArgs, null);
@@ -272,8 +275,9 @@ public class GDDataModel {
 				+ "=? AND " + ResStr.STRLANG + "=? AND " + ResStr.STRNAME
 				+ "=?";
 
-		String[] selectionArgs = new String[] { GDDVBDataContract.ObjectPublicationSet, setId,
-				GDCommon.LangCN, propertyName };
+		String[] selectionArgs = new String[] {
+				GDDVBDataContract.ObjectPublicationSet, setId, GDCommon.LangCN,
+				propertyName };
 
 		Cursor cursor = mDVBDataProvider.query(ResStr.CONTENT_URI,
 				QuerySetPropertyProjection, selection, selectionArgs, null);
@@ -387,8 +391,13 @@ public class GDDataModel {
 	}
 
 	// Query Guide list
-	private static final String[] ProjectionQueryGuideList = { GuideList.PUBLICATIONID };
-	private static final int QUERYGUIDELIST_PUBLICATIONID = 0;
+	private static final String[] ProjectionQueryGuideList = {
+			GuideList.DATEVALUE, GuideList.GUIDELISTID,
+			GuideList.PUBLICATIONID, GuideList.USERSTATUS };
+	private static final int QUERYGUIDELIST_DATEVALUE = 0;
+	private static final int QUERYGUIDELIST_GUIDELISTID = 1;
+	private static final int QUERYGUIDELIST_PUBLICATIONID = 2;
+	private static final int QUERYGUIDELIST_USERSTATUS = 3;
 
 	private GuideListItem[] getGuideList(String selection,
 			String[] selectionArgs) {
@@ -407,8 +416,13 @@ public class GDDataModel {
 				int i = 0;
 				do {
 					GuideListItem item = new GuideListItem();
+					item.Date = cursor.getString(QUERYGUIDELIST_DATEVALUE);
+					item.GuideListID = cursor
+							.getString(QUERYGUIDELIST_GUIDELISTID);
 					item.PublicationID = cursor
 							.getString(QUERYGUIDELIST_PUBLICATIONID);
+					int status = cursor.getInt(QUERYGUIDELIST_USERSTATUS);
+					item.isSelected = item.originalSelected = status == 0 ? false : true;
 					items[i] = item;
 					i++;
 				} while (cursor.moveToNext());
@@ -422,8 +436,12 @@ public class GDDataModel {
 		if (items != null && items.length > 0) {
 
 			for (int i = 0; i < items.length; i++) {
-				items[i].Name = getPublicationResStr(items[i].PublicationID,
-						GDDVBDataContract.PUBLICATIONTABLE);
+				items[i].Name = getPublicationResStr(items[i].GuideListID,
+						GDDVBDataContract.GUIDELISTTABLE,
+						GDDVBDataContract.ValuePublicationName);
+				items[i].ColumnType = getPublicationResStr(
+						items[i].GuideListID, GDDVBDataContract.GUIDELISTTABLE,
+						GDDVBDataContract.ValueColumnName);
 			}
 		}
 
@@ -440,23 +458,27 @@ public class GDDataModel {
 	public GuideListItem[] getGuideList() {
 		return getGuideList(null, null);
 	}
-	
-	public boolean updateGuideList(GuideListItem[] item) {
+
+	public boolean updateGuideList(GuideListItem[] items) {
 		boolean result = true;
-		
-		// update
-		String selection = "";
-		String[] selectionArgs = new String[] {  };
 
-		ContentValues values = new ContentValues();
-//		values.put(GuideList.);
+		String sql = "UPDATE " + GDDVBDataContract.GUIDELISTTABLE + " SET "
+				+ GuideList.USERSTATUS + "=? WHERE " + GuideList.DATEVALUE
+				+ "=? AND " + GuideList.GUIDELISTID + "=? AND "
+				+ GuideList.PUBLICATIONID + "=?";
 
-		int count = mDVBDataProvider.update(
-				GuideList.CONTENT_URI, values, selection,
-				selectionArgs);
-		if (count == item.length)
-			result = true;
-		
+		String[][] bindArgs = new String[items.length][];
+		for(int i=0; i<items.length ; i++) {
+			String[] args = new String[4];
+			args[0]= items[i].isSelected ? "1" : "0";
+			args[1]= items[i].Date;
+			args[2] = items[i].GuideListID;
+			args[3] = items[i].PublicationID;
+			bindArgs[i] = args;
+		}
+
+		result = mDVBDataProvider.execBatchSql(sql, bindArgs);
+
 		return result;
 	}
 
@@ -475,7 +497,7 @@ public class GDDataModel {
 
 		Cursor cursor = mDVBDataProvider.query(Preview.CONTENT_URI,
 				ProjectionQueryPreview, null, null, null);
-		
+
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				items = new PreviewData[cursor.getCount()];
@@ -484,20 +506,23 @@ public class GDDataModel {
 					PreviewData item = new PreviewData();
 					item.Type = cursor.getString(QUERYPREVIEW_PREVIEWTYPE);
 					item.URI = cursor.getString(QUERYPREVIEW_PREVIEWURI);
-					
-					item.ShowTime = Integer.valueOf(cursor.getString(QUERYPREVIEW_SHOWTIME));
-					item.Duration = Integer.valueOf(cursor.getString(QUERYPREVIEW_DURATION));
-					item.PlayMode = Integer.valueOf(cursor.getString(QUERYPREVIEW_PLAYMODE));
+
+					item.ShowTime = Integer.valueOf(cursor
+							.getString(QUERYPREVIEW_SHOWTIME));
+					item.Duration = Integer.valueOf(cursor
+							.getString(QUERYPREVIEW_DURATION));
+					item.PlayMode = Integer.valueOf(cursor
+							.getString(QUERYPREVIEW_PLAYMODE));
 					items[i] = item;
 					i++;
 				} while (cursor.moveToNext());
 			}
 		}
-		
+
 		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
-		
+
 		return items;
 	}
 

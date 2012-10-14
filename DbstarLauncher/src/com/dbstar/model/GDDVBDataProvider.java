@@ -136,7 +136,7 @@ public class GDDVBDataProvider  extends GDDBProvider {
 		String[] COLUMNS = new String[] { GuideList.DATEVALUE,
 				GuideList.GUIDELISTID, GuideList.PUBLICATIONID, GuideList.URI,
 				GuideList.TOTALSIZE, GuideList.PRODUCTDESCID,
-				GuideList.RECEIVESTATUS, GuideList.PUSHTIME,
+				GuideList.RECEIVESTATUS, GuideList.USERSTATUS, GuideList.PUSHTIME,
 				GuideList.POSTERID, GuideList.POSTERNAME, GuideList.POSTERURI,
 				GuideList.TRAILERID, GuideList.TRAILERNAME,
 				GuideList.TRAILERURI };
