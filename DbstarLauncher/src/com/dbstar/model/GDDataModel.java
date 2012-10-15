@@ -36,20 +36,20 @@ public class GDDataModel {
 	public GDDataModel() {
 		mDVBDataProvider = new GDDVBDataProvider();
 		mSmartHomeProvider = new GDSmartHomeProvider();
-		mUserDataProvider = new GDUserDataProvider();
+		// mUserDataProvider = new GDUserDataProvider();
 	}
 
 	public void initialize(GDSystemConfigure configure) {
 		setLocalization(configure.getLocalization());
 		mDVBDataProvider.initialize(configure);
 		mSmartHomeProvider.initialize(configure);
-		mUserDataProvider.initialize(configure);
+		// mUserDataProvider.initialize(configure);
 	}
 
 	public void deInitialize() {
 		mDVBDataProvider.deinitialize();
 		mSmartHomeProvider.deinitialize();
-		mUserDataProvider.deinitialize();
+		// mUserDataProvider.deinitialize();
 	}
 
 	public void setLocalization(String localization) {
@@ -124,54 +124,6 @@ public class GDDataModel {
 		return columnName;
 	}
 
-	public String getPublicationResStr(String publicationId, String objectName,
-			String property) {
-		String resStr = "";
-		String selection = ResStr.OBJECTNAME + "=? and " + ResStr.ENTITYID
-				+ "=? and " + ResStr.STRLANG + "=? AND " + ResStr.STRNAME
-				+ "=?";
-		String[] selectionArgs = { objectName, publicationId,
-				getLocalization(), property };
-
-		Cursor cursor = mDVBDataProvider.query(ResStr.CONTENT_URI,
-				ResStrQuery.COLUMNS, selection, selectionArgs, null);
-
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				resStr = cursor.getString(ResStrQuery.STRVALUE);
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-
-		return resStr;
-	}
-
-	public ContentData[] getReadyPublications(String columnId) {
-
-		EntityObject[] entities = getAllEntities(columnId);
-		if (entities == null || entities.length == 0)
-			return null;
-
-		ArrayList<ContentData> contents = new ArrayList<ContentData>();
-
-		for (int i = 0; i < entities.length; i++) {
-			PublicationData data = getPublication(entities[i].Id);
-			if (data != null) {
-				ContentData content = new ContentData();
-				content.XMLFilePath = data.URI;
-				content.Id = data.PublicationID;
-
-				contents.add(content);
-			}
-		}
-
-		return (ContentData[]) contents
-				.toArray(new ContentData[contents.size()]);
-	}
-
 	public EntityObject[] getAllEntities(String columnId) {
 		EntityObject[] entities = null;
 
@@ -202,24 +154,84 @@ public class GDDataModel {
 		return entities;
 	}
 
-	private final static String[] ProjectionQueryPublicationsCount = { Publication.URI };
+	public ContentData[] getReadyPublications(String columnId, String favorite) {
+
+		EntityObject[] entities = getAllEntities(columnId);
+		if (entities == null || entities.length == 0)
+			return null;
+
+		ArrayList<ContentData> contents = new ArrayList<ContentData>();
+
+		for (int i = 0; i < entities.length; i++) {
+			PublicationData data = getPublication(entities[i].Id, favorite);
+			if (data != null) {
+				ContentData content = new ContentData();
+				content.XMLFilePath = data.URI;
+				content.Id = data.PublicationID;
+
+				contents.add(content);
+			}
+		}
+
+		return (ContentData[]) contents
+				.toArray(new ContentData[contents.size()]);
+	}
+
+	public ContentData[] getReadyPublicationSet(String columnId, String favorite) {
+		EntityObject[] entities = getAllEntities(columnId);
+		if (entities == null || entities.length == 0)
+			return null;
+
+		ArrayList<ContentData> contents = new ArrayList<ContentData>();
+
+		for (int i = 0; i < entities.length; i++) {
+			String entityId = entities[i].Id;
+			PublicationData data = getPublicationsSet(entityId, favorite);
+
+			if (data != null) {
+				ContentData content = new ContentData();
+				content.XMLFilePath = data.URI;
+				content.Id = data.PublicationID;
+
+				content.Name = getPublicationSetName(entityId);
+				content.Description = getPublicationSetDescription(entityId);
+				String posterUri = getPublicationPoster(entityId);
+				ContentData.Poster item = new ContentData.Poster();
+				item.URI = posterUri;
+				content.Posters = new ArrayList<ContentData.Poster>();
+				content.Posters.add(item);
+
+				contents.add(content);
+			}
+		}
+
+		return (ContentData[]) contents
+				.toArray(new ContentData[contents.size()]);
+	}
+
+	private final static String[] ProjectionQueryPublications = { Publication.URI };
 	private final static int PublicationURI = 0;
 
-	public PublicationData getPublication(String entityId) {
+	public PublicationData getPublication(String entityId, String favorite) {
 
 		PublicationData publication = null;
-		Cursor cursor = null;
 
 		String selection = Publication.PUBLICATIONID + "=?  AND ("
 				+ Publication.RECEIVESTATUS + "=? Or "
 				+ Publication.RECEIVESTATUS + "=?) AND " + Publication.VISIBLE
-				+ "=?";
-		String[] selectionArgs = new String[] { entityId, "1", "2", "true" };
+				+ "=? AND (" + Publication.DELETED + "=? OR "
+				+ Publication.DELETED + " is null OR " + Publication.DELETED
+				+ "=?)";
 
-		// cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
-		cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
-				ProjectionQueryPublicationsCount, selection, selectionArgs,
-				null);
+		if (favorite != null && !favorite.isEmpty()) {
+			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
+		}
+
+		String[] selectionArgs = new String[] { entityId, "1", "2", "true",
+				"0", "" };
+
+		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
+				ProjectionQueryPublications, selection, selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
@@ -237,21 +249,119 @@ public class GDDataModel {
 		return publication;
 	}
 
-	public TV getTVData(String entityId) {
-		TV tv = new TV();
+	private final static String[] ProjectionQueryEpisodes = {
+			Publication.PUBLICATIONID, Publication.URI, Publication.INDEXINSET };
+	private final static int EpisodesID = 0;
+	private final static int EpisodesURI = 1;
+	private final static int EpisodesIndexInSet = 2;
 
-		tv.Content = new ContentData();
-		tv.Content.Id = entityId;
-		tv.Content.Name = getPublicationSetName(entityId);
-		tv.Content.Description = getPublicationSetDescription(entityId);
-		tv.Content.Posters = new ArrayList<ContentData.Poster>();
-		String posterUri = getPublicationPoster(entityId);
-		ContentData.Poster item = new ContentData.Poster();
-		item.URI = posterUri;
-		tv.Content.Posters.add(item);
-		getEpisodes(entityId, tv);
+	public ContentData[] getPublicationsEx(String setId, String favorite) {
+		ContentData[] contents = null;
 
-		return tv;
+		String selection = Publication.SETID + "=? AND ("
+				+ Publication.RECEIVESTATUS + "=? or "
+				+ Publication.RECEIVESTATUS + "=?) And " + Publication.VISIBLE
+				+ "=? AND (" + Publication.DELETED + "=? OR "
+				+ Publication.DELETED + " is null OR " + Publication.DELETED
+				+ "=?)";
+
+		if (favorite != null && !favorite.isEmpty()) {
+			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
+		}
+
+		String[] selectionArgs = new String[] { setId, "1", "2", "true", "0",
+				"" };
+
+		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
+				ProjectionQueryEpisodes, selection, selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				contents = new ContentData[cursor.getCount()];
+				int i = 0;
+				do {
+					ContentData content = new ContentData();
+					content.Id = cursor.getString(EpisodesID);
+					content.XMLFilePath = cursor.getString(EpisodesURI);
+					content.IndexInSet = Integer.valueOf(cursor
+							.getString(EpisodesIndexInSet));
+					contents[i] = content;
+					i++;
+				} while (cursor.moveToNext());
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return contents;
+	}
+
+	private final static String[] ProjectionQueryPublicationsSet = { PublicationsSet.URI };
+	private final static int PublicationsSetURI = 0;
+
+	public PublicationData getPublicationsSet(String entityId, String favorite) {
+
+		PublicationData publication = null;
+
+		String selection = PublicationsSet.SETID + "=?  AND ("
+				+ PublicationsSet.RECEIVESTATUS + "=? Or "
+				+ PublicationsSet.RECEIVESTATUS + "=?)";
+		// + PublicationsSet.RECEIVESTATUS + "=?) AND "
+		// + PublicationsSet.VISIBLE + "=? AND (" + Publication.DELETED +
+		// "=? OR " + Publication.DELETED + " is null OR " + Publication.DELETED
+		// + "=?)";
+		if (favorite != null && !favorite.isEmpty()) {
+			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
+		}
+
+		String[] selectionArgs = new String[] { entityId, "1", "2" };
+
+		// String[] selectionArgs = new String[] { entityId, "1", "2", "true",
+		// "0", "" };
+
+		Cursor cursor = mDVBDataProvider.query(PublicationsSet.CONTENT_URI,
+				ProjectionQueryPublicationsSet, selection, selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				publication = new PublicationData();
+				publication.PublicationID = entityId;
+				publication.URI = cursor.getString(PublicationsSetURI);
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return publication;
+	}
+
+	public String getPublicationResStr(String publicationId, String objectName,
+			String property) {
+		String resStr = "";
+		String selection = ResStr.OBJECTNAME + "=? and " + ResStr.ENTITYID
+				+ "=? and " + ResStr.STRLANG + "=? AND " + ResStr.STRNAME
+				+ "=?";
+		String[] selectionArgs = { objectName, publicationId,
+				getLocalization(), property };
+
+		Cursor cursor = mDVBDataProvider.query(ResStr.CONTENT_URI,
+				ResStrQuery.COLUMNS, selection, selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				resStr = cursor.getString(ResStrQuery.STRVALUE);
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return resStr;
 	}
 
 	private static final String PublicationSetPropertyName = GDDVBDataContract.ObjectSetName;
@@ -321,42 +431,6 @@ public class GDDataModel {
 		return uri;
 	}
 
-	private final static String[] ProjectionQueryEpisodes = { Publication.URI,
-			Publication.INDEXINSET };
-	private final static int EpisodesURI = 0;
-	private final static int EpisodesIndexInSet = 1;
-
-	public void getEpisodes(String setId, TV tv) {
-		String selection = "(" + Publication.RECEIVESTATUS + "=? or "
-				+ Publication.RECEIVESTATUS + "=?) And " + Publication.VISIBLE
-				+ "=? AND " + Publication.SETID + "=?";
-		String[] selectionArgs = new String[] { "1", "2", "true", setId };
-
-		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
-				ProjectionQueryEpisodes, selection, selectionArgs, null);
-
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				tv.Episodes = new TV.EpisodeItem[cursor.getCount()];
-
-				int i = 0;
-				do {
-					TV.EpisodeItem item = new TV.EpisodeItem();
-					item.Url = cursor.getString(EpisodesURI);
-					item.Number = Integer.valueOf(cursor
-							.getString(EpisodesIndexInSet));
-					tv.Episodes[i] = item;
-					i++;
-				} while (cursor.moveToNext());
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-
-	}
-
 	private final static String[] ProjectionQueryContentCount = { "count(*)" };
 
 	private final static String[] ProjectionQueryContent = { Content.ID,
@@ -422,7 +496,8 @@ public class GDDataModel {
 					item.PublicationID = cursor
 							.getString(QUERYGUIDELIST_PUBLICATIONID);
 					int status = cursor.getInt(QUERYGUIDELIST_USERSTATUS);
-					item.isSelected = item.originalSelected = status == 0 ? false : true;
+					item.isSelected = item.originalSelected = status == 0 ? false
+							: true;
 					items[i] = item;
 					i++;
 				} while (cursor.moveToNext());
@@ -468,10 +543,10 @@ public class GDDataModel {
 				+ GuideList.PUBLICATIONID + "=?";
 
 		String[][] bindArgs = new String[items.length][];
-		for(int i=0; i<items.length ; i++) {
+		for (int i = 0; i < items.length; i++) {
 			String[] args = new String[4];
-			args[0]= items[i].isSelected ? "1" : "0";
-			args[1]= items[i].Date;
+			args[0] = items[i].isSelected ? "1" : "0";
+			args[1] = items[i].Date;
 			args[2] = items[i].GuideListID;
 			args[3] = items[i].PublicationID;
 			bindArgs[i] = args;
@@ -672,442 +747,46 @@ public class GDDataModel {
 	}
 
 	// user favorite
-	public ContentData[] getFavoriteMovie() {
-		ContentData[] contents = null;
+	public boolean addPublicationToFavourite(String publicationSetId,
+			String publicationId) {
 
-		FavoritePublicationData[] publications = getPublicationsByType(GDCommon.ColumnTypeMovie);
-
-		if (publications != null && publications.length > 0) {
-			contents = new ContentData[publications.length];
-
-			for (int i = 0; i < publications.length; i++) {
-				FavoritePublicationData data = publications[i];
-				ContentData content = new ContentData();
-				content.XMLFilePath = data.URI;
-				content.Id = data.PublicationID;
-				contents[i] = content;
-			}
-
+		boolean result = true;
+		if (publicationSetId != null && !publicationSetId.isEmpty()) {
+			result = addPublicationSetToFavourite(publicationSetId);
 		}
 
-		return contents;
-	}
+		if (result && publicationId != null && !publicationId.isEmpty()) {
 
-	public TV[] getFavoriteTV() {
-		TV[] tvs = null;
-		FavoritePublicationSetData[] sets = getPublicationsSetByType(GDCommon.ColumnTypeTV);
+			String selection = Publication.PUBLICATIONID + "=?";
+			String[] selectionArgs = new String[] { publicationId };
 
-		if (sets != null && sets.length > 0) {
-			tvs = new TV[sets.length];
-
-			for (int i = 0; i < sets.length; i++) {
-				ContentData data = new ContentData();
-
-				data.Id = sets[i].SetID;
-				data.Name = sets[i].Name;
-				data.Description = sets[i].Description;
-				data.Posters = new LinkedList<ContentData.Poster>();
-				ContentData.Poster poster = new ContentData.Poster();
-				poster.URI = sets[i].PosterFile;
-				data.Posters.add(poster);
-
-				TV tv = new TV();
-				tv.Content = data;
-				tv.Episodes = getFavoriteEpisodes(sets[i].SetID);
-			}
-		}
-
-		return tvs;
-	}
-
-	public TV.EpisodeItem[] getFavoriteEpisodes(String setId) {
-		TV.EpisodeItem[] items = null;
-
-		FavoritePublicationData[] publications = getPublicationsExByType(setId);
-		if (publications != null && publications.length > 0) {
-			items = new TV.EpisodeItem[publications.length];
-			for (int i = 0; i < items.length; i++) {
-				TV.EpisodeItem item = new TV.EpisodeItem();
-				item.Url = publications[i].URI;
-				item.Number = publications[i].EpisodeIndex;
-			}
-		}
-
-		return items;
-	}
-
-	public ContentData[] getFavoriteRecord() {
-		ContentData[] contents = null;
-
-		FavoritePublicationSetData[] sets = getPublicationsSetByType(GDCommon.ColumnTypeRecord);
-
-		if (sets != null && sets.length > 0) {
-			contents = new ContentData[sets.length];
-
-			for (int i = 0; i < sets.length; i++) {
-				ContentData data = new ContentData();
-
-				data.Id = sets[i].SetID;
-				data.Name = sets[i].Name;
-				data.Description = sets[i].Description;
-				data.Posters = new LinkedList<ContentData.Poster>();
-				ContentData.Poster poster = new ContentData.Poster();
-				poster.URI = sets[i].PosterFile;
-				data.Posters.add(poster);
-			}
-		}
-		return contents;
-	}
-
-	public ContentData[] getFavoriteEntertainment() {
-		ContentData[] contents = null;
-		FavoritePublicationSetData[] sets = getPublicationsSetByType(GDCommon.ColumnTypeEntertainment);
-
-		if (sets != null && sets.length > 0) {
-			contents = new ContentData[sets.length];
-
-			for (int i = 0; i < sets.length; i++) {
-				ContentData data = new ContentData();
-
-				data.Id = sets[i].SetID;
-				data.Name = sets[i].Name;
-				data.Description = sets[i].Description;
-				data.Posters = new LinkedList<ContentData.Poster>();
-				ContentData.Poster poster = new ContentData.Poster();
-				poster.URI = sets[i].PosterFile;
-				data.Posters.add(poster);
-			}
-		}
-		return contents;
-	}
-
-	private FavoritePublicationData[] getPublicationsByType(String columnType) {
-		FavoritePublicationData[] publications = null;
-		Cursor cursor = null;
-
-		String selection = FavoritePublication.COLUMNTYPE + "=?";
-		String[] selectionArgs = new String[] { columnType };
-
-		// cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
-		cursor = mUserDataProvider.query(FavoritePublication.CONTENT_URI,
-				GDUserDataProvider.PublicationQuery.COLUMNS, selection,
-				selectionArgs, null);
-
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				publications = new FavoritePublicationData[cursor.getCount()];
-				int i = 0;
-				do {
-					FavoritePublicationData publication = new FavoritePublicationData();
-					publication.PublicationID = cursor
-							.getString(GDUserDataProvider.PublicationQuery.PUBLICATIONID);
-					publication.URI = cursor
-							.getString(GDUserDataProvider.PublicationQuery.URI);
-
-					publications[i] = publication;
-					i++;
-				} while (cursor.moveToNext());
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-
-		return publications;
-	}
-
-	private FavoritePublicationData[] getPublicationsExByType(String columnType) {
-		FavoritePublicationData[] publications = null;
-		Cursor cursor = null;
-
-		String selection = FavoritePublication.COLUMNTYPE + "=?";
-		String[] selectionArgs = new String[] { columnType };
-
-		// cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
-		cursor = mUserDataProvider.query(FavoritePublication.CONTENT_URI,
-				GDUserDataProvider.PublicationQuery.COLUMNS, selection,
-				selectionArgs, null);
-
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				publications = new FavoritePublicationData[cursor.getCount()];
-				int i = 0;
-				do {
-					FavoritePublicationData publication = new FavoritePublicationData();
-					publication.PublicationID = cursor
-							.getString(GDUserDataProvider.PublicationExQuery.PUBLICATIONID);
-					publication.URI = cursor
-							.getString(GDUserDataProvider.PublicationExQuery.URI);
-
-					publication.EpisodeIndex = Integer
-							.valueOf(cursor
-									.getString(GDUserDataProvider.PublicationExQuery.EPISODEINDEX));
-
-					publications[i] = publication;
-					i++;
-				} while (cursor.moveToNext());
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-
-		return publications;
-	}
-
-	class FavoritePublicationData {
-		public String PublicationID;
-		public String URI;
-		public int EpisodeIndex;
-	}
-
-	class FavoritePublicationSetData {
-		public String SetID;
-		public String Name;
-		public String Description;
-		public String PosterFile;
-		public String TrailerFile;
-	}
-
-	private FavoritePublicationSetData[] getPublicationsSetByType(
-			String columnType) {
-		FavoritePublicationSetData[] publicationSets = null;
-		Cursor cursor = null;
-
-		String selection = FavoritePublicationSet.COLUMNTYPE + "=?";
-		String[] selectionArgs = new String[] { columnType };
-
-		// cursor = mContext.getContentResolver().query(Publication.CONTENT_URI,
-		cursor = mUserDataProvider.query(FavoritePublicationSet.CONTENT_URI,
-				GDUserDataProvider.PublicationSetQuery.COLUMNS, selection,
-				selectionArgs, null);
-
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				publicationSets = new FavoritePublicationSetData[cursor
-						.getCount()];
-				int i = 0;
-				do {
-					FavoritePublicationSetData set = new FavoritePublicationSetData();
-					set.SetID = cursor
-							.getString(GDUserDataProvider.PublicationSetQuery.SETID);
-					set.Name = cursor
-							.getString(GDUserDataProvider.PublicationSetQuery.NAME);
-					set.Description = cursor
-							.getString(GDUserDataProvider.PublicationSetQuery.DESCRIPTION);
-					set.PosterFile = cursor
-							.getString(GDUserDataProvider.PublicationSetQuery.POSTER);
-					set.TrailerFile = cursor
-							.getString(GDUserDataProvider.PublicationSetQuery.TRAILER);
-
-					publicationSets[i] = set;
-					i++;
-				} while (cursor.moveToNext());
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-
-		return publicationSets;
-	}
-
-	// save to favorite
-	public void addMeidaToFavorite(MediaData mediaData) {
-		if (mediaData == null)
-			return;
-
-		if (mediaData.ColumnType.equals(GDCommon.ColumnTypeMovie)) {
-			addToFavoritePublication(mediaData);
-		} else if (mediaData.ColumnType.equals(GDCommon.ColumnTypeTV)) {
-			addToFavoritePublicationSet(mediaData);
-			addToFavoritePublicationEx(mediaData);
-		}
-	}
-
-	public boolean addToFavoritePublication(MediaData mediaData) {
-		boolean result = false;
-
-		String columnType = mediaData.ColumnType;
-		String publicationId = mediaData.PublicationID;
-		String uri = mediaData.URI;
-
-		String[] projection = GDUserDataProvider.PublicationQuery.COLUMNS;
-		String selection = FavoritePublication.COLUMNTYPE + "=? AND "
-				+ FavoritePublication.PUBLICATIONID + "=?";
-		String[] selectionArgs = { columnType, publicationId };
-		Cursor cursor = mUserDataProvider.query(
-				FavoritePublication.CONTENT_URI, projection, selection,
-				selectionArgs, null);
-
-		String oldURI = "";
-		int id = -1;
-		if (cursor != null && cursor.getCount() > 0) {
-			id = cursor.getInt(GDUserDataProvider.PublicationQuery.ID);
-			oldURI = cursor.getString(GDUserDataProvider.PublicationQuery.URI);
-		}
-
-		if (id < 0) {
-			// insert
 			ContentValues values = new ContentValues();
-			values.put(FavoritePublication.COLUMNTYPE, columnType);
-			values.put(FavoritePublication.PUBLICATIONID, publicationId);
-			values.put(FavoritePublication.URI, uri);
-			Uri retUri = mUserDataProvider.insert(
-					FavoritePublication.CONTENT_URI, values);
+			values.put(Publication.FAVORITE, "1");
 
-			if (retUri != null)
-				result = true;
-		} else {
-			if (oldURI == null || !oldURI.equals(uri)) {
-				// update
-				selection = FavoritePublication.ID + "=?";
-				selectionArgs = new String[] { String.valueOf(id) };
+			int count = mDVBDataProvider.update(Publication.CONTENT_URI,
+					values, selection, selectionArgs);
 
-				ContentValues values = new ContentValues();
-				values.put(FavoritePublication.COLUMNTYPE, columnType);
-				values.put(FavoritePublication.PUBLICATIONID, publicationId);
-				values.put(FavoritePublication.URI, uri);
-				int count = mUserDataProvider.update(
-						FavoritePublication.CONTENT_URI, values, selection,
-						selectionArgs);
-				if (count == 1)
-					result = true;
-			} else {
-				result = true;
-			}
+			if (count < 1)
+				result = false;
 		}
 
 		return result;
 	}
 
-	public boolean addToFavoritePublicationEx(MediaData mediaData) {
-		boolean result = false;
+	public boolean addPublicationSetToFavourite(String publicationSetId) {
+		String selection = PublicationsSet.SETID + "=?";
+		String[] selectionArgs = new String[] { publicationSetId };
 
-		String columnType = mediaData.ColumnType;
-		String publicationId = mediaData.PublicationID;
-		String uri = mediaData.URI;
-		int episodeIndex = mediaData.EpisodeIndex;
+		ContentValues values = new ContentValues();
+		values.put(PublicationsSet.FAVORITE, "1");
 
-		String[] projection = GDUserDataProvider.PublicationExQuery.COLUMNS;
-		String selection = FavoritePublication.COLUMNTYPE + "=? AND "
-				+ FavoritePublication.PUBLICATIONID + "=?";
-		String[] selectionArgs = { columnType, publicationId };
-		Cursor cursor = mUserDataProvider.query(
-				FavoritePublication.CONTENT_URI, projection, selection,
-				selectionArgs, null);
+		int count = mDVBDataProvider.update(PublicationsSet.CONTENT_URI,
+				values, selection, selectionArgs);
 
-		String oldURI = "";
-		int oldIndex = -1;
-		int id = -1;
-		if (cursor != null && cursor.getCount() > 0) {
-			id = cursor.getInt(GDUserDataProvider.PublicationExQuery.ID);
-			oldURI = cursor
-					.getString(GDUserDataProvider.PublicationExQuery.URI);
-			oldIndex = cursor
-					.getInt(GDUserDataProvider.PublicationExQuery.EPISODEINDEX);
-		}
+		if (count > 0)
+			return true;
 
-		if (id < 0) {
-			// insert
-			ContentValues values = new ContentValues();
-			values.put(FavoritePublication.COLUMNTYPE, columnType);
-			values.put(FavoritePublication.PUBLICATIONID, publicationId);
-			values.put(FavoritePublication.URI, uri);
-			values.put(FavoritePublication.EPISODEINDEX, episodeIndex);
-			Uri retUri = mUserDataProvider.insert(
-					FavoritePublication.CONTENT_URI, values);
-
-			if (retUri != null)
-				result = true;
-		} else {
-			if (oldURI == null || !oldURI.equals(uri)
-					|| oldIndex != episodeIndex) {
-				// update
-				selection = FavoritePublication.ID + "=?";
-				selectionArgs = new String[] { String.valueOf(id) };
-
-				ContentValues values = new ContentValues();
-				values.put(FavoritePublication.COLUMNTYPE, columnType);
-				values.put(FavoritePublication.PUBLICATIONID, publicationId);
-				values.put(FavoritePublication.URI, uri);
-				values.put(FavoritePublication.EPISODEINDEX, episodeIndex);
-				int count = mUserDataProvider.update(
-						FavoritePublication.CONTENT_URI, values, selection,
-						selectionArgs);
-				if (count == 1)
-					result = true;
-			} else {
-				result = true;
-			}
-		}
-
-		return result;
-	}
-
-	public boolean addToFavoritePublicationSet(MediaData mediaData) {
-		boolean result = false;
-
-		String setId = mediaData.SetID;
-		String name = mediaData.Name;
-		String description = mediaData.Description;
-		String poster = mediaData.Poster;
-		String trailer = mediaData.Trailer;
-
-		String[] projection = GDUserDataProvider.PublicationSetQuery.COLUMNS;
-		String selection = FavoritePublicationSet.SETID + "=?";
-		String[] selectionArgs = { setId };
-		Cursor cursor = mUserDataProvider.query(
-				FavoritePublicationSet.CONTENT_URI, projection, selection,
-				selectionArgs, null);
-
-		int id = -1;
-		String oldName = "";
-		if (cursor != null && cursor.getCount() > 0) {
-			id = cursor.getInt(GDUserDataProvider.PublicationSetQuery.ID);
-			oldName = cursor
-					.getString(GDUserDataProvider.PublicationSetQuery.NAME);
-		}
-
-		if (id < 0) {
-			// insert
-			ContentValues values = new ContentValues();
-			values.put(FavoritePublicationSet.SETID, setId);
-			values.put(FavoritePublicationSet.NAME, name);
-			values.put(FavoritePublicationSet.DESCRIPTION, description);
-			values.put(FavoritePublicationSet.POSTER, poster);
-			values.put(FavoritePublicationSet.TRAILER, trailer);
-			Uri retUri = mUserDataProvider.insert(
-					FavoritePublicationSet.CONTENT_URI, values);
-
-			if (retUri != null)
-				result = true;
-		} else {
-			if (oldName == null || !oldName.equals(name)) {
-				// update
-				selection = FavoritePublicationSet.ID + "=?";
-				selectionArgs = new String[] { String.valueOf(id) };
-
-				ContentValues values = new ContentValues();
-				values.put(FavoritePublicationSet.SETID, setId);
-				values.put(FavoritePublicationSet.NAME, name);
-				values.put(FavoritePublicationSet.DESCRIPTION, description);
-				values.put(FavoritePublicationSet.POSTER, poster);
-				values.put(FavoritePublicationSet.TRAILER, trailer);
-				int count = mUserDataProvider.update(
-						FavoritePublication.CONTENT_URI, values, selection,
-						selectionArgs);
-				if (count == 1)
-					result = true;
-			} else {
-				result = true;
-			}
-		}
-
-		return result;
+		return false;
 	}
 
 	private final static int QUERYBRAND_ID = 0;

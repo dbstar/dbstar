@@ -331,6 +331,9 @@ public class GDTVActivity extends GDBaseActivity {
 			Log.d(TAG, "play = " + uri.toString());
 
 			intent.setData(uri);
+			intent.putExtra("publication_id", item.Content.Id);
+			intent.putExtra("publicationset_id", mTV.Content.Id);
+			
 			intent.setComponent(new ComponentName("com.farcore.videoplayer",
 					"com.farcore.videoplayer.playermenu"));
 			intent.setAction("android.intent.action.View");

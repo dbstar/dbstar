@@ -31,6 +31,7 @@ public class ContentData {
 	public List<Trailer> Trailers;
 	public List<SubTitle> SubTitles;
 	
+	public int IndexInSet;
 	public MFile MainFile;
 	
 	public static class SubTitle {

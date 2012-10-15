@@ -112,6 +112,7 @@ public class GDDVBDataContract {
 		public static final String ISAUTHORIZED = "IsAuthorized";
 		public static final String VODNUM = "VODNum";
 		public static final String VODPLATFORM = "VODPlatform";
+		public static final String DELETED  = "Deleted";
 	}
 
 	public static final class Publication implements BaseColumns {

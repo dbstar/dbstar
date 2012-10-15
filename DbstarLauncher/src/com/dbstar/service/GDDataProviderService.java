@@ -64,10 +64,10 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_GETFAVORITEMOVIE = 17;
 	public static final int REQUESTTYPE_GETFAVORITETV = 18;
 	public static final int REQUESTTYPE_GETFAVORITERECORD = 19;
-	public static final int REQUESTTYPE_GETFAVORITEENTERTAINMENT = 20;	
+	public static final int REQUESTTYPE_GETFAVORITEENTERTAINMENT = 20;
 
 	public static final int REQUESTTYPE_ADDTOFAVORITE = 21;
-	
+
 	public static final int REQUESTTYPE_GETGUIDELIST = 22;
 	public static final int REQUESTTYPE_UPDATEGUIDELIST = 23;
 
@@ -385,12 +385,13 @@ public class GDDataProviderService extends Service {
 				}
 				break;
 			}
-			
+
 			case GDCommon.MSG_SYSTEM_UPGRADE: {
-				String packageFile = msg.getData().getString(GDCommon.KeyPackgeFile);
-				mApplicationObserver.handleNotifiy(
-						GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
-				
+				String packageFile = msg.getData().getString(
+						GDCommon.KeyPackgeFile);
+				mApplicationObserver.handleNotifiy(GDCommon.MSG_SYSTEM_UPGRADE,
+						packageFile);
+
 				break;
 			}
 
@@ -652,7 +653,7 @@ public class GDDataProviderService extends Service {
 					String columnId = String.valueOf(value);
 
 					ContentData[] datas = mDataModel
-							.getReadyPublications(columnId);
+							.getReadyPublications(columnId, null);
 					task.Data = datas;
 
 					taskFinished(task);
@@ -664,22 +665,41 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					EntityObject[] entities = mDataModel
-							.getAllEntities(columnId);
+					ContentData[] contents = mDataModel
+							.getReadyPublicationSet(columnId, null);
 
-					TV[] tvs = new TV[entities.length];
-					for (int i = 0; i < entities.length; i++) {
-						tvs[i] = mDataModel.getTVData(entities[i].Id);
-						TV.EpisodeItem[] items = tvs[i].Episodes;
-						for (int j = 0; j < items.length; j++) {
-							ContentData content = new ContentData();
-							content.XMLFilePath = items[j].Url;
-							String xmlFile = getDetailsDataFile(content);
-							mDataModel.getDetailsData(xmlFile, content);
-							Log.d(TAG, "xmlFile " + xmlFile);
-							Log.d(TAG, "content " + content.MainFile);
-							items[j].Content = content;
+					TV[] tvs = new TV[contents.length];
+					for (int i = 0; i < contents.length; i++) {
+						TV tv = new TV();
+						tv.Content = contents[i];
+
+						ContentData[] episodesContent = mDataModel
+								.getPublicationsEx(contents[i].Id, null);
+
+						if (episodesContent != null
+								&& episodesContent.length > 0) {
+							TV.EpisodeItem[] items = new TV.EpisodeItem[episodesContent.length];
+							for (int j = 0; j < episodesContent.length; j++) {
+
+								TV.EpisodeItem item = new TV.EpisodeItem();
+								item.Content = episodesContent[j];
+								item.Number = item.Content.IndexInSet;
+								// item.Url = item.Content.XMLFilePath;
+
+								String xmlFile = getDetailsDataFile(item.Content);
+
+								mDataModel
+										.getDetailsData(xmlFile, item.Content);
+
+								Log.d(TAG, "xmlFile " + xmlFile);
+								Log.d(TAG, "content " + item.Content.MainFile);
+
+								items[j] = item;
+							}
+							tv.Episodes = items;
 						}
+
+						tvs[i] = tv;
 					}
 					task.Data = tvs;
 
@@ -688,20 +708,26 @@ public class GDDataProviderService extends Service {
 				}
 
 				case REQUESTTYPE_GETFAVORITEMOVIE: {
-					ContentData[] contents = mDataModel.getFavoriteMovie();
-					task.Data = contents;
-
-					taskFinished(task);
+//					ContentData[] contents = mDataModel.getFavoriteMovie();
+//					task.Data = contents;
+//
+//					taskFinished(task);
 					break;
 				}
 
 				case REQUESTTYPE_GETFAVORITETV:
 				case REQUESTTYPE_GETFAVORITERECORD:
 				case REQUESTTYPE_GETFAVORITEENTERTAINMENT: {
-					TV[] tvs = mDataModel.getFavoriteTV();
-					task.Data = tvs;
+//					TV[] tvs = mDataModel.getFavoriteTV();
+//					task.Data = tvs;
+//
+//					taskFinished(task);
+					break;
+				}
 
-					taskFinished(task);
+				case REQUESTTYPE_ADDTOFAVORITE: {
+//					MediaData data = (MediaData) task.Data;
+//					mDataModel.addMeidaToFavorite(data);
 					break;
 				}
 
@@ -829,22 +855,16 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-				case REQUESTTYPE_ADDTOFAVORITE: {
-					MediaData data = (MediaData) task.Data;
-					mDataModel.addMeidaToFavorite(data);
-					break;
-				}
-				
 				case REQUESTTYPE_GETGUIDELIST: {
 					GuideListItem[] items = mDataModel.getGuideList();
 					task.Data = items;
 					taskFinished(task);
 					break;
 				}
-				
+
 				case REQUESTTYPE_UPDATEGUIDELIST: {
 					mDataModel.updateGuideList((GuideListItem[]) task.Data);
-//					taskFinished(task);
+					// taskFinished(task);
 					break;
 				}
 
@@ -860,7 +880,7 @@ public class GDDataProviderService extends Service {
 	public void getColumns(ClientObserver observer, int level, int index,
 			String columnId) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETCOLUMNS;
 		task.Parameters = new HashMap<String, Object>();
@@ -872,7 +892,7 @@ public class GDDataProviderService extends Service {
 
 	public void getAllPublications(ClientObserver observer, String columnId) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETALLPUBLICATIONS;
 		task.Parameters = new HashMap<String, Object>();
@@ -883,7 +903,7 @@ public class GDDataProviderService extends Service {
 
 	public void getTVData(ClientObserver observer, String columnId) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETTVDATA;
 		task.Parameters = new HashMap<String, Object>();
@@ -894,7 +914,7 @@ public class GDDataProviderService extends Service {
 
 	public void getContentsCount(ClientObserver observer, String columnId) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETCONTENTSCOUNT;
 		task.Parameters = new HashMap<String, Object>();
@@ -906,7 +926,7 @@ public class GDDataProviderService extends Service {
 	public void getContents(ClientObserver observer, String columnId,
 			int pageNumber, int pageSize) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETCONTENTS;
 		task.Parameters = new HashMap<String, Object>();
@@ -922,7 +942,7 @@ public class GDDataProviderService extends Service {
 	public void getDetailsData(ClientObserver observer, int pageNumber,
 			int index, ContentData content) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETDETAILSDATA;
 		task.PageNumber = pageNumber;
@@ -935,7 +955,7 @@ public class GDDataProviderService extends Service {
 	public void getImage(ClientObserver observer, int pageNumber, int index,
 			ContentData content) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETIMAGE;
 		task.PageNumber = pageNumber;
@@ -951,7 +971,7 @@ public class GDDataProviderService extends Service {
 			return;
 
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETPOWERCONSUMPTION;
 
@@ -969,7 +989,7 @@ public class GDDataProviderService extends Service {
 			return;
 
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE;
 
@@ -984,7 +1004,7 @@ public class GDDataProviderService extends Service {
 
 	public void getSettingsValue(ClientObserver observer, String key) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETSETTINGS;
 		task.Key = key;
@@ -994,7 +1014,7 @@ public class GDDataProviderService extends Service {
 
 	public void setSettingsValue(String key, String value) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Type = REQUESTTYPE_SETSETTINGS;
 
 		task.Parameters = new HashMap<String, Object>();
@@ -1008,7 +1028,7 @@ public class GDDataProviderService extends Service {
 
 		RequestTask task = new RequestTask();
 		task.Observer = null;
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Type = REQUESTTYPE_STARTGETTASKINFO;
 
 		enqueueTask(task);
@@ -1016,7 +1036,7 @@ public class GDDataProviderService extends Service {
 
 	public void getDownloadStatus(ClientObserver observer) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETDOWNLOADSTATUS;
 
@@ -1028,7 +1048,7 @@ public class GDDataProviderService extends Service {
 	public void stopGetTaskInfo() {
 		RequestTask task = new RequestTask();
 		task.Observer = null;
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Type = REQUESTTYPE_STOPGETTASKINFO;
 
 		enqueueTask(task);
@@ -1037,7 +1057,7 @@ public class GDDataProviderService extends Service {
 	// favorite
 	public void getFavoriteMovie(ClientObserver observer) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETFAVORITEMOVIE;
 
@@ -1046,7 +1066,7 @@ public class GDDataProviderService extends Service {
 
 	public void getFavoriteTV(ClientObserver observer) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETFAVORITETV;
 
@@ -1055,27 +1075,26 @@ public class GDDataProviderService extends Service {
 
 	public void addMediaToFavorite(MediaData data) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Data = data;
 		task.Type = REQUESTTYPE_ADDTOFAVORITE;
 
 		enqueueTask(task);
 	}
-	
-	
+
 	public void getAllGuideList(ClientObserver observer) {
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETGUIDELIST;
 
 		enqueueTask(task);
 	}
-	
+
 	public void updateGuideList(ClientObserver observer, GuideListItem[] items) {
-		
+
 		RequestTask task = new RequestTask();
-		//task.Id = System.currentTimeMillis();
+		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Data = items;
 		task.Type = REQUESTTYPE_UPDATEGUIDELIST;
@@ -1291,16 +1310,17 @@ public class GDDataProviderService extends Service {
 							}
 
 							Log.d(TAG, "onReceive packageFile " + packageFile);
-//							mApplicationObserver.handleNotifiy(
-//									GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
-							
+							// mApplicationObserver.handleNotifiy(
+							// GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
+
 							Bundle data = new Bundle();
 							data.putString(GDCommon.KeyPackgeFile, packageFile);
-							
-							Message msg = mHandler.obtainMessage(GDCommon.MSG_SYSTEM_UPGRADE);
+
+							Message msg = mHandler
+									.obtainMessage(GDCommon.MSG_SYSTEM_UPGRADE);
 							msg.setData(data);
 							mHandler.sendMessage(msg);
-							
+
 						}
 						break;
 					}
