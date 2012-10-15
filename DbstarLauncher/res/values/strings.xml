@@ -117,6 +117,20 @@
 	<string name="userinfo_user_card_validity_term">用户卡有效期</string>
 	<string name="userinfo_user_bussiness">用户所属业务</string>
 	<string name="userinfo_user_residual_amount">点卡余额</string>
+	
+	
+	<string name="deviceinfo_device_serialnumber">终端序列号</string>
+	<string name="deviceinfo_hardware_type">硬件型号</string>
+	<string name="deviceinfo_software_version">软件版本</string>
+	<string name="deviceinfo_loader_version">Loader版本</string>
+	<string name="deviceinfo_mac_address">Mac地址</string>
+	<string name="deviceinfo_gateway_serialnumber">网关序列号</string>
+	<string name="deviceinfo_server_ip">服务器IP</string>
+	<string name="deviceinfo_server_port">服务器端口</string>
+	
+	<string name="userinfo_operator">运营商</string>
+	<string name="userinfo_smartcard_number">智能卡号</string>
+	<string name="userinfo_orderedproduct">订购产品</string>
 
 	<string name="settings_item_video">视频</string>
 	<string name="settings_item_audio">音频</string>
