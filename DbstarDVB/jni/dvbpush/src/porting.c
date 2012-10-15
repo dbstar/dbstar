@@ -29,7 +29,7 @@ static char			s_database_uri[64];
 static int			s_debug_level = 0;
 static char			s_xml[128];
 
-static dvbpush_notify_t dvbpush_notify;
+static dvbpush_notify_t dvbpush_notify = NULL;
 
 /* define some general interface function here */
 
@@ -475,8 +475,10 @@ int msg_send2_UI(int type, char *msg, int len)
 	if (dvbpush_notify != NULL){
 		return dvbpush_notify(type, msg, len);
 	}
-	else
+	else{
+		DEBUG("there is no callback to send msg\n");
 		return -1;
+	}
 }
 
 int dvbpush_command(int cmd, char **buf, int *len)
@@ -485,11 +487,28 @@ int dvbpush_command(int cmd, char **buf, int *len)
 
 	DEBUG("dvbpush_command(cmd=%d)\n", cmd);
 	switch (cmd) {
-	case CMD_DVBPUSH_GETINFO:
-		dvbpush_getinfo(buf, len);
-		break;
-	default:
-		break;
+		case CMD_DVBPUSH_GETINFO_START:
+			dvbpush_getinfo_start();
+			break;
+		case CMD_DVBPUSH_GETINFO:
+			dvbpush_getinfo(buf, len);
+			break;
+		case CMD_DVBPUSH_GETINFO_STOP:
+			dvbpush_getinfo_stop();
+			break;
+		
+		case CMD_UPGRADE_CANCEL:
+			DEBUG("CMD_UPGRADE_CANCEL\n");
+			break;
+		case CMD_UPGRADE_CONFIRM:
+			DEBUG("CMD_UPGRADE_CONFIRM\n");
+			break;
+		case CMD_UPGRADE_TIMEOUT:
+			DEBUG("CMD_UPGRADE_TIMEOUT\n");
+			break;
+		
+		default:
+			break;
 	}
 
 	return ret;

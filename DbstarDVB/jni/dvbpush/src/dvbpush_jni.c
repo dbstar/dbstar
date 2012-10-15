@@ -119,8 +119,8 @@ JNIEXPORT jint JNICALL Java_com_dbstar_DbstarDVB_DbstarService_init
 		return -2;
 	}
 
-	ret = dvbpush_init();
 	ret = dvbpush_register_notify((void *)&dvbpush_notify_cb);
+	ret = dvbpush_init();
 
 	return ret;
 }

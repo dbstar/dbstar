@@ -11,6 +11,7 @@
 #include "porting.h"
 #include "multicast.h"
 #include "timeprint.h"
+#include "dvbpush_api.h"
 
 #define DVB_TEST_ENABLE 0
 
@@ -67,6 +68,8 @@ void *main_thread(void *data)
 //		DEBUG("dvb init with failed\n");
 //		return NULL;
 //	}
+	
+	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
 	
 	int main_running = 1;
 	while(1==main_running)
