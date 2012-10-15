@@ -23,6 +23,7 @@
 $(call inherit-product, device/amlogic/common/mbx_amlogic.mk)
 
 # Discard inherited values and use our own instead.
+PLATFORM_VERSION_CODENAME := REL
 PRODUCT_NAME := f16ref
 PRODUCT_MANUFACTURER := MBX
 PRODUCT_DEVICE := f16ref
@@ -80,7 +81,9 @@ PRODUCT_COPY_FILES += \
 	device/amlogic/f16ref/cfg80211_ath6kl.ko:system/lib/cfg80211_ath6kl.ko \
 	device/amlogic/f16ref/compat.ko:system/lib/compat.ko \
 	device/amlogic/f16ref/rt3070sta.ko:system/lib/rt3070sta.ko \
-	device/amlogic/f16ref/RT2870STA.dat:system/etc/Wireless/RT2870STA/RT2870STA.dat
+	device/amlogic/f16ref/RT2870STA.dat:system/etc/Wireless/RT2870STA/RT2870STA.dat \
+	device/amlogic/f16ref/libape.so:system/lib/libape.so \
+	device/amlogic/f16ref/libfaad.so:system/lib/libfaad.so 
 
 	
 PRODUCT_PACKAGES += wpa_supplicant.conf
@@ -179,6 +182,9 @@ PRODUCT_COPY_FILES += \
 	frameworks/base/data/etc/android.hardware.sensor.compass.xml:system/etc/permissions/android.hardware.sensor.compass.xml \
 	frameworks/base/data/etc/android.hardware.touchscreen.xml:system/etc/permissions/android.hardware.touchscreen.xml \
 	frameworks/base/data/etc/android.hardware.location.xml:system/etc/permissions/android.hardware.location.xml \
+	frameworks/base/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
+	frameworks/base/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
+	frameworks/base/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:system/etc/permissions/android.software.live_wallpaper.xml
 
 # multitouch
@@ -186,3 +192,9 @@ PRODUCT_COPY_FILES += \
   device/amlogic/f16ref/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
 	frameworks/base/data/etc/android.hardware.touchscreen.multitouch.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.xml \
 	frameworks/base/data/etc/android.hardware.touchscreen.multitouch.distinct.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.distinct.xml
+
+# App optimization
+PRODUCT_COPY_FILES += \
+	$(LOCAL_PATH)/liboptimization.so:system/lib/liboptimization.so \
+	$(LOCAL_PATH)/config:system/etc/config
+		
