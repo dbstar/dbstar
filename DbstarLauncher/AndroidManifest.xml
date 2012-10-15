@@ -42,9 +42,6 @@
         <activity android:name=".app.GDVideoPlayer" />
         <activity android:name=".app.GDReceiveStatusActivity" />
         <activity android:name=".app.GDDiskManagementActivity" />
-        <activity android:name=".app.GDSystemSettingsActivity" />
-        <activity android:name=".app.GDGuodianSettingsActivity" />
-        <activity android:name=".app.GDUserInfoActivity" />
         <activity android:name=".app.GDOrderPushActivity" />
         <activity android:name=".app.GDFavoriteMovieActivity" />
         <activity
@@ -56,9 +53,16 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        
-        <activity android:name=".app.GDUpgradeActivity"
+        <activity
+            android:name=".app.GDUpgradeActivity"
             android:theme="@style/popup_activity" />
+        <activity android:name=".app.GDHelpActivity" />
+        <activity android:name=".app.GDAudioSettingsActivity" />
+        <activity android:name=".app.GDVideoSettingsActivity" />
+        <activity android:name=".app.GDDeviceInfoActivity" />
+        <activity android:name=".app.GDNetworkSettingsActivity" />
+        <activity android:name=".app.GDUserInfoActivity" />
+        <activity android:name=".app.GDGuodianSettingsActivity" />
 
         <service
             android:name=".service.GDDataProviderService"
