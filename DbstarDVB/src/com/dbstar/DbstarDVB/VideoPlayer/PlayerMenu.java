@@ -3218,6 +3218,7 @@ public class PlayerMenu extends Activity {
 		super.onStart();
 
 		// start popup dialog
+		/* Comment this temporatily, avoid making player cannot work.
 		Log.d(TAG, "publication id=" + mPublicationId + " publication set id=" + mPublicationSetId);
 		Intent in = new Intent("com.dbstar.app.ShowPopup");
 		in.putExtra("publication_id", mPublicationId);
@@ -3225,6 +3226,7 @@ public class PlayerMenu extends Activity {
 			in.putExtra("publicationset_id", mPublicationSetId);
 		}
 		startActivity(in);
+		*/
 	}
 
 	public void onStop() {
