@@ -152,7 +152,6 @@ public class GDOrderPushActivity extends GDBaseActivity {
 				mReceiveItemAdapter.setDataSet(mReceiveItemCurrentPage);
 				mReceiveItemAdapter.notifyDataSetChanged();
 
-				// mListView.setSelection(0);
 				mListView.invalidate();
 			}
 
@@ -162,15 +161,6 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			}
 
 		});
-
-		// mListView.setOnKeyListener(new View.OnKeyListener() {
-		//
-		// @Override
-		// public boolean onKey(View v, int keyCode, KeyEvent event) {
-		// //TODO: navigate between pages
-		// return false;
-		// }
-		// });
 
 		mListView.setOnItemSelectedListener(new OnItemSelectedListener() {
 
@@ -200,25 +190,15 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		});
 
 		mTimelineView.setFocusable(true);
-		// mTimelineView.setFocusableInTouchMode(true);
 		mTimelineView.requestFocus();
 
 		mListView.setFocusable(true);
-		// mListView.setFocusableInTouchMode(true);
 		mListView.setOnKeyListener(mReceiveItemsKeyListener);
 	}
 
 	public void onServiceStart() {
 		super.onServiceStart();
 
-		// initTestData();
-
-		// ReceiveTask[] tasks = mTaskPages.get(mTasksPageNumber);
-		// // Log.d(TAG, " tasks size " + tasks.length);
-		// mTimelineAdapter.setDataSet(tasks);
-		// mTimelineAdapter.notifyDataSetChanged();
-		//
-		// mTimelineView.setSelection(0);
 		if (mService != null) {
 			mService.getAllGuideList(this);
 		}
@@ -597,131 +577,4 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			return convertView;
 		}
 	}
-
-	// void initTestData() {
-	// ReceiveItem item = null;
-	// ReceiveItem[] items = new ReceiveItem[8];
-	//
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "变形金刚";
-	// items[0] = item;
-	//
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "机械师";
-	// items[1] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "冰河世纪4";
-	// items[2] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "听风者";
-	// items[3] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "画皮2";
-	// items[4] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "蝙蝠侠前传3";
-	// items[5] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "黑衣人3";
-	// items[6] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "泰坦尼克号";
-	// items[7] = item;
-	//
-	// ReceiveItem[] items2 = new ReceiveItem[8];
-	//
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "普罗米修斯";
-	// items2[0] = item;
-	//
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "普罗米修斯";
-	// items2[1] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "普罗米修斯";
-	// items2[2] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "普罗米修斯";
-	// items2[3] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "普罗米修斯";
-	// items2[4] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "普罗米修斯";
-	// items2[5] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "普罗米修斯";
-	// items2[6] = item;
-	// item = new ReceiveItem();
-	// item.Type = "电影";
-	// item.Title = "普罗米修斯";
-	// items2[7] = item;
-	//
-	// ReceiveTask task = null;
-	// ReceiveTask[] tasks = null;
-	//
-	// tasks = new ReceiveTask[5];
-	//
-	// task = new ReceiveTask();
-	// task.Date = "5月1号";
-	// task.ItemsPageCount = 1;
-	// task.ItemsPageNumber = 0;
-	// task.ItemPages = new ArrayList<ReceiveItem[]>();
-	// task.ItemPages.add(items);
-	// tasks[0] = task;
-	//
-	// task = new ReceiveTask();
-	// task.Date = "6月1号";
-	// task.ItemsPageCount = 1;
-	// task.ItemsPageNumber = 0;
-	// task.ItemPages = new ArrayList<ReceiveItem[]>();
-	// task.ItemPages.add(items2);
-	// tasks[1] = task;
-	//
-	// task = new ReceiveTask();
-	// task.Date = "7月1号";
-	// task.ItemsPageCount = 1;
-	// task.ItemsPageNumber = 0;
-	// task.ItemPages = new ArrayList<ReceiveItem[]>();
-	// task.ItemPages.add(items);
-	// tasks[2] = task;
-	//
-	// task = new ReceiveTask();
-	// task.Date = "8月1号";
-	// task.ItemsPageCount = 1;
-	// task.ItemsPageNumber = 0;
-	// task.ItemPages = new ArrayList<ReceiveItem[]>();
-	// task.ItemPages.add(items2);
-	// tasks[3] = task;
-	//
-	// task = new ReceiveTask();
-	// task.Date = "9月1号";
-	// task.ItemsPageCount = 1;
-	// task.ItemsPageNumber = 0;
-	// task.ItemPages = new ArrayList<ReceiveItem[]>();
-	// task.ItemPages.add(items);
-	// tasks[4] = task;
-	//
-	// mTaskPages = new ArrayList<ReceiveTask[]>();
-	// mTaskPages.add(tasks);
-	//
-	// mTasksPageNumber = 0;
-	// mTasksPageCount = 1;
-	// // mCurrentTask = tasks;
-	// }
 }
