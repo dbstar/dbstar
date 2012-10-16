@@ -1473,7 +1473,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Drawable d = new BitmapDrawable(getResources(), mDefaultPoster);
 		mVideoView.setBackgroundDrawable(d);
 
-		updatePowerView(mPowerConsumption, mPowerCost);
+//		updatePowerView(mPowerConsumption, mPowerCost);
+		mIsPopupMenuHided = true;
+		displayPopupMenu(false);
 	}
 
 	private void initializeEngine() {
