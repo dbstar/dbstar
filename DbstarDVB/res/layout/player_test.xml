@@ -6,23 +6,7 @@
 	>
 
 	<TextView
-	android:id="@+id/DbstarTest"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:text="@string/DbstarTest"
-	android:gravity="center_horizontal"
-	android:textSize="18sp"
-	/>
-	<Button
-	android:id="@+id/TestButton01"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:text="@string/DvbpushTest"
-	android:gravity="center_horizontal"
-	android:textSize="18sp"
-	/>
-	<Button
-	android:id="@+id/TestButton02"
+	android:id="@+id/PlayerTest"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
 	android:text="@string/PlayerTest"
@@ -30,10 +14,18 @@
 	android:textSize="18sp"
 	/>
 	<Button
-	android:id="@+id/TestButton03"
+	android:id="@+id/PlayerButton01"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="@string/UpgradeTest"
+	android:text="@string/NormalPlay"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<Button
+	android:id="@+id/PlayerButton02"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DRMPlay"
 	android:gravity="center_horizontal"
 	android:textSize="18sp"
 	/>

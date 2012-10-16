@@ -1,7 +1,5 @@
 package com.dbstar.DbstarDVB.PlayerService;
 
-//import com.dbstar.DbstarDVB.PlayerService.IPlayerService;
-
 import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;

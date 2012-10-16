@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	>
+
+	<TextView
+	android:id="@+id/DvbpushTest"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DvbpushTest"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<Button
+	android:id="@+id/DvbButton01"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DvbButton01"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<Button
+	android:id="@+id/DvbButton02"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DvbButton02"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<Button
+	android:id="@+id/DvbButton03"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DvbButton03"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<Button
+	android:id="@+id/DvbButton04"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DvbButton04"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<Button
+	android:id="@+id/DvbButton05"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DvbButton05"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+
+	<TextView
+	android:id="@+id/Command"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/Command"
+	android:gravity="left" android:paddingLeft="100px"
+	android:textSize="18sp"
+	/>
+</LinearLayout>

@@ -2140,6 +2140,7 @@ public class PlayerMenu extends Activity {
 				List<String> paths = new ArrayList<String>();
 				int pos = getCurDirFile(mUri, paths);
 				// paths.add(it.getData().getPath());
+				backToOtherAPK = true;
 				if (pos != -1) {
 					PlayList.getinstance().setlist(paths, pos);
 					PlayList.getinstance().rootPath = null;
@@ -2288,7 +2289,14 @@ public class PlayerMenu extends Activity {
 
 		if (null != path) {
 			String dir = null;
+			int idx = -1;
 			int index = -1;
+			idx = path.lastIndexOf("|");
+			Log.d(TAG, "+++++++++++++++ lastIndexOf(|) = " + idx);
+			if (idx > 0) {
+				path = path.substring(0, idx);
+			}
+
 			index = path.lastIndexOf("/");
 			if (index >= 0) {
 				dir = path.substring(0, index);
@@ -3202,8 +3210,7 @@ public class PlayerMenu extends Activity {
 		}
 		if (m1080scale == 2
 				|| (m1080scale == 1 && (outputmode.equals("1080p")
-						|| outputmode.equals("1080i") || outputmode
-							.equals("720p")))) {
+						|| outputmode.equals("1080i") || outputmode.equals("720p")))) {
 			writeFile(Fb0Blank, "1");
 			Intent intent_video_off = new Intent(ACTION_REALVIDEO_OFF);
 			PlayerMenu.this.sendBroadcast(intent_video_off);
@@ -3217,16 +3224,9 @@ public class PlayerMenu extends Activity {
 	public void onStart() {
 		super.onStart();
 
+		/* Comment this temporatily, avoid making player cannot work. */
 		// start popup dialog
-		/* Comment this temporatily, avoid making player cannot work.
-		Log.d(TAG, "publication id=" + mPublicationId + " publication set id=" + mPublicationSetId);
-		Intent in = new Intent("com.dbstar.app.ShowPopup");
-		in.putExtra("publication_id", mPublicationId);
-		if (mPublicationSetId != null && !mPublicationSetId.isEmpty()) {
-			in.putExtra("publicationset_id", mPublicationSetId);
-		}
-		startActivity(in);
-		*/
+		//mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP, MSG_DIALOG_TIMEOUT);
 	}
 
 	public void onStop() {
@@ -3236,6 +3236,16 @@ public class PlayerMenu extends Activity {
 			PlayList.getinstance().rootPath = null;
 		}
 		finish();
+	}
+
+	private void popupDialog() {
+		Log.d(TAG, "publication id=" + mPublicationId + " publication set id=" + mPublicationSetId);
+		Intent in = new Intent("com.dbstar.app.ShowPopup");
+		in.putExtra("publication_id", mPublicationId);
+		if (mPublicationSetId != null && !mPublicationSetId.isEmpty()) {
+			in.putExtra("publicationset_id", mPublicationSetId);
+		}
+		startActivity(in);
 	}
 
 	// =========================================================
@@ -3441,7 +3451,11 @@ public class PlayerMenu extends Activity {
 						AudioTrackOperation.AudioStreamFormat.clear();
 						AudioTrackOperation.AudioStreamInfo.clear();
 						INITOK = false;
-						PRE_NEXT_FLAG = 1;
+						/* stop player */
+						PRE_NEXT_FLAG = 0;
+						if (m_Amplayer != null)
+							Amplayer_stop();
+						PlayerMenu.this.finish();
 					}
 					break;
 				case VideoInfo.PLAYER_INITOK:
@@ -3879,8 +3893,12 @@ public class PlayerMenu extends Activity {
 					 * finally { if (fd != null) { fd.close(); } }
 					 */
 				} else {
+					/*
 					m_Amplayer.Open(PlayList.getinstance().getcur(),
 							playPosition);
+					*/
+					Log.d(TAG, "+++++++++++++++++++ Open(" + mUri.getPath() + ")");
+					m_Amplayer.Open(mUri.getPath(), playPosition);
 				}
 			} else {
 				m_Amplayer.Open(PlayList.getinstance().getcur(), playPosition);
@@ -4212,6 +4230,20 @@ public class PlayerMenu extends Activity {
 
 		}
 	}
+
+	private static final int MSG_DIALOG_POPUP = 1;
+	private static final int MSG_DIALOG_TIMEOUT = 500;
+	Handler mDialogHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_DIALOG_POPUP:
+				popupDialog();
+				break;
+			default:
+				break;
+			}
+		}
+	};
 
 	Handler mRotateHandler = new Handler() {
 		public void handleMessage(Message msg) {

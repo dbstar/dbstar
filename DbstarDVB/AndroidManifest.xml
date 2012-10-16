@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.dbstar.DbstarDVB"
 	android:versionCode="1"
+	android:sharedUserId="android.uid.system"
 	android:versionName="1.73">
 
 	<uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14" />
@@ -22,18 +23,34 @@
 
 	<application
 		android:icon="@drawable/ic_launcher"
-		android:label="@string/hello"
+		android:label="@string/DbstarDVB"
 		android:debuggable="false" >
 
 		<service android:name=".DbstarService" android:exported="true"/>
 		<service android:name=".PlayerService.AmPlayer"/>
 		<activity
-			android:name=".DbstarTest"
-			android:label="@string/hello"
+			android:name=".Test.DbstarTest"
+			android:label="@string/DbstarTest"
 			android:screenOrientation="landscape" >
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name=".Test.DvbpushTest"
+			android:label="@string/DvbpushTest"
+			android:screenOrientation="landscape" >
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name=".Test.PlayerTest"
+			android:label="@string/PlayerTest"
+			android:screenOrientation="landscape" >
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
 			</intent-filter>
 		</activity>
 		<activity android:name=".VideoPlayer.FileList"
