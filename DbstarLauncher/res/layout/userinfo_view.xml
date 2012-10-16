@@ -4,48 +4,69 @@
     android:layout_height="match_parent"
     android:background="@drawable/view_background" >
 
-    <TextView
-        android:id="@+id/userinfo_view_title"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="108dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+
+        <ImageView
+            android:layout_width="269dp"
+            android:layout_height="70dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/logo_dbstar" />
+
+        <TextView
+            android:id="@+id/pageNumberView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="1186dp"
+            android:layout_marginTop="80dp"
+            android:gravity="top|center_horizontal"
+            android:textColor="#ffffff"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+    <TableLayout
+        android:id="@+id/userinfo_top"
+        android:layout_width="800dp"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
-        android:gravity="center"
-        android:textColor="#ffffff"
-        android:textSize="28sp"
-        android:text="@string/systemsettings_userinfo" />
-
-    <TableLayout
-        android:layout_width="800dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/userinfo_view_title"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="60dp" 
+        android:layout_marginTop="123dp"
         android:stretchColumns="1" >
 
         <TableRow>
+
             <TextView
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:gravity="right|center_vertical"
-                android:text="@string/userinfo_system_version"
+                android:text="@string/userinfo_operator"
                 android:textColor="#ffffff"
                 android:textSize="20sp" />
 
             <TextView
-                android:id="@+id/text_version"
+                android:id="@+id/text_operator"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-				/>
+                android:layout_height="wrap_content" />
         </TableRow>
 
         <TableRow>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="right|center_vertical"
-                android:text="@string/userinfo_user_card_number"
+                android:text="@string/userinfo_smartcard_number"
                 android:textColor="#ffffff"
                 android:textSize="20sp" />
 
@@ -54,67 +75,34 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </TableRow>
-
-        <TableRow>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:text="@string/userinfo_macaddress"
-                android:textColor="#ffffff"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/text_macaddress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </TableRow>
-
-        <TableRow>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:text="@string/userinfo_user_card_validity_term"
-                android:textColor="#ffffff"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/text_usercard_validityterm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </TableRow>
-
-        <TableRow>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:text="@string/userinfo_user_bussiness"
-                android:textColor="#ffffff"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/text_user_bussiness"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </TableRow>
-
-        <TableRow>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:text="@string/userinfo_user_residual_amount"
-                android:textColor="#ffffff"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/text_user_residual_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </TableRow>
     </TableLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/userinfo_top"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right|center_vertical"
+            android:text="@string/userinfo_orderedproduct"
+            android:textColor="#ffffff"
+            android:textSize="20sp" />
+
+        <ListView
+            android:id="@+id/userinfo_orderedproduct"
+            android:layout_width="1100dp"
+            android:layout_height="480dp"
+            android:cacheColorHint="#00000000"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="4.0dp"
+            android:gravity="top"
+            android:listSelector="@android:color/transparent" />
+    </LinearLayout>
 
     <include
         android:layout_width="fill_parent"
@@ -122,5 +110,5 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         layout="@layout/footerview" />
-        
+
 </RelativeLayout>

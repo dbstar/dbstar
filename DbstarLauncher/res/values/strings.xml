@@ -2,174 +2,167 @@
 <resources>
 
     <string name="app_name">DbstarLauncher</string>
-    
     <string name="hotline">服务热线: 4000&#8211;300&#8211;888</string>
     <string name="organization">《中国电力报》：国电集团部署2012年基建工作</string>
-    <string name="desc"> </string>
+    <string name="desc"></string>
     <string name="GDVideoView_error_text_invalid_progressive_playback">格式不对</string>
-	<string name="GDVideoView_error_text_unknown">未知错误</string>
-	<string name="GDVideoView_error_title">错误</string>
-	<string name="GDVideoView_error_button">关闭</string>
-	
-	<string name="VideoView_error_text_invalid_progressive_playback">无法渐进播放</string>
-	<string name="VideoView_error_text_unknown">未知错误</string>
-	<string name="VideoView_error_title">错误</string>
-	<string name="VideoView_error_button">确定</string>
-	
-	<string name="loading_text">正在加载数据，请等待&#8230;</string>
-	
-	<string name="celander_text_nongli">农历</string>
-	
-	<string name="property_title">名字</string>
-	<string name="property_director">导演</string>
-	<string name="property_actors">主演</string>
-	<string name="property_type">类型</string>
-	<string name="property_year">年代</string>
-	<string name="property_region">制片国家/地区</string>
-	<string name="property_rate">推荐指数</string>
-	<string name="property_episodes">集数</string>
-	
-	<string name="text_di">第</string>
-	<string name="text_ye">页</string>
-	<string name="text_ji">集</string>
-	<string name="text_tiao">条</string>
-	<string name="text_gong">共</string>
-	
-	<string name="property_semicolon">:</string>
-	<string name="property_space">&#160;</string>
-	
-	<string name="menulevel1_item_guowang">国网动态</string>
-	<string name="menulevel1_item_smartpower">智能用电</string>
-	<string name="menulevel1_item_smarthome">智能家居</string>
-	<string name="menulevel1_item_hdmovie">电影</string>
-	<string name="menulevel1_item_tv">剧情</string>
-	<string name="menulevel1_item_record">纪录</string>
-	<string name="menulevel1_item_zongyi">综合</string>
-	<string name="menulevel1_item_paper">报纸</string>
-	<string name="menulevel1_item_journal">杂志</string>
-	<string name="menulevel1_item_book">图书</string>
-	<string name="menulevel1_item_3d">3D体验</string>
-	<string name="menulevel1_item_demo">试看</string>
-	<string name="menulevel1_item_iptv">IPTV</string>
-	<string name="menulevel1_item_variety">综合</string>
-	<string name="menulevel1_item_healthy">数字健康</string>
-	<string name="menulevel1_item_trailer">预告</string>
-	<string name="menulevel1_item_children">少儿</string>
-	<string name="menulevel1_item_usercenter">个人中心</string>
-	<string name="menulevel1_item_settings">设置</string>
-	
-	
-	<string name="menulevel2_item_guowangkuaixun">国网快讯</string>
-	<string name="menulevel2_item_shipindongtai">视频动态</string>
-	<string name="menulevel2_item_guojiadianwangbao">国家电网报</string>
-	<string name="menulevel2_item_dingshirenwu">定时任务</string>
-	<string name="menulevel2_item_yijiankongzhi">一键控制</string>
-	<string name="menulevel2_item_wodedianqi">电器管理</string>
-	<string name="menulevel2_item_haongnengfenxi">耗能分析</string>
-	<string name="menulevel2_item_wodeyongdian">我的用电</string>
-	<string name="menulevel2_item_yongdianmingxi">用电明细</string>
-	<string name="menulevel2_item_yongidantiyan">用电体验</string>
-	<string name="menulevel2_item_jienengchangshi">节能常识</string>
-	
-	<string name="menulevel2_item_myfavourites">我的收藏</string>
-	<string name="menulevel2_item_receivecheck">选择接受</string>
-	<string name="menulevel2_item_myorder">我的排序</string>
-	<string name="menulevel2_item_downloadstatus">下载状态</string>
-	
-	<string name="menulevel3_item_movie">电影</string>
-	<string name="menulevel3_item_tv">剧集</string>
-	<string name="menulevel3_item_record">纪录</string>
-	<string name="menulevel3_item_entertainment">综艺</string>
-	
-	<string name="context_view_mypower_title">我的用电</string>
-	<string name="mypower_powerusage">本月用电:</string>
-	<string name="mypower_powercost">本月花费:</string>
-	<string name="string_degree">度</string>
-	<string name="string_yuan">元</string>
+    <string name="GDVideoView_error_text_unknown">未知错误</string>
+    <string name="GDVideoView_error_title">错误</string>
+    <string name="GDVideoView_error_button">关闭</string>
+    <string name="VideoView_error_text_invalid_progressive_playback">无法渐进播放</string>
+    <string name="VideoView_error_text_unknown">未知错误</string>
+    <string name="VideoView_error_title">错误</string>
+    <string name="VideoView_error_button">确定</string>
+    <string name="loading_text">正在加载数据，请等待&#8230;</string>
+    <string name="celander_text_nongli">农历</string>
+    <string name="property_title">名字</string>
+    <string name="property_director">导演</string>
+    <string name="property_actors">主演</string>
+    <string name="property_type">类型</string>
+    <string name="property_year">年代</string>
+    <string name="property_region">制片国家/地区</string>
+    <string name="property_rate">推荐指数</string>
+    <string name="property_episodes">集数</string>
+    <string name="text_di">第</string>
+    <string name="text_ye">页</string>
+    <string name="text_ji">集</string>
+    <string name="text_tiao">条</string>
+    <string name="text_gong">共</string>
+    <string name="property_semicolon">:</string>
+    <string name="property_space">&#160;</string>
+    <string name="menulevel1_item_guowang">国网动态</string>
+    <string name="menulevel1_item_smartpower">智能用电</string>
+    <string name="menulevel1_item_smarthome">智能家居</string>
+    <string name="menulevel1_item_hdmovie">电影</string>
+    <string name="menulevel1_item_tv">剧情</string>
+    <string name="menulevel1_item_record">纪录</string>
+    <string name="menulevel1_item_zongyi">综合</string>
+    <string name="menulevel1_item_paper">报纸</string>
+    <string name="menulevel1_item_journal">杂志</string>
+    <string name="menulevel1_item_book">图书</string>
+    <string name="menulevel1_item_3d">3D体验</string>
+    <string name="menulevel1_item_demo">试看</string>
+    <string name="menulevel1_item_iptv">IPTV</string>
+    <string name="menulevel1_item_variety">综合</string>
+    <string name="menulevel1_item_healthy">数字健康</string>
+    <string name="menulevel1_item_trailer">预告</string>
+    <string name="menulevel1_item_children">少儿</string>
+    <string name="menulevel1_item_usercenter">个人中心</string>
+    <string name="menulevel1_item_settings">设置</string>
+    <string name="menulevel2_item_guowangkuaixun">国网快讯</string>
+    <string name="menulevel2_item_shipindongtai">视频动态</string>
+    <string name="menulevel2_item_guojiadianwangbao">国家电网报</string>
+    <string name="menulevel2_item_dingshirenwu">定时任务</string>
+    <string name="menulevel2_item_yijiankongzhi">一键控制</string>
+    <string name="menulevel2_item_wodedianqi">电器管理</string>
+    <string name="menulevel2_item_haongnengfenxi">耗能分析</string>
+    <string name="menulevel2_item_wodeyongdian">我的用电</string>
+    <string name="menulevel2_item_yongdianmingxi">用电明细</string>
+    <string name="menulevel2_item_yongidantiyan">用电体验</string>
+    <string name="menulevel2_item_jienengchangshi">节能常识</string>
+    <string name="menulevel2_item_myfavourites">我的收藏</string>
+    <string name="menulevel2_item_receivecheck">选择接受</string>
+    <string name="menulevel2_item_myorder">我的排序</string>
+    <string name="menulevel2_item_downloadstatus">下载状态</string>
+    <string name="menulevel3_item_movie">电影</string>
+    <string name="menulevel3_item_tv">剧集</string>
+    <string name="menulevel3_item_record">纪录</string>
+    <string name="menulevel3_item_entertainment">综艺</string>
+    <string name="context_view_mypower_title">我的用电</string>
+    <string name="mypower_powerusage">本月用电:</string>
+    <string name="mypower_powercost">本月花费:</string>
+    <string name="string_degree">度</string>
+    <string name="string_yuan">元</string>
+    <string name="warning_text">警告</string>
+    <string name="conformation_text">确认</string>
+    <string name="systemsettings_userinfo">用户信息</string>
+    <string name="systemsettings_receivestatus">接收状态</string>
+    <string name="systemsettings_diskspace">磁盘管理</string>
+    <string name="systemsettings_settings">系统设置</string>
+    <string name="systemsettings_guodian">网关设置</string>
+    <string name="systemsettings_advanced">高级设置</string>
+    <string name="systemsettings_filebrowser">文件浏览</string>
+    <string name="receivestatus_filename">文件名</string>
+    <string name="receivestatus_downloadprogress">下载进度</string>
+    <string name="receivestatus_status">接收状态</string>
+    <string name="receivestatus_filesize">文件大小</string>
+    <string name="receivestatus_downloadpercent">百分比</string>
+    <string name="receivestatus_downloadspeed">下载速度</string>
+    <string name="receivestatus_diskspace">剩余空间</string>
+    <string name="receivestatus_status_waitting">等待</string>
+    <string name="receivestatus_status_downloading">正在下载</string>
+    <string name="receivestatus_status_finished">下载完成</string>
+    <string name="receivestatus_status_failed">下载失败</string>
+    <string name="userinfo_system_version">系统版本</string>
+    <string name="userinfo_user_card_number">用户卡号</string>
+    <string name="userinfo_macaddress">本终端mac地址</string>
+    <string name="userinfo_user_card_validity_term">用户卡有效期</string>
+    <string name="userinfo_user_bussiness">用户所属业务</string>
+    <string name="userinfo_user_residual_amount">点卡余额</string>
+    <string name="deviceinfo_device_serialnumber">终端序列号</string>
+    <string name="deviceinfo_hardware_type">硬件型号</string>
+    <string name="deviceinfo_software_version">软件版本</string>
+    <string name="deviceinfo_loader_version">Loader版本</string>
+    <string name="deviceinfo_mac_address">Mac地址</string>
+    <string name="deviceinfo_gateway_serialnumber">网关序列号</string>
+    <string name="deviceinfo_server_ip">服务器IP</string>
+    <string name="deviceinfo_server_port">服务器端口</string>
+    <string name="userinfo_operator">运营商</string>
+    <string name="userinfo_smartcard_number">智能卡号</string>
+    <string name="userinfo_orderedproduct">订购产品</string>
+    <string name="settings_video">视频</string>
+    <string name="settings_audio">音频</string>
+    <string name="settings_audio_transparent">透传</string>
+    <string name="settings_audio_transcode">转码</string>
+    <string name="settings_video_selection">选择</string>
+    <string name="settings_video_1080p60">1080P60</string>
+    <string name="settings_video_1080p25">1080P25</string>
+    <string name="settings_video_1080i50">1080I50</string>
+    <string name="settings_video_720p">720P</string>
+    <string name="settings_video_auto">自适应</string>
+    
+    <string name="settings_item_help">帮助</string>
+    <string name="settings_help_content">本程序的主要提供航天数字业务，包括电影、电视剧、纪录片等。\n\n在主界面中，通过左右键可以切换一级栏目，通过确认键可以进入到次级栏目。如果没有下一级栏目，则直接打开该栏目</string>
+    <string name="settings_item_subtitle">字幕</string>
+    <string name="settings_item_network">网络</string>
+    <string name="settings_item_diskguard">磁盘预警</string>
+    <string name="settings_item_automation">自动</string>
+    <string name="settings_item_source">源码</string>
+    <string name="settings_item_diskguard_spacesize">预警空间大小</string>
+    <string name="settings_item_fontsize">字号</string>
+    <string name="settings_item_fontcolor">字色</string>
+    <string name="settings_item_boundary">边缘</string>
+    <string name="settings_item_bottonmargin">与下间距</string>
+    <string name="settings_item_autoget">自动获取</string>
+    <string name="settings_item_ip">IP</string>
+    <string name="settings_item_gateway">网关</string>
+    <string name="settings_item_dns">DNS</string>
+    <string name="guodiansettings_version">版本</string>
+    <string name="guodiansettings_serverip">服务器地址</string>
+    <string name="guodiansettings_serverport">服务器端口</string>
+    <string name="guodiansettings_username">用户名</string>
+    <string name="guodiansettings_password">密码</string>
+    <string name="guodiansettings_serialnumber">序列号</string>
+    <string name="inputview_title">输入</string>
+    <string name="button_text_ok">确定</string>
+    <string name="button_text_cancel">取消</string>
+    <string name="dialog_upgrade_title">升级</string>
+    <string name="dialog_upgrade_notes">确认升级系统吗？</string>
+    <string name="diskmanagement_disksize">磁盘空间</string>
+    <string name="diskmanagement_usedspace">占用空间</string>
+    <string name="diskmanagement_emptyspace">剩余空间</string>
+    <string name="diskmanagement_gaurdspace">预警空间</string>
+    <string name="tv_view_description_header">剧情简介:</string>
+    <string name="movie_info_view_notes">*信息键可以再次唤出本窗口</string>
+    <string name="close_button_text">关闭本窗</string>
+    <string name="replay_button_text">从头播放</string>
+    <string name="add_favourite_button_text">收藏本片</string>
+    <string name="delete_button_text">删除本片</string>
+    <string name="checher_receive">接受</string>
+    <string name="checher_not_receive">不接受</string>
+    <string name="ok_key">OK</string>
+    <string name="checher_switch_receive_status">切换接受状态</string>
+    <string name="back_to_home_and_save">返回自动保存</string>
+    <string name="back_to_home">返回首页</string>
 
-	<string name="warning_text">警告</string>
-	<string name="conformation_text">确认</string>
-	
-	<string name="systemsettings_userinfo">用户信息</string>
-	<string name="systemsettings_receivestatus">接收状态</string>
-	<string name="systemsettings_diskspace">磁盘管理</string>
-	<string name="systemsettings_settings">系统设置</string>
-	<string name="systemsettings_guodian">网关设置</string>
-	<string name="systemsettings_advanced">高级设置</string>
-	<string name="systemsettings_filebrowser">文件浏览</string>
-
-	<string name="receivestatus_filename">文件名</string>
-	<string name="receivestatus_downloadprogress">下载进度</string>
-	<string name="receivestatus_status">接收状态</string>
-	<string name="receivestatus_filesize">文件大小</string>
-	<string name="receivestatus_downloadpercent">百分比</string>
-	<string name="receivestatus_downloadspeed">下载速度</string>
-	<string name="receivestatus_diskspace">剩余空间</string>
-	
-	<string name="receivestatus_status_waitting">等待</string>
-	<string name="receivestatus_status_downloading">正在下载</string>
-	<string name="receivestatus_status_finished">下载完成</string>
-	<string name="receivestatus_status_failed">下载失败</string>
-	
-	<string name="userinfo_system_version">系统版本</string>
-	<string name="userinfo_user_card_number">用户卡号</string>
-	<string name="userinfo_macaddress">本终端mac地址</string>
-	<string name="userinfo_user_card_validity_term">用户卡有效期</string>
-	<string name="userinfo_user_bussiness">用户所属业务</string>
-	<string name="userinfo_user_residual_amount">点卡余额</string>
-
-	<string name="settings_item_video">视频</string>
-	<string name="settings_item_audio">音频</string>
-	<string name="settings_item_subtitle">字幕</string>
-	<string name="settings_item_network">网络</string>
-	<string name="settings_item_diskguard">磁盘预警</string>
-	<string name="settings_item_automation">自动</string>
-	
-	<string name="settings_item_source">源码</string>
-	<string name="settings_item_diskguard_spacesize">预警空间大小</string>
-	<string name="settings_item_fontsize">字号</string>
-	<string name="settings_item_fontcolor">字色</string>
-	<string name="settings_item_boundary">边缘</string>
-	<string name="settings_item_bottonmargin">与下间距</string>
-	<string name="settings_item_autoget">自动获取</string>
-	<string name="settings_item_ip">IP</string>
-	<string name="settings_item_gateway">网关</string>
-	<string name="settings_item_dns">DNS</string>
-	
-	<string name="guodiansettings_version">版本</string>
-	<string name="guodiansettings_serverip">服务器地址</string>
-	<string name="guodiansettings_serverport">服务器端口</string>
-	<string name="guodiansettings_username">用户名</string>
-	<string name="guodiansettings_password">密码</string>
-	<string name="guodiansettings_serialnumber">序列号</string>
-	
-	<string name="inputview_title">输入</string>
-	
-	<string name="button_text_ok">确定</string>
-	<string name="button_text_cancel">取消</string>
-	
-	<string name="dialog_upgrade_title">升级</string>
-	<string name="dialog_upgrade_notes">确认升级系统吗？</string>
-	
-	
-	<string name="diskmanagement_disksize">磁盘空间</string>
-	<string name="diskmanagement_usedspace">占用空间</string>
-	<string name="diskmanagement_emptyspace">剩余空间</string>
-	<string name="diskmanagement_gaurdspace">预警空间</string>
-	
-	<string name="tv_view_description_header">剧情简介:</string>
-	
-	<string name="movie_info_view_notes">*信息键可以再次唤出本窗口</string>
-	<string name="close_button_text">关闭本窗</string>
-	<string name="replay_button_text">从头播放</string>
-	<string name="add_favourite_button_text">收藏本片</string>
-	<string name="delete_button_text">删除本片</string>
-	
-	<string name="checher_receive">接受</string>
-	<string name="checher_not_receive">不接受</string>
-	<string name="ok_key">OK</string>
-	<string name="checher_switch_receive_status">切换接受状态</string>
-	<string name="back_to_home_and_save">返回自动保存</string>
-	<string name="back_to_home">返回首页</string>
-	
 </resources>

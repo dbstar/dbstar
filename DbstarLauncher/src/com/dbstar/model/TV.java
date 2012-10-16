@@ -30,10 +30,10 @@ public class TV {
 	
 	
 	public static class EpisodeItem {
+		public ContentData Content;
 		public int Number;
 		public boolean Watched;
 		public String Url;
-		public ContentData Content;
 		
 		public EpisodeItem() {
 			Number = -1;

@@ -1,6 +1,5 @@
 package com.dbstar.app;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,15 +11,11 @@ import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.service.GDDataProviderService;
-import com.dbstar.util.upgrade.RebootUtils;
 import com.dbstar.widget.*;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 
-import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -71,13 +66,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public static final int SettingsHelp = 0;
 	public static final int SettingsDeviceInfo = 1;
 	public static final int SettingsUserInfo = 2;
-	public static final int SettingsAudioVideo = 3;
-	public static final int SettingsSystemSettings = 4;
-	public static final int SettingsGuodian = 5;
+	public static final int SettingsAudio = 3;
+	public static final int SettingsVideo = 4;
+	public static final int SettingsNetwork = 5;
 	public static final int SettingsDiskSpace = 6;
 	public static final int SettingsFileBrowser = 7;
 	public static final int SettingsAdvanced = 8;
-	public static final int SettingsCount = 9;
+	public static final int SettingsGuodian = 9;
+	public static final int SettingsCount = 10;
 
 	// message from engine
 	public static final int MSG_UPDATE_POWERCONSUMPTION = 0;
@@ -550,12 +546,38 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Intent intent = null;
 
 		switch (settingsItemIndex) {
-		case SettingsUserInfo:
+		case SettingsHelp: {
+			intent = new Intent();
+			intent.setClass(this, GDHelpActivity.class);
+			break;
+		}
+		case SettingsDeviceInfo: {
+			intent = new Intent();
+			intent.setClass(this, GDDeviceInfoActivity.class);
+			break;
+		}
+		case SettingsUserInfo: {
 			intent = new Intent();
 			intent.setClass(this, GDUserInfoActivity.class);
 			break;
+		}
 
-		case SettingsDiskSpace:
+		case SettingsAudio: {
+			intent = new Intent();
+			intent.setClass(this, GDAudioSettingsActivity.class);
+			break;
+		}
+		case SettingsVideo: {
+			intent = new Intent();
+			intent.setClass(this, GDVideoSettingsActivity.class);
+			break;
+		}
+		case SettingsNetwork: {
+			intent = new Intent();
+			intent.setClass(this, GDNetworkSettingsActivity.class);
+			break;
+		}
+		case SettingsDiskSpace: {
 			String disk = null;
 			if (mBound && mService != null) {
 				disk = mService.getStorageDisk();
@@ -567,30 +589,26 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				intent.setClass(this, GDDiskManagementActivity.class);
 			}
 			break;
-
-		case SettingsSystemSettings:
-			// intent = new Intent();
-			// intent.setClass(this, GDSettingsActivity.class);
-			break;
-
-		case SettingsGuodian:
+		}
+		case SettingsGuodian: {
 			intent = new Intent();
 			intent.setClass(this, GDGuodianSettingsActivity.class);
 			break;
-
-		case SettingsFileBrowser:
+		}
+		case SettingsFileBrowser: {
 			intent = new Intent();
 			intent.setComponent(new ComponentName("com.fb.FileBrower",
 					"com.fb.FileBrower.FileBrower"));
 			intent.setAction("android.intent.action.MAIN");
 			break;
-
-		case SettingsAdvanced:
+		}
+		case SettingsAdvanced: {
 			intent = new Intent();
 			intent.setComponent(new ComponentName("com.android.settings",
 					"com.android.settings.Settings"));
 			intent.setAction("android.intent.action.MAIN");
 			break;
+			}
 		default:
 			break;
 		}
@@ -1475,7 +1493,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		case GDCommon.MSG_SYSTEM_UPGRADE: {
-			notifyUpgrade((String)data);
+			notifyUpgrade((String) data);
 			break;
 		}
 

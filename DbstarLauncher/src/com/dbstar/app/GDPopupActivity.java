@@ -108,7 +108,13 @@ public class GDPopupActivity extends GDBaseActivity {
 		setContentView(R.layout.movie_info_view);
 		
 		Intent intent = getIntent();
-		mMediaData = (MediaData) intent.getSerializableExtra(GDCommon.KeyMediaData);
+//		mMediaData = (MediaData) intent.getSerializableExtra(GDCommon.KeyMediaData);
+		String publicationId = intent.getStringExtra("publication_id");
+		String publicationSetId = intent.getStringExtra("publicationset_id");
+		
+		mMediaData = new MediaData();
+		mMediaData.PublicationID = publicationId;
+		mMediaData.SetID = publicationSetId;
 		
 		initializeView();
 	}

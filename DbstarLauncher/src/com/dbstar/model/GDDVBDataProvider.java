@@ -190,7 +190,7 @@ public class GDDVBDataProvider  extends GDDBProvider {
 				PublicationsSet.PUSHTIME, PublicationsSet.ISRESERVED,
 				PublicationsSet.VISIBLE, PublicationsSet.FAVORITE,
 				PublicationsSet.ISAUTHORIZED, PublicationsSet.VODNUM,
-				PublicationsSet.VODPLATFORM };
+				PublicationsSet.VODPLATFORM, PublicationsSet.DELETED };
 
 		int SETID = 0;
 		int COLUMNID = 1;
@@ -206,6 +206,7 @@ public class GDDVBDataProvider  extends GDDBProvider {
 		int ISAUTHORIZED = 11;
 		int VODNUM = 12;
 		int VODPLATFORM = 13;
+		int DELETED = 14;
 	}
 
 	public interface PublicationQuery {
@@ -219,7 +220,7 @@ public class GDDVBDataProvider  extends GDDBProvider {
 				Publication.DRMFILE, Publication.SETID, Publication.INDEXINSET,
 				Publication.FAVORITE, Publication.BOOKMARK,
 				Publication.ISAUTHORIZED, Publication.VODNUM,
-				Publication.VODPLATFORM };
+				Publication.VODPLATFORM, Publication.DELETED };
 
 		int COLUMNID = 0;
 		int PRODUCTID = 1;
@@ -239,6 +240,7 @@ public class GDDVBDataProvider  extends GDDBProvider {
 		int ISAUTHORIZED = 15;
 		int VODNUM = 16;
 		int VODPLATFORM = 17;
+		int DELETED = 18;
 	}
 
 	public interface MFileQuery {

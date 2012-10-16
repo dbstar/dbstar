@@ -174,6 +174,9 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			Log.d(TAG, "play = " + uri.toString());
 
 			intent.setData(uri);
+			intent.putExtra("publication_id", movie.Content.Id);
+//			intent.putExtra("column_type", GDCommon.ColumnTypeMovie);
+			
 			intent.setComponent(new ComponentName("com.farcore.videoplayer",
 					"com.farcore.videoplayer.playermenu"));
 			intent.setAction("android.intent.action.View");
