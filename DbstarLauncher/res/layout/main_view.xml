@@ -16,6 +16,7 @@
         android:focusable="false" >
 
         <ImageView
+            android:id="@+id/logo_dbstar"
             android:layout_width="269dp"
             android:layout_height="70dp"
             android:layout_alignParentLeft="true"
@@ -23,6 +24,15 @@
             android:layout_marginLeft="40dp"
             android:scaleType="fitXY"
             android:src="@drawable/logo_dbstar" />
+
+        <ImageView
+            android:layout_width="221dp"
+            android:layout_height="58dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@id/logo_dbstar"
+            android:scaleType="fitXY"
+            android:src="@drawable/logo_guodian" />
 
         <TextView
             android:id="@+id/custom_service_hotline"
@@ -33,7 +43,7 @@
             android:layout_marginRight="40dp"
             android:gravity="center_vertical"
             android:text="@string/hotline"
-            android:textColor="#ffffff"
+            android:textColor="#3d3d3d"
             android:textSize="16sp" />
     </RelativeLayout>
 

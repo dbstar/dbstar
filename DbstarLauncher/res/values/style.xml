@@ -19,6 +19,10 @@
         <item name="android:maxHeight">20dip</item>
     </style>
     
+    <style name="scans_text">
+        <item name="android:typeface">sans</item>
+    </style>
+    
     <declare-styleable name="GDAlertDialog">
         <attr name="fullDark" format="reference|color" />
         <attr name="topDark" format="reference|color" />

@@ -4,10 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.dbstar.R;
-import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.ContentData;
 import com.dbstar.service.GDDataProviderService;
-import com.dbstar.model.GDCommon;
 import com.dbstar.model.Movie;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.widget.GDAdapterView;
@@ -55,7 +53,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	int mSeletedItemIndex = 0;
 	GDScrollBar mScrollBar = null;
 
-	// View mSelectedView = null;
+	View mSelectedView = null;
 	boolean mReachPageEnd = false;
 	TextView mPageNumberView;
 
@@ -307,28 +305,28 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 			ViewHolder holder = new ViewHolder();
 
-			// if (mSeletedItemIndex == position) {
-			// if (mSelectedView == null) {
-			// LayoutInflater inflater = getLayoutInflater();
-			// mSelectedView =
-			// inflater.inflate(R.layout.small_thumbnail_item_focused,
-			// parent, false);
-			// holder.titleView = (TextView) mSelectedView
-			// .findViewById(R.id.item_text);
-			// holder.thumbnailView = (ImageView) mSelectedView
-			// .findViewById(R.id.thumbnail);
-			//
-			// mSelectedView.setTag(holder);
-			// }
-			//
-			// if (convertView != mSelectedView) {
-			// convertView = mSelectedView;
-			// }
-			// } else {
-			// if (convertView == mSelectedView) {
-			// convertView = null;
-			// }
-			// }
+			if (mSmallThumbnailView.getSelectedItemPosition() == position) {
+				if (mSelectedView == null) {
+					LayoutInflater inflater = getLayoutInflater();
+					mSelectedView = inflater.inflate(
+							R.layout.small_thumbnail_item_focused, parent,
+							false);
+					holder.titleView = (TextView) mSelectedView
+							.findViewById(R.id.item_text);
+					holder.thumbnailView = (ImageView) mSelectedView
+							.findViewById(R.id.thumbnail);
+
+					mSelectedView.setTag(holder);
+				}
+
+				if (convertView != mSelectedView) {
+					convertView = mSelectedView;
+				}
+			} else {
+				if (convertView == mSelectedView) {
+					convertView = null;
+				}
+			}
 
 			if (null == convertView) {
 				LayoutInflater inflater = getLayoutInflater();
@@ -379,11 +377,15 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			if (action == KeyEvent.ACTION_DOWN) {
 				switch (keyCode) {
 
-				 case KeyEvent.KEYCODE_F2: {
-					 ret = true;
-					 testPopup();
-					 break;
-				 }
+//				case 82:
+//				 case KeyEvent.KEYCODE_F2: {
+//					 ret = true;
+////					 testPopup();
+//					 Intent in = new Intent();
+//					 in.setClass(GDHDMovieActivity.this, com.dbstar.app.alert.GDForceUpgradeActivity.class);
+//					 startActivity(in);
+//					 break;
+//				 }
 				
 				case KeyEvent.KEYCODE_DPAD_LEFT: {
 					int currentItem = mSmallThumbnailView
@@ -454,29 +456,29 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		}
 	};
 
-	void testPopup() {
-
-		Movie movie = getSelectedMovie();
-		String file = mService.getMediaFile(movie.Content);
-		Log.d(TAG, "file = " + file);
-		if (!file.equals("")) {
-
-			Intent intent = new Intent();
-
-			MediaData data = new MediaData();
-			data.mediaURL = file;
-			data.ColumnType = GDCommon.ColumnTypeMovie;
-			data.PublicationID = movie.Content.Id;
-			data.URI = movie.Content.XMLFilePath;
-
-			intent.putExtra(GDCommon.KeyMediaData, data);
-
-			intent.setComponent(new ComponentName("com.dbstar.DbstarDVB",
-					"com.dbstar.DbstarDVB.TestActivity"));
-			intent.setAction("android.intent.action.View");
-
-			startActivity(intent);
-		}
-	}
+//	void testPopup() {
+//
+//		Movie movie = getSelectedMovie();
+//		String file = mService.getMediaFile(movie.Content);
+//		Log.d(TAG, "file = " + file);
+//		if (!file.equals("")) {
+//
+//			Intent intent = new Intent();
+//
+//			MediaData data = new MediaData();
+//			data.mediaURL = file;
+//			data.ColumnType = GDCommon.ColumnTypeMovie;
+//			data.PublicationID = movie.Content.Id;
+//			data.URI = movie.Content.XMLFilePath;
+//
+//			intent.putExtra(GDCommon.KeyMediaData, data);
+//
+//			intent.setComponent(new ComponentName("com.dbstar.DbstarDVB",
+//					"com.dbstar.DbstarDVB.TestActivity"));
+//			intent.setAction("android.intent.action.View");
+//
+//			startActivity(intent);
+//		}
+//	}
 
 }

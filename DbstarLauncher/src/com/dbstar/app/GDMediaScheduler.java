@@ -2,6 +2,8 @@ package com.dbstar.app;
 
 import java.io.File;
 
+import com.dbstar.model.PreviewData;
+import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.widget.GDVideoView;
 
@@ -17,12 +19,11 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
-public class GDMediaScheduler implements OnCompletionListener,
-		OnErrorListener, OnPreparedListener,
-		SurfaceHolder.Callback {
+public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
+		OnErrorListener, OnPreparedListener, SurfaceHolder.Callback {
 
 	private static final String TAG = "GDMediaScheduler";
-	
+
 	private static final int RNONE = 0;
 	private static final int RVideo = 1;
 	private static final int RImage = 2;
@@ -35,14 +36,13 @@ public class GDMediaScheduler implements OnCompletionListener,
 	public static final int PLAYER_STATE_PREPARED = 1;
 	public static final int PLAYER_STATE_COMPLETED = 2;
 	public static final int PLAYER_STATE_ERROR = -1;
-	
-	
+
 	boolean mResourcesReady;
 	boolean mUIReady;
-	Context mContext ;
-	
+	Context mContext;
+
 	GDDataProviderService mService = null;
-	
+
 	GDVideoView mVideoView;
 	SurfaceHolder mHolder;
 	Bitmap mImage = null;
@@ -51,12 +51,11 @@ public class GDMediaScheduler implements OnCompletionListener,
 	PlayState mCurrentState = new PlayState();
 	PlayState mStoreState = new PlayState();
 
-	String[] mResources;
-	int[] mResourceTypes = { RVideo, RImage };
+	PreviewData[] mResources;
 	int mResourceIndex = -1;
 
 	Handler mHandler = new Handler();
-	
+
 	private Runnable mUpdateTimeTask = new Runnable() {
 		public void run() {
 			playMedia();
@@ -66,47 +65,57 @@ public class GDMediaScheduler implements OnCompletionListener,
 	public GDMediaScheduler(Context context, GDVideoView videoView) {
 		mVideoView = videoView;
 		mContext = context;
-		
+
 		mHolder = mVideoView.getHolder();
 		mHolder.addCallback(this);
-		
+
 		mVideoView.setOnCompletionListener(this);
 		mVideoView.setOnPreparedListener(this);
 		mVideoView.setOnErrorListener(this);
-		
+
 		mResourceIndex = -1;
-		
+		mResources = null;
 		mResourcesReady = false;
 		mUIReady = false;
 	}
-	
+
 	private boolean mEngineStarted = false;
 
 	public void start(GDDataProviderService service) {
 		if (mEngineStarted)
 			return;
-		
+
 		mEngineStarted = true;
 		mService = service;
-		
-		mResources = new String[2];
-//		mResources[0] = mService.getDemoMovie();
-//		mResources[1] = mService.getDemoPic();
-		
-		if (!mResources[0].equals("") && !mResources[1].equals("")) {
-			mResourcesReady = true;
-		} else {
-			return;
-		}
-		
-		playMedia();
+
+		mResources = null;
+		mResourceIndex = -1;
+		mResourcesReady = false;
+		mUIReady = false;
+
+		mService.getPreviews(this);
 	}
-	
+
+	@Override
+	public void updateData(int type, int param1, int param2, Object data) {
+	}
+
+	@Override
+	public void updateData(int type, Object key, Object data) {
+		if (type == GDDataProviderService.REQUESTTYPE_GETPREVIEWS) {
+			if (data != null) {
+				mResources = (PreviewData[]) data;
+				mResourcesReady = true;
+				playMedia();
+			}
+		}
+	}
+
 	// Surface.Callback
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.d(TAG, "surfaceCreated");
 		Log.d(TAG, "mStoreState.Type=" + mStoreState.Type);
-		
+
 		mUIReady = true;
 		playMedia();
 	}
@@ -123,12 +132,13 @@ public class GDMediaScheduler implements OnCompletionListener,
 
 		// we must clear this uri of VideoView, or else
 		// when the surface is created again, it will play
-		// this uri again automaticly, see GDVideoView/surfaceCreated/openVideo()
+		// this uri again automaticly, see
+		// GDVideoView/surfaceCreated/openVideo()
 		mVideoView.setVideoURI(null);
 
 		// Note: playback will be stopped in saveMediaState(), not here
 		// saveMediaSate is called before surfaceDestroyed! in onPause or onStop
-		//  in the parent activity
+		// in the parent activity
 
 		Log.d(TAG, "mStoreState.Type=" + mStoreState.Type);
 		mHandler.removeCallbacks(mUpdateTimeTask);
@@ -160,13 +170,13 @@ public class GDMediaScheduler implements OnCompletionListener,
 	}
 
 	public void playMedia() {
-		
+
 		if (!mResourcesReady || !mUIReady) {
 			return;
 		}
-		
+
 		boolean successed = false;
-		while(true) {
+		while (true) {
 			if (!fetchMediaResource() && mResourceIndex < mResources.length - 1) {
 				continue;
 			} else {
@@ -174,44 +184,55 @@ public class GDMediaScheduler implements OnCompletionListener,
 				break;
 			}
 		}
-		
+
 		if (successed) {
 			String resourcePath = "";
 			int resourceType = RNONE;
-			resourcePath = mResources[mResourceIndex];
-			resourceType = mResourceTypes[mResourceIndex];
-	
+			resourcePath = mResources[mResourceIndex].URI;
+			resourceType = getResourceType(mResources[mResourceIndex].Type);
+
 			if (resourceType == RVideo) {
 				playVideo(resourcePath);
-			} else if (resourceType == RImage ) {
+			} else if (resourceType == RImage) {
 				drawImage(resourcePath);
 			} else {
 				;
 			}
 		}
 	}
-	
+
+	int getResourceType(String type) {
+		if (type.equals(PreviewData.TypeVideo)) {
+			return RVideo;
+		} else if (type.equals(PreviewData.TypeImage)) {
+			return RImage;
+		} else {
+			return RNONE;
+		}
+	}
+
 	private void playVideo(String url) {
-		
+
 		Log.d(TAG, " playVideo " + url);
-		
+
 		mVideoView.setBackgroundDrawable(null);
 
 		if (!url.equals("")) {
-			
+
 			mCurrentState.Type = RVideo;
 			mCurrentState.Url = url;
 			mCurrentState.index = mResourceIndex;
-			
-			/*mCurrentState.Duration = 0;
-			mCurrentState.Position = 0;
-			mCurrentState.InterruptedTime = 0;
-			mCurrentState.StartTime = 0;*/
-			
-			mCurrentState.PlayerState = PLAYER_STATE_IDLE;
-			mVideoView.setVideoPath (url);
 
-			if (mStoreState.Url != null && mStoreState.Url.equals(mCurrentState.Url)) {
+			/*
+			 * mCurrentState.Duration = 0; mCurrentState.Position = 0;
+			 * mCurrentState.InterruptedTime = 0; mCurrentState.StartTime = 0;
+			 */
+
+			mCurrentState.PlayerState = PLAYER_STATE_IDLE;
+			mVideoView.setVideoPath(url);
+
+			if (mStoreState.Url != null
+					&& mStoreState.Url.equals(mCurrentState.Url)) {
 				mVideoView.seekTo(mStoreState.Position);
 				clearStoreState();
 			}
@@ -219,28 +240,30 @@ public class GDMediaScheduler implements OnCompletionListener,
 	}
 
 	private void drawImage(String imagePath) {
-		
+
 		Log.d(TAG, " drawImage " + imagePath);
-		
+
 		mCurrentState.Type = RImage;
 		mCurrentState.Url = imagePath;
 		mCurrentState.index = mResourceIndex;
 		mCurrentState.Duration = PLAYIMAGE_INTERVAL;
 		mCurrentState.StartTime = System.currentTimeMillis();
-		
-		if (mImage != null)
-		{
+
+		if (mImage != null) {
 			mImage.recycle();
 		}
 
 		mImage = BitmapFactory.decodeFile(imagePath);
-		mVideoView.setBackgroundDrawable(new BitmapDrawable(mContext.getResources(), mImage));
-		
+		mVideoView.setBackgroundDrawable(new BitmapDrawable(mContext
+				.getResources(), mImage));
+
 		int remainTime = mCurrentState.Duration;
-		if (mStoreState.Url != null && mStoreState.Url.equals(mCurrentState.Url)) {
+		if (mStoreState.Url != null
+				&& mStoreState.Url.equals(mCurrentState.Url)) {
 			remainTime = mCurrentState.Duration - mStoreState.Position;
-			//clearStoreState();
-		} clearStoreState();
+			// clearStoreState();
+		}
+		clearStoreState();
 
 		mHandler.postDelayed(mUpdateTimeTask, remainTime);
 	}
@@ -248,29 +271,33 @@ public class GDMediaScheduler implements OnCompletionListener,
 	private void getResourceIndex() {
 		long currentTime = System.currentTimeMillis();
 		long ecleapsedTime = currentTime - mStoreState.InterruptedTime;
-		if ((mStoreState.Position + (int)ecleapsedTime) > mStoreState.Duration) {
+		if ((mStoreState.Position + (int) ecleapsedTime) > mStoreState.Duration) {
 			mResourceIndex = mStoreState.index + 1;
 			clearStoreState();
 		} else {
 			mResourceIndex = mStoreState.index;
-			mStoreState.Position = mStoreState.Position + (int)ecleapsedTime;
+			mStoreState.Position = mStoreState.Position + (int) ecleapsedTime;
 		}
 	}
+
 	private boolean fetchMediaResource() {
 
-		Log.d(TAG, "fetchMediaResource @@@@@@ mStoreState.Type = " + mStoreState.Type);
-		
+		Log.d(TAG, "fetchMediaResource @@@@@@ mStoreState.Type = "
+				+ mStoreState.Type);
+
 		if (mStoreState.Type != RNONE) {
-			
-			Log.d(TAG, "@@@@@@ mStoreState.PlayerState = " + mStoreState.PlayerState);
+
+			Log.d(TAG, "@@@@@@ mStoreState.PlayerState = "
+					+ mStoreState.PlayerState);
 			Log.d(TAG, "@@@@@@ mStoreState.Index = " + mStoreState.index);
-			
+
 			if (mStoreState.Type == RVideo) {
 				if (mStoreState.PlayerState == PLAYER_STATE_PREPARED) {
 					getResourceIndex();
 				} else if (mStoreState.PlayerState == PLAYER_STATE_IDLE) {
 					mResourceIndex = mStoreState.index;
-				} else if (mStoreState.PlayerState == PLAYER_STATE_COMPLETED || mStoreState.PlayerState == PLAYER_STATE_ERROR) {
+				} else if (mStoreState.PlayerState == PLAYER_STATE_COMPLETED
+						|| mStoreState.PlayerState == PLAYER_STATE_ERROR) {
 					mResourceIndex = mStoreState.index + 1;
 					clearStoreState();
 				} else {
@@ -279,25 +306,25 @@ public class GDMediaScheduler implements OnCompletionListener,
 			} else if (mStoreState.Type == RImage) {
 				getResourceIndex();
 			} else {
-				
+
 			}
 
 		} else {
 			mResourceIndex = mResourceIndex + 1;
 		}
-		
+
 		mResourceIndex = mResourceIndex % mResources.length;
-		
+
 		Log.d(TAG, "fetch resource mResourceIndex = " + mResourceIndex);
 
 		boolean successed = false;
-		File file = new File(mResources[mResourceIndex]);
+		File file = new File(mResources[mResourceIndex].URI);
 		if (file.exists()) {
 			successed = true;
-			
+
 			Log.d(TAG, "file url " + file.getAbsolutePath() + " exist!");
 		}
-		
+
 		return successed;
 	}
 
@@ -312,12 +339,12 @@ public class GDMediaScheduler implements OnCompletionListener,
 		mStoreState.Duration = mCurrentState.Duration;
 		mStoreState.InterruptedTime = System.currentTimeMillis();
 		mStoreState.PlayerState = mCurrentState.PlayerState;
-		
+
 		Log.d(TAG, "mStoreState.Type = " + mStoreState.Type);
 		Log.d(TAG, "mStoreState.PlayerState = " + mStoreState.PlayerState);
 		Log.d(TAG, "mStoreState.url = " + mStoreState.Url);
 		Log.d(TAG, "mStoreState.Duration = " + mStoreState.Duration);
-		
+
 		if (mCurrentState.Type == RVideo) {
 			if (mVideoView.isPlaying()) {
 				Log.d(TAG, "get position");
@@ -325,7 +352,7 @@ public class GDMediaScheduler implements OnCompletionListener,
 				Log.d(TAG, "mStoreState.Position = " + mStoreState.Position);
 
 				mVideoView.stopPlayback();
-				
+
 				mVideoView.setVideoURI(null);
 			} else {
 				// the play has stopped.
@@ -333,21 +360,21 @@ public class GDMediaScheduler implements OnCompletionListener,
 			}
 		} else {
 			// Image
-			mStoreState.Position = (int)(mStoreState.InterruptedTime - mCurrentState.StartTime);
+			mStoreState.Position = (int) (mStoreState.InterruptedTime - mCurrentState.StartTime);
 			Log.d(TAG, "mStoreState.Position = " + mStoreState.Position);
 		}
 	}
-	
+
 	public void stopMediaPlay() {
 		Log.d(TAG, "stopMediaPlay");
-		
+
 		mHandler.removeCallbacks(mUpdateTimeTask);
 
 		if (mVideoView.isPlaying()) {
 			mVideoView.stopPlayback();
 		}
 	}
-	
+
 	private void clearStoreState() {
 		mStoreState.Type = RNONE;
 		mStoreState.Url = "";
@@ -355,23 +382,24 @@ public class GDMediaScheduler implements OnCompletionListener,
 		mStoreState.Position = -1;
 		mStoreState.PlayerState = PLAYER_STATE_NONE;
 	}
-	
+
 	class PlayState {
 		int Type;
 		String Url;
 		int index;
-		
+
 		int Position;
 		int Duration;
 		long InterruptedTime;
 		long StartTime;
-		
+
 		int PlayerState;
-		
+
 		PlayState() {
 			Type = RNONE;
 			Url = "";
 			index = -1;
 		}
 	}
+
 }

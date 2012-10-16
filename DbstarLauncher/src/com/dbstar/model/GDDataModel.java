@@ -13,16 +13,11 @@ import java.io.IOException;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
-import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.GDDVBDataContract.*;
 import com.dbstar.model.GDDVBDataProvider.ColumnEntityQuery;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
 import com.dbstar.model.GDDVBDataProvider.ResStrQuery;
-import com.dbstar.model.GDSmartHomeContract.Global;
-import com.dbstar.model.GDUserDataContract.FavoritePublication;
-import com.dbstar.model.GDUserDataContract.FavoritePublicationSet;
 
 public class GDDataModel {
 	private static final String TAG = "GDDataModel";
@@ -557,6 +552,28 @@ public class GDDataModel {
 		return result;
 	}
 
+	public String getPreviewPath() {
+		String path = null;
+		String selection = GDDVBDataContract.Global.NAME + "=?";
+		String[] selectionArgs = { GDDVBDataContract.ValueColumnPreviewPath };
+		Cursor cursor = mDVBDataProvider.query(
+				GDDVBDataContract.Global.CONTENT_URI,
+				GDDVBDataProvider.GlobalQuery.COLUMNS, selection,
+				selectionArgs, null);
+		
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				path = cursor.getString(GDDVBDataProvider.GlobalQuery.VALUE);
+			}
+		}
+		
+		if (cursor != null) {
+			cursor.close();
+		}
+
+		return path;
+	}
+
 	private static final String[] ProjectionQueryPreview = {
 			Preview.PREVIEWTYPE, Preview.SHOWTIME, Preview.PREVIEWURI,
 			Preview.DURATION, Preview.PLAYMODE };
@@ -601,12 +618,12 @@ public class GDDataModel {
 		return items;
 	}
 
-	private final static String[] ProjectionQueryGlobal = { Global.ID,
-			Global.NAME, Global.VALUE };
-
-	private final static int QUERYGLOBAL_ID = 0;
-	private final static int QUERYGLOBAL_NAME = 1;
-	private final static int QUERYGLOBAL_VALUE = 2;
+	// private final static String[] ProjectionQueryGlobal = { Global.ID,
+	// Global.NAME, Global.VALUE };
+	//
+	// private final static int QUERYGLOBAL_ID = 0;
+	// private final static int QUERYGLOBAL_NAME = 1;
+	// private final static int QUERYGLOBAL_VALUE = 2;
 
 	public boolean setGuodianServerIP(String ip) {
 		return setSettingValue(GDSettings.SettingServerIP, ip);
@@ -637,19 +654,21 @@ public class GDDataModel {
 		boolean ret = true;
 		int Id = -1;
 		String oldValue = "";
-		String selection = Global.NAME + "=?";
+		String selection = GDSmartHomeContract.Global.NAME + "=?";
 		String[] selectionArgs = new String[] { key };
 
 		Cursor cursor = mSmartHomeProvider.query(Global.CONTENT_URI,
-				ProjectionQueryGlobal, selection, selectionArgs, null);
+				GDSmartHomeProvider.GlobalQuery.COLUMNS, selection,
+				selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				// Log.d(TAG, "query cursor size = " + cursor.getCount());
 
 				do {
-					Id = cursor.getInt(QUERYGLOBAL_ID);
-					oldValue = cursor.getString(QUERYGLOBAL_VALUE);
+					Id = cursor.getInt(GDSmartHomeProvider.GlobalQuery.ID);
+					oldValue = cursor
+							.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
 				} while (cursor.moveToNext());
 			}
 		}
@@ -669,13 +688,13 @@ public class GDDataModel {
 		} else {
 			if (!oldValue.equals(value)) {
 				// update
-				selection = Global.ID + "=?";
+				selection = GDSmartHomeContract.Global.ID + "=?";
 				selectionArgs = new String[] { String.valueOf(Id) };
 
 				ContentValues values = new ContentValues();
-				values.put(Global.ID, Id);
-				values.put(Global.NAME, key);
-				values.put(Global.VALUE, value);
+				values.put(GDSmartHomeContract.Global.ID, Id);
+				values.put(GDSmartHomeContract.Global.NAME, key);
+				values.put(GDSmartHomeContract.Global.VALUE, value);
 				int count = mSmartHomeProvider.update(Global.CONTENT_URI,
 						values, selection, selectionArgs);
 				if (count == 1)
@@ -693,14 +712,16 @@ public class GDDataModel {
 		String[] selectionArgs = new String[] { key };
 
 		cursor = mSmartHomeProvider.query(Global.CONTENT_URI,
-				ProjectionQueryGlobal, selection, selectionArgs, null);
+				GDSmartHomeProvider.GlobalQuery.COLUMNS, selection,
+				selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				Log.d(TAG, "query cursor size = " + cursor.getCount());
 
 				do {
-					value = cursor.getString(QUERYGLOBAL_VALUE);
+					value = cursor
+							.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
 				} while (cursor.moveToNext());
 			}
 

@@ -1,5 +1,6 @@
 package com.dbstar.service;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -17,6 +18,7 @@ import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GDDataModel;
 import com.dbstar.model.GDNetModel;
 import com.dbstar.model.GuideListItem;
+import com.dbstar.model.PreviewData;
 import com.dbstar.model.ReceiveEntry;
 import com.dbstar.model.TV;
 import com.dbstar.service.client.GDDBStarClient;
@@ -70,6 +72,7 @@ public class GDDataProviderService extends Service {
 
 	public static final int REQUESTTYPE_GETGUIDELIST = 22;
 	public static final int REQUESTTYPE_UPDATEGUIDELIST = 23;
+	public static final int REQUESTTYPE_GETPREVIEWS = 24;
 
 	private static final String PARAMETER_COLUMN_ID = "column_id";
 	private static final String PARAMETER_PAGENUMBER = "page_number";
@@ -304,7 +307,8 @@ public class GDDataProviderService extends Service {
 
 	class SystemEventHandler extends Handler {
 		public void handleMessage(Message msg) {
-			switch (msg.what) {
+			int msgId = msg.what;
+			switch (msgId) {
 			case GDCommon.MSG_TASK_FINISHED: {
 				RequestTask task = dequeueFinishedTask();
 
@@ -386,11 +390,11 @@ public class GDDataProviderService extends Service {
 				break;
 			}
 
+			case GDCommon.MSG_SYSTEM_FORCE_UPGRADE:
 			case GDCommon.MSG_SYSTEM_UPGRADE: {
 				String packageFile = msg.getData().getString(
 						GDCommon.KeyPackgeFile);
-				mApplicationObserver.handleNotifiy(GDCommon.MSG_SYSTEM_UPGRADE,
-						packageFile);
+				mApplicationObserver.handleNotifiy(msgId, packageFile);
 
 				break;
 			}
@@ -449,6 +453,7 @@ public class GDDataProviderService extends Service {
 			break;
 		}
 
+		case REQUESTTYPE_GETPREVIEWS:
 		case REQUESTTYPE_GETGUIDELIST:
 		case REQUESTTYPE_GETDOWNLOADSTATUS: {
 			if (task.Observer != null) {
@@ -652,8 +657,8 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					ContentData[] datas = mDataModel
-							.getReadyPublications(columnId, null);
+					ContentData[] datas = mDataModel.getReadyPublications(
+							columnId, null);
 					task.Data = datas;
 
 					taskFinished(task);
@@ -665,8 +670,8 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					ContentData[] contents = mDataModel
-							.getReadyPublicationSet(columnId, null);
+					ContentData[] contents = mDataModel.getReadyPublicationSet(
+							columnId, null);
 
 					TV[] tvs = new TV[contents.length];
 					for (int i = 0; i < contents.length; i++) {
@@ -708,26 +713,26 @@ public class GDDataProviderService extends Service {
 				}
 
 				case REQUESTTYPE_GETFAVORITEMOVIE: {
-//					ContentData[] contents = mDataModel.getFavoriteMovie();
-//					task.Data = contents;
-//
-//					taskFinished(task);
+					// ContentData[] contents = mDataModel.getFavoriteMovie();
+					// task.Data = contents;
+					//
+					// taskFinished(task);
 					break;
 				}
 
 				case REQUESTTYPE_GETFAVORITETV:
 				case REQUESTTYPE_GETFAVORITERECORD:
 				case REQUESTTYPE_GETFAVORITEENTERTAINMENT: {
-//					TV[] tvs = mDataModel.getFavoriteTV();
-//					task.Data = tvs;
-//
-//					taskFinished(task);
+					// TV[] tvs = mDataModel.getFavoriteTV();
+					// task.Data = tvs;
+					//
+					// taskFinished(task);
 					break;
 				}
 
 				case REQUESTTYPE_ADDTOFAVORITE: {
-//					MediaData data = (MediaData) task.Data;
-//					mDataModel.addMeidaToFavorite(data);
+					// MediaData data = (MediaData) task.Data;
+					// mDataModel.addMeidaToFavorite(data);
 					break;
 				}
 
@@ -865,6 +870,29 @@ public class GDDataProviderService extends Service {
 				case REQUESTTYPE_UPDATEGUIDELIST: {
 					mDataModel.updateGuideList((GuideListItem[]) task.Data);
 					// taskFinished(task);
+					break;
+				}
+				
+				case REQUESTTYPE_GETPREVIEWS: {
+					String path = mDataModel.getPreviewPath();
+					if (path != null && !path.isEmpty()) {
+						File dir = new File(path);
+						if (dir != null && dir.exists()) {
+							File[] files = dir.listFiles();
+							if (files != null && files.length > 0) {
+								PreviewData[] data = new PreviewData[files.length];
+								for (int i=0; i<data.length ; i++) {
+									data[i].URI = files[i].getAbsolutePath();
+									data[i].Type = PreviewData.TypeVideo;
+								}
+								
+								task.Data = data;
+								taskFinished(task);
+							}
+							
+						}
+					}
+					
 					break;
 				}
 
@@ -1102,6 +1130,14 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
+	public void getPreviews(ClientObserver observer) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETPREVIEWS;
+
+		enqueueTask(task);
+	}
+
 	private String getThumbnailFile(ContentData content) {
 		return mConfigure.getThumbnailFile(content);
 	}
@@ -1298,6 +1334,7 @@ public class GDDataProviderService extends Service {
 					Log.d(TAG, "onReceive type " + type);
 
 					switch (type) {
+					case DbstarServiceApi.UPGRADE_NEW_VER_FORCE:
 					case DbstarServiceApi.UPGRADE_NEW_VER: {
 						byte[] bytes = intent.getByteArrayExtra("message");
 						if (bytes != null) {
@@ -1316,8 +1353,16 @@ public class GDDataProviderService extends Service {
 							Bundle data = new Bundle();
 							data.putString(GDCommon.KeyPackgeFile, packageFile);
 
-							Message msg = mHandler
-									.obtainMessage(GDCommon.MSG_SYSTEM_UPGRADE);
+							int msgId = 0;
+							if (type == DbstarServiceApi.UPGRADE_NEW_VER) {
+								msgId = GDCommon.MSG_SYSTEM_UPGRADE;
+							} else if (type == DbstarServiceApi.UPGRADE_NEW_VER_FORCE) {
+								msgId = GDCommon.MSG_SYSTEM_FORCE_UPGRADE;
+							} else {
+								;
+							}
+
+							Message msg = mHandler.obtainMessage(msgId);
 							msg.setData(data);
 							mHandler.sendMessage(msg);
 

@@ -4,6 +4,7 @@
     android:layout_height="wrap_content" >
 
     <TextView android:id="@+id/item_text"
+        style="@style/scans_text"
 	    android:layout_width="134dp"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

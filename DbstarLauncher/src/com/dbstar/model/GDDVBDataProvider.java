@@ -2,6 +2,7 @@ package com.dbstar.model;
 
 import com.dbstar.model.GDDVBDataContract.Column;
 import com.dbstar.model.GDDVBDataContract.ColumnEntity;
+import com.dbstar.model.GDDVBDataContract.Global;
 import com.dbstar.model.GDDVBDataContract.GuideList;
 import com.dbstar.model.GDDVBDataContract.MFile;
 import com.dbstar.model.GDDVBDataContract.Message;
@@ -22,10 +23,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
 
-public class GDDVBDataProvider  extends GDDBProvider {
+public class GDDVBDataProvider extends GDDBProvider {
 
 	private static final String TAG = "DVBDataProvider";
 
+	private static final int GLOBALTABLE = 1000;
 	private static final int COLUMNTABLE = 1001;
 	private static final int PUBLICATIONSETTABLE = 1002;
 	private static final int PUBLICATIONTABLE = 1003;
@@ -47,6 +49,8 @@ public class GDDVBDataProvider  extends GDDBProvider {
 	private static final int COLUMNENTITYTABLE = 1017;
 
 	static {
+		sURIMatcher.addURI(GDDVBDataContract.AUTHORITY,
+				GDDVBDataContract.GLOBALTABLE, GLOBALTABLE);
 		sURIMatcher.addURI(GDDVBDataContract.AUTHORITY,
 				GDDVBDataContract.COLUMNTABLE, COLUMNTABLE);
 		sURIMatcher.addURI(GDDVBDataContract.AUTHORITY,
@@ -87,6 +91,7 @@ public class GDDVBDataProvider  extends GDDBProvider {
 	}
 
 	interface Tables {
+		String GLOBAL = GDDVBDataContract.GLOBALTABLE;
 		String COLUMN = GDDVBDataContract.COLUMNTABLE;
 		String COLUMNENTITY = GDDVBDataContract.COLUMNENTITYTABLE;
 		String GUIDELIST = GDDVBDataContract.GUIDELISTTABLE;
@@ -104,6 +109,15 @@ public class GDDVBDataProvider  extends GDDBProvider {
 		String RESSTR = GDDVBDataContract.RESSTRTABLE;
 		String RESSUBTITLE = GDDVBDataContract.RESSUBTITLETABLE;
 		String RESTRAILER = GDDVBDataContract.RESTRAILERTABLE;
+	}
+
+	public interface GlobalQuery {
+		String TABLE = Tables.GLOBAL;
+
+		String[] COLUMNS = new String[] { Global.VALUE, Global.PARAM };
+
+		int VALUE = 0;
+		int PARAM = 1;
 	}
 
 	public interface ColumnQuery {
@@ -136,10 +150,10 @@ public class GDDVBDataProvider  extends GDDBProvider {
 		String[] COLUMNS = new String[] { GuideList.DATEVALUE,
 				GuideList.GUIDELISTID, GuideList.PUBLICATIONID, GuideList.URI,
 				GuideList.TOTALSIZE, GuideList.PRODUCTDESCID,
-				GuideList.RECEIVESTATUS, GuideList.USERSTATUS, GuideList.PUSHTIME,
-				GuideList.POSTERID, GuideList.POSTERNAME, GuideList.POSTERURI,
-				GuideList.TRAILERID, GuideList.TRAILERNAME,
-				GuideList.TRAILERURI };
+				GuideList.RECEIVESTATUS, GuideList.USERSTATUS,
+				GuideList.PUSHTIME, GuideList.POSTERID, GuideList.POSTERNAME,
+				GuideList.POSTERURI, GuideList.TRAILERID,
+				GuideList.TRAILERNAME, GuideList.TRAILERURI };
 
 		int DATEVALUE = 0;
 		int GUIDELISTID = 1;
@@ -359,21 +373,20 @@ public class GDDVBDataProvider  extends GDDBProvider {
 		int SUBTITLEURI = 0;
 	}
 
-	
 	// @Override
 	public boolean initialize(GDSystemConfigure configure) {
 		super.initialize(configure);
-		
+
 		String dbFile = mConfigure.getDVBDatabaseFile();
 		if (!isFileExist(dbFile)) {
 			return false;
 		}
-		
+
 		mDbFile = dbFile;
-		
+
 		return true;
 	}
-	
+
 	public void deinitialize() {
 		super.deinitialize();
 	}
@@ -383,6 +396,9 @@ public class GDDVBDataProvider  extends GDDBProvider {
 		int match = sURIMatcher.match(uri);
 		String typeStr;
 		switch (match) {
+		case GLOBALTABLE:
+			typeStr = GDDVBDataContract.Global.CONTENT_TYPE;
+			break;
 		case COLUMNTABLE:
 			typeStr = GDDVBDataContract.Column.CONTENT_TYPE;
 			break;
@@ -448,6 +464,9 @@ public class GDDVBDataProvider  extends GDDBProvider {
 		String table = "";
 		switch (uri) {
 
+		case GLOBALTABLE:
+			table = Tables.GLOBAL;
+			break;
 		case COLUMNTABLE:
 			table = Tables.COLUMN;
 			break;

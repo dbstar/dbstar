@@ -165,4 +165,5 @@
     <string name="back_to_home_and_save">返回自动保存</string>
     <string name="back_to_home">返回首页</string>
 
+    <string name="popup_forceupgrade_notes">强制升级,5秒后系统将自动重起</string>
 </resources>

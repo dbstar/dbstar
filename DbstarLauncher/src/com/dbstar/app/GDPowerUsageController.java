@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import com.dbstar.service.ClientObserver;
+import com.dbstar.app.launcher.GDLauncherActivity;
 import com.dbstar.model.GDSettings;
 
 import com.dbstar.service.GDDataProviderService;

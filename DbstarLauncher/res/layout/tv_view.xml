@@ -33,7 +33,7 @@
             android:layout_marginLeft="1186dp"
             android:layout_marginTop="80dp"
             android:focusable="false"
-            android:textColor="#ffffff"
+            android:textColor="#3d3d3d"
             android:textSize="16sp" />
     </RelativeLayout>
 

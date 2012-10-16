@@ -7,6 +7,7 @@ public class GDDVBDataContract {
 	public static final String AUTHORITY = "com.dbstar.provider";
 	public static final Uri AUTHORITY_URI = Uri.parse("content://" + AUTHORITY);
 
+	public static final String GLOBALTABLE = "Global";
 	public static final String COLUMNTABLE = "Column";
 	public static final String COLUMNENTITYTABLE = "ColumnEntity";
 	public static final String PRODUCTTABLE = "Product";
@@ -28,10 +29,27 @@ public class GDDVBDataContract {
 	public static final String ObjectPublicationSet = "PublicationsSet";
 	public static final String ObjectSetName = "SetName";
 	public static final String ObjectSetDesc = "SetDesc";
-	
+
 	public static final String ValuePublicationName = "PublicationName";
 	public static final String ValueColumnName = "ColumnName";
 	
+	public static final String ValueColumnPreviewPath = "PreviewPath";
+
+	public static final class Global implements BaseColumns {
+
+		public static final Uri CONTENT_URI = Uri.withAppendedPath(
+				AUTHORITY_URI, "Global");
+
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/com.dbstar.provider.Global";
+
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/com.dbstar.provider.Global";
+
+		public static final String NAME = "Name";
+		public static final String VALUE = "Value";
+		public static final String PARAM = "Param";
+
+	}
+
 	public static final class Column implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
@@ -112,7 +130,7 @@ public class GDDVBDataContract {
 		public static final String ISAUTHORIZED = "IsAuthorized";
 		public static final String VODNUM = "VODNum";
 		public static final String VODPLATFORM = "VODPlatform";
-		public static final String DELETED  = "Deleted";
+		public static final String DELETED = "Deleted";
 	}
 
 	public static final class Publication implements BaseColumns {
@@ -143,7 +161,7 @@ public class GDDVBDataContract {
 		public static final String ISAUTHORIZED = "IsAuthorized";
 		public static final String VODNUM = "VODNum";
 		public static final String VODPLATFORM = "VODPlatform";
-		public static final String DELETED  = "Deleted";
+		public static final String DELETED = "Deleted";
 	}
 
 	public static final class MultipleLanguageInfoVA implements BaseColumns {
@@ -281,7 +299,7 @@ public class GDDVBDataContract {
 		public static final String RECEIVESTATUS = "ReceiveStatus";
 
 		public static final String USERSTATUS = "UserStatus";
-		
+
 		public static final String PUSHTIME = "PushTime";
 		public static final String POSTERID = "PosterID";
 		public static final String POSTERNAME = "PosterName";

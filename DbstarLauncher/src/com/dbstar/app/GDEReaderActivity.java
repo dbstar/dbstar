@@ -3,6 +3,8 @@ package com.dbstar.app;
 import java.io.File;
 
 import com.dbstar.R;
+import com.dbstar.browser.GDWebChromeClient;
+import com.dbstar.browser.GDWebViewClient;
 
 import android.app.Activity;
 import android.content.Intent;

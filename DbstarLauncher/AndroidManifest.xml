@@ -22,7 +22,7 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         <activity
-            android:name=".app.GDLauncherActivity"
+            android:name=".app.launcher.GDLauncherActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:stateNotNeeded="true" >
@@ -38,10 +38,8 @@
         <activity android:name=".app.GDEReaderActivity" />
         <activity android:name=".app.GDHDMovieActivity" />
         <activity android:name=".app.GDTVActivity" />
-        <activity android:name=".app.GDWebBrowserActivity" />
         <activity android:name=".app.GDVideoPlayer" />
         <activity android:name=".app.GDReceiveStatusActivity" />
-        <activity android:name=".app.GDDiskManagementActivity" />
         <activity android:name=".app.GDOrderPushActivity" />
         <activity android:name=".app.GDFavoriteMovieActivity" />
         <activity
@@ -56,13 +54,18 @@
         <activity
             android:name=".app.GDUpgradeActivity"
             android:theme="@style/popup_activity" />
-        <activity android:name=".app.GDHelpActivity" />
-        <activity android:name=".app.GDAudioSettingsActivity" />
-        <activity android:name=".app.GDVideoSettingsActivity" />
-        <activity android:name=".app.GDDeviceInfoActivity" />
-        <activity android:name=".app.GDNetworkSettingsActivity" />
-        <activity android:name=".app.GDUserInfoActivity" />
-        <activity android:name=".app.GDGuodianSettingsActivity" />
+        <activity
+            android:name=".app.alert.GDForceUpgradeActivity"
+            android:theme="@style/popup_activity" />
+        <activity android:name=".browser.GDWebBrowserActivity" />
+        <activity android:name=".app.settings.GDHelpActivity" />
+        <activity android:name=".app.settings.GDAudioSettingsActivity" />
+        <activity android:name=".app.settings.GDVideoSettingsActivity" />
+        <activity android:name=".app.settings.GDDeviceInfoActivity" />
+        <activity android:name=".app.settings.GDNetworkSettingsActivity" />
+        <activity android:name=".app.settings.GDUserInfoActivity" />
+        <activity android:name=".app.settings.GDGuodianSettingsActivity" />
+        <activity android:name=".app.settings.GDDiskManagementActivity" />
 
         <service
             android:name=".service.GDDataProviderService"

@@ -42,7 +42,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected String mMenuPath;
 	protected MenuPathItem[] mMenuPathItems = new MenuPathItem[MENU_LEVEL_COUNT];
 	// Menu path container view
-	ViewGroup mMenuPathContainer;
+	protected ViewGroup mMenuPathContainer;
 
 	protected class MenuPathItem {
 		TextView sTextView;

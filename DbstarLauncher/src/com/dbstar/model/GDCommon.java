@@ -8,6 +8,7 @@ public class GDCommon {
 	public static final int MSG_NETWORK_DISCONNECT = 5;
 	public static final int MSG_DISK_SPACEWARNING = 6;
 	public static final int MSG_SYSTEM_UPGRADE = 7;
+	public static final int MSG_SYSTEM_FORCE_UPGRADE = 8;
 		
 	public static final String KeyDisk = "disk";
 	

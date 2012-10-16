@@ -17,6 +17,7 @@ public class GDUpgradeActivity extends AlertActivity implements
 	private static final int POSITIVE_BUTTON = AlertDialog.BUTTON_POSITIVE;
 
 	private String mPackageFile = "";
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
