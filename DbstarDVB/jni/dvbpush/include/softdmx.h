@@ -26,9 +26,10 @@ typedef void (*dataCb) (int fid, const unsigned char *data, int len, void *user_
 
 typedef struct LoaderInfo LoaderInfo_t;
 struct LoaderInfo {
-    long long stb_id;  //64bit
-    unsigned int software_version; //32bit
-    unsigned int hardware_version; //32bit
+    unsigned int stb_id_h;  //64bit
+    unsigned int stb_id_l;
+    unsigned char software_version[4]; //32bit
+    unsigned char hardware_version[4]; //32bit
     unsigned int img_len;          //32bit
     int fid;                       //32bit
     unsigned short oui;            //16bit
@@ -63,12 +64,13 @@ struct Filterp {
         unsigned char mode[DMX_FILTER_SIZE];
 };
 typedef struct Filterp Filter_param;
-//int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char pri);
+int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char pri);
 int alloc_filter(unsigned short pid, char pro);
 int free_filter(unsigned short pid);
 void TC_free_filter(int fid);
 int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read);
 void chanFilterInit(void);
+void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data);
 
 #ifdef __cplusplus
 }

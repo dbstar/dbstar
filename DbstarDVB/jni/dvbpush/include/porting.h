@@ -14,5 +14,7 @@ int parse_xml_get(char *xml_uri, unsigned int size);
 int prog_data_pid_get(void);
 int ifconfig_get(char *interface_name, char *ip, char *status, char *mac);
 int msg_send2_UI(int type, char *msg, int len);
+int initialize_xml_get();
+int localcolumn_res_get(char *localcolumn_res, unsigned int uri_size);
 
 #endif

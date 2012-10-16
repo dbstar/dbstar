@@ -7,6 +7,7 @@
 #include "common.h"
 #include "softdmx.h"
 #include "prodrm20.h"
+#include "dvbpush_api.h"
 
 Channel_t chanFilter[MAX_CHAN_FILTER+1];
 int max_filter_num = 0;
@@ -14,11 +15,80 @@ int loader_dsc_fid;
 LoaderInfo_t loaderInfo;
 pthread_t loaderthread;
 int tt=0;
+#define upgradefile_all "/data/uptest"
+#define upgradefile_img "/data/upgrade.zip"
 
 static void* loader_thread(void *arg)
 {
-	LoaderInfo_t *loader = (LoaderInfo_t *)arg;
-	
+    unsigned char buf[1024];
+    LoaderInfo_t *loader = (LoaderInfo_t *)arg;
+    FILE *fp = fopen(upgradefile_all,"r");
+    FILE *rfp = fopen(upgradefile_img,"w+");
+    int ret;
+    unsigned int len,wlen,rlen;   
+
+/*fp=fopen("localfile","rb");// localfile文件名
+fseek(fp,0,SEEK_SET);
+fseek(fp,0,SEEK_END);
+long longBytes=ftell(fp);// longBytes就是文件的长度
+*/
+//printf("mtd_scan_partitions = [%d]\n",mtd_scan_partitions());
+printf("in loader thread...\n");
+    wlen = 0;
+    ret = fread(buf,1,48,fp);
+    ret = fread(&len,1,1,fp);
+printf("in loader thread, read file len = [%u]\n",len);
+    if (len > 1024) rlen = 1024;
+    else rlen = len;
+    do
+    {
+        ret = fread(buf,1,rlen,fp);
+        if (ret > 0)
+            wlen += ret;
+        else
+        {
+            break;
+        }
+        rlen = len - wlen;
+        if (rlen > 1024) 
+            rlen = 1024;
+        else if (rlen < 0) 
+            break;
+    } while(wlen < len);
+    if (wlen != len)
+    {
+printf("received upgrade file is err, re download the file!!!!\n");
+    } 
+    
+    wlen = 0;
+    ret = fread(&len,4,1,fp);
+    len = ((len&0xff)<<24)|((len&0xff00)<<8)|((len&0xff0000)>>8)|((len&0xff000000)>>24);
+    if (len > 1024) rlen = 1024;
+    else rlen = len;
+printf("in loader thread, read file len = [%x]\n",len);
+    do
+    {
+        ret = fread(buf,1,rlen,fp);
+        if (ret > 0)
+        {
+            fwrite(buf,1,ret,rfp);
+            wlen += ret;
+        }
+        else
+        {
+            break;
+        }
+        rlen = len - wlen;
+        if (rlen > 1024)
+            rlen = 1024;
+        else if (rlen < 0) 
+            break;
+    } while(wlen < len);
+
+    fclose(fp);
+    fclose(rfp);
+
+#if 0
 	//1 checking img, if not correct,return
 	
 	//2 set upgrade mark
@@ -34,6 +104,11 @@ static void* loader_thread(void *arg)
 			//close sysem, reboot
 		}
 	}
+#else
+	char msg[128];
+	snprintf(msg, sizeof(msg),"%s",upgradefile_img);
+	msg_send2_UI(UPGRADE_NEW_VER, msg, strlen(msg));
+#endif
 	return NULL;
 }
 
@@ -115,202 +190,324 @@ static void dump_bytes(int fid, const unsigned char *data, int len, void *user_d
 
 static void loader_section_handle(int fid, const unsigned char *data, int len, void *user_data)
 {
-	unsigned char *datap;
-	static int part, section, partw, filelen;
-	static int start = 2, inited = 1;
-	static FILE *upgradefile=NULL;
-	unsigned char *partbuf;//[1024*1024];
-	
-	
-	printf("Got loader des section len [%d]\n",len);
-	if (len < 12)
-	{
-		printf("loader data too small!!!!!!!!!!\n");
-		return;
-	}
-	
-	if (inited)
-	{
-		inited = 0;
-		part = 0;
-		section = 0;
-		start = 1;
-		partw = 0;
-		filelen = 0;
-		upgradefile = fopen("upImage","w+");
-		partbuf = (unsigned char *)malloc(1024*1024);
-	}
-	
-	datap = (unsigned char *)data+4;
-	
-	if (start == 0)
-	{
-		if (part == datap[0])
-		{
-			newpart:
-			memcpy(partbuf+partw,datap+4,len-12);
-			partw += len-12;
-			
-			if (datap[2]==datap[3])
-			{
-				fwrite(partbuf,1,partw,upgradefile);
-				filelen += partw;
-				if (datap[0]==datap[1])
-				{
-					if ( filelen >= loaderInfo.img_len)
-					{
-						start = 2;
-						inited = 1;
-						TC_free_filter(loaderInfo.fid);
-						free(partbuf);
-						fclose(upgradefile);
-						pthread_create(&loaderthread, NULL, loader_thread, &loaderInfo);
-					}
-					else
-					{
-						start = 1;
-						part = 0;
-						section = 0;
-						partw = 0;
-						filelen = 0;
-						fseek(upgradefile,0,SEEK_SET);
-					}
-				}
-			}
-		}
-		else
-		{
-			part = datap[0];
-			partw = 0;
-			goto newpart;
-		}
-	}
-	else if(start==1)
-	{
-		if (datap[0]||datap[2])
-		return;
-		else
-		{
-			start = 0;
-			goto newpart;
-		}
-	}
+    unsigned char *datap;
+    static int part, section, partw, filelen;
+    static unsigned int start = 2, inited = 1, next = 0;
+    unsigned int seq;
+    static FILE *upgradefile=NULL;
+    unsigned char *partbuf;//[1024*1024];
+     
+
+//printf("Got upgrade img section len [%d][%x][%x][%x]\n",len,data[0],data[1],data[2]);
+    if (len < 12)
+    {
+        printf("loader data too small!!!!!!!!!!\n");
+        return;
+    }
+
+    /*if (inited)
+    {
+        inited = 0;
+        part = 0;
+        section = 0;
+        start = 1;
+        partw = 0;
+        filelen = 0;
+        upgradefile = fopen("uptest","w+");
+        partbuf = (unsigned char *)malloc(1024*1024);
+    }*/
+//printf("[%x][%x][%x][%x][%x][%x][%x][%x]\n",data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+    datap = (unsigned char *)data+4;
+//printf("start = [%x]\n",*datap++);
+
+    seq = datap[0]*0x100 + datap[2];
+printf("seq = [%u] part_num[%x] last_part_num[%x],sec_num[%x] last_sec_num[%x]\n",seq,datap[0],datap[1],datap[2],datap[3]);
+    if (seq == next)
+    {
+//printf("seq = next = [%u]\n",seq);
+        if (seq==0)
+        {
+            if (!upgradefile)
+            {
+                upgradefile = fopen(upgradefile_all,"w+");
+            }
+            else
+            {
+                fseek(upgradefile,0,SEEK_SET);
+            }
+            filelen = 0;
+        }
+        fwrite(datap+4,1,len-12,upgradefile);
+        filelen += len-12;
+        next++;
+        if (datap[2]==datap[3])  //last section num = current section num
+        {
+            if(datap[0]==datap[1])//last part num = current part num seq >= 3*0x100+0xad)
+            {
+                printf("close the upgrade file\n");
+                TC_free_filter(loaderInfo.fid);
+                fclose(upgradefile);
+                next = 0;
+                filelen = 0;
+printf("creat the loader thread...\n");
+                pthread_create(&loaderthread, NULL, loader_thread, &loaderInfo);
+            }
+            //fseek(upgradefile,0,SEEK_SET);
+            // if ( filelen >= loaderInfo.img_len)
+        }
+        
+    }
+    else if (seq > next)
+    {
+        if (next == 1)  //filter the 0 packets alise as a start
+            next = 0;
+printf("lost packet num = [%u], next = [%u]\n",seq-next,next);
+    }
+/*    else if (seq >= 1000)
+    {
+printf("close the upgrade file\n");
+         TC_free_filter(loaderInfo.fid);
+         fclose(upgradefile);
+         // pthread_create(&loaderthread, NULL, loader_thread, &loaderInfo);
+         filelen = 0;
+         //fseek(upgradefile,0,SEEK_SET);
+         // if ( filelen >= loaderInfo.img_len)
+         next = 0;
+
+    }*/ 
+#if 0
+    if (start == 0)
+    {
+//printf("start==0 find the header\n");
+        if (part == datap[0])
+        {
+newpart:
+            memcpy(partbuf+partw,datap+4,len-12);
+            partw += len-12;
+            
+            if (datap[2]==datap[3])
+            {
+                fwrite(partbuf,1,partw,upgradefile);
+                filelen += partw;
+                if (datap[0]==datap[1])
+                {
+                    if ( filelen >= loaderInfo.img_len)
+                    {
+                        start = 2;
+                        inited = 1;
+                        TC_free_filter(loaderInfo.fid);
+                        free(partbuf);
+                        fclose(upgradefile);
+                       // pthread_create(&loaderthread, NULL, loader_thread, &loaderInfo);
+                    }
+                    else
+                    {
+                        start = 1;
+                        part = 0;
+                        section = 0;
+                        partw = 0;
+                        filelen = 0;
+                        fseek(upgradefile,0,SEEK_SET);
+                    }
+                }
+            }
+        }
+        else
+        {
+            part = datap[0];
+            partw = 0;
+            goto newpart;
+        }
+    }
+    else if(start==1)
+    {
+//printf("start==1,not the header\n");
+printf("datap0[%x][%x]=2[%x][%x],start=0\n",datap[0],data[1],datap[2],datap[3]);
+        if (datap[0]||datap[2])
+            return;
+      /*  else
+        {
+printf("datap0[%x]=2[%x],start=0\n",datap[0],datap[2]);
+            start = 0;
+            goto newpart;
+        }*/
+    }
+#endif
 }
 
 static void read_loaderinfo(LoaderInfo_t * loader)
 {
-    loader->stb_id = 2000317120000066;  //2xx0317120xxxxxx
+    loader->stb_id_h = 21234567;//
+    loader->stb_id_l = 89012345;//2000317120000066;  //2xx0317120xxxxxx
     loader->oui = 0x3;
-    loader->hardware_version = 101209030;  //99-99-12-31-9
-    loader->software_version = 101209030;
-    loader->model_type = 0x17;  //17 BCD
-    loader->user_group_id = 0;
+    loader->hardware_version[0] = 123;
+    loader->hardware_version[1] = 24;
+    loader->hardware_version[2] = 201;
+    loader->hardware_version[3] = 69;
+
+    loader->software_version[0] = 0x00;
+    loader->software_version[1] = 0x01;
+    loader->software_version[2] = 0x01;
+    loader->software_version[3] = 0x01;
+    loader->model_type = 0x1;//17;  //17 BCD
+    loader->user_group_id = 1;
 }
 
-static void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data)
+void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data)
 {
-	unsigned char *datap;
-	static int loader_init = 0;
-	//static LoaderInfo_t loaderInfo;
-	unsigned short tmp16;
-	unsigned int tmp32;
-	unsigned long long tmp64;
-	
-	printf("Got loader des section len [%d]\n",len);
-	/*{
-	int i;
-	
-	for(i=0;i<len;i++)
-	{
-	printf("%02x ", data[i]);
-	if(((i+1)%32)==0) printf("\n");
-	}
-	
-	if((i%32)!=0) printf("\n");
-	
-	}*/
-	if (len < 55)
-	{
-		printf("loader info too small!!!!!!!!!!\n");
-		return;
-	}
-	datap = (unsigned char *)data+4;
-	if ((datap[0] != datap[1])||(datap[2] != datap[3]))
-		printf("!!!!!!!!!!!!!!!!error section number,need modify code!\n");
-	
-	datap += 4;
-	
-	if (loader_init == 0)
-	{
-		read_loaderinfo(&loaderInfo);
-		loader_init = 1;
-	}
-	
-	//oui 
-	tmp16 = *datap;
-	datap++;
-	tmp16 = (tmp16<<8)|(*datap);
-	if (tmp16 != loaderInfo.oui)
-		return;
-	
-	//model_type
-	datap++;
-	tmp16 = *datap;
-	datap++;
-	tmp16 = (tmp16<<8)|(*datap);
-	if (tmp16 != loaderInfo.model_type)
-		return;
-	
-	//hardware_version
-	datap += 2;
-	tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	if (tmp32 != loaderInfo.hardware_version)
-		return;
-	
-	//software_version
-	datap += 4;
-	tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	if (tmp32 <= loaderInfo.software_version)
-		return;
-	loaderInfo.software_version = tmp32;
-	
-	//stb_id
-	datap += 4;
-	tmp64 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	datap += 4;
-	tmp64 = ((tmp64<<32)|(datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	//if (tmp64 > loaderInfo.stb_id)
-	//    return;
-	
-	datap += 4;
-	tmp64 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	datap += 4;
-	tmp64 = ((tmp64<<32)|(datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	//if (tmp64 < loaderInfo.stb_id)
-	//    return;
-	
-	TC_free_filter(loader_dsc_fid);
-	datap += 4;
-	{
-		unsigned short pid;
-		unsigned char tid;
-		Filter_param param;
-		
-		pid = *datap;
-		datap++;
-		pid = ((pid<<8)|(*datap))&0x1fff; 
-		datap++;
-		tid = *datap++;
-		
-		memset(&param,0,sizeof(param));
-		param.filter[0] = tid;
-		param.mask[0] = 0xff;
-		loaderInfo.fid = TC_alloc_filter(pid, &param, loader_section_handle, NULL, 0);
-	}
-	
-	loaderInfo.file_type = *datap++;
-	loaderInfo.img_len = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	loaderInfo.download_type = datap[4];
+    unsigned char *datap,mark;
+    char tmp[10];
+    static int loader_init = 0;
+    //static LoaderInfo_t loaderInfo;
+    unsigned short tmp16;
+    unsigned int tmp32;
+    unsigned int stb_id_l,stb_id_h;
+
+printf("Got loader des section len [%d]\n",len);
+/*{
+ int i;
+
+                for(i=0;i<len;i++)
+                {
+                        printf("%02x ", data[i]);
+                        if(((i+1)%32)==0) printf("\n");
+                }
+
+                if((i%32)!=0) printf("\n");
+
+}*/
+    if (len < 55)
+    {
+        printf("loader info too small!!!!!!!!!!\n");
+//        return;
+    }
+    datap = (unsigned char *)data+4;
+    //if ((datap[0] != datap[1])||(datap[2] != datap[3]))
+    //    printf("!!!!!!!!!!!!!!!!error section number,need modify code!\n");
+
+    datap += 4;
+
+    if (loader_init == 0)
+    {
+        //get_loader_message(&mark,&loaderInfo));
+        read_loaderinfo(&loaderInfo);
+        loader_init = 1;
+    }
+
+    //oui 
+    tmp16 = *datap;
+    datap++;
+    tmp16 = (tmp16<<8)|(*datap);
+printf("loader info oui = [%x]\n",tmp16);
+//    if (tmp16 != loaderInfo.oui)
+//        return;
+
+    //model_type
+    datap++;
+    tmp16 = *datap;
+    datap++;
+    tmp16 = (tmp16<<8)|(*datap);
+printf("loader info model type = [%x]\n",tmp16);
+//    if (tmp16 != loaderInfo.model_type)
+//        return;
+
+    datap ++;  //usergroup id
+
+    //hardware_version
+    datap += 2;
+    //tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
+printf("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+    if ((datap[0] != loaderInfo.hardware_version[0])||(datap[1] != loaderInfo.hardware_version[1])
+       ||(datap[2] != loaderInfo.hardware_version[2])||(datap[3] != loaderInfo.hardware_version[3]))
+    {
+   //    return;
+    }
+    //software_version
+    datap += 4;
+    //tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
+//printf("loader info software version = [%x][%x]\n",tmp32,loaderInfo.software_version);
+printf("loader info software version [%u[%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]); 
+    if ((datap[0] == loaderInfo.software_version[0])||(datap[1] == loaderInfo.software_version[1])
+       ||(datap[2] == loaderInfo.software_version[2])||(datap[3] == loaderInfo.software_version[3]))
+    {
+    //    return;
+    }
+    loaderInfo.software_version[0] = datap[0];
+    loaderInfo.software_version[1] = datap[1];
+    loaderInfo.software_version[2] = datap[2];
+    loaderInfo.software_version[3] = datap[3];
+printf("get software version..\n");
+    //stb_id
+    datap += 4;
+    sprintf(tmp,"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
+    stb_id_h = atol(tmp);
+printf("start stb id h = [%u] me h[%u][%x][%x]\n",stb_id_h,loaderInfo.stb_id_h,datap[4],datap[5]);
+    if (loaderInfo.stb_id_h < stb_id_h)
+    {
+        printf("stb id is not in this update sequence \n");
+        return;
+    }
+    else if (loaderInfo.stb_id_h == stb_id_h)
+    {
+        datap += 4;
+        sprintf(tmp,"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
+        stb_id_l = atol(tmp);
+printf("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
+        if (loaderInfo.stb_id_l < stb_id_l)
+        {
+            printf("stb id is not in this update sequence \n");
+            return;
+        }
+    }
+    else
+        datap += 4;
+    datap += 4;
+    sprintf(tmp,"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
+    stb_id_h = atol(tmp);
+printf("end stb id h [%u] me [%u]\n",stb_id_h,loaderInfo.stb_id_h); 
+    if (loaderInfo.stb_id_h > stb_id_h)
+    {
+        printf("stb id is not in this update sequence \n");
+        return;
+    }
+    else if (loaderInfo.stb_id_h == stb_id_h)
+    {
+        datap += 4;
+        sprintf(tmp,"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
+        stb_id_l = atol(tmp);
+printf("end start id h=[%u], l=[%u]\n",stb_id_h, stb_id_l);
+        if (loaderInfo.stb_id_l > stb_id_l)
+        {
+            printf("stb id is not in this update sequence \n");
+            return;
+        }
+    }
+    else
+        datap += 4;
+
+    TC_free_filter(loader_dsc_fid);
+    datap += 4;
+    {
+    unsigned short pid;
+    unsigned char tid;
+    Filter_param param;
+
+    pid = *datap;
+    datap++;
+    pid = ((pid<<8)|(*datap));//&0x1fff; 
+    datap++;
+    tid = *datap++;
+printf("pid = [%x]  tid=[%x]\n",pid,tid);
+    memset(&param,0,sizeof(param));
+    param.filter[0] = tid;
+    param.mask[0] = 0xff;
+    loaderInfo.fid = TC_alloc_filter(pid, &param, loader_section_handle, NULL, 0);
+    }
+
+    loaderInfo.file_type = *datap++;
+    loaderInfo.img_len = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
+    loaderInfo.download_type = datap[4];
+printf("filetype =[%d], img_len[%d], downloadtype=[%d]\n",loaderInfo.file_type,loaderInfo.img_len,loaderInfo.download_type);
 }
 
 int alloc_filter(unsigned short pid, char pro)

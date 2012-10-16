@@ -74,20 +74,44 @@ typedef enum{
 
 #define GLB_NAME_SERVICEID		"serviceID"
 #define GLB_NAME_PUSHDATADIR	"push_data_dir"
+#define GLB_NAME_LOCALCOLUMNRES	"/data/dbstar/columnres"
+
+#define INITIALIZE_PATH "pushinfo/initialize"
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
 	NAVIGATIONTYPE_COLUMN
 }NAVIGATIONTYPE_E;
 
+
 typedef enum{
 	COLUMN_MOVIE = 1,
 	COLUMN_TV = 2,
-	COLUMN_3D = 3,
-	COLUMN_GUIDE = 4,
-	COLUMN_SETTING = 5,
-	COLUMN_SG = 100
+	COLUMN_GUIDE = 3,
+	COLUMN_SG = 4,
+	COLUMN_LOCAL = 99	// 本地内置的菜单，包括“设置”和“个人中心”
 }COLUMN_TYPE_E;
+
+/*
+默认的初始化文件uri，相对于push根路径的uri，类似于Initialize.xml中Channel.xml的路径
+但在运行过程中可能会被更改
+*/
+typedef enum{
+	PUSH_XML_FLAG_MINLINE = -1,
+	
+	INITIALIZE_XML = 0,
+	CHANNEL_XML,
+	SERVICE_XML,
+	COLUMN_XML,
+	GUIDELIST_XML,
+	COMMANDS_XML,
+	MESSAGE_XML,
+	PRODUCTDESC_XML,
+	PUBLICATIONSCOLUMN_XML,
+	
+	PUSH_XML_FLAG_MAXLINE
+}PUSH_XML_FLAG_E;
+
 
 /*
 本地测试push时使用（针对hytd.ts播发流），正常情况下关闭此宏。
@@ -349,6 +373,7 @@ void ms_sleep(unsigned int ms);
 char *strrstr_s(const char *str_dad, char *str_son, char signchr);
 char *time_serial();
 int ipv4_simple_check(const char *ip_addr);
+int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, char *preferential_file);
 
 #endif
 

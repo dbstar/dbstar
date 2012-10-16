@@ -14,12 +14,12 @@
 #include "dvbpush_api.h"
 
 #define DVB_TEST_ENABLE 0
-
+static int s_dvbpush_init_flag = 0;
 static pthread_t tid_main;
 static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
 
-void *main_thread(void *data)
+void *main_thread()
 {	
 	DEBUG("main thread start...\n");
 	compile_timeprint();
@@ -51,7 +51,8 @@ void *main_thread(void *data)
 		//return parseDoc("/mnt/sda1/dbstar/pushinfo/initialize/Initialize.xml");
 		//return parseDoc("/mnt/sda1/dbstar/pushinfo/channel/Channel.xml");
 		//return parseDoc("/mnt/sda1/dbstar/pushinfo/servicegroup/01/101/desc/Product_preview.xml");
-		return parseDoc(xml_uri);
+		parse_xml(xml_uri, 0);
+		return NULL;
 	}
 	
 	if(-1==mid_push_init(PUSH_CONF)){
@@ -59,15 +60,15 @@ void *main_thread(void *data)
 		return NULL;
 	}
 	
-//	if(-1==igmp_init()){
-//		DEBUG("igmp init failed\n");
-//		return NULL;
-//	}
-//	
-//	if(-1==softdvb_init()){
-//		DEBUG("dvb init with failed\n");
-//		return NULL;
-//	}
+	if(-1==igmp_init()){
+		DEBUG("igmp init failed\n");
+		return NULL;
+	}
+	
+	if(-1==softdvb_init()){
+		DEBUG("dvb init with failed\n");
+		return NULL;
+	}
 	
 	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
 	
@@ -90,36 +91,47 @@ void *main_thread(void *data)
 
 int dvbpush_init()
 {
-	DEBUG("dvbpush start...\n");
-	pthread_create(&tid_main, NULL, main_thread, NULL);
-	//pthread_detach(tid_main);
-	
+	if(0==s_dvbpush_init_flag){
+		s_dvbpush_init_flag = 1;
+		DEBUG("dvbpush init...\n");
+		pthread_create(&tid_main, NULL, main_thread, NULL);
+		//pthread_detach(tid_main);
+	}
+	else{
+		DEBUG("can NOT do dvbpush init for more than once: %d\n", s_dvbpush_init_flag);
+	}
 	return 0;
 }
 
 int dvbpush_uninit()
 {
-	DEBUG("dvbpush stop...\n");
-	
-	/*
-	必须先调用softdvb_uninit()，因为softdvb_thread()中使用了malloc出来的两个资源：
-	1、p_buf——在igmp_thread()中malloc和free，关联igmp_uninit()。
-	2、g_recvBuffer——在mid_push_init()中malloc，在mid_push_uninit()中free
-	*/
-	softdvb_uninit();
-	igmp_uninit();
-	mid_push_uninit();
-	xmlparser_uninit();
-	sqlite_uninit();
-	setting_uninit();
-	
-	pthread_mutex_lock(&mtx_main);
-	pthread_cond_signal(&cond_main);
-	pthread_mutex_unlock(&mtx_main);
-	
-	pthread_join(tid_main, NULL);
-	
-	DEBUG("dvbpush over\n");
+	if(1==s_dvbpush_init_flag){
+		DEBUG("dvbpush uninit...\n");
+		
+		/*
+		必须先调用softdvb_uninit()，因为softdvb_thread()中使用了malloc出来的两个资源：
+		1、p_buf——在igmp_thread()中malloc和free，关联igmp_uninit()。
+		2、g_recvBuffer——在mid_push_init()中malloc，在mid_push_uninit()中free
+		*/
+		softdvb_uninit();
+		igmp_uninit();
+		mid_push_uninit();
+		xmlparser_uninit();
+		sqlite_uninit();
+		setting_uninit();
+		
+		pthread_mutex_lock(&mtx_main);
+		pthread_cond_signal(&cond_main);
+		pthread_mutex_unlock(&mtx_main);
+		
+		pthread_join(tid_main, NULL);
+		
+		DEBUG("dvbpush over\n");
+		s_dvbpush_init_flag = -1;
+	}
+	else{
+		DEBUG("can not do dvbpush uninit with %d\n", s_dvbpush_init_flag);
+	}
 	return 0;
 }
 

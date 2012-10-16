@@ -28,6 +28,8 @@ static int			s_prog_data_pid = 0;
 static char			s_database_uri[64];
 static int			s_debug_level = 0;
 static char			s_xml[128];
+static char			s_initialize_xml[256];
+static char			s_localcolumn_res[256];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
@@ -50,6 +52,8 @@ static void settingDefault_set(void)
 	snprintf(s_database_uri, sizeof(s_database_uri), "%s", DATABASE);
 	s_debug_level = 0;
 	memset(s_xml, 0, sizeof(s_xml));
+	snprintf(s_initialize_xml, sizeof(s_initialize_xml), "%d", INITIALIZE_XML);
+	snprintf(s_localcolumn_res, sizeof(s_localcolumn_res), "%s", GLB_NAME_LOCALCOLUMNRES);
 	
 	return;
 }
@@ -147,8 +151,12 @@ int setting_init(void)
 					strncpy(s_database_uri, p_value, sizeof(s_database_uri)-1);
 				else if(0==strcmp(tmp_buf, "dbstar_debug_level"))
 					s_debug_level = atoi(p_value);
-				else if(0==strcmp(tmp_buf, "parse_xml"))
+				else if(0==strcmp(tmp_buf, "parse_xml"))	/* this xml only for parse testing */
 					strncpy(s_xml, p_value, sizeof(s_xml)-1);
+				else if(0==strcmp(tmp_buf, "initialize_xml"))
+					strncpy(s_initialize_xml, p_value, sizeof(s_initialize_xml)-1);
+				else if(0==strcmp(tmp_buf, "localcolumn_res"))
+					strncpy(s_localcolumn_res, p_value, sizeof(s_localcolumn_res)-1);
 			}
 		}
 		memset(tmp_buf, 0, sizeof(tmp_buf));
@@ -234,6 +242,20 @@ int parse_xml_get(char *xml_uri, unsigned int size)
 		return -1;
 	
 	strncpy(xml_uri, s_xml, size);
+	return 0;
+}
+
+int initialize_xml_get()
+{
+	return atoi(s_initialize_xml);
+}
+
+int localcolumn_res_get(char *localcolumn_res, unsigned int uri_size)
+{
+	if(NULL==localcolumn_res || 0==uri_size)
+		return -1;
+	
+	strncpy(localcolumn_res, s_localcolumn_res, uri_size);
 	return 0;
 }
 

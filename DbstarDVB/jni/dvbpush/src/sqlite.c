@@ -244,6 +244,14 @@ static int createDatabase()
 					DEBUG("create table \"Preview\" OK\n");
 					ret += 0;
 				}
+				if(createTable("parse_xml_queue")){
+					ERROROUT("can not create table \"parse_xml_queue\"\n");
+					ret += -1;
+				}
+				else{
+					DEBUG("create table \"parse_xml_queue\" OK\n");
+					ret += 0;
+				}
 			}
 			sqlite3_free(errmsgOpen);
 		}
@@ -331,7 +339,8 @@ Param	NVARCHAR(256));", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-XMLName	NVARCHAR(64) PRIMARY KEY,\
+PushFlag	NVARCHAR(64) PRIMARY KEY,\
+XMLName	NVARCHAR(64),\
 Version	NVARCHAR(64),\
 StandardVersion	NVARCHAR(32),\
 URI		NVARCHAR(256));", name);
@@ -485,6 +494,7 @@ PublicationID	NVARCHAR(64) PRIMARY KEY,\
 ColumnID	NVARCHAR(64),\
 ProductID	NVARCHAR(64),\
 URI	NVARCHAR(256),\
+DescURI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
 ReceiveStatus	NVARCHAR(64),\
@@ -636,6 +646,14 @@ PushTime	NVARCHAR(128),\
 StartTime	CHAR(32),\
 EndTime	CHAR(32),\
 PlayMode	NVARCHAR(64));", name);
+			}
+			else if(!strcmp(name,"parse_xml_queue"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+XMLFlag	INT PRIMARY KEY,\
+XMLUri	NVARCHAR(64),\
+WaitFlag	INT);", name);
 			}
 			
 			else

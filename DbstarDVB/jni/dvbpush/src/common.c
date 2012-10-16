@@ -17,6 +17,8 @@
 #include <linux/if_ether.h>
 #include <net/if_arp.h>
 #include <semaphore.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 #include "common.h"
 
@@ -116,16 +118,16 @@ void print_timestamp(int show_s_ms, int show_str)
 			ERROROUT("gettimeofday failed\n");
 		}
 		else
-			printf("|s: %ld\t|ms: %ld\t|us:%ld\t", tv_now.tv_sec, (tv_now.tv_usec)/1000, (tv_now.tv_usec));
+			DEBUG("|s: %ld\t|ms: %ld\t|us:%ld\t", tv_now.tv_sec, (tv_now.tv_usec)/1000, (tv_now.tv_usec));
 	}
 	if(show_str){
 		t = time(NULL);
 		localtime_r(&t, &area);
-		printf("|%s", asctime(&area));
+		DEBUG("|%s", asctime(&area));
 	}
 	
 	if(0==show_str)
-		printf("\n");
+		DEBUG("\n");
 	
 	return;
 }
@@ -187,7 +189,7 @@ char *strrstr_s(const char *str_dad, char *str_son, char separater_sign)
 	
 	
 	int i = 0;
-	char *p_dad = str_dad;
+	char *p_dad = (char *)str_dad;
 	char *p = NULL;
 	for(i=0; i<256; i++){
 		p = strchr(p_dad, separater_sign);
@@ -271,4 +273,116 @@ int ipv4_simple_check(const char *ip_addr)
 		ret = -1;
 	
 	return ret;
+}
+
+/*
+ 从路径path中获取第一个文件格式为filefmt的文件，优先匹配preferential_file，
+ 将获得的文件uri存放在file中
+*/
+int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, char *preferential_file)
+{
+	DIR * pdir;
+	struct dirent *ptr;
+	char newpath[512];
+	struct stat filestat;
+	int file_count = 0;
+	int file_count_max = 64;
+	int ret = -1;
+	
+	if(NULL==path || NULL==file || 0==file_size){
+		DEBUG("some arguments are invalid\n");
+		return -1;
+	}
+	
+	if(stat(path, &filestat) != 0){
+		DEBUG("The file or path(%s) can not be get stat!\n", path);
+		return -1;
+	}
+	if((filestat.st_mode & S_IFDIR) != S_IFDIR){
+		DEBUG("(%s) is not be a path!\n", path);
+		return -1;
+	}
+	pdir =opendir(path);
+	while((ptr = readdir(pdir))!=NULL)
+	{
+		if((file_count+1) > file_count_max){
+			DEBUG("The count of the files is too much(%d > %d)!\n", file_count + 1, file_count_max);
+			break;
+		}
+		
+		if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
+			continue;
+		
+		snprintf(newpath,sizeof(newpath),"%s/%s", path,ptr->d_name);
+		if(stat(newpath, &filestat) != 0){
+			DEBUG("The file or path(%s) can not be get stat!\n", newpath);
+			continue;
+		}
+		/* Check if it is file. */
+		if((filestat.st_mode & S_IFREG) == S_IFREG){
+			snprintf(file,file_size,"%s/%s", path,ptr->d_name);
+			if(NULL!=preferential_file && 0!=strlen(preferential_file)){
+				if(0==strcmp(ptr->d_name, preferential_file)){
+					DEBUG("match %s in %s\n", preferential_file, path);
+					ret = 0;
+					break;
+				}
+			}
+			else if(NULL!=filefmt && 0!=strlen(filefmt)){
+				char *p = strrchr(ptr->d_name,'.');
+				if(p){
+					p++;
+					if(p && strlen(filefmt)==strlen(p) && 0==strncasecmp(p, filefmt, strlen(filefmt))){
+						DEBUG("match file format %s file %s\n", filefmt, file);
+						ret = 0;
+						break;
+					}
+				}
+			}
+			else{
+				ret = 0;
+				DEBUG("get %s in %s\n", ptr->d_name, path);
+				break;
+			}
+			
+//			if(filefmt[0] != '\0'){
+//				char* p;
+//				if((p = strrchr(ptr->d_name,'.')) == 0) continue;
+//				
+//				char fileformat[64];
+//				char* token;
+//				strcpy(fileformat, filefmt);        
+//				if((token = strtok( fileformat,";")) == NULL){
+//					strcpy(file[file_count], newpath);
+//					file_count++;
+//					continue;
+//				}else{
+//					if(strcasecmp(token,p) == 0){
+//						strcpy(file[file_count], newpath);
+//						file_count++;
+//						continue;
+//					}
+//				}
+//				while((token = strtok( NULL,";")) != NULL){
+//					if(strcasecmp(token,p) == 0){
+//						strcpy(file[file_count], newpath);
+//						file_count++;
+//						continue;
+//					}
+//				}
+//			}
+//			else{
+//				strcpy(file[file_count], newpath);
+//				file_count++;
+//			}
+		}
+//		else if((filestat.st_mode & S_IFDIR) == S_IFDIR){
+//			if(ReadPath(newpath, file, filefmt) != 0){
+//				DEBUG("Path(%s) reading is fail!\n", newpath);
+//				continue;
+//			}
+//		} 
+	}
+	closedir(pdir);
+	return ret;   
 }

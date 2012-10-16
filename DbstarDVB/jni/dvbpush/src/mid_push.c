@@ -32,9 +32,8 @@
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (200000)		//定义缓冲区大小，单位：包	1500*200000=280M
 
-
 #define XML_NUM			8
-static char s_xml_name[XML_NUM][256];
+static PUSH_XML_S s_push_xml[XML_NUM];
 
 static pthread_mutex_t mtx_xml = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_xml = PTHREAD_COND_INITIALIZER;
@@ -51,7 +50,8 @@ typedef struct tagDataBuffer
 typedef struct tagPRG
 {
 	char		id[32];
-	char		prog_uri[128];
+	char		uri[256];
+	char		caption[128];
 	long long	cur;
 	long long	total;
 }PROG_S;
@@ -276,7 +276,7 @@ static int prog_is_valid(PROG_S *prog)
 	if(NULL==prog)
 		return -1;
 		
-	if(strlen(prog->prog_uri)>0 || (prog->total)>0LL){
+	if(strlen(prog->uri)>0 || (prog->total)>0LL){
 		//DEBUG("valid prog\n");
 		return 1;
 	}
@@ -320,7 +320,7 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 	int i = 0;
 	/*
 	 形如：1001\taaaaaaname\t23932\t23523094823\n1002\tbbbbbbname\t234239\t12349320\n1003\tcccccname\t0\t213984902943
-	 每条记录预留长度：64位id + strlen(prog_uri) + 20位当前长度 + 20位总长 + 4位分隔符
+	 每条记录预留长度：64位id + strlen(caption) + 20位当前长度 + 20位总长 + 4位分隔符
 	 其中：long long型转为10进制后最大长度为20
 	*/
 	if(1 && (s_push_monitor_active>0)){	// TRUE is only for test, here should be: s_push_has_data>0
@@ -340,11 +340,11 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 				/*
 				* 获取指定节目的已接收字节大小，可算出百分比
 				*/
-				long long rxb = push_dir_get_single(s_prgs[i].prog_uri);
+				long long rxb = push_dir_get_single(s_prgs[i].uri);
 				
 				DEBUG("PROG_S:%s %s %lld/%lld %-3lld%%\n",
 					s_prgs[i].id,
-					s_prgs[i].prog_uri,
+					s_prgs[i].uri,
 					rxb,
 					s_prgs[i].total,
 					rxb*100/s_prgs[i].total);
@@ -355,15 +355,15 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 					
 				if(0==i){
 					snprintf(s_dvbpush_info, info_size,
-						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
+						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur,s_prgs[i].total);
 				}
 				else{
 					snprintf(s_dvbpush_info+strlen(s_dvbpush_info), info_size-strlen(s_dvbpush_info),
-						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].prog_uri,s_prgs[i].cur,s_prgs[i].total);
+						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur,s_prgs[i].total);
 				}
 				
 				if(rxb>=s_prgs[i].total){
-					DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", s_prgs[i].prog_uri);
+					DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", s_prgs[i].uri);
 					push_progs_finish(s_prgs[i].id);
 				}
 			}
@@ -415,9 +415,9 @@ void *push_xml_parse_thread()
 		if(1==s_xmlparse_running){
 			int i = 0;
 			for(i=0; i<XML_NUM; i++){
-				if(strlen(s_xml_name[i])>0){
-					parseDoc(s_xml_name[i]);
-					memset(s_xml_name[i], 0, sizeof(s_xml_name[i]));
+				if(strlen(s_push_xml[i].uri)>0){
+					parse_xml(s_push_xml[i].uri, s_push_xml[i].flag);
+					memset(s_push_xml[i].uri, 0, sizeof(s_push_xml[i].uri));
 				}
 			}
 		}
@@ -452,22 +452,17 @@ void callback(const char *path, long long size, int flag)
 {
 	DEBUG("path:%s, size:%lld, flag:%d\n", path, size, flag);
 	
-	char xml_absolute_name[256+128];
-	snprintf(xml_absolute_name, sizeof(xml_absolute_name), "%s/%s", s_push_data_dir, path);
 	/* 由于涉及到解析和数据库操作，这里不直接调用parseDoc，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
-	if(	strrstr_s(path, "allpid.xml", '/')
-		|| strrstr_s(path, "column.xml", '/')
-		|| strrstr_s(path, "ProductTag.xml", '/')
-		|| strrstr_s(path, "brand_0001.xml", '/')
-		|| strrstr_s(path, "PreProductTag.xml", '/')){
+	if(	PUSH_XML_FLAG_MINLINE<flag && flag<PUSH_XML_FLAG_MAXLINE){
 			
 		pthread_mutex_lock(&mtx_xml);
 		
 		int i = 0;
 		for(i=0; i<XML_NUM; i++){
-			if(0==strlen(s_xml_name[i])){
-				strcpy(s_xml_name[i], xml_absolute_name);
+			if(0==strlen(s_push_xml[i].uri)){
+				snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s/%s", s_push_data_dir, path);
+				s_push_xml[i].flag = flag;
 				break;
 			}
 		}
@@ -482,7 +477,7 @@ void callback(const char *path, long long size, int flag)
 
 /*
  如果传入参数为空，则寻找“/etc/push.conf”文件。详细约束参考push_init()说明
- 此函数需要及早调用，xml解析模块也需要此值。
+ 此函数需要及早调用，xml解析模块也需要此值。目前在main()中调用。
 */
 void push_root_dir_init(char *push_conf)
 {
@@ -496,11 +491,7 @@ void push_root_dir_init(char *push_conf)
 		fp = fopen(push_conf, "r");
 	
 	memset(s_push_data_dir, 0, sizeof(s_push_data_dir));
-	if(NULL==fp){
-		DEBUG("waring: open push.conf to get push data dir failed\n");
-		strncpy(s_push_data_dir, PUSH_DATA_DIR_DF, sizeof(s_push_data_dir)-1);
-	}
-	else{
+	if(fp){
 		memset(tmp_buf, 0, sizeof(tmp_buf));
 		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
 			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), '=');
@@ -516,6 +507,11 @@ void push_root_dir_init(char *push_conf)
 			memset(tmp_buf, 0, sizeof(tmp_buf));
 		}
 		fclose(fp);
+	}
+	
+	if(0==strlen(s_push_data_dir)){
+		DEBUG("waring: open push.conf to get push data dir failed\n");
+		strncpy(s_push_data_dir, PUSH_DATA_DIR_DF, sizeof(s_push_data_dir)-1);
 	}
 }
 
@@ -535,13 +531,13 @@ static int push_monitor_regist(int regist_flag)
 	
 	if(1==regist_flag || 0==regist_flag){
 		for(i=0; i<PROGS_NUM; i++){
-			//DEBUG("s_prgs[%d]=%s\n", i, s_prgs[i].prog_uri);
+			//DEBUG("s_prgs[%d]=%s\n", i, s_prgs[i].uri);
 			if(1==prog_is_valid(&s_prgs[i])){
 				ret ++;
 				if(1==regist_flag)
-					push_dir_register(s_prgs[i].prog_uri, s_prgs[i].total, 0);
+					push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
 				else if(0==regist_flag)
-					push_dir_unregister(s_prgs[i].prog_uri);
+					push_dir_unregister(s_prgs[i].uri);
 			}
 		}
 	}
@@ -603,7 +599,10 @@ int push_monitor_reset()
 	mid_push_regist("15","中文长文件名测试，中文English混排，长文件名", 3872943433LL);
 	ret = 0;
 #else
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM ProductDesc;");
+	/*
+	虽然投递单中还有成品集PublicationsSet、预告单GuideList、小片Preview，但与用户紧密相关的只有成品Publication
+	*/
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM Publication WHERE ReceiveStatus='0' OR ReceiveStatus='1';");
 	ret = sqlite_read(sqlite_cmd, NULL, sqlite_callback);
 #endif
 	pthread_mutex_unlock(&mtx_push_monitor);
@@ -615,12 +614,14 @@ int mid_push_init(char *push_conf)
 {
 	int i = 0;
 	for(i=0;i<XML_NUM;i++){
-		memset(s_xml_name[i], 0, sizeof(s_xml_name[i]));
+		memset(s_push_xml[i].uri, 0, sizeof(s_push_xml[i].uri));
+		s_push_xml[i].flag = -1;
 	}
 	
 	for(i=0; i<PROGS_NUM; i++){
 		memset(s_prgs[i].id, 0, sizeof(s_prgs[i].id));
-		memset(s_prgs[i].prog_uri, 0, sizeof(s_prgs[i].prog_uri));
+		memset(s_prgs[i].uri, 0, sizeof(s_prgs[i].uri));
+		memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
 		s_prgs[i].cur = 0LL;
 		s_prgs[i].total = 0LL;
 	}
@@ -692,6 +693,11 @@ int mid_push_uninit()
 	return 0;
 }
 
+static char *language_get()
+{
+	return "chi";
+}
+
 //注册节目
 static int mid_push_regist(char *id, char *content_uri, long long content_len)
 {
@@ -710,17 +716,29 @@ static int mid_push_regist(char *id, char *content_uri, long long content_len)
 	int i;
 	for(i=0; i<PROGS_NUM; i++)
 	{
-		if(0==strlen(s_prgs[i].prog_uri)){
+		if(0==strlen(s_prgs[i].uri)){
 			snprintf(s_prgs[i].id, sizeof(s_prgs[i].id), "%s", id);
-			snprintf(s_prgs[i].prog_uri, sizeof(s_prgs[i].prog_uri), "%s", content_uri);
+			snprintf(s_prgs[i].uri, sizeof(s_prgs[i].uri), "%s", content_uri);
 			s_prgs[i].cur = 0;
 			s_prgs[i].total = content_len;
 			
+			char sqlite_cmd[256];
+			memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
+			int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID='%s' AND StrLang='%s' AND StrName='Name' AND Extension='';", 
+				s_prgs[i].id, language_get());
+		
+			int ret_sqlexec = sqlite_read(sqlite_cmd, s_prgs[i].caption, sqlite_cb);
+			if(ret_sqlexec<=0){
+				DEBUG("read no Name from db, filled with id\n");
+				strncpy(s_prgs[i].caption, s_prgs[i].id, sizeof(s_prgs[i].caption)-1);
+			}
+			
 			/*
 			只在需要查询时才注册，并在查询后反注册。避免push模块自身无意义的查询
-			push_dir_register(s_prgs[i].prog_uri, s_prgs[i].total, 0);
+			push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
 			*/
-			DEBUG("regist to push %d: %s %lld\n", i, s_prgs[i].prog_uri, s_prgs[i].total);
+			DEBUG("regist to push %d: %s %lld\n", i, s_prgs[i].uri, s_prgs[i].total);
 			break;
 		}
 	}

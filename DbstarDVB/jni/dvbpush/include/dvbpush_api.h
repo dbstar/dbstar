@@ -36,7 +36,7 @@ typedef enum {
 	UPGRADE_START                   = 0x20003,     // 开始升级
 	UPGRADE_PERCENT                 = 0x20004,     // 升级进度百分比
 	UPGRADE_SUCCESS                 = 0x21000,     // 升级成功
-	UPGRADE_FAILED                  = 0x21001,     // 升级失败
+	UPGRADE_FAILED                  = 0x21001     // 升级失败
 }DBSTAR_CMD_MSG_E;
 
 typedef int (* dvbpush_notify_t)(int type, char *msg, int len);

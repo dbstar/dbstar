@@ -1,6 +1,12 @@
 ﻿#ifndef __MID_PUSH_H__
 #define __MID_PUSH_H__
 
+typedef struct{
+	char uri[512];
+	int flag;
+}PUSH_XML_S;
+
+void push_root_dir_init(char *push_conf);
 int send_mpe_sec_to_push_fifo(unsigned char *pkt, int pkt_len);
 int mid_push_init(char *push_conf);
 int mid_push_uninit();

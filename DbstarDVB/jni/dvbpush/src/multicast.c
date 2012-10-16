@@ -40,6 +40,7 @@ typedef struct{
 static int p_read;
 static int p_write;
 static unsigned char *p_buf;
+int loader_dsc_fid;
 
 static pthread_mutex_t mtx_getip = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_getip = PTHREAD_COND_INITIALIZER;
@@ -378,12 +379,12 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
  act_flag：	1——初始化demux过滤器
  			0——反初始化demux过滤器
 */
-static int allpid_init(int act_flag)
+static int pid_init(int act_flag)
 {
 	char sqlite_cmd[256+128];
 	int (*sqlite_callback)(char **, int, int, void *) = allpid_sqlite_cb;
 
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT id FROM allpid;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT pid FROM Channel;");
 	// 1 means alloc filter
 	int filter_act = act_flag;
 	return sqlite_read(sqlite_cmd, &filter_act, sqlite_callback);
@@ -392,6 +393,7 @@ static int allpid_init(int act_flag)
 int softdvb_init()
 {
 	int ret = 0;
+	Filter_param param;
 	
 	chanFilterInit();
 	
@@ -399,6 +401,13 @@ int softdvb_init()
 	unsigned short root_pid = root_channel_get();
 	int filter1 = alloc_filter(root_pid, 0);
 	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
+	
+	memset(&param,0,sizeof(param));
+	param.filter[0] = 0xf0;
+	param.mask[0] = 0xff;
+	
+	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
+	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
 #ifdef PUSH_LOCAL_TEST
 	// prog/video
@@ -416,7 +425,7 @@ int softdvb_init()
 	int filter3 = alloc_filter(audio_pid, 1);
 	DEBUG("set dvb filter3, pid=%d, fid=%d\n", audio_pid, filter3);
 #else
-	if(-1==allpid_init(1)){
+	if(-1==pid_init(1)){
 		DEBUG("allpid init faild\n");
 		return -1;
 	}
@@ -463,7 +472,7 @@ int softdvb_uninit()
 	ret = free_filter(audio_pid);
 	DEBUG("free pid %d return with %d\n", audio_pid, ret);
 #else
-	if(-1==allpid_init(0)){
+	if(-1==pid_init(0)){
 		DEBUG("allpid init faild\n");
 		return -1;
 	}	

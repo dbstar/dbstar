@@ -9,6 +9,7 @@ int sqlite_table_clear(char *table_name);
 
 int sqlite_transaction_begin();
 int sqlite_transaction_exec(char *sqlite_cmd);
+int sqlite_transaction_table_clear(char *table_name);
 int sqlite_transaction_end(int commit_flag);
 
 #endif
