@@ -79,13 +79,13 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mUIReady = false;
 	}
 
-	private boolean mEngineStarted = false;
+//	private boolean mEngineStarted = false;
 
 	public void start(GDDataProviderService service) {
-		if (mEngineStarted)
-			return;
+//		if (mEngineStarted)
+//			return;
 
-		mEngineStarted = true;
+//		mEngineStarted = true;
 		mService = service;
 
 		mResources = null;
@@ -172,6 +172,8 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	public void playMedia() {
 
+		Log.d(TAG, "palyMedia mResourcesReady = " + mResourcesReady + " mUIReady = " + mUIReady);
+		
 		if (!mResourcesReady || !mUIReady) {
 			return;
 		}

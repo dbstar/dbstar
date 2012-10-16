@@ -876,7 +876,7 @@ public class GDDataProviderService extends Service {
 				case REQUESTTYPE_GETPREVIEWS: {
 					String path = mDataModel.getPreviewPath();
 					if (path != null && !path.isEmpty()) {
-						
+						Log.d(TAG, "path= " + path);
 						File dir = new File(path);
 						if (dir != null && dir.exists()) {
 							File[] files = dir.listFiles();

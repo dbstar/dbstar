@@ -1437,7 +1437,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mVideoView = (GDVideoView) findViewById(R.id.player_view);
 
 		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
-		mMainMenu.setAnimationDuration(200);
+		mMainMenu.setAnimationDuration(120);
 
 		mMainMenuAdapter = new MainMenuAdapter(this);
 		mMainMenuAdapter.setDataSet(mMainMenuItems);
