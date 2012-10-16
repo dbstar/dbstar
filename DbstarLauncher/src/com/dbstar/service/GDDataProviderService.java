@@ -886,9 +886,11 @@ public class GDDataProviderService extends Service {
 
 								PreviewData[] data = new PreviewData[files.length];
 								for (int i=0; i<data.length ; i++) {
-									data[i].URI = files[i].getAbsolutePath();
-									Log.d(TAG, "+++++++++ file path = " + data[i].URI);
-									data[i].Type = PreviewData.TypeVideo;
+									PreviewData item = new PreviewData();
+									item.URI = files[i].getAbsolutePath();
+									Log.d(TAG, "+++++++++ file path = " + item.URI);
+									item.Type = PreviewData.TypeVideo;
+									data[i] = item;
 								}
 								
 								task.Data = data;

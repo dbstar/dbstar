@@ -104,6 +104,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	public void updateData(int type, Object key, Object data) {
 		if (type == GDDataProviderService.REQUESTTYPE_GETPREVIEWS) {
 			if (data != null) {
+				Log.d(TAG, "updateData ");
 				mResources = (PreviewData[]) data;
 				mResourcesReady = true;
 				playMedia();
@@ -115,7 +116,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.d(TAG, "surfaceCreated");
 		Log.d(TAG, "mStoreState.Type=" + mStoreState.Type);
-
+		
 		mUIReady = true;
 		playMedia();
 	}
@@ -171,12 +172,14 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	public void playMedia() {
 
-		Log.d(TAG, "playMedia");
+		Log.d(TAG, "playMedia mResourcesReady = "  + mResourcesReady + " mUIReady " + mUIReady);
 
 		if (!mResourcesReady || !mUIReady) {
 			return;
 		}
 
+		Log.d(TAG, "1");
+		
 		boolean successed = false;
 		while (true) {
 			if (!fetchMediaResource() && mResourceIndex < mResources.length - 1) {
@@ -187,6 +190,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			}
 		}
 
+		Log.d(TAG, "successed = " + successed);
 		if (successed) {
 			String resourcePath = "";
 			int resourceType = RNONE;
