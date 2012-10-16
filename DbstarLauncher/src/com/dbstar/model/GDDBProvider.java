@@ -88,10 +88,13 @@ public class GDDBProvider {
 		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
 			return null;
 		}
+		
+		Log.d(TAG, "getReadableDatabase ");
 
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
+			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
 			if (mDataBase.isOpen()) {
 				db = mDataBase;
 			} else {
@@ -111,11 +114,16 @@ public class GDDBProvider {
 		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
 			return null;
 		}
+		
+		Log.d(TAG, "getWriteableDatabase ");
 
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
+			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
+			
 			if (mDataBase.isOpen()) {
+				Log.d(TAG, "mDataBase.isReadOnly() " + mDataBase.isReadOnly());
 				if (!mDataBase.isReadOnly()) {
 					db = mDataBase;
 				} else {
