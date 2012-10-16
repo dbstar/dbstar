@@ -567,7 +567,7 @@ public class GDDataModel {
 			}
 		}
 		
-		if (cursor != null) {
+		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
 
@@ -672,6 +672,10 @@ public class GDDataModel {
 				} while (cursor.moveToNext());
 			}
 		}
+		
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
 
 		if (Id < 0) {
 			// insert
@@ -724,7 +728,9 @@ public class GDDataModel {
 							.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
 				} while (cursor.moveToNext());
 			}
-
+		}
+		
+		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
 
