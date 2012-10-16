@@ -876,19 +876,15 @@ public class GDDataProviderService extends Service {
 				case REQUESTTYPE_GETPREVIEWS: {
 					String path = mDataModel.getPreviewPath();
 					if (path != null && !path.isEmpty()) {
-						Log.d(TAG, "path = " + path);
 						
 						File dir = new File(path);
 						if (dir != null && dir.exists()) {
 							File[] files = dir.listFiles();
 							if (files != null && files.length > 0) {
-								Log.d(TAG, "file count = " + files.length);
-
 								PreviewData[] data = new PreviewData[files.length];
 								for (int i=0; i<data.length ; i++) {
 									PreviewData item = new PreviewData();
 									item.URI = files[i].getAbsolutePath();
-									Log.d(TAG, "+++++++++ file path = " + item.URI);
 									item.Type = PreviewData.TypeVideo;
 									data[i] = item;
 								}

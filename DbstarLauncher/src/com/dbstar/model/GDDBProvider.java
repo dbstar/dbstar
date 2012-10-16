@@ -20,7 +20,7 @@ public class GDDBProvider {
 	protected SQLiteDatabase mDataBase = null;
 	protected String mDbFile = null;
 
-	protected boolean isFileExist(String filePath) {
+	protected synchronized boolean isFileExist(String filePath) {
 		boolean exist = false;
 
 		if (filePath == null || filePath.isEmpty())
@@ -34,7 +34,7 @@ public class GDDBProvider {
 		return exist;
 	}
 
-	protected void createDatabase(String dbFile) {
+	protected synchronized void createDatabase(String dbFile) {
 		
 		Log.d(TAG, "++++++++++++++++++createDatabase " + dbFile);
 
@@ -60,7 +60,7 @@ public class GDDBProvider {
 		}
 	}
 
-	protected SQLiteDatabase openDatabase(String dbFile, boolean isReadOnly) {
+	protected synchronized SQLiteDatabase openDatabase(String dbFile, boolean isReadOnly) {
 
 		Log.d(TAG, "open dbFile = " + dbFile);
 		
@@ -83,7 +83,7 @@ public class GDDBProvider {
 		return db;
 	}
 
-	protected SQLiteDatabase getReadableDatabase() {
+	protected synchronized SQLiteDatabase getReadableDatabase() {
 		String dbFile = mDbFile;
 		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
 			return null;
@@ -109,7 +109,7 @@ public class GDDBProvider {
 		return db;
 	}
 
-	protected SQLiteDatabase getWriteableDatabase() {
+	protected synchronized SQLiteDatabase getWriteableDatabase() {
 		String dbFile = mDbFile;
 		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
 			return null;
@@ -142,7 +142,7 @@ public class GDDBProvider {
 		return db;
 	}
 
-	protected SQLiteDatabase reOpenDb(boolean isReadOnly) {
+	protected synchronized SQLiteDatabase reOpenDb(boolean isReadOnly) {
 		SQLiteDatabase db = null;
 		if (isReadOnly) {
 			db = getReadableDatabase();
@@ -155,7 +155,7 @@ public class GDDBProvider {
 		return db;
 	}
 
-	protected void closeDatabase() {
+	protected synchronized void closeDatabase() {
 		if (mDataBase != null && mDataBase.isOpen()) {
 			mDataBase.close();
 			mDataBase = null;
@@ -170,7 +170,7 @@ public class GDDBProvider {
 		return true;
 	}
 
-	protected void deinitialize() {
+	protected synchronized void deinitialize() {
 		Log.d(TAG, "deinitialize");
 		mDbFile = "";
 		if (mDataBase != null && mDataBase.isOpen()) {

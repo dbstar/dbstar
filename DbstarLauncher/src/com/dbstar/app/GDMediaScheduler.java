@@ -91,7 +91,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mResources = null;
 		mResourceIndex = -1;
 		mResourcesReady = false;
-		mUIReady = false;
 
 		mService.getPreviews(this);
 	}
@@ -172,13 +171,9 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	public void playMedia() {
 
-		Log.d(TAG, "playMedia mResourcesReady = "  + mResourcesReady + " mUIReady " + mUIReady);
-
 		if (!mResourcesReady || !mUIReady) {
 			return;
 		}
-
-		Log.d(TAG, "1");
 		
 		boolean successed = false;
 		while (true) {
@@ -190,7 +185,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			}
 		}
 
-		Log.d(TAG, "successed = " + successed);
 		if (successed) {
 			String resourcePath = "";
 			int resourceType = RNONE;
