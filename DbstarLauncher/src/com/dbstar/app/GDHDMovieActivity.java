@@ -389,7 +389,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 //				case 82:
 //				 case KeyEvent.KEYCODE_F2: {
 //					 ret = true;
-////					 testPopup();
+//					 testPopup();
 //					 Intent in = new Intent();
 //					 in.setClass(GDHDMovieActivity.this, com.dbstar.app.alert.GDForceUpgradeActivity.class);
 //					 startActivity(in);
@@ -464,30 +464,5 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			return ret;
 		}
 	};
-
-//	void testPopup() {
-//
-//		Movie movie = getSelectedMovie();
-//		String file = mService.getMediaFile(movie.Content);
-//		Log.d(TAG, "file = " + file);
-//		if (!file.equals("")) {
-//
-//			Intent intent = new Intent();
-//
-//			MediaData data = new MediaData();
-//			data.mediaURL = file;
-//			data.ColumnType = GDCommon.ColumnTypeMovie;
-//			data.PublicationID = movie.Content.Id;
-//			data.URI = movie.Content.XMLFilePath;
-//
-//			intent.putExtra(GDCommon.KeyMediaData, data);
-//
-//			intent.setComponent(new ComponentName("com.dbstar.DbstarDVB",
-//					"com.dbstar.DbstarDVB.TestActivity"));
-//			intent.setAction("android.intent.action.View");
-//
-//			startActivity(intent);
-//		}
-//	}
 
 }
