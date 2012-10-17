@@ -319,15 +319,22 @@ public class GDTVActivity extends GDBaseActivity {
 		item.Watched = true;
 
 		String file = mService.getMediaFile(item.Content);
-
+		String drmFile = mService.getDRMFile(item.Content);
 		Log.d(TAG, "playTV file =" + file);
+		Log.d(TAG, "drm file = " + drmFile);
 
 		if (!file.equals("")) {
 			Intent intent = new Intent();
 			// intent.putExtra("Uri", file);
 			// intent.setClass(this, GDVideoPlayer.class);
 
-			Uri uri = Uri.parse("file://" + file);
+			final String schema = "file://";
+			String path = schema + file;
+			if (drmFile != null && !drmFile.isEmpty()) {
+				path += "|" + drmFile;
+			}
+			
+			Uri uri = Uri.parse(path);
 			Log.d(TAG, "play = " + uri.toString());
 
 			intent.setData(uri);

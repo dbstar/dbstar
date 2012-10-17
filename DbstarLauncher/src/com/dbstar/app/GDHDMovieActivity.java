@@ -162,13 +162,22 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		Log.d(TAG, "playMovie");
 		Movie movie = getSelectedMovie();
 		String file = mService.getMediaFile(movie.Content);
+		String drmFile = mService.getDRMFile(movie.Content);
 		Log.d(TAG, "file = " + file);
+		Log.d(TAG, "drm file = " + drmFile);
 		if (!file.equals("")) {
 			Intent intent = new Intent();
 			// intent.putExtra("Uri", file);
 			// intent.setClass(this, GDVideoPlayer.class);
 
-			Uri uri = Uri.parse("file://" + file);
+			final String schema = "file://";
+			String path = schema + file;
+			if (drmFile != null && !drmFile.isEmpty()) {
+				path += "|" + drmFile;
+			}
+			
+			Uri uri = Uri.parse(path);
+
 			Log.d(TAG, "play = " + uri.toString());
 
 			intent.setData(uri);

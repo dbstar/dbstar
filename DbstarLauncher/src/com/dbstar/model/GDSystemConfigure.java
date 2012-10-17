@@ -217,6 +217,14 @@ public class GDSystemConfigure {
 
 		return file;
 	}
+	
+	public String getDRMFile(ContentData content) {
+		String file;
+
+		file = mStorageDir + "/" + content.DRMFile;
+
+		return file;
+	}
 
 	public String getThumbnailFile(ContentData content) {
 

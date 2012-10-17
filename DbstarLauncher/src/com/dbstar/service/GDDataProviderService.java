@@ -1152,6 +1152,10 @@ public class GDDataProviderService extends Service {
 	public String getMediaFile(ContentData content) {
 		return mConfigure.getMediaFile(content);
 	}
+	
+	public String getDRMFile(ContentData content) {
+		return mConfigure.getDRMFile(content);
+	}
 
 	public String getEBookFile(String category) {
 		return mConfigure.getEbookFile(category);
