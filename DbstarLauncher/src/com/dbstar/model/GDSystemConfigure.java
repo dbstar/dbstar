@@ -15,10 +15,10 @@ public class GDSystemConfigure {
 
 	public static final String EBooKFolder = "ebook";
 	private static final String GuodianServer = "GuodianServer";
-	
+
 	public static final String DefaultStorageDisk = "/mnt/sda1";
 	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
-	public static final String SmartHomeDatabase = "/data/dbstar/smarthome/database/smarthome.db";	
+	public static final String SmartHomeDatabase = "/data/dbstar/smarthome/database/smarthome.db";
 	public static final String DVBDatabaseFile = "Dbstar.db";
 	public static final String UserDatabaseFile = "userdb.db";
 
@@ -46,12 +46,12 @@ public class GDSystemConfigure {
 	// the storage disk:
 	// 1. it maybe set in the configure file
 	// 2. if not set in configure file, we will first get the default one,
-	//    if the default one is not available, try to get from the mounted disk
-	//    that has the "dbstar" folder.
+	// if the default one is not available, try to get from the mounted disk
+	// that has the "dbstar" folder.
 	private String mStorageDisk = "";
 	private String mStorageDir = "";
 	private String mIconRootDir;
-		
+
 	private String mLocalization = GDCommon.LangCN;
 
 	// paramter used for Guodian urls
@@ -66,7 +66,7 @@ public class GDSystemConfigure {
 	List<String> mPushedMessage = null;
 
 	private String mGuodianServer = "";
-	
+
 	// read configure from file
 	// call this method every time the disk is mounted or unmounted
 	public boolean readConfigure() {
@@ -97,10 +97,10 @@ public class GDSystemConfigure {
 			if (storageDir != null && storageDir.exists())
 				return true;
 		}
-		
+
 		// clear the cached disk path
 		mStorageDir = "";
-		
+
 		// get default disk
 		File defaultDir = new File(DefaultStorageDisk + "/dbstar");
 		if (defaultDir.exists()) {
@@ -127,7 +127,7 @@ public class GDSystemConfigure {
 		if (mStorageDir.isEmpty()) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -141,14 +141,14 @@ public class GDSystemConfigure {
 
 		return ret;
 	}
-	
+
 	public boolean isDiskAvailable() {
 		boolean available = false;
 		Log.d(TAG, "check disk available " + mStorageDisk);
 
-		if(mStorageDisk == null || mStorageDisk.isEmpty())
+		if (mStorageDisk == null || mStorageDisk.isEmpty())
 			return available;
-		
+
 		File file = new File(mStorageDisk);
 		if (file != null && file.exists())
 			available = true;
@@ -163,7 +163,7 @@ public class GDSystemConfigure {
 	public String getStorageDir() {
 		return mStorageDir;
 	}
-	
+
 	public String getIconRootDir() {
 		mIconRootDir = mStorageDir;
 		return mIconRootDir;
@@ -172,11 +172,11 @@ public class GDSystemConfigure {
 	public String getLocalization() {
 		return mLocalization;
 	}
-	
+
 	private void setLocalization(String localization) {
 		mLocalization = localization;
 	}
-	
+
 	public String getDVBDatabaseFile() {
 		if (mStorageDir == null || mStorageDir.isEmpty())
 			return "";
@@ -190,7 +190,7 @@ public class GDSystemConfigure {
 
 		return dbFile;
 	}
-	
+
 	public String getUserDatabaseFile() {
 		if (mStorageDir == null || mStorageDir.isEmpty())
 			return "";
@@ -198,9 +198,10 @@ public class GDSystemConfigure {
 		String dbFile = new String(mStorageDir + "/" + UserDatabaseFile);
 		return dbFile;
 	}
-	
+
 	public String getDetailsDataFile(ContentData content) {
-		String xmlFile = new String(mStorageDir + "/" + content.XMLFilePath + DefaultDesFile);
+		String xmlFile = new String(mStorageDir + "/" + content.XMLFilePath
+				+ DefaultDesFile);
 
 		File file = new File(xmlFile);
 		if (!file.exists()) {
@@ -211,17 +212,23 @@ public class GDSystemConfigure {
 	}
 
 	public String getMediaFile(ContentData content) {
-		String file;
+		String file = "";
 
-		file = mStorageDir + "/" + content.MainFile.FileURI;
+		final String mainFile = content.MainFile.FileURI;
+		if (mainFile != null && !mainFile.isEmpty()) {
+			file = mStorageDir + "/" + mainFile;
+		}
 
 		return file;
 	}
-	
-	public String getDRMFile(ContentData content) {
-		String file;
 
-		file = mStorageDir + "/" + content.DRMFile;
+	public String getDRMFile(ContentData content) {
+		String file = "";
+
+//		final String drmFile = content.DRMFile;
+//		if (drmFile != null && !drmFile.isEmpty()) {
+//			file = mStorageDir + "/" + drmFile;
+//		}
 
 		return file;
 	}
