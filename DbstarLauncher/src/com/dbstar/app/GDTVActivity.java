@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.dbstar.R;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.TV;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.widget.GDAdapterView;
@@ -13,12 +14,10 @@ import com.dbstar.widget.GDGridView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 import com.dbstar.widget.GDScrollBar;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -320,39 +319,11 @@ public class GDTVActivity extends GDBaseActivity {
 
 		String file = mService.getMediaFile(item.Content);
 		String drmFile = mService.getDRMFile(item.Content);
-		Log.d(TAG, "playTV file =" + file);
-		Log.d(TAG, "drm file = " + drmFile);
-
-		if (!file.equals("")) {
-			Intent intent = new Intent();
-			// intent.putExtra("Uri", file);
-			// intent.setClass(this, GDVideoPlayer.class);
-
-			final String schema = "file://";
-			String path = schema + file;
-			if (drmFile != null && !drmFile.isEmpty()) {
-				path += "|" + drmFile;
-			}
-			
-			Uri uri = Uri.parse(path);
-			Log.d(TAG, "play = " + uri.toString());
-
-			intent.setData(uri);
-			intent.putExtra("publication_id", item.Content.Id);
-			intent.putExtra("publicationset_id", mTV.Content.Id);
-			
-			intent.setComponent(new ComponentName("com.farcore.videoplayer",
-					"com.farcore.videoplayer.playermenu"));
-			intent.setAction("android.intent.action.View");
-			startActivity(intent);
-		}
+		
+		GDPlayerUtil.playVideo(this, file, drmFile);
 	}
 
 	private String formEpisodesText(int num) {
-		// String str = new String();
-		// str += mResource.HanZi_Di;
-		// str += num + 1;
-		// str += mResource.HanZi_Ji;
 
 		int number = num;
 		StringBuilder builder = new StringBuilder();

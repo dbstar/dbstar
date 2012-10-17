@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.dbstar.R;
+import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.ContentData;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.model.Movie;
@@ -12,26 +13,17 @@ import com.dbstar.widget.GDAdapterView;
 import com.dbstar.widget.GDGridView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 import com.dbstar.widget.GDScrollBar;
-
-//import android.app.Dialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-//import android.view.Window;
-//import android.view.animation.Animation;
-//import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
-//import android.widget.Button;
 import android.widget.ImageView;
-//import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class GDHDMovieActivity extends GDBaseActivity {
@@ -47,7 +39,6 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	String mColumnId;
 	List<Movie[]> mPageDatas;
 
-	// Dialog mMovieInfoViewDlg = null;
 	GDGridView mSmallThumbnailView;
 	MovieAdapter mAdapter;
 	int mSeletedItemIndex = 0;
@@ -161,34 +152,11 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	private void playMovie() {
 		Log.d(TAG, "playMovie");
 		Movie movie = getSelectedMovie();
+		
 		String file = mService.getMediaFile(movie.Content);
 		String drmFile = mService.getDRMFile(movie.Content);
-		Log.d(TAG, "file = " + file);
-		Log.d(TAG, "drm file = " + drmFile);
-		if (!file.equals("")) {
-			Intent intent = new Intent();
-			// intent.putExtra("Uri", file);
-			// intent.setClass(this, GDVideoPlayer.class);
-
-			final String schema = "file://";
-			String path = schema + file;
-			if (drmFile != null && !drmFile.isEmpty()) {
-				path += "|" + drmFile;
-			}
-			
-			Uri uri = Uri.parse(path);
-
-			Log.d(TAG, "play = " + uri.toString());
-
-			intent.setData(uri);
-			intent.putExtra("publication_id", movie.Content.Id);
-//			intent.putExtra("column_type", GDCommon.ColumnTypeMovie);
-			
-			intent.setComponent(new ComponentName("com.farcore.videoplayer",
-					"com.farcore.videoplayer.playermenu"));
-			intent.setAction("android.intent.action.View");
-			startActivity(intent);
-		}
+		
+		GDPlayerUtil.playVideo(this, file, drmFile);
 	}
 
 	public void updateData(int type, Object key, Object data) {
@@ -385,16 +353,6 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			int action = event.getAction();
 			if (action == KeyEvent.ACTION_DOWN) {
 				switch (keyCode) {
-
-//				case 82:
-//				 case KeyEvent.KEYCODE_F2: {
-//					 ret = true;
-//					 testPopup();
-//					 Intent in = new Intent();
-//					 in.setClass(GDHDMovieActivity.this, com.dbstar.app.alert.GDForceUpgradeActivity.class);
-//					 startActivity(in);
-//					 break;
-//				 }
 				
 				case KeyEvent.KEYCODE_DPAD_LEFT: {
 					int currentItem = mSmallThumbnailView
