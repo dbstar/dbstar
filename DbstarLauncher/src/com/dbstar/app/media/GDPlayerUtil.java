@@ -30,9 +30,14 @@ public class GDPlayerUtil {
 //			intent.putExtra("publication_id", movie.Content.Id);
 //			intent.putExtra("column_type", GDCommon.ColumnTypeMovie);
 			
-			intent.setComponent(new ComponentName("com.farcore.videoplayer",
-					"com.farcore.videoplayer.playermenu"));
+//			intent.setComponent(new ComponentName("com.farcore.videoplayer",
+//					"com.farcore.videoplayer.playermenu"));
+//			intent.setAction("android.intent.action.View");
+			
+			intent.setComponent(new ComponentName("com.dbstar.DbstarDVB",
+					"com.dbstar.DbstarDVB.VideoPlayer.PlayerMenu"));
 			intent.setAction("android.intent.action.View");
+			
 			context.startActivity(intent);
 		}
 	}

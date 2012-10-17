@@ -225,10 +225,10 @@ public class GDSystemConfigure {
 	public String getDRMFile(ContentData content) {
 		String file = "";
 
-//		final String drmFile = content.DRMFile;
-//		if (drmFile != null && !drmFile.isEmpty()) {
-//			file = mStorageDir + "/" + drmFile;
-//		}
+		final String drmFile = content.DRMFile;
+		if (drmFile != null && !drmFile.isEmpty()) {
+			file = mStorageDir + "/" + drmFile;
+		}
 
 		return file;
 	}
