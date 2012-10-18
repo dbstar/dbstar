@@ -28,6 +28,8 @@
 #include "sqlite.h"
 #include "softdmx.h"
 
+static char s_data_source[64];
+
 #define MULTI_BUF_POINTER_MOVE(p,len) (p)=(((p)+(len))%MULTI_BUF_SIZE)
 
 typedef struct{
@@ -67,14 +69,13 @@ static int multicast_uninit()
 
 int igmp_init()
 {
-	char data_source[64];
-	memset(data_source, 0, sizeof(data_source));
-	if(-1==data_source_get(data_source, sizeof(data_source)-1)){
+	memset(s_data_source, 0, sizeof(s_data_source));
+	if(-1==data_source_get(s_data_source, sizeof(s_data_source)-1)){
 		DEBUG("has no data source to process, exit from %s()\n", __FUNCTION__);
 		return -1;
 	}
 	multicast_init();
-	if(-1==multicast_add(data_source)){
+	if(-1==multicast_add(s_data_source)){
 		DEBUG("igmp join failed\n");
 		return -1;
 	}
@@ -100,7 +101,7 @@ int igmp_uninit()
 
 void *igmp_thread(void *multi_addr)
 {
-	char *p_multi_addr = (char *)multi_addr;
+	char *p_multi_addr = s_data_source;
 	DEBUG("multicast addr: %s\n", p_multi_addr);
     char if_ip[16] = {0};
 	int sock, opt;
@@ -331,6 +332,8 @@ int multicast_add(const char *multi_addr)
 		DEBUG("this multicast addr is invalid: %s\n", multi_addr);
 		return -1;
 	}
+	else
+		DEBUG("will join: %s", multi_addr);
 	
 	int ret = -1;
 	// 创建接收线程
@@ -379,7 +382,7 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
  act_flag：	1——初始化demux过滤器
  			0——反初始化demux过滤器
 */
-static int pid_init(int act_flag)
+int pid_init(int act_flag)
 {
 	char sqlite_cmd[256+128];
 	int (*sqlite_callback)(char **, int, int, void *) = allpid_sqlite_cb;

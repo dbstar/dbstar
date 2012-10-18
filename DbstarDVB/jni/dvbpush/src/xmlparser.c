@@ -198,11 +198,23 @@ int xmlparser_init(void)
 	memset(s_push_root_path, 0, sizeof(s_push_root_path));
 	if(0==pushdata_rootdir_get(s_push_root_path, sizeof(s_push_root_path))){
 		DBSTAR_GLOBAL_S global_s;
+		sqlite_transaction_begin();
+		
 		memset(&global_s, 0, sizeof(global_s));
 		strncpy(global_s.Name, GLB_NAME_PUSHDATADIR, sizeof(global_s.Name));
 		strncpy(global_s.Value, s_push_root_path, sizeof(global_s.Value));
-		sqlite_transaction_begin();
 		global_insert(&global_s);
+		
+		memset(&global_s, 0, sizeof(global_s));
+		strncpy(global_s.Name, GLB_NAME_PREVIEWPATH, sizeof(global_s.Name));
+		strncpy(global_s.Value, DBSTAR_PREVIEWPATH, sizeof(global_s.Value));
+		global_insert(&global_s);
+		
+		memset(&global_s, 0, sizeof(global_s));
+		strncpy(global_s.Name, GLB_NAME_LANGUAGE, sizeof(global_s.Name));
+		strncpy(global_s.Value, "chi", sizeof(global_s.Value));	// this should be changed at future
+		global_insert(&global_s);
+		
 		sqlite_transaction_end(1);
 		
 		char init_xml_path[512];
@@ -218,7 +230,7 @@ int xmlparser_init(void)
 		DEBUG("get push data root dir failed\n");
 		return -1;
 	}
-	localcolumn_init();
+	//localcolumn_init();
 	
 	return 0;
 }
@@ -1350,17 +1362,27 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 	return;
 }
 
-/*xmlroute仍存在重复的可能性*/
-/*只有从parseDoc过来的调用，其rootelement方不为空，其他地方的调用rootelement均为空*/
+/*
+ xmlroute仍存在重复的可能性
+*/
+/*
+ 只有从parseDoc过来的调用，其rootelement方不为空，其他地方的调用rootelement均为空
+*/
 /*
  判断标记，若正在处理的节点有效，则本父节点有效，且叔伯节点无效。
  使用场景：通过子节点的值判断本节点是否有效。注意和局部变量process_over之间的关系。
 */
-static void parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, DBSTAR_XMLINFO_S *xmlinfo, char *rootelement, int *p_child_tree_is_valid, char *xml_ver)
+/*
+ 返回值：
+ 1——提前退出
+ 0——正常退出
+ -1——失败
+*/
+static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, DBSTAR_XMLINFO_S *xmlinfo, char *rootelement, int *p_child_tree_is_valid, char *xml_ver)
 {
 	if(NULL==doc || NULL==cur || NULL==xmlroute){
 		DEBUG("some arguments are invalide\n");
-		return;
+		return -1;
 	}
 	//DEBUG("%s:%d\n", xmlroute, p_child_tree_is_valid);
 	/*
@@ -1450,6 +1472,7 @@ static void parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr,
 					parseProperty(cur, new_xmlroute, (void *)serviceID);
 					if(0==strcmp(serviceID, serviceID_get())){
 						DEBUG("detect valid productID: %s\n", serviceID);
+						pid_init(0);
 						sqlite_transaction_table_clear("Channel");
 						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
 						process_over = 1;
@@ -2950,12 +2973,12 @@ static void parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr,
 			cur = cur->next;
 		else{
 			DEBUG("process over advance, because have the valid child-tree already\n");
-			break;
+			return 1;
 		}
 	}
 	//DEBUG("return from %s\n", xmlroute);
 	
-	return;
+	return 0;
 }
 
 static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
@@ -3011,33 +3034,33 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		sqlite_transaction_begin();
 // Initialize.xml
 		if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
-			parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, xml_ver);
+			ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, xml_ver);
 		}
 // Channels.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Channels")){
-			parseNode(doc, cur, "Channels", NULL, &xmlinfo, "Channels", NULL, xml_ver);
+			ret = parseNode(doc, cur, "Channels", NULL, &xmlinfo, "Channels", NULL, xml_ver);
 		}
 // Service.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"ServiceGroup")){
-			parseNode(doc, cur, "ServiceGroup", NULL, &xmlinfo, "ServiceGroup", NULL, xml_ver);
+			ret = parseNode(doc, cur, "ServiceGroup", NULL, &xmlinfo, "ServiceGroup", NULL, xml_ver);
 		}
 // Product.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Product")){
 			DBSTAR_PRODUCT_S product_s;
 			memset(&product_s, 0, sizeof(product_s));
 					
-			parseNode(doc, cur, "Product", &product_s, &xmlinfo, "Product", NULL, xml_ver);
+			ret = parseNode(doc, cur, "Product", &product_s, &xmlinfo, "Product", NULL, xml_ver);
 			product_insert(&product_s);
 		}
 // PublicationsSets.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"PublicationsSets")){
-			parseNode(doc, cur, "PublicationsSets", NULL, &xmlinfo, "PublicationsSets", NULL, xml_ver);
+			ret = parseNode(doc, cur, "PublicationsSets", NULL, &xmlinfo, "PublicationsSets", NULL, xml_ver);
 		}
 // Publication.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Publication")){
 			DBSTAR_PUBLICATION_S publication_s;
 			memset(&publication_s, 0, sizeof(publication_s));
-			parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, xml_ver);
+			ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, xml_ver);
 			publication_insert(&publication_s);
 		}
 // Column.xml
@@ -3046,16 +3069,16 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 			 不能一股脑的清理掉Column的所有数据，保留本地菜单
 			*/
 			char sqlite_cmd[256];
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType='%d';", COLUMN_LOCAL);
+			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE  fanle ColumnType='%d';", COLUMN_LOCAL);
 			sqlite_transaction_exec(sqlite_cmd);
 			DBSTAR_COLUMN_S column_s;
 			memset(&column_s, 0, sizeof(column_s));
-			parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", NULL, xml_ver);
+			ret = parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", NULL, xml_ver);
 		}
 // GuideList.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"GuideList")){
 			sqlite_transaction_table_clear("GuideList");
-			parseNode(doc, cur, "GuideList", NULL, &xmlinfo, "GuideList", NULL, xml_ver);
+			ret = parseNode(doc, cur, "GuideList", NULL, &xmlinfo, "GuideList", NULL, xml_ver);
 		}
 // ProductDesc.xml 当前投递单
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
@@ -3063,23 +3086,23 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 			
 			DBSTAR_PRODUCTDESC_S productdesc_s;
 			memset(&productdesc_s, 0, sizeof(productdesc_s));
-			parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", NULL, xml_ver);
+			ret = parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", NULL, xml_ver);
 		}
 // PublicationsColumn.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"PublicationsColumn")){
-			parseNode(doc, cur, "PublicationsColumn", NULL, &xmlinfo, "PublicationsColumn", NULL, xml_ver);
+			ret = parseNode(doc, cur, "PublicationsColumn", NULL, &xmlinfo, "PublicationsColumn", NULL, xml_ver);
 		}
 		
 		
 // Message.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Messages")){
-			parseNode(doc, cur, "Messages", NULL, &xmlinfo, "Messages", NULL, xml_ver);
+			ret = parseNode(doc, cur, "Messages", NULL, &xmlinfo, "Messages", NULL, xml_ver);
 		}
 // Preview.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Preview")){
 			DBSTAR_PREVIEW_S preview_s;
 			memset(&preview_s, 0, sizeof(preview_s));
-			parseNode(doc, cur, "Preview", &preview_s, &xmlinfo, "Preview", NULL, xml_ver);
+			ret = parseNode(doc, cur, "Preview", &preview_s, &xmlinfo, "Preview", NULL, xml_ver);
 			preview_insert(&preview_s);
 		}
 		
@@ -3091,6 +3114,11 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		if(strcmp(xml_ver, xmlinfo.Version))
 			xmlinfo_insert(&xmlinfo);
 		sqlite_transaction_end(1);
+		
+		if(0==xmlStrcmp(cur->name, BAD_CAST"Channels") && 1==ret){
+			DEBUG("Channels are edited, reinit pid\n");
+			pid_init(1);
+		}
 	}
 	
 	xmlFreeDoc(doc);

@@ -911,6 +911,7 @@ int sqlite_transaction_begin()
 {
 	int ret = -1;
 	
+	DEBUG("sqlite_transaction_begin>>\n");
 	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
 		DEBUG("######### SQLITE TRANSACTION STATUS is abnormally #########\n");
 		DEBUG("expect SQL_TRAN_STATUS_END but %d\n", s_sql_tran_status);
@@ -997,6 +998,7 @@ int sqlite_transaction_end(int commit_flag)
 {
 	int ret = -1;
 	
+	DEBUG("sqlite_transaction_end<<\n");
 	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
 		if(1==commit_flag){
 			DEBUG("commit transaction\n");

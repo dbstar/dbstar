@@ -53,10 +53,10 @@ typedef enum{
 
 #define	SERVICE_ID			"01"
 #define PROG_DATA_PID_DF	(102)	// 0X66
-#define ROOT_CHANNEL		(100)
+#define ROOT_CHANNEL		(100)	// 0x64
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
-#define DATA_SOURCE			"igmp://224.0.0.1:5000"
+#define DATA_SOURCE			"igmp://239.1.7.5:5000"
 #define MULTI_BUF_SIZE		(12*1024*1316)	/* larger than 16M */
 
 #define EXTENSION_STR_FILL	"Extension"
@@ -74,9 +74,12 @@ typedef enum{
 
 #define GLB_NAME_SERVICEID		"serviceID"
 #define GLB_NAME_PUSHDATADIR	"push_data_dir"
-#define GLB_NAME_LOCALCOLUMNRES	"/data/dbstar/columnres"
+#define GLB_NAME_PREVIEWPATH	"PreviewPath"
+#define GLB_NAME_LANGUAGE		"DbstarLanguage"
 
-#define INITIALIZE_PATH "pushinfo/initialize"
+#define INITIALIZE_PATH		"pushinfo/initialize"
+#define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
+#define LOCALCOLUMN_RES		"/data/dbstar/ColumnRes"
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,

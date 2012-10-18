@@ -53,7 +53,7 @@ static void settingDefault_set(void)
 	s_debug_level = 0;
 	memset(s_xml, 0, sizeof(s_xml));
 	snprintf(s_initialize_xml, sizeof(s_initialize_xml), "%d", INITIALIZE_XML);
-	snprintf(s_localcolumn_res, sizeof(s_localcolumn_res), "%s", GLB_NAME_LOCALCOLUMNRES);
+	snprintf(s_localcolumn_res, sizeof(s_localcolumn_res), "%s", LOCALCOLUMN_RES);
 	
 	return;
 }

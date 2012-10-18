@@ -473,6 +473,8 @@ void callback(const char *path, long long size, int flag)
 			
 		pthread_mutex_unlock(&mtx_xml);
 	}
+	else
+		DEBUG("this file is ignore\n");
 }
 
 /*
@@ -602,7 +604,11 @@ int push_monitor_reset()
 	/*
 	虽然投递单中还有成品集PublicationsSet、预告单GuideList、小片Preview，但与用户紧密相关的只有成品Publication
 	*/
+#if 0
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM ProductDesc;");
+#else
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM Publication WHERE ReceiveStatus='0' OR ReceiveStatus='1';");
+#endif
 	ret = sqlite_read(sqlite_cmd, NULL, sqlite_callback);
 #endif
 	pthread_mutex_unlock(&mtx_push_monitor);

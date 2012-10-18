@@ -7,5 +7,6 @@ int softdvb_init();
 int softdvb_uninit();
 int igmp_init();
 int igmp_uninit();
+int pid_init(int act_flag);
 
 #endif
