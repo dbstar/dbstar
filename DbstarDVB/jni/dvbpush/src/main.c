@@ -29,12 +29,12 @@ void *main_thread()
 		return NULL;
 	}
 	
+	push_root_dir_init(PUSH_CONF);
+	
 	if(-1==sqlite_init()){
 		DEBUG("sqlite init failed\n");
 		return NULL;
 	}
-	
-	push_root_dir_init(PUSH_CONF);
 	
 	if(-1==xmlparser_init()){
 		DEBUG("xmlparser init failed\n");

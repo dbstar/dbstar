@@ -195,42 +195,43 @@ int xmlparser_init(void)
 	else
 		DEBUG("read serviceID: %s\n", s_serviceID);
 	
+	DBSTAR_GLOBAL_S global_s;
+	sqlite_transaction_begin();
+	
 	memset(s_push_root_path, 0, sizeof(s_push_root_path));
 	if(0==pushdata_rootdir_get(s_push_root_path, sizeof(s_push_root_path))){
-		DBSTAR_GLOBAL_S global_s;
-		sqlite_transaction_begin();
-		
 		memset(&global_s, 0, sizeof(global_s));
 		strncpy(global_s.Name, GLB_NAME_PUSHDATADIR, sizeof(global_s.Name));
 		strncpy(global_s.Value, s_push_root_path, sizeof(global_s.Value));
 		global_insert(&global_s);
-		
-		memset(&global_s, 0, sizeof(global_s));
-		strncpy(global_s.Name, GLB_NAME_PREVIEWPATH, sizeof(global_s.Name));
-		strncpy(global_s.Value, DBSTAR_PREVIEWPATH, sizeof(global_s.Value));
-		global_insert(&global_s);
-		
-		memset(&global_s, 0, sizeof(global_s));
-		strncpy(global_s.Name, GLB_NAME_LANGUAGE, sizeof(global_s.Name));
-		strncpy(global_s.Value, "chi", sizeof(global_s.Value));	// this should be changed at future
-		global_insert(&global_s);
-		
-		sqlite_transaction_end(1);
-		
-		char init_xml_path[512];
-		char init_xml_uri[512];
-		snprintf(init_xml_path, sizeof(init_xml_path), "%s/%s", s_push_root_path,INITIALIZE_PATH);
-		memset(init_xml_uri, 0, sizeof(init_xml_uri));
-		
-		if(0==distill_file(init_xml_path, init_xml_uri, sizeof(init_xml_uri), "xml", "Initialize.xml")){
-			parse_xml(init_xml_uri,INITIALIZE_XML);
-		}
 	}
 	else{
 		DEBUG("get push data root dir failed\n");
 		return -1;
 	}
-	//localcolumn_init();
+		
+	memset(&global_s, 0, sizeof(global_s));
+	strncpy(global_s.Name, GLB_NAME_PREVIEWPATH, sizeof(global_s.Name));
+	strncpy(global_s.Value, DBSTAR_PREVIEWPATH, sizeof(global_s.Value));
+	global_insert(&global_s);
+	
+	memset(&global_s, 0, sizeof(global_s));
+	strncpy(global_s.Name, GLB_NAME_LANGUAGE, sizeof(global_s.Name));
+	strncpy(global_s.Value, "chi", sizeof(global_s.Value));	// this should be changed at future
+	global_insert(&global_s);
+	
+	sqlite_transaction_end(1);
+		
+	char init_xml_path[512];
+	char init_xml_uri[512];
+	snprintf(init_xml_path, sizeof(init_xml_path), "%s/%s", s_push_root_path,INITIALIZE_PATH);
+	memset(init_xml_uri, 0, sizeof(init_xml_uri));
+	
+	if(0==distill_file(init_xml_path, init_xml_uri, sizeof(init_xml_uri), "xml", "Initialize.xml")){
+		parse_xml(init_xml_uri,INITIALIZE_XML);
+	}
+	
+	localcolumn_init();
 	
 	return 0;
 }
@@ -1417,7 +1418,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 			szKey = xmlNodeGetContent(cur);
 			if(0==xmlStrcmp(cur->name, BAD_CAST"Version")){
 				strncpy(xmlinfo->Version, (char *)szKey, sizeof(xmlinfo->Version)-1);
-				if(NULL!=xml_ver && 0==strcmp(xml_ver, xmlinfo->Version)){
+				if(NULL==xml_ver || 0==strcmp(xml_ver, xmlinfo->Version)){
 					DEBUG("same xml version: %s\n", xml_ver);
 					process_over = 1;
 				}

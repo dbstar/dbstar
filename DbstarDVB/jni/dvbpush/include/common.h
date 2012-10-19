@@ -43,6 +43,7 @@ typedef enum{
 #define	MSG_FIFO_ROOT_DIR	WORKING_DATA_DIR"/msg_fifo"
 #define SETTING_BASE		WORKING_DATA_DIR"/dbstar.conf"
 #define PUSH_CONF			WORKING_DATA_DIR"/push.conf"
+#define PUSH_CONF_DF		"/etc/push.conf"
 
 /*
 程序运行过程中产生的数据，包括：下载的片源、对应的数据库
@@ -102,8 +103,8 @@ typedef enum{
 typedef enum{
 	PUSH_XML_FLAG_MINLINE = -1,
 	
-	INITIALIZE_XML = 0,
-	CHANNEL_XML,
+	INITIALIZE_XML = 20,
+	CHANNEL_XML = 22,
 	SERVICE_XML,
 	COLUMN_XML,
 	GUIDELIST_XML,
@@ -112,7 +113,7 @@ typedef enum{
 	PRODUCTDESC_XML,
 	PUBLICATIONSCOLUMN_XML,
 	
-	PUSH_XML_FLAG_MAXLINE
+	PUSH_XML_FLAG_MAXLINE = 100
 }PUSH_XML_FLAG_E;
 
 

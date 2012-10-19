@@ -488,7 +488,7 @@ void push_root_dir_init(char *push_conf)
 	char *p_value;
 	
 	if(NULL==push_conf)
-		fp = fopen("/etc/push.conf", "r");
+		fp = fopen(PUSH_CONF_DF, "r");
 	else
 		fp = fopen(push_conf, "r");
 	
@@ -514,6 +514,10 @@ void push_root_dir_init(char *push_conf)
 	if(0==strlen(s_push_data_dir)){
 		DEBUG("waring: open push.conf to get push data dir failed\n");
 		strncpy(s_push_data_dir, PUSH_DATA_DIR_DF, sizeof(s_push_data_dir)-1);
+	}
+	else{
+		if('/'==s_push_data_dir[strlen(s_push_data_dir)-1])
+			s_push_data_dir[strlen(s_push_data_dir)-1] = '\0';
 	}
 }
 

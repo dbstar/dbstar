@@ -302,6 +302,22 @@ void *softdvb_thread()
 	int left = 0;
 	
 	softdvb_running = 1;
+	
+	/*
+	由于加入组播组是在一个线程中进行的，容易出现加入组播工作还未完毕，这里就已经开始判断igmp_running，从而导致错误退出。
+	所以这里延迟一下判断。
+	*/
+	int i = 0;
+	for(i=0; i<100; i++){
+		if(1!=softdvb_running)
+			break;
+		
+		if(1==igmp_running)
+			break;
+		else
+			usleep(100000);
+	}
+	
 	while(1==softdvb_running && 1==igmp_running)	// make sure the igmp thread is start firstly
 	{
 		if(p_write >= p_read)
