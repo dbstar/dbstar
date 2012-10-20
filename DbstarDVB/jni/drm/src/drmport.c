@@ -37,8 +37,8 @@ typedef struct {
 #endif
 //#define CDCA_MAX_CARD_NUM 2
 #define SMC_DEVICE  "/dev/smc0"
-#define BLOCK01_FILE "/mnt/sdb1/drm/entitle/block01"
-#define ENTITLE_FILE_PATH "/mnt/sdb1/drm/entitle"
+#define BLOCK01_FILE "/data/dbstar/drm/entitle/block01"
+#define ENTITLE_FILE_PATH "/data/dbstar/drm/entitle"
 //#define DMX_DEV_NO 0
 
 //CDCA_U8 checkTimeoutMark = 0;
