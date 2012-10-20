@@ -13,14 +13,14 @@
         android:layout_marginLeft="0dp"
         android:layout_marginTop="0dp" >
 
-        <ImageView
+      <!--  <ImageView
             android:layout_width="269dp"
             android:layout_height="70dp"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="40dp"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_dbstar" />
+            android:src="@drawable/logo_dbstar" /> -->
 
         <TextView
             android:id="@+id/pageNumberView"

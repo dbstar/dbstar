@@ -15,7 +15,7 @@
         android:layout_marginTop="0dp"
         android:focusable="false" >
 
-        <ImageView
+        <!--<ImageView
             android:id="@+id/logo_dbstar"
             android:layout_width="269dp"
             android:layout_height="70dp"
@@ -32,7 +32,7 @@
             android:layout_marginLeft="20dp"
             android:layout_toRightOf="@id/logo_dbstar"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_guodian" />
+            android:src="@drawable/logo_guodian" />-->
 
         <TextView
             android:id="@+id/custom_service_hotline"
