@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include <string.h>
 #include <am_smc.h>
 #include <fcntl.h>
@@ -52,6 +53,27 @@ SCDCACardEntitleInfo card_sn = {"", NULL}; //[CDCA_MAX_CARD_NUM];
 //extern Channel_t chanFilter[];
 //extern int max_filter_num;
 
+
+static int mkdirp(char *path)
+{
+	int ret = 0;
+	char cmd[128] = {};
+
+	if (path == NULL) {
+		LOGD("--- path NULL\n");
+		return -1;
+	}
+
+	if (access(path, 0) == 0) {
+		LOGD("--- path[%s] already exist.\n", path);
+		ret = 0;
+	} else {
+		sprintf(cmd, "mkdir -p %s", path);
+		ret = system(cmd);
+	}
+
+	return ret;
+}
 
 /*-------- 线程管理 --------*/
 
@@ -165,12 +187,18 @@ void  CDSTBCA_Memcpy(void*       pDestBuf,
 void CDSTBCA_ReadBuffer(CDCA_U8 byBlockID, CDCA_U8*  pbyData, CDCA_U32* pdwLen)
 {
 	int len;
+	int ret = 0;
 
 	LOGD("###############Read the flash 64k buffer [%d]\n", byBlockID);
 	if (block01_fd == NULL) {
 		//	CDCA_U8 tmp[128*1024];
 
 		//	memset(tmp,0,128*1024);
+		ret = mkdirp(ENTITLE_FILE_PATH);
+		if (ret != 0) {
+			LOGD("--- create the entitle path error. [%s]\n", strerror(errno));
+			return;
+		}
 		block01_fd = fopen(BLOCK01_FILE, "r+");
 
 		if (block01_fd == NULL) {
@@ -195,11 +223,18 @@ void CDSTBCA_ReadBuffer(CDCA_U8 byBlockID, CDCA_U8*  pbyData, CDCA_U32* pdwLen)
 /* 写入存储空间 */
 void CDSTBCA_WriteBuffer(CDCA_U8 byBlockID, const CDCA_U8* pbyData, CDCA_U32 dwLen)
 {
+	int ret = 0;
+
 	LOGD("###############Write the flash 64k buffer [%d]\n", byBlockID);
 	if (block01_fd == NULL) {
 		//	CDCA_U8 tmp[128*1024];
 
 		//	memset(tmp,0,128*1024);
+		ret = mkdirp(ENTITLE_FILE_PATH);
+		if (ret != 0) {
+			LOGD("--- create the entitle path error. [%s]\n", strerror(errno));
+			return;
+		}
 		block01_fd = fopen(BLOCK01_FILE, "r+");
 		if (block01_fd == NULL) {
 			LOGD("open the flash file error!!!!!\n");
@@ -606,7 +641,7 @@ void CDSTBCA_Printf(CDCA_U8 byLevel, const char* szMesssage)
 #if 0
 void Card_Entitle_init()
 {
-	sLOGD(card_sn[0].sn, "8000302100000333");
+	sprintf(card_sn[0].sn, "8000302100000333");
 	card_sn[0].fd = NULL;
 }
 
@@ -652,7 +687,7 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 
 CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void** pFileHandle)
 {
-	//int i;
+	int ret = 0;
 	char fullentitle[CDCA_MAXLEN_SN_PATH];
 
 	sprintf(fullentitle, "%s/%s", ENTITLE_FILE_PATH, CardSN);
@@ -660,6 +695,11 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 	if (access(fullentitle, 0)) { //not exsit
 		if (card_sn.fd) {
 			fclose(card_sn.fd);
+		}
+		ret = mkdirp(ENTITLE_FILE_PATH);
+		if (ret != 0) {
+			LOGD("--- create the entitle path error. [%s]\n", strerror(errno));
+			return CDCA_FALSE;
 		}
 		strncpy(card_sn.sn, fullentitle, CDCA_MAXLEN_SN_PATH);
 		card_sn.fd = fopen(fullentitle, "w+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
