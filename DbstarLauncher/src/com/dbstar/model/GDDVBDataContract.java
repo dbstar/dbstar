@@ -33,7 +33,10 @@ public class GDDVBDataContract {
 	public static final String ValuePublicationName = "PublicationName";
 	public static final String ValueColumnName = "ColumnName";
 	
-	public static final String ValueColumnPreviewPath = "PreviewPath";
+	// Global property name
+	public static final String PropertyPreviewPath = "PreviewPath";
+	public static final String PropertyColumnResPath = "ColumnRes";
+	public static final String PropertyPushDir = "PushDir";
 
 	public static final class Global implements BaseColumns {
 

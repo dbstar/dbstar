@@ -15,17 +15,23 @@ public class GDSystemConfigure {
 
 	public static final String EBooKFolder = "ebook";
 	private static final String GuodianServer = "GuodianServer";
-
-	public static final String DefaultStorageDisk = "/mnt/sda1";
-	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
-	public static final String SmartHomeDatabase = "/data/dbstar/smarthome/database/smarthome.db";
 	public static final String DVBDatabaseFile = "Dbstar.db";
 	public static final String UserDatabaseFile = "userdb.db";
 
+	// Default Property values
+	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
+	public static final String DefaultStorageDisk = "/mnt/sda1";
+	public static final String SmartHomeDatabase = "/data/dbstar/smarthome/database/smarthome.db";
+	public static final String DefaultPushDir = "/mnt/sda1/dbstar";
+	public static final String DefaultDbstarDBFile = "/data/dbstar/Dbstar.db";
+	public static final String DefaultColumnResDir = "/data/dbstar/ColumnRes";
 	public static final String DefaultDesFile = "/info/desc/Publication.xml";
 
-	private static final String PROPERTY_STORAGE_DIR = "storage";
+	// Property Name
 	private static final String PROPERTY_LOCALIZATION = "language";
+	private static final String PROPERTY_DBSTARDATABSE = "DbstarDatabase";
+	private static final String PROPERTY_PUSH_DIR = "PushDir";
+	private static final String PROPERTY_COLUMNRES_DIR = "ColumnRes";
 
 	private String Property_GuoWangDongTai;
 	private String Property_GuoWangKuaiXun;
@@ -43,17 +49,6 @@ public class GDSystemConfigure {
 	private String Property_ZaZhi;
 	private String Property_BaoZhi;
 
-	// the storage disk:
-	// 1. it maybe set in the configure file
-	// 2. if not set in configure file, we will first get the default one,
-	// if the default one is not available, try to get from the mounted disk
-	// that has the "dbstar" folder.
-	private String mStorageDisk = "";
-	private String mStorageDir = "";
-	private String mIconRootDir;
-
-	private String mLocalization = GDCommon.LangCN;
-
 	// paramter used for Guodian urls
 	private String[][] mCategoryContents = { { Property_GuoWangDongTai, "" },
 			{ Property_GuoWangKuaiXun, "" }, { Property_ShiPinDongTai, "" },
@@ -62,11 +57,23 @@ public class GDSystemConfigure {
 			{ Property_HaoNengFenXi, "" }, { Property_WoDeYongDian, "" },
 			{ Property_YongDianMingXi, "" }, { Property_YongDianTiYan, "" },
 			{ Property_JieNengChangShi, "" } };
+
+	// the storage disk:
+	// 1. it maybe set in the configure file
+	// 2. if not set in configure file, we will first get the default one,
+	// if the default one is not available, try to get from the mounted disk
+	// that has the "dbstar" folder.
+	private String mStorageDisk = "";
+	private String mStorageDir = "";
+	private String mIconRootDir = "";
+
+	private String mLocalization = GDCommon.LangCN;
 	// demo data for push message
 	List<String> mPushedMessage = null;
-
 	private String mGuodianServer = "";
-
+	private String mDbstarDatabase = "";
+	
+	
 	// read configure from file
 	// call this method every time the disk is mounted or unmounted
 	public boolean readConfigure() {
@@ -90,24 +97,26 @@ public class GDSystemConfigure {
 	// get the storage directory
 	// call this method every time the disk is mounted or unmounted
 	public boolean configureStorage() {
-		// if this disk is already set, check whether it is valid
-
+		//1. step 
+		//if this disk is already set, check whether it is valid
 		if (!mStorageDir.equals("")) {
 			File storageDir = new File(mStorageDir);
-			if (storageDir != null && storageDir.exists())
+			if (storageDir != null && storageDir.exists()) {
+				setStorageDir(mStorageDir);
 				return true;
+			}
 		}
 
 		// clear the cached disk path
 		mStorageDir = "";
 
-		// get default disk
+		// 2. setp: get default disk
 		File defaultDir = new File(DefaultStorageDisk + "/dbstar");
 		if (defaultDir.exists()) {
 			mStorageDisk = DefaultStorageDisk;
 			mStorageDir = DefaultStorageDisk + "/dbstar";
 		} else {
-			// get from mounted disks
+			// 3. step: get from mounted disks
 			String paths[] = getMountedDisks();
 			for (String path : paths) {
 				File dbstarFolder = new File(path + "/dbstar");
@@ -131,6 +140,53 @@ public class GDSystemConfigure {
 		return true;
 	}
 
+	// Parameters for Flash/Local storage
+	public String getIconRootDir() {
+		if (mIconRootDir != null && !mIconRootDir.isEmpty()) {
+			return mIconRootDir;
+		}
+		
+		return DefaultColumnResDir;
+	}
+
+	public String getLocalization() {
+		return mLocalization;
+	}
+
+	private void setLocalization(String localization) {
+		mLocalization = localization;
+	}
+
+	public String getDVBDatabaseFile() {
+		if (mDbstarDatabase == null || mDbstarDatabase.isEmpty())
+			return DefaultDbstarDBFile;
+
+		return mDbstarDatabase;
+	}
+
+	public String getSmartHomeDBFile() {
+		String dbFile = SmartHomeDatabase;
+
+		return dbFile;
+	}
+	
+	
+	//Parameters for Removable storage
+	public void setStorageDir (String storageDir) {
+		if (storageDir != null && !storageDir.isEmpty()) {
+			mStorageDir = storageDir;
+			
+			int index = storageDir.indexOf("dbstar");
+			if (index > 0) {
+				String disk = storageDir.substring(0, index);
+				if (disk != null && !disk.isEmpty()) {
+					mStorageDisk = disk;
+					Log.d(TAG, "storage disk = " + disk);
+				}
+			}
+		}
+	}
+	
 	public boolean isStorageDisk(String disk) {
 		boolean ret = false;
 
@@ -162,33 +218,6 @@ public class GDSystemConfigure {
 
 	public String getStorageDir() {
 		return mStorageDir;
-	}
-
-	public String getIconRootDir() {
-		mIconRootDir = mStorageDir;
-		return mIconRootDir;
-	}
-
-	public String getLocalization() {
-		return mLocalization;
-	}
-
-	private void setLocalization(String localization) {
-		mLocalization = localization;
-	}
-
-	public String getDVBDatabaseFile() {
-		if (mStorageDir == null || mStorageDir.isEmpty())
-			return "";
-
-		String dbFile = new String(mStorageDir + "/" + DVBDatabaseFile);
-		return dbFile;
-	}
-
-	public String getSmartHomeDBFile() {
-		String dbFile = SmartHomeDatabase;
-
-		return dbFile;
 	}
 
 	public String getUserDatabaseFile() {
@@ -234,20 +263,6 @@ public class GDSystemConfigure {
 	}
 
 	public String getThumbnailFile(ContentData content) {
-
-		// if (content != null) {
-		// // for test
-		// String str = new String(mStorageDir + mPushPath + content.XMLFilePath
-		// + "/pic");
-		// File dir = new File(str);
-		// String[] fs = dir.list();
-		//
-		// Log.d(TAG, "file=" + str);
-		//
-		// if (fs.length > 0) {
-		// return str + "/" + fs[0];
-		// }
-		// }
 
 		String file = "";
 		List<ContentData.Poster> posters = content.Posters;
@@ -355,8 +370,12 @@ public class GDSystemConfigure {
 
 					// Log.d(TAG, property[0] + "=" + property[1]);
 
-					if (property[0].equals(PROPERTY_STORAGE_DIR)) {
+					if (property[0].equals(PROPERTY_DBSTARDATABSE)) {
+						mDbstarDatabase = property[1].trim();
+					} else if (property[0].equals(PROPERTY_PUSH_DIR)) {
 						mStorageDir = property[1].trim();
+					} else if (property[0].equals(PROPERTY_COLUMNRES_DIR)) {
+						mIconRootDir = property[1].trim();
 					} else if (property[0].equals(PROPERTY_LOCALIZATION)) {
 						setLocalization(property[1].trim());
 					} else if (property[0].equals("Property_GuoWangDongTai")) {

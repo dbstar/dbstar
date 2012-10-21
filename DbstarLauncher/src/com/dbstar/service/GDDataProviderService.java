@@ -195,8 +195,8 @@ public class GDDataProviderService extends Service {
 		}
 
 		mDBStarClient.start();
-
 		mConfigure.readConfigure();
+		
 		if (mConfigure.configureStorage()) {
 			String disk = mConfigure.getStorageDisk();
 			Log.d(TAG, "monitor disk " + disk);
@@ -208,10 +208,9 @@ public class GDDataProviderService extends Service {
 				mDiskMonitor.addDiskToMonitor(disk);
 			}
 		}
-
+		
 		initializeDataEngine();
 		initializeNetEngine();
-
 		registerUSBReceiver();
 		reqisterConnectReceiver();
 		reqisterSystemMessageReceiver();
@@ -227,6 +226,7 @@ public class GDDataProviderService extends Service {
 
 	void initializeDataEngine() {
 		mDataModel.initialize(mConfigure);
+		mDataModel.setPushDir(mConfigure.getStorageDir());
 	}
 
 	void deinitializeDataEngine() {

@@ -552,10 +552,23 @@ public class GDDataModel {
 		return result;
 	}
 
+	// Global property query
 	public String getPreviewPath() {
-		String path = null;
+		return queryGlobalProperty(GDDVBDataContract.PropertyPreviewPath);
+	}
+	
+	public String getPushDir() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyPushDir);
+	}
+	
+	public String getColumnResDir() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyColumnResPath);
+	}
+	
+	private String queryGlobalProperty(String property) {
+		String value = null;
 		String selection = GDDVBDataContract.Global.NAME + "=?";
-		String[] selectionArgs = { GDDVBDataContract.ValueColumnPreviewPath };
+		String[] selectionArgs = { property };
 		Cursor cursor = mDVBDataProvider.query(
 				GDDVBDataContract.Global.CONTENT_URI,
 				GDDVBDataProvider.GlobalQuery.COLUMNS, selection,
@@ -563,7 +576,7 @@ public class GDDataModel {
 		
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				path = cursor.getString(GDDVBDataProvider.GlobalQuery.VALUE);
+				value = cursor.getString(GDDVBDataProvider.GlobalQuery.VALUE);
 			}
 		}
 		
@@ -571,8 +584,64 @@ public class GDDataModel {
 			cursor.close();
 		}
 
-		return path;
+		return value;
 	}
+	
+	public boolean setPushDir (String pushDir) {
+		return updateGlobalProperty(GDDVBDataContract.PropertyPushDir, pushDir);
+	}
+	
+	private boolean updateGlobalProperty(String property, String value) {
+		String selection = GDDVBDataContract.Global.NAME + "=?";
+		String[] selectionArgs = { property };
+		Cursor cursor = mDVBDataProvider.query(
+				GDDVBDataContract.Global.CONTENT_URI,
+				GDDVBDataProvider.GlobalQuery.COLUMNS, selection,
+				selectionArgs, null);
+		
+		boolean ret = true;
+		int Id = -1;
+		String oldValue = "";
+		
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				Id = 0;
+				oldValue = cursor
+						.getString(GDDVBDataProvider.GlobalQuery.VALUE);
+			}
+		}
+		
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		if (Id < 0) {
+			// insert
+			ContentValues values = new ContentValues();
+			values.put(GDDVBDataContract.Global.NAME, property);
+			values.put(GDDVBDataContract.Global.VALUE, value);
+			Uri retUri = mDVBDataProvider.insert(GDDVBDataContract.Global.CONTENT_URI, values);
+			/*
+			 * long rowId = Long.valueOf(retUri.getLastPathSegment()); if (rowId
+			 * > 0)
+			 */
+			if (retUri != null)
+				ret = true;
+		} else {
+			if (!oldValue.equals(value)) {
+				// update
+				ContentValues values = new ContentValues();
+				values.put(GDDVBDataContract.Global.VALUE, value);
+				int count = mDVBDataProvider.update(GDDVBDataContract.Global.CONTENT_URI,
+						values, selection, selectionArgs);
+				if (count == 1)
+					ret = true;
+			}
+		}
+
+		return ret;
+	}
+	
 
 	private static final String[] ProjectionQueryPreview = {
 			Preview.PREVIEWTYPE, Preview.SHOWTIME, Preview.PREVIEWURI,

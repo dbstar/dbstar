@@ -183,12 +183,12 @@ public class GDDBStarClient {
 	}
 
 	ReceiveEntry[] test() {
-		String info = "1001\ttaska\t23932\t23523094823\n1002\t任务2\t234239\t12349320\n";
-		info += "1003\ttaska\t23932\t23523094823\n1004\t任务2\t234239\t12349320\n";
-		info += "1005\ttaska\t23932\t23523094823\n1006\t任务2\t234239\t12349320\n";
-		info += "1007\ttaska\t23932\t23523094823\n1008\t任务2\t234239\t12349320\n";
-		info += "1009\ttaska\t23932\t23523094823\n1010\t任务2\t234239\t12349320\n";
-		info += "1011\ttaska\t23932\t23523094823\n1012\t任务2\t234239\t12349320\n";
+		String info = "1001\ttaska\t23932\t23523094823\n1002\ttask2\t234239\t12349320\n";
+		info += "1003\ttaska\t23932\t23523094823\n1004\ttask2\t234239\t12349320\n";
+		info += "1005\ttaska\t23932\t23523094823\n1006\ttask2\t234239\t12349320\n";
+		info += "1007\ttaska\t23932\t23523094823\n1008\ttask2\t234239\t12349320\n";
+		info += "1009\ttaska\t23932\t23523094823\n1010\ttask2\t234239\t12349320\n";
+		info += "1011\ttaska\t23932\t23523094823\n1012\ttask2\t234239\t12349320\n";
 
 		String[] items = null;
 		if (info != null) {
