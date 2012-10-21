@@ -565,6 +565,38 @@ public class GDDataModel {
 		return queryGlobalProperty(GDDVBDataContract.PropertyColumnResPath);
 	}
 	
+	public String getLanguage() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyLanguage);
+	}
+	
+	public String getOperatorInfo() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyOperatorInfo);
+	}
+	
+	public String getCardId() {
+		return queryGlobalProperty(GDDVBDataContract.PropertySmartCardID);
+	}
+	
+	public String getProducts() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyOrderProduct);
+	}
+	
+	public String getPushSource() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyPushSource);
+	}
+	
+	public String getHelpInfo() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyHelpInfo);
+	}
+	
+	public boolean setPushDir (String pushDir) {
+		return updateGlobalProperty(GDDVBDataContract.PropertyPushDir, pushDir);
+	}
+	
+	public boolean setPushSource(String source) {
+		return updateGlobalProperty(GDDVBDataContract.PropertyPushSource, source);
+	}
+		
 	private String queryGlobalProperty(String property) {
 		String value = null;
 		String selection = GDDVBDataContract.Global.NAME + "=?";
@@ -586,11 +618,7 @@ public class GDDataModel {
 
 		return value;
 	}
-	
-	public boolean setPushDir (String pushDir) {
-		return updateGlobalProperty(GDDVBDataContract.PropertyPushDir, pushDir);
-	}
-	
+
 	private boolean updateGlobalProperty(String property, String value) {
 		String selection = GDDVBDataContract.Global.NAME + "=?";
 		String[] selectionArgs = { property };

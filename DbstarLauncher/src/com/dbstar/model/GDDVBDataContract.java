@@ -37,6 +37,12 @@ public class GDDVBDataContract {
 	public static final String PropertyPreviewPath = "PreviewPath";
 	public static final String PropertyColumnResPath = "ColumnRes";
 	public static final String PropertyPushDir = "PushDir";
+	public static final String PropertyLanguage = "CurLanguage";
+	public static final String PropertyOperatorInfo = "OperationBusiness";
+	public static final String PropertySmartCardID = "SmartCardID";
+	public static final String PropertyOrderProduct = "OrderProduct";
+	public static final String PropertyPushSource = "PushSource"; //igmp://239.0.0.1:5000
+	public static final String PropertyHelpInfo = "HelpInfo";
 
 	public static final class Global implements BaseColumns {
 
