@@ -19,144 +19,6 @@ static char s_push_root_path[512];
 static int global_insert(DBSTAR_GLOBAL_S *p);
 
 /*
- 本地栏目的初始化，目前是“设置”和“个人中心”
- 注意和下发的Column.xml字段识别保持一致
-*/
-static int localcolumn_init()
-{
-	char localcolumn_res[256];
-	char sqlite_cmd[512];
-	
-	memset(localcolumn_res, 0, sizeof(localcolumn_res));
-	localcolumn_res_get(localcolumn_res, sizeof(localcolumn_res));
-	
-	sqlite_transaction_begin();
-	/*
-	 一级菜单“设置”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a00","-1","a00","99",localcolumn_res,"setting_losefocus.png",localcolumn_res,"setting_getfocus.png",localcolumn_res,"setting_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a00","chi","DisplayName","设置","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a00","eng","DisplayName","Setting","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“设置－网络设置”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a0001","a00","a00/a0001","99",localcolumn_res,"network_losefocus.png",localcolumn_res,"network_getfocus.png",localcolumn_res,"network_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0001","chi","DisplayName","网络设置","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0001","eng","DisplayName","Network","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“设置－视频设置”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a0002","a00","a00/a0002","99",localcolumn_res,"Video_losefocus.png",localcolumn_res,"Video_getfocus.png",localcolumn_res,"Video_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0002","chi","DisplayName","视频设置","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0002","eng","DisplayName","Video","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“设置－音频设置”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a0003","a00","a00/a0003","99",localcolumn_res,"Audio_losefocus.png",localcolumn_res,"Audio_getfocus.png",localcolumn_res,"Audio_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0003","chi","DisplayName","音频设置","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0003","eng","DisplayName","Audio","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“设置－用户信息”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a0004","a00","a00/a0004","99",localcolumn_res,"UserInfo_losefocus.png",localcolumn_res,"UserInfo_getfocus.png",localcolumn_res,"UserInfo_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0004","chi","DisplayName","用户信息","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0004","eng","DisplayName","User Info","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“设置－本机信息”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a0005","a00","a00/a0005","99",localcolumn_res,"DeviceInfo_losefocus.png",localcolumn_res,"DeviceInfo_getfocus.png",localcolumn_res,"DeviceInfo_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0005","chi","DisplayName","本机信息","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0005","eng","DisplayName","Device Info","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“设置－帮助”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a0006","a00","a00/a0006","99",localcolumn_res,"Help_losefocus.png",localcolumn_res,"Help_getfocus.png",localcolumn_res,"Help_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0006","chi","DisplayName","帮助","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0006","eng","DisplayName","Help","");
-	sqlite_transaction_exec(sqlite_cmd);
-	
-	/*
-	 一级菜单“个人中心”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a01","-1","a01","99",localcolumn_res,"MyCenter_losefocus.png",localcolumn_res,"MyCenter_getfocus.png",localcolumn_res,"MyCenter_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a01","chi","DisplayName","个人中心","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a01","eng","DisplayName","My Center","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“选择接收”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a0101","-1","a01/a0101","99",localcolumn_res,"Receiving_losefocus.png",localcolumn_res,"Receiving_getfocus.png",localcolumn_res,"Receiving_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0101","chi","DisplayName","选择接收","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0101","eng","DisplayName","Receiving","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“下载状态”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s/%s','%s/%s','%s/%s');",
-		"a0102","-1","a01/a0102","99",localcolumn_res,"Download_losefocus.png",localcolumn_res,"Download_getfocus.png",localcolumn_res,"Download_onclick.png");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0102","chi","DisplayName","下载状态","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","a0102","eng","DisplayName","Download","");
-	sqlite_transaction_exec(sqlite_cmd);
-	
-	return sqlite_transaction_end(1);
-}
-
-/*
  只用于读取单个字符串类型字段的单个值
 */
 int str_read_cb(char **result, int row, int column, void *some_str)
@@ -178,6 +40,37 @@ int str_read_cb(char **result, int row, int column, void *some_str)
 }
 
 /*
+ 从数据表Global中读取push的根路径，此路径由上层写入数据库。
+ 此路径应当更新到push.conf中供push模块初始化使用。
+ 之所以这么更新，是因为无法确保硬盘一定是挂在/mnt/sda1下。
+*/
+char *push_dir_get()
+{
+	return s_push_root_path;
+}
+
+static int push_dir_init()
+{
+	char sqlite_cmd[512];
+	
+	memset(s_push_root_path, 0, sizeof(s_push_root_path));
+	
+	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_PUSHDIR);
+
+	int ret_sqlexec = sqlite_read(sqlite_cmd, s_push_root_path, sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read no PushDir from db, filled with %s\n", PUSH_DATA_DIR_DF);
+		snprintf(s_push_root_path, sizeof(s_push_root_path), "%s", PUSH_DATA_DIR_DF);
+	}
+	else
+		DEBUG("read PushDir: %s\n", s_push_root_path);
+		
+	return 0;
+}
+
+
+/*
  初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
 */
 int xmlparser_init(void)
@@ -197,18 +90,6 @@ int xmlparser_init(void)
 	
 	DBSTAR_GLOBAL_S global_s;
 	sqlite_transaction_begin();
-	
-	memset(s_push_root_path, 0, sizeof(s_push_root_path));
-	if(0==pushdata_rootdir_get(s_push_root_path, sizeof(s_push_root_path))){
-		memset(&global_s, 0, sizeof(global_s));
-		strncpy(global_s.Name, GLB_NAME_PUSHDATADIR, sizeof(global_s.Name));
-		strncpy(global_s.Value, s_push_root_path, sizeof(global_s.Value));
-		global_insert(&global_s);
-	}
-	else{
-		DEBUG("get push data root dir failed\n");
-		return -1;
-	}
 		
 	memset(&global_s, 0, sizeof(global_s));
 	strncpy(global_s.Name, GLB_NAME_PREVIEWPATH, sizeof(global_s.Name));
@@ -216,9 +97,14 @@ int xmlparser_init(void)
 	global_insert(&global_s);
 	
 	memset(&global_s, 0, sizeof(global_s));
-	strncpy(global_s.Name, GLB_NAME_LANGUAGE, sizeof(global_s.Name));
+	strncpy(global_s.Name, GLB_NAME_CURLANGUAGE, sizeof(global_s.Name));
 	strncpy(global_s.Value, "chi", sizeof(global_s.Value));	// this should be changed at future
 	global_insert(&global_s);
+	
+//	memset(&global_s, 0, sizeof(global_s));
+//	strncpy(global_s.Name, GLB_NAME_COLUMNRES, sizeof(global_s.Name));
+//	strncpy(global_s.Value, LOCALCOLUMN_RES, sizeof(global_s.Value));
+//	global_insert(&global_s);
 	
 	sqlite_transaction_end(1);
 		
@@ -231,7 +117,9 @@ int xmlparser_init(void)
 		parse_xml(init_xml_uri,INITIALIZE_XML);
 	}
 	
-	localcolumn_init();
+	push_dir_init();
+	
+	//localcolumn_init();
 	
 	return 0;
 }
@@ -339,25 +227,29 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 */
 static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 {
-	if(NULL==xmlinfo && 0==strlen(xmlinfo->XMLName))
+	if(NULL==xmlinfo && 0==strlen(xmlinfo->PushFlag))
 		return -1;
 	
 	if(strlen(xmlinfo->Version)>0 || strlen(xmlinfo->StandardVersion)>0 || strlen(xmlinfo->URI)>0){
 		char sqlite_cmd[512];
 		
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Initialize(XMLName) VALUES('%s');", xmlinfo->XMLName);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Initialize(PushFlag) VALUES('%s');", xmlinfo->PushFlag);
 		sqlite_transaction_exec(sqlite_cmd);
 		
 		if(strlen(xmlinfo->Version)>0){
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET Version='%s'WHERE XMLName='%s';", xmlinfo->Version, xmlinfo->XMLName);
+			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET XMLName='%s'WHERE PushFlag='%s';", xmlinfo->XMLName, xmlinfo->PushFlag);
+			sqlite_transaction_exec(sqlite_cmd);
+		}
+		if(strlen(xmlinfo->Version)>0){
+			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET Version='%s'WHERE PushFlag='%s';", xmlinfo->Version, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->StandardVersion)>0){
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET StandardVersion='%s'WHERE XMLName='%s';", xmlinfo->StandardVersion, xmlinfo->XMLName);
+			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET StandardVersion='%s'WHERE PushFlag='%s';", xmlinfo->StandardVersion, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->URI)>0){
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET URI='%s'WHERE XMLName='%s';", xmlinfo->URI, xmlinfo->XMLName);
+			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET URI='%s'WHERE PushFlag='%s';", xmlinfo->URI, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 	}
@@ -504,7 +396,10 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	if(0==strlen(ptr->ParentID))
+		snprintf(ptr->ParentID, sizeof(ptr->ParentID), "-1");
+	
+	char sqlite_cmd[2048];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s','%s','%s');",
 		ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,ptr->ColumnIcon_losefocus,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick);
 	
@@ -513,7 +408,6 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 
 /*
  GuideList.xml到来时，删除旧表，所以此处不用考虑UPDATE
- 能否确保GuideList的Poster和Trailer都不多于一个？？？？
 */
 static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 {
@@ -522,37 +416,12 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
-	if(strlen(ptr->DateValue)>0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE GuideList SET DateValue='%s' WHERE DateValue='';",
-			ptr->DateValue);
-		sqlite_transaction_exec(sqlite_cmd);
-	}
-	
-	if(strlen(ptr->GuideListID)>0){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(DateValue,GuideListID,PublicationID,PosterID,PosterName,PosterURI,TrailerID,TrailerName,TrailerURI) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-			ptr->DateValue,ptr->GuideListID,ptr->PublicationID,ptr->PosterID,ptr->PosterName,ptr->PosterURI,ptr->TrailerID,ptr->TrailerName,ptr->TrailerURI);
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	char sqlite_cmd[512];
+//	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(DateValue,GuideListID,productID,PublicationID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,UserStatus) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
+//		ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID,ptr->URI,ptr->TotalSize,ptr->ProductDescID,ptr->ReceiveStatus,ptr->PushTime,ptr->UserStatus);
+//	sqlite_transaction_exec(sqlite_cmd);
 	
 	return 0;
-}
-
-/*
-只清理GuideList中除DataValue以外的字段
-*/
-static void guidelist_clear_without_datavalue(DBSTAR_GUIDELIST_S *p_guidelist){
-	if(NULL==p_guidelist)
-		return;
-		
-	memset(p_guidelist->GuideListID, 0, sizeof(p_guidelist->GuideListID));
-	memset(p_guidelist->PublicationID, 0, sizeof(p_guidelist->PublicationID));
-	memset(p_guidelist->PosterID, 0, sizeof(p_guidelist->PosterID));
-	memset(p_guidelist->PosterName, 0, sizeof(p_guidelist->PosterName));
-	memset(p_guidelist->PosterURI, 0, sizeof(p_guidelist->PosterURI));
-	memset(p_guidelist->TrailerID, 0, sizeof(p_guidelist->TrailerID));
-	memset(p_guidelist->TrailerName, 0, sizeof(p_guidelist->TrailerName));
-	memset(p_guidelist->TrailerURI, 0, sizeof(p_guidelist->TrailerURI));
 }
 
 /*
@@ -727,7 +596,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 }
 
 /*
- 擦除接收单结构体中除serviceID、rootPath和ReceiveType之外的变量
+ 擦除接收单结构体中除rootPath和ReceiveType之外的变量
 */
 static void productdesc_clear_partial(DBSTAR_PRODUCTDESC_S *ptr, int clear_productid)
 {
@@ -741,6 +610,7 @@ static void productdesc_clear_partial(DBSTAR_PRODUCTDESC_S *ptr, int clear_produ
 	memset(ptr->ID, 0, sizeof(ptr->ID));
 	memset(ptr->TotalSize, 0, sizeof(ptr->TotalSize));
 	memset(ptr->URI, 0, sizeof(ptr->URI));
+	memset(ptr->Columns, 0, sizeof(ptr->Columns));
 }
 
 /*
@@ -880,7 +750,7 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 		return -1;
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Channel(pid,pidType,multParamSet) VALUES('%s','%s','%s');",p->pid,p->pidType,p->multParamSet);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Channel(pid,pidtype,multiURI) VALUES('%s','%s','%s');",p->pid,p->pidtype,p->multiURI);
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
@@ -1157,7 +1027,7 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 			//DEBUG("property of %s, %s: %s\n", xmlroute, attrPtr->name, szAttr);
 
 // Initialize.xml
-			if(0==strcmp(xmlroute, "Initialize^ServiceInit")){
+			if(0==strcmp(xmlroute, "Initialize^ServiceInits^ServiceInit")){
 				DBSTAR_PRODUCT_SERVICE_S *p = (DBSTAR_PRODUCT_SERVICE_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"productID", attrPtr->name)){
 					strncpy(p->productID, (char *)szAttr, sizeof(p->productID)-1);
@@ -1165,13 +1035,13 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 				else if(0==xmlStrcmp(BAD_CAST"serviceID", attrPtr->name)){
 					strncpy(p->serviceID, (char *)szAttr, sizeof(p->serviceID)-1);
 				}
-				else if(0==xmlStrcmp(BAD_CAST"productName", attrPtr->name)){
-					strncpy(p->productName, (char *)szAttr, sizeof(p->productName)-1);
-				}
+//				else if(0==xmlStrcmp(BAD_CAST"productName", attrPtr->name)){
+//					strncpy(p->productName, (char *)szAttr, sizeof(p->productName)-1);
+//				}
 //				else
 //					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
 			}
-			else if(0==strncmp(xmlroute, "Initialize^ServiceInit^", strlen("Initialize^ServiceInit^"))){
+			else if(0==strncmp(xmlroute, "Initialize^ServiceInits^ServiceInit^", strlen("Initialize^ServiceInits^ServiceInit^"))){
 				DBSTAR_XMLINFO_S *p = (DBSTAR_XMLINFO_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"name", attrPtr->name)){
 					strncpy(p->XMLName, (char *)szAttr, sizeof(p->XMLName)-1);
@@ -1184,6 +1054,29 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 				else
 					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
 			}
+			else if(0==strcmp(xmlroute, "Initialize^ServiceInits^ServiceInit^Channels^Channel")){
+				DBSTAR_CHANNEL_S *p  = (DBSTAR_CHANNEL_S *)ptr;
+				if(0==xmlStrcmp(BAD_CAST"pid", attrPtr->name)){
+					strncpy(p->pid, (char *)szAttr, sizeof(p->pid)-1);
+				}
+				else if(0==xmlStrcmp(BAD_CAST"pidtype", attrPtr->name)){
+					strncpy(p->pidtype, (char *)szAttr, sizeof(p->pidtype)-1);
+				}
+//				else
+//					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
+			}
+			
+// GuideList.xml
+			else if(0==strcmp(xmlroute, "GuideList^Date^Product")){
+				DBSTAR_GUIDELIST_S *p = (DBSTAR_GUIDELIST_S *)ptr;
+				if(0==xmlStrcmp(BAD_CAST"productID", attrPtr->name)){
+					strncpy(p->productID, (char *)szAttr, sizeof(p->productID)-1);
+				}
+//				else
+//					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
+			}
+
+#if 0
 // Channel.xml
 			else if(0==strcmp(xmlroute, "Channels^Service")){
 				if(0==xmlStrcmp(BAD_CAST"serviceID", attrPtr->name)){
@@ -1206,6 +1099,8 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 //				else
 //					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
 			}
+#endif
+
 // Column.xml Columns^Column^ColumnIcons^ColumnIcon
 			else if(0==strcmp(xmlroute, "Columns^Column^ColumnIcons^ColumnIcon")){
 				COLUMNICON_S *p = (COLUMNICON_S *)ptr;
@@ -1235,10 +1130,7 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 					||	0==strcmp(xmlroute, "ProductDesc^ReceiveGuideList")
 					||	0==strcmp(xmlroute, "ProductDesc^ReceivePreview")){
 				DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
-				if(0==xmlStrcmp(BAD_CAST"serviceID", attrPtr->name)){
-					strncpy(p->serviceID, (char *)szAttr, sizeof(p->serviceID)-1);
-				}
-				else if(0==xmlStrcmp(BAD_CAST"rootPath", attrPtr->name)){
+				if(0==xmlStrcmp(BAD_CAST"rootPath", attrPtr->name)){
 					strncpy(p->rootPath, (char *)szAttr, sizeof(p->rootPath)-1);
 				}
 				else
@@ -1248,6 +1140,17 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 				DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"productID", attrPtr->name)){
 					strncpy(p->productID, (char *)szAttr, sizeof(p->productID)-1);
+				}
+				else
+					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
+			}
+			else if(0==strcmp(xmlroute, "ProductDesc^ReceivePublications^Product^Publication^Columns^Column")){
+				DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
+				if(0==xmlStrcmp(BAD_CAST"columnID", attrPtr->name)){
+					if(0==strlen(p->Columns))
+						snprintf(p->Columns, sizeof(p->Columns), "%s", (char *)szAttr);
+					else
+						snprintf((p->Columns) + strlen(p->Columns), sizeof(p->Columns) - strlen(p->Columns), "%s", (char *)szAttr);
 				}
 				else
 					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
@@ -1370,13 +1273,13 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
  只有从parseDoc过来的调用，其rootelement方不为空，其他地方的调用rootelement均为空
 */
 /*
+ p_child_tree_is_valid
  判断标记，若正在处理的节点有效，则本父节点有效，且叔伯节点无效。
  使用场景：通过子节点的值判断本节点是否有效。注意和局部变量process_over之间的关系。
 */
 /*
  返回值：
- 1——提前退出
- 0——正常退出
+ 0——成功
  -1——失败
 */
 static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, DBSTAR_XMLINFO_S *xmlinfo, char *rootelement, int *p_child_tree_is_valid, char *xml_ver)
@@ -1399,10 +1302,13 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 	int uniform_parse = 0;
 	
 	/*
-	若兄弟节点中，只需要处理本节点内部信息，完毕后不需要扫描兄弟节点，则置process_over为1。
+	若兄弟节点中，只需要处理本节点内部信息，完毕后不需要继续扫描其余兄弟节点，则置process_over为1。
 	场景：在属性中存在判断条件，合法时递归parseNode进入内部，内部处理完毕后整个节点结束。
+	1：已经找到合法的分支，剩下的分支无需解析，提前退出
+	2：在业务逻辑上判断不需要解析，比如，ServiceID不匹配
+	3：解析错误导致提前退出
 	*/
-	int process_over = 0;
+	int process_over = XML_EXIT_NORMALLY;
 	
 	cur = cur->xmlChildrenNode;
 	while (cur != NULL) {
@@ -1420,7 +1326,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				strncpy(xmlinfo->Version, (char *)szKey, sizeof(xmlinfo->Version)-1);
 				if(NULL==xml_ver || 0==strcmp(xml_ver, xmlinfo->Version)){
 					DEBUG("same xml version: %s\n", xml_ver);
-					process_over = 1;
+					process_over = XML_EXIT_UNNECESSARY;
 				}
 				uniform_parse = 1;
 			}
@@ -1438,8 +1344,11 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 			DEBUG("XML route: %s\n", new_xmlroute);
 			
 // Initialize.xml
-			if(0==strncmp(new_xmlroute, "Initialize^", strlen("Initialize^"))){		
-				if(0==strcmp(new_xmlroute, "Initialize^ServiceInit")){
+			if(0==strncmp(new_xmlroute, "Initialize^", strlen("Initialize^"))){
+				if(0==strcmp(new_xmlroute, "Initialize^ServiceInits")){
+					parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit")){
 					DBSTAR_PRODUCT_SERVICE_S product_service_s;
 					memset(&product_service_s, 0, sizeof(product_service_s));
 					parseProperty(cur, new_xmlroute, (void *)&product_service_s);
@@ -1450,21 +1359,53 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						strncpy(global_s.Name, GLB_NAME_SERVICEID, sizeof(global_s.Name)-1);
 						strncpy(global_s.Value, product_service_s.serviceID, sizeof(global_s.Value)-1);
 						global_insert(&global_s);
+						
+						sqlite_transaction_table_clear("Initialize");
 						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
-						process_over = 1;
+						process_over = XML_EXIT_MOVEUP;
 					}
 					else
 						DEBUG("productID %s is invalid\n", product_service_s.productID);
 				}
-				else if(0==strncmp(new_xmlroute, "Initialize^ServiceInit^", strlen("Initialize^ServiceInit^"))){
+				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels")){
+					pid_init(0);
+					sqlite_transaction_table_clear("Channel");
+					parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
+					pid_init(1);
+				}
+				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels^Channel")){
+					DBSTAR_CHANNEL_S channel_s;
+					memset(&channel_s, 0, sizeof(channel_s));
+					parseProperty(cur, new_xmlroute, (void *)(&channel_s));
+					channel_insert(&channel_s);
+				}
+				else if(0==strncmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^", strlen("Initialize^ServiceInits^ServiceInit^"))){
 					DBSTAR_XMLINFO_S xmlinfo;
 					memset(&xmlinfo, 0, sizeof(xmlinfo));
+					if(0==xmlStrcmp(cur->name, BAD_CAST"Guidelist"))
+						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", GUIDELIST_XML);
+					else if(0==xmlStrcmp(cur->name, BAD_CAST"Column"))
+						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", COLUMN_XML);
+					else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc"))
+						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", PRODUCTDESC_XML);
+					else if(0==xmlStrcmp(cur->name, BAD_CAST"SProduct"))
+						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", SPRODUCT_XML);
+					else if(0==xmlStrcmp(cur->name, BAD_CAST"Service"))
+						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", SERVICE_XML);
+					else if(0==xmlStrcmp(cur->name, BAD_CAST"Command"))
+						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", COMMANDS_XML);
+					else if(0==xmlStrcmp(cur->name, BAD_CAST"Message"))
+						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", MESSAGE_XML);
+					else
+						DEBUG("such xml node can not be processed: %s\n", new_xmlroute);
+					
 					parseProperty(cur, new_xmlroute, (void *)(&xmlinfo));
 					xmlinfo_insert(&xmlinfo);
 				}
 				else
 					DEBUG("can not distinguish such xml route: %s\n", new_xmlroute);
 			}
+#if 0
 // Channels.xml
 			else if(0==strncmp(new_xmlroute, "Channels^", strlen("Channels^"))){
 				if(0==strcmp(new_xmlroute, "Channels^Service")){
@@ -1476,7 +1417,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						pid_init(0);
 						sqlite_transaction_table_clear("Channel");
 						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
-						process_over = 1;
+						process_over = XML_EXIT_MOVEUP;
 					}
 					else
 						DEBUG("this productID is invalid: %s\n", serviceID);
@@ -1488,6 +1429,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					channel_insert(&channel_s);
 				}
 			}
+#endif
 // Service.xml
 			else if(0==strncmp(new_xmlroute, "ServiceGroup^", strlen("ServiceGroup^"))){
 				if(0==strcmp(new_xmlroute, "ServiceGroup^Services")){
@@ -1511,7 +1453,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					*/
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, p_child_tree_is_valid, NULL);
 					process_over = *p_child_tree_is_valid;
-					if(1==process_over)
+					if(XML_EXIT_MOVEUP==process_over)
 						service_insert((DBSTAR_SERVICE_S *)ptr);
 				}
 				else if(0==strcmp(new_xmlroute, "ServiceGroup^Services^Service^ServiceID")){
@@ -1528,7 +1470,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					else{
 						DEBUG("ServiceID %s is invalid\n", p_service->ServiceID);
 						*p_child_tree_is_valid = 0;
-						process_over = 1;	// 无效节点，接下来不需要无意义的扫描。
+						process_over = XML_EXIT_MOVEUP;	// 无效节点，接下来不需要无意义的扫描。
 					}
 				}
 				else if(0==strcmp(new_xmlroute, "ServiceGroup^Services^Service^ServiceNames")){
@@ -2285,7 +2227,22 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 			
 // Column.xml
 			else if(0==strncmp(new_xmlroute, "Columns^", strlen("Columns^"))){
-				if(0==strcmp(new_xmlroute, "Columns^Column")){
+				if(0==strcmp(new_xmlroute, "Columns^ServiceID")){
+					if(0!=strcmp((char *)szKey, serviceID_get())){
+						DEBUG("invalid ServiceID %s for Column.xml, contrast with %s\n", (char *)szKey,serviceID_get());
+						process_over = XML_EXIT_UNNECESSARY;
+					}
+					else{
+						DEBUG("valid ServiceID %s for Column.xml\n", (char *)szKey);
+						/*
+						 不能一股脑的清理掉Column的所有数据，保留本地菜单
+						*/
+						char sqlite_cmd[256];
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='%d';", COLUMN_LOCAL);
+						sqlite_transaction_exec(sqlite_cmd);
+					}
+				}
+				else if(0==strcmp(new_xmlroute, "Columns^Column")){
 					memset(ptr, 0, sizeof(DBSTAR_COLUMN_S));
 					
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
@@ -2302,8 +2259,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					if(strlen((char *)szKey)>0)
 						strncpy(p_column->ParentID, (char *)szKey, sizeof(p_column->ParentID)-1);
-					else
-						strncpy(p_column->ParentID, "-1", sizeof(p_column->ParentID)-1);
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Columns^Column^DisplayNames"))
@@ -2354,43 +2309,51 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					else if(0==strcmp(columnicon_s.type, "onclick"))
 						strncpy(p_column->ColumnIcon_onclick, columnicon_s.uri, sizeof(p_column->ColumnIcon_onclick)-1);
 				}
-				else if(0==strcmp(new_xmlroute, "Columns^Column^Services"))
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
-				else if(0==strcmp(new_xmlroute, "Columns^Column^Services^ServiceID")){
-					DBSTAR_COLUMN_S *p_column = (DBSTAR_COLUMN_S *)ptr;
-					szKey = xmlNodeGetContent(cur);
-					if(0==strcmp((char *)szKey, serviceID_get())){
-						strncpy(p_column->ServiceID, (char *)szKey, sizeof(p_column->ServiceID)-1);
-					}
-					xmlFree(szKey);
-				}
 			}
 // GuideList.xml
 			else if(0==strncmp(new_xmlroute, "GuideList^", strlen("GuideList^"))){
-				if(0==strcmp(new_xmlroute, "GuideList^Date")){
-					DBSTAR_GUIDELIST_S guidelist_s;
-					memset(&guidelist_s, 0, sizeof(guidelist_s));
-					parseNode(doc, cur, new_xmlroute, &guidelist_s, NULL, NULL, NULL, NULL);
-					guidelist_insert(&guidelist_s);
+				if(0==strcmp(new_xmlroute, "GuideList^ServiceID")){
+					if(0!=strcmp((char *)szKey, serviceID_get())){
+						DEBUG("invalid ServiceID %s for GuideList.xml, contrast with %s\n", (char *)szKey,serviceID_get());
+						process_over = XML_EXIT_UNNECESSARY;
+					}
+					else{
+						DEBUG("valid ServiceID %s for GuideList.xml\n", (char *)szKey);
+						sqlite_transaction_table_clear("GuideList");
+					}
+				}
+				else if(0==strcmp(new_xmlroute, "GuideList^Date")){
+					memset(ptr, 0, sizeof(DBSTAR_GUIDELIST_S));
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "GuideList^Date^DateValue")){
+					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
+					
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p_guidelist->DateValue, (char *)szKey, sizeof(p_guidelist->DateValue)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product")){
+					parseProperty(cur, new_xmlroute, ptr);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item")){
 					/*
 					针对每个Item，清理除DataValue之外的其他变量
 					*/
-					guidelist_clear_without_datavalue((DBSTAR_GUIDELIST_S *)ptr);
+					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
+					memset(p_guidelist->GuideListID, 0, sizeof(p_guidelist->GuideListID));
+					memset(p_guidelist->PublicationID, 0, sizeof(p_guidelist->PublicationID));
+					
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
-					DEBUG("p_guidelist->PublicationID=%s, p_guidelist->GuideListID=%s\n", ((DBSTAR_GUIDELIST_S *)ptr)->PublicationID, ((DBSTAR_GUIDELIST_S *)ptr)->GuideListID);
 					guidelist_insert((DBSTAR_GUIDELIST_S *)ptr);
-					guidelist_clear_without_datavalue((DBSTAR_GUIDELIST_S *)ptr);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^PublicationID")){
 					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
 					
 					szKey = xmlNodeGetContent(cur);
 					strncpy(p_guidelist->PublicationID, (char *)szKey, sizeof(p_guidelist->PublicationID)-1);
-					snprintf(p_guidelist->GuideListID, sizeof(p_guidelist->GuideListID), "%s_%s", p_guidelist->PublicationID,time_serial());
 					xmlFree(szKey);
-					DEBUG("p_guidelist->PublicationID=%s, p_guidelist->GuideListID=%s\n", p_guidelist->PublicationID, p_guidelist->GuideListID);
+					snprintf(p_guidelist->GuideListID, sizeof(p_guidelist->GuideListID), "%s_%s", p_guidelist->DateValue, p_guidelist->PublicationID);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^PublicationNames")){
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
@@ -2402,7 +2365,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&resstr_s, 0, sizeof(resstr_s));
 					
 					strncpy(resstr_s.ObjectName, OBJ_GUIDELIST, sizeof(resstr_s.ObjectName)-1);
-					DEBUG("p_guidelist->PublicationID=%s, p_guidelist->GuideListID=%s\n", p_guidelist->PublicationID, p_guidelist->GuideListID);
 					if(strlen(p_guidelist->GuideListID)>0)
 						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s", p_guidelist->GuideListID);
 					else
@@ -2459,78 +2421,27 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					if(resstr_s.StrValue)
 						free(resstr_s.StrValue);
 				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^Poster")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^Poster^PosterID")){
-					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
-					
-					szKey = xmlNodeGetContent(cur);
-					strncpy(p_guidelist->PosterID, (char *)szKey, sizeof(p_guidelist->PosterID)-1);
-					xmlFree(szKey);
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^Poster^PosterName")){
-					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
-					
-					szKey = xmlNodeGetContent(cur);
-					strncpy(p_guidelist->PosterName, (char *)szKey, sizeof(p_guidelist->PosterName)-1);
-					xmlFree(szKey);
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^Poster^PosterURI")){
-					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
-					
-					szKey = xmlNodeGetContent(cur);
-					strncpy(p_guidelist->PosterURI, (char *)szKey, sizeof(p_guidelist->PosterURI)-1);
-					xmlFree(szKey);
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^Trailer")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^Trailer^TrailerID")){
-					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
-					
-					szKey = xmlNodeGetContent(cur);
-					strncpy(p_guidelist->TrailerID, (char *)szKey, sizeof(p_guidelist->TrailerID)-1);
-					xmlFree(szKey);
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^Trailer^TrailerName")){
-					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
-					
-					szKey = xmlNodeGetContent(cur);
-					strncpy(p_guidelist->TrailerName, (char *)szKey, sizeof(p_guidelist->TrailerName)-1);
-					xmlFree(szKey);
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item^Trailer^TrailerURI")){
-					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
-					
-					szKey = xmlNodeGetContent(cur);
-					strncpy(p_guidelist->TrailerURI, (char *)szKey, sizeof(p_guidelist->TrailerURI)-1);
-					xmlFree(szKey);
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^DateValue")){
-					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
-					
-					szKey = xmlNodeGetContent(cur);
-					strncpy(p_guidelist->DateValue, (char *)szKey, sizeof(p_guidelist->DateValue)-1);
-					xmlFree(szKey);
-				}
  			}
 
 
 // ProductDesc.xml 当前投递单
 			else if(0==strncmp(new_xmlroute, "ProductDesc^", strlen("ProductDesc^"))){
-				if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications")){
+				if(0==strcmp(new_xmlroute, "ProductDesc^ServiceID")){
+					if(0!=strcmp((char *)szKey, serviceID_get())){
+						DEBUG("invalid ServiceID %s for ProductDesc.xml, contrast with %s\n", (char *)szKey,serviceID_get());
+						process_over = XML_EXIT_UNNECESSARY;
+					}
+					else{
+						DEBUG("valid ServiceID %s for ProductDesc.xml\n", (char *)szKey);
+						productdesc_clear();
+					}
+				}
+				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications")){
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 					memset(ptr, 0, sizeof(DBSTAR_PRODUCTDESC_S));
 					parseProperty(cur, new_xmlroute, ptr);
 					
-					if(0==strcmp(p->serviceID, serviceID_get())){
-						strncpy(p->ReceiveType, "ReceivePublications", sizeof(p->ReceiveType)-1);
-						//productdesc_history_clear(p);
-						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
-					}
-					else
-						DEBUG("ignore invalid serviceID: %s\n", p->serviceID);
+					strncpy(p->ReceiveType, "ReceivePublications", sizeof(p->ReceiveType)-1);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product")){
 					productdesc_clear_partial((DBSTAR_PRODUCTDESC_S *)ptr, 1);
@@ -2593,6 +2504,12 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					strncpy(p->URI, (char *)szKey, sizeof(p->URI)-1);
 					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^Columns")){
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^Columns^Column")){
+					parseProperty(cur, new_xmlroute, ptr);
 				}
 				
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveSets")){
@@ -2970,16 +2887,19 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 	//			DEBUG("can NOT process such element '%s' in xml route '%s'\n", cur->name, xmlroute);
 		}
 		
-		if(0==process_over)
+		if(XML_EXIT_NORMALLY==process_over)
 			cur = cur->next;
 		else{
 			DEBUG("process over advance, because have the valid child-tree already\n");
-			return 1;
+			break;
 		}
 	}
 	//DEBUG("return from %s\n", xmlroute);
 	
-	return 0;
+	if(XML_EXIT_NORMALLY==process_over || XML_EXIT_MOVEUP==process_over)
+		return 0;
+	else
+		return -1;
 }
 
 static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
@@ -3066,27 +2986,17 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		}
 // Column.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
-			/*
-			 不能一股脑的清理掉Column的所有数据，保留本地菜单
-			*/
-			char sqlite_cmd[256];
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE  fanle ColumnType='%d';", COLUMN_LOCAL);
-			sqlite_transaction_exec(sqlite_cmd);
 			DBSTAR_COLUMN_S column_s;
-			memset(&column_s, 0, sizeof(column_s));
 			ret = parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", NULL, xml_ver);
 		}
 // GuideList.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"GuideList")){
-			sqlite_transaction_table_clear("GuideList");
-			ret = parseNode(doc, cur, "GuideList", NULL, &xmlinfo, "GuideList", NULL, xml_ver);
+			DBSTAR_GUIDELIST_S guidelist_s;
+			ret = parseNode(doc, cur, "GuideList", &guidelist_s, &xmlinfo, "GuideList", NULL, xml_ver);
 		}
 // ProductDesc.xml 当前投递单
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
-			productdesc_clear();
-			
 			DBSTAR_PRODUCTDESC_S productdesc_s;
-			memset(&productdesc_s, 0, sizeof(productdesc_s));
 			ret = parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", NULL, xml_ver);
 		}
 // PublicationsColumn.xml
@@ -3112,14 +3022,20 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 			ret = -1;
 		}
 		
-		if(strcmp(xml_ver, xmlinfo.Version))
+		if(0==ret && strcmp(xml_ver, xmlinfo.Version)){
+			if(INITIALIZE_XML==xml_flag){
+				snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", xml_flag);
+				snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize");
+				snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", xml_uri);
+			}
+			
 			xmlinfo_insert(&xmlinfo);
-		sqlite_transaction_end(1);
-		
-		if(0==xmlStrcmp(cur->name, BAD_CAST"Channels") && 1==ret){
-			DEBUG("Channels are edited, reinit pid\n");
-			pid_init(1);
 		}
+		
+		if(-1==ret)
+			sqlite_transaction_end(0);
+		else if(0==ret)
+			sqlite_transaction_end(1);
 	}
 	
 	xmlFreeDoc(doc);

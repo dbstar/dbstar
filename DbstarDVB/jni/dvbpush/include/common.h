@@ -50,7 +50,7 @@ typedef enum{
 */
 #define USR_DATA_ROOT_DIR	"/mnt/sda1/dbstar"
 #define PUSH_DATA_DIR_DF	USR_DATA_ROOT_DIR		// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
-#define DATABASE			USR_DATA_ROOT_DIR"/Dbstar.db"
+#define DATABASE			"/data/dbstar/Dbstar.db"
 
 #define	SERVICE_ID			"01"
 #define PROG_DATA_PID_DF	(102)	// 0X66
@@ -73,10 +73,16 @@ typedef enum{
 #define OBJ_MESSAGE			"Message"
 #define OBJ_PREVIEW			"Preview"
 
-#define GLB_NAME_SERVICEID		"serviceID"
-#define GLB_NAME_PUSHDATADIR	"push_data_dir"
-#define GLB_NAME_PREVIEWPATH	"PreviewPath"
-#define GLB_NAME_LANGUAGE		"DbstarLanguage"
+#define GLB_NAME_SERVICEID			"serviceID"
+#define GLB_NAME_PUSHDIR			"PushDir"
+#define GLB_NAME_COLUMNRES			"ColumnRes"
+#define GLB_NAME_PREVIEWPATH		"PreviewPath"
+#define GLB_NAME_CURLANGUAGE		"CurLanguage"
+#define GLB_NAME_OPERATIONBUSINESS	"OperationBusiness"
+#define GLB_NAME_SMARTCARDID		"SmartCardID"
+#define GLB_NAME_ORDERPRODUCT		"OrderProduct"
+#define GLB_NAME_DATASOURCE			"PushSource"
+#define GLB_NAME_HELPINFO			"HelpInfo"
 
 #define INITIALIZE_PATH		"pushinfo/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
@@ -104,18 +110,33 @@ typedef enum{
 	PUSH_XML_FLAG_MINLINE = -1,
 	
 	INITIALIZE_XML = 20,
-	CHANNEL_XML = 22,
-	SERVICE_XML,
-	COLUMN_XML,
-	GUIDELIST_XML,
-	COMMANDS_XML,
-	MESSAGE_XML,
-	PRODUCTDESC_XML,
-	PUBLICATIONSCOLUMN_XML,
+	CHANNEL_XML = 100,
+	COLUMN_XML = 101,
+	GUIDELIST_XML = 102,
+	PUBLICATIONSCOLUMN_XML = 103,
+	COMMANDS_XML = 104,
+	MESSAGE_XML = 105,
+	PRODUCTDESC_XML = 106,
+	SERVICE_XML = 107,
+	SPRODUCT_XML = 108,
 	
-	PUSH_XML_FLAG_MAXLINE = 100
+	PUSH_XML_FLAG_MAXLINE = 1000
 }PUSH_XML_FLAG_E;
 
+
+/*
+	若兄弟节点中，只需要处理本节点内部信息，完毕后不需要继续扫描其余兄弟节点，则置process_over为1。
+	场景：在属性中存在判断条件，合法时递归parseNode进入内部，内部处理完毕后整个节点结束。
+	1：已经找到合法的分支，剩下的分支无需解析，提前退出
+	2：在业务逻辑上判断不需要解析，比如，ServiceID不匹配，或者版本相等
+	3：解析错误导致提前退出
+*/
+typedef enum{
+	XML_EXIT_NORMALLY = 0,
+	XML_EXIT_MOVEUP = 1,
+	XML_EXIT_UNNECESSARY = 2,
+	XML_EXIT_ERROR = 3,
+}XML_EXIT_E;
 
 /*
 本地测试push时使用（针对hytd.ts播发流），正常情况下关闭此宏。
@@ -135,6 +156,7 @@ typedef struct{
 }DBSTAR_PRODUCT_SERVICE_S;
 
 typedef struct{
+	char	PushFlag[64];
 	char	XMLName[64];
 	char	Version[64];
 	char	StandardVersion[64];
@@ -143,8 +165,8 @@ typedef struct{
 
 typedef struct{
 	char	pid[64];
-	char	pidType[64];
-	char	multParamSet[64];
+	char	pidtype[64];
+	char	multiURI[64];
 }DBSTAR_CHANNEL_S;
 
 typedef struct{
@@ -232,27 +254,23 @@ typedef struct{
 }DBSTAR_COLUMN_S;
 
 typedef struct{
-	char	GuideListID[64];
 	char	DateValue[64];
+	char	GuideListID[64];
+	char	productID[64];
 	char	PublicationID[64];
-	char	PosterID[64];
-	char	PosterName[128];
-	char	PosterURI[256];
-	char	TrailerID[64];
-	char	TrailerName[128];
-	char	TrailerURI[256];
 }DBSTAR_GUIDELIST_S;
 
 typedef struct{
+	char	serviceID[64];
 	char	ReceiveType[64];
 	char	ProductDescID[64];
-	char	serviceID[64];
 	char	rootPath[256];
 	char	productID[64];
 	char	SetID[64];
 	char	ID[64];
 	char	TotalSize[64];
 	char	URI[256];
+	char	Columns[1024];	// it's better to use malloc and relloc
 }DBSTAR_PRODUCTDESC_S;
 
 typedef struct{

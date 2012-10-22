@@ -61,7 +61,7 @@ static int push_monitor_regist(int regist_flag);
 
 #define PROGS_NUM 64
 static PROG_S s_prgs[PROGS_NUM];
-static char s_push_data_dir[256];
+//static char s_push_data_dir[256];
 /*************接收缓冲区定义***********/
 DataBuffer *g_recvBuffer;	//[MAX_PACK_BUF]
 static int g_wIndex = 0;
@@ -437,16 +437,16 @@ void usage()
 	exit(0);
 }
 
-int pushdata_rootdir_get(char *buf, unsigned int size)
-{
-	if(NULL==buf || 0==size){
-		DEBUG("some arguments are invalid\n");
-		return -1;
-	}
-	
-	strncpy(buf, s_push_data_dir, size);
-	return 0;
-}
+//int pushdata_rootdir_get(char *buf, unsigned int size)
+//{
+//	if(NULL==buf || 0==size){
+//		DEBUG("some arguments are invalid\n");
+//		return -1;
+//	}
+//	
+//	strncpy(buf, s_push_data_dir, size);
+//	return 0;
+//}
 
 void callback(const char *path, long long size, int flag)
 {
@@ -461,7 +461,7 @@ void callback(const char *path, long long size, int flag)
 		int i = 0;
 		for(i=0; i<XML_NUM; i++){
 			if(0==strlen(s_push_xml[i].uri)){
-				snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s/%s", s_push_data_dir, path);
+				snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s/%s", push_dir_get(), path);
 				s_push_xml[i].flag = flag;
 				break;
 			}
@@ -481,45 +481,45 @@ void callback(const char *path, long long size, int flag)
  如果传入参数为空，则寻找“/etc/push.conf”文件。详细约束参考push_init()说明
  此函数需要及早调用，xml解析模块也需要此值。目前在main()中调用。
 */
-void push_root_dir_init(char *push_conf)
-{
-	FILE* fp = NULL;
-	char tmp_buf[256];
-	char *p_value;
-	
-	if(NULL==push_conf)
-		fp = fopen(PUSH_CONF_DF, "r");
-	else
-		fp = fopen(push_conf, "r");
-	
-	memset(s_push_data_dir, 0, sizeof(s_push_data_dir));
-	if(fp){
-		memset(tmp_buf, 0, sizeof(tmp_buf));
-		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
-			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), '=');
-			if(NULL!=p_value)
-			{
-				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
-					if(0==strcmp(tmp_buf, "DATA_DIR")){
-						strncpy(s_push_data_dir, p_value, sizeof(s_push_data_dir)-1);
-						break;
-					}
-				}
-			}
-			memset(tmp_buf, 0, sizeof(tmp_buf));
-		}
-		fclose(fp);
-	}
-	
-	if(0==strlen(s_push_data_dir)){
-		DEBUG("waring: open push.conf to get push data dir failed\n");
-		strncpy(s_push_data_dir, PUSH_DATA_DIR_DF, sizeof(s_push_data_dir)-1);
-	}
-	else{
-		if('/'==s_push_data_dir[strlen(s_push_data_dir)-1])
-			s_push_data_dir[strlen(s_push_data_dir)-1] = '\0';
-	}
-}
+//void push_root_dir_init(char *push_conf)
+//{
+//	FILE* fp = NULL;
+//	char tmp_buf[256];
+//	char *p_value;
+//	
+//	if(NULL==push_conf)
+//		fp = fopen(PUSH_CONF_DF, "r");
+//	else
+//		fp = fopen(push_conf, "r");
+//	
+//	memset(s_push_data_dir, 0, sizeof(s_push_data_dir));
+//	if(fp){
+//		memset(tmp_buf, 0, sizeof(tmp_buf));
+//		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
+//			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), '=');
+//			if(NULL!=p_value)
+//			{
+//				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
+//					if(0==strcmp(tmp_buf, "DATA_DIR")){
+//						strncpy(s_push_data_dir, p_value, sizeof(s_push_data_dir)-1);
+//						break;
+//					}
+//				}
+//			}
+//			memset(tmp_buf, 0, sizeof(tmp_buf));
+//		}
+//		fclose(fp);
+//	}
+//	
+//	if(0==strlen(s_push_data_dir)){
+//		DEBUG("waring: open %s to get push data dir failed, use %s instead\n",s_push_data_dir, PUSH_DATA_DIR_DF);
+//		strncpy(s_push_data_dir, PUSH_DATA_DIR_DF, sizeof(s_push_data_dir)-1);
+//	}
+//	else{
+//		if('/'==s_push_data_dir[strlen(s_push_data_dir)-1])
+//			s_push_data_dir[strlen(s_push_data_dir)-1] = '\0';
+//	}
+//}
 
 /*
 根据s_prgs数组对push接收进度查询进行注册和反注册。
