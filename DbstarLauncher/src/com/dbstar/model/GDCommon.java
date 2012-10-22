@@ -9,6 +9,9 @@ public class GDCommon {
 	public static final int MSG_DISK_SPACEWARNING = 6;
 	public static final int MSG_SYSTEM_UPGRADE = 7;
 	public static final int MSG_SYSTEM_FORCE_UPGRADE = 8;
+	
+	public static final int MSG_ADD_TO_FAVOURITE = 9;
+	public static final int MSG_DELETE_FROM_FAVOURTE = 10;
 		
 	public static final String KeyDisk = "disk";
 	
@@ -28,5 +31,8 @@ public class GDCommon {
 	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
+	
+	public static final String KeyPublicationID = "publication_id";
+	public static final String KeyPublicationSetID = "publicationset_id";
 	
 }

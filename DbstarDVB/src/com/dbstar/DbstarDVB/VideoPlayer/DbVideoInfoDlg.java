@@ -33,15 +33,19 @@ public class DbVideoInfoDlg extends Dialog {
 	TextView mMovieActors;
 	TextView mMovieType;
 	TextView mMovieRegion;
-	
-	String mTitle;
-	String mDescription;
-	String mDirector;
-	String mActors;
-	String mType;
-	String mRegion;
-	
-	String mPublicationId = null, mPublicationSetID = null;
+
+	class MediaData {
+		String Title;
+		String Description;
+		String Director;
+		String Actors;
+		String Type;
+		String Region;
+		String PublicationId = null;
+		String PublicationSetID = null;
+	}
+
+	MediaData mMediaData;
 
 	TextView mTimeoutView;
 	int mTimeoutInMills = TIMEOUT_IN_MILLIONSECONDS;
@@ -121,8 +125,20 @@ public class DbVideoInfoDlg extends Dialog {
 	}
 
 	public void retriveMediaInfo(Intent intent) {
+		mMediaData = new MediaData();
+
+		mMediaData.PublicationSetID = intent
+				.getStringExtra("publicationset_id");
+		mMediaData.PublicationId = intent.getStringExtra("publication_id");
+		mMediaData.Title = intent.getStringExtra("title");
+		mMediaData.Description = intent.getStringExtra("description");
+		mMediaData.Director = intent.getStringExtra("director");
+		mMediaData.Actors = intent.getStringExtra("actors");
+		mMediaData.Type = intent.getStringExtra("type");
+
+		updateView();
 	}
-	
+
 	public void onStart() {
 		super.onStart();
 
@@ -157,13 +173,11 @@ public class DbVideoInfoDlg extends Dialog {
 		mReplayButton.setOnClickListener(mClickListener);
 		mAddFavouriteButton.setOnClickListener(mClickListener);
 		mDeleteButton.setOnClickListener(mClickListener);
-
-		// updateMovieInfo(mMovie);
-		Log.d(TAG, "++++++++++++++++initializeView++++++++++++++");
 	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		Log.d(TAG, " ++++ in movie info dlg : onKeyDown +++ ");
 		resetTimer();
 
 		return super.onKeyDown(keyCode, event);
@@ -214,27 +228,64 @@ public class DbVideoInfoDlg extends Dialog {
 	}
 
 	void updateView() {
-//		if (movie != null) {
-//			if (movie.Content.Name != null) {
-//				mMovieTitle.setText(movie.Content.Name);
-//			}
-//
-//			if (movie.Description != null) {
-//				mMovieDescription.setText(movie.Description);
-//			}
-//
-//			String director = getResources().getString(
-//					R.string.property_director);
-//			if (movie.Content.Director != null) {
-//				director += movie.Content.Director;
-//			}
-//			mMovieDirector.setText(director);
-//
-//			String actors = getResources().getString(R.string.property_actors);
-//			if (movie.Content.Actors != null) {
-//				actors += movie.Content.Actors;
-//			}
-//			mMovieActors.setText(actors);
-//		}
+		if (mMediaData != null) {
+			if (mMediaData.Title != null) {
+				mMovieTitle.setText(mMediaData.Title);
+			}
+
+			if (mMediaData.Description != null) {
+				mMovieDescription.setText(mMediaData.Description);
+			}
+
+			String director = getResources().getString(
+					R.string.property_director);
+			if (mMediaData.Director != null) {
+				director += mMediaData.Director;
+			}
+			mMovieDirector.setText(director);
+
+			String actors = getResources().getString(R.string.property_actors);
+			if (mMediaData.Actors != null) {
+				actors += mMediaData.Actors;
+			}
+			mMovieActors.setText(actors);
+		}
+	}
+
+	private static final int COMMAND_REPLAY = 0;
+	private static final int COMMAND_ADDTOFAVOURITE = 1;
+	private static final int COMMAND_DELETEFROMFAVOURITE = 2;
+
+	void sendCommnd(int cmd) {
+		Intent intent = null;
+		switch (cmd) {
+		case COMMAND_REPLAY: {
+			intent = new Intent();
+			intent.setAction("com.dbstar.DbstarDVB.Action.REPLAY");
+			break;
+		}
+		case COMMAND_ADDTOFAVOURITE: {
+			intent = new Intent();
+			intent.setAction("com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE");
+			intent.putExtra("publication_id", mMediaData.PublicationId);
+			if (mMediaData.PublicationSetID != null) {
+				intent.putExtra("publicationset_id", mMediaData.PublicationSetID);
+			}
+			break;
+		}
+		case COMMAND_DELETEFROMFAVOURITE: {
+			intent = new Intent();
+			intent.setAction("com.dbstar.DbstarLauncher.Action.DELETE_FROM_FAVOURITE");
+			intent.putExtra("publication_id", mMediaData.PublicationId);
+			if (mMediaData.PublicationSetID != null) {
+				intent.putExtra("publicationset_id", mMediaData.PublicationSetID);
+			}
+			break;
+		}
+		}
+		
+		if (intent != null) {
+			getContext().sendBroadcast(intent);
+		}
 	}
 }

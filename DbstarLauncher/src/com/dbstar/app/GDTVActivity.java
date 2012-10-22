@@ -320,7 +320,7 @@ public class GDTVActivity extends GDBaseActivity {
 		String file = mService.getMediaFile(item.Content);
 		String drmFile = mService.getDRMFile(item.Content);
 		
-		GDPlayerUtil.playVideo(this, file, drmFile);
+		GDPlayerUtil.playVideo(this, mTV.Content.Id, item.Content, file, drmFile);
 	}
 
 	private String formEpisodesText(int num) {

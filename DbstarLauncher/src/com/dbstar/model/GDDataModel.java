@@ -243,6 +243,41 @@ public class GDDataModel {
 
 		return publication;
 	}
+	
+	public int getPublicationSetItemCount(String setId, String favorite) {
+
+		int count = 0;
+		String selection = Publication.SETID + "=?  AND ("
+				+ Publication.RECEIVESTATUS + "=? Or "
+				+ Publication.RECEIVESTATUS + "=?) AND " + Publication.VISIBLE
+				+ "=? AND (" + Publication.DELETED + "=? OR "
+				+ Publication.DELETED + " is null OR " + Publication.DELETED
+				+ "=?)";
+		String[] selectionArgs = null;
+
+		if (favorite != null && !favorite.isEmpty()) {
+			selection += " AND " + PublicationsSet.FAVORITE + "=?";
+			selectionArgs = new String[] { setId, "1", "2", "true", "0", "",
+					favorite };
+		} else {
+			selectionArgs = new String[] { setId, "1", "2", "true", "0", "" };
+		}
+
+		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
+				ProjectionQueryContentCount, selection, selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				count = cursor.getInt(0);
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return count;
+	}
 
 	private final static String[] ProjectionQueryEpisodes = {
 			Publication.PUBLICATIONID, Publication.URI, Publication.INDEXINSET };
@@ -426,39 +461,6 @@ public class GDDataModel {
 		return uri;
 	}
 
-	private final static String[] ProjectionQueryContentCount = { "count(*)" };
-
-	private final static String[] ProjectionQueryContent = { Content.ID,
-			Content.PATH };
-
-	private final static int QUERYCONTENT_ID = 0;
-	private final static int QUERYCONTENT_PATH = 1;
-
-	private final static String[] ProjectionQueryBrand = { Brand.ID,
-			Brand.DOWNLOAD, Brand.TOTALSIZE, Brand.CNAME };
-
-	public int getContentsCount(String columnId) {
-		int count = 0;
-		String selection = Content.COLUMN_ID + "=?  AND " + Content.READY
-				+ "=1";
-		String[] selectionArgs = new String[] { columnId };
-
-		Cursor cursor = mDVBDataProvider.query(Content.CONTENT_URI,
-				ProjectionQueryContentCount, selection, selectionArgs, null);
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				count = cursor.getInt(0);
-				Log.d(TAG, "count = " + count);
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-
-		return count;
-	}
-
 	// Query Guide list
 	private static final String[] ProjectionQueryGuideList = {
 			GuideList.DATEVALUE, GuideList.GUIDELISTID,
@@ -556,47 +558,48 @@ public class GDDataModel {
 	public String getPreviewPath() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyPreviewPath);
 	}
-	
+
 	public String getPushDir() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyPushDir);
 	}
-	
+
 	public String getColumnResDir() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyColumnResPath);
 	}
-	
+
 	public String getLanguage() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyLanguage);
 	}
-	
+
 	public String getOperatorInfo() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyOperatorInfo);
 	}
-	
+
 	public String getCardId() {
 		return queryGlobalProperty(GDDVBDataContract.PropertySmartCardID);
 	}
-	
+
 	public String getProducts() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyOrderProduct);
 	}
-	
+
 	public String getPushSource() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyPushSource);
 	}
-	
+
 	public String getHelpInfo() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyHelpInfo);
 	}
-	
-	public boolean setPushDir (String pushDir) {
+
+	public boolean setPushDir(String pushDir) {
 		return updateGlobalProperty(GDDVBDataContract.PropertyPushDir, pushDir);
 	}
-	
+
 	public boolean setPushSource(String source) {
-		return updateGlobalProperty(GDDVBDataContract.PropertyPushSource, source);
+		return updateGlobalProperty(GDDVBDataContract.PropertyPushSource,
+				source);
 	}
-		
+
 	private String queryGlobalProperty(String property) {
 		String value = null;
 		String selection = GDDVBDataContract.Global.NAME + "=?";
@@ -605,13 +608,13 @@ public class GDDataModel {
 				GDDVBDataContract.Global.CONTENT_URI,
 				GDDVBDataProvider.GlobalQuery.COLUMNS, selection,
 				selectionArgs, null);
-		
+
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				value = cursor.getString(GDDVBDataProvider.GlobalQuery.VALUE);
 			}
 		}
-		
+
 		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
@@ -626,11 +629,11 @@ public class GDDataModel {
 				GDDVBDataContract.Global.CONTENT_URI,
 				GDDVBDataProvider.GlobalQuery.COLUMNS, selection,
 				selectionArgs, null);
-		
+
 		boolean ret = true;
 		int Id = -1;
 		String oldValue = "";
-		
+
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				Id = 0;
@@ -638,7 +641,7 @@ public class GDDataModel {
 						.getString(GDDVBDataProvider.GlobalQuery.VALUE);
 			}
 		}
-		
+
 		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
@@ -648,7 +651,8 @@ public class GDDataModel {
 			ContentValues values = new ContentValues();
 			values.put(GDDVBDataContract.Global.NAME, property);
 			values.put(GDDVBDataContract.Global.VALUE, value);
-			Uri retUri = mDVBDataProvider.insert(GDDVBDataContract.Global.CONTENT_URI, values);
+			Uri retUri = mDVBDataProvider.insert(
+					GDDVBDataContract.Global.CONTENT_URI, values);
 			/*
 			 * long rowId = Long.valueOf(retUri.getLastPathSegment()); if (rowId
 			 * > 0)
@@ -660,8 +664,9 @@ public class GDDataModel {
 				// update
 				ContentValues values = new ContentValues();
 				values.put(GDDVBDataContract.Global.VALUE, value);
-				int count = mDVBDataProvider.update(GDDVBDataContract.Global.CONTENT_URI,
-						values, selection, selectionArgs);
+				int count = mDVBDataProvider.update(
+						GDDVBDataContract.Global.CONTENT_URI, values,
+						selection, selectionArgs);
 				if (count == 1)
 					ret = true;
 			}
@@ -669,7 +674,6 @@ public class GDDataModel {
 
 		return ret;
 	}
-	
 
 	private static final String[] ProjectionQueryPreview = {
 			Preview.PREVIEWTYPE, Preview.SHOWTIME, Preview.PREVIEWURI,
@@ -769,7 +773,7 @@ public class GDDataModel {
 				} while (cursor.moveToNext());
 			}
 		}
-		
+
 		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
@@ -826,7 +830,7 @@ public class GDDataModel {
 				} while (cursor.moveToNext());
 			}
 		}
-		
+
 		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
 		}
@@ -880,29 +884,57 @@ public class GDDataModel {
 		}
 
 		if (result && publicationId != null && !publicationId.isEmpty()) {
-
-			String selection = Publication.PUBLICATIONID + "=?";
-			String[] selectionArgs = new String[] { publicationId };
-
-			ContentValues values = new ContentValues();
-			values.put(Publication.FAVORITE, "1");
-
-			int count = mDVBDataProvider.update(Publication.CONTENT_URI,
-					values, selection, selectionArgs);
-
-			if (count < 1)
-				result = false;
+			result = setPublicationFavouriteProperty(publicationId, "1");
 		}
 
 		return result;
 	}
 
 	public boolean addPublicationSetToFavourite(String publicationSetId) {
+		return setPublicationSetFavouriteProperty(publicationSetId, "1");
+	}
+	
+	public boolean removePublicationFromFavourite(String publicationSetId,
+			String publicationId) {
+		boolean result = true;
+		if (publicationId != null && !publicationId.isEmpty()) {
+			result = setPublicationFavouriteProperty(publicationId, "0");
+		}
+		
+		if (result && publicationSetId != null && !publicationSetId.isEmpty()) {
+			int count = getPublicationSetItemCount(publicationSetId, "1");
+			if (count == 0) {
+				setPublicationSetFavouriteProperty(publicationSetId, "0");
+			}
+		}
+
+		return result;
+	}
+
+	private boolean setPublicationFavouriteProperty(String publicationId,
+			String value) {
+		String selection = Publication.PUBLICATIONID + "=?";
+		String[] selectionArgs = new String[] { publicationId };
+
+		ContentValues values = new ContentValues();
+		values.put(Publication.FAVORITE, value);
+
+		int count = mDVBDataProvider.update(Publication.CONTENT_URI, values,
+				selection, selectionArgs);
+
+		if (count < 1)
+			return false;
+
+		return true;
+	}
+
+	private boolean setPublicationSetFavouriteProperty(String publicationSetId,
+			String value) {
 		String selection = PublicationsSet.SETID + "=?";
 		String[] selectionArgs = new String[] { publicationSetId };
 
 		ContentValues values = new ContentValues();
-		values.put(PublicationsSet.FAVORITE, "1");
+		values.put(PublicationsSet.FAVORITE, value);
 
 		int count = mDVBDataProvider.update(PublicationsSet.CONTENT_URI,
 				values, selection, selectionArgs);
@@ -996,5 +1028,39 @@ public class GDDataModel {
 
 		return Entries;
 	}
+	
+	private final static String[] ProjectionQueryContentCount = { "count(*)" };
+
+	private final static String[] ProjectionQueryContent = { Content.ID,
+			Content.PATH };
+
+	private final static int QUERYCONTENT_ID = 0;
+	private final static int QUERYCONTENT_PATH = 1;
+
+	private final static String[] ProjectionQueryBrand = { Brand.ID,
+			Brand.DOWNLOAD, Brand.TOTALSIZE, Brand.CNAME };
+
+	public int getContentsCount(String columnId) {
+		int count = 0;
+		String selection = Content.COLUMN_ID + "=?  AND " + Content.READY
+				+ "=1";
+		String[] selectionArgs = new String[] { columnId };
+
+		Cursor cursor = mDVBDataProvider.query(Content.CONTENT_URI,
+				ProjectionQueryContentCount, selection, selectionArgs, null);
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				count = cursor.getInt(0);
+				Log.d(TAG, "count = " + count);
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return count;
+	}
+
 
 }

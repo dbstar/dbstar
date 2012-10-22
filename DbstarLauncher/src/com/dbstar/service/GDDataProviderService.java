@@ -405,6 +405,33 @@ public class GDDataProviderService extends Service {
 				break;
 			}
 
+			case GDCommon.MSG_ADD_TO_FAVOURITE: {
+				String publicationId = msg.getData().getString(
+						GDCommon.KeyPublicationID);
+
+				String publicationSetId = msg.getData().getString(
+						GDCommon.KeyPublicationSetID);
+
+				if (mDataModel != null) {
+					mDataModel.addPublicationToFavourite(publicationSetId,
+							publicationId);
+				}
+				break;
+			}
+			case GDCommon.MSG_DELETE_FROM_FAVOURTE: {
+				String publicationId = msg.getData().getString(
+						GDCommon.KeyPublicationID);
+
+				String publicationSetId = msg.getData().getString(
+						GDCommon.KeyPublicationSetID);
+
+				if (mDataModel != null) {
+					mDataModel.removePublicationFromFavourite(publicationSetId,
+							publicationId);
+				}
+				break;
+			}
+
 			default:
 				break;
 			}
@@ -917,7 +944,7 @@ public class GDDataProviderService extends Service {
 					taskFinished(task);
 					break;
 				}
-				
+
 				case REQUESTTYPE_GETHELPINFO: {
 					String help = mDataModel.getHelpInfo();
 					task.Data = help;
@@ -1417,11 +1444,38 @@ public class GDDataProviderService extends Service {
 
 						}
 						break;
+
 					}
 					default:
 						break;
 					}
 				}
+			} else if (action
+					.equals("com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE")) {
+				String publicationSetId = intent
+						.getStringExtra("publicationset_id");
+				String publicationId = intent.getStringExtra("publication_id");
+
+				Message msg = mHandler
+						.obtainMessage(GDCommon.MSG_ADD_TO_FAVOURITE);
+				Bundle data = new Bundle();
+				data.putString(GDCommon.KeyPublicationID, publicationId);
+				data.putString(GDCommon.KeyPublicationSetID, publicationSetId);
+				msg.setData(data);
+				mHandler.sendMessage(msg);
+
+			} else if (action
+					.equals("com.dbstar.DbstarLauncher.Action.DELETE_FROM_FAVOURITE")) {
+				String publicationSetId = intent
+						.getStringExtra("publicationset_id");
+				String publicationId = intent.getStringExtra("publication_id");
+				Message msg = mHandler
+						.obtainMessage(GDCommon.MSG_DELETE_FROM_FAVOURTE);
+				Bundle data = new Bundle();
+				data.putString(GDCommon.KeyPublicationID, publicationId);
+				data.putString(GDCommon.KeyPublicationSetID, publicationSetId);
+				msg.setData(data);
+				mHandler.sendMessage(msg);
 			}
 
 		}
