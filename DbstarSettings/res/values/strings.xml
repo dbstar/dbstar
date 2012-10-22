@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="app_name">DbstarSettings</string>
+    <string name="warning_text">警告</string>
+    <string name="conformation_text">确认</string>
+    <string name="systemsettings_userinfo">用户信息</string>
+    <string name="systemsettings_receivestatus">接收状态</string>
+    <string name="systemsettings_diskspace">磁盘管理</string>
+    <string name="systemsettings_settings">系统设置</string>
+    <string name="systemsettings_guodian">网关设置</string>
+    <string name="systemsettings_advanced">高级设置</string>
+    <string name="systemsettings_filebrowser">文件浏览</string>
+    <string name="userinfo_system_version">系统版本</string>
+    <string name="userinfo_user_card_number">用户卡号</string>
+    <string name="userinfo_macaddress">本终端mac地址</string>
+    <string name="userinfo_user_card_validity_term">用户卡有效期</string>
+    <string name="userinfo_user_bussiness">用户所属业务</string>
+    <string name="userinfo_user_residual_amount">点卡余额</string>
+    <string name="deviceinfo_device_serialnumber">终端序列号</string>
+    <string name="deviceinfo_hardware_type">硬件型号</string>
+    <string name="deviceinfo_software_version">软件版本</string>
+    <string name="deviceinfo_loader_version">Loader版本</string>
+    <string name="deviceinfo_mac_address">Mac地址</string>
+    <string name="deviceinfo_gateway_serialnumber">网关序列号</string>
+    <string name="deviceinfo_server_ip">服务器IP</string>
+    <string name="deviceinfo_server_port">服务器端口</string>
+    <string name="userinfo_operator">运营商</string>
+    <string name="userinfo_smartcard_number">智能卡号</string>
+    <string name="userinfo_orderedproduct">订购产品</string>
+    <string name="settings_video">视频</string>
+    <string name="settings_audio">音频</string>
+    <string name="settings_audio_transparent">透传</string>
+    <string name="settings_audio_transcode">转码</string>
+    <string name="settings_video_selection">选择</string>
+    <string name="settings_video_1080p60">1080P60</string>
+    <string name="settings_video_1080p25">1080P25</string>
+    <string name="settings_video_1080i50">1080I50</string>
+    <string name="settings_video_720p">720P</string>
+    <string name="settings_video_auto">自适应</string>
+    <string name="settings_item_help">帮助</string>
+    <string name="settings_help_content">本程序的主要提供航天数字业务，包括电影、电视剧、纪录片等。\n\n在主界面中，通过左右键可以切换一级栏目，通过确认键可以进入到次级栏目。如果没有下一级栏目，则直接打开该栏目</string>
+    <string name="settings_item_subtitle">字幕</string>
+    <string name="settings_item_network">网络</string>
+    <string name="settings_item_diskguard">磁盘预警</string>
+    <string name="settings_item_automation">自动</string>
+    <string name="settings_item_source">源码</string>
+    <string name="settings_item_diskguard_spacesize">预警空间大小</string>
+    <string name="settings_item_fontsize">字号</string>
+    <string name="settings_item_fontcolor">字色</string>
+    <string name="settings_item_boundary">边缘</string>
+    <string name="settings_item_bottonmargin">与下间距</string>
+    <string name="settings_item_autoget">自动获取</string>
+    <string name="settings_item_ip">IP</string>
+    <string name="settings_item_gateway">网关</string>
+    <string name="settings_item_dns">DNS</string>
+    <string name="guodiansettings_version">版本</string>
+    <string name="guodiansettings_serverip">服务器地址</string>
+    <string name="guodiansettings_serverport">服务器端口</string>
+    <string name="guodiansettings_username">用户名</string>
+    <string name="guodiansettings_password">密码</string>
+    <string name="guodiansettings_serialnumber">序列号</string>
+    <string name="inputview_title">输入</string>
+    <string name="button_text_ok">确定</string>
+    <string name="button_text_cancel">取消</string>
+    <string name="dialog_upgrade_title">升级</string>
+    <string name="dialog_upgrade_notes">确认升级系统吗？</string>
+    <string name="diskmanagement_disksize">磁盘空间</string>
+    <string name="diskmanagement_usedspace">占用空间</string>
+    <string name="diskmanagement_emptyspace">剩余空间</string>
+    <string name="diskmanagement_gaurdspace">预警空间</string>
+    <string name="lock_settings_picker_title" msgid="3332098786253116023">"选择屏幕锁定"</string>
+
+    <!-- Do not translate.  Concise terminology for wifi with WEP security -->
+    <string name="wifi_security_short_wep">WEP</string>
+    <!-- Do not translate.  Concise terminology for wifi with WPA security -->
+    <string name="wifi_security_short_wpa">WPA</string>
+    <!-- Do not translate.  Concise terminology for wifi with WPA2 security -->
+    <string name="wifi_security_short_wpa2">WPA2</string>
+    <!-- Do not translate.  Concise terminology for wifi with both WPA/WPA2 security -->
+    <string name="wifi_security_short_wpa_wpa2">WPA/WPA2</string>
+    <!-- Do not translate.  Concise terminology for wifi with unknown PSK type -->
+    <string name="wifi_security_short_psk_generic">@string/wifi_security_short_wpa_wpa2</string>
+    <!-- Do not translate.  Concise terminology for wifi with 802.1x EAP security -->
+    <string name="wifi_security_short_eap">802.1x</string>
+
+    <!-- Do not translate.  Terminology for wifi with WEP security -->
+    <string name="wifi_security_wep">WEP</string>
+    <!-- Do not translate.  Terminology for wifi with WPA security -->
+    <string name="wifi_security_wpa">WPA PSK</string>
+    <!-- Do not translate.  Terminology for wifi with WPA2 security -->
+    <string name="wifi_security_wpa2">WPA2 PSK</string>
+    <!-- Do not translate.  Terminology for wifi with both WPA/WPA2 security, or unknown -->
+    <string name="wifi_security_wpa_wpa2">WPA/WPA2 PSK</string>
+    <!-- Do not translate.  Terminology for wifi with unknown PSK type -->
+    <string name="wifi_security_psk_generic">@string/wifi_security_wpa_wpa2</string>
+    <!-- Do not translate.  Concise terminology for wifi with 802.1x EAP security -->
+    <string name="wifi_security_eap">802.1x EAP</string>
+
+    <!-- Wifi configuration dialog -->
+    <string name="wifi_quick_toggle_title" msgid="874495178395350104">"Wi-Fi"</string>
+    <string name="wifi_quick_toggle_summary" msgid="1047950931623694366">"打开 Wi-Fi"</string>
+    <string name="wifi_settings" msgid="1277428034634973011">"Wi-Fi"</string>
+    <string name="wifi_settings_category" msgid="2810363951104753710">"Wi-Fi 设置"</string>
+    <string name="wifi_settings_title" msgid="4351120897298124250">"Wi-Fi"</string>
+    <string name="wifi_settings_summary" msgid="668767638556052820">"设置和管理无线接入点"</string>
+    <string name="wifi_starting" msgid="6716593470710880000">"正在打开 Wi-Fi..."</string>
+    <string name="wifi_stopping" msgid="244864762599017659">"正在关闭 Wi-Fi..."</string>
+    <string name="wifi_error" msgid="3207971103917128179">"出错"</string>
+    <string name="wifi_in_airplane_mode" msgid="8652520421778203796">"正处于飞行模式下"</string>
+    <string name="wifi_fail_to_scan" msgid="1265540342578081461">"扫描不到网络"</string>
+    <string name="wifi_notify_open_networks" msgid="3755768188029653293">"网络通知"</string>
+    <string name="wifi_notify_open_networks_summary" msgid="3038290727701553612">"附近有开放网络时通知我"</string>
+    <string name="wifi_enable_watchdog_service" msgid="3808826765041243874">"不采用状况差的连接"</string>
+    <string name="wifi_enable_watchdog_service_summary" msgid="4227430628962787616">"仅在 Wi-Fi 互联网连接状况良好时使用 Wi-Fi 网络"</string>
+    <string name="wifi_setting_sleep_policy_title" msgid="9107237003911220057">"在休眠状态下保持 Wi-Fi 连接"</string>
+    <string name="wifi_setting_sleep_policy_error" msgid="8174902072673071961">"更改设置时出现问题"</string>
+    <string name="wifi_add_network" msgid="6234851776910938957">"添加网络"</string>
+    <string name="wifi_access_points" msgid="2664629396767022441">"Wi-Fi 网络"</string>
+    <string name="wifi_menu_scan" msgid="1470911530412095868">"扫描"</string>
+    <string name="wifi_menu_advanced" msgid="7522252991919573664">"高级"</string>
+    <string name="wifi_menu_connect" msgid="4996220309848349408">"连接到网络"</string>
+    <string name="wifi_menu_forget" msgid="8736964302477327114">"不保存网络"</string>
+    <string name="wifi_menu_modify" msgid="2068554918652440105">"修改网络"</string>
+    <string name="wifi_empty_list_wifi_off" msgid="4722299515264875943">"要查看可用网络，请打开 Wi-Fi。"</string>
+    <string name="wifi_show_advanced" msgid="1793703023711426246">"显示高级选项"</string>
+    <string name="wifi_network_setup" msgid="2243277654809358812">"WPS"</string>
+    <string name="wifi_wps_pin" msgid="8242979682530043184">"键入从接入点获取的 PIN"</string>
+    <string name="wifi_wps_setup_title" msgid="2301524571580808871">"WPS 设置"</string>
+    <string name="wifi_wps_pin_output" msgid="7773693032190962123">"键入接入点上的 PIN <xliff:g id="WPS_PIN">%1$s</xliff:g>"</string>
+    <string name="wifi_wps_in_progress" msgid="2776555137392461525">"正在进行 WPS，这一过程可能需要数十秒的时间"</string>
+    <string name="wifi_wps_failed" msgid="1648418410092969300">"无法启动 WPS，请重试。"</string>
+    <string name="wifi_ssid" msgid="641393708309146745">"网络 SSID"</string>
+    <string name="wifi_security" msgid="6603611185592956936">"安全性"</string>
+    <string name="wifi_signal" msgid="5514120261628065287">"信号强度"</string>
+    <string name="wifi_status" msgid="4824568012414605414">"状态消息"</string>
+    <string name="wifi_speed" msgid="3526198708812322037">"连接速度"</string>
+    <string name="wifi_ip_address" msgid="1440054061044402918">"IP 地址"</string>
+    <string name="wifi_eap_method" msgid="8529436133640730382">"EAP 方法"</string>
+    <string name="please_select_phase2" msgid="5231074529772044898">"阶段2身份验证"</string>
+    <string name="wifi_eap_ca_cert" msgid="3521574865488892851">"CA 证书"</string>
+    <string name="wifi_eap_user_cert" msgid="1291089413368160789">"用户证书"</string>
+    <string name="wifi_eap_identity" msgid="4359453783379679103">"身份"</string>
+    <string name="wifi_eap_anonymous" msgid="2989469344116577955">"匿名身份"</string>
+    <string name="wifi_password" msgid="5948219759936151048">"密码"</string>
+    <string name="wifi_show_password" msgid="6461249871236968884">"显示密码"</string>
+    <string name="wifi_ip_settings" msgid="3359331401377059481">"IP 设置"</string>
+    <string name="wifi_unchanged" msgid="3410422020930397102">"（未更改）"</string>
+    <string name="wifi_unspecified" msgid="5431501214192991253">"（未指定）"</string>
+    <string name="wifi_remembered" msgid="4955746899347821096">"已保存"</string>
+    <string name="wifi_disabled_generic" msgid="4259794910584943386">"已停用"</string>
+    <string name="wifi_disabled_network_failure" msgid="3111321240793227690">"已停用状况不佳的互联网连接"</string>
+    <string name="wifi_disabled_heading" msgid="1428050635183875599"></string>
+    <string name="wifi_disabled_help" msgid="5416325603334140666">"系统因连接状况不佳而停用了该网络。您可以通过“设置”&gt;“Wi-Fi”屏幕中的“高级”菜单项关闭此功能。"</string>
+    <string name="wifi_disabled_password_failure" msgid="8659805351763133575">"身份验证出现问题"</string>
+    <string name="wifi_not_in_range" msgid="1136191511238508967">"不在范围内"</string>
+    <string name="wifi_wps_available_first_item" msgid="3538912605343585226">"受保护的网络可用"</string>
+    <string name="wifi_wps_available_second_item" msgid="6121307881706347616">" （受保护的网络可用）"</string>
+    <string name="wifi_secured_first_item" msgid="4072076186051083451">"通过<xliff:g id="WIFI_SECURITY_SHORT">%1$s</xliff:g>进行保护"</string>
+    <string name="wifi_secured_second_item" msgid="1326000076939056265">"，通过<xliff:g id="WIFI_SECURITY_SHORT">%1$s</xliff:g>进行保护"</string>
+    <string name="wifi_security_none" msgid="7985461072596594400">"无"</string>
+    <string name="wifi_connect" msgid="1076622875777072845">"连接"</string>
+    <string name="wifi_forget" msgid="8168174695608386644">"不保存"</string>
+    <string name="wifi_save" msgid="3331121567988522826">"保存"</string>
+    <string name="wifi_cancel" msgid="6763568902542968964">"取消"</string>
+    <string name="wifi_wps_overlap_error" msgid="3352261777053283320">"检测到另一个 Wi-Fi 保护会话。请过几分钟后重试。"</string>
+    <string name="wifi_advanced_titlebar" msgid="1627063574532930090">"高级 Wi-Fi 设置"</string>
+    <string name="wifi_setting_frequency_band_title" msgid="7493768705046080060">"Wi-Fi 频带"</string>
+    <string name="wifi_setting_frequency_band_summary" msgid="3250740757118009784">"指定操作的频率范围"</string>
+    <string name="wifi_setting_frequency_band_error" msgid="837281974489794378">"设置频带时出现问题。"</string>
+    <string name="wifi_advanced_mac_address_title" msgid="6571335466330978393">"MAC 地址"</string>
+    <string name="wifi_advanced_ip_address_title" msgid="6215297094363164846">"IP 地址"</string>
+    <string name="wifi_advanced_settings_label" msgid="3654366894867838338">"IP 设置"</string>
+    <string name="wifi_ip_settings_menu_save" msgid="7296724066102908366">"保存"</string>
+    <string name="wifi_ip_settings_menu_cancel" msgid="6582567330136502340">"取消"</string>
+    <string name="wifi_ip_settings_invalid_ip_address" msgid="2513142355364274970">"请键入有效的 IP 地址。"</string>
+    <string name="wifi_ip_settings_invalid_gateway" msgid="8164264988361096450">"请键入有效的网关地址。"</string>
+    <string name="wifi_ip_settings_invalid_dns" msgid="8744583948328391047">"请键入有效的 DNS 地址。"</string>
+    <string name="wifi_ip_settings_invalid_network_prefix_length" msgid="40470058023181052">"键入长度在 0 到 32 之间的网络前缀。"</string>
+    <string name="wifi_dns1" msgid="7344118050720080045">"域名 1"</string>
+    <string name="wifi_dns2" msgid="1368601006824882659">"域名 2"</string>
+    <string name="wifi_gateway" msgid="163914742461092086">"网关"</string>
+    <string name="wifi_network_prefix_length" msgid="3028785234245085998">"网络前缀长度"</string>
+    <string name="wifi_p2p_settings_title" msgid="5933614000444751775">"Wi-Fi Direct"</string>
+    <string name="wifi_p2p_settings_summary" msgid="6653169526746701975">"设置对等连接"</string>
+    <string name="wifi_p2p_device_info" msgid="3191876744469364173">"设备信息"</string>
+    <string name="wifi_p2p_wps_setup" msgid="1780420204385670531">"Wi-Fi 保护设置"</string>
+    <string name="wifi_p2p_wps_pin" msgid="6025317359151049787">"键入 PIN"</string>
+    <string name="wifi_p2p_persist_network" msgid="1646424791818168590">"记住该连接"</string>
+    <string name="wifi_p2p_menu_search" msgid="7189970585393813135">"搜索"</string>
+    <string name="wifi_p2p_menu_create_group" msgid="7595229161883902082">"创建群组"</string>
+    <string name="wifi_p2p_menu_remove_group" msgid="4844634506540667517">"删除群组"</string>
+    <string name="wifi_p2p_menu_advanced" msgid="2578792521809265949">"高级"</string>
+    <string name="wifi_p2p_available_devices" msgid="5943352520059654483">"可用设备"</string>
+    <string name="wifi_tether_checkbox_text" msgid="6961605862058056788">"便携式 Wi-Fi 热点"</string>
+    <string name="wifi_tether_enabled_subtext" msgid="8948641212931906143">"便携式热点 <xliff:g id="NETWORK_SSID">%1$s</xliff:g> 已启用"</string>
+    <string name="wifi_tether_failed_subtext" msgid="2654888578056042315">"便携式 Wi-Fi 热点错误"</string>
+    <string name="wifi_tether_configure_ap_text" msgid="3474995108398156258">"配置 Wi-Fi 热点"</string>
+    <string name="wifi_tether_configure_subtext" msgid="1927454307836232128">"<xliff:g id="NETWORK_SSID">%1$s</xliff:g><xliff:g id="NETWORK_SECURITY">%2$s</xliff:g> 便携式 Wi-Fi 热点"</string>
+    <string name="wifi_tether_configure_ssid_default" msgid="8467525402622138547">"Android 热点"</string>
+    <string name="wifi_setup_title" msgid="661074868726906436">"Wi-Fi 设置"</string>
+    <string name="wifi_setup_title_editing_network" msgid="7304321031985059969">"连接到 Wi-Fi 网络<xliff:g id="NETWORK_NAME">%s</xliff:g>"</string>
+    <string name="wifi_setup_title_connecting_network" msgid="3747859666621319757">"正在连接到 Wi-Fi 网络“<xliff:g id="NETWORK_NAME">%s</xliff:g>”..."</string>
+    <string name="wifi_setup_title_connected_network" msgid="209755856836003839">"已连接到 Wi-Fi 网络<xliff:g id="NETWORK_NAME">%s</xliff:g>"</string>
+    <string name="wifi_setup_title_add_network" msgid="6932651000151032301">"添加网络"</string>
+    <string name="wifi_setup_not_connected" msgid="6997432604664057052">"未连接"</string>
+    <string name="wifi_setup_add_network" msgid="5939624680150051807">"添加网络"</string>
+    <string name="wifi_setup_refresh_list" msgid="3411615711486911064">"刷新列表"</string>
+    <string name="wifi_setup_skip" msgid="6661541841684895522">"跳过"</string>
+    <string name="wifi_setup_next" msgid="3388694784447820477">"下一步"</string>
+    <string name="wifi_setup_back" msgid="144777383739164044">"上一步"</string>
+    <string name="wifi_setup_detail" msgid="2336990478140503605">"网络详情"</string>
+    <string name="wifi_setup_connect" msgid="7954456989590237049">"连接"</string>
+    <string name="wifi_setup_forget" msgid="2562847595567347526">"不保存"</string>
+    <string name="wifi_setup_save" msgid="3659235094218508211">"保存"</string>
+    <string name="wifi_setup_cancel" msgid="3185216020264410239">"取消"</string>
+    <string name="wifi_setup_status_scanning" msgid="5317003416385428036">"正在扫描查找网络..."</string>
+    <string name="wifi_setup_status_select_network" msgid="7519563569903137003">"触摸某个网络即可与其连接"</string>
+    <string name="wifi_setup_status_existing_network" msgid="6394925174802598186">"连接到现有网络"</string>
+    <string name="wifi_setup_status_unsecured_network" msgid="8143046977328718252">"连接到不受保护的网络"</string>
+    <string name="wifi_setup_status_edit_network" msgid="4765340816724760717">"键入网络配置"</string>
+    <string name="wifi_setup_status_new_network" msgid="7468952850452301083">"连接到新的网络"</string>
+    <string name="wifi_setup_status_connecting" msgid="4971421484401530740">"正在连接..."</string>
+    <string name="wifi_setup_status_proceed_to_next" msgid="6708250000342940031">"转至下一步"</string>
+    <string name="wifi_setup_status_eap_not_supported" msgid="5335338851032315905">"不支持 EAP。"</string>
+    <string name="wifi_setup_eap_not_supported" msgid="595556546597351489">"您无法在设置过程中配置 EAP Wi-Fi 连接。设置完毕后，您可以在“设置”&gt;“无线和网络”中进行配置。"</string>
+    <string name="wifi_setup_description_connecting" msgid="2793554932006756795">"建立连接可能需要几分钟时间..."</string>
+    <string name="wifi_setup_description_connected" msgid="5235991893829582459">"触摸"<b>"下一步"</b>"可继续进行设置。"\n\n"触摸"<b>"返回"</b>"可连接到其他 Wi-Fi 网络。"</string>
+
+    <!-- Ethernet configuration dialog -->
+    <string name="eth_config_title">以太网设备设置</string>
+    <string name="eth_setting">以太网</string>
+    <string name="eth_dev_list">以太网设备</string>
+    <string name="eth_con_type">连接类型</string>
+    <string name="eth_con_type_dhcp">动态IP</string>
+    <string name="eth_con_type_manual">静态IP</string>
+    <string name="eth_dns">DNS地址</string>
+    <string name="eth_gw">默认网关</string>
+    <string name="eth_ipaddr">IP地址</string>
+    <string name="eth_quick_toggle_title">以太网</string>
+    <string name="eth_quick_toggle_summary">打开以太网</string>
+    <string name="eth_conf_perf_title">以太网设置</string>
+    <string name="eth_conf_summary">以太网设备设置</string>
+    <string name="eth_mask">子网掩码</string>
+    <string name="eth_toggle_summary_off">关闭以太网</string>
+    <string name="eth_toggle_summary_on">打开以太网</string>
+    <string name="eth_settings_error">设置失败：请输入有效的字符 0~255</string>
+
+    <!-- HTTP proxy settings. The hint text field for port. -->
+    <string name="proxy_port_hint" translatable="false">8080</string>
+
+    <!-- Hint text for the IP address -->
+    <string name="wifi_ip_address_hint" translatable="false">192.168.1.128</string>
+
+    <!-- Hint text for the gateway -->
+    <string name="wifi_gateway_hint" translatable="false">192.168.1.1</string>
+
+    <!-- Hint text for DNS -->
+    <string name="wifi_dns2_hint" translatable="false">4.4.4.4</string>
+
+    <!-- Hint text for DNS -->
+    <string name="wifi_dns1_hint" translatable="false">8.8.8.8</string>
+
+    <!-- Hint text for network prefix length -->
+    <string name="wifi_network_prefix_length_hint" translatable="false">24</string>
+    <string name="proxy_settings_title" msgid="5912878565897294401">"代理设置"</string>
+    <string name="proxy_clear_text" msgid="5555400754952012657">"清除"</string>
+    <string name="proxy_port_label" msgid="5655276502233453400">"代理服务器端口"</string>
+    <string name="proxy_exclusionlist_label" msgid="7700491504623418701">"对以下对象绕过代理："</string>
+    <string name="proxy_exclusionlist_hint" msgid="6084099226687226948">"example.com,mycomp.test.com,localhost"</string>
+    <string name="proxy_defaultView_text" msgid="6387985519141433291">"恢复默认设置"</string>
+    <string name="proxy_action_text" msgid="2957063145357903951">"完成"</string>
+    <string name="proxy_hostname_label" msgid="8490171412999373362">"代理服务器主机名"</string>
+    <string name="proxy_hostname_hint" msgid="2076157057003936176">"proxy.example.com"</string>
+    <string name="proxy_error" msgid="8926675299638611451">"注意"</string>
+    <string name="proxy_error_dismiss" msgid="4993171795485460060">"确定"</string>
+    <string name="proxy_error_invalid_host" msgid="8052095511862922213">"您键入的主机名无效。"</string>
+    <string name="proxy_error_invalid_exclusion_list" msgid="6467799485443290961">"您键入的排除列表的格式不正确。请键入以逗号分隔的排除域列表。"</string>
+    <string name="proxy_error_empty_port" msgid="3525734169948795417">"您必须填写端口字段。"</string>
+    <string name="proxy_error_empty_host_set_port" msgid="2451694104858226781">"如果主机字段为空，则端口字段必须为空。"</string>
+    <string name="proxy_error_invalid_port" msgid="2671425042711054494">"您键入的端口无效。"</string>
+    <string name="proxy_warning_limited_support" msgid="7229337138062837422">"该浏览器使用 HTTP 代理，但其他应用程序可能不会使用。"</string>
+    <string name="radio_info_signal_location_label" msgid="16475158265551708">"地点："</string>
+    <string name="radio_info_neighboring_location_label" msgid="2385625674055934880">"相邻的 CID："</string>
+    <string name="radio_info_data_attempts_label" msgid="1731106244577323381">"数据尝试次数："</string>
+    <string name="radio_info_gprs_service_label" msgid="2331818110375395364">"GPRS 服务："</string>
+    <string name="radio_info_roaming_label" msgid="6141505430275138647">"漫游："</string>
+    <string name="radio_info_imei_label" msgid="1220524224732944192">"移动通信国际识别码："</string>
+    <string name="radio_info_call_redirect_label" msgid="1654674226961476872">"呼叫重定向："</string>
+    <string name="radio_info_ppp_resets_label" msgid="3241667824729310546">"启动后重置 PPP 的次数："</string>
+    <string name="radio_info_gsm_disconnects_label" msgid="1683069665736339820">"GSM 断开连接："</string>
+    <string name="radio_info_current_network_label" msgid="3256402602440102610">"当前网络："</string>
+    <string name="radio_info_data_successes_label" msgid="4417894113689054945">"数据成功："</string>
+    <string name="radio_info_ppp_received_label" msgid="3345184342444878849">"已收到 PPP："</string>
+    <string name="radio_info_gsm_service_label" msgid="2082332114596916985">"GSM 服务："</string>
+    <string name="radio_info_signal_strength_label" msgid="1931937920896925766">"信号强度:"</string>
+    <string name="radio_info_call_status_label" msgid="4896238900685510883">"呼叫状态："</string>
+    <string name="radio_info_ppp_sent_label" msgid="5009102250704375687">"已发送 PPP："</string>
+    <string name="radio_info_radio_resets_label" msgid="9211343458143291617">"无线通信重置："</string>
+    <string name="radio_info_message_waiting_label" msgid="6981842420058672207">"消息等待："</string>
+    <string name="radio_info_phone_number_label" msgid="7192944627907412169">"手机号码："</string>
+    <string name="radio_info_band_mode_label" msgid="441469694142042022">"选择无线通信频道"</string>
+    <string name="radio_info_network_type_label" msgid="3706382548257257987">"网络类型："</string>
+    <string name="radio_info_set_perferred_label" msgid="9039200405863503267">"设置首选网络类型："</string>
+    <string name="radio_info_ping_ipaddr" msgid="498747917793263530">"Ping IP 地址："</string>
+    <string name="radio_info_ping_hostname" msgid="3054888474808217853">"Ping 主机名 (www.google.com)："</string>
+    <string name="radio_info_http_client_test" msgid="5733604021077701555">"HTTP 客户端测试："</string>
+    <string name="ping_test_label" msgid="7255376471490860631">"运行 ping 测试"</string>
+    <string name="radio_info_smsc_label" msgid="6399460520126501354">"SMSC："</string>
+    <string name="radio_info_smsc_update_label" msgid="7258686760358791539">"更新"</string>
+    <string name="radio_info_smsc_refresh_label" msgid="6902302130315125102">"刷新"</string>
+    <string name="radio_info_toggle_dns_check_label" msgid="8292252930563286858">"切换 DNS 检查"</string>
+    <string name="radioInfo_unknown" msgid="737385314432468266">"未知"</string>
+    <string name="oem_radio_info_label" msgid="6163141792477958941">"特定 OEM 的信息/设置"</string>
+    <string name="band_mode_title" msgid="954174198903776205">"设置 GSM/UMTS 波段"</string>
+    <string name="band_mode_loading" msgid="548764766363847336">"正在载入波段列表..."</string>
+    <string name="band_mode_set" msgid="5730560180249458484">"设置"</string>
+    <string name="band_mode_failed" msgid="1495968863884716379">"失败"</string>
+    <string name="band_mode_succeeded" msgid="2701016190055887575">"成功"</string>
+
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Wi-Fi Testing on the diagnostic screen
+    -->
+    <string name="testing_wifi_info" translatable="false">Wi-Fi information</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Menu item for WifiManager disableNetwork API
+    -->
+    <string name="disableNetwork" translatable="false">disableNetwork</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Menu item for WifiManager enableNetwork API
+    -->
+    <string name="enableNetwork" translatable="false">enableNetwork</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Menu item for WifiManager disconnect API
+    -->
+    <string name="disconnect" translatable="false">disconnect</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Menu item for WifiManager getConfiguredNetworks API
+    -->
+    <string name="getConfiguredNetworks" translatable="false">getConfiguredNetworks</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Menu item for WifiManager getConnectionInfo API
+    -->
+    <string name="getConnectionInfo" translatable="false">getConnectionInfo</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Menu item on Wifi information screen
+    -->
+    <string name="wifi_api_test" translatable="false">Wi-Fi API</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Menu item on Wifi information screen
+    -->
+    <string name="wifi_status_test" translatable="false">Wi-Fi status</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Button text on Wifi Status screen
+    -->
+    <string name="wifi_update" translatable="false">Refresh stats</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="wifi_state_label" translatable="false">Wi-Fi state:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="network_state_label" translatable="false">Network state:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+        Label on Wifi Status screen
+    -->
+    <string name="supplicant_state_label" translatable="false">Supplicant state:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="rssi_label" translatable="false">RSSI:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="bssid_label" translatable="false">BSSID:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="ssid_label" translatable="false">SSID:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="hidden_ssid_label" translatable="false">Hidden SSID:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="ipaddr_label" translatable="false">IPaddr:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="macaddr_label" translatable="false">MAC addr:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="networkid_label" translatable="false">Network ID:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="link_speed_label" translatable="false">Link speed:</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Status screen
+    -->
+    <string name="scan_list_label" translatable="false">Scan results:</string>
+
+    <!-- wifi state values -->
+    <!-- Do not translate. Used for diagnostic screens, precise translation is not necessary -->
+    <string name="wifi_state_disabling" translatable="false">Disabling</string>
+    <!-- Do not translate. Used for diagnostic screens, precise translation is not necessary -->
+    <string name="wifi_state_disabled" translatable="false">Disabled</string>
+    <!-- Do not translate. Used for diagnostic screens, precise translation is not necessary -->
+    <string name="wifi_state_enabling" translatable="false">Enabling</string>
+    <!-- Do not translate. Used for diagnostic screens, precise translation is not necessary -->
+    <string name="wifi_state_enabled" translatable="false">Enabled</string>
+    <!-- Do not translate. Used for diagnostic screens, precise translation is not necessary -->
+    <string name="wifi_state_unknown" translatable="false">Unknown</string>
+
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Menu item on Wifi information screen
+    -->
+    <string name="wifi_config_info" translatable="false">Wi-Fi config</string>
+    <!--
+         Do not translate. Used for diagnostic screens, precise translation is not necessary
+         Label on Wifi Configuration screen
+    -->
+    <string name="config_list_label" translatable="false">Configured networks</string>
+    <string name="yes" msgid="4676390750360727396">"是"</string>
+    <string name="no" msgid="6731231425810196216">"无"</string>
+    <string name="device_info_default" msgid="7847265875578739287">"未知"</string>
+    <string name="header_category_wireless_networks" msgid="4944823405420438623">"无线和网络"</string>
+    <string name="progress_scanning" msgid="192587958424295789">"正在搜索"</string>
+    <string name="progress_tap_to_pair" msgid="5655704645616731277">"触摸可配对"</string>
+
+    <!-- no translation found for intent_sender_data_label (6332324780477289261) -->
+    <skip />
+
+    <string name="skip_label" msgid="47510779345218297">"跳过"</string>
+    <string name="next_label" msgid="4693520878012668114">"下一步"</string>
+    <string name="display_label" msgid="8074070940506840792">"屏幕"</string>
+    <string name="proxy_settings_label" msgid="3271174136184391743">"代理设置"</string>
+    <string name="cancel" msgid="6859253417269739139">"取消"</string>
+    <string name="settings_label" msgid="1626402585530130914">"设置"</string>
+    <string name="airplane_mode" msgid="8837269988154128601">"飞行模式"</string>
+    <string name="wireless_networks_settings_title" msgid="3643009077742794212">"无线和网络"</string>
+    <string name="networks" msgid="6333316876545927039">"运营商选择"</string>
+    <string name="sum_carrier_select" msgid="3616956422251879163">"选择网络运营商"</string>
+    <string name="display_settings_title" msgid="1708697328627382561">"显示"</string>
+    <string name="sound_settings" msgid="5534671337768745343">"声音"</string>
+    <string name="silent_mode_title" msgid="3181479108593217704">"静音模式"</string>
+    <string name="ringtone_title" msgid="5379026328015343686">"手机铃声"</string>
+    <string name="display_settings" msgid="7965901687241669598">"显示"</string>
+    <string name="apn_settings" msgid="3743170484827528406">"APN"</string>
+    <string name="apn_edit" msgid="1354715499708424718">"修改接入点"</string>
+    <string name="apn_not_set" msgid="4974192007399968164">"未设置"</string>
+    <string name="apn_name" msgid="4115580098369824123">"名称"</string>
+    <string name="apn_apn" msgid="2479425126733513353">"APN"</string>
+    <string name="apn_http_proxy" msgid="1826885957243696354">"代理"</string>
+    <string name="apn_http_port" msgid="3763259523984976226">"端口"</string>
+    <string name="apn_user" msgid="455637547356117761">"用户名"</string>
+    <string name="apn_password" msgid="5412301994998250968">"密码"</string>
+    <string name="apn_server" msgid="2436185314756372858">"服务器"</string>
+    <string name="apn_mmsc" msgid="3670124402105585737">"MMSC"</string>
+    <string name="apn_mms_proxy" msgid="5374082621073999275">"彩信代理"</string>
+    <string name="apn_mms_port" msgid="4074188088199243040">"彩信端口"</string>
+    <string name="apn_mcc" msgid="4258628382260674636">"MCC"</string>
+    <string name="apn_mnc" msgid="8629374076888809874">"MNC"</string>
+    <string name="apn_auth_type" msgid="6167205395676037015">"身份验证类型"</string>
+    <string name="apn_auth_type_none" msgid="5069592676845549926">"无"</string>
+    <string name="apn_auth_type_pap" msgid="1666934536996033383">"PAP"</string>
+    <string name="apn_auth_type_chap" msgid="3369626283789068360">"CHAP"</string>
+    <string name="apn_auth_type_pap_chap" msgid="9102343063036134541">"PAP 或 CHAP"</string>
+    <string name="apn_type" msgid="469613123902220544">"APN 类型"</string>
+    <string name="apn_protocol" msgid="3272222921649348640">"APN 协议"</string>
+    <string name="apn_roaming_protocol" msgid="3386954381510788422">"APN 漫游协议"</string>
+    <string name="carrier_enabled" msgid="407655861175280806">"APN 启用/停用"</string>
+    <string name="carrier_enabled_summaryOn" msgid="6338915271908057531">"APN 已启用"</string>
+    <string name="carrier_enabled_summaryOff" msgid="4300790190221203756">"APN 已停用"</string>
+    <string name="bearer" msgid="594270280031923558">"承载系统"</string>
+    <string name="menu_delete" msgid="6981294422841124659">"删除 APN"</string>
+    <string name="menu_new" msgid="3014205883303921729">"新建 APN"</string>
+    <string name="menu_save" msgid="8109345640668285399">"保存"</string>
+    <string name="menu_cancel" msgid="2194502410474697474">"放弃"</string>
+    <string name="error_title" msgid="7631322303341024692"></string>
+    <string name="error_name_empty" msgid="8418502878620394756">"“名称”字段不能为空。"</string>
+    <string name="error_apn_empty" msgid="6056233831214537267">"APN 不能为空。"</string>
+    <string name="error_mcc_not3" msgid="4560171714156251661">"MCC 字段必须为 3 位数。"</string>
+    <string name="error_mnc_not23" msgid="8418177072458379439">"MNC 字段必须为 2 位数或 3 位数。"</string>
+    <string name="restore_default_apn" msgid="8178010218751639581">"正在恢复默认 APN 设置。"</string>
+    <string name="menu_restore" msgid="8260067415075573273">"重置为默认设置"</string>
+    <string name="restore_default_apn_completed" msgid="2824775307377604897">"重置默认 APN 设置已完成。"</string>
+    <string name="skip_button_label" msgid="8680422740354436943">"取消"</string>
+    <string name="next_button_label" msgid="8890792540116568321">"下一步"</string>
+    <!-- no translation found for service_client_name (4037193625611815517) -->
+    <skip />
+
+    <string name="enter_password" msgid="4131758584074246224">"键入密码以解密存储设备"</string>
+    <string name="try_again" msgid="4272075051293936921">"请重试。"</string>
+    <string name="service_busy" msgid="2325014135156127705">"该服务正忙，请重试。"</string>
+    <string name="delete" msgid="4219243412325163003">"删除"</string>
+    <string name="hdcp_checking_title" msgid="8605478913544273282">"HDCP 检查"</string>
+    <string name="hdcp_checking_dialog_title" msgid="5141305530923283">"设置 HDCP 检查行为"</string>
+    <string name="vpn_name" msgid="4689699885361002297">"名称"</string>
+    <string name="vpn_type" msgid="5435733139514388070">"类型"</string>
+    <string name="vpn_server" msgid="2123096727287421913">"服务器地址"</string>
+    <string name="vpn_mppe" msgid="6639001940500288972">"PPP 加密 (MPPE)"</string>
+    <string name="vpn_l2tp_secret" msgid="529359749677142076">"L2TP 密钥"</string>
+    <string name="vpn_ipsec_identifier" msgid="4098175859460006296">"IPSec 标识符"</string>
+    <string name="vpn_ipsec_secret" msgid="4526453255704888704">"IPSec 预共享密钥"</string>
+    <string name="vpn_ipsec_user_cert" msgid="6880651510020187230">"IPSec 用户证书"</string>
+    <string name="vpn_ipsec_ca_cert" msgid="91338213449148229">"IPSec CA 证书"</string>
+    <string name="vpn_ipsec_server_cert" msgid="6599276718456935010">"IPSec 服务器证书"</string>
+    <string name="vpn_show_options" msgid="7182688955890457003">"显示高级选项"</string>
+    <string name="vpn_search_domains" msgid="5391995501541199624">"DNS 搜索域"</string>
+    <string name="vpn_dns_servers" msgid="5570715561245741829">"DNS 服务器（例如 8.8.8.8）"</string>
+    <string name="vpn_routes" msgid="3818655448226312232">"转发路线（例如 10.0.0.0/8）"</string>
+    <string name="vpn_username" msgid="1863901629860867849">"用户名"</string>
+    <string name="vpn_password" msgid="6756043647233596772">"密码"</string>
+    <string name="vpn_save_login" msgid="6350322456427484881">"保存帐户信息"</string>
+    <string name="vpn_not_used" msgid="9094191054524660891">"（未使用）"</string>
+    <string name="vpn_no_ca_cert" msgid="2095005387500126113">"（不验证服务器）"</string>
+    <string name="vpn_no_server_cert" msgid="2167487440231913330">"（来自服务器）"</string>
+    <string name="vpn_cancel" msgid="1979937976123659332">"取消"</string>
+    <string name="vpn_save" msgid="4233484051644764510">"保存"</string>
+    <string name="vpn_connect" msgid="8469608541746132301">"连接"</string>
+    <string name="vpn_edit" msgid="1111459297288136079">"修改 VPN 网络"</string>
+    <string name="vpn_connect_to" msgid="7328758950427515753">"连接到<xliff:g id="NETWORK">%s</xliff:g>"</string>
+    <string name="vpn_title" msgid="6317731879966640551">"VPN"</string>
+    <string name="vpn_create" msgid="8966010925994175306">"添加 VPN 网络"</string>
+    <string name="vpn_menu_edit" msgid="4526245173583195618">"修改网络"</string>
+    <string name="vpn_menu_delete" msgid="3326527392609513129">"删除网络"</string>
+    <string name="bluetooth_no_devices_found" msgid="1085232930277181436">"未在附近找到蓝牙设备。"</string>
+    <string name="status_unavailable" msgid="7862009036663793314">"不可用"</string>
+
+	<string name="credentials_password_too_short" msgid="7502749986405522663">"密码至少应包含 8 个字符。"</string>
+
+    <!-- Digit audio output settings screen, setting option name to change outputmode -->
+    <string name="digit_audio_output_title">数字音频输出</string>
+
+</resources>
