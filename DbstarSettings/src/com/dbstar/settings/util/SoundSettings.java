@@ -16,6 +16,8 @@ public class SoundSettings {
 
 	public static final String AudioModePCM = "PCM";
 	public static final String AudioModeRAW = "RAW";
+	
+	private CharSequence[] mEntryValues;
 
 	// Mode: PCM, Value: 0
 	// Mode: RAW, Value: 1
@@ -25,12 +27,16 @@ public class SoundSettings {
 			return false;
 		}
 		
-//		SystemProperties.set(STR_DIGIT_AUDIO_OUTPUT, mode);
+		SystemProperties.set(STR_DIGIT_AUDIO_OUTPUT, mode);
 		boolean success = Utils.setValue(DigitalRawFile, value);
 		
 		Log.i(TAG, "digit audio output set to " + mode);
 		
 		return success;
+	}
+	
+	public static String getAudioOutputMode() {
+		return SystemProperties.get(STR_DIGIT_AUDIO_OUTPUT);
 	}
 
 }

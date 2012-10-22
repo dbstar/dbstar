@@ -9,7 +9,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 
-public class GDDeviceInfoActivity extends GDSettingsActivity {
+public class GDDeviceInfoActivity extends GDBaseActivity {
 	private static final String TAG = "GDDeviceInfoActivity";
 	
 	private TextView mDeviceSerialNumberView;

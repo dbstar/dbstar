@@ -279,5 +279,11 @@
         <item>高性能模式</item>
         <item>自动模式</item>
     </string-array>
+    
+    <!-- Digit audio output settings.  The type of output to show. -->
+    <string-array name="digit_audio_output_entries">
+        <item>PCM</item>
+        <item>RAW</item>
+    </string-array>
 
 </resources>
