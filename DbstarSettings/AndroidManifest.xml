@@ -42,24 +42,29 @@
             android:screenOrientation="landscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="com.dbstar.settings.NETWORK_SETTINGS" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".GDAudioSettingsActivity"
-            android:label="@string/app_name"
-            android:theme="@style/theme_trans" >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="com.dbstar.settings.AUDIO_SETTINGS" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
             android:name=".GDDeviceInfoActivity"
-            android:label="@string/app_name"
-            android:theme="@style/theme_trans" >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="com.dbstar.settings.DEVICEINFO_SETTINGS" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
     </application>
