@@ -572,8 +572,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			break;
 		}
 		case SettingsDeviceInfo: {
-			intent = new Intent();
-			intent.setClass(this, GDDeviceInfoActivity.class);
+			intent = startDbstarSettingActivity("GDDeviceInfoActivity");
 			break;
 		}
 		case SettingsUserInfo: {
@@ -583,8 +582,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		case SettingsAudio: {
-			intent = new Intent();
-			intent.setClass(this, GDAudioSettingsActivity.class);
+			intent = startDbstarSettingActivity("GDAudioSettingsActivity");
 			break;
 		}
 		case SettingsVideo: {
@@ -593,8 +591,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			break;
 		}
 		case SettingsNetwork: {
-			intent = new Intent();
-			intent.setClass(this, GDNetworkSettingsActivity.class);
+			intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
 			break;
 		}
 		case SettingsDiskSpace: {
@@ -637,6 +634,19 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
 			startActivity(intent);
 		}
+	}
+	
+	private Intent startSettingsComponent(String packageName, String activityName) {
+		Intent intent = new Intent();
+		String componentName = packageName + "." + activityName;
+		intent.setComponent(new ComponentName(packageName, componentName));
+		intent.setAction("android.intent.action.Main");
+		
+		return intent;
+	}
+	
+	private Intent startDbstarSettingActivity(String activityName) {
+		return startSettingsComponent("com.dbstar.settings", activityName);
 	}
 
 	public class PopupMenuAdapter extends BaseAdapter {

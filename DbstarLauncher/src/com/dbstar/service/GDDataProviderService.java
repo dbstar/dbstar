@@ -12,6 +12,7 @@ import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
+import com.dbstar.model.DeviceData;
 import com.dbstar.model.EntityObject;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDSystemConfigure;
@@ -21,6 +22,7 @@ import com.dbstar.model.GuideListItem;
 import com.dbstar.model.PreviewData;
 import com.dbstar.model.ReceiveEntry;
 import com.dbstar.model.TV;
+import com.dbstar.model.UserData;
 import com.dbstar.service.client.GDDBStarClient;
 
 import android.app.Service;
@@ -73,6 +75,10 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_GETGUIDELIST = 22;
 	public static final int REQUESTTYPE_UPDATEGUIDELIST = 23;
 	public static final int REQUESTTYPE_GETPREVIEWS = 24;
+
+	public static final int REQUESTTYPE_GETUSERDATA = 25;
+	public static final int REQUESTTYPE_GETDEVICEDATA = 26;
+	public static final int REQUESTTYPE_GETHELPINFO = 27;
 
 	private static final String PARAMETER_COLUMN_ID = "column_id";
 	private static final String PARAMETER_PAGENUMBER = "page_number";
@@ -196,7 +202,7 @@ public class GDDataProviderService extends Service {
 
 		mDBStarClient.start();
 		mConfigure.readConfigure();
-		
+
 		if (mConfigure.configureStorage()) {
 			String disk = mConfigure.getStorageDisk();
 			Log.d(TAG, "monitor disk " + disk);
@@ -208,7 +214,7 @@ public class GDDataProviderService extends Service {
 				mDiskMonitor.addDiskToMonitor(disk);
 			}
 		}
-		
+
 		initializeDataEngine();
 		initializeNetEngine();
 		registerUSBReceiver();
@@ -453,6 +459,8 @@ public class GDDataProviderService extends Service {
 			break;
 		}
 
+		case REQUESTTYPE_GETUSERDATA:
+		case REQUESTTYPE_GETHELPINFO:
 		case REQUESTTYPE_GETPREVIEWS:
 		case REQUESTTYPE_GETGUIDELIST:
 		case REQUESTTYPE_GETDOWNLOADSTATUS: {
@@ -872,7 +880,7 @@ public class GDDataProviderService extends Service {
 					// taskFinished(task);
 					break;
 				}
-				
+
 				case REQUESTTYPE_GETPREVIEWS: {
 					String path = mDataModel.getPreviewPath();
 					if (path != null && !path.isEmpty()) {
@@ -882,20 +890,38 @@ public class GDDataProviderService extends Service {
 							File[] files = dir.listFiles();
 							if (files != null && files.length > 0) {
 								PreviewData[] data = new PreviewData[files.length];
-								for (int i=0; i<data.length ; i++) {
+								for (int i = 0; i < data.length; i++) {
 									PreviewData item = new PreviewData();
 									item.URI = files[i].getAbsolutePath();
 									item.Type = PreviewData.TypeVideo;
 									data[i] = item;
 								}
-								
+
 								task.Data = data;
 								taskFinished(task);
 							}
-							
+
 						}
 					}
-					
+
+					break;
+				}
+
+				case REQUESTTYPE_GETUSERDATA: {
+					UserData data = new UserData();
+					data.OperatorData = mDataModel.getOperatorInfo();
+					data.CardId = mDataModel.getCardId();
+					data.Products = mDataModel.getProducts();
+
+					task.Data = data;
+					taskFinished(task);
+					break;
+				}
+				
+				case REQUESTTYPE_GETHELPINFO: {
+					String help = mDataModel.getHelpInfo();
+					task.Data = help;
+					taskFinished(task);
 					break;
 				}
 
@@ -1141,6 +1167,22 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
+	public void getUserData(ClientObserver observer) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETUSERDATA;
+
+		enqueueTask(task);
+	}
+
+	public void getHelpInfo(ClientObserver observer) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETHELPINFO;
+
+		enqueueTask(task);
+	}
+
 	private String getThumbnailFile(ContentData content) {
 		return mConfigure.getThumbnailFile(content);
 	}
@@ -1152,7 +1194,7 @@ public class GDDataProviderService extends Service {
 	public String getMediaFile(ContentData content) {
 		return mConfigure.getMediaFile(content);
 	}
-	
+
 	public String getDRMFile(ContentData content) {
 		return mConfigure.getDRMFile(content);
 	}

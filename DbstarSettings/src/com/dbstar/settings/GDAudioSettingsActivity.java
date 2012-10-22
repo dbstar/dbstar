@@ -1,13 +1,12 @@
-package com.dbstar.app.settings;
+package com.dbstar.settings;
+
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.RadioButton;
 
-import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.settings.R;
 
 public class GDAudioSettingsActivity extends GDBaseActivity {
 
