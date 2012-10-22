@@ -71,4 +71,10 @@
 	<string name="ext_sdcard_device_str">外接TF卡</string>
 	<string name="sata_device_str">SATA</string>
 	<string name="usb_device_str">USB设备</string>
+	
+	<string name="movie_info_view_notes">*信息键可以再次唤出本窗口</string>
+    <string name="close_button_text">关闭本窗</string>
+    <string name="replay_button_text">从头播放</string>
+    <string name="add_favourite_button_text">收藏本片</string>
+    <string name="delete_button_text">删除本片</string>
 </resources>

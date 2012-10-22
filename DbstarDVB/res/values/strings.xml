@@ -89,4 +89,10 @@
 	<string name="ext_sdcard_device_str">External TF Card</string>
 	<string name="sata_device_str">SATA</string>
 	<string name="usb_device_str">USB</string>
+	
+	<string name="movie_info_view_notes">*press menu key will show this window again</string>
+    <string name="close_button_text">cloase</string>
+    <string name="replay_button_text">replay</string>
+    <string name="add_favourite_button_text">add</string>
+    <string name="delete_button_text">delete</string>
 </resources>

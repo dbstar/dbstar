@@ -19,10 +19,12 @@ import android.os.SystemProperties;
 import com.subtitleparser.*;
 import com.subtitleview.SubtitleView;
 import android.content.Context;
+
 import com.dbstar.DbstarDVB.PlayerService.*;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.res.Configuration;
@@ -146,7 +148,6 @@ public class PlayerMenu extends Activity {
 	private int morebar_status = 0;
 	private boolean backToOtherAPK = true;
 
-	String mPublicationId = null, mPublicationSetId = null;
 	Timer timer = new Timer();
 	Toast ff_fb = null;
 	Toast toast = null;
@@ -2278,11 +2279,8 @@ public class PlayerMenu extends Activity {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		mPublicationId = getIntent().getStringExtra("publication_id");
-		mPublicationSetId = getIntent().getStringExtra("publicationset_id");
 	}
-
+	
 	private int getCurDirFile(Uri uri, List<String> list) {
 		String path = uri.getPath();
 		int pos = -1;
@@ -3226,7 +3224,7 @@ public class PlayerMenu extends Activity {
 
 		/* Comment this temporatily, avoid making player cannot work. */
 		// start popup dialog
-		//mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP, MSG_DIALOG_TIMEOUT);
+		mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP, MSG_DIALOG_TIMEOUT);
 	}
 
 	public void onStop() {
@@ -3236,16 +3234,6 @@ public class PlayerMenu extends Activity {
 			PlayList.getinstance().rootPath = null;
 		}
 		finish();
-	}
-
-	private void popupDialog() {
-		Log.d(TAG, "publication id=" + mPublicationId + " publication set id=" + mPublicationSetId);
-		Intent in = new Intent("com.dbstar.app.ShowPopup");
-		in.putExtra("publication_id", mPublicationId);
-		if (mPublicationSetId != null && !mPublicationSetId.isEmpty()) {
-			in.putExtra("publicationset_id", mPublicationSetId);
-		}
-		startActivity(in);
 	}
 
 	// =========================================================
@@ -4231,19 +4219,38 @@ public class PlayerMenu extends Activity {
 		}
 	}
 
+	DbVideoInfoDlg mVideoInfoDlg = null;
 	private static final int MSG_DIALOG_POPUP = 1;
 	private static final int MSG_DIALOG_TIMEOUT = 500;
 	Handler mDialogHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_DIALOG_POPUP:
-				popupDialog();
+				PlayerMenu.this.showDialog(MSG_DIALOG_POPUP);
 				break;
 			default:
 				break;
 			}
 		}
 	};
+	
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog;
+		switch (id) {
+		case MSG_DIALOG_POPUP:
+			if (mVideoInfoDlg == null) {
+				mVideoInfoDlg = new DbVideoInfoDlg(this);
+			}
+			dialog = mVideoInfoDlg;
+			mVideoInfoDlg.retriveMediaInfo(getIntent());
+			break;
+		default:
+			dialog = null;
+			break;
+		}
+
+		return dialog;
+	}
 
 	Handler mRotateHandler = new Handler() {
 		public void handleMessage(Message msg) {
