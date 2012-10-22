@@ -215,16 +215,17 @@ public class DbVideoInfoDlg extends Dialog {
 
 	void repalyButtonClicked() {
 		Log.d(TAG, "repalyButtonClicked");
+		sendCommnd(COMMAND_REPLAY);
 	}
 
 	void saveButtonClicked() {
 		Log.d(TAG, "saveButtonClicked");
-
+		sendCommnd(COMMAND_ADDTOFAVOURITE);
 	}
 
 	void deleteButtonClicked() {
 		Log.d(TAG, "deleteButtonClicked");
-
+		sendCommnd(COMMAND_DELETEFROMFAVOURITE);
 	}
 
 	void updateView() {
@@ -237,14 +238,15 @@ public class DbVideoInfoDlg extends Dialog {
 				mMovieDescription.setText(mMediaData.Description);
 			}
 
-			String director = getResources().getString(
+			String director = getContext().getResources().getString(
 					R.string.property_director);
 			if (mMediaData.Director != null) {
 				director += mMediaData.Director;
 			}
 			mMovieDirector.setText(director);
 
-			String actors = getResources().getString(R.string.property_actors);
+			String actors = getContext().getResources().getString(
+					R.string.property_actors);
 			if (mMediaData.Actors != null) {
 				actors += mMediaData.Actors;
 			}
@@ -269,7 +271,8 @@ public class DbVideoInfoDlg extends Dialog {
 			intent.setAction("com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE");
 			intent.putExtra("publication_id", mMediaData.PublicationId);
 			if (mMediaData.PublicationSetID != null) {
-				intent.putExtra("publicationset_id", mMediaData.PublicationSetID);
+				intent.putExtra("publicationset_id",
+						mMediaData.PublicationSetID);
 			}
 			break;
 		}
@@ -278,12 +281,13 @@ public class DbVideoInfoDlg extends Dialog {
 			intent.setAction("com.dbstar.DbstarLauncher.Action.DELETE_FROM_FAVOURITE");
 			intent.putExtra("publication_id", mMediaData.PublicationId);
 			if (mMediaData.PublicationSetID != null) {
-				intent.putExtra("publicationset_id", mMediaData.PublicationSetID);
+				intent.putExtra("publicationset_id",
+						mMediaData.PublicationSetID);
 			}
 			break;
 		}
 		}
-		
+
 		if (intent != null) {
 			getContext().sendBroadcast(intent);
 		}

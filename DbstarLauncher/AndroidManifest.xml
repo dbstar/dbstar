@@ -69,12 +69,7 @@
 
         <service
             android:name=".service.GDDataProviderService"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE" />
-                <action android:name="com.dbstar.DbstarLauncher.Action.DELETE_FROM_FAVOURITE" />
-            </intent-filter>
-        </service>
+            android:exported="false" />
     </application>
 
 </manifest>

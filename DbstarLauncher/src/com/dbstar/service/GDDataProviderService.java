@@ -12,8 +12,6 @@ import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
-import com.dbstar.model.DeviceData;
-import com.dbstar.model.EntityObject;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GDDataModel;
@@ -1323,6 +1321,8 @@ public class GDDataProviderService extends Service {
 	private void reqisterSystemMessageReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
+		filter.addAction("com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE");
+		filter.addAction("com.dbstar.DbstarLauncher.Action.DELETE_FROM_FAVOURITE");
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
 
