@@ -16,8 +16,8 @@ import android.widget.TextView;
 public class NormalState extends ViewState {
 	private static final String TAG = "NormalState";
 
-	private static final int TIMEOUT_IN_MILLIONSECONDS = 5000;
-	private static final int TIMEOUT_IN_SECONDS = 5;
+	private static final int TIMEOUT_IN_MILLIONSECONDS = 30000;
+	private static final int TIMEOUT_IN_SECONDS = 30;
 	private static final int UpdatePeriodInMills = 1000;
 	private static final int UpdatePeriodInSeconds = 1;
 
