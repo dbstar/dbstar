@@ -243,7 +243,7 @@ public class GDDataModel {
 
 		return publication;
 	}
-	
+
 	public int getPublicationSetItemCount(String setId, String favorite) {
 
 		int count = 0;
@@ -874,6 +874,25 @@ public class GDDataModel {
 		}
 	}
 
+	public boolean deletePublication(String setId, String publicationId) {
+		boolean result = false;
+		if (publicationId != null && !publicationId.isEmpty()) {
+			result = setPublicationProperty(publicationId, Publication.DELETED,
+					"1");
+		}
+
+		return result;
+	}
+
+	public boolean deletePublicationSet(String publicationSetId) {
+		boolean result = false;
+		if (publicationSetId != null && !publicationSetId.isEmpty()) {
+			result = setPublicationSetProperty(publicationSetId,
+					PublicationsSet.DELETED, "1");
+		}
+		return result;
+	}
+
 	// user favorite
 	public boolean addPublicationToFavourite(String publicationSetId,
 			String publicationId) {
@@ -893,14 +912,14 @@ public class GDDataModel {
 	public boolean addPublicationSetToFavourite(String publicationSetId) {
 		return setPublicationSetFavouriteProperty(publicationSetId, "1");
 	}
-	
+
 	public boolean removePublicationFromFavourite(String publicationSetId,
 			String publicationId) {
 		boolean result = true;
 		if (publicationId != null && !publicationId.isEmpty()) {
 			result = setPublicationFavouriteProperty(publicationId, "0");
 		}
-		
+
 		if (result && publicationSetId != null && !publicationSetId.isEmpty()) {
 			int count = getPublicationSetItemCount(publicationSetId, "1");
 			if (count == 0) {
@@ -913,11 +932,23 @@ public class GDDataModel {
 
 	private boolean setPublicationFavouriteProperty(String publicationId,
 			String value) {
+		return setPublicationProperty(publicationId, Publication.FAVORITE,
+				value);
+	}
+
+	private boolean setPublicationSetFavouriteProperty(String publicationSetId,
+			String value) {
+		return setPublicationSetProperty(publicationSetId,
+				PublicationsSet.FAVORITE, value);
+	}
+
+	private boolean setPublicationProperty(String publicationId,
+			String propery, String value) {
 		String selection = Publication.PUBLICATIONID + "=?";
 		String[] selectionArgs = new String[] { publicationId };
 
 		ContentValues values = new ContentValues();
-		values.put(Publication.FAVORITE, value);
+		values.put(propery, value);
 
 		int count = mDVBDataProvider.update(Publication.CONTENT_URI, values,
 				selection, selectionArgs);
@@ -928,13 +959,13 @@ public class GDDataModel {
 		return true;
 	}
 
-	private boolean setPublicationSetFavouriteProperty(String publicationSetId,
-			String value) {
+	private boolean setPublicationSetProperty(String publicationSetId,
+			String propery, String value) {
 		String selection = PublicationsSet.SETID + "=?";
 		String[] selectionArgs = new String[] { publicationSetId };
 
 		ContentValues values = new ContentValues();
-		values.put(PublicationsSet.FAVORITE, value);
+		values.put(propery, value);
 
 		int count = mDVBDataProvider.update(PublicationsSet.CONTENT_URI,
 				values, selection, selectionArgs);
@@ -1028,7 +1059,7 @@ public class GDDataModel {
 
 		return Entries;
 	}
-	
+
 	private final static String[] ProjectionQueryContentCount = { "count(*)" };
 
 	private final static String[] ProjectionQueryContent = { Content.ID,
@@ -1061,6 +1092,5 @@ public class GDDataModel {
 
 		return count;
 	}
-
 
 }

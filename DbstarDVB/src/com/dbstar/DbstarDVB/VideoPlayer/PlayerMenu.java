@@ -21,6 +21,7 @@ import com.subtitleview.SubtitleView;
 import android.content.Context;
 
 import com.dbstar.DbstarDVB.PlayerService.*;
+import com.dbstar.DbstarDVB.VideoPlayer.alert.DbVideoInfoDlg;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -4239,10 +4240,9 @@ public class PlayerMenu extends Activity {
 		switch (id) {
 		case MSG_DIALOG_POPUP:
 			if (mVideoInfoDlg == null) {
-				mVideoInfoDlg = new DbVideoInfoDlg(this);
+				mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
 			}
 			dialog = mVideoInfoDlg;
-			mVideoInfoDlg.retriveMediaInfo(getIntent());
 			break;
 		default:
 			dialog = null;

@@ -116,6 +116,7 @@ public class GDDataProviderService extends Service {
 
 	GDDBStarClient mDBStarClient;
 	GDApplicationObserver mApplicationObserver = null;
+	ClientObserver mPageOberser = null;
 
 	private final IBinder mBinder = new DataProviderBinder();
 	SystemEventHandler mHandler = null;
@@ -159,6 +160,16 @@ public class GDDataProviderService extends Service {
 	public void unRegisterAppObserver(GDApplicationObserver observer) {
 		if (mApplicationObserver == observer) {
 			mApplicationObserver = null;
+		}
+	}
+	
+	public void registerPageObserver (ClientObserver observer) {
+		mPageOberser = observer;
+	}
+	
+	public void unRegisterPageObserver(ClientObserver observer) {
+		if (mPageOberser == observer) {
+			mPageOberser = null;
 		}
 	}
 
@@ -416,7 +427,7 @@ public class GDDataProviderService extends Service {
 				}
 				break;
 			}
-			case GDCommon.MSG_DELETE_FROM_FAVOURTE: {
+			case GDCommon.MSG_DELETE: {
 				String publicationId = msg.getData().getString(
 						GDCommon.KeyPublicationID);
 
@@ -424,8 +435,12 @@ public class GDDataProviderService extends Service {
 						GDCommon.KeyPublicationSetID);
 
 				if (mDataModel != null) {
-					mDataModel.removePublicationFromFavourite(publicationSetId,
+					mDataModel.deletePublication(publicationSetId,
 							publicationId);
+					
+					if (mPageOberser != null) {
+						mPageOberser.updatePage();
+					}
 				}
 				break;
 			}
@@ -1465,12 +1480,12 @@ public class GDDataProviderService extends Service {
 				mHandler.sendMessage(msg);
 
 			} else if (action
-					.equals("com.dbstar.DbstarLauncher.Action.DELETE_FROM_FAVOURITE")) {
+					.equals("com.dbstar.DbstarLauncher.Action.DELETE")) {
 				String publicationSetId = intent
 						.getStringExtra("publicationset_id");
 				String publicationId = intent.getStringExtra("publication_id");
 				Message msg = mHandler
-						.obtainMessage(GDCommon.MSG_DELETE_FROM_FAVOURTE);
+						.obtainMessage(GDCommon.MSG_DELETE);
 				Bundle data = new Bundle();
 				data.putString(GDCommon.KeyPublicationID, publicationId);
 				data.putString(GDCommon.KeyPublicationSetID, publicationSetId);

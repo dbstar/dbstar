@@ -116,6 +116,15 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 	
 	@Override
+	protected void onStop() {
+		super.onStop();
+		
+		if (mService != null && mBound) {
+			mService.unRegisterPageObserver(this);
+		}
+	}
+	
+	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		
@@ -147,6 +156,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	
 	protected void onServiceStart() {
 		Log.d(TAG, "onServiceStart");
+		
+		mService.registerPageObserver(this);
 	}
 
 	protected void onServiceStop() {
@@ -158,6 +169,10 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 	
 	public void updateData(int type, Object key, Object data) {
+		
+	}
+	
+	public void updatePage() {
 		
 	}
 

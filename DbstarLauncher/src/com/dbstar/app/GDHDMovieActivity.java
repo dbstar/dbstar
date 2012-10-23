@@ -216,6 +216,15 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			}
 		}
 	}
+	
+	@Override
+	public void updatePage() {
+		super.updatePage();
+		
+		if (mService != null && mBound) {
+			mService.getAllPublications(this, mColumnId);
+		}
+	}
 
 	public void updateData(int type, int param1, int param2, Object data) {
 

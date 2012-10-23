@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="1129dp"
+    android:layout_height="406dp"
+    android:background="@drawable/movie_info_view_bg" >
+
+    <TextView
+        android:id="@+id/delete_confirm_notes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button_container"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="140dp"
+        android:ellipsize="end"
+        android:lineSpacingMultiplier="1.2"
+        android:maxLines="3"
+        android:text="@string/delete_view_notes"
+        android:textColor="#ffffff"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:id="@+id/button_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dp"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/donot_delete_button"
+            android:layout_width="153dp"
+            android:layout_height="47dp"
+            android:background="@drawable/bluebutton_bg_selector"
+            android:text="@string/button_text_notdelete" />
+
+        <Space
+            android:layout_width="160dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="153dp"
+            android:layout_height="47dp"
+            android:background="@drawable/redbutton_bg_selector"
+            android:text="@string/button_text_delete" />
+    </LinearLayout>
+
+</RelativeLayout>

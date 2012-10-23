@@ -11,7 +11,7 @@ public class GDCommon {
 	public static final int MSG_SYSTEM_FORCE_UPGRADE = 8;
 	
 	public static final int MSG_ADD_TO_FAVOURITE = 9;
-	public static final int MSG_DELETE_FROM_FAVOURTE = 10;
+	public static final int MSG_DELETE = 10;
 		
 	public static final String KeyDisk = "disk";
 	
