@@ -8,13 +8,15 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 
+import com.dbstar.DbstarDVB.R;
+
 public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 	Intent mIntent = null;
 	ViewState mState;
 	MediaData mMediaData;
 
 	public DbVideoInfoDlg(Context context, Intent intent) {
-		super(context);
+		super(context, R.style.DbDialog);
 
 		mMediaData = getMediaData(intent);
 	}
