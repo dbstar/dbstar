@@ -289,8 +289,6 @@ void dvbpush_getinfo_start()
 	DEBUG("start.........\n");
 	s_push_monitor_active = push_monitor_regist(1);
 	DEBUG("here start %d progs\n", s_push_monitor_active);
-//	char *msg = "/mnt/sdb1/update.zip";
-//	msg_send2_UI(UPGRADE_NEW_VER, msg, strlen(msg));
 }
 
 void dvbpush_getinfo_stop()
@@ -387,23 +385,23 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 2、只有UI上进入查看进度的界面后，通知底层去查询，其他时间查询没有意义。
 3、当push无数据后，再轮询若干遍（等待缓冲数据写入硬盘）后就不再轮询。
 */
-void *push_monitor_thread()
-{
-	char *p = NULL;
-	unsigned int len = 0;
-	
-	s_monitor_running = 1;
-	//dvbpush_getinfo_start();
-	while (1==s_monitor_running)
-	{
-		sleep(5);
-		//dvbpush_getinfo(&p, &len);
-	}
-	//dvbpush_getinfo_stop();
-	DEBUG("exit from push monitor thread\n");
-	
-	return NULL;
-}
+//void *push_monitor_thread()
+//{
+////	char *p = NULL;
+////	unsigned int len = 0;
+//	
+//	s_monitor_running = 1;
+//	//dvbpush_getinfo_start();
+//	while (1==s_monitor_running)
+//	{
+//		sleep(5);
+//		//dvbpush_getinfo(&p, &len);
+//	}
+//	//dvbpush_getinfo_stop();
+//	DEBUG("exit from push monitor thread\n");
+//	
+//	return NULL;
+//}
 
 void *push_xml_parse_thread()
 {
@@ -665,10 +663,10 @@ int mid_push_init(char *push_conf)
 	pthread_create(&tidDecodeData, NULL, push_decoder_thread, NULL);
 	//pthread_detach(tidDecodeData);
 	
-	//创建监视线程
-	pthread_t tidMonitor;
-	pthread_create(&tidMonitor, NULL, push_monitor_thread, NULL);
-	pthread_detach(tidMonitor);
+//	//创建监视线程
+//	pthread_t tidMonitor;
+//	pthread_create(&tidMonitor, NULL, push_monitor_thread, NULL);
+//	pthread_detach(tidMonitor);
 	
 	//创建xml解析线程
 	pthread_t tidxmlphase;

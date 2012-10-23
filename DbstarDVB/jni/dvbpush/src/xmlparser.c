@@ -88,26 +88,6 @@ int xmlparser_init(void)
 	else
 		DEBUG("read serviceID: %s\n", s_serviceID);
 	
-	DBSTAR_GLOBAL_S global_s;
-	sqlite_transaction_begin();
-		
-	memset(&global_s, 0, sizeof(global_s));
-	strncpy(global_s.Name, GLB_NAME_PREVIEWPATH, sizeof(global_s.Name));
-	strncpy(global_s.Value, DBSTAR_PREVIEWPATH, sizeof(global_s.Value));
-	global_insert(&global_s);
-	
-	memset(&global_s, 0, sizeof(global_s));
-	strncpy(global_s.Name, GLB_NAME_CURLANGUAGE, sizeof(global_s.Name));
-	strncpy(global_s.Value, "chi", sizeof(global_s.Value));	// this should be changed at future
-	global_insert(&global_s);
-	
-//	memset(&global_s, 0, sizeof(global_s));
-//	strncpy(global_s.Name, GLB_NAME_COLUMNRES, sizeof(global_s.Name));
-//	strncpy(global_s.Value, LOCALCOLUMN_RES, sizeof(global_s.Value));
-//	global_insert(&global_s);
-	
-	sqlite_transaction_end(1);
-		
 	char init_xml_path[512];
 	char init_xml_uri[512];
 	snprintf(init_xml_path, sizeof(init_xml_path), "%s/%s", s_push_root_path,INITIALIZE_PATH);
@@ -118,8 +98,6 @@ int xmlparser_init(void)
 	}
 	
 	push_dir_init();
-	
-	//localcolumn_init();
 	
 	return 0;
 }
@@ -827,6 +805,7 @@ static int publicationva_info_insert(DBSTAR_MULTIPLELANGUAGEINFOVA_S *p)
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+#if 0
 /*
  插入富媒体类成品的信息到MultipleLanguageInfoRM中。
 */
@@ -860,6 +839,7 @@ static int publicationapp_info_insert(DBSTAR_MULTIPLELANGUAGEINFOAPP_S *p)
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
+#endif
 
 /*
  向字幕资源表ResSubTitle中插入字幕信息

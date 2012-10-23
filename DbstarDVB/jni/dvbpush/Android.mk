@@ -62,5 +62,5 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS += -W -Wall
 LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -lpush
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libxml2 libiconv
+LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libxml2 libiconv libdrmvod
 include $(BUILD_SHARED_LIBRARY)

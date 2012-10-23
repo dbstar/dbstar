@@ -1,4 +1,4 @@
-#include <stdlib.h>
+ï»¿#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -47,7 +47,7 @@ void *main_thread()
 //	DEBUG("parse_xml: %s\n", xml_uri);
 //	if(strlen(xml_uri)>0)
 //	{
-//		// ¿ÉÒÔ¿ªÊ¼½âÎöÖ¸¶¨µÄxmlÎÄ¼ş
+//		// å¯ä»¥å¼€å§‹è§£ææŒ‡å®šçš„xmlæ–‡ä»¶
 //		//return parseDoc("/mnt/sda1/dbstar/pushinfo/initialize/Initialize.xml");
 //		//return parseDoc("/mnt/sda1/dbstar/pushinfo/channel/Channel.xml");
 //		//return parseDoc("/mnt/sda1/dbstar/pushinfo/servicegroup/01/101/desc/Product_preview.xml");
@@ -77,7 +77,7 @@ void *main_thread()
 	{
 		pthread_mutex_lock(&mtx_main);
 		/*
-		ĞèÒª±¾Ïß³ÌÏÈÔËĞĞµ½ÕâÀï£¬ÔÙÔÚÆäËû·Ç¸¸Ïß³ÌÖĞÖ´ĞĞpthread_cond_signal(&cond_push_monitor)²ÅÄÜÉúĞ§¡£
+		éœ€è¦æœ¬çº¿ç¨‹å…ˆè¿è¡Œåˆ°è¿™é‡Œï¼Œå†åœ¨å…¶ä»–éçˆ¶çº¿ç¨‹ä¸­æ‰§è¡Œpthread_cond_signal(&cond_push_monitor)æ‰èƒ½ç”Ÿæ•ˆã€‚
 		*/
 		pthread_cond_wait(&cond_main,&mtx_main);
 		DEBUG("main thread is closed by external call\n");
@@ -109,9 +109,9 @@ int dvbpush_uninit()
 		DEBUG("dvbpush uninit...\n");
 		
 		/*
-		±ØĞëÏÈµ÷ÓÃsoftdvb_uninit()£¬ÒòÎªsoftdvb_thread()ÖĞÊ¹ÓÃÁËmalloc³öÀ´µÄÁ½¸ö×ÊÔ´£º
-		1¡¢p_buf¡ª¡ªÔÚigmp_thread()ÖĞmallocºÍfree£¬¹ØÁªigmp_uninit()¡£
-		2¡¢g_recvBuffer¡ª¡ªÔÚmid_push_init()ÖĞmalloc£¬ÔÚmid_push_uninit()ÖĞfree
+		å¿…é¡»å…ˆè°ƒç”¨softdvb_uninit()ï¼Œå› ä¸ºsoftdvb_thread()ä¸­ä½¿ç”¨äº†mallocå‡ºæ¥çš„ä¸¤ä¸ªèµ„æºï¼š
+		1ã€p_bufâ€”â€”åœ¨igmp_thread()ä¸­mallocå’Œfreeï¼Œå…³è”igmp_uninit()ã€‚
+		2ã€g_recvBufferâ€”â€”åœ¨mid_push_init()ä¸­mallocï¼Œåœ¨mid_push_uninit()ä¸­free
 		*/
 		softdvb_uninit();
 		igmp_uninit();

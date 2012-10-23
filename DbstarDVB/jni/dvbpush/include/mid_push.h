@@ -12,4 +12,9 @@ int mid_push_init(char *push_conf);
 int mid_push_uninit();
 int pushdata_rootdir_get(char *buf, unsigned int size);
 int push_monitor_reset();
+
+void dvbpush_getinfo_start();
+void dvbpush_getinfo_stop();
+int dvbpush_getinfo(char **p, unsigned int *len);
+
 #endif

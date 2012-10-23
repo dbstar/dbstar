@@ -15,6 +15,8 @@
 
 #include "common.h"
 #include "dvbpush_api.h"
+#include "mid_push.h"
+#include "prodrm20.h"
 
 static int 			s_settingInitFlag = 0;
 
@@ -29,7 +31,7 @@ static char			s_database_uri[64];
 static int			s_debug_level = 0;
 static char			s_xml[128];
 static char			s_initialize_xml[256];
-static char			s_localcolumn_res[256];
+static char			s_column_res[256];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
@@ -53,7 +55,7 @@ static void settingDefault_set(void)
 	s_debug_level = 0;
 	memset(s_xml, 0, sizeof(s_xml));
 	snprintf(s_initialize_xml, sizeof(s_initialize_xml), "%d", INITIALIZE_XML);
-	snprintf(s_localcolumn_res, sizeof(s_localcolumn_res), "%s", LOCALCOLUMN_RES);
+	snprintf(s_column_res, sizeof(s_column_res), "%s", LOCALCOLUMN_RES);
 	
 	return;
 }
@@ -156,7 +158,7 @@ int setting_init(void)
 				else if(0==strcmp(tmp_buf, "initialize_xml"))
 					strncpy(s_initialize_xml, p_value, sizeof(s_initialize_xml)-1);
 				else if(0==strcmp(tmp_buf, "localcolumn_res"))
-					strncpy(s_localcolumn_res, p_value, sizeof(s_localcolumn_res)-1);
+					strncpy(s_column_res, p_value, sizeof(s_column_res)-1);
 			}
 		}
 		memset(tmp_buf, 0, sizeof(tmp_buf));
@@ -250,12 +252,12 @@ int initialize_xml_get()
 	return atoi(s_initialize_xml);
 }
 
-int localcolumn_res_get(char *localcolumn_res, unsigned int uri_size)
+int column_res_get(char *column_res, unsigned int uri_size)
 {
-	if(NULL==localcolumn_res || 0==uri_size)
+	if(NULL==column_res || 0==uri_size)
 		return -1;
 	
-	strncpy(localcolumn_res, s_localcolumn_res, uri_size);
+	strncpy(column_res, s_column_res, uri_size);
 	return 0;
 }
 
@@ -503,6 +505,7 @@ int msg_send2_UI(int type, char *msg, int len)
 	}
 }
 
+int smartcard_sn_get();
 int dvbpush_command(int cmd, char **buf, int *len)
 {
 	int ret = 0;
@@ -513,7 +516,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			dvbpush_getinfo_start();
 			break;
 		case CMD_DVBPUSH_GETINFO:
-			dvbpush_getinfo(buf, len);
+			dvbpush_getinfo(buf, (unsigned int *)len);
 			break;
 		case CMD_DVBPUSH_GETINFO_STOP:
 			dvbpush_getinfo_stop();
@@ -534,4 +537,27 @@ int dvbpush_command(int cmd, char **buf, int *len)
 	}
 
 	return ret;
+}
+
+static char s_smartcard_sn[CDCA_MAXLEN_SN+1];
+int smartcard_sn_get()
+{
+	DEBUG("to read smartcard sn, space=%d\n", sizeof(s_smartcard_sn));
+	
+	memset(s_smartcard_sn, 0, sizeof(s_smartcard_sn));
+	CDCA_U16 ret = CDCASTB_GetCardSN(s_smartcard_sn);
+	if(CDCA_RC_OK==ret){
+		DEBUG("read smartcard sn OK: %s\n", s_smartcard_sn);
+		return 0;
+	}
+	else if(CDCA_RC_POINTER_INVALID==ret){
+		DEBUG("pointer to read smartcard is invalid\n");
+		return -1;
+	}
+	else if(CDCA_RC_CARD_INVALID==ret){
+		DEBUG("there is none or invalid smartcard: %s\n", s_smartcard_sn);
+		return -1;
+	}
+	
+	return 0;
 }

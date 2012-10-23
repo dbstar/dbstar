@@ -1,4 +1,4 @@
-#include <stdlib.h>
+ï»¿#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <semaphore.h>
@@ -12,7 +12,9 @@
 #include "sqlite.h"
 #include "porting.h"
 
-/*Êı¾İ¿â±ØĞë¼°Ê±´ò¿ª¡¢¼°Ê±¹Ø±Õ£¬²»ÄÜ²ÉÓÃ´ò¿ª¼ÆÊıÆ÷µÄ·½Ê½£¬ÒòÎªÉÏ²ãÓ¦ÓÃÒ²¿ÉÄÜÔÚÊ¹ÓÃ*/
+/*
+æ•°æ®åº“å¿…é¡»åŠæ—¶æ‰“å¼€ã€åŠæ—¶å…³é—­ï¼Œä¸èƒ½é‡‡ç”¨æ‰“å¼€è®¡æ•°å™¨çš„æ–¹å¼ï¼Œå› ä¸ºä¸Šå±‚åº”ç”¨ä¹Ÿå¯èƒ½åœ¨ä½¿ç”¨
+*/
 
 ///used in this file
 static sqlite3* g_db = NULL;												///the pointer of database created or opened
@@ -20,6 +22,8 @@ static int s_sqlite_init_flag = 0;
 
 static int createTable(char* name);
 static void closeDatabase();
+static int localcolumn_init();
+static int global_info_init();
 
 static int createDatabase()
 {
@@ -39,14 +43,14 @@ static int createDatabase()
 			return -1;
 		}
 		
-		DEBUG("database_uri: %s\n", database_uri);
+		DEBUG("database uri: %s\n", database_uri);
 		if(-1==dir_exist_ensure(database_uri)){
 			return -1;
 		}
 
 		if(SQLITE_OK!=sqlite3_open(database_uri,&g_db)){
 			ERROROUT("can't open database: %s\n", database_uri);
-			ret += -1;
+			ret = -1;
 		}
 		else{
 			/// open foreign key support
@@ -54,220 +58,235 @@ static int createDatabase()
 				|| NULL!=errmsgOpen){
 				ERROROUT("can't open foreign_keys\n");
 				DEBUG("database errmsg: %s\n", errmsgOpen);
-				ret += -1;
+				ret = -1;
 			}
 			else{
-				if(createTable("Global")){
-					ERROROUT("can not create table \"Global\"\n");
-					ret += -1;
+				ret = 0;
+				
+				int createtable_ret = createTable("Global");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"Global\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
 				
-				if(createTable("Initialize")){
-					ERROROUT("can not create table \"Initialize\"\n");
-					ret += -1;
+				createtable_ret = createTable("Initialize");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"Initialize\" OK\n");
-					ret += 0;
-				}
-				if(createTable("Channel")){
-					ERROROUT("can not create table \"Channel\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"Channel\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
 				
-				if(createTable("Service")){
-					ERROROUT("can not create table \"Service\"\n");
-					ret += -1;
+				createtable_ret = createTable("Channel");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"Service\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
 				
-				if(createTable("ResStr")){
-					ERROROUT("can not create table \"ResStr\"\n");
-					ret += -1;
+				createtable_ret = createTable("Service");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"ResStr\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
 				
-				if(createTable("ResPoster")){
-					ERROROUT("can not create table \"ResPoster\"\n");
-					ret += -1;
+				createtable_ret = createTable("ResStr");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"ResPoster\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("ResTrailer")){
-					ERROROUT("can not create table \"ResTrailer\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"ResTrailer\" OK\n");
-					ret += 0;
-				}
-				if(createTable("ResSubTitle")){
-					ERROROUT("can not create table \"ResSubTitle\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("ResPoster");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"ResSubTitle\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("ResExtension")){
-					ERROROUT("can not create table \"ResExtension\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"ResExtension\" OK\n");
-					ret += 0;
-				}
-				if(createTable("ResExtensionFile")){
-					ERROROUT("can not create table \"ResExtensionFile\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("ResTrailer");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"ResExtensionFile\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("Column")){
-					ERROROUT("can not create table \"Column\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"Column\" OK\n");
-					ret += 0;
-				}
-				if(createTable("ColumnEntity")){
-					ERROROUT("can not create table \"ColumnEntity\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("ResSubTitle");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"ColumnEntity\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("Product")){
-					ERROROUT("can not create table \"Product\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"Product\" OK\n");
-					ret += 0;
-				}
-				if(createTable("PublicationsSet")){
-					ERROROUT("can not create table \"PublicationsSet\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("ResExtension");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"PublicationsSet\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("Publication")){
-					ERROROUT("can not create table \"Publication\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"Publication\" OK\n");
-					ret += 0;
-				}
-				if(createTable("MultipleLanguageInfoVA")){
-					ERROROUT("can not create table \"MultipleLanguageInfoVA\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("ResExtensionFile");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"MultipleLanguageInfoVA\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("MultipleLanguageInfoRM")){
-					ERROROUT("can not create table \"MultipleLanguageInfoRM\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"MultipleLanguageInfoRM\" OK\n");
-					ret += 0;
-				}
-				if(createTable("MultipleLanguageInfoApp")){
-					ERROROUT("can not create table \"MultipleLanguageInfoApp\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("Column");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"MultipleLanguageInfoApp\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("MFile")){
-					ERROROUT("can not create table \"MFile\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"MFile\" OK\n");
-					ret += 0;
-				}
-				if(createTable("Message")){
-					ERROROUT("can not create table \"Message\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("ColumnEntity");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"Message\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("GuideList")){
-					ERROROUT("can not create table \"GuideList\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"GuideList\" OK\n");
-					ret += 0;
-				}
-				if(createTable("ProductDesc")){
-					ERROROUT("can not create table \"ProductDesc\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("Product");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"ProductDesc\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("Preview")){
-					ERROROUT("can not create table \"Preview\"\n");
-					ret += -1;
-				}
-				else{
-					DEBUG("create table \"Preview\" OK\n");
-					ret += 0;
-				}
-				if(createTable("RejectRecv")){
-					ERROROUT("can not create table \"RejectRecv\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("PublicationsSet");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"RejectRecv\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
-				if(createTable("SProduct")){
-					ERROROUT("can not create table \"SProduct\"\n");
-					ret += -1;
+				
+				createtable_ret = createTable("Publication");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
 				}
 				else{
-					DEBUG("create table \"SProduct\" OK\n");
-					ret += 0;
+					ret += createtable_ret;
 				}
+				
+				createtable_ret = createTable("MultipleLanguageInfoVA");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
+				createtable_ret = createTable("MultipleLanguageInfoRM");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
+				createtable_ret = createTable("MultipleLanguageInfoApp");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
+				createtable_ret = createTable("Message");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
+				createtable_ret = createTable("GuideList");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
+				createtable_ret = createTable("ProductDesc");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
+				createtable_ret = createTable("Preview");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
+				createtable_ret = createTable("RejectRecv");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
+				createtable_ret = createTable("SProduct");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+CREATE_TABLE_END:
+				DEBUG("shot tables finished, ret=%d\n", ret);
 			}
 			sqlite3_free(errmsgOpen);
 		}
 		closeDatabase();
 	}
 	
-	return (ret<0?-1:0);
+	return ret;
 }
 
 static int openDatabase()
@@ -311,6 +330,12 @@ static void closeDatabase()
 	return;
 }
 
+/*
+è¿”å›å€¼ï¼š
+0â€”â€”æŒ‡å®šçš„è¡¨å­˜åœ¨ï¼ŒæˆåŠŸï¼›
+-1â€”â€”åˆ›å»ºè¡¨å¤±è´¥ï¼›
+1â€”â€”æŒ‡å®šçš„è¡¨åˆ›å»ºæˆåŠŸã€‚
+*/
 static int createTable(char* name)
 {
 	char* errmsg=NULL;
@@ -329,13 +354,15 @@ static int createTable(char* name)
 	}
 	else{
 		if(l_row>0){
-			DEBUG("tabel \"%s\" is exist\n", name);
+			DEBUG("tabel \"%s\" is exist, OK\n", name);
 			ret = 0;
 		}
 		else{
 			sqlite3_free(errmsg);
-			ret = 0;
-			/*ÕâÀï½¨Á¢±íµÄÄ¿µÄÊÇ²éÑ¯£¬²»ÊÇ´æ´¢£¬ËùÒÔ²»ÄÜÓÃÓÚ²éÑ¯µÄÍ¼Æ¬¡¢½á¹¹Ìå¡¢ÃèÊöµÈ*/
+			ret = 1;
+			/*
+			è¿™é‡Œå»ºç«‹è¡¨çš„ç›®çš„æ˜¯æŸ¥è¯¢ï¼Œä¸æ˜¯å­˜å‚¨ï¼Œæ‰€ä»¥ä¸èƒ½ç”¨äºæŸ¥è¯¢çš„å›¾ç‰‡ã€ç»“æ„ä½“ã€æè¿°ç­‰
+			*/
 			if(!strcmp(name,"Global"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
@@ -531,9 +558,6 @@ Resolution	NVARCHAR(32),\
 BitRate	NVARCHAR(32),\
 CodeFormat	NVARCHAR(32));", name);
 			}
-/*
-
-*/
 			else if(!strcmp(name,"MultipleLanguageInfoVA"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
@@ -670,17 +694,27 @@ Name	NVARCHAR(64),\
 URI	NVARCHAR(512));", name);
 			}
 			
-			else
+			else{
+				DEBUG("baby: table %s is not defined, so can not create it\n", name);
 				memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
+				ret = -1;
+			}
 			
 			if(strlen(sqlite_cmd)>0){
-				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
+				if(0==sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
+				{
+					DEBUG("create table '%s' success\n", name);
+					ret = 1;
+				}
+				else
 				{
 					ERROROUT("create '%s' failed: %s\n", name, sqlite_cmd);
 					DEBUG("sqlite errmsg: %s\n", errmsg);
 					ret = -1;
 				}
 			}
+			else
+				ret = -1;
 		}
 	}
 
@@ -697,9 +731,19 @@ int sqlite_init()
 {
 	if(0==s_sqlite_init_flag){
 		g_db = NULL;
-		if(-1==createDatabase()){						///open database
+		int ret = createDatabase();
+		if(0==ret)
+			DEBUG("open database success\n");
+		else if(ret>0){
+			DEBUG("create database success(some/all tables are created)\n");
+			localcolumn_init();
+			global_info_init();
+		}
+		else{						///open database failed
+			DEBUG("create/open database failed\n");
 			return -1;
 		}
+			
 		s_sqlite_init_flag = 1;
 	}
 
@@ -746,11 +790,11 @@ int sqlite_execute(char *exec_str)
 }
 
 /*
-¹¦ÄÜ£º	Ö´ĞĞSELECTÓï¾ä
-ÊäÈë£º	sqlite_cmd				¡ª¡ªsql SELECTÓï¾ä
-		receiver				¡ª¡ªÓÃÓÚ´¦ÀíSELECT½á¹ûµÄ²ÎÊı£¬Èç¹ûsqlite_read_callbackÎªNULL£¬ÔòreceiverÒ²¿ÉÒÔÎªNULL
-		sqlite_read_callback	¡ª¡ªÓÃÓÚ´¦ÀíSELECT½á¹ûµÄ»Øµ÷£¬Èç¹ûÖ»ÊÇÏëÖªµÀ²éÑ¯µ½¼¸Ìõ¼ÇÂ¼£¬Ôò´Ë»Øµ÷¿ÉÒÔÎªNULL
-·µ»Ø£º	-1¡ª¡ªÊ§°Ü£»ÆäËûÖµ¡ª¡ª²éÑ¯µ½µÄ¼ÇÂ¼Êı
+åŠŸèƒ½ï¼š	æ‰§è¡ŒSELECTè¯­å¥
+è¾“å…¥ï¼š	sqlite_cmd				â€”â€”sql SELECTè¯­å¥
+		receiver				â€”â€”ç”¨äºå¤„ç†SELECTç»“æœçš„å‚æ•°ï¼Œå¦‚æœsqlite_read_callbackä¸ºNULLï¼Œåˆ™receiverä¹Ÿå¯ä»¥ä¸ºNULL
+		sqlite_read_callback	â€”â€”ç”¨äºå¤„ç†SELECTç»“æœçš„å›è°ƒï¼Œå¦‚æœåªæ˜¯æƒ³çŸ¥é“æŸ¥è¯¢åˆ°å‡ æ¡è®°å½•ï¼Œåˆ™æ­¤å›è°ƒå¯ä»¥ä¸ºNULL
+è¿”å›ï¼š	-1â€”â€”å¤±è´¥ï¼›å…¶ä»–å€¼â€”â€”æŸ¥è¯¢åˆ°çš„è®°å½•æ•°
 */
 int sqlite_read(char *sqlite_cmd, void *receiver, int (*sqlite_read_callback)(char **result, int row, int column, void *receiver))
 {
@@ -829,7 +873,7 @@ int sqlite_table_clear(char *table_name)
 
 #if 0
 /*
- ½«Ò»ÏµÁĞsqliteÓï¾ä·â×°ÎªÒ»¸öÊÂÎñ£¬¸÷¸öÓï¾ä¼äÓÃ'\n'½áÎ²¡£
+ å°†ä¸€ç³»åˆ—sqliteè¯­å¥å°è£…ä¸ºä¸€ä¸ªäº‹åŠ¡ï¼Œå„ä¸ªè¯­å¥é—´ç”¨'\n'ç»“å°¾ã€‚
 */
 int sqlite_transaction(char *sqlite_cmd)
 {
@@ -904,11 +948,11 @@ int sqlite_transaction(char *sqlite_cmd)
 #endif
 
 /*
- Êı¾İ¿âÊÂÎñÊ¹ÓÃ¹æÔò£º
- 1¡¢ÊÂÎñµÄ¿ªÊ¼ºÍ½áÊø±ØĞëÊÇ³É¶Ô³öÏÖµÄ¡£ÊÂÎñ²»ÔÊĞíÇ¶Ì×¡£
- 2¡¢¶ÔÓÚÕûÌåÌæ»»µÄÊı¾İ±í£¬Ó¦½«Êı¾İ±íÇå³ı¡¢Êı¾İÂ¼Èë¹¤×÷·â×°ÔÚÒ»¸öÊÂÎñÖĞ¡£
- 3¡¢ËùÓĞRes¿ªÍ·µÄÊı¾İ±í£¬ËüÃÇµÄÊı¾İ¶¼ÊÇÒÀ´æÓÚÆäËûÊı¾İ±í²ÅÓĞÒâÒå£¬
- 	Òò´ËÕâĞ©Êı¾İ±íµÄ²åÈë¡¢É¾³ı¡¢¸üĞÂµÈ¶¯×÷£¬¾ùÊÇÄ³¸öËŞÖ÷ÊÂÎñµÄÒ»²¿·Ö£¬ËüÃÇ×ÔÉí²»¹¹³ÉÒ»¸öµ¥¶ÀµÄÊÂÎñ¡£
+ æ•°æ®åº“äº‹åŠ¡ä½¿ç”¨è§„åˆ™ï¼š
+ 1ã€äº‹åŠ¡çš„å¼€å§‹å’Œç»“æŸå¿…é¡»æ˜¯æˆå¯¹å‡ºç°çš„ã€‚äº‹åŠ¡ä¸å…è®¸åµŒå¥—ã€‚
+ 2ã€å¯¹äºæ•´ä½“æ›¿æ¢çš„æ•°æ®è¡¨ï¼Œåº”å°†æ•°æ®è¡¨æ¸…é™¤ã€æ•°æ®å½•å…¥å·¥ä½œå°è£…åœ¨ä¸€ä¸ªäº‹åŠ¡ä¸­ã€‚
+ 3ã€æ‰€æœ‰Reså¼€å¤´çš„æ•°æ®è¡¨ï¼Œå®ƒä»¬çš„æ•°æ®éƒ½æ˜¯ä¾å­˜äºå…¶ä»–æ•°æ®è¡¨æ‰æœ‰æ„ä¹‰ï¼Œ
+ 	å› æ­¤è¿™äº›æ•°æ®è¡¨çš„æ’å…¥ã€åˆ é™¤ã€æ›´æ–°ç­‰åŠ¨ä½œï¼Œå‡æ˜¯æŸä¸ªå®¿ä¸»äº‹åŠ¡çš„ä¸€éƒ¨åˆ†ï¼Œå®ƒä»¬è‡ªèº«ä¸æ„æˆä¸€ä¸ªå•ç‹¬çš„äº‹åŠ¡ã€‚
 */
 typedef enum{
 	SQL_TRAN_STATUS_END = 0,
@@ -919,7 +963,7 @@ static SQL_TRAN_STATUS_E s_sql_tran_status = SQL_TRAN_STATUS_END;
 
 
 /*
- º¯Êı1£ºÊÂÎñ¿ªÊ¼
+ å‡½æ•°1ï¼šäº‹åŠ¡å¼€å§‹
 */
 int sqlite_transaction_begin()
 {
@@ -957,7 +1001,7 @@ int sqlite_transaction_begin()
 	return ret;
 }
 /*
- º¯Êı2£ºÊÂÎñÖĞµÄsqliteÓï¾ä¡£
+ å‡½æ•°2ï¼šäº‹åŠ¡ä¸­çš„sqliteè¯­å¥ã€‚
 */
 int sqlite_transaction_exec(char *sqlite_cmd)
 {
@@ -992,7 +1036,7 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 	return ret;
 }
 /*
- º¯Êı3£ºÇåÀíÊı¾İ±í£¬ÔÚÊÂÎñÖĞÖ´ĞĞ¡£
+ å‡½æ•°3ï¼šæ¸…ç†æ•°æ®è¡¨ï¼Œåœ¨äº‹åŠ¡ä¸­æ‰§è¡Œã€‚
 */
 int sqlite_transaction_table_clear(char *table_name)
 {
@@ -1005,8 +1049,8 @@ int sqlite_transaction_table_clear(char *table_name)
 }
 
 /*
- º¯Êı4£ºÊÂÎñ½áÊø¡£
- ²ÎÊı£ºcommin_flag¡ª¡ª0£ºÌá½»ÊÂÎñ£»-1£º»Ø¹öÊÂÎñ¡£
+ å‡½æ•°4ï¼šäº‹åŠ¡ç»“æŸã€‚
+ å‚æ•°ï¼šcommin_flagâ€”â€”0ï¼šæäº¤äº‹åŠ¡ï¼›-1ï¼šå›æ»šäº‹åŠ¡ã€‚
 */
 int sqlite_transaction_end(int commit_flag)
 {
@@ -1044,50 +1088,50 @@ int sqlite_transaction_end(int commit_flag)
 
 
 /*
- ±¾µØÀ¸Ä¿µÄ³õÊ¼»¯£¬Ä¿Ç°ÊÇ¡°ÉèÖÃ¡±ºÍ¡°¸öÈËÖĞĞÄ¡±
- ×¢ÒâºÍÏÂ·¢µÄColumn.xml×Ö¶ÎÊ¶±ğ±£³ÖÒ»ÖÂ
+ æœ¬åœ°æ ç›®çš„åˆå§‹åŒ–ï¼Œç›®å‰æ˜¯â€œè®¾ç½®â€å’Œâ€œä¸ªäººä¸­å¿ƒâ€
+ æ³¨æ„å’Œä¸‹å‘çš„Column.xmlå­—æ®µè¯†åˆ«ä¿æŒä¸€è‡´
 */
 int localcolumn_init()
 {
 	char sqlite_cmd[512];
 	
-	DEBUG("aaaaaaaaaaaaaaaaaaa\n");
+	DEBUG("init local column, such as 'Settings' or 'My Center\n");
 	
 	sqlite_transaction_begin();
 	
 	
 	/*
-	 Ò»¼¶²Ëµ¥¡°¸öÈËÖĞĞÄ¡±
+	 ä¸€çº§èœå•â€œä¸ªäººä¸­å¿ƒâ€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',1);",
 		"01","-1","01",COLUMN_LOCAL,"LocalColumnIcon/MyCenter_losefocus.png","LocalColumnIcon/MyCenter_getfocus.png","MyCenter_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","01","chi","DisplayName","¸öÈËÖĞĞÄ","");
+		"Column","01","chi","DisplayName","ä¸ªäººä¸­å¿ƒ","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","01","eng","DisplayName","My Center","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
-	 ¶ş¼¶²Ëµ¥¡°Ñ¡Ôñ½ÓÊÕ¡±
+	 äºŒçº§èœå•â€œé€‰æ‹©æ¥æ”¶â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',1);",
 		"0101","01","01/0101",COLUMN_LOCAL,"LocalColumnIcon/Receiving_losefocus.png","LocalColumnIcon/Receiving_getfocus.png","Receiving_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","0101","chi","DisplayName","Ñ¡Ôñ½ÓÊÕ","");
+		"Column","0101","chi","DisplayName","é€‰æ‹©æ¥æ”¶","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","0101","eng","DisplayName","Receiving","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
-	 ¶ş¼¶²Ëµ¥¡°ÏÂÔØ×´Ì¬¡±
+	 äºŒçº§èœå•â€œä¸‹è½½çŠ¶æ€â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',2);",
 		"0102","01","01/0102",COLUMN_LOCAL,"LocalColumnIcon/Download_losefocus.png","LocalColumnIcon/Download_getfocus.png","Download_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","0102","chi","DisplayName","ÏÂÔØ×´Ì¬","");
+		"Column","0102","chi","DisplayName","ä¸‹è½½çŠ¶æ€","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","0102","eng","DisplayName","Download","");
@@ -1095,90 +1139,108 @@ int localcolumn_init()
 	
 	
 	/*
-	 Ò»¼¶²Ëµ¥¡°ÉèÖÃ¡±
+	 ä¸€çº§èœå•â€œè®¾ç½®â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',2);",
 		"02","-1","02",COLUMN_LOCAL,"LocalColumnIcon/Setting_losefocus.png","LocalColumnIcon/Setting_getfocus.png","Setting_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","02","chi","DisplayName","ÉèÖÃ","");
+		"Column","02","chi","DisplayName","è®¾ç½®","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","02","eng","DisplayName","Setting","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
-	 ¶ş¼¶²Ëµ¥¡°ÉèÖÃ£­ÍøÂçÉèÖÃ¡±
+	 äºŒçº§èœå•â€œè®¾ç½®ï¼ç½‘ç»œè®¾ç½®â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',1);",
 		"0201","02","02/0201",COLUMN_LOCAL,"LocalColumnIcon/Network_losefocus.png","LocalColumnIcon/Network_getfocus.png","Network_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","0201","chi","DisplayName","ÍøÂçÉèÖÃ","");
+		"Column","0201","chi","DisplayName","ç½‘ç»œè®¾ç½®","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","0201","eng","DisplayName","Network","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
-	 ¶ş¼¶²Ëµ¥¡°ÉèÖÃ£­ÊÓÆµÉèÖÃ¡±
+	 äºŒçº§èœå•â€œè®¾ç½®ï¼è§†é¢‘è®¾ç½®â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',2);",
 		"0202","02","02/0202",COLUMN_LOCAL,"LocalColumnIcon/Video_losefocus.png","LocalColumnIcon/Video_getfocus.png","Video_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","0202","chi","DisplayName","ÊÓÆµÉèÖÃ","");
+		"Column","0202","chi","DisplayName","è§†é¢‘è®¾ç½®","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","0202","eng","DisplayName","Video","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
-	 ¶ş¼¶²Ëµ¥¡°ÉèÖÃ£­ÒôÆµÉèÖÃ¡±
+	 äºŒçº§èœå•â€œè®¾ç½®ï¼éŸ³é¢‘è®¾ç½®â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',3);",
 		"0203","02","02/0203",COLUMN_LOCAL,"LocalColumnIcon/Audio_losefocus.png","LocalColumnIcon/Audio_getfocus.png","Audio_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","0203","chi","DisplayName","ÒôÆµÉèÖÃ","");
+		"Column","0203","chi","DisplayName","éŸ³é¢‘è®¾ç½®","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","0203","eng","DisplayName","Audio","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
-	 ¶ş¼¶²Ëµ¥¡°ÉèÖÃ£­ÓÃ»§ĞÅÏ¢¡±
+	 äºŒçº§èœå•â€œè®¾ç½®ï¼ç”¨æˆ·ä¿¡æ¯â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',4);",
 		"0204","02","02/0204",COLUMN_LOCAL,"LocalColumnIcon/UserInfo_losefocus.png","LocalColumnIcon/UserInfo_getfocus.png","UserInfo_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","0204","chi","DisplayName","ÓÃ»§ĞÅÏ¢","");
+		"Column","0204","chi","DisplayName","ç”¨æˆ·ä¿¡æ¯","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","0204","eng","DisplayName","User Info","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
-	 ¶ş¼¶²Ëµ¥¡°ÉèÖÃ£­±¾»úĞÅÏ¢¡±
+	 äºŒçº§èœå•â€œè®¾ç½®ï¼æœ¬æœºä¿¡æ¯â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',5);",
 		"0205","02","02/0205",COLUMN_LOCAL,"LocalColumnIcon/DeviceInfo_losefocus.png","LocalColumnIcon/DeviceInfo_getfocus.png","DeviceInfo_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","0205","chi","DisplayName","±¾»úĞÅÏ¢","");
+		"Column","0205","chi","DisplayName","æœ¬æœºä¿¡æ¯","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","0205","eng","DisplayName","Device Info","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
-	 ¶ş¼¶²Ëµ¥¡°ÉèÖÃ£­°ïÖú¡±
+	 äºŒçº§èœå•â€œè®¾ç½®ï¼å¸®åŠ©â€
 	*/
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%d','%s','%s','%s',6);",
 		"0206","02","02/0206",COLUMN_LOCAL,"LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_getfocus.png","Help_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","0206","chi","DisplayName","°ïÖú","");
+		"Column","0206","chi","DisplayName","å¸®åŠ©","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","0206","eng","DisplayName","Help","");
 	sqlite_transaction_exec(sqlite_cmd);
 	
+	
+	return sqlite_transaction_end(1);
+}
+
+static int global_info_init()
+{
+	DEBUG("init table 'Global', set default records\n");
+	
+	char sqlite_cmd[1024];
+	sqlite_transaction_begin();
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+		GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
+	sqlite_transaction_exec(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+		GLB_NAME_CURLANGUAGE,"chi");
+	sqlite_transaction_exec(sqlite_cmd);
 	
 	return sqlite_transaction_end(1);
 }
