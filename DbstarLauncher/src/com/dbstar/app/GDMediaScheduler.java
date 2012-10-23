@@ -79,13 +79,13 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mUIReady = false;
 	}
 
-//	private boolean mEngineStarted = false;
+	// private boolean mEngineStarted = false;
 
 	public void start(GDDataProviderService service) {
-//		if (mEngineStarted)
-//			return;
+		// if (mEngineStarted)
+		// return;
 
-//		mEngineStarted = true;
+		// mEngineStarted = true;
 		mService = service;
 
 		mResources = null;
@@ -93,6 +93,11 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mResourcesReady = false;
 
 		mService.getPreviews(this);
+	}
+
+	@Override
+	public void updatePage() {
+
 	}
 
 	@Override
@@ -106,7 +111,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 				Log.d(TAG, "updateData ");
 				mResources = (PreviewData[]) data;
 				mResourcesReady = true;
-//				playMedia();
+				// playMedia();
 				mHandler.postDelayed(mUpdateTimeTask, 3000);
 			}
 		}
@@ -116,7 +121,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.d(TAG, "surfaceCreated");
 		Log.d(TAG, "mStoreState.Type=" + mStoreState.Type);
-		
+
 		mUIReady = true;
 		playMedia();
 	}
@@ -172,12 +177,13 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	public void playMedia() {
 
-		Log.d(TAG, "palyMedia mResourcesReady = " + mResourcesReady + " mUIReady = " + mUIReady);
-		
+		Log.d(TAG, "palyMedia mResourcesReady = " + mResourcesReady
+				+ " mUIReady = " + mUIReady);
+
 		if (!mResourcesReady || !mUIReady) {
 			return;
 		}
-		
+
 		boolean successed = false;
 		while (true) {
 			if (!fetchMediaResource() && mResourceIndex < mResources.length - 1) {

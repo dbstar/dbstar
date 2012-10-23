@@ -212,14 +212,14 @@ public class NormalState extends ViewState {
 			String director = dlg.getContext().getResources()
 					.getString(R.string.property_director);
 			if (mMediaData.Director != null) {
-				director += mMediaData.Director;
+				director += ": " + mMediaData.Director;
 			}
 			mMovieDirector.setText(director);
 
 			String actors = dlg.getContext().getResources()
 					.getString(R.string.property_actors);
 			if (mMediaData.Actors != null) {
-				actors += mMediaData.Actors;
+				actors += ": " + mMediaData.Actors;
 			}
 			mMovieActors.setText(actors);
 		}
