@@ -5,6 +5,8 @@ import java.util.TimerTask;
 
 import android.app.Dialog;
 import android.os.Handler;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -62,6 +64,8 @@ public class FavouriteState extends ViewState {
 	}
 
 	void resetTimer() {
+		Log.d("FavoriteState", "+++reset timer++");
+		
 		if (mTask != null)
 			mTask.cancel();
 
@@ -99,6 +103,10 @@ public class FavouriteState extends ViewState {
 
 	public void exit() {
 		stopTimer();
+	}
+	
+	protected void keyEvent(int KeyCode, KeyEvent event) {
+		resetTimer();
 	}
 
 	void initializeView(Dialog dlg) {

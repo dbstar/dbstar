@@ -68,6 +68,8 @@ public class NormalState extends ViewState {
 	}
 
 	void resetTimer() {
+		Log.d(TAG, "+++reset timer++");
+		
 		if (mTask != null)
 			mTask.cancel();
 

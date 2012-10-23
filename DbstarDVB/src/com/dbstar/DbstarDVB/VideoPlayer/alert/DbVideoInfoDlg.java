@@ -45,6 +45,8 @@ public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
+		Log.d("DbVideoInfoDlg", "+++reset timer++ keyCode" + keyCode);
+		
 		mState.keyEvent(keyCode, event);
 
 		return super.onKeyDown(keyCode, event);
