@@ -16,6 +16,10 @@
 #include "common.h"
 #include "dvbpush_api.h"
 #include "mid_push.h"
+#include "softdmx.h"
+#include "bootloader.h"
+#include "xmlparser.h"
+#include "sqlite.h"
 #include "prodrm20.h"
 
 static int 			s_settingInitFlag = 0;
@@ -505,7 +509,7 @@ int msg_send2_UI(int type, char *msg, int len)
 	}
 }
 
-int smartcard_sn_get();
+
 int dvbpush_command(int cmd, char **buf, int *len)
 {
 	int ret = 0;
@@ -539,25 +543,78 @@ int dvbpush_command(int cmd, char **buf, int *len)
 	return ret;
 }
 
-static char s_smartcard_sn[CDCA_MAXLEN_SN+1];
-int smartcard_sn_get()
+
+static void upgrade_info_refresh(char *info_name, char *info_value)
 {
-	DEBUG("to read smartcard sn, space=%d\n", sizeof(s_smartcard_sn));
+	char sqlite_cmd[512];
+	char stbinfo[128];
 	
-	memset(s_smartcard_sn, 0, sizeof(s_smartcard_sn));
-	CDCA_U16 ret = CDCASTB_GetCardSN(s_smartcard_sn);
-	if(CDCA_RC_OK==ret){
-		DEBUG("read smartcard sn OK: %s\n", s_smartcard_sn);
-		return 0;
-	}
-	else if(CDCA_RC_POINTER_INVALID==ret){
-		DEBUG("pointer to read smartcard is invalid\n");
-		return -1;
-	}
-	else if(CDCA_RC_CARD_INVALID==ret){
-		DEBUG("there is none or invalid smartcard: %s\n", s_smartcard_sn);
-		return -1;
-	}
+	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", info_name);
 	
-	return 0;
+	memset(stbinfo, 0, sizeof(stbinfo));
+	int ret_sqlexec = sqlite_read(sqlite_cmd, stbinfo, sqlite_cb);
+	if(ret_sqlexec<=0 || strcmp(stbinfo, info_value)){
+		DEBUG("replace %s as %s to table 'Global'\n", info_name, info_value);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			info_name,info_value);
+		sqlite_execute(sqlite_cmd);
+	}
+	else
+		DEBUG("same %s: %s\n", info_name, info_value);
+}
+
+void upgrade_info_init()
+{
+	unsigned char mark = 0;
+	LoaderInfo_t out;
+	
+	memset(&out, 0, sizeof(out));
+	if(0==get_loader_message(&mark, &out))
+	{
+		DEBUG("read loader msg: %d", mark);
+		if(0!=mark){
+			set_loader_reboot_mark(0);
+		}
+		
+		char tmpinfo[128];
+		
+		snprintf(tmpinfo, sizeof(tmpinfo), "%u%u", out.stb_id_h, out.stb_id_l);
+		upgrade_info_refresh(GLB_NAME_STBID, tmpinfo);
+		
+		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.hardware_version[0],out.hardware_version[1],out.hardware_version[2],out.hardware_version[3]);
+		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
+		
+		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.software_version[0],out.software_version[1],out.software_version[2],out.software_version[3]);
+		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
+	}
+	else
+		DEBUG("get loader message failed\n");
+}
+
+int drm_info_init()
+{
+	if(0==drm_init()){
+		char smartcard_sn[CDCA_MAXLEN_SN+1];
+		memset(smartcard_sn, 0, sizeof(smartcard_sn));
+		DEBUG("to read smartcard sn, space=%d\n", sizeof(smartcard_sn));
+		
+		CDCA_U16 ret = CDCASTB_GetCardSN(smartcard_sn);
+		if(CDCA_RC_OK==ret){
+			DEBUG("read smartcard sn OK: %s\n", smartcard_sn);
+			return 0;
+		}
+		else if(CDCA_RC_POINTER_INVALID==ret){
+			DEBUG("pointer to read smartcard is invalid\n");
+			return -1;
+		}
+		else if(CDCA_RC_CARD_INVALID==ret){
+			DEBUG("there is none or invalid smartcard: %s\n", smartcard_sn);
+			return -1;
+		}
+	}
+	else
+		DEBUG("drm init failed\n");
+	
+	return -1;
 }

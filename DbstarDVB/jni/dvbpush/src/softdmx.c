@@ -8,6 +8,7 @@
 #include "softdmx.h"
 #include "prodrm20.h"
 #include "dvbpush_api.h"
+#include "bootloader.h"
 
 Channel_t chanFilter[MAX_CHAN_FILTER+1];
 int max_filter_num = 0;
@@ -17,15 +18,18 @@ pthread_t loaderthread;
 int tt=0;
 #define upgradefile_all "/data/uptest"
 #define upgradefile_img "/data/upgrade.zip"
+#define COMMAND_FILE  "/cache/recovery/command"
 
 static void* loader_thread(void *arg)
 {
     unsigned char buf[1024];
-    LoaderInfo_t *loader = (LoaderInfo_t *)arg;
+    unsigned char sha0[64];
+    //LoaderInfo_t *loader = (LoaderInfo_t *)arg;
     FILE *fp = fopen(upgradefile_all,"r");
     FILE *rfp = fopen(upgradefile_img,"w+");
     int ret;
-    unsigned int len,wlen,rlen;   
+    unsigned int len,wlen;
+    int rlen;   
 
 /*fp=fopen("localfile","rb");// localfile猟周兆
 fseek(fp,0,SEEK_SET);
@@ -89,25 +93,65 @@ printf("in loader thread, read file len = [%x]\n",len);
     fclose(rfp);
 
 #if 0
+    if (sha_verify(upgradefile_img, sha0, loaderInfo.img_len) != 0)
+    {
+printf("verify err \n");
+while(1);
+        Filter_param param;
+        memset(&param,0,sizeof(param));
+        param.filter[0] = 0xf0;
+        param.mask[0] = 0xff;
+
+        loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 1);
+
+        return NULL;
+    }
+#endif
+
+#if 1
 	//1 checking img, if not correct,return
-	
+	FILE *cfp = fopen(COMMAND_FILE,"w");
+
+        if (!cfp)
+            return NULL;
 	//2 set upgrade mark
-	if (loader->download_type)
+	if (loaderInfo.download_type)
 	{
-		//must upgrade,display upgrade info, wait 5 second, set uboot mark and then reboot 
+	    //must upgrade,display upgrade info, wait 5 second, set uboot mark and then reboot 
+            char msg[128];
+        
+            if (loaderInfo.file_type)
+            {
+                fprintf(cfp,"--update_package=%s\n",upgradefile_img);
+                fprintf(cfp,"--wipe_data\n");
+                fprintf(cfp,"--wipe_cache\n");
+                snprintf(msg, sizeof(msg),"真真?真真真?= %s",upgradefile_img);
+            }
+            else
+            {
+                snprintf(msg, sizeof(msg),"LOADER SOFTWARE = %s",upgradefile_img);
+            }
+            msg_send2_UI(UPGRADE_NEW_VER_FORCE, msg, strlen(msg));
 	}
 	else
 	{
-		//display info and ask to upgrade right now?
-		if(1) //yes
-		{
-			//close sysem, reboot
-		}
-	}
-#else
-	char msg[128];
-	snprintf(msg, sizeof(msg),"%s",upgradefile_img);
-	msg_send2_UI(UPGRADE_NEW_VER, msg, strlen(msg));
+            //display info and ask to upgrade right now?
+	    char msg[128];
+	
+            if (loaderInfo.file_type)
+            {
+                fprintf(cfp,"--update_package=%s\n",upgradefile_img);
+                fprintf(cfp,"--wipe_data\n");
+                fprintf(cfp,"--wipe_cache\n");
+                snprintf(msg, sizeof(msg),"真真真真真真 = %s",upgradefile_img);
+            }
+            else
+            {
+                snprintf(msg, sizeof(msg),"LOADER SOFTWARE = %s",upgradefile_img);
+            }
+	    msg_send2_UI(UPGRADE_NEW_VER, msg, strlen(msg));
+        }
+        fclose(cfp);
 #endif
 	return NULL;
 }
@@ -358,7 +402,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
     unsigned char *datap,mark;
     char tmp[10];
     static int loader_init = 0;
-    //static LoaderInfo_t loaderInfo;
+    static LoaderInfo_t loaderInfo;
     unsigned short tmp16;
     unsigned int tmp32;
     unsigned int stb_id_l,stb_id_h;
@@ -389,8 +433,8 @@ printf("Got loader des section len [%d]\n",len);
 
     if (loader_init == 0)
     {
-        //get_loader_message(&mark,&loaderInfo));
-        read_loaderinfo(&loaderInfo);
+        get_loader_message(&mark,&loaderInfo);
+        //read_loaderinfo(&loaderInfo);
         loader_init = 1;
     }
 

@@ -56,8 +56,9 @@ LOCAL_SRC_FILES += \
 	src/sqlite.c \
 	src/porting.c \
 	src/softdmx.c \
-	src/dvbpush_jni.c
-#	src/drmport.c
+	src/dvbpush_jni.c \
+	src/sha_verify.c \
+	src/mtdutils.c
 
 LOCAL_CFLAGS += -W -Wall
 LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -lpush

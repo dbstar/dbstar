@@ -83,6 +83,9 @@ typedef enum{
 #define GLB_NAME_ORDERPRODUCT		"OrderProduct"
 #define GLB_NAME_DATASOURCE			"PushSource"
 #define GLB_NAME_HELPINFO			"HelpInfo"
+#define GLB_NAME_STBID				"StbID"
+#define GLB_NAME_HARDWARE_VERSION	"HardwareVersion"
+#define GLB_NAME_SOFTWARE_VERSION	"SoftwareVersion"
 
 #define INITIALIZE_PATH		"pushinfo/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"

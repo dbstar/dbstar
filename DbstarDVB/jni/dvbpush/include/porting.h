@@ -16,5 +16,7 @@ int ifconfig_get(char *interface_name, char *ip, char *status, char *mac);
 int msg_send2_UI(int type, char *msg, int len);
 int initialize_xml_get();
 int localcolumn_res_get(char *localcolumn_res, unsigned int uri_size);
+void upgrade_info_init();
+int drm_info_init();
 
 #endif
