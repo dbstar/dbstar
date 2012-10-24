@@ -54,12 +54,13 @@ typedef enum{
 
 #define	SERVICE_ID			"01"
 #define PROG_DATA_PID_DF	(102)	// 0X66
-#define ROOT_CHANNEL		(100)	// 0x64
+#define ROOT_CHANNEL		(400)
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
 #define DATA_SOURCE			"igmp://239.1.7.5:5000"
 #define MULTI_BUF_SIZE		(12*1024*1316)	/* larger than 16M */
 
+#define XML_ROOT_ELEMENT	"RootElement"
 #define EXTENSION_STR_FILL	"Extension"
 #define OBJID_PAUSE			"_|_"
 #define OBJ_SERVICE			"Service"
@@ -87,7 +88,7 @@ typedef enum{
 #define GLB_NAME_HARDWARE_VERSION	"HardwareVersion"
 #define GLB_NAME_SOFTWARE_VERSION	"SoftwareVersion"
 
-#define INITIALIZE_PATH		"pushinfo/initialize"
+#define INITIALIZE_PATH		"servicegroup/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
 #define LOCALCOLUMN_RES		"/data/dbstar/ColumnRes"
 
@@ -106,17 +107,24 @@ typedef enum{
 }COLUMN_TYPE_E;
 
 /*
+ 当前生效标记。当新的Channel序列下发时，将已有的pid标记为0，将新下发的pid标记为1。
+ 这样是为了方便在事务中一起处理Channel
+*/
+typedef enum{
+	CHANNEL_INEFFECTIVE = 0,
+	CHANNEL_EFFECTIVE = 1
+}CHANNEL_EFFECTIVE_E;
+
+/*
 默认的初始化文件uri，相对于push根路径的uri，类似于Initialize.xml中Channel.xml的路径
 但在运行过程中可能会被更改
 */
 typedef enum{
 	PUSH_XML_FLAG_MINLINE = -1,
 	
-	INITIALIZE_XML = 20,
-	CHANNEL_XML = 100,
+	INITIALIZE_XML = 100,
 	COLUMN_XML = 101,
 	GUIDELIST_XML = 102,
-	PUBLICATIONSCOLUMN_XML = 103,
 	COMMANDS_XML = 104,
 	MESSAGE_XML = 105,
 	PRODUCTDESC_XML = 106,
@@ -164,6 +172,7 @@ typedef struct{
 	char	Version[64];
 	char	StandardVersion[64];
 	char	URI[256];
+	char	ServiceID[64];
 }DBSTAR_XMLINFO_S;
 
 typedef struct{

@@ -188,7 +188,7 @@ int special_productid_check(char *productid)
 	if(NULL==productid)
 		return -1;
 
-	if(0==strcmp(productid, "special_product_001"))
+	if(0==strcmp(productid, "1"))
 		return 1;
 	else
 		return 0;

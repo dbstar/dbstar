@@ -99,7 +99,7 @@ int igmp_uninit()
 	return multicast_uninit();
 }
 
-void *igmp_thread(void *multi_addr)
+static void *igmp_thread()
 {
 	char *p_multi_addr = s_data_source;
 	DEBUG("multicast addr: %s\n", p_multi_addr);
@@ -354,7 +354,7 @@ int multicast_add(const char *multi_addr)
 	int ret = -1;
 	// 创建接收线程
 	
-	if(0==pthread_create(&pth_igmp_id, NULL, igmp_thread, (void *)multi_addr)){
+	if(0==pthread_create(&pth_igmp_id, NULL, igmp_thread, NULL)){
 		//pthread_detach(pth_igmp_id);
 		DEBUG("create multicast receive thread success\n");
 		ret = 0;
@@ -376,11 +376,20 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 	}
 	
 	int i = 0;
+	
 	for(i=1;i<row+1;i++)
 	{
-		//DEBUG("==%s:%s:%ld==\n", result[i*column], result[i*column+1], strtol(result[i*column+1], NULL, 0));
-		unsigned short pid = (unsigned short)(atoi(result[i*column]));
-		if(1==*((int *)filter_act)){
+		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
+		if(1==*((int *)filter_act) && CHANNEL_INEFFECTIVE==atoi(result[i*column+1])){
+			int ret = free_filter(pid);
+			DEBUG("free pid %d return with %d\n", pid, ret);
+		}
+	}
+	for(i=1;i<row+1;i++)
+	{
+		DEBUG("PID --- %s:%s --- \n", result[i*column], result[i*column+1]);
+		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
+		if(1==*((int *)filter_act) && CHANNEL_EFFECTIVE==atoi(result[i*column+1])){
 			int filter = alloc_filter(pid, 1);
 			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
 		}
@@ -403,7 +412,7 @@ int pid_init(int act_flag)
 	char sqlite_cmd[256+128];
 	int (*sqlite_callback)(char **, int, int, void *) = allpid_sqlite_cb;
 
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT pid FROM Channel;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT pid,EffectFlag FROM Channel;");
 	// 1 means alloc filter
 	int filter_act = act_flag;
 	return sqlite_read(sqlite_cmd, &filter_act, sqlite_callback);

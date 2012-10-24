@@ -82,7 +82,7 @@ int xmlparser_init(void)
 
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sqlite_cb);
 	if(ret_sqlexec<=0){
-		DEBUG("read no serviceID from db, filled with %s\n", SERVICE_ID);
+		DEBUG("read no serviceID from db\n");
 		//strncpy(s_serviceID, SERVICE_ID, sizeof(s_serviceID)-1);
 	}
 	else
@@ -125,7 +125,7 @@ static int xmlver_get(int pushflag, char *xmlver, unsigned int versize)
 
 	int ret_sqlexec = sqlite_read(sqlite_cmd, xmlver, sqlite_cb);
 	if(ret_sqlexec<=0){
-		DEBUG("read no version from db for %d\n", pushflag);
+		DEBUG("read no version from db for PushFlag %d\n", pushflag);
 		return -1;
 	}
 	else
@@ -720,7 +720,7 @@ static int preview_insert_productid(char *PreviewID, char *ProductID)
 
 
 /*
- channel记录入库前会将Channel数据表清空，故此处不必考虑UPDATE的情况。
+ channel新记录入库时，记EffectFlag为有效。
 */
 static int channel_insert(DBSTAR_CHANNEL_S *p)
 {
@@ -728,8 +728,28 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 		return -1;
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Channel(pid,pidtype,multiURI) VALUES('%s','%s','%s');",p->pid,p->pidtype,p->multiURI);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Channel(pid,pidtype,EffectFlag) VALUES('%s','%s',%d);",p->pid,p->pidtype,CHANNEL_EFFECTIVE);
 	return sqlite_transaction_exec(sqlite_cmd);
+}
+
+/*
+ channel新记录入库前将Channel原有pid记录置为无效。
+*/
+static int channel_ineffective_set()
+{
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Channel SET EffectFlag = %d;",CHANNEL_INEFFECTIVE);
+	return sqlite_transaction_exec(sqlite_cmd);
+}
+
+/*
+ 清理channel中无效pid。直接执行，不进入数据库。
+*/
+static int channel_ineffective_clear()
+{
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Channel WHERE EffectFlag = %d;",CHANNEL_INEFFECTIVE);
+	return sqlite_execute(sqlite_cmd);
 }
 
 /*
@@ -1005,9 +1025,24 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 		if(NULL!=szAttr)
 		{
 			//DEBUG("property of %s, %s: %s\n", xmlroute, attrPtr->name, szAttr);
-
+// xml general property
+			if(0==strcmp(xmlroute, XML_ROOT_ELEMENT)){
+				DBSTAR_XMLINFO_S *p = (DBSTAR_XMLINFO_S *)ptr;
+				if(0==xmlStrcmp(BAD_CAST"Version", attrPtr->name)){
+					strncpy(p->Version, (char *)szAttr, sizeof(p->Version)-1);
+				}
+				else if(0==xmlStrcmp(BAD_CAST"StandardVersion", attrPtr->name)){
+					strncpy(p->StandardVersion, (char *)szAttr, sizeof(p->StandardVersion)-1);
+				}
+				else if(0==xmlStrcmp(BAD_CAST"ServiceID", attrPtr->name)){
+					strncpy(p->ServiceID, (char *)szAttr, sizeof(p->ServiceID)-1);
+				}
+				else
+					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
+			}
+			
 // Initialize.xml
-			if(0==strcmp(xmlroute, "Initialize^ServiceInits^ServiceInit")){
+			else if(0==strcmp(xmlroute, "Initialize^ServiceInits^ServiceInit")){
 				DBSTAR_PRODUCT_SERVICE_S *p = (DBSTAR_PRODUCT_SERVICE_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"productID", attrPtr->name)){
 					strncpy(p->productID, (char *)szAttr, sizeof(p->productID)-1);
@@ -1018,6 +1053,17 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 //				else if(0==xmlStrcmp(BAD_CAST"productName", attrPtr->name)){
 //					strncpy(p->productName, (char *)szAttr, sizeof(p->productName)-1);
 //				}
+//				else
+//					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
+			}
+			else if(0==strcmp(xmlroute, "Initialize^ServiceInits^ServiceInit^Channels^Channel")){
+				DBSTAR_CHANNEL_S *p  = (DBSTAR_CHANNEL_S *)ptr;
+				if(0==xmlStrcmp(BAD_CAST"pid", attrPtr->name)){
+					strncpy(p->pid, (char *)szAttr, sizeof(p->pid)-1);
+				}
+				else if(0==xmlStrcmp(BAD_CAST"pidtype", attrPtr->name)){
+					strncpy(p->pidtype, (char *)szAttr, sizeof(p->pidtype)-1);
+				}
 //				else
 //					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
 			}
@@ -1033,17 +1079,6 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 				}
 				else
 					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
-			}
-			else if(0==strcmp(xmlroute, "Initialize^ServiceInits^ServiceInit^Channels^Channel")){
-				DBSTAR_CHANNEL_S *p  = (DBSTAR_CHANNEL_S *)ptr;
-				if(0==xmlStrcmp(BAD_CAST"pid", attrPtr->name)){
-					strncpy(p->pid, (char *)szAttr, sizeof(p->pid)-1);
-				}
-				else if(0==xmlStrcmp(BAD_CAST"pidtype", attrPtr->name)){
-					strncpy(p->pidtype, (char *)szAttr, sizeof(p->pidtype)-1);
-				}
-//				else
-//					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
 			}
 			
 // GuideList.xml
@@ -1293,7 +1328,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 	cur = cur->xmlChildrenNode;
 	while (cur != NULL) {
 		//DEBUG("%s cur->name:%s\n", XML_TEXT_NODE==cur->type?"XML_TEXT_NODE":"not XML_TEXT_NODE", cur->name);
-		if(XML_TEXT_NODE==cur->type){
+		if(XML_TEXT_NODE==cur->type || 0==xmlStrcmp(BAD_CAST"comment", cur->name)){
 			cur = cur->next;
 			continue;
 		}
@@ -1348,10 +1383,8 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						DEBUG("productID %s is invalid\n", product_service_s.productID);
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels")){
-					pid_init(0);
-					sqlite_transaction_table_clear("Channel");
+					channel_ineffective_set();
 					parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
-					pid_init(1);
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels^Channel")){
 					DBSTAR_CHANNEL_S channel_s;
@@ -1362,7 +1395,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				else if(0==strncmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^", strlen("Initialize^ServiceInits^ServiceInit^"))){
 					DBSTAR_XMLINFO_S xmlinfo;
 					memset(&xmlinfo, 0, sizeof(xmlinfo));
-					if(0==xmlStrcmp(cur->name, BAD_CAST"Guidelist"))
+					if(0==xmlStrcmp(cur->name, BAD_CAST"GuideList"))
 						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", GUIDELIST_XML);
 					else if(0==xmlStrcmp(cur->name, BAD_CAST"Column"))
 						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", COLUMN_XML);
@@ -1376,40 +1409,20 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", COMMANDS_XML);
 					else if(0==xmlStrcmp(cur->name, BAD_CAST"Message"))
 						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", MESSAGE_XML);
-					else
+					else{
 						DEBUG("such xml node can not be processed: %s\n", new_xmlroute);
+						snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "InvalidPushFlag");
+					}
 					
-					parseProperty(cur, new_xmlroute, (void *)(&xmlinfo));
-					xmlinfo_insert(&xmlinfo);
+					if(strcmp("InvalidPushFlag", xmlinfo.PushFlag)){
+						parseProperty(cur, new_xmlroute, (void *)(&xmlinfo));
+						xmlinfo_insert(&xmlinfo);
+					}
 				}
 				else
 					DEBUG("can not distinguish such xml route: %s\n", new_xmlroute);
 			}
-#if 0
-// Channels.xml
-			else if(0==strncmp(new_xmlroute, "Channels^", strlen("Channels^"))){
-				if(0==strcmp(new_xmlroute, "Channels^Service")){
-					char serviceID[64];
-					memset(serviceID, 0, sizeof(serviceID));
-					parseProperty(cur, new_xmlroute, (void *)serviceID);
-					if(0==strcmp(serviceID, serviceID_get())){
-						DEBUG("detect valid productID: %s\n", serviceID);
-						pid_init(0);
-						sqlite_transaction_table_clear("Channel");
-						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
-						process_over = XML_EXIT_MOVEUP;
-					}
-					else
-						DEBUG("this productID is invalid: %s\n", serviceID);
-				}
-				else if(0==strcmp(new_xmlroute, "Channels^Service^Channel")){
-					DBSTAR_CHANNEL_S channel_s;
-					memset(&channel_s, 0, sizeof(channel_s));
-					parseProperty(cur, new_xmlroute, (void *)(&channel_s));
-					channel_insert(&channel_s);
-				}
-			}
-#endif
+			
 // Service.xml
 			else if(0==strncmp(new_xmlroute, "ServiceGroup^", strlen("ServiceGroup^"))){
 				if(0==strcmp(new_xmlroute, "ServiceGroup^Services")){
@@ -2935,15 +2948,36 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		sqlite_transaction_begin();
 // Initialize.xml
 		if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
-			ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, xml_ver);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if(strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)){
+				DEBUG("same Version: %s, no need to parse\n", xml_ver);
+				ret = -1;
+			}
+			else
+				ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, xml_ver);
 		}
 // Channels.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Channels")){
-			ret = parseNode(doc, cur, "Channels", NULL, &xmlinfo, "Channels", NULL, xml_ver);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+						xml_ver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+				ret = -1;
+			}
+			else
+				ret = parseNode(doc, cur, "Channels", NULL, &xmlinfo, "Channels", NULL, xml_ver);
 		}
 // Service.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"ServiceGroup")){
-			ret = parseNode(doc, cur, "ServiceGroup", NULL, &xmlinfo, "ServiceGroup", NULL, xml_ver);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+						xml_ver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+				ret = -1;
+			}
+			else{
+				ret = parseNode(doc, cur, "ServiceGroup", NULL, &xmlinfo, "ServiceGroup", NULL, xml_ver);
+			}
 		}
 // Product.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Product")){
@@ -2959,10 +2993,18 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		}
 // Publication.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Publication")){
-			DBSTAR_PUBLICATION_S publication_s;
-			memset(&publication_s, 0, sizeof(publication_s));
-			ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, xml_ver);
-			publication_insert(&publication_s);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version))){
+				DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
+						xml_ver, xmlinfo.Version);
+				ret = -1;
+			}
+			else{
+				DBSTAR_PUBLICATION_S publication_s;
+				memset(&publication_s, 0, sizeof(publication_s));
+				ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, xml_ver);
+				publication_insert(&publication_s);
+			}
 		}
 // Column.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
@@ -2971,18 +3013,34 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		}
 // GuideList.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"GuideList")){
-			DBSTAR_GUIDELIST_S guidelist_s;
-			ret = parseNode(doc, cur, "GuideList", &guidelist_s, &xmlinfo, "GuideList", NULL, xml_ver);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+						xml_ver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+				ret = -1;
+			}
+			else{
+				DBSTAR_GUIDELIST_S guidelist_s;
+				ret = parseNode(doc, cur, "GuideList", &guidelist_s, &xmlinfo, "GuideList", NULL, xml_ver);
+			}
 		}
 // ProductDesc.xml 当前投递单
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
-			DBSTAR_PRODUCTDESC_S productdesc_s;
-			ret = parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", NULL, xml_ver);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+						xml_ver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+				ret = -1;
+			}
+			else{
+				DBSTAR_PRODUCTDESC_S productdesc_s;
+				ret = parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", NULL, xml_ver);
+			}
 		}
-// PublicationsColumn.xml
-		else if(0==xmlStrcmp(cur->name, BAD_CAST"PublicationsColumn")){
-			ret = parseNode(doc, cur, "PublicationsColumn", NULL, &xmlinfo, "PublicationsColumn", NULL, xml_ver);
-		}
+//// PublicationsColumn.xml
+//		else if(0==xmlStrcmp(cur->name, BAD_CAST"PublicationsColumn")){
+//			ret = parseNode(doc, cur, "PublicationsColumn", NULL, &xmlinfo, "PublicationsColumn", NULL, xml_ver);
+//		}
 		
 		
 // Message.xml
@@ -3002,20 +3060,25 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 			ret = -1;
 		}
 		
-		if(0==ret && strcmp(xml_ver, xmlinfo.Version)){
+		if(0==ret && strlen(xml_ver)>0 && strcmp(xml_ver, xmlinfo.Version)){
 			if(INITIALIZE_XML==xml_flag){
 				snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", xml_flag);
 				snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize");
 				snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", xml_uri);
+				xmlinfo_insert(&xmlinfo);
 			}
-			
-			xmlinfo_insert(&xmlinfo);
 		}
 		
 		if(-1==ret)
 			sqlite_transaction_end(0);
-		else if(0==ret)
+		else if(0==ret){
 			sqlite_transaction_end(1);
+			
+			if(INITIALIZE_XML==xml_flag){
+				pid_init(1);
+				channel_ineffective_clear();
+			}
+		}
 	}
 	
 	xmlFreeDoc(doc);
@@ -3027,11 +3090,9 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 */
 static int depent_on_serviceID(PUSH_XML_FLAG_E xml_flag)
 {
-	if(	CHANNEL_XML==xml_flag
-		|| COLUMN_XML==xml_flag
+	if(	COLUMN_XML==xml_flag
 		|| SERVICE_XML==xml_flag
-		|| PRODUCTDESC_XML==xml_flag
-		|| PUBLICATIONSCOLUMN_XML==xml_flag )
+		|| PRODUCTDESC_XML==xml_flag )
 		return 1;
 	else
 		return 0;
@@ -3059,10 +3120,9 @@ int parse_xml(char *xml_uri, PUSH_XML_FLAG_E xml_flag)
 	实际使用中，这里的判断应当是根据PUSH回调出来的Initialize.xml对应的Flag，此Flag才是唯一的标识。
 	*/
 	if(0==ret && INITIALIZE_XML==xml_flag){
-		parseDoc(NULL, CHANNEL_XML);
+		DEBUG("Zhao Hua Xi Shi\n");
 		parseDoc(NULL, COLUMN_XML);
 		parseDoc(NULL, PRODUCTDESC_XML);
-		parseDoc(NULL, PUBLICATIONSCOLUMN_XML);
 	}
 	
 	return ret;

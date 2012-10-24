@@ -387,7 +387,8 @@ URI		NVARCHAR(256));", name);
 					"CREATE TABLE %s(\
 pid	NVARCHAR(64) PRIMARY KEY,\
 pidtype	NVARCHAR(64),\
-multiURI	NVARCHAR(64));", name);
+URI NVARCHAR(256),\
+EffectFlag INTEGER);", name);
 			}
 			else if(!strcmp(name,"Service"))
 			{
@@ -516,7 +517,8 @@ URI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
 ReceiveStatus	NVARCHAR(64),\
-PushTime	NVARCHAR(128),\
+PushStartTime	NVARCHAR(64),\
+PushEndTime	NVARCHAR(64),\
 IsReserved	NVARCHAR(64),\
 Visible	NVARCHAR(64),\
 Favorite	NVARCHAR(64),\
@@ -536,7 +538,8 @@ DescURI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
 ReceiveStatus	NVARCHAR(64),\
-PushTime	NVARCHAR(128),\
+PushStartTime	NVARCHAR(64),\
+PushEndTime	NVARCHAR(64),\
 PublicationType	NVARCHAR(64),\
 IsReserved	CHAR(32),\
 Visible	CHAR(32),\
@@ -634,7 +637,8 @@ URI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
 ReceiveStatus	NVARCHAR(64),\
-PushTime	NVARCHAR(128),\
+PushStartTime	NVARCHAR(64),\
+PushEndTime	NVARCHAR(64),\
 UserStatus	NVARCHAR(64),\
 PRIMARY KEY (DateValue,PublicationID));", name);
 			}
@@ -648,7 +652,8 @@ ID	NVARCHAR(64),\
 TotalSize	NVARCHAR(64),\
 URI	NVARCHAR(256),\
 ReceiveStatus	NVARCHAR(64),\
-PushTime	NVARCHAR(64),\
+PushStartTime	NVARCHAR(64),\
+PushEndTime	NVARCHAR(64),\
 PRIMARY KEY (ReceiveType,ID));", name);
 			}
 			else if(!strcmp(name,"Preview"))
@@ -670,7 +675,8 @@ URI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
 ReceiveStatus	NVARCHAR(64),\
-PushTime	NVARCHAR(128),\
+PushStartTime	NVARCHAR(64),\
+PushEndTime	NVARCHAR(64),\
 StartTime	CHAR(32),\
 EndTime	CHAR(32),\
 PlayMode	NVARCHAR(64));", name);
@@ -683,6 +689,8 @@ ServiceID	NVARCHAR(64),\
 ID	NVARCHAR(64),\
 URI	NVARCHAR(512),\
 Type	NVARCHAR(64),\
+PushStartTime	NVARCHAR(64),\
+PushEndTime	NVARCHAR(64),\
 PRIMARY KEY (ServiceID,ID));", name);
 			}
 			else if(!strcmp(name,"SProduct"))
