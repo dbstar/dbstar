@@ -75,6 +75,8 @@ static int push_dir_init()
 */
 int xmlparser_init(void)
 {
+	push_dir_init();
+	
 	char sqlite_cmd[512];
 	memset(s_serviceID, 0, sizeof(s_serviceID));
 	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
@@ -97,7 +99,6 @@ int xmlparser_init(void)
 		parse_xml(init_xml_uri,INITIALIZE_XML);
 	}
 	
-	push_dir_init();
 	
 	return 0;
 }
@@ -205,9 +206,11 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 */
 static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 {
+	DEBUG("==================== %s\n", xmlinfo->PushFlag);
 	if(NULL==xmlinfo && 0==strlen(xmlinfo->PushFlag))
 		return -1;
 	
+	DEBUG("%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI);
 	if(strlen(xmlinfo->Version)>0 || strlen(xmlinfo->StandardVersion)>0 || strlen(xmlinfo->URI)>0){
 		char sqlite_cmd[512];
 		
@@ -369,7 +372,7 @@ static int publication_insert_setinfo(DBSTAR_PUBLICATIONSSET_S *p)
 */
 static int column_insert(DBSTAR_COLUMN_S *ptr)
 {
-	if(NULL==ptr || 0==strlen(ptr->ColumnID) || 0==strlen(ptr->ParentID) || 0==strlen(ptr->ServiceID)){
+	if(NULL==ptr || 0==strlen(ptr->ColumnID) || 0==strlen(ptr->ParentID)){
 		DEBUG("invalid arguments\n");
 		return -1;
 	}
@@ -1416,6 +1419,8 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					
 					if(strcmp("InvalidPushFlag", xmlinfo.PushFlag)){
 						parseProperty(cur, new_xmlroute, (void *)(&xmlinfo));
+						if('/'==xmlinfo.URI[strlen(xmlinfo.URI)-1] || 1==check_tail(xmlinfo.URI, ".xml", 0))
+							snprintf(xmlinfo.URI+strlen(xmlinfo.URI), sizeof(xmlinfo.URI)-strlen(xmlinfo.URI), "/%s", xmlinfo.XMLName);
 						xmlinfo_insert(&xmlinfo);
 					}
 				}
@@ -2220,22 +2225,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 			
 // Column.xml
 			else if(0==strncmp(new_xmlroute, "Columns^", strlen("Columns^"))){
-				if(0==strcmp(new_xmlroute, "Columns^ServiceID")){
-					if(0!=strcmp((char *)szKey, serviceID_get())){
-						DEBUG("invalid ServiceID %s for Column.xml, contrast with %s\n", (char *)szKey,serviceID_get());
-						process_over = XML_EXIT_UNNECESSARY;
-					}
-					else{
-						DEBUG("valid ServiceID %s for Column.xml\n", (char *)szKey);
-						/*
-						 不能一股脑的清理掉Column的所有数据，保留本地菜单
-						*/
-						char sqlite_cmd[256];
-						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='%d';", COLUMN_LOCAL);
-						sqlite_transaction_exec(sqlite_cmd);
-					}
-				}
-				else if(0==strcmp(new_xmlroute, "Columns^Column")){
+				if(0==strcmp(new_xmlroute, "Columns^Column")){
 					memset(ptr, 0, sizeof(DBSTAR_COLUMN_S));
 					
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
@@ -2953,8 +2943,17 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 				DEBUG("same Version: %s, no need to parse\n", xml_ver);
 				ret = -1;
 			}
-			else
+			else{
 				ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, xml_ver);
+				
+				if(PUSH_XML_FLAG_UNDEFINED==xml_flag)
+					snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", INITIALIZE_XML);
+				else
+					snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", xml_flag);
+				snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize.xml");
+				snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", xml_uri);
+				xmlinfo_insert(&xmlinfo);
+			}
 		}
 // Channels.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Channels")){
@@ -3008,8 +3007,23 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		}
 // Column.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
-			DBSTAR_COLUMN_S column_s;
-			ret = parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", NULL, xml_ver);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+						xml_ver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+				ret = -1;
+			}
+			else{
+				/*
+				 不能一股脑的清理掉Column的所有数据，保留本地菜单
+				*/
+				char sqlite_cmd[256];
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='%d';", COLUMN_LOCAL);
+				sqlite_transaction_exec(sqlite_cmd);
+						
+				DBSTAR_COLUMN_S column_s;
+				ret = parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", NULL, xml_ver);
+			}
 		}
 // GuideList.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"GuideList")){
@@ -3058,15 +3072,6 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		else{
 			ERROROUT("xml file has wrong root node with '%s'\n", cur->name);
 			ret = -1;
-		}
-		
-		if(0==ret && strlen(xml_ver)>0 && strcmp(xml_ver, xmlinfo.Version)){
-			if(INITIALIZE_XML==xml_flag){
-				snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", xml_flag);
-				snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize");
-				snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", xml_uri);
-				xmlinfo_insert(&xmlinfo);
-			}
 		}
 		
 		if(-1==ret)

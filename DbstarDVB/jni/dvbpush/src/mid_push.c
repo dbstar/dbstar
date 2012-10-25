@@ -453,23 +453,26 @@ void callback(const char *path, long long size, int flag)
 	/* 由于涉及到解析和数据库操作，这里不直接调用parseDoc，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
 	if(	PUSH_XML_FLAG_MINLINE<flag && flag<PUSH_XML_FLAG_MAXLINE){
+		if(0==check_tail(path, ".xml", 0)){
+			pthread_mutex_lock(&mtx_xml);
 			
-		pthread_mutex_lock(&mtx_xml);
-		
-		int i = 0;
-		for(i=0; i<XML_NUM; i++){
-			if(0==strlen(s_push_xml[i].uri)){
-				snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s/%s", push_dir_get(), path);
-				s_push_xml[i].flag = flag;
-				break;
+			int i = 0;
+			for(i=0; i<XML_NUM; i++){
+				if(0==strlen(s_push_xml[i].uri)){
+					snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s/%s", push_dir_get(), path);
+					s_push_xml[i].flag = flag;
+					break;
+				}
 			}
+			if(XML_NUM<=i)
+				DEBUG("xml name space is full\n");
+			else
+				pthread_cond_signal(&cond_xml); //send sianal
+				
+			pthread_mutex_unlock(&mtx_xml);
 		}
-		if(XML_NUM<=i)
-			DEBUG("xml name space is full\n");
 		else
-			pthread_cond_signal(&cond_xml); //send sianal
-			
-		pthread_mutex_unlock(&mtx_xml);
+			DEBUG("this is not a xml\n");
 	}
 	else
 		DEBUG("this file is ignore\n");

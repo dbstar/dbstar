@@ -16,7 +16,7 @@ int loader_dsc_fid;
 LoaderInfo_t loaderInfo;
 pthread_t loaderthread;
 int tt=0;
-#define upgradefile_all "/data/uptest"
+#define upgradefile_all "/tmp/upgrade.zip"
 #define upgradefile_img "/data/upgrade.zip"
 #define COMMAND_FILE  "/cache/recovery/command"
 
@@ -25,11 +25,10 @@ static void* loader_thread(void *arg)
     unsigned char buf[1024];
     unsigned char sha0[64];
     //LoaderInfo_t *loader = (LoaderInfo_t *)arg;
-    FILE *fp = fopen(upgradefile_all,"r");
-    FILE *rfp = fopen(upgradefile_img,"w+");
+    FILE *fp = fopen(upgradefile_img,"r");
+  //  FILE *rfp = fopen(upgradefile_img,"w+");
     int ret;
-    unsigned int len,wlen;
-    int rlen;   
+    unsigned int len,wlen,rlen;   
 
 /*fp=fopen("localfile","rb");// localfile猟周兆
 fseek(fp,0,SEEK_SET);
@@ -67,6 +66,7 @@ printf("received upgrade file is err, re download the file!!!!\n");
     wlen = 0;
     ret = fread(&len,4,1,fp);
     len = ((len&0xff)<<24)|((len&0xff00)<<8)|((len&0xff0000)>>8)|((len&0xff000000)>>24);
+#if 0
     if (len > 1024) rlen = 1024;
     else rlen = len;
 printf("in loader thread, read file len = [%x]\n",len);
@@ -91,9 +91,9 @@ printf("in loader thread, read file len = [%x]\n",len);
 
     fclose(fp);
     fclose(rfp);
-
+#endif
 #if 0
-    if (sha_verify(upgradefile_img, sha0, loaderInfo.img_len) != 0)
+    if (sha_verify(fp, sha0, loaderInfo.img_len) != 0)
     {
 printf("verify err \n");
 while(1);
@@ -103,11 +103,11 @@ while(1);
         param.mask[0] = 0xff;
 
         loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 1);
-
+        fclose(fp);
         return NULL;
     }
 #endif
-
+    fclose(fp);
 #if 1
 	//1 checking img, if not correct,return
 	FILE *cfp = fopen(COMMAND_FILE,"w");
@@ -122,14 +122,18 @@ while(1);
         
             if (loaderInfo.file_type)
             {
-                fprintf(cfp,"--update_package=%s\n",upgradefile_img);
-                fprintf(cfp,"--wipe_data\n");
-                fprintf(cfp,"--wipe_cache\n");
-                snprintf(msg, sizeof(msg),"真真?真真真?= %s",upgradefile_img);
+                fprintf(cfp,"--update_package=%s\n",upgradefile_all);
+  //              fprintf(cfp,"--wipe_data\n");
+  //              fprintf(cfp,"--wipe_cache\n");
+                fprintf(cfp,"--orifile=%s\n",upgradefile_img);
+                snprintf(msg, sizeof(msg),"%.2x%.2x%.2x%.2x",loaderInfo.software_version[0],
+                    loaderInfo.software_version[1],loaderInfo.software_version[2],loaderInfo.software_version[3]);
+                fprintf(cfp,"%s\n",msg);
+                snprintf(msg, sizeof(msg),"?????5??????? = %s",upgradefile_all);
             }
             else
             {
-                snprintf(msg, sizeof(msg),"LOADER SOFTWARE = %s",upgradefile_img);
+                snprintf(msg, sizeof(msg),"LOADER SOFTWARE = %s",upgradefile_all);
             }
             msg_send2_UI(UPGRADE_NEW_VER_FORCE, msg, strlen(msg));
 	}
@@ -140,10 +144,15 @@ while(1);
 	
             if (loaderInfo.file_type)
             {
-                fprintf(cfp,"--update_package=%s\n",upgradefile_img);
-                fprintf(cfp,"--wipe_data\n");
-                fprintf(cfp,"--wipe_cache\n");
-                snprintf(msg, sizeof(msg),"真真真真真真 = %s",upgradefile_img);
+                fprintf(cfp,"--update_package=%s\n",upgradefile_all);
+//                fprintf(cfp,"--wipe_data\n");
+//                fprintf(cfp,"--wipe_cache\n");
+                fprintf(cfp,"--orifile=%s\n",upgradefile_img);
+                snprintf(msg, sizeof(msg),"%.2x%.2x%.2x%.2x",loaderInfo.software_version[0],
+                    loaderInfo.software_version[1],loaderInfo.software_version[2],loaderInfo.software_version[3]);
+                fprintf(cfp,"%s\n",msg);
+
+                snprintf(msg, sizeof(msg),"???????????? = %s",upgradefile_all);
             }
             else
             {

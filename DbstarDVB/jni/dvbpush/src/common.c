@@ -164,7 +164,7 @@ int phony_div(unsigned int div_father, unsigned int div_son)
 }
 
 /* 
-检查字符串str_dad的尾部是否有str_son，并且str_son要么紧跟在指定的signchr字符后面，要么str_dad完全等于str_son，
+检查字符串str_dad的尾部是否有str_son，并且str_son要么紧跟在指定的separater_sign字符后面，要么str_dad完全等于str_son，
 场景：	检查全路径settings/allpid/allpid.xml中是否含有文件名allpid.xml，指定分隔符为“/”。
 			
 		strrstr_s("settings/allpid/allpid.xml", STR_SON, '/');
@@ -209,6 +209,50 @@ char *strrstr_s(const char *str_dad, char *str_son, char separater_sign)
 		DEBUG("what a fucking string you check for, it has 256 separater sign at least.\n");
 	
 	return NULL;
+}
+
+/*
+ 是否以指定字符串结尾，case_cmp表示是否敏感匹配，0表示不敏感，其他表示敏感
+*/
+int check_tail(char *str_dad, char *str_tail, int case_cmp)
+{
+	if(NULL==str_dad || NULL==str_tail || 0==strlen(str_tail) || strlen(str_dad)<strlen(str_tail)){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+	
+	int space_size = strlen(str_tail)+1;
+	char *p_dad = malloc(space_size);
+	if(p_dad){
+		snprintf(p_dad, space_size, "%s", str_dad+(strlen(str_dad)-strlen(str_tail)));
+	}
+	else{
+		DEBUG("can not malloc for %d Bs\n", space_size);
+		return -1;
+	}
+	
+	
+	char *p_tail = malloc(space_size);
+	if(p_tail){
+		snprintf(p_tail, space_size, "%s", str_tail);
+	}
+	else{
+		DEBUG("can not malloc for %d Bs\n", space_size);
+		free(p_dad);
+		return -1;
+	}
+	
+	//DEBUG("str_dad: %s, p_dad:%s, p_tail:%s\n", str_dad, p_dad, p_tail);
+	int ret = 1;
+	if(0==case_cmp)
+		ret = strncasecmp(p_dad, p_tail, space_size-1);
+	else
+		ret = strcmp(p_dad, p_tail);
+	
+	if(0==ret)
+		return 0;
+	else
+		return 1;
 }
 
 /*

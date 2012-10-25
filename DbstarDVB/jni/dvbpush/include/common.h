@@ -120,7 +120,8 @@ typedef enum{
 但在运行过程中可能会被更改
 */
 typedef enum{
-	PUSH_XML_FLAG_MINLINE = -1,
+	PUSH_XML_FLAG_UNDEFINED = -1,
+	PUSH_XML_FLAG_MINLINE = 0,
 	
 	INITIALIZE_XML = 100,
 	COLUMN_XML = 101,
@@ -262,7 +263,6 @@ typedef struct{
 	char	ColumnIcon_losefocus[256];
 	char	ColumnIcon_getfocus[256];
 	char	ColumnIcon_onclick[256];
-	char	ServiceID[64];
 }DBSTAR_COLUMN_S;
 
 typedef struct{
@@ -408,6 +408,7 @@ char *strrstr_s(const char *str_dad, char *str_son, char signchr);
 char *time_serial();
 int ipv4_simple_check(const char *ip_addr);
 int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, char *preferential_file);
+int check_tail(char *str_dad, char *str_tail, int case_cmp);
 
 #endif
 
