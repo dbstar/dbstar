@@ -172,7 +172,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		
 	}
 	
-	public void updatePage() {
+	public void notifyEvent(int type, Object event) {
 		
 	}
 

@@ -96,7 +96,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	}
 
 	@Override
-	public void updatePage() {
+	public void notifyEvent(int type, Object event) {
 
 	}
 

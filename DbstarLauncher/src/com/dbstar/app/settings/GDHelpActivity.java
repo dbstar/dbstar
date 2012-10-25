@@ -24,25 +24,25 @@ public class GDHelpActivity extends GDBaseActivity {
 		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 	}
 	
-	public void onServiceStart() {
-		mService.getHelpInfo(this);
-	}
-	
-	public void updateData(int type, String key, Object data) {
-		if (type == GDDataProviderService.REQUESTTYPE_GETHELPINFO) {
-			if (data != null) {
-				String helpInfo = (String) data;
-				if (!helpInfo.isEmpty()) {
-					mHelpContent.setText(helpInfo);
-				}
-			}
-		}
-	}
+//	public void onServiceStart() {
+//		mService.getHelpInfo(this);
+//	}
+//	
+//	public void updateData(int type, String key, Object data) {
+//		if (type == GDDataProviderService.REQUESTTYPE_GETHELPINFO) {
+//			if (data != null) {
+//				String helpInfo = (String) data;
+//				if (!helpInfo.isEmpty()) {
+//					mHelpContent.setText(helpInfo);
+//				}
+//			}
+//		}
+//	}
 	
 	public void initializeView() {
 		super.initializeView();
 		
-		mHelpContent = (TextView) findViewById(R.id.settings_help_content);
-		mHelpContent.setText("");
+//		mHelpContent = (TextView) findViewById(R.id.settings_help_content);
+//		mHelpContent.setText("");
 	}
 }

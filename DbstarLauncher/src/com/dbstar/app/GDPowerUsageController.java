@@ -162,7 +162,7 @@ public class GDPowerUsageController implements ClientObserver {
 	}
 
 	@Override
-	public void updatePage() {
+	public void notifyEvent(int type, Object event) {
 		
 	}
 

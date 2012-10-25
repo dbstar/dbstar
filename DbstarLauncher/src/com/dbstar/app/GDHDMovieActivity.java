@@ -6,6 +6,7 @@ import java.util.List;
 import com.dbstar.R;
 import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.ContentData;
+import com.dbstar.model.EventData;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.model.Movie;
 import com.dbstar.model.GDDVBDataContract.Content;
@@ -152,10 +153,10 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	private void playMovie() {
 		Log.d(TAG, "playMovie");
 		Movie movie = getSelectedMovie();
-		
+
 		String file = mService.getMediaFile(movie.Content);
 		String drmFile = mService.getDRMFile(movie.Content);
-		
+
 		GDPlayerUtil.playVideo(this, null, movie.Content, file, drmFile);
 	}
 
@@ -194,18 +195,10 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				mPageNumber = 0;
 
 				// update views
-				mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
-				mScrollBar.setRange(mPageCount);
-				mScrollBar.setPosition(mPageNumber);
-
-				mAdapter.setDataSet(mPageDatas.get(mPageNumber));
-				mSmallThumbnailView.setSelection(0);
-				mAdapter.notifyDataSetChanged();
-
-				mScrollBar.setPosition(mPageNumber);
-
-				Log.d(TAG, "update mPageCount " + mPageCount);
+				updateViews(mPageDatas.get(mPageNumber));
 				
+				Log.d(TAG, "update mPageCount " + mPageCount);
+
 				for (int i = 0; i < mPageCount; i++) {
 					Movie[] movies = mPageDatas.get(i);
 					for (int j = 0; j < movies.length; j++) {
@@ -216,13 +209,87 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			}
 		}
 	}
-	
+
+	private void updateViews(Movie[] movies) {
+		mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+		mScrollBar.setRange(mPageCount);
+		mScrollBar.setPosition(mPageNumber);
+
+		mAdapter.setDataSet(movies);
+		mSmallThumbnailView.setSelection(0);
+		mAdapter.notifyDataSetChanged();
+
+		// mScrollBar.setPosition(mPageNumber);
+	}
+
 	@Override
-	public void updatePage() {
-		super.updatePage();
-		
-		if (mService != null && mBound) {
-			mService.getAllPublications(this, mColumnId);
+	public void notifyEvent(int type, Object event) {
+		// super.updatePage();
+
+		// if (mService != null && mBound) {
+		// mService.getAllPublications(this, mColumnId);
+		// }
+
+		if (type == EventData.EVENT_DELETE) {
+			EventData.DeleteEvent deleteEvent = (EventData.DeleteEvent) event;
+			String publicationId = deleteEvent.PublicationId;
+			Movie[] movies = mPageDatas.get(mPageNumber);
+			int i = 0;
+			boolean found = false;
+			for (i = 0; i < movies.length; i++) {
+				ContentData content = movies[i].Content;
+				if (content.Id.equals(publicationId)) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				movePageItems(mPageNumber, i);
+			}
+
+			mPageCount = mPageDatas.size();
+			if (mPageCount > 0) {
+				// delete last page
+				if (mPageNumber == mPageCount) {
+					mPageNumber = mPageCount - 1;
+				}
+				movies = mPageDatas.get(mPageNumber);
+			} else {
+				movies = null;
+			}
+			
+			updateViews(movies);
+		}
+	}
+
+	private void movePageItems(int pageNumber, int start) {
+		Movie[] movies = mPageDatas.get(pageNumber);
+
+		if (start == movies.length - 1 && start == 0) {
+			// the deleted item is the last one
+			// there is only one item in this page
+			mPageDatas.remove(pageNumber);
+		}
+
+		for (int i = start; i < movies.length - 1; i++) {
+			movies[i] = movies[i + 1];
+			movies[i + 1] = null;
+		}
+
+		if (pageNumber < mPageCount - 1) {
+			Movie[] nextMovies = mPageDatas.get(pageNumber + 1);
+			movies[movies.length - 1] = nextMovies[0];
+
+			movePageItems(pageNumber + 1, 0);
+		} else {
+			// this is the last page, remove the last null item
+			Movie[] newMovies = new Movie[movies.length - 1];
+			for (int i = 0; i < newMovies.length; i++) {
+				newMovies[i] = movies[i];
+			}
+
+			mPageDatas.set(pageNumber, newMovies);
 		}
 	}
 
@@ -335,12 +402,12 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			return convertView;
 		}
 	}
-	
+
 	OnItemSelectedListener mThumbnailSelectedListener = new OnItemSelectedListener() {
 
 		@Override
-		public void onItemSelected(GDAdapterView<?> parent,
-				View view, int position, long id) {
+		public void onItemSelected(GDAdapterView<?> parent, View view,
+				int position, long id) {
 			Log.d(TAG, "mSmallThumbnailView selected = " + position);
 
 			mSeletedItemIndex = position;
@@ -352,9 +419,9 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		}
 
 	};
-	
+
 	View.OnKeyListener mThumbnailOnKeyListener = new View.OnKeyListener() {
-		
+
 		@Override
 		public boolean onKey(View v, int keyCode, KeyEvent event) {
 			Log.d(TAG, "onKey " + keyCode);
@@ -362,7 +429,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			int action = event.getAction();
 			if (action == KeyEvent.ACTION_DOWN) {
 				switch (keyCode) {
-				
+
 				case KeyEvent.KEYCODE_DPAD_LEFT: {
 					int currentItem = mSmallThumbnailView
 							.getSelectedItemPosition();
@@ -370,8 +437,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 						mSmallThumbnailView.setSelection(currentItem - 1);
 						ret = true;
 					} else if (currentItem == 0) {
-						mSmallThumbnailView.setSelection(mAdapter
-								.getCount() - 1);
+						mSmallThumbnailView
+								.setSelection(mAdapter.getCount() - 1);
 						ret = true;
 					} else {
 					}
@@ -384,8 +451,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 					if (currentItem == (PAGE_ITEMS / 2 - 1)) {
 						if (currentItem < (mAdapter.getCount() - 1)) {
-							mSmallThumbnailView
-									.setSelection(currentItem + 1);
+							mSmallThumbnailView.setSelection(currentItem + 1);
 							ret = true;
 						}
 					} else if (currentItem == (mAdapter.getCount() - 1)) {

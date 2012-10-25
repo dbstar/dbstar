@@ -12,6 +12,7 @@ import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
+import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GDDataModel;
@@ -439,7 +440,10 @@ public class GDDataProviderService extends Service {
 							publicationId);
 					
 					if (mPageOberser != null) {
-						mPageOberser.updatePage();
+						EventData.DeleteEvent event = new EventData.DeleteEvent();
+						event.PublicationId = publicationId;
+						event.PublicationSetId = publicationSetId;
+						mPageOberser.notifyEvent(EventData.EVENT_DELETE, event);
 					}
 				}
 				break;
