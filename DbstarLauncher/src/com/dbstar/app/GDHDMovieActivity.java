@@ -109,7 +109,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 	public void onServiceStart() {
 		super.onServiceStart();
-		mService.getAllPublications(this, mColumnId);
+		mService.getPublications(this, mColumnId);
 	}
 
 	private void loadPrevPage() {
@@ -161,7 +161,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	}
 
 	public void updateData(int type, Object key, Object data) {
-		if (type == GDDataProviderService.REQUESTTYPE_GETALLPUBLICATIONS) {
+		if (type == GDDataProviderService.REQUESTTYPE_GETPUBLICATION) {
 
 			ContentData[] contents = (ContentData[]) data;
 			Log.d(TAG, "update ");
@@ -227,7 +227,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		// super.updatePage();
 
 		// if (mService != null && mBound) {
-		// mService.getAllPublications(this, mColumnId);
+		// mService.getPublications(this, mColumnId);
 		// }
 
 		if (type == EventData.EVENT_DELETE) {

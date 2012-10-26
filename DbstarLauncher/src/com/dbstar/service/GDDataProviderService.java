@@ -59,8 +59,8 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_SETSETTINGS = 11;
 	public static final int REQUESTTYPE_GETSETTINGS = 12;
 
-	public static final int REQUESTTYPE_GETALLPUBLICATIONS = 13;
-	public static final int REQUESTTYPE_GETTVDATA = 14;
+	public static final int REQUESTTYPE_GETPUBLICATION = 13;
+	public static final int REQUESTTYPE_GETPUBLICATIONSET = 14;
 	public static final int REQUESTTYPE_STARTGETTASKINFO = 15;
 	public static final int REQUESTTYPE_STOPGETTASKINFO = 16;
 
@@ -472,8 +472,8 @@ public class GDDataProviderService extends Service {
 		case REQUESTTYPE_GETFAVORITETV:
 		case REQUESTTYPE_GETFAVORITERECORD:
 		case REQUESTTYPE_GETFAVORITEENTERTAINMENT:
-		case REQUESTTYPE_GETALLPUBLICATIONS:
-		case REQUESTTYPE_GETTVDATA: {
+		case REQUESTTYPE_GETPUBLICATION:
+		case REQUESTTYPE_GETPUBLICATIONSET: {
 			if (task.Observer != null) {
 				task.Observer.updateData(task.Type, null, task.Data);
 			}
@@ -704,7 +704,7 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-				case REQUESTTYPE_GETALLPUBLICATIONS: {
+				case REQUESTTYPE_GETPUBLICATION: {
 					Object value = null;
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
@@ -717,7 +717,7 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-				case REQUESTTYPE_GETTVDATA: {
+				case REQUESTTYPE_GETPUBLICATIONSET: {
 					Object value = null;
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
@@ -991,11 +991,22 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
-	public void getAllPublications(ClientObserver observer, String columnId) {
+	public void getPublicationsCount(ClientObserver observer, String columnId) {
 		RequestTask task = new RequestTask();
 		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETALLPUBLICATIONS;
+		task.Type = REQUESTTYPE_GETCONTENTSCOUNT;
+		task.Parameters = new HashMap<String, Object>();
+		task.Parameters.put(PARAMETER_COLUMN_ID, columnId);
+
+		enqueueTask(task);
+	}
+	
+	public void getPublications(ClientObserver observer, String columnId) {
+		RequestTask task = new RequestTask();
+		// task.Id = System.currentTimeMillis();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETPUBLICATION;
 		task.Parameters = new HashMap<String, Object>();
 		task.Parameters.put(PARAMETER_COLUMN_ID, columnId);
 
@@ -1006,7 +1017,7 @@ public class GDDataProviderService extends Service {
 		RequestTask task = new RequestTask();
 		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETTVDATA;
+		task.Type = REQUESTTYPE_GETPUBLICATIONSET;
 		task.Parameters = new HashMap<String, Object>();
 		task.Parameters.put(PARAMETER_COLUMN_ID, columnId);
 

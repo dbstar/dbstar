@@ -11,7 +11,7 @@ public class GDFavoriteMovieActivity extends GDHDMovieActivity {
 	
 	public void updateData(int type, Object key, Object data) {
 		if (type == GDDataProviderService.REQUESTTYPE_GETFAVORITEMOVIE) {
-			super.updateData(GDDataProviderService.REQUESTTYPE_GETALLPUBLICATIONS, key, data);
+			super.updateData(GDDataProviderService.REQUESTTYPE_GETPUBLICATION, key, data);
 		}
 	}
 }

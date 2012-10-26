@@ -157,7 +157,7 @@ public class GDTVActivity extends GDBaseActivity {
 	}
 
 	public void updateData(int type, Object key, Object data) {
-		if (type == GDDataProviderService.REQUESTTYPE_GETTVDATA) {
+		if (type == GDDataProviderService.REQUESTTYPE_GETPUBLICATIONSET) {
 
 			TV[] tvs = (TV[]) data;
 

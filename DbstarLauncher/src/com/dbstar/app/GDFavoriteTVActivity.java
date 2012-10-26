@@ -11,7 +11,7 @@ public class GDFavoriteTVActivity extends GDTVActivity {
 	
 	public void updateData(int type, Object key, Object data) {
 		if (type == GDDataProviderService.REQUESTTYPE_GETFAVORITETV) {
-			super.updateData(GDDataProviderService.REQUESTTYPE_GETTVDATA, key, data);
+			super.updateData(GDDataProviderService.REQUESTTYPE_GETPUBLICATIONSET, key, data);
 		}
 	}
 }

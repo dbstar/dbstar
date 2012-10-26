@@ -154,7 +154,7 @@ public class GDDataModel {
 
 		return entities;
 	}
-
+	
 	public ContentData[] getReadyPublications(String columnId, String favorite) {
 
 		EntityObject[] entities = getAllEntities(columnId);
