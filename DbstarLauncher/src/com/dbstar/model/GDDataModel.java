@@ -35,10 +35,16 @@ public class GDDataModel {
 	}
 
 	public void initialize(GDSystemConfigure configure) {
-		setLocalization(configure.getLocalization());
+//		setLocalization(configure.getLocalization());
 		mDVBDataProvider.initialize(configure);
 		mSmartHomeProvider.initialize(configure);
 		// mUserDataProvider.initialize(configure);
+		
+		String language = getLanguage();
+		setLocalization(language);
+		configure.setLocalization(language);
+		
+		Log.d(TAG, "language = " + language);
 	}
 
 	public void deInitialize() {

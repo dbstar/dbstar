@@ -153,7 +153,7 @@ public class GDSystemConfigure {
 		return mLocalization;
 	}
 
-	private void setLocalization(String localization) {
+	public void setLocalization(String localization) {
 		mLocalization = localization;
 	}
 

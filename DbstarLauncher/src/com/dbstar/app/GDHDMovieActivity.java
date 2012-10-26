@@ -437,8 +437,9 @@ public class GDHDMovieActivity extends GDBaseActivity {
 						mSmallThumbnailView.setSelection(currentItem - 1);
 						ret = true;
 					} else if (currentItem == 0) {
-						mSmallThumbnailView
-								.setSelection(mAdapter.getCount() - 1);
+//						mSmallThumbnailView
+//								.setSelection(mAdapter.getCount() - 1);
+						loadPrevPage();
 						ret = true;
 					} else {
 					}
@@ -455,7 +456,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 							ret = true;
 						}
 					} else if (currentItem == (mAdapter.getCount() - 1)) {
-						mSmallThumbnailView.setSelection(0);
+//						mSmallThumbnailView.setSelection(0);
+						loadNextPage();
 						ret = true;
 					} else {
 					}

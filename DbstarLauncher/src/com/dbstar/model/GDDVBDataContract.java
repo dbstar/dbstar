@@ -56,7 +56,6 @@ public class GDDVBDataContract {
 		public static final String NAME = "Name";
 		public static final String VALUE = "Value";
 		public static final String PARAM = "Param";
-
 	}
 
 	public static final class Column implements BaseColumns {
