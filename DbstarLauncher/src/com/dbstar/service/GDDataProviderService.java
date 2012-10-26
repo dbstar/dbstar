@@ -47,39 +47,39 @@ public class GDDataProviderService extends Service {
 	private static final String TAG = "GDDataProviderService";
 
 	public static final int REQUESTTYPE_GETCOLUMNS = 1;
-	public static final int REQUESTTYPE_GETCONTENTS = 2;
-	public static final int REQUESTTYPE_GETCONTENTSCOUNT = 3;
-	public static final int REQUESTTYPE_GETIMAGE = 5;
-	public static final int REQUESTTYPE_GETDETAILSDATA = 6;
-	public static final int REQUESTTYPE_GETDOWNLOADSTATUS = 7;
+	public static final int REQUESTTYPE_GETPUBLICATION = 2;
+	public static final int REQUESTTYPE_GETPUBLICATIONSET = 3;
+	public static final int REQUESTTYPE_GETPUBLICATIONS_OFSET = 4;
+	public static final int REQUESTTYPE_GETIMAGE = 6;
+	public static final int REQUESTTYPE_GETDETAILSDATA = 7;
+	public static final int REQUESTTYPE_GETDOWNLOADSTATUS = 8;
 
-	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 8;
-	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 9;
+	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 9;
+	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 10;
 
 	public static final int REQUESTTYPE_SETSETTINGS = 11;
 	public static final int REQUESTTYPE_GETSETTINGS = 12;
 
-	public static final int REQUESTTYPE_GETPUBLICATION = 13;
-	public static final int REQUESTTYPE_GETPUBLICATIONSET = 14;
-	public static final int REQUESTTYPE_STARTGETTASKINFO = 15;
-	public static final int REQUESTTYPE_STOPGETTASKINFO = 16;
+	public static final int REQUESTTYPE_STARTGETTASKINFO = 13;
+	public static final int REQUESTTYPE_STOPGETTASKINFO = 14;
 
-	public static final int REQUESTTYPE_GETFAVORITEMOVIE = 17;
-	public static final int REQUESTTYPE_GETFAVORITETV = 18;
-	public static final int REQUESTTYPE_GETFAVORITERECORD = 19;
-	public static final int REQUESTTYPE_GETFAVORITEENTERTAINMENT = 20;
+	public static final int REQUESTTYPE_GETFAVORITEMOVIE = 15;
+	public static final int REQUESTTYPE_GETFAVORITETV = 16;
+	public static final int REQUESTTYPE_GETFAVORITERECORD = 17;
+	public static final int REQUESTTYPE_GETFAVORITEENTERTAINMENT = 18;
 
-	public static final int REQUESTTYPE_ADDTOFAVORITE = 21;
+	public static final int REQUESTTYPE_ADDTOFAVORITE = 19;
 
-	public static final int REQUESTTYPE_GETGUIDELIST = 22;
-	public static final int REQUESTTYPE_UPDATEGUIDELIST = 23;
-	public static final int REQUESTTYPE_GETPREVIEWS = 24;
+	public static final int REQUESTTYPE_GETGUIDELIST = 20;
+	public static final int REQUESTTYPE_UPDATEGUIDELIST = 21;
+	public static final int REQUESTTYPE_GETPREVIEWS = 22;
 
-	public static final int REQUESTTYPE_GETUSERDATA = 25;
-	public static final int REQUESTTYPE_GETDEVICEDATA = 26;
-	public static final int REQUESTTYPE_GETHELPINFO = 27;
+	public static final int REQUESTTYPE_GETUSERDATA = 23;
+	public static final int REQUESTTYPE_GETDEVICEDATA = 24;
+	public static final int REQUESTTYPE_GETHELPINFO = 25;
 
 	private static final String PARAMETER_COLUMN_ID = "column_id";
+	private static final String PARAMETER_SET_ID = "set_id";
 	private static final String PARAMETER_PAGENUMBER = "page_number";
 	private static final String PARAMETER_PAGESIZE = "page_size";
 	private static final String PARAMETER_CONTENTDATA = "content_data";
@@ -92,7 +92,6 @@ public class GDDataProviderService extends Service {
 	private static final String PARAMETER_KEY = "key";
 	private static final String PARAMETER_VALUE = "value";
 
-	// private static final String DVBPrepertyName = "dbstar.dvbpush.started";
 	private static final String SmartHomePrepertyName = "dbstar.smarthome.started";
 
 	private Object mTaskQueueLock = new Object();
@@ -163,11 +162,11 @@ public class GDDataProviderService extends Service {
 			mApplicationObserver = null;
 		}
 	}
-	
-	public void registerPageObserver (ClientObserver observer) {
+
+	public void registerPageObserver(ClientObserver observer) {
 		mPageOberser = observer;
 	}
-	
+
 	public void unRegisterPageObserver(ClientObserver observer) {
 		if (mPageOberser == observer) {
 			mPageOberser = null;
@@ -438,7 +437,7 @@ public class GDDataProviderService extends Service {
 				if (mDataModel != null) {
 					mDataModel.deletePublication(publicationSetId,
 							publicationId);
-					
+
 					if (mPageOberser != null) {
 						EventData.DeleteEvent event = new EventData.DeleteEvent();
 						event.PublicationId = publicationId;
@@ -480,20 +479,21 @@ public class GDDataProviderService extends Service {
 			break;
 		}
 
-		case REQUESTTYPE_GETCONTENTSCOUNT: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, null, task.Data);
-			}
-			break;
-		}
-		case REQUESTTYPE_GETCONTENTS: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, task.PageNumber,
-						task.PageSize, task.Data);
-			}
-			break;
-		}
+		// case REQUESTTYPE_GETCONTENTSCOUNT: {
+		// if (task.Observer != null) {
+		// task.Observer.updateData(task.Type, null, task.Data);
+		// }
+		// break;
+		// }
+		// case REQUESTTYPE_GETCONTENTS: {
+		// if (task.Observer != null) {
+		// task.Observer.updateData(task.Type, task.PageNumber,
+		// task.PageSize, task.Data);
+		// }
+		// break;
+		// }
 
+		case REQUESTTYPE_GETPUBLICATIONS_OFSET:
 		case REQUESTTYPE_GETDETAILSDATA:
 		case REQUESTTYPE_GETIMAGE: {
 			if (task.Observer != null) {
@@ -539,6 +539,15 @@ public class GDDataProviderService extends Service {
 	private void enqueueTask(RequestTask task) {
 		synchronized (mTaskQueueLock) {
 			mTaskQueue.add(task);
+			if (mTaskQueue.size() == 1) {
+				mTaskQueueLock.notifyAll();
+			}
+		}
+	}
+
+	private void enqueueTaskHightPrority(RequestTask task) {
+		synchronized (mTaskQueueLock) {
+			mTaskQueue.addFirst(task);
 			if (mTaskQueue.size() == 1) {
 				mTaskQueueLock.notifyAll();
 			}
@@ -709,8 +718,8 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					ContentData[] datas = mDataModel.getReadyPublications(
-							columnId, null);
+					ContentData[] datas = mDataModel.getPublications(columnId,
+							null);
 					task.Data = datas;
 
 					taskFinished(task);
@@ -722,43 +731,35 @@ public class GDDataProviderService extends Service {
 					value = task.Parameters.get(PARAMETER_COLUMN_ID);
 					String columnId = String.valueOf(value);
 
-					ContentData[] contents = mDataModel.getReadyPublicationSet(
+					ContentData[] contents = mDataModel.getPublicationSets(
 							columnId, null);
 
-					TV[] tvs = new TV[contents.length];
-					for (int i = 0; i < contents.length; i++) {
-						TV tv = new TV();
-						tv.Content = contents[i];
+					task.Data = contents;
 
-						ContentData[] episodesContent = mDataModel
-								.getPublicationsEx(contents[i].Id, null);
+					taskFinished(task);
+					break;
+				}
 
-						if (episodesContent != null
-								&& episodesContent.length > 0) {
-							TV.EpisodeItem[] items = new TV.EpisodeItem[episodesContent.length];
-							for (int j = 0; j < episodesContent.length; j++) {
+				case REQUESTTYPE_GETPUBLICATIONS_OFSET: {
+					Object value = null;
+					value = task.Parameters.get(PARAMETER_SET_ID);
+					String setId = String.valueOf(value);
 
-								TV.EpisodeItem item = new TV.EpisodeItem();
-								item.Content = episodesContent[j];
-								item.Number = item.Content.IndexInSet;
-								// item.Url = item.Content.XMLFilePath;
+					ContentData[] contents = mDataModel.getPublicationsEx(
+							setId, null);
 
-								String xmlFile = getDetailsDataFile(item.Content);
+					if (contents != null && contents.length > 0) {
+						for (int i = 0; i < contents.length; i++) {
+							String xmlFile = getDetailsDataFile(contents[i]);
 
-								mDataModel
-										.getDetailsData(xmlFile, item.Content);
+							mDataModel.getDetailsData(xmlFile, contents[i]);
 
-								Log.d(TAG, "xmlFile " + xmlFile);
-								Log.d(TAG, "content " + item.Content.MainFile);
-
-								items[j] = item;
-							}
-							tv.Episodes = items;
+//							Log.d(TAG, "xmlFile " + xmlFile);
+//							Log.d(TAG, "content " + contents[i].MainFile);
 						}
-
-						tvs[i] = tv;
 					}
-					task.Data = tvs;
+
+					task.Data = contents;
 
 					taskFinished(task);
 					break;
@@ -788,40 +789,12 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-				case REQUESTTYPE_GETCONTENTSCOUNT: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_COLUMN_ID);
-					String columnId = String.valueOf(value);
-
-					int count = mDataModel.getContentsCount(columnId);
-					task.Data = Integer.valueOf(count);
-
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETCONTENTS: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_COLUMN_ID);
-					String columnId = String.valueOf(value);
-					value = task.Parameters.get(PARAMETER_PAGENUMBER);
-					int pageNumber = ((Integer) value).intValue();
-					value = task.Parameters.get(PARAMETER_PAGESIZE);
-					int pageSize = ((Integer) value).intValue();
-
-					ContentData[] contents = mDataModel.getContents(columnId,
-							pageNumber, pageSize);
-					task.Data = contents;
-
-					taskFinished(task);
-					break;
-				}
-
 				case REQUESTTYPE_GETDETAILSDATA: {
 					Object value = null;
 					value = task.Parameters.get(PARAMETER_CONTENTDATA);
 					ContentData content = (ContentData) value;
 					String xmlFile = getDetailsDataFile(content);
+
 					mDataModel.getDetailsData(xmlFile, content);
 					task.Data = content;
 
@@ -991,17 +964,6 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
-	public void getPublicationsCount(ClientObserver observer, String columnId) {
-		RequestTask task = new RequestTask();
-		// task.Id = System.currentTimeMillis();
-		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETCONTENTSCOUNT;
-		task.Parameters = new HashMap<String, Object>();
-		task.Parameters.put(PARAMETER_COLUMN_ID, columnId);
-
-		enqueueTask(task);
-	}
-	
 	public void getPublications(ClientObserver observer, String columnId) {
 		RequestTask task = new RequestTask();
 		// task.Id = System.currentTimeMillis();
@@ -1013,7 +975,7 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
-	public void getTVData(ClientObserver observer, String columnId) {
+	public void getPublicationSets(ClientObserver observer, String columnId) {
 		RequestTask task = new RequestTask();
 		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
@@ -1024,29 +986,16 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
-	public void getContentsCount(ClientObserver observer, String columnId) {
+	public void getPublicationsOfSet(ClientObserver observer, String setId,
+			int pageNumber, int index) {
 		RequestTask task = new RequestTask();
 		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETCONTENTSCOUNT;
+		task.Type = REQUESTTYPE_GETPUBLICATIONS_OFSET;
 		task.Parameters = new HashMap<String, Object>();
-		task.Parameters.put(PARAMETER_COLUMN_ID, columnId);
-
-		enqueueTask(task);
-	}
-
-	public void getContents(ClientObserver observer, String columnId,
-			int pageNumber, int pageSize) {
-		RequestTask task = new RequestTask();
-		// task.Id = System.currentTimeMillis();
-		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETCONTENTS;
-		task.Parameters = new HashMap<String, Object>();
-		task.Parameters.put(PARAMETER_COLUMN_ID, columnId);
-		task.Parameters.put(PARAMETER_PAGENUMBER, pageNumber);
-		task.Parameters.put(PARAMETER_PAGESIZE, pageSize);
+		task.Parameters.put(PARAMETER_SET_ID, setId);
 		task.PageNumber = pageNumber;
-		task.PageSize = pageSize;
+		task.Index = index;
 
 		enqueueTask(task);
 	}
@@ -1074,7 +1023,8 @@ public class GDDataProviderService extends Service {
 		task.Index = index;
 		task.Parameters = new HashMap<String, Object>();
 		task.Parameters.put(PARAMETER_CONTENTDATA, content);
-		enqueueTask(task);
+		// enqueueTask(task);
+		enqueueTaskHightPrority(task);
 	}
 
 	public void getPowerConsumption(ClientObserver observer, String cc_id,
@@ -1494,13 +1444,11 @@ public class GDDataProviderService extends Service {
 				msg.setData(data);
 				mHandler.sendMessage(msg);
 
-			} else if (action
-					.equals("com.dbstar.DbstarLauncher.Action.DELETE")) {
+			} else if (action.equals("com.dbstar.DbstarLauncher.Action.DELETE")) {
 				String publicationSetId = intent
 						.getStringExtra("publicationset_id");
 				String publicationId = intent.getStringExtra("publication_id");
-				Message msg = mHandler
-						.obtainMessage(GDCommon.MSG_DELETE);
+				Message msg = mHandler.obtainMessage(GDCommon.MSG_DELETE);
 				Bundle data = new Bundle();
 				data.putString(GDCommon.KeyPublicationID, publicationId);
 				data.putString(GDCommon.KeyPublicationSetID, publicationSetId);

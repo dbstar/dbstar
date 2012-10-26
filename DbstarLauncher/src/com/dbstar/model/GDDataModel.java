@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import com.dbstar.model.GDDVBDataContract.*;
-import com.dbstar.model.GDDVBDataProvider.ColumnEntityQuery;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
 import com.dbstar.model.GDDVBDataProvider.ResStrQuery;
 
@@ -35,15 +34,15 @@ public class GDDataModel {
 	}
 
 	public void initialize(GDSystemConfigure configure) {
-//		setLocalization(configure.getLocalization());
+		// setLocalization(configure.getLocalization());
 		mDVBDataProvider.initialize(configure);
 		mSmartHomeProvider.initialize(configure);
 		// mUserDataProvider.initialize(configure);
-		
+
 		String language = getLanguage();
 		setLocalization(language);
 		configure.setLocalization(language);
-		
+
 		Log.d(TAG, "language = " + language);
 	}
 
@@ -69,7 +68,6 @@ public class GDDataModel {
 		String selection = Column.PARENT_ID + "=?";
 		String[] selectionArgs = new String[] { columnId };
 
-		// cursor = mContext.getContentResolver().query(Column.CONTENT_URI,
 		cursor = mDVBDataProvider.query(Column.CONTENT_URI,
 				ColumnQuery.COLUMNS, selection, selectionArgs, null);
 		if (cursor != null && cursor.getCount() > 0) {
@@ -125,24 +123,98 @@ public class GDDataModel {
 		return columnName;
 	}
 
-	public EntityObject[] getAllEntities(String columnId) {
-		EntityObject[] entities = null;
+	private final static String[] ProjectionQueryPublications = {
+			Publication.PUBLICATIONID, Publication.URI };
+	private final static int PublicationID = 0;
+	private final static int PublicationURI = 1;
 
-		String selection = ColumnEntity.COLUMNID + "=?";
-		String[] selectionArgs = new String[] { columnId };
+	public ContentData[] getPublications(String columnId, String favorite) {
 
-		Cursor cursor = mDVBDataProvider.query(ColumnEntity.CONTENT_URI,
-				ColumnEntityQuery.COLUMNS, selection, selectionArgs, null);
+		ContentData[] contents = null;
+
+		String selection = Publication.COLUMNID + "=?  AND ("
+				+ Publication.RECEIVESTATUS + "=? Or "
+				+ Publication.RECEIVESTATUS + "=?) AND " + Publication.VISIBLE
+				+ "=? AND (" + Publication.DELETED + "=? OR "
+				+ Publication.DELETED + " is null OR " + Publication.DELETED
+				+ "=?) ";
+
+		if (favorite != null && !favorite.isEmpty()) {
+			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
+		}
+
+		String[] selectionArgs = new String[] { columnId, "1", "2", "true",
+				"0", "" };
+
+		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
+				ProjectionQueryPublications, selection, selectionArgs, null);
+
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				entities = new EntityObject[cursor.getCount()];
+				contents = new ContentData[cursor.getCount()];
 				int i = 0;
 				do {
-					EntityObject entity = new EntityObject();
-					entity.Id = cursor.getString(ColumnEntityQuery.ENTITYID);
-					entity.Type = cursor
-							.getString(ColumnEntityQuery.ENTITYTYPE);
-					entities[i] = entity;
+					ContentData content = new ContentData();
+					content.Id = cursor.getString(PublicationID);
+					content.XMLFilePath = cursor.getString(PublicationURI);
+					contents[i] = content;
+					i++;
+					
+					Log.d(TAG, "content id= " + content.Id);
+				} while (cursor.moveToNext());
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return contents;
+	}
+
+	private final static String[] ProjectionQueryPublicationsSet = {
+			PublicationsSet.SETID, PublicationsSet.URI };
+	private final static int PublicationsSetID = 0;
+	private final static int PublicationsSetURI = 1;
+
+	public ContentData[] getPublicationSets(String columnId, String favorite) {
+
+		ContentData[] contents = null;
+
+		String selection = PublicationsSet.COLUMNID + "=?  AND ("
+				+ PublicationsSet.RECEIVESTATUS + "=? OR "
+				+ PublicationsSet.RECEIVESTATUS + "=?) AND ("
+				+ PublicationsSet.DELETED + "=? OR " + PublicationsSet.DELETED
+				+ " is null OR " + PublicationsSet.DELETED + " =?) ";
+
+		if (favorite != null && !favorite.isEmpty()) {
+			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
+		}
+
+		String[] selectionArgs = new String[] { columnId, "1", "2", "0", "" };
+
+		Cursor cursor = mDVBDataProvider.query(PublicationsSet.CONTENT_URI,
+				ProjectionQueryPublicationsSet, selection, selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				contents = new ContentData[cursor.getCount()];
+
+				int i = 0;
+				do {
+					ContentData content = new ContentData();
+					content.Id = cursor.getString(PublicationsSetID);
+					content.XMLFilePath = cursor.getString(PublicationsSetURI);
+
+					content.Name = getPublicationSetName(content.Id);
+					content.Description = getPublicationSetDescription(content.Id);
+					String posterUri = getPublicationPoster(content.Id);
+					ContentData.Poster item = new ContentData.Poster();
+					item.URI = posterUri;
+					content.Posters = new ArrayList<ContentData.Poster>();
+					content.Posters.add(item);
+
+					contents[i] = content;
 					i++;
 				} while (cursor.moveToNext());
 			}
@@ -152,102 +224,7 @@ public class GDDataModel {
 			cursor.close();
 		}
 
-		return entities;
-	}
-	
-	public ContentData[] getReadyPublications(String columnId, String favorite) {
-
-		EntityObject[] entities = getAllEntities(columnId);
-		if (entities == null || entities.length == 0)
-			return null;
-
-		ArrayList<ContentData> contents = new ArrayList<ContentData>();
-
-		for (int i = 0; i < entities.length; i++) {
-			PublicationData data = getPublication(entities[i].Id, favorite);
-			if (data != null) {
-				ContentData content = new ContentData();
-				content.XMLFilePath = data.URI;
-				content.Id = data.PublicationID;
-
-				contents.add(content);
-			}
-		}
-
-		return (ContentData[]) contents
-				.toArray(new ContentData[contents.size()]);
-	}
-
-	public ContentData[] getReadyPublicationSet(String columnId, String favorite) {
-		EntityObject[] entities = getAllEntities(columnId);
-		if (entities == null || entities.length == 0)
-			return null;
-
-		ArrayList<ContentData> contents = new ArrayList<ContentData>();
-
-		for (int i = 0; i < entities.length; i++) {
-			String entityId = entities[i].Id;
-			PublicationData data = getPublicationsSet(entityId, favorite);
-
-			if (data != null) {
-				ContentData content = new ContentData();
-				content.XMLFilePath = data.URI;
-				content.Id = data.PublicationID;
-
-				content.Name = getPublicationSetName(entityId);
-				content.Description = getPublicationSetDescription(entityId);
-				String posterUri = getPublicationPoster(entityId);
-				ContentData.Poster item = new ContentData.Poster();
-				item.URI = posterUri;
-				content.Posters = new ArrayList<ContentData.Poster>();
-				content.Posters.add(item);
-
-				contents.add(content);
-			}
-		}
-
-		return (ContentData[]) contents
-				.toArray(new ContentData[contents.size()]);
-	}
-
-	private final static String[] ProjectionQueryPublications = { Publication.URI };
-	private final static int PublicationURI = 0;
-
-	public PublicationData getPublication(String entityId, String favorite) {
-
-		PublicationData publication = null;
-
-		String selection = Publication.PUBLICATIONID + "=?  AND ("
-				+ Publication.RECEIVESTATUS + "=? Or "
-				+ Publication.RECEIVESTATUS + "=?) AND " + Publication.VISIBLE
-				+ "=? AND (" + Publication.DELETED + "=? OR "
-				+ Publication.DELETED + " is null OR " + Publication.DELETED
-				+ "=?)";
-
-		if (favorite != null && !favorite.isEmpty()) {
-			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
-		}
-
-		String[] selectionArgs = new String[] { entityId, "1", "2", "true",
-				"0", "" };
-
-		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
-				ProjectionQueryPublications, selection, selectionArgs, null);
-
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				// Log.d(TAG, "query cursor size = " + cursor.getCount());
-				publication = new PublicationData();
-				publication.PublicationID = entityId;
-				publication.URI = cursor.getString(PublicationURI);
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-
-		return publication;
+		return contents;
 	}
 
 	public int getPublicationSetItemCount(String setId, String favorite) {
@@ -321,6 +298,7 @@ public class GDDataModel {
 					content.XMLFilePath = cursor.getString(EpisodesURI);
 					content.IndexInSet = Integer.valueOf(cursor
 							.getString(EpisodesIndexInSet));
+					
 					contents[i] = content;
 					i++;
 				} while (cursor.moveToNext());
@@ -332,47 +310,6 @@ public class GDDataModel {
 		}
 
 		return contents;
-	}
-
-	private final static String[] ProjectionQueryPublicationsSet = { PublicationsSet.URI };
-	private final static int PublicationsSetURI = 0;
-
-	public PublicationData getPublicationsSet(String entityId, String favorite) {
-
-		PublicationData publication = null;
-
-		String selection = PublicationsSet.SETID + "=?  AND ("
-				+ PublicationsSet.RECEIVESTATUS + "=? Or "
-				+ PublicationsSet.RECEIVESTATUS + "=?)";
-		// + PublicationsSet.RECEIVESTATUS + "=?) AND "
-		// + PublicationsSet.VISIBLE + "=? AND (" + Publication.DELETED +
-		// "=? OR " + Publication.DELETED + " is null OR " + Publication.DELETED
-		// + "=?)";
-		if (favorite != null && !favorite.isEmpty()) {
-			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
-		}
-
-		String[] selectionArgs = new String[] { entityId, "1", "2" };
-
-		// String[] selectionArgs = new String[] { entityId, "1", "2", "true",
-		// "0", "" };
-
-		Cursor cursor = mDVBDataProvider.query(PublicationsSet.CONTENT_URI,
-				ProjectionQueryPublicationsSet, selection, selectionArgs, null);
-
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				publication = new PublicationData();
-				publication.PublicationID = entityId;
-				publication.URI = cursor.getString(PublicationsSetURI);
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-
-		return publication;
 	}
 
 	public String getPublicationResStr(String publicationId, String objectName,

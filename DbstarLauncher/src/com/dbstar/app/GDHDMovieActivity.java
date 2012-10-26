@@ -198,37 +198,57 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				updateViews(mPageDatas.get(mPageNumber));
 				
 				Log.d(TAG, "update mPageCount " + mPageCount);
-
-				for (int i = 0; i < mPageCount; i++) {
-					Movie[] movies = mPageDatas.get(i);
-					for (int j = 0; j < movies.length; j++) {
-						mService.getDetailsData(this, i, j, movies[j].Content);
-					}
-				}
-
+		
+				mRequestPageIndex = 0;
+				requestPageData(mRequestPageIndex);
 			}
 		}
 	}
+	
+	int mRequestPageIndex = -1;
+	int mRequestCount = 0;
+	void requestPageData(int pageNumber) {
+		Movie[] movies = mPageDatas.get(pageNumber);
+		mRequestCount = movies.length;
+		for (int j = 0; j < movies.length; j++) {
+			mService.getDetailsData(this, pageNumber, j, movies[j].Content);
+		}
+	}
+	
+	public void updateData(int type, int param1, int param2, Object data) {
 
-	private void updateViews(Movie[] movies) {
-		mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
-		mScrollBar.setRange(mPageCount);
-		mScrollBar.setPosition(mPageNumber);
+		if (type == GDDataProviderService.REQUESTTYPE_GETDETAILSDATA) {
+			int pageNumber = param1;
+			int index = param2;
+			Log.d(TAG, "updateData page number = " + pageNumber + " index = "
+					+ index);
 
-		mAdapter.setDataSet(movies);
-		mSmallThumbnailView.setSelection(0);
-		mAdapter.notifyDataSetChanged();
+			mService.getImage(this, pageNumber, index, (ContentData) data);
+			
+			mRequestCount--;
+			if (mRequestCount == 0) {
+				mRequestPageIndex++;
+				if (mRequestPageIndex < mPageCount) {
+					requestPageData(mRequestPageIndex);
+				}
+			}
 
-		// mScrollBar.setPosition(mPageNumber);
+		} else if (type == GDDataProviderService.REQUESTTYPE_GETIMAGE) {
+			int pageNumber = param1;
+			int index = param2;
+			Log.d(TAG, "updateData page number = " + pageNumber + " index = "
+					+ index);
+
+			Movie[] movies = mPageDatas.get(pageNumber);
+			movies[index].Thumbnail = (Bitmap) data;
+
+			if (pageNumber == mPageNumber)
+				mAdapter.notifyDataSetChanged();
+		}
 	}
 
 	@Override
 	public void notifyEvent(int type, Object event) {
-		// super.updatePage();
-
-		// if (mService != null && mBound) {
-		// mService.getPublications(this, mColumnId);
-		// }
 
 		if (type == EventData.EVENT_DELETE) {
 			EventData.DeleteEvent deleteEvent = (EventData.DeleteEvent) event;
@@ -292,29 +312,15 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			mPageDatas.set(pageNumber, newMovies);
 		}
 	}
+	
+	private void updateViews(Movie[] movies) {
+		mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+		mScrollBar.setRange(mPageCount);
+		mScrollBar.setPosition(mPageNumber);
 
-	public void updateData(int type, int param1, int param2, Object data) {
-
-		if (type == GDDataProviderService.REQUESTTYPE_GETDETAILSDATA) {
-			int pageNumber = param1;
-			int index = param2;
-			Log.d(TAG, "updateData page number = " + pageNumber + " index = "
-					+ index);
-
-			mService.getImage(this, pageNumber, index, (ContentData) data);
-
-		} else if (type == GDDataProviderService.REQUESTTYPE_GETIMAGE) {
-			int pageNumber = param1;
-			int index = param2;
-			Log.d(TAG, "updateData page number = " + pageNumber + " index = "
-					+ index);
-
-			Movie[] movies = mPageDatas.get(pageNumber);
-			movies[index].Thumbnail = (Bitmap) data;
-
-			if (pageNumber == mPageNumber)
-				mAdapter.notifyDataSetChanged();
-		}
+		mAdapter.setDataSet(movies);
+		mSmallThumbnailView.setSelection(0);
+		mAdapter.notifyDataSetChanged();
 	}
 
 	private class MovieAdapter extends BaseAdapter {

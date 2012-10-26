@@ -7,6 +7,7 @@ import java.util.List;
 import com.dbstar.R;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.app.media.GDPlayerUtil;
+import com.dbstar.model.ContentData;
 import com.dbstar.model.TV;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.widget.GDAdapterView;
@@ -109,7 +110,7 @@ public class GDTVActivity extends GDBaseActivity {
 	public void onServiceStart() {
 		super.onServiceStart();
 
-		mService.getTVData(this, mColumnId);
+		mService.getPublicationSets(this, mColumnId);
 	}
 
 	protected void initializeView() {
@@ -159,33 +160,37 @@ public class GDTVActivity extends GDBaseActivity {
 	public void updateData(int type, Object key, Object data) {
 		if (type == GDDataProviderService.REQUESTTYPE_GETPUBLICATIONSET) {
 
-			TV[] tvs = (TV[]) data;
+			ContentData[] contents = (ContentData[]) data;
 
-			if (tvs != null && tvs.length > 0) {
-
-				mTotalCount = tvs.length;
-				mPageCount = mTotalCount / PageSize;
+			if (contents != null && contents.length > 0) {
 
 				int index = 0;
+				mTotalCount = contents.length;
+				mPageCount = mTotalCount / PageSize;
+
 				for (int i = 0; i < mPageCount; i++) {
-					TV[] pTvs = new TV[PageSize];
+					TV[] tvs = new TV[PageSize];
 					for (int j = 0; j < PageSize; j++, index++) {
-						pTvs[j] = tvs[index];
+						TV tv = new TV();
+						tv.Content = contents[index];
+						tvs[j] = tv;
 					}
 
-					mPageDatas.add(i, pTvs);
+					mPageDatas.add(i, tvs);
 				}
 
 				int remain = mTotalCount % PageSize;
 
 				if (remain > 0) {
 					mPageCount += 1;
-					TV[] pTvs = new TV[remain];
+					TV[] tvs = new TV[remain];
 					for (int j = 0; j < remain; j++, index++) {
-						pTvs[j] = tvs[index];
+						TV tv = new TV();
+						tv.Content = contents[index];
+						tvs[j] = tv;
 					}
 
-					mPageDatas.add(pTvs);
+					mPageDatas.add(tvs);
 				}
 
 				// update views
@@ -196,20 +201,68 @@ public class GDTVActivity extends GDBaseActivity {
 				mAdapter.notifyDataSetChanged();
 				mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
 
-				// request thumbnails
-				for (int i = 0; i < mPageCount; i++) {
-					TV[] ptvs = mPageDatas.get(i);
-					for (int j = 0; j < ptvs.length; j++) {
-						mService.getImage(this, i, j, ptvs[j].Content);
-					}
-				}
+				// request pages data from the first page.
+				mRequestPageIndex = 0;
+				requestPageData(mRequestPageIndex);
 			}
+		}
+	}
+
+	int mRequestPageIndex = -1;
+	int mRequestCount = 0;
+
+	void requestPageData(int pageNumber) {
+		TV[] tvs = mPageDatas.get(pageNumber);
+		mRequestCount = tvs.length;
+		for (int j = 0; j < tvs.length; j++) {
+			mService.getImage(this, pageNumber, j, tvs[j].Content);
+			mService.getPublicationsOfSet(this, tvs[j].Content.Id, pageNumber,
+					j);
 		}
 	}
 
 	public void updateData(int type, int param1, int param2, Object data) {
 
-		if (type == GDDataProviderService.REQUESTTYPE_GETIMAGE) {
+		if (type == GDDataProviderService.REQUESTTYPE_GETPUBLICATIONS_OFSET) {
+			int pageNumber = param1;
+			int index = param2;
+
+			ContentData[] contents = (ContentData[]) data;
+			if (contents != null && contents.length > 0) {
+				TV.EpisodeItem[] items = new TV.EpisodeItem[contents.length];
+				for (int j = 0; j < contents.length; j++) {
+
+					TV.EpisodeItem item = new TV.EpisodeItem();
+					item.Content = contents[j];
+					item.Number = item.Content.IndexInSet;
+
+					items[j] = item;
+				}
+
+				TV[] tvs = mPageDatas.get(pageNumber);
+				TV tv = tvs[index];
+				tv.Episodes = items;
+				formEpisodesPages(tv);
+				if (pageNumber == mPageNumber) {
+					if (tv.EpisodesPageCount > 0) {
+						mEpisodesAdapter.setDataSet(tv.EpisodesPages
+								.get(tv.EpisodesPageNumber));
+						mEpisodesAdapter.notifyDataSetChanged();
+
+						updateEpisodesView(tv);
+					}
+				}
+			}
+
+			mRequestCount--;
+			if (mRequestCount == 0) {
+				mRequestPageIndex++;
+				if (mRequestPageIndex < mPageCount) {
+					requestPageData(mRequestPageIndex);
+				}
+			}
+
+		} else if (type == GDDataProviderService.REQUESTTYPE_GETIMAGE) {
 			int pageNumber = param1;
 			int index = param2;
 			Log.d(TAG, "updateData page number = " + pageNumber + " index = "
@@ -276,31 +329,14 @@ public class GDTVActivity extends GDBaseActivity {
 		mTVActors.setText(actors);
 
 		if (tv.EpisodesPages == null) {
-			tv.EpisodesPageCount = tv.Episodes.length / EpisodesPageSize;
-			tv.EpisodesPageNumber = 0;
-			tv.EpisodesPages = new ArrayList<TV.EpisodeItem[]>();
-
-			int index = 0;
-			for (int i = 0; i < tv.EpisodesPageCount; i++) {
-				TV.EpisodeItem[] items = new TV.EpisodeItem[EpisodesPageSize];
-				for (int j = 0; j < EpisodesPageSize; j++, index++) {
-					items[j] = tv.Episodes[index];
-				}
-				tv.EpisodesPages.add(items);
-			}
-
-			int lastPageItems = tv.Episodes.length % EPISODES_PAGE_ITEMS;
-			if (lastPageItems > 0) {
-				TV.EpisodeItem[] items = new TV.EpisodeItem[lastPageItems];
-				for (int j = 0; j < lastPageItems; j++, index++) {
-					items[j] = tv.Episodes[index];
-				}
-				tv.EpisodesPages.add(items);
-				tv.EpisodesPageCount += 1;
-			}
+			formEpisodesPages(tv);
 		}
 
-		if (tv.EpisodesPages.size() > 0) {
+		updateEpisodesView(tv);
+	}
+
+	void updateEpisodesView(TV tv) {
+		if (tv.EpisodesPages != null && tv.EpisodesPages.size() > 0) {
 			mEpisodesAdapter.setDataSet(tv.EpisodesPages
 					.get(tv.EpisodesPageNumber));
 
@@ -308,6 +344,34 @@ public class GDTVActivity extends GDBaseActivity {
 		}
 		mScrollBar.setRange(tv.EpisodesPageCount);
 		mScrollBar.setPosition(tv.EpisodesPageNumber);
+	}
+
+	void formEpisodesPages(TV tv) {
+		if (tv.Episodes == null || tv.Episodes.length == 0)
+			return;
+
+		tv.EpisodesPageCount = tv.Episodes.length / EpisodesPageSize;
+		tv.EpisodesPageNumber = 0;
+		tv.EpisodesPages = new ArrayList<TV.EpisodeItem[]>();
+
+		int index = 0;
+		for (int i = 0; i < tv.EpisodesPageCount; i++) {
+			TV.EpisodeItem[] items = new TV.EpisodeItem[EpisodesPageSize];
+			for (int j = 0; j < EpisodesPageSize; j++, index++) {
+				items[j] = tv.Episodes[index];
+			}
+			tv.EpisodesPages.add(items);
+		}
+
+		int lastPageItems = tv.Episodes.length % EPISODES_PAGE_ITEMS;
+		if (lastPageItems > 0) {
+			TV.EpisodeItem[] items = new TV.EpisodeItem[lastPageItems];
+			for (int j = 0; j < lastPageItems; j++, index++) {
+				items[j] = tv.Episodes[index];
+			}
+			tv.EpisodesPages.add(items);
+			tv.EpisodesPageCount += 1;
+		}
 	}
 
 	void playTV() {
@@ -319,8 +383,9 @@ public class GDTVActivity extends GDBaseActivity {
 
 		String file = mService.getMediaFile(item.Content);
 		String drmFile = mService.getDRMFile(item.Content);
-		
-		GDPlayerUtil.playVideo(this, mTV.Content.Id, item.Content, file, drmFile);
+
+		GDPlayerUtil.playVideo(this, mTV.Content.Id, item.Content, file,
+				drmFile);
 	}
 
 	private String formEpisodesText(int num) {
