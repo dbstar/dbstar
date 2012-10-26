@@ -241,6 +241,9 @@ on boot
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     chmod 0770 /data/misc/dhcp
 
+# create dbstar dir
+    mkdir /data/dbstar 0777 system system
+
 # basic network init
     ifup lo
     hostname localhost
@@ -318,7 +321,6 @@ on boot
     chmod 0666 /sys/class/tsync/mode
     chmod 0666 /sys/class/tsync/enable
     chmod 0666 /sys/class/graphics/fb0/blank
-    chmod 0666 /sys/class/graphics/fb0/block_mode
     chmod 0666 /sys/class/graphics/fb0/order
     chmod 0666 /sys/class/graphics/fb1/blank
     chmod 0666 /sys/class/graphics/fb1/order
@@ -833,25 +835,12 @@ service remote_control /system/bin/remote_control
     socket remote_control_sensor stream 666 root system
     socket remote_control_service stream 666 root system
 
-# dvbpush
-service dvbpush /system/bin/logwrapper /system/bin/dvbpush
-    class main
-    group system system
-    disabled
-    oneshot
-
 # smarthome
 service smarthome /system/bin/logwrapper /system/bin/smarthome
     class main
     group system system
     disabled
     oneshot
-
-on property:dbstar.dvbpush.started=1
-	start dvbpush
-
-on property:dbstar.dvbpush.started=0
-	stop dvbpush
 
 on property:dbstar.smarthome.started=1
 	start smarthome
@@ -860,7 +849,7 @@ on property:dbstar.smarthome.started=0
 	stop smarthome
 
 # dbstart
-service dbstar /system/bin/logwrapper /system/bin/dbstar_control.sh start
+service dbstar /system/bin/logwrapper /system/bin/dbstar_control.sh init
     class main
     group system system
     oneshot
