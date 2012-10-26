@@ -265,7 +265,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			break;
 		}
 		
-		 case 82: // just for test on emulator
+//		 case 82: // just for test on emulator
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER: {
 			onItemSelected();
