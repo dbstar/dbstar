@@ -261,6 +261,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 //		case 82: // just for test on emulator
+		case KeyEvent.KEYCODE_DPAD_UP: {
+			showPopupMenu();
+			break;
+		}
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER: {
 			onItemSelected();
@@ -282,6 +286,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			return mMainMenu.onKeyUp(keyCode, event);
 		}
 //		case 82: // just for test on emulator
+		case KeyEvent.KEYCODE_DPAD_UP:
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER:
 		case KeyEvent.KEYCODE_BACK: {
