@@ -47,8 +47,6 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 	persist.sys.usb.config=mass_storage
 
 PRODUCT_PACKAGES += \
-	DbstarLauncher \
-	DbstarDVB \
 	FileBrowser \
 	AppInstaller \
 	VideoPlayer \
@@ -131,6 +129,7 @@ PRODUCT_PACKAGES += \
 	libjnidvbplayer \
 	libjnidvr \
 	libjnifrontend \
+	libjnidvbfrontendctrl \
 	libjnidmx \
 	libjnidsc \
 	libjnifilter \
@@ -141,6 +140,7 @@ PRODUCT_PACKAGES += \
 	libjnidvbepgscanner \
 	libjnidvbrecorder \
 	libjnidvbclientsubtitle \
+	libzvbi \
 	bookplay_package \
 	dvbepg \
 	DVBPlayer \
@@ -149,7 +149,6 @@ PRODUCT_PACKAGES += \
 	progmanager
 endif
 PRODUCT_PACKAGES += Phone
-PRODUCT_PACKAGES += dbstar
 # USE_OPENGL_RENDERER := false
 PRODUCT_COPY_FILES += \
        $(LOCAL_PATH)/init.factorytest.rc:init.factorytest.rc \
@@ -159,12 +158,6 @@ PRODUCT_COPY_FILES += \
        $(LOCAL_PATH)/initlogo-robot-720x576.rle:root/initlogo.576p.rle \
        $(LOCAL_PATH)/set_display_mode.sh:system/bin/set_display_mode.sh \
        $(LOCAL_PATH)/reset_display_mode.sh:system/bin/reset_display_mode.sh \
-       $(LOCAL_PATH)/dbstar_control.sh:system/bin/dbstar_control.sh \
-       $(LOCAL_PATH)/dbstar.conf:data/dbstar/dbstar.conf \
-       $(LOCAL_PATH)/push.conf:data/dbstar/push.conf \
-       $(LOCAL_PATH)/audiodsp_codec_ac3.bin:system/etc/firmware/audiodsp_codec_ac3.bin\
-       $(LOCAL_PATH)/audiodsp_codec_ddp_dcv.bin:system/etc/firmware/audiodsp_codec_ddp_dcv.bin\
-       $(LOCAL_PATH)/bootanimation.zip:system/media/bootanimation.zip \
        $(LOCAL_PATH)/media_profiles.xml:system/etc/media_profiles.xml \
        $(LOCAL_PATH)/asound.conf:system/etc/asound.conf \
        $(LOCAL_PATH)/asound.state:system/etc/asound.state \
@@ -200,3 +193,9 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/liboptimization.so:system/lib/liboptimization.so \
 	$(LOCAL_PATH)/config:system/etc/config
 		
+
+#dbstar
+PRODUCT_PACKAGES += \
+	dbstar \
+	DbstarLauncher \
+	DbstarDVB
