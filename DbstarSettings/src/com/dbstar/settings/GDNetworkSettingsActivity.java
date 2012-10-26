@@ -5,10 +5,8 @@ import java.util.List;
 import com.dbstar.settings.R;
 import com.dbstar.settings.util.Utils;
 
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.preference.PreferenceActivity.Header;
 
 public class GDNetworkSettingsActivity extends GDSettingsActivity {
 	public void onCreate(Bundle savedInstanceState) {

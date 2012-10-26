@@ -104,8 +104,8 @@
     <string name="wifi_settings_category" msgid="2810363951104753710">"Wi-Fi 设置"</string>
     <string name="wifi_settings_title" msgid="4351120897298124250">"Wi-Fi"</string>
     <string name="wifi_settings_summary" msgid="668767638556052820">"设置和管理无线接入点"</string>
-    <string name="wifi_starting" msgid="6716593470710880000">"正在打开 Wi-Fi..."</string>
-    <string name="wifi_stopping" msgid="244864762599017659">"正在关闭 Wi-Fi..."</string>
+    <string name="wifi_starting" msgid="6716593470710880000">"正在打开 Wi-Fi&#8230;"</string>
+    <string name="wifi_stopping" msgid="244864762599017659">"正在关闭 Wi-Fi&#8230;"</string>
     <string name="wifi_error" msgid="3207971103917128179">"出错"</string>
     <string name="wifi_in_airplane_mode" msgid="8652520421778203796">"正处于飞行模式下"</string>
     <string name="wifi_fail_to_scan" msgid="1265540342578081461">"扫描不到网络"</string>
@@ -200,7 +200,7 @@
     <string name="wifi_tether_configure_ssid_default" msgid="8467525402622138547">"Android 热点"</string>
     <string name="wifi_setup_title" msgid="661074868726906436">"Wi-Fi 设置"</string>
     <string name="wifi_setup_title_editing_network" msgid="7304321031985059969">"连接到 Wi-Fi 网络<xliff:g id="NETWORK_NAME">%s</xliff:g>"</string>
-    <string name="wifi_setup_title_connecting_network" msgid="3747859666621319757">"正在连接到 Wi-Fi 网络“<xliff:g id="NETWORK_NAME">%s</xliff:g>”..."</string>
+    <string name="wifi_setup_title_connecting_network" msgid="3747859666621319757">"正在连接到 Wi-Fi 网络“<xliff:g id="NETWORK_NAME">%s</xliff:g>”&#8230;"</string>
     <string name="wifi_setup_title_connected_network" msgid="209755856836003839">"已连接到 Wi-Fi 网络<xliff:g id="NETWORK_NAME">%s</xliff:g>"</string>
     <string name="wifi_setup_title_add_network" msgid="6932651000151032301">"添加网络"</string>
     <string name="wifi_setup_not_connected" msgid="6997432604664057052">"未连接"</string>
@@ -214,17 +214,17 @@
     <string name="wifi_setup_forget" msgid="2562847595567347526">"不保存"</string>
     <string name="wifi_setup_save" msgid="3659235094218508211">"保存"</string>
     <string name="wifi_setup_cancel" msgid="3185216020264410239">"取消"</string>
-    <string name="wifi_setup_status_scanning" msgid="5317003416385428036">"正在扫描查找网络..."</string>
+    <string name="wifi_setup_status_scanning" msgid="5317003416385428036">"正在扫描查找网络&#8230;"</string>
     <string name="wifi_setup_status_select_network" msgid="7519563569903137003">"触摸某个网络即可与其连接"</string>
     <string name="wifi_setup_status_existing_network" msgid="6394925174802598186">"连接到现有网络"</string>
     <string name="wifi_setup_status_unsecured_network" msgid="8143046977328718252">"连接到不受保护的网络"</string>
     <string name="wifi_setup_status_edit_network" msgid="4765340816724760717">"键入网络配置"</string>
     <string name="wifi_setup_status_new_network" msgid="7468952850452301083">"连接到新的网络"</string>
-    <string name="wifi_setup_status_connecting" msgid="4971421484401530740">"正在连接..."</string>
+    <string name="wifi_setup_status_connecting" msgid="4971421484401530740">"正在连接&#8230;"</string>
     <string name="wifi_setup_status_proceed_to_next" msgid="6708250000342940031">"转至下一步"</string>
     <string name="wifi_setup_status_eap_not_supported" msgid="5335338851032315905">"不支持 EAP。"</string>
     <string name="wifi_setup_eap_not_supported" msgid="595556546597351489">"您无法在设置过程中配置 EAP Wi-Fi 连接。设置完毕后，您可以在“设置”&gt;“无线和网络”中进行配置。"</string>
-    <string name="wifi_setup_description_connecting" msgid="2793554932006756795">"建立连接可能需要几分钟时间..."</string>
+    <string name="wifi_setup_description_connecting" msgid="2793554932006756795">"建立连接可能需要几分钟时间&#8230;"</string>
     <string name="wifi_setup_description_connected" msgid="5235991893829582459">"触摸"<b>"下一步"</b>"可继续进行设置。"\n\n"触摸"<b>"返回"</b>"可连接到其他 Wi-Fi 网络。"</string>
 
     <!-- Ethernet configuration dialog -->
@@ -313,114 +313,106 @@
     <string name="radioInfo_unknown" msgid="737385314432468266">"未知"</string>
     <string name="oem_radio_info_label" msgid="6163141792477958941">"特定 OEM 的信息/设置"</string>
     <string name="band_mode_title" msgid="954174198903776205">"设置 GSM/UMTS 波段"</string>
-    <string name="band_mode_loading" msgid="548764766363847336">"正在载入波段列表..."</string>
+    <string name="band_mode_loading" msgid="548764766363847336">"正在载入波段列表&#8230;"</string>
     <string name="band_mode_set" msgid="5730560180249458484">"设置"</string>
     <string name="band_mode_failed" msgid="1495968863884716379">"失败"</string>
     <string name="band_mode_succeeded" msgid="2701016190055887575">"成功"</string>
 
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Wi-Fi Testing on the diagnostic screen
+         Wi-Fi Testing on the diagnostic screen
     -->
     <string name="testing_wifi_info" translatable="false">Wi-Fi information</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Menu item for WifiManager disableNetwork API
-    -->
+         Menu item for WifiManager disableNetwork API    -->
     <string name="disableNetwork" translatable="false">disableNetwork</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Menu item for WifiManager enableNetwork API
-    -->
+         Menu item for WifiManager enableNetwork API    -->
     <string name="enableNetwork" translatable="false">enableNetwork</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Menu item for WifiManager disconnect API
+         Menu item for WifiManager disconnect API
     -->
     <string name="disconnect" translatable="false">disconnect</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Menu item for WifiManager getConfiguredNetworks API
+         Menu item for WifiManager getConfiguredNetworks API
     -->
     <string name="getConfiguredNetworks" translatable="false">getConfiguredNetworks</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Menu item for WifiManager getConnectionInfo API
+         Menu item for WifiManager getConnectionInfo API
     -->
     <string name="getConnectionInfo" translatable="false">getConnectionInfo</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Menu item on Wifi information screen
+         Menu item on Wifi information screen
     -->
     <string name="wifi_api_test" translatable="false">Wi-Fi API</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Menu item on Wifi information screen
+         Menu item on Wifi information screen
     -->
     <string name="wifi_status_test" translatable="false">Wi-Fi status</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Button text on Wifi Status screen
+         Button text on Wifi Status screen
     -->
     <string name="wifi_update" translatable="false">Refresh stats</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
+         Label on Wifi Status screen
     -->
     <string name="wifi_state_label" translatable="false">Wi-Fi state:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
+         Label on Wifi Status screen
     -->
     <string name="network_state_label" translatable="false">Network state:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-        Label on Wifi Status screen
-    -->
+        Label on Wifi Status screen    -->
     <string name="supplicant_state_label" translatable="false">Supplicant state:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
-    -->
+         Label on Wifi Status screen    -->
     <string name="rssi_label" translatable="false">RSSI:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
-    -->
+         Label on Wifi Status screen    -->
     <string name="bssid_label" translatable="false">BSSID:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
-    -->
+         Label on Wifi Status screen    -->
     <string name="ssid_label" translatable="false">SSID:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
-    -->
+         Label on Wifi Status screen    -->
     <string name="hidden_ssid_label" translatable="false">Hidden SSID:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
-    -->
+         Label on Wifi Status screen    -->
     <string name="ipaddr_label" translatable="false">IPaddr:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
+         Label on Wifi Status screen
     -->
     <string name="macaddr_label" translatable="false">MAC addr:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
+         Label on Wifi Status screen
     -->
     <string name="networkid_label" translatable="false">Network ID:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
+         Label on Wifi Status screen
     -->
     <string name="link_speed_label" translatable="false">Link speed:</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Status screen
+         Label on Wifi Status screen
     -->
     <string name="scan_list_label" translatable="false">Scan results:</string>
 
@@ -438,12 +430,12 @@
 
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Menu item on Wifi information screen
+         Menu item on Wifi information screen
     -->
     <string name="wifi_config_info" translatable="false">Wi-Fi config</string>
     <!--
          Do not translate. Used for diagnostic screens, precise translation is not necessary
-         Label on Wifi Configuration screen
+         Label on Wifi Configuration screen
     -->
     <string name="config_list_label" translatable="false">Configured networks</string>
     <string name="yes" msgid="4676390750360727396">"是"</string>
@@ -552,10 +544,28 @@
     <string name="vpn_menu_delete" msgid="3326527392609513129">"删除网络"</string>
     <string name="bluetooth_no_devices_found" msgid="1085232930277181436">"未在附近找到蓝牙设备。"</string>
     <string name="status_unavailable" msgid="7862009036663793314">"不可用"</string>
-
-	<string name="credentials_password_too_short" msgid="7502749986405522663">"密码至少应包含 8 个字符。"</string>
+    <string name="credentials_password_too_short" msgid="7502749986405522663">"密码至少应包含 8 个字符。"</string>
 
     <!-- Digit audio output settings screen, setting option name to change outputmode -->
     <string name="digit_audio_output_title">数字音频输出</string>
+    <string name="tv_default_frequency_summary">60Hz</string>
 
+    <string name="display_position">重显率</string>
+    <string name="display_position_summary">设置您的电视重显率</string>
+    <string name="cvbs_output_mode">双输出模式</string>
+    <string name="cvbs_output_mode_summary">设置您的双输出模式</string>
+    <string name="position_help">帮助： \n1.按确认键切换放大/缩小； \n2.按方向键调整屏幕四个边的位置； \n3.按返回键保存并退出； \n4.调整结果将在重启后生效； \n5.按菜单键设置默认重显率。</string>
+    <string name="position_help_noreboot">帮助： \n1.按确认键切换放大/缩小； \n2.按方向键调整屏幕四个边的位置； \n3.按返回键保存； \n4.按菜单键设置默认重显率。</string>
+    <string name="display_position_dialog_title">&quot;注意&quot;</string>
+    <string name="display_position_set_confirm_dialog">&quot;重显率已设置。确认保存并重启？&quot;</string>
+    <string name="display_position_set_confirm_dialog_noreboot">&quot;重显率已设置。确认保存？&quot;</string>
+    <string name="display_position_dialog_no">&quot;否&quot;</string>
+    <string name="display_position_set_default_confirm_dialog">&quot;重显率已设置成默认值。确认保存并重启？&quot;</string>
+    <string name="display_position_set_default_confirm_dialog_noreboot">&quot;重显率已设置成默认值。确认保存？&quot;</string>
+    <string name="tv_output_mode" >&quot;输出模式&quot;</string>
+    <string name="tv_output_mode_summary" >&quot;设置您的电视输出模式。&quot;</string>
+    <string name="tv_output_mode_dialog_title" >"注意"</string>
+    <string name="tv_output_mode_dialog_notes" >"显示模式已设置。你确认保存？如果你不操作,这将在15秒内恢复。"</string>
+    <string name="tv_default_frequency">默认高清制式刷新频率</string>
+    
 </resources>

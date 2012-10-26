@@ -33,17 +33,16 @@ public class Utils {
 
 	// Audio
 	public static boolean platformHasDigitAudio() {
-		 return SystemProperties.getBoolean("ro.platform.has.digitaudio",
-		 false);
+		return SystemProperties.getBoolean("ro.platform.has.digitaudio", false);
 	}
 
 	// Video
 	public static boolean hasCVBSMode() {
-		 return SystemProperties.getBoolean("ro.amlogic.has.CvbsOutput", false);
+		return SystemProperties.getBoolean("ro.amlogic.has.CvbsOutput", false);
 	}
 
 	public static boolean hwHasEthernet() {
-		 return SystemProperties.getBoolean("hw.hasethernet", false);
+		return SystemProperties.getBoolean("hw.hasethernet", false);
 	}
 
 	public static boolean platformHasSecurity() {
@@ -64,6 +63,11 @@ public class Utils {
 
 	public static int platformHas1080Scale() {
 		return SystemProperties.getInt("ro.platform.has.1080scale", 0);
+	}
+
+	public static boolean platformHasDefaultTVFreq() {
+		return SystemProperties.getBoolean("ro.platform.has.defaulttvfreq",
+				false);
 	}
 
 	// TODO
@@ -220,10 +224,10 @@ public class Utils {
 	}
 
 	public static boolean isInECMMode() {
-//		boolean in = Boolean.parseBoolean(
-//                SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE));
-//		return in;
-		
+		// boolean in = Boolean.parseBoolean(
+		// SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE));
+		// return in;
+
 		return false;
 	}
 
@@ -239,32 +243,33 @@ public class Utils {
 		public static final int DISABLED_UNKNOWN_REASON = WifiConfiguration.DISABLED_UNKNOWN_REASON;
 
 		public static final int INVALID_NETWORK_ID = WifiConfiguration.INVALID_NETWORK_ID;
-		
-//		public static final int AP_STATEA_ENABLING = 0;
-//		public static final int AP_STATEA_ENABLED = 1;
-//		public static final int AP_STATEA_DISABLING = 2;
-//		public static final int AP_STATEA_DISABLED = 3;
-//
-//		public static final int DISABLED_AUTH_FAILURE = 0;
-//		public static final int DISABLED_DHCP_FAILURE = 1;
-//		public static final int DISABLED_DNS_FAILURE = 2;
-//		public static final int DISABLED_UNKNOWN_REASON = 3;
-//
-//		public static final int INVALID_NETWORK_ID = -1;
+
+		// public static final int AP_STATEA_ENABLING = 0;
+		// public static final int AP_STATEA_ENABLED = 1;
+		// public static final int AP_STATEA_DISABLING = 2;
+		// public static final int AP_STATEA_DISABLED = 3;
+		//
+		// public static final int DISABLED_AUTH_FAILURE = 0;
+		// public static final int DISABLED_DHCP_FAILURE = 1;
+		// public static final int DISABLED_DNS_FAILURE = 2;
+		// public static final int DISABLED_UNKNOWN_REASON = 3;
+		//
+		// public static final int INVALID_NETWORK_ID = -1;
 
 		public static int getDisabledReason(WifiConfiguration configure) {
 			return configure.disableReason;
 		}
-		
+
 		public static boolean isDualBandSupported(WifiManager mgr) {
 			return mgr.isDualBandSupported();
 		}
-		
+
 		public static int getFrequencyBand(WifiManager mgr) {
 			return mgr.getFrequencyBand();
 		}
-		
-		public static void setFrequencyBand(WifiManager mgr, int value, boolean ret) {
+
+		public static void setFrequencyBand(WifiManager mgr, int value,
+				boolean ret) {
 			mgr.setFrequencyBand(value, ret);
 		}
 	}
