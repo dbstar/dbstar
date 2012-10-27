@@ -121,6 +121,7 @@ public class GDDataProviderService extends Service {
 	private final IBinder mBinder = new DataProviderBinder();
 	SystemEventHandler mHandler = null;
 
+	boolean mIsSmartHomeServiceStarted = false;
 	boolean mIsDbServiceStarted = false;
 	boolean mIsStorageReady = false;
 	boolean mIsNetworkReady = false;
@@ -209,9 +210,10 @@ public class GDDataProviderService extends Service {
 			mThreadPool.add(thread);
 		}
 
-		mDBStarClient.start();
+		// read configure
 		mConfigure.readConfigure();
 
+		// check storage
 		if (mConfigure.configureStorage()) {
 			String disk = mConfigure.getStorageDisk();
 			Log.d(TAG, "monitor disk " + disk);
@@ -224,19 +226,27 @@ public class GDDataProviderService extends Service {
 			}
 		}
 
+		// check network
+		mIsNetworkReady = isNetworkConnected();
+		Log.d(TAG, "network is connected " + mIsNetworkReady);
+
+		// start Dbstar service
+		mIsDbServiceStarted = false;
+		mDBStarClient.start();
+
+		// start smart home service
+		mIsSmartHomeServiceStarted = false;
+		if (mIsStorageReady && mIsNetworkReady) {
+			startDbStarService();
+		}
+
+		// initialize engine
 		initializeDataEngine();
 		initializeNetEngine();
 		registerUSBReceiver();
 		reqisterConnectReceiver();
 		reqisterSystemMessageReceiver();
 
-		mIsNetworkReady = isNetworkConnected();
-		Log.d(TAG, "network is connected " + mIsNetworkReady);
-
-		mIsDbServiceStarted = false;
-		if (mIsStorageReady && mIsNetworkReady) {
-			startDbStarService();
-		}
 	}
 
 	void initializeDataEngine() {
@@ -284,10 +294,13 @@ public class GDDataProviderService extends Service {
 	}
 
 	private void startDbStarService() {
-		if (mIsDbServiceStarted)
-			return;
 		Log.d(TAG, "++++++++++++++++++startDbStarService++++++++++++++++++++");
 
+		if (mIsSmartHomeServiceStarted)
+			return;
+		
+		mIsSmartHomeServiceStarted = true;
+		
 		SharedPreferences settings = null;
 		SharedPreferences.Editor editor = null;
 
@@ -295,17 +308,15 @@ public class GDDataProviderService extends Service {
 		editor = settings.edit();
 		editor.putInt(SmartHomePrepertyName, 1);
 		editor.commit();
-
-		mDBStarClient.startDvbpush();
-
-		mIsDbServiceStarted = true;
 	}
 
 	private void stopDbStarService() {
-		Log.d(TAG, "stopDbStarService");
-
-		if (!mIsDbServiceStarted)
+		if (!mIsSmartHomeServiceStarted)
 			return;
+		
+		mIsSmartHomeServiceStarted = false;
+		
+		Log.d(TAG, "stopDbStarService");
 
 		SharedPreferences settings = null;
 		SharedPreferences.Editor editor = null;
@@ -314,10 +325,6 @@ public class GDDataProviderService extends Service {
 		editor = settings.edit();
 		editor.putInt(SmartHomePrepertyName, 0);
 		editor.commit();
-
-		mDBStarClient.stopDvbpush();
-
-		mIsDbServiceStarted = false;
 	}
 
 	class SystemEventHandler extends Handler {
@@ -355,9 +362,11 @@ public class GDDataProviderService extends Service {
 					mDiskMonitor.removeDiskFromMonitor(disk);
 					mDiskMonitor.addDiskToMonitor(disk);
 
-					if (mIsStorageReady && mIsNetworkReady) {
+					if (mIsNetworkReady) {
 						startDbStarService();
 					}
+
+					notifyDbstarServiceStorageStatus();
 
 					// restart application
 					mApplicationObserver.initializeApp();
@@ -374,6 +383,9 @@ public class GDDataProviderService extends Service {
 				String storage = mConfigure.getStorageDisk();
 				if (disk.equals(storage)) {
 					mIsStorageReady = false;
+
+					notifyDbstarServiceStorageStatus();
+
 					deinitializeDataEngine();
 					mApplicationObserver.deinitializeApp();
 				}
@@ -384,15 +396,19 @@ public class GDDataProviderService extends Service {
 				getMacAddress();
 				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
 				mIsNetworkReady = true;
-				if (mIsStorageReady && mIsNetworkReady) {
+				if (mIsStorageReady) {
 					startDbStarService();
 				}
+
+				notifyDbstarServiceNetworkStatus();
 
 				break;
 			case GDCommon.MSG_NETWORK_DISCONNECT:
 				Log.d(TAG, "++++++++++++ network disconnected +++++++++++");
 				mIsNetworkReady = false;
+				notifyDbstarServiceNetworkStatus();
 				stopDbStarService();
+
 				break;
 
 			case GDCommon.MSG_DISK_SPACEWARNING: {
@@ -478,20 +494,6 @@ public class GDDataProviderService extends Service {
 			}
 			break;
 		}
-
-		// case REQUESTTYPE_GETCONTENTSCOUNT: {
-		// if (task.Observer != null) {
-		// task.Observer.updateData(task.Type, null, task.Data);
-		// }
-		// break;
-		// }
-		// case REQUESTTYPE_GETCONTENTS: {
-		// if (task.Observer != null) {
-		// task.Observer.updateData(task.Type, task.PageNumber,
-		// task.PageSize, task.Data);
-		// }
-		// break;
-		// }
 
 		case REQUESTTYPE_GETPUBLICATIONS_OFSET:
 		case REQUESTTYPE_GETDETAILSDATA:
@@ -754,8 +756,8 @@ public class GDDataProviderService extends Service {
 
 							mDataModel.getDetailsData(xmlFile, contents[i]);
 
-//							Log.d(TAG, "xmlFile " + xmlFile);
-//							Log.d(TAG, "content " + contents[i].MainFile);
+							// Log.d(TAG, "xmlFile " + xmlFile);
+							// Log.d(TAG, "content " + contents[i].MainFile);
 						}
 					}
 
@@ -1385,51 +1387,61 @@ public class GDDataProviderService extends Service {
 
 			if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
 
-				if (mApplicationObserver != null) {
-					int type = intent.getIntExtra("type", 0);
-					Log.d(TAG, "onReceive type " + type);
+				int type = intent.getIntExtra("type", 0);
+				Log.d(TAG, "onReceive type " + type);
 
-					switch (type) {
-					case DbstarServiceApi.UPGRADE_NEW_VER_FORCE:
-					case DbstarServiceApi.UPGRADE_NEW_VER: {
-						byte[] bytes = intent.getByteArrayExtra("message");
-						if (bytes != null) {
-							String packageFile = "";
+				switch (type) {
+				case DbstarServiceApi.UPGRADE_NEW_VER_FORCE:
+				case DbstarServiceApi.UPGRADE_NEW_VER: {
+					byte[] bytes = intent.getByteArrayExtra("message");
+					if (bytes != null) {
+						String packageFile = "";
 
-							try {
-								packageFile = new String(bytes, "utf-8");
-							} catch (UnsupportedEncodingException e) {
-								e.printStackTrace();
-							}
-
-							Log.d(TAG, "onReceive packageFile " + packageFile);
-							// mApplicationObserver.handleNotifiy(
-							// GDCommon.MSG_SYSTEM_UPGRADE, packageFile);
-
-							Bundle data = new Bundle();
-							data.putString(GDCommon.KeyPackgeFile, packageFile);
-
-							int msgId = 0;
-							if (type == DbstarServiceApi.UPGRADE_NEW_VER) {
-								msgId = GDCommon.MSG_SYSTEM_UPGRADE;
-							} else if (type == DbstarServiceApi.UPGRADE_NEW_VER_FORCE) {
-								msgId = GDCommon.MSG_SYSTEM_FORCE_UPGRADE;
-							} else {
-								;
-							}
-
-							Message msg = mHandler.obtainMessage(msgId);
-							msg.setData(data);
-							mHandler.sendMessage(msg);
-
+						try {
+							packageFile = new String(bytes, "utf-8");
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
 						}
-						break;
+
+						Log.d(TAG, "onReceive packageFile " + packageFile);
+
+						Bundle data = new Bundle();
+						data.putString(GDCommon.KeyPackgeFile, packageFile);
+
+						int msgId = 0;
+						if (type == DbstarServiceApi.UPGRADE_NEW_VER) {
+							msgId = GDCommon.MSG_SYSTEM_UPGRADE;
+						} else if (type == DbstarServiceApi.UPGRADE_NEW_VER_FORCE) {
+							msgId = GDCommon.MSG_SYSTEM_FORCE_UPGRADE;
+						} else {
+							;
+						}
+
+						Message msg = mHandler.obtainMessage(msgId);
+						msg.setData(data);
+						mHandler.sendMessage(msg);
 
 					}
-					default:
-						break;
-					}
+					break;
+
 				}
+
+				case DbstarServiceApi.STATUS_DVBPUSH_INIT_SUCCESS: {
+					mIsDbServiceStarted = true;
+					notifyDbstarServiceNetworkStatus();
+					notifyDbstarServiceStorageStatus();
+					break;
+				}
+
+				case DbstarServiceApi.STATUS_DVBPUSH_INIT_FAILED: {
+					mIsDbServiceStarted = false;
+					break;
+				}
+
+				default:
+					break;
+				}
+
 			} else if (action
 					.equals("com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE")) {
 				String publicationSetId = intent
@@ -1459,5 +1471,28 @@ public class GDDataProviderService extends Service {
 		}
 
 	};
+
+	void notifyDbstarServiceNetworkStatus() {
+		if (!mIsDbServiceStarted)
+			return;
+
+		if (isNetworkConnected()) {
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_NETWORK_CONNECT);
+		} else {
+			mDBStarClient
+					.notifyDbServer(DbstarServiceApi.CMD_NETWORK_DISCONNECT);
+		}
+	}
+
+	void notifyDbstarServiceStorageStatus() {
+		if (!mIsDbServiceStarted)
+			return;
+
+		if (mIsStorageReady) {
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT);
+		} else {
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_UNMOUNT);
+		}
+	}
 
 }

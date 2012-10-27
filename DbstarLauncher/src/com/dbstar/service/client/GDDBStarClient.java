@@ -17,15 +17,8 @@ import com.dbstar.model.ReceiveEntry;
 public class GDDBStarClient {
 	private static final String TAG = "GDDBStarClient";
 
-	private static final int DBSTARSERVICE_NONE = -1;
-	private static final int DBSTARSERVICE_START = 0;
-	private static final int DBSTARSERVICE_STOP = 1;
-
 	Context mContext;
 	private Intent mIntent = new Intent();
-
-	private int mDbStarServiceState = DBSTARSERVICE_NONE;
-	private int mDbStarServiceTargetState = DBSTARSERVICE_NONE;
 
 	private IDbstarService mDbstarService = null;
 	private ComponentName mComponentName = new ComponentName(
@@ -38,13 +31,7 @@ public class GDDBStarClient {
 
 			mDbstarService = IDbstarService.Stub.asInterface(service);
 
-			if (mDbStarServiceTargetState == DBSTARSERVICE_START
-					&& mDbStarServiceState != DBSTARSERVICE_START) {
-				startDvbpush();
-			} else if (mDbStarServiceTargetState == DBSTARSERVICE_STOP
-					&& mDbStarServiceState != DBSTARSERVICE_STOP) {
-				stopDvbpush();
-			}
+			startDvbpush();
 		}
 
 		public void onServiceDisconnected(ComponentName className) {
@@ -75,15 +62,11 @@ public class GDDBStarClient {
 		if (mDbstarService != null) {
 			try {
 				mDbstarService.initDvbpush();
-				mDbStarServiceState = DBSTARSERVICE_START;
-
 				Log.d(TAG, "+++++++++++startDvbpush+++++++++++");
 
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-		} else {
-			mDbStarServiceTargetState = DBSTARSERVICE_START;
 		}
 	}
 
@@ -91,13 +74,10 @@ public class GDDBStarClient {
 		if (mDbstarService != null) {
 			try {
 				mDbstarService.uninitDvbpush();
-				mDbStarServiceState = DBSTARSERVICE_STOP;
 				Log.d(TAG, "+++++++++++ stopDvbpush +++++++++++");
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-		} else {
-			mDbStarServiceTargetState = DBSTARSERVICE_STOP;
 		}
 	}
 
@@ -115,6 +95,16 @@ public class GDDBStarClient {
 		}
 
 		return result;
+	}
+
+	public void notifyDbServer(int msg) {
+		if (mDbstarService != null) {
+			try {
+				mDbstarService.sendCommand(msg, null, 0);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public boolean stopTaskInfo() {
