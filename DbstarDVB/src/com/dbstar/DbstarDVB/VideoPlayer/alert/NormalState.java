@@ -118,7 +118,9 @@ public class NormalState extends ViewState {
 	}
 
 	protected void keyEvent(int KeyCode, KeyEvent event) {
-		resetTimer();
+		if (mDialog != null && mDialog.isShowing()) {
+			resetTimer();
+		}
 	}
 
 	public void initializeView(Dialog dlg) {
@@ -140,6 +142,8 @@ public class NormalState extends ViewState {
 		mReplayButton.setOnClickListener(mClickListener);
 		mAddFavouriteButton.setOnClickListener(mClickListener);
 		mDeleteButton.setOnClickListener(mClickListener);
+		
+		mCloseButton.requestFocus();
 	}
 
 	View.OnClickListener mClickListener = new View.OnClickListener() {

@@ -468,7 +468,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		if (mSelectedView != null) {
 			holder = (MainMenuAdapter.ItemHolder) mSelectedView.getTag();
 			// holder.icon.setImageBitmap(menuItem.MenuIconFocused());
-			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 			mSelectedView.invalidate();
 		}
 

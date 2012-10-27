@@ -106,7 +106,9 @@ public class FavouriteState extends ViewState {
 	}
 	
 	protected void keyEvent(int KeyCode, KeyEvent event) {
-		resetTimer();
+		if (mDialog != null && mDialog.isShowing()) {
+			resetTimer();
+		}
 	}
 
 	void initializeView(Dialog dlg) {
