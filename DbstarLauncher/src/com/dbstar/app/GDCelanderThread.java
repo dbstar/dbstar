@@ -25,7 +25,6 @@ public class GDCelanderThread extends Thread {
 	boolean mUpdate = false;
 	Object mExitLock = new Object();
 	boolean mExit = false;
-//	boolean mLunarDateIsSet = false;
 	String mTextNongLi;
 	Activity mParentActivity;
 	GDCalendarGB mLunar;
@@ -36,8 +35,6 @@ public class GDCelanderThread extends Thread {
 		mTimeView = timeView;
 		mDateView = dateView;
 		mWeekView = weekView;
-
-//		mLunarDateIsSet = false;
 		
 		mTextNongLi = mParentActivity.getResources().getString(R.string.celander_text_nongli);
 		mLunar = new GDCalendarGB(mParentActivity);
@@ -126,8 +123,7 @@ public class GDCelanderThread extends Thread {
 					int month = getMonthNumber(c.get(Calendar.MONTH));
 					int numDay = c.get(Calendar.DAY_OF_MONTH);
 					String numDate = year + "/" + month + "/" + numDay;
-					mDateView.setText(numDate);
-					
+
 					Locale locale = Locale.getDefault();
 					if (!locale.equals(Locale.CHINA)) {
 						locale = Locale.CHINA;
@@ -135,7 +131,7 @@ public class GDCelanderThread extends Thread {
 					String strWeek = c.getDisplayName(Calendar.DAY_OF_WEEK,
 							Calendar.LONG, locale);
 
-//					mWeekView.setText(strWeek);
+					mDateView.setText(numDate + "  " + strWeek);
 
 					// if (!mLunarDateIsSet || hours % 12 == 0)
 					{
@@ -146,11 +142,9 @@ public class GDCelanderThread extends Thread {
 						mLunar.setGregorian(year, month, numDay);
 						mLunar.computeChineseFields();
 						mLunar.computeSolarTerms();
-						
-//						String strDate = strWeek + " " + mTextNongLi + mLunar.getLunarDate();
-//						mDateView.setText(strDate);
-						strWeek = mTextNongLi + mLunar.getLunarDate() + " " + strWeek;
-						mWeekView.setText(strWeek);
+
+						String chineseDate = mTextNongLi + mLunar.getLunarDate();
+						mWeekView.setText(chineseDate);
 					}
 
 				} catch (Exception e) {

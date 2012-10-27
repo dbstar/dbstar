@@ -21,7 +21,6 @@ import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGuodianSettingsActivity;
 import com.dbstar.app.settings.GDHelpActivity;
 import com.dbstar.app.settings.GDUserInfoActivity;
-import com.dbstar.app.settings.GDVideoSettingsActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.GDApplicationObserver;

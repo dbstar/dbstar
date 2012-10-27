@@ -15,7 +15,7 @@
         android:ellipsize="end"
 		android:maxLines="1"
 		android:scrollHorizontally="true"
-        android:textColor="#ffffffff"
+        android:textColor="#ffffff"
         android:textSize="22sp"/>
     
     <ImageView android:id="@+id/item_icon"
