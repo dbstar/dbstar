@@ -228,6 +228,10 @@
     <string name="wifi_setup_description_connected" msgid="5235991893829582459">"触摸"<b>"下一步"</b>"可继续进行设置。"\n\n"触摸"<b>"返回"</b>"可连接到其他 Wi-Fi 网络。"</string>
 
     <!-- Ethernet configuration dialog -->
+    <string name="eth_switch_title_off">打开以太网</string>
+    <string name="eth_switch_title_on">关闭以太网</string>
+    <string name="eth_switch_summary_on">以太网已经打开</string>
+    <string name="eth_switch_summary_off">以太网已经关闭</string>
     <string name="eth_config_title">以太网设备设置</string>
     <string name="eth_setting">以太网</string>
     <string name="eth_dev_list">以太网设备</string>

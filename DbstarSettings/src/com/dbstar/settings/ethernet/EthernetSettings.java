@@ -20,11 +20,13 @@ package com.dbstar.settings.ethernet;
 
 import com.dbstar.settings.R;
 import com.dbstar.settings.SettingsPreferenceFragment;
+import com.dbstar.settings.common.SettingsCommon;
 import com.dbstar.settings.util.Utils;
 
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ethernet.EthernetManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -39,10 +41,12 @@ import android.util.Log;
 public class EthernetSettings extends SettingsPreferenceFragment {
 	private static final String LOG_TAG = "Ethernet";
 	private static final String KEY_CONF_ETH = "ETHERNET_config";
+	private static final String KEY_SWITCH_ETH = "ETHERNET_switch";
 
 	private EthernetEnabler mEthEnabler;
 	private EthernetConfigDialog mEthConfigDialog;
 	private Preference mEthConfigPref;
+	private CheckBoxPreference mEthSwitchPref;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,15 @@ public class EthernetSettings extends SettingsPreferenceFragment {
 
 		final PreferenceScreen preferenceScreen = getPreferenceScreen();
 		mEthConfigPref = preferenceScreen.findPreference(KEY_CONF_ETH);
+		mEthSwitchPref = (CheckBoxPreference) preferenceScreen
+				.findPreference(KEY_SWITCH_ETH);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+
+		initToggles();
 	}
 
 	@Override
@@ -63,87 +76,35 @@ public class EthernetSettings extends SettingsPreferenceFragment {
 	}
 
 	@Override
-	public void onStart() {
-		super.onStart();
-		initToggles();
-	}
-
-	@Override
 	public void onPause() {
 		super.onPause();
+
+		if (mEthEnabler != null) {
+			mEthEnabler.pause();
+		}
 	}
 
 	@Override
 	public void onStop() {
 		super.onStop();
-		if (Utils.platformHasMbxUiMode()) {
-			final Activity activity = getActivity();
-			activity.getActionBar().setDisplayOptions(0,
-					ActionBar.DISPLAY_SHOW_CUSTOM);
-			activity.getActionBar().setCustomView(null);
-		}
 	}
 
 	@Override
 	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
 			Preference preference) {
-		super.onPreferenceTreeClick(preferenceScreen, preference);
 
 		if (preference == mEthConfigPref) {
 			mEthConfigDialog.show();
 		}
-		return false;
+
+		return super.onPreferenceTreeClick(preferenceScreen, preference);
 	}
 
 	private void initToggles() {
-		// For MultiPane preference, the switch is on the left column header.
-		// Other layouts unsupported for now.
-
-		final Activity activity = getActivity();
-		Switch actionBarSwitch = new Switch(activity);
-		if (activity instanceof PreferenceActivity) {
-			PreferenceActivity preferenceActivity = (PreferenceActivity) activity;
-			if (Utils.platformHasMbxUiMode()) {
-				final int padding = activity.getResources()
-						.getDimensionPixelSize(
-								R.dimen.action_bar_switch_padding);
-				actionBarSwitch.setPadding(0, 0, padding, 0);
-				activity.getActionBar().setDisplayOptions(
-						ActionBar.DISPLAY_SHOW_CUSTOM,
-						ActionBar.DISPLAY_SHOW_CUSTOM);
-				activity.getActionBar().setCustomView(
-						actionBarSwitch,
-						new ActionBar.LayoutParams(
-								ActionBar.LayoutParams.WRAP_CONTENT,
-								ActionBar.LayoutParams.WRAP_CONTENT,
-								Gravity.CENTER_VERTICAL | Gravity.RIGHT));
-			} else if (preferenceActivity.onIsHidingHeaders()
-					|| !preferenceActivity.onIsMultiPane()) {
-				final int padding = activity.getResources()
-						.getDimensionPixelSize(
-								R.dimen.action_bar_switch_padding);
-				actionBarSwitch.setPadding(0, 0, padding, 0);
-				activity.getActionBar().setDisplayOptions(
-						ActionBar.DISPLAY_SHOW_CUSTOM,
-						ActionBar.DISPLAY_SHOW_CUSTOM);
-				activity.getActionBar().setCustomView(
-						actionBarSwitch,
-						new ActionBar.LayoutParams(
-								ActionBar.LayoutParams.WRAP_CONTENT,
-								ActionBar.LayoutParams.WRAP_CONTENT,
-								Gravity.CENTER_VERTICAL | Gravity.RIGHT));
-			}
-			mEthEnabler = new EthernetEnabler(
-					(EthernetManager) getSystemService(Context.ETH_SERVICE),
-					actionBarSwitch);
-			mEthConfigDialog = new EthernetConfigDialog(getActivity(),
-					(EthernetManager) getSystemService(Context.ETH_SERVICE));
-			mEthEnabler.setConfigDialog(mEthConfigDialog);
-		}
-
-		if (!Utils.platformHasMbxUiMode()) {
-			mEthConfigDialog = new EthernetConfigDialog(getActivity(),
-					(EthernetManager) getSystemService(Context.ETH_SERVICE));
-		}
+		mEthEnabler = new EthernetEnabler(
+				(EthernetManager) getSystemService(Context.ETH_SERVICE),
+				mEthSwitchPref);
+		mEthConfigDialog = new EthernetConfigDialog(getActivity(),
+				(EthernetManager) getSystemService(Context.ETH_SERVICE));
 	}
 }

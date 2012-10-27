@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2008 The Android Open Source Project
+<!--
+     Copyright (C) 2008 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -15,11 +16,20 @@
 -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-        android:title="@string/eth_setting">
-        <!-- Programmatically will have dynamic summary, but we provide the fallback summary. -->
-        <Preference
-            android:title="@string/eth_conf_perf_title"
-            android:summary="@string/eth_conf_summary"
-            android:key="ETHERNET_config"
-            android:persistent="false" />
+    android:title="@string/eth_setting" >
+
+    <CheckBoxPreference
+        android:key="ETHERNET_switch"
+        android:defaultValue="false"
+        android:summaryOff="@string/eth_switch_summary_off"
+        android:summaryOn="@string/eth_switch_summary_on"
+        android:title="@string/eth_switch_title_off" />
+
+    <!-- Programmatically will have dynamic summary, but we provide the fallback summary. -->
+    <Preference
+        android:key="ETHERNET_config"
+        android:persistent="false"
+        android:summary="@string/eth_conf_summary"
+        android:title="@string/eth_conf_perf_title" />
+
 </PreferenceScreen>

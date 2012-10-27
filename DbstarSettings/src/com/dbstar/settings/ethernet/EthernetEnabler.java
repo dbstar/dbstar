@@ -18,7 +18,6 @@
 
 package com.dbstar.settings.ethernet;
 
-
 import static android.net.ethernet.EthernetManager.ETH_STATE_DISABLED;
 import static android.net.ethernet.EthernetManager.ETH_STATE_ENABLED;
 import static android.net.ethernet.EthernetManager.ETH_STATE_UNKNOWN;
@@ -31,89 +30,65 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.NetworkInfo;
 import android.net.ethernet.EthernetManager;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.TextUtils;
 import android.util.Config;
 import android.util.Slog;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
-public class EthernetEnabler implements CompoundButton.OnCheckedChangeListener  {
-    private static final String TAG = "SettingsEthEnabler";
+public class EthernetEnabler implements OnPreferenceChangeListener {
+	private static final String TAG = "SettingsEthEnabler";
 
-    private static final boolean LOCAL_LOGD = false;
-    private EthernetManager mEthManager;
-    private Switch mSwitch;
-    private boolean mStateMachineEvent;
-    private EthernetConfigDialog mEthConfigDialog = null;
+	private static final boolean LOCAL_LOGD = false;
+	private EthernetManager mEthManager;
+	private CheckBoxPreference mSwitch;
+	private boolean mStateMachineEvent;
 
-    public void setConfigDialog(EthernetConfigDialog Dialog) {
-        mEthConfigDialog = Dialog;
-    }
+	public EthernetEnabler(EthernetManager ethernetManager,
+			CheckBoxPreference _switch) {
+		mEthManager = ethernetManager;
+		mSwitch = _switch;
 
-    public EthernetEnabler(EthernetManager ethernetManager, Switch _switch) {
-        mEthManager = ethernetManager;
-        mSwitch = _switch;
+		if (mEthManager.getEthState() == ETH_STATE_ENABLED) {
+			setSwitchChecked(true);
+		}
+	}
 
-        if (mEthManager.getEthState() == ETH_STATE_ENABLED) {
-            setSwitchChecked(true);
-        }
-    }
+	public void resume() {
+		mSwitch.setOnPreferenceChangeListener(this);
+	}
 
-    public EthernetManager getManager() {
-        return mEthManager;
-    }
+	public void pause() {
+		mSwitch.setOnPreferenceChangeListener(null);
+	}
 
-    public void resume() {
-        mSwitch.setOnCheckedChangeListener(this);
-    }
+	private void setSwitchChecked(boolean checked) {
+		if (checked != mSwitch.isChecked()) {
+			mStateMachineEvent = true;
+			mSwitch.setChecked(checked);
+			mStateMachineEvent = false;
+		}
+	}
 
-    public void pause() {
-        mSwitch.setOnCheckedChangeListener(null);
-    }
+	private void setEthEnabled(final boolean enable) {
+		int state = mEthManager.getEthState();
 
-    public void setSwitch(Switch switch_) {
-        if (mSwitch == switch_) return;
-        mSwitch.setOnCheckedChangeListener(null);
-        mSwitch = switch_;
-        mSwitch.setOnCheckedChangeListener(this);
+		mEthManager.setEthEnabled(enable);
+	}
 
-        final int state = mEthManager.getEthState();
-        boolean isEnabled = state == ETH_STATE_ENABLED;
-        boolean isDisabled = state == ETH_STATE_DISABLED;
-        mSwitch.setChecked(isEnabled);
-        mSwitch.setEnabled(isEnabled || isDisabled);
-    }
+	@Override
+	public boolean onPreferenceChange(Preference pref, Object value) {
+		if (mStateMachineEvent) {
+			return false;
+		}
 
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        //Do nothing if called as a result of a state machine event
-        if (mStateMachineEvent) {
-            return;
-        }
-        // Show toast message if no Ethernet interfaces
-        if (isChecked && false) {
-            //Toast.makeText(mContext, R.string.wifi_in_airplane_mode, Toast.LENGTH_SHORT).show();
-            // Reset switch to off. No infinite check/listener loop.
-            buttonView.setChecked(false);
-        }
+		boolean isChecked = (Boolean) value;
+		setEthEnabled(isChecked);
+		setSwitchChecked(isChecked);
 
-        setEthEnabled(isChecked);
-        setSwitchChecked(isChecked);
-    }
-
-    private void setSwitchChecked(boolean checked) {
-        if (checked != mSwitch.isChecked()) {
-            mStateMachineEvent = true;
-            mSwitch.setChecked(checked);
-            mStateMachineEvent = false;
-        }
-    }
-
-    private void setEthEnabled(final boolean enable) {
-        int state = mEthManager.getEthState();
-
-        if (LOCAL_LOGD) Slog.d(TAG, "setEthEnabled " + enable);
-
-        mEthManager.setEthEnabled(enable);
-    }
+		return false;
+	}
 }
