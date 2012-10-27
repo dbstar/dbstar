@@ -20,7 +20,6 @@ import com.dbstar.model.GDNetModel;
 import com.dbstar.model.GuideListItem;
 import com.dbstar.model.PreviewData;
 import com.dbstar.model.ReceiveEntry;
-import com.dbstar.model.TV;
 import com.dbstar.model.UserData;
 import com.dbstar.service.client.GDDBStarClient;
 

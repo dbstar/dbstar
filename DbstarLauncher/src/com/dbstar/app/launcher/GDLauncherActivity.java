@@ -259,19 +259,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		case KeyEvent.KEYCODE_DPAD_LEFT: {
 			return mMainMenu.onKeyDown(keyCode, event);
 		}
-
-		case KeyEvent.KEYCODE_DPAD_UP: {
-			showPopupMenu();
-			break;
-		}
 		
 //		 case 82: // just for test on emulator
+		case KeyEvent.KEYCODE_DPAD_UP:
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER: {
 			onItemSelected();
 			return true;
 		}
 
+		case KeyEvent.KEYCODE_DPAD_DOWN:
 		case KeyEvent.KEYCODE_BACK:
 			onBackKeyEvent();
 			return true; // not handle back key in main view
@@ -287,6 +284,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			return mMainMenu.onKeyUp(keyCode, event);
 		}
 		case KeyEvent.KEYCODE_DPAD_UP:
+		case KeyEvent.KEYCODE_DPAD_DOWN:
 		//case 82: // just for test on emulator
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER:
@@ -589,8 +587,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			break;
 		}
 		case SettingsVideo: {
-			intent = new Intent();
-			intent.setClass(this, GDVideoSettingsActivity.class);
+			intent = startDbstarSettingActivity("GDVideoSettingsActivity");
 			break;
 		}
 		case SettingsNetwork: {
