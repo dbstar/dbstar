@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.dbstar.settings.GDVideoSettingsActivity;
 import com.dbstar.settings.R;
 import com.dbstar.settings.R.array;
 import com.dbstar.settings.R.drawable;
@@ -43,15 +44,6 @@ import android.os.SystemProperties;
 
 public class PositionSetting extends Activity {
 	private final String TAG = "Settings_PositionSetting";
-	private static int zoom_pixel = 2;
-	private boolean zoom_flag = false; // zoom_flag is true: zoom in;zoom_flag
-										// is false: zoom out
-	private static double outputsize_per = 0.08;
-	private Outputsize outputsize = new Outputsize();
-	private PositionCoor position_per = new PositionCoor();
-	private PositionCoor position_cur = new PositionCoor();
-	private int selectedItemPosition;
-
 
 	private final String OUTPUT_POSITION_X = "output_position_x";
 	private final String OUTPUT_POSITION_Y = "output_position_y";
@@ -88,18 +80,28 @@ public class PositionSetting extends Activity {
 	private final static String sel_1080poutput_y = "ubootenv.var.1080poutputy";
 	private final static String sel_1080poutput_width = "ubootenv.var.1080poutputwidth";
 	private final static String sel_1080poutput_height = "ubootenv.var.1080poutputheight";
-	private String curOutputmode = "";
-	private String pre_output_x = "";
-	private String pre_output_y = "";
-	private String pre_output_width = "";
-	private String pre_output_height = "";
-	private String[] outputmode_array;
 
-	private ImageButton mchangeZoomBtn;
-	private ImageButton mleftBtn;
-	private ImageButton mrightBtn;
-	private ImageButton mtopBtn;
-	private ImageButton mbottomBtn;
+	private static int ZoomPixel = 2;
+	private boolean mZoomFlag = false; // mZoomFlag is true: zoom in;mZoomFlag
+										// is false: zoom out
+	private static double SizeChangeStep = 0.08;
+	private Outputsize mOutputsize = new Outputsize();
+	private PositionCoor mPrePosition = new PositionCoor();
+	private PositionCoor mCurPosition = new PositionCoor();
+	private int mSelectedItemPosition;
+
+	private String mCurOutputMode = "";
+	private String mPreOutputX = "";
+	private String mPreOutputY = "";
+	private String mPreOutputWidth = "";
+	private String mPreOutputHeight = "";
+	private String[] mOutputModeArray;
+
+	private ImageButton mZoomButton;
+	private ImageButton mLeftButton;
+	private ImageButton mRightButton;
+	private ImageButton mUpButton;
+	private ImageButton mDownButton;
 	private static final int GET_USER_OPERATION = 1;
 	private static final int GET_DEFAULT_OPERATION = 2;
 
@@ -134,38 +136,36 @@ public class PositionSetting extends Activity {
 		TextView mHelp = (TextView) findViewById(R.id.positionsetting_help);
 		mHelp.setText(R.string.position_help_noreboot);
 
-		mchangeZoomBtn = (ImageButton) findViewById(R.id.btn_position_changeZoom);
-		mchangeZoomBtn
-				.setOnTouchListener(new mpositionChangeZoomBtnOnTouchistener());
-		mchangeZoomBtn
-				.setOnKeyListener(new mpositionChangeZoomBtnOnKeyistener());
-		mleftBtn = (ImageButton) findViewById(R.id.btn_position_left);
-		mleftBtn.setOnTouchListener(new mpositionLeftBtnOnTouchListener());
-		mrightBtn = (ImageButton) findViewById(R.id.btn_position_right);
-		mrightBtn.setOnTouchListener(new mpositionRightBtnOnTouchListener());
-		mtopBtn = (ImageButton) findViewById(R.id.btn_position_top);
-		mtopBtn.setOnTouchListener(new mpositionTopBtnOnTouchListener());
-		mbottomBtn = (ImageButton) findViewById(R.id.btn_position_bottom);
-		mbottomBtn.setOnTouchListener(new mpositionBottomBtnOnTouchListener());
+		mZoomButton = (ImageButton) findViewById(R.id.btn_position_changeZoom);
+		mZoomButton.setOnTouchListener(new mZoomButtonOnTouchListener());
+		mZoomButton.setOnKeyListener(new mZoomButtonOnKeyListener());
+		mLeftButton = (ImageButton) findViewById(R.id.btn_position_left);
+		mLeftButton.setOnTouchListener(new mLeftButtonOnTouchListener());
+		mRightButton = (ImageButton) findViewById(R.id.btn_position_right);
+		mRightButton.setOnTouchListener(new mRightButtonOnTouchListener());
+		mUpButton = (ImageButton) findViewById(R.id.btn_position_top);
+		mUpButton.setOnTouchListener(new mUpButtonOnTouchListener());
+		mDownButton = (ImageButton) findViewById(R.id.btn_position_bottom);
+		mDownButton.setOnTouchListener(new mDownButtonOnTouchListener());
 
-		curOutputmode = SystemProperties.get(STR_OUTPUT_MODE);
-		outputmode_array = getResources().getStringArray(
+		mCurOutputMode = SystemProperties.get(STR_OUTPUT_MODE);
+		mOutputModeArray = getResources().getStringArray(
 				R.array.position_entries);
 		getOutputsize();
-		getOutput(curOutputmode);
+		getOutput(mCurOutputMode);
 
-		position_per.width = 0;
-		position_per.height = 0;
-		position_per.left = 0;
-		position_per.top = 0;
-		position_per.right = 0;
-		position_per.bottom = 0;
-		position_cur.width = Integer.valueOf(pre_output_width).intValue();
-		position_cur.height = Integer.valueOf(pre_output_height).intValue();
-		position_cur.left = Integer.valueOf(pre_output_x).intValue();
-		position_cur.top = Integer.valueOf(pre_output_y).intValue();
-		position_cur.right = position_cur.width + position_cur.left - 1;
-		position_cur.bottom = position_cur.height + position_cur.top - 1;
+		mPrePosition.width = 0;
+		mPrePosition.height = 0;
+		mPrePosition.left = 0;
+		mPrePosition.top = 0;
+		mPrePosition.right = 0;
+		mPrePosition.bottom = 0;
+		mCurPosition.width = Integer.valueOf(mPreOutputWidth).intValue();
+		mCurPosition.height = Integer.valueOf(mPreOutputHeight).intValue();
+		mCurPosition.left = Integer.valueOf(mPreOutputX).intValue();
+		mCurPosition.top = Integer.valueOf(mPreOutputY).intValue();
+		mCurPosition.right = mCurPosition.width + mCurPosition.left - 1;
+		mCurPosition.bottom = mCurPosition.height + mCurPosition.top - 1;
 
 		writeFile(FreeScaleOsd0File, "1");
 		writeFile(FreeScaleOsd1File, "1");
@@ -173,105 +173,118 @@ public class PositionSetting extends Activity {
 		try {
 			Bundle bundle = new Bundle();
 			bundle = this.getIntent().getExtras();
-			selectedItemPosition = bundle.getInt("selectedItemPosition");
+			mSelectedItemPosition = bundle
+					.getInt(SettingsCommon.KEY_SELECTED_ITEM);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	class mpositionChangeZoomBtnOnTouchistener implements OnTouchListener {
+	class mZoomButtonOnTouchListener implements OnTouchListener {
 		public boolean onTouch(View v, MotionEvent event) {
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
-				mchangeZoomBtn
+				mZoomButton
 						.setBackgroundResource(R.drawable.position_button_zoom_hl);
-				if (zoom_flag == true) {
-					mleftBtn.setBackgroundResource(R.drawable.position_button_right);
-					mrightBtn
-							.setBackgroundResource(R.drawable.position_button_left);
-					mtopBtn.setBackgroundResource(R.drawable.position_button_down);
-					mbottomBtn
-							.setBackgroundResource(R.drawable.position_button_up);
-					zoom_flag = false;
-				} else {
-					mleftBtn.setBackgroundResource(R.drawable.position_button_left);
-					mrightBtn
+				if (mZoomFlag == true) {
+					mLeftButton
 							.setBackgroundResource(R.drawable.position_button_right);
-					mtopBtn.setBackgroundResource(R.drawable.position_button_up);
-					mbottomBtn
+					mRightButton
+							.setBackgroundResource(R.drawable.position_button_left);
+					mUpButton
 							.setBackgroundResource(R.drawable.position_button_down);
-					zoom_flag = true;
+					mDownButton
+							.setBackgroundResource(R.drawable.position_button_up);
+					mZoomFlag = false;
+				} else {
+					mLeftButton
+							.setBackgroundResource(R.drawable.position_button_left);
+					mRightButton
+							.setBackgroundResource(R.drawable.position_button_right);
+					mUpButton
+							.setBackgroundResource(R.drawable.position_button_up);
+					mDownButton
+							.setBackgroundResource(R.drawable.position_button_down);
+					mZoomFlag = true;
 				}
 			} else if (event.getAction() == MotionEvent.ACTION_UP) {
-				mchangeZoomBtn
+				mZoomButton
 						.setBackgroundResource(R.drawable.position_button_zoom);
 			}
 			return false;
 		}
 	}
 
-	class mpositionChangeZoomBtnOnKeyistener implements OnKeyListener {
+	class mZoomButtonOnKeyListener implements OnKeyListener {
 		public boolean onKey(View v, int keyCode, KeyEvent event) {
 			if (event.getAction() == KeyEvent.ACTION_DOWN
 					&& keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-				mchangeZoomBtn
+				mZoomButton
 						.setBackgroundResource(R.drawable.position_button_zoom_hl);
-				if (zoom_flag == true) {
-					mleftBtn.setBackgroundResource(R.drawable.position_button_right);
-					mrightBtn
-							.setBackgroundResource(R.drawable.position_button_left);
-					mtopBtn.setBackgroundResource(R.drawable.position_button_down);
-					mbottomBtn
-							.setBackgroundResource(R.drawable.position_button_up);
-					zoom_flag = false;
-				} else {
-					mleftBtn.setBackgroundResource(R.drawable.position_button_left);
-					mrightBtn
+				if (mZoomFlag == true) {
+					mLeftButton
 							.setBackgroundResource(R.drawable.position_button_right);
-					mtopBtn.setBackgroundResource(R.drawable.position_button_up);
-					mbottomBtn
+					mRightButton
+							.setBackgroundResource(R.drawable.position_button_left);
+					mUpButton
 							.setBackgroundResource(R.drawable.position_button_down);
-					zoom_flag = true;
+					mDownButton
+							.setBackgroundResource(R.drawable.position_button_up);
+					mZoomFlag = false;
+				} else {
+					mLeftButton
+							.setBackgroundResource(R.drawable.position_button_left);
+					mRightButton
+							.setBackgroundResource(R.drawable.position_button_right);
+					mUpButton
+							.setBackgroundResource(R.drawable.position_button_up);
+					mDownButton
+							.setBackgroundResource(R.drawable.position_button_down);
+					mZoomFlag = true;
 				}
 			} else if (event.getAction() == KeyEvent.ACTION_UP
 					&& keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-				mchangeZoomBtn
+				mZoomButton
 						.setBackgroundResource(R.drawable.position_button_zoom);
 			}
 			return false;
 		}
 	}
 
-	class mpositionLeftBtnOnTouchListener implements OnTouchListener {
+	class mLeftButtonOnTouchListener implements OnTouchListener {
 		// @Override
 		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
-				if (zoom_flag) {
-					mleftBtn.setBackgroundResource(R.drawable.position_button_left_hl);
+				if (mZoomFlag) {
+					mLeftButton
+							.setBackgroundResource(R.drawable.position_button_left_hl);
 				} else {
-					mleftBtn.setBackgroundResource(R.drawable.position_button_right_hl);
+					mLeftButton
+							.setBackgroundResource(R.drawable.position_button_right_hl);
 				}
 			} else if (event.getAction() == MotionEvent.ACTION_UP) {
-				if (zoom_flag) {
-					mleftBtn.setBackgroundResource(R.drawable.position_button_left);
-					if (position_cur.left > (-position_per.left)) {
-						position_cur.left -= zoom_pixel;
-						if (position_cur.left < (-position_per.left)) {
-							position_cur.left = -position_per.left;
+				if (mZoomFlag) {
+					mLeftButton
+							.setBackgroundResource(R.drawable.position_button_left);
+					if (mCurPosition.left > (-mPrePosition.left)) {
+						mCurPosition.left -= ZoomPixel;
+						if (mCurPosition.left < (-mPrePosition.left)) {
+							mCurPosition.left = -mPrePosition.left;
 						}
-						setPosition(position_cur.left, position_cur.top,
-								position_cur.right, position_cur.bottom, 0);
+						setPosition(mCurPosition.left, mCurPosition.top,
+								mCurPosition.right, mCurPosition.bottom, 0);
 					}
 				} else {
-					mleftBtn.setBackgroundResource(R.drawable.position_button_right);
-					if (position_cur.left < (outputsize.width_min - position_per.left)) {
-						position_cur.left += zoom_pixel;
-						if (position_cur.left > (outputsize.width_min - position_per.left)) {
-							position_cur.left = outputsize.width_min
-									- position_per.left;
+					mLeftButton
+							.setBackgroundResource(R.drawable.position_button_right);
+					if (mCurPosition.left < (mOutputsize.width_min - mPrePosition.left)) {
+						mCurPosition.left += ZoomPixel;
+						if (mCurPosition.left > (mOutputsize.width_min - mPrePosition.left)) {
+							mCurPosition.left = mOutputsize.width_min
+									- mPrePosition.left;
 						}
-						setPosition(position_cur.left, position_cur.top,
-								position_cur.right, position_cur.bottom, 0);
+						setPosition(mCurPosition.left, mCurPosition.top,
+								mCurPosition.right, mCurPosition.bottom, 0);
 					}
 				}
 			}
@@ -279,44 +292,44 @@ public class PositionSetting extends Activity {
 		}
 	}
 
-	class mpositionRightBtnOnTouchListener implements OnTouchListener {
+	class mRightButtonOnTouchListener implements OnTouchListener {
 		// @Override
 		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
-				if (zoom_flag) {
-					mrightBtn
+				if (mZoomFlag) {
+					mRightButton
 							.setBackgroundResource(R.drawable.position_button_right_hl);
 				} else {
-					mrightBtn
+					mRightButton
 							.setBackgroundResource(R.drawable.position_button_left_hl);
 				}
 			} else if (event.getAction() == MotionEvent.ACTION_UP) {
-				if (zoom_flag) {
-					mrightBtn
+				if (mZoomFlag) {
+					mRightButton
 							.setBackgroundResource(R.drawable.position_button_right);
-					if (position_cur.right < (outputsize.width - position_per.left)) {
-						position_cur.right += zoom_pixel;
-						if (position_cur.right > (outputsize.width - position_per.left)) {
-							position_cur.right = outputsize.width
-									- position_per.left;
+					if (mCurPosition.right < (mOutputsize.width - mPrePosition.left)) {
+						mCurPosition.right += ZoomPixel;
+						if (mCurPosition.right > (mOutputsize.width - mPrePosition.left)) {
+							mCurPosition.right = mOutputsize.width
+									- mPrePosition.left;
 						}
-						setPosition(position_cur.left, position_cur.top,
-								position_cur.right, position_cur.bottom, 0);
+						setPosition(mCurPosition.left, mCurPosition.top,
+								mCurPosition.right, mCurPosition.bottom, 0);
 					}
 				} else {
-					mrightBtn
+					mRightButton
 							.setBackgroundResource(R.drawable.position_button_left);
-					if (position_cur.right > (outputsize.width
-							- position_per.left - outputsize.width_min)) {
-						position_cur.right -= zoom_pixel;
-						if (position_cur.right < (outputsize.width
-								- position_per.left - outputsize.width_min)) {
-							position_cur.right = outputsize.width
-									- position_per.left - outputsize.width_min;
+					if (mCurPosition.right > (mOutputsize.width
+							- mPrePosition.left - mOutputsize.width_min)) {
+						mCurPosition.right -= ZoomPixel;
+						if (mCurPosition.right < (mOutputsize.width
+								- mPrePosition.left - mOutputsize.width_min)) {
+							mCurPosition.right = mOutputsize.width
+									- mPrePosition.left - mOutputsize.width_min;
 						}
-						setPosition(position_cur.left, position_cur.top,
-								position_cur.right, position_cur.bottom, 0);
+						setPosition(mCurPosition.left, mCurPosition.top,
+								mCurPosition.right, mCurPosition.bottom, 0);
 					}
 				}
 			}
@@ -324,37 +337,41 @@ public class PositionSetting extends Activity {
 		}
 	}
 
-	class mpositionTopBtnOnTouchListener implements OnTouchListener {
+	class mUpButtonOnTouchListener implements OnTouchListener {
 		// @Override
 		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
-				if (zoom_flag) {
-					mtopBtn.setBackgroundResource(R.drawable.position_button_up_hl);
+				if (mZoomFlag) {
+					mUpButton
+							.setBackgroundResource(R.drawable.position_button_up_hl);
 				} else {
-					mtopBtn.setBackgroundResource(R.drawable.position_button_down_hl);
+					mUpButton
+							.setBackgroundResource(R.drawable.position_button_down_hl);
 				}
 			} else if (event.getAction() == MotionEvent.ACTION_UP) {
-				if (zoom_flag) {
-					mtopBtn.setBackgroundResource(R.drawable.position_button_up);
-					if (position_cur.top > (-position_per.top)) {
-						position_cur.top -= zoom_pixel;
-						if (position_cur.top < (-position_per.top)) {
-							position_cur.top = -position_per.top;
+				if (mZoomFlag) {
+					mUpButton
+							.setBackgroundResource(R.drawable.position_button_up);
+					if (mCurPosition.top > (-mPrePosition.top)) {
+						mCurPosition.top -= ZoomPixel;
+						if (mCurPosition.top < (-mPrePosition.top)) {
+							mCurPosition.top = -mPrePosition.top;
 						}
-						setPosition(position_cur.left, position_cur.top,
-								position_cur.right, position_cur.bottom, 0);
+						setPosition(mCurPosition.left, mCurPosition.top,
+								mCurPosition.right, mCurPosition.bottom, 0);
 					}
 				} else {
-					mtopBtn.setBackgroundResource(R.drawable.position_button_down);
-					if (position_cur.top < (outputsize.height_min - position_per.top)) {
-						position_cur.top += zoom_pixel;
-						if (position_cur.top > (outputsize.height_min - position_per.top)) {
-							position_cur.top = outputsize.height_min
-									- position_per.top;
+					mUpButton
+							.setBackgroundResource(R.drawable.position_button_down);
+					if (mCurPosition.top < (mOutputsize.height_min - mPrePosition.top)) {
+						mCurPosition.top += ZoomPixel;
+						if (mCurPosition.top > (mOutputsize.height_min - mPrePosition.top)) {
+							mCurPosition.top = mOutputsize.height_min
+									- mPrePosition.top;
 						}
-						setPosition(position_cur.left, position_cur.top,
-								position_cur.right, position_cur.bottom, 0);
+						setPosition(mCurPosition.left, mCurPosition.top,
+								mCurPosition.right, mCurPosition.bottom, 0);
 					}
 				}
 			}
@@ -362,44 +379,44 @@ public class PositionSetting extends Activity {
 		}
 	}
 
-	class mpositionBottomBtnOnTouchListener implements OnTouchListener {
+	class mDownButtonOnTouchListener implements OnTouchListener {
 		// @Override
 		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
-				if (zoom_flag) {
-					mbottomBtn
+				if (mZoomFlag) {
+					mDownButton
 							.setBackgroundResource(R.drawable.position_button_down_hl);
 				} else {
-					mbottomBtn
+					mDownButton
 							.setBackgroundResource(R.drawable.position_button_up_hl);
 				}
 			} else if (event.getAction() == MotionEvent.ACTION_UP) {
-				if (zoom_flag) {
-					mbottomBtn
+				if (mZoomFlag) {
+					mDownButton
 							.setBackgroundResource(R.drawable.position_button_down);
-					if (position_cur.bottom < (outputsize.height - position_per.top)) {
-						position_cur.bottom += zoom_pixel;
-						if (position_cur.bottom > (outputsize.height - position_per.top)) {
-							position_cur.bottom = outputsize.height
-									- position_per.top;
+					if (mCurPosition.bottom < (mOutputsize.height - mPrePosition.top)) {
+						mCurPosition.bottom += ZoomPixel;
+						if (mCurPosition.bottom > (mOutputsize.height - mPrePosition.top)) {
+							mCurPosition.bottom = mOutputsize.height
+									- mPrePosition.top;
 						}
-						setPosition(position_cur.left, position_cur.top,
-								position_cur.right, position_cur.bottom, 0);
+						setPosition(mCurPosition.left, mCurPosition.top,
+								mCurPosition.right, mCurPosition.bottom, 0);
 					}
 				} else {
-					mbottomBtn
+					mDownButton
 							.setBackgroundResource(R.drawable.position_button_up);
-					if (position_cur.bottom > (outputsize.height
-							- position_per.top - outputsize.height_min)) {
-						position_cur.bottom -= zoom_pixel;
-						if (position_cur.bottom < (outputsize.height
-								- position_per.top - outputsize.height_min)) {
-							position_cur.bottom = outputsize.height
-									- position_per.top - outputsize.height_min;
+					if (mCurPosition.bottom > (mOutputsize.height
+							- mPrePosition.top - mOutputsize.height_min)) {
+						mCurPosition.bottom -= ZoomPixel;
+						if (mCurPosition.bottom < (mOutputsize.height
+								- mPrePosition.top - mOutputsize.height_min)) {
+							mCurPosition.bottom = mOutputsize.height
+									- mPrePosition.top - mOutputsize.height_min;
 						}
-						setPosition(position_cur.left, position_cur.top,
-								position_cur.right, position_cur.bottom, 0);
+						setPosition(mCurPosition.left, mCurPosition.top,
+								mCurPosition.right, mCurPosition.bottom, 0);
 					}
 				}
 			}
@@ -414,62 +431,73 @@ public class PositionSetting extends Activity {
 		case KeyEvent.KEYCODE_DPAD_LEFT:
 		case KeyEvent.KEYCODE_DPAD_RIGHT:
 		case KeyEvent.KEYCODE_DPAD_CENTER:
-			if (zoom_flag == true) {
-				mchangeZoomBtn
+			if (mZoomFlag == true) {
+				mZoomButton
 						.setBackgroundResource(R.drawable.position_button_zoom);
-				mleftBtn.setBackgroundResource(R.drawable.position_button_left);
-				mrightBtn
+				mLeftButton
+						.setBackgroundResource(R.drawable.position_button_left);
+				mRightButton
 						.setBackgroundResource(R.drawable.position_button_right);
-				mtopBtn.setBackgroundResource(R.drawable.position_button_up);
-				mbottomBtn
+				mUpButton.setBackgroundResource(R.drawable.position_button_up);
+				mDownButton
 						.setBackgroundResource(R.drawable.position_button_down);
 			} else {
-				mchangeZoomBtn
+				mZoomButton
 						.setBackgroundResource(R.drawable.position_button_zoom);
-				mleftBtn.setBackgroundResource(R.drawable.position_button_right);
-				mrightBtn
+				mLeftButton
+						.setBackgroundResource(R.drawable.position_button_right);
+				mRightButton
 						.setBackgroundResource(R.drawable.position_button_left);
-				mtopBtn.setBackgroundResource(R.drawable.position_button_down);
-				mbottomBtn.setBackgroundResource(R.drawable.position_button_up);
+				mUpButton
+						.setBackgroundResource(R.drawable.position_button_down);
+				mDownButton
+						.setBackgroundResource(R.drawable.position_button_up);
 			}
 			break;
 		}
 		return true;
 	}
 
+	private void backToParentActivity() {
+		Intent intent = new Intent();
+		Bundle bundle = new Bundle();
+		bundle.putInt(SettingsCommon.KEY_SELECTED_ITEM, mSelectedItemPosition);
+		intent.setClass(this, GDVideoSettingsActivity.class);
+		intent.putExtras(bundle);
+		startActivity(intent);
+		finish();
+	}
+
 	public boolean onKeyDown(int keyCode, KeyEvent msg) {
-		mchangeZoomBtn.requestFocus();
-		mchangeZoomBtn.requestFocusFromTouch();
+		Log.d(TAG, " onKeyDown " + keyCode);
+		
+		mZoomButton.requestFocus();
+		mZoomButton.requestFocusFromTouch();
 		if (keyCode == KeyEvent.KEYCODE_BACK
-				|| keyCode == KeyEvent.KEYCODE_MENU) {
+				|| keyCode == KeyEvent.KEYCODE_MENU 
+				|| keyCode == KeyEvent.KEYCODE_ESCAPE) {
 			int x, y;
-			x = position_cur.left + position_per.left;
+			x = mCurPosition.left + mPrePosition.left;
 			if (x < 0)
 				x = 0;
-			y = position_cur.top + position_per.top;
+			y = mCurPosition.top + mPrePosition.top;
 			if (y < 0)
 				y = 0;
-			position_cur.width = position_cur.right - position_cur.left + 1;
-			position_cur.height = position_cur.bottom - position_cur.top + 1;
-			if ((position_cur.width % 2) == 1) {
-				position_cur.width--;
+			mCurPosition.width = mCurPosition.right - mCurPosition.left + 1;
+			mCurPosition.height = mCurPosition.bottom - mCurPosition.top + 1;
+			if ((mCurPosition.width % 2) == 1) {
+				mCurPosition.width--;
 			}
-			if ((position_cur.height % 2) == 1) {
-				position_cur.height--;
+			if ((mCurPosition.height % 2) == 1) {
+				mCurPosition.height--;
 			}
-			if ((String.valueOf(x).equals(pre_output_x))
-					&& (String.valueOf(y).equals(pre_output_y))
-					&& (String.valueOf(position_cur.width)
-							.equals(pre_output_width))
-					&& (String.valueOf(position_cur.height)
-							.equals(pre_output_height))) {
-				Intent intent = new Intent();
-				Bundle bundle = new Bundle();
-				bundle.putInt("selectedItemPosition", selectedItemPosition);
-				intent.setClass(PositionSetting.this, DisplaySettings.class);
-				intent.putExtras(bundle);
-				startActivity(intent);
-				PositionSetting.this.finish();
+			if ((String.valueOf(x).equals(mPreOutputX))
+					&& (String.valueOf(y).equals(mPreOutputY))
+					&& (String.valueOf(mCurPosition.width)
+							.equals(mPreOutputWidth))
+					&& (String.valueOf(mCurPosition.height)
+							.equals(mPreOutputHeight))) {
+				backToParentActivity();
 			} else {
 				Intent intent = new Intent(PositionSetting.this,
 						DisplayPositionSetConfirm.class);
@@ -479,123 +507,132 @@ public class PositionSetting extends Activity {
 				startActivityForResult(intent, GET_USER_OPERATION);
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-			if (zoom_flag) {
-				mtopBtn.setBackgroundResource(R.drawable.position_button_up_hl);
-				if (position_cur.top > (-position_per.top)) {
-					position_cur.top -= zoom_pixel;
-					if (position_cur.top < (-position_per.top)) {
-						position_cur.top = -position_per.top;
+			if (mZoomFlag) {
+				mUpButton
+						.setBackgroundResource(R.drawable.position_button_up_hl);
+				if (mCurPosition.top > (-mPrePosition.top)) {
+					mCurPosition.top -= ZoomPixel;
+					if (mCurPosition.top < (-mPrePosition.top)) {
+						mCurPosition.top = -mPrePosition.top;
 					}
-					setPosition(position_cur.left, position_cur.top,
-							position_cur.right, position_cur.bottom, 0);
+					setPosition(mCurPosition.left, mCurPosition.top,
+							mCurPosition.right, mCurPosition.bottom, 0);
 				}
 			} else {
-				mtopBtn.setBackgroundResource(R.drawable.position_button_down_hl);
-				if (position_cur.top < (outputsize.height_min - position_per.top)) {
-					position_cur.top += zoom_pixel;
-					if (position_cur.top > (outputsize.height_min - position_per.top)) {
-						position_cur.top = outputsize.height_min
-								- position_per.top;
+				mUpButton
+						.setBackgroundResource(R.drawable.position_button_down_hl);
+				if (mCurPosition.top < (mOutputsize.height_min - mPrePosition.top)) {
+					mCurPosition.top += ZoomPixel;
+					if (mCurPosition.top > (mOutputsize.height_min - mPrePosition.top)) {
+						mCurPosition.top = mOutputsize.height_min
+								- mPrePosition.top;
 					}
-					setPosition(position_cur.left, position_cur.top,
-							position_cur.right, position_cur.bottom, 0);
+					setPosition(mCurPosition.left, mCurPosition.top,
+							mCurPosition.right, mCurPosition.bottom, 0);
 				}
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-			if (zoom_flag) {
-				mbottomBtn
+			if (mZoomFlag) {
+				mDownButton
 						.setBackgroundResource(R.drawable.position_button_down_hl);
-				if (position_cur.bottom < (outputsize.height - position_per.top)) {
-					position_cur.bottom += zoom_pixel;
-					if (position_cur.bottom > (outputsize.height - position_per.top)) {
-						position_cur.bottom = outputsize.height
-								- position_per.top;
+				if (mCurPosition.bottom < (mOutputsize.height - mPrePosition.top)) {
+					mCurPosition.bottom += ZoomPixel;
+					if (mCurPosition.bottom > (mOutputsize.height - mPrePosition.top)) {
+						mCurPosition.bottom = mOutputsize.height
+								- mPrePosition.top;
 					}
-					setPosition(position_cur.left, position_cur.top,
-							position_cur.right, position_cur.bottom, 0);
+					setPosition(mCurPosition.left, mCurPosition.top,
+							mCurPosition.right, mCurPosition.bottom, 0);
 				}
 			} else {
-				mbottomBtn
+				mDownButton
 						.setBackgroundResource(R.drawable.position_button_up_hl);
-				if (position_cur.bottom > (outputsize.height - position_per.top - outputsize.height_min)) {
-					position_cur.bottom -= zoom_pixel;
-					if (position_cur.bottom < (outputsize.height
-							- position_per.top - outputsize.height_min)) {
-						position_cur.bottom = outputsize.height
-								- position_per.top - outputsize.height_min;
+				if (mCurPosition.bottom > (mOutputsize.height
+						- mPrePosition.top - mOutputsize.height_min)) {
+					mCurPosition.bottom -= ZoomPixel;
+					if (mCurPosition.bottom < (mOutputsize.height
+							- mPrePosition.top - mOutputsize.height_min)) {
+						mCurPosition.bottom = mOutputsize.height
+								- mPrePosition.top - mOutputsize.height_min;
 					}
-					setPosition(position_cur.left, position_cur.top,
-							position_cur.right, position_cur.bottom, 0);
+					setPosition(mCurPosition.left, mCurPosition.top,
+							mCurPosition.right, mCurPosition.bottom, 0);
 				}
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-			if (zoom_flag) {
-				mleftBtn.setBackgroundResource(R.drawable.position_button_left_hl);
-				if (position_cur.left > (-position_per.left)) {
-					position_cur.left -= zoom_pixel;
-					if (position_cur.left < (-position_per.left)) {
-						position_cur.left = -position_per.left;
+			if (mZoomFlag) {
+				mLeftButton
+						.setBackgroundResource(R.drawable.position_button_left_hl);
+				if (mCurPosition.left > (-mPrePosition.left)) {
+					mCurPosition.left -= ZoomPixel;
+					if (mCurPosition.left < (-mPrePosition.left)) {
+						mCurPosition.left = -mPrePosition.left;
 					}
-					setPosition(position_cur.left, position_cur.top,
-							position_cur.right, position_cur.bottom, 0);
+					setPosition(mCurPosition.left, mCurPosition.top,
+							mCurPosition.right, mCurPosition.bottom, 0);
 				}
 			} else {
-				mleftBtn.setBackgroundResource(R.drawable.position_button_right_hl);
-				if (position_cur.left < (outputsize.width_min - position_per.left)) {
-					position_cur.left += zoom_pixel;
-					if (position_cur.left > (outputsize.width_min - position_per.left)) {
-						position_cur.left = outputsize.width_min
-								- position_per.left;
+				mLeftButton
+						.setBackgroundResource(R.drawable.position_button_right_hl);
+				if (mCurPosition.left < (mOutputsize.width_min - mPrePosition.left)) {
+					mCurPosition.left += ZoomPixel;
+					if (mCurPosition.left > (mOutputsize.width_min - mPrePosition.left)) {
+						mCurPosition.left = mOutputsize.width_min
+								- mPrePosition.left;
 					}
-					setPosition(position_cur.left, position_cur.top,
-							position_cur.right, position_cur.bottom, 0);
+					setPosition(mCurPosition.left, mCurPosition.top,
+							mCurPosition.right, mCurPosition.bottom, 0);
 				}
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-			if (zoom_flag) {
-				mrightBtn
+			if (mZoomFlag) {
+				mRightButton
 						.setBackgroundResource(R.drawable.position_button_right_hl);
-				if (position_cur.right < (outputsize.width - position_per.left)) {
-					position_cur.right += zoom_pixel;
-					if (position_cur.right > (outputsize.width - position_per.left)) {
-						position_cur.right = outputsize.width
-								- position_per.left;
+				if (mCurPosition.right < (mOutputsize.width - mPrePosition.left)) {
+					mCurPosition.right += ZoomPixel;
+					if (mCurPosition.right > (mOutputsize.width - mPrePosition.left)) {
+						mCurPosition.right = mOutputsize.width
+								- mPrePosition.left;
 					}
-					setPosition(position_cur.left, position_cur.top,
-							position_cur.right, position_cur.bottom, 0);
+					setPosition(mCurPosition.left, mCurPosition.top,
+							mCurPosition.right, mCurPosition.bottom, 0);
 				}
 			} else {
-				mrightBtn
+				mRightButton
 						.setBackgroundResource(R.drawable.position_button_left_hl);
-				if (position_cur.right > (outputsize.width - position_per.left - outputsize.width_min)) {
-					position_cur.right -= zoom_pixel;
-					if (position_cur.right < (outputsize.width
-							- position_per.left - outputsize.width_min)) {
-						position_cur.right = outputsize.width
-								- position_per.left - outputsize.width_min;
+				if (mCurPosition.right > (mOutputsize.width - mPrePosition.left - mOutputsize.width_min)) {
+					mCurPosition.right -= ZoomPixel;
+					if (mCurPosition.right < (mOutputsize.width
+							- mPrePosition.left - mOutputsize.width_min)) {
+						mCurPosition.right = mOutputsize.width
+								- mPrePosition.left - mOutputsize.width_min;
 					}
-					setPosition(position_cur.left, position_cur.top,
-							position_cur.right, position_cur.bottom, 0);
+					setPosition(mCurPosition.left, mCurPosition.top,
+							mCurPosition.right, mCurPosition.bottom, 0);
 				}
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-			mchangeZoomBtn
+			mZoomButton
 					.setBackgroundResource(R.drawable.position_button_zoom_hl);
-			if (zoom_flag == true) {
-				mleftBtn.setBackgroundResource(R.drawable.position_button_right);
-				mrightBtn
-						.setBackgroundResource(R.drawable.position_button_left);
-				mtopBtn.setBackgroundResource(R.drawable.position_button_down);
-				mbottomBtn.setBackgroundResource(R.drawable.position_button_up);
-				zoom_flag = false;
-			} else {
-				mleftBtn.setBackgroundResource(R.drawable.position_button_left);
-				mrightBtn
+			if (mZoomFlag == true) {
+				mLeftButton
 						.setBackgroundResource(R.drawable.position_button_right);
-				mtopBtn.setBackgroundResource(R.drawable.position_button_up);
-				mbottomBtn
+				mRightButton
+						.setBackgroundResource(R.drawable.position_button_left);
+				mUpButton
 						.setBackgroundResource(R.drawable.position_button_down);
-				zoom_flag = true;
+				mDownButton
+						.setBackgroundResource(R.drawable.position_button_up);
+				mZoomFlag = false;
+			} else {
+				mLeftButton
+						.setBackgroundResource(R.drawable.position_button_left);
+				mRightButton
+						.setBackgroundResource(R.drawable.position_button_right);
+				mUpButton.setBackgroundResource(R.drawable.position_button_up);
+				mDownButton
+						.setBackgroundResource(R.drawable.position_button_down);
+				mZoomFlag = true;
 			}
 		}
 		return true;
@@ -620,7 +657,8 @@ public class PositionSetting extends Activity {
 	}
 
 	private void setPosition(int l, int t, int r, int b, int mode) {
-		Intent intent_output_position = new Intent(SettingsCommon.ACTION_OUTPUTPOSITION_CHANGE);
+		Intent intent_output_position = new Intent(
+				SettingsCommon.ACTION_OUTPUTPOSITION_CHANGE);
 		intent_output_position.putExtra(OUTPUT_POSITION_X, l);
 		intent_output_position.putExtra(OUTPUT_POSITION_Y, t);
 		intent_output_position.putExtra(OUTPUT_POSITION_W, r);
@@ -650,132 +688,132 @@ public class PositionSetting extends Activity {
 	}
 
 	private void getOutputsize() {
-		if ((curOutputmode.equals(outputmode_array[0]))
-				|| (curOutputmode.equals(outputmode_array[1]))) {
-			outputsize.width_min = (int) (720 * outputsize_per);
-			outputsize.width_max = (int) (720 * (1 + outputsize_per));
-			outputsize.width = OUTPUT480_FULL_WIDTH;
-			outputsize.height_min = (int) (480 * outputsize_per);
-			outputsize.height_max = (int) (480 * (1 + outputsize_per));
-			outputsize.height = OUTPUT480_FULL_HEIGHT;
-		} else if ((curOutputmode.equals(outputmode_array[2]))
-				|| (curOutputmode.equals(outputmode_array[3]))) {
-			outputsize.width_min = (int) (720 * outputsize_per);
-			outputsize.width_max = (int) (720 * (1 + outputsize_per));
-			outputsize.width = OUTPUT576_FULL_WIDTH;
-			outputsize.height_min = (int) (576 * outputsize_per);
-			outputsize.height_max = (int) (576 * (1 + outputsize_per));
-			outputsize.height = OUTPUT576_FULL_HEIGHT;
-		} else if (curOutputmode.equals(outputmode_array[4])) {
-			outputsize.width_min = (int) (1280 * outputsize_per);
-			outputsize.width_max = (int) (1280 * (1 + outputsize_per));
-			outputsize.width = OUTPUT720_FULL_WIDTH;
-			outputsize.height_min = (int) (720 * outputsize_per);
-			outputsize.height_max = (int) (720 * (1 + outputsize_per));
-			outputsize.height = OUTPUT720_FULL_HEIGHT;
-		} else if ((curOutputmode.equals(outputmode_array[5]))
-				|| (curOutputmode.equals(outputmode_array[6]))) {
-			outputsize.width_min = (int) (1920 * outputsize_per);
-			outputsize.width_max = (int) (1920 * (1 + outputsize_per));
-			outputsize.width = OUTPUT1080_FULL_WIDTH;
-			outputsize.height_min = (int) (1080 * outputsize_per);
-			outputsize.height_max = (int) (1080 * (1 + outputsize_per));
-			outputsize.height = OUTPUT1080_FULL_HEIGHT;
+		if ((mCurOutputMode.equals(mOutputModeArray[0]))
+				|| (mCurOutputMode.equals(mOutputModeArray[1]))) {
+			mOutputsize.width_min = (int) (720 * SizeChangeStep);
+			mOutputsize.width_max = (int) (720 * (1 + SizeChangeStep));
+			mOutputsize.width = OUTPUT480_FULL_WIDTH;
+			mOutputsize.height_min = (int) (480 * SizeChangeStep);
+			mOutputsize.height_max = (int) (480 * (1 + SizeChangeStep));
+			mOutputsize.height = OUTPUT480_FULL_HEIGHT;
+		} else if ((mCurOutputMode.equals(mOutputModeArray[2]))
+				|| (mCurOutputMode.equals(mOutputModeArray[3]))) {
+			mOutputsize.width_min = (int) (720 * SizeChangeStep);
+			mOutputsize.width_max = (int) (720 * (1 + SizeChangeStep));
+			mOutputsize.width = OUTPUT576_FULL_WIDTH;
+			mOutputsize.height_min = (int) (576 * SizeChangeStep);
+			mOutputsize.height_max = (int) (576 * (1 + SizeChangeStep));
+			mOutputsize.height = OUTPUT576_FULL_HEIGHT;
+		} else if (mCurOutputMode.equals(mOutputModeArray[4])) {
+			mOutputsize.width_min = (int) (1280 * SizeChangeStep);
+			mOutputsize.width_max = (int) (1280 * (1 + SizeChangeStep));
+			mOutputsize.width = OUTPUT720_FULL_WIDTH;
+			mOutputsize.height_min = (int) (720 * SizeChangeStep);
+			mOutputsize.height_max = (int) (720 * (1 + SizeChangeStep));
+			mOutputsize.height = OUTPUT720_FULL_HEIGHT;
+		} else if ((mCurOutputMode.equals(mOutputModeArray[5]))
+				|| (mCurOutputMode.equals(mOutputModeArray[6]))) {
+			mOutputsize.width_min = (int) (1920 * SizeChangeStep);
+			mOutputsize.width_max = (int) (1920 * (1 + SizeChangeStep));
+			mOutputsize.width = OUTPUT1080_FULL_WIDTH;
+			mOutputsize.height_min = (int) (1080 * SizeChangeStep);
+			mOutputsize.height_max = (int) (1080 * (1 + SizeChangeStep));
+			mOutputsize.height = OUTPUT1080_FULL_HEIGHT;
 		}
 	}
 
-	private void getOutput(String get_outputmode) {
-		if (get_outputmode.equals(outputmode_array[0])) {
-			pre_output_x = SystemProperties.get(sel_480ioutput_x);
-			pre_output_y = SystemProperties.get(sel_480ioutput_y);
-			pre_output_width = SystemProperties.get(sel_480ioutput_width);
-			pre_output_height = SystemProperties.get(sel_480ioutput_height);
-			if (pre_output_x.equals(""))
-				pre_output_x = "0";
-			if (pre_output_y.equals(""))
-				pre_output_y = "0";
-			if (pre_output_width.equals(""))
-				pre_output_width = String.valueOf(OUTPUT480_FULL_WIDTH);
-			if (pre_output_height.equals(""))
-				pre_output_height = String.valueOf(OUTPUT480_FULL_HEIGHT);
-		} else if (get_outputmode.equals(outputmode_array[1])) {
-			pre_output_x = SystemProperties.get(sel_480poutput_x);
-			pre_output_y = SystemProperties.get(sel_480poutput_y);
-			pre_output_width = SystemProperties.get(sel_480poutput_width);
-			pre_output_height = SystemProperties.get(sel_480poutput_height);
-			if (pre_output_x.equals(""))
-				pre_output_x = "0";
-			if (pre_output_y.equals(""))
-				pre_output_y = "0";
-			if (pre_output_width.equals(""))
-				pre_output_width = String.valueOf(OUTPUT480_FULL_WIDTH);
-			if (pre_output_height.equals(""))
-				pre_output_height = String.valueOf(OUTPUT480_FULL_HEIGHT);
-		} else if (get_outputmode.equals(outputmode_array[2])) {
-			pre_output_x = SystemProperties.get(sel_576ioutput_x);
-			pre_output_y = SystemProperties.get(sel_576ioutput_y);
-			pre_output_width = SystemProperties.get(sel_576ioutput_width);
-			pre_output_height = SystemProperties.get(sel_576ioutput_height);
-			if (pre_output_x.equals(""))
-				pre_output_x = "0";
-			if (pre_output_y.equals(""))
-				pre_output_y = "0";
-			if (pre_output_width.equals(""))
-				pre_output_width = String.valueOf(OUTPUT576_FULL_WIDTH);
-			if (pre_output_height.equals(""))
-				pre_output_height = String.valueOf(OUTPUT576_FULL_HEIGHT);
-		} else if (get_outputmode.equals(outputmode_array[3])) {
-			pre_output_x = SystemProperties.get(sel_576poutput_x);
-			pre_output_y = SystemProperties.get(sel_576poutput_y);
-			pre_output_width = SystemProperties.get(sel_576poutput_width);
-			pre_output_height = SystemProperties.get(sel_576poutput_height);
-			if (pre_output_x.equals(""))
-				pre_output_x = "0";
-			if (pre_output_y.equals(""))
-				pre_output_y = "0";
-			if (pre_output_width.equals(""))
-				pre_output_width = String.valueOf(OUTPUT576_FULL_WIDTH);
-			if (pre_output_height.equals(""))
-				pre_output_height = String.valueOf(OUTPUT576_FULL_HEIGHT);
-		} else if (get_outputmode.equals(outputmode_array[4])) {
-			pre_output_x = SystemProperties.get(sel_720poutput_x);
-			pre_output_y = SystemProperties.get(sel_720poutput_y);
-			pre_output_width = SystemProperties.get(sel_720poutput_width);
-			pre_output_height = SystemProperties.get(sel_720poutput_height);
-			if (pre_output_x.equals(""))
-				pre_output_x = "0";
-			if (pre_output_y.equals(""))
-				pre_output_y = "0";
-			if (pre_output_width.equals(""))
-				pre_output_width = String.valueOf(OUTPUT720_FULL_WIDTH);
-			if (pre_output_height.equals(""))
-				pre_output_height = String.valueOf(OUTPUT720_FULL_HEIGHT);
-		} else if (get_outputmode.equals(outputmode_array[5])) {
-			pre_output_x = SystemProperties.get(sel_1080ioutput_x);
-			pre_output_y = SystemProperties.get(sel_1080ioutput_y);
-			pre_output_width = SystemProperties.get(sel_1080ioutput_width);
-			pre_output_height = SystemProperties.get(sel_1080ioutput_height);
-			if (pre_output_x.equals(""))
-				pre_output_x = "0";
-			if (pre_output_y.equals(""))
-				pre_output_y = "0";
-			if (pre_output_width.equals(""))
-				pre_output_width = String.valueOf(OUTPUT1080_FULL_WIDTH);
-			if (pre_output_height.equals(""))
-				pre_output_height = String.valueOf(OUTPUT1080_FULL_HEIGHT);
-		} else if (get_outputmode.equals(outputmode_array[6])) {
-			pre_output_x = SystemProperties.get(sel_1080poutput_x);
-			pre_output_y = SystemProperties.get(sel_1080poutput_y);
-			pre_output_width = SystemProperties.get(sel_1080poutput_width);
-			pre_output_height = SystemProperties.get(sel_1080poutput_height);
-			if (pre_output_x.equals(""))
-				pre_output_x = "0";
-			if (pre_output_y.equals(""))
-				pre_output_y = "0";
-			if (pre_output_width.equals(""))
-				pre_output_width = String.valueOf(OUTPUT1080_FULL_WIDTH);
-			if (pre_output_height.equals(""))
-				pre_output_height = String.valueOf(OUTPUT1080_FULL_HEIGHT);
+	private void getOutput(String mode) {
+		if (mode.equals(mOutputModeArray[0])) {
+			mPreOutputX = SystemProperties.get(sel_480ioutput_x);
+			mPreOutputY = SystemProperties.get(sel_480ioutput_y);
+			mPreOutputWidth = SystemProperties.get(sel_480ioutput_width);
+			mPreOutputHeight = SystemProperties.get(sel_480ioutput_height);
+			if (mPreOutputX.equals(""))
+				mPreOutputX = "0";
+			if (mPreOutputY.equals(""))
+				mPreOutputY = "0";
+			if (mPreOutputWidth.equals(""))
+				mPreOutputWidth = String.valueOf(OUTPUT480_FULL_WIDTH);
+			if (mPreOutputHeight.equals(""))
+				mPreOutputHeight = String.valueOf(OUTPUT480_FULL_HEIGHT);
+		} else if (mode.equals(mOutputModeArray[1])) {
+			mPreOutputX = SystemProperties.get(sel_480poutput_x);
+			mPreOutputY = SystemProperties.get(sel_480poutput_y);
+			mPreOutputWidth = SystemProperties.get(sel_480poutput_width);
+			mPreOutputHeight = SystemProperties.get(sel_480poutput_height);
+			if (mPreOutputX.equals(""))
+				mPreOutputX = "0";
+			if (mPreOutputY.equals(""))
+				mPreOutputY = "0";
+			if (mPreOutputWidth.equals(""))
+				mPreOutputWidth = String.valueOf(OUTPUT480_FULL_WIDTH);
+			if (mPreOutputHeight.equals(""))
+				mPreOutputHeight = String.valueOf(OUTPUT480_FULL_HEIGHT);
+		} else if (mode.equals(mOutputModeArray[2])) {
+			mPreOutputX = SystemProperties.get(sel_576ioutput_x);
+			mPreOutputY = SystemProperties.get(sel_576ioutput_y);
+			mPreOutputWidth = SystemProperties.get(sel_576ioutput_width);
+			mPreOutputHeight = SystemProperties.get(sel_576ioutput_height);
+			if (mPreOutputX.equals(""))
+				mPreOutputX = "0";
+			if (mPreOutputY.equals(""))
+				mPreOutputY = "0";
+			if (mPreOutputWidth.equals(""))
+				mPreOutputWidth = String.valueOf(OUTPUT576_FULL_WIDTH);
+			if (mPreOutputHeight.equals(""))
+				mPreOutputHeight = String.valueOf(OUTPUT576_FULL_HEIGHT);
+		} else if (mode.equals(mOutputModeArray[3])) {
+			mPreOutputX = SystemProperties.get(sel_576poutput_x);
+			mPreOutputY = SystemProperties.get(sel_576poutput_y);
+			mPreOutputWidth = SystemProperties.get(sel_576poutput_width);
+			mPreOutputHeight = SystemProperties.get(sel_576poutput_height);
+			if (mPreOutputX.equals(""))
+				mPreOutputX = "0";
+			if (mPreOutputY.equals(""))
+				mPreOutputY = "0";
+			if (mPreOutputWidth.equals(""))
+				mPreOutputWidth = String.valueOf(OUTPUT576_FULL_WIDTH);
+			if (mPreOutputHeight.equals(""))
+				mPreOutputHeight = String.valueOf(OUTPUT576_FULL_HEIGHT);
+		} else if (mode.equals(mOutputModeArray[4])) {
+			mPreOutputX = SystemProperties.get(sel_720poutput_x);
+			mPreOutputY = SystemProperties.get(sel_720poutput_y);
+			mPreOutputWidth = SystemProperties.get(sel_720poutput_width);
+			mPreOutputHeight = SystemProperties.get(sel_720poutput_height);
+			if (mPreOutputX.equals(""))
+				mPreOutputX = "0";
+			if (mPreOutputY.equals(""))
+				mPreOutputY = "0";
+			if (mPreOutputWidth.equals(""))
+				mPreOutputWidth = String.valueOf(OUTPUT720_FULL_WIDTH);
+			if (mPreOutputHeight.equals(""))
+				mPreOutputHeight = String.valueOf(OUTPUT720_FULL_HEIGHT);
+		} else if (mode.equals(mOutputModeArray[5])) {
+			mPreOutputX = SystemProperties.get(sel_1080ioutput_x);
+			mPreOutputY = SystemProperties.get(sel_1080ioutput_y);
+			mPreOutputWidth = SystemProperties.get(sel_1080ioutput_width);
+			mPreOutputHeight = SystemProperties.get(sel_1080ioutput_height);
+			if (mPreOutputX.equals(""))
+				mPreOutputX = "0";
+			if (mPreOutputY.equals(""))
+				mPreOutputY = "0";
+			if (mPreOutputWidth.equals(""))
+				mPreOutputWidth = String.valueOf(OUTPUT1080_FULL_WIDTH);
+			if (mPreOutputHeight.equals(""))
+				mPreOutputHeight = String.valueOf(OUTPUT1080_FULL_HEIGHT);
+		} else if (mode.equals(mOutputModeArray[6])) {
+			mPreOutputX = SystemProperties.get(sel_1080poutput_x);
+			mPreOutputY = SystemProperties.get(sel_1080poutput_y);
+			mPreOutputWidth = SystemProperties.get(sel_1080poutput_width);
+			mPreOutputHeight = SystemProperties.get(sel_1080poutput_height);
+			if (mPreOutputX.equals(""))
+				mPreOutputX = "0";
+			if (mPreOutputY.equals(""))
+				mPreOutputY = "0";
+			if (mPreOutputWidth.equals(""))
+				mPreOutputWidth = String.valueOf(OUTPUT1080_FULL_WIDTH);
+			if (mPreOutputHeight.equals(""))
+				mPreOutputHeight = String.valueOf(OUTPUT1080_FULL_HEIGHT);
 		}
 	}
 
@@ -803,17 +841,17 @@ public class PositionSetting extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		int x, y;
-		x = position_cur.left + position_per.left;
+		x = mCurPosition.left + mPrePosition.left;
 		if (x < 0)
 			x = 0;
-		y = position_cur.top + position_per.top;
+		y = mCurPosition.top + mPrePosition.top;
 		if (y < 0)
 			y = 0;
-		if ((position_cur.width % 2) == 1) {
-			position_cur.width--;
+		if ((mCurPosition.width % 2) == 1) {
+			mCurPosition.width--;
 		}
-		if ((position_cur.height % 2) == 1) {
-			position_cur.height--;
+		if ((mCurPosition.height % 2) == 1) {
+			mCurPosition.height--;
 		}
 		switch (requestCode) {
 		case (GET_USER_OPERATION):
@@ -824,9 +862,9 @@ public class PositionSetting extends Activity {
 					intent_output_position.putExtra(OUTPUT_POSITION_X, x);
 					intent_output_position.putExtra(OUTPUT_POSITION_Y, y);
 					intent_output_position.putExtra(OUTPUT_POSITION_W,
-							position_cur.width);
+							mCurPosition.width);
 					intent_output_position.putExtra(OUTPUT_POSITION_H,
-							position_cur.height);
+							mCurPosition.height);
 					PositionSetting.this.sendBroadcast(intent_output_position);
 					Log.i(TAG, "--------------------------------position Set");
 					Log.d(TAG,
@@ -837,44 +875,28 @@ public class PositionSetting extends Activity {
 									+ y);
 					Log.d(TAG,
 							"--------------------------------set display axis width = "
-									+ position_cur.width);
+									+ mCurPosition.width);
 					Log.d(TAG,
 							"--------------------------------set display axis height = "
-									+ position_cur.height);
+									+ mCurPosition.height);
 
-					Intent intent = new Intent();
-					Bundle bundle = new Bundle();
-					bundle.putInt("selectedItemPosition", selectedItemPosition);
-					intent.setClass(PositionSetting.this, DisplaySettings.class);
-					intent.putExtras(bundle);
-					startActivity(intent);
-					PositionSetting.this.finish();
+					backToParentActivity();
 				} catch (Exception e) {
 					Log.i(TAG,
 							"--------------------------------setOutput_position No set");
 					Log.e(TAG,
 							"Exception Occured: Trying to add set setflag : "
 									+ e.toString());
-					Intent intent = new Intent();
-					Bundle bundle = new Bundle();
-					bundle.putInt("selectedItemPosition", selectedItemPosition);
-					intent.setClass(PositionSetting.this, DisplaySettings.class);
-					intent.putExtras(bundle);
-					startActivity(intent);
-					PositionSetting.this.finish();
+
+					backToParentActivity();
 					Log.e(TAG, "Finishing the Application");
 				}
 			} else if (resultCode == Activity.RESULT_CANCELED) {
 				Intent intent_output_position = new Intent(
 						SettingsCommon.ACTION_OUTPUTPOSITION_CANCEL);
 				PositionSetting.this.sendBroadcast(intent_output_position);
-				Intent intent = new Intent();
-				Bundle bundle = new Bundle();
-				bundle.putInt("selectedItemPosition", selectedItemPosition);
-				intent.setClass(PositionSetting.this, DisplaySettings.class);
-				intent.putExtras(bundle);
-				startActivity(intent);
-				PositionSetting.this.finish();
+
+				backToParentActivity();
 				Log.i(TAG, "----------------------no");
 			}
 			break;
@@ -886,39 +908,24 @@ public class PositionSetting extends Activity {
 					PositionSetting.this.sendBroadcast(intent_output_position);
 					Log.i(TAG,
 							"--------------------------------default position Set");
-					Intent intent = new Intent();
-					Bundle bundle = new Bundle();
-					bundle.putInt("selectedItemPosition", selectedItemPosition);
-					intent.setClass(PositionSetting.this, DisplaySettings.class);
-					intent.putExtras(bundle);
-					startActivity(intent);
-					PositionSetting.this.finish();
+
+					backToParentActivity();
 				} catch (Exception e) {
 					Log.i(TAG,
 							"--------------------------------setOutput_position No set");
 					Log.e(TAG,
 							"Exception Occured: Trying to add set setflag : "
 									+ e.toString());
-					Intent intent = new Intent();
-					Bundle bundle = new Bundle();
-					bundle.putInt("selectedItemPosition", selectedItemPosition);
-					intent.setClass(PositionSetting.this, DisplaySettings.class);
-					intent.putExtras(bundle);
-					startActivity(intent);
-					PositionSetting.this.finish();
+
+					backToParentActivity();
 					Log.e(TAG, "Finishing the Application");
 				}
 			} else if (resultCode == Activity.RESULT_CANCELED) {
 				// Intent intent_output_position = new
 				// Intent(ACTION_OUTPUTPOSITION_CANCEL);
 				// PositionSetting.this.sendBroadcast(intent_output_position);
-				Intent intent = new Intent();
-				Bundle bundle = new Bundle();
-				bundle.putInt("selectedItemPosition", selectedItemPosition);
-				intent.setClass(PositionSetting.this, DisplaySettings.class);
-				intent.putExtras(bundle);
-				startActivity(intent);
-				PositionSetting.this.finish();
+
+				backToParentActivity();
 				Log.i(TAG, "----------------------no");
 			}
 			break;

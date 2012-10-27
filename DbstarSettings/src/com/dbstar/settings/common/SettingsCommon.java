@@ -24,5 +24,7 @@ public class SettingsCommon {
 	public static final String STR_DEFAULT_FREQUENCY_VAR = "ubootenv.var.defaulttvfrequency";
 	
 	public static final String STR_1080SCALE="ro.platform.has.1080scale";
+	
+	public static final String KEY_SELECTED_ITEM = "SelectedItemPosition";
 
 }

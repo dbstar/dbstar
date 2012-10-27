@@ -39,8 +39,7 @@
         <activity
             android:name=".GDNetworkSettingsActivity"
             android:label="@string/app_name"
-            android:screenOrientation="landscape"
-            android:theme="@style/PreferencesTheme" >
+            android:screenOrientation="landscape" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="com.dbstar.settings.NETWORK_SETTINGS" />
@@ -60,11 +59,24 @@
         </activity>
         <activity
             android:name=".GDVideoSettingsActivity"
-            android:label="@string/app_name"
-            android:theme="@style/PreferencesTheme" >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="com.dbstar.settings.Video_SETTINGS" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            
+            <meta-data android:name="com.dbstar.settings.FRAGMENT_CLASS"
+                android:value="com.dbstar.settings.display.DisplaySettings" />
+            <meta-data android:name="com.android.settings.TOP_LEVEL_HEADER_ID"
+                android:resource="@id/display_settings" />
+        </activity>
+        <activity
+            android:name=".display.PositionSetting"
+            android:theme="@android:style/Theme.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

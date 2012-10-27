@@ -136,8 +136,10 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
 		}
 
 		try {
-			Bundle bundle = new Bundle();
-			mSelectedItemPosition = bundle.getInt("mSelectedItemPosition");
+//			Bundle bundle = new Bundle();
+			Intent intent = getActivity().getIntent();
+			Bundle bundle = intent.getExtras();
+			mSelectedItemPosition = bundle.getInt(SettingsCommon.KEY_SELECTED_ITEM);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
