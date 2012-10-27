@@ -15,6 +15,13 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
+mylib := libdbstardrm.a
+LOCAL_MODULE := $(mylib)
+LOCAL_MODULE_TAGS := optional
+LOCAL_SRC_FILES := lib/$(mylib)
+include $(PREBUILD_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
 mylib := libpush.a
 LOCAL_MODULE := $(mylib)
 LOCAL_MODULE_TAGS := optional
@@ -46,8 +53,10 @@ LOCAL_MODULE := libdvbpushjni
 LOCAL_ARM_MODE := arm
 LOCAL_MODULE_TAGS := optional
 LOCAL_PRELINK_MODULE := false
-
 LOCAL_SRC_FILES += \
+	src/drm/drmport.c \
+	src/drm/smcdrv.c \
+	src/drm/drmapi.c \
 	src/mid_push.c \
 	src/common.c \
 	src/multicast.c \
@@ -59,9 +68,42 @@ LOCAL_SRC_FILES += \
 	src/dvbpush_jni.c \
 	src/sha_verify.c \
 	src/mtdutils.c
-
 LOCAL_CFLAGS += -W -Wall
-LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -lpush
+LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -lpush -ldbstardrm
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libxml2 libiconv libdrmvod
+LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libxml2 libiconv
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libdrmvod
+LOCAL_MODULE_TAGS := optional
+LOCAL_PRELINK_MODULE := false
+LOCAL_SRC_FILES := \
+	src/drm/drmvod.c 
+LIBPLAYER_PATH := $(LOCAL_PATH)/../../../../amlogic/LibPlayer
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include \
+	$(LIBPLAYER_PATH)/amplayer/player/include \
+    $(LIBPLAYER_PATH)/amplayer/control/include \
+    $(LIBPLAYER_PATH)/amcodec/include \
+    $(LIBPLAYER_PATH)/amffmpeg \
+    $(JNI_H_INCLUDE) 
+LOCAL_CFLAGS := -Wall
+LOCAL_SHARED_LIBRARIES += liblog libdvbpushjni
+LOCAL_PROGUARD_ENABLED := disabled
+LOCAL_PRELINK_MODULE := false
+include $(BUILD_SHARED_LIBRARY)
+
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := drmtest
+LOCAL_MODULE_TAGS := optional
+LOCAL_PRELINK_MODULE := false
+LOCAL_SRC_FILES := \
+	src/drm/drmport.c \
+	src/drm/smcdrv.c \
+	src/drm/drmtest.c 
+LOCAL_CFLAGS := -Wall
+LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/
+LOCAL_SHARED_LIBRARIES += libc liblog
+include $(BUILD_EXECUTABLE)

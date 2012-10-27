@@ -1,8 +1,6 @@
-#include <am_smc.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "am_smc_internal.h"
 #include <limits.h>
 #include <sys/errno.h>
 #include <sys/types.h>
@@ -13,6 +11,8 @@
 #include <linux/amsmc.h>
 #include <time.h>
 
+#include "am/am_smc.h"
+#include "am/am_smc_internal.h"
 
 extern int smc_fd;
 
