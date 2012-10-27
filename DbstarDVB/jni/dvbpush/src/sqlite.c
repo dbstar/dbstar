@@ -379,7 +379,7 @@ PushFlag	NVARCHAR(64) PRIMARY KEY,\
 XMLName	NVARCHAR(64),\
 Version	NVARCHAR(64),\
 StandardVersion	NVARCHAR(32),\
-URI		NVARCHAR(256));", name);
+URI	NVARCHAR(256));", name);
 			}
 			else if(!strcmp(name,"Channel"))
 			{
@@ -388,7 +388,7 @@ URI		NVARCHAR(256));", name);
 pid	NVARCHAR(64) PRIMARY KEY,\
 pidtype	NVARCHAR(64),\
 URI NVARCHAR(256),\
-EffectFlag INTEGER);", name);
+EffectFlag INTEGER DEFAULT 1);", name);
 			}
 			else if(!strcmp(name,"Service"))
 			{
@@ -407,7 +407,7 @@ ObjectName	NVARCHAR(64),\
 EntityID	NVARCHAR(64),\
 StrLang		NVARCHAR(32),\
 StrName		NVARCHAR(64),\
-Extension	NVARCHAR(64),\
+Extension	NVARCHAR(64) DEFAULT '',\
 StrValue	NVARCHAR(1024),\
 PRIMARY KEY (ObjectName,EntityID,StrLang,StrName,Extension));", name);
 			}
@@ -516,15 +516,16 @@ ProductID	NVARCHAR(64),\
 URI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
-ReceiveStatus	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	NVARCHAR(64),\
 PushEndTime	NVARCHAR(64),\
 IsReserved	NVARCHAR(64),\
-Visible	NVARCHAR(64),\
-Favorite	NVARCHAR(64),\
+Visible	NVARCHAR(64) DEFAULT '1',\
+Favorite	NVARCHAR(64) DEFAULT '0',\
 IsAuthorized	NVARCHAR(64),\
 VODNum	NVARCHAR(64),\
-VODPlatform	NVARCHAR(256));", name);
+VODPlatform	NVARCHAR(256),\
+Deleted NVARCHAR(256) DEFAULT '0');", name);
 			}
 			else if(!strcmp(name,"Publication"))
 			{
@@ -537,20 +538,21 @@ URI	NVARCHAR(256),\
 DescURI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
-ReceiveStatus	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	NVARCHAR(64),\
 PushEndTime	NVARCHAR(64),\
 PublicationType	NVARCHAR(64),\
 IsReserved	CHAR(32),\
-Visible	CHAR(32),\
+Visible	CHAR(32) DEFAULT '1',\
 DRMFile	NVARCHAR(256),\
 SetID	NVARCHAR(64),\
 IndexInSet	NVARCHAR(32),\
-Favorite	NVARCHAR(32),\
+Favorite	NVARCHAR(32) DEFAULT '0',\
 Bookmark	NVARCHAR(32),\
 IsAuthorized	NVARCHAR(64),\
 VODNum	NVARCHAR(64),\
 VODPlatform	NVARCHAR(256),\
+Deleted NVARCHAR(256) DEFAULT '0',\
 FileID	NVARCHAR(64),\
 FileSize	NVARCHAR(64),\
 FileURI	NVARCHAR(256),\
@@ -636,10 +638,10 @@ PublicationID	NVARCHAR(64),\
 URI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
-ReceiveStatus	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	NVARCHAR(64),\
 PushEndTime	NVARCHAR(64),\
-UserStatus	NVARCHAR(64),\
+UserStatus	NVARCHAR(64) DEFAULT '1',\
 PRIMARY KEY (DateValue,PublicationID));", name);
 			}
 			else if(!strcmp(name,"ProductDesc"))
@@ -651,7 +653,7 @@ ProductDescID	NVARCHAR(64),\
 ID	NVARCHAR(64),\
 TotalSize	NVARCHAR(64),\
 URI	NVARCHAR(256),\
-ReceiveStatus	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	NVARCHAR(64),\
 PushEndTime	NVARCHAR(64),\
 PRIMARY KEY (ReceiveType,ID));", name);
@@ -674,7 +676,7 @@ CodeFormat	NVARCHAR(64),\
 URI	NVARCHAR(256),\
 TotalSize	NVARCHAR(64),\
 ProductDescID	NVARCHAR(64),\
-ReceiveStatus	NVARCHAR(64),\
+ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	NVARCHAR(64),\
 PushEndTime	NVARCHAR(64),\
 StartTime	CHAR(32),\
@@ -1064,7 +1066,7 @@ int sqlite_transaction_end(int commit_flag)
 {
 	int ret = -1;
 	
-	DEBUG("sqlite_transaction_end<<\n");
+	DEBUG("sqlite_transaction_end<< %s\n", 1==commit_flag?"commit":"rollback");
 	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
 		if(1==commit_flag){
 			DEBUG("commit transaction\n");
@@ -1242,9 +1244,9 @@ static int global_info_init()
 	char sqlite_cmd[1024];
 	sqlite_transaction_begin();
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-		GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
-	sqlite_transaction_exec(sqlite_cmd);
+//	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+//		GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
+//	sqlite_transaction_exec(sqlite_cmd);
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 		GLB_NAME_CURLANGUAGE,"chi");

@@ -70,12 +70,13 @@ void *main_thread()
 		return NULL;
 	}
 	
-	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
-	
 	upgrade_info_init();
 	
-	DEBUG("read drm info\n");
+	DEBUG("do not read drm info\n");
 	drm_info_init();
+	drm_set_emmpid(0x64);
+	
+	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
 	
 	int main_running = 1;
 	while(1==main_running)

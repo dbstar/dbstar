@@ -5,6 +5,7 @@
 #include <time.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+#include <pthread.h>
 
 #include "common.h"
 #include "xmlparser.h"
@@ -17,6 +18,9 @@
 static char s_serviceID[64];
 static char s_push_root_path[512];
 static int global_insert(DBSTAR_GLOBAL_S *p);
+static pthread_mutex_t mtx_parse_xml = PTHREAD_MUTEX_INITIALIZER;
+
+static int serviceID_init();
 
 /*
  只用于读取单个字符串类型字段的单个值
@@ -33,7 +37,10 @@ int str_read_cb(char **result, int row, int column, void *some_str)
 //	for(i=1;i<row+1;i++)
 	{
 		//DEBUG("==%s:%s:%ld==\n", result[i*column], result[i*column+1], strtol(result[i*column+1], NULL, 0));
-		strcpy((char *)some_str, result[i*column]);
+		if(result[i*column])
+			sprintf((char *)some_str, "%s", result[i*column]);
+		else
+			DEBUG("NULL value\n");
 	}
 	
 	return 0;
@@ -77,6 +84,27 @@ int xmlparser_init(void)
 {
 	push_dir_init();
 	
+	serviceID_init();
+	
+	char init_xml_path[512];
+	char init_xml_uri[512];
+	snprintf(init_xml_path, sizeof(init_xml_path), "%s/%s", s_push_root_path,INITIALIZE_MIDPATH);
+	memset(init_xml_uri, 0, sizeof(init_xml_uri));
+	
+	if(0==distill_file(init_xml_path, init_xml_uri, sizeof(init_xml_uri), "xml", "Initialize.xml")){
+		parse_xml(init_xml_uri,INITIALIZE_XML);
+	}
+	
+	return 0;
+}
+
+int xmlparser_uninit(void)
+{
+	return 0;
+}
+
+static int serviceID_init()
+{
 	char sqlite_cmd[512];
 	memset(s_serviceID, 0, sizeof(s_serviceID));
 	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
@@ -85,26 +113,10 @@ int xmlparser_init(void)
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no serviceID from db\n");
-		//strncpy(s_serviceID, SERVICE_ID, sizeof(s_serviceID)-1);
 	}
 	else
 		DEBUG("read serviceID: %s\n", s_serviceID);
 	
-	char init_xml_path[512];
-	char init_xml_uri[512];
-	snprintf(init_xml_path, sizeof(init_xml_path), "%s/%s", s_push_root_path,INITIALIZE_PATH);
-	memset(init_xml_uri, 0, sizeof(init_xml_uri));
-	
-	if(0==distill_file(init_xml_path, init_xml_uri, sizeof(init_xml_uri), "xml", "Initialize.xml")){
-		parse_xml(init_xml_uri,INITIALIZE_XML);
-	}
-	
-	
-	return 0;
-}
-
-int xmlparser_uninit(void)
-{
 	return 0;
 }
 
@@ -206,7 +218,7 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 */
 static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 {
-	DEBUG("==================== %s\n", xmlinfo->PushFlag);
+	//DEBUG("==================== %s\n", xmlinfo->PushFlag);
 	if(NULL==xmlinfo && 0==strlen(xmlinfo->PushFlag))
 		return -1;
 	
@@ -217,7 +229,7 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Initialize(PushFlag) VALUES('%s');", xmlinfo->PushFlag);
 		sqlite_transaction_exec(sqlite_cmd);
 		
-		if(strlen(xmlinfo->Version)>0){
+		if(strlen(xmlinfo->XMLName)>0){
 			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET XMLName='%s'WHERE PushFlag='%s';", xmlinfo->XMLName, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
@@ -281,7 +293,7 @@ static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
 	}
 	
 	char sqlite_cmd[1024*3];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO PublicationsSet(SetID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,IsReserved,Visible,Favorite,IsAuthorized,VODNum,VODPlatform) \
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO PublicationsSet(SetID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,IsReserved,Visible,Favorite,IsAuthorized,VODNum,VODPlatform) \
 	VALUES('%s',\
 	(select ColumnID from PublicationsSet where SetID='%s'),\
 	'%s',\
@@ -289,7 +301,8 @@ static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
 	(select TotalSize from PublicationsSet where SetID='%s'),\
 	(select ProductDescID from PublicationsSet where SetID='%s'),\
 	(select ReceiveStatus from PublicationsSet where SetID='%s'),\
-	(select PushTime from PublicationsSet where SetID='%s'),\
+	(select PushStartTime from PublicationsSet where SetID='%s'),\
+	(select PushEndTime from PublicationsSet where SetID='%s'),\
 	(select IsReserved from PublicationsSet where SetID='%s'),\
 	(select Visible from PublicationsSet where SetID='%s'),\
 	(select Favorite from PublicationsSet where SetID='%s'),\
@@ -299,6 +312,7 @@ static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
 		p->SetID,
 		p->SetID,
 		p->ProductID,
+		p->SetID,
 		p->SetID,
 		p->SetID,
 		p->SetID,
@@ -323,7 +337,7 @@ static int publication_insert_setinfo(DBSTAR_PUBLICATIONSSET_S *p)
 	
 	char sqlite_cmd[1024*4];
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,ReceiveStatus,PushTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
 	VALUES('%s',\
 	(select ColumnID from Publication where PublicationID='%s'),\
 	(select ProductID from Publication where PublicationID='%s'),\
@@ -332,7 +346,8 @@ static int publication_insert_setinfo(DBSTAR_PUBLICATIONSSET_S *p)
 	(select TotalSize from Publication where PublicationID='%s'),\
 	(select ProductDescID from Publication where PublicationID='%s'),\
 	(select ReceiveStatus from Publication where PublicationID='%s'),\
-	(select PushTime from Publication where PublicationID='%s'),\
+	(select PushStartTime from Publication where PublicationID='%s'),\
+	(select PushEndTime from Publication where PublicationID='%s'),\
 	(select PublicationType from Publication where PublicationID='%s'),\
 	(select IsReserved from Publication where PublicationID='%s'),\
 	(select Visible from Publication where PublicationID='%s'),\
@@ -344,6 +359,7 @@ static int publication_insert_setinfo(DBSTAR_PUBLICATIONSSET_S *p)
 	(select IsAuthorized from Publication where PublicationID='%s'),\
 	(select VODNum from Publication where PublicationID='%s'),\
 	(select VODPlatform from Publication where PublicationID='%s'));",
+		p->PublicationID,
 		p->PublicationID,
 		p->PublicationID,
 		p->PublicationID,
@@ -372,7 +388,7 @@ static int publication_insert_setinfo(DBSTAR_PUBLICATIONSSET_S *p)
 */
 static int column_insert(DBSTAR_COLUMN_S *ptr)
 {
-	if(NULL==ptr || 0==strlen(ptr->ColumnID) || 0==strlen(ptr->ParentID)){
+	if(NULL==ptr || 0==strlen(ptr->ColumnID)){
 		DEBUG("invalid arguments\n");
 		return -1;
 	}
@@ -392,15 +408,15 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 */
 static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 {
-	if(NULL==ptr){
+	if(NULL==ptr && strlen(ptr->DateValue)>0 && strlen(ptr->PublicationID)>0){
 		DEBUG("invalid arguments\n");
 		return -1;
 	}
 	
-//	char sqlite_cmd[512];
-//	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(DateValue,GuideListID,productID,PublicationID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,UserStatus) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-//		ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID,ptr->URI,ptr->TotalSize,ptr->ProductDescID,ptr->ReceiveStatus,ptr->PushTime,ptr->UserStatus);
-//	sqlite_transaction_exec(sqlite_cmd);
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s','%s','%s','%s','1');",
+		ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID);
+	sqlite_transaction_exec(sqlite_cmd);
 	
 	return 0;
 }
@@ -485,7 +501,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	distill_file(desc_path, desc_uri, sizeof(desc_uri), "xml", "Publication.xml");
 	
 	if(0==strcmp(ptr->ReceiveType, "ReceivePublications")){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,ReceiveStatus,PushTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
 	VALUES('%s',\
 	(select ColumnID from Publication where PublicationID='%s'),\
 	'%s',\
@@ -494,6 +510,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	'%s',\
 	'%s',\
 	(select ReceiveStatus from Publication where PublicationID='%s'),\
+	'%s',\
 	'%s',\
 	(select PublicationType from Publication where PublicationID='%s'),\
 	(select IsReserved from Publication where PublicationID='%s'),\
@@ -514,7 +531,8 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		ptr->TotalSize,
 		ptr->ProductDescID,
 		ptr->ID,
-		time_str,
+		ptr->PushStartTime,
+		ptr->PushEndTime,
 		ptr->ID,
 		ptr->ID,
 		ptr->ID,
@@ -530,7 +548,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		return sqlite_transaction_exec(sqlite_cmd);
 	}
 	else if(0==strcmp(ptr->ReceiveType, "ReceiveSets")){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO PublicationsSet(SetID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,IsReserved,Visible,Favorite,IsAuthorized,VODNum,VODPlatform) \
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO PublicationsSet(SetID,ColumnID,ProductID,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,IsReserved,Visible,Favorite,IsAuthorized,VODNum,VODPlatform) \
 	VALUES('%s',\
 	(select ColumnID from PublicationsSet where SetID='%s'),\
 	'%s',\
@@ -538,6 +556,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	'%s',\
 	'%s',\
 	(select ReceiveStatus from PublicationsSet where SetID='%s'),\
+	'%s',\
 	'%s',\
 	(select IsReserved from PublicationsSet where SetID='%s'),\
 	(select Visible from PublicationsSet where SetID='%s'),\
@@ -552,7 +571,8 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		ptr->TotalSize,
 		ptr->ProductDescID,
 		ptr->ID,
-		time_str,
+		ptr->PushStartTime,
+		ptr->PushEndTime,
 		ptr->ID,
 		ptr->ID,
 		ptr->ID,
@@ -564,8 +584,8 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	}
 	else if(	0==strcmp(ptr->ReceiveType, "ReceiveGuideList")
 			||	0==strcmp(ptr->ReceiveType, "ReceivePreview")){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ProductDesc(ReceiveType,ProductDescID,URI,TotalSize,ReceiveStatus,PushTime) VALUES('%s','%s','%s','%s','0','%s');",
-			ptr->ReceiveType,ptr->ProductDescID,total_uri,ptr->TotalSize,time_str);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ProductDesc(ReceiveType,ProductDescID,URI,TotalSize,ReceiveStatus,PushStartTime,PushEndTime) VALUES('%s','%s','%s','%s','0','%s','%s');",
+			ptr->ReceiveType,ptr->ProductDescID,total_uri,ptr->TotalSize,ptr->PushStartTime,ptr->PushEndTime);
 		
 		return sqlite_transaction_exec(sqlite_cmd);
 	}
@@ -624,7 +644,7 @@ static int publication_insert_productid(char *PublicationID, char *ProductID)
 	
 	char sqlite_cmd[1024*4];
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,ReceiveStatus,PushTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
 	VALUES('%s',\
 	(select ColumnID from Publication where PublicationID='%s'),\
 	'%s',\
@@ -633,7 +653,8 @@ static int publication_insert_productid(char *PublicationID, char *ProductID)
 	(select TotalSize from Publication where PublicationID='%s'),\
 	(select ProductDescID from Publication where PublicationID='%s'),\
 	(select ReceiveStatus from Publication where PublicationID='%s'),\
-	(select PushTime from Publication where PublicationID='%s'),\
+	(select PushStartTime from Publication where PublicationID='%s'),\
+	(select PushEndTime from Publication where PublicationID='%s'),\
 	(select PublicationType from Publication where PublicationID='%s'),\
 	(select IsReserved from Publication where PublicationID='%s'),\
 	(select Visible from Publication where PublicationID='%s'),\
@@ -648,6 +669,7 @@ static int publication_insert_productid(char *PublicationID, char *ProductID)
 		PublicationID,
 		PublicationID,
 		ProductID,
+		PublicationID,
 		PublicationID,
 		PublicationID,
 		PublicationID,
@@ -679,7 +701,7 @@ static int preview_insert_productid(char *PreviewID, char *ProductID)
 	}
 	
 	char sqlite_cmd[1024*4];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,StartTime,EndTime,PlayMode) \
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,StartTime,EndTime,PlayMode) \
 	VALUES('%s',\
 	'%s',\
 	(select PreviewType from Preview where PreviewID='%s'),\
@@ -695,12 +717,14 @@ static int preview_insert_productid(char *PreviewID, char *ProductID)
 	(select TotalSize from Preview where PreviewID='%s'),\
 	(select ProductDescID from Preview where PreviewID='%s'),\
 	(select ReceiveStatus from Preview where PreviewID='%s'),\
-	(select PushTime from Preview where PreviewID='%s'),\
+	(select PushStartTime from Preview where PreviewID='%s'),\
+	(select PushEndTime from Preview where PreviewID='%s'),\
 	(select StartTime from Preview where PreviewID='%s'),\
 	(select EndTime from Preview where PreviewID='%s'),\
 	(select PlayMode from Preview where PreviewID='%s'));",
 		PreviewID,
 		ProductID,
+		PreviewID,
 		PreviewID,
 		PreviewID,
 		PreviewID,
@@ -767,7 +791,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 	
 	char sqlite_cmd[1024*4];
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,ReceiveStatus,PushTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,PublicationType,IsReserved,Visible,DRMFile,SetID,IndexInSet,Favorite,Bookmark,IsAuthorized,VODNum,VODPlatform) \
 	VALUES('%s',\
 	(select ColumnID from Publication where PublicationID='%s'),\
 	(select ProductID from Publication where PublicationID='%s'),\
@@ -776,7 +800,8 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 	(select TotalSize from Publication where PublicationID='%s'),\
 	(select ProductDescID from Publication where PublicationID='%s'),\
 	(select ReceiveStatus from Publication where PublicationID='%s'),\
-	(select PushTime from Publication where PublicationID='%s'),\
+	(select PushStartTime from Publication where PublicationID='%s'),\
+	(select PushEndTime from Publication where PublicationID='%s'),\
 	'%s',\
 	'%s',\
 	'%s',\
@@ -788,6 +813,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 	(select IsAuthorized from Publication where PublicationID='%s'),\
 	(select VODNum from Publication where PublicationID='%s'),\
 	(select VODPlatform from Publication where PublicationID='%s'));",
+		p->PublicationID,
 		p->PublicationID,
 		p->PublicationID,
 		p->PublicationID,
@@ -965,7 +991,7 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 	}
 	
 	char sqlite_cmd[1024*4];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushTime,StartTime,EndTime,PlayMode) \
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,StartTime,EndTime,PlayMode) \
 	VALUES('%s',\
 	(select ProductID from Preview where PreviewID='%s'),\
 	'%s',\
@@ -981,7 +1007,8 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 	(select TotalSize from Preview where PreviewID='%s'),\
 	(select ProductDescID from Preview where PreviewID='%s'),\
 	(select ReceiveStatus from Preview where PreviewID='%s'),\
-	(select PushTime from Preview where PreviewID='%s'),\
+	(select PushStartTime from Preview where PreviewID='%s'),\
+	(select PushEndTime from Preview where PreviewID='%s'),\
 	(select StartTime from Preview where PreviewID='%s'),\
 	(select EndTime from Preview where PreviewID='%s'),\
 	(select PlayMode from Preview where PreviewID='%s'));",
@@ -996,6 +1023,7 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 		p->Resolution,
 		p->BitRate,
 		p->CodeFormat,
+		p->PreviewID,
 		p->PreviewID,
 		p->PreviewID,
 		p->PreviewID,
@@ -1377,6 +1405,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						strncpy(global_s.Name, GLB_NAME_SERVICEID, sizeof(global_s.Name)-1);
 						strncpy(global_s.Value, product_service_s.serviceID, sizeof(global_s.Value)-1);
 						global_insert(&global_s);
+						snprintf(s_serviceID, sizeof(s_serviceID),"%s", product_service_s.productID);
 						
 						sqlite_transaction_table_clear("Initialize");
 						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
@@ -2295,17 +2324,18 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 			}
 // GuideList.xml
 			else if(0==strncmp(new_xmlroute, "GuideList^", strlen("GuideList^"))){
-				if(0==strcmp(new_xmlroute, "GuideList^ServiceID")){
-					if(0!=strcmp((char *)szKey, serviceID_get())){
-						DEBUG("invalid ServiceID %s for GuideList.xml, contrast with %s\n", (char *)szKey,serviceID_get());
-						process_over = XML_EXIT_UNNECESSARY;
-					}
-					else{
-						DEBUG("valid ServiceID %s for GuideList.xml\n", (char *)szKey);
-						sqlite_transaction_table_clear("GuideList");
-					}
-				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date")){
+//				if(0==strcmp(new_xmlroute, "GuideList^ServiceID")){
+//					if(0!=strcmp((char *)szKey, serviceID_get())){
+//						DEBUG("invalid ServiceID %s for GuideList.xml, contrast with %s\n", (char *)szKey,serviceID_get());
+//						process_over = XML_EXIT_UNNECESSARY;
+//					}
+//					else{
+//						DEBUG("valid ServiceID %s for GuideList.xml\n", (char *)szKey);
+//						sqlite_transaction_table_clear("GuideList");
+//					}
+//				}
+//				else 
+				if(0==strcmp(new_xmlroute, "GuideList^Date")){
 					memset(ptr, 0, sizeof(DBSTAR_GUIDELIST_S));
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
 				}
@@ -2318,6 +2348,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product")){
 					parseProperty(cur, new_xmlroute, ptr);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Item")){
 					/*
@@ -2889,32 +2920,39 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
-
+	int ret = 0;
+	char xml_uri[512];
+	
+	DEBUG("xml_flag: %d\n", xml_flag);
+	pthread_mutex_lock(&mtx_parse_xml);
 //	if(NULL==docname){
 //		DEBUG("CAUTION: name of xml file is NULL\n");
-//		return -1;
+//		ret = -1;
+//		goto PARSE_XML_END;
 //	}
 	
-	char xml_uri[512];
 	memset(xml_uri, 0, sizeof(xml_uri));
 	if(NULL==docname){
-		if(-1==xmluri_get(xml_flag, xml_uri, sizeof(xml_uri))){
+		char tmp_uri[512];
+		if(-1==xmluri_get(xml_flag, tmp_uri, sizeof(tmp_uri))){
 			DEBUG("can not get valid xml uri to parse\n");
-			return -1;
+			ret = -1;
+			goto PARSE_XML_END;
 		}
+		else
+			snprintf(xml_uri, sizeof(xml_uri), "%s/%s", push_dir_get(), tmp_uri);
 	}
 	else
-		strncpy(xml_uri, docname, sizeof(xml_uri)-1);
+		snprintf(xml_uri, sizeof(xml_uri), "%s/%s", push_dir_get(), docname);
 	
 	DEBUG("parse xml file[%d]: %s\n", xml_flag, xml_uri);
 	
 	doc = xmlParseFile(xml_uri);
 	if (doc == NULL ) {
 		ERROROUT("parse failed: %s\n", xml_uri);
-		return -1;
+		ret = -1;
+		goto PARSE_XML_END;
 	}
-	
-	int ret = 0;
 
 	cur = xmlDocGetRootElement(doc);
 	if (cur == NULL) {
@@ -2929,30 +2967,24 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		memset(xml_ver, 0, sizeof(xml_ver));
 		xmlver_get(xml_flag, xml_ver, sizeof(xml_ver));
 		
-		char *p_slash = strrchr(xml_uri, '/');
-		if(p_slash)
-			snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "%s", p_slash+1);
-		else
-			snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "%s", xml_uri);
-		
 		sqlite_transaction_begin();
 // Initialize.xml
 		if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
 			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 			if(strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)){
 				DEBUG("same Version: %s, no need to parse\n", xml_ver);
-				ret = -1;
+				ret = 0;
+				/*
+				 之所以返回0而不是-1，是为了能强制扫描那些依赖于ServiceID的xml的解析
+				*/
 			}
 			else{
 				ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, xml_ver);
 				
-				if(PUSH_XML_FLAG_UNDEFINED==xml_flag)
-					snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", INITIALIZE_XML);
-				else
+				if(0==ret){
 					snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", xml_flag);
-				snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize.xml");
-				snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", xml_uri);
-				xmlinfo_insert(&xmlinfo);
+					snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize.xml");
+				}
 			}
 		}
 // Channels.xml
@@ -2992,18 +3024,10 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		}
 // Publication.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Publication")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version))){
-				DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
-						xml_ver, xmlinfo.Version);
-				ret = -1;
-			}
-			else{
-				DBSTAR_PUBLICATION_S publication_s;
-				memset(&publication_s, 0, sizeof(publication_s));
-				ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, xml_ver);
-				publication_insert(&publication_s);
-			}
+			DBSTAR_PUBLICATION_S publication_s;
+			memset(&publication_s, 0, sizeof(publication_s));
+			ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, xml_ver);
+			publication_insert(&publication_s);
 		}
 // Column.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
@@ -3034,6 +3058,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 				ret = -1;
 			}
 			else{
+				sqlite_transaction_table_clear("GuideList");
 				DBSTAR_GUIDELIST_S guidelist_s;
 				ret = parseNode(doc, cur, "GuideList", &guidelist_s, &xmlinfo, "GuideList", NULL, xml_ver);
 			}
@@ -3059,14 +3084,30 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		
 // Message.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Messages")){
-			ret = parseNode(doc, cur, "Messages", NULL, &xmlinfo, "Messages", NULL, xml_ver);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+						xml_ver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+				ret = -1;
+			}
+			else{
+				ret = parseNode(doc, cur, "Messages", NULL, &xmlinfo, "Messages", NULL, xml_ver);
+			}
 		}
 // Preview.xml
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"Preview")){
-			DBSTAR_PREVIEW_S preview_s;
-			memset(&preview_s, 0, sizeof(preview_s));
-			ret = parseNode(doc, cur, "Preview", &preview_s, &xmlinfo, "Preview", NULL, xml_ver);
-			preview_insert(&preview_s);
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+						xml_ver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+				ret = -1;
+			}
+			else{
+				DBSTAR_PREVIEW_S preview_s;
+				memset(&preview_s, 0, sizeof(preview_s));
+				ret = parseNode(doc, cur, "Preview", &preview_s, &xmlinfo, "Preview", NULL, xml_ver);
+				preview_insert(&preview_s);
+			}
 		}
 		
 		else{
@@ -3077,6 +3118,10 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		if(-1==ret)
 			sqlite_transaction_end(0);
 		else if(0==ret){
+			if(docname)
+				snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", docname);
+			xmlinfo_insert(&xmlinfo);
+			
 			sqlite_transaction_end(1);
 			
 			if(INITIALIZE_XML==xml_flag){
@@ -3087,6 +3132,11 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 	}
 	
 	xmlFreeDoc(doc);
+
+PARSE_XML_END:
+	DEBUG("parse xml end\n");
+	pthread_mutex_unlock(&mtx_parse_xml);
+	
 	return ret;
 }
 
@@ -3095,9 +3145,13 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 */
 static int depent_on_serviceID(PUSH_XML_FLAG_E xml_flag)
 {
-	if(	COLUMN_XML==xml_flag
-		|| SERVICE_XML==xml_flag
-		|| PRODUCTDESC_XML==xml_flag )
+	if(	COLUMN_XML == xml_flag
+		|| GUIDELIST_XML == xml_flag
+		|| COMMANDS_XML == xml_flag
+		|| MESSAGE_XML == xml_flag
+		|| PRODUCTDESC_XML == xml_flag
+		|| SERVICE_XML == xml_flag
+		|| SPRODUCT_XML == xml_flag )
 		return 1;
 	else
 		return 0;
@@ -3125,9 +3179,15 @@ int parse_xml(char *xml_uri, PUSH_XML_FLAG_E xml_flag)
 	实际使用中，这里的判断应当是根据PUSH回调出来的Initialize.xml对应的Flag，此Flag才是唯一的标识。
 	*/
 	if(0==ret && INITIALIZE_XML==xml_flag){
-		DEBUG("Zhao Hua Xi Shi\n");
+		DEBUG("force remedy >>>>>>>>>>>>>>>>\n");
 		parseDoc(NULL, COLUMN_XML);
+		parseDoc(NULL, GUIDELIST_XML);
+		parseDoc(NULL, COMMANDS_XML);
+		parseDoc(NULL, MESSAGE_XML);
 		parseDoc(NULL, PRODUCTDESC_XML);
+		parseDoc(NULL, SERVICE_XML);
+		parseDoc(NULL, SPRODUCT_XML);
+		DEBUG("force remedy <<<<<<<<<<<<<<<<\n");
 	}
 	
 	return ret;

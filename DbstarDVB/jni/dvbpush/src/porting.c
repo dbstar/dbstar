@@ -500,6 +500,7 @@ int dvbpush_register_notify(void *func)
 */
 int msg_send2_UI(int type, char *msg, int len)
 {
+	DEBUG("type: %d, msg: %s, len: %d\n", type, msg, len);
 	if (dvbpush_notify != NULL){
 		return dvbpush_notify(type, msg, len);
 	}

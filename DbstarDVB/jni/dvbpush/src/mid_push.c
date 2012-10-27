@@ -459,7 +459,7 @@ void callback(const char *path, long long size, int flag)
 			int i = 0;
 			for(i=0; i<XML_NUM; i++){
 				if(0==strlen(s_push_xml[i].uri)){
-					snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s/%s", push_dir_get(), path);
+					snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s", path);
 					s_push_xml[i].flag = flag;
 					break;
 				}
