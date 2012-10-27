@@ -214,7 +214,7 @@ char *strrstr_s(const char *str_dad, char *str_son, char separater_sign)
 /*
  是否以指定字符串结尾，case_cmp表示是否敏感匹配，0表示不敏感，其他表示敏感
 */
-int check_tail(char *str_dad, char *str_tail, int case_cmp)
+int check_tail(const char *str_dad, char *str_tail, int case_cmp)
 {
 	if(NULL==str_dad || NULL==str_tail || 0==strlen(str_tail) || strlen(str_dad)<strlen(str_tail)){
 		DEBUG("invalid args\n");

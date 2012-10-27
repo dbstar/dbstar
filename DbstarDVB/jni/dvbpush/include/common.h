@@ -88,7 +88,7 @@ typedef enum{
 #define GLB_NAME_HARDWARE_VERSION	"HardwareVersion"
 #define GLB_NAME_SOFTWARE_VERSION	"SoftwareVersion"
 
-#define INITIALIZE_PATH		"servicegroup/initialize"
+#define INITIALIZE_MIDPATH	"servicegroup/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
 #define LOCALCOLUMN_RES		"/data/dbstar/ColumnRes"
 
@@ -282,6 +282,8 @@ typedef struct{
 	char	ID[64];
 	char	TotalSize[64];
 	char	URI[256];
+	char	PushStartTime[64];
+	char	PushEndTime[64];
 	char	Columns[1024];	// it's better to use malloc and relloc
 }DBSTAR_PRODUCTDESC_S;
 
@@ -408,7 +410,7 @@ char *strrstr_s(const char *str_dad, char *str_son, char signchr);
 char *time_serial();
 int ipv4_simple_check(const char *ip_addr);
 int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, char *preferential_file);
-int check_tail(char *str_dad, char *str_tail, int case_cmp);
+int check_tail(const char *str_dad, char *str_tail, int case_cmp);
 
 #endif
 
