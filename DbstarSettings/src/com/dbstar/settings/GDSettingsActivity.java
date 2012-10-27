@@ -58,7 +58,7 @@ public class GDSettingsActivity extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		mInLocalHeaderSwitch = false;
 		
-		getListView().setBackgroundResource(R.drawable.view_background);
+//		getListView().setBackgroundResource(R.drawable.view_background);
 
 		if (!onIsHidingHeaders() && onIsMultiPane()) {
 			highlightHeader();
@@ -211,18 +211,18 @@ public class GDSettingsActivity extends PreferenceActivity {
 
 	private void getMetaData() {
 		try {
-			ActivityInfo ai = getPackageManager().getActivityInfo(
+			ActivityInfo activityInfo = getPackageManager().getActivityInfo(
 					getComponentName(), PackageManager.GET_META_DATA);
-			if (ai == null || ai.metaData == null)
+			if (activityInfo == null || activityInfo.metaData == null)
 				return;
-			mTopLevelHeaderId = ai.metaData.getInt(META_DATA_KEY_HEADER_ID);
-			mFragmentClass = ai.metaData
+			mTopLevelHeaderId = activityInfo.metaData.getInt(META_DATA_KEY_HEADER_ID);
+			mFragmentClass = activityInfo.metaData
 					.getString(META_DATA_KEY_FRAGMENT_CLASS);
 
 			// Check if it has a parent specified and create a Header object
-			final int parentHeaderTitleRes = ai.metaData
+			final int parentHeaderTitleRes = activityInfo.metaData
 					.getInt(META_DATA_KEY_PARENT_TITLE);
-			String parentFragmentClass = ai.metaData
+			String parentFragmentClass = activityInfo.metaData
 					.getString(META_DATA_KEY_PARENT_FRAGMENT_CLASS);
 			if (parentFragmentClass != null) {
 				mParentHeader = new Header();

@@ -159,7 +159,7 @@ public class GDDataModel {
 					content.XMLFilePath = cursor.getString(PublicationURI);
 					contents[i] = content;
 					i++;
-					
+
 					Log.d(TAG, "content id= " + content.Id);
 				} while (cursor.moveToNext());
 			}
@@ -298,7 +298,7 @@ public class GDDataModel {
 					content.XMLFilePath = cursor.getString(EpisodesURI);
 					content.IndexInSet = Integer.valueOf(cursor
 							.getString(EpisodesIndexInSet));
-					
+
 					contents[i] = content;
 					i++;
 				} while (cursor.moveToNext());
@@ -781,10 +781,24 @@ public class GDDataModel {
 		return value;
 	}
 
+	protected synchronized boolean isFileExist(String filePath) {
+		boolean exist = false;
+
+		if (filePath == null || filePath.isEmpty())
+			return false;
+
+		File file = new File(filePath);
+		if (file != null && file.exists()) {
+			exist = true;
+		}
+
+		return exist;
+	}
+
 	public Bitmap getImage(String file) {
 		Log.d(TAG, "image =" + file);
 
-		if (file == null || file.isEmpty())
+		if (!isFileExist(file))
 			return null;
 
 		Bitmap image = BitmapFactory.decodeFile(file);
@@ -795,6 +809,10 @@ public class GDDataModel {
 	public void getDetailsData(String xmlFile, ContentData content) {
 
 		Log.d(TAG, "getDetailsData xmlFile " + xmlFile);
+
+		if (xmlFile == null || xmlFile.isEmpty())
+			return;
+
 		File file = new File(xmlFile);
 
 		if (file.exists() && file.length() > 0) {

@@ -2019,7 +2019,7 @@ public class PlayerMenu extends Activity {
 					showOsdView();
 				}
 			}
-		} else if (keyCode == KeyEvent.KEYCODE_INFO) {
+		} else if (keyCode == KeyEvent.KEYCODE_NOTIFICATION) {
 			mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP, MSG_DIALOG_TIMEOUT);
 		}
 		/*

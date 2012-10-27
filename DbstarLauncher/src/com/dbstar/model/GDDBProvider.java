@@ -12,10 +12,10 @@ import android.util.Log;
 
 public class GDDBProvider {
 	private static final String TAG = "GDDBProvider";
-	
+
 	protected static final UriMatcher sURIMatcher = new UriMatcher(
 			UriMatcher.NO_MATCH);
-	
+
 	protected GDSystemConfigure mConfigure = null;
 	protected SQLiteDatabase mDataBase = null;
 	protected String mDbFile = null;
@@ -35,13 +35,13 @@ public class GDDBProvider {
 	}
 
 	protected synchronized void createDatabase(String dbFile) {
-		
+
 		Log.d(TAG, "++++++++++++++++++createDatabase " + dbFile);
 
-		if (!mConfigure.isDiskAvailable())
-			return;
-		
-		if (dbFile!=null && !dbFile.isEmpty() && !isFileExist(dbFile)) {
+		// if (!mConfigure.isDiskAvailable())
+		// return;
+
+		if (!isFileExist(dbFile)) {
 			SQLiteDatabase db = null;
 			db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
 			Log.d(TAG, "dbFile=" + dbFile);
@@ -53,18 +53,21 @@ public class GDDBProvider {
 			} finally {
 				db.endTransaction();
 			}
-			
+
 			if (db != null) {
 				db.close();
 			}
 		}
 	}
 
-	protected synchronized SQLiteDatabase openDatabase(String dbFile, boolean isReadOnly) {
+	protected synchronized SQLiteDatabase openDatabase(String dbFile,
+			boolean isReadOnly) {
 
 		Log.d(TAG, "open dbFile = " + dbFile);
-		
-		if (!mConfigure.isDiskAvailable())
+
+//		if (!mConfigure.isDiskAvailable())
+//			return null;
+		if (!isFileExist(dbFile))
 			return null;
 
 		SQLiteDatabase db = null;
@@ -85,10 +88,14 @@ public class GDDBProvider {
 
 	protected synchronized SQLiteDatabase getReadableDatabase() {
 		String dbFile = mDbFile;
-		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
+//		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
+//			return null;
+//		}
+		
+		if (!isFileExist(dbFile)) {
 			return null;
 		}
-		
+
 		Log.d(TAG, "getReadableDatabase ");
 
 		SQLiteDatabase db = null;
@@ -111,17 +118,21 @@ public class GDDBProvider {
 
 	protected synchronized SQLiteDatabase getWriteableDatabase() {
 		String dbFile = mDbFile;
-		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
+//		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
+//			return null;
+//		}
+		
+		if (!isFileExist(dbFile)) {
 			return null;
 		}
-		
+
 		Log.d(TAG, "getWriteableDatabase ");
 
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
 			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
-			
+
 			if (mDataBase.isOpen()) {
 				Log.d(TAG, "mDataBase.isReadOnly() " + mDataBase.isReadOnly());
 				if (!mDataBase.isReadOnly()) {
@@ -251,7 +262,8 @@ public class GDDBProvider {
 			rowId = db.insert(table, null, values);
 			if (rowId > 0) {
 				Log.d(TAG, " insert at id=" + rowId);
-//				retUri = ContentUris.withAppendedId(Global.CONTENT_URI, rowId);
+				// retUri = ContentUris.withAppendedId(Global.CONTENT_URI,
+				// rowId);
 				retUri = ContentUris.withAppendedId(uri, rowId);
 				// getContext().getContentResolver().notifyChange(retUri, null);
 				return retUri;
@@ -283,30 +295,28 @@ public class GDDBProvider {
 		}
 		return count;
 	}
-	
-	
-	public boolean execBatchSql(String sql, String[][] bindArgs){
+
+	public boolean execBatchSql(String sql, String[][] bindArgs) {
 		boolean isSuccess = true;
 		SQLiteDatabase db = getWriteableDatabase();
-		
-		try{
+
+		try {
 			db.beginTransaction();// 添加事务
-			for(String[] args:bindArgs){
-				
+			for (String[] args : bindArgs) {
+
 				Log.d(TAG, " execBatchSql " + sql + args);
 				db.execSQL(sql, args);
 			}
 			db.setTransactionSuccessful();// 设置事务标志为成功，当结束事务时就会提交事务
-		}catch(Exception e){
+		} catch (Exception e) {
 			isSuccess = false;
 			e.printStackTrace();
-		}finally{
+		} finally {
 			db.endTransaction();// 提交事务
 		}
 		return isSuccess;
 	}
-	
-	
+
 	protected String getTableName(int type) {
 		return "";
 	}

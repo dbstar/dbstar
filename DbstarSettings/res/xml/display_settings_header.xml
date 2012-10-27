@@ -5,7 +5,7 @@
     <header
         android:id="@+id/display_settings"
         android:icon="@drawable/ic_settings_display"
-        android:fragment="com.dbstar.settings.DisplaySettings"
+        android:fragment="com.dbstar.settings.display.DisplaySettings"
         android:title="@string/display_settings" />
 
 </preference-headers>

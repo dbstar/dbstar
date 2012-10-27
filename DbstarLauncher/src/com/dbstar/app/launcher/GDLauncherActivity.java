@@ -641,6 +641,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		intent.setComponent(new ComponentName(packageName, componentName));
 		intent.setAction("android.intent.action.VIEW");
 		
+		Log.d(TAG, "start " + componentName);
 		return intent;
 	}
 	
@@ -844,9 +845,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void onParentMenuShown() {
-		mMainMenuAdapter.notifyDataSetChanged();
-		Menu menu = mMenuStack.peek();
-		mMainMenu.setSelectionByForce(menu.FocusedPosition);
+//		mMainMenuAdapter.notifyDataSetChanged();
+//		Menu menu = mMenuStack.peek();
+//		mMainMenu.setSelectionByForce(menu.FocusedPosition);
 
 		showMenuPath();
 	}
@@ -1066,8 +1067,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					@Override
 					public void onAnimationStart(Animation animation) {
 						Menu topMenu = mMenuStack.peek();
+						mOldSelectedItemPosition = -1;
+						mSelectedItemPosition = topMenu.FocusedPosition;
 						mMainMenuAdapter.setDataSet(topMenu.Items);
-
+						mMainMenu.setSelectionByForce(mSelectedItemPosition);
 						mMainMenuAdapter.notifyDataSetChanged();
 					}
 

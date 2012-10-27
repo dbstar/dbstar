@@ -39,7 +39,8 @@
         <activity
             android:name=".GDNetworkSettingsActivity"
             android:label="@string/app_name"
-            android:screenOrientation="landscape" >
+            android:screenOrientation="landscape"
+            android:theme="@style/PreferencesTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="com.dbstar.settings.NETWORK_SETTINGS" />
@@ -59,10 +60,29 @@
         </activity>
         <activity
             android:name=".GDVideoSettingsActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/PreferencesTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="com.dbstar.settings.Video_SETTINGS" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".display.OutputSetConfirm"
+            android:theme="@android:style/Theme.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".display.DisplayPositionSetConfirm"
+            android:theme="@android:style/Theme.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -77,6 +97,24 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".display.OutputSettingsBroadcastReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.OUTPUTMODE_CHANGE" />
+                <action android:name="android.intent.action.OUTPUTMODE_CANCEL" />
+                <action android:name="android.intent.action.OUTPUTMODE_SAVE" />
+                <action android:name="android.intent.action.OUTPUTPOSITION_CHANGE" />
+                <action android:name="android.intent.action.OUTPUTPOSITION_CANCEL" />
+                <action android:name="android.intent.action.OUTPUTPOSITION_SAVE" />
+                <action android:name="android.intent.action.OUTPUTPOSITION_DEFAULT_SAVE" />
+                <action android:name="android.intent.action.DISP_CHANGE" />
+                <action android:name="android.intent.action.REALVIDEO_ON" />
+                <action android:name="android.intent.action.REALVIDEO_OFF" />
+                <action android:name="android.intent.action.VIDEOPOSITION_CHANGE" />
+                <action android:name="android.intent.action.CVBSMODE_CHANGE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
