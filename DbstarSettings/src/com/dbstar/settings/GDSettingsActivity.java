@@ -57,6 +57,8 @@ public class GDSettingsActivity extends PreferenceActivity {
 		mInLocalHeaderSwitch = true;
 		super.onCreate(savedInstanceState);
 		mInLocalHeaderSwitch = false;
+		
+		getListView().setBackgroundResource(R.drawable.view_background);
 
 		if (!onIsHidingHeaders() && onIsMultiPane()) {
 			highlightHeader();

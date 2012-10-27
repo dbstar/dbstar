@@ -137,7 +137,7 @@
                     android:scrollHorizontally="true"
                     android:singleLine="true"
                     android:textColor="#ffffffff"
-                    android:textSize="20sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
         </LinearLayout>
 

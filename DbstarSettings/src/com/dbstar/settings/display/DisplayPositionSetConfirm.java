@@ -29,6 +29,8 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 
+import com.dbstar.settings.R;
+
 public class DisplayPositionSetConfirm extends Activity {
 	private static final String TAG = "DisplayPositionSetConfirm";
 

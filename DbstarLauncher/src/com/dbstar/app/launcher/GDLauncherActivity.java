@@ -21,7 +21,6 @@ import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGuodianSettingsActivity;
 import com.dbstar.app.settings.GDHelpActivity;
 import com.dbstar.app.settings.GDUserInfoActivity;
-import com.dbstar.app.settings.GDVideoSettingsActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.GDApplicationObserver;
@@ -469,7 +468,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		if (mSelectedView != null) {
 			holder = (MainMenuAdapter.ItemHolder) mSelectedView.getTag();
 			// holder.icon.setImageBitmap(menuItem.MenuIconFocused());
-			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 			mSelectedView.invalidate();
 		}
 
