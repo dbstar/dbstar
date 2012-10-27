@@ -4,11 +4,11 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <am_smc.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <android/log.h>
 
+#include "am/am_smc.h"
 #include "linux/amsmc.h"
 #include "prodrm20.h"
 
