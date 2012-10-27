@@ -615,14 +615,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent = new Intent();
 			intent.setComponent(new ComponentName("com.fb.FileBrower",
 					"com.fb.FileBrower.FileBrower"));
-			intent.setAction("android.intent.action.MAIN");
+			intent.setAction("android.intent.action.VIEW");
 			break;
 		}
 		case SettingsAdvanced: {
 			intent = new Intent();
 			intent.setComponent(new ComponentName("com.android.settings",
 					"com.android.settings.Settings"));
-			intent.setAction("android.intent.action.MAIN");
+			intent.setAction("android.intent.action.VIEW");
 			break;
 			}
 		default:
@@ -639,7 +639,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Intent intent = new Intent();
 		String componentName = packageName + "." + activityName;
 		intent.setComponent(new ComponentName(packageName, componentName));
-		intent.setAction("android.intent.action.Main");
+		intent.setAction("android.intent.action.VIEW");
 		
 		return intent;
 	}
