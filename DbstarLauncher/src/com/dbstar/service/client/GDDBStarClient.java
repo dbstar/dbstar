@@ -100,6 +100,7 @@ public class GDDBStarClient {
 	public void notifyDbServer(int msg) {
 		if (mDbstarService != null) {
 			try {
+				Log.d(TAG, "notifyDbServer " + msg);
 				mDbstarService.sendCommand(msg, null, 0);
 			} catch (RemoteException e) {
 				e.printStackTrace();
