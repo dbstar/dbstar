@@ -208,6 +208,10 @@ public class GDDataProviderService extends Service {
 
 			mThreadPool.add(thread);
 		}
+		
+		registerUSBReceiver();
+		reqisterConnectReceiver();
+		reqisterSystemMessageReceiver();
 
 		// read configure
 		mConfigure.readConfigure();
@@ -242,10 +246,6 @@ public class GDDataProviderService extends Service {
 		// initialize engine
 		initializeDataEngine();
 		initializeNetEngine();
-		registerUSBReceiver();
-		reqisterConnectReceiver();
-		reqisterSystemMessageReceiver();
-
 	}
 
 	void initializeDataEngine() {
@@ -297,9 +297,9 @@ public class GDDataProviderService extends Service {
 
 		if (mIsSmartHomeServiceStarted)
 			return;
-		
+
 		mIsSmartHomeServiceStarted = true;
-		
+
 		SharedPreferences settings = null;
 		SharedPreferences.Editor editor = null;
 
@@ -312,9 +312,9 @@ public class GDDataProviderService extends Service {
 	private void stopDbStarService() {
 		if (!mIsSmartHomeServiceStarted)
 			return;
-		
+
 		mIsSmartHomeServiceStarted = false;
-		
+
 		Log.d(TAG, "stopDbStarService");
 
 		SharedPreferences settings = null;
