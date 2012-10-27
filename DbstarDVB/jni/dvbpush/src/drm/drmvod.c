@@ -102,7 +102,7 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 	h->priv_data = (void *)&s_drmvod;
 
 	if (s_drmvod.filename_drm[0]) {
-		if ((ret = drm_init()) == 0) {
+		if ((ret = drm_init()) == 0 && drm_sc_insert()) {
 			s_drmvod.inited = 1;
 			LOGD("########## drm_init() OK\n");
 		} else {
