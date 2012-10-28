@@ -28,7 +28,11 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
 
 /**
  * Base class for Settings fragments, with some helper functions and dialog management.
@@ -42,8 +46,11 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        
+        ListView listView = getListView();
+    	//listView.setBackgroundDrawable(null);
     }
-
+    
     /*
      * The name is intentionally made different from Activity#finish(), so that
      * users won't misunderstand its meaning.

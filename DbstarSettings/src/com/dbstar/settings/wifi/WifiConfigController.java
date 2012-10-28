@@ -117,8 +117,6 @@ public class WifiConfigController implements TextWatcher,
     private LinkProperties mLinkProperties = new LinkProperties();
 
     // True when this instance is used in SetupWizard XL context.
-    private final boolean mInXlSetupWizard;
-
     static boolean requireKeyStore(WifiConfiguration config) {
         if (config == null) {
             return false;
@@ -136,7 +134,6 @@ public class WifiConfigController implements TextWatcher,
     public WifiConfigController(
             WifiConfigUiBase parent, View view, AccessPoint accessPoint, boolean edit) {
         mConfigUi = parent;
-        mInXlSetupWizard = (parent instanceof WifiConfigUiForSetupWizardXL);
 
         mView = view;
         mAccessPoint = accessPoint;
@@ -154,18 +151,7 @@ public class WifiConfigController implements TextWatcher,
             mSsidView.addTextChangedListener(this);
             mSecuritySpinner = ((Spinner) mView.findViewById(R.id.security));
             mSecuritySpinner.setOnItemSelectedListener(this);
-            if (mInXlSetupWizard) {
-                mView.findViewById(R.id.type_ssid).setVisibility(View.VISIBLE);
-                mView.findViewById(R.id.type_security).setVisibility(View.VISIBLE);
-                // We want custom layout. The content must be same as the other cases.
-
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
-                        R.layout.wifi_setup_custom_list_item_1, android.R.id.text1,
-                        context.getResources().getStringArray(R.array.wifi_security_no_eap));
-                mSecuritySpinner.setAdapter(adapter);
-            } else {
-                mView.findViewById(R.id.type).setVisibility(View.VISIBLE);
-            }
+            mView.findViewById(R.id.type).setVisibility(View.VISIBLE);
             mConfigUi.setSubmitButton(context.getString(R.string.wifi_save));
         } else {
             mConfigUi.setTitle(mAccessPoint.ssid);
@@ -510,13 +496,6 @@ public class WifiConfigController implements TextWatcher,
     }
 
     private void showSecurityFields() {
-        if (mInXlSetupWizard) {
-            // Note: XL SetupWizard won't hide "EAP" settings here.
-            if (!((WifiSettingsForSetupWizardXL)mConfigUi.getContext()).initSecurityFields(mView,
-                        mAccessPointSecurity)) {
-                return;
-            }
-        }
         if (mAccessPointSecurity == AccessPoint.SECURITY_NONE) {
             mView.findViewById(R.id.security_fields).setVisibility(View.GONE);
             return;
