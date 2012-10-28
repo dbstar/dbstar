@@ -198,4 +198,5 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	dbstar \
 	DbstarLauncher \
+	DbstarSettings \
 	DbstarDVB
