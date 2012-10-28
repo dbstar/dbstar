@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2010 The Android Open Source Project
+<!--
+     Copyright (C) 2010 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -15,6 +16,19 @@
 -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-        android:title="@string/wifi_settings_category">
+    android:title="@string/wifi_settings_category" >
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="WIFI_switch"
+        android:summaryOff="@string/wifi_switch_summary_off"
+        android:summaryOn="@string/wifi_switch_summary_on"
+        android:title="@string/wifi_switch_title_off" />
+
+    <PreferenceScreen
+        android:key="WIFI_aplist"
+        android:persistent="false"
+        android:summary="@string/wifi_settings_aplist_summary"
+        android:title="@string/wifi_settings_aplist_title" />
 
 </PreferenceScreen>

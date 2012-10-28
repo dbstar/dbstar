@@ -23,7 +23,6 @@ import com.dbstar.settings.SettingsPreferenceFragment;
 import com.dbstar.settings.common.SettingsCommon;
 import com.dbstar.settings.util.Utils;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
