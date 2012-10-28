@@ -557,6 +557,11 @@ static struct mtd_partition multi_partition_info_1G_or_More[] =
     },
 #endif
     {
+	.name = "loader",
+	.offset = 8*1024*1024,
+	.size = 4*1024*1024,
+    },
+    {
 	.name = "aml_logo",
 	.offset = 12*1024*1024,
 	.size = 16*1024*1024,

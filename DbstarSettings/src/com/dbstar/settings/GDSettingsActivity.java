@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -53,11 +54,13 @@ public class GDSettingsActivity extends PreferenceActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 
 		getMetaData();
+//		requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 
 		mInLocalHeaderSwitch = true;
 		super.onCreate(savedInstanceState);
 		mInLocalHeaderSwitch = false;
 		
+		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_title_view);
 //		getListView().setBackgroundResource(R.drawable.view_background);
 
 		if (!onIsHidingHeaders() && onIsMultiPane()) {
@@ -355,8 +358,8 @@ public class GDSettingsActivity extends PreferenceActivity {
 				holder = new HeaderViewHolder();
 				switch (headerType) {
 				case HEADER_TYPE_CATEGORY:
-					view = new TextView(getContext(), null,
-							android.R.attr.listSeparatorTextViewStyle);
+					view = new TextView(getContext());
+					//, null,	android.R.attr.listSeparatorTextViewStyle);
 
 					// if(Utils.platformHasTvUiMode()){
 					// TextView v = (TextView)view;

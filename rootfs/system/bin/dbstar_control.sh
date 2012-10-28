@@ -9,25 +9,13 @@ system_init()
 
 dbstar_init()
 {
-	if [ -e "/data/dbstar/dbstar.conf" ]; then
-		echo "dbstar.conf already exist!"
-	else
-		cp /system/etc/dbstar/dbstar.conf /data/dbstar/dbstar.conf
-	fi
-	if [ -e "/data/dbstar/push.conf" ]; then
-		echo "push.conf already exist!"
-	else
-		cp /system/etc/dbstar/push.conf /data/dbstar/push.conf
-	fi
 	if [ -e "/data/dbstar/Dbstar.db" ]; then
-		echo "Dbstar.db already exist!"
+		echo "dbstar already inited!"
 	else
-		cp /system/etc/dbstar/Dbstar.db /data/dbstar/Dbstar.db
-	fi
-	if [ -e "/data/dbstar/ColumnRes" ]; then
-		echo "Dbstar.db already exist!"
-	else
-		cp /system/etc/dbstar/Dbstar.db /data/dbstar/Dbstar.db
+		cp -rf /system/etc/dbstar/* /data/dbstar/
+		mv /system/app/SystemUI.apk /system/app/SystemUI.apk.bk
+		mv /system/app/Launcher2.apk /system/app/Launcher2.apk.bk
+		setprop dbstar.inited 1
 	fi
 }
 

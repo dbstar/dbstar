@@ -25,6 +25,24 @@
         android:summaryOn="@string/wifi_switch_summary_on"
         android:title="@string/wifi_switch_title_off" />
 
+    <Preference
+        android:key="WIFI_scan"
+        android:persistent="false"
+        android:summary="@string/wifi_scan_summary_normal"
+        android:title="@string/wifi_menu_scan" />
+    
+    <Preference
+        android:key="WIFI_add_network"
+        android:persistent="false"
+        android:summary="@string/wifi_add_network_summary"
+        android:title="@string/wifi_add_network" />
+    
+    <Preference
+        android:key="WIFI_advanced"
+        android:persistent="false"
+        android:summary="@string/wifi_advanced_summary"
+        android:title="@string/wifi_menu_advanced" />
+    
     <PreferenceScreen
         android:key="WIFI_aplist"
         android:persistent="false"

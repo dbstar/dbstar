@@ -238,7 +238,10 @@ dbstar_make()
 	call cd $ANDROID_SRC
 	call source ./build/envsetup.sh
 	call lunch $ANDROID_LUNCH
-	mmm $DBSTAR_SRC
+	mmm $DBSTAR_SRC/DbstarDVB
+	mmm $DBSTAR_SRC/DbstarLauncher
+	mmm $DBSTAR_SRC/DbstarSettings
+	mmm $DBSTAR_SRC/rootfs
 	if [ $? -eq 0 ]; then
 		logger "FINISH make dbstar"
 	else
@@ -325,11 +328,11 @@ check_args()
 	elif [ $1 = "otapackage" ]; then
 		AUTOBUILD_FLAG=8
 	elif [ $1 = "patch" ]; then
-		AUTOBUILD_FLAG=0x10
+		AUTOBUILD_FLAG=16
 	elif [ $1 = "dbstar" ]; then
-		AUTOBUILD_FLAG=0x20
+		AUTOBUILD_FLAG=32
 	elif [ $1 = "all" ]; then
-		AUTOBUILD_FLAG=0xf
+		AUTOBUILD_FLAG=15
 	fi
 
 	if [ "$2" = "-B" ]; then
