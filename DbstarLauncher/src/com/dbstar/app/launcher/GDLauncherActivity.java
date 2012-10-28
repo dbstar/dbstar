@@ -78,13 +78,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final int USERCENTER_LEVEL3_RECORD = 2;
 	private static final int USERCENTER_LEVEL3_ENTERTAINMENT = 3;
 	// private static final int USERCENTER_LEVEL3_COUNT = 4;
-
-	public static final int SettingsHelp = 0;
-	public static final int SettingsDeviceInfo = 1;
-	public static final int SettingsUserInfo = 2;
-	public static final int SettingsAudio = 3;
-	public static final int SettingsVideo = 4;
-	public static final int SettingsNetwork = 5;
+	public static final int SettingsNetwork = 0;
+	public static final int SettingsVideo = 1;
+	public static final int SettingsAudio = 2;
+	public static final int SettingsUserInfo = 3;
+	public static final int SettingsDeviceInfo = 4;
+	public static final int SettingsHelp = 5;
 	public static final int SettingsDiskSpace = 6;
 	public static final int SettingsFileBrowser = 7;
 	public static final int SettingsAdvanced = 8;

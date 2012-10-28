@@ -34,8 +34,6 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.TextUtils;
-import android.util.Config;
-import android.util.Slog;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
