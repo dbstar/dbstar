@@ -86,12 +86,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class WifiSettings extends SettingsPreferenceFragment implements
 		DialogInterface.OnClickListener {
 	private static final String TAG = "WifiSettings";
-	private static final int MENU_ID_SCAN = Menu.FIRST;
-	private static final int MENU_ID_ADD_NETWORK = Menu.FIRST + 1;
-	private static final int MENU_ID_ADVANCED = Menu.FIRST + 2;
-	private static final int MENU_ID_CONNECT = Menu.FIRST + 3;
-	private static final int MENU_ID_FORGET = Menu.FIRST + 4;
-	private static final int MENU_ID_MODIFY = Menu.FIRST + 5;
+
+	private static final int MENU_ID_CONNECT = Menu.FIRST;
+	private static final int MENU_ID_FORGET = Menu.FIRST + 1;
+	private static final int MENU_ID_MODIFY = Menu.FIRST + 2;
 
 	private static final int WIFI_DIALOG_ID = 1;
 
@@ -115,11 +113,8 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	private WifiInfo mLastInfo;
 
 	private AtomicBoolean mConnected = new AtomicBoolean(false);
-
 	private int mKeyStoreNetworkId = Utils.WifiConfigure.INVALID_NETWORK_ID;
-
 	private WifiDialog mDialog;
-
 	private TextView mEmptyView;
 
 	/* Used in Wifi Setup context */
@@ -130,7 +125,6 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 
 	// should Next button only be enabled when we have a connection?
 	private boolean mEnableNextOnConnection;
-	private boolean mInXlSetupWizard;
 
 	// Save the dialog details
 	private boolean mDlgEdit;
@@ -138,6 +132,16 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	private Bundle mAccessPointSavedState;
 
 	/* End of "used in Wifi Setup context" */
+
+	private static final String KEY_WIFI_SWITCH = "WIFI_switch";
+	private static final String KEY_WIFI_APLIST = "WIFI_aplist";
+	private static final String KEY_WIFI_SCAN = "WIFI_scan";
+	private static final String KEY_WIFI_ADDNETWORK = "WIFI_add_network";
+	private static final String KEY_WIFI_ADVANCED = "WIFI_advanced";
+
+	private CheckBoxPreference mWifiSwitchPref;
+	private PreferenceScreen mAPListPref;
+	private Preference mScanPref, mAddNetworkPref, mAdvancedPref;
 
 	public WifiSettings() {
 		mFilter = new IntentFilter();
@@ -163,13 +167,6 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	}
 
 	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-
-		mInXlSetupWizard = (activity instanceof WifiSettingsForSetupWizardXL);
-	}
-
-	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// We don't call super.onActivityCreated() here, since it assumes
 		// we have already set up Preference (probably in onCreate()),
@@ -188,8 +185,7 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 		final Intent intent = activity.getIntent();
 
 		// if we're supposed to enable/disable the Next button based on our
-		// current connection
-		// state, start it off in the right state
+		// current connection state, start it off in the right state
 		mEnableNextOnConnection = intent.getBooleanExtra(
 				EXTRA_ENABLE_NEXT_ON_CONNECT, false);
 
@@ -209,7 +205,6 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 		// getListView().setEmptyView(mEmptyView);
 
 		registerForContextMenu(getListView());
-		setHasOptionsMenu(true);
 
 		// After confirming PreferenceScreen is available, we call super.
 		super.onActivityCreated(savedInstanceState);
@@ -231,7 +226,7 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 
 		updateAccessPoints();
 
-		if (null != mDialog)// tony.wang
+		if (null != mDialog)
 			mDialog.updatePWShowState();
 
 	}
@@ -246,49 +241,25 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 		mScanner.pause();
 	}
 
-	private static final String KEY_WIFI_SWITCH = "WIFI_switch";
-	private static final String KEY_WIFI_APLIST = "WIFI_aplist";
-	private CheckBoxPreference mWifiSwitchPref;
-	private PreferenceScreen mAPListPref;
-
 	@Override
 	public void onStart() {
 		super.onStart();
+
+		addPreferencesFromResource(R.xml.wifi_settings);
+
+		final PreferenceScreen preferenceScreen = getPreferenceScreen();
+		mWifiSwitchPref = (CheckBoxPreference) preferenceScreen
+				.findPreference(KEY_WIFI_SWITCH);
+
+		mScanPref = preferenceScreen.findPreference(KEY_WIFI_SCAN);
+		mAddNetworkPref = preferenceScreen.findPreference(KEY_WIFI_ADDNETWORK);
+		mAdvancedPref = preferenceScreen.findPreference(KEY_WIFI_ADVANCED);
+
+		mAPListPref = (PreferenceScreen) preferenceScreen
+				.findPreference(KEY_WIFI_APLIST);
+
 		final Activity activity = getActivity();
-		if (mInXlSetupWizard) {
-			addPreferencesFromResource(R.xml.wifi_access_points_for_wifi_setup_xl);
-		} else {
-			addPreferencesFromResource(R.xml.wifi_settings);
-
-			final PreferenceScreen preferenceScreen = getPreferenceScreen();
-			mWifiSwitchPref = (CheckBoxPreference) preferenceScreen
-					.findPreference(KEY_WIFI_SWITCH);
-
-			mAPListPref = (PreferenceScreen) preferenceScreen
-					.findPreference(KEY_WIFI_APLIST);
-
-			mWifiEnabler = new WifiEnabler(activity, mWifiSwitchPref);
-		}
-	}
-
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		// We don't want menus in Setup Wizard XL.
-		if (!mInXlSetupWizard) {
-			final boolean wifiIsEnabled = mWifiManager.isWifiEnabled();
-			menu.add(Menu.NONE, MENU_ID_SCAN, 0, R.string.wifi_menu_scan)
-					// .setIcon(R.drawable.ic_menu_scan_network)
-					.setEnabled(wifiIsEnabled)
-					.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-			menu.add(Menu.NONE, MENU_ID_ADD_NETWORK, 0,
-					R.string.wifi_add_network).setEnabled(wifiIsEnabled)
-					.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-			menu.add(Menu.NONE, MENU_ID_ADVANCED, 0,
-					R.string.wifi_menu_advanced)
-			// .setIcon(android.R.drawable.ic_menu_manage)
-					.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-		}
-		super.onCreateOptionsMenu(menu, inflater);
+		mWifiEnabler = new WifiEnabler(activity, mWifiSwitchPref);
 	}
 
 	@Override
@@ -308,39 +279,9 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case MENU_ID_SCAN:
-			if (mWifiManager.isWifiEnabled()) {
-				mScanner.forceScan();
-			}
-			return true;
-		case MENU_ID_ADD_NETWORK:
-			if (mWifiManager.isWifiEnabled()) {
-				onAddNetworkPressed();
-			}
-			return true;
-		case MENU_ID_ADVANCED:
-			if (getActivity() instanceof PreferenceActivity) {
-				((PreferenceActivity) getActivity()).startPreferencePanel(
-						AdvancedWifiSettings.class.getCanonicalName(), null,
-						R.string.wifi_advanced_titlebar, null, this, 0);
-			} else {
-				startFragment(this,
-						AdvancedWifiSettings.class.getCanonicalName(), -1, null);
-			}
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
 	public void onCreateContextMenu(ContextMenu menu, View view,
 			ContextMenuInfo info) {
-		if (mInXlSetupWizard) {
-			((WifiSettingsForSetupWizardXL) getActivity()).onCreateContextMenu(
-					menu, view, info);
-		} else if (info instanceof AdapterContextMenuInfo) {
+		if (info instanceof AdapterContextMenuInfo) {
 			Preference preference = (Preference) getListView()
 					.getItemAtPosition(((AdapterContextMenuInfo) info).position);
 
@@ -407,6 +348,23 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 			} else {
 				showConfigUi(mSelectedAccessPoint, false);
 			}
+		} else if (preference == mScanPref) {
+			if (mWifiManager.isWifiEnabled()) {
+				mScanner.forceScan();
+			}
+		} else if (preference == mAddNetworkPref) {
+			if (mWifiManager.isWifiEnabled()) {
+				onAddNetworkPressed();
+			}
+		} else if (preference == mAdvancedPref) {
+			if (getActivity() instanceof PreferenceActivity) {
+				((PreferenceActivity) getActivity()).startPreferencePanel(
+						AdvancedWifiSettings.class.getCanonicalName(), null,
+						R.string.wifi_advanced_titlebar, null, this, 0);
+			} else {
+				startFragment(this,
+						AdvancedWifiSettings.class.getCanonicalName(), -1, null);
+			}
 		} else {
 			return super.onPreferenceTreeClick(screen, preference);
 		}
@@ -418,12 +376,7 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	 * clicks "Add network" preference or one of available networks is selected.
 	 */
 	private void showConfigUi(AccessPoint accessPoint, boolean edit) {
-		if (mInXlSetupWizard) {
-			((WifiSettingsForSetupWizardXL) getActivity()).showConfigUi(
-					accessPoint, edit);
-		} else {
-			showDialog(accessPoint, edit);
-		}
+		showDialog(accessPoint, edit);
 	}
 
 	private void showDialog(AccessPoint accessPoint, boolean edit) {
@@ -477,14 +430,8 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 			// AccessPoints are automatically sorted with TreeSet.
 			final Collection<AccessPoint> accessPoints = constructAccessPoints();
 			mAPListPref.removeAll();
-			if (mInXlSetupWizard) {
-				((WifiSettingsForSetupWizardXL) getActivity())
-						.onAccessPointsUpdated(getPreferenceScreen(),
-								accessPoints);
-			} else {
-				for (AccessPoint accessPoint : accessPoints) {
-					mAPListPref.addPreference(accessPoint);
-				}
+			for (AccessPoint accessPoint : accessPoints) {
+				mAPListPref.addPreference(accessPoint);
 			}
 			break;
 
@@ -600,10 +547,6 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 								.getParcelableExtra(WifiManager.EXTRA_NEW_STATE)));
 			}
 
-			if (mInXlSetupWizard) {
-				((WifiSettingsForSetupWizardXL) getActivity())
-						.onSupplicantStateChanged(intent);
-			}
 		} else if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
 			NetworkInfo info = (NetworkInfo) intent
 					.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
@@ -651,10 +594,6 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 			}
 		}
 
-		if (mInXlSetupWizard) {
-			((WifiSettingsForSetupWizardXL) getActivity())
-					.updateConnectionState(mLastState);
-		}
 	}
 
 	private void updateWifiState(int state) {
@@ -766,35 +705,23 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	 *            true when the device is connected to a wifi network.
 	 */
 	private void changeNextButtonState(boolean connected) {
-		if (mInXlSetupWizard) {
-			((WifiSettingsForSetupWizardXL) getActivity())
-					.changeNextButtonState(connected);
-		} else if (mEnableNextOnConnection && hasNextButton()) {
+
+		if (mEnableNextOnConnection && hasNextButton()) {
 			getNextButton().setEnabled(connected);
 		}
 	}
 
 	public void onClick(DialogInterface dialogInterface, int button) {
-		if (mInXlSetupWizard) {
-			if (button == WifiDialog.BUTTON_FORGET
-					&& mSelectedAccessPoint != null) {
-				forget();
-			} else if (button == WifiDialog.BUTTON_SUBMIT) {
-				((WifiSettingsForSetupWizardXL) getActivity())
-						.onConnectButtonPressed();
-			}
-		} else {
-			if (button == WifiDialog.BUTTON_FORGET
-					&& mSelectedAccessPoint != null) {
-				forget();
-			} else if (button == WifiDialog.BUTTON_SUBMIT) {
-				submit(mDialog.getController());
-			}
+
+		if (button == WifiDialog.BUTTON_FORGET && mSelectedAccessPoint != null) {
+			forget();
+		} else if (button == WifiDialog.BUTTON_SUBMIT) {
+			submit(mDialog.getController());
 		}
 
 	}
 
-	/* package */void submit(WifiConfigController configController) {
+	void submit(WifiConfigController configController) {
 		int networkSetup = configController.chosenNetworkSetupMethod();
 		switch (networkSetup) {
 		case WifiConfigController.WPS_PBC:
@@ -832,15 +759,10 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	}
 
 	private void saveNetwork(WifiConfiguration config) {
-		if (mInXlSetupWizard) {
-			((WifiSettingsForSetupWizardXL) getActivity())
-					.onSaveNetwork(config);
-		} else {
-			mWifiManager.saveNetwork(config);
-		}
+		mWifiManager.saveNetwork(config);
 	}
 
-	/* package */void forget() {
+	void forget() {
 		mWifiManager.forgetNetwork(mSelectedAccessPoint.networkId);
 
 		if (mWifiManager.isWifiEnabled()) {
@@ -855,7 +777,7 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	/**
 	 * Refreshes acccess points and ask Wifi module to scan networks again.
 	 */
-	/* package */void refreshAccessPoints() {
+	void refreshAccessPoints() {
 		if (mWifiManager.isWifiEnabled()) {
 			mScanner.resume();
 		}
@@ -866,13 +788,13 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	/**
 	 * Called when "add network" button is pressed.
 	 */
-	/* package */void onAddNetworkPressed() {
+	void onAddNetworkPressed() {
 		// No exact access point is selected.
 		mSelectedAccessPoint = null;
 		showConfigUi(null, true);
 	}
 
-	/* package */int getAccessPointsCount() {
+	int getAccessPointsCount() {
 		final boolean wifiIsEnabled = mWifiManager.isWifiEnabled();
 		if (wifiIsEnabled) {
 			return mAPListPref.getPreferenceCount();
@@ -885,7 +807,7 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	 * Requests wifi module to pause wifi scan. May be ignored when the module
 	 * is disabled.
 	 */
-	/* package */void pauseWifiScan() {
+	void pauseWifiScan() {
 		if (mWifiManager.isWifiEnabled()) {
 			mScanner.pause();
 		}
@@ -895,7 +817,7 @@ public class WifiSettings extends SettingsPreferenceFragment implements
 	 * Requests wifi module to resume wifi scan. May be ignored when the module
 	 * is disabled.
 	 */
-	/* package */void resumeWifiScan() {
+	void resumeWifiScan() {
 		if (mWifiManager.isWifiEnabled()) {
 			mScanner.resume();
 		}

@@ -12,7 +12,7 @@
      distributed under the License is distributed on an "AS IS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
-     limitations under the License.
+     limitations under the License.
 -->
 
 <resources>
@@ -136,5 +136,23 @@
         <item name="android:windowBackground">@drawable/view_background</item>
         <item name="android:background">#FFEAEAEA</item>
     </style>
+    
+    <style name="customListView" parent="@android:style/Widget.ListView">
+        <item name="android:background">@color/transparent</item>
+        <item name="android:scrollbarSize">0.0dip</item>
+        <item name="android:listSelector">@color/semitransparent_white</item>
+        <item name="android:cacheColorHint">#00000000</item>
+    </style>
+    
+     <style name="PreferencesTheme.NoTitleBar" parent="@android:style/Theme.Light.NoTitleBar">  
+        <item name="android:textColorPrimaryInverse">@android:color/black</item>      
+        <item name="android:windowBackground">@drawable/view_background</item>  
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:listViewStyle">@style/customListView</item>
+    </style>  
+
+    <style name="PreferencesTheme" parent="@style/PreferencesTheme.NoTitleBar">  
+        <item name="android:windowNoTitle">false</item>  
+    </style>  
 
 </resources>

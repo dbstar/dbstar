@@ -233,7 +233,12 @@
     <string name="wifi_switch_title_on">关闭Wi-Fi</string>
     <string name="wifi_switch_summary_on">Wi-Fi已经打开</string>
     <string name="wifi_switch_summary_off">Wi-Fi已经关闭</string>
-
+    <string name="wifi_scan_summary_normal">点击扫描网络</string>
+    <string name="wifi_scan_summary_scaning">正在扫描网络&#8230;</string>
+	<string name="wifi_scan_summary_finished">扫描完成</string>
+	<string name="wifi_add_network_summary">点击添加网络</string>
+	<string name="wifi_advanced_summary">点击进行高级网络设置</string>
+    
     <!-- Ethernet configuration dialog -->
     <string name="eth_switch_title_off">打开以太网</string>
     <string name="eth_switch_title_on">关闭以太网</string>
