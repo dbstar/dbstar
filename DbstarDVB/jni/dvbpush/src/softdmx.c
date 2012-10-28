@@ -35,12 +35,12 @@ fseek(fp,0,SEEK_SET);
 fseek(fp,0,SEEK_END);
 long longBytes=ftell(fp);// longBytes就是文件的长度
 */
-//printf("mtd_scan_partitions = [%d]\n",mtd_scan_partitions());
-printf("in loader thread...\n");
+//DEBUG("mtd_scan_partitions = [%d]\n",mtd_scan_partitions());
+DEBUG("in loader thread...\n");
     wlen = 0;
     ret = fread(buf,1,48,fp);
     ret = fread(&len,1,1,fp);
-printf("in loader thread, read file len = [%u]\n",len);
+DEBUG("in loader thread, read file len = [%u]\n",len);
     if (len > 1024) rlen = 1024;
     else rlen = len;
     do
@@ -60,16 +60,17 @@ printf("in loader thread, read file len = [%u]\n",len);
     } while(wlen < len);
     if (wlen != len)
     {
-printf("received upgrade file is err, re download the file!!!!\n");
+DEBUG("received upgrade file is err, re download the file!!!!\n");
     } 
     
     wlen = 0;
     ret = fread(&len,4,1,fp);
     len = ((len&0xff)<<24)|((len&0xff00)<<8)|((len&0xff0000)>>8)|((len&0xff000000)>>24);
+    fread(sha0,1,64,fp);
 #if 0
     if (len > 1024) rlen = 1024;
     else rlen = len;
-printf("in loader thread, read file len = [%x]\n",len);
+DEBUG("in loader thread, read file len = [%x]\n",len);
     do
     {
         ret = fread(buf,1,rlen,fp);
@@ -92,10 +93,10 @@ printf("in loader thread, read file len = [%x]\n",len);
     fclose(fp);
     fclose(rfp);
 #endif
-#if 0
+#if 1
     if (sha_verify(fp, sha0, loaderInfo.img_len) != 0)
     {
-printf("verify err \n");
+DEBUG("verify err \n");
 while(1);
         Filter_param param;
         memset(&param,0,sizeof(param));
@@ -230,7 +231,7 @@ int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* 
 			chanFilter[i].samepidnum = m;
 			chanFilter[i].used = 1;
 			chanFilter[i].pid = pid;
-			//printf("****************************allcoate a filter id[%d],num[%d],pid[0x%x]\n",i,m,pid);
+			//DEBUG("****************************allcoate a filter id[%d],num[%d],pid[0x%x]\n",i,m,pid);
 			return i;
 		}
 	}
@@ -251,10 +252,10 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
     unsigned char *partbuf;//[1024*1024];
      
 
-//printf("Got upgrade img section len [%d][%x][%x][%x]\n",len,data[0],data[1],data[2]);
+//DEBUG("Got upgrade img section len [%d][%x][%x][%x]\n",len,data[0],data[1],data[2]);
     if (len < 12)
     {
-        printf("loader data too small!!!!!!!!!!\n");
+        DEBUG("loader data too small!!!!!!!!!!\n");
         return;
     }
 
@@ -269,20 +270,21 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
         upgradefile = fopen("uptest","w+");
         partbuf = (unsigned char *)malloc(1024*1024);
     }*/
-//printf("[%x][%x][%x][%x][%x][%x][%x][%x]\n",data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+//DEBUG("[%x][%x][%x][%x][%x][%x][%x][%x]\n",data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
     datap = (unsigned char *)data+4;
-//printf("start = [%x]\n",*datap++);
+//DEBUG("start = [%x]\n",*datap++);
 
     seq = datap[0]*0x100 + datap[2];
-printf("seq = [%u] part_num[%x] last_part_num[%x],sec_num[%x] last_sec_num[%x]\n",seq,datap[0],datap[1],datap[2],datap[3]);
+//DEBUG("seq = [%u] part_num[%x] last_part_num[%x],sec_num[%x] last_sec_num[%x]\n",seq,datap[0],datap[1],datap[2],datap[3]);
     if (seq == next)
     {
-//printf("seq = next = [%u]\n",seq);
+//DEBUG("seq = next = [%u]\n",seq);
         if (seq==0)
         {
             if (!upgradefile)
             {
-                upgradefile = fopen(upgradefile_all,"w+");
+                upgradefile = fopen(upgradefile_img,"w+");
+                DEBUG(">> %s\n", strerror(errno));
             }
             else
             {
@@ -290,19 +292,22 @@ printf("seq = [%u] part_num[%x] last_part_num[%x],sec_num[%x] last_sec_num[%x]\n
             }
             filelen = 0;
         }
-        fwrite(datap+4,1,len-12,upgradefile);
+        if(upgradefile)
+        	;//DEBUG("seq = [%u]\n",seq);//fwrite(datap+4,1,len-12,upgradefile);
+        else
+        	DEBUG("upgradefile is NULL, %s\n", upgradefile_img);
         filelen += len-12;
         next++;
         if (datap[2]==datap[3])  //last section num = current section num
         {
             if(datap[0]==datap[1])//last part num = current part num seq >= 3*0x100+0xad)
             {
-                printf("close the upgrade file\n");
+                DEBUG("close the upgrade file\n");
                 TC_free_filter(loaderInfo.fid);
                 fclose(upgradefile);
                 next = 0;
                 filelen = 0;
-printf("creat the loader thread...\n");
+DEBUG("creat the loader thread...\n");
                 pthread_create(&loaderthread, NULL, loader_thread, &loaderInfo);
             }
             //fseek(upgradefile,0,SEEK_SET);
@@ -314,11 +319,11 @@ printf("creat the loader thread...\n");
     {
         if (next == 1)  //filter the 0 packets alise as a start
             next = 0;
-printf("lost packet num = [%u], next = [%u]\n",seq-next,next);
+//DEBUG("lost packet num = [%u], next = [%u]\n",seq-next,next);
     }
 /*    else if (seq >= 1000)
     {
-printf("close the upgrade file\n");
+DEBUG("close the upgrade file\n");
          TC_free_filter(loaderInfo.fid);
          fclose(upgradefile);
          // pthread_create(&loaderthread, NULL, loader_thread, &loaderInfo);
@@ -331,7 +336,7 @@ printf("close the upgrade file\n");
 #if 0
     if (start == 0)
     {
-//printf("start==0 find the header\n");
+//DEBUG("start==0 find the header\n");
         if (part == datap[0])
         {
 newpart:
@@ -374,13 +379,13 @@ newpart:
     }
     else if(start==1)
     {
-//printf("start==1,not the header\n");
-printf("datap0[%x][%x]=2[%x][%x],start=0\n",datap[0],data[1],datap[2],datap[3]);
+//DEBUG("start==1,not the header\n");
+DEBUG("datap0[%x][%x]=2[%x][%x],start=0\n",datap[0],data[1],datap[2],datap[3]);
         if (datap[0]||datap[2])
             return;
       /*  else
         {
-printf("datap0[%x]=2[%x],start=0\n",datap[0],datap[2]);
+DEBUG("datap0[%x]=2[%x],start=0\n",datap[0],datap[2]);
             start = 0;
             goto newpart;
         }*/
@@ -406,6 +411,37 @@ static void read_loaderinfo(LoaderInfo_t * loader)
     loader->user_group_id = 1;
 }
 
+void ca_section_handle(int fid, const unsigned char *data, int len, void *user_data)
+{
+    static unsigned short emmpid=0xffff;
+    unsigned short pid;
+    static unsigned char version=0xff;
+    unsigned char tmp;
+
+    if (len < 18)
+    {
+DEBUG("ca section too small!!!! %d\n",len);
+        return;
+    }
+
+    tmp = data[5]&0x3e;
+    if (version != tmp)
+    {
+        version = tmp;
+        pid = ((data[12]&0x1f)<<8)|data[13];
+        if (pid != emmpid)
+        {
+			DEBUG("---------set emm pid =[%x]\n",pid);
+			if(0==drm_init())
+            	CDCASTB_SetEmmPid(pid);
+            else
+            	DEBUG("drm init failed\n");
+        }
+    } 
+}
+
+
+
 void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data)
 {
     unsigned char *datap,mark;
@@ -416,27 +452,27 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
     unsigned int tmp32;
     unsigned int stb_id_l,stb_id_h;
 
-printf("Got loader des section len [%d]\n",len);
+//DEBUG("Got loader des section len [%d]\n",len);
 /*{
  int i;
 
                 for(i=0;i<len;i++)
                 {
-                        printf("%02x ", data[i]);
-                        if(((i+1)%32)==0) printf("\n");
+                        DEBUG("%02x ", data[i]);
+                        if(((i+1)%32)==0) DEBUG("\n");
                 }
 
-                if((i%32)!=0) printf("\n");
+                if((i%32)!=0) DEBUG("\n");
 
 }*/
     if (len < 55)
     {
-        printf("loader info too small!!!!!!!!!!\n");
+        DEBUG("loader info too small!!!!!!!!!!\n");
 //        return;
     }
     datap = (unsigned char *)data+4;
     //if ((datap[0] != datap[1])||(datap[2] != datap[3]))
-    //    printf("!!!!!!!!!!!!!!!!error section number,need modify code!\n");
+    //    DEBUG("!!!!!!!!!!!!!!!!error section number,need modify code!\n");
 
     datap += 4;
 
@@ -451,7 +487,7 @@ printf("Got loader des section len [%d]\n",len);
     tmp16 = *datap;
     datap++;
     tmp16 = (tmp16<<8)|(*datap);
-printf("loader info oui = [%x]\n",tmp16);
+//DEBUG("loader info oui = [%x]\n",tmp16);
 //    if (tmp16 != loaderInfo.oui)
 //        return;
 
@@ -460,7 +496,7 @@ printf("loader info oui = [%x]\n",tmp16);
     tmp16 = *datap;
     datap++;
     tmp16 = (tmp16<<8)|(*datap);
-printf("loader info model type = [%x]\n",tmp16);
+//DEBUG("loader info model type = [%x]\n",tmp16);
 //    if (tmp16 != loaderInfo.model_type)
 //        return;
 
@@ -469,7 +505,7 @@ printf("loader info model type = [%x]\n",tmp16);
     //hardware_version
     datap += 2;
     //tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-printf("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+//DEBUG("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
     if ((datap[0] != loaderInfo.hardware_version[0])||(datap[1] != loaderInfo.hardware_version[1])
        ||(datap[2] != loaderInfo.hardware_version[2])||(datap[3] != loaderInfo.hardware_version[3]))
     {
@@ -478,8 +514,8 @@ printf("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],dat
     //software_version
     datap += 4;
     //tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-//printf("loader info software version = [%x][%x]\n",tmp32,loaderInfo.software_version);
-printf("loader info software version [%u[%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]); 
+//DEBUG("loader info software version = [%x][%x]\n",tmp32,loaderInfo.software_version);
+//DEBUG("loader info software version [%u[%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]); 
     if ((datap[0] == loaderInfo.software_version[0])||(datap[1] == loaderInfo.software_version[1])
        ||(datap[2] == loaderInfo.software_version[2])||(datap[3] == loaderInfo.software_version[3]))
     {
@@ -489,27 +525,28 @@ printf("loader info software version [%u[%u][%u][%u]\n",datap[0],datap[1],datap[
     loaderInfo.software_version[1] = datap[1];
     loaderInfo.software_version[2] = datap[2];
     loaderInfo.software_version[3] = datap[3];
-printf("get software version..\n");
+//DEBUG("get software version..\n");
     //stb_id
     datap += 4;
     sprintf(tmp,"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
     stb_id_h = atol(tmp);
-printf("start stb id h = [%u] me h[%u][%x][%x]\n",stb_id_h,loaderInfo.stb_id_h,datap[4],datap[5]);
+//DEBUG("start stb id h = [%u] me h[%u][%x][%x]\n",stb_id_h,loaderInfo.stb_id_h,datap[4],datap[5]);
     if (loaderInfo.stb_id_h < stb_id_h)
     {
-        printf("stb id is not in this update sequence \n");
-        return;
+        datap += 4;
+        //DEBUG("stb id is not in this update sequence \n");
+        //return;
     }
     else if (loaderInfo.stb_id_h == stb_id_h)
     {
         datap += 4;
         sprintf(tmp,"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
         stb_id_l = atol(tmp);
-printf("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
+//DEBUG("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
         if (loaderInfo.stb_id_l < stb_id_l)
         {
-            printf("stb id is not in this update sequence \n");
-            return;
+            //DEBUG("stb id is not in this update sequence \n");
+            //return;
         }
     }
     else
@@ -517,27 +554,29 @@ printf("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
     datap += 4;
     sprintf(tmp,"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
     stb_id_h = atol(tmp);
-printf("end stb id h [%u] me [%u]\n",stb_id_h,loaderInfo.stb_id_h); 
+//DEBUG("end stb id h [%u] me [%u]\n",stb_id_h,loaderInfo.stb_id_h); 
     if (loaderInfo.stb_id_h > stb_id_h)
     {
-        printf("stb id is not in this update sequence \n");
-        return;
+        datap += 4;
+        //DEBUG("stb id is not in this update sequence \n");
+        //return;
     }
     else if (loaderInfo.stb_id_h == stb_id_h)
     {
         datap += 4;
         sprintf(tmp,"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
         stb_id_l = atol(tmp);
-printf("end start id h=[%u], l=[%u]\n",stb_id_h, stb_id_l);
+//DEBUG("end start id h=[%u], l=[%u]\n",stb_id_h, stb_id_l);
         if (loaderInfo.stb_id_l > stb_id_l)
         {
-            printf("stb id is not in this update sequence \n");
-            return;
+            DEBUG("stb id is not in this update sequence \n");
+            //return;
         }
     }
     else
         datap += 4;
 
+	DEBUG("loader_dsc_fid: %d=%x\n", loader_dsc_fid,loader_dsc_fid);
     TC_free_filter(loader_dsc_fid);
     datap += 4;
     {
@@ -550,7 +589,7 @@ printf("end start id h=[%u], l=[%u]\n",stb_id_h, stb_id_l);
     pid = ((pid<<8)|(*datap));//&0x1fff; 
     datap++;
     tid = *datap++;
-printf("pid = [%x]  tid=[%x]\n",pid,tid);
+//DEBUG(">>>> pid = [%x]  tid=[%x]\n",pid,tid);
     memset(&param,0,sizeof(param));
     param.filter[0] = tid;
     param.mask[0] = 0xff;
@@ -560,7 +599,7 @@ printf("pid = [%x]  tid=[%x]\n",pid,tid);
     loaderInfo.file_type = *datap++;
     loaderInfo.img_len = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
     loaderInfo.download_type = datap[4];
-printf("filetype =[%d], img_len[%d], downloadtype=[%d]\n",loaderInfo.file_type,loaderInfo.img_len,loaderInfo.download_type);
+//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",loaderInfo.file_type,loaderInfo.img_len,loaderInfo.download_type);
 }
 
 int alloc_filter(unsigned short pid, char pro)
@@ -597,6 +636,7 @@ void TC_free_filter(int fid)
 {
 	if ((fid < MAX_CHAN_FILTER)&&(fid>=0))
 	{
+		DEBUG("free fid=%d, pid=%x\n", fid, chanFilter[fid].pid);
 		chanFilter[fid].used = 0;
 		chanFilter[fid].pid = -1;
 		chanFilter[fid].bytes = 0;
@@ -618,6 +658,8 @@ void TC_free_filter(int fid)
 		}
 		chanFilter[fid].pid = -1;
 	}
+	else
+		DEBUG("invalid fid: %d\n", fid);
 }
 
 static int get_filter(unsigned short pid)
@@ -646,7 +688,7 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 	unsigned char *optr;
 	Channel_t *chan = &chanFilter[fid];
 	static int total = 0;
-	//printf("startmak = [%d],chanbytes[%d]\n",start,chan->bytes);
+	//DEBUG("startmak = [%d],chanbytes[%d]\n",start,chan->bytes);
 	optr = ptr;
 	if(start)
 	{
@@ -673,7 +715,7 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 		chan->bytes += dlen - part;
 		p = dlen - part;
 	}
-	//printf("chan_bytes = [%d]\n",chan->bytes);
+	//DEBUG("chan_bytes = [%d]\n",chan->bytes);
 	if(chan->bytes<3)
 		return 0;
 	
@@ -711,7 +753,7 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 		int sec_len;
 		int len = chan->buf[0]+1;
 		int left = chan->bytes-len;
-		//printf("len = [%d] left[%d]\n",len,chan->bytes);		
+		//DEBUG("len = [%d] left[%d]\n",len,chan->bytes);		
 		/*if(chan->bytes<len)
 		return 0;
 		
@@ -774,7 +816,7 @@ retry:
 		
 		if(chan->buf[0]==0xFF)
 		{
-		//printf("eeeeeeeeeeeeeeeeeeeend \n");
+		//DEBUG("eeeeeeeeeeeeeeeeeeeend \n");
 		chan->stage = CHAN_STAGE_END;
 		}
 		else
@@ -785,7 +827,7 @@ retry:
 		return 0;
 		
 		sec_len = ((chan->buf[1]<<8)|chan->buf[2])&0xFFF;
-		//printf("section len = [%d]\n",sec_len);
+		//DEBUG("section len = [%d]\n",sec_len);
 		sec_len += 3;*/
 		if((chan->bytes - chan->offset) < chan->sec_len)
 			return 0;
@@ -800,10 +842,15 @@ retry:
 				send_mpe_sec_to_push_fifo(chanbuf, sec_len);
 				// tt += sec_len;
 				
-				//printf("payload [%d]\n",total);
+				//DEBUG("payload [%d]\n",total);
 			}
+//			else if(*chanbuf == 0xf1){
+//				//DEBUG("chan->pid: 0x%x\n", chan->pid);
+//				loader_section_handle(0, chanbuf, sec_len, NULL);
+//			}
 			else
 			{
+				//DEBUG("===== chan->pid: 0x%x",chan->pid);
 				int j;
 				for(j = 0; j < max_filter_num; j++)
 				{
@@ -837,6 +884,7 @@ retry:
 					{
 						if (f->hdle)
 						{
+							//DEBUG("call f->hdle\n");
 							f->hdle(f->fid, chanbuf, sec_len, f->userdata);
 						}
 						break;
@@ -845,7 +893,7 @@ retry:
 				left = chan->bytes - sec_len - chan->offset;
 				if(left>0)
 				{
-					//printf("llllllllllleft some data!!!!!!!!!!!!! [%d]\n",left);
+					//DEBUG("llllllllllleft some data!!!!!!!!!!!!! [%d]\n",left);
 					if(chanbuf[sec_len]==0xFF)
 					{
 						chan->stage = CHAN_STAGE_END;
@@ -890,7 +938,7 @@ retry:
 		pthread_cond_broadcast(&parser->cond);
 		}*/
 		//             handle_pes_packet(fid, chan->buf, chan->bytes, userdata);
-		printf("get a pes packet\n");
+		//DEBUG("get a pes packet\n");
 		chan->bytes = 0;
 		return 0;
 	}
@@ -909,7 +957,7 @@ int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 	unsigned short pid;
 	unsigned char  tei, cc, af_avail, p_avail, ts_start, sc;
 	
-	//printf("aaaaaaaa\n");
+	//DEBUG("aaaaaaaa\n");
 	optr = ptr;
 	/*Scan the sync byte*/
 	if (optr[p]!=0x47)
@@ -917,7 +965,7 @@ int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 resync:
 		while(optr[p]!=0x47)
 		{
-			printf("eeeeeeeeeeeerror\n");
+			//DEBUG("eeeeeeeeeeeerror\n");
 			p++;
 			if( p == write_ptr)
 			{
@@ -1040,7 +1088,7 @@ resync:
 	if(p_avail && (left>0) && !sc)
 	{
 		chan = get_filter(pid);
-		//printf("get channel [%d][%d]\n",chan,pid);
+		//DEBUG("get channel [%d][%d]\n",chan,pid);
 		if(chan != -1)
 			parse_payload(chan, p1, left, ts_start, ptr);
 	}
@@ -1082,16 +1130,16 @@ int main(void)
 	//Card_Entitle_init();
 #if 1
 	if (CDCASTB_Init(0))
-		printf("DRM Init successful!!!!!!\n");
+		DEBUG("DRM Init successful!!!!!!\n");
 	else
-		printf("DRM Init failure!!!!!!!!!!\n");
+		DEBUG("DRM Init failure!!!!!!!!!!\n");
 	sleep(5);
 	//CDCASTB_FormatBuffer();
-	printf("2222222222222222222\n");
+	DEBUG("2222222222222222222\n");
 	if (CDCASTB_SCInsert())
-		printf("CARD inserted!!!!!!!!!\n");
+		DEBUG("CARD inserted!!!!!!!!!\n");
 	else
-		printf("CARD out!!!!!!!!!!!!\n");
+		DEBUG("CARD out!!!!!!!!!!!!\n");
 	CDCASTB_SetEmmPid(0x64);
 	sleep(2);
 	
@@ -1102,45 +1150,45 @@ int main(void)
 	//fclose(fde);
 	ret = CDCASTB_DRM_GetEntitleInfo(&dwnext,einfo,&ennum);
 	
-	printf("ggggggget entitle info ret[%d],ennum[%d]\n",ret,ennum);
+	DEBUG("ggggggget entitle info ret[%d],ennum[%d]\n",ret,ennum);
 	
 	while(1);
 #endif
 	
 #endif
 	//	filter1 = alloc_filter(123);
-	//printf("alloc _filter [%d]\n",filter1);
+	//DEBUG("alloc _filter [%d]\n",filter1);
 	//      fd1 = fopen("hytd.ts", "r");
 #if 1
 	FILE *fp1,*fp2, *fp3;
 	if ((fp1 = fopen("test.ts","r")) == NULL)
 	//if ((fp1 = fopen("content1.txt","r")) == NULL) 
-		printf("open content1.txt error\n");
+		DEBUG("open content1.txt error\n");
 	
 	if ((fp2 = fopen("1.drm","r")) == NULL)
 	//if ((fp2 = fopen("product1.drm","r")) == NULL)
-		printf("open product1.drm error\n");
-	printf("opening file.....\n");
+		DEBUG("open product1.drm error\n");
+	DEBUG("opening file.....\n");
 	ret = CDCASTB_DRM_OpenFile((const void*)fp1,(const void*)fp2);
 	
-	printf("!!!!!!!!!!!!!!!open the two file [%d]\n",ret);
+	DEBUG("!!!!!!!!!!!!!!!open the two file [%d]\n",ret);
 	ret = CDCASTB_DRM_SyncEntitleToCard();
-	printf("sybc result [%d]\n",ret);
+	DEBUG("sybc result [%d]\n",ret);
 	while(1);
 	if ((fp3 = fopen("result.txt","w+")) == NULL)
-		printf("open result.txt error\n");
+		DEBUG("open result.txt error\n");
 	
 	do 
 	{
 		ret = CDCASTB_DRM_ReadFile((const void*)fp1,pbyBuffer,&pdwBufferLen);
-		printf("read file [%d][%d]\n",ret,pdwBufferLen);
+		DEBUG("read file [%d][%d]\n",ret,pdwBufferLen);
 		//if ((fp3 = fopen("result.txt","wt")) == NULL)
-		//  printf("open result.txt error\n");
+		//  DEBUG("open result.txt error\n");
 		
 		fwrite(pbyBuffer,1,pdwBufferLen,fp3);
 	}while(ret == 0);
 	
-	printf("ret = [%d]\n",ret);
+	DEBUG("ret = [%d]\n",ret);
 	fclose(fp3);
 	fclose(fp2);
 	fclose(fp1);
@@ -1151,13 +1199,13 @@ int main(void)
 	}
 #endif
 	fd1 = fopen("3_DRM.ts", "r");
-	if(!fd1) printf("open file error\n");
+	if(!fd1) DEBUG("open file error\n");
 		left = 0;
 	read = 0;
 	total = 0;
 	if (!fd1)
 	{
-		printf("open hytd.ts error\n");
+		DEBUG("open hytd.ts error\n");
 		return -1;
 	}
 	
@@ -1197,9 +1245,9 @@ int main(void)
 				break;
 		}
 		usleep(1);
-		//printf("total = [%d]\n",total);
+		//DEBUG("total = [%d]\n",total);
 	}
-	printf("total = [%d][%d]\n",total,tt);
+	DEBUG("total = [%d][%d]\n",total,tt);
 	fclose(fd1);
 	CDCASTB_Close();
 	

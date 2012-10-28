@@ -71,6 +71,7 @@ void TC_free_filter(int fid);
 int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read);
 void chanFilterInit(void);
 void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data);
+void ca_section_handle(int fid, const unsigned char *data, int len, void *user_data);
 
 #ifdef __cplusplus
 }

@@ -72,9 +72,8 @@ void *main_thread()
 	
 	upgrade_info_init();
 	
-	DEBUG("do not read drm info\n");
+	DEBUG("read drm info\n");
 	drm_info_init();
-	drm_set_emmpid(0x64);
 	
 	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
 	
