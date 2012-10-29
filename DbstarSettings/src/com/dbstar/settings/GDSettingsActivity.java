@@ -60,7 +60,7 @@ public class GDSettingsActivity extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		mInLocalHeaderSwitch = false;
 		
-		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_title_view);
+//		getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.custom_title_view);
 //		getListView().setBackgroundResource(R.drawable.view_background);
 
 		if (!onIsHidingHeaders() && onIsMultiPane()) {
