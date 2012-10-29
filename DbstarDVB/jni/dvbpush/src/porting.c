@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <net/if_arp.h>
 #include <arpa/inet.h>
+#include <time.h>
 
 #include "common.h"
 #include "dvbpush_api.h"
@@ -38,6 +39,8 @@ static char			s_initialize_xml[256];
 static char			s_column_res[256];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
+
+static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int date_str_size);
 
 /* define some general interface function here */
 
@@ -593,29 +596,186 @@ void upgrade_info_init()
 		DEBUG("get loader message failed\n");
 }
 
+static void drm_errors(char *fun, CDCA_U16 ret)
+{
+	switch(ret){
+		case CDCA_RC_CARD_INVALID:
+			DEBUG("[%s] none or invalid smart card\n", fun);
+			break;
+		case CDCA_RC_POINTER_INVALID:
+			DEBUG("[%s] null pointor\n", fun);
+			break;
+		case CDCA_RC_DATA_NOT_FIND:
+			DEBUG("[%s] no such operator\n", fun);
+			break;
+		default:
+			DEBUG("[%s] such return can not distinguished: %d\n", fun, ret);
+			break;
+	}
+}
+
+#define DRMENTITLE	"DRMProduct"
 int drm_info_init()
 {
 	if(0==drm_init()){
-		char smartcard_sn[CDCA_MAXLEN_SN+1];
-		memset(smartcard_sn, 0, sizeof(smartcard_sn));
-		DEBUG("to read smartcard sn, space=%d\n", sizeof(smartcard_sn));
+		char		smartcard_sn[CDCA_MAXLEN_SN+1];
+		CDCA_U16	wArrTvsID[CDCA_MAXNUM_OPERATOR];
+		CDCA_U8		index = 0;
+		CDCA_U16	j = 0;
+		SCDCAEntitles Entitle;
+		CDCA_U16	ret = 0;
+		CDCA_U16	OperatorCount = 0;
+		SCDCAOperatorInfo OperatorInfo;
+		char		date_str[32];
+		char		sqlite_cmd[256];
 		
-		CDCA_U16 ret = CDCASTB_GetCardSN(smartcard_sn);
+		memset(smartcard_sn, 0, sizeof(smartcard_sn));
+		
+		ret = CDCASTB_GetCardSN(smartcard_sn);
 		if(CDCA_RC_OK==ret){
 			DEBUG("read smartcard sn OK: %s\n", smartcard_sn);
-			return 0;
 		}
-		else if(CDCA_RC_POINTER_INVALID==ret){
-			DEBUG("pointer to read smartcard is invalid\n");
+		else{
+			drm_errors("CDCASTB_GetCardSN", ret);
 			return -1;
 		}
-		else if(CDCA_RC_CARD_INVALID==ret){
-			DEBUG("there is none or invalid smartcard: %s\n", smartcard_sn);
+		
+		memset(wArrTvsID, 0, sizeof(wArrTvsID));
+		ret = CDCASTB_GetOperatorIds(wArrTvsID);
+		if(CDCA_RC_OK==ret){
+			for(index=0;index<CDCA_MAXNUM_OPERATOR;index++){
+				if(0==wArrTvsID[index]){
+					DEBUG("OperatorID list end\n");
+					break;
+				}
+				else
+					DEBUG("OperatorID: %d\n", wArrTvsID[index]);
+			}
+		}
+		else{
+			drm_errors("CDCASTB_GetOperatorIds", ret);
 			return -1;
+		}
+		
+		OperatorCount = index;
+		for(j=0;j<OperatorCount;j++){
+			ret = CDCASTB_GetOperatorInfo(wArrTvsID[j], &OperatorInfo);
+			if(CDCA_RC_OK==ret){
+				DEBUG("[%d]: %s\n", wArrTvsID[j], OperatorInfo.m_szTVSPriInfo);
+			}
+			else
+				drm_errors("CDCASTB_GetServiceEntitles", ret);
+			
+			memset(&Entitle, 0, sizeof(Entitle));
+			ret = CDCASTB_GetServiceEntitles(wArrTvsID[j],&Entitle);
+			if(CDCA_RC_OK==ret){
+				DEBUG("Operator %d has %d entitles\n", wArrTvsID[j],Entitle.m_wProductCount);
+				sqlite_transaction_begin();
+				for(index=0;index<Entitle.m_wProductCount;index++){
+					DEBUG("\n[%d]Product id: %lu\n", wArrTvsID[j],Entitle.m_Entitles[index].m_dwProductID);
+					DEBUG("[%d]Product Expire: %d-%d\n\n", wArrTvsID[j],Entitle.m_Entitles[index].m_tBeginDate, Entitle.m_Entitles[index].m_tExpireDate);
+					memset(date_str, 0, sizeof(date_str));
+					if(0==drm_date_convert(Entitle.m_Entitles[index].m_tExpireDate, date_str, sizeof(date_str))){
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%d','%s','%s');", Entitle.m_Entitles[index].m_dwProductID, date_str, DRMENTITLE);
+						sqlite_transaction_exec(sqlite_cmd);
+					}
+				}
+				if(index>0)
+					sqlite_transaction_end(1);
+				else
+					sqlite_transaction_end(0);
+			}
+			else{
+				drm_errors("CDCASTB_GetServiceEntitles", ret);
+				return -1;
+			}
 		}
 	}
 	else
 		DEBUG("drm init failed\n");
 	
 	return -1;
+}
+
+/*
+struct tm{
+int tm_sec;
+int tm_min;
+int tm_hour;
+int tm_mday;
+int tm_mon;//代表目前月份，从一月算起，范围从0-11
+int tm_year;
+int tm_wday;
+int tm_yday;
+int tm_isdst;
+};
+*/
+/*
+void drm_date_time_test()
+{
+//	time_t timep;
+//	struct tm *p;
+//	time(&timep);
+//	printf(“time() : %d n”,timep);
+//	p=localtime(&timep);
+//	timep = mktime(p);
+//	printf(“time()->localtime()->mktime():%dn”,timep);
+	
+	time_t sec_2000;
+	struct tm *p;
+	struct tm tm_2000;
+	memset(&tm_2000, 0, sizeof(struct tm));
+	tm_2000.tm_mday = 1;
+	tm_2000.tm_mon = 0;
+	tm_2000.tm_year = (2000-1900);
+	sec_2000 = mktime(&tm_2000);
+	p = localtime(&sec_2000);
+	DEBUG("%dYear %dMon %dDay: %dHour %dMin %dSec\n", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
+	sec_2000 += (13879*24*60*60);
+	p = localtime(&sec_2000);
+	DEBUG("%dYear %dMon %dDay: %dHour %dMin %dSec\n", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
+	
+	time_t sec_today;
+	struct tm tm_today;
+	memset(&tm_today, 0, sizeof(struct tm));
+	tm_today.tm_sec = 27;
+	tm_today.tm_min = 59;
+	tm_today.tm_hour = 14;
+	tm_today.tm_mday = 28;
+	tm_today.tm_mon = 9;
+	tm_today.tm_year = (2012-1900);
+	sec_today = mktime(&tm_today);
+	p = localtime(&sec_today);
+	DEBUG("%dYear %dMon %dDay: %dHour %dMin %dSec\n", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
+	
+	sec_today += (7*24*60*60);
+	p = localtime(&sec_today);
+	DEBUG("%dYear %dMon %dDay: %dHour %dMin %dSec\n", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
+}
+*/
+
+/*
+ 参考drm_date_time_test实现，将drm中的date转换为年月日。date为自2000年1月1日开始的天数，详见drm移植文档。
+*/
+static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int date_str_size)
+{
+	if(NULL==date_str || 0==date_str_size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+	
+	time_t sec_appointed;
+	struct tm tm_appointed;
+	struct tm *p;
+	
+	memset(&tm_appointed, 0, sizeof(struct tm));
+	tm_appointed.tm_mday = 1;
+	tm_appointed.tm_mon = 0;
+	tm_appointed.tm_year = (2000-1900);
+	sec_appointed = mktime(&tm_appointed);
+	sec_appointed += (drm_date*24*60*60);
+	p = localtime(&sec_appointed);
+	snprintf(date_str, date_str_size, "%d/%d/%d", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday);
+	
+	return 0;
 }

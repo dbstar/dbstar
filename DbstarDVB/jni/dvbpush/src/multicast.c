@@ -426,9 +426,9 @@ int softdvb_init()
 	chanFilterInit();
 	
 	// prog/file
-	unsigned short root_pid = root_channel_get();
-	int filter1 = alloc_filter(root_pid, 0);
-	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
+//	unsigned short root_pid = root_channel_get();
+//	int filter1 = alloc_filter(root_pid, 0);
+//	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
 	
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0xf0;
@@ -436,6 +436,13 @@ int softdvb_init()
 	
 	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
 	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
+	
+	memset(&param,0,sizeof(param));
+	param.filter[0] = 0x1;
+	param.mask[0] = 0xff;
+	
+	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
+	DEBUG("set ca filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
 #ifdef PUSH_LOCAL_TEST
 	// prog/video

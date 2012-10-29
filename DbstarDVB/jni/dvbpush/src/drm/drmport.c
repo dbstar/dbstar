@@ -11,6 +11,7 @@
 #include "am/am_smc.h"
 #include "linux/amsmc.h"
 #include "prodrm20.h"
+#include "softdmx.h"
 
 #define DRMVOD_LOG_TAG "DRMLIB"
 #if 1
@@ -22,7 +23,6 @@
 #define LOGD(...)
 #define LOGE(...)
 #endif
-
 
 #if 0
 typedef struct {
@@ -36,22 +36,22 @@ typedef struct {
 	CDCA_U32      timeouttime;
 } SCDCAFilterInfo;
 #endif
-//#define CDCA_MAX_CARD_NUM 2
+#define CDCA_MAX_CARD_NUM 2
 #define SMC_DEVICE  "/dev/smc0"
 #define BLOCK01_FILE "/data/dbstar/drm/entitle/block01"
 #define ENTITLE_FILE_PATH "/data/dbstar/drm/entitle"
 //#define DMX_DEV_NO 0
 
-//CDCA_U8 checkTimeoutMark = 0;
+CDCA_U8 checkTimeoutMark = 0;
 int smc_fd = -1;
 
 
 FILE *block01_fd = NULL;
 
 SCDCACardEntitleInfo card_sn = {"", NULL}; //[CDCA_MAX_CARD_NUM];
-//SCDCAFilterInfo dmx_filter[MAX_CHAN_FILTER];
-//extern Channel_t chanFilter[];
-//extern int max_filter_num;
+SCDCAFilterInfo dmx_filter[MAX_CHAN_FILTER];
+extern Channel_t chanFilter[];
+extern int max_filter_num;
 
 
 static int mkdirp(char *path)
@@ -257,7 +257,7 @@ void CDSTBCA_WriteBuffer(CDCA_U8 byBlockID, const CDCA_U8* pbyData, CDCA_U32 dwL
 
 /*-------- TS流管理 --------*/
 
-#if 0
+#if 1
 void filter_timeout_handler(int fid)
 {
 	if (fid >= max_filter_num) {
@@ -319,7 +319,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
                                        CDCA_U8        byWaitSeconds)
 {
 	LOGD("CDSTBCA_SetPrivateDataFilter() called\n");
-#if 0
+#if 1
 	Filter_param param;
 	//Channel_t *filter;
 	int fid, i;
@@ -362,7 +362,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 /* 释放私有数据过滤器 */
 void CDSTBCA_ReleasePrivateDataFilter(CDCA_U8  byReqID, CDCA_U16 wPid)
 {
-#if 0
+#if 1
 	int fid;
 
 	for (fid = 0; fid < max_filter_num; fid++) {
