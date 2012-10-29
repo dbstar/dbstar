@@ -8,5 +8,6 @@ int softdvb_uninit();
 int igmp_init();
 int igmp_uninit();
 int pid_init(int act_flag);
+void net_rely_condition_set(int rely_cond);
 
 #endif
