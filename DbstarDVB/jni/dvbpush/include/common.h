@@ -150,6 +150,19 @@ typedef enum{
 	XML_EXIT_ERROR = 3,
 }XML_EXIT_E;
 
+
+/*
+ dvbpush初始化依赖的条件
+*/
+typedef enum{
+	RELY_CONDITION_NET = 1,
+	RELY_CONDITION_HD = 2,
+	RELY_CONDITION_UPGRADE = 4,
+	
+	RELY_CONDITION_EXIT = 128
+}RELY_CONDITION_E;
+
+
 /*
 本地测试push时使用（针对hytd.ts播发流），正常情况下关闭此宏。
 */

@@ -94,6 +94,7 @@ int xmlparser_init(void)
 	if(0==distill_file(init_xml_path, init_xml_uri, sizeof(init_xml_uri), "xml", "Initialize.xml")){
 		parse_xml(init_xml_uri,INITIALIZE_XML);
 	}
+	DEBUG("end of xmlparser_init\n");
 	
 	return 0;
 }
@@ -218,8 +219,8 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 */
 static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 {
-	//DEBUG("==================== %s\n", xmlinfo->PushFlag);
-	if(NULL==xmlinfo && 0==strlen(xmlinfo->PushFlag))
+	DEBUG("==================== %s, len=%d\n", xmlinfo->PushFlag);
+	if(NULL==xmlinfo || 0==strlen(xmlinfo->PushFlag))
 		return -1;
 	
 	DEBUG("%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI);
@@ -2972,7 +2973,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
 			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 			if(strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)){
-				DEBUG("same Version: %s, no need to parse\n", xml_ver);
+				DEBUG("[%s]same Version: %s, no need to parse\n", xmlinfo.xml_flag, xml_ver);
 				ret = 0;
 				/*
 				 之所以返回0而不是-1，是为了能强制扫描那些依赖于ServiceID的xml的解析

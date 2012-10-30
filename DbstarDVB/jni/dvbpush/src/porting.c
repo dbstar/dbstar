@@ -22,6 +22,7 @@
 #include "xmlparser.h"
 #include "sqlite.h"
 #include "prodrm20.h"
+#include "multicast.h"
 
 static int 			s_settingInitFlag = 0;
 
@@ -529,6 +530,22 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DVBPUSH_GETINFO_STOP:
 			dvbpush_getinfo_stop();
 			break;
+		case CMD_NETWORK_CONNECT:
+			push_rely_condition_set(RELY_CONDITION_NET);
+			net_rely_condition_set(RELY_CONDITION_NET);
+			break;
+		case CMD_NETWORK_DISCONNECT:
+			push_rely_condition_set(0-RELY_CONDITION_NET);
+			net_rely_condition_set(0-RELY_CONDITION_NET);
+			break;
+		case CMD_DISK_MOUNT:
+			push_rely_condition_set(RELY_CONDITION_HD);
+			net_rely_condition_set(RELY_CONDITION_HD);
+			break;
+		case CMD_DISK_UNMOUNT:
+			push_rely_condition_set(0-RELY_CONDITION_HD);
+			net_rely_condition_set(0-RELY_CONDITION_HD);
+			break;
 		
 		case CMD_UPGRADE_CANCEL:
 			DEBUG("CMD_UPGRADE_CANCEL\n");
@@ -676,7 +693,7 @@ int drm_info_init()
 					DEBUG("[%d]Product Expire: %d-%d\n\n", wArrTvsID[j],Entitle.m_Entitles[index].m_tBeginDate, Entitle.m_Entitles[index].m_tExpireDate);
 					memset(date_str, 0, sizeof(date_str));
 					if(0==drm_date_convert(Entitle.m_Entitles[index].m_tExpireDate, date_str, sizeof(date_str))){
-						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%d','%s','%s');", Entitle.m_Entitles[index].m_dwProductID, date_str, DRMENTITLE);
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%lu','%s','%s');", Entitle.m_Entitles[index].m_dwProductID, date_str, DRMENTITLE);
 						sqlite_transaction_exec(sqlite_cmd);
 					}
 				}
