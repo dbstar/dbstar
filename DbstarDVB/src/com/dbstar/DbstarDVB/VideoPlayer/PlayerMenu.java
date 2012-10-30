@@ -1595,6 +1595,174 @@ public class PlayerMenu extends Activity {
 
 	public boolean onKeyDown(int keyCode, KeyEvent msg) {
 		setOSDOnOff(true);
+		
+		if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+			if (player_status == VideoInfo.PLAYER_RUNNING) {
+				try {
+					m_Amplayer.Pause();
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			} else if (player_status == VideoInfo.PLAYER_PAUSE) {
+				try {
+					m_Amplayer.Resume();
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			}
+			return true;
+		} else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+			if (!INITOK)
+				return false;
+
+//			fastreverse.requestFocus();
+//			int flag = getCurOsdViewFlag();
+//			if (OSD_INFO_BAR == flag) {
+//				showOsdView();
+//			} else if (OSD_MORE_BAR == flag) {
+//				switchOsdView();
+//			}
+
+			if (player_status == VideoInfo.PLAYER_SEARCHING) {
+				if (FB_FLAG) {
+					if (FB_LEVEL < FF_MAX) {
+						FB_LEVEL = FB_LEVEL + 1;
+					} else {
+						FB_LEVEL = 0;
+					}
+
+					try {
+						m_Amplayer.BackForward(FB_STEP[FB_LEVEL]);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+
+					if (FB_LEVEL == 0) {
+						ff_fb.cancel();
+						FB_FLAG = false;
+					} else {
+						ff_fb.cancel();
+						ff_fb.setText(new String("FB x"
+								+ Integer.toString(FB_SPEED[FB_LEVEL])));
+						ff_fb.show();
+					}
+				}
+
+				if (FF_FLAG) {
+					if (FF_LEVEL > 0) {
+						FF_LEVEL = FF_LEVEL - 1;
+					} else {
+						FF_LEVEL = 0;
+					}
+
+					try {
+						m_Amplayer.FastForward(FF_STEP[FF_LEVEL]);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+
+					if (FF_LEVEL == 0) {
+						ff_fb.cancel();
+						FF_FLAG = false;
+					} else {
+						ff_fb.cancel();
+						ff_fb.setText(new String("FF x"
+								+ Integer.toString(FF_SPEED[FF_LEVEL])));
+						ff_fb.show();
+					}
+				}
+			} else {
+				try {
+					m_Amplayer.BackForward(FB_STEP[1]);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				FB_FLAG = true;
+				FB_LEVEL = 1;
+				ff_fb.cancel();
+				ff_fb.setText(new String("FB x" + FB_SPEED[FB_LEVEL]));
+				ff_fb.show();
+			}
+			return true;
+		} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+			if (!INITOK)
+				return false;
+
+//			fastforword.requestFocus();
+//			int flag = getCurOsdViewFlag();
+//			if (OSD_INFO_BAR == flag) {
+//				showOsdView();
+//			} else if (OSD_MORE_BAR == flag) {
+//				switchOsdView();
+//			}
+
+			if (player_status == VideoInfo.PLAYER_SEARCHING) {
+				if (FF_FLAG) {
+					if (FF_LEVEL < FF_MAX) {
+						FF_LEVEL = FF_LEVEL + 1;
+					} else {
+						FF_LEVEL = 0;
+					}
+
+					try {
+						m_Amplayer.FastForward(FF_STEP[FF_LEVEL]);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+
+					if (FF_LEVEL == 0) {
+						ff_fb.cancel();
+						FF_FLAG = false;
+					} else {
+						ff_fb.cancel();
+						ff_fb.setText(new String("FF x"
+								+ Integer.toString(FF_SPEED[FF_LEVEL])));
+						ff_fb.show();
+					}
+				}
+
+				if (FB_FLAG) {
+					if (FB_LEVEL > 0) {
+						FB_LEVEL = FB_LEVEL - 1;
+					} else {
+						FB_LEVEL = 0;
+					}
+
+					try {
+						m_Amplayer.BackForward(FB_STEP[FB_LEVEL]);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+
+					if (FB_LEVEL == 0) {
+						ff_fb.cancel();
+						FB_FLAG = false;
+					} else {
+						ff_fb.cancel();
+						ff_fb.setText(new String("FB x"
+								+ Integer.toString(FB_SPEED[FB_LEVEL])));
+						ff_fb.show();
+					}
+				}
+			} else {
+				try {
+					m_Amplayer.FastForward(FF_STEP[1]);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				FF_FLAG = true;
+				FF_LEVEL = 1;
+				ff_fb.cancel();
+				ff_fb.setText(new String("FF x" + FF_SPEED[FF_LEVEL]));
+				ff_fb.show();
+			}
+			return true;
+		} else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+			return true;
+		}  else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+			return true;
+		}
+		
 		if (keyCode != KeyEvent.KEYCODE_UNKNOWN) {
 			if ((morbar.getVisibility() == View.VISIBLE)
 					|| (infobar.getVisibility() == View.VISIBLE))
