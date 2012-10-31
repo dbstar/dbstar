@@ -35,17 +35,23 @@ TIMESTAMP=`date +%Y%m%d`
 #################################################################################
 # building flags
 #################################################################################
-#  0x1: kernel 
-#  0x2: recovery
-#  0x4: rootfs
-#  0x8: otapackage
-# 0x10: dbstar
-# 0x20: patch
+BUILD_FLAG_PATCH=1
+BUILD_FLAG_KERNEL=2
+BUILD_FLAG_RECOVERY=3
+BUILD_FLAG_ROOTFS=4
+BUILD_FLAG_DBSTAR=5
+BUILD_FLAG_OTAPACKAGE=6
+BUILD_FLAG_ALL=999
+
 AUTOBUILD_FLAG=0
 
-#  0x0: donot clean
-#  0x1: clean and make
+#  0: donot clean
+#  1: clean and make
 REBUILD_FLAG=0
+
+#  0: log into file
+#  1: log stdout
+VERBOSE_FLAG=0
 
 
 #################################################################################
@@ -54,7 +60,11 @@ REBUILD_FLAG=0
 call()
 {
     echo ">>> $@" 
-	$@ 1>>$LOG_LOGGER 2>&1
+	if [ $VERBOSE_FLAG -eq 1 ]; then
+		$@
+	else
+		$@ 1>>$LOG_LOGGER 2>&1
+	fi
 }
 
 logger()
@@ -68,11 +78,18 @@ checkout()
 	LOG_LOGGER=$LOG_REPO
 	call mkdir -p $ANDROID_SRC
 	call cd $ANDROID_SRC
-	call repo init --repo-url=git://10.8.9.8/tools/repo.git -u $GIT_SREVER -b $GIT_BRANCH
-	call repo sync $MAKE_ARGS
-	call repo start $GIT_BRANCH-$TIMESTAMP --all
-	call repo manifest -r -o $BUILD_OUT/$GIT_BRANCH-$TIMESTAMP.xml
-	logger "FINISH Android repo checkout"
+#call repo init --repo-url=$REPO_URL -u $GIT_SREVER -b $GIT_BRANCH
+	call repo init -u $GIT_SREVER -b $GIT_BRANCH
+
+	if [ $? -eq 0 ]; then
+		call repo sync $MAKE_ARGS
+		call repo start $GIT_BRANCH --all
+		call repo manifest -r -o $BUILD_OUT/$GIT_BRANCH-$TIMESTAMP.xml
+		logger "FINISH Android repo checkout"
+	else
+		logger "ERROR Android repo checkout"
+		exit 1
+	fi
 }
 
 repo_sync()
@@ -81,10 +98,15 @@ repo_sync()
 	LOG_LOGGER=$LOG_REPO
 	call cd $ANDROID_SRC
 	call repo sync $MAKE_ARGS
-	call repo start $GIT_BRANCH --all
-	call repo manifest -r -o $BUILD_OUT/$GIT_BRANCH-$TIMESTAMP.xml
-	logger "FINISH Android repo checkout"
-	logger "FINISH Android repo sync"
+
+	if [ $? -eq 0 ]; then
+		call repo start $GIT_BRANCH --all
+		call repo manifest -r -o $BUILD_OUT/$GIT_BRANCH-$TIMESTAMP.xml
+		logger "FINISH Android repo sync"
+	else
+		logger "ERROR Android repo sync"
+		exit 1
+	fi
 }
 
 uboot_make()
@@ -95,9 +117,14 @@ uboot_make()
 	call rm -rf build
 	call make $UBOOT_CONFIG
 	call make $MAKE_ARGS
-	call mkdir -p $BUILD_OUT
-	call cp ./build/u-boot-aml-ucl.bin $BUILD_OUT
-	logger "FINISH make uboot"
+	if [ $? -eq 0 ]; then
+		call mkdir -p $BUILD_OUT
+		call cp ./build/u-boot-aml-ucl.bin $BUILD_OUT
+		logger "FINISH make uboot"
+	else
+		logger "ERROR make uboot"
+		exit 1
+	fi
 }
 
 rootfs_clean()
@@ -125,6 +152,7 @@ rootfs_make()
 		logger "FINISH make rootfs"
 	else
 		logger "ERROR make rootfs"
+		exit 1
 	fi
 }
 
@@ -145,6 +173,7 @@ otapackage_make()
 		call cp $ROOTFS_OUT/*.zip $BUILD_OUT
 	else
 		logger "ERROR make otapackage"
+		exit 1
 	fi
 }
 
@@ -155,8 +184,8 @@ modules_make()
 	call cd $KERNEL_SRC
 	if [ $REBUILD_FLAG -eq 1 ]; then
 		call make distclean
-		call make $KERNEL_CONFIG
 	fi
+	call make $KERNEL_CONFIG
 	call make uImage $MAKE_ARGS
 	call make modules
 
@@ -174,6 +203,7 @@ modules_make()
 		logger "FINISH make modules"
 	else
 		logger "ERROR make modules"
+		exit 1
 	fi
 }
 
@@ -189,6 +219,7 @@ kernel_make()
 		logger "FINISH make kernel"
 	else
 		logger "ERROR make kernel"
+		exit 1
 	fi
 }
 
@@ -217,6 +248,7 @@ recovery_make()
 		logger "FINISH make recovery"
 	else
 		logger "ERROR make recovery"
+		exit 1
 	fi
 }
 
@@ -238,10 +270,16 @@ dbstar_make()
 	call cd $ANDROID_SRC
 	call source ./build/envsetup.sh
 	call lunch $ANDROID_LUNCH
-	mmm $DBSTAR_SRC/DbstarDVB
-	mmm $DBSTAR_SRC/DbstarLauncher
-	mmm $DBSTAR_SRC/DbstarSettings
 	mmm $DBSTAR_SRC/rootfs
+	if [ $REBUILD_FLAG -eq 1 ]; then
+		mmm $DBSTAR_SRC/DbstarDVB -B
+		mmm $DBSTAR_SRC/DbstarLauncher -B
+		mmm $DBSTAR_SRC/DbstarSettings -B
+	else
+		mmm $DBSTAR_SRC/DbstarDVB
+		mmm $DBSTAR_SRC/DbstarLauncher
+		mmm $DBSTAR_SRC/DbstarSettings
+	fi
 	if [ $? -eq 0 ]; then
 		logger "FINISH make dbstar"
 	else
@@ -254,26 +292,28 @@ autobuild()
 	logger "******************** start..."
 	mkdir -p $BUILD_OUT
 
-	if [ $AUTOBUILD_FLAG -eq 16 ]; then
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_PATCH ]; then
 		dbstar_patch
 	fi
-	if [ $AUTOBUILD_FLAG -eq 32 ]; then
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_ROOTFS ]; then
+		rootfs_make
+	fi
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_DBSTAR ]; then
 		dbstar_make
 	fi
-	if [ $AUTOBUILD_FLAG -eq 4 ]; then
-		rootfs_make
-	fi
-	if [ $AUTOBUILD_FLAG -eq 1 ]; then
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_KERNEL ]; then
 		kernel_make
 	fi
-	if [ $AUTOBUILD_FLAG -eq 2 ]; then
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_RECOVERY ]; then
 		recovery_make
 	fi
-	if [ $AUTOBUILD_FLAG -eq 8 ]; then
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_OTAPACKAGE ]; then
 		otapackage_make
 	fi
-	if [ $AUTOBUILD_FLAG -eq 15 ]; then
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_ALL ]; then
+		dbstar_patch
 		rootfs_make
+		dbstar_make
 		kernel_make
 		recovery_make
 		otapackage_make
@@ -320,24 +360,31 @@ check_args()
 	if [ $1 = "-h" ]; then
 		help
 	elif [ $1 = "kernel" ]; then
-		AUTOBUILD_FLAG=1
+		AUTOBUILD_FLAG=$BUILD_FLAG_KERNEL
 	elif [ $1 = "recovery" ]; then
-		AUTOBUILD_FLAG=2
+		AUTOBUILD_FLAG=$BUILD_FLAG_RECOVERY
 	elif [ $1 = "rootfs" ]; then
-		AUTOBUILD_FLAG=4
-	elif [ $1 = "otapackage" ]; then
-		AUTOBUILD_FLAG=8
+		AUTOBUILD_FLAG=$BUILD_FLAG_ROOTFS
 	elif [ $1 = "patch" ]; then
-		AUTOBUILD_FLAG=16
+		AUTOBUILD_FLAG=$BUILD_FLAG_PATCH
 	elif [ $1 = "dbstar" ]; then
-		AUTOBUILD_FLAG=32
+		AUTOBUILD_FLAG=$BUILD_FLAG_DBSTAR
+	elif [ $1 = "otapackage" ]; then
+		AUTOBUILD_FLAG=$BUILD_FLAG_OTAPACKAGE
 	elif [ $1 = "all" ]; then
-		AUTOBUILD_FLAG=15
+		AUTOBUILD_FLAG=$BUILD_FLAG_ALL
+	else
+		help
 	fi
 
 	if [ "$2" = "-B" ]; then
-		logger 
 		REBUILD_FLAG=1
+	elif [ "$2" = "-v" ]; then
+		VERBOSE_FLAG=1
+	fi
+
+	if [ "$3" = "-v" ]; then
+		VERBOSE_FLAG=1
 	fi
 }
 
@@ -348,6 +395,8 @@ if [ $# -eq 1 ]; then
 	check_args $1
 elif [ $# -eq 2 ]; then
 	check_args $1 $2
+elif [ $# -eq 3 ]; then
+	check_args $1 $2 $3
 else
 	help
 fi
