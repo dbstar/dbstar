@@ -20,6 +20,7 @@
 #include <linux/if_ether.h>
 #include <net/if_arp.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "common.h"
 #include "push.h"
@@ -40,6 +41,13 @@ static pthread_cond_t cond_xml = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mtx_push_monitor = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_push_monitor = PTHREAD_COND_INITIALIZER;
 
+
+static pthread_mutex_t mtx_push_rely_condition = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t cond_push_rely_condition = PTHREAD_COND_INITIALIZER;
+static int s_push_rely_condition = 0;
+static int s_mpe_send_pause = 0;
+static int s_push_decoder_pause = 0;
+
 //数据包结构
 typedef struct tagDataBuffer
 {
@@ -58,12 +66,14 @@ typedef struct tagPRG
 
 static int mid_push_regist(char *id, char *content_uri, long long content_len);
 static int push_monitor_regist(int regist_flag);
+static int push_decoder_buf_init();
+static int push_decoder_buf_uninit();
 
 #define PROGS_NUM 64
 static PROG_S s_prgs[PROGS_NUM];
 //static char s_push_data_dir[256];
 /*************接收缓冲区定义***********/
-DataBuffer *g_recvBuffer;	//[MAX_PACK_BUF]
+DataBuffer *g_recvBuffer = NULL;	//[MAX_PACK_BUF]
 static int g_wIndex = 0;
 static int g_rIndex = 0;
 /**************************************/
@@ -99,6 +109,11 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	static unsigned int rx_frame_errors = 0;
 	static unsigned int rx_fifo_dropped = 0;
 	*/
+	
+	if(1==s_mpe_send_pause){
+		DEBUG("do nothing\n");
+		s_mpe_send_pause = 2;
+	}
 	
 	if (pkt_len < 16) {
 		printf("IP/MPE packet length = %d too small.\n", pkt_len);
@@ -138,8 +153,10 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 		return res;
 	}
 	
-	if(NULL==g_recvBuffer)
+	if(NULL==g_recvBuffer){
+		DEBUG("g_recvBuffer is NULL\n");
 		return res;
+	}
 	
 	/*	if (g_wIndex == g_rIndex 
 	&& g_recvBuffer[g_wIndex].m_len) {
@@ -191,6 +208,32 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	return 0;
 }
 
+int push_decoder_pause()
+{
+	push_rely_condition_set(RELY_CONDITION_UPGRADE);
+	s_push_decoder_pause = 1;
+	s_mpe_send_pause = 1;
+	
+	while(1){
+		DEBUG("s_push_decoder_pause=%d, s_mpe_send_pause=%d\n", s_push_decoder_pause,s_mpe_send_pause);
+		if(2==s_push_decoder_pause)
+			break;
+			
+		sleep(1);
+	}
+	push_decoder_buf_uninit();
+	return 0;
+}
+
+int push_decoder_resume()
+{
+	push_rely_condition_set(0-RELY_CONDITION_UPGRADE);
+	s_push_decoder_pause = 0;
+	s_mpe_send_pause = 0;
+	
+	return 0;
+}
+
 void *push_decoder_thread()
 {
 	unsigned char *pBuf = NULL;
@@ -198,9 +241,39 @@ void *push_decoder_thread()
 	int read_nothing_count = 0;
     short len;
 	
+PUSHTASK_START:
+	s_push_decoder_pause = 2;
+	pthread_mutex_lock(&mtx_push_rely_condition);
+	pthread_cond_wait(&cond_push_rely_condition,&mtx_push_rely_condition); //wait
+	pthread_mutex_unlock(&mtx_push_rely_condition);
+	/*
+	 网络和硬盘都必须准备好才能启动此push。
+	*/
+	if((RELY_CONDITION_NET&s_push_rely_condition)&&(RELY_CONDITION_HD&s_push_rely_condition)&&(!(RELY_CONDITION_UPGRADE&s_push_rely_condition)))
+		DEBUG("push rely condition is ready\n");
+	else if(s_push_rely_condition&RELY_CONDITION_EXIT){
+		DEBUG("exit from here by external action\n");
+		return NULL;
+	}
+	else{
+		DEBUG("push rely condition is not ready, %d\n", s_push_rely_condition);
+		goto PUSHTASK_START;
+	}
+	
+	if(-1==push_decoder_buf_init()){
+		return NULL;
+	}
+	
+	DEBUG("push decoder thread will goto main loop\n");
+	s_push_decoder_pause = 0;
 	s_decoder_running = 1;
 	while (1==s_decoder_running && NULL!=g_recvBuffer)
 	{
+		if(1==s_push_decoder_pause){
+			DEBUG("s_push_decoder_pause=%d\n", s_push_decoder_pause);
+			goto PUSHTASK_START;
+		}
+		
 		len = g_recvBuffer[rindex].m_len;
 		if (len)
 		{
@@ -232,6 +305,18 @@ void *push_decoder_thread()
 	DEBUG("exit from push decoder thread\n");
 	
 	return NULL;
+}
+
+void push_rely_condition_set(int rely_cond)
+{
+	DEBUG("set %d\n", rely_cond);
+	pthread_mutex_lock(&mtx_push_rely_condition);
+	int tmp_cond = s_push_rely_condition;
+	if(rely_cond>=0 || (rely_cond<0 && s_push_rely_condition>0))
+		s_push_rely_condition += rely_cond;
+	DEBUG("push origine %d, set %d, so s_rely_condition is %d\n", tmp_cond, rely_cond, s_push_rely_condition);
+	pthread_cond_signal(&cond_push_rely_condition);
+	pthread_mutex_unlock(&mtx_push_rely_condition);
 }
 
 static void push_progs_finish(char *id)
@@ -621,6 +706,33 @@ int push_monitor_reset()
 	return ret;
 }
 
+static int push_decoder_buf_init()
+{
+	g_recvBuffer = (DataBuffer *)malloc(sizeof(DataBuffer)*MAX_PACK_BUF);
+	if(NULL==g_recvBuffer){
+		ERROROUT("can not malloc %d*%d\n", sizeof(DataBuffer), MAX_PACK_BUF);
+		return -1;
+	}
+	else
+		DEBUG("malloc for push decoder buffer success\n");
+	
+	int i = 0;
+	for(i=0;i<MAX_PACK_BUF;i++)
+		g_recvBuffer[i].m_len = 0;
+	
+	return 0;
+}
+
+static int push_decoder_buf_uninit()
+{
+	if(g_recvBuffer){
+		DEBUG("free push decoder buf\n");
+		free(g_recvBuffer);
+		g_recvBuffer = NULL;
+	}
+	return 0;
+}
+
 int mid_push_init(char *push_conf)
 {
 	int i = 0;
@@ -637,14 +749,7 @@ int mid_push_init(char *push_conf)
 		s_prgs[i].total = 0LL;
 	}
 	push_monitor_reset();
-	
-	g_recvBuffer = (DataBuffer *)malloc(sizeof(DataBuffer)*MAX_PACK_BUF);
-	if(NULL==g_recvBuffer){
-		ERROROUT("can not malloc %d*%d\n", sizeof(DataBuffer), MAX_PACK_BUF);
-		return -1;
-	}
-	for(i=0;i<MAX_PACK_BUF;i++)
-		g_recvBuffer[i].m_len = 0;
+	push_rely_condition_set(0-RELY_CONDITION_UPGRADE);
 	
 	/*
 	* 初始化PUSH库
@@ -672,15 +777,17 @@ int mid_push_init(char *push_conf)
 //	pthread_detach(tidMonitor);
 	
 	//创建xml解析线程
-	pthread_t tidxmlphase;
-	pthread_create(&tidxmlphase, NULL, push_xml_parse_thread, NULL);
-	pthread_detach(tidxmlphase);
+	pthread_t tidxmlparse;
+	pthread_create(&tidxmlparse, NULL, push_xml_parse_thread, NULL);
+	pthread_detach(tidxmlparse);
 	
 	return 0;
 }
 
 int mid_push_uninit()
 {
+	push_rely_condition_set(RELY_CONDITION_EXIT);
+	
 	pthread_mutex_lock(&mtx_xml);
 	s_xmlparse_running = 0;
 	pthread_cond_signal(&cond_xml);
@@ -697,9 +804,7 @@ int mid_push_uninit()
 	
 	s_decoder_running = 0;
 	pthread_join(tidDecodeData, NULL);
-	
-	free(g_recvBuffer);
-	g_recvBuffer = NULL;
+	push_decoder_buf_uninit();
 	
 	return 0;
 }

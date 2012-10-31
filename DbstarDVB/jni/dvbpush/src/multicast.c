@@ -41,7 +41,7 @@ typedef struct{
 
 static int p_read;
 static int p_write;
-static unsigned char *p_buf;
+static unsigned char *p_buf = NULL;
 int loader_dsc_fid;
 
 static pthread_mutex_t mtx_getip = PTHREAD_MUTEX_INITIALIZER;
@@ -50,6 +50,11 @@ static int igmp_running = 0;
 static int softdvb_running = 0;
 static pthread_t pth_softdvb_id;
 static pthread_t pth_igmp_id;
+
+
+static pthread_mutex_t mtx_rely_condition = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t cond_rely_condition = PTHREAD_COND_INITIALIZER;
+static int s_rely_condition = 0;
 
 static int multicast_init()
 {
@@ -85,6 +90,8 @@ int igmp_init()
 int igmp_uninit()
 {
 	if(0==igmp_running){
+		net_rely_condition_set(RELY_CONDITION_EXIT);
+		
 		pthread_mutex_lock(&mtx_getip);
 		pthread_cond_signal(&cond_getip);
 		pthread_mutex_unlock(&mtx_getip);
@@ -131,6 +138,29 @@ static void *igmp_thread()
 		strncpy(multi_ip, p_multi_addr, sizeof(multi_ip)-1);
 	}
 	DEBUG("multicast ip: %s, port: %d\n", multi_ip, multi_port);
+	net_rely_condition_set(0);
+	
+MULTITASK_START:
+	pthread_mutex_lock(&mtx_rely_condition);
+	pthread_cond_wait(&cond_rely_condition,&mtx_rely_condition); //wait
+	pthread_mutex_unlock(&mtx_rely_condition);
+	
+	/*
+	 只要具备网络条件即可启动组播业务，不需要等待硬盘，因为升级不需要硬盘，有flash即可。
+	*/
+	if(RELY_CONDITION_NET & s_rely_condition)
+		DEBUG("network condition is ready\n");
+	else if(s_rely_condition&RELY_CONDITION_EXIT){
+		DEBUG("exit from here by external action\n");
+		return NULL;
+	}
+	else{
+		DEBUG("net rely condition is not ready, %d\n", s_rely_condition);
+		goto MULTITASK_START;
+	}
+	
+	sleep(2);
+	DEBUG("igmp thread will goto main loop\n");
 	
 	while(1){
 		while(1){
@@ -248,6 +278,11 @@ static void *igmp_thread()
 
 	sizeof_sin = sizeof(sin);
 	
+	if(p_buf){
+		DEBUG("free p_buf\n");
+		free(p_buf);
+		p_buf = NULL;
+	}
 	p_buf = (unsigned char *)malloc(MULTI_BUF_SIZE);
 	if(NULL==p_buf){
 		ERROROUT("can not malloc space for p_buf\n");
@@ -297,6 +332,17 @@ static void *igmp_thread()
 	return NULL;
 }
 
+void net_rely_condition_set(int rely_cond)
+{
+	pthread_mutex_lock(&mtx_rely_condition);
+	int tmp_cond = s_rely_condition;
+	if(rely_cond>=0 || (rely_cond<0 && s_rely_condition>0))
+		s_rely_condition += rely_cond;
+	DEBUG("net origine %d, set %d, so s_rely_condition is %d\n", tmp_cond, rely_cond, s_rely_condition);
+	pthread_cond_signal(&cond_rely_condition);
+	pthread_mutex_unlock(&mtx_rely_condition);
+}
+
 void *softdvb_thread()
 {
 	int left = 0;
@@ -318,7 +364,10 @@ void *softdvb_thread()
 			usleep(100000);
 	}
 	
-	while(1==softdvb_running && 1==igmp_running)	// make sure the igmp thread is start firstly
+	/*
+	 组播任务的开启、关闭会根据网络情况处理，这里就不再判断igmp_running了，要不然逻辑很复杂。
+	*/
+	while(1==softdvb_running)	// make sure the igmp thread is start firstly
 	{
 		if(p_write >= p_read)
 			left = p_write - p_read;
@@ -426,23 +475,21 @@ int softdvb_init()
 	chanFilterInit();
 	
 	// prog/file
-//	unsigned short root_pid = root_channel_get();
-//	int filter1 = alloc_filter(root_pid, 0);
-//	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
+	unsigned short root_pid = root_channel_get();
+	int filter1 = alloc_filter(root_pid, 0);
+	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
 	
-	memset(&param,0,sizeof(param));
-	param.filter[0] = 0xf0;
-	param.mask[0] = 0xff;
-	
-	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
-	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
+//	memset(&param,0,sizeof(param));
+//	param.filter[0] = 0xf0;
+//	param.mask[0] = 0xff;
+//	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
+//	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0x1;
 	param.mask[0] = 0xff;
-	
 	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
-	DEBUG("set ca filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
+	DEBUG("set ca filter1, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
 #ifdef PUSH_LOCAL_TEST
 	// prog/video

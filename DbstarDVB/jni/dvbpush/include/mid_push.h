@@ -17,4 +17,8 @@ void dvbpush_getinfo_start();
 void dvbpush_getinfo_stop();
 int dvbpush_getinfo(char **p, unsigned int *len);
 
+int push_decoder_pause();
+int push_decoder_resume();
+void push_rely_condition_set(int rely_cond);
+
 #endif

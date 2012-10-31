@@ -1,0 +1,174 @@
+# system.prop for M1 reference board
+# This overrides settings in the products/generic/system.prop file
+#
+#rild.libpath=/system/lib/libreference-ril.so
+#rild.libargs=-d /dev/ttyS0
+#ro.sf.lcd_density=240
+keyguard.no_require_sim=1
+#set keyguard.enable=false to disable keyguard
+keyguard.enable=false
+ro.statusbar.widget=false
+ro.statusbar.button=false
+ro.statusbar.yearmonthdayweek=false
+
+#wifi.interface=ra0
+# Time between scans in seconds. Keep it high to minimize battery drain.
+# This only affects the case in which there are remembered access points,
+# but none are in range.
+#wifi.supplicant_scan_interval = 60
+#alsa.mixer.playback.master=DAC2 Analog
+#alsa.mixer.capture.master=Analog
+alsa.use.usb.audioin=true
+# from frameworks/base/build/tablet-dalvik-heap.mk
+dalvik.vm.heapstartsize=5m
+dalvik.vm.heapgrowthlimit=128m
+dalvik.vm.heapsize=256m
+
+hwui.render_dirty_regions=false
+
+# Configure features
+hw.nopm=true
+hw.nobattery=true
+hw.nophone=true
+hw.novibrate=true
+hw.nogps=true
+hw.cameras=0
+hw.hasethernet=true
+hw.has.accelerometer=false
+hw.nomediapartition=true
+hw.nosoundpartition=true
+ro.hw.ethernet.onboard=true
+
+ro.screen.has.timeout=false
+ro.screen.has.brightness=false
+ro.screen.has.tvout=true
+ro.platform.has.security=false
+ro.platform.has.tts=false
+ro.platform.has.touch=false
+ro.platform.has.mbxuimode=true
+ro.platform.has.1080scale=2
+ro.fontScale=1.3
+ro.platform.has.digitaudio=true
+ro.platform.has.defaulttvfreq=false
+ro.platform.has.hdmicec=false
+
+# Use OSD2 mouse patch
+ro.ui.cursor=osd2
+ro.ui.cursor.autohide=true
+ro.ui.cursor.timeout=10000
+
+# Enable 32-bit OSD
+sys.fb.bits=32
+
+# Disable GPS
+gps.enable=false
+
+# for sata connect to PC
+vold.gadget_only_sata=1
+
+#Enable player buildin
+media.amsuperplayer.enable=true
+media.amplayer.enable-acodecs=asf,aac,flac,alac,m4a,ape,mp3
+media.amplayer.enable=true
+media.amplayer.support-exname=divx,h264,avi,ts,m2ts,mkv,mp4,mpg,mpeg,rm,rmvb,wmv,ts,dat,vob,vc1
+media.amplayer.support-exname1=mp2,mp3,ac3
+media.amsuperplayer.m4aplayer=STAGEFRIGHT_PLAYER
+media.amsuperplayer.defplayer=PV_PLAYER
+media.amplayer.thumbnail=true
+media.arm.audio.decoder=ape
+mbx.3D_Bright.enable=false
+media.amplayer.stopbuflevel=0.002
+
+# Camera exif
+ro.camera.exif.make=M1
+ro.camera.exif.model=f16ref
+
+#Max alloc size for fat size in fsck_msdoa
+ro.fsck_msdos.max_fat_size_MB=32
+
+######## UBOOTENV VARIBLES - r/w as system properties ##########
+#
+#  Now we can load ubootenv varibles to system properties. 
+#  We use a special prefix ("ubootenv.var" as default) to indicate that the 'property'
+#  actually is an ubootenv varible. 
+#  
+#  A ubootenv 'property' will be initialized during system booting. And when user set
+#  a different value, it will be written back to ubootenv device immediately.
+#
+
+## prefix of ubootenv varibles - should less than 16 chars.
+#UBOOTENV MTD NAME
+ubootenv.var.outputmode=
+ubootenv.var.cvbsmode=
+ubootenv.var.screenratio=
+ubootenv.var.oobeflag=
+ubootenv.var.480poutputx=
+ubootenv.var.480poutputy=
+ubootenv.var.480poutputwidth=
+ubootenv.var.480poutputheight=
+ubootenv.var.480ioutputx=
+ubootenv.var.480ioutputy=
+ubootenv.var.480ioutputwidth=
+ubootenv.var.480ioutputheight=
+ubootenv.var.576poutputx=
+ubootenv.var.576poutputy=
+ubootenv.var.576poutputwidth=
+ubootenv.var.576poutputheight=
+ubootenv.var.576ioutputx=
+ubootenv.var.576ioutputy=
+ubootenv.var.576ioutputwidth=
+ubootenv.var.576ioutputheight=
+ubootenv.var.720poutputx=
+ubootenv.var.720poutputy=
+ubootenv.var.720poutputwidth=
+ubootenv.var.720poutputheight=
+ubootenv.var.1080poutputx=
+ubootenv.var.1080poutputy=
+ubootenv.var.1080poutputwidth=
+ubootenv.var.1080poutputheight=
+ubootenv.var.1080ioutputx=
+ubootenv.var.1080ioutputy=
+ubootenv.var.1080ioutputwidth=
+ubootenv.var.1080ioutputheight=
+ubootenv.var.digitaudiooutput=
+ubootenv.var.defaulttvfrequency=
+ubootenv.var.hdmicecswitch=
+
+tv.hideStatusBar.enable=false
+tv.powermanager.nevertimeout=true
+#Configure the dtv standard, can only be DVB,ATSC
+dtv.standard=DVB
+
+# Disable preload-class
+ro.amlogic.no.preloadclass=1
+
+service.adb.tcp.port=5555
+const.window.w=1280
+const.window.h=720
+
+# Disable LongPress_PowerKey
+ro.amlogic.no.LongPressPowerKey=true
+
+#Open cvbs output mode
+ro.amlogic.has.CvbsOutput=true
+ro.video.deinterlace.enable=false
+sys.defaultStream.ismusic=true
+
+ro.app.optimization=true
+
+#enable address bar cover issue fixing
+ro.flashplayer.surfacehack=1
+
+#dhcp_release
+net.dhcp.release=disabled
+
+#reduce the time of loading online video
+media.libplayer.fastswitch=1
+media.amplayer.delaybuffering=1
+media.libplayer.ipv4only=1
+
+
+#set default timezone
+persist.sys.timezone=Asia/Shanghai
+#set default ethernet on
+ro.ethernet.default_on=true
