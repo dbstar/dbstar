@@ -733,7 +733,7 @@ public class GDLoopGallery extends GDAbsSpinner {
         case KeyEvent.KEYCODE_DPAD_RIGHT:
             if (moveNext()) {
                 playSoundEffect(SoundEffectConstants.NAVIGATION_RIGHT);
-                return true;
+                return true;	
             }
             return true;
          default:
@@ -758,6 +758,11 @@ public class GDLoopGallery extends GDAbsSpinner {
         return false;
     }
     
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+    	Log.d(TAG, "onKeyLongPress code = " + keyCode);
+    	
+    	return super.onKeyLongPress(keyCode, event);
+    }
     
 //    public boolean onKeyMultiple(int keyCode, int repeatCount, KeyEvent event) {
 //    	Log.d(TAG, "onKeyMultiple keyCode=" + keyCode + " repeatCount=" + repeatCount);

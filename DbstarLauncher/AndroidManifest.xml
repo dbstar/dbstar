@@ -43,7 +43,7 @@
         <activity android:name=".app.GDOrderPushActivity" />
         <activity android:name=".app.GDFavoriteMovieActivity" />
         <activity
-            android:name=".app.GDPopupActivity"
+            android:name=".app.alert.GDPopupActivity"
             android:theme="@style/popup_activity" >
             <intent-filter>
                 <action android:name="com.dbstar.app.ShowPopup" />
@@ -52,7 +52,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".app.GDUpgradeActivity"
+            android:name=".app.alert.GDUpgradeActivity"
             android:theme="@style/popup_activity" />
         <activity
             android:name=".app.alert.GDForceUpgradeActivity"

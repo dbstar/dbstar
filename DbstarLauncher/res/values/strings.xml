@@ -144,10 +144,6 @@
     <string name="guodiansettings_password">密码</string>
     <string name="guodiansettings_serialnumber">序列号</string>
     <string name="inputview_title">输入</string>
-    <string name="button_text_ok">确定</string>
-    <string name="button_text_cancel">取消</string>
-    <string name="dialog_upgrade_title">升级</string>
-    <string name="dialog_upgrade_notes">确认升级系统吗？</string>
     <string name="diskmanagement_disksize">磁盘空间</string>
     <string name="diskmanagement_usedspace">占用空间</string>
     <string name="diskmanagement_emptyspace">剩余空间</string>
@@ -165,5 +161,11 @@
     <string name="back_to_home_and_save">返回自动保存</string>
     <string name="back_to_home">返回首页</string>
 
-    <string name="popup_forceupgrade_notes">强制升级,5秒后系统将自动重起</string>
+    <!-- Upgrade messages -->
+    <string name="button_text_ok">确定</string>
+    <string name="button_text_cancel">取消</string>
+    <string name="dialog_upgrade_title">请注意！</string>
+    <string name="dialog_upgrade_notes">系统检测到新的版本，按确认键开始升级，按取消键取消升级。</string>
+    <string name="popup_forceupgrade_notes">系统检测到新的版本，5秒后自动重启开始升级！</string>
+    <string name="popup_upgrade_emphasized_message">在升级过程中请不要断电或进行其它操作，以保证系统升级正常完成！</string>
 </resources>

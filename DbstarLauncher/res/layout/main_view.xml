@@ -15,7 +15,8 @@
         android:layout_marginTop="0dp"
         android:focusable="false" >
 
-        <!--<ImageView
+        <!--
+        <ImageView
             android:id="@+id/logo_dbstar"
             android:layout_width="269dp"
             android:layout_height="70dp"
@@ -32,7 +33,8 @@
             android:layout_marginLeft="20dp"
             android:layout_toRightOf="@id/logo_dbstar"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_guodian" />-->
+            android:src="@drawable/logo_guodian" />
+        -->
 
         <TextView
             android:id="@+id/custom_service_hotline"
@@ -56,8 +58,8 @@
         android:layout_alignParentTop="true"
         android:layout_marginRight="105dp"
         android:layout_marginTop="123dp"
-        android:focusable="false"
-        android:background="@drawable/video_view_bg" >
+        android:background="@drawable/video_view_bg"
+        android:focusable="false" >
 
         <com.dbstar.widget.GDVideoView
             android:id="@+id/player_view"
@@ -79,8 +81,8 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="105dp"
         android:layout_marginTop="123dp"
-        android:focusable="false"
-        android:background="@drawable/context_view_bg" >
+        android:background="@drawable/context_view_bg"
+        android:focusable="false" >
 
         <!-- celander view -->
 
@@ -89,8 +91,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
             android:layout_marginTop="12dp"
             android:orientation="horizontal" >
 
@@ -98,11 +100,12 @@
                 android:id="@+id/time_view"
                 android:layout_width="120dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="right|center_vertical"
                 android:ellipsize="end"
                 android:gravity="center"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
+                android:text="12:20"
                 android:textColor="#ffffffff"
                 android:textSize="34sp"
                 android:textStyle="bold" />
@@ -110,7 +113,7 @@
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="left|center_vertical"
                 android:layout_marginLeft="10dp"
                 android:orientation="vertical" >
 
@@ -118,11 +121,12 @@
                     android:id="@+id/date_view"
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:layout_gravity="center"
+                    android:layout_gravity="left|center_vertical"
                     android:ellipsize="end"
-                    android:gravity="left|center_vertical"
+                    android:gravity="center"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
+                    android:text="2012/11/08  星期三"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
 
@@ -130,12 +134,11 @@
                     android:id="@+id/week_view"
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
-                    android:layout_gravity="center"
-                    android:layout_marginRight="10dp"
+                    android:layout_gravity="left|center_vertical"
                     android:ellipsize="end"
-                    android:gravity="center"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
+                    android:text="农历九月十三"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
             </LinearLayout>

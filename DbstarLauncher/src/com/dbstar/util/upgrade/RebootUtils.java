@@ -11,14 +11,17 @@ import android.util.Log;
 public class RebootUtils {
 	private final static String TAG = "Upgrade.RebootUtils";
 
-	
 	public static void rebootInstallPackage(final Context context,
 			final String packageFile) {
+		if (packageFile == null || packageFile.isEmpty())
+			return;
+
 		File file = new File(packageFile);
-		
-		rebootInstallPackage(context, file);
+		if (file != null && file.exists()) {
+			rebootInstallPackage(context, file);
+		}
 	}
-	
+
 	public static void rebootInstallPackage(final Context context,
 			final File packageFile) {
 		Log.w(TAG, "!!! REBOOT INSTALL PACKAGE !!!");

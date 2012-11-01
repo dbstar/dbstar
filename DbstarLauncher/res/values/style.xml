@@ -22,25 +22,5 @@
     <style name="scans_text">
         <item name="android:typeface">sans</item>
     </style>
-    
-    <declare-styleable name="GDAlertDialog">
-        <attr name="fullDark" format="reference|color" />
-        <attr name="topDark" format="reference|color" />
-        <attr name="centerDark" format="reference|color" />
-        <attr name="bottomDark" format="reference|color" />
-        <attr name="fullBright" format="reference|color" />
-        <attr name="topBright" format="reference|color" />
-        <attr name="centerBright" format="reference|color" />
-        <attr name="bottomBright" format="reference|color" />
-        <attr name="bottomMedium" format="reference|color" />
-        <attr name="centerMedium" format="reference|color" />
-        <attr name="layout" format="reference"/>
-        <attr name="listLayout" format="reference" />
-        <attr name="multiChoiceItemLayout" format="reference" />
-        <attr name="singleChoiceItemLayout" format="reference" />
-        <attr name="listItemLayout" format="reference" />
-        <attr name="progressLayout" format="reference" />
-        <attr name="horizontalProgressLayout" format="reference" />
-    </declare-styleable>
 
 </resources>

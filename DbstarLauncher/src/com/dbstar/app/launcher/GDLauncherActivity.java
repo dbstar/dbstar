@@ -15,8 +15,8 @@ import com.dbstar.app.GDOrderPushActivity;
 import com.dbstar.app.GDPowerUsageController;
 import com.dbstar.app.GDReceiveStatusActivity;
 import com.dbstar.app.GDTVActivity;
-import com.dbstar.app.GDUpgradeActivity;
 import com.dbstar.app.alert.GDForceUpgradeActivity;
+import com.dbstar.app.alert.GDUpgradeActivity;
 import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGuodianSettingsActivity;
 import com.dbstar.app.settings.GDHelpActivity;
@@ -258,7 +258,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			return mMainMenu.onKeyDown(keyCode, event);
 		}
 		
-//		 case 82: // just for test on emulator
+		 case 82: // just for test on emulator
 		case KeyEvent.KEYCODE_DPAD_UP:
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER: {
@@ -391,7 +391,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				// show baozhi
 			}
 
-		} else if (menuItem.Type().equals(GDCommon.ColumnTypeGuodian)) {
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSettings)) {
 			String category = menuItem.MenuText();
 			String url = mService.getCategoryContent(category);
 			Log.d(TAG, category + " url = " + url);
