@@ -320,6 +320,60 @@ int ipv4_simple_check(const char *ip_addr)
 }
 
 /*
+ 组播报文的目的地址使用D类IP地址， 范围是从224.0.0.0到239.255.255.255
+ 这里只做简单的头部、粗略IP、端口号检查，不做过于细致的区别。实际上可用的组播IP范围要小一些
+*/
+int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port)
+{
+	if(NULL==igmp_addr || NULL==igmp_ip || NULL==igmp_port){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+	
+	if(0!=strncasecmp(igmp_addr, "igmp://", strlen("igmp://"))){
+		DEBUG("there is no valid protocol head for igmp addr: %s\n", igmp_addr);
+		return -1;
+	}
+	
+	char *p_multi_addr = igmp_addr+strlen("igmp://");
+	char *p_colon = strchr(p_multi_addr, ':');
+	char multi_ip[16];
+	if(p_colon || abs(p_colon-p_multi_addr)>15){
+		memset(multi_ip, 0, sizeof(multi_ip));
+		strncpy(multi_ip, p_multi_addr, abs(p_colon-p_multi_addr));
+
+		int ip[4];
+		if(4==sscanf(multi_ip, "%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3])){
+			DEBUG("will check multi ip %d-%d-%d-%d\n", ip[0], ip[1], ip[2], ip[3]);
+		}
+		else{
+			DEBUG("can NOT check multi ip %s, perhaps it has invalid format\n", multi_ip);
+			return -1;
+		}
+		
+		if((ip[0]>=224&&ip[0]<=239)&&(ip[1]>=0&&ip[1]<=255)&&(ip[2]>=0&&ip[2]<=255)&&(ip[3]>=0&&ip[3]<=255))
+		{
+			strcpy(igmp_ip, multi_ip);
+			p_colon ++;
+			*igmp_port = strtol(p_colon, NULL, 0);
+			
+			DEBUG("valid multi addr: %s\n", igmp_addr);
+			return 0;
+		}
+		else{
+			DEBUG("invalid multi ip: %s\n", multi_ip);
+			return -1;
+		}
+	}
+	else{
+		DEBUG("invalid igmp addr: %s\n", igmp_addr);
+		return -1;
+	}
+	
+	return 0;
+}
+
+/*
  从路径path中获取第一个文件格式为filefmt的文件，优先匹配preferential_file，
  将获得的文件uri存放在file中
 */

@@ -504,7 +504,7 @@ int dvbpush_register_notify(void *func)
 */
 int msg_send2_UI(int type, char *msg, int len)
 {
-	DEBUG("type: %d, msg: %s, len: %d\n", type, msg, len);
+	DEBUG("type: %d=0x%x, msg: %s, len: %d\n", type,type, msg, len);
 	if (dvbpush_notify != NULL){
 		return dvbpush_notify(type, msg, len);
 	}
@@ -519,7 +519,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 {
 	int ret = 0;
 
-	DEBUG("dvbpush_command(cmd=%d)\n", cmd);
+	DEBUG("command: %d=0x%x\n", cmd,cmd);
 	switch (cmd) {
 		case CMD_DVBPUSH_GETINFO_START:
 			dvbpush_getinfo_start();

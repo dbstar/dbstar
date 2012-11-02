@@ -424,6 +424,7 @@ char *time_serial();
 int ipv4_simple_check(const char *ip_addr);
 int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, char *preferential_file);
 int check_tail(const char *str_dad, char *str_tail, int case_cmp);
+int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port);
 
 #endif
 

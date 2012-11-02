@@ -55,6 +55,8 @@ static pthread_t pth_igmp_id;
 static pthread_mutex_t mtx_rely_condition = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_rely_condition = PTHREAD_COND_INITIALIZER;
 static int s_rely_condition = 0;
+static int s_igmp_restart = 0;
+static int s_igmp_recvbuf_init_flag = 0;
 
 static int multicast_init()
 {
@@ -106,10 +108,30 @@ int igmp_uninit()
 	return multicast_uninit();
 }
 
+int igmp_recvbuf_init()
+{
+	if(0==s_igmp_recvbuf_init_flag){
+		if(p_buf){
+			DEBUG("free p_buf: %p\n", p_buf);
+			free(p_buf);
+			p_buf = NULL;
+		}
+		p_buf = (unsigned char *)malloc(MULTI_BUF_SIZE);
+		if(NULL==p_buf){
+			ERROROUT("can not malloc space for p_buf\n");
+			return -1;
+		}
+		s_igmp_recvbuf_init_flag = 1;
+		DEBUG("malloc %d for igmp receive buffer\n", MULTI_BUF_SIZE);
+	}
+	else{
+		DEBUG("have malloc igmp receive buffer already\n");
+	}
+	return 0;
+}
+
 static void *igmp_thread()
 {
-	char *p_multi_addr = s_data_source;
-	DEBUG("multicast addr: %s\n", p_multi_addr);
     char if_ip[16] = {0};
 	int sock, opt;
 	struct sockaddr_in sin;
@@ -125,28 +147,13 @@ static void *igmp_thread()
 	char multi_ip[16];
 	int multi_port = 3000;
 
-	p_multi_addr += strlen("igmp://");
-	char *p_colon = strchr(p_multi_addr, ':');
-	memset(multi_ip, 0, sizeof(multi_ip));
-	if(p_colon){
-		strncpy(multi_ip, p_multi_addr, abs(p_colon-p_multi_addr));
-		multi_ip[sizeof(multi_ip)-1] = '\0';
-		p_colon ++;
-		multi_port = atoi(p_colon);
-	}
-	else{
-		strncpy(multi_ip, p_multi_addr, sizeof(multi_ip)-1);
-	}
-	DEBUG("multicast ip: %s, port: %d\n", multi_ip, multi_port);
-	net_rely_condition_set(0);
-	
 MULTITASK_START:
 	pthread_mutex_lock(&mtx_rely_condition);
 	pthread_cond_wait(&cond_rely_condition,&mtx_rely_condition); //wait
 	pthread_mutex_unlock(&mtx_rely_condition);
 	
 	/*
-	 只要具备网络条件即可启动组播业务，不需要等待硬盘，因为升级不需要硬盘，有flash即可。
+	 只要具备网络条件即可启动组播业务，不需要等待硬盘。因为升级不需要硬盘，有flash即可。
 	*/
 	if(RELY_CONDITION_NET & s_rely_condition)
 		DEBUG("network condition is ready\n");
@@ -160,19 +167,24 @@ MULTITASK_START:
 	}
 	
 	sleep(2);
-	DEBUG("igmp thread will goto main loop\n");
+	DEBUG("igmp thread will goto its main loop\n");
+	
+	memset(multi_ip, 0, sizeof(multi_ip));
+	if(-1==igmp_simple_check(s_data_source, multi_ip, &multi_port)){
+		DEBUG("check igmp addr: %s invalid\n", s_data_source);
+		goto MULTITASK_START;
+	}
+	DEBUG("multicast ip: %s, port: %d\n", multi_ip, multi_port);
+	
 	
 	while(1){
 		while(1){
 			pthread_mutex_lock(&mtx_getip);
 			
 			memset(if_ip, 0, sizeof(if_ip));
-#if 0
-			strcpy(if_ip, "192.168.1.252");
-			break;
-#else
 			if(0==ifconfig_get("eth0", if_ip, NULL, NULL)){
 				if(0==ipv4_simple_check(if_ip)){
+					pthread_mutex_unlock(&mtx_getip);
 					break;
 				}
 				else
@@ -188,12 +200,12 @@ MULTITASK_START:
 			retcode = pthread_cond_timedwait(&cond_getip, &mtx_getip, &outtime);
 			if(ETIMEDOUT!=retcode){
 				DEBUG("igmp thread is canceled by external signal\n");
+				pthread_mutex_unlock(&mtx_getip);
 				return NULL;
 			}
 			pthread_mutex_unlock(&mtx_getip);
 		}
 		DEBUG("get eth0 ip: %s\n", if_ip);
-#endif
 	
 		bzero((char *)&sin, sizeof(sin));
 		sin.sin_family = AF_INET;
@@ -201,10 +213,10 @@ MULTITASK_START:
 		sin.sin_port = htons(multi_port);
 	
 		if ((sock = socket( AF_INET, SOCK_DGRAM, 0)) == -1) {
-			DEBUG("Error opening socket\n");
+			DEBUG("Error opening igmp socket\n");
 		}
 		else{
-			DEBUG("create socket %d\n", sock);
+			DEBUG("create igmp socket %d\n", sock);
 		
 			opt = 1;
 			if( ioctl( sock,  FIONBIO, (int)&opt ) < 0 ){
@@ -270,6 +282,7 @@ MULTITASK_START:
 		retcode = pthread_cond_timedwait(&cond_getip, &mtx_getip, &outtime);
 		if(ETIMEDOUT!=retcode){
 			DEBUG("igmp thread is canceled by external signal\n");
+			pthread_mutex_unlock(&mtx_getip);
 			return NULL;
 		}
 		pthread_mutex_unlock(&mtx_getip);
@@ -278,18 +291,11 @@ MULTITASK_START:
 
 	sizeof_sin = sizeof(sin);
 	
-	if(p_buf){
-		DEBUG("free p_buf\n");
-		free(p_buf);
-		p_buf = NULL;
-	}
-	p_buf = (unsigned char *)malloc(MULTI_BUF_SIZE);
-	if(NULL==p_buf){
-		ERROROUT("can not malloc space for p_buf\n");
+	if(-1==igmp_recvbuf_init())
 		return NULL;
-	}
 	
 	igmp_running = 1;
+	s_igmp_restart = 0;
 	while(1==igmp_running){
         if (p_write >= p_read)
         {
@@ -302,6 +308,7 @@ MULTITASK_START:
 		recv_len = recvfrom(sock, p_buf+p_write, dfree, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
 		if( recv_len > 0 )
 		{
+			//DEBUG("igmp recv len: %d\n:", recv_len);
 			p_write += recv_len;
 			if (p_write >= MULTI_BUF_SIZE)
 				p_write -= MULTI_BUF_SIZE;
@@ -312,6 +319,10 @@ MULTITASK_START:
 		if (recv_len < 1024)
 		{
             usleep(10000);
+            if(1==s_igmp_restart){
+            	DEBUG("will restart igmp thread loop\n");
+            	break;
+            }
 		}
 	}
 	
@@ -320,10 +331,16 @@ MULTITASK_START:
 		if (setsockopt(sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&ipmreq, sizeof(ipmreq)) < 0) {
 			perror("Error in setsocket(add membership)");
 		}
+		else
+			DEBUG("do igmp leave\n");
 	
 		close(sock);
+		DEBUG("close igmp socket: %d\n", sock);
 	}
 	sock = -1;
+	
+	if(1==s_igmp_restart)
+		goto MULTITASK_START;
 	
 	free(p_buf);
 	p_buf = NULL;
@@ -334,6 +351,8 @@ MULTITASK_START:
 
 void net_rely_condition_set(int rely_cond)
 {
+	s_igmp_restart = 1;
+	
 	pthread_mutex_lock(&mtx_rely_condition);
 	int tmp_cond = s_rely_condition;
 	if(rely_cond>=0 || (rely_cond<0 && s_rely_condition>0))

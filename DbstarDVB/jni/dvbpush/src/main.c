@@ -75,6 +75,7 @@ void *main_thread()
 	DEBUG("read drm info\n");
 	drm_info_init();
 	
+	DEBUG("OK ================================ OK\n");
 	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
 	
 	int main_running = 1;
@@ -98,7 +99,7 @@ int dvbpush_init()
 {
 	if(0==s_dvbpush_init_flag){
 		s_dvbpush_init_flag = 1;
-		DEBUG("dvbpush init...\n");
+		DEBUG("dvbpush init...>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.......\n");
 		pthread_create(&tid_main, NULL, main_thread, NULL);
 		//pthread_detach(tid_main);
 	}
