@@ -105,7 +105,6 @@
                 android:gravity="center"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
-                android:text="12:20"
                 android:textColor="#ffffffff"
                 android:textSize="34sp"
                 android:textStyle="bold" />
@@ -126,7 +125,6 @@
                     android:gravity="center"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
-                    android:text="2012/11/08  星期三"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
 
@@ -138,7 +136,6 @@
                     android:ellipsize="end"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
-                    android:text="农历九月十三"
                     android:textColor="#ffffffff"
                     android:textSize="18sp" />
             </LinearLayout>
