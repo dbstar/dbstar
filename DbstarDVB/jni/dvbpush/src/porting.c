@@ -484,6 +484,20 @@ int ifconfig_get(char *interface_name, char *ip, char *status, char *mac)
 	return ret;
 }
 
+void upgrade_sign_set()
+{
+	unsigned char mark = 0;
+	LoaderInfo_t out;
+	
+	memset(&out, 0, sizeof(out));
+	if(0==get_loader_message(&mark, &out))
+	{
+		DEBUG("read loader msg: %d, set to 3\n", mark);
+		set_loader_reboot_mark(3);
+	}
+	else
+		DEBUG("get loader message failed\n");
+}
 
 /*
  通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
@@ -549,12 +563,10 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		
 		case CMD_UPGRADE_CANCEL:
 			DEBUG("CMD_UPGRADE_CANCEL\n");
+			upgrade_sign_set();
 			break;
-		case CMD_UPGRADE_CONFIRM:
-			DEBUG("CMD_UPGRADE_CONFIRM\n");
-			break;
-		case CMD_UPGRADE_TIMEOUT:
-			DEBUG("CMD_UPGRADE_TIMEOUT\n");
+		case CMD_PUSH_SELECT:
+			DEBUG("CMD_PUSH_SELECT\n");
 			break;
 		
 		default:

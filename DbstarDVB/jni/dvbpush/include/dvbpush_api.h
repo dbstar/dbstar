@@ -20,7 +20,7 @@ typedef enum {
 	CMD_UPGRADE_CONFIRM             = 0x00042,    // 用户确认升级
 	CMD_UPGRADE_TIMEOUT             = 0x00043,    // 用户操作对话框超时
 	
-	CMD_PUSH_REJECT                 = 0x00051,    // 用户拒绝接收的成品Publication
+	CMD_PUSH_SELECT                 = 0x00051,    // 用户从“选择接收”页面退出，选择完毕。
 	CMD_MAX                         = 0x0FFFF,
 
 	MSG_MARQUEE                     = 0x10000,    // 跑马灯
