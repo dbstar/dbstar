@@ -7,6 +7,8 @@ public class ColumnData {
 	public String Name;
 	public String Type;
 	public String Path;
+	
+	public int Index;
 
 	public String IconNormalPath;
 	public String IconFocusedPath;

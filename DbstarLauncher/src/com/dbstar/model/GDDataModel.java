@@ -61,15 +61,16 @@ public class GDDataModel {
 	}
 
 	public ColumnData[] getColumns(String columnId) {
-		// Log.d(TAG, "getColumn id=" + columnId);
+
 		Cursor cursor = null;
 		ColumnData[] Columns = null;
 
 		String selection = Column.PARENT_ID + "=?";
 		String[] selectionArgs = new String[] { columnId };
+		String sortOrder = Column.INDEX + " ASC";
 
 		cursor = mDVBDataProvider.query(Column.CONTENT_URI,
-				ColumnQuery.COLUMNS, selection, selectionArgs, null);
+				ColumnQuery.COLUMNS, selection, selectionArgs, sortOrder);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				Log.d(TAG, "query cursor size = " + cursor.getCount());

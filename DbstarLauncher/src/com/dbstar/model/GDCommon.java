@@ -23,12 +23,22 @@ public class GDCommon {
 	public static final String ColumnTypeMovie = "1";
 	public static final String ColumnTypePreview = "3";
 	public static final String ColumnTypeGuodian = "100";
-	public static final String ColumnTypeSettings = "5";
-	public static final String ColumnTypeUserCenter = "6";
+	public static final String ColumnTypeSettings = "99";
+	public static final String ColumnTypeUserCenter = "98";
 	public static final String ColumnTypeMyFavourites = "7";
 	public static final String ColumnTypeRecord = "8";
 	public static final String ColumnTypeEntertainment = "9";
 
+	public static final String ColumnIDReceiveChooser = "9801";
+	public static final String ColumnIDDownloadStatus = "9802";
+	
+	public static final String ColumnIDNetworkSettings = "9901";
+	public static final String ColumnIDVideoSettings = "9902";
+	public static final String ColumnIDAudioSettings = "9903";
+	public static final String ColumnIDUserInfoSettings = "9904";
+	public static final String ColumnIDDeviceInfoSettings = "9905";
+	public static final String ColumnIDHelpSettings = "9906";
+	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
 

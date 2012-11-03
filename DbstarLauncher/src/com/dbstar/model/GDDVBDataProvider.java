@@ -123,15 +123,16 @@ public class GDDVBDataProvider extends GDDBProvider {
 	public interface ColumnQuery {
 		String TABLE = Tables.COLUMN;
 
-		String[] COLUMNS = new String[] { Column.ID, Column.PATH, Column.TYPE,
+		String[] COLUMNS = new String[] { Column.ID, Column.PATH, Column.TYPE, Column.INDEX,
 				Column.ICON_NORMAL, Column.ICON_FOCUSED, Column.ICON_CLICKED };
 
 		int ID = 0;
 		int PATH = 1;
 		int TYPE = 2;
-		int ICON_NORMAL = 3;
-		int ICON_FOCUSED = 4;
-		int ICON_CLICKED = 5;
+		int INDEX = 3;
+		int ICON_NORMAL = 4;
+		int ICON_FOCUSED = 5;
+		int ICON_CLICKED = 6;
 	}
 
 	public interface ColumnEntityQuery {

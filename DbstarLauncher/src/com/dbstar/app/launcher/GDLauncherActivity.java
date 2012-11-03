@@ -18,7 +18,6 @@ import com.dbstar.app.GDTVActivity;
 import com.dbstar.app.alert.GDForceUpgradeActivity;
 import com.dbstar.app.alert.GDUpgradeActivity;
 import com.dbstar.app.settings.GDDiskManagementActivity;
-import com.dbstar.app.settings.GDGuodianSettingsActivity;
 import com.dbstar.app.settings.GDHelpActivity;
 import com.dbstar.app.settings.GDUserInfoActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
@@ -66,29 +65,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private static final int MENULEVEL2_GUOWANG_KUAIXUNINDEX = 0;
 	private static final int MENULEVEL2_GUOWANG_SHIPININDEX = 1;
-
-	private static final int USERCENTER_LEVEL2_MYFAVOURITES = 0;
-	private static final int USERCENTER_LEVEL2_RECEIVECHECK = 1;
-	private static final int USERCENTER_LEVEL2_MYORDER = 2;
-	private static final int USERCENTER_LEVEL2_DOWNLOADSTATUS = 3;
-	private static final int USERCENTER_LEVEL2_COUNT = 4;
-
-	private static final int USERCENTER_LEVEL3_MOVIE = 0;
-	private static final int USERCENTER_LEVEL3_TV = 1;
-	private static final int USERCENTER_LEVEL3_RECORD = 2;
-	private static final int USERCENTER_LEVEL3_ENTERTAINMENT = 3;
-	// private static final int USERCENTER_LEVEL3_COUNT = 4;
-	public static final int SettingsNetwork = 0;
-	public static final int SettingsVideo = 1;
-	public static final int SettingsAudio = 2;
-	public static final int SettingsUserInfo = 3;
-	public static final int SettingsDeviceInfo = 4;
-	public static final int SettingsHelp = 5;
-	public static final int SettingsDiskSpace = 6;
-	public static final int SettingsFileBrowser = 7;
-	public static final int SettingsAdvanced = 8;
-	public static final int SettingsGuodian = 9;
-	public static final int SettingsCount = 10;
 
 	// message from engine
 	public static final int MSG_UPDATE_POWERCONSUMPTION = 0;
@@ -257,8 +233,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		case KeyEvent.KEYCODE_DPAD_LEFT: {
 			return mMainMenu.onKeyDown(keyCode, event);
 		}
-		
-		 case 82: // just for test on emulator
+
+		// case 82: // just for test on emulator
 		case KeyEvent.KEYCODE_DPAD_UP:
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER: {
@@ -283,7 +259,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 		case KeyEvent.KEYCODE_DPAD_UP:
 		case KeyEvent.KEYCODE_DPAD_DOWN:
-		//case 82: // just for test on emulator
+			// case 82: // just for test on emulator
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER:
 		case KeyEvent.KEYCODE_BACK: {
@@ -391,7 +367,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				// show baozhi
 			}
 
-		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSettings)) {
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeGuodian)) {
 			String category = menuItem.MenuText();
 			String url = mService.getCategoryContent(category);
 			Log.d(TAG, category + " url = " + url);
@@ -404,23 +380,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			}
 
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSettings)) {
-			int menuLevel2ItemIndex = menu.FocusedPosition;
-			if (menuLevel2ItemIndex >= 0
-					&& menuLevel2ItemIndex < menu.Items.length) {
-				showSettingView(menuLevel2ItemIndex);
-			}
+			showSettingView(menuItem.ColumnId());
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeUserCenter)) {
-			int menuLevel2ItemIndex = menu.FocusedPosition;
-			if (menuLevel2ItemIndex >= 0
-					&& menuLevel2ItemIndex < menu.Items.length) {
-				showUserCenter(menuLevel2ItemIndex);
-			}
-		} else if (menuItem.Type().equals(GDCommon.ColumnTypeMyFavourites)) {
-			int menuLevel2ItemIndex = menu.FocusedPosition;
-			if (menuLevel2ItemIndex >= 0
-					&& menuLevel2ItemIndex < menu.Items.length) {
-				showMyFavourite(menuLevel2ItemIndex);
-			}
+			showUserCenter(menuItem.ColumnId());
 		} else {
 			;
 		}
@@ -492,63 +454,18 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		showMenuPath();
 	}
 
-	void showUserCenter(int item) {
-		if (item < 0 || item > USERCENTER_LEVEL2_COUNT - 1) {
+	void showUserCenter(String columnId) {
+		if (columnId == null || columnId.isEmpty())
 			return;
-		}
 
 		Intent intent = null;
 
-		switch (item) {
-		case USERCENTER_LEVEL2_MYFAVOURITES: {
-			// intent = new Intent();
-			// intent.setClass(this, GDUserInfoActivity.class);
-			break;
-		}
-
-		case USERCENTER_LEVEL2_RECEIVECHECK: {
-			intent = new Intent();
-			intent.setClass(this, GDOrderPushActivity.class);
-			break;
-		}
-
-		case USERCENTER_LEVEL2_MYORDER: {
-			// intent = new Intent();
-			// intent.setClass(this, GDUserInfoActivity.class);
-			break;
-		}
-
-		case USERCENTER_LEVEL2_DOWNLOADSTATUS: {
+		if (columnId.equals(GDCommon.ColumnIDDownloadStatus)) {
 			intent = new Intent();
 			intent.setClass(this, GDReceiveStatusActivity.class);
-			break;
-		}
-
-		}
-
-		if (intent != null) {
-			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-			startActivity(intent);
-		}
-	}
-
-	void showMyFavourite(int item) {
-		Intent intent = null;
-
-		switch (item) {
-		case USERCENTER_LEVEL3_MOVIE:
+		} else if (columnId.equals(GDCommon.ColumnIDReceiveChooser)) {
 			intent = new Intent();
-			intent.putExtra(Content.COLUMN_ID, "");
-			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-			intent.setClass(this, GDFavoriteMovieActivity.class);
-			break;
-
-		case USERCENTER_LEVEL3_TV:
-		case USERCENTER_LEVEL3_RECORD:
-		case USERCENTER_LEVEL3_ENTERTAINMENT:
-			break;
-		default:
-			break;
+			intent.setClass(this, GDOrderPushActivity.class);
 		}
 
 		if (intent != null) {
@@ -557,75 +474,27 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 	}
 
-	void showSettingView(int settingsItemIndex) {
-		if (settingsItemIndex < 0 || settingsItemIndex > SettingsCount - 1) {
+	void showSettingView(String columnId) {
+		if (columnId == null || columnId.isEmpty()) {
 			return;
 		}
 
 		Intent intent = null;
 
-		switch (settingsItemIndex) {
-		case SettingsHelp: {
+		if (columnId.equals(GDCommon.ColumnIDHelpSettings)) {
 			intent = new Intent();
 			intent.setClass(this, GDHelpActivity.class);
-			break;
-		}
-		case SettingsDeviceInfo: {
+		} else if (columnId.equals(GDCommon.ColumnIDDeviceInfoSettings)) {
 			intent = startDbstarSettingActivity("GDDeviceInfoActivity");
-			break;
-		}
-		case SettingsUserInfo: {
+		} else if (columnId.equals(GDCommon.ColumnIDUserInfoSettings)) {
 			intent = new Intent();
 			intent.setClass(this, GDUserInfoActivity.class);
-			break;
-		}
-
-		case SettingsAudio: {
+		} else if (columnId.equals(GDCommon.ColumnIDAudioSettings)) {
 			intent = startDbstarSettingActivity("GDAudioSettingsActivity");
-			break;
-		}
-		case SettingsVideo: {
+		} else if (columnId.equals(GDCommon.ColumnIDVideoSettings)) {
 			intent = startDbstarSettingActivity("GDVideoSettingsActivity");
-			break;
-		}
-		case SettingsNetwork: {
+		} else if (columnId.equals(GDCommon.ColumnIDNetworkSettings)) {
 			intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
-			break;
-		}
-		case SettingsDiskSpace: {
-			String disk = null;
-			if (mBound && mService != null) {
-				disk = mService.getStorageDisk();
-			}
-
-			if (disk != null) {
-				intent = new Intent();
-				intent.putExtra(GDCommon.KeyDisk, disk);
-				intent.setClass(this, GDDiskManagementActivity.class);
-			}
-			break;
-		}
-		case SettingsGuodian: {
-			intent = new Intent();
-			intent.setClass(this, GDGuodianSettingsActivity.class);
-			break;
-		}
-		case SettingsFileBrowser: {
-			intent = new Intent();
-			intent.setComponent(new ComponentName("com.fb.FileBrower",
-					"com.fb.FileBrower.FileBrower"));
-			intent.setAction("android.intent.action.VIEW");
-			break;
-		}
-		case SettingsAdvanced: {
-			intent = new Intent();
-			intent.setComponent(new ComponentName("com.android.settings",
-					"com.android.settings.Settings"));
-			intent.setAction("android.intent.action.VIEW");
-			break;
-			}
-		default:
-			break;
 		}
 
 		if (intent != null) {
@@ -633,17 +502,18 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			startActivity(intent);
 		}
 	}
-	
-	private Intent startSettingsComponent(String packageName, String activityName) {
+
+	private Intent startSettingsComponent(String packageName,
+			String activityName) {
 		Intent intent = new Intent();
 		String componentName = packageName + "." + activityName;
 		intent.setComponent(new ComponentName(packageName, componentName));
 		intent.setAction("android.intent.action.VIEW");
-		
+
 		Log.d(TAG, "start " + componentName);
 		return intent;
 	}
-	
+
 	private Intent startDbstarSettingActivity(String activityName) {
 		return startSettingsComponent("com.dbstar.settings", activityName);
 	}
@@ -767,15 +637,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 			Log.d(TAG, "mSelectedItemPosition=" + mSelectedItemPosition
 					+ " position=" + position);
-//			if (mSelectedItemPosition == position) {
-//				holder.icon
-//						.setImageBitmap(mDataSet[position].MenuIconFocused());
-//				holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-//			} else {
-//				holder.icon.setImageBitmap(mDataSet[position].MenuIcon());
-//				holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-//			}
-			
+			// if (mSelectedItemPosition == position) {
+			// holder.icon
+			// .setImageBitmap(mDataSet[position].MenuIconFocused());
+			// holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+			// } else {
+			// holder.icon.setImageBitmap(mDataSet[position].MenuIcon());
+			// holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+			// }
+
 			holder.icon.setImageBitmap(mDataSet[position].MenuIcon());
 			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
 
@@ -844,9 +714,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void onParentMenuShown() {
-//		mMainMenuAdapter.notifyDataSetChanged();
-//		Menu menu = mMenuStack.peek();
-//		mMainMenu.setSelectionByForce(menu.FocusedPosition);
+		// mMainMenuAdapter.notifyDataSetChanged();
+		// Menu menu = mMenuStack.peek();
+		// mMainMenu.setSelectionByForce(menu.FocusedPosition);
 
 		showMenuPath();
 	}
@@ -1487,7 +1357,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Drawable d = new BitmapDrawable(getResources(), mDefaultPoster);
 		mVideoView.setBackgroundDrawable(d);
 
-//		updatePowerView(mPowerConsumption, mPowerCost);
+		// updatePowerView(mPowerConsumption, mPowerCost);
 		mIsPopupMenuHided = true;
 		displayPopupMenu(false);
 	}
@@ -1572,7 +1442,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	private void startEngine() {
-		 mMediaScheduler.start(mService);
+		mMediaScheduler.start(mService);
 		// mPowerController.start(mService);
 		// mWeatherController.start(mService);
 	}

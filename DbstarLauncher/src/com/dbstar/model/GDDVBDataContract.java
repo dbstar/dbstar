@@ -71,6 +71,7 @@ public class GDDVBDataContract {
 		public static final String PARENT_ID = "ParentID";
 		public static final String PATH = "Path";
 		public static final String TYPE = "ColumnType";
+		public static final String INDEX = "SequenceNum";
 		public static final String ICON_NORMAL = "ColumnIcon_losefocus";
 		public static final String ICON_FOCUSED = "ColumnIcon_getfocus";
 		public static final String ICON_CLICKED = "ColumnIcon_onclick";

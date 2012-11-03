@@ -9,7 +9,6 @@ import java.util.Map;
 
 import com.dbstar.util.GDNetworkUtil;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
-import com.dbstar.DbstarDVB.model.MediaData;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
