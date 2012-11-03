@@ -66,8 +66,6 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_GETFAVORITERECORD = 17;
 	public static final int REQUESTTYPE_GETFAVORITEENTERTAINMENT = 18;
 
-	public static final int REQUESTTYPE_ADDTOFAVORITE = 19;
-
 	public static final int REQUESTTYPE_GETGUIDELIST = 20;
 	public static final int REQUESTTYPE_UPDATEGUIDELIST = 21;
 	public static final int REQUESTTYPE_GETPREVIEWS = 22;
@@ -788,12 +786,6 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-				case REQUESTTYPE_ADDTOFAVORITE: {
-					// MediaData data = (MediaData) task.Data;
-					// mDataModel.addMeidaToFavorite(data);
-					break;
-				}
-
 				case REQUESTTYPE_GETDETAILSDATA: {
 					Object value = null;
 					value = task.Parameters.get(PARAMETER_CONTENTDATA);
@@ -1136,15 +1128,6 @@ public class GDDataProviderService extends Service {
 		// task.Id = System.currentTimeMillis();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETFAVORITETV;
-
-		enqueueTask(task);
-	}
-
-	public void addMediaToFavorite(MediaData data) {
-		RequestTask task = new RequestTask();
-		// task.Id = System.currentTimeMillis();
-		task.Data = data;
-		task.Type = REQUESTTYPE_ADDTOFAVORITE;
 
 		enqueueTask(task);
 	}
