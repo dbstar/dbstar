@@ -3058,7 +3058,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 				 不能一股脑的清理掉Column的所有数据，保留本地菜单
 				*/
 				char sqlite_cmd[256];
-				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='%d' AND ColumnType!='%d';", COLUMN_MYCENTER, COLUMN_SETTINGS);
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='%d' AND ColumnType!='%d';", COLUMN_MYCENTER, COLUMN_SETTING);
 				sqlite_transaction_exec(sqlite_cmd);
 						
 				DBSTAR_COLUMN_S column_s;

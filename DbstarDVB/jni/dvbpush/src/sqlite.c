@@ -1244,9 +1244,9 @@ static int global_info_init()
 	char sqlite_cmd[1024];
 	sqlite_transaction_begin();
 	
-//	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-//		GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
-//	sqlite_transaction_exec(sqlite_cmd);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+		GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
+	sqlite_transaction_exec(sqlite_cmd);
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 		GLB_NAME_CURLANGUAGE,"chi");
