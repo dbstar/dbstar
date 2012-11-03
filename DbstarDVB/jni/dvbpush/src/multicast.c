@@ -110,6 +110,8 @@ int igmp_uninit()
 
 int igmp_recvbuf_init()
 {
+	DEBUG("s_igmp_recvbuf_init_flag=%d\n", s_igmp_recvbuf_init_flag);
+	
 	if(0==s_igmp_recvbuf_init_flag){
 		if(p_buf){
 			DEBUG("free p_buf: %p\n", p_buf);
@@ -498,11 +500,11 @@ int softdvb_init()
 	int filter1 = alloc_filter(root_pid, 0);
 	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
 	
-//	memset(&param,0,sizeof(param));
-//	param.filter[0] = 0xf0;
-//	param.mask[0] = 0xff;
-//	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
-//	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
+	memset(&param,0,sizeof(param));
+	param.filter[0] = 0xf0;
+	param.mask[0] = 0xff;
+	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
+	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0x1;
