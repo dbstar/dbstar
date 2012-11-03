@@ -9,15 +9,16 @@ public class GDCommon {
 	public static final int MSG_DISK_SPACEWARNING = 6;
 	public static final int MSG_SYSTEM_UPGRADE = 7;
 	public static final int MSG_SYSTEM_FORCE_UPGRADE = 8;
-	
-	public static final int MSG_ADD_TO_FAVOURITE = 9;
-	public static final int MSG_DELETE = 10;
-		
+	public static final int MSG_USER_UPGRADE_CANCELLED = 9;
+
+	public static final int MSG_ADD_TO_FAVOURITE = 10;
+	public static final int MSG_DELETE = 11;
+
 	public static final String KeyDisk = "disk";
-	
+
 	public static final String LangCN = "chi";
 	public static final String LangEN = "eng";
-	
+
 	public static final String ColumnTypeTV = "2";
 	public static final String ColumnTypeMovie = "1";
 	public static final String ColumnTypePreview = "3";
@@ -27,12 +28,14 @@ public class GDCommon {
 	public static final String ColumnTypeMyFavourites = "7";
 	public static final String ColumnTypeRecord = "8";
 	public static final String ColumnTypeEntertainment = "9";
-	
-	
+
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
-	
+
 	public static final String KeyPublicationID = "publication_id";
 	public static final String KeyPublicationSetID = "publicationset_id";
-	
+
+	public static final String ActionAddFavourite = "com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE";
+	public static final String ActionDelete = "com.dbstar.DbstarLauncher.Action.DELETE";
+	public static final String ActionUpgradeCancelled = "com.dbstar.DbstarLauncher.Action.UPGRADE_CANCELLED";
 }

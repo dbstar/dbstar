@@ -37,6 +37,9 @@ public class GDUpgradeActivity extends Activity implements View.OnClickListener 
 	public void onClick(View view) {
 		if (view.getId() == R.id.buttonOK) {
 			rebootInstallPackage(mPackageFile);
+		} else {
+			Intent cancelIntent = new Intent(GDCommon.ActionUpgradeCancelled);
+			sendBroadcast(cancelIntent);
 		}
 
 		// No matter what, finish the activity

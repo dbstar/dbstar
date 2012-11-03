@@ -428,6 +428,11 @@ public class GDDataProviderService extends Service {
 
 				break;
 			}
+			
+			case GDCommon.MSG_USER_UPGRADE_CANCELLED: {
+				mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_UPGRADE_CANCEL);
+				break;
+			}
 
 			case GDCommon.MSG_ADD_TO_FAVOURITE: {
 				String publicationId = msg.getData().getString(
@@ -1442,7 +1447,7 @@ public class GDDataProviderService extends Service {
 				}
 
 			} else if (action
-					.equals("com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE")) {
+					.equals(GDCommon.ActionAddFavourite)) {
 				String publicationSetId = intent
 						.getStringExtra("publicationset_id");
 				String publicationId = intent.getStringExtra("publication_id");
@@ -1455,7 +1460,7 @@ public class GDDataProviderService extends Service {
 				msg.setData(data);
 				mHandler.sendMessage(msg);
 
-			} else if (action.equals("com.dbstar.DbstarLauncher.Action.DELETE")) {
+			} else if (action.equals(GDCommon.ActionDelete)) {
 				String publicationSetId = intent
 						.getStringExtra("publicationset_id");
 				String publicationId = intent.getStringExtra("publication_id");
@@ -1465,6 +1470,8 @@ public class GDDataProviderService extends Service {
 				data.putString(GDCommon.KeyPublicationSetID, publicationSetId);
 				msg.setData(data);
 				mHandler.sendMessage(msg);
+			} else if (action.equals(GDCommon.ActionUpgradeCancelled)) {
+				mHandler.sendEmptyMessage(GDCommon.MSG_USER_UPGRADE_CANCELLED);
 			}
 
 		}
