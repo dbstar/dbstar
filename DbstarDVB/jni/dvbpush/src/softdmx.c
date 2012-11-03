@@ -116,6 +116,7 @@ while(1);
         if (!cfp)
             return NULL;
 	//2 set upgrade mark
+	DEBUG("loaderInfo.download_type: %d\n", loaderInfo.download_type);
 	if (loaderInfo.download_type)
 	{
 	    //must upgrade,display upgrade info, wait 5 second, set uboot mark and then reboot 

@@ -107,7 +107,8 @@ typedef enum{
 	COLUMN_TV = 2,
 	COLUMN_GUIDE = 3,
 	COLUMN_SG = 4,
-	COLUMN_LOCAL = 99	// 本地内置的菜单，包括“设置”和“个人中心”
+	COLUMN_MYCENTER = 98,	// 本地内置的菜单，“个人中心”
+	COLUMN_SETTING = 99,	// 本地内置的菜单，“设置”
 }COLUMN_TYPE_E;
 
 /*
