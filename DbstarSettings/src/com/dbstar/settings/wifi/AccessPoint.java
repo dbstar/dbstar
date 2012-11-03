@@ -150,14 +150,14 @@ class AccessPoint implements Comparable<AccessPoint> {
     	mContext = context;
 //        setWidgetLayoutResource(R.layout.preference_widget_wifi_signal);
         loadConfig(config);
-        refresh();
+//        refresh();
     }
 
     AccessPoint(Context context, ScanResult result) {
     	mContext = context;
 //        setWidgetLayoutResource(R.layout.preference_widget_wifi_signal);
         loadResult(result);
-        refresh();
+//        refresh();
     }
 
     AccessPoint(Context context, Bundle savedState) {
@@ -211,10 +211,13 @@ class AccessPoint implements Comparable<AccessPoint> {
 
     public void bindView(View view) {
 //        super.onBindView(view);
+    	Log.d(TAG, "bindView view=" + view);
     	
     	mTitleView = (TextView) view.findViewById(R.id.title);
     	mSummaryView = (TextView) view.findViewById(R.id.summary);
 
+    	Log.d(TAG, "bindView mTitleView=" + mTitleView);
+    	
         mSignalView = (ImageView) view.findViewById(R.id.signal);
         ImageView signal = mSignalView;
         if (mRssi == Integer.MAX_VALUE) {
@@ -271,7 +274,7 @@ class AccessPoint implements Comparable<AccessPoint> {
             if (security == SECURITY_PSK) {
                 pskType = getPskType(result);
             }
-            refresh();
+//            refresh();
             return true;
         }
         return false;
@@ -285,12 +288,12 @@ class AccessPoint implements Comparable<AccessPoint> {
             mRssi = info.getRssi();
             mInfo = info;
             mState = state;
-            refresh();
+//            refresh();
         } else if (mInfo != null) {
             reorder = true;
             mInfo = null;
             mState = null;
-            refresh();
+//            refresh();
         }
         if (reorder) {
 //            notifyHierarchyChanged();
@@ -330,7 +333,11 @@ class AccessPoint implements Comparable<AccessPoint> {
     }
 
     /** Updates the title and summary; may indirectly call notifyChanged()  */
-    private void refresh() {
+    public void refresh() {
+    	
+    	Log.d(TAG, "ssid=" + ssid + " mTitleView =" + mTitleView);
+    	Log.d(TAG, "ssid=" + ssid);
+    	
         setTitle(ssid);
 
         Context context = mContext;
