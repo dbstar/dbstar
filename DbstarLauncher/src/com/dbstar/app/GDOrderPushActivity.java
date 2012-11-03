@@ -207,7 +207,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			if (mService != null) {
+			if (mService != null && mTaskPages != null && mTaskPages.size() > 0) {
 				ArrayList<GuideListItem> items = new ArrayList<GuideListItem>();
 				for (int i = 0; i < mTaskPages.size(); i++) {
 					ReceiveTask[] tasks = mTaskPages.get(i);

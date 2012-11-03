@@ -13,6 +13,8 @@ public class GDCommon {
 
 	public static final int MSG_ADD_TO_FAVOURITE = 10;
 	public static final int MSG_DELETE = 11;
+	
+	public static final int MSG_USER_CHANGE_GUIDELIST = 12;
 
 	public static final String KeyDisk = "disk";
 
