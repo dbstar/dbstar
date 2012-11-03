@@ -892,6 +892,7 @@ public class GDDataProviderService extends Service {
 				case REQUESTTYPE_UPDATEGUIDELIST: {
 					mDataModel.updateGuideList((GuideListItem[]) task.Data);
 					// taskFinished(task);
+					
 					break;
 				}
 

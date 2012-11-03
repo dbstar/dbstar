@@ -20,6 +20,69 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
+    <!-- Digit audio output settings.  The type of output to show. -->
+    <string-array name="digit_audio_output_entries">
+        <item>PCM</item>
+        <item>RAW</item>
+    </string-array>
+
+    <!-- position settings.  The type of output mode to choose. Do Not change the order-->
+    <string-array name="position_entries">
+        <item>480i</item>
+        <item>480p</item>
+        <item>576i</item>
+        <item>576p</item>
+        <item>720p</item>
+        <item>1080i</item>
+        <item>1080p</item>
+    </string-array>
+    
+    <!-- Display settings.  The type of output mode to show. -->
+    <string-array name="outputmode_entries">
+        <item>480i</item>
+        <item>480p</item>
+        <item>576i</item>
+        <item>576p</item>
+        <item>720p</item>
+        <item>1080i</item>
+        <item>1080p</item>
+    </string-array>
+
+    <!-- Do not translate. -->
+    <string-array name="outputmode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+
+     <!-- Display settings.  The type of cvbs mode to show. -->
+    <string-array name="cvbsmode_entries">
+        <item>480cvbs</item>
+        <item>576cvbs</item>
+    </string-array>
+
+    <!-- Do not translate. -->
+    <string-array name="cvbsmode_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    
+    <!-- Display settings.  The type of default frequency to show. -->
+    <string-array name="default_frequency_entries">
+        <item>50Hz</item>
+        <item>60Hz</item>
+    </string-array>
+
+    <!-- Do not translate. -->
+    <string-array name="default_frequency_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    
     <string-array name="wifi_status">
         <item msgid="1922181315419294640"></item>
         <item msgid="8934131797783724664">"正在扫描&#8230;"</item>
@@ -44,18 +107,6 @@
         <item msgid="197508606402264311">"已断开连接"</item>
         <item msgid="8578370891960825148">"失败"</item>
     </string-array>
-    <!-- no translation found for wifi_security:0 (8491993170197127709) -->
-    <!-- no translation found for wifi_security:1 (6524315248437318854) -->
-    <!-- no translation found for wifi_security:2 (1532568756571457140) -->
-    <!-- no translation found for wifi_security:3 (3620707702811709779) -->
-    <!-- no translation found for wifi_security_no_eap:0 (2084555984818107151) -->
-    <!-- no translation found for wifi_security_no_eap:1 (397579322683471524) -->
-    <!-- no translation found for wifi_security_no_eap:2 (1968820975358150484) -->
-
-
-    <!-- Match this with the constants in AccessPoint. -->
-    <skip />
-    <!-- Wi-Fi security choices used when manually added a Wi-Fi network -->
     <string-array name="wifi_security">
 
         <!-- The Wi-Fi network does not have any security. -->
@@ -183,162 +234,5 @@
     <string-array name="wifi_proxy_settings">
         <item msgid="4473276491748503377">"无"</item>
         <item msgid="8673874894887358090">"手动"</item>
-    </string-array>
-    <string-array name="emergency_tone_entries">
-        <item msgid="5165439859689033665">"关闭"</item>
-        <item msgid="3165868966179561687">"警报"</item>
-        <item msgid="6038758039030476855">"振动"</item>
-    </string-array>
-    <string-array name="apn_auth_entries">
-        <item msgid="3856896061242872146">"无"</item>
-        <item msgid="5756844015743664882">"PAP"</item>
-        <item msgid="535934025797984365">"CHAP"</item>
-        <item msgid="8383098660619805783">"PAP 或 CHAP"</item>
-    </string-array>
-    <string-array name="apn_protocol_entries">
-        <item msgid="4852355456199302715">"IPv4"</item>
-        <item msgid="4394161344888484571">"IPv6"</item>
-        <item msgid="8084938354605535381">"IPv4/IPv6"</item>
-    </string-array>
-    <string-array name="bearer_entries">
-        <item msgid="1770285336669531300">"LTE"</item>
-        <item msgid="3044323519470167625">"eHRPD"</item>
-        <item msgid="6848428671997893147">"未指定"</item>
-    </string-array>
-    <string-array name="app_install_location_entries">
-        <item msgid="8151497958991952759">"设备内部存储"</item>
-        <item msgid="3738430123799803530">"可卸载的 SD 卡"</item>
-        <item msgid="4498124044785815005">"由系统确定"</item>
-    </string-array>
-    <string-array name="silent_mode_entries">
-        <item msgid="783505504936446770">"关闭"</item>
-        <item msgid="4804571292609523335">"振动"</item>
-        <item msgid="595707141547423573">"静音"</item>
-    </string-array>
-    <string-array name="long_press_timeout_selector_titles">
-        <item msgid="3511504869290423954">"短"</item>
-        <item msgid="2560532955514699713">"中"</item>
-        <item msgid="2372711992605524591">"长"</item>
-    </string-array>
-    <string-array name="hdcp_checking_titles">
-        <item msgid="441827799230089869">"从不检查"</item>
-        <item msgid="6042769699089883931">"仅检查 DRM 内容"</item>
-        <item msgid="9174900380056846820">"总是检查"</item>
-    </string-array>
-    <string-array name="hdcp_checking_summaries">
-        <item msgid="505558545611516707">"一律不使用 HDCP 检查"</item>
-        <item msgid="3878793616631049349">"仅使用 HDCP 检查 DRM 内容"</item>
-        <item msgid="45075631231212732">"始终使用 HDCP 检查"</item>
-    </string-array>
-    <string-array name="window_animation_scale_entries">
-        <item msgid="8134156599370824081">"关闭动画"</item>
-        <item msgid="6624864048416710414">"动画缩放 0.5x"</item>
-        <item msgid="2219332261255416635">"动画缩放 1x"</item>
-        <item msgid="3544428804137048509">"动画缩放 1.5x"</item>
-        <item msgid="3110710404225974514">"动画缩放 2x"</item>
-        <item msgid="4402738611528318731">"动画缩放 5x"</item>
-        <item msgid="6189539267968330656">"动画缩放 10x"</item>
-    </string-array>
-    <string-array name="transition_animation_scale_entries">
-        <item msgid="8464255836173039442">"关闭动画"</item>
-        <item msgid="3375781541913316411">"动画缩放 0.5x"</item>
-        <item msgid="1991041427801869945">"动画缩放 1x"</item>
-        <item msgid="4012689927622382874">"动画缩放 1.5x"</item>
-        <item msgid="3289156759925947169">"动画缩放 2x"</item>
-        <item msgid="7705857441213621835">"动画缩放 5x"</item>
-        <item msgid="6660750935954853365">"动画缩放 10x"</item>
-    </string-array>
-    <string-array name="app_process_limit_entries">
-        <item msgid="3401625457385943795">"标准限制"</item>
-        <item msgid="4071574792028999443">"不允许后台进程"</item>
-        <item msgid="4810006996171705398">"不得超过 1 个进程"</item>
-        <item msgid="8586370216857360863">"不得超过 2 个进程"</item>
-        <item msgid="836593137872605381">"不得超过 3 个进程"</item>
-        <item msgid="7899496259191969307">"不得超过 4 个进程"</item>
-    </string-array>
-    <string-array name="vpn_types_long">
-        <item msgid="2732002039459078847">"PPTP VPN"</item>
-        <item msgid="3799752201662127867">"具有预共享密钥的 L2TP/IPSec VPN"</item>
-        <item msgid="4725504331295252103">"具有证书的 L2TP/IPSec VPN"</item>
-        <item msgid="7526551163264034377">"具有预共享密钥且进行 Xauth 身份验证的 IPSec VPN"</item>
-        <item msgid="8064740940687465039">"具有证书且进行 Xauth 身份验证的 IPSec VPN"</item>
-        <item msgid="4946199982372391490">"具有证书且进行混合身份验证的 IPSec VPN"</item>
-    </string-array>
-    <string-array name="vpn_states">
-        <item msgid="8621078286418985762">"连接已断开"</item>
-        <item msgid="6692305604213080515">"正在初始化&#8230;"</item>
-        <item msgid="8001704909356800092">"正在连接&#8230;"</item>
-        <item msgid="4039737283841672166">"已连接"</item>
-        <item msgid="4042143101664725090">"超时"</item>
-        <item msgid="7664124146786465092">"失败"</item>
-    </string-array>
-    <!-- Cpu mode settings -->
-    <string-array name="cpu_mode_entries">
-        <item>正常模式</item>
-        <item>高性能模式</item>
-        <item>自动模式</item>
-    </string-array>
-
-    <!-- Digit audio output settings.  The type of output to show. -->
-    <string-array name="digit_audio_output_entries">
-        <item>PCM</item>
-        <item>RAW</item>
-    </string-array>
-
-    <!-- position settings.  The type of output mode to choose. Do Not change the order-->
-    <string-array name="position_entries">
-        <item>480i</item>
-        <item>480p</item>
-        <item>576i</item>
-        <item>576p</item>
-        <item>720p</item>
-        <item>1080i</item>
-        <item>1080p</item>
-    </string-array>
-    
-    <!-- Display settings.  The type of output mode to show. -->
-    <string-array name="outputmode_entries">
-        <item>480i</item>
-        <item>480p</item>
-        <item>576i</item>
-        <item>576p</item>
-        <item>720p</item>
-        <item>1080i</item>
-        <item>1080p</item>
-    </string-array>
-
-    <!-- Do not translate. -->
-    <string-array name="outputmode_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-    </string-array>
-
-     <!-- Display settings.  The type of cvbs mode to show. -->
-    <string-array name="cvbsmode_entries">
-        <item>480cvbs</item>
-        <item>576cvbs</item>
-    </string-array>
-
-    <!-- Do not translate. -->
-    <string-array name="cvbsmode_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-    
-    <!-- Display settings.  The type of default frequency to show. -->
-    <string-array name="default_frequency_entries">
-        <item>50Hz</item>
-        <item>60Hz</item>
-    </string-array>
-
-    <!-- Do not translate. -->
-    <string-array name="default_frequency_values">
-        <item>0</item>
-        <item>1</item>
     </string-array>
 </resources>

@@ -46,12 +46,13 @@ public class EthernetLayer {
 
 	private EthernetManager mEthManager;
 	private String[] mDevList;
-	private EthernetConfigDialog mDialog;
+	private EthernetConfigController mController;
 	private final IntentFilter mIntentFilter;
 	private Handler mHandler;
 
-	EthernetLayer(EthernetConfigDialog configdialog, EthernetManager ethManager) {
-		mDialog = configdialog;
+	EthernetLayer(EthernetConfigController controller,
+			EthernetManager ethManager) {
+		mController = controller;
 		mEthManager = ethManager;
 		mIntentFilter = new IntentFilter(
 				EthernetManager.ETH_STATE_CHANGED_ACTION);
@@ -59,11 +60,11 @@ public class EthernetLayer {
 	}
 
 	public void resume() {
-		mDialog.getContext().registerReceiver(mReceiver, mIntentFilter);
+		mController.getContext().registerReceiver(mReceiver, mIntentFilter);
 	}
 
 	public void pause() {
-		mDialog.getContext().unregisterReceiver(mReceiver);
+		mController.getContext().unregisterReceiver(mReceiver);
 	}
 
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -90,7 +91,7 @@ public class EthernetLayer {
 
 	private void handleDevListChanges() {
 		mDevList = mEthManager.getDeviceNameList();
-		mDialog.updateDevNameList(mDevList);
+		mController.updateDevNameList(mDevList);
 		mDevList = null;
 	}
 }

@@ -2,28 +2,48 @@ package com.dbstar.settings;
 
 import java.util.List;
 
-import com.dbstar.settings.util.Utils;
+import com.dbstar.settings.display.PositionSetting;
+import com.dbstar.settings.utils.Utils;
 
-import android.content.pm.PackageManager;
-import android.os.Bundle;
+import android.content.ComponentName;
+import android.content.Intent;
 
-public class GDVideoSettingsActivity extends GDSettingsActivity {
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
+public class GDVideoSettingsActivity extends MultiPanelActivity {
+	public void onBuildHeaders(List<Header> target) {
+		Header header = null;
 
-	protected void buildHeaders(List<Header> headers) {
-		loadHeadersFromResource(R.xml.display_settings_header, headers);
-	}
-
-	protected void updateHeadersList(List<Header> target) {
-		Header header = target.get(0);
-		int id = (int) header.id;
-		if (mFirstHeader == null
-				&& HeaderAdapter.getHeaderType(header) != HeaderAdapter.HEADER_TYPE_CATEGORY) {
-			mFirstHeader = header;
+		if (Utils.platformHasTvOutput()) {
+			header = new Header();
+			header.fragment = "com.dbstar.settings.display.TVOutputModeSettings";
+			header.titleRes = R.string.tv_output_mode;
+			header.iconRes = R.drawable.ic_settings_display;
+			target.add(header);
 		}
-		mHeaderIndexMap.put(id, 0);
-	}
 
+		if (Utils.hasCVBSMode()) {
+			header = new Header();
+			header.fragment = "com.dbstar.settings.display.CVBSOutputModeSettings";
+			header.titleRes = R.string.cvbs_output_mode;
+			header.iconRes = R.drawable.ic_settings_display;
+			target.add(header);
+		}
+
+		if (Utils.platformHasTvOutput()) {
+			header = new Header();
+			header.titleRes = R.string.display_position;
+			header.iconRes = R.drawable.ic_settings_display;
+			header.intent = new Intent();
+			header.intent.setComponent(new ComponentName("com.dbstar.settings",
+					"com.dbstar.settings.display.PositionSetting"));
+			target.add(header);
+		}
+
+		if (Utils.platformHasDefaultTVFreq()) {
+			header = new Header();
+			header.fragment = "com.dbstar.settings.display.FrequencySettings";
+			header.titleRes = R.string.tv_default_frequency;
+			header.iconRes = R.drawable.ic_settings_display;
+			target.add(header);
+		}
+	}
 }

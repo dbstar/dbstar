@@ -28,11 +28,12 @@ import android.preference.Preference;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.dbstar.settings.R;
-import com.dbstar.settings.util.Utils;
+import com.dbstar.settings.utils.Utils;
 
-class AccessPoint extends Preference {
+class AccessPoint implements Comparable<AccessPoint> {
     static final String TAG = "Settings.AccessPoint";
 
     private static final String KEY_DETAILEDSTATE = "key_detailedstate";
@@ -72,6 +73,10 @@ class AccessPoint extends Preference {
     private int mRssi;
     private WifiInfo mInfo;
     private DetailedState mState;
+    
+    private Context mContext;
+    private TextView mTitleView, mSummaryView;
+    private ImageView mSignalView;
 
     static int getSecurity(WifiConfiguration config) {
         if (config.allowedKeyManagement.get(KeyMgmt.WPA_PSK)) {
@@ -96,7 +101,7 @@ class AccessPoint extends Preference {
     }
 
     public String getSecurityString(boolean concise) {
-        Context context = getContext();
+        Context context = mContext;
         switch(security) {
             case SECURITY_EAP:
                 return concise ? context.getString(R.string.wifi_security_short_eap) :
@@ -142,22 +147,22 @@ class AccessPoint extends Preference {
     }
 
     AccessPoint(Context context, WifiConfiguration config) {
-        super(context);
-        setWidgetLayoutResource(R.layout.preference_widget_wifi_signal);
+    	mContext = context;
+//        setWidgetLayoutResource(R.layout.preference_widget_wifi_signal);
         loadConfig(config);
         refresh();
     }
 
     AccessPoint(Context context, ScanResult result) {
-        super(context);
-        setWidgetLayoutResource(R.layout.preference_widget_wifi_signal);
+    	mContext = context;
+//        setWidgetLayoutResource(R.layout.preference_widget_wifi_signal);
         loadResult(result);
         refresh();
     }
 
     AccessPoint(Context context, Bundle savedState) {
-        super(context);
-        setWidgetLayoutResource(R.layout.preference_widget_wifi_signal);
+    	mContext = context;
+//        setWidgetLayoutResource(R.layout.preference_widget_wifi_signal);
 
         mConfig = savedState.getParcelable(KEY_CONFIG);
         if (mConfig != null) {
@@ -204,10 +209,14 @@ class AccessPoint extends Preference {
         mScanResult = result;
     }
 
-    @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
-        ImageView signal = (ImageView) view.findViewById(R.id.signal);
+    public void bindView(View view) {
+//        super.onBindView(view);
+    	
+    	mTitleView = (TextView) view.findViewById(R.id.title);
+    	mSummaryView = (TextView) view.findViewById(R.id.summary);
+
+        mSignalView = (ImageView) view.findViewById(R.id.signal);
+        ImageView signal = mSignalView;
         if (mRssi == Integer.MAX_VALUE) {
             signal.setImageDrawable(null);
         } else {
@@ -217,14 +226,18 @@ class AccessPoint extends Preference {
                     STATE_SECURED : STATE_NONE, true);
         }
     }
+    
+    private void setTitle(String title) {
+    	mTitleView.setText(title);
+    }
+    
+    private void setSummary(String summary) {
+    	mSummaryView.setText(summary);
+    }
 
-    @Override
-    public int compareTo(Preference preference) {
-        if (!(preference instanceof AccessPoint)) {
-            return 1;
-        }
-        AccessPoint other = (AccessPoint) preference;
-        // Active one goes first.
+    public int compareTo(AccessPoint other) {
+
+    	// Active one goes first.
         if (mInfo != other.mInfo) {
             return (mInfo != null) ? -1 : 1;
         }
@@ -251,7 +264,7 @@ class AccessPoint extends Preference {
                 int oldLevel = getLevel();
                 mRssi = result.level;
                 if (getLevel() != oldLevel) {
-                    notifyChanged();
+//                    notifyChanged();
                 }
             }
             // This flag only comes from scans, is not easily saved in config
@@ -280,7 +293,7 @@ class AccessPoint extends Preference {
             refresh();
         }
         if (reorder) {
-            notifyHierarchyChanged();
+//            notifyHierarchyChanged();
         }
     }
 
@@ -320,7 +333,7 @@ class AccessPoint extends Preference {
     private void refresh() {
         setTitle(ssid);
 
-        Context context = getContext();
+        Context context = mContext;
         if (mState != null) { // This is the active connection
             setSummary(Summary.get(context, mState));
         } else if (mRssi == Integer.MAX_VALUE) { // Wifi out of range

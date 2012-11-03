@@ -37,10 +37,7 @@ public class DisplayPositionSetConfirm extends Activity {
 	/** If there is output mode option, use this. */
 
 	private AlertDialog DisplayPositionSetConfirmDiag = null;
-	private final static long set_delay = 15 * 1000;
-	private Handler mProgressHandler;
 	private String mMessages = "";
-	private int get_operation = 1;
 	private static final int GET_USER_OPERATION = 1;
 	private static final int GET_DEFAULT_OPERATION = 2;
 
@@ -50,12 +47,12 @@ public class DisplayPositionSetConfirm extends Activity {
 		super.onCreate(savedInstanceState);
 		Bundle bundle = new Bundle();
 		bundle = this.getIntent().getExtras();
-		get_operation = bundle.getInt("get_operation");
+		int operation = bundle.getInt("get_operation");
 
-		if (get_operation == GET_USER_OPERATION) {
+		if (operation == GET_USER_OPERATION) {
 			mMessages = getResources().getString(
 					R.string.display_position_set_confirm_dialog_noreboot);
-		} else if (get_operation == GET_DEFAULT_OPERATION) {
+		} else if (operation == GET_DEFAULT_OPERATION) {
 			mMessages = getResources()
 					.getString(
 							R.string.display_position_set_default_confirm_dialog_noreboot);
@@ -73,7 +70,7 @@ public class DisplayPositionSetConfirm extends Activity {
 		DisplayPositionSetConfirmDiag = new AlertDialog.Builder(this)
 				.setTitle(R.string.display_position_dialog_title)
 				.setMessage(mMessages)
-				.setPositiveButton(R.string.yes,
+				.setPositiveButton(R.string.button_text_yes,
 						new DialogInterface.OnClickListener() {
 							public void onClick(
 									DialogInterface dialoginterface, int i) {
@@ -81,7 +78,7 @@ public class DisplayPositionSetConfirm extends Activity {
 								finish();
 							}
 						})
-				.setNegativeButton(R.string.display_position_dialog_no,
+				.setNegativeButton(R.string.button_text_no,
 						new DialogInterface.OnClickListener() {
 							public void onClick(
 									DialogInterface dialoginterface, int i) {

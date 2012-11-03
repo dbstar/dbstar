@@ -18,6 +18,8 @@ package com.dbstar.settings.display;
 
 import com.dbstar.settings.R;
 import com.dbstar.settings.R.string;
+import com.dbstar.settings.utils.SettingsCommon;
+
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -34,13 +36,12 @@ import android.os.Message;
 public class OutputSetConfirm extends Activity {
 	private static final String TAG = "OutputSetConfirm";
 
-	private AlertDialog OutputSetConfirmDlg = null;
+	private AlertDialog mConfirmDlg = null;
 	private final static long set_delay = 15 * 1000;
 	private Handler mProgressHandler;
 
-	private final String ACTION_OUTPUTMODE_CHANGE = "android.intent.action.OUTPUTMODE_CHANGE";
-	private final String ACTION_OUTPUTMODE_CANCEL = "android.intent.action.OUTPUTMODE_CANCEL";
-	private final String OUTPUT_MODE = "output_mode";
+	String mNewOutputMode = null;
+	int mCVBSMode = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,16 +49,15 @@ public class OutputSetConfirm extends Activity {
 		super.onCreate(savedInstanceState);
 
 		Intent intent = this.getIntent();
-		String new_mode = intent.getStringExtra("set_mode");
-		int cvbs_mode = intent.getIntExtra("cvbs_mode", 0);
+		mNewOutputMode = intent.getStringExtra("set_mode");
+		mCVBSMode = intent.getIntExtra("cvbs_mode", 0);
 
-		Log.e(TAG, "----------------------set preview mode" + new_mode);
-		
-		Intent changeIntent = new Intent(ACTION_OUTPUTMODE_CHANGE);
-		changeIntent.putExtra(OUTPUT_MODE, new_mode);
-		changeIntent.putExtra("cvbs_mode", cvbs_mode);
-		OutputSetConfirm.this.sendBroadcast(changeIntent);
-		
+		Intent changeIntent = new Intent(
+				SettingsCommon.ACTION_OUTPUTMODE_CHANGE);
+		changeIntent.putExtra(SettingsCommon.OUTPUT_MODE, mNewOutputMode);
+		changeIntent.putExtra("cvbs_mode", mCVBSMode);
+		sendBroadcast(changeIntent);
+
 		showConfirmDlg();
 	}
 
@@ -65,11 +65,12 @@ public class OutputSetConfirm extends Activity {
 		@Override
 		public void handleMessage(Message msg) {
 			super.handleMessage(msg);
-			Intent intent_outputmode = new Intent(ACTION_OUTPUTMODE_CANCEL);
-			OutputSetConfirm.this.sendBroadcast(intent_outputmode);
-			Log.e(TAG, "----------------------timeout");
+			Intent cancelIntent = new Intent(
+					SettingsCommon.ACTION_OUTPUTMODE_CANCEL);
+			sendBroadcast(cancelIntent);
+
 			setResult(RESULT_CANCELED, null);
-			OutputSetConfirmDlg.dismiss();
+			mConfirmDlg.dismiss();
 			finish();
 		}
 	}
@@ -79,10 +80,10 @@ public class OutputSetConfirm extends Activity {
 		mProgressHandler = new SetconfirmHandler();
 		mProgressHandler.sendEmptyMessageDelayed(0, set_delay);
 
-		OutputSetConfirmDlg = new AlertDialog.Builder(this)
+		mConfirmDlg = new AlertDialog.Builder(this)
 				.setTitle(R.string.tv_output_mode_dialog_title)
 				.setMessage(R.string.tv_output_mode_dialog_notes)
-				.setPositiveButton(R.string.yes,
+				.setPositiveButton(R.string.button_text_yes,
 						new DialogInterface.OnClickListener() {
 							public void onClick(
 									DialogInterface dialoginterface, int i) {
@@ -91,13 +92,13 @@ public class OutputSetConfirm extends Activity {
 								finish();
 							}
 						})
-				.setNegativeButton(R.string.display_position_dialog_no,
+				.setNegativeButton(R.string.button_text_no,
 						new DialogInterface.OnClickListener() {
 							public void onClick(
 									DialogInterface dialoginterface, int i) {
 								mProgressHandler.removeMessages(0);
 								Intent cancelIntent = new Intent(
-										ACTION_OUTPUTMODE_CANCEL);
+										SettingsCommon.ACTION_OUTPUTMODE_CANCEL);
 								OutputSetConfirm.this
 										.sendBroadcast(cancelIntent);
 								setResult(RESULT_CANCELED, null);
@@ -114,9 +115,8 @@ public class OutputSetConfirm extends Activity {
 							dialog.cancel();
 							mProgressHandler.removeMessages(0);
 							Intent cancelIntent = new Intent(
-									ACTION_OUTPUTMODE_CANCEL);
-							OutputSetConfirm.this
-									.sendBroadcast(cancelIntent);
+									SettingsCommon.ACTION_OUTPUTMODE_CANCEL);
+							OutputSetConfirm.this.sendBroadcast(cancelIntent);
 							setResult(RESULT_CANCELED, null);
 							finish();
 							return true;
@@ -124,6 +124,6 @@ public class OutputSetConfirm extends Activity {
 						return false;
 					}
 				}).show();
-		OutputSetConfirmDlg.getButton(-2).requestFocus();
+		mConfirmDlg.getButton(-2).requestFocus();
 	}
 }

@@ -4,8 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import com.dbstar.settings.common.SettingsCommon;
-import com.dbstar.settings.util.Utils;
+import com.dbstar.settings.utils.SettingsCommon;
+import com.dbstar.settings.utils.Utils;
 
 import android.os.SystemProperties;
 
@@ -77,9 +77,9 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 	private final String[] mOutputModeList_50hz = { "480i", "480p", "576i",
 			"576p", "720p50hz", "1080i50hz", "1080p50hz" };
 
-//	static {
-//		System.loadLibrary("outputsettings");
-//	}
+	// static {
+	// System.loadLibrary("outputsettings");
+	// }
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -287,19 +287,16 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 				Utils.setValue(scaleAxisOsd1File, "1280 720 1920 1080");
 				Utils.setValue(scaleOsd1File, "0x10001");
 			} else {
-				Utils.setValue(request2XScaleFile, "16 1280 720"); // for
-																	// setting
-																	// blank to
-																	// 0
+				// for setting blank to 0
+				Utils.setValue(request2XScaleFile, "16 1280 720");
 			}
 		}
 		// real video off
 		else if (intent.getAction().equalsIgnoreCase(
 				SettingsCommon.ACTION_REALVIDEO_OFF)) {
 			int[] curPosition = { 0, 0, 1280, 720 };
-			Utils.setValue(blankFb0File, "1"); // surfaceflinger will set back
-												// to
-												// 0
+			// surfaceflinger will set back to 0
+			Utils.setValue(blankFb0File, "1");
 			String cur_mode = SystemProperties
 					.get(SettingsCommon.STR_OUTPUT_VAR);
 			curPosition = getPosition(cur_mode);

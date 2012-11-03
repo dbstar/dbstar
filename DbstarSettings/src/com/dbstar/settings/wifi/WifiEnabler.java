@@ -24,22 +24,21 @@ import android.net.NetworkInfo;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
 import android.provider.Settings;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.dbstar.settings.R;
-import com.dbstar.settings.util.Utils;
+import com.dbstar.settings.utils.Utils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class WifiEnabler implements OnPreferenceChangeListener {
+public class WifiEnabler implements OnCheckedChangeListener {
 	private final Context mContext;
-	private CheckBoxPreference mSwitch;
+	private CheckBox mSwitch;
 	private AtomicBoolean mConnected = new AtomicBoolean(false);
 
 	private final WifiManager mWifiManager;
@@ -69,7 +68,7 @@ public class WifiEnabler implements OnPreferenceChangeListener {
 		}
 	};
 
-	public WifiEnabler(Context context, CheckBoxPreference switch_) {
+	public WifiEnabler(Context context, CheckBox switch_) {
 		mContext = context;
 		mSwitch = switch_;
 
@@ -90,49 +89,12 @@ public class WifiEnabler implements OnPreferenceChangeListener {
 	public void resume() {
 		// Wi-Fi state is sticky, so just let the receiver update UI
 		mContext.registerReceiver(mReceiver, mIntentFilter);
-		mSwitch.setOnPreferenceChangeListener(this);
+		mSwitch.setOnCheckedChangeListener(this);
 	}
 
 	public void pause() {
 		mContext.unregisterReceiver(mReceiver);
-		mSwitch.setOnPreferenceChangeListener(null);
-	}
-
-	@Override
-	public boolean onPreferenceChange(Preference pref, Object value) {
-		if (mStateMachineEvent) {
-			return false;
-		}
-
-		boolean isChecked = (Boolean) value;
-
-		// if (isChecked && !WirelessSettings.isRadioAllowed(mContext,
-		// Settings.System.RADIO_WIFI)) {
-		if (isChecked
-				&& !Utils.isRadioAllowed(mContext, Settings.System.RADIO_WIFI)) {
-			Toast.makeText(mContext, R.string.wifi_in_airplane_mode,
-					Toast.LENGTH_SHORT).show();
-			// Reset switch to off. No infinite check/listenenr loop.
-			mSwitch.setChecked(false);
-		}
-
-		// Disable tethering if enabling Wifi
-		int wifiApState = mWifiManager.getWifiApState();
-		if (isChecked
-				&& ((wifiApState == WifiManager.WIFI_AP_STATE_ENABLING) || (wifiApState == WifiManager.WIFI_AP_STATE_ENABLED))) {
-			mWifiManager.setWifiApEnabled(null, false);
-		}
-
-		if (mWifiManager.setWifiEnabled(isChecked)) {
-			// Intent has been taken into account, disable until new state is
-			// active
-			mSwitch.setEnabled(false);
-		} else {
-			// Error
-			Toast.makeText(mContext, R.string.wifi_error, Toast.LENGTH_SHORT)
-					.show();
-		}
-		return false;
+		mSwitch.setOnCheckedChangeListener(null);
 	}
 
 	private void handleWifiStateChanged(int state) {
@@ -180,6 +142,41 @@ public class WifiEnabler implements OnPreferenceChangeListener {
 		 * mWifiManager.getConnectionInfo(); if (info != null) {
 		 * //setSummary(Summary.get(mContext, info.getSSID(), state)); } }
 		 */
+	}
+
+	@Override
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		if (mStateMachineEvent) {
+			return;
+		}
+
+		// if (isChecked && !WirelessSettings.isRadioAllowed(mContext,
+		// Settings.System.RADIO_WIFI)) {
+		if (isChecked
+				&& !Utils.isRadioAllowed(mContext, Settings.System.RADIO_WIFI)) {
+//			Toast.makeText(mContext, R.string.wifi_in_airplane_mode,
+//					Toast.LENGTH_SHORT).show();
+			// Reset switch to off. No infinite check/listenenr loop.
+			mSwitch.setChecked(false);
+		}
+
+		// Disable tethering if enabling Wifi
+		int wifiApState = mWifiManager.getWifiApState();
+		if (isChecked
+				&& ((wifiApState == WifiManager.WIFI_AP_STATE_ENABLING) || (wifiApState == WifiManager.WIFI_AP_STATE_ENABLED))) {
+			mWifiManager.setWifiApEnabled(null, false);
+		}
+
+		if (mWifiManager.setWifiEnabled(isChecked)) {
+			// Intent has been taken into account, disable until new state is
+			// active
+			mSwitch.setEnabled(false);
+		} else {
+			// Error
+//			Toast.makeText(mContext, R.string.wifi_error, Toast.LENGTH_SHORT)
+//					.show();
+		}
+		return;
 	}
 
 }

@@ -21,32 +21,31 @@ package com.dbstar.settings.ethernet;
 import static android.net.ethernet.EthernetManager.ETH_STATE_DISABLED;
 import static android.net.ethernet.EthernetManager.ETH_STATE_ENABLED;
 import static android.net.ethernet.EthernetManager.ETH_STATE_UNKNOWN;
-
-import com.dbstar.settings.R;
+import android.net.ethernet.EthernetManager;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.NetworkInfo;
-import android.net.ethernet.EthernetManager;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
 import android.text.TextUtils;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 
-public class EthernetEnabler implements OnPreferenceChangeListener {
+import com.dbstar.settings.R;
+
+public class EthernetEnabler implements OnCheckedChangeListener {
 	private static final String TAG = "SettingsEthEnabler";
 
 	private static final boolean LOCAL_LOGD = false;
 	private EthernetManager mEthManager;
-	private CheckBoxPreference mSwitch;
+	private CheckBox mSwitch;
 	private boolean mStateMachineEvent;
 
 	public EthernetEnabler(EthernetManager ethernetManager,
-			CheckBoxPreference _switch) {
+			CheckBox _switch) {
 		mEthManager = ethernetManager;
 		mSwitch = _switch;
 
@@ -56,11 +55,11 @@ public class EthernetEnabler implements OnPreferenceChangeListener {
 	}
 
 	public void resume() {
-		mSwitch.setOnPreferenceChangeListener(this);
+		mSwitch.setOnCheckedChangeListener(this);
 	}
 
 	public void pause() {
-		mSwitch.setOnPreferenceChangeListener(null);
+		mSwitch.setOnCheckedChangeListener(null);
 	}
 
 	private void setSwitchChecked(boolean checked) {
@@ -78,15 +77,12 @@ public class EthernetEnabler implements OnPreferenceChangeListener {
 	}
 
 	@Override
-	public boolean onPreferenceChange(Preference pref, Object value) {
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		if (mStateMachineEvent) {
-			return false;
+			return;
 		}
 
-		boolean isChecked = (Boolean) value;
 		setEthEnabled(isChecked);
 		setSwitchChecked(isChecked);
-
-		return false;
 	}
 }

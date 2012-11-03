@@ -14,7 +14,7 @@ import com.dbstar.settings.R.drawable;
 import com.dbstar.settings.R.id;
 import com.dbstar.settings.R.string;
 import com.dbstar.settings.R.xml;
-import com.dbstar.settings.common.SettingsCommon;
+import com.dbstar.settings.utils.SettingsCommon;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -149,11 +149,20 @@ public class PositionSetting extends Activity {
 		mDownButton.setOnTouchListener(new mDownButtonOnTouchListener());
 
 		mCurOutputMode = SystemProperties.get(STR_OUTPUT_MODE);
+		
+		Log.d(TAG, "mCurOutputMode =" + mCurOutputMode);
+		if (mCurOutputMode.isEmpty()) {
+			mCurOutputMode = "720p";
+		}
+		
 		mOutputModeArray = getResources().getStringArray(
 				R.array.position_entries);
 		getOutputsize();
 		getOutput(mCurOutputMode);
 
+		Log.d(TAG, "mPreOutputWidth " + mPreOutputWidth);
+		Log.d(TAG, "mPreOutputHeight " + mPreOutputHeight);
+		
 		mPrePosition.width = 0;
 		mPrePosition.height = 0;
 		mPrePosition.left = 0;
@@ -459,13 +468,14 @@ public class PositionSetting extends Activity {
 	}
 
 	private void backToParentActivity() {
-		Intent intent = new Intent();
-		Bundle bundle = new Bundle();
-		bundle.putInt(SettingsCommon.KEY_SELECTED_ITEM, mSelectedItemPosition);
-		intent.setClass(this, GDVideoSettingsActivity.class);
-		intent.putExtras(bundle);
-		startActivity(intent);
-		finish();
+//		Intent intent = new Intent();
+//		Bundle bundle = new Bundle();
+//		bundle.putInt(SettingsCommon.KEY_SELECTED_ITEM, mSelectedItemPosition);
+//		intent.setClass(this, GDVideoSettingsActivity.class);
+//		intent.putExtras(bundle);
+//		startActivity(intent);
+//		finish();
+		super.onBackPressed();
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent msg) {
@@ -682,7 +692,6 @@ public class PositionSetting extends Activity {
 				out.close();
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			Log.e(TAG, "IOException when write " + OutputFile);
 		}
 	}
@@ -819,21 +828,18 @@ public class PositionSetting extends Activity {
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		SystemProperties.set("vplayer.hideStatusBar.enable", "true");
 		super.onResume();
 	}
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		SystemProperties.set("vplayer.hideStatusBar.enable", "false");
 		super.onPause();
 	}
 
 	@Override
 	protected void onDestroy() {
-		// TODO Auto-generated method stub
 		super.onDestroy();
 	}
 

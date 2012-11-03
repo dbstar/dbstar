@@ -16,8 +16,8 @@
 
 package com.dbstar.settings;
 
-import com.dbstar.settings.SettingsPreferenceFragment.SettingsDialogFragment;
-import com.dbstar.settings.util.Utils;
+import com.dbstar.settings.BaseFragment.BaseDialogFragment;
+import com.dbstar.settings.utils.Utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -72,7 +72,7 @@ public class ProxySelector extends Fragment implements DialogCreatable {
 
     private static final int ERROR_DIALOG_ID = 0;
 
-    private SettingsDialogFragment mDialogFragment;
+    private BaseDialogFragment mDialogFragment;
     private View mView;
 
     @Override
@@ -129,7 +129,7 @@ public class ProxySelector extends Fragment implements DialogCreatable {
         if (mDialogFragment != null) {
             Log.e(TAG, "Old dialog fragment not null!");
         }
-        mDialogFragment = new SettingsDialogFragment(this, dialogId);
+        mDialogFragment = new BaseDialogFragment(this, dialogId);
         mDialogFragment.show(getActivity().getFragmentManager(), Integer.toString(dialogId));
     }
 
