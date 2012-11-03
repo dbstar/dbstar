@@ -717,7 +717,7 @@ static int push_decoder_buf_init()
 	else
 		DEBUG("malloc for push decoder buffer success\n");
 	
-	DEBUG("g_recvBuffer=%p, size=%d\n", g_recvBuffer, sizeof(g_recvBuffer));
+	DEBUG("g_recvBuffer=%p\n", g_recvBuffer);
 	
 //	int i = 0;
 //	for(i=0;i<MAX_PACK_BUF;i++)

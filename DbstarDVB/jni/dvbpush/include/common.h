@@ -10,6 +10,9 @@ extern int debug_level_get(void);
 #if DVBPUSH_DEBUG_ANDROID
 #include <android/log.h>
 #define LOG_TAG "dvbpush"
+#define SIMPLE_DEBUG(x...) do { \
+	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, x); \
+} while(0)
 #define DEBUG(x...) do { \
 	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__); \
 	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, x); \
@@ -57,6 +60,7 @@ typedef enum{
 #define ROOT_CHANNEL		(400)
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
+//"igmp://225.1.1.1:3000"
 #define DATA_SOURCE			"igmp://239.1.7.5:5000"
 #define MULTI_BUF_SIZE		(12*1024*1316)	/* larger than 16M */
 
