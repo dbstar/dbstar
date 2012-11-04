@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
@@ -57,7 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class WifiSettings extends BaseFragment implements View.OnClickListener {
+public class WifiSettings extends BaseFragment {
 	private static final String TAG = "WifiSettings";
 
 	// Instance state keys
@@ -69,6 +71,7 @@ public class WifiSettings extends BaseFragment implements View.OnClickListener {
 	View mWifiSwitchButton;
 	CheckBox mWifiSwitchIndicator;
 	TextView mWifiSwitchTitle;
+	Button mScannerButton;
 
 	private final IntentFilter mFilter;
 	private final BroadcastReceiver mReceiver;
@@ -139,11 +142,15 @@ public class WifiSettings extends BaseFragment implements View.OnClickListener {
 
 		mWifiSwitchButton = (View) getActivity().findViewById(
 				R.id.wifi_switch_button);
-		mWifiSwitchButton.setOnClickListener(this);
+		mWifiSwitchButton.setOnClickListener(mEnablerClickListener);
 		mWifiSwitchTitle = (TextView) getActivity().findViewById(
 				R.id.wifi_switch_title);
 		mWifiSwitchIndicator = (CheckBox) getActivity().findViewById(
 				R.id.wifi_switch_indicator);
+
+		mScannerButton = (Button) getActivity().findViewById(
+				R.id.wifi_scan_button);
+		mScannerButton.setOnClickListener(mScanerClickListener);
 
 		mAPListView = (ListView) getActivity().findViewById(
 				R.id.wifi_ap_list_view);
@@ -153,6 +160,8 @@ public class WifiSettings extends BaseFragment implements View.OnClickListener {
 		mAPAdapter = new AccessPointsAdapter(getActivity());
 		mAPAdapter.setDataSet(mAccessPointList);
 		mAPListView.setAdapter(mAPAdapter);
+
+		mAPListView.setOnItemClickListener(mOnAPSelectedListener);
 	}
 
 	@Override
@@ -196,25 +205,41 @@ public class WifiSettings extends BaseFragment implements View.OnClickListener {
 	 * like the strength of network and the security for it.
 	 */
 	private void updateAccessPoints() {
+
+		Log.d(TAG, "updateAccessPoints");
+
 		final int wifiState = mWifiManager.getWifiState();
+
+		Log.d(TAG, "wifiState = " + wifiState);
 
 		switch (wifiState) {
 		case WifiManager.WIFI_STATE_ENABLED:
 			// AccessPoints are automatically sorted with TreeSet.
 			final Collection<AccessPoint> accessPoints = constructAccessPoints();
 			// mAPListPref.removeAll();
+
+			Log.d(TAG, "1 mAccessPointList  = " + mAccessPointList.size());
+
 			mAccessPointList.clear();
+			mAPAdapter.notifyDataSetChanged();
+
 			for (AccessPoint accessPoint : accessPoints) {
 				// mAPListPref.addPreference(accessPoint);
 				mAccessPointList.add(accessPoint);
 			}
+
+			Log.d(TAG, "2 mAccessPointList  = " + mAccessPointList.size());
+
 			mAPAdapter.notifyDataSetChanged();
 			break;
 
 		case WifiManager.WIFI_STATE_ENABLING:
 			// mAPListPref.removeAll();
 			mAccessPointList.clear();
+
+			Log.d(TAG, "3 mAccessPointList  = " + mAccessPointList.size());
 			mAPAdapter.notifyDataSetChanged();
+
 			break;
 
 		case WifiManager.WIFI_STATE_DISABLING:
@@ -469,13 +494,36 @@ public class WifiSettings extends BaseFragment implements View.OnClickListener {
 		}
 	}
 
-	@Override
-	public void onClick(View view) {
-		if (view.getId() != R.id.wifi_switch_button)
-			return;
+	DialogInterface.OnClickListener mDialogClickListener = new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialogInterface, int button) {
+			if (button == WifiDialog.BUTTON_FORGET
+					&& mSelectedAccessPoint != null) {
+				forget();
+			} else if (button == WifiDialog.BUTTON_SUBMIT) {
+				submit(mDialog.getController());
+			}
+		}
+	};
 
-		mWifiSwitchIndicator.toggle();
-	}
+	View.OnClickListener mEnablerClickListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			if (view.getId() != R.id.wifi_switch_button)
+				return;
+
+			mWifiSwitchIndicator.toggle();
+		}
+	};
+
+	View.OnClickListener mScanerClickListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View view) {
+			if (view.getId() != R.id.wifi_scan_button)
+				return;
+
+			resumeWifiScan();
+		}
+	};
 
 	OnItemClickListener mOnAPSelectedListener = new OnItemClickListener() {
 
@@ -520,6 +568,115 @@ public class WifiSettings extends BaseFragment implements View.OnClickListener {
 		showDialog(WIFI_DIALOG_ID);
 	}
 
+	@Override
+	public Dialog onCreateDialog(int dialogId) {
+		AccessPoint ap = mDlgAccessPoint; // For manual launch
+		if (ap == null) { // For re-launch from saved state
+			if (mAccessPointSavedState != null) {
+				ap = new AccessPoint(getActivity(), mAccessPointSavedState);
+				// For repeated orientation changes
+				mDlgAccessPoint = ap;
+			}
+		}
+		// If it's still null, fine, it's for Add Network
+		mSelectedAccessPoint = ap;
+		mDialog = new WifiDialog(getActivity(), mDialogClickListener, ap,
+				mDlgEdit);
+		return mDialog;
+	}
+
+	private boolean requireKeyStore(WifiConfiguration config) {
+		if (WifiConfigController.requireKeyStore(config)
+				&& KeyStore.getInstance().state() != KeyStore.State.UNLOCKED) {
+			mKeyStoreNetworkId = config.networkId;
+			Credentials.getInstance().unlock(getActivity());
+			return true;
+		}
+		return false;
+	}
+
+	void submit(WifiConfigController configController) {
+		int networkSetup = configController.chosenNetworkSetupMethod();
+		switch (networkSetup) {
+		case WifiConfigController.WPS_PBC:
+		case WifiConfigController.WPS_DISPLAY:
+		case WifiConfigController.WPS_KEYPAD:
+			mWifiManager.startWps(configController.getWpsConfig());
+			break;
+		case WifiConfigController.MANUAL:
+			final WifiConfiguration config = configController.getConfig();
+
+			if (config == null) {
+				if (mSelectedAccessPoint != null
+						&& !requireKeyStore(mSelectedAccessPoint.getConfig())
+						&& mSelectedAccessPoint.networkId != INVALID_NETWORK_ID) {
+					mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
+				}
+			} else if (config.networkId != INVALID_NETWORK_ID) {
+				if (mSelectedAccessPoint != null) {
+					saveNetwork(config);
+				}
+			} else {
+				if (configController.isEdit() || requireKeyStore(config)) {
+					saveNetwork(config);
+				} else {
+					mWifiManager.connectNetwork(config);
+				}
+			}
+			break;
+		}
+
+		if (mWifiManager.isWifiEnabled()) {
+			mScanner.resume();
+		}
+		updateAccessPoints();
+	}
+
+	private void saveNetwork(WifiConfiguration config) {
+		mWifiManager.saveNetwork(config);
+	}
+
+	void forget() {
+		mWifiManager.forgetNetwork(mSelectedAccessPoint.networkId);
+
+		if (mWifiManager.isWifiEnabled()) {
+			mScanner.resume();
+		}
+		updateAccessPoints();
+	}
+
+	/**
+	 * Refreshes acccess points and ask Wifi module to scan networks again.
+	 */
+	void refreshAccessPoints() {
+		if (mWifiManager.isWifiEnabled()) {
+			mScanner.resume();
+		}
+
+		mAccessPointList.clear();
+		mAPAdapter.notifyDataSetChanged();
+	}
+
+	/**
+	 * Requests wifi module to pause wifi scan. May be ignored when the module
+	 * is disabled.
+	 */
+	void pauseWifiScan() {
+		if (mWifiManager.isWifiEnabled()) {
+			mScanner.pause();
+		}
+	}
+
+	/**
+	 * Requests wifi module to resume wifi scan. May be ignored when the module
+	 * is disabled.
+	 */
+	void resumeWifiScan() {
+		if (mWifiManager.isWifiEnabled()) {
+			mScanner.resume();
+		}
+	}
+
 	private class AccessPointsAdapter extends BaseAdapter {
 
 		private ArrayList<AccessPoint> mDataSet = null;
@@ -561,6 +718,8 @@ public class WifiSettings extends BaseFragment implements View.OnClickListener {
 			}
 
 			mDataSet.get(position).bindView(convertView);
+			Log.d(TAG, "get view " + position + " total = " + mDataSet.size());
+			mDataSet.get(position).refresh();
 
 			return convertView;
 		}
