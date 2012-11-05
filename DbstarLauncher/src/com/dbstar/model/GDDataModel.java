@@ -157,7 +157,7 @@ public class GDDataModel {
 			selection += " AND " + Publication.FAVORITE + "=" + favorite;
 		}
 
-		String[] selectionArgs = new String[] { columnId, "1", "2", "true",
+		String[] selectionArgs = new String[] { columnId, "1", "2", "1",
 				"0", "" };
 
 		contents = queryPublications(selection, selectionArgs);
@@ -336,10 +336,10 @@ public class GDDataModel {
 
 		if (favorite != null && !favorite.isEmpty()) {
 			selection += " AND " + PublicationsSet.FAVORITE + "=?";
-			selectionArgs = new String[] { setId, "1", "2", "true", "0", "",
+			selectionArgs = new String[] { setId, "1", "2", "1", "0", "",
 					favorite };
 		} else {
-			selectionArgs = new String[] { setId, "1", "2", "true", "0", "" };
+			selectionArgs = new String[] { setId, "1", "2", "1", "0", "" };
 		}
 
 		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
@@ -372,7 +372,7 @@ public class GDDataModel {
 			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
 		}
 
-		String[] selectionArgs = new String[] { setId, "1", "2", "true", "0",
+		String[] selectionArgs = new String[] { setId, "1", "2", "1", "0",
 				"" };
 
 		contents = queryPublications(selection, selectionArgs);
