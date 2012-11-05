@@ -43,13 +43,16 @@ public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 	}
 
 	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
+	public boolean dispatchKeyEvent(KeyEvent event) {
 
-		Log.d("DbVideoInfoDlg", "==== onKeyDown keyCode ====" + keyCode);
-		
-		mState.keyEvent(keyCode, event);
+		if (event.getAction() == KeyEvent.ACTION_DOWN) {
+			Log.d("DbVideoInfoDlg",
+					"==== onKeyDown keyCode ====" + event.getKeyCode());
 
-		return super.onKeyDown(keyCode, event);
+			mState.keyEvent(event.getKeyCode(), event);
+		}
+
+		return super.dispatchKeyEvent(event);
 	}
 
 	@Override
@@ -72,7 +75,7 @@ public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 		mediaData.Director = intent.getStringExtra("director");
 		mediaData.Actors = intent.getStringExtra("actors");
 		mediaData.Type = intent.getStringExtra("type");
-		
+
 		Log.d("DbVideoInfoDlg", "PublicationId = " + mediaData.PublicationId);
 		Log.d("DbVideoInfoDlg", "PublicationId = " + mediaData.Description);
 		return mediaData;
