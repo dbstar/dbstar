@@ -510,7 +510,7 @@ VODPlatform	NVARCHAR(256));", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-SetID	NVARCHAR(64) PRIMARY KEY,\
+SetID	NVARCHAR(64),\
 ColumnID	NVARCHAR(64),\
 ProductID	NVARCHAR(64),\
 URI	NVARCHAR(256),\
@@ -525,13 +525,14 @@ Favorite	NVARCHAR(64) DEFAULT '0',\
 IsAuthorized	NVARCHAR(64),\
 VODNum	NVARCHAR(64),\
 VODPlatform	NVARCHAR(256),\
-Deleted NVARCHAR(256) DEFAULT '0');", name);
+Deleted NVARCHAR(256) DEFAULT '0',\
+PRIMARY KEY (SetID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"Publication"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-PublicationID	NVARCHAR(64) PRIMARY KEY,\
+PublicationID	NVARCHAR(64),\
 ColumnID	NVARCHAR(64),\
 ProductID	NVARCHAR(64),\
 URI	NVARCHAR(256),\
@@ -548,7 +549,7 @@ DRMFile	NVARCHAR(256),\
 SetID	NVARCHAR(64),\
 IndexInSet	NVARCHAR(32),\
 Favorite	NVARCHAR(32) DEFAULT '0',\
-Bookmark	NVARCHAR(32),\
+Bookmark	NVARCHAR(32) DEFAULT '0',\
 IsAuthorized	NVARCHAR(64),\
 VODNum	NVARCHAR(64),\
 VODPlatform	NVARCHAR(256),\
@@ -561,7 +562,8 @@ FileFormat	NVARCHAR(32),\
 Duration	NVARCHAR(32),\
 Resolution	NVARCHAR(32),\
 BitRate	NVARCHAR(32),\
-CodeFormat	NVARCHAR(32));", name);
+CodeFormat	NVARCHAR(32),\
+PRIMARY KEY (PublicationID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoVA"))
 			{
@@ -604,7 +606,7 @@ PRIMARY KEY (PublicationID,infolang));", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-PublicationID	NVARCHAR(64) PRIMARY KEY,\
+PublicationID	NVARCHAR(64),\
 infolang	NVARCHAR(64),\
 PublicationDesc	NVARCHAR(1024),\
 Keywords	NVARCHAR(256),\
@@ -614,7 +616,8 @@ AppVersion	NVARCHAR(64),\
 Language	NVARCHAR(64),\
 Developer	NVARCHAR(64),\
 Rated	NVARCHAR(64),\
-Requirements	NVARCHAR(64));", name);
+Requirements	NVARCHAR(64),\
+PRIMARY KEY (PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"Message"))
 			{
