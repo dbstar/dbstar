@@ -72,8 +72,7 @@ public class GDSystemConfigure {
 	List<String> mPushedMessage = null;
 	private String mGuodianServer = "";
 	private String mDbstarDatabase = "";
-	
-	
+
 	// read configure from file
 	// call this method every time the disk is mounted or unmounted
 	public boolean readConfigure() {
@@ -97,8 +96,8 @@ public class GDSystemConfigure {
 	// get the storage directory
 	// call this method every time the disk is mounted or unmounted
 	public boolean configureStorage() {
-		//1. step 
-		//if this disk is already set, check whether it is valid
+		// 1. step
+		// if this disk is already set, check whether it is valid
 		if (!mStorageDir.equals("")) {
 			File storageDir = new File(mStorageDir);
 			if (storageDir != null && storageDir.exists()) {
@@ -145,7 +144,7 @@ public class GDSystemConfigure {
 		if (mIconRootDir != null && !mIconRootDir.isEmpty()) {
 			return mIconRootDir;
 		}
-		
+
 		return DefaultColumnResDir;
 	}
 
@@ -169,13 +168,12 @@ public class GDSystemConfigure {
 
 		return dbFile;
 	}
-	
-	
-	//Parameters for Removable storage
-	public void setStorageDir (String storageDir) {
+
+	// Parameters for Removable storage
+	public void setStorageDir(String storageDir) {
 		if (storageDir != null && !storageDir.isEmpty()) {
 			mStorageDir = storageDir;
-			
+
 			int index = storageDir.indexOf("dbstar");
 			if (index > 0) {
 				String disk = storageDir.substring(0, index);
@@ -186,7 +184,7 @@ public class GDSystemConfigure {
 			}
 		}
 	}
-	
+
 	public boolean isStorageDisk(String disk) {
 		boolean ret = false;
 
@@ -229,6 +227,9 @@ public class GDSystemConfigure {
 	}
 
 	public String getDetailsDataFile(ContentData content) {
+		if (content.XMLFilePath == null || content.XMLFilePath.isEmpty())
+			return "";
+		
 		String xmlFile = new String(mStorageDir + "/" + content.XMLFilePath
 				+ DefaultDesFile);
 
@@ -242,6 +243,9 @@ public class GDSystemConfigure {
 
 	public String getMediaFile(ContentData content) {
 		String file = "";
+
+		if (content == null || content.MainFile == null)
+			return file;
 
 		final String mainFile = content.MainFile.FileURI;
 		if (mainFile != null && !mainFile.isEmpty()) {
@@ -266,30 +270,21 @@ public class GDSystemConfigure {
 
 		String file = "";
 		List<ContentData.Poster> posters = content.Posters;
-		if (posters != null && posters.size() > 0) {
-			for (int i = 0; i < posters.size(); i++) {
-				file = new String(mStorageDir + "/" + posters.get(i).URI);
-				Log.d(TAG, "file = " + file);
-				File f = new File(file);
-				if (f.exists()) {
-					break;
-				} else {
-					file = "";
-				}
+		if (posters == null || posters.size() == 0)
+			return file;
+
+		for (int i = 0; i < posters.size(); i++) {
+			ContentData.Poster poster = posters.get(i);
+			if (poster.URI == null || poster.URI.isEmpty())
+				continue;
+
+			String uri = new String(mStorageDir + "/" + poster.URI);
+
+			File f = new File(uri);
+			if (f.exists()) {
+				file = uri;
+				break;
 			}
-		}
-
-		return file;
-	}
-
-	public String getDescritpionFile(ContentData content) {
-		String movie = content.XMLFilePath;
-		String file = new String(mStorageDir + "/" + movie);
-		file = file + "/data/description.txt";
-
-		File descriptionFile = new File(file);
-		if (!descriptionFile.exists()) {
-			file = "";
 		}
 
 		return file;
