@@ -240,7 +240,7 @@ public class GDDataModel {
 
 	public void getPublicationVAInfo(ContentData content) {
 
-		String selection = MultipleLanguageInfoVA.PUBLICATIONID + "=? AND ("
+		String selection = MultipleLanguageInfoVA.PUBLICATIONID + "=? AND "
 				+ MultipleLanguageInfoVA.INFOLANG + "=?";
 
 		String[] selectionArgs = new String[] { content.Id, getLocalization() };
