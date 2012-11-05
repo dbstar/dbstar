@@ -2222,9 +2222,9 @@ public class PlayerMenu extends Activity {
 								"false");
 						SystemProperties.set("vplayer.playing", "false");
 
-//						Intent selectFileIntent = new Intent();
-//						selectFileIntent.setClass(PlayerMenu.this,
-//								FileList.class);
+						Intent selectFileIntent = new Intent();
+						selectFileIntent.setClass(PlayerMenu.this,
+								FileList.class);
 						if (SettingsVP.chkEnableOSD2XScale() == true) {
 							if (infobar != null) {
 								infobar.setVisibility(View.GONE);
@@ -2253,12 +2253,12 @@ public class PlayerMenu extends Activity {
 							}
 						}
 						// stop play
-//						backToFileList = true;
+						backToFileList = true;
 						if (m_Amplayer != null)
 							Amplayer_stop();
-//						PlayList.getinstance().rootPath = null;
-//						if (!backToOtherAPK)
-//							startActivity(selectFileIntent);
+						PlayList.getinstance().rootPath = null;
+						if (!backToOtherAPK)
+							startActivity(selectFileIntent);
 						finish();
 						onPause(); // for disable 2Xscale
 						onDestroy(); // set freescale when exception
