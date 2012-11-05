@@ -26,6 +26,7 @@ public class GDDVBDataContract {
 	public static final String RESTRAILERTABLE = "ResTrailer";
 	public static final String RESSUBTITLETABLE = "ResSubTitle";
 
+	public static final String ObjectPublication = "Publication";
 	public static final String ObjectPublicationSet = "PublicationsSet";
 	public static final String ObjectSetName = "SetName";
 	public static final String ObjectSetDesc = "SetDesc";
@@ -155,6 +156,7 @@ public class GDDVBDataContract {
 		public static final String COLUMNID = "ColumnID";
 		public static final String PRODUCTID = "ProductID";
 		public static final String URI = "URI";
+		public static final String DESCURI="DescURI";
 		public static final String TOTALSIZE = "TotalSize";
 		public static final String PRODUCTDESCID = "ProductDescID";
 		public static final String RECEIVESTATUS = "ReceiveStatus";
@@ -171,6 +173,16 @@ public class GDDVBDataContract {
 		public static final String VODNUM = "VODNum";
 		public static final String VODPLATFORM = "VODPlatform";
 		public static final String DELETED = "Deleted";
+		
+		public static final String FILEID="FileID";
+		public static final String FILESIZE="FileSize";
+		public static final String FILEURI="FileURI";
+		public static final String FILETYPE="FileType";
+		public static final String FILEFORMAT="FileFormat";
+		public static final String DURATION="Duration";
+		public static final String RESOLUTION="Resolution";
+		public static final String BITRATE="Bitrate";
+		public static final String CODEFORMAT="CodeFormat";
 	}
 
 	public static final class MultipleLanguageInfoVA implements BaseColumns {

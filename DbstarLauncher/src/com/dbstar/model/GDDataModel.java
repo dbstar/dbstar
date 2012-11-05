@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 import com.dbstar.model.GDDVBDataContract.*;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
+import com.dbstar.model.GDDVBDataProvider.PublicationsSetQuery;
 import com.dbstar.model.GDDVBDataProvider.ResStrQuery;
 
 public class GDDataModel {
@@ -125,9 +126,21 @@ public class GDDataModel {
 	}
 
 	private final static String[] ProjectionQueryPublications = {
-			Publication.PUBLICATIONID, Publication.URI };
+			Publication.PUBLICATIONID, Publication.DESCURI,
+			Publication.TOTALSIZE, Publication.DRMFILE, Publication.INDEXINSET,
+			Publication.FILEID, Publication.FILESIZE, Publication.FILEURI,
+			Publication.BITRATE, Publication.RESOLUTION, Publication.CODEFORMAT };
 	private final static int PublicationID = 0;
-	private final static int PublicationURI = 1;
+	private final static int PublicationDescURI = PublicationID + 1;
+	private final static int PublicationTotalSize = PublicationDescURI + 1;
+	private final static int PublicationDrmFile = PublicationTotalSize + 1;
+	private final static int PublicationIndexInSet = PublicationDrmFile + 1;
+	private final static int PublicationFileID = PublicationIndexInSet + 1;
+	private final static int PublicationFileSize = PublicationFileID + 1;
+	private final static int PublicationFileURI = PublicationFileSize + 1;
+	private final static int PublicationBitrate = PublicationFileURI + 1;
+	private final static int PublicationResolution = PublicationBitrate + 1;
+	private final static int PublicationCodeFormat = PublicationResolution + 1;
 
 	public ContentData[] getPublications(String columnId, String favorite) {
 
@@ -141,11 +154,21 @@ public class GDDataModel {
 				+ "=?) ";
 
 		if (favorite != null && !favorite.isEmpty()) {
-			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
+			selection += " AND " + Publication.FAVORITE + "=" + favorite;
 		}
 
 		String[] selectionArgs = new String[] { columnId, "1", "2", "true",
 				"0", "" };
+
+		contents = queryPublications(selection, selectionArgs);
+
+		return contents;
+	}
+
+	private ContentData[] queryPublications(String selection,
+			String[] selectionArgs) {
+
+		ContentData[] contents = null;
 
 		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
 				ProjectionQueryPublications, selection, selectionArgs, null);
@@ -157,7 +180,37 @@ public class GDDataModel {
 				do {
 					ContentData content = new ContentData();
 					content.Id = cursor.getString(PublicationID);
-					content.XMLFilePath = cursor.getString(PublicationURI);
+					content.XMLFilePath = cursor.getString(PublicationDescURI);
+					content.TotalSize = cursor.getInt(PublicationTotalSize);
+					content.DRMFile = cursor.getString(PublicationDrmFile);
+
+					// Main file
+					content.MainFile = new ContentData.MFile();
+					content.MainFile.FileURI = cursor
+							.getString(PublicationFileURI);
+					content.MainFile.FileSize = cursor
+							.getString(PublicationFileSize);
+					content.MainFile.BitRate = cursor
+							.getString(PublicationBitrate);
+					content.MainFile.Resolution = cursor
+							.getString(PublicationResolution);
+					content.MainFile.CodeFormat = cursor
+							.getString(PublicationCodeFormat);
+
+					content.IndexInSet = cursor.getShort(PublicationIndexInSet);
+
+					// Posters
+					String posterUri = getPublicationPoster(content.Id);
+					ContentData.Poster item = new ContentData.Poster();
+					item.URI = posterUri;
+					content.Posters = new ArrayList<ContentData.Poster>();
+					content.Posters.add(item);
+
+					// Name
+					content.Name = getPublicationResStr(content.Id,
+							GDDVBDataContract.ObjectPublication,
+							GDDVBDataContract.ValuePublicationName);
+
 					contents[i] = content;
 					i++;
 
@@ -171,6 +224,48 @@ public class GDDataModel {
 		}
 
 		return contents;
+	}
+
+	private String[] ProjectionQueryPublicationVAInfo = {
+			MultipleLanguageInfoVA.PUBLICATIONDESC,
+			MultipleLanguageInfoVA.IMAGEDEFINITION,
+			MultipleLanguageInfoVA.AREA, MultipleLanguageInfoVA.DIRECTOR,
+			MultipleLanguageInfoVA.ACTOR };
+
+	private final static int VAInfoPublicationDesc = 0;
+	private final static int VAInfoImageDefinition = 1;
+	private final static int VAInfoArea = 2;
+	private final static int VAInfoDirector = 3;
+	private final static int VAInfoActor = 4;
+
+	public void getPublicationVAInfo(ContentData content) {
+
+		String selection = MultipleLanguageInfoVA.PUBLICATIONID + "=? AND ("
+				+ MultipleLanguageInfoVA.INFOLANG + "=?";
+
+		String[] selectionArgs = new String[] { content.Id, getLocalization() };
+
+		Cursor cursor = mDVBDataProvider.query(
+				MultipleLanguageInfoVA.CONTENT_URI,
+				ProjectionQueryPublicationVAInfo, selection, selectionArgs,
+				null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				content.Description = cursor.getString(VAInfoPublicationDesc);
+				content.ImageDefinition = cursor
+						.getString(VAInfoImageDefinition);
+				content.Area = cursor.getString(VAInfoArea);
+				content.Director = cursor.getString(VAInfoDirector);
+				content.Actors = cursor.getString(VAInfoActor);
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		return;
 	}
 
 	private final static String[] ProjectionQueryPublicationsSet = {
@@ -263,12 +358,6 @@ public class GDDataModel {
 		return count;
 	}
 
-	private final static String[] ProjectionQueryEpisodes = {
-			Publication.PUBLICATIONID, Publication.URI, Publication.INDEXINSET };
-	private final static int EpisodesID = 0;
-	private final static int EpisodesURI = 1;
-	private final static int EpisodesIndexInSet = 2;
-
 	public ContentData[] getPublicationsEx(String setId, String favorite) {
 		ContentData[] contents = null;
 
@@ -286,29 +375,7 @@ public class GDDataModel {
 		String[] selectionArgs = new String[] { setId, "1", "2", "true", "0",
 				"" };
 
-		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
-				ProjectionQueryEpisodes, selection, selectionArgs, null);
-
-		if (cursor != null && cursor.getCount() > 0) {
-			if (cursor.moveToFirst()) {
-				contents = new ContentData[cursor.getCount()];
-				int i = 0;
-				do {
-					ContentData content = new ContentData();
-					content.Id = cursor.getString(EpisodesID);
-					content.XMLFilePath = cursor.getString(EpisodesURI);
-					content.IndexInSet = Integer.valueOf(cursor
-							.getString(EpisodesIndexInSet));
-
-					contents[i] = content;
-					i++;
-				} while (cursor.moveToNext());
-			}
-		}
-
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
+		contents = queryPublications(selection, selectionArgs);
 
 		return contents;
 	}
@@ -316,8 +383,8 @@ public class GDDataModel {
 	public String getPublicationResStr(String publicationId, String objectName,
 			String property) {
 		String resStr = "";
-		String selection = ResStr.OBJECTNAME + "=? and " + ResStr.ENTITYID
-				+ "=? and " + ResStr.STRLANG + "=? AND " + ResStr.STRNAME
+		String selection = ResStr.OBJECTNAME + "=? AND " + ResStr.ENTITYID
+				+ "=? AND " + ResStr.STRLANG + "=? AND " + ResStr.STRNAME
 				+ "=?";
 		String[] selectionArgs = { objectName, publicationId,
 				getLocalization(), property };

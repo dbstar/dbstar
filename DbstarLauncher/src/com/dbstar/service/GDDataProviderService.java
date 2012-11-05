@@ -753,12 +753,11 @@ public class GDDataProviderService extends Service {
 
 					if (contents != null && contents.length > 0) {
 						for (int i = 0; i < contents.length; i++) {
-							String xmlFile = getDetailsDataFile(contents[i]);
-
-							mDataModel.getDetailsData(xmlFile, contents[i]);
-
-							// Log.d(TAG, "xmlFile " + xmlFile);
-							// Log.d(TAG, "content " + contents[i].MainFile);
+//							String xmlFile = getDetailsDataFile(contents[i]);
+//
+//							mDataModel.getDetailsData(xmlFile, contents[i]);
+							
+							mDataModel.getPublicationVAInfo(contents[i]);
 						}
 					}
 
@@ -768,21 +767,10 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-				case REQUESTTYPE_GETFAVORITEMOVIE: {
-					// ContentData[] contents = mDataModel.getFavoriteMovie();
-					// task.Data = contents;
-					//
-					// taskFinished(task);
-					break;
-				}
-
+				case REQUESTTYPE_GETFAVORITEMOVIE:
 				case REQUESTTYPE_GETFAVORITETV:
 				case REQUESTTYPE_GETFAVORITERECORD:
 				case REQUESTTYPE_GETFAVORITEENTERTAINMENT: {
-					// TV[] tvs = mDataModel.getFavoriteTV();
-					// task.Data = tvs;
-					//
-					// taskFinished(task);
 					break;
 				}
 
@@ -790,9 +778,11 @@ public class GDDataProviderService extends Service {
 					Object value = null;
 					value = task.Parameters.get(PARAMETER_CONTENTDATA);
 					ContentData content = (ContentData) value;
-					String xmlFile = getDetailsDataFile(content);
-
-					mDataModel.getDetailsData(xmlFile, content);
+//					String xmlFile = getDetailsDataFile(content);
+//
+//					mDataModel.getDetailsData(xmlFile, content);
+					
+					mDataModel.getPublicationVAInfo(content);
 					task.Data = content;
 
 					taskFinished(task);

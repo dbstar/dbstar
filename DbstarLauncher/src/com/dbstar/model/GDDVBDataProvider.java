@@ -228,7 +228,7 @@ public class GDDVBDataProvider extends GDDBProvider {
 		String TABLE = Tables.PUBLICATION;
 
 		String[] COLUMNS = new String[] { Publication.COLUMNID,
-				Publication.PRODUCTID, Publication.URI, Publication.TOTALSIZE,
+				Publication.PRODUCTID, Publication.URI, Publication.DESCURI, Publication.TOTALSIZE,
 				Publication.PRODUCTDESCID, Publication.RECEIVESTATUS,
 				Publication.PUSHTIME, Publication.PUBLICATIONTYPE,
 				Publication.ISRESERVED, Publication.VISIBLE,
@@ -240,22 +240,23 @@ public class GDDVBDataProvider extends GDDBProvider {
 		int COLUMNID = 0;
 		int PRODUCTID = 1;
 		int URI = 2;
-		int TOTALSIZE = 3;
-		int PRODUCTDESCID = 4;
-		int RECEIVESTATUS = 5;
-		int PUSHTIME = 6;
-		int PUBLICATIONTYPE = 7;
-		int ISRESERVED = 8;
-		int VISIBLE = 9;
-		int DRMFILE = 10;
-		int SETID = 11;
-		int INDEXINSET = 12;
-		int FAVORITE = 13;
-		int BOOKMARK = 14;
-		int ISAUTHORIZED = 15;
-		int VODNUM = 16;
-		int VODPLATFORM = 17;
-		int DELETED = 18;
+		int DESCURI = 3;
+		int TOTALSIZE = 4;
+		int PRODUCTDESCID = 5;
+		int RECEIVESTATUS = 6;
+		int PUSHTIME = 7;
+		int PUBLICATIONTYPE = 8;
+		int ISRESERVED = 9;
+		int VISIBLE = 10;
+		int DRMFILE = 11;
+		int SETID = 12;
+		int INDEXINSET = 13;
+		int FAVORITE = 14;
+		int BOOKMARK = 15;
+		int ISAUTHORIZED = 16;
+		int VODNUM = 17;
+		int VODPLATFORM = 18;
+		int DELETED = 19;
 	}
 
 	public interface MFileQuery {

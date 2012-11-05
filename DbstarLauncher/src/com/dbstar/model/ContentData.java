@@ -24,7 +24,7 @@ public class ContentData {
 	public String AspectRatio;
 	public String Audience;
 	public String Model;
-	public int Length;
+	public int TotalSize;
 
 	public String DRMFile;
 	public List<Poster> Posters; 

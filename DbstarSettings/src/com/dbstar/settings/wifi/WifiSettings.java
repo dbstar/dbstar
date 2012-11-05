@@ -41,8 +41,6 @@ import android.content.BroadcastReceiver;
 import android.graphics.Bitmap;
 import android.util.Log;
 
-import static android.net.wifi.WifiConfiguration.INVALID_NETWORK_ID;
-
 //invisible
 import com.android.internal.util.AsyncChannel;
 
@@ -58,6 +56,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static android.net.wifi.WifiConfiguration.INVALID_NETWORK_ID;
 
 public class WifiSettings extends BaseFragment {
 	private static final String TAG = "WifiSettings";
@@ -205,9 +205,6 @@ public class WifiSettings extends BaseFragment {
 	 * like the strength of network and the security for it.
 	 */
 	private void updateAccessPoints() {
-
-		Log.d(TAG, "updateAccessPoints");
-
 		final int wifiState = mWifiManager.getWifiState();
 
 		Log.d(TAG, "wifiState = " + wifiState);
@@ -216,19 +213,12 @@ public class WifiSettings extends BaseFragment {
 		case WifiManager.WIFI_STATE_ENABLED:
 			// AccessPoints are automatically sorted with TreeSet.
 			final Collection<AccessPoint> accessPoints = constructAccessPoints();
-			// mAPListPref.removeAll();
-
-			Log.d(TAG, "1 mAccessPointList  = " + mAccessPointList.size());
-
 			mAccessPointList.clear();
 			mAPAdapter.notifyDataSetChanged();
 
 			for (AccessPoint accessPoint : accessPoints) {
-				// mAPListPref.addPreference(accessPoint);
 				mAccessPointList.add(accessPoint);
 			}
-
-			Log.d(TAG, "2 mAccessPointList  = " + mAccessPointList.size());
 
 			mAPAdapter.notifyDataSetChanged();
 			break;
@@ -236,10 +226,7 @@ public class WifiSettings extends BaseFragment {
 		case WifiManager.WIFI_STATE_ENABLING:
 			// mAPListPref.removeAll();
 			mAccessPointList.clear();
-
-			Log.d(TAG, "3 mAccessPointList  = " + mAccessPointList.size());
 			mAPAdapter.notifyDataSetChanged();
-
 			break;
 
 		case WifiManager.WIFI_STATE_DISABLING:
