@@ -133,13 +133,21 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mBound = false;
 		}
 	}
+	
+	@Override
+	public void startActivity(Intent intent) {
+		super.startActivity(intent);
+		
+		overridePendingTransition(0, R.anim.slide_in_right);
+	}
 
 	@Override
 	public void finish() {
 		super.finish();
 		
 		// eliminate the animation between activities
-//		overridePendingTransition(0, 0);
+		//enterAnim, exitAnim 
+		overridePendingTransition(0, R.anim.slide_out_left);
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
