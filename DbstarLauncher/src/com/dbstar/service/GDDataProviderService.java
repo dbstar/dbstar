@@ -1280,8 +1280,9 @@ public class GDDataProviderService extends Service {
 	private void reqisterSystemMessageReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
-		filter.addAction("com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE");
-		filter.addAction("com.dbstar.DbstarLauncher.Action.DELETE_FROM_FAVOURITE");
+		filter.addAction(GDCommon.ActionAddFavourite);
+		filter.addAction(GDCommon.ActionDelete);
+		filter.addAction(GDCommon.ActionUpgradeCancelled);
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
 
