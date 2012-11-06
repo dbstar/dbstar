@@ -138,7 +138,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	public void startActivity(Intent intent) {
 		super.startActivity(intent);
 		
-		overridePendingTransition(0, R.anim.slide_in_right);
+		overridePendingTransition(R.anim.slide_in_right, 0);
 	}
 
 	@Override
