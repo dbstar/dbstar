@@ -31,7 +31,7 @@
 #include "dvbpush_api.h"
 
 #define MAX_PACK_LEN (1500)
-#define MAX_PACK_BUF (200000)		//定义缓冲区大小，单位：包	1500*200000=280M
+#define MAX_PACK_BUF (20)		//定义缓冲区大小，单位：包	1500*200000=280M
 
 #define XML_NUM			8
 static PUSH_XML_S s_push_xml[XML_NUM];
@@ -715,7 +715,7 @@ static int push_decoder_buf_init()
 		return -1;
 	}
 	else
-		DEBUG("malloc for push decoder buffer success\n");
+		DEBUG("malloc for push decoder buffer %d*%d success\n", sizeof(DataBuffer), MAX_PACK_BUF);
 	
 	DEBUG("g_recvBuffer=%p\n", g_recvBuffer);
 	
@@ -730,8 +730,11 @@ static int push_decoder_buf_uninit()
 {
 	if(g_recvBuffer){
 		DEBUG("free push decoder buf\n");
-		free(g_recvBuffer);
+		char *tmp_recvbuf = g_recvBuffer;
 		g_recvBuffer = NULL;
+		usleep(300);
+		free(tmp_recvbuf);
+		tmp_recvbuf = NULL;
 	}
 	return 0;
 }

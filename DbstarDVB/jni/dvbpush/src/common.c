@@ -249,6 +249,15 @@ int check_tail(const char *str_dad, char *str_tail, int case_cmp)
 	else
 		ret = strcmp(p_dad, p_tail);
 	
+	if(p_dad){
+		free(p_dad);
+		p_dad = NULL;
+	}
+	if(p_tail){
+		free(p_tail);
+		p_tail = NULL;
+	}
+	
 	if(0==ret)
 		return 0;
 	else
