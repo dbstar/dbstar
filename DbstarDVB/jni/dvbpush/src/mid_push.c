@@ -31,7 +31,7 @@
 #include "dvbpush_api.h"
 
 #define MAX_PACK_LEN (1500)
-#define MAX_PACK_BUF (20)		//定义缓冲区大小，单位：包	1500*200000=280M
+#define MAX_PACK_BUF (200000)		//定义缓冲区大小，单位：包	1500*200000=280M
 
 #define XML_NUM			8
 static PUSH_XML_S s_push_xml[XML_NUM];

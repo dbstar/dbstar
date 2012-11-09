@@ -31,6 +31,7 @@
 #include <stdlib.h>
 //#include <string.h>
 #include "sha.h"
+#include "common.h"
 
 #define rol(bits, value) (((value) << (bits)) | ((value) >> (32 - (bits))))
 
@@ -190,8 +191,11 @@ printf("\n sha1 longth is [%d]\n",sizeof(ctx.buf));
 //printf("%.2x",ctx.buf[i]);   
         if(*sha1++ != *sha0++)
         {
+        	DEBUG("sha verify failed\n");
     	    //return -1;
         }
+        else
+        	DEBUG("sha verify success\n");
     }
 printf("\n");
     return 0;
