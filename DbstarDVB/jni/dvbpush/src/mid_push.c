@@ -521,17 +521,6 @@ void usage()
 	exit(0);
 }
 
-//int pushdata_rootdir_get(char *buf, unsigned int size)
-//{
-//	if(NULL==buf || 0==size){
-//		DEBUG("some arguments are invalid\n");
-//		return -1;
-//	}
-//	
-//	strncpy(buf, s_push_data_dir, size);
-//	return 0;
-//}
-
 void callback(const char *path, long long size, int flag)
 {
 	DEBUG("path:%s, size:%lld, flag:%d\n", path, size, flag);
@@ -715,7 +704,7 @@ static int push_decoder_buf_init()
 		return -1;
 	}
 	else
-		DEBUG("malloc for push decoder buffer success\n");
+		DEBUG("malloc for push decoder buffer %d*%d success\n", sizeof(DataBuffer), MAX_PACK_BUF);
 	
 	DEBUG("g_recvBuffer=%p\n", g_recvBuffer);
 	
@@ -730,8 +719,11 @@ static int push_decoder_buf_uninit()
 {
 	if(g_recvBuffer){
 		DEBUG("free push decoder buf\n");
-		free(g_recvBuffer);
+		char *tmp_recvbuf = g_recvBuffer;
 		g_recvBuffer = NULL;
+		usleep(300);
+		free(tmp_recvbuf);
+		tmp_recvbuf = NULL;
 	}
 	return 0;
 }
@@ -810,11 +802,6 @@ int mid_push_uninit()
 	push_decoder_buf_uninit();
 	
 	return 0;
-}
-
-static char *language_get()
-{
-	return "chi";
 }
 
 //×¢²á½ÚÄ¿

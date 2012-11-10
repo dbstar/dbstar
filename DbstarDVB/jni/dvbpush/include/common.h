@@ -61,7 +61,7 @@ typedef enum{
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
 //"igmp://225.1.1.1:3000"
-#define DATA_SOURCE			"igmp://239.1.7.5:5000"
+#define DATA_SOURCE			"igmp://239.1.7.5:4321"
 #define MULTI_BUF_SIZE		(12*1024*1316)	/* larger than 16M */
 
 #define XML_ROOT_ELEMENT	"RootElement"
@@ -95,6 +95,8 @@ typedef enum{
 #define INITIALIZE_MIDPATH	"servicegroup/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
 #define LOCALCOLUMN_RES		"/data/dbstar/ColumnRes"
+
+#define CURLANGUAGE_DFT				"chi"
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,

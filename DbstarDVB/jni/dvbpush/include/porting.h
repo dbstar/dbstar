@@ -18,5 +18,6 @@ int initialize_xml_get();
 int localcolumn_res_get(char *localcolumn_res, unsigned int uri_size);
 void upgrade_info_init();
 int drm_info_init();
+char *language_get();
 
 #endif

@@ -42,7 +42,7 @@ typedef struct{
 static int p_read;
 static int p_write;
 static unsigned char *p_buf = NULL;
-int loader_dsc_fid;
+extern int loader_dsc_fid;
 
 static pthread_mutex_t mtx_getip = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_getip = PTHREAD_COND_INITIALIZER;
@@ -135,6 +135,7 @@ int igmp_recvbuf_init()
 static void *igmp_thread()
 {
     char if_ip[16] = {0};
+    char if_status[16];
 	int sock, opt;
 	struct sockaddr_in sin;
 	int sizeof_sin = -1;
@@ -184,13 +185,22 @@ MULTITASK_START:
 			pthread_mutex_lock(&mtx_getip);
 			
 			memset(if_ip, 0, sizeof(if_ip));
-			if(0==ifconfig_get("eth0", if_ip, NULL, NULL)){
+			memset(if_status, 0, sizeof(if_status));
+			if(0==ifconfig_get("eth0", if_ip, if_status, NULL)){
+#if 0	// have any ip is OK
 				if(0==ipv4_simple_check(if_ip)){
 					pthread_mutex_unlock(&mtx_getip);
 					break;
 				}
 				else
 					DEBUG("ip(%s) of eth0 is invalid\n", if_ip);
+#else
+				DEBUG("get ip: %s, status: %s\n", if_ip, if_status);
+				if(0==strcmp(if_status, "UP"))
+					break;
+				else
+					DEBUG("eth0 is DOWN\n");
+#endif
 			}
 			else{
 				DEBUG("get eth0 ip failed\n");

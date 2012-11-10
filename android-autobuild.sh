@@ -41,7 +41,8 @@ BUILD_FLAG_RECOVERY=3
 BUILD_FLAG_ROOTFS=4
 BUILD_FLAG_DBSTAR=5
 BUILD_FLAG_OTAPACKAGE=6
-BUILD_FLAG_ALL=999
+BUILD_FLAG_ALL=998
+BUILD_FLAG_RELEASE=999
 
 AUTOBUILD_FLAG=0
 
@@ -193,11 +194,13 @@ modules_make()
 		call cp drivers/amlogic/mali/mali.ko $BUILD_OUT
 		call cp drivers/amlogic/ump/ump.ko $BUILD_OUT
 		call cp drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $BUILD_OUT
+		call cp net/wireless/cfg80211.ko $BUILD_OUT
 		call cp drivers/scsi/scsi_wait_scan.ko $BUILD_OUT
 
 		call cp drivers/amlogic/mali/mali.ko $ROOTFS_OUT/root/boot/
 		call cp drivers/amlogic/ump/ump.ko $ROOTFS_OUT/root/boot/
 		call cp drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $ROOTFS_OUT/system/lib/
+		call cp net/wireless/cfg80211.ko $ROOTFS_OUT/system/lib/
 		call cp drivers/scsi/scsi_wait_scan.ko $ROOTFS_OUT/system/lib/
 
 		logger "FINISH make modules"
@@ -223,8 +226,29 @@ kernel_make()
 	fi
 }
 
+bootable_make()
+{
+	logger "START make bootable recovery"
+	LOG_LOGGER=$LOG_ROOTFS
+	call cd $ANDROID_SRC
+	call source ./build/envsetup.sh
+	call lunch $ANDROID_LUNCH
+	if [ $REBUILD_FLAG -eq 1 ]; then
+		mmm $ANDROID_SRC/bootable/recovery -B
+	else
+		mmm $ANDROID_SRC/bootable/recovery
+	fi
+	if [ $? -eq 0 ]; then
+		call cp -f $ROOTFS_OUT/system/bin/recovery $ROOTFS_OUT/system/recovery/root/sbin/
+		logger "FINISH make bootable recovery"
+	else
+		logger "ERROR make bootable recovery"
+	fi
+}
+
 recovery_make()
 {
+	bootable_make
 	logger "START make recovery"
 	LOG_LOGGER=$LOG_KERNEL
 	call cd $KERNEL_SRC
@@ -256,10 +280,12 @@ dbstar_patch()
 {
 	logger "START patch dbstar"
 	call cd $ANDROID_SRC
-	echo ">>>> patching kernel..."
+	echo ">>>> patching kernel ..."
 	cp -rf $DBSTAR_SRC/kernel/* $ANDROID_SRC/kernel/
-	echo ">>>> patching device..."
+	echo ">>>> patching device ..."
 	cp -rf $DBSTAR_SRC/device/* $ANDROID_SRC/device/
+	echo ">>>> patching build ..."
+	cp -rf $DBSTAR_SRC/build/* $ANDROID_SRC/build/
 	logger "FINISH patch dbstar"
 }
 
@@ -312,6 +338,13 @@ autobuild()
 	fi
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_ALL ]; then
 		dbstar_patch
+		dbstar_make
+		kernel_make
+		recovery_make
+		otapackage_make
+	fi
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_RELEASE ]; then
+		dbstar_patch
 		rootfs_make
 		dbstar_make
 		kernel_make
@@ -346,9 +379,10 @@ Auto build android system.
 Example: $0 kernel       # build kernel
          $0 recovery     # build recovery kernel
          $0 rootfs       # build system rootfs
-         $0 otapackage   # build system rootfs
+         $0 otapackage   # build otapackage
          $0 dbstar       # build dbstar package
          $0 patch        # patch dbstar kernel and device
+         $0 all          # patch and build dbstar/kernel/otapackage
 
 
 HELP
