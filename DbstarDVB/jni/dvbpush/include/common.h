@@ -96,6 +96,8 @@ typedef enum{
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
 #define LOCALCOLUMN_RES		"/data/dbstar/ColumnRes"
 
+#define CURLANGUAGE_DFT				"chi"
+
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
 	NAVIGATIONTYPE_COLUMN
