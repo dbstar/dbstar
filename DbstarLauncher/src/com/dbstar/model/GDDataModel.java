@@ -157,8 +157,8 @@ public class GDDataModel {
 			selection += " AND " + Publication.FAVORITE + "=" + favorite;
 		}
 
-		String[] selectionArgs = new String[] { columnId, "1", "2", "1",
-				"0", "" };
+		String[] selectionArgs = new String[] { columnId, "1", "2", "1", "0",
+				"" };
 
 		contents = queryPublications(selection, selectionArgs);
 
@@ -200,7 +200,8 @@ public class GDDataModel {
 					content.IndexInSet = cursor.getShort(PublicationIndexInSet);
 
 					// Posters
-					String posterUri = getPublicationPoster(content.Id);
+					String posterUri = getPublicationPoster(
+							GDDVBDataContract.ObjectPublication, content.Id);
 					ContentData.Poster item = new ContentData.Poster();
 					item.URI = posterUri;
 					content.Posters = new ArrayList<ContentData.Poster>();
@@ -304,7 +305,8 @@ public class GDDataModel {
 
 					content.Name = getPublicationSetName(content.Id);
 					content.Description = getPublicationSetDescription(content.Id);
-					String posterUri = getPublicationPoster(content.Id);
+					String posterUri = getPublicationPoster(
+							GDDVBDataContract.ObjectPublicationSet, content.Id);
 					ContentData.Poster item = new ContentData.Poster();
 					item.URI = posterUri;
 					content.Posters = new ArrayList<ContentData.Poster>();
@@ -372,8 +374,7 @@ public class GDDataModel {
 			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
 		}
 
-		String[] selectionArgs = new String[] { setId, "1", "2", "1", "0",
-				"" };
+		String[] selectionArgs = new String[] { setId, "1", "2", "1", "0", "" };
 
 		contents = queryPublications(selection, selectionArgs);
 
@@ -448,13 +449,12 @@ public class GDDataModel {
 
 	private static final String QueryPosterProjection[] = { ResPoster.POSTERURI };
 
-	public String getPublicationPoster(String setId) {
+	public String getPublicationPoster(String objectName, String id) {
 		String uri = "";
 
 		String selection = ResPoster.OBJECTNAME + "=? AND "
 				+ ResPoster.ENTITYID + "=?";
-		String[] selectionArgs = new String[] {
-				GDDVBDataContract.ObjectPublicationSet, setId };
+		String[] selectionArgs = new String[] { objectName, id };
 
 		Cursor cursor = mDVBDataProvider.query(ResPoster.CONTENT_URI,
 				QueryPosterProjection, selection, selectionArgs, null);
