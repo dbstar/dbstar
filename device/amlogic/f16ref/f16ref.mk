@@ -49,14 +49,12 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 PRODUCT_PACKAGES += \
 	FileBrowser \
 	AppInstaller \
-	VideoPlayer \
 	Samba \
 	libsmbbase \
 	libsmbmnt \
 	smbd \
 	Update \
 	RemoteIME \
-	OOBE \
 	remotecfg \
 	PPPoE \
 	libpppoejni \
@@ -118,7 +116,7 @@ PRODUCT_COPY_FILES += device/amlogic/f16ref/dhd.ko:system/lib/dhd.ko
 #PRODUCT_COPY_FILES += hardware/amlogic/wifi/bcm_4018x/config/40183/fw_bcm4330b2.bin:system/etc/wifi/40183/fw_bcm4330b2.bin
 
 # Camera
-PRODUCT_PACKAGES += camera.amlogic
+#PRODUCT_PACKAGES += camera.amlogic
 	
 BUILD_DVB_PACKAGES := false
 

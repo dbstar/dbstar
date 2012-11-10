@@ -9,14 +9,13 @@ system_init()
 
 dbstar_init()
 {
+	mv /system/app/SystemUI.apk /system/app/SystemUI.apk.bk
+	mv /system/app/Launcher2.apk /system/app/Launcher2.apk.bk
 	if [ -e "/data/dbstar/Dbstar.db" ]; then
 		echo "dbstar already inited!"
 	else
 		cp -rf /system/etc/dbstar/* /data/dbstar/
 		chmod 666 /data/dbstar/Dbstar.db
-		mv /system/app/SystemUI.apk /system/app/SystemUI.apk.bk
-		mv /system/app/Launcher2.apk /system/app/Launcher2.apk.bk
-		mv /system/app/OOBE.apk /system/app/OOBE.apk.bk
 		setprop dbstar.inited 1
 	fi
 }
