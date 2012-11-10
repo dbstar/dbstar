@@ -27,9 +27,11 @@ public class DbstarService extends Service {
 	private static final String TAG = "DbstarService";
 	private static String mDownloadName = "";
 	private static Context mContext = null;
+	private DbstarPM mDPM = new DbstarPM();
 
 	public void onCreate() {
 		Log.d(TAG, "----- onCreate ----");
+		mDPM.acquirePartialWakeLock(this);
 	}
 
 	public void onStart(Intent intent, int startId) {
@@ -47,6 +49,7 @@ public class DbstarService extends Service {
 
 	public void onDestroy() {
 		Log.d(TAG, "----- onDestroy ----");
+		mDPM.releaseWakeLock();
 	}
 
 	public IBinder onBind(Intent intent) {
