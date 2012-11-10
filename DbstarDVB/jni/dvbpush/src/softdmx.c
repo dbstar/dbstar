@@ -15,7 +15,7 @@ int max_filter_num = 0;
 int loader_dsc_fid;
 static LoaderInfo_t g_loaderInfo;
 static pthread_t loaderthread = 0;
-static loaderAction = 0;
+static int loaderAction = 0;
 
 #define UPGRADEFILE_ALL "/tmp/upgrade.zip"
 #define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
@@ -354,7 +354,7 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 	
 	seq = datap[0]*0x100 + datap[2];
 	
-	if(s_first_package_flag==seq){
+	if(s_first_package_flag>0 && (unsigned int)(s_first_package_flag)==seq){
 		DEBUG("has recv %d/%d for one loop, lost such packages:\n", total_loader, maxSeq);
 		int count_need = 0;
 		for(tmp_i=0;tmp_i<maxSeq;tmp_i++){
