@@ -1,6 +1,7 @@
 # mount point	fstype		device			device2
 /ubootwhole	mtd		ubootwhole
 /boot		mtd		boot
+/loader		mtd		loader
 /aml_logo	mtd		aml_logo
 /system		yaffs2		system
 /cache		yaffs2		cache
