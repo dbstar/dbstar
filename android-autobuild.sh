@@ -193,11 +193,13 @@ modules_make()
 		call cp drivers/amlogic/mali/mali.ko $BUILD_OUT
 		call cp drivers/amlogic/ump/ump.ko $BUILD_OUT
 		call cp drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $BUILD_OUT
+		call cp net/wireless/cfg80211.ko $BUILD_OUT
 		call cp drivers/scsi/scsi_wait_scan.ko $BUILD_OUT
 
 		call cp drivers/amlogic/mali/mali.ko $ROOTFS_OUT/root/boot/
 		call cp drivers/amlogic/ump/ump.ko $ROOTFS_OUT/root/boot/
 		call cp drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $ROOTFS_OUT/system/lib/
+		call cp net/wireless/cfg80211.ko $ROOTFS_OUT/system/lib/
 		call cp drivers/scsi/scsi_wait_scan.ko $ROOTFS_OUT/system/lib/
 
 		logger "FINISH make modules"
