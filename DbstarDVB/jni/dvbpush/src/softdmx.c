@@ -14,7 +14,8 @@ Channel_t chanFilter[MAX_CHAN_FILTER+1];
 int max_filter_num = 0;
 int loader_dsc_fid;
 static LoaderInfo_t g_loaderInfo;
-static pthread_t loaderthread;
+static pthread_t loaderthread = 0;
+static loaderAction = 0;
 
 #define UPGRADEFILE_ALL "/tmp/upgrade.zip"
 #define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
@@ -113,6 +114,12 @@ static void* loader_thread()
 	int ret;
 	unsigned int len = 0,wlen = 0,rlen = 0;
 
+reLoader:
+	while (loaderAction == 0)
+	{
+		sleep(2);
+		DEBUG("loaderAction == 0\n");
+	}
 	/*fp=fopen("localfile","rb");// localfileÎÄ¼þÃû
 	fseek(fp,0,SEEK_SET);
 	fseek(fp,0,SEEK_END);
@@ -122,6 +129,7 @@ static void* loader_thread()
 	DEBUG("in loader thread...\n");
 	wlen = 0;
 	ret = fread(buf,1,48,fp);
+	len = 0;
 	ret = fread(&len,1,1,fp);
 	DEBUG("in loader thread, read file len = [%u]\n",len);
 	if (len > 1024)
@@ -159,11 +167,9 @@ static void* loader_thread()
 #if 1
 	if (sha_verify(fp, sha0, g_loaderInfo.img_len-64) != 0)
 	{
-		DEBUG("verify err\n");
-//		while(1){
-//			DEBUG("here is a lair\n");
-//			sleep(5);
-//		};
+		DEBUG("sha verify err\n");
+		
+		loaderAction = 0;
 		Filter_param param;
 		memset(&param,0,sizeof(param));
 		param.filter[0] = 0xf0;
@@ -171,7 +177,9 @@ static void* loader_thread()
 
 		loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 1);
 		fclose(fp);
-		return NULL;
+		
+		goto reLoader;
+		//return NULL;
 	}
 #endif
 	fclose(fp);
@@ -425,7 +433,11 @@ patch0:
 					free(recv_mark);
 					startWrite = 0;
 					getMaxSeq = 0;
-					pthread_create(&loaderthread, NULL, loader_thread, NULL);
+					if (loaderthread == 0)
+					{
+						pthread_create(&loaderthread, NULL, loader_thread, NULL);
+						loaderAction = 1;
+					}
 					return;
 				}
 			}
@@ -505,6 +517,12 @@ void ca_section_handle(int fid, const unsigned char *data, int len, void *user_d
 	tmp = data[5]&0x3e;
 	if (version != tmp)
 	{
+		if (tc_crc32(data,len))
+		{
+			SIMPLE_DEBUG("CA table  error !!!!!!!!!!!!!!!!!!!!\n");
+			return;
+		}
+
 		version = tmp;
 		pid = ((data[12]&0x1f)<<8)|data[13];
 		if (pid != emmpid)
@@ -547,6 +565,13 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		DEBUG("loader info too small!!!!!!!!!!\n");
 		//        return;
 	}
+
+	if (tc_crc32(data,len))
+	{
+		SIMPLE_DEBUG("loader des error !!!!!!!!!!!!!!!!!!!!\n");
+		return;
+	}
+
 	datap = (unsigned char *)data+4;
 	//if ((datap[0] != datap[1])||(datap[2] != datap[3]))
 	//    DEBUG("!!!!!!!!!!!!!!!!error section number,need modify code!\n");
@@ -564,39 +589,45 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	tmp16 = *datap;
 	datap++;
 	tmp16 = (tmp16<<8)|(*datap);
-	//DEBUG("loader info oui = [%x]\n",tmp16);
-	//    if (tmp16 != g_loaderInfo.oui)
-	//        return;
+	DEBUG("loader info oui = [%x]\n",tmp16);
+	if (tmp16 != g_loaderInfo.oui){
+		SIMPLE_DEBUG("oui check failed [%x]\n",tmp16);
+		return;
+	}
 	
 	//model_type
 	datap++;
 	tmp16 = *datap;
 	datap++;
 	tmp16 = (tmp16<<8)|(*datap);
-	//DEBUG("loader info model type = [%x]\n",tmp16);
-	//    if (tmp16 != g_loaderInfo.model_type)
-	//        return;
+	DEBUG("loader info model type = [%x]\n",tmp16);
+	if (tmp16 != g_loaderInfo.model_type){
+		SIMPLE_DEBUG("model type check failed [%x]\n",tmp16);
+		return;
+	}
 	
 	datap ++;  //usergroup id
 	
 	//hardware_version
 	datap += 2;
 	//tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	//DEBUG("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+	DEBUG("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
 	if ((datap[0] != g_loaderInfo.hardware_version[0])||(datap[1] != g_loaderInfo.hardware_version[1])
 	||(datap[2] != g_loaderInfo.hardware_version[2])||(datap[3] != g_loaderInfo.hardware_version[3]))
 	{
-		//    return;
+		SIMPLE_DEBUG("hardware version check failed\n");
+		return;
 	}
 	//software_version
 	datap += 4;
 	//tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
 	//DEBUG("loader info software version = [%x][%x]\n",tmp32,g_loaderInfo.software_version);
-	//DEBUG("loader info software version [%u[%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+	DEBUG("loader info software version [%u[%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
 	if ((datap[0] == g_loaderInfo.software_version[0])||(datap[1] == g_loaderInfo.software_version[1])
 	||(datap[2] == g_loaderInfo.software_version[2])||(datap[3] == g_loaderInfo.software_version[3]))
 	{
-		//    return;
+		SIMPLE_DEBUG("software version check failed\n");
+		return;
 	}
 	g_loaderInfo.software_version[0] = datap[0];
 	g_loaderInfo.software_version[1] = datap[1];
@@ -611,8 +642,8 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	if (g_loaderInfo.stb_id_h < stb_id_h)
 	{
 		datap += 4;
-		//DEBUG("stb id is not in this update sequence \n");
-		//return;
+		DEBUG("stb id is not in this update sequence \n");
+		return;
 	}
 	else if (g_loaderInfo.stb_id_h == stb_id_h)
 	{
@@ -622,8 +653,8 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		//DEBUG("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
 		if (g_loaderInfo.stb_id_l < stb_id_l)
 		{
-			//DEBUG("stb id is not in this update sequence \n");
-			//return;
+			DEBUG("stb id is not in this update sequence \n");
+			return;
 		}
 	}
 	else
@@ -635,8 +666,8 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	if (g_loaderInfo.stb_id_h > stb_id_h)
 	{
 		datap += 4;
-		//DEBUG("stb id is not in this update sequence \n");
-		//return;
+		DEBUG("stb id is not in this update sequence \n");
+		return;
 	}
 	else if (g_loaderInfo.stb_id_h == stb_id_h)
 	{
@@ -647,7 +678,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		if (g_loaderInfo.stb_id_l > stb_id_l)
 		{
 			DEBUG("stb id is not in this update sequence \n");
-			//return;
+			return;
 		}
 	}
 	else
