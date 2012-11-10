@@ -151,54 +151,61 @@ const uint8_t* SHA(const void *data, int len, uint8_t *digest) {
 
 int sha_verify(FILE *f,  uint8_t*sha0, size_t signed_len)
 {
-    SHA_CTX ctx;
-    SHA_init(&ctx);
-    //FILE *f = fopen(name,"r");
-    unsigned char* buffer = malloc(BUFFER_SIZE);
-    if ((buffer == NULL) || (f == NULL)){
-        printf("failed to alloc memory for sha1 buffer\n");
-        //fclose(f);
-        return -1; //VERIFY_FAILURE;
-    }
- 
-    double frac = -1.0;
-    size_t so_far = 0;
- //   fseek(f, 0, SEEK_SET);
-    while (so_far < signed_len) {
-        size_t size = BUFFER_SIZE;
-        if (signed_len - so_far < size) size = signed_len - so_far;
-        if (fread(buffer, 1, size, f) != size) {
-            //LOGE("failed to read data from %s (%s)\n", path, strerror(errno));
-   //         fclose(f);
-            return -1;//VERIFY_FAILURE;
-        }
-        SHA_update(&ctx, buffer, size);
-        so_far += size;
-        double df = so_far / (double)signed_len;
-        if (df > frac + 0.02 || size == so_far) {
-            
-            frac = df;
-        }
-    }
-   // fclose(f);
-    free(buffer);
-
-    const uint8_t* sha1 = SHA_final(&ctx);
-    int i;// = sizeof(sha1);
-printf("\n sha1 longth is [%d]\n",sizeof(ctx.buf));
-    for(i=0; i<sizeof(ctx.buf); i++)
-    { 
-//printf("%.2x",ctx.buf[i]);   
-        if(*sha1++ != *sha0++)
-        {
-        	DEBUG("sha verify failed\n");
-    	    //return -1;
-        }
-        else
-        	DEBUG("sha verify success\n");
-    }
-printf("\n");
-    return 0;
+	SHA_CTX ctx;
+	SHA_init(&ctx);
+	//FILE *f = fopen(name,"r");
+	if(NULL==f){
+		DEBUG("can not do sha verify with NULL file handle\n");
+		return -1;
+	}
+	
+	unsigned char* buffer = malloc(BUFFER_SIZE);
+	if (NULL==buffer){
+		DEBUG("failed to alloc memory for sha1 buffer\n");
+		//fclose(f);
+		return -1; //VERIFY_FAILURE;
+	}
+	
+	double frac = -1.0;
+	size_t so_far = 0;
+	//   fseek(f, 0, SEEK_SET);
+	while (so_far < signed_len) {
+		size_t size = BUFFER_SIZE;
+		if (signed_len - so_far < size)
+			size = signed_len - so_far;
+		if (fread(buffer, 1, size, f) != size) {
+			DEBUG("failed to read data: %s\n", strerror(errno));
+			//         fclose(f);
+			free(buffer);
+			buffer = NULL;
+			return -1;//VERIFY_FAILURE;
+		}
+		SHA_update(&ctx, buffer, size);
+		so_far += size;
+		double df = so_far / (double)signed_len;
+		if (df > frac + 0.02 || size == so_far) {
+			frac = df;
+		}
+	}
+	// fclose(f);
+	free(buffer);
+	
+	const uint8_t* sha1 = SHA_final(&ctx);
+	unsigned int i = 0;// = sizeof(sha1);
+	printf("\n sha1 longth is [%d]\n",sizeof(ctx.buf));
+	for(i=0; i<sizeof(ctx.buf); i++)
+	{ 
+		//printf("%.2x",ctx.buf[i]);   
+		if(*sha1++ != *sha0++)
+		{
+			DEBUG("sha verify failed, not return when -1 currently\n");
+			return -1;
+		}
+		else
+			DEBUG("sha verify success\n");
+	}
+	printf("\n");
+	return 0;
 }
 
 #if 0    

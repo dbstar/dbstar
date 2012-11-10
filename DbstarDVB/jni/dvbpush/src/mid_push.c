@@ -521,17 +521,6 @@ void usage()
 	exit(0);
 }
 
-//int pushdata_rootdir_get(char *buf, unsigned int size)
-//{
-//	if(NULL==buf || 0==size){
-//		DEBUG("some arguments are invalid\n");
-//		return -1;
-//	}
-//	
-//	strncpy(buf, s_push_data_dir, size);
-//	return 0;
-//}
-
 void callback(const char *path, long long size, int flag)
 {
 	DEBUG("path:%s, size:%lld, flag:%d\n", path, size, flag);
@@ -813,11 +802,6 @@ int mid_push_uninit()
 	push_decoder_buf_uninit();
 	
 	return 0;
-}
-
-static char *language_get()
-{
-	return "chi";
 }
 
 //×¢²á½ÚÄ¿

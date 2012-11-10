@@ -135,6 +135,7 @@ int igmp_recvbuf_init()
 static void *igmp_thread()
 {
     char if_ip[16] = {0};
+    char if_status[16];
 	int sock, opt;
 	struct sockaddr_in sin;
 	int sizeof_sin = -1;
@@ -184,13 +185,22 @@ MULTITASK_START:
 			pthread_mutex_lock(&mtx_getip);
 			
 			memset(if_ip, 0, sizeof(if_ip));
-			if(0==ifconfig_get("eth0", if_ip, NULL, NULL)){
+			memset(if_status, 0, sizeof(if_status));
+			if(0==ifconfig_get("eth0", if_ip, if_status, NULL)){
+#if 0	// have any ip is OK
 				if(0==ipv4_simple_check(if_ip)){
 					pthread_mutex_unlock(&mtx_getip);
 					break;
 				}
 				else
 					DEBUG("ip(%s) of eth0 is invalid\n", if_ip);
+#else
+				DEBUG("get ip: %s, status: %s\n", if_ip, if_status);
+				if(0==strcmp(if_status, "UP"))
+					break;
+				else
+					DEBUG("eth0 is DOWN\n");
+#endif
 			}
 			else{
 				DEBUG("get eth0 ip failed\n");
@@ -495,10 +505,10 @@ int softdvb_init()
 	
 	chanFilterInit();
 	
-//	// prog/file
-//	unsigned short root_pid = root_channel_get();
-//	int filter1 = alloc_filter(root_pid, 0);
-//	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
+	// prog/file
+	unsigned short root_pid = root_channel_get();
+	int filter1 = alloc_filter(root_pid, 0);
+	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
 	
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0xf0;
@@ -506,11 +516,11 @@ int softdvb_init()
 	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
 	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
-//	memset(&param,0,sizeof(param));
-//	param.filter[0] = 0x1;
-//	param.mask[0] = 0xff;
-//	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
-//	DEBUG("set ca filter1, pid=0x1, fid=%d\n", ca_dsc_fid);
+	memset(&param,0,sizeof(param));
+	param.filter[0] = 0x1;
+	param.mask[0] = 0xff;
+	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
+	DEBUG("set ca filter1, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
 #ifdef PUSH_LOCAL_TEST
 	// prog/video

@@ -157,13 +157,13 @@ static void* loader_thread()
 	fread(sha0,1,64,fp);
 
 #if 1
-	if (sha_verify(fp, sha0, g_loaderInfo.img_len) != 0)
+	if (sha_verify(fp, sha0, g_loaderInfo.img_len-64) != 0)
 	{
 		DEBUG("verify err\n");
-		while(1){
-			DEBUG("here is a lair\n");
-			sleep(5);
-		};
+//		while(1){
+//			DEBUG("here is a lair\n");
+//			sleep(5);
+//		};
 		Filter_param param;
 		memset(&param,0,sizeof(param));
 		param.filter[0] = 0xf0;
@@ -320,7 +320,7 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 	FILE *upgradefile=NULL;
 	
 	static int s_first_package_flag = -1;
-	int tmp_i = 0;
+	unsigned int tmp_i = 0;
 	
 	//DEBUG("call loader_section_handle\n");
 	if (len < 12)

@@ -1252,7 +1252,7 @@ static int global_info_init()
 	sqlite_transaction_exec(sqlite_cmd);
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-		GLB_NAME_CURLANGUAGE,"chi");
+		GLB_NAME_CURLANGUAGE,CURLANGUAGE_DFT);
 	sqlite_transaction_exec(sqlite_cmd);
 	
 	return sqlite_transaction_end(1);

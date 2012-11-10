@@ -38,6 +38,7 @@ static int			s_debug_level = 0;
 static char			s_xml[128];
 static char			s_initialize_xml[256];
 static char			s_column_res[256];
+static char			s_Language[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
@@ -807,4 +808,24 @@ static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int 
 	snprintf(date_str, date_str_size, "%d/%d/%d", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday);
 	
 	return 0;
+}
+
+char *language_get()
+{
+	char sqlite_cmd[512];
+	
+	memset(s_Language, 0, sizeof(s_Language));
+	
+	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_CURLANGUAGE);
+
+	int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read no Language from db, filled with %s\n", CURLANGUAGE_DFT);
+		snprintf(s_Language, sizeof(s_Language), "%s", CURLANGUAGE_DFT);
+	}
+	else
+		DEBUG("read PushDir: %s\n", s_Language);
+		
+	return s_Language;
 }
