@@ -476,6 +476,8 @@ public class GDDataProviderService extends Service {
 				keys[4] = GDSettings.PropertyGatewayPort;
 
 				Intent intent = new Intent();
+				intent.setAction(GDCommon.ActionUpateNetworkInfo);
+				
 				for (int i = 0; i < 2; i++) {
 					String value = mDataModel.queryGlobalProperty(keys[i]);
 					Log.d(TAG, "+++++++++++ queryGlobalProperty key=" + keys[i] + " value=" + value);

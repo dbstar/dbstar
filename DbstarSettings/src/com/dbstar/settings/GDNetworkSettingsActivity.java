@@ -37,10 +37,13 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 	private EthernetSettings mEthSettings;
 	private WifiSettings mWifiSettings;
 
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.network_settings);
+
+		registerGetInfoReceiver();
 
 		initializeView();
 
@@ -55,6 +58,21 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 
 	}
 
+	@Override
+	public void onStart() {
+		super.onStart();
+
+		getNetworkInfo();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		setNetworkInfo();
+		unregisterReceiver(mReceiver);
+	}
+
 	public void initializeView() {
 		super.initializeView();
 
@@ -63,10 +81,6 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 		mMulticastPort = (TextView) findViewById(R.id.multicast_port);
 		mGatewayIP = (TextView) findViewById(R.id.gateway_ip);
 		mGatewayPort = (TextView) findViewById(R.id.gateway_port);
-
-		registerGetInfoReceiver();
-
-		getNetworkInfo();
 	}
 
 	void registerGetInfoReceiver() {
@@ -121,7 +135,7 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 		intent.putExtra(PropertyGatewayPort, gatewayPort);
 		intent.putExtra(PropertyMulticastIP, multicastIP);
 		intent.putExtra(PropertyMulticastPort, multicastPort);
-		
+
 		sendBroadcast(intent);
 	}
 
