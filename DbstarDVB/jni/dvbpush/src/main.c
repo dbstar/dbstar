@@ -29,7 +29,10 @@ void *main_thread()
 		return NULL;
 	}
 	
-//	push_root_dir_init(PUSH_CONF);
+	if(-1==push_decoder_buf_init()){
+		DEBUG("push decoder buf init failed\n");
+		return NULL;
+	}
 	
 	if(-1==sqlite_init()){
 		DEBUG("sqlite init failed\n");

@@ -17,6 +17,11 @@ static LoaderInfo_t g_loaderInfo;
 static pthread_t loaderthread = 0;
 static int loaderAction = 0;
 
+extern int TC_loaner_to_push_order(int ord);
+extern int TC_loader_get_push_state(void);
+extern int TC_loader_get_push_buf_size(void);
+extern unsigned char * TC_loader_get_push_buf_pointer(void);
+
 #define UPGRADEFILE_ALL "/tmp/upgrade.zip"
 #define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
 #define COMMAND_FILE  "/cache/recovery/command0"
@@ -237,9 +242,48 @@ reLoader:
 		msg_send2_UI(UPGRADE_NEW_VER, msg, strlen(msg));
 	}
 	fclose(cfp);
+	
+	TC_loader_filter_handle(0);
 #endif
 	return NULL;
 }
+
+int TC_loader_filter_handle(int aof) //1 allocate loader filter, 0 free loader filter
+{
+    static Channel_t chanFilter0;
+    static int maxnum=0;
+	
+	DEBUG("aof: %d\n", aof);
+    if(aof)
+    {
+    	DEBUG("aof---------------------\n");
+        TC_loader_to_push_order(0);  //let push idle;
+        memset(&chanFilter0,0,sizeof(chanFilter0));
+        memcpy(&chanFilter0,&chanFilter[0],sizeof(chanFilter0));
+        maxnum = max_filter_num;
+        max_filter_num = 1;
+        TC_free_filter(0);
+        
+    }
+    else
+    {
+    	DEBUG("aof======================\n");
+        memcpy(&chanFilter[0],&chanFilter0,sizeof(chanFilter0));
+        chanFilter[0].bytes = 0;
+        chanFilter[0].stage  = CHAN_STAGE_START;
+
+        if (max_filter_num != 1)
+        {
+            if (max_filter_num >= maxnum)
+                return 0;
+        }
+        max_filter_num = maxnum;
+        memset(&chanFilter0,0,sizeof(chanFilter0));
+        maxnum = 0;
+    }
+    return 0;
+}
+
 
 int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char priority)
 {
@@ -414,13 +458,15 @@ patch0:
 					
 					SIMPLE_DEBUG("total_loader: %u, maxSeq: %u, g_loaderInfo.fid: %d\n", total_loader, maxSeq,g_loaderInfo.fid);
 					TC_free_filter(g_loaderInfo.fid);
+					TC_loader_to_push_order(1);                                        
 					upgradefile = fopen(UPGRADEFILE_IMG,"w");
 					if (!upgradefile)
 					{
 						SIMPLE_DEBUG("open %s failed\n", UPGRADEFILE_IMG);
 						startWrite = 0;
 						getMaxSeq = 0;
-						free(recv_buf);
+						if (recv_buf!= TC_loader_get_push_buf_pointer())
+							free(recv_buf);
 						free(recv_mark);
 						return;
 					}
@@ -429,7 +475,8 @@ patch0:
 					
 					fwrite(recv_buf,1,totalLen,upgradefile);
 					fclose(upgradefile);
-					free(recv_buf);
+					if (recv_buf!= TC_loader_get_push_buf_pointer())
+						free(recv_buf);
 					free(recv_mark);
 					startWrite = 0;
 					getMaxSeq = 0;
@@ -470,14 +517,29 @@ patch0:
 			return;
 		if (maxSeq == -1)
 			maxSeq = (datap[1]+1)*0x100+1;
-		recv_buf = (unsigned char *)malloc(maxSeq*LOADER_PACKAGE_SIZE);
+		
+		while(TC_loader_get_push_state()==0)
+		{
+			usleep(100000);
+		}
+		
+		if (TC_loader_get_push_buf_size() >= maxSeq*LOADER_PACKAGE_SIZE)
+		{
+			recv_buf = TC_loader_get_push_buf_pointer();
+			DEBUG("use push buf for upgrade: %p\n", recv_buf);
+		}
+		else 
+		{
+			DEBUG("push buffer is too small for upgrade file!!!!\n");
+			recv_buf = (unsigned char *)malloc(maxSeq*LOADER_PACKAGE_SIZE);
+			DEBUG("malloc %d x %d = %d for upgrade file\n", maxSeq,LOADER_PACKAGE_SIZE,maxSeq*LOADER_PACKAGE_SIZE);
+		}
+		
 		if (recv_buf == NULL)
 		{
 			DEBUG("can not allcate mem for upgrade file!!!!\n");
 			return;
 		}
-		else
-			DEBUG("malloc %d x %d = %d for upgrade file\n", maxSeq,LOADER_PACKAGE_SIZE,maxSeq*LOADER_PACKAGE_SIZE);
 		
 		recv_mark = (unsigned char *)malloc(maxSeq);
 		if (recv_mark == NULL)
@@ -615,7 +677,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	if ((datap[0] != g_loaderInfo.hardware_version[0])||(datap[1] != g_loaderInfo.hardware_version[1])
 	||(datap[2] != g_loaderInfo.hardware_version[2])||(datap[3] != g_loaderInfo.hardware_version[3]))
 	{
-		SIMPLE_DEBUG("hardware version check failed\n");
+		SIMPLE_DEBUG("hardware version check failed!!!!!\n");
 		return;
 	}
 	//software_version
@@ -643,7 +705,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	datap += 4;
 	snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 	stb_id_h = atol(tmp);
-	//DEBUG("start stb id h = [%u] me h[%u][%x][%x]\n",stb_id_h,g_loaderInfo.stb_id_h,datap[4],datap[5]);
+	DEBUG("start stb id h = [%u] me h[%u]\n",stb_id_h,g_loaderInfo.stb_id_h);
 	if (g_loaderInfo.stb_id_h < stb_id_h)
 	{
 		datap += 4;
@@ -655,7 +717,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		datap += 4;
 		snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 		stb_id_l = atol(tmp);
-		//DEBUG("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
+		DEBUG("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
 		if (g_loaderInfo.stb_id_l < stb_id_l)
 		{
 			DEBUG("stb id is not in this update sequence \n");
@@ -667,7 +729,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	datap += 4;
 	snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 	stb_id_h = atol(tmp);
-	//DEBUG("end stb id h [%u] me [%u]\n",stb_id_h,g_loaderInfo.stb_id_h);
+	DEBUG("end stb id h [%u] me [%u]\n",stb_id_h,g_loaderInfo.stb_id_h);
 	if (g_loaderInfo.stb_id_h > stb_id_h)
 	{
 		datap += 4;
@@ -679,7 +741,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		datap += 4;
 		snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 		stb_id_l = atol(tmp);
-		//DEBUG("end start id h=[%u], l=[%u]\n",stb_id_h, stb_id_l);
+		DEBUG("end start id h=[%u], l=[%u]\n",stb_id_h, stb_id_l);
 		if (g_loaderInfo.stb_id_l > stb_id_l)
 		{
 			DEBUG("stb id is not in this update sequence \n");
@@ -703,10 +765,11 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		datap++;
 		tid = *datap++;
 		DEBUG(">>>> pid = [%x]  tid=[%x] loader_section_handle=%p\n",pid,tid,loader_section_handle);
+		TC_loader_filter_handle(1);
 		memset(&param,0,sizeof(param));
 		param.filter[0] = tid;
 		param.mask[0] = 0xff;
-		g_loaderInfo.fid = TC_alloc_filter(pid, &param, loader_section_handle, NULL, 0);
+		g_loaderInfo.fid = TC_alloc_filter(pid, &param, loader_section_handle, NULL, 1);
 		DEBUG("pid: %d|0x%x, fid: %d\n", pid,pid, g_loaderInfo.fid);
 	}
 	
@@ -755,10 +818,6 @@ void TC_free_filter(int fid)
 	{
 		DEBUG("free fid=%d, pid=%x\n", fid, chanFilter[fid].pid);
 		chanFilter[fid].used = 0;
-		chanFilter[fid].pid = -1;
-		chanFilter[fid].bytes = 0;
-		chanFilter[fid].fid = -1;
-		chanFilter[fid].stage  = CHAN_STAGE_START;
 		if(chanFilter[fid].samepidnum)
 		{
 			unsigned short pid,j;
@@ -773,7 +832,25 @@ void TC_free_filter(int fid)
 				}
 			}
 		}
-		chanFilter[fid].pid = -1;
+		chanFilter[fid].pid = 0xffff;
+		chanFilter[fid].bytes = 0;
+		chanFilter[fid].fid = -1;
+		chanFilter[fid].stage  = CHAN_STAGE_START;
+		
+		//chanFilter[fid].pid = 0xffff;
+		if ((fid+1) == max_filter_num)
+		{
+			int k;
+			int maxt = 0;
+			for (k = 0; k < max_filter_num; k++)
+			{
+				if (chanFilter[k].used)
+				{
+					maxt = k+1;
+				}   
+			}
+			max_filter_num = maxt;
+		}
 	}
 	else
 		DEBUG("invalid fid: %d\n", fid);

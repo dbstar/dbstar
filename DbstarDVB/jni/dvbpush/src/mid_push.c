@@ -45,6 +45,7 @@ static pthread_cond_t cond_push_monitor = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mtx_push_rely_condition = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_push_rely_condition = PTHREAD_COND_INITIALIZER;
 static int s_push_rely_condition = 0;
+static int push_idle = 0;
 //static int s_mpe_send_pause = 0;
 //static int s_push_decoder_pause = 0;
 
@@ -66,7 +67,6 @@ typedef struct tagPRG
 
 static int mid_push_regist(char *id, char *content_uri, long long content_len);
 static int push_monitor_regist(int regist_flag);
-static int push_decoder_buf_init();
 static int push_decoder_buf_uninit();
 
 #define PROGS_NUM 64
@@ -75,7 +75,7 @@ static PROG_S s_prgs[PROGS_NUM];
 /*************接收缓冲区定义***********/
 DataBuffer *g_recvBuffer = NULL;	//[MAX_PACK_BUF]
 static int g_wIndex = 0;
-static int g_rIndex = 0;
+//static int g_rIndex = 0;
 /**************************************/
 
 static pthread_t tidDecodeData;
@@ -260,13 +260,11 @@ void *push_decoder_thread()
 //		goto PUSHTASK_START;
 //	}
 	
-	if(-1==push_decoder_buf_init()){
-		return NULL;
-	}
-	
 	DEBUG("push decoder thread will goto main loop\n");
 //	s_push_decoder_pause = 0;
 	s_decoder_running = 1;
+rewake:	
+	DEBUG("go to push main loop\n");
 	while (1==s_decoder_running && NULL!=g_recvBuffer)
 	{
 //		if(1==s_push_decoder_pause){
@@ -289,7 +287,7 @@ void *push_decoder_thread()
 			rindex++;
 			if(rindex >= MAX_PACK_BUF)
 				rindex = 0;
-			g_rIndex = rindex;
+			//g_rIndex = rindex;
 		}
 		else
 		{
@@ -301,6 +299,23 @@ void *push_decoder_thread()
 				read_nothing_count = 0;
 			}
 		}
+	}
+	
+	if (s_decoder_running == 2)
+	{
+		push_idle = 1;
+		while (s_decoder_running == 2)
+		{
+			DEBUG("push thread in idle\n");
+			sleep(15);
+		}
+		//memset(g_recvBuffer,0 ,sizeof(DataBuffer)*MAX_PACK_BUF);
+		g_recvBuffer[0].m_len = 0;
+		g_recvBuffer[1].m_len = 0;
+		g_wIndex = 0;
+		rindex = 0;
+		push_idle = 0;
+		goto rewake;
 	}
 	DEBUG("exit from push decoder thread\n");
 	
@@ -714,7 +729,7 @@ int push_monitor_reset()
 	return ret;
 }
 
-static int push_decoder_buf_init()
+int push_decoder_buf_init()
 {
 	g_recvBuffer = (DataBuffer *)malloc(sizeof(DataBuffer)*MAX_PACK_BUF);
 	if(NULL==g_recvBuffer){
@@ -724,11 +739,16 @@ static int push_decoder_buf_init()
 	else
 		DEBUG("malloc for push decoder buffer %d*%d success\n", sizeof(DataBuffer), MAX_PACK_BUF);
 	
+	//memset(g_recvBuffer,0,sizeof(DataBuffer)*MAX_PACK_BUF);	
 	DEBUG("g_recvBuffer=%p\n", g_recvBuffer);
 	
+	g_recvBuffer[0].m_len = 0;
+	g_recvBuffer[1].m_len = 0;
 //	int i = 0;
 //	for(i=0;i<MAX_PACK_BUF;i++)
 //		g_recvBuffer[i].m_len = 0;
+//	
+//	DEBUG("g_recvBuffer=%p aaaaaaaaa\n", g_recvBuffer);
 	
 	return 0;
 }
@@ -736,6 +756,7 @@ static int push_decoder_buf_init()
 static int push_decoder_buf_uninit()
 {
 	if(g_recvBuffer){
+		DEBUG("free push decoder buf\n");
 		DataBuffer *tmp_recvbuf = g_recvBuffer;
 		g_recvBuffer = NULL;
 		usleep(300);
@@ -822,6 +843,35 @@ int mid_push_uninit()
 	return 0;
 }
 
+int TC_loader_to_push_order(int ord)
+{
+	DEBUG("ord: %d\n", ord);
+    if (ord)
+    {
+        s_decoder_running = 1;
+    }
+    else
+    {
+        s_decoder_running = 2;
+       // g_wIndex = 0;
+    }
+    return 0;
+}
+
+int TC_loader_get_push_state(void)
+{
+    return push_idle;
+}
+
+int TC_loader_get_push_buf_size(void)
+{
+    return sizeof(DataBuffer)*MAX_PACK_BUF;
+}
+
+unsigned char * TC_loader_get_push_buf_pointer(void)
+{
+    return (unsigned char *)g_recvBuffer;
+}
 //注册节目
 static int mid_push_regist(char *id, char *content_uri, long long content_len)
 {
