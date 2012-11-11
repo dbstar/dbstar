@@ -30,7 +30,7 @@ static char			s_service_id[32];
 static int			s_root_channel;
 static char			s_root_push_file[128];
 static unsigned int	s_root_push_file_size = 0;
-static char			s_data_source[128];
+static char			s_data_source[64];
 static int			s_prog_data_pid = 0;
 
 static char			s_database_uri[64];
@@ -38,6 +38,8 @@ static int			s_debug_level = 0;
 static char			s_xml[128];
 static char			s_initialize_xml[256];
 static char			s_column_res[256];
+static int			s_software_check = 1;
+
 static char			s_Language[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
@@ -56,7 +58,6 @@ static void settingDefault_set(void)
 	s_root_channel = ROOT_CHANNEL;
 	strncpy(s_root_push_file, ROOT_PUSH_FILE, sizeof(s_root_push_file)-1);
 	s_root_push_file_size = ROOT_PUSH_FILE_SIZE;
-	strncpy(s_data_source, DATA_SOURCE, sizeof(s_data_source)-1);
 	
 	s_prog_data_pid = PROG_DATA_PID_DF;
 	
@@ -64,7 +65,8 @@ static void settingDefault_set(void)
 	s_debug_level = 0;
 	memset(s_xml, 0, sizeof(s_xml));
 	snprintf(s_initialize_xml, sizeof(s_initialize_xml), "%d", INITIALIZE_XML);
-	snprintf(s_column_res, sizeof(s_column_res), "%s", LOCALCOLUMN_RES);
+	snprintf(s_column_res, sizeof(s_column_res), "%s", COLUMN_RES);
+	s_software_check = 1;
 	
 	return;
 }
@@ -154,8 +156,6 @@ int setting_init(void)
 					strncpy(s_root_push_file, p_value, sizeof(s_root_push_file)-1);
 				else if(0==strcmp(tmp_buf, "root_push_file_size"))
 					s_root_push_file_size = atoi(p_value);
-				else if(0==strcmp(tmp_buf, "data_source"))
-					strncpy(s_data_source, p_value, sizeof(s_data_source)-1);
 				else if(0==strcmp(tmp_buf, "prog_data_pid"))
 					s_prog_data_pid = atoi(p_value);
 				else if(0==strcmp(tmp_buf, "dbstar_database"))
@@ -168,6 +168,8 @@ int setting_init(void)
 					strncpy(s_initialize_xml, p_value, sizeof(s_initialize_xml)-1);
 				else if(0==strcmp(tmp_buf, "localcolumn_res"))
 					strncpy(s_column_res, p_value, sizeof(s_column_res)-1);
+				else if(0==strcmp(tmp_buf, "software_check"))
+					s_software_check = atoi(p_value);
 			}
 		}
 		memset(tmp_buf, 0, sizeof(tmp_buf));
@@ -219,15 +221,6 @@ int root_push_file_size_get(void)
 	return s_root_push_file_size;
 }
 
-int data_source_get(char *data_source, unsigned int len)
-{
-	if(NULL==data_source || 0==len)
-		return -1;
-	
-	strncpy(data_source, s_data_source, len);
-	return 0;
-}
-
 int prog_data_pid_get(void)
 {
 	return s_prog_data_pid;
@@ -245,6 +238,11 @@ int database_uri_get(char *database_uri, unsigned int size)
 int debug_level_get(void)
 {
 	return s_debug_level;
+}
+
+int software_check(void)
+{
+	return s_software_check;
 }
 
 int parse_xml_get(char *xml_uri, unsigned int size)
@@ -546,20 +544,11 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			dvbpush_getinfo_stop();
 			break;
 		case CMD_NETWORK_CONNECT:
-			push_rely_condition_set(RELY_CONDITION_NET);
-			net_rely_condition_set(RELY_CONDITION_NET);
-			break;
 		case CMD_NETWORK_DISCONNECT:
-			push_rely_condition_set(0-RELY_CONDITION_NET);
-			net_rely_condition_set(0-RELY_CONDITION_NET);
-			break;
 		case CMD_DISK_MOUNT:
-			push_rely_condition_set(RELY_CONDITION_HD);
-			net_rely_condition_set(RELY_CONDITION_HD);
-			break;
 		case CMD_DISK_UNMOUNT:
-			push_rely_condition_set(0-RELY_CONDITION_HD);
-			net_rely_condition_set(0-RELY_CONDITION_HD);
+			push_rely_condition_set(cmd);
+			net_rely_condition_set(cmd);
 			break;
 		
 		case CMD_UPGRADE_CANCEL:
@@ -614,13 +603,14 @@ void upgrade_info_init()
 		char tmpinfo[128];
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%u%u", out.stb_id_h, out.stb_id_l);
-		upgrade_info_refresh(GLB_NAME_STBID, tmpinfo);
+		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.hardware_version[0],out.hardware_version[1],out.hardware_version[2],out.hardware_version[3]);
 		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.software_version[0],out.software_version[1],out.software_version[2],out.software_version[3]);
 		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
+		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, tmpinfo);
 	}
 	else
 		DEBUG("get loader message failed\n");
@@ -812,20 +802,53 @@ static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int 
 
 char *language_get()
 {
-	char sqlite_cmd[512];
-	
-	memset(s_Language, 0, sizeof(s_Language));
-	
-	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_CURLANGUAGE);
-
-	int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sqlite_cb);
-	if(ret_sqlexec<=0){
-		DEBUG("read no Language from db, filled with %s\n", CURLANGUAGE_DFT);
-		snprintf(s_Language, sizeof(s_Language), "%s", CURLANGUAGE_DFT);
-	}
-	else
-		DEBUG("read PushDir: %s\n", s_Language);
+	if(0==strlen(s_Language)){
+		char sqlite_cmd[512];
 		
+		int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_CURLANGUAGE);
+	
+		int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sqlite_cb);
+		if(ret_sqlexec<=0){
+			DEBUG("read no Language from db, filled with %s\n", CURLANGUAGE_DFT);
+			snprintf(s_Language, sizeof(s_Language), "%s", CURLANGUAGE_DFT);
+		}
+		else
+			DEBUG("read Language: %s\n", s_Language);
+	}
+	
 	return s_Language;
+}
+
+char *multi_addr_get(void)
+{
+	char sqlite_cmd[512];
+	char read_str[512];
+	
+	memset(read_str, 0, sizeof(read_str));
+	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_DBDATASERVERIP);
+	int ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read nothing for multi ip, filled with default\n");
+		snprintf(s_data_source, sizeof(s_data_source), "igmp://%s", DBDATASERVERIP_DFT);
+	}
+	else{
+		snprintf(s_data_source, sizeof(s_data_source), "igmp://%s", read_str);
+	}
+	DEBUG("multi ip: %s\n", read_str);
+	
+	memset(read_str, 0, sizeof(read_str));
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_DBDATASERVERPORT);
+	ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read nothing for multi port, filled with default\n");
+		snprintf(s_data_source+strlen(s_data_source), sizeof(s_data_source)-strlen(s_data_source), ":%s", DBDATASERVERPORT_DFT);
+	}
+	else{
+		snprintf(s_data_source+strlen(s_data_source), sizeof(s_data_source)-strlen(s_data_source), ":%s", read_str);
+	}
+	DEBUG("multi addr: %s\n", s_data_source);
+	
+	return s_data_source;
 }

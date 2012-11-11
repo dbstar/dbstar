@@ -53,15 +53,13 @@ typedef enum{
 */
 #define USR_DATA_ROOT_DIR	"/mnt/sda1/dbstar"
 #define PUSH_DATA_DIR_DF	USR_DATA_ROOT_DIR		// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
-#define DATABASE			"/data/dbstar/Dbstar.db"
+#define DATABASE			WORKING_DATA_DIR"/Dbstar.db"
 
 #define	SERVICE_ID			"01"
 #define PROG_DATA_PID_DF	(102)	// 0X66
 #define ROOT_CHANNEL		(400)
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
-//"igmp://225.1.1.1:3000"
-#define DATA_SOURCE			"igmp://239.1.7.5:4321"
 #define MULTI_BUF_SIZE		(12*1024*1316)	/* larger than 16M */
 
 #define XML_ROOT_ELEMENT	"RootElement"
@@ -88,15 +86,22 @@ typedef enum{
 #define GLB_NAME_ORDERPRODUCT		"OrderProduct"
 #define GLB_NAME_DATASOURCE			"PushSource"
 #define GLB_NAME_HELPINFO			"HelpInfo"
-#define GLB_NAME_STBID				"StbID"
+#define GLB_NAME_PRODUCTSN			"ProductSN"
+#define GLB_NAME_DEVICEMODEL		"DeviceModel"
 #define GLB_NAME_HARDWARE_VERSION	"HardwareVersion"
 #define GLB_NAME_SOFTWARE_VERSION	"SoftwareVersion"
+#define GLB_NAME_LOADER_VERSION		"LoaderVersion"
+#define GLB_NAME_DBDATASERVERIP		"DBDataServerIP"
+#define GLB_NAME_DBDATASERVERPORT	"DBDataServerPort"
 
 #define INITIALIZE_MIDPATH	"servicegroup/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
-#define LOCALCOLUMN_RES		"/data/dbstar/ColumnRes"
+#define COLUMN_RES			WORKING_DATA_DIR"/ColumnRes"
 
 #define CURLANGUAGE_DFT				"chi"
+#define DEVICEMODEL_DFT				"DB_AML_M3"
+#define DBDATASERVERIP_DFT			"239.1.7.5"
+#define DBDATASERVERPORT_DFT		"4321"
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,

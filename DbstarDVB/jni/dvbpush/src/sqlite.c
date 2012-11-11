@@ -342,7 +342,7 @@ static int createTable(char* name)
 	char ** l_result=NULL;									    	///result of tables in database
 	int l_row=0;                                            	///the row of result
 	int l_column=0;									        	///the column of result
-	char sqlite_cmd[1024];
+	char sqlite_cmd[4096];
 	int ret = -1;
 	
 	memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
@@ -368,26 +368,26 @@ static int createTable(char* name)
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 Name	NVARCHAR(64) PRIMARY KEY,\
-Value	NVARCHAR(128),\
-Param	NVARCHAR(1024));", name);
+Value	NVARCHAR(128) DEFAULT '',\
+Param	NVARCHAR(1024) DEFAULT '');", name);
 			}
 			else if(!strcmp(name,"Initialize"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 PushFlag	NVARCHAR(64) PRIMARY KEY,\
-XMLName	NVARCHAR(64),\
-Version	NVARCHAR(64),\
-StandardVersion	NVARCHAR(32),\
-URI	NVARCHAR(256));", name);
+XMLName	NVARCHAR(64) DEFAULT '',\
+Version	NVARCHAR(64) DEFAULT '',\
+StandardVersion	NVARCHAR(32) DEFAULT '',\
+URI	NVARCHAR(256) DEFAULT '');", name);
 			}
 			else if(!strcmp(name,"Channel"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 pid	NVARCHAR(64) PRIMARY KEY,\
-pidtype	NVARCHAR(64),\
-URI NVARCHAR(256),\
+pidtype	NVARCHAR(64) DEFAULT '',\
+URI NVARCHAR(256) DEFAULT '',\
 EffectFlag INTEGER DEFAULT 1);", name);
 			}
 			else if(!strcmp(name,"Service"))
@@ -395,75 +395,75 @@ EffectFlag INTEGER DEFAULT 1);", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ServiceID	NVARCHAR(64) PRIMARY KEY,\
-RegionCode	NVARCHAR(64),\
-OnlineTime	RCHAR(32),\
-OfflineTime	RCHAR(32));", name);
+RegionCode	NVARCHAR(64) DEFAULT '',\
+OnlineTime	RCHAR(32) DEFAULT '',\
+OfflineTime	RCHAR(32) DEFAULT '');", name);
 			}
 			else if(!strcmp(name,"ResStr"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ObjectName	NVARCHAR(64),\
-EntityID	NVARCHAR(64),\
-StrLang		NVARCHAR(32),\
-StrName		NVARCHAR(64),\
+ObjectName	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(64) DEFAULT '',\
+StrLang		NVARCHAR(32) DEFAULT '',\
+StrName		NVARCHAR(64) DEFAULT '',\
 Extension	NVARCHAR(64) DEFAULT '',\
-StrValue	NVARCHAR(1024),\
+StrValue	NVARCHAR(1024) DEFAULT '',\
 PRIMARY KEY (ObjectName,EntityID,StrLang,StrName,Extension));", name);
 			}
 			else if(!strcmp(name,"ResPoster"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ObjectName	NVARCHAR(64),\
-EntityID	NVARCHAR(64),\
-PosterID	NVARCHAR(64),\
-PosterName	NVARCHAR(64),\
-PosterURI	NVARCHAR(256),\
+ObjectName	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(64) DEFAULT '',\
+PosterID	NVARCHAR(64) DEFAULT '',\
+PosterName	NVARCHAR(64) DEFAULT '',\
+PosterURI	NVARCHAR(256) DEFAULT '',\
 PRIMARY KEY (ObjectName,EntityID,PosterID));", name);
 			}
 			else if(!strcmp(name,"ResTrailer"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ObjectName	NVARCHAR(64),\
-EntityID	NVARCHAR(64),\
-TrailerID	NVARCHAR(64),\
-TrailerName	NVARCHAR(64),\
-TrailerURI	NVARCHAR(256),\
+ObjectName	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(64) DEFAULT '',\
+TrailerID	NVARCHAR(64) DEFAULT '',\
+TrailerName	NVARCHAR(64) DEFAULT '',\
+TrailerURI	NVARCHAR(256) DEFAULT '',\
 PRIMARY KEY (ObjectName,EntityID,TrailerID));", name);
 			}
 			else if(!strcmp(name,"ResSubTitle"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ObjectName	NVARCHAR(64),\
-EntityID	NVARCHAR(64),\
-SubTitleID	NVARCHAR(64),\
-SubTitleName	NVARCHAR(64),\
-SubTitleLanguage	NVARCHAR(64),\
-SubTitleURI	NVARCHAR(256),\
+ObjectName	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(64) DEFAULT '',\
+SubTitleID	NVARCHAR(64) DEFAULT '',\
+SubTitleName	NVARCHAR(64) DEFAULT '',\
+SubTitleLanguage	NVARCHAR(64) DEFAULT '',\
+SubTitleURI	NVARCHAR(256) DEFAULT '',\
 PRIMARY KEY (ObjectName,EntityID,SubTitleID));", name);
 			}
 			else if(!strcmp(name,"ResExtension"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ObjectName	NVARCHAR(256),\
-EntityID	NVARCHAR(64),\
-Name	NVARCHAR(64),\
-Type	NVARCHAR(64),\
+ObjectName	NVARCHAR(256) DEFAULT '',\
+EntityID	NVARCHAR(64) DEFAULT '',\
+Name	NVARCHAR(64) DEFAULT '',\
+Type	NVARCHAR(64) DEFAULT '',\
 PRIMARY KEY (ObjectName,EntityID,Name));", name);
 			}
 			else if(!strcmp(name,"ResExtensionFile"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ObjectName	NVARCHAR(256),\
-EntityID	NVARCHAR(64),\
-FileID	NVARCHAR(64),\
-FileName	NVARCHAR(64),\
-FileURI	NVARCHAR(256),\
+ObjectName	NVARCHAR(256) DEFAULT '',\
+EntityID	NVARCHAR(64) DEFAULT '',\
+FileID	NVARCHAR(64) DEFAULT '',\
+FileName	NVARCHAR(64) DEFAULT '',\
+FileURI	NVARCHAR(256) DEFAULT '',\
 PRIMARY KEY (ObjectName,EntityID,FileID));", name);
 			}
 			else if(!strcmp(name,"Column"))
@@ -471,12 +471,12 @@ PRIMARY KEY (ObjectName,EntityID,FileID));", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ColumnID	NVARCHAR(64) PRIMARY KEY,\
-ParentID	NVARCHAR(64),\
-Path	NVARCHAR(256),\
-ColumnType	NVARCHAR(256),\
-ColumnIcon_losefocus	NVARCHAR(256),\
-ColumnIcon_getfocus	NVARCHAR(256),\
-ColumnIcon_onclick	NVARCHAR(256),\
+ParentID	NVARCHAR(64) DEFAULT '',\
+Path	NVARCHAR(256) DEFAULT '',\
+ColumnType	NVARCHAR(256) DEFAULT '',\
+ColumnIcon_losefocus	NVARCHAR(256) DEFAULT '',\
+ColumnIcon_getfocus	NVARCHAR(256) DEFAULT '',\
+ColumnIcon_onclick	NVARCHAR(256) DEFAULT '',\
 SequenceNum	INTEGER,\
 URI	NVARCHAR(256));", name);
 			}
@@ -484,47 +484,47 @@ URI	NVARCHAR(256));", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ColumnID	NVARCHAR(64),\
-EntityID	NVARCHAR(64),\
-EntityType	NVARCHAR(64));", name);
+ColumnID	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(64) DEFAULT '',\
+EntityType	NVARCHAR(64) DEFAULT '');", name);
 			}
 			else if(!strcmp(name,"Product"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ProductID	NVARCHAR(64) PRIMARY KEY,\
-ProductType	NVARCHAR(64),\
-Flag	NVARCHAR(64),\
-OnlineDate	CHAR(32),\
-OfflineDate	CHAR(32),\
-IsReserved	CHAR(32),\
-Price	NVARCHAR(32),\
-CurrencyType	NVARCHAR(32),\
-DRMFile	NVARCHAR(256),\
-ColumnID	NVARCHAR(64),\
-IsAuthorized	NVARCHAR(64),\
-VODNum	NVARCHAR(64),\
+ProductType	NVARCHAR(64) DEFAULT '',\
+Flag	NVARCHAR(64) DEFAULT '',\
+OnlineDate	CHAR(32) DEFAULT '',\
+OfflineDate	CHAR(32) DEFAULT '',\
+IsReserved	CHAR(32) DEFAULT '',\
+Price	NVARCHAR(32) DEFAULT '',\
+CurrencyType	NVARCHAR(32) DEFAULT '',\
+DRMFile	NVARCHAR(256) DEFAULT '',\
+ColumnID	NVARCHAR(64) DEFAULT '',\
+IsAuthorized	NVARCHAR(64) DEFAULT '',\
+VODNum	NVARCHAR(64) DEFAULT '',\
 VODPlatform	NVARCHAR(256));", name);
 			}
 			else if(!strcmp(name,"PublicationsSet"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-SetID	NVARCHAR(64),\
-ColumnID	NVARCHAR(64),\
-ProductID	NVARCHAR(64),\
-URI	NVARCHAR(256),\
-TotalSize	NVARCHAR(64),\
-ProductDescID	NVARCHAR(64),\
+SetID	NVARCHAR(64) DEFAULT '',\
+ColumnID	NVARCHAR(64) DEFAULT '',\
+ProductID	NVARCHAR(64) DEFAULT '',\
+URI	NVARCHAR(256) DEFAULT '',\
+TotalSize	NVARCHAR(64) DEFAULT '',\
+ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64),\
-PushEndTime	NVARCHAR(64),\
-IsReserved	NVARCHAR(64),\
+PushStartTime	NVARCHAR(64) DEFAULT '',\
+PushEndTime	NVARCHAR(64) DEFAULT '',\
+IsReserved	NVARCHAR(64) DEFAULT '',\
 Visible	NVARCHAR(64) DEFAULT '1',\
 Favorite	NVARCHAR(64) DEFAULT '0',\
-IsAuthorized	NVARCHAR(64),\
-VODNum	NVARCHAR(64),\
-VODPlatform	NVARCHAR(256),\
+IsAuthorized	NVARCHAR(64) DEFAULT '',\
+VODNum	NVARCHAR(64) DEFAULT '',\
+VODPlatform	NVARCHAR(256) DEFAULT '',\
 Deleted NVARCHAR(256) DEFAULT '0',\
 PRIMARY KEY (SetID,ColumnID));", name);
 			}
@@ -532,118 +532,118 @@ PRIMARY KEY (SetID,ColumnID));", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-PublicationID	NVARCHAR(64),\
-ColumnID	NVARCHAR(64),\
-ProductID	NVARCHAR(64),\
-URI	NVARCHAR(256),\
-DescURI	NVARCHAR(256),\
-TotalSize	NVARCHAR(64),\
-ProductDescID	NVARCHAR(64),\
+PublicationID	NVARCHAR(64) DEFAULT '',\
+ColumnID	NVARCHAR(64) DEFAULT '',\
+ProductID	NVARCHAR(64) DEFAULT '',\
+URI	NVARCHAR(256) DEFAULT '',\
+DescURI	NVARCHAR(256) DEFAULT '',\
+TotalSize	NVARCHAR(64) DEFAULT '',\
+ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64),\
-PushEndTime	NVARCHAR(64),\
-PublicationType	NVARCHAR(64),\
-IsReserved	CHAR(32),\
+PushStartTime	NVARCHAR(64) DEFAULT '',\
+PushEndTime	NVARCHAR(64) DEFAULT '',\
+PublicationType	NVARCHAR(64) DEFAULT '',\
+IsReserved	CHAR(32) DEFAULT '',\
 Visible	CHAR(32) DEFAULT '1',\
-DRMFile	NVARCHAR(256),\
-SetID	NVARCHAR(64),\
-IndexInSet	NVARCHAR(32),\
+DRMFile	NVARCHAR(256) DEFAULT '',\
+SetID	NVARCHAR(64) DEFAULT '',\
+IndexInSet	NVARCHAR(32) DEFAULT '',\
 Favorite	NVARCHAR(32) DEFAULT '0',\
 Bookmark	NVARCHAR(32) DEFAULT '0',\
-IsAuthorized	NVARCHAR(64),\
-VODNum	NVARCHAR(64),\
-VODPlatform	NVARCHAR(256),\
+IsAuthorized	NVARCHAR(64) DEFAULT '',\
+VODNum	NVARCHAR(64) DEFAULT '',\
+VODPlatform	NVARCHAR(256) DEFAULT '',\
 Deleted NVARCHAR(256) DEFAULT '0',\
-FileID	NVARCHAR(64),\
-FileSize	NVARCHAR(64),\
-FileURI	NVARCHAR(256),\
-FileType	NVARCHAR(64),\
-FileFormat	NVARCHAR(32),\
-Duration	NVARCHAR(32),\
-Resolution	NVARCHAR(32),\
-BitRate	NVARCHAR(32),\
-CodeFormat	NVARCHAR(32),\
+FileID	NVARCHAR(64) DEFAULT '',\
+FileSize	NVARCHAR(64) DEFAULT '',\
+FileURI	NVARCHAR(256) DEFAULT '',\
+FileType	NVARCHAR(64) DEFAULT '',\
+FileFormat	NVARCHAR(32) DEFAULT '',\
+Duration	NVARCHAR(32) DEFAULT '',\
+Resolution	NVARCHAR(32) DEFAULT '',\
+BitRate	NVARCHAR(32) DEFAULT '',\
+CodeFormat	NVARCHAR(32) DEFAULT '',\
 PRIMARY KEY (PublicationID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoVA"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-PublicationID	NVARCHAR(64),\
-infolang	NVARCHAR(64),\
-PublicationDesc	NVARCHAR(1024),\
-ImageDefinition	NVARCHAR(32),\
-Keywords	NVARCHAR(256),\
-Area	NVARCHAR(64),\
-Language	NVARCHAR(64),\
-Episode	NVARCHAR(32),\
-AspectRatio	NVARCHAR(32),\
-AudioChannel	NVARCHAR(32),\
-Director	NVARCHAR(128),\
-Actor	NVARCHAR(256),\
-Audience	NVARCHAR(64),\
-Model	NVARCHAR(32),\
+PublicationID	NVARCHAR(64) DEFAULT '',\
+infolang	NVARCHAR(64) DEFAULT '',\
+PublicationDesc	NVARCHAR(1024) DEFAULT '',\
+ImageDefinition	NVARCHAR(32) DEFAULT '',\
+Keywords	NVARCHAR(256) DEFAULT '',\
+Area	NVARCHAR(64) DEFAULT '',\
+Language	NVARCHAR(64) DEFAULT '',\
+Episode	NVARCHAR(32) DEFAULT '',\
+AspectRatio	NVARCHAR(32) DEFAULT '',\
+AudioChannel	NVARCHAR(32) DEFAULT '',\
+Director	NVARCHAR(128) DEFAULT '',\
+Actor	NVARCHAR(256) DEFAULT '',\
+Audience	NVARCHAR(64) DEFAULT '',\
+Model	NVARCHAR(32) DEFAULT '',\
 PRIMARY KEY (PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoRM"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-PublicationID	NVARCHAR(64),\
-infolang	NVARCHAR(64),\
-PublicationDesc	NVARCHAR(1024),\
-Keywords	NVARCHAR(256),\
-Publisher	NVARCHAR(128),\
-Area	NVARCHAR(64),\
-Language	NVARCHAR(64),\
-Episode	NVARCHAR(32),\
-AspectRatio	NVARCHAR(32),\
-VolNum	NVARCHAR(64),\
-ISSN	NVARCHAR(64),\
+PublicationID	NVARCHAR(64) DEFAULT '',\
+infolang	NVARCHAR(64) DEFAULT '',\
+PublicationDesc	NVARCHAR(1024) DEFAULT '',\
+Keywords	NVARCHAR(256) DEFAULT '',\
+Publisher	NVARCHAR(128) DEFAULT '',\
+Area	NVARCHAR(64) DEFAULT '',\
+Language	NVARCHAR(64) DEFAULT '',\
+Episode	NVARCHAR(32) DEFAULT '',\
+AspectRatio	NVARCHAR(32) DEFAULT '',\
+VolNum	NVARCHAR(64) DEFAULT '',\
+ISSN	NVARCHAR(64) DEFAULT '',\
 PRIMARY KEY (PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoApp"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-PublicationID	NVARCHAR(64),\
-infolang	NVARCHAR(64),\
-PublicationDesc	NVARCHAR(1024),\
-Keywords	NVARCHAR(256),\
-Category	NVARCHAR(64),\
-Released	NVARCHAR(64),\
-AppVersion	NVARCHAR(64),\
-Language	NVARCHAR(64),\
-Developer	NVARCHAR(64),\
-Rated	NVARCHAR(64),\
-Requirements	NVARCHAR(64),\
+PublicationID	NVARCHAR(64) DEFAULT '',\
+infolang	NVARCHAR(64) DEFAULT '',\
+PublicationDesc	NVARCHAR(1024) DEFAULT '',\
+Keywords	NVARCHAR(256) DEFAULT '',\
+Category	NVARCHAR(64) DEFAULT '',\
+Released	NVARCHAR(64) DEFAULT '',\
+AppVersion	NVARCHAR(64) DEFAULT '',\
+Language	NVARCHAR(64) DEFAULT '',\
+Developer	NVARCHAR(64) DEFAULT '',\
+Rated	NVARCHAR(64) DEFAULT '',\
+Requirements	NVARCHAR(64) DEFAULT '',\
 PRIMARY KEY (PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"Message"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-MessageID	NVARCHAR(64),\
-type	NVARCHAR(64),\
-displayForm	NVARCHAR(64),\
-StartTime	CHAR(32),\
-EndTime		CHAR(32),\
-Interval	CHAR(32));", name);
+MessageID	NVARCHAR(64) DEFAULT '',\
+type	NVARCHAR(64) DEFAULT '',\
+displayForm	NVARCHAR(64) DEFAULT '',\
+StartTime	CHAR(32) DEFAULT '',\
+EndTime		CHAR(32) DEFAULT '',\
+Interval	CHAR(32) DEFAULT '');", name);
 			}
 			else if(!strcmp(name,"GuideList"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-DateValue	NVARCHAR(64),\
-GuideListID	NVARCHAR(64),\
-productID	NVARCHAR(64),\
-PublicationID	NVARCHAR(64),\
-URI	NVARCHAR(256),\
-TotalSize	NVARCHAR(64),\
-ProductDescID	NVARCHAR(64),\
+DateValue	NVARCHAR(64) DEFAULT '',\
+GuideListID	NVARCHAR(64) DEFAULT '',\
+productID	NVARCHAR(64) DEFAULT '',\
+PublicationID	NVARCHAR(64) DEFAULT '',\
+URI	NVARCHAR(256) DEFAULT '',\
+TotalSize	NVARCHAR(64) DEFAULT '',\
+ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64),\
-PushEndTime	NVARCHAR(64),\
+PushStartTime	NVARCHAR(64) DEFAULT '',\
+PushEndTime	NVARCHAR(64) DEFAULT '',\
 UserStatus	NVARCHAR(64) DEFAULT '1',\
 PRIMARY KEY (DateValue,PublicationID));", name);
 			}
@@ -651,14 +651,14 @@ PRIMARY KEY (DateValue,PublicationID));", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ReceiveType	NVARCHAR(64),\
-ProductDescID	NVARCHAR(64),\
-ID	NVARCHAR(64),\
-TotalSize	NVARCHAR(64),\
-URI	NVARCHAR(256),\
+ReceiveType	NVARCHAR(64) DEFAULT '',\
+ProductDescID	NVARCHAR(64) DEFAULT '',\
+ID	NVARCHAR(64) DEFAULT '',\
+TotalSize	NVARCHAR(64) DEFAULT '',\
+URI	NVARCHAR(256) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64),\
-PushEndTime	NVARCHAR(64),\
+PushStartTime	NVARCHAR(64) DEFAULT '',\
+PushEndTime	NVARCHAR(64) DEFAULT '',\
 PRIMARY KEY (ReceiveType,ID));", name);
 			}
 			else if(!strcmp(name,"Preview"))
@@ -666,45 +666,45 @@ PRIMARY KEY (ReceiveType,ID));", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 PreviewID	NVARCHAR(64) PRIMARY KEY,\
-ProductID	NVARCHAR(64),\
-PreviewType	NVARCHAR(64),\
-PreviewSize	NVARCHAR(64),\
-ShowTime	NVARCHAR(64),\
-PreviewURI	NVARCHAR(256),\
-PreviewFormat	NVARCHAR(64),\
-Duration	NVARCHAR(64),\
-Resolution	NVARCHAR(64),\
-BitRate	NVARCHAR(64),\
-CodeFormat	NVARCHAR(64),\
-URI	NVARCHAR(256),\
-TotalSize	NVARCHAR(64),\
-ProductDescID	NVARCHAR(64),\
+ProductID	NVARCHAR(64) DEFAULT '',\
+PreviewType	NVARCHAR(64) DEFAULT '',\
+PreviewSize	NVARCHAR(64) DEFAULT '',\
+ShowTime	NVARCHAR(64) DEFAULT '',\
+PreviewURI	NVARCHAR(256) DEFAULT '',\
+PreviewFormat	NVARCHAR(64) DEFAULT '',\
+Duration	NVARCHAR(64) DEFAULT '',\
+Resolution	NVARCHAR(64) DEFAULT '',\
+BitRate	NVARCHAR(64) DEFAULT '',\
+CodeFormat	NVARCHAR(64) DEFAULT '',\
+URI	NVARCHAR(256) DEFAULT '',\
+TotalSize	NVARCHAR(64) DEFAULT '',\
+ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64),\
-PushEndTime	NVARCHAR(64),\
-StartTime	CHAR(32),\
-EndTime	CHAR(32),\
-PlayMode	NVARCHAR(64));", name);
+PushStartTime	NVARCHAR(64) DEFAULT '',\
+PushEndTime	NVARCHAR(64) DEFAULT '',\
+StartTime	CHAR(32) DEFAULT '',\
+EndTime	CHAR(32) DEFAULT '',\
+PlayMode	NVARCHAR(64) DEFAULT '');", name);
 			}
 			else if(!strcmp(name,"RejectRecv"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ServiceID	NVARCHAR(64),\
-ID	NVARCHAR(64),\
-URI	NVARCHAR(512),\
-Type	NVARCHAR(64),\
-PushStartTime	NVARCHAR(64),\
-PushEndTime	NVARCHAR(64),\
+ServiceID	NVARCHAR(64) DEFAULT '',\
+ID	NVARCHAR(64) DEFAULT '',\
+URI	NVARCHAR(512) DEFAULT '',\
+Type	NVARCHAR(64) DEFAULT '',\
+PushStartTime	NVARCHAR(64) DEFAULT '',\
+PushEndTime	NVARCHAR(64) DEFAULT '',\
 PRIMARY KEY (ServiceID,ID));", name);
 			}
 			else if(!strcmp(name,"SProduct"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-SType	NVARCHAR(64),\
-Name	NVARCHAR(64),\
-URI	NVARCHAR(512));", name);
+SType	NVARCHAR(64) DEFAULT '',\
+Name	NVARCHAR(64) DEFAULT '',\
+URI	NVARCHAR(512) DEFAULT '');", name);
 			}
 			
 			else{
@@ -1170,10 +1170,10 @@ int localcolumn_init()
 		"9901","99","99/9901",COLUMN_SETTING,"LocalColumnIcon/Network_losefocus.png","LocalColumnIcon/Network_getfocus.png","Network_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","9901","chi","DisplayName","网络设置","");
+		"Column","9901","chi","DisplayName","基本信息","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","9901","eng","DisplayName","Network","");
+		"Column","9901","eng","DisplayName","Basic Info","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
 	 二级菜单“设置－视频设置”
@@ -1182,10 +1182,10 @@ int localcolumn_init()
 		"9902","99","99/9902",COLUMN_SETTING,"LocalColumnIcon/Video_losefocus.png","LocalColumnIcon/Video_getfocus.png","Video_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","9902","chi","DisplayName","视频设置","");
+		"Column","9902","chi","DisplayName","媒体设置","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","9902","eng","DisplayName","Video","");
+		"Column","9902","eng","DisplayName","Media","");
 	sqlite_transaction_exec(sqlite_cmd);
 	/*
 	 二级菜单“设置－音频设置”
@@ -1194,11 +1194,13 @@ int localcolumn_init()
 		"9903","99","99/9903",COLUMN_SETTING,"LocalColumnIcon/Audio_losefocus.png","LocalColumnIcon/Audio_getfocus.png","Audio_onclick.png");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","9903","chi","DisplayName","音频设置","");
+		"Column","9903","chi","DisplayName","网络设置","");
 	sqlite_transaction_exec(sqlite_cmd);
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","9903","eng","DisplayName","Audio","");
+		"Column","9903","eng","DisplayName","Network","");
 	sqlite_transaction_exec(sqlite_cmd);
+
+#if 0
 	/*
 	 二级菜单“设置－用户信息”
 	*/
@@ -1235,7 +1237,7 @@ int localcolumn_init()
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 		"Column","9906","eng","DisplayName","Help","");
 	sqlite_transaction_exec(sqlite_cmd);
-	
+#endif	
 	
 	return sqlite_transaction_end(1);
 }
@@ -1253,6 +1255,18 @@ static int global_info_init()
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 		GLB_NAME_CURLANGUAGE,CURLANGUAGE_DFT);
+	sqlite_transaction_exec(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+		GLB_NAME_DEVICEMODEL,DEVICEMODEL_DFT);
+	sqlite_transaction_exec(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+		GLB_NAME_DBDATASERVERIP,DBDATASERVERIP_DFT);
+	sqlite_transaction_exec(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+		GLB_NAME_DBDATASERVERPORT,DBDATASERVERPORT_DFT);
 	sqlite_transaction_exec(sqlite_cmd);
 	
 	return sqlite_transaction_end(1);

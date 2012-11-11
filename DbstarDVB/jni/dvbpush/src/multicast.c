@@ -27,8 +27,7 @@
 #include "mid_push.h"
 #include "sqlite.h"
 #include "softdmx.h"
-
-static char s_data_source[64];
+#include "dvbpush_api.h"
 
 #define MULTI_BUF_POINTER_MOVE(p,len) (p)=(((p)+(len))%MULTI_BUF_SIZE)
 
@@ -52,9 +51,9 @@ static pthread_t pth_softdvb_id;
 static pthread_t pth_igmp_id;
 
 
-static pthread_mutex_t mtx_rely_condition = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond_rely_condition = PTHREAD_COND_INITIALIZER;
-static int s_rely_condition = 0;
+static pthread_mutex_t mtx_net_rely_condition = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t cond_net_rely_condition = PTHREAD_COND_INITIALIZER;
+static int s_net_rely_condition = 0;
 static int s_igmp_restart = 0;
 static int s_igmp_recvbuf_init_flag = 0;
 
@@ -76,13 +75,8 @@ static int multicast_uninit()
 
 int igmp_init()
 {
-	memset(s_data_source, 0, sizeof(s_data_source));
-	if(-1==data_source_get(s_data_source, sizeof(s_data_source)-1)){
-		DEBUG("has no data source to process, exit from %s()\n", __FUNCTION__);
-		return -1;
-	}
 	multicast_init();
-	if(-1==multicast_add(s_data_source)){
+	if(-1==multicast_add()){
 		DEBUG("igmp join failed\n");
 		return -1;
 	}
@@ -151,21 +145,21 @@ static void *igmp_thread()
 	int multi_port = 3000;
 
 MULTITASK_START:
-	pthread_mutex_lock(&mtx_rely_condition);
-	pthread_cond_wait(&cond_rely_condition,&mtx_rely_condition); //wait
-	pthread_mutex_unlock(&mtx_rely_condition);
+	pthread_mutex_lock(&mtx_net_rely_condition);
+	pthread_cond_wait(&cond_net_rely_condition,&mtx_net_rely_condition); //wait
+	pthread_mutex_unlock(&mtx_net_rely_condition);
 	
 	/*
 	 只要具备网络条件即可启动组播业务，不需要等待硬盘。因为升级不需要硬盘，有flash即可。
 	*/
-	if(RELY_CONDITION_NET & s_rely_condition)
+	if(RELY_CONDITION_NET & s_net_rely_condition)
 		DEBUG("network condition is ready\n");
-	else if(s_rely_condition&RELY_CONDITION_EXIT){
+	else if(s_net_rely_condition&RELY_CONDITION_EXIT){
 		DEBUG("exit from here by external action\n");
 		return NULL;
 	}
 	else{
-		DEBUG("net rely condition is not ready, %d\n", s_rely_condition);
+		DEBUG("net rely condition is not ready, %d\n", s_net_rely_condition);
 		goto MULTITASK_START;
 	}
 	
@@ -173,8 +167,8 @@ MULTITASK_START:
 	DEBUG("igmp thread will goto its main loop\n");
 	
 	memset(multi_ip, 0, sizeof(multi_ip));
-	if(-1==igmp_simple_check(s_data_source, multi_ip, &multi_port)){
-		DEBUG("check igmp addr: %s invalid\n", s_data_source);
+	if(-1==igmp_simple_check(multi_addr_get(), multi_ip, &multi_port)){
+		DEBUG("check multi addr: %s invalid\n", multi_addr_get());
 		goto MULTITASK_START;
 	}
 	DEBUG("multicast ip: %s, port: %d\n", multi_ip, multi_port);
@@ -196,8 +190,10 @@ MULTITASK_START:
 					DEBUG("ip(%s) of eth0 is invalid\n", if_ip);
 #else
 				DEBUG("get ip: %s, status: %s\n", if_ip, if_status);
-				if(0==strcmp(if_status, "UP"))
+				if(0==strcmp(if_status, "UP")){
+					pthread_mutex_unlock(&mtx_getip);
 					break;
+				}
 				else
 					DEBUG("eth0 is DOWN\n");
 #endif
@@ -361,17 +357,35 @@ MULTITASK_START:
 	return NULL;
 }
 
-void net_rely_condition_set(int rely_cond)
+void net_rely_condition_set(int cmd)
 {
-	s_igmp_restart = 1;
-	
-	pthread_mutex_lock(&mtx_rely_condition);
-	int tmp_cond = s_rely_condition;
-	if(rely_cond>=0 || (rely_cond<0 && s_rely_condition>0))
-		s_rely_condition += rely_cond;
-	DEBUG("net origine %d, set %d, so s_rely_condition is %d\n", tmp_cond, rely_cond, s_rely_condition);
-	pthread_cond_signal(&cond_rely_condition);
-	pthread_mutex_unlock(&mtx_rely_condition);
+/*
+ OTA升级不使用硬盘，只使用网络。所以硬盘插拔不影响组播接收
+*/
+	if(CMD_NETWORK_DISCONNECT==cmd || CMD_NETWORK_CONNECT==cmd){
+		pthread_mutex_lock(&mtx_net_rely_condition);
+		int tmp_cond = s_net_rely_condition;
+		if(CMD_NETWORK_DISCONNECT==cmd){
+			s_igmp_restart = 1;
+			s_net_rely_condition = s_net_rely_condition & (~RELY_CONDITION_NET);
+		}
+		else if(CMD_NETWORK_CONNECT==cmd){
+			s_net_rely_condition = s_net_rely_condition | RELY_CONDITION_NET;
+		}
+		else{
+			DEBUG("what a fucking check you do, such cmd: 0x%x\n", cmd);
+			pthread_mutex_unlock(&mtx_net_rely_condition);
+		}
+		DEBUG("net origine %d, cmd 0x%x, so s_net_rely_condition is %d\n", tmp_cond, cmd, s_net_rely_condition);
+		pthread_cond_signal(&cond_net_rely_condition);
+		pthread_mutex_unlock(&mtx_net_rely_condition);
+		
+		return;
+	}
+	else{
+		DEBUG("cmd 0x%x is ignored for igmp\n", cmd);
+		return;
+	}
 }
 
 void *softdvb_thread()
@@ -422,15 +436,8 @@ void *softdvb_thread()
 /*
 此函数目前只能调用一次。
 */
-int multicast_add(const char *multi_addr)
+int multicast_add()
 {
-	if(NULL==multi_addr || 0!=strncasecmp(multi_addr, "igmp://", strlen("igmp://"))){
-		DEBUG("this multicast addr is invalid: %s\n", multi_addr);
-		return -1;
-	}
-	else
-		DEBUG("will join: %s", multi_addr);
-	
 	int ret = -1;
 	// 创建接收线程
 	
@@ -505,10 +512,10 @@ int softdvb_init()
 	
 	chanFilterInit();
 	
-	// prog/file
-	unsigned short root_pid = root_channel_get();
-	int filter1 = alloc_filter(root_pid, 0);
-	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
+//	// prog/file
+//	unsigned short root_pid = root_channel_get();
+//	int filter1 = alloc_filter(root_pid, 0);
+//	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
 	
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0xf0;
@@ -516,11 +523,11 @@ int softdvb_init()
 	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
 	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
-	memset(&param,0,sizeof(param));
-	param.filter[0] = 0x1;
-	param.mask[0] = 0xff;
-	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
-	DEBUG("set ca filter1, pid=0x1, fid=%d\n", ca_dsc_fid);
+//	memset(&param,0,sizeof(param));
+//	param.filter[0] = 0x1;
+//	param.mask[0] = 0xff;
+//	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
+//	DEBUG("set ca filter1, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
 #ifdef PUSH_LOCAL_TEST
 	// prog/video

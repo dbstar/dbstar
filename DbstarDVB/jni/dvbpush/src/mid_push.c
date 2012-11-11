@@ -307,14 +307,27 @@ void *push_decoder_thread()
 	return NULL;
 }
 
-void push_rely_condition_set(int rely_cond)
+void push_rely_condition_set(int cmd)
 {
-	DEBUG("set %d\n", rely_cond);
 	pthread_mutex_lock(&mtx_push_rely_condition);
 	int tmp_cond = s_push_rely_condition;
-	if(rely_cond>=0 || (rely_cond<0 && s_push_rely_condition>0))
-		s_push_rely_condition += rely_cond;
-	DEBUG("push origine %d, set %d, so s_rely_condition is %d\n", tmp_cond, rely_cond, s_push_rely_condition);
+	if(CMD_NETWORK_DISCONNECT==cmd){
+		s_push_rely_condition = s_push_rely_condition & (~RELY_CONDITION_NET);
+	}
+	else if(CMD_NETWORK_CONNECT==cmd){
+		s_push_rely_condition = s_push_rely_condition | RELY_CONDITION_NET;
+	}
+	else if(CMD_DISK_UNMOUNT==cmd){
+		s_push_rely_condition = s_push_rely_condition & (~RELY_CONDITION_HD);
+	}
+	else if(CMD_DISK_MOUNT==cmd){
+		s_push_rely_condition = s_push_rely_condition | RELY_CONDITION_HD;
+	}
+	else{
+		DEBUG("this cmd 0x%x is ignored\n", cmd);
+		pthread_mutex_unlock(&mtx_push_rely_condition);
+	}
+	DEBUG("push origine %d, cmd 0x%x, so s_push_rely_condition is %d\n", tmp_cond, cmd, s_push_rely_condition);
 	pthread_cond_signal(&cond_push_rely_condition);
 	pthread_mutex_unlock(&mtx_push_rely_condition);
 }
@@ -546,11 +559,16 @@ void callback(const char *path, long long size, int flag)
 				
 			pthread_mutex_unlock(&mtx_xml);
 		}
+		else if(COLUMN_XML==flag && (0==check_tail(path, ".png", 0) || 0==check_tail(path, ".jpg", 0))){
+			char cp_cmd[512];
+			snprintf(cp_cmd, sizeof(cp_cmd), "cp %s/%s %s", push_dir_get(),path,COLUMN_RES);
+			system(cp_cmd);
+		}
 		else
 			DEBUG("this is not a xml\n");
 	}
 	else
-		DEBUG("this file is ignore\n");
+		DEBUG("this file(%d) is ignore\n", flag);
 }
 
 /*
@@ -718,11 +736,11 @@ static int push_decoder_buf_init()
 static int push_decoder_buf_uninit()
 {
 	if(g_recvBuffer){
-		DEBUG("free push decoder buf\n");
-		char *tmp_recvbuf = g_recvBuffer;
+		DataBuffer *tmp_recvbuf = g_recvBuffer;
 		g_recvBuffer = NULL;
 		usleep(300);
 		free(tmp_recvbuf);
+		DEBUG("free push decoder buf: %p\n", tmp_recvbuf);
 		tmp_recvbuf = NULL;
 	}
 	return 0;
@@ -836,7 +854,7 @@ static int mid_push_regist(char *id, char *content_uri, long long content_len)
 		
 			int ret_sqlexec = sqlite_read(sqlite_cmd, s_prgs[i].caption, sqlite_cb);
 			if(ret_sqlexec<=0){
-				DEBUG("read no Name from db, filled with id\n");
+				DEBUG("read no Name from db, filled with id: %s\n", s_prgs[i].id);
 				strncpy(s_prgs[i].caption, s_prgs[i].id, sizeof(s_prgs[i].caption)-1);
 			}
 			

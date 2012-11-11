@@ -231,31 +231,15 @@ int check_tail(const char *str_dad, char *str_tail, int case_cmp)
 		return -1;
 	}
 	
-	
-	char *p_tail = malloc(space_size);
-	if(p_tail){
-		snprintf(p_tail, space_size, "%s", str_tail);
-	}
-	else{
-		DEBUG("can not malloc for %d Bs\n", space_size);
-		free(p_dad);
-		return -1;
-	}
-	
-	//DEBUG("str_dad: %s, p_dad:%s, p_tail:%s\n", str_dad, p_dad, p_tail);
 	int ret = 1;
 	if(0==case_cmp)
-		ret = strncasecmp(p_dad, p_tail, space_size-1);
+		ret = strncasecmp(p_dad, str_tail, space_size-1);
 	else
-		ret = strcmp(p_dad, p_tail);
+		ret = strcmp(p_dad, str_tail);
 	
 	if(p_dad){
 		free(p_dad);
 		p_dad = NULL;
-	}
-	if(p_tail){
-		free(p_tail);
-		p_tail = NULL;
 	}
 	
 	if(0==ret)
@@ -344,10 +328,10 @@ int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port)
 		return -1;
 	}
 	
-	char *p_multi_addr = igmp_addr+strlen("igmp://");
+	const char *p_multi_addr = igmp_addr+strlen("igmp://");
 	char *p_colon = strchr(p_multi_addr, ':');
 	char multi_ip[16];
-	if(p_colon || abs(p_colon-p_multi_addr)>15){
+	if(p_colon){
 		memset(multi_ip, 0, sizeof(multi_ip));
 		strncpy(multi_ip, p_multi_addr, abs(p_colon-p_multi_addr));
 
@@ -365,9 +349,14 @@ int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port)
 			strcpy(igmp_ip, multi_ip);
 			p_colon ++;
 			*igmp_port = strtol(p_colon, NULL, 0);
-			
-			DEBUG("valid multi addr: %s\n", igmp_addr);
-			return 0;
+			if(*igmp_port>0){
+				DEBUG("valid multi addr: %s\n", igmp_addr);
+				return 0;
+			}
+			else{
+				DEBUG("invalid multi port: %d\n", *igmp_port);
+				return -1;
+			}
 		}
 		else{
 			DEBUG("invalid multi ip: %s\n", multi_ip);

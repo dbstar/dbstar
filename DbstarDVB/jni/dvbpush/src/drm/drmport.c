@@ -12,6 +12,7 @@
 #include "linux/amsmc.h"
 #include "prodrm20.h"
 #include "softdmx.h"
+#include "common.h"
 
 #define DRMVOD_LOG_TAG "DRMLIB"
 #if 1
@@ -338,6 +339,8 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 		param.filter[i] = pbyFilter[i];
 		param.mask[i] = pbyMask[i];
 	}
+	SIMPLE_DEBUG("filter[8]: %x,%x,%x,%x,%x,%x,%x,%x\n",param.filter[0],param.filter[1],param.filter[2],param.filter[3],param.filter[4],param.filter[5],param.filter[6],param.filter[7]);
+	SIMPLE_DEBUG("mask  [8]: %x,%x,%x,%x,%x,%x,%x,%x\n\n",param.mask[0],param.mask[1],param.mask[2],param.mask[3],param.mask[4],param.mask[5],param.mask[6],param.mask[7]);
 
 	fid = TC_alloc_filter(wPid, &param, (dataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
 	if (fid >= MAX_CHAN_FILTER) {

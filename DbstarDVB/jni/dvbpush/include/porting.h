@@ -8,7 +8,7 @@ int special_productid_check(char *productid);
 int root_channel_get(void);
 int root_push_file_get(char *filename, unsigned int len);
 int root_push_file_size_get(void);
-int data_source_get(char *data_source, unsigned int len);
+char *multi_addr_get(void);
 int database_uri_get(char *database_uri, unsigned int size);
 int parse_xml_get(char *xml_uri, unsigned int size);
 int prog_data_pid_get(void);
@@ -19,5 +19,6 @@ int localcolumn_res_get(char *localcolumn_res, unsigned int uri_size);
 void upgrade_info_init();
 int drm_info_init();
 char *language_get();
+int software_check(void);
 
 #endif

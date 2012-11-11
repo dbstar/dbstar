@@ -622,12 +622,17 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	datap += 4;
 	//tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
 	//DEBUG("loader info software version = [%x][%x]\n",tmp32,g_loaderInfo.software_version);
-	DEBUG("loader info software version [%u[%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
-	if ((datap[0] == g_loaderInfo.software_version[0])||(datap[1] == g_loaderInfo.software_version[1])
-	||(datap[2] == g_loaderInfo.software_version[2])||(datap[3] == g_loaderInfo.software_version[3]))
+	DEBUG("loader info software version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+	if ((datap[0] == g_loaderInfo.software_version[0])&&(datap[1] == g_loaderInfo.software_version[1])
+	&&(datap[2] == g_loaderInfo.software_version[2])&&(datap[3] == g_loaderInfo.software_version[3]))
 	{
-		SIMPLE_DEBUG("software version check failed\n");
-		return;
+		if(-1==software_check()){
+			SIMPLE_DEBUG("software version is equal, but ignore it and continue to do upgrade\n");
+		}
+		else{
+			SIMPLE_DEBUG("software version is equal, do no upgrade\n");
+			return;
+		}
 	}
 	g_loaderInfo.software_version[0] = datap[0];
 	g_loaderInfo.software_version[1] = datap[1];
@@ -950,73 +955,74 @@ retry:
 			sec_len = chan->sec_len;
 			if(*chanbuf == 0x3e)
 			{
-			send_mpe_sec_to_push_fifo(chanbuf, sec_len);
-			
-			//DEBUG("payload [%d]\n",total);
+				send_mpe_sec_to_push_fifo(chanbuf, sec_len);
+				
+				//DEBUG("payload [%d]\n",total);
 			}
 			else if(*chanbuf == 0xf1){
-			//DEBUG("chan->pid: 0x%x\n", chan->pid);
-			loader_section_handle(0, chanbuf, sec_len, NULL);
+				//DEBUG("chan->pid: 0x%x\n", chan->pid);
+				loader_section_handle(0, chanbuf, sec_len, NULL);
 			}
 			else
 			{
-			//DEBUG("===== chan->pid: 0x%x",chan->pid);
-			int j = 0;
-			for(j = 0; j < max_filter_num; j++)
-			{
-				unsigned char match = 1;
-				unsigned char neq = 0;
-				Channel_t *f = &chanFilter[j];
-				int i = 0;
-				
-				if(!f->used||(f->pid != chan->pid))
-				continue;
-				
-				for(i=0; i<DMX_FILTER_SIZE+2; i++)
+				//SIMPLE_DEBUG("===== chan->pid: 0x%x", chan->pid);
+				int j = 0;
+				for(j = 0; j < max_filter_num; j++)
 				{
-					unsigned char xor = chanbuf[i]^f->value[i];
+					unsigned char match = 1;
+					unsigned char neq = 0;
+					Channel_t *f = &chanFilter[j];
+					int i = 0;
 					
-					if(xor&f->maskandmode[i])
+					if(!f->used||(f->pid != chan->pid)){
+						continue;
+					}
+					
+					for(i=0; i<DMX_FILTER_SIZE+2; i++)
 					{
+						unsigned char xor = chanbuf[i]^f->value[i];
+						
+						if(xor&f->maskandmode[i])
+						{
+							match = 0;
+							break;
+						}
+						
+						if(xor&f->maskandnotmode[i])
+							neq = 1;
+					}
+						
+					if(match && f->neq && !neq)
 						match = 0;
+					if(!match)
+						continue;
+					else
+					{
+						if (f->hdle)
+						{
+							//SIMPLE_DEBUG("call fid=%d, chan->pid=0x%x\n", f->fid,chan->pid);
+							f->hdle(f->fid, chanbuf, sec_len, f->userdata);
+						}
 						break;
 					}
-					
-					if(xor&f->maskandnotmode[i])
-						neq = 1;
 				}
-					
-				if(match && f->neq && !neq)
-					match = 0;
-				if(!match)
-					continue;
-				else
+				left = chan->bytes - sec_len - chan->offset;
+				if(left>0)
 				{
-					if (f->hdle)
+					//DEBUG("llllllllllleft some data!!!!!!!!!!!!! [%d]\n",left);
+					if(chanbuf[sec_len]==0xFF)
 					{
-						//DEBUG("call %p, fid=%d\n", f->hdle,f->fid);
-						f->hdle(f->fid, chanbuf, sec_len, f->userdata);
+						chan->stage = CHAN_STAGE_END;
+						chan->bytes = 0;
+						return 0;
 					}
-					break;
+					memmove(chan->buf, chanbuf+sec_len, left);
 				}
-			}
-			left = chan->bytes - sec_len - chan->offset;
-			if(left>0)
-			{
-				//DEBUG("llllllllllleft some data!!!!!!!!!!!!! [%d]\n",left);
-				if(chanbuf[sec_len]==0xFF)
-				{
-					chan->stage = CHAN_STAGE_END;
-					chan->bytes = 0;
-					return 0;
-				}
-				memmove(chan->buf, chanbuf+sec_len, left);
-			}
-			else
-				left = 0;
-				chan->bytes = left;
-				if(left)
-					goto retry;
+				else
+					left = 0;
+					chan->bytes = left;
+					if(left)
+						goto retry;
 			}
 		}
 	}
