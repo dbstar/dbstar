@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Window;
 
 import com.dbstar.DbstarDVB.R;
 
@@ -23,8 +22,6 @@ public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 		mState = new NormalState(this, this);
 		mState.enter(mMediaData);
@@ -77,7 +74,7 @@ public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 		mediaData.Type = intent.getStringExtra("type");
 
 		Log.d("DbVideoInfoDlg", "PublicationId = " + mediaData.PublicationId);
-		Log.d("DbVideoInfoDlg", "PublicationId = " + mediaData.Description);
+		Log.d("DbVideoInfoDlg", "Description = " + mediaData.Description);
 		return mediaData;
 	}
 }

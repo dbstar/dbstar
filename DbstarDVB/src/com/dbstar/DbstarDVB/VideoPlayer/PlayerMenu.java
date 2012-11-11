@@ -463,6 +463,10 @@ public class PlayerMenu extends Activity {
 	}
 
 	void setOSDOnOff(boolean on) {
+		if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
+			on = true;
+		}
+
 		if (confirm_dialog != null && confirm_dialog.isShowing())
 			on = true;
 		if (isSubtitleOn())
@@ -4409,11 +4413,8 @@ public class PlayerMenu extends Activity {
 		Dialog dialog;
 		switch (id) {
 		case MSG_DIALOG_POPUP:
-//			if (mVideoInfoDlg == null) {
-//				mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
-//			}
-//			dialog = mVideoInfoDlg;
-			dialog = new DbVideoInfoDlg(this, getIntent());
+			mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
+			dialog = mVideoInfoDlg;
 			break;
 		default:
 			dialog = null;

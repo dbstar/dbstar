@@ -79,7 +79,7 @@
     <string name="delete_button_text">删除本片</string>
     <string name="favorite_view_notes">你已收藏本片，以后可直接在个人中心中查找</string>
     <string name="button_text_iknow">我知道了</string>
-    <string name="delete_view_notes">删除后你将无法在观看此片，是否从磁盘中删除？</string>
+    <string name="delete_view_notes">删除后你将无法再观看此片，是否从磁盘中删除？</string>
     <string name="button_text_notdelete">不删除</string>
     <string name="button_text_delete">删除</string>
     

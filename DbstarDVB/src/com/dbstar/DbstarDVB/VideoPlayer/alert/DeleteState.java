@@ -48,8 +48,8 @@ public class DeleteState extends ViewState {
 	void deleteButtonClicked() {
 		closePopupView();
 
-		mActionHandler.sendCommnd(ActionHandler.COMMAND_EXIT_PLAYER);
 		mActionHandler.sendCommnd(ActionHandler.COMMAND_DELETE);
+		mActionHandler.sendCommnd(ActionHandler.COMMAND_EXIT_PLAYER);
 	}
 
 	void notDeleteButtonClicked() {

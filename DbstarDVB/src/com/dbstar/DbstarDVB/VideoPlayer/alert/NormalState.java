@@ -7,6 +7,7 @@ import com.dbstar.DbstarDVB.R;
 
 import android.app.Dialog;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -43,7 +44,9 @@ public class NormalState extends ViewState {
 
 	class TimeoutTask extends TimerTask {
 		public void run() {
-			timeout();
+			Log.d(TAG, " --===========================  timeout mUIHandler = "
+					+ mUIHandler);
+			mUIHandler.post(mUpdateTask);
 		}
 	}
 
@@ -51,6 +54,8 @@ public class NormalState extends ViewState {
 
 		@Override
 		public void run() {
+			Log.d(TAG, " ++++++++++ timeout = " + mTimeoutInMills + " s="
+					+ mTimeoutInSeconds);
 			if (mTimeoutInMills == 0) {
 				closePopupView();
 				return;
@@ -63,23 +68,18 @@ public class NormalState extends ViewState {
 
 	}
 
-	void timeout() {
-		mUIHandler.post(mUpdateTask);
-	}
-
 	void resetTimer() {
 		Log.d(TAG, "+++reset timer++");
-		
-		if (mTask != null)
+		if (mTask != null) {
 			mTask.cancel();
-
-		mTask = new TimeoutTask();
+		}
 
 		mTimeoutInMills = TIMEOUT_IN_MILLIONSECONDS;
 		mTimeoutInSeconds = TIMEOUT_IN_SECONDS;
 
 		updateTimeoutView();
 
+		mTask = new TimeoutTask();
 		mTimer.schedule(mTask, UpdatePeriodInMills, UpdatePeriodInMills);
 	}
 
@@ -99,9 +99,12 @@ public class NormalState extends ViewState {
 
 	public void enter(Object args) {
 		mMediaData = (MediaData) args;
+
 		mDialog.setContentView(R.layout.movie_info_view);
+
 		initializeView(mDialog);
 		mActionHandler = new ActionHandler(mDialog.getContext(), mMediaData);
+
 	}
 
 	protected void start() {
@@ -124,6 +127,7 @@ public class NormalState extends ViewState {
 	}
 
 	public void initializeView(Dialog dlg) {
+
 		mTimeoutView = (TextView) dlg.findViewById(R.id.timeout_view);
 
 		mMovieTitle = (TextView) dlg.findViewById(R.id.title_view);
@@ -142,7 +146,7 @@ public class NormalState extends ViewState {
 		mReplayButton.setOnClickListener(mClickListener);
 		mAddFavouriteButton.setOnClickListener(mClickListener);
 		mDeleteButton.setOnClickListener(mClickListener);
-		
+
 		mCloseButton.requestFocus();
 	}
 
@@ -174,6 +178,7 @@ public class NormalState extends ViewState {
 	}
 
 	void closePopupView() {
+		Log.d(TAG, "+++++++++ close popus dialog");
 		mDialog.dismiss();
 	}
 

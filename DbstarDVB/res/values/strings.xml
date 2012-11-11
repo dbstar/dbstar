@@ -89,10 +89,24 @@
 	<string name="ext_sdcard_device_str">External TF Card</string>
 	<string name="sata_device_str">SATA</string>
 	<string name="usb_device_str">USB</string>
-	
-	<string name="movie_info_view_notes">*press menu key will show this window again</string>
-    <string name="close_button_text">cloase</string>
-    <string name="replay_button_text">replay</string>
-    <string name="add_favourite_button_text">add</string>
-    <string name="delete_button_text">delete</string>
+
+	<string name="movie_info_view_notes">*信息键可以再次唤出本窗口</string>
+    <string name="close_button_text">关闭本窗</string>
+    <string name="replay_button_text">从头播放</string>
+    <string name="add_favourite_button_text">收藏本片</string>
+    <string name="delete_button_text">删除本片</string>
+    <string name="favorite_view_notes">你已收藏本片，以后可直接在个人中心中查找</string>
+    <string name="button_text_iknow">我知道了</string>
+    <string name="delete_view_notes">删除后你将无法再观看此片，是否从磁盘中删除？</string>
+    <string name="button_text_notdelete">不删除</string>
+    <string name="button_text_delete">删除</string>
+    
+    <string name="property_title">名字</string>
+    <string name="property_director">导演</string>
+    <string name="property_actors">主演</string>
+    <string name="property_type">类型</string>
+    <string name="property_year">年代</string>
+    <string name="property_region">制片国家/地区</string>
+    <string name="property_rate">推荐指数</string>
+    <string name="property_episodes">集数</string>
 </resources>
