@@ -109,6 +109,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 	public void onServiceStart() {
 		super.onServiceStart();
+
 		mService.getPublications(this, mColumnId);
 	}
 
@@ -196,17 +197,18 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 				// update views
 				updateViews(mPageDatas.get(mPageNumber));
-				
+
 				Log.d(TAG, "update mPageCount " + mPageCount);
-		
+
 				mRequestPageIndex = 0;
 				requestPageData(mRequestPageIndex);
 			}
 		}
 	}
-	
+
 	int mRequestPageIndex = -1;
 	int mRequestCount = 0;
+
 	void requestPageData(int pageNumber) {
 		Movie[] movies = mPageDatas.get(pageNumber);
 		mRequestCount = movies.length;
@@ -214,7 +216,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			mService.getDetailsData(this, pageNumber, j, movies[j].Content);
 		}
 	}
-	
+
 	public void updateData(int type, int param1, int param2, Object data) {
 
 		if (type == GDDataProviderService.REQUESTTYPE_GETDETAILSDATA) {
@@ -224,7 +226,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 					+ index);
 
 			mService.getImage(this, pageNumber, index, (ContentData) data);
-			
+
 			mRequestCount--;
 			if (mRequestCount == 0) {
 				mRequestPageIndex++;
@@ -278,7 +280,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			} else {
 				movies = null;
 			}
-			
+
 			updateViews(movies);
 		}
 	}
@@ -312,7 +314,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			mPageDatas.set(pageNumber, newMovies);
 		}
 	}
-	
+
 	private void updateViews(Movie[] movies) {
 		mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
 		mScrollBar.setRange(mPageCount);
@@ -443,8 +445,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 						mSmallThumbnailView.setSelection(currentItem - 1);
 						ret = true;
 					} else if (currentItem == 0) {
-//						mSmallThumbnailView
-//								.setSelection(mAdapter.getCount() - 1);
+						// mSmallThumbnailView
+						// .setSelection(mAdapter.getCount() - 1);
 						loadPrevPage();
 						ret = true;
 					} else {
@@ -462,7 +464,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 							ret = true;
 						}
 					} else if (currentItem == (mAdapter.getCount() - 1)) {
-//						mSmallThumbnailView.setSelection(0);
+						// mSmallThumbnailView.setSelection(0);
 						loadNextPage();
 						ret = true;
 					} else {

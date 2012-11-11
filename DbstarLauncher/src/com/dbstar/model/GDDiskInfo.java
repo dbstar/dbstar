@@ -14,8 +14,10 @@ public class GDDiskInfo {
 	static public class DiskInfo {
 		public long RawDiskSize;
 		public long RawDiskSpace;
+		public long RawDiskUsed;
 
 		public String DiskSize;
+		public String DiskUsed;
 		public String DiskSpace;
 	}
 
@@ -39,6 +41,9 @@ public class GDDiskInfo {
 
 		long diskSpace = blockSize * availCount;
 		info.RawDiskSpace = diskSpace;
+		
+		long diskUsed = diskSize - diskSpace;
+		info.RawDiskUsed = diskUsed;
 
 		if (convert) {
 
@@ -50,6 +55,12 @@ public class GDDiskInfo {
 					.formatSize(diskSpace);
 			info.DiskSpace = StringUtil.formatFloatValue(diskSpacePair.Value)
 					+ StringUtil.getUnitString(diskSpacePair.Unit);
+			
+			StringUtil.SizePair diskUsedPair = StringUtil
+					.formatSize(diskUsed);
+			
+			info.DiskUsed = StringUtil.formatFloatValue(diskUsedPair.Value)
+					+ StringUtil.getUnitString(diskUsedPair.Unit);
 		}
 
 		return info;

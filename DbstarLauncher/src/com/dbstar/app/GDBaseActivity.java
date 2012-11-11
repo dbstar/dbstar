@@ -118,16 +118,16 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	@Override
 	protected void onStop() {
 		super.onStop();
-
-		if (mService != null && mBound) {
-			mService.unRegisterPageObserver(this);
-		}
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 
+		if (mBound) {
+			mService.unRegisterPageObserver(this);
+		}
+		
 		if (mBound) {
 			unbindService(mConnection);
 			mBound = false;
@@ -177,6 +177,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected void onServiceStop() {
 		Log.d(TAG, "onServiceStop");
+		
+		mService.unRegisterPageObserver(this);
 	}
 
 	public void updateData(int type, int param1, int param2, Object data) {

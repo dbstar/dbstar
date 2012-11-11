@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import com.dbstar.app.settings.GDSettings;
 import com.dbstar.model.GDDVBDataContract.*;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
 import com.dbstar.model.GDDVBDataProvider.PublicationsSetQuery;
@@ -582,24 +583,8 @@ public class GDDataModel {
 		return queryGlobalProperty(GDDVBDataContract.PropertyLanguage);
 	}
 
-	public String getOperatorInfo() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyOperatorInfo);
-	}
-
-	public String getCardId() {
-		return queryGlobalProperty(GDDVBDataContract.PropertySmartCardID);
-	}
-
-	public String getProducts() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyOrderProduct);
-	}
-
 	public String getPushSource() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyPushSource);
-	}
-
-	public String getHelpInfo() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyHelpInfo);
 	}
 
 	public boolean setPushDir(String pushDir) {
@@ -611,7 +596,23 @@ public class GDDataModel {
 				source);
 	}
 
-	private String queryGlobalProperty(String property) {
+	public String getDeviceSearialNumber() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyDeviceSearialNumber);
+	}
+
+	public String getHardwareType() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyHardwareType);
+	}
+
+	public String getSoftwareVersion() {
+		return queryGlobalProperty(GDDVBDataContract.PropertySoftwareVersion);
+	}
+
+	public String getLoaderVersion() {
+		return queryGlobalProperty(GDDVBDataContract.PropertyLoaderVersion);
+	}
+
+	public String queryGlobalProperty(String property) {
 		String value = null;
 		String selection = GDDVBDataContract.Global.NAME + "=?";
 		String[] selectionArgs = { property };
@@ -633,7 +634,7 @@ public class GDDataModel {
 		return value;
 	}
 
-	private boolean updateGlobalProperty(String property, String value) {
+	public boolean updateGlobalProperty(String property, String value) {
 		String selection = GDDVBDataContract.Global.NAME + "=?";
 		String[] selectionArgs = { property };
 		Cursor cursor = mDVBDataProvider.query(
@@ -775,13 +776,9 @@ public class GDDataModel {
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				// Log.d(TAG, "query cursor size = " + cursor.getCount());
-
-				do {
-					Id = cursor.getInt(GDSmartHomeProvider.GlobalQuery.ID);
-					oldValue = cursor
-							.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
-				} while (cursor.moveToNext());
+				Id = 0;
+				oldValue = cursor
+						.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
 			}
 		}
 
@@ -804,12 +801,10 @@ public class GDDataModel {
 		} else {
 			if (!oldValue.equals(value)) {
 				// update
-				selection = GDSmartHomeContract.Global.ID + "=?";
-				selectionArgs = new String[] { String.valueOf(Id) };
+				selection = GDSmartHomeContract.Global.NAME + "=?";
+				selectionArgs = new String[] { key };
 
 				ContentValues values = new ContentValues();
-				values.put(GDSmartHomeContract.Global.ID, Id);
-				values.put(GDSmartHomeContract.Global.NAME, key);
 				values.put(GDSmartHomeContract.Global.VALUE, value);
 				int count = mSmartHomeProvider.update(Global.CONTENT_URI,
 						values, selection, selectionArgs);
@@ -824,10 +819,10 @@ public class GDDataModel {
 	public String getSettingValue(String key) {
 		Cursor cursor = null;
 		String value = "";
-		String selection = Global.NAME + "=?";
+		String selection = GDSmartHomeContract.Global.NAME + "=?";
 		String[] selectionArgs = new String[] { key };
 
-		cursor = mSmartHomeProvider.query(Global.CONTENT_URI,
+		cursor = mSmartHomeProvider.query(GDSmartHomeContract.Global.CONTENT_URI,
 				GDSmartHomeProvider.GlobalQuery.COLUMNS, selection,
 				selectionArgs, null);
 
@@ -835,10 +830,7 @@ public class GDDataModel {
 			if (cursor.moveToFirst()) {
 				Log.d(TAG, "query cursor size = " + cursor.getCount());
 
-				do {
-					value = cursor
-							.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
-				} while (cursor.moveToNext());
+				value = cursor.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
 			}
 		}
 

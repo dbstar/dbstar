@@ -23,8 +23,6 @@ public class GDSmartHomeProvider extends GDDBProvider {
 			+ Global.NAME
 			+ " NVARCHAR(20), " + Global.VALUE + " NVARCHAR(20));";
 
-	private static final UriMatcher sURIMatcher = new UriMatcher(
-			UriMatcher.NO_MATCH);
 	static {
 		sURIMatcher.addURI(GDSmartHomeContract.AUTHORITY, "global", GLOBAL);
 	}

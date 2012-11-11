@@ -33,17 +33,18 @@ public class GDDVBDataContract {
 
 	public static final String ValuePublicationName = "PublicationName";
 	public static final String ValueColumnName = "ColumnName";
-	
+
 	// Global property name
 	public static final String PropertyPreviewPath = "PreviewPath";
 	public static final String PropertyColumnResPath = "ColumnRes";
 	public static final String PropertyPushDir = "PushDir";
 	public static final String PropertyLanguage = "CurLanguage";
-	public static final String PropertyOperatorInfo = "OperationBusiness";
-	public static final String PropertySmartCardID = "SmartCardID";
-	public static final String PropertyOrderProduct = "OrderProduct";
-	public static final String PropertyPushSource = "PushSource"; //igmp://239.0.0.1:5000
-	public static final String PropertyHelpInfo = "HelpInfo";
+	public static final String PropertyPushSource = "PushSource"; // igmp://239.0.0.1:5000
+
+	public static final String PropertyDeviceSearialNumber = "ProductSN";
+	public static final String PropertyHardwareType = "DeviceModel";
+	public static final String PropertySoftwareVersion = "SoftwareVersion";
+	public static final String PropertyLoaderVersion = "LoaderVersion";
 
 	public static final class Global implements BaseColumns {
 
@@ -156,7 +157,7 @@ public class GDDVBDataContract {
 		public static final String COLUMNID = "ColumnID";
 		public static final String PRODUCTID = "ProductID";
 		public static final String URI = "URI";
-		public static final String DESCURI="DescURI";
+		public static final String DESCURI = "DescURI";
 		public static final String TOTALSIZE = "TotalSize";
 		public static final String PRODUCTDESCID = "ProductDescID";
 		public static final String RECEIVESTATUS = "ReceiveStatus";
@@ -173,16 +174,16 @@ public class GDDVBDataContract {
 		public static final String VODNUM = "VODNum";
 		public static final String VODPLATFORM = "VODPlatform";
 		public static final String DELETED = "Deleted";
-		
-		public static final String FILEID="FileID";
-		public static final String FILESIZE="FileSize";
-		public static final String FILEURI="FileURI";
-		public static final String FILETYPE="FileType";
-		public static final String FILEFORMAT="FileFormat";
-		public static final String DURATION="Duration";
-		public static final String RESOLUTION="Resolution";
-		public static final String BITRATE="Bitrate";
-		public static final String CODEFORMAT="CodeFormat";
+
+		public static final String FILEID = "FileID";
+		public static final String FILESIZE = "FileSize";
+		public static final String FILEURI = "FileURI";
+		public static final String FILETYPE = "FileType";
+		public static final String FILEFORMAT = "FileFormat";
+		public static final String DURATION = "Duration";
+		public static final String RESOLUTION = "Resolution";
+		public static final String BITRATE = "Bitrate";
+		public static final String CODEFORMAT = "CodeFormat";
 	}
 
 	public static final class MultipleLanguageInfoVA implements BaseColumns {

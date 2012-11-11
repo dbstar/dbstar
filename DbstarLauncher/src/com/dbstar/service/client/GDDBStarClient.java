@@ -124,7 +124,7 @@ public class GDDBStarClient {
 		return result;
 	}
 
-	// data format: "1001|taska|23932|23523094823\n1002|ÈÎÎñ2|234239|12349320\n"
+	// data format: "1001|task1|23932|23523094823\n1002|task2|234239|12349320\n"
 
 	public ReceiveEntry[] getTaskInfo() {
 		ReceiveEntry[] entries = null;
@@ -166,34 +166,6 @@ public class GDDBStarClient {
 			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
-		}
-
-		// entries = test();
-
-		return entries;
-	}
-
-	ReceiveEntry[] test() {
-		String info = "1001\ttaska\t23932\t23523094823\n1002\ttask2\t234239\t12349320\n";
-		info += "1003\ttaska\t23932\t23523094823\n1004\ttask2\t234239\t12349320\n";
-		info += "1005\ttaska\t23932\t23523094823\n1006\ttask2\t234239\t12349320\n";
-		info += "1007\ttaska\t23932\t23523094823\n1008\ttask2\t234239\t12349320\n";
-		info += "1009\ttaska\t23932\t23523094823\n1010\ttask2\t234239\t12349320\n";
-		info += "1011\ttaska\t23932\t23523094823\n1012\ttask2\t234239\t12349320\n";
-
-		String[] items = null;
-		if (info != null) {
-			items = info.split("\n");
-		}
-
-		ReceiveEntry[] entries = null;
-		if (items != null) {
-			entries = new ReceiveEntry[items.length];
-
-			for (int i = 0; i < items.length; i++) {
-				entries[i] = createEntry(items[i]);
-			}
-
 		}
 
 		return entries;

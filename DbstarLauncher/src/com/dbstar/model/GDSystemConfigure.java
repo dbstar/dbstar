@@ -21,7 +21,7 @@ public class GDSystemConfigure {
 	// Default Property values
 	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
 	public static final String DefaultStorageDisk = "/mnt/sda1";
-	public static final String SmartHomeDatabase = "/data/dbstar/smarthome/database/smarthome.db";
+	public static final String SmartHomeDatabase = "/data/dbstar/Smarthome.db";
 	public static final String DefaultPushDir = "/mnt/sda1/dbstar";
 	public static final String DefaultDbstarDBFile = "/data/dbstar/Dbstar.db";
 	public static final String DefaultColumnResDir = "/data/dbstar/ColumnRes";

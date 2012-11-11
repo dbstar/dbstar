@@ -1,5 +1,7 @@
 package com.dbstar.app.settings;
 
+import java.util.Map;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.util.Log;
@@ -25,6 +27,11 @@ public class GDSettingActivity extends GDBaseActivity {
 			String settingName = (String) key;
 			String value = (String) data;
 			updateSettings(settingName, value);
+		} else if (type == GDDataProviderService.REQUESTTYPE_GETDEVICEINFO) {
+			Map<String, String> properties = (Map<String, String>) data;
+
+			updateSettings(properties);
+
 		}
 	}
 
@@ -35,20 +42,23 @@ public class GDSettingActivity extends GDBaseActivity {
 	protected void updateSettings(String key, String value) {
 
 	}
-	
+
+	protected void updateSettings(Map<String, String> properties) {
+
+	}
+
 	protected void saveSettings() {
-		
+
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			saveSettings();
 		}
-		
+
 		return super.onKeyDown(keyCode, event);
 	}
-	
-	
+
 	private View mInputView = null;
 	private EditText mInputTextView = null;
 	private View mCurrentEditView = null;

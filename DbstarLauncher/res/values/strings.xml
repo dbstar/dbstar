@@ -75,13 +75,47 @@
     <string name="string_yuan">元</string>
     <string name="warning_text">警告</string>
     <string name="conformation_text">确认</string>
-    <string name="systemsettings_userinfo">用户信息</string>
+
+    <!-- General Info -->
+    <string name="product_info">产品信息</string>
+
+    <!-- Disk info -->
+    <string name="disk_info">硬盘信息</string>
+    <string name="disk_totalsize">硬盘总容量:&#160;</string>
+    <string name="disk_usedsize">占用空间:&#160;</string>
+    <string name="disk_spacesize">剩余空间:&#160;</string>
+
+    <!-- Device info -->
+    <string name="deviceinfo_device_serialnumber">终端序列号:&#160;</string>
+    <string name="deviceinfo_hardware_type">硬件型号:&#160;</string>
+    <string name="deviceinfo_software_version">软件版本:&#160;</string>
+    <string name="deviceinfo_loader_version">Loader版本:&#160;</string>
+    <string name="deviceinfo_mac_address">Mac地址:&#160;</string>
+
+    <!--  -->
     <string name="systemsettings_receivestatus">接收状态</string>
     <string name="systemsettings_diskspace">磁盘管理</string>
     <string name="systemsettings_settings">系统设置</string>
     <string name="systemsettings_guodian">网关设置</string>
     <string name="systemsettings_advanced">高级设置</string>
     <string name="systemsettings_filebrowser">文件浏览</string>
+    
+    <!-- Guodian Settings -->
+    <string name="guodiansettings_version">版本</string>
+    <string name="guodiansettings_serverip">服务器地址</string>
+    <string name="guodiansettings_serverport">服务器端口</string>
+    <string name="guodiansettings_username">用户名</string>
+    <string name="guodiansettings_password">密码</string>
+    <string name="guodiansettings_serialnumber">序列号</string>
+    <string name="inputview_title">输入</string>
+
+    <!-- Disk management -->
+    <string name="diskmanagement_disksize">磁盘空间</string>
+    <string name="diskmanagement_usedspace">占用空间</string>
+    <string name="diskmanagement_emptyspace">剩余空间</string>
+    <string name="diskmanagement_gaurdspace">预警空间</string>
+
+    <!-- Receive status -->
     <string name="receivestatus_filename">文件名</string>
     <string name="receivestatus_downloadprogress">下载进度</string>
     <string name="receivestatus_status">接收状态</string>
@@ -93,61 +127,8 @@
     <string name="receivestatus_status_downloading">正在下载</string>
     <string name="receivestatus_status_finished">下载完成</string>
     <string name="receivestatus_status_failed">下载失败</string>
-    <string name="userinfo_system_version">系统版本</string>
-    <string name="userinfo_user_card_number">用户卡号</string>
-    <string name="userinfo_macaddress">本终端mac地址</string>
-    <string name="userinfo_user_card_validity_term">用户卡有效期</string>
-    <string name="userinfo_user_bussiness">用户所属业务</string>
-    <string name="userinfo_user_residual_amount">点卡余额</string>
-    <string name="deviceinfo_device_serialnumber">终端序列号</string>
-    <string name="deviceinfo_hardware_type">硬件型号</string>
-    <string name="deviceinfo_software_version">软件版本</string>
-    <string name="deviceinfo_loader_version">Loader版本</string>
-    <string name="deviceinfo_mac_address">Mac地址</string>
-    <string name="deviceinfo_gateway_serialnumber">网关序列号</string>
-    <string name="deviceinfo_server_ip">服务器IP</string>
-    <string name="deviceinfo_server_port">服务器端口</string>
-    <string name="userinfo_operator">运营商</string>
-    <string name="userinfo_smartcard_number">智能卡号</string>
-    <string name="userinfo_orderedproduct">订购产品</string>
-    <string name="settings_video">视频</string>
-    <string name="settings_audio">音频</string>
-    <string name="settings_audio_transparent">透传</string>
-    <string name="settings_audio_transcode">转码</string>
-    <string name="settings_video_selection">选择</string>
-    <string name="settings_video_1080p60">1080P60</string>
-    <string name="settings_video_1080p25">1080P25</string>
-    <string name="settings_video_1080i50">1080I50</string>
-    <string name="settings_video_720p">720P</string>
-    <string name="settings_video_auto">自适应</string>
     
-    <string name="settings_item_help">帮助</string>
-    <string name="settings_help_content">本程序的主要提供航天数字业务，包括电影、电视剧、纪录片等。\n\n在主界面中，通过左右键可以切换一级栏目，通过确认键可以进入到次级栏目。如果没有下一级栏目，则直接打开该栏目</string>
-    <string name="settings_item_subtitle">字幕</string>
-    <string name="settings_item_network">网络</string>
-    <string name="settings_item_diskguard">磁盘预警</string>
-    <string name="settings_item_automation">自动</string>
-    <string name="settings_item_source">源码</string>
-    <string name="settings_item_diskguard_spacesize">预警空间大小</string>
-    <string name="settings_item_fontsize">字号</string>
-    <string name="settings_item_fontcolor">字色</string>
-    <string name="settings_item_boundary">边缘</string>
-    <string name="settings_item_bottonmargin">与下间距</string>
-    <string name="settings_item_autoget">自动获取</string>
-    <string name="settings_item_ip">IP</string>
-    <string name="settings_item_gateway">网关</string>
-    <string name="settings_item_dns">DNS</string>
-    <string name="guodiansettings_version">版本</string>
-    <string name="guodiansettings_serverip">服务器地址</string>
-    <string name="guodiansettings_serverport">服务器端口</string>
-    <string name="guodiansettings_username">用户名</string>
-    <string name="guodiansettings_password">密码</string>
-    <string name="guodiansettings_serialnumber">序列号</string>
-    <string name="inputview_title">输入</string>
-    <string name="diskmanagement_disksize">磁盘空间</string>
-    <string name="diskmanagement_usedspace">占用空间</string>
-    <string name="diskmanagement_emptyspace">剩余空间</string>
-    <string name="diskmanagement_gaurdspace">预警空间</string>
+    <!-- movie popups -->
     <string name="tv_view_description_header">剧情简介:</string>
     <string name="movie_info_view_notes">*信息键可以再次唤出本窗口</string>
     <string name="close_button_text">关闭本窗</string>
@@ -168,4 +149,5 @@
     <string name="dialog_upgrade_notes">系统检测到新的版本，按确认键开始升级，按取消键取消升级。</string>
     <string name="popup_forceupgrade_notes">系统检测到新的版本，5秒后自动重启开始升级！</string>
     <string name="popup_upgrade_emphasized_message">在升级过程中请不要断电或进行其它操作，以保证系统升级正常完成！</string>
+
 </resources>

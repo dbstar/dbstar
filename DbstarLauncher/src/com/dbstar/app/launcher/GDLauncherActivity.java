@@ -8,7 +8,6 @@ import java.util.Stack;
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.app.GDCelanderThread;
-import com.dbstar.app.GDFavoriteMovieActivity;
 import com.dbstar.app.GDHDMovieActivity;
 import com.dbstar.app.GDMediaScheduler;
 import com.dbstar.app.GDOrderPushActivity;
@@ -18,8 +17,7 @@ import com.dbstar.app.GDTVActivity;
 import com.dbstar.app.alert.GDForceUpgradeActivity;
 import com.dbstar.app.alert.GDUpgradeActivity;
 import com.dbstar.app.settings.GDDiskManagementActivity;
-import com.dbstar.app.settings.GDHelpActivity;
-import com.dbstar.app.settings.GDUserInfoActivity;
+import com.dbstar.app.settings.GDGeneralInfoActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.GDApplicationObserver;
@@ -481,18 +479,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		Intent intent = null;
 
-		if (columnId.equals(GDCommon.ColumnIDHelpSettings)) {
+		if (columnId.equals(GDCommon.ColumnIDGeneralInfoSettings)) {
 			intent = new Intent();
-			intent.setClass(this, GDHelpActivity.class);
-		} else if (columnId.equals(GDCommon.ColumnIDDeviceInfoSettings)) {
-			intent = startDbstarSettingActivity("GDDeviceInfoActivity");
-		} else if (columnId.equals(GDCommon.ColumnIDUserInfoSettings)) {
-			intent = new Intent();
-			intent.setClass(this, GDUserInfoActivity.class);
-		} else if (columnId.equals(GDCommon.ColumnIDAudioSettings)) {
-			intent = startDbstarSettingActivity("GDAudioSettingsActivity");
-		} else if (columnId.equals(GDCommon.ColumnIDVideoSettings)) {
-			intent = startDbstarSettingActivity("GDVideoSettingsActivity");
+			intent.setClass(this, GDGeneralInfoActivity.class);
+		} else if (columnId.equals(GDCommon.ColumnIDMultimediaSettings)) {
+			intent = startDbstarSettingActivity("GDMultimediaSettingsActivity");
 		} else if (columnId.equals(GDCommon.ColumnIDNetworkSettings)) {
 			intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
 		}

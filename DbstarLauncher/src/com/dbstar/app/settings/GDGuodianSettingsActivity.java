@@ -3,7 +3,6 @@ package com.dbstar.app.settings;
 import com.dbstar.R;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.app.GDBaseActivity;
-import com.dbstar.model.GDSettings;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;

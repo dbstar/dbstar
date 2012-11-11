@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.dbstar.util.GDNetworkUtil;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
+import com.dbstar.app.settings.GDSettings;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
@@ -70,9 +71,9 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_UPDATEGUIDELIST = 21;
 	public static final int REQUESTTYPE_GETPREVIEWS = 22;
 
-	public static final int REQUESTTYPE_GETUSERDATA = 23;
 	public static final int REQUESTTYPE_GETDEVICEDATA = 24;
-	public static final int REQUESTTYPE_GETHELPINFO = 25;
+
+	public static final int REQUESTTYPE_GETDEVICEINFO = 25;
 
 	private static final String PARAMETER_COLUMN_ID = "column_id";
 	private static final String PARAMETER_SET_ID = "set_id";
@@ -84,6 +85,7 @@ public class GDDataProviderService extends Service {
 	private static final String PARAMETER_DATESTART = "date_start";
 	private static final String PARAMETER_DATEEND = "date_end";
 	private static final String PARAMETER_CHAREGTYPE = "charge_type";
+	private static final String PARAMETER_KEYS = "keys";
 
 	private static final String PARAMETER_KEY = "key";
 	private static final String PARAMETER_VALUE = "value";
@@ -205,7 +207,7 @@ public class GDDataProviderService extends Service {
 
 			mThreadPool.add(thread);
 		}
-		
+
 		registerUSBReceiver();
 		reqisterConnectReceiver();
 		reqisterSystemMessageReceiver();
@@ -425,9 +427,10 @@ public class GDDataProviderService extends Service {
 
 				break;
 			}
-			
+
 			case GDCommon.MSG_USER_UPGRADE_CANCELLED: {
-				mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_UPGRADE_CANCEL);
+				mDBStarClient
+						.notifyDbServer(DbstarServiceApi.CMD_UPGRADE_CANCEL);
 				break;
 			}
 
@@ -464,12 +467,67 @@ public class GDDataProviderService extends Service {
 				}
 				break;
 			}
+			case GDCommon.MSG_GET_NETWORKINFO: {
+				String[] keys = new String[5];
+				keys[0] = GDSettings.PropertyMulticastIP;
+				keys[1] = GDSettings.PropertyMulticastPort;
+				keys[2] = GDSettings.PropertyGatewaySerialNumber;
+				keys[3] = GDSettings.PropertyGatewayIP;
+				keys[4] = GDSettings.PropertyGatewayPort;
+
+				Intent intent = new Intent();
+				for (int i = 0; i < 2; i++) {
+					String value = mDataModel.queryGlobalProperty(keys[i]);
+					Log.d(TAG, "+++++++++++ queryGlobalProperty key=" + keys[i] + " value=" + value);
+					intent.putExtra(keys[i], value);
+				}
+				
+				for (int i = 2; i < keys.length; i++) {
+					String value = mDataModel.getSettingValue(keys[i]);
+					Log.d(TAG, "+++++++++++ getSettingValue key=" + keys[i] + " value=" + value);
+					intent.putExtra(keys[i], value);
+				}
+
+				sendNetworkInfo(intent);
+				break;
+			}
+
+			case GDCommon.MSG_SET_NETWORKINFO: {
+				String[] keys = new String[5];
+				keys[0] = GDSettings.PropertyGatewaySerialNumber;
+				keys[1] = GDSettings.PropertyGatewayIP;
+				keys[2] = GDSettings.PropertyGatewayPort;
+				keys[3] = GDSettings.PropertyMulticastIP;
+				keys[4] = GDSettings.PropertyMulticastPort;
+
+				String[] values = new String[5];
+				Bundle data = msg.getData();
+				values[0] = data
+						.getString(GDSettings.PropertyGatewaySerialNumber);
+				values[1] = data.getString(GDSettings.PropertyGatewayIP);
+				values[2] = data.getString(GDSettings.PropertyGatewayPort);
+				values[3] = data.getString(GDSettings.PropertyMulticastIP);
+				values[4] = data.getString(GDSettings.PropertyMulticastPort);
+
+				for (int i = 0; i < 3; i++) {
+					mDataModel.setSettingValue(keys[i], values[i]);
+				}
+				
+				for (int i = 3; i < keys.length; i++) {
+					mDataModel.updateGlobalProperty(keys[i], values[i]);
+				}
+				break;
+			}
 
 			default:
 				break;
 			}
 		}
 
+	}
+	
+	private void sendNetworkInfo(Intent intent) {
+		sendBroadcast(intent);
 	}
 
 	private void handleTaskFinished(RequestTask task) {
@@ -505,11 +563,9 @@ public class GDDataProviderService extends Service {
 			}
 			break;
 		}
-
-		case REQUESTTYPE_GETUSERDATA:
-		case REQUESTTYPE_GETHELPINFO:
 		case REQUESTTYPE_GETPREVIEWS:
 		case REQUESTTYPE_GETGUIDELIST:
+		case REQUESTTYPE_GETDEVICEINFO:
 		case REQUESTTYPE_GETDOWNLOADSTATUS: {
 			if (task.Observer != null) {
 				// task.Observer.updateData(task.Type, task.PageNumber,
@@ -753,10 +809,10 @@ public class GDDataProviderService extends Service {
 
 					if (contents != null && contents.length > 0) {
 						for (int i = 0; i < contents.length; i++) {
-//							String xmlFile = getDetailsDataFile(contents[i]);
-//
-//							mDataModel.getDetailsData(xmlFile, contents[i]);
-							
+							// String xmlFile = getDetailsDataFile(contents[i]);
+							//
+							// mDataModel.getDetailsData(xmlFile, contents[i]);
+
 							mDataModel.getPublicationVAInfo(contents[i]);
 						}
 					}
@@ -778,10 +834,10 @@ public class GDDataProviderService extends Service {
 					Object value = null;
 					value = task.Parameters.get(PARAMETER_CONTENTDATA);
 					ContentData content = (ContentData) value;
-//					String xmlFile = getDetailsDataFile(content);
-//
-//					mDataModel.getDetailsData(xmlFile, content);
-					
+					// String xmlFile = getDetailsDataFile(content);
+					//
+					// mDataModel.getDetailsData(xmlFile, content);
+
 					mDataModel.getPublicationVAInfo(content);
 					task.Data = content;
 
@@ -882,7 +938,7 @@ public class GDDataProviderService extends Service {
 				case REQUESTTYPE_UPDATEGUIDELIST: {
 					mDataModel.updateGuideList((GuideListItem[]) task.Data);
 					// taskFinished(task);
-					
+
 					break;
 				}
 
@@ -912,20 +968,19 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-				case REQUESTTYPE_GETUSERDATA: {
-					UserData data = new UserData();
-					data.OperatorData = mDataModel.getOperatorInfo();
-					data.CardId = mDataModel.getCardId();
-					data.Products = mDataModel.getProducts();
+				case REQUESTTYPE_GETDEVICEINFO: {
+					Object value = null;
+					value = task.Parameters.get(PARAMETER_KEYS);
+					String[] keys = (String[]) value;
+
+					Map<String, String> data = new HashMap<String, String>();
+					for (int i = 0; i < keys.length; i++) {
+						String propertyValue = mDataModel
+								.queryGlobalProperty(keys[i]);
+						data.put(keys[i], propertyValue);
+					}
 
 					task.Data = data;
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETHELPINFO: {
-					String help = mDataModel.getHelpInfo();
-					task.Data = help;
 					taskFinished(task);
 					break;
 				}
@@ -1074,6 +1129,17 @@ public class GDDataProviderService extends Service {
 		enqueueTask(task);
 	}
 
+	public void getDeviceInfo(ClientObserver observer, String[] keys) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETDEVICEINFO;
+
+		task.Parameters = new HashMap<String, Object>();
+		task.Parameters.put(PARAMETER_KEYS, keys);
+
+		enqueueTask(task);
+	}
+
 	public void startGetTaskInfo() {
 
 		RequestTask task = new RequestTask();
@@ -1147,22 +1213,6 @@ public class GDDataProviderService extends Service {
 		RequestTask task = new RequestTask();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETPREVIEWS;
-
-		enqueueTask(task);
-	}
-
-	public void getUserData(ClientObserver observer) {
-		RequestTask task = new RequestTask();
-		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETUSERDATA;
-
-		enqueueTask(task);
-	}
-
-	public void getHelpInfo(ClientObserver observer) {
-		RequestTask task = new RequestTask();
-		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETHELPINFO;
 
 		enqueueTask(task);
 	}
@@ -1283,6 +1333,10 @@ public class GDDataProviderService extends Service {
 		filter.addAction(GDCommon.ActionAddFavourite);
 		filter.addAction(GDCommon.ActionDelete);
 		filter.addAction(GDCommon.ActionUpgradeCancelled);
+
+		filter.addAction(GDCommon.ActionGetNetworkInfo);
+		filter.addAction(GDCommon.ActionSetNetworkInfo);
+
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
 
@@ -1420,8 +1474,7 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-			} else if (action
-					.equals(GDCommon.ActionAddFavourite)) {
+			} else if (action.equals(GDCommon.ActionAddFavourite)) {
 				String publicationSetId = intent
 						.getStringExtra("publicationset_id");
 				String publicationId = intent.getStringExtra("publication_id");
@@ -1446,6 +1499,32 @@ public class GDDataProviderService extends Service {
 				mHandler.sendMessage(msg);
 			} else if (action.equals(GDCommon.ActionUpgradeCancelled)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_USER_UPGRADE_CANCELLED);
+			} else if (action.equals(GDCommon.ActionGetNetworkInfo)) {
+				mHandler.sendEmptyMessage(GDCommon.MSG_GET_NETWORKINFO);
+			} else if (action.equals(GDCommon.ActionSetNetworkInfo)) {
+				String gatewaySerialNumber = intent
+						.getStringExtra(GDSettings.PropertyGatewaySerialNumber);
+				String gatewayIP = intent
+						.getStringExtra(GDSettings.PropertyGatewayIP);
+				String gatewayPort = intent
+						.getStringExtra(GDSettings.PropertyGatewayPort);
+				String multicastIP = intent
+						.getStringExtra(GDSettings.PropertyMulticastIP);
+				String multicastPort = intent
+						.getStringExtra(GDSettings.PropertyMulticastPort);
+
+				Bundle data = new Bundle();
+				data.putString(GDSettings.PropertyGatewaySerialNumber,
+						gatewaySerialNumber);
+				data.putString(GDSettings.PropertyGatewayIP, gatewayIP);
+				data.putString(GDSettings.PropertyGatewayPort, gatewayPort);
+				data.putString(GDSettings.PropertyMulticastIP, multicastIP);
+				data.putString(GDSettings.PropertyMulticastPort, multicastPort);
+
+				Message msg = mHandler
+						.obtainMessage(GDCommon.MSG_SET_NETWORKINFO);
+				msg.setData(data);
+				mHandler.sendMessage(msg);
 			}
 
 		}

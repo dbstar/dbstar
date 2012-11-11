@@ -59,12 +59,7 @@
             android:name=".app.alert.GDForceUpgradeActivity"
             android:theme="@style/popup_activity" />
         <activity android:name=".browser.GDWebBrowserActivity" />
-        <activity android:name=".app.settings.GDHelpActivity" />
-        <activity android:name=".app.settings.GDAudioSettingsActivity" />
-        <activity android:name=".app.settings.GDVideoSettingsActivity" />
-        <activity android:name=".app.settings.GDDeviceInfoActivity" />
-        <activity android:name=".app.settings.GDNetworkSettingsActivity" />
-        <activity android:name=".app.settings.GDUserInfoActivity" />
+        <activity android:name=".app.settings.GDGeneralInfoActivity" />
         <activity android:name=".app.settings.GDGuodianSettingsActivity" />
         <activity android:name=".app.settings.GDDiskManagementActivity" />
 
