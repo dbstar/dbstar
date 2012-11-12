@@ -301,18 +301,18 @@ public class GDDBProvider {
 		SQLiteDatabase db = getWriteableDatabase();
 
 		try {
-			db.beginTransaction();// 添加事务
+			db.beginTransaction();
 			for (String[] args : bindArgs) {
 
 				Log.d(TAG, " execBatchSql " + sql + args);
 				db.execSQL(sql, args);
 			}
-			db.setTransactionSuccessful();// 设置事务标志为成功，当结束事务时就会提交事务
+			db.setTransactionSuccessful();
 		} catch (Exception e) {
 			isSuccess = false;
 			e.printStackTrace();
 		} finally {
-			db.endTransaction();// 提交事务
+			db.endTransaction();
 		}
 		return isSuccess;
 	}

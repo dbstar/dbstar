@@ -180,6 +180,12 @@ public class EthernetConfigController {
 		mBackupDns.setEnabled(!enable);
 		mGw.setEnabled(!enable);
 		mMask.setEnabled(!enable);
+		
+		mIpaddr.setFocusable(!enable);
+		mDns.setFocusable(!enable);
+		mBackupDns.setFocusable(!enable);
+		mGw.setFocusable(!enable);
+		mMask.setFocusable(!enable);
 
 		mDhcpConnectState.setVisibility(View.VISIBLE);
 		mManualConnectState.setVisibility(View.GONE);
@@ -194,6 +200,12 @@ public class EthernetConfigController {
 		mBackupDns.setEnabled(enable);
 		mGw.setEnabled(enable);
 		mMask.setEnabled(enable);
+		
+		mIpaddr.setFocusable(enable);
+		mDns.setFocusable(enable);
+		mBackupDns.setFocusable(enable);
+		mGw.setFocusable(enable);
+		mMask.setFocusable(enable);
 
 		mDhcpConnectState.setVisibility(View.GONE);
 		mManualConnectState.setVisibility(View.VISIBLE);

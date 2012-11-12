@@ -770,7 +770,7 @@ public class GDDataModel {
 		String selection = GDSmartHomeContract.Global.NAME + "=?";
 		String[] selectionArgs = new String[] { key };
 
-		Cursor cursor = mSmartHomeProvider.query(Global.CONTENT_URI,
+		Cursor cursor = mSmartHomeProvider.query(GDSmartHomeContract.Global.CONTENT_URI,
 				GDSmartHomeProvider.GlobalQuery.COLUMNS, selection,
 				selectionArgs, null);
 
@@ -789,9 +789,9 @@ public class GDDataModel {
 		if (Id < 0) {
 			// insert
 			ContentValues values = new ContentValues();
-			values.put(Global.NAME, key);
-			values.put(Global.VALUE, value);
-			Uri retUri = mSmartHomeProvider.insert(Global.CONTENT_URI, values);
+			values.put(GDSmartHomeContract.Global.NAME, key);
+			values.put(GDSmartHomeContract.Global.VALUE, value);
+			Uri retUri = mSmartHomeProvider.insert(GDSmartHomeContract.Global.CONTENT_URI, values);
 			/*
 			 * long rowId = Long.valueOf(retUri.getLastPathSegment()); if (rowId
 			 * > 0)
@@ -806,7 +806,7 @@ public class GDDataModel {
 
 				ContentValues values = new ContentValues();
 				values.put(GDSmartHomeContract.Global.VALUE, value);
-				int count = mSmartHomeProvider.update(Global.CONTENT_URI,
+				int count = mSmartHomeProvider.update(GDSmartHomeContract.Global.CONTENT_URI,
 						values, selection, selectionArgs);
 				if (count == 1)
 					ret = true;

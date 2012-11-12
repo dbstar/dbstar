@@ -116,12 +116,12 @@
                 android:layout_height="42dp"
                 android:layout_marginRight="30dp"
                 android:gravity="left|center_vertical"
-                android:text="@string/eth_gw"
+                android:text="@string/eth_mask"
                 android:textColor="#000000"
                 android:textSize="20sp" />
 
             <EditText
-                android:id="@+id/eth_gateway"
+                android:id="@+id/eth_mask"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/textview_bgselector"
@@ -140,12 +140,12 @@
                 android:layout_height="42dp"
                 android:layout_marginRight="30dp"
                 android:gravity="left|center_vertical"
-                android:text="@string/eth_mask"
+                android:text="@string/eth_gw"
                 android:textColor="#000000"
                 android:textSize="20sp" />
 
             <EditText
-                android:id="@+id/eth_mask"
+                android:id="@+id/eth_gateway"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/textview_bgselector"
@@ -201,7 +201,6 @@
                 android:scrollHorizontally="true"
                 android:singleLine="true" />
         </TableRow>
-
     </TableLayout>
 
     <LinearLayout
@@ -216,8 +215,8 @@
             android:id="@+id/eth_savebutton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/button_text_confirm"
-            android:background="@drawable/eth_button_bg" />
+            android:background="@drawable/eth_button_bg"
+            android:text="@string/button_text_confirm" />
     </LinearLayout>
 
 </LinearLayout>
