@@ -106,10 +106,10 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 						.getStringExtra(PropertyMulticastPort);
 
 				mGatewaySerialNumber.setText(gatewaySerialNumber);
-				mMulticastIP.setText(gatewayIP);
-				mMulticastPort.setText(gatewayPort);
-				mGatewayIP.setText(multicastIP);
-				mGatewayPort.setText(multicastPort);
+				mMulticastIP.setText(multicastIP);
+				mMulticastPort.setText(multicastPort);
+				mGatewayIP.setText(gatewayIP);
+				mGatewayPort.setText(gatewayPort);
 			}
 		}
 	};
