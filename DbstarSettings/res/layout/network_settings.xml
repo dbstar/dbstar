@@ -86,7 +86,7 @@
                         android:layout_width="280dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
-                        android:inputType="number"
+                        android:inputType="number|text"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -114,7 +114,7 @@
                         android:layout_width="180dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
-                        android:inputType="number"
+                        android:inputType="number|text"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -166,7 +166,7 @@
                         android:layout_width="180dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
-                        android:inputType="number"
+                        android:inputType="number|text"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
