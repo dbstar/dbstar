@@ -122,10 +122,10 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 
 	void setNetworkInfo() {
 		String gatewaySerialNumber = mGatewaySerialNumber.getText().toString();
-		String gatewayIP = mMulticastIP.getText().toString();
-		String gatewayPort = mMulticastPort.getText().toString();
-		String multicastIP = mGatewayIP.getText().toString();
-		String multicastPort = mGatewayPort.getText().toString();
+		String gatewayIP = mGatewayIP.getText().toString();
+		String gatewayPort = mGatewayPort.getText().toString();
+		String multicastIP = mMulticastIP.getText().toString();
+		String multicastPort = mMulticastPort.getText().toString();
 
 		Intent intent = new Intent();
 		intent.setAction(ActionSetNetworkInfo);
