@@ -14,8 +14,14 @@ dbstar_init()
 	if [ -e "/data/dbstar/Dbstar.db" ]; then
 		echo "dbstar already inited!"
 	else
-		cp -rf /system/etc/dbstar/* /data/dbstar/
+		cp -rf /system/etc/dbstar/Dbstar.db /data/dbstar/
 		chmod 666 /data/dbstar/Dbstar.db
+		setprop dbstar.inited 1
+	fi
+	if [ -e "/data/dbstar/Smarthome.db" ]; then
+		echo "Smarthome.db already inited!"
+	else
+		cp -rf /system/etc/dbstar/Smarthome.db /data/dbstar/
 		chmod 666 /data/dbstar/Smarthome.db
 		setprop dbstar.inited 1
 	fi
