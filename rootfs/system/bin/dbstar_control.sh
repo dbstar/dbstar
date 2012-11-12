@@ -16,6 +16,7 @@ dbstar_init()
 	else
 		cp -rf /system/etc/dbstar/* /data/dbstar/
 		chmod 666 /data/dbstar/Dbstar.db
+		chmod 666 /data/dbstar/Smarthome.db
 		setprop dbstar.inited 1
 	fi
 }
