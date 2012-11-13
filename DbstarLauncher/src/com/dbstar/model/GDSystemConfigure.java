@@ -229,7 +229,7 @@ public class GDSystemConfigure {
 	public String getDetailsDataFile(ContentData content) {
 		if (content.XMLFilePath == null || content.XMLFilePath.isEmpty())
 			return "";
-		
+
 		String xmlFile = new String(mStorageDir + "/" + content.XMLFilePath
 				+ DefaultDesFile);
 
@@ -285,6 +285,22 @@ public class GDSystemConfigure {
 				file = uri;
 				break;
 			}
+		}
+
+		return file;
+	}
+
+	public String getPreviewFile(PreviewData data) {
+		String file = "";
+		if (data == null || data.URI == null || data.URI.isEmpty()) {
+			return file;
+		}
+
+		file = mStorageDir + "/" + data.URI;
+
+		File f = new File(file);
+		if (!f.exists()) {
+			file = "";
 		}
 
 		return file;

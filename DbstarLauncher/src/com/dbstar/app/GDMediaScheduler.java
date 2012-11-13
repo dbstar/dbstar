@@ -197,7 +197,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		if (successed) {
 			String resourcePath = "";
 			int resourceType = RNONE;
-			resourcePath = mResources[mResourceIndex].URI;
+			resourcePath = mResources[mResourceIndex].FileURI;
 			resourceType = getResourceType(mResources[mResourceIndex].Type);
 
 			if (resourceType == RVideo) {
@@ -327,7 +327,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		Log.d(TAG, "fetch resource mResourceIndex = " + mResourceIndex);
 
 		boolean successed = false;
-		File file = new File(mResources[mResourceIndex].URI);
+		File file = new File(mResources[mResourceIndex].FileURI);
 		if (file.exists()) {
 			successed = true;
 

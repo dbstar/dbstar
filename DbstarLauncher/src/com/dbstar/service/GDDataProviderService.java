@@ -2,6 +2,7 @@ package com.dbstar.service;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -477,16 +478,18 @@ public class GDDataProviderService extends Service {
 
 				Intent intent = new Intent();
 				intent.setAction(GDCommon.ActionUpateNetworkInfo);
-				
+
 				for (int i = 0; i < 2; i++) {
 					String value = mDataModel.queryGlobalProperty(keys[i]);
-					Log.d(TAG, "+++++++++++ queryGlobalProperty key=" + keys[i] + " value=" + value);
+					Log.d(TAG, "+++++++++++ queryGlobalProperty key=" + keys[i]
+							+ " value=" + value);
 					intent.putExtra(keys[i], value);
 				}
-				
+
 				for (int i = 2; i < keys.length; i++) {
 					String value = mDataModel.getSettingValue(keys[i]);
-					Log.d(TAG, "+++++++++++ getSettingValue key=" + keys[i] + " value=" + value);
+					Log.d(TAG, "+++++++++++ getSettingValue key=" + keys[i]
+							+ " value=" + value);
 					intent.putExtra(keys[i], value);
 				}
 
@@ -514,7 +517,7 @@ public class GDDataProviderService extends Service {
 				for (int i = 0; i < 3; i++) {
 					mDataModel.setSettingValue(keys[i], values[i]);
 				}
-				
+
 				for (int i = 3; i < keys.length; i++) {
 					mDataModel.updateGlobalProperty(keys[i], values[i]);
 				}
@@ -527,7 +530,7 @@ public class GDDataProviderService extends Service {
 		}
 
 	}
-	
+
 	private void sendNetworkInfo(Intent intent) {
 		sendBroadcast(intent);
 	}
@@ -945,28 +948,22 @@ public class GDDataProviderService extends Service {
 				}
 
 				case REQUESTTYPE_GETPREVIEWS: {
-					String path = mDataModel.getPreviewPath();
-					if (path != null && !path.isEmpty()) {
-						Log.d(TAG, "path= " + path);
-						File dir = new File(path);
-						if (dir != null && dir.exists()) {
-							File[] files = dir.listFiles();
-							if (files != null && files.length > 0) {
-								PreviewData[] data = new PreviewData[files.length];
-								for (int i = 0; i < data.length; i++) {
-									PreviewData item = new PreviewData();
-									item.URI = files[i].getAbsolutePath();
-									item.Type = PreviewData.TypeVideo;
-									data[i] = item;
-								}
+					PreviewData[] data = mDataModel.getPreviews();
+					ArrayList<PreviewData> previews = new ArrayList<PreviewData>();
+					if (data != null && data.length > 0) {
 
-								task.Data = data;
-								taskFinished(task);
+						for (int i = 0; i < data.length; i++) {
+							String uri = getPreviewFile(data[i]);
+							if (uri != null && !uri.isEmpty()) {
+								data[i].FileURI = uri;
+								previews.add(data[i]);
 							}
-
 						}
-					}
 
+						task.Data = previews.toArray(new PreviewData[previews
+								.size()]);
+						taskFinished(task);
+					}
 					break;
 				}
 
@@ -1231,6 +1228,10 @@ public class GDDataProviderService extends Service {
 		return mConfigure.getMediaFile(content);
 	}
 
+	public String getPreviewFile(PreviewData data) {
+		return mConfigure.getPreviewFile(data);
+	}
+
 	public String getDRMFile(ContentData content) {
 		return mConfigure.getDRMFile(content);
 	}
@@ -1241,6 +1242,35 @@ public class GDDataProviderService extends Service {
 
 	public String getStorageDisk() {
 		return mConfigure.getStorageDisk();
+	}
+
+	public PreviewData[] getPreviewFiles() {
+		PreviewData[] previews = null;
+		String path = mDataModel.getPreviewPath();
+		if (path == null || path.isEmpty()) {
+			return previews;
+		}
+
+		Log.d(TAG, "path= " + path);
+		File dir = new File(path);
+		if (dir == null || !dir.exists()) {
+			return previews;
+		}
+
+		File[] files = dir.listFiles();
+		if (files != null && files.length > 0) {
+			PreviewData[] data = new PreviewData[files.length];
+			for (int i = 0; i < data.length; i++) {
+				PreviewData item = new PreviewData();
+				item.URI = files[i].getAbsolutePath();
+				item.Type = PreviewData.TypeVideo;
+				data[i] = item;
+			}
+
+			previews = data;
+		}
+
+		return previews;
 	}
 
 	// cancel the requests from this observer

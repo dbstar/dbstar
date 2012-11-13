@@ -1,6 +1,8 @@
 package com.dbstar.model;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -20,6 +22,55 @@ public class GDDBProvider {
 	protected SQLiteDatabase mDataBase = null;
 	protected String mDbFile = null;
 
+	class FileInfo {
+		String FileName;
+		long LastModifiedTime;
+	}
+
+	List<FileInfo> mFiles = new LinkedList<FileInfo>();
+
+	private FileInfo getFileInfo(String fileName) {
+		FileInfo fileInfo = null;
+
+		for (int i = 0; i < mFiles.size(); i++) {
+			FileInfo info = mFiles.get(i);
+			if (info.FileName.equalsIgnoreCase(fileName)) {
+				fileInfo = info;
+				break;
+			}
+		}
+
+		return fileInfo;
+	}
+
+	private FileInfo addFileInfo(String fileName, long lastModifiedTime) {
+		FileInfo fileInfo = null;
+		for (int i = 0; i < mFiles.size(); i++) {
+			FileInfo info = mFiles.get(i);
+			if (info.FileName.equalsIgnoreCase(fileName)) {
+				fileInfo = info;
+				break;
+			}
+		}
+
+		if (fileInfo != null) {
+			fileInfo.LastModifiedTime = lastModifiedTime;
+		} else {
+			fileInfo = new FileInfo();
+			fileInfo.FileName = fileName;
+			fileInfo.LastModifiedTime = lastModifiedTime;
+			mFiles.add(fileInfo);
+		}
+
+		return fileInfo;
+	}
+
+	private FileInfo addFileInfo(FileInfo fileInfo) {
+		mFiles.add(fileInfo);
+
+		return fileInfo;
+	}
+
 	protected synchronized boolean isFileExist(String filePath) {
 		boolean exist = false;
 
@@ -32,6 +83,31 @@ public class GDDBProvider {
 		}
 
 		return exist;
+	}
+
+	// If the file is modified, we need to reopen it
+	// Note: make sure this file exist before call this method
+	protected boolean isNeedReopen(String fileName) {
+		boolean modified = false;
+		File file = new File(fileName);
+
+		FileInfo fileInfo = getFileInfo(fileName);
+		if (fileInfo == null) {
+			// this file is first opened.
+			fileInfo = new FileInfo();
+			fileInfo.FileName = fileName;
+			fileInfo.LastModifiedTime = file.lastModified();
+
+			addFileInfo(fileInfo);
+
+			modified = true;
+		} else {
+			if (fileInfo.LastModifiedTime != file.lastModified()) {
+				modified = true;
+			}
+		}
+
+		return modified;
 	}
 
 	protected synchronized void createDatabase(String dbFile) {
@@ -65,8 +141,8 @@ public class GDDBProvider {
 
 		Log.d(TAG, "open dbFile = " + dbFile);
 
-//		if (!mConfigure.isDiskAvailable())
-//			return null;
+		// if (!mConfigure.isDiskAvailable())
+		// return null;
 		if (!isFileExist(dbFile))
 			return null;
 
@@ -86,12 +162,24 @@ public class GDDBProvider {
 		return db;
 	}
 
+	protected synchronized SQLiteDatabase reopenDatabase(String dbFile,
+			boolean isReadOnly) {
+		if (mDataBase != null && mDataBase.isOpen()) {
+			mDataBase.close();
+			mDataBase = null;
+		}
+
+		SQLiteDatabase db = openDatabase(dbFile, isReadOnly);
+
+		return db;
+	}
+
 	protected synchronized SQLiteDatabase getReadableDatabase() {
 		String dbFile = mDbFile;
-//		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
-//			return null;
-//		}
-		
+		// if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
+		// return null;
+		// }
+
 		if (!isFileExist(dbFile)) {
 			return null;
 		}
@@ -100,13 +188,17 @@ public class GDDBProvider {
 
 		SQLiteDatabase db = null;
 
-		if (mDataBase != null) {
-			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
-			if (mDataBase.isOpen()) {
-				db = mDataBase;
-			} else {
-				mDataBase = null;
+		if (!isNeedReopen(dbFile)) {
+			if (mDataBase != null) {
+				Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
+				if (mDataBase.isOpen()) {
+					db = mDataBase;
+				} else {
+					mDataBase = null;
+				}
 			}
+		} else {
+			db = reopenDatabase(dbFile, true);
 		}
 
 		if (db == null) {
@@ -118,10 +210,10 @@ public class GDDBProvider {
 
 	protected synchronized SQLiteDatabase getWriteableDatabase() {
 		String dbFile = mDbFile;
-//		if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
-//			return null;
-//		}
-		
+		// if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
+		// return null;
+		// }
+
 		if (!isFileExist(dbFile)) {
 			return null;
 		}
@@ -130,20 +222,25 @@ public class GDDBProvider {
 
 		SQLiteDatabase db = null;
 
-		if (mDataBase != null) {
-			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
+		if (!isNeedReopen(dbFile)) {
+			if (mDataBase != null) {
+				Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
 
-			if (mDataBase.isOpen()) {
-				Log.d(TAG, "mDataBase.isReadOnly() " + mDataBase.isReadOnly());
-				if (!mDataBase.isReadOnly()) {
-					db = mDataBase;
+				if (mDataBase.isOpen()) {
+					Log.d(TAG,
+							"mDataBase.isReadOnly() " + mDataBase.isReadOnly());
+					if (!mDataBase.isReadOnly()) {
+						db = mDataBase;
+					} else {
+						mDataBase.close();
+						mDataBase = null;
+					}
 				} else {
-					mDataBase.close();
 					mDataBase = null;
 				}
-			} else {
-				mDataBase = null;
 			}
+		} else {
+			db = openDatabase(dbFile, false);
 		}
 
 		if (db == null) {
@@ -315,6 +412,15 @@ public class GDDBProvider {
 			db.endTransaction();
 		}
 		return isSuccess;
+	}
+
+	public Cursor rawQuery(String sql, String[] selectionArgs) {
+		SQLiteDatabase db = getReadableDatabase();
+		if (db == null || !db.isOpen()) {
+			return null;
+		}
+
+		return db.rawQuery(sql, selectionArgs);
 	}
 
 	protected String getTableName(int type) {

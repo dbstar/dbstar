@@ -353,11 +353,11 @@ public class GDDVBDataContract {
 	public static final class Preview implements BaseColumns {
 
 		public static final Uri CONTENT_URI = Uri.withAppendedPath(
-				AUTHORITY_URI, "MFile");
+				AUTHORITY_URI, "Preview");
 
-		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/com.dbstar.provider.MFile";
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/com.dbstar.provider.Preview";
 
-		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/com.dbstar.provider.MFile";
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/com.dbstar.provider.Preview";
 
 		public static final String PREVIEWID = "PreviewID";
 		public static final String PRODUCTID = "ProductID";
@@ -381,7 +381,6 @@ public class GDDVBDataContract {
 
 		public static final String ENDTIME = "EndTime";
 		public static final String PLAYMODE = "PlayMode";
-		// public static final String FILEFORMAT = "PreviewName";
 	}
 
 	public static final class ResStr implements BaseColumns {
