@@ -4,7 +4,6 @@ import java.io.File;
 
 import com.dbstar.R;
 import com.dbstar.util.GDNetworkUtil;
-import com.dbstar.widget.GDWebView;
 
 import android.app.Activity;
 import android.content.Context;

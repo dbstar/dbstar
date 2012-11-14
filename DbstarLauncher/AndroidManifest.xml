@@ -36,31 +36,22 @@
                 <category android:name="android.intent.category.MONKEY" />
             </intent-filter>
         </activity>
-        <activity android:name=".app.GDEReaderActivity" />
         <activity android:name=".app.GDHDMovieActivity" />
         <activity android:name=".app.GDTVActivity" />
-        <activity android:name=".app.GDVideoPlayer" />
         <activity android:name=".app.GDReceiveStatusActivity" />
         <activity android:name=".app.GDOrderPushActivity" />
         <activity android:name=".app.GDFavoriteMovieActivity" />
-        <activity
-            android:name=".app.alert.GDPopupActivity"
-            android:theme="@style/popup_activity" >
-            <intent-filter>
-                <action android:name="com.dbstar.app.ShowPopup" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".app.alert.GDUpgradeActivity"
             android:theme="@style/popup_activity" />
         <activity
             android:name=".app.alert.GDForceUpgradeActivity"
             android:theme="@style/popup_activity" />
-        <activity android:name=".browser.GDWebBrowserActivity" />
         <activity android:name=".app.settings.GDGeneralInfoActivity" />
-        <activity android:name=".app.settings.GDGuodianSettingsActivity" />
+        
+        <activity android:name=".app.GDVideoPlayer" />
+        <activity android:name=".app.GDEReaderActivity" />
+        <activity android:name=".browser.GDWebBrowserActivity" />
         <activity android:name=".app.settings.GDDiskManagementActivity" />
 
         <service

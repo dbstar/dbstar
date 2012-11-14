@@ -22,7 +22,6 @@ import com.dbstar.model.GDNetModel;
 import com.dbstar.model.GuideListItem;
 import com.dbstar.model.PreviewData;
 import com.dbstar.model.ReceiveEntry;
-import com.dbstar.model.UserData;
 import com.dbstar.service.client.GDDBStarClient;
 
 import android.app.Service;
@@ -72,8 +71,6 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_GETGUIDELIST = 20;
 	public static final int REQUESTTYPE_UPDATEGUIDELIST = 21;
 	public static final int REQUESTTYPE_GETPREVIEWS = 22;
-
-	public static final int REQUESTTYPE_GETDEVICEDATA = 24;
 
 	public static final int REQUESTTYPE_GETDEVICEINFO = 25;
 
@@ -1336,8 +1333,13 @@ public class GDDataProviderService extends Service {
 	void queryDiskGuardSize() {
 		String value = mDataModel
 				.queryGlobalProperty(GDDVBDataContract.PropertyDiskGuardSize);
-		long guardSize = Integer.valueOf(value).longValue() * 1024 * 1024;
-		mDiskMonitor.setGuardSize(guardSize);
+		if (value != null && !value.isEmpty()) {
+			long guardSize = Integer.valueOf(value).longValue();
+			if (guardSize > 0) {
+				guardSize = guardSize * 1024 * 1024;
+				mDiskMonitor.setGuardSize(guardSize);
+			}
+		}
 	}
 
 	public void cancelAllRequests() {
