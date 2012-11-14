@@ -128,7 +128,7 @@
     <string name="receivestatus_status_finished">下载完成</string>
     <string name="receivestatus_status_failed">下载失败</string>
     <string name="receivestatus_status_hassignal">信号正常</string>
-    <string name="receivestatus_status_nosignal">信号正常</string>
+    <string name="receivestatus_status_nosignal">无信号</string>
     
     <!-- movie popups -->
     <string name="tv_view_description_header">剧情简介:</string>
