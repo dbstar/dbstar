@@ -61,6 +61,8 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 	@Override
 	public void onStart() {
 		super.onStart();
+		
+		mGatewaySerialNumber.requestFocus();
 
 		getNetworkInfo();
 	}

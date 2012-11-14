@@ -140,6 +140,13 @@ public class EthernetConfigController {
 
 					enableDhcp(true);
 
+					DhcpInfo dhcpInfo = mEthManager.getDhcpInfo();
+					mIpaddr.setText(getAddress(dhcpInfo.ipAddress));
+					mMask.setText(getAddress(dhcpInfo.netmask));
+					mGw.setText(getAddress(dhcpInfo.gateway));
+					mDns.setText(getAddress(dhcpInfo.dns1));
+					mBackupDns.setText(getAddress(dhcpInfo.dns2));
+
 				} else {
 					enableManual(true);
 				}
@@ -180,7 +187,7 @@ public class EthernetConfigController {
 		mBackupDns.setEnabled(!enable);
 		mGw.setEnabled(!enable);
 		mMask.setEnabled(!enable);
-		
+
 		mIpaddr.setFocusable(!enable);
 		mDns.setFocusable(!enable);
 		mBackupDns.setFocusable(!enable);
@@ -200,7 +207,7 @@ public class EthernetConfigController {
 		mBackupDns.setEnabled(enable);
 		mGw.setEnabled(enable);
 		mMask.setEnabled(enable);
-		
+
 		mIpaddr.setFocusable(enable);
 		mDns.setFocusable(enable);
 		mBackupDns.setFocusable(enable);
@@ -237,20 +244,37 @@ public class EthernetConfigController {
 			info.setDnsAddr(null);
 			info.setNetMask(null);
 		} else {
-			if (isIpAddress(mIpaddr.getText().toString())
-					&& isIpAddress(mGw.getText().toString())
-					&& isIpAddress(mDns.getText().toString())
-					&& isIpAddress(mMask.getText().toString())) {
-				info.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_MANUAL);
-				info.setIpAddress(mIpaddr.getText().toString());
-				info.setRouteAddr(mGw.getText().toString());
-				info.setDnsAddr(mDns.getText().toString());
-				info.setNetMask(mMask.getText().toString());
-			} else {
+			String ip = mIpaddr.getText().toString();
+			String mask = mMask.getText().toString();
+			String gateway = mGw.getText().toString();
+			String dns = mDns.getText().toString();
+			
+			if ((ip.isEmpty() || !isIpAddress(ip)) && (mask.isEmpty() || !isIpAddress(mask))) {
 				Toast.makeText(mContext, R.string.eth_settings_error,
 						Toast.LENGTH_LONG).show();
 				return;
+			} else {
+				info.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_MANUAL);
+				info.setIpAddress(ip);
+				info.setRouteAddr(gateway);
+				info.setDnsAddr(dns);
+				info.setNetMask(mask);
 			}
+			
+//			if (isIpAddress(mIpaddr.getText().toString())
+//					&& isIpAddress(mGw.getText().toString())
+//					&& isIpAddress(mDns.getText().toString())
+//					&& isIpAddress(mMask.getText().toString())) {
+//				info.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_MANUAL);
+//				info.setIpAddress(mIpaddr.getText().toString());
+//				info.setRouteAddr(mGw.getText().toString());
+//				info.setDnsAddr(mDns.getText().toString());
+//				info.setNetMask(mMask.getText().toString());
+//			} else {
+//				Toast.makeText(mContext, R.string.eth_settings_error,
+//						Toast.LENGTH_LONG).show();
+//				return;
+//			}
 		}
 
 		mEthManager.updateEthDevInfo(info);

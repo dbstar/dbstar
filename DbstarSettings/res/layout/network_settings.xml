@@ -21,7 +21,7 @@
             android:layout_centerVertical="true"
             android:layout_marginLeft="40dp"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_dbstar" />
+            android:src="@drawable/logo_dbstar" />
         -->
 
         <TextView
@@ -87,6 +87,8 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
                         android:inputType="number|text"
+                        android:nextFocusRight="@+id/wifi_switch_button"
+                        android:nextFocusUp="@+id/multicast_port"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -94,7 +96,7 @@
                 <Space
                     android:layout_width="0dp"
                     android:layout_height="40dp" />
-                
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -115,10 +117,11 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
                         android:inputType="number|text"
+                        android:nextFocusRight="@+id/wifi_switch_indicator"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
-                
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -139,6 +142,7 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
                         android:inputType="number"
+                        android:nextFocusRight="@+id/wifi_switch_indicator"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -146,7 +150,7 @@
                 <Space
                     android:layout_width="0dp"
                     android:layout_height="40dp" />
-                
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -167,6 +171,7 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
                         android:inputType="number|text"
+                        android:nextFocusRight="@+id/wifi_switch_indicator"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -191,6 +196,8 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
                         android:inputType="number"
+                        android:nextFocusDown="@id/gateway_serialnumber"
+                        android:nextFocusRight="@+id/wifi_switch_indicator"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -230,6 +237,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:focusable="true"
+                    android:nextFocusLeft="@+id/gateway_serialnumber"
+                    android:nextFocusUp="@+id/eth_savebutton"
                     android:orientation="horizontal" >
 
                     <CheckBox
@@ -258,6 +267,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:focusable="true"
+                    android:nextFocusLeft="@+id/gateway_serialnumber"
                     android:orientation="horizontal" >
 
                     <CheckBox
@@ -294,11 +304,11 @@
                 android:layout_height="wrap_content"
                 android:cacheColorHint="@android:color/transparent"
                 android:clipToPadding="false"
+                android:divider="#00000000"
+                android:dividerHeight="4dp"
                 android:drawSelectorOnTop="false"
                 android:listPreferredItemHeight="48dp"
                 android:listSelector="#00000000"
-                android:divider="#00000000"
-                android:dividerHeight="4dp"
                 android:paddingBottom="8dp"
                 android:paddingTop="8dp"
                 android:scrollbarAlwaysDrawVerticalTrack="true"
@@ -307,11 +317,13 @@
         </LinearLayout>
     </LinearLayout>
 
-    <include
+    <!--
+          <include
         android:layout_width="fill_parent"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        layout="@layout/footerview" />
+        layout="@layout/footerview" />
+    -->
 
 </RelativeLayout>

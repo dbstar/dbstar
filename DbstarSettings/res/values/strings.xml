@@ -39,7 +39,7 @@
     <string name="lan_connection">LAN连接</string>
     <string name="eth_con_type_dhcp">动态IP</string>
     <string name="eth_con_type_manual">静态IP</string>
-    <string name="lan_connected">已连接</string>
+    <string name="network_connected">已连接</string>
     <string name="eth_dns">DNS</string>
     <string name="eth_backup_dns">备用DNS</string>
     <string name="eth_gw">网关</string>
