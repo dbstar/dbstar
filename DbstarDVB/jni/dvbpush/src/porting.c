@@ -297,14 +297,6 @@ int alarm_ring(void)
 	return -1;
 }
 
-int special_product_id_get(char *id, unsigned int id_size)
-{
-	/*
-	临时测试使用
-	*/
-	return snprintf(id, id_size, "1003");
-}
-
 
 #ifdef SOLARIS
 #include <sys/sockio.h>
@@ -635,7 +627,7 @@ static void drm_errors(char *fun, CDCA_U16 ret)
 }
 
 #define DRMENTITLE	"DRMProduct"
-int drm_info_init()
+int drm_info_refresh()
 {
 	if(0==drm_init()){
 		char		smartcard_sn[CDCA_MAXLEN_SN+1];

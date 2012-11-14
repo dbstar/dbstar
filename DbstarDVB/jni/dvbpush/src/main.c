@@ -75,8 +75,8 @@ void *main_thread()
 	
 	upgrade_info_init();
 	
-	DEBUG("read drm info\n");
-	drm_info_init();
+	DEBUG("to read drm info\n");
+	drm_info_refresh();
 	
 	DEBUG("OK ================================ OK\n");
 	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);

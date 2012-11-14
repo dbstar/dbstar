@@ -375,11 +375,13 @@ Param	NVARCHAR(1024) DEFAULT '');", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-PushFlag	NVARCHAR(64) PRIMARY KEY,\
+PushFlag	NVARCHAR(64) DEFAULT '',\
+ServiceID	NVARCHAR(64) DEFAULT '',\
 XMLName	NVARCHAR(64) DEFAULT '',\
 Version	NVARCHAR(64) DEFAULT '',\
 StandardVersion	NVARCHAR(32) DEFAULT '',\
-URI	NVARCHAR(256) DEFAULT '');", name);
+URI	NVARCHAR(256) DEFAULT '',\
+PRIMARY KEY (PushFlag,ServiceID));", name);
 			}
 			else if(!strcmp(name,"Channel"))
 			{
@@ -397,7 +399,8 @@ EffectFlag INTEGER DEFAULT 1);", name);
 ServiceID	NVARCHAR(64) PRIMARY KEY,\
 RegionCode	NVARCHAR(64) DEFAULT '',\
 OnlineTime	RCHAR(32) DEFAULT '',\
-OfflineTime	RCHAR(32) DEFAULT '');", name);
+OfflineTime	RCHAR(32) DEFAULT '',\
+Status	RCHAR(32) DEFAULT '0');", name);
 			}
 			else if(!strcmp(name,"ResStr"))
 			{
@@ -1267,6 +1270,10 @@ static int global_info_init()
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 		GLB_NAME_DBDATASERVERPORT,DBDATASERVERPORT_DFT);
+	sqlite_transaction_exec(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+		GLB_NAME_HDFOREWARNING,HDFOREWARNING_DFT);
 	sqlite_transaction_exec(sqlite_cmd);
 	
 	return sqlite_transaction_end(1);

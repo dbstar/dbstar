@@ -805,7 +805,7 @@ CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen
 CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen)
 {
 	int ret;
-	LOGD("write file len [%d]\n", dwLen);
+	LOGD("write file len [%u]\n", dwLen);
 	if (!pFileHandle) {
 		return -1;
 	}
@@ -814,7 +814,7 @@ CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLe
 	}
 	/*return*/ret =  fwrite(pBuf, 1, dwLen, (FILE *)pFileHandle);
 	if (ret > 0) {
-		LOGD("write file successful[%d][%d]!!!!\n", ret, dwLen);
+		LOGD("write file successful[%d][%u]!!!!\n", ret, dwLen);
 	} else {
 		LOGD("write file failed!!!!!!\n");
 	}

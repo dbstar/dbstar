@@ -215,7 +215,6 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 
 /*
  向初始化表Initialize插入xml文件的信息，既有可能是解析Initialize.xml时插入，也有可能是解析每个xml时插入版本信息
- 效率比较低，应转换为事务处理。
 */
 static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 {
@@ -223,13 +222,17 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 	if(NULL==xmlinfo || 0==strlen(xmlinfo->PushFlag))
 		return -1;
 	
-	DEBUG("%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI);
+	DEBUG("%s,%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->ServiceID, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI);
 	if(strlen(xmlinfo->Version)>0 || strlen(xmlinfo->StandardVersion)>0 || strlen(xmlinfo->URI)>0){
 		char sqlite_cmd[512];
 		
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Initialize(PushFlag) VALUES('%s');", xmlinfo->PushFlag);
 		sqlite_transaction_exec(sqlite_cmd);
 		
+		if(strlen(xmlinfo->ServiceID)>0){
+			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET ServiceID='%s'WHERE PushFlag='%s';", xmlinfo->ServiceID, xmlinfo->PushFlag);
+			sqlite_transaction_exec(sqlite_cmd);
+		}
 		if(strlen(xmlinfo->XMLName)>0){
 			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET XMLName='%s'WHERE PushFlag='%s';", xmlinfo->XMLName, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
@@ -253,6 +256,7 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 
 /*
  向业务表Service中插入业务信息，实际上本表只有一条记录
+ 如果需要支持多业务时，需要处理Service表中Status字段的值
 */
 static int service_insert(DBSTAR_SERVICE_S *p)
 {
@@ -263,8 +267,11 @@ static int service_insert(DBSTAR_SERVICE_S *p)
 	
 	char sqlite_cmd[512];
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Service(ServiceID,RegionCode,OnlineTime,OfflineTime) VALUES('%s','%s','%s','%s');",
-		p->ServiceID,p->RegionCode,p->OnlineTime,p->OfflineTime);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Service SET Status='%d' WHERE Status='%d';", SERVICE_STATUS_VALID,SERVICE_STATUS_EFFECT);
+	sqlite_transaction_exec(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Service(ServiceID,RegionCode,OnlineTime,OfflineTime,Status) VALUES('%s','%s','%s','%s','%d');",
+		p->ServiceID,p->RegionCode,p->OnlineTime,p->OfflineTime,SERVICE_STATUS_EFFECT);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -3082,7 +3089,11 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 // ProductDesc.xml 当前投递单
 		else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
 			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+			/*
+			 由于需要反注册，所以需要解析所有serviceID的投递内容做反向注册
+			 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
+			*/
+			if((strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version))){
 				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
 						xml_ver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
 				ret = -1;

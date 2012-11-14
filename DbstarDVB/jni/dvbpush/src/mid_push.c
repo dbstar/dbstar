@@ -402,6 +402,11 @@ void dvbpush_getinfo_start()
 	DEBUG("start.........\n");
 	s_push_monitor_active = push_monitor_regist(1);
 	DEBUG("here start %d progs\n", s_push_monitor_active);
+	
+	if(1==data_stream_status_get())
+		msg_send2_UI(STATUS_DATA_SIGNAL_ON, NULL, 0);
+	else
+		msg_send2_UI(STATUS_DATA_SIGNAL_OFF, NULL, 0);
 }
 
 void dvbpush_getinfo_stop()
@@ -573,11 +578,6 @@ void callback(const char *path, long long size, int flag)
 				pthread_cond_signal(&cond_xml); //send sianal
 				
 			pthread_mutex_unlock(&mtx_xml);
-		}
-		else if(COLUMN_XML==flag && (0==check_tail(path, ".png", 0) || 0==check_tail(path, ".jpg", 0))){
-			char cp_cmd[512];
-			snprintf(cp_cmd, sizeof(cp_cmd), "cp %s/%s %s", push_dir_get(),path,COLUMN_RES);
-			system(cp_cmd);
 		}
 		else
 			DEBUG("this is not a xml\n");
@@ -790,7 +790,7 @@ int mid_push_init(char *push_conf)
 	 */
 	if (push_init(push_conf) != 0)
 	{
-		DEBUG("Init push lib failed!\n");
+		DEBUG("Init push lib failed with %s!\n", push_conf);
 		return -1;
 	}
 	

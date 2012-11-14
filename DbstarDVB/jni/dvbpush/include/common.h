@@ -85,7 +85,7 @@ typedef enum{
 #define GLB_NAME_SMARTCARDID		"SmartCardID"
 #define GLB_NAME_ORDERPRODUCT		"OrderProduct"
 #define GLB_NAME_DATASOURCE			"PushSource"
-#define GLB_NAME_HELPINFO			"HelpInfo"
+#define GLB_NAME_HDFOREWARNING		"HDForeWarning"
 #define GLB_NAME_PRODUCTSN			"ProductSN"
 #define GLB_NAME_DEVICEMODEL		"DeviceModel"
 #define GLB_NAME_HARDWARE_VERSION	"HardwareVersion"
@@ -102,6 +102,7 @@ typedef enum{
 #define DEVICEMODEL_DFT				"DB_AML_M3"
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
+#define HDFOREWARNING_DFT			"20480"
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
@@ -164,6 +165,19 @@ typedef enum{
 
 
 /*
+	对于支持多业务、有需要考虑反注册接收的终端而言，需要记录业务的状态：
+	0——此业务无效
+	1——此业务是终端需要支持的业务之一，但不是当前生效的业务
+	2——此业务是终端的当前生效业务。
+*/
+typedef enum{
+	SERVICE_STATUS_INVALID	= 0,
+	SERVICE_STATUS_VALID	= 1,
+	SERVICE_STATUS_EFFECT	= 2
+}SERVICE_STATUS_E;
+
+
+/*
  dvbpush初始化依赖的条件
 */
 typedef enum{
@@ -194,11 +208,11 @@ typedef struct{
 
 typedef struct{
 	char	PushFlag[64];
+	char	ServiceID[64];
 	char	XMLName[64];
 	char	Version[64];
 	char	StandardVersion[64];
 	char	URI[256];
-	char	ServiceID[64];
 }DBSTAR_XMLINFO_S;
 
 typedef struct{
@@ -261,6 +275,7 @@ typedef struct{
 	char	RegionCode[64];
 	char	OnlineTime[32];
 	char	OfflineTime[32];
+	char	Status[32];
 }DBSTAR_SERVICE_S;
 
 typedef struct{

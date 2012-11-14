@@ -17,7 +17,7 @@ int msg_send2_UI(int type, char *msg, int len);
 int initialize_xml_get();
 int localcolumn_res_get(char *localcolumn_res, unsigned int uri_size);
 void upgrade_info_init();
-int drm_info_init();
+int drm_info_refresh();
 char *language_get();
 int software_check(void);
 

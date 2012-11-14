@@ -11,7 +11,8 @@ typedef enum {
 	
 	CMD_DISK_MOUNT                  = 0x00021,    // 硬盘插上可用
 	CMD_DISK_UNMOUNT                = 0x00022,    // 硬盘拔掉
-	
+	CMD_DISK_FOREWARNING			= 0x00023,    // 硬盘到达预警空间
+		
 	CMD_DVBPUSH_GETINFO_START       = 0x00031,    // 开始获取push下载状态
 	CMD_DVBPUSH_GETINFO				= 0x00032,    // 获取push下载状态
 	CMD_DVBPUSH_GETINFO_STOP        = 0x00033,    // 停止获取push下载状态
@@ -30,6 +31,8 @@ typedef enum {
 
 	STATUS_DVBPUSH_INIT_FAILED      = 0x30010,    // dvbpush初始化失败
 	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011,    // dvbpush初始化成功
+	STATUS_DATA_SIGNAL_ON			= 0x30012,    // 信号正常，即有ts流
+	STATUS_DATA_SIGNAL_OFF			= 0x30013,    // 无信号，即无ts流
 	
 	UPGRADE_NEW_VER                 = 0x20001,     // 有新版本到来，用户选择升级
 	UPGRADE_NEW_VER_FORCE           = 0x20002,     // 有新版本到来，强制升级
