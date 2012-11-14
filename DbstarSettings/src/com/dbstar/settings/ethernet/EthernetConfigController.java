@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -50,6 +51,7 @@ public class EthernetConfigController {
 	private EthernetManager mEthManager;
 	private EthernetDevInfo mEthInfo;
 	private boolean mEnablePending;
+	Button mSaveButton;
 
 	private Context mContext;
 	private Activity mActivity;
@@ -76,6 +78,7 @@ public class EthernetConfigController {
 	}
 
 	public int buildDialogContent(Context context) {
+		mSaveButton = (Button) mActivity.findViewById(R.id.eth_savebutton);
 		mDhcpSwitchButton = (View) mActivity
 				.findViewById(R.id.dhcp_switch_button);
 		mDhcpSwitchIndicator = (CheckBox) mActivity
@@ -196,6 +199,9 @@ public class EthernetConfigController {
 
 		mDhcpConnectState.setVisibility(View.VISIBLE);
 		mManualConnectState.setVisibility(View.GONE);
+
+		mManualSwitchButton.setNextFocusDownId(R.id.eth_savebutton);
+		mSaveButton.setNextFocusUpId(R.id.manual_switch_button);
 	}
 
 	private void enableManual(boolean enable) {
@@ -216,6 +222,9 @@ public class EthernetConfigController {
 
 		mDhcpConnectState.setVisibility(View.GONE);
 		mManualConnectState.setVisibility(View.VISIBLE);
+
+		mManualSwitchButton.setNextFocusDownId(R.id.eth_ip);
+		mSaveButton.setNextFocusUpId(R.id.eth_backup_dns);
 	}
 
 	private void getEthernetDevice(String[] Devs) {
@@ -248,8 +257,9 @@ public class EthernetConfigController {
 			String mask = mMask.getText().toString();
 			String gateway = mGw.getText().toString();
 			String dns = mDns.getText().toString();
-			
-			if ((ip.isEmpty() || !isIpAddress(ip)) && (mask.isEmpty() || !isIpAddress(mask))) {
+
+			if ((ip.isEmpty() || !isIpAddress(ip))
+					&& (mask.isEmpty() || !isIpAddress(mask))) {
 				Toast.makeText(mContext, R.string.eth_settings_error,
 						Toast.LENGTH_LONG).show();
 				return;
@@ -260,21 +270,21 @@ public class EthernetConfigController {
 				info.setDnsAddr(dns);
 				info.setNetMask(mask);
 			}
-			
-//			if (isIpAddress(mIpaddr.getText().toString())
-//					&& isIpAddress(mGw.getText().toString())
-//					&& isIpAddress(mDns.getText().toString())
-//					&& isIpAddress(mMask.getText().toString())) {
-//				info.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_MANUAL);
-//				info.setIpAddress(mIpaddr.getText().toString());
-//				info.setRouteAddr(mGw.getText().toString());
-//				info.setDnsAddr(mDns.getText().toString());
-//				info.setNetMask(mMask.getText().toString());
-//			} else {
-//				Toast.makeText(mContext, R.string.eth_settings_error,
-//						Toast.LENGTH_LONG).show();
-//				return;
-//			}
+
+			// if (isIpAddress(mIpaddr.getText().toString())
+			// && isIpAddress(mGw.getText().toString())
+			// && isIpAddress(mDns.getText().toString())
+			// && isIpAddress(mMask.getText().toString())) {
+			// info.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_MANUAL);
+			// info.setIpAddress(mIpaddr.getText().toString());
+			// info.setRouteAddr(mGw.getText().toString());
+			// info.setDnsAddr(mDns.getText().toString());
+			// info.setNetMask(mMask.getText().toString());
+			// } else {
+			// Toast.makeText(mContext, R.string.eth_settings_error,
+			// Toast.LENGTH_LONG).show();
+			// return;
+			// }
 		}
 
 		mEthManager.updateEthDevInfo(info);

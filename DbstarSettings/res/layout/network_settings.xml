@@ -89,6 +89,7 @@
                         android:inputType="number|text"
                         android:nextFocusRight="@+id/wifi_switch_button"
                         android:nextFocusUp="@+id/multicast_port"
+                        android:nextFocusDown="@+id/gateway_ip"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
