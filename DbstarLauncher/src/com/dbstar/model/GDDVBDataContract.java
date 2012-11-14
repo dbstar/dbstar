@@ -40,6 +40,7 @@ public class GDDVBDataContract {
 	public static final String PropertyPushDir = "PushDir";
 	public static final String PropertyLanguage = "CurLanguage";
 	public static final String PropertyPushSource = "PushSource"; // igmp://239.0.0.1:5000
+	public static final String PropertyDiskGuardSize = "HDForeWarning";
 
 	public static final String PropertyDeviceSearialNumber = "ProductSN";
 	public static final String PropertyHardwareType = "DeviceModel";

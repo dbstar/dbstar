@@ -19,6 +19,10 @@ public class GDCommon {
 	public static final int MSG_GET_NETWORKINFO = 13;
 	public static final int MSG_SET_NETWORKINFO = 14;
 
+	public static final int MSG_DATA_SIGNAL_STATUS = 15;
+	public static final int STATUS_HASSIGNAL = 0;
+	public static final int STATUS_NOSIGNAL = 1;
+	
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "chi";

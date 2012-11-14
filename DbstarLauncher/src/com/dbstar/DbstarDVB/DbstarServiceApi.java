@@ -16,7 +16,8 @@ public class DbstarServiceApi {
 	
 	public static final int CMD_DISK_MOUNT                  = 0x00021;
 	public static final int CMD_DISK_UNMOUNT                = 0x00022;
-	
+	public static final int CMD_DISK_FOREWARNING            = 0x00023;
+
 	public static final int CMD_DVBPUSH_GETINFO_START       = 0x00031;
 	public static final int CMD_DVBPUSH_GETINFO				= 0x00032;
 	public static final int CMD_DVBPUSH_GETINFO_STOP        = 0x00033;
@@ -36,6 +37,8 @@ public class DbstarServiceApi {
 
 	public static final int	STATUS_DVBPUSH_INIT_FAILED      = 0x30010;
 	public static final int	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011;
+	public static final int	STATUS_DATA_SIGNAL_ON           = 0x30012;
+	public static final int	STATUS_DATA_SIGNAL_OFF          = 0x30013;
 	
 	public static final int	UPGRADE_NEW_VER                 = 0x20001;
 	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;

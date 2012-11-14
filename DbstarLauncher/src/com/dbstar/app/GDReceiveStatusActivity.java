@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.dbstar.R;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.model.EventData;
 import com.dbstar.model.GDDiskInfo;
 import com.dbstar.model.ReceiveEntry;
 import com.dbstar.util.StringUtil;
@@ -43,6 +44,12 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	private static final int MSG_UPDATEPROGRESS = 0;
 
+	private static final int SignalStateNone = -1;
+	private static final int SignalStateOff = 0;
+	private static final int SignalStateOn = 1;
+
+	private int mSignalState = SignalStateNone;
+
 	private ClientObserver mObserver = null;
 
 	ListView mListView;
@@ -50,6 +57,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	TextView mDiskInfoView;
 	TextView mPageItemsView;
 	TextView mPageNumberView;
+	TextView mSignalStatusView;
 
 	String mStatusWaitting, mStatusDownloading, mStatusFinished, mStatusFailed;
 	String mTextDi, mTextYe, mTextGong, mTextTiao;
@@ -362,6 +370,43 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		mPageItemsView.setText(itemsInfo);
 	}
 
+	@Override
+	public void notifyEvent(int type, Object event) {
+
+		if (type == EventData.EVENT_DATASIGNAL) {
+			EventData.DataSignalEvent signalEvent = (EventData.DataSignalEvent) event;
+
+			mSignalState = signalEvent.hasSignal ? SignalStateOn
+					: SignalStateOff;
+
+			setSignalState(mSignalState);
+		}
+
+	}
+
+	void setSignalState(int state) {
+		String stateStr = "";
+		switch (state) {
+		case SignalStateOn: {
+			stateStr = this.getResources().getString(
+					R.string.receivestatus_status_hassignal);
+			break;
+		}
+		case SignalStateOff: {
+			stateStr = this.getResources().getString(
+					R.string.receivestatus_status_nosignal);
+			break;
+		}
+		default: {
+			break;
+		}
+		}
+
+		if (mSignalStatusView != null) {
+			mSignalStatusView.setText(stateStr);
+		}
+	}
+
 	public void initializeView() {
 		// super.initializeView();
 
@@ -369,23 +414,24 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 				R.drawable.receive_item_light_bg);
 		mReceiveItemDarkBackground = getResources().getDrawable(
 				R.drawable.receive_item_dark_bg);
-		
+
 		mStatusWaitting = getResources().getString(
 				R.string.receivestatus_status_waitting);
 		mStatusDownloading = getResources().getString(
 				R.string.receivestatus_status_downloading);
 		mStatusFinished = getResources().getString(
 				R.string.receivestatus_status_finished);
-		
+
 		mStatusFailed = getResources().getString(
 				R.string.receivestatus_status_failed);
-		
+
 		mTextDi = getResources().getString(R.string.text_di);
 		mTextYe = getResources().getString(R.string.text_ye);
 		mTextGong = getResources().getString(R.string.text_gong);
 		mTextTiao = getResources().getString(R.string.text_tiao);
-		
+
 		mDownloadSpeedView = (TextView) findViewById(R.id.download_speed);
+		mSignalStatusView = (TextView) findViewById(R.id.signal_status);
 		mDiskInfoView = (TextView) findViewById(R.id.disk_info);
 		mPageNumberView = (TextView) findViewById(R.id.download_pages);
 		mPageItemsView = (TextView) findViewById(R.id.download_items);

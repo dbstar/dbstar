@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import com.dbstar.app.settings.GDSettings;
 import com.dbstar.model.GDDVBDataContract.*;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
-import com.dbstar.model.GDDVBDataProvider.PublicationsSetQuery;
 import com.dbstar.model.GDDVBDataProvider.ResStrQuery;
 
 public class GDDataModel {
@@ -712,12 +711,12 @@ public class GDDataModel {
 					item.Type = cursor.getString(QUERYPREVIEW_PREVIEWTYPE);
 					item.URI = cursor.getString(QUERYPREVIEW_PREVIEWURI);
 
-					item.ShowTime = Integer.valueOf(cursor
-							.getString(QUERYPREVIEW_SHOWTIME));
-					item.Duration = Integer.valueOf(cursor
-							.getString(QUERYPREVIEW_DURATION));
-					item.PlayMode = Integer.valueOf(cursor
-							.getString(QUERYPREVIEW_PLAYMODE));
+//					item.ShowTime = Integer.valueOf(cursor
+//							.getString(QUERYPREVIEW_SHOWTIME));
+//					item.Duration = Integer.valueOf(cursor
+//							.getString(QUERYPREVIEW_DURATION));
+//					item.PlayMode = Integer.valueOf(cursor
+//							.getString(QUERYPREVIEW_PLAYMODE));
 					items[i] = item;
 					i++;
 				} while (cursor.moveToNext());

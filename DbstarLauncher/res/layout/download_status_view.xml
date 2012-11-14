@@ -155,8 +155,18 @@
             android:textColor="#ffffff"
             android:textSize="18sp" />
 
+        <TextView
+            android:id="@+id/signal_status"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|center_vertical"
+            android:layout_marginRight="0dp"
+            android:gravity="left|center_vertical"
+            android:textColor="#ffffff"
+            android:textSize="18sp" />
+        
         <Space
-            android:layout_width="100dp"
+            android:layout_width="20dp"
             android:layout_height="wrap_content" />
 
         <TextView

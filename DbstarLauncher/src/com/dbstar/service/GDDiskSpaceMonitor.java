@@ -18,7 +18,7 @@ public class GDDiskSpaceMonitor {
 	private static final String TAG = "GDDiskSpaceMonitor";
 
 	private static final int CheckDiskInterval = 60000;
-	private static final int DefaultGuardSize = 104857600; // 100Mib
+	private static final int DefaultGuardSize = 1090519040; // 10G 
 
 	private Handler mAppHandler;
 	private HandlerThread mBackgroundThread;

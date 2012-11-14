@@ -15,6 +15,7 @@ import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
+import com.dbstar.model.GDDVBDataContract;
 import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GDDataModel;
 import com.dbstar.model.GDNetModel;
@@ -246,6 +247,8 @@ public class GDDataProviderService extends Service {
 		// initialize engine
 		initializeDataEngine();
 		initializeNetEngine();
+
+		queryDiskGuardSize();
 	}
 
 	void initializeDataEngine() {
@@ -417,6 +420,9 @@ public class GDDataProviderService extends Service {
 					mApplicationObserver.handleNotifiy(
 							GDCommon.MSG_DISK_SPACEWARNING, disk);
 				}
+
+				mDBStarClient
+						.notifyDbServer(DbstarServiceApi.CMD_DISK_FOREWARNING);
 				break;
 			}
 
@@ -520,6 +526,17 @@ public class GDDataProviderService extends Service {
 
 				for (int i = 3; i < keys.length; i++) {
 					mDataModel.updateGlobalProperty(keys[i], values[i]);
+				}
+				break;
+			}
+
+			case GDCommon.MSG_DATA_SIGNAL_STATUS: {
+				int hasSignal = msg.arg1;
+				if (mPageOberser != null) {
+					EventData.DataSignalEvent event = new EventData.DataSignalEvent();
+					event.hasSignal = hasSignal == GDCommon.STATUS_HASSIGNAL ? true
+							: false;
+					mPageOberser.notifyEvent(EventData.EVENT_DATASIGNAL, event);
 				}
 				break;
 			}
@@ -1316,6 +1333,13 @@ public class GDDataProviderService extends Service {
 		return mMacAddress;
 	}
 
+	void queryDiskGuardSize() {
+		String value = mDataModel
+				.queryGlobalProperty(GDDVBDataContract.PropertyDiskGuardSize);
+		long guardSize = Integer.valueOf(value).longValue() * 1024 * 1024;
+		mDiskMonitor.setGuardSize(guardSize);
+	}
+
 	public void cancelAllRequests() {
 		Log.d(TAG, "cancelAllRequests!");
 
@@ -1499,6 +1523,17 @@ public class GDDataProviderService extends Service {
 
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_FAILED: {
 					mIsDbServiceStarted = false;
+					break;
+				}
+
+				case DbstarServiceApi.STATUS_DATA_SIGNAL_ON:
+				case DbstarServiceApi.STATUS_DATA_SIGNAL_OFF: {
+					Message msg = mHandler
+							.obtainMessage(GDCommon.MSG_DATA_SIGNAL_STATUS);
+					int hasSignal = type == DbstarServiceApi.STATUS_DATA_SIGNAL_ON ? GDCommon.STATUS_HASSIGNAL
+							: GDCommon.STATUS_NOSIGNAL;
+					msg.arg1 = hasSignal;
+					mHandler.sendMessage(msg);
 					break;
 				}
 
