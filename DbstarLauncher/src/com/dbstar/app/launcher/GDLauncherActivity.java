@@ -272,10 +272,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		boolean ret = false;
 
 		// Hide popup menu first!
-		if (isPopupMenuShown()) {
-			hidePopupMenu();
-			return true;
-		}
+//		if (isPopupMenuShown()) {
+//			hidePopupMenu();
+//			return true;
+//		}
 
 		if (mMenuStack.size() > 1) {
 			ret = true;
@@ -312,10 +312,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 			return true;
 		} else if (menuItem.HasSubMenu == HAS_SUBCOLUMNS) {
-			if (isPopupMenuShown())
-				enterSubMenu(menuItem.SubMenu);
-			else
-				showPopupMenu();
+//			if (isPopupMenuShown())
+//				enterSubMenu(menuItem.SubMenu);
+//			else
+//				showPopupMenu();
+			enterSubMenu(menuItem.SubMenu);
 			return true;
 		} else {
 			// no sub items
@@ -1349,8 +1350,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mVideoView.setBackgroundDrawable(d);
 
 		// updatePowerView(mPowerConsumption, mPowerCost);
-		mIsPopupMenuHided = true;
-		displayPopupMenu(false);
+//		mIsPopupMenuHided = true;
+		mIsPopupMenuHided = false;
+//		displayPopupMenu(false);
 	}
 
 	private void initializeEngine() {
