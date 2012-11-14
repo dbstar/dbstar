@@ -69,7 +69,6 @@ public class GDTVActivity extends GDBaseActivity {
 			mEpisodesNormalBackground;
 
 	View mSelectedView = null;
-	boolean mInTVView = true;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -614,11 +613,8 @@ public class GDTVActivity extends GDBaseActivity {
 			if (action == KeyEvent.ACTION_UP) {
 				switch (keyCode) {
 				case KeyEvent.KEYCODE_DPAD_CENTER:
-				case KeyEvent.KEYCODE_ENTER:
-				case 82: {
-					// mSmallThumbnailView.requestFocus(View.FOCUS_DOWN);
+				case KeyEvent.KEYCODE_ENTER: {
 					if (mEpisodesAdapter.getCount() > 0) {
-						mInTVView = false;
 						boolean ret = mEpisodesView.requestFocus();
 						// mEpisodesView.setSelection(0);
 						Log.d(TAG, "mEpisodesAdapter.getCount() "
@@ -737,7 +733,6 @@ public class GDTVActivity extends GDBaseActivity {
 					break;
 				}
 
-				case 82:
 				case KeyEvent.KEYCODE_DPAD_CENTER:
 				case KeyEvent.KEYCODE_ENTER:
 					ret = true;

@@ -699,8 +699,13 @@ public class GDDataModel {
 	public PreviewData[] getPreviews() {
 		PreviewData[] items = null;
 
+		String selection = Preview.RECEIVESTATUS + "=? OR "
+				+ Preview.RECEIVESTATUS + "=?";
+
+		String[] selectionArgs = new String[] { "1", "2" };
+
 		Cursor cursor = mDVBDataProvider.query(Preview.CONTENT_URI,
-				ProjectionQueryPreview, null, null, null);
+				ProjectionQueryPreview, selection, selectionArgs, null);
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
@@ -711,12 +716,12 @@ public class GDDataModel {
 					item.Type = cursor.getString(QUERYPREVIEW_PREVIEWTYPE);
 					item.URI = cursor.getString(QUERYPREVIEW_PREVIEWURI);
 
-//					item.ShowTime = Integer.valueOf(cursor
-//							.getString(QUERYPREVIEW_SHOWTIME));
-//					item.Duration = Integer.valueOf(cursor
-//							.getString(QUERYPREVIEW_DURATION));
-//					item.PlayMode = Integer.valueOf(cursor
-//							.getString(QUERYPREVIEW_PLAYMODE));
+					// item.ShowTime = Integer.valueOf(cursor
+					// .getString(QUERYPREVIEW_SHOWTIME));
+					// item.Duration = Integer.valueOf(cursor
+					// .getString(QUERYPREVIEW_DURATION));
+					// item.PlayMode = Integer.valueOf(cursor
+					// .getString(QUERYPREVIEW_PLAYMODE));
 					items[i] = item;
 					i++;
 				} while (cursor.moveToNext());
@@ -769,7 +774,8 @@ public class GDDataModel {
 		String selection = GDSmartHomeContract.Global.NAME + "=?";
 		String[] selectionArgs = new String[] { key };
 
-		Cursor cursor = mSmartHomeProvider.query(GDSmartHomeContract.Global.CONTENT_URI,
+		Cursor cursor = mSmartHomeProvider.query(
+				GDSmartHomeContract.Global.CONTENT_URI,
 				GDSmartHomeProvider.GlobalQuery.COLUMNS, selection,
 				selectionArgs, null);
 
@@ -790,7 +796,8 @@ public class GDDataModel {
 			ContentValues values = new ContentValues();
 			values.put(GDSmartHomeContract.Global.NAME, key);
 			values.put(GDSmartHomeContract.Global.VALUE, value);
-			Uri retUri = mSmartHomeProvider.insert(GDSmartHomeContract.Global.CONTENT_URI, values);
+			Uri retUri = mSmartHomeProvider.insert(
+					GDSmartHomeContract.Global.CONTENT_URI, values);
 			/*
 			 * long rowId = Long.valueOf(retUri.getLastPathSegment()); if (rowId
 			 * > 0)
@@ -805,8 +812,9 @@ public class GDDataModel {
 
 				ContentValues values = new ContentValues();
 				values.put(GDSmartHomeContract.Global.VALUE, value);
-				int count = mSmartHomeProvider.update(GDSmartHomeContract.Global.CONTENT_URI,
-						values, selection, selectionArgs);
+				int count = mSmartHomeProvider.update(
+						GDSmartHomeContract.Global.CONTENT_URI, values,
+						selection, selectionArgs);
 				if (count == 1)
 					ret = true;
 			}
@@ -821,7 +829,8 @@ public class GDDataModel {
 		String selection = GDSmartHomeContract.Global.NAME + "=?";
 		String[] selectionArgs = new String[] { key };
 
-		cursor = mSmartHomeProvider.query(GDSmartHomeContract.Global.CONTENT_URI,
+		cursor = mSmartHomeProvider.query(
+				GDSmartHomeContract.Global.CONTENT_URI,
 				GDSmartHomeProvider.GlobalQuery.COLUMNS, selection,
 				selectionArgs, null);
 
