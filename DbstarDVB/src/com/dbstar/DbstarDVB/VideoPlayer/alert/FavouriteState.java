@@ -15,8 +15,8 @@ import com.dbstar.DbstarDVB.R;
 
 public class FavouriteState extends ViewState {
 
-	private static final int TIMEOUT_IN_MILLIONSECONDS = 20000;
-	private static final int TIMEOUT_IN_SECONDS = 20;
+	private static final int TIMEOUT_IN_MILLIONSECONDS = 3000;
+	private static final int TIMEOUT_IN_SECONDS = 3;
 	private static final int UpdatePeriodInMills = 1000;
 	private static final int UpdatePeriodInSeconds = 1;
 

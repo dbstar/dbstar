@@ -276,7 +276,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="82dp"
+        android:layout_marginBottom="78dp"
         android:layout_marginRight="104dp"
         android:background="#00000000"
         android:focusable="true"

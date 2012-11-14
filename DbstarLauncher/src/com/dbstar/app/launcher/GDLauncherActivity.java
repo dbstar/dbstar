@@ -612,8 +612,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				holder = new ItemHolder();
 
 				LayoutInflater inflater = getLayoutInflater();
-				convertView = inflater
-						.inflate(R.layout.menu_level_1_item, null);
+				convertView = inflater.inflate(R.layout.menu_level_1_item,
+						parent, false);
 				holder.text = (TextView) convertView
 						.findViewById(R.id.item_text);
 				holder.icon = (ImageView) convertView
