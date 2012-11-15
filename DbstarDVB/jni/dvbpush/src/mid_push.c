@@ -29,6 +29,7 @@
 #include "xmlparser.h"
 #include "sqlite.h"
 #include "dvbpush_api.h"
+#include "multicast.h"
 
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (200000)		//定义缓冲区大小，单位：包	1500*200000=280M
@@ -293,7 +294,7 @@ rewake:
 		{
 			usleep(20000);
 			read_nothing_count++;
-			if(read_nothing_count>=500)
+			if(read_nothing_count>=1024)
 			{
 				DEBUG("read nothing, read index %d\n", rindex);
 				read_nothing_count = 0;

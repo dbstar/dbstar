@@ -9,6 +9,7 @@
 #include "prodrm20.h"
 #include "dvbpush_api.h"
 #include "bootloader.h"
+#include "softdmx_print.h"
 
 Channel_t chanFilter[MAX_CHAN_FILTER+1];
 int max_filter_num = 0;
@@ -16,6 +17,7 @@ int loader_dsc_fid;
 static LoaderInfo_t g_loaderInfo;
 static pthread_t loaderthread = 0;
 static int loaderAction = 0;
+static int s_print_cnt = 0;
 
 extern int TC_loaner_to_push_order(int ord);
 extern int TC_loader_get_push_state(void);
@@ -404,7 +406,7 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 		for(tmp_i=0;tmp_i<maxSeq;tmp_i++){
 			if(0==recv_mark[tmp_i]){
 				count_need ++;
-				SIMPLE_DEBUG("lost %d: %d\n", count_need, tmp_i);
+				PRINTF("lost %d: %d\n", count_need, tmp_i);
 			}
 		}
 		s_first_package_flag = -2;
@@ -418,7 +420,7 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 			{
     	    	if (tc_crc32(data,len+12) )
     	    	{
-    	    		SIMPLE_DEBUG("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+    	    		PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
     	    		return;
     	    	}
 				recv_mark[seq]=1;
@@ -432,7 +434,7 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 //				}
 				
 				if(((lastSeq+1) != seq && lastSeq!=0) || g_loaderInfo.fid>32 || g_loaderInfo.fid<0)
-					SIMPLE_DEBUG("total_loader=%d/%d,lastSeq=%d,seq=[%u],fid=%d\n", total_loader,maxSeq,lastSeq,seq,g_loaderInfo.fid);
+					PRINTF("total_loader=%d/%d,lastSeq=%d,seq=[%u],fid=%d\n", total_loader,maxSeq,lastSeq,seq,g_loaderInfo.fid);
 				
 				totalLen += len;
 patch0:
@@ -456,13 +458,13 @@ patch0:
 						return;
 					}
 					
-					SIMPLE_DEBUG("total_loader: %u, maxSeq: %u, g_loaderInfo.fid: %d\n", total_loader, maxSeq,g_loaderInfo.fid);
+					PRINTF("total_loader: %u, maxSeq: %u, g_loaderInfo.fid: %d\n", total_loader, maxSeq,g_loaderInfo.fid);
 					TC_free_filter(g_loaderInfo.fid);
 					TC_loader_to_push_order(1);                                        
 					upgradefile = fopen(UPGRADEFILE_IMG,"w");
 					if (!upgradefile)
 					{
-						SIMPLE_DEBUG("open %s failed\n", UPGRADEFILE_IMG);
+						PRINTF("open %s failed\n", UPGRADEFILE_IMG);
 						startWrite = 0;
 						getMaxSeq = 0;
 						if (recv_buf!= TC_loader_get_push_buf_pointer())
@@ -471,7 +473,7 @@ patch0:
 						return;
 					}
 					else
-						SIMPLE_DEBUG("open %s OK\n", UPGRADEFILE_IMG);
+						PRINTF("open %s OK\n", UPGRADEFILE_IMG);
 					
 					fwrite(recv_buf,1,totalLen,upgradefile);
 					fclose(upgradefile);
@@ -509,7 +511,7 @@ patch0:
 			}
 		}
 		else
-			SIMPLE_DEBUG("seq=[%u] part_num[%x] last_part_num[%x],sec_num[%x] last_sec_num[%x]\n",seq,datap[0],datap[1],datap[2],datap[3]);
+			PRINTF("seq=[%u] part_num[%x] last_part_num[%x],sec_num[%x] last_sec_num[%x]\n",seq,datap[0],datap[1],datap[2],datap[3]);
 	}
 	else
 	{
@@ -581,7 +583,7 @@ void ca_section_handle(int fid, const unsigned char *data, int len, void *user_d
 	{
 		if (tc_crc32(data,len))
 		{
-			SIMPLE_DEBUG("CA table  error !!!!!!!!!!!!!!!!!!!!\n");
+			PRINTF("CA table  error !!!!!!!!!!!!!!!!!!!!\n");
 			return;
 		}
 
@@ -598,8 +600,6 @@ void ca_section_handle(int fid, const unsigned char *data, int len, void *user_d
 	}
 }
 
-
-
 void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data)
 {
 	unsigned char *datap=NULL;
@@ -609,7 +609,12 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	unsigned short tmp16=0;
 	unsigned int stb_id_l=0,stb_id_h=0;
 	
-	DEBUG("Got loader des section len [%d]\n",len);
+	if(s_print_cnt>20480)
+		s_print_cnt = 0;
+	else
+		s_print_cnt ++;
+	
+//	INTERMITTENT_PRINT("Got loader des section len [%d]\n",len);
 	/*{
 	int i;
 	
@@ -624,13 +629,13 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	}*/
 	if (len < 55)
 	{
-		DEBUG("loader info too small!!!!!!!!!!\n");
+		INTERMITTENT_PRINT("loader info too small!!!!!!!!!![%d]\n",len);
 		//        return;
 	}
 
 	if (tc_crc32(data,len))
 	{
-		SIMPLE_DEBUG("loader des error !!!!!!!!!!!!!!!!!!!!\n");
+		INTERMITTENT_PRINT("loader des error !!!!!!!!!!!!!!!!!!!!\n");
 		return;
 	}
 
@@ -651,9 +656,9 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	tmp16 = *datap;
 	datap++;
 	tmp16 = (tmp16<<8)|(*datap);
-	DEBUG("loader info oui = [%x]\n",tmp16);
+//	INTERMITTENT_PRINT("loader info oui = [%x]\n",tmp16);
 	if (tmp16 != g_loaderInfo.oui){
-		SIMPLE_DEBUG("oui check failed [%x]\n",tmp16);
+		INTERMITTENT_PRINT("loader oui check failed [%x]\n",tmp16);
 		return;
 	}
 	
@@ -662,9 +667,9 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	tmp16 = *datap;
 	datap++;
 	tmp16 = (tmp16<<8)|(*datap);
-	DEBUG("loader info model type = [%x]\n",tmp16);
+	INTERMITTENT_PRINT("loader info model type = [%x]\n",tmp16);
 	if (tmp16 != g_loaderInfo.model_type){
-		SIMPLE_DEBUG("model type check failed [%x]\n",tmp16);
+		INTERMITTENT_PRINT("model type check failed [%x]\n",tmp16);
 		return;
 	}
 	
@@ -673,26 +678,26 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	//hardware_version
 	datap += 2;
 	//tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	DEBUG("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+	INTERMITTENT_PRINT("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
 	if ((datap[0] != g_loaderInfo.hardware_version[0])||(datap[1] != g_loaderInfo.hardware_version[1])
 	||(datap[2] != g_loaderInfo.hardware_version[2])||(datap[3] != g_loaderInfo.hardware_version[3]))
 	{
-		SIMPLE_DEBUG("hardware version check failed!!!!!\n");
+		INTERMITTENT_PRINT("hardware version check failed!!!!!\n");
 		return;
 	}
 	//software_version
 	datap += 4;
 	//tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
 	//DEBUG("loader info software version = [%x][%x]\n",tmp32,g_loaderInfo.software_version);
-	DEBUG("loader info software version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+	INTERMITTENT_PRINT("loader info software version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
 	if ((datap[0] == g_loaderInfo.software_version[0])&&(datap[1] == g_loaderInfo.software_version[1])
 	&&(datap[2] == g_loaderInfo.software_version[2])&&(datap[3] == g_loaderInfo.software_version[3]))
 	{
 		if(-1==software_check()){
-			SIMPLE_DEBUG("software version is equal, but ignore it and continue to do upgrade\n");
+			INTERMITTENT_PRINT("software version is equal, but ignore it and continue to do upgrade\n");
 		}
 		else{
-			SIMPLE_DEBUG("software version is equal, do no upgrade\n");
+			INTERMITTENT_PRINT("software version is equal, do no upgrade\n");
 			return;
 		}
 	}
@@ -705,11 +710,11 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	datap += 4;
 	snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 	stb_id_h = atol(tmp);
-	DEBUG("start stb id h = [%u] me h[%u]\n",stb_id_h,g_loaderInfo.stb_id_h);
+	INTERMITTENT_PRINT("start stb id h = [%u] me h[%u]\n",stb_id_h,g_loaderInfo.stb_id_h);
 	if (g_loaderInfo.stb_id_h < stb_id_h)
 	{
 		datap += 4;
-		DEBUG("stb id is not in this update sequence \n");
+		INTERMITTENT_PRINT("stb id is not in this update sequence \n");
 		return;
 	}
 	else if (g_loaderInfo.stb_id_h == stb_id_h)
@@ -717,10 +722,10 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		datap += 4;
 		snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 		stb_id_l = atol(tmp);
-		DEBUG("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
+		INTERMITTENT_PRINT("start id l=[%u], l=[%u]\n",stb_id_h, stb_id_l);
 		if (g_loaderInfo.stb_id_l < stb_id_l)
 		{
-			DEBUG("stb id is not in this update sequence \n");
+			INTERMITTENT_PRINT("stb id is not in this update sequence \n");
 			return;
 		}
 	}
@@ -729,11 +734,11 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	datap += 4;
 	snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 	stb_id_h = atol(tmp);
-	DEBUG("end stb id h [%u] me [%u]\n",stb_id_h,g_loaderInfo.stb_id_h);
+	INTERMITTENT_PRINT("end stb id h [%u] me [%u]\n",stb_id_h,g_loaderInfo.stb_id_h);
 	if (g_loaderInfo.stb_id_h > stb_id_h)
 	{
 		datap += 4;
-		DEBUG("stb id is not in this update sequence \n");
+		INTERMITTENT_PRINT("stb id is not in this update sequence \n");
 		return;
 	}
 	else if (g_loaderInfo.stb_id_h == stb_id_h)
@@ -741,17 +746,18 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		datap += 4;
 		snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 		stb_id_l = atol(tmp);
-		DEBUG("end start id h=[%u], l=[%u]\n",stb_id_h, stb_id_l);
+		INTERMITTENT_PRINT("end start id h=[%u], l=[%u]\n",stb_id_h, stb_id_l);
 		if (g_loaderInfo.stb_id_l > stb_id_l)
 		{
-			DEBUG("stb id is not in this update sequence \n");
+			INTERMITTENT_PRINT("stb id is not in this update sequence \n");
 			return;
 		}
 	}
 	else
 		datap += 4;
 	
-	DEBUG("loader_dsc_fid: %d=%x\n", loader_dsc_fid,loader_dsc_fid);
+	INTERMITTENT_PRINT("loader_dsc_fid: %d=%x\n", loader_dsc_fid,loader_dsc_fid);
+	s_print_cnt = 0;
 	TC_free_filter(loader_dsc_fid);
 	datap += 4;
 	{
@@ -1042,7 +1048,7 @@ retry:
 			}
 			else
 			{
-				//SIMPLE_DEBUG("===== chan->pid: 0x%x", chan->pid);
+				//PRINTF("===== chan->pid: 0x%x", chan->pid);
 				int j = 0;
 				for(j = 0; j < max_filter_num; j++)
 				{
@@ -1077,7 +1083,7 @@ retry:
 					{
 						if (f->hdle)
 						{
-							//SIMPLE_DEBUG("call fid=%d, chan->pid=0x%x\n", f->fid,chan->pid);
+							//PRINTF("call fid=%d, chan->pid=0x%x\n", f->fid,chan->pid);
 							f->hdle(f->fid, chanbuf, sec_len, f->userdata);
 						}
 						break;

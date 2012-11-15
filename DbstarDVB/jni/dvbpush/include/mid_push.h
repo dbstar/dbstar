@@ -21,4 +21,6 @@ int push_decoder_pause();
 int push_decoder_resume();
 void push_rely_condition_set(int rely_cond);
 
+int push_decoder_buf_init();
+
 #endif
