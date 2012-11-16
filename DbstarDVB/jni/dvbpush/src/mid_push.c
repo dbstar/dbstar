@@ -32,7 +32,8 @@
 #include "multicast.h"
 
 #define MAX_PACK_LEN (1500)
-#define MAX_PACK_BUF (200000)		//定义缓冲区大小，单位：包	1500*200000=280M
+#define MAX_PACK_BUF (100000)		//定义缓冲区大小，单位：包	1500*200000=280M
+#define MEMSET_PUSHBUF_SAFE			// if MAX_PACK_BUF<200000 define
 
 #define XML_NUM			8
 static PUSH_XML_S s_push_xml[XML_NUM];
@@ -47,8 +48,6 @@ static pthread_mutex_t mtx_push_rely_condition = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_push_rely_condition = PTHREAD_COND_INITIALIZER;
 static int s_push_rely_condition = 0;
 static int push_idle = 0;
-//static int s_mpe_send_pause = 0;
-//static int s_push_decoder_pause = 0;
 
 //数据包结构
 typedef struct tagDataBuffer
@@ -111,10 +110,8 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	static unsigned int rx_fifo_dropped = 0;
 	*/
 	
-//	if(1==s_mpe_send_pause){
-//		DEBUG("do nothing\n");
-//		s_mpe_send_pause = 2;
-//	}
+//	PRINTF("g_recvBuffer=%p\n", g_recvBuffer);
+	//return 0;
 	
 	if (pkt_len < 16) {
 		printf("IP/MPE packet length = %d too small.\n", pkt_len);
@@ -209,32 +206,6 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	return 0;
 }
 
-int push_decoder_pause()
-{
-//	push_rely_condition_set(RELY_CONDITION_UPGRADE);
-//	s_push_decoder_pause = 1;
-//	s_mpe_send_pause = 1;
-//	
-//	while(1){
-//		DEBUG("s_push_decoder_pause=%d, s_mpe_send_pause=%d\n", s_push_decoder_pause,s_mpe_send_pause);
-//		if(2==s_push_decoder_pause)
-//			break;
-//			
-//		sleep(1);
-//	}
-//	push_decoder_buf_uninit();
-	return 0;
-}
-
-int push_decoder_resume()
-{
-//	push_rely_condition_set(0-RELY_CONDITION_UPGRADE);
-//	s_push_decoder_pause = 0;
-//	s_mpe_send_pause = 0;
-//	
-	return 0;
-}
-
 void *push_decoder_thread()
 {
 	unsigned char *pBuf = NULL;
@@ -242,37 +213,12 @@ void *push_decoder_thread()
 	int read_nothing_count = 0;
     short len;
 	
-//PUSHTASK_START:
-//	s_push_decoder_pause = 2;
-//	pthread_mutex_lock(&mtx_push_rely_condition);
-//	pthread_cond_wait(&cond_push_rely_condition,&mtx_push_rely_condition); //wait
-//	pthread_mutex_unlock(&mtx_push_rely_condition);
-//	/*
-//	 网络和硬盘都必须准备好才能启动此push。
-//	*/
-//	if((RELY_CONDITION_NET&s_push_rely_condition)&&(RELY_CONDITION_HD&s_push_rely_condition)&&(!(RELY_CONDITION_UPGRADE&s_push_rely_condition)))
-//		DEBUG("push rely condition is ready\n");
-//	else if(s_push_rely_condition&RELY_CONDITION_EXIT){
-//		DEBUG("exit from here by external action\n");
-//		return NULL;
-//	}
-//	else{
-//		DEBUG("push rely condition is not ready, %d\n", s_push_rely_condition);
-//		goto PUSHTASK_START;
-//	}
-	
 	DEBUG("push decoder thread will goto main loop\n");
-//	s_push_decoder_pause = 0;
 	s_decoder_running = 1;
 rewake:	
 	DEBUG("go to push main loop\n");
 	while (1==s_decoder_running && NULL!=g_recvBuffer)
 	{
-//		if(1==s_push_decoder_pause){
-//			DEBUG("s_push_decoder_pause=%d\n", s_push_decoder_pause);
-//			goto PUSHTASK_START;
-//		}
-		
 		len = g_recvBuffer[rindex].m_len;
 		if (len)
 		{
@@ -310,9 +256,13 @@ rewake:
 			DEBUG("push thread in idle\n");
 			sleep(15);
 		}
-		//memset(g_recvBuffer,0 ,sizeof(DataBuffer)*MAX_PACK_BUF);
+#ifdef MEMSET_PUSHBUF_SAFE
+		memset(g_recvBuffer,0 ,sizeof(DataBuffer)*MAX_PACK_BUF);
+		DEBUG("g_recvBuffer=%p\n", g_recvBuffer);
+#else
 		g_recvBuffer[0].m_len = 0;
 		g_recvBuffer[1].m_len = 0;
+#endif
 		g_wIndex = 0;
 		rindex = 0;
 		push_idle = 0;
@@ -739,17 +689,14 @@ int push_decoder_buf_init()
 	}
 	else
 		DEBUG("malloc for push decoder buffer %d*%d success\n", sizeof(DataBuffer), MAX_PACK_BUF);
-	
-	//memset(g_recvBuffer,0,sizeof(DataBuffer)*MAX_PACK_BUF);	
+
+#ifdef MEMSET_PUSHBUF_SAFE	
+	memset(g_recvBuffer,0,sizeof(DataBuffer)*MAX_PACK_BUF);	
 	DEBUG("g_recvBuffer=%p\n", g_recvBuffer);
-	
+#else	
 	g_recvBuffer[0].m_len = 0;
 	g_recvBuffer[1].m_len = 0;
-//	int i = 0;
-//	for(i=0;i<MAX_PACK_BUF;i++)
-//		g_recvBuffer[i].m_len = 0;
-//	
-//	DEBUG("g_recvBuffer=%p aaaaaaaaa\n", g_recvBuffer);
+#endif
 	
 	return 0;
 }
