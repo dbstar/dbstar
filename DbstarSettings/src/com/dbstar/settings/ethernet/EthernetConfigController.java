@@ -328,33 +328,35 @@ public class EthernetConfigController {
 			String gateway = mGw.getText().toString();
 			String dns = mDns.getText().toString();
 
-			if ((ip.isEmpty() || !isIpAddress(ip))
-					&& (mask.isEmpty() || !isIpAddress(mask))) {
+			boolean valid = true;
+
+			if (ip.isEmpty() || !isIpAddress(ip)) {
+				valid = false;
+			}
+
+			if (mask.isEmpty() || !isIpAddress(mask)) {
+				valid = false;
+			}
+
+			if (!gateway.isEmpty() && !isIpAddress(gateway)) {
+				valid = false;
+			}
+
+			if (!dns.isEmpty() && !isIpAddress(dns)) {
+				valid = false;
+			}
+
+			if (!valid) {
 				Toast.makeText(mContext, R.string.eth_settings_error,
 						Toast.LENGTH_LONG).show();
 				return;
-			} else {
-				info.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_MANUAL);
-				info.setIpAddress(ip);
-				info.setRouteAddr(gateway);
-				info.setDnsAddr(dns);
-				info.setNetMask(mask);
 			}
 
-			// if (isIpAddress(mIpaddr.getText().toString())
-			// && isIpAddress(mGw.getText().toString())
-			// && isIpAddress(mDns.getText().toString())
-			// && isIpAddress(mMask.getText().toString())) {
-			// info.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_MANUAL);
-			// info.setIpAddress(mIpaddr.getText().toString());
-			// info.setRouteAddr(mGw.getText().toString());
-			// info.setDnsAddr(mDns.getText().toString());
-			// info.setNetMask(mMask.getText().toString());
-			// } else {
-			// Toast.makeText(mContext, R.string.eth_settings_error,
-			// Toast.LENGTH_LONG).show();
-			// return;
-			// }
+			info.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_MANUAL);
+			info.setIpAddress(ip);
+			info.setRouteAddr(gateway);
+			info.setDnsAddr(dns);
+			info.setNetMask(mask);
 		}
 
 		mEthManager.updateEthDevInfo(info);
