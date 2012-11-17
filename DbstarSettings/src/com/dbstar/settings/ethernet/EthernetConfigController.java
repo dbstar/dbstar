@@ -10,12 +10,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.NetworkInfo;
 import android.net.NetworkUtils;
 import android.net.DhcpInfo;
 import android.net.ethernet.EthernetManager;
 import android.net.ethernet.EthernetDevInfo;
+import android.net.ethernet.EthernetStateTracker;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
 import android.view.View;
@@ -50,6 +53,10 @@ public class EthernetConfigController {
 
 	private EthernetManager mEthManager;
 	private EthernetDevInfo mEthInfo;
+
+	private final IntentFilter mIntentFilter;
+	private Handler mHandler;
+
 	private boolean mEnablePending;
 	Button mSaveButton;
 
@@ -58,15 +65,78 @@ public class EthernetConfigController {
 
 	String mDev = null;
 
+	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			int state = intent.getIntExtra(EthernetManager.EXTRA_ETH_STATE,
+					EthernetStateTracker.EVENT_HW_DISCONNECTED);
+			Log.d(TAG, " recv state=" + state);
+			if (state == EthernetStateTracker.EVENT_HW_CONNECTED
+					|| state == EthernetStateTracker.EVENT_HW_PHYCONNECTED) {
+				handleNetConnected(true);
+			} else if (state == EthernetStateTracker.EVENT_HW_DISCONNECTED) {
+				// || state == EthernetStateTracker.EVENT_HW_CHANGED) {
+				// Unfortunately, the interface will still be listed when this
+				// intent is sent, so delay updating.
+				handleNetConnected(false);
+			}
+		}
+	};
+
+	boolean mIsNetConnected = false;
+
+	void handleNetConnected(boolean connected) {
+
+		Log.d(TAG, " =================== network connected =  " + connected);
+
+		mIsNetConnected = connected;
+		mHandler.post(new Runnable() {
+			public void run() {
+				setConnectionStatus();
+			}
+		});
+	}
+
+	void setConnectionStatus() {
+		if (mIsNetConnected) {
+			if (mDhcpSwitchIndicator.isChecked()) {
+				mDhcpConnectState.setVisibility(View.VISIBLE);
+			}
+			if (mManualSwitchIndicator.isChecked()) {
+				mManualConnectState.setVisibility(View.VISIBLE);
+			}
+
+		} else {
+			if (mDhcpSwitchIndicator.isChecked()) {
+				mDhcpConnectState.setVisibility(View.INVISIBLE);
+			}
+			if (mManualSwitchIndicator.isChecked()) {
+				mManualConnectState.setVisibility(View.INVISIBLE);
+			}
+		}
+	}
+
 	public EthernetConfigController(Activity activity,
 			EthernetManager ethManager) {
 		mActivity = activity;
 		mEthManager = ethManager;
 		mContext = activity;
 
+		mIntentFilter = new IntentFilter(
+				EthernetManager.ETH_STATE_CHANGED_ACTION);
+		mHandler = new Handler();
+
 		buildDialogContent(activity);
 		enableAfterConfig();
 
+	}
+
+	public void resume() {
+		getContext().registerReceiver(mReceiver, mIntentFilter);
+	}
+
+	public void pause() {
+		getContext().unregisterReceiver(mReceiver);
 	}
 
 	public Context getContext() {
