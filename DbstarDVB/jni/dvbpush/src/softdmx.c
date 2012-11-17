@@ -19,7 +19,6 @@ static pthread_t loaderthread = 0;
 static int loaderAction = 0;
 static int s_print_cnt = 0;
 
-extern int TC_loaner_to_push_order(int ord);
 extern int TC_loader_get_push_state(void);
 extern int TC_loader_get_push_buf_size(void);
 extern unsigned char * TC_loader_get_push_buf_pointer(void);
@@ -125,7 +124,7 @@ reLoader:
 	while (loaderAction == 0)
 	{
 		sleep(2);
-		DEBUG("loaderAction == 0\n");
+		PRINTF("loaderAction == 0\n");
 	}
 	/*fp=fopen("localfile","rb");// localfileÎÄ¼þÃû
 	fseek(fp,0,SEEK_SET);
@@ -258,7 +257,6 @@ int TC_loader_filter_handle(int aof) //1 allocate loader filter, 0 free loader f
 	DEBUG("aof: %d\n", aof);
     if(aof)
     {
-    	DEBUG("aof---------------------\n");
         TC_loader_to_push_order(0);  //let push idle;
         memset(&chanFilter0,0,sizeof(chanFilter0));
         memcpy(&chanFilter0,&chanFilter[0],sizeof(chanFilter0));
@@ -269,7 +267,6 @@ int TC_loader_filter_handle(int aof) //1 allocate loader filter, 0 free loader f
     }
     else
     {
-    	DEBUG("aof======================\n");
         memcpy(&chanFilter[0],&chanFilter0,sizeof(chanFilter0));
         chanFilter[0].bytes = 0;
         chanFilter[0].stage  = CHAN_STAGE_START;
@@ -427,7 +424,7 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 				total_loader++;
 				
 				if(-2==s_first_package_flag){
-					DEBUG("supply seq: %d, len=%d, total_loader=%d\n", seq, len, total_loader);
+					PRINTF("supply seq: %d, len=%d, total_loader=%d\n", seq, len, total_loader);
 				}
 //				if(LOADER_PACKAGE_SIZE!=len){
 //					DEBUG("monitor this package: seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=%d\n", seq, len, maxSeq, total_loader, totalLen);
@@ -605,7 +602,6 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	unsigned char *datap=NULL;
 	unsigned char mark = 0;
 	char tmp[10];
-	static int loader_init = 0;
 	unsigned short tmp16=0;
 	unsigned int stb_id_l=0,stb_id_h=0;
 	
@@ -645,12 +641,8 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	
 	datap += 4;
 	
-	if (loader_init == 0)
-	{
-		get_loader_message(&mark,&g_loaderInfo);
-		//read_loaderinfo(&g_loaderInfo);
-		loader_init = 1;
-	}
+	memset(&g_loaderInfo, 0, sizeof(g_loaderInfo));
+	get_loader_message(&mark,&g_loaderInfo);
 	
 	//oui
 	tmp16 = *datap;
@@ -689,7 +681,8 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	datap += 4;
 	//tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
 	//DEBUG("loader info software version = [%x][%x]\n",tmp32,g_loaderInfo.software_version);
-	INTERMITTENT_PRINT("loader info software version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+	INTERMITTENT_PRINT("new software ver: [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
+	INTERMITTENT_PRINT("cur software ver: [%u][%u][%u][%u]\n",g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
 	if ((datap[0] == g_loaderInfo.software_version[0])&&(datap[1] == g_loaderInfo.software_version[1])
 	&&(datap[2] == g_loaderInfo.software_version[2])&&(datap[3] == g_loaderInfo.software_version[3]))
 	{
@@ -701,6 +694,9 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 			return;
 		}
 	}
+	else
+		INTERMITTENT_PRINT("software version is not equal, do upgrade\n");
+		
 	g_loaderInfo.software_version[0] = datap[0];
 	g_loaderInfo.software_version[1] = datap[1];
 	g_loaderInfo.software_version[2] = datap[2];

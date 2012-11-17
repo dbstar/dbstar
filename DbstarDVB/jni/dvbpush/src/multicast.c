@@ -129,7 +129,10 @@ int igmp_recvbuf_init()
 
 int data_stream_status_get()
 {
-	return s_data_stream_status;
+	if(s_data_stream_status>0)
+		return 1;
+	else
+		return 0;
 }
 
 static void *igmp_thread()
@@ -322,16 +325,17 @@ MULTITASK_START:
 		recv_len = recvfrom(sock, p_buf+p_write, dfree, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
 		if( recv_len > 0 )
 		{
-			s_data_stream_status = 1;
-			//DEBUG("igmp recv len: %d\n:", recv_len);
+			s_data_stream_status = 8;
 			p_write += recv_len;
 			if (p_write >= MULTI_BUF_SIZE)
 				p_write -= MULTI_BUF_SIZE;
 			//DEBUG("recv_len=%d\n", recv_len);
 			//multi_buf_write(buf, recv_len);
 		}
-		else
-			s_data_stream_status = 0;
+		else{
+			if(s_data_stream_status>0)
+				s_data_stream_status --;
+		}
 		
 		if (recv_len < 1024)
 		{
@@ -521,10 +525,10 @@ int softdvb_init()
 	
 	chanFilterInit();
 	
-	// prog/file
-	unsigned short root_pid = root_channel_get();
-	int filter1 = alloc_filter(root_pid, 0);
-	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
+//	// prog/file
+//	unsigned short root_pid = root_channel_get();
+//	int filter1 = alloc_filter(root_pid, 0);
+//	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
 	
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0xf0;
@@ -532,11 +536,11 @@ int softdvb_init()
 	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
 	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
-	memset(&param,0,sizeof(param));
-	param.filter[0] = 0x1;
-	param.mask[0] = 0xff;
-	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
-	DEBUG("set ca filter1, pid=0x1, fid=%d\n", ca_dsc_fid);
+//	memset(&param,0,sizeof(param));
+//	param.filter[0] = 0x1;
+//	param.mask[0] = 0xff;
+//	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
+//	DEBUG("set ca filter1, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
 #ifdef PUSH_LOCAL_TEST
 	// prog/video

@@ -33,6 +33,9 @@ typedef enum {
 	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011,    // dvbpush初始化成功
 	STATUS_DATA_SIGNAL_ON			= 0x30012,    // 信号正常，即有ts流
 	STATUS_DATA_SIGNAL_OFF			= 0x30013,    // 无信号，即无ts流
+	STATUS_COLUMN_REFRESH			= 0x30014,    // 动态栏目发生更新
+	STATUS_PREVIEW_REFRESH			= 0x30015,    // 首页小片发生更新
+	STATUS_INTERFACE_REFRESH		= 0x30016,    // 界面产品发生更新
 	
 	UPGRADE_NEW_VER                 = 0x20001,     // 有新版本到来，用户选择升级
 	UPGRADE_NEW_VER_FORCE           = 0x20002,     // 有新版本到来，强制升级
