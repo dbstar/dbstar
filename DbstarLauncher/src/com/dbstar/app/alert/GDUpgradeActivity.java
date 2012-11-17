@@ -39,6 +39,7 @@ public class GDUpgradeActivity extends Activity implements View.OnClickListener 
 			rebootInstallPackage(mPackageFile);
 		} else {
 			Intent cancelIntent = new Intent(GDCommon.ActionUpgradeCancelled);
+			cancelIntent.putExtra(GDCommon.KeyPackgeFile, mPackageFile);
 			sendBroadcast(cancelIntent);
 		}
 

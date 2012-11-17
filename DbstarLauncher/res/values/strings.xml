@@ -86,10 +86,10 @@
     <string name="receivestatus_status_nosignal">无信号</string>
 
     <!-- guide list -->
-    <string name="checher_receive">接受</string>
-    <string name="checher_not_receive">不接受</string>
+    <string name="checher_receive">接收</string>
+    <string name="checher_not_receive">不接收</string>
     <string name="ok_key">OK</string>
-    <string name="checher_switch_receive_status">切换接受状态</string>
+    <string name="checher_switch_receive_status">切换接收状态</string>
     <string name="back_to_home_and_save">返回自动保存</string>
     <string name="back_to_home">返回首页</string>
 

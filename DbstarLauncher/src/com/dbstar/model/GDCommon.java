@@ -1,5 +1,7 @@
 package com.dbstar.model;
 
+import android.content.Intent;
+
 public class GDCommon {
 	public static final int MSG_TASK_FINISHED = 1;
 	public static final int MSG_MEDIA_MOUNTED = 2;
@@ -13,16 +15,16 @@ public class GDCommon {
 
 	public static final int MSG_ADD_TO_FAVOURITE = 10;
 	public static final int MSG_DELETE = 11;
-	
+
 	public static final int MSG_USER_CHANGE_GUIDELIST = 12;
-	
+
 	public static final int MSG_GET_NETWORKINFO = 13;
 	public static final int MSG_SET_NETWORKINFO = 14;
 
 	public static final int MSG_DATA_SIGNAL_STATUS = 15;
 	public static final int STATUS_HASSIGNAL = 0;
 	public static final int STATUS_NOSIGNAL = 1;
-	
+
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "chi";
@@ -40,11 +42,11 @@ public class GDCommon {
 
 	public static final String ColumnIDReceiveChooser = "9801";
 	public static final String ColumnIDDownloadStatus = "9802";
-	
+
 	public static final String ColumnIDGeneralInfoSettings = "9901";
 	public static final String ColumnIDMultimediaSettings = "9902";
 	public static final String ColumnIDNetworkSettings = "9903";
-	
+
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
 
@@ -54,8 +56,11 @@ public class GDCommon {
 	public static final String ActionAddFavourite = "com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE";
 	public static final String ActionDelete = "com.dbstar.DbstarLauncher.Action.DELETE";
 	public static final String ActionUpgradeCancelled = "com.dbstar.DbstarLauncher.Action.UPGRADE_CANCELLED";
-	
+
 	public static final String ActionGetNetworkInfo = "com.dbstar.DbstarLauncher.Action.GET_NETWORKINFO";
 	public static final String ActionUpateNetworkInfo = "com.dbstar.DbstarLauncher.Action.UPDATE_NETWORKINFO";
 	public static final String ActionSetNetworkInfo = "com.dbstar.DbstarLauncher.Action.SET_NETWORKINFO";
+
+	public static final String ActionScreenOn = Intent.ACTION_SCREEN_ON;
+	public static final String ActionScreenOff = Intent.ACTION_SCREEN_OFF;
 }

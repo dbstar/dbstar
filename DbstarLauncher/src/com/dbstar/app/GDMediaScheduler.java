@@ -183,6 +183,10 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		if (!mResourcesReady || !mUIReady) {
 			return;
 		}
+		
+		if (mResources == null || mResources.length == 0) {
+			return;
+		}
 
 		boolean successed = false;
 		while (true) {
@@ -302,7 +306,8 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 			if (mStoreState.Type == RVideo) {
 				if (mStoreState.PlayerState == PLAYER_STATE_PREPARED) {
-					getResourceIndex();
+//					getResourceIndex();
+					mResourceIndex = mStoreState.index;
 				} else if (mStoreState.PlayerState == PLAYER_STATE_IDLE) {
 					mResourceIndex = mStoreState.index;
 				} else if (mStoreState.PlayerState == PLAYER_STATE_COMPLETED
@@ -337,7 +342,15 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		return successed;
 	}
 
-	public void saveMediaState() {
+	public void resume() {
+		playMedia();
+	}
+	
+	public void pause() {
+		saveMediaState();
+	}
+	
+	private void saveMediaState() {
 		Log.d(TAG, "storeMediaState");
 
 		mHandler.removeCallbacks(mUpdateTimeTask);

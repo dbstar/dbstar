@@ -190,7 +190,7 @@ public class GDDBStarClient {
 		entry.RawTotal = Long.valueOf(items[3]);
 		// Log.d(TAG, "progress = " + entry.RawProgress + " total = " +
 		// entry.RawTotal);
-		entry.ConverSize();
+		entry.ConvertSize();
 
 		return entry;
 	}

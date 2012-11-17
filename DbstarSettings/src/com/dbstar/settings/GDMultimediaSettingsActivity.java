@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -154,7 +155,6 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 	@Override
 	public void onStart() {
 		super.onStart();
-
 	}
 
 	public void initializeView() {
@@ -236,10 +236,8 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 		mVideoOutputView.setOnItemClickListener(mOnVideoModeClickedListener);
 		mAudioOutputView.setOnItemClickListener(mOnAudioModeSelectedListener);
 
-		mVideoOutputView.setOnItemSelectedListener(mItemSelectedListener);
-		mAudioOutputView.setOnItemSelectedListener(mItemSelectedListener);
-
-		mVideoOutputView.requestFocus();
+		mVideoOutputView.setOnItemSelectedListener(mVideoItemSelectedListener);
+		mAudioOutputView.setOnItemSelectedListener(mAudioItemSelectedListener);
 	}
 
 	int mVideoSelectedMode = -1;
@@ -322,11 +320,43 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 	};
 
+	int mAudioLastSelectedItem = -1;
+	int mAudioSelectedItem = -1;
+	View mAudioLastSelectedView = null, mAudioSelectedView = null;
+
+	OnItemSelectedListener mAudioItemSelectedListener = new OnItemSelectedListener() {
+
+		@Override
+		public void onItemSelected(AdapterView<?> parent, View view,
+				int position, long id) {
+
+			mAudioLastSelectedView = mAudioSelectedView;
+			mAudioSelectedView = view;
+
+			if (mAudioLastSelectedView != null) {
+				ListAdapter.ViewHolder holder = (ListAdapter.ViewHolder) mAudioLastSelectedView
+						.getTag();
+				holder.modeViewHighlight.setVisibility(View.GONE);
+				holder.modeView.setVisibility(View.VISIBLE);
+			}
+
+			ListAdapter.ViewHolder holder = (ListAdapter.ViewHolder) mAudioSelectedView
+					.getTag();
+			holder.modeViewHighlight.setVisibility(View.VISIBLE);
+			holder.modeView.setVisibility(View.GONE);
+		}
+
+		@Override
+		public void onNothingSelected(AdapterView<?> arg0) {
+		}
+
+	};
+
 	int mLastSelectedItem = -1;
 	int mSelectedItem = -1;
 	View mLastSelectedView = null, mSelectedView = null;
 
-	OnItemSelectedListener mItemSelectedListener = new OnItemSelectedListener() {
+	OnItemSelectedListener mVideoItemSelectedListener = new OnItemSelectedListener() {
 
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View view,
@@ -370,6 +400,11 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 	private void setAudioModeSelected(int position, boolean selected) {
 		OutputMode mode = mAudioModes.get(position);
 		mode.isSelected = selected;
+
+		if (selected) {
+			String value = mAudioModeValues[position];
+			SoundSettings.setAudioOutputMode(mode.modeValue, value);
+		}
 	}
 
 	private class ListAdapter extends BaseAdapter {

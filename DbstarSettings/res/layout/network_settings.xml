@@ -118,7 +118,7 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
                         android:inputType="number|text"
-                        android:nextFocusRight="@+id/wifi_switch_indicator"
+                        android:nextFocusRight="@+id/wifi_switch_button"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -142,8 +142,8 @@
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
-                        android:inputType="number"
-                        android:nextFocusRight="@+id/wifi_switch_indicator"
+                        android:inputType="number|text"
+                        android:nextFocusRight="@+id/wifi_switch_button"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -172,7 +172,7 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
                         android:inputType="number|text"
-                        android:nextFocusRight="@+id/wifi_switch_indicator"
+                        android:nextFocusRight="@+id/wifi_switch_button"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>
@@ -196,9 +196,9 @@
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
                         android:background="@drawable/textview_bgselector"
-                        android:inputType="number"
+                        android:inputType="number|text"
                         android:nextFocusDown="@id/gateway_serialnumber"
-                        android:nextFocusRight="@+id/wifi_switch_indicator"
+                        android:nextFocusRight="@+id/wifi_switch_button"
                         android:scrollHorizontally="true"
                         android:singleLine="true" />
                 </LinearLayout>

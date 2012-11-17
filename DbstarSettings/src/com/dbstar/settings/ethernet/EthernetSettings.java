@@ -84,11 +84,19 @@ public class EthernetSettings implements View.OnClickListener {
 		if (mEthEnabler != null) {
 			mEthEnabler.resume();
 		}
+		
+		if (mController != null) {
+			mController.resume();
+		}
 	}
 
 	public void onPause() {
 		if (mEthEnabler != null) {
 			mEthEnabler.pause();
+		}
+		
+		if (mController != null) {
+			mController.pause();
 		}
 	}
 

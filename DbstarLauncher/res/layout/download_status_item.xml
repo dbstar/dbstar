@@ -18,16 +18,17 @@
 
     <ProgressBar
         android:id="@+id/progress_bar"
-        style="@style/progress_bar"
         android:layout_width="420dp"
         android:layout_height="wrap_content"
         android:layout_gravity="left|center_vertical"
         android:layout_marginLeft="10dp"
-        android:background="@drawable/progress_horizontal_bg"
+        android:background="@null"
         android:max="100"
-        android:minHeight="10dip"
+        android:maxHeight="20dip"
+        android:minHeight="20dip"
         android:progress="0"
-        android:progressDrawable="@drawable/progress_horizontal" />
+        android:indeterminateOnly="false"
+        android:progressDrawable="@drawable/progressbar_horizontal_layer" />
 
     <TextView
         android:id="@+id/text_status"
