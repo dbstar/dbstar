@@ -32,8 +32,8 @@
 #include "multicast.h"
 
 #define MAX_PACK_LEN (1500)
-#define MAX_PACK_BUF (100000)		//定义缓冲区大小，单位：包	1500*200000=280M
-#define MEMSET_PUSHBUF_SAFE			// if MAX_PACK_BUF<200000 define
+#define MAX_PACK_BUF (140000)		//定义缓冲区大小，单位：包	1500*200000=280M
+//#define MEMSET_PUSHBUF_SAFE			// if MAX_PACK_BUF<200000 define
 
 #define XML_NUM			8
 static PUSH_XML_S s_push_xml[XML_NUM];
@@ -85,6 +85,7 @@ static int s_decoder_running = 0;
 static char *s_dvbpush_info = NULL;
 static time_t s_recv_status_refresh_pin = 0;
 static int s_push_monitor_active = 0;
+static int s_dvbpush_getinfo_start = 0;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
@@ -350,32 +351,31 @@ static int prog_is_valid(PROG_S *prog)
 
 void dvbpush_getinfo_start()
 {
-	DEBUG("start.........\n");
+	DEBUG("dvbpush getinfo start >>\n");
 	s_push_monitor_active = push_monitor_regist(1);
 	DEBUG("here start %d progs\n", s_push_monitor_active);
 	
-	if(1==data_stream_status_get())
-		msg_send2_UI(STATUS_DATA_SIGNAL_ON, NULL, 0);
-	else
-		msg_send2_UI(STATUS_DATA_SIGNAL_OFF, NULL, 0);
+	msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
+	s_dvbpush_getinfo_start = 1;
 }
 
 void dvbpush_getinfo_stop()
 {
+	s_dvbpush_getinfo_start = 0;
 	push_monitor_regist(0);
 	
 	if(NULL!=s_dvbpush_info){
-		DEBUG("FREE s_dvbpush_info\n");
+		DEBUG("FREE s_dvbpush_info=%p\n", s_dvbpush_info);
 		free(s_dvbpush_info);
 		s_dvbpush_info = NULL;
 	}
-	DEBUG("here stop\n");
+	DEBUG("dvbpush getinfo stop ==\n");
 }
 
 int dvbpush_getinfo(char **p, unsigned int *len)
 {
 	if(NULL!=s_dvbpush_info){
-		DEBUG("FREE s_dvbpush_info\n");
+		DEBUG("FREE s_dvbpush_info=%p\n", s_dvbpush_info);
 		free(s_dvbpush_info);
 		s_dvbpush_info = NULL;
 	}
@@ -395,7 +395,7 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 		s_dvbpush_info = malloc(info_size);
 		
 		if(s_dvbpush_info){
-			DEBUG("malloc %d Bs for push info\n", info_size);
+			DEBUG("malloc %d Bs for push info, p=%p\n", info_size, s_dvbpush_info);
 			s_dvbpush_info[0]='\0';
 			/*
 			监测节目接收进度
@@ -454,23 +454,22 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 2、只有UI上进入查看进度的界面后，通知底层去查询，其他时间查询没有意义。
 3、当push无数据后，再轮询若干遍（等待缓冲数据写入硬盘）后就不再轮询。
 */
-//void *push_monitor_thread()
-//{
-////	char *p = NULL;
-////	unsigned int len = 0;
-//	
-//	s_monitor_running = 1;
-//	//dvbpush_getinfo_start();
-//	while (1==s_monitor_running)
-//	{
-//		sleep(5);
-//		//dvbpush_getinfo(&p, &len);
-//	}
-//	//dvbpush_getinfo_stop();
-//	DEBUG("exit from push monitor thread\n");
-//	
-//	return NULL;
-//}
+void *push_monitor_thread()
+{
+	s_monitor_running = 1;
+	
+	while (1==s_monitor_running)
+	{
+		sleep(2);
+		if(1==s_dvbpush_getinfo_start){
+			sleep(1);
+			msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
+		}
+	}
+	DEBUG("exit from push monitor thread\n");
+	
+	return NULL;
+}
 
 void *push_xml_parse_thread()
 {
@@ -731,7 +730,6 @@ int mid_push_init(char *push_conf)
 		s_prgs[i].total = 0LL;
 	}
 	push_monitor_reset();
-//	push_rely_condition_set(0-RELY_CONDITION_UPGRADE);
 	
 	/*
 	* 初始化PUSH库
@@ -753,10 +751,10 @@ int mid_push_init(char *push_conf)
 	pthread_create(&tidDecodeData, NULL, push_decoder_thread, NULL);
 	//pthread_detach(tidDecodeData);
 	
-//	//创建监视线程
-//	pthread_t tidMonitor;
-//	pthread_create(&tidMonitor, NULL, push_monitor_thread, NULL);
-//	pthread_detach(tidMonitor);
+	//创建监视线程
+	pthread_t tidMonitor;
+	pthread_create(&tidMonitor, NULL, push_monitor_thread, NULL);
+	pthread_detach(tidMonitor);
 	
 	//创建xml解析线程
 	pthread_t tidxmlparse;
@@ -847,7 +845,7 @@ static int mid_push_regist(char *id, char *content_uri, long long content_len)
 			char sqlite_cmd[256];
 			memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
 			int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID='%s' AND StrLang='%s' AND StrName='Name' AND Extension='';", 
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='Publication' AND EntityID='%s' AND StrLang='%s' AND StrName='PublicationName' AND Extension='';", 
 				s_prgs[i].id, language_get());
 		
 			int ret_sqlexec = sqlite_read(sqlite_cmd, s_prgs[i].caption, sqlite_cb);
