@@ -963,6 +963,7 @@ public class GDDataProviderService extends Service {
 
 				case REQUESTTYPE_GETPREVIEWS: {
 					PreviewData[] data = mDataModel.getPreviews();
+
 					ArrayList<PreviewData> previews = new ArrayList<PreviewData>();
 					if (data != null && data.length > 0) {
 
@@ -976,6 +977,7 @@ public class GDDataProviderService extends Service {
 
 						task.Data = previews.toArray(new PreviewData[previews
 								.size()]);
+
 						taskFinished(task);
 					}
 					break;

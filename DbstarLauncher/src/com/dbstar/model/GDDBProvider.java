@@ -128,9 +128,6 @@ public class GDDBProvider {
 				db.setTransactionSuccessful();
 			} finally {
 				db.endTransaction();
-			}
-
-			if (db != null) {
 				db.close();
 			}
 		}
@@ -164,8 +161,10 @@ public class GDDBProvider {
 
 	protected synchronized SQLiteDatabase reopenDatabase(String dbFile,
 			boolean isReadOnly) {
-		if (mDataBase != null && mDataBase.isOpen()) {
-			mDataBase.close();
+		if (mDataBase != null) {
+			if (mDataBase.isOpen()) {
+				mDataBase.close();
+			}
 			mDataBase = null;
 		}
 
@@ -188,17 +187,13 @@ public class GDDBProvider {
 
 		SQLiteDatabase db = null;
 
-		if (!isNeedReopen(dbFile)) {
-			if (mDataBase != null) {
-				Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
-				if (mDataBase.isOpen()) {
-					db = mDataBase;
-				} else {
-					mDataBase = null;
-				}
+		if (mDataBase != null) {
+			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
+			if (mDataBase.isOpen()) {
+				db = mDataBase;
+			} else {
+				mDataBase = null;
 			}
-		} else {
-			db = reopenDatabase(dbFile, true);
 		}
 
 		if (db == null) {
@@ -222,44 +217,27 @@ public class GDDBProvider {
 
 		SQLiteDatabase db = null;
 
-		if (!isNeedReopen(dbFile)) {
-			if (mDataBase != null) {
-				Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
+		if (mDataBase != null) {
+			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
 
-				if (mDataBase.isOpen()) {
-					Log.d(TAG,
-							"mDataBase.isReadOnly() " + mDataBase.isReadOnly());
-					if (!mDataBase.isReadOnly()) {
-						db = mDataBase;
-					} else {
-						mDataBase.close();
-						mDataBase = null;
-					}
+			if (mDataBase.isOpen()) {
+				Log.d(TAG,
+						"mDataBase.isReadOnly() " + mDataBase.isReadOnly());
+				if (!mDataBase.isReadOnly()) {
+					db = mDataBase;
 				} else {
+					mDataBase.close();
 					mDataBase = null;
 				}
+			} else {
+				mDataBase = null;
 			}
-		} else {
-			db = openDatabase(dbFile, false);
 		}
 
 		if (db == null) {
 			db = openDatabase(dbFile, false);
 		}
 
-		return db;
-	}
-
-	protected synchronized SQLiteDatabase reOpenDb(boolean isReadOnly) {
-		SQLiteDatabase db = null;
-		if (isReadOnly) {
-			db = getReadableDatabase();
-		} else {
-			db = getWriteableDatabase();
-		}
-		if (db != null && db.isOpen()) {
-			onOpen(db, isReadOnly);
-		}
 		return db;
 	}
 
