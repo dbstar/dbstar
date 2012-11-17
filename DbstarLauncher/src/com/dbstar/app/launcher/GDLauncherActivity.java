@@ -194,9 +194,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public void onResume() {
 		super.onResume();
-
-		Log.d(TAG, "++++++onResume");
-
+		
 		mMainMenu.requestFocus();
 		
 		mMediaScheduler.resume();
@@ -204,8 +202,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public void onPause() {
 		super.onPause();
-
-		Log.d(TAG, "++++++onPause");
 
 		mMediaScheduler.pause();
 	}
