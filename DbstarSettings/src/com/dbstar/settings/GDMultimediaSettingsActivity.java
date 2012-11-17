@@ -400,6 +400,11 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 	private void setAudioModeSelected(int position, boolean selected) {
 		OutputMode mode = mAudioModes.get(position);
 		mode.isSelected = selected;
+
+		if (selected) {
+			String value = mAudioModeValues[position];
+			SoundSettings.setAudioOutputMode(mode.modeValue, value);
+		}
 	}
 
 	private class ListAdapter extends BaseAdapter {
