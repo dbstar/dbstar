@@ -1070,7 +1070,7 @@ public class GDDataModel {
 					entry.Name = cursor.getString(QUERYBRAND_CNAME);
 					entry.RawProgress = cursor.getLong(QUERYBRAND_DOWNLOAD);
 					entry.RawTotal = cursor.getLong(QUERYBRAND_TOTALSIZE);
-					entry.ConverSize();
+					entry.ConvertSize();
 
 					Log.d(TAG, "Name " + entry.Name + " item " + i
 							+ " progress=" + entry.RawProgress + " total="

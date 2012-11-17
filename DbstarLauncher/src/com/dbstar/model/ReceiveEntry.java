@@ -24,7 +24,7 @@ public class ReceiveEntry {
 		TotalUnit = StringUtil.UNIT_B;
 	}
 
-	public void ConverSize() {
+	public void ConvertSize() {
 		
 		// normalize the value
 		if (RawProgress < 0) RawProgress = 0;

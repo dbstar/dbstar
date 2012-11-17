@@ -177,7 +177,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	// void updateEntryData(ReceiveEntry oldEntry, ReceiveEntry newEntry) {
 	// oldEntry.RawProgress = newEntry.RawProgress;
 	// oldEntry.RawTotal = newEntry.RawTotal;
-	// oldEntry.ConverSize();
+	// oldEntry.ConvertSize();
 	// }
 
 	void updatePageData(ReceiveEntry[] pageEntries,
