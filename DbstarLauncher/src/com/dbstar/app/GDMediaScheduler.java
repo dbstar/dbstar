@@ -183,6 +183,10 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		if (!mResourcesReady || !mUIReady) {
 			return;
 		}
+		
+		if (mResources == null || mResources.length == 0) {
+			return;
+		}
 
 		boolean successed = false;
 		while (true) {
