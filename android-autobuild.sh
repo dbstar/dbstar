@@ -28,7 +28,7 @@ GIT_BRANCH="ics-amlogic-0702"
 ANDROID_LUNCH="18"
 UBOOT_CONFIG="m3_mbox_config"
 KERNEL_CONFIG="meson_reff16_defconfig"
-#MAKE_ARGS="-j5"
+#MAKE_ARGS="-j3"
 TIMESTAMP=`date +%Y%m%d`
 
 
@@ -128,6 +128,13 @@ uboot_make()
 	fi
 }
 
+lunch_setup()
+{
+	call cd $ANDROID_SRC
+	call source ./build/envsetup.sh
+	call lunch $ANDROID_LUNCH
+}
+
 rootfs_clean()
 {
 	logger "START clean rootfs"
@@ -141,10 +148,8 @@ rootfs_make()
 {
 	logger "START make rootfs"
 	LOG_LOGGER=$LOG_ROOTFS
+
 	call cd $ANDROID_SRC
-	call source ./build/envsetup.sh
-	call lunch $ANDROID_LUNCH
-	
 	if [ $REBUILD_FLAG -eq 1 ]; then
 		rootfs_clean
 	fi
@@ -166,8 +171,6 @@ otapackage_make()
 	call cp $BUILD_OUT/uImage_recovery $ROOTFS_OUT
 
 	call cd $ANDROID_SRC
-	call source ./build/envsetup.sh
-	call lunch $ANDROID_LUNCH
 	call make otapackage $MAKE_ARGS
 	if [ $? -eq 0 ]; then
 		logger "FINISH make otapackage"
@@ -231,8 +234,6 @@ bootable_make()
 	logger "START make bootable recovery"
 	LOG_LOGGER=$LOG_ROOTFS
 	call cd $ANDROID_SRC
-	call source ./build/envsetup.sh
-	call lunch $ANDROID_LUNCH
 	if [ $REBUILD_FLAG -eq 1 ]; then
 		mmm $ANDROID_SRC/bootable/recovery -B
 	else
@@ -294,17 +295,15 @@ dbstar_make()
 	logger "START make dbstar"
 	LOG_LOGGER=$LOG_ROOTFS
 	call cd $ANDROID_SRC
-	call source ./build/envsetup.sh
-	call lunch $ANDROID_LUNCH
-	mmm $DBSTAR_SRC/rootfs
+	call mmm $DBSTAR_SRC/rootfs
 	if [ $REBUILD_FLAG -eq 1 ]; then
-		mmm $DBSTAR_SRC/DbstarDVB -B
-		mmm $DBSTAR_SRC/DbstarLauncher -B
-		mmm $DBSTAR_SRC/DbstarSettings -B
+		call mmm $DBSTAR_SRC/DbstarDVB -B
+		call mmm $DBSTAR_SRC/DbstarLauncher -B
+		call mmm $DBSTAR_SRC/DbstarSettings -B
 	else
-		mmm $DBSTAR_SRC/DbstarDVB
-		mmm $DBSTAR_SRC/DbstarLauncher
-		mmm $DBSTAR_SRC/DbstarSettings
+		call mmm $DBSTAR_SRC/DbstarDVB
+		call mmm $DBSTAR_SRC/DbstarLauncher
+		call mmm $DBSTAR_SRC/DbstarSettings
 	fi
 	if [ $? -eq 0 ]; then
 		logger "FINISH make dbstar"
@@ -317,6 +316,7 @@ autobuild()
 {
 	logger "******************** start..."
 	mkdir -p $BUILD_OUT
+	lunch_setup
 
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_PATCH ]; then
 		dbstar_patch
@@ -407,6 +407,8 @@ check_args()
 		AUTOBUILD_FLAG=$BUILD_FLAG_OTAPACKAGE
 	elif [ $1 = "all" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_ALL
+	elif [ $1 = "release" ]; then
+		AUTOBUILD_FLAG=$BUILD_FLAG_RELEASE
 	else
 		help
 	fi

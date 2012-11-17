@@ -243,6 +243,10 @@ on boot
 
 # create dbstar dir
     mkdir /data/dbstar 0777 system system
+    write /proc/sys/net/core/rmem_max 524288
+    write /proc/sys/net/core/rmem_default 524288
+    chown system system /proc/sys/net/core/rmem_max
+    chown system system /proc/sys/net/core/rmem_default
 
 # basic network init
     ifup lo
