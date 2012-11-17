@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.dbstar.util.GDNetworkUtil;
+import com.dbstar.util.upgrade.RebootUtils;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.settings.GDSettings;
 import com.dbstar.model.ColumnData;
@@ -124,6 +125,9 @@ public class GDDataProviderService extends Service {
 	boolean mIsNetworkReady = false;
 
 	String mMacAddress = "";
+
+	String mUpgradePackageFile;
+	boolean mNeedUpgrade = false;
 
 	private class RequestTask {
 		public static final int INVALID = 0;
@@ -433,6 +437,8 @@ public class GDDataProviderService extends Service {
 			}
 
 			case GDCommon.MSG_USER_UPGRADE_CANCELLED: {
+				mNeedUpgrade = true;
+				mUpgradePackageFile = String.valueOf(msg.obj);
 				mDBStarClient
 						.notifyDbServer(DbstarServiceApi.CMD_UPGRADE_CANCEL);
 				break;
@@ -1397,6 +1403,8 @@ public class GDDataProviderService extends Service {
 		filter.addAction(GDCommon.ActionGetNetworkInfo);
 		filter.addAction(GDCommon.ActionSetNetworkInfo);
 
+		filter.addAction(GDCommon.ActionScreenOn);
+
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
 
@@ -1569,7 +1577,12 @@ public class GDDataProviderService extends Service {
 				msg.setData(data);
 				mHandler.sendMessage(msg);
 			} else if (action.equals(GDCommon.ActionUpgradeCancelled)) {
-				mHandler.sendEmptyMessage(GDCommon.MSG_USER_UPGRADE_CANCELLED);
+				String packageFile = intent
+						.getStringExtra(GDCommon.KeyPackgeFile);
+				Message msg = mHandler
+						.obtainMessage(GDCommon.MSG_USER_UPGRADE_CANCELLED);
+				msg.obj = packageFile;
+				mHandler.sendMessage(msg);
 			} else if (action.equals(GDCommon.ActionGetNetworkInfo)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_GET_NETWORKINFO);
 			} else if (action.equals(GDCommon.ActionSetNetworkInfo)) {
@@ -1596,11 +1609,19 @@ public class GDDataProviderService extends Service {
 						.obtainMessage(GDCommon.MSG_SET_NETWORKINFO);
 				msg.setData(data);
 				mHandler.sendMessage(msg);
+			} else if (action.equals(GDCommon.ActionScreenOn)) {
+				upgradeAfterSleep();
 			}
 
 		}
 
 	};
+
+	void upgradeAfterSleep() {
+		if (mNeedUpgrade) {
+			RebootUtils.rebootInstallPackage(this, mUpgradePackageFile);
+		}
+	}
 
 	void notifyDbstarServiceNetworkStatus() {
 		if (!mIsDbServiceStarted)
