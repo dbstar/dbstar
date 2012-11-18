@@ -80,6 +80,7 @@ static int mkdirp(char *path)
 
 void CDSTBCA_HDDec_CloseDecrypter(const void *pCtx)
 {
+	LOGD("CDSTBCA_HDDec_CloseDecrypter, pCtx = %p\n", pCtx);
 }
 
 /* 注册任务 */
@@ -93,7 +94,7 @@ CDCA_BOOL CDSTBCA_RegisterTask(const char* szName,
                                CDCA_U16    wStackSize)
 {
 	static int i = 0;
-	int ret = 0;
+//	int ret = 0;
 	LOGD("DRM create thread[%d], thread name [%s]\n", i, szName);
 	if (pthread_create(&tmpthread[i], NULL, pTaskFun, pParam) != 0) {
 		LOGD("DRM Create task [%s] ERROR\n", szName);
@@ -153,7 +154,7 @@ void* CDSTBCA_Malloc(CDCA_U32 byBufSize)
 {
 	void *ptr = NULL;
 	ptr = malloc(byBufSize);
-	LOGD("&&& malloc(%d), ptr=0x%p\n", byBufSize, ptr);
+	LOGD("&&& malloc(%lu), ptr=0x%p\n", byBufSize, ptr);
 	return ptr;
 }
 
@@ -212,12 +213,12 @@ void CDSTBCA_ReadBuffer(CDCA_U8 byBlockID, CDCA_U8*  pbyData, CDCA_U32* pdwLen)
 		fseek(block01_fd, 64 * 1024, SEEK_SET);
 		len = *pdwLen;
 		*pdwLen = fread(pbyData, 1, len, block01_fd);
-		LOGD("read flash block 2[%d]\n", *pdwLen);
+		LOGD("read flash block 2[%lu]\n", *pdwLen);
 	} else if (byBlockID == CDCA_FLASH_BLOCK_A) {
 		fseek(block01_fd, 0, SEEK_SET);
 		len = *pdwLen;
 		*pdwLen = fread(pbyData, 1, len, block01_fd);
-		LOGD("read flash block 1[%d]\n", *pdwLen);
+		LOGD("read flash block 1[%lu]\n", *pdwLen);
 	}
 }
 
@@ -246,11 +247,11 @@ void CDSTBCA_WriteBuffer(CDCA_U8 byBlockID, const CDCA_U8* pbyData, CDCA_U32 dwL
 	if (byBlockID == CDCA_FLASH_BLOCK_B) {
 		fseek(block01_fd, 64 * 1024, SEEK_SET);
 		fwrite(pbyData, 1, dwLen, block01_fd);
-		LOGD("write flash block 2 [%d]\n", dwLen);
+		LOGD("write flash block 2 [%lu]\n", dwLen);
 	} else if (byBlockID == CDCA_FLASH_BLOCK_A) {
 		fseek(block01_fd, 0, SEEK_SET);
 		fwrite(pbyData, 1, dwLen, block01_fd);
-		LOGD("write flash block 1 [%d]\n", dwLen);
+		LOGD("write flash block 1 [%lu]\n", dwLen);
 	}
 	fflush(block01_fd);
 }
@@ -508,7 +509,7 @@ void CDSTBCA_GetSTBID(CDCA_U16* pwPlatformID,
 {
 	*pwPlatformID = 0;//0x1122;
 	*pdwUniqueID = 0x00000000;
-	LOGD("######################get STBID pwPlatformID=0x%x, pdwUniqueIDpdwUniqueID=0x%x \n", *pwPlatformID, *pdwUniqueID);
+	LOGD("######################get STBID pwPlatformID=0x%x, pdwUniqueIDpdwUniqueID=0x%lx \n", *pwPlatformID, *pdwUniqueID);
 }
 
 /* 安全芯片接口 */
@@ -754,7 +755,7 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
                           CDCA_U32    dwOffsetKByte,
                           CDCA_U32    dwOffsetByte)
 {
-	LOGD("seek the file ori=[%d] posk=[%d] pos=[%d] \n", byOrigin, dwOffsetKByte, dwOffsetByte);
+	LOGD("seek the file ori=[%d] posk=[%lu] pos=[%lu] \n", byOrigin, dwOffsetKByte, dwOffsetByte);
 
 	if (!pFileHandle) {
 		return CDCA_FALSE;
@@ -804,8 +805,8 @@ CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen
 /* 写文件 */
 CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen)
 {
-	int ret;
-	LOGD("write file len [%u]\n", dwLen);
+	CDCA_U32 ret;
+	LOGD("write file len [%lu]\n", dwLen);
 	if (!pFileHandle) {
 		return -1;
 	}
@@ -814,7 +815,7 @@ CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLe
 	}
 	/*return*/ret =  fwrite(pBuf, 1, dwLen, (FILE *)pFileHandle);
 	if (ret > 0) {
-		LOGD("write file successful[%d][%u]!!!!\n", ret, dwLen);
+		LOGD("write file successful[%lu][%lu]!!!!\n", ret, dwLen);
 	} else {
 		LOGD("write file failed!!!!!!\n");
 	}

@@ -593,9 +593,9 @@ void upgrade_info_init()
 		}
 		
 		char tmpinfo[128];
-		
-		snprintf(tmpinfo, sizeof(tmpinfo), "%u%u", out.stb_id_h, out.stb_id_l);
+		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", out.stb_id_h,out.stb_id_l);
 		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
+		DEBUG("stb id: %s\n", tmpinfo);
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.hardware_version[0],out.hardware_version[1],out.hardware_version[2],out.hardware_version[3]);
 		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
@@ -644,12 +644,11 @@ int drm_info_refresh()
 		SCDCAOperatorInfo OperatorInfo;
 		char		BeginDate[64];
 		char		ExpireDate[64];
-		char		sqlite_cmd[256];
 		
 /*
  查询CA_LIB版本号，要求机顶盒以16进制显示
 */
-		DEBUG("CA_LIB Ver: 3.0(0x%x)\n", CDCASTB_GetVer());
+		DEBUG("CA_LIB Ver: 3.0(0x%lx)\n", CDCASTB_GetVer());
 		
 /*
  智能卡号
@@ -676,7 +675,7 @@ int drm_info_refresh()
 					break;
 				}
 				else
-					;	//DEBUG("OperatorID: %d\n", wArrTvsID[index]);
+					DEBUG("OperatorID: %d\n", wArrTvsID[index]);
 			}
 		}
 		else{
@@ -732,7 +731,7 @@ int drm_info_refresh()
 					memset(&SlotInfo, 0, sizeof(SlotInfo));
 					ret = CDCASTB_GetSlotInfo(wArrTvsID[j],bySlotID[index],&SlotInfo);
 					if(CDCA_RC_OK==ret)
-						DEBUG("bySlotID[%d]: %d, CreditLimit:%u, Balance:%lu\n", index, bySlotID[index],SlotInfo.m_wCreditLimit, SlotInfo.m_wBalance);
+						DEBUG("bySlotID[%d]: %d, CreditLimit:%lu, Balance:%lu\n", index, bySlotID[index],SlotInfo.m_wCreditLimit, SlotInfo.m_wBalance);
 					else{
 						char tmp_str[128];
 						snprintf(tmp_str, sizeof(tmp_str), "CDCASTB_GetSlotInfo Operator: %d, bySlotID: %d", wArrTvsID[j],bySlotID[index]);
@@ -751,7 +750,7 @@ int drm_info_refresh()
 			if(CDCA_RC_OK==ret){
 				for(index=0;index<CDCA_MAXNUM_ACLIST;index++)
 					if(0!=ACArray[index])
-						DEBUG("Operator: %d, ACArray[%d]:%u\n", wArrTvsID[j],index,ACArray[index]);
+						DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
 			}
 			else
 				drm_errors("CDCASTB_GetSlotIDs", ret);
@@ -765,7 +764,7 @@ int drm_info_refresh()
 		memset(&EntitleInfo, 0, sizeof(EntitleInfo));
 		ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,&EntitleInfo,&dwNum);
 		if(CDCA_RC_OK==ret)
-			DEBUG("dwFrom=%u, dwNum=%u\n", dwFrom, dwNum);
+			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
 		else
 			drm_errors("CDCASTB_GetSlotIDs", ret);
 	}
