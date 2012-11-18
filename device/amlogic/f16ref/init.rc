@@ -247,6 +247,7 @@ on boot
     write /proc/sys/net/core/rmem_default 524288
     chown system system /proc/sys/net/core/rmem_max
     chown system system /proc/sys/net/core/rmem_default
+    chmod 0777 /sys/class/gpio/cmd
 
 # basic network init
     ifup lo
