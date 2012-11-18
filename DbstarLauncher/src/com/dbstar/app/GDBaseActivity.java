@@ -127,27 +127,43 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		if (mBound) {
 			mService.unRegisterPageObserver(this);
 		}
-		
+
 		if (mBound) {
 			unbindService(mConnection);
 			mBound = false;
 		}
 	}
-	
+
 	@Override
 	public void startActivity(Intent intent) {
 		super.startActivity(intent);
-		
-		overridePendingTransition(R.anim.slide_in_right, 0);
+
+		// overridePendingTransition(R.anim.slide_in_right, 0);
+		overridePendingTransition(R.anim.fade_in_short, R.anim.fade_out_short);
+	}
+
+	public void startActivity(Intent intent, boolean animate) {
+		super.startActivity(intent);
+
+		int enterAnimateId = 0;
+		int exitAnimateId = 0;
+		if (animate) {
+			// animateId = R.anim.slide_in_right;
+			enterAnimateId = R.anim.fade_in_short;
+			exitAnimateId = R.anim.fade_out_short;
+		}
+
+		overridePendingTransition(enterAnimateId, exitAnimateId);
 	}
 
 	@Override
 	public void finish() {
 		super.finish();
-		
+
 		// eliminate the animation between activities
-		//enterAnim, exitAnim 
-		overridePendingTransition(0, R.anim.slide_out_left);
+		// enterAnim, exitAnim
+		// overridePendingTransition(0, R.anim.slide_out_left);
+		overridePendingTransition(R.anim.fade_in_short, R.anim.fade_out_short);
 	}
 
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -177,7 +193,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected void onServiceStop() {
 		Log.d(TAG, "onServiceStop");
-		
+
 		mService.unRegisterPageObserver(this);
 	}
 

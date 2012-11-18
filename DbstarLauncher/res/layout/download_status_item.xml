@@ -24,9 +24,9 @@
         android:layout_marginLeft="10dp"
         android:background="@null"
         android:max="100"
-        android:maxHeight="20dip"
-        android:minHeight="20dip"
-        android:progress="0"
+        android:maxHeight="10dp"
+        android:minHeight="10dp"
+        android:progress="20"
         android:indeterminateOnly="false"
         android:progressDrawable="@drawable/progressbar_horizontal_layer" />
 

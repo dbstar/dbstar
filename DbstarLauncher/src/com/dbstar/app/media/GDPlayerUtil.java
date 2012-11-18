@@ -1,5 +1,6 @@
 package com.dbstar.app.media;
 
+import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.ContentData;
 
 import android.content.ComponentName;
@@ -48,7 +49,8 @@ public class GDPlayerUtil {
 					"com.dbstar.DbstarDVB.VideoPlayer.PlayerMenu"));
 			intent.setAction("android.intent.action.View");
 
-			context.startActivity(intent);
+			GDBaseActivity activity = (GDBaseActivity) context;
+			activity.startActivity(intent, false);
 		}
 	}
 }
