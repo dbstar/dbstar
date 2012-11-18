@@ -144,16 +144,31 @@ static struct platform_device saradc_device = {
 #include <linux/input.h>
 #include <linux/adc_keypad.h>
 
+static int adc_kp_led_control(int *param)
+{
+	if(param[0] == 0) {
+		printk("ADCKP: set led off\n");
+		set_gpio_val(GPIOAO_bank_bit0_11(10), GPIOAO_bit_bit0_11(10), 0);
+		set_gpio_mode(GPIOAO_bank_bit0_11(10), GPIOAO_bit_bit0_11(10), GPIO_OUTPUT_MODE);
+	} else if(param[0] == 1) {
+		printk("ADCKP: set led on\n");
+		set_gpio_val(GPIOAO_bank_bit0_11(10), GPIOAO_bit_bit0_11(10), 1);
+		set_gpio_mode(GPIOAO_bank_bit0_11(10), GPIOAO_bit_bit0_11(10), GPIO_OUTPUT_MODE);
+	} else if(param[0] == 2) {
+		printk("ADCKP: counting\n");
+		return 1;
+    }
+
+	return 0;
+}
+
 static struct adc_key adc_kp_key[] = {
-    {KEY_MENU,          "menu", CHAN_4, 0, 60},
-    {KEY_VOLUMEDOWN,    "vol-", CHAN_4, 140, 60},
-    {KEY_VOLUMEUP,      "vol+", CHAN_4, 266, 60},
-    {KEY_BACK,          "exit", CHAN_4, 386, 60},
-    {KEY_HOME,          "home", CHAN_4, 510, 60},
-    {KEY_ENTER,          "enter", CHAN_4, 639, 60},
+    {KEY_POWER,          "power", CHAN_4, 0, 60},
 };
 
 static struct adc_kp_platform_data adc_kp_pdata = {
+    .led_control = adc_kp_led_control,
+    .led_control_param_num = 2,
     .key = &adc_kp_key[0],
     .key_num = ARRAY_SIZE(adc_kp_key),
 };
