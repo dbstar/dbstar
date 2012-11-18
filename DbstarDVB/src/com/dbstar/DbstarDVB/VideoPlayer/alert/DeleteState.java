@@ -7,11 +7,14 @@ import android.widget.Button;
 import com.dbstar.DbstarDVB.R;
 
 public class DeleteState extends ViewState {
+
+	public static final String ID = "Delete";
+
 	Button mDeleteButton, mNotDeleteButton;
 	MediaData mMediaData;
 
 	public DeleteState(Dialog dlg, ViewStateManager manager) {
-		super(dlg, manager);
+		super(ID, dlg, manager);
 	}
 
 	public void enter(Object args) {

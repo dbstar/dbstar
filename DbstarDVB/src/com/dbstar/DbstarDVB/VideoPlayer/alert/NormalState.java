@@ -1,26 +1,21 @@
 package com.dbstar.DbstarDVB.VideoPlayer.alert;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import com.dbstar.DbstarDVB.R;
 
 import android.app.Dialog;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class NormalState extends ViewState {
+public class NormalState extends TimerViewState {
 	private static final String TAG = "NormalState";
 
+	public static final String ID = "Normal";
+
 	private static final int TIMEOUT_IN_MILLIONSECONDS = 5000;
-	private static final int TIMEOUT_IN_SECONDS = 5;
 	private static final int UpdatePeriodInMills = 1000;
-	private static final int UpdatePeriodInSeconds = 1;
 
 	TextView mMovieTitle;
 	TextView mMovieDescription;
@@ -29,72 +24,15 @@ public class NormalState extends ViewState {
 	TextView mMovieType;
 	TextView mMovieRegion;
 
-	TextView mTimeoutView;
-	int mTimeoutInMills = TIMEOUT_IN_MILLIONSECONDS;
-	int mTimeoutInSeconds = TIMEOUT_IN_SECONDS;
-
 	Button mCloseButton, mReplayButton, mAddFavouriteButton, mDeleteButton;
-
 	MediaData mMediaData;
 
-	static Handler mUIHandler = new Handler();
-	Timer mTimer = new Timer();
-	TimeoutTask mTask = null;
-	UpdateTask mUpdateTask = new UpdateTask();
-
-	class TimeoutTask extends TimerTask {
-		public void run() {
-			Log.d(TAG, " --===========================  timeout mUIHandler = "
-					+ mUIHandler);
-			mUIHandler.post(mUpdateTask);
-		}
-	}
-
-	class UpdateTask implements Runnable {
-
-		@Override
-		public void run() {
-			Log.d(TAG, " ++++++++++ timeout = " + mTimeoutInMills + " s="
-					+ mTimeoutInSeconds);
-			if (mTimeoutInMills == 0) {
-				closePopupView();
-				return;
-			}
-
-			mTimeoutInMills -= UpdatePeriodInMills;
-			mTimeoutInSeconds -= UpdatePeriodInSeconds;
-			updateTimeoutView();
-		}
-
-	}
-
-	void resetTimer() {
-		Log.d(TAG, "+++reset timer++");
-		if (mTask != null) {
-			mTask.cancel();
-		}
-
-		mTimeoutInMills = TIMEOUT_IN_MILLIONSECONDS;
-		mTimeoutInSeconds = TIMEOUT_IN_SECONDS;
-
-		updateTimeoutView();
-
-		mTask = new TimeoutTask();
-		mTimer.schedule(mTask, UpdatePeriodInMills, UpdatePeriodInMills);
-	}
-
-	void stopTimer() {
-		mTask.cancel();
-		mTimer.cancel();
-	}
-
-	void updateTimeoutView() {
-		String timeout = String.valueOf(mTimeoutInSeconds);
-		mTimeoutView.setText(timeout);
-	}
-
 	public NormalState(Dialog dlg, ViewStateManager manager) {
-		super(dlg, manager);
+		super(ID, dlg, manager);
+
+		mTimeoutTotal = TIMEOUT_IN_MILLIONSECONDS;
+		mTimeoutUpdateInterval = UpdatePeriodInMills;
+		mDelay = UpdatePeriodInMills;
 	}
 
 	public void enter(Object args) {
@@ -103,8 +41,8 @@ public class NormalState extends ViewState {
 		mDialog.setContentView(R.layout.movie_info_view);
 
 		initializeView(mDialog);
-		mActionHandler = new ActionHandler(mDialog.getContext(), mMediaData);
 
+		mActionHandler = new ActionHandler(mDialog.getContext(), mMediaData);
 	}
 
 	protected void start() {
@@ -177,6 +115,10 @@ public class NormalState extends ViewState {
 		}
 	}
 
+	public void onTimeout() {
+		closePopupView();
+	}
+
 	void closePopupView() {
 		Log.d(TAG, "+++++++++ close popus dialog");
 		mDialog.dismiss();
@@ -199,14 +141,24 @@ public class NormalState extends ViewState {
 
 		mActionHandler.sendCommnd(ActionHandler.COMMAND_ADDTOFAVOURITE);
 
-		ViewState state = new FavouriteState(mDialog, mManager);
+		ViewState state = null;
+		state = mManager.getState(FavouriteState.ID);
+		if (state == null) {
+			state = new FavouriteState(mDialog, mManager);
+		}
+
 		mManager.changeToState(state, null);
 	}
 
 	void deleteButtonClicked() {
 		Log.d(TAG, "deleteButtonClicked");
 
-		ViewState state = new DeleteState(mDialog, mManager);
+		ViewState state = null;
+		state = mManager.getState(DeleteState.ID);
+		if (state == null) {
+			state = new DeleteState(mDialog, mManager);
+		}
+
 		mManager.changeToState(state, mMediaData);
 	}
 

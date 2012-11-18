@@ -1600,6 +1600,8 @@ public class PlayerMenu extends Activity {
 	public boolean onKeyDown(int keyCode, KeyEvent msg) {
 		setOSDOnOff(true);
 		
+		Log.d(TAG, "onKeyDown " + keyCode);
+		
 		/*if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
 			if (player_status == VideoInfo.PLAYER_RUNNING) {
 				try {
@@ -3355,6 +3357,10 @@ public class PlayerMenu extends Activity {
 		SystemProperties.set("vplayer.playing", "false");
 		if (confirm_dialog != null && confirm_dialog.isShowing()) {
 			confirm_dialog.dismiss();
+		}
+		
+		if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
+			mVideoInfoDlg.dismiss();
 		}
 
 		setOSDOnOff(true);
