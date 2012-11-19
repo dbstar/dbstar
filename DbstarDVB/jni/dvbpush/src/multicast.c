@@ -467,7 +467,7 @@ int multicast_add()
 	return ret;
 }
 
-static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act)
+static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p\n", row, column, filter_act);
 	if(row<1 || NULL==filter_act){
@@ -510,12 +510,12 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 int pid_init(int act_flag)
 {
 	char sqlite_cmd[256+128];
-	int (*sqlite_callback)(char **, int, int, void *) = allpid_sqlite_cb;
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = allpid_sqlite_cb;
 
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT pid,EffectFlag FROM Channel;");
 	// 1 means alloc filter
 	int filter_act = act_flag;
-	return sqlite_read(sqlite_cmd, &filter_act, sqlite_callback);
+	return sqlite_read(sqlite_cmd, &filter_act, sizeof(filter_act), sqlite_callback);
 }
 
 int softdvb_init()

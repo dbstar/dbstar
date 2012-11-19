@@ -614,9 +614,9 @@ static int push_monitor_regist(int regist_flag)
 	return ret;
 }
 
-static int pushlist_sqlite_cb(char **result, int row, int column, void *receiver)
+static int pushlist_sqlite_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
-	DEBUG("sqlite callback, row=%d, column=%d, receiver addr: %p\n", row, column, receiver);
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
 	if(row<1){
 		DEBUG("no record in table, return\n");
 		return 0;
@@ -643,7 +643,7 @@ int push_monitor_reset()
 {
 	int ret = -1;
 	char sqlite_cmd[256+128];
-	int (*sqlite_callback)(char **, int, int, void *) = pushlist_sqlite_cb;
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushlist_sqlite_cb;
 
 	pthread_mutex_lock(&mtx_push_monitor);
 #if 0	// only for test	
@@ -672,7 +672,7 @@ int push_monitor_reset()
 #else
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM Publication WHERE ReceiveStatus='0' OR ReceiveStatus='1';");
 #endif
-	ret = sqlite_read(sqlite_cmd, NULL, sqlite_callback);
+	ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
 #endif
 	pthread_mutex_unlock(&mtx_push_monitor);
 
@@ -739,6 +739,8 @@ int mid_push_init(char *push_conf)
 		DEBUG("Init push lib failed with %s!\n", push_conf);
 		return -1;
 	}
+	else
+		DEBUG("Init push lib success with %s!\n", push_conf);
 	
 	/*
 	确保开机后至少有一次扫描机会，获得准确的下载进度。
@@ -844,11 +846,11 @@ static int mid_push_regist(char *id, char *content_uri, long long content_len)
 			
 			char sqlite_cmd[256];
 			memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
-			int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+			int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='Publication' AND EntityID='%s' AND StrLang='%s' AND StrName='PublicationName' AND Extension='';", 
 				s_prgs[i].id, language_get());
 		
-			int ret_sqlexec = sqlite_read(sqlite_cmd, s_prgs[i].caption, sqlite_cb);
+			int ret_sqlexec = sqlite_read(sqlite_cmd, s_prgs[i].caption, sizeof(s_prgs[i].caption), sqlite_cb);
 			if(ret_sqlexec<=0){
 				DEBUG("read no Name from db, filled with id: %s\n", s_prgs[i].id);
 				strncpy(s_prgs[i].caption, s_prgs[i].id, sizeof(s_prgs[i].caption)-1);

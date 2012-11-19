@@ -54,7 +54,7 @@ static void settingDefault_set(void)
 	memset(s_root_push_file, 0, sizeof(s_root_push_file));
 	memset(s_data_source, 0, sizeof(s_data_source));
 	
-	strncpy(s_service_id, SERVICE_ID, sizeof(s_service_id)-1);
+	memset(s_service_id, 0, sizeof(s_service_id));
 	s_root_channel = ROOT_CHANNEL;
 	strncpy(s_root_push_file, ROOT_PUSH_FILE, sizeof(s_root_push_file)-1);
 	s_root_push_file_size = ROOT_PUSH_FILE_SIZE;
@@ -564,11 +564,11 @@ static void upgrade_info_refresh(char *info_name, char *info_value)
 	char sqlite_cmd[512];
 	char stbinfo[128];
 	
-	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", info_name);
 	
 	memset(stbinfo, 0, sizeof(stbinfo));
-	int ret_sqlexec = sqlite_read(sqlite_cmd, stbinfo, sqlite_cb);
+	int ret_sqlexec = sqlite_read(sqlite_cmd, stbinfo, sizeof(stbinfo), sqlite_cb);
 	if(ret_sqlexec<=0 || strcmp(stbinfo, info_value)){
 		DEBUG("replace %s as %s to table 'Global'\n", info_name, info_value);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
@@ -863,10 +863,10 @@ char *language_get()
 	if(0==strlen(s_Language)){
 		char sqlite_cmd[512];
 		
-		int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+		int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_CURLANGUAGE);
 	
-		int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sqlite_cb);
+		int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sizeof(s_Language), sqlite_cb);
 		if(ret_sqlexec<=0){
 			DEBUG("read no Language from db, filled with %s\n", CURLANGUAGE_DFT);
 			snprintf(s_Language, sizeof(s_Language), "%s", CURLANGUAGE_DFT);
@@ -884,9 +884,9 @@ char *multi_addr_get(void)
 	char read_str[512];
 	
 	memset(read_str, 0, sizeof(read_str));
-	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_DBDATASERVERIP);
-	int ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sqlite_cb);
+	int ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sizeof(read_str), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read nothing for multi ip, filled with default\n");
 		snprintf(s_data_source, sizeof(s_data_source), "igmp://%s", DBDATASERVERIP_DFT);
@@ -898,7 +898,7 @@ char *multi_addr_get(void)
 	
 	memset(read_str, 0, sizeof(read_str));
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_DBDATASERVERPORT);
-	ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sqlite_cb);
+	ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sizeof(read_str), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read nothing for multi port, filled with default\n");
 		snprintf(s_data_source+strlen(s_data_source), sizeof(s_data_source)-strlen(s_data_source), ":%s", DBDATASERVERPORT_DFT);

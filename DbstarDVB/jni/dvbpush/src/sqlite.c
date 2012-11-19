@@ -738,6 +738,33 @@ URI	NVARCHAR(512) DEFAULT '');", name);
 	sqlite3_free(errmsg);
 	return ret;
 }
+
+
+/*
+ 回调：只用于读取单个字符串类型字段的单个值
+*/
+int str_read_cb(char **result, int row, int column, void *some_str, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p\n", row, column, some_str);
+	if(row<1 || NULL==some_str){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+	
+	int i = 1;
+//	for(i=1;i<row+1;i++)
+	{
+		//DEBUG("==%s:%s:%ld==\n", result[i*column], result[i*column+1], strtol(result[i*column+1], NULL, 0));
+		if(result[i*column])
+			snprintf((char *)some_str, receiver_size, "%s", result[i*column]);
+		else
+			DEBUG("NULL value\n");
+	}
+	
+	return 0;
+}
+
+
 /***sqlite_init() brief init sqlite, include open database, create table, and so on.
  * param null
  *
@@ -809,17 +836,18 @@ int sqlite_execute(char *exec_str)
 功能：	执行SELECT语句
 输入：	sqlite_cmd				——sql SELECT语句
 		receiver				——用于处理SELECT结果的参数，如果sqlite_read_callback为NULL，则receiver也可以为NULL
+		receiver_size			——receiver的大小，在receiver为数组时应根据此值做安全拷贝
 		sqlite_read_callback	——用于处理SELECT结果的回调，如果只是想知道查询到几条记录，则此回调可以为NULL
 返回：	-1——失败；其他值——查询到的记录数
 */
-int sqlite_read(char *sqlite_cmd, void *receiver, int (*sqlite_read_callback)(char **result, int row, int column, void *receiver))
+int sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, int (*sqlite_read_callback)(char **result, int row, int column, void *receiver, unsigned int receiver_size))
 {
 	char* errmsg=NULL;
 	char** l_result = NULL;
 	int l_row = 0;
 	int l_column = 0;
 	int ret = 0;
-	int (*sqlite_callback)(char **,int,int,void *) = sqlite_read_callback;
+	int (*sqlite_callback)(char **,int,int,void *,unsigned int) = sqlite_read_callback;
 
 	DEBUG("sqlite read: %s\n", sqlite_cmd);
 	
@@ -849,7 +877,7 @@ int sqlite_read(char *sqlite_cmd, void *receiver, int (*sqlite_read_callback)(ch
 			else{
 				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
 				if(sqlite_callback)
-					sqlite_callback(l_result, l_row, l_column, receiver);
+					sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
 				else{
 					DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
 //					int i = 0;
@@ -1062,6 +1090,78 @@ int sqlite_transaction_table_clear(char *table_name)
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM %s;", table_name);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
+}
+
+/*
+功能：	事务中执行SELECT语句。
+注意：	事务中的读取仅能对当前数据库状态负责，因为事务提交后，此值有可能被改变。
+		仅能读取单个字段字符串字段值。
+输入：	sqlite_cmd				——sql SELECT语句
+		receiver				——用于处理SELECT结果的参数，如果sqlite_read_callback为NULL，则receiver也可以为NULL
+		receiver_size			——receiver的大小，在receiver为数组时应根据此值做安全拷贝
+		sqlite_read_callback	——用于处理SELECT结果的回调，如果只是想知道查询到几条记录，则此回调可以为NULL
+返回：	-1——失败；其他值——查询到的记录数
+*/
+int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size/*, int (*sqlite_read_callback)(char **result, int row, int column, void *receiver, unsigned int receiver_size)*/)
+{
+	char* errmsg=NULL;
+	char** l_result = NULL;
+	int l_row = 0;
+	int l_column = 0;
+	int ret = 0;
+	int (*sqlite_callback)(char **,int,int,void *,unsigned int) = str_read_cb;	/*sqlite_read_callback;*/
+
+	DEBUG("in transaction sqlite read: %s\n", sqlite_cmd);
+	
+/*
+	///open database
+	if(-1==openDatabase())
+	{
+		ERROROUT("Open database failed\n");
+		ret = -1;
+	}
+	else{	// open database ok
+*/		
+		if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg)
+			|| NULL!=errmsg)
+		{
+			ERROROUT("sqlite cmd: %s\n", sqlite_cmd);
+			DEBUG("errmsg: %s\n", errmsg);
+			ret = -1;
+		}
+		else{ // inquire table ok
+			if(0==l_row){
+				DEBUG("no row, l_row=0, l_column=%d", l_column);
+				/*
+				int i = 0;
+				for(i=0;i<l_column;i++)
+					printf("\t\t%s", l_result[i]);
+				*/
+				printf("\n");
+			}
+			else{
+				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
+				if(sqlite_callback)
+					sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
+				else{
+					DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
+//					int i = 0;
+//					for(i=0;i<(l_column+1);i++)
+//						printf("\t\t%s\n", l_result[i]);
+				}
+			}
+			ret = l_row;
+/*
+		}
+*/
+		sqlite3_free_table(l_result);
+		sqlite3_free(errmsg);
+		/*
+		closeDatabase();
+		*/
+	}
+	
+	return ret;
 }
 
 /*

@@ -23,30 +23,6 @@ static pthread_mutex_t mtx_parse_xml = PTHREAD_MUTEX_INITIALIZER;
 static int serviceID_init();
 
 /*
- 只用于读取单个字符串类型字段的单个值
-*/
-int str_read_cb(char **result, int row, int column, void *some_str)
-{
-	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p\n", row, column, some_str);
-	if(row<1 || NULL==some_str){
-		DEBUG("no record in table, return\n");
-		return 0;
-	}
-	
-	int i = 1;
-//	for(i=1;i<row+1;i++)
-	{
-		//DEBUG("==%s:%s:%ld==\n", result[i*column], result[i*column+1], strtol(result[i*column+1], NULL, 0));
-		if(result[i*column])
-			sprintf((char *)some_str, "%s", result[i*column]);
-		else
-			DEBUG("NULL value\n");
-	}
-	
-	return 0;
-}
-
-/*
  从数据表Global中读取push的根路径，此路径由上层写入数据库。
  此路径应当更新到push.conf中供push模块初始化使用。
  之所以这么更新，是因为无法确保硬盘一定是挂在/mnt/sda1下。
@@ -62,11 +38,11 @@ static int push_dir_init()
 	
 	memset(s_push_root_path, 0, sizeof(s_push_root_path));
 	
-	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_PUSHDIR);
 
-	int ret_sqlexec = sqlite_read(sqlite_cmd, s_push_root_path, sqlite_cb);
-	if(ret_sqlexec<=0){
+	int ret_sqlexec = sqlite_read(sqlite_cmd, s_push_root_path, sizeof(s_push_root_path), sqlite_cb);
+	if(ret_sqlexec<=0 || strlen(s_push_root_path)<2){
 		DEBUG("read no PushDir from db, filled with %s\n", PUSH_DATA_DIR_DF);
 		snprintf(s_push_root_path, sizeof(s_push_root_path), "%s", PUSH_DATA_DIR_DF);
 	}
@@ -92,7 +68,7 @@ int xmlparser_init(void)
 	memset(init_xml_uri, 0, sizeof(init_xml_uri));
 	
 	if(0==distill_file(init_xml_path, init_xml_uri, sizeof(init_xml_uri), "xml", "Initialize.xml")){
-		parse_xml(init_xml_uri,INITIALIZE_XML);
+		parse_xml(INITIALIZE_MIDPATH,INITIALIZE_XML);
 	}
 	DEBUG("end of xmlparser_init\n");
 	
@@ -108,10 +84,10 @@ static int serviceID_init()
 {
 	char sqlite_cmd[512];
 	memset(s_serviceID, 0, sizeof(s_serviceID));
-	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	int (*sqlite_cb)(char **, int, int, void *,unsigned int) = str_read_cb;
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_SERVICEID);
 
-	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sqlite_cb);
+	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sizeof(s_serviceID), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no serviceID from db\n");
 	}
@@ -126,7 +102,7 @@ char *serviceID_get()
 	return s_serviceID;
 }
 
-static int xmlver_get(int pushflag, char *xmlver, unsigned int versize)
+static int xmlver_get(int pushflag, char *serviceID, char *xmlver, unsigned int versize)
 {
 	if(NULL==xmlver || 0==versize){
 		DEBUG("can not get xml version with NULL buffer\n");
@@ -134,10 +110,10 @@ static int xmlver_get(int pushflag, char *xmlver, unsigned int versize)
 	}
 	
 	char sqlite_cmd[512];
-	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Version FROM Initialize WHERE PushFlag='%d';", pushflag);
 
-	int ret_sqlexec = sqlite_read(sqlite_cmd, xmlver, sqlite_cb);
+	int ret_sqlexec = sqlite_read(sqlite_cmd, xmlver, sizeof(xmlver), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no version from db for PushFlag %d\n", pushflag);
 		return -1;
@@ -154,10 +130,10 @@ static int xmluri_get(int pushflag, char *xmluri, unsigned int urisize)
 	}
 	
 	char sqlite_cmd[512];
-	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag='%d';", pushflag);
 
-	int ret_sqlexec = sqlite_read(sqlite_cmd, xmluri, sqlite_cb);
+	int ret_sqlexec = sqlite_read(sqlite_cmd, xmluri, sizeof(xmluri), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no uri from db for %d\n", pushflag);
 		return -1;
@@ -1098,13 +1074,16 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 // xml general property
 			if(0==strcmp(xmlroute, XML_ROOT_ELEMENT)){
 				DBSTAR_XMLINFO_S *p = (DBSTAR_XMLINFO_S *)ptr;
-				if(0==xmlStrcmp(BAD_CAST"Version", attrPtr->name)){
+				if(		0==xmlStrcmp(BAD_CAST"Version", attrPtr->name)
+					||	0==xmlStrcmp(BAD_CAST"version", attrPtr->name)){
 					strncpy(p->Version, (char *)szAttr, sizeof(p->Version)-1);
 				}
-				else if(0==xmlStrcmp(BAD_CAST"StandardVersion", attrPtr->name)){
+				else if(	0==xmlStrcmp(BAD_CAST"StandardVersion", attrPtr->name)
+						||	0==xmlStrcmp(BAD_CAST"standardversion", attrPtr->name)){
 					strncpy(p->StandardVersion, (char *)szAttr, sizeof(p->StandardVersion)-1);
 				}
-				else if(0==xmlStrcmp(BAD_CAST"ServiceID", attrPtr->name)){
+				else if(	0==xmlStrcmp(BAD_CAST"ServiceID", attrPtr->name)
+						||	0==xmlStrcmp(BAD_CAST"serviceID", attrPtr->name)){
 					strncpy(p->ServiceID, (char *)szAttr, sizeof(p->ServiceID)-1);
 				}
 				else
@@ -1433,6 +1412,14 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 			if(0==strncmp(new_xmlroute, "Initialize^", strlen("Initialize^"))){
 				if(0==strcmp(new_xmlroute, "Initialize^ServiceInits")){
 					parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
+					
+					/*
+					如果不是XML_EXIT_MOVEUP，则意味着所有分支都与己无关，视为不需要解析。
+					*/
+					if(XML_EXIT_MOVEUP!=process_over){
+						DEBUG("[%d]no switch need to be parse in this Initialize.xml, return with XML_EXIT_UNNECESSARY instead of XML_EXIT_MOVEUP\n", process_over);
+						process_over = XML_EXIT_UNNECESSARY;
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit")){
 					DBSTAR_PRODUCT_SERVICE_S product_service_s;
@@ -1451,8 +1438,9 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
 						process_over = XML_EXIT_MOVEUP;
 					}
-					else
+					else{
 						DEBUG("productID %s is invalid\n", product_service_s.productID);
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels")){
 					channel_ineffective_set();
@@ -2901,10 +2889,14 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 	}
 	//DEBUG("return from %s\n", xmlroute);
 	
-	if(XML_EXIT_NORMALLY==process_over || XML_EXIT_MOVEUP==process_over)
+	if(XML_EXIT_NORMALLY==process_over || XML_EXIT_MOVEUP==process_over){
+		DEBUG("parse xml ok, process_over=%d\n", process_over);
 		return 0;
-	else
+	}
+	else{
+		DEBUG("parse xml failed, process_over=%d\n", process_over);
 		return -1;
+	}
 }
 
 static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
@@ -2957,17 +2949,23 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 		
 		char xml_ver[64];
 		memset(xml_ver, 0, sizeof(xml_ver));
-		xmlver_get(xml_flag, xml_ver, sizeof(xml_ver));
+//		xmlver_get(xml_flag, xml_ver, sizeof(xml_ver));aaaa
 		
 		sqlite_transaction_begin();
 // Initialize.xml
 		if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
 			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+			if(0<sqlite_transaction_read("select Version from Initialize where PushFlag='100' and ServiceID='0';",xml_ver,sizeof(xml_ver))){
+				DEBUG("read version: %s\n", xml_ver);
+			}
+			else
+				DEBUG("read version failed\n");
 			if(strlen(xml_ver)>0 && 0==strcmp(xml_ver, xmlinfo.Version)){
 				DEBUG("[%s]same Version: %s, no need to parse\n", xmlinfo.PushFlag, xml_ver);
 				ret = 0;
 				/*
-				 之所以返回0而不是-1，是为了能强制扫描那些依赖于ServiceID的xml的解析
+				 之所以返回0而不是-1，是为了能强制扫描那些依赖于ServiceID的xml的解析。
+				 这里的强制扫描纯xml文件是一种保障机制，但不能扫描栏目和界面产品等含有资源的xml
 				*/
 			}
 			else{
@@ -2975,6 +2973,10 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 				
 				if(0==ret){
 					snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize.xml");
+					/*
+					 Initialize.xml是所有service共用的，不存在单独的serviceID属性，这里只是起到填充作用
+					*/
+					snprintf(xmlinfo.ServiceID, sizeof(xmlinfo.XMLName), "0");
 				}
 			}
 		}
@@ -3186,6 +3188,8 @@ static int depent_on_serviceID(PUSH_XML_FLAG_E xml_flag)
 */
 int parse_xml(char *xml_uri, PUSH_XML_FLAG_E xml_flag)
 {
+	DEBUG("do not parse xml currently\n");
+	return 0;
 	/*
 	 如果还未获得serviceID，则那些依赖于serviceID进行判断的xml不能解析
 	*/
@@ -3202,7 +3206,10 @@ int parse_xml(char *xml_uri, PUSH_XML_FLAG_E xml_flag)
 	*/
 	if(0==ret && INITIALIZE_XML==xml_flag){
 		DEBUG("force remedy >>>>>>>>>>>>>>>>\n");
+		/*
+		栏目和界面产品是以文件夹为单位下发的，所以不在强制解析，避免信息不同步。
 		parseDoc(NULL, COLUMN_XML);
+		*/
 		parseDoc(NULL, GUIDELIST_XML);
 		parseDoc(NULL, COMMANDS_XML);
 		parseDoc(NULL, MESSAGE_XML);

@@ -50,7 +50,7 @@ typedef enum{
 #define	WORKING_DATA_DIR	"/data/dbstar"
 #define	MSG_FIFO_ROOT_DIR	WORKING_DATA_DIR"/msg_fifo"
 #define SETTING_BASE		WORKING_DATA_DIR"/dbstar.conf"
-#define PUSH_CONF			WORKING_DATA_DIR"/push.conf"
+#define PUSH_CONF			"/system/etc/dbstar/push.conf"
 #define PUSH_CONF_DF		"/etc/push.conf"
 
 /*
@@ -61,8 +61,8 @@ typedef enum{
 #define DATABASE			WORKING_DATA_DIR"/Dbstar.db"
 
 #define	SERVICE_ID			"01"
-#define PROG_DATA_PID_DF	(102)	// 0X66
 #define ROOT_CHANNEL		(400)
+#define PROG_DATA_PID_DF	(411)	// 0X19b
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
 #define MULTI_BUF_SIZE		(12*1024*1316)	/* larger than 16M */
@@ -99,7 +99,7 @@ typedef enum{
 #define GLB_NAME_DBDATASERVERIP		"DBDataServerIP"
 #define GLB_NAME_DBDATASERVERPORT	"DBDataServerPort"
 
-#define INITIALIZE_MIDPATH	"servicegroup/initialize"
+#define INITIALIZE_MIDPATH	"pushroot/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
 #define COLUMN_RES			WORKING_DATA_DIR"/ColumnRes"
 

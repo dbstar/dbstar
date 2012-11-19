@@ -26,7 +26,7 @@ void *main_thread()
 	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
-		return NULL;
+		//return NULL;
 	}
 	
 	if(-1==push_decoder_buf_init()){
@@ -36,12 +36,12 @@ void *main_thread()
 	
 	if(-1==sqlite_init()){
 		DEBUG("sqlite init failed\n");
-		return NULL;
+		//return NULL;
 	}
 	
 	if(-1==xmlparser_init()){
 		DEBUG("xmlparser init failed\n");
-		return NULL;
+		//return NULL;
 	}
 	
 //	char xml_uri[128];
@@ -60,7 +60,7 @@ void *main_thread()
 	
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
-		return NULL;
+		//return NULL;
 	}
 	
 	if(-1==igmp_init()){
@@ -70,7 +70,7 @@ void *main_thread()
 	
 	if(-1==softdvb_init()){
 		DEBUG("dvb init with failed\n");
-		return NULL;
+		//return NULL;
 	}
 	
 	upgrade_info_init();

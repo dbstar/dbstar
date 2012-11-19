@@ -391,7 +391,7 @@ int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, 
 	}
 	
 	if(stat(path, &filestat) != 0){
-		DEBUG("The file or path(%s) can not be get stat!\n", path);
+		ERROROUT("The file or path(%s) can not be get stat!\n", path);
 		return -1;
 	}
 	if((filestat.st_mode & S_IFDIR) != S_IFDIR){
