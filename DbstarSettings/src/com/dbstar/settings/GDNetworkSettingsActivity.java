@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -83,6 +84,12 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 		mMulticastPort = (TextView) findViewById(R.id.multicast_port);
 		mGatewayIP = (TextView) findViewById(R.id.gateway_ip);
 		mGatewayPort = (TextView) findViewById(R.id.gateway_port);
+		
+		// hide soft keyboard
+		InputMethodManager imm = (InputMethodManager)getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mGatewaySerialNumber.getWindowToken(),
+                InputMethodManager.HIDE_IMPLICIT_ONLY);
 	}
 
 	void registerGetInfoReceiver() {

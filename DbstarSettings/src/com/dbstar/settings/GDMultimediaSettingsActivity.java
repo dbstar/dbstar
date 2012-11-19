@@ -106,6 +106,7 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			}
 		}
 
+		// default frequency
 		mHasDefaultFrequency = Utils.platformHasDefaultTVFreq();
 		Log.d(TAG, "has default frequency = " + mHasDefaultFrequency);
 		if (mHasDefaultFrequency) {
@@ -118,9 +119,12 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 		Log.d(TAG, "default fq " + mDefaultFrequency);
 
+		// output mode
 		String videoMode = DisplaySettings.getOutpuMode();
 
 		Log.d(TAG, "default mode " + videoMode);
+
+		mVideoSelectedMode = -1;
 
 		if (videoMode.isEmpty()) {
 			OutputMode mode = mVideoModes.get(mVideoModes.size() - 1);
@@ -129,24 +133,31 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			Log.d(TAG, "default output mode = " + mode.modeStr + " value "
 					+ mode.modeValue);
 		} else {
-			for (int i = 0; i < mVideoModes.size(); i++) {
+			for (int i = 1; i < mVideoModes.size(); i++) {
 				OutputMode mode = mVideoModes.get(i);
+				boolean selected = false;
 				if (mode.modeValue.equals(videoMode)) {
 					if (mHasDefaultFrequency) {
 						if (mode.frequecy.equalsIgnoreCase(mDefaultFrequency)) {
-							mVideoSelectedMode = i;
-							mode.isSelected = true;
-						} else {
-							mode.isSelected = false;
+							selected = true;
 						}
-
 					} else {
-						mVideoSelectedMode = i;
-						mode.isSelected = true;
+						if (mode.frequecy.equalsIgnoreCase("60Hz")) {
+							selected = true;
+						}
 					}
-				} else {
-					mode.isSelected = false;
 				}
+
+				mode.isSelected = selected;
+				if (selected) {
+					mVideoSelectedMode = i;
+				}
+			}
+
+			if (mVideoSelectedMode < 0) {
+				mVideoSelectedMode = 0;
+				OutputMode mode = mVideoModes.get(0);
+				mode.isSelected = true;
 			}
 		}
 		mVideoOutputModeAdapter.notifyDataSetChanged();
@@ -215,7 +226,8 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 		for (int i = 0; i < mVideoModes.size(); i++) {
 			OutputMode vMode = mVideoModes.get(i);
-			Log.d(TAG, "video mode " + vMode.modeStr + " " + vMode.modeValue);
+			Log.d(TAG, "video mode " + vMode.modeStr + " " + vMode.modeValue
+					+ " f " + vMode.frequecy);
 		}
 
 		for (int i = 0; i < mAudioModeEntries.length; i++) {
@@ -238,6 +250,9 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 		mVideoOutputView.setOnItemSelectedListener(mVideoItemSelectedListener);
 		mAudioOutputView.setOnItemSelectedListener(mAudioItemSelectedListener);
+		
+		mVideoOutputView.setOnFocusChangeListener(mFocusChangeListener);
+		mAudioOutputView.setOnFocusChangeListener(mFocusChangeListener);
 	}
 
 	int mVideoSelectedMode = -1;
@@ -260,12 +275,12 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			setVideoModeSelected(mVideoOldSelectedMode, false, false);
 		}
 
-		setVideoModeSelected(mVideoSelectedMode, true, true);
-
 		mVideoOutputModeAdapter.notifyDataSetChanged();
 		mVideoOutputView.invalidate();
 
-		if (mVideoSelectedMode > 0) {
+		if (modeIndex > 0) {
+			setVideoModeSelected(modeIndex, true, true);
+
 			OutputMode mode = mVideoModes.get(modeIndex);
 			Intent intent = new Intent(this, OutputSetConfirm.class);
 			intent.putExtra("set_mode", mode.modeValue);
@@ -273,6 +288,9 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 				intent.putExtra("cvbs_mode", mCVBSIndex);
 			}
 			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
+		} else {
+			// "auto" mode
+			setVideoModeSelected(modeIndex, true, false);
 		}
 	}
 
@@ -383,6 +401,28 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 		}
 
 	};
+
+	View.OnFocusChangeListener mFocusChangeListener = new View.OnFocusChangeListener() {
+
+		@Override
+		public void onFocusChange(View v, boolean hasFocus) {
+			if (v.getId() == R.id.video_outputmode_list) {
+				showSelectedItem(mSelectedView, hasFocus);
+			} else if (v.getId() == R.id.audio_outputmode_list) {
+				showSelectedItem(mAudioSelectedView, hasFocus);
+			}
+		}
+	};
+
+	void showSelectedItem(View v, boolean show) {
+
+		if (v != null) {
+			ListAdapter.ViewHolder holder = (ListAdapter.ViewHolder) v.getTag();
+			holder.modeViewHighlight.setVisibility(show ? View.VISIBLE
+					: View.GONE);
+			holder.modeView.setVisibility(show ? View.GONE : View.VISIBLE);
+		}
+	}
 
 	private void setVideoModeSelected(int position, boolean selected,
 			boolean setFrequency) {

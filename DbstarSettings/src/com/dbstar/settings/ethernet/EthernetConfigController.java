@@ -289,6 +289,12 @@ public class EthernetConfigController {
 		mBackupDns.setFocusable(enable);
 		mGw.setFocusable(enable);
 		mMask.setFocusable(enable);
+		
+		mIpaddr.setNextFocusLeftId(R.id.gateway_serialnumber);
+		mDns.setNextFocusLeftId(R.id.gateway_serialnumber);
+		mBackupDns.setNextFocusLeftId(R.id.gateway_serialnumber);
+		mGw.setNextFocusLeftId(R.id.gateway_serialnumber);
+		mMask.setNextFocusLeftId(R.id.gateway_serialnumber);
 
 		mDhcpConnectState.setVisibility(View.GONE);
 		mManualConnectState.setVisibility(View.VISIBLE);
