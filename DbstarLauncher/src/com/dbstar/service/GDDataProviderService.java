@@ -23,6 +23,7 @@ import com.dbstar.model.GDNetModel;
 import com.dbstar.model.GuideListItem;
 import com.dbstar.model.PreviewData;
 import com.dbstar.model.ReceiveEntry;
+import com.dbstar.service.client.DbServiceObserver;
 import com.dbstar.service.client.GDDBStarClient;
 
 import android.app.Service;
@@ -43,7 +44,7 @@ import android.os.Message;
 import android.util.Log;
 import android.os.Process;
 
-public class GDDataProviderService extends Service {
+public class GDDataProviderService extends Service implements DbServiceObserver{
 
 	private static final String TAG = "GDDataProviderService";
 
@@ -237,6 +238,7 @@ public class GDDataProviderService extends Service {
 
 		// start Dbstar service
 		mIsDbServiceStarted = false;
+		mDBStarClient.setObserver(this);
 		mDBStarClient.start();
 
 		// start smart home service
@@ -541,6 +543,11 @@ public class GDDataProviderService extends Service {
 							: false;
 					mPageOberser.notifyEvent(EventData.EVENT_DATASIGNAL, event);
 				}
+				break;
+			}
+			
+			case GDCommon.SYNC_STATUS_TODBSERVER: {
+				syncStatusToDbServer();
 				break;
 			}
 
@@ -1528,13 +1535,21 @@ public class GDDataProviderService extends Service {
 
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_SUCCESS: {
 					mIsDbServiceStarted = true;
-					notifyDbstarServiceNetworkStatus();
-					notifyDbstarServiceStorageStatus();
+					
+					Log.d(TAG, " ========== DbstarServer init success ===========");
+					if (mDBStarClient.isBoundToServer()) {
+						//syncStatusToDbServer();
+						mHandler.sendEmptyMessage(GDCommon.SYNC_STATUS_TODBSERVER);
+					} else {
+						mStatusIsSynced = false;
+					}
 					break;
 				}
 
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_FAILED: {
 					mIsDbServiceStarted = false;
+					
+					Log.d(TAG, " ========== DbstarServer init failed ===========");
 					break;
 				}
 
@@ -1623,9 +1638,9 @@ public class GDDataProviderService extends Service {
 		}
 	}
 
-	void notifyDbstarServiceNetworkStatus() {
+	boolean notifyDbstarServiceNetworkStatus() {
 		if (!mIsDbServiceStarted)
-			return;
+			return false;
 
 		if (isNetworkConnected()) {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_NETWORK_CONNECT);
@@ -1633,17 +1648,47 @@ public class GDDataProviderService extends Service {
 			mDBStarClient
 					.notifyDbServer(DbstarServiceApi.CMD_NETWORK_DISCONNECT);
 		}
+		
+		return true;
 	}
 
-	void notifyDbstarServiceStorageStatus() {
+	boolean notifyDbstarServiceStorageStatus() {
 		if (!mIsDbServiceStarted)
-			return;
+			return false;
 
 		if (mIsStorageReady) {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT);
 		} else {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_UNMOUNT);
 		}
+		
+		return true;
+	}
+
+	boolean mStatusIsSynced = false;
+
+	@Override
+	public void onServerStarted() {
+		syncStatusToDbServer();
+	}
+
+	@Override
+	public void onServerRestarted() {
+		syncStatusToDbServer();
+	}
+
+	@Override
+	public void onServerStopped() {
+		mStatusIsSynced = false;
+	}
+	
+	private void syncStatusToDbServer() {
+		Log.d(TAG, "syncStatusToDbServer " + mStatusIsSynced);
+		if (mStatusIsSynced)
+			return;
+		
+		mStatusIsSynced = notifyDbstarServiceNetworkStatus();
+		mStatusIsSynced = mStatusIsSynced && notifyDbstarServiceStorageStatus();
 	}
 
 }

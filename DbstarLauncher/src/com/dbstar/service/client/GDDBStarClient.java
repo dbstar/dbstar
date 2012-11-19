@@ -19,23 +19,45 @@ public class GDDBStarClient {
 
 	Context mContext;
 	private Intent mIntent = new Intent();
+	boolean mIsServerCorrupted = false;
+	DbServiceObserver mObserver;
 
 	private IDbstarService mDbstarService = null;
 	private ComponentName mComponentName = new ComponentName(
 			"com.dbstar.DbstarDVB", "com.dbstar.DbstarDVB.DbstarService");
 
+	private boolean mIsBoundToServer = false;
+	public boolean isBoundToServer() {
+		return mIsBoundToServer;
+	}
+	
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
 
 			Log.d(TAG, "+++++++++++GDDBStarClient onServiceConnected+++++++++");
 
 			mDbstarService = IDbstarService.Stub.asInterface(service);
+			
+			mIsBoundToServer = true;
 
 			startDvbpush();
+			
+			if (!mIsServerCorrupted) {
+				mObserver.onServerStarted();
+			} else {
+				mIsServerCorrupted = false;
+				mObserver.onServerRestarted();
+			}
+
 		}
 
+		// this is called when server is stopped abnormally.
 		public void onServiceDisconnected(ComponentName className) {
+			Log.d(TAG, "+++++++++GDDBStarClient onServiceDisconnected+++++++");
+
 			mDbstarService = null;
+			mIsServerCorrupted = true;
+			mIsBoundToServer = false;
 		}
 	};
 
@@ -54,8 +76,8 @@ public class GDDBStarClient {
 		mContext.unbindService(mConnection);
 	}
 
-	public void setListener() {
-
+	public void setObserver(DbServiceObserver oberver) {
+		mObserver = oberver;
 	}
 
 	public void startDvbpush() {
@@ -100,7 +122,7 @@ public class GDDBStarClient {
 	public void notifyDbServer(int msg) {
 		if (mDbstarService != null) {
 			try {
-				Log.d(TAG, "notifyDbServer " + msg);
+				Log.d(TAG, " ====== notifyDbServer === msg =  " + msg);
 				mDbstarService.sendCommand(msg, null, 0);
 			} catch (RemoteException e) {
 				e.printStackTrace();

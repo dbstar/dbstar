@@ -24,6 +24,8 @@ public class GDCommon {
 	public static final int MSG_DATA_SIGNAL_STATUS = 15;
 	public static final int STATUS_HASSIGNAL = 0;
 	public static final int STATUS_NOSIGNAL = 1;
+	
+	public static final int SYNC_STATUS_TODBSERVER = 16;
 
 	public static final String KeyDisk = "disk";
 
