@@ -240,7 +240,7 @@ bootable_make()
 		mmm $ANDROID_SRC/bootable/recovery
 	fi
 	if [ $? -eq 0 ]; then
-		call cp -f $ROOTFS_OUT/system/bin/recovery $ROOTFS_OUT/system/recovery/root/sbin/
+		call cp -f $ROOTFS_OUT/system/bin/recovery $ROOTFS_OUT/recovery/root/sbin/
 		logger "FINISH make bootable recovery"
 	else
 		logger "ERROR make bootable recovery"
