@@ -49,26 +49,13 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 PRODUCT_PACKAGES += \
 	FileBrowser \
 	AppInstaller \
-	Samba \
-	libsmbbase \
-	libsmbmnt \
-	smbd \
 	Update \
 	RemoteIME \
 	remotecfg \
-	PPPoE \
-	libpppoejni \
-	pppoe_wrapper \
-	pppoe \
-	amlogic.pppoe \
-	amlogic.pppoe.xml \
 	pcli \
 	audio_firmware \
 	remote_control \
-	amlpictureKit \
-	PicturePlayer \
-	MusicPlayer	\
-	Bluetooth
+	MusicPlayer	
 
 PRODUCT_COPY_FILES += \
 	device/amlogic/f16ref/ump.ko:root/boot/ump.ko \
@@ -89,15 +76,15 @@ PRODUCT_PACKAGES += hostapd_wps
 
 
 # 40181 Wifi driver
-PRODUCT_PACKAGES += wl
-PRODUCT_PACKAGES += dhd
-PRODUCT_PACKAGES += 40181/nvram.txt
-PRODUCT_PACKAGES += 40181/fw_bcm40181a0.bin
-PRODUCT_PACKAGES += 40181/fw_bcm40181a0_apsta.bin
-PRODUCT_PACKAGES += 40181/fw_bcm40181a2.bin
-PRODUCT_PACKAGES += 40181/fw_bcm40181a2_apsta.bin
-PRODUCT_PACKAGES += 40181/fw_bcm40181a2_p2p.bin
-PRODUCT_COPY_FILES += device/amlogic/f16ref/dhd.ko:system/lib/dhd.ko
+#PRODUCT_PACKAGES += wl
+#PRODUCT_PACKAGES += dhd
+#PRODUCT_PACKAGES += 40181/nvram.txt
+#PRODUCT_PACKAGES += 40181/fw_bcm40181a0.bin
+#PRODUCT_PACKAGES += 40181/fw_bcm40181a0_apsta.bin
+#PRODUCT_PACKAGES += 40181/fw_bcm40181a2.bin
+#PRODUCT_PACKAGES += 40181/fw_bcm40181a2_apsta.bin
+#PRODUCT_PACKAGES += 40181/fw_bcm40181a2_p2p.bin
+#PRODUCT_COPY_FILES += device/amlogic/f16ref/dhd.ko:system/lib/dhd.ko
 
 # 4018X Wifi driver
 #PRODUCT_PACKAGES += wpa_cli
@@ -146,7 +133,7 @@ PRODUCT_PACKAGES += \
 	DVBService \
 	progmanager
 endif
-PRODUCT_PACKAGES += Phone
+#PRODUCT_PACKAGES += Phone
 # USE_OPENGL_RENDERER := false
 PRODUCT_COPY_FILES += \
        $(LOCAL_PATH)/init.factorytest.rc:init.factorytest.rc \
