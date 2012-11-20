@@ -25,6 +25,14 @@ dbstar_init()
 		chmod 666 /data/dbstar/Smarthome.db
 		setprop dbstar.inited 1
 	fi
+	if [ -e "/data/dbstar/ColumnRes" ]; then
+		echo "ColumnRes already inited!"
+	else
+		cp -rf /system/etc/dbstar/ColumnRes /data/dbstar/
+		chmod 777 /data/dbstar/ColumnRes
+		chmod 777 /data/dbstar/ColumnRes/LocalColumnIcon
+		setprop dbstar.inited 1
+	fi
 }
 
 
