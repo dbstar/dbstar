@@ -1,27 +1,25 @@
 package com.dbstar.settings;
 
-import java.util.List;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.dbstar.settings.R;
-import com.dbstar.settings.ethernet.EthernetConfigController;
-import com.dbstar.settings.ethernet.EthernetEnabler;
 import com.dbstar.settings.ethernet.EthernetSettings;
 import com.dbstar.settings.wifi.WifiSettings;
 
-public class GDNetworkSettingsActivity extends GDBaseActivity {
+public class GDNetworkSettingsActivity extends GDBaseActivity implements
+		OnSaveListener {
 
+	private static final String TAG = "GDNetworkSettingsActivity";
 	private static final String ActionGetNetworkInfo = "com.dbstar.DbstarLauncher.Action.GET_NETWORKINFO";
 	private static final String ActionUpateNetworkInfo = "com.dbstar.DbstarLauncher.Action.UPDATE_NETWORKINFO";
 	private static final String ActionSetNetworkInfo = "com.dbstar.DbstarLauncher.Action.SET_NETWORKINFO";
@@ -38,6 +36,8 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 	private EthernetSettings mEthSettings;
 	private WifiSettings mWifiSettings;
 
+	private Handler mHandler;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -48,23 +48,32 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 
 		initializeView();
 
-		Intent intent = getIntent();
+		// Intent intent = getIntent();
 		// mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 
-		mEthSettings = new EthernetSettings(this);
+		mEthSettings = new EthernetSettings(this, this);
 		mWifiSettings = new WifiSettings(this);
 
 		mWifiSettings.onActivityCreated(savedInstanceState);
 
+		mHandler = new Handler();
+
+		mHandler.postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				onShow();
+			}
+
+		}, 300);
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-		
-		mGatewaySerialNumber.requestFocus();
 
+		// mGatewaySerialNumber.requestFocus();
 		getNetworkInfo();
 	}
 
@@ -72,8 +81,15 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 	public void onDestroy() {
 		super.onDestroy();
 
-		setNetworkInfo();
+		// setNetworkInfo();
 		unregisterReceiver(mReceiver);
+	}
+
+	private void onShow() {
+		// hide soft keyboard
+		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+				InputMethodManager.HIDE_IMPLICIT_ONLY);
 	}
 
 	public void initializeView() {
@@ -84,12 +100,12 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 		mMulticastPort = (TextView) findViewById(R.id.multicast_port);
 		mGatewayIP = (TextView) findViewById(R.id.gateway_ip);
 		mGatewayPort = (TextView) findViewById(R.id.gateway_port);
-		
-		// hide soft keyboard
-		InputMethodManager imm = (InputMethodManager)getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mGatewaySerialNumber.getWindowToken(),
-                InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+		mGatewaySerialNumber.setOnFocusChangeListener(mFocusChangedListener);
+		mMulticastIP.setOnFocusChangeListener(mFocusChangedListener);
+		mMulticastPort.setOnFocusChangeListener(mFocusChangedListener);
+		mGatewayIP.setOnFocusChangeListener(mFocusChangedListener);
+		mGatewayPort.setOnFocusChangeListener(mFocusChangedListener);
 	}
 
 	void registerGetInfoReceiver() {
@@ -162,7 +178,27 @@ public class GDNetworkSettingsActivity extends GDBaseActivity {
 		super.onPause();
 
 		mEthSettings.onPause();
-
 		mWifiSettings.onPause();
 	}
+
+	@Override
+	public void onSave() {
+		setNetworkInfo();
+
+		finish();
+	}
+
+	View.OnFocusChangeListener mFocusChangedListener = new View.OnFocusChangeListener() {
+
+		@Override
+		public void onFocusChange(View v, boolean hasFocus) {
+			if (v instanceof EditText) {
+				if (hasFocus) {
+					EditText textView = (EditText) v;
+					textView.setSelection(0);
+				}
+			}
+
+		}
+	};
 }

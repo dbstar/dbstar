@@ -73,16 +73,16 @@
         <receiver android:name=".display.OutputSettingsBroadcastReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.OUTPUTMODE_CHANGE" />
-                <action android:name="android.intent.action.OUTPUTMODE_CANCEL" />
-                <action android:name="android.intent.action.OUTPUTMODE_SAVE" />
-                <action android:name="android.intent.action.OUTPUTPOSITION_CHANGE" />
-                <action android:name="android.intent.action.OUTPUTPOSITION_CANCEL" />
-                <action android:name="android.intent.action.OUTPUTPOSITION_SAVE" />
-                <action android:name="android.intent.action.OUTPUTPOSITION_DEFAULT_SAVE" />
-                <action android:name="android.intent.action.DISP_CHANGE" />
-                <action android:name="android.intent.action.VIDEOPOSITION_CHANGE" />
-                <action android:name="android.intent.action.CVBSMODE_CHANGE" />
+                <action android:name="dbstar.intent.action.OUTPUTMODE_CHANGE" />
+                <action android:name="dbstar.intent.action.OUTPUTMODE_CANCEL" />
+                <action android:name="dbstar.intent.action.OUTPUTMODE_SAVE" />
+                <action android:name="dbstar.intent.action.OUTPUTPOSITION_CHANGE" />
+                <action android:name="dbstar.intent.action.OUTPUTPOSITION_CANCEL" />
+                <action android:name="dbstar.intent.action.OUTPUTPOSITION_SAVE" />
+                <action android:name="dbstar.intent.action.OUTPUTPOSITION_DEFAULT_SAVE" />
+                <action android:name="dbstar.intent.action.DISP_CHANGE" />
+                <action android:name="dbstar.intent.action.VIDEOPOSITION_CHANGE" />
+                <action android:name="dbstar.intent.action.CVBSMODE_CHANGE" />
             </intent-filter>
         </receiver>
     </application>

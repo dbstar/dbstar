@@ -1,14 +1,13 @@
 package com.dbstar.settings;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,7 +73,7 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 		initializeView();
 
-		Intent intent = getIntent();
+		// Intent intent = getIntent();
 		// mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 
@@ -166,6 +165,8 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 	@Override
 	public void onStart() {
 		super.onStart();
+
+		mVideoOutputView.requestFocus();
 	}
 
 	public void initializeView() {
@@ -250,9 +251,12 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 		mVideoOutputView.setOnItemSelectedListener(mVideoItemSelectedListener);
 		mAudioOutputView.setOnItemSelectedListener(mAudioItemSelectedListener);
-		
+
 		mVideoOutputView.setOnFocusChangeListener(mFocusChangeListener);
 		mAudioOutputView.setOnFocusChangeListener(mFocusChangeListener);
+
+		mVideoOutputView.setOnKeyListener(mVideoKeyListener);
+		mAudioOutputView.setOnKeyListener(mAudioKeyListener);
 	}
 
 	int mVideoSelectedMode = -1;
@@ -268,6 +272,9 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 	};
 
 	private void onModeChanged(int modeIndex) {
+		if (mVideoSelectedMode == modeIndex)
+			return;
+
 		mVideoOldSelectedMode = mVideoSelectedMode;
 		mVideoSelectedMode = modeIndex;
 
@@ -421,6 +428,8 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			holder.modeViewHighlight.setVisibility(show ? View.VISIBLE
 					: View.GONE);
 			holder.modeView.setVisibility(show ? View.GONE : View.VISIBLE);
+
+			Log.d(TAG, "view " + holder.modeView.getText() + " show=" + show);
 		}
 	}
 
@@ -445,6 +454,58 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			String value = mAudioModeValues[position];
 			SoundSettings.setAudioOutputMode(mode.modeValue, value);
 		}
+	}
+
+	private View.OnKeyListener mVideoKeyListener = new View.OnKeyListener() {
+
+		@Override
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+
+			if (event.getAction() == KeyEvent.ACTION_DOWN) {
+				if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+					return handleUpKey(mVideoOutputView);
+				} else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+					return handleDownKey(mVideoOutputView);
+				}
+
+			}
+
+			return false;
+		}
+	};
+
+	private View.OnKeyListener mAudioKeyListener = new View.OnKeyListener() {
+
+		@Override
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+			if (event.getAction() == KeyEvent.ACTION_DOWN) {
+				if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+					return handleUpKey(mAudioOutputView);
+				} else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+					return handleDownKey(mAudioOutputView);
+				}
+			}
+
+			return false;
+		}
+	};
+
+	boolean handleUpKey(ListView listView) {
+		if (listView.getSelectedItemPosition() == 0) {
+			listView.setSelection(listView.getCount() - 1);
+			return true;
+		}
+
+		return false;
+	}
+
+	boolean handleDownKey(ListView listView) {
+		if (listView.getSelectedItemPosition() == listView.getCount() - 1) {
+			listView.setSelection(0);
+			return true;
+		}
+
+		return false;
 	}
 
 	private class ListAdapter extends BaseAdapter {

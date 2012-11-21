@@ -1,7 +1,7 @@
 package com.dbstar.settings.ethernet;
 
+import com.dbstar.settings.OnSaveListener;
 import com.dbstar.settings.R;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
@@ -28,13 +28,15 @@ public class EthernetSettings implements View.OnClickListener {
 
 	View mEthConfigView;
 	View mWifiConfigView;
+	
+	OnSaveListener mSaveListener;
 
 	public boolean isEthernetOn() {
 		return mEthernetSwitchIndicator.isChecked();
 	}
 
-	public EthernetSettings(Activity activity) {
-
+	public EthernetSettings(Activity activity, OnSaveListener callback) {
+		mSaveListener = callback;
 		mEthConfigView = (View) activity.findViewById(R.id.eth_config);
 		mWifiConfigView = (View) activity.findViewById(R.id.wifi_aplist);
 
@@ -107,6 +109,7 @@ public class EthernetSettings implements View.OnClickListener {
 
 		} else if (view.getId() == R.id.eth_savebutton) {
 			mController.saveConfigure();
+			mSaveListener.onSave();
 		}
 	}
 }

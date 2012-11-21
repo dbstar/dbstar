@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.NetworkUtils;
 import android.net.DhcpInfo;
@@ -37,6 +38,9 @@ import android.widget.Toast;
 public class EthernetConfigController {
 	private final String TAG = "EthernetConfigController";
 
+	public static final int MSG_NETWORK_CONNECT = 0;
+	public static final int MSG_NETWORK_DISCONNECT = 1;
+
 	public static final String DefaultEthernetDeviceName = "eth0";
 	private View mDhcpSwitchButton;
 	private CheckBox mDhcpSwitchIndicator;
@@ -54,7 +58,7 @@ public class EthernetConfigController {
 	private EthernetManager mEthManager;
 	private EthernetDevInfo mEthInfo;
 
-	private final IntentFilter mIntentFilter;
+	private final IntentFilter mIntentFilter, mConnectIntentFilter;
 	private Handler mHandler;
 
 	private boolean mEnablePending;
@@ -62,6 +66,8 @@ public class EthernetConfigController {
 
 	private Context mContext;
 	private Activity mActivity;
+
+	ConnectivityManager mConnectManager;
 
 	String mDev = null;
 
@@ -73,32 +79,95 @@ public class EthernetConfigController {
 			Log.d(TAG, " recv state=" + state);
 			if (state == EthernetStateTracker.EVENT_HW_CONNECTED
 					|| state == EthernetStateTracker.EVENT_HW_PHYCONNECTED) {
-				handleNetConnected(true);
+				handleEthStateChanged(true);
 			} else if (state == EthernetStateTracker.EVENT_HW_DISCONNECTED) {
 				// || state == EthernetStateTracker.EVENT_HW_CHANGED) {
 				// Unfortunately, the interface will still be listed when this
 				// intent is sent, so delay updating.
-				handleNetConnected(false);
+				handleEthStateChanged(false);
 			}
 		}
 	};
 
-	boolean mIsNetConnected = false;
+	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
 
-	void handleNetConnected(boolean connected) {
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
 
-		Log.d(TAG, " =================== network connected =  " + connected);
+			if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
+				return;
 
-		mIsNetConnected = connected;
+			boolean noConnectivity = intent.getBooleanExtra(
+					ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
+
+			Log.d(TAG, "noConnectivity = " + noConnectivity);
+			if (noConnectivity) {
+				// There are no connected networks at all
+				handleNetConnected();
+				return;
+			}
+
+			// case 1: attempting to connect to another network, just wait for
+			// another broadcast
+			// case 2: connected
+			// NetworkInfo networkInfo = (NetworkInfo) intent
+			// .getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+
+			NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
+
+			if (networkInfo != null) {
+				Log.d(TAG, "getTypeName() = " + networkInfo.getTypeName());
+				Log.d(TAG, "isConnected() = " + networkInfo.isConnected());
+
+				if (networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET
+						&& networkInfo.isConnected()) {
+					handleNetConnected();
+				}
+			}
+		}
+
+	};
+
+	private void reqisterConnectReceiver() {
+		mActivity.registerReceiver(mNetworkReceiver, mConnectIntentFilter);
+	}
+
+	private void unregisterConnectReceiver() {
+		mActivity.unregisterReceiver(mNetworkReceiver);
+	}
+
+	public boolean isNetworkConnected() {
+		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
+		return networkInfo != null
+				&& networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET
+				&& networkInfo.isConnected();
+	}
+
+	void handleNetConnected() {
+
 		mHandler.post(new Runnable() {
 			public void run() {
-				setConnectionStatus();
+				setConnectionStatus(isNetworkConnected());
 			}
 		});
 	}
 
-	void setConnectionStatus() {
-		if (mIsNetConnected) {
+	boolean mIsEthHWConnected = false;
+
+	void handleEthStateChanged(boolean ethHWConnected) {
+		mIsEthHWConnected = ethHWConnected;
+		mHandler.post(new Runnable() {
+			public void run() {
+				setConnectionStatus(mIsEthHWConnected);
+			}
+		});
+	}
+
+	void setConnectionStatus(boolean connected) {
+
+		Log.d(TAG, " =================== network connected =  " + connected);
+
+		if (connected) {
 			if (mDhcpSwitchIndicator.isChecked()) {
 				mDhcpConnectState.setVisibility(View.VISIBLE);
 			}
@@ -124,6 +193,13 @@ public class EthernetConfigController {
 
 		mIntentFilter = new IntentFilter(
 				EthernetManager.ETH_STATE_CHANGED_ACTION);
+
+		mConnectIntentFilter = new IntentFilter(
+				ConnectivityManager.CONNECTIVITY_ACTION);
+
+		mConnectManager = (ConnectivityManager) mActivity
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+
 		mHandler = new Handler();
 
 		buildDialogContent(activity);
@@ -133,10 +209,14 @@ public class EthernetConfigController {
 
 	public void resume() {
 		getContext().registerReceiver(mReceiver, mIntentFilter);
+		reqisterConnectReceiver();
+
+		setConnectionStatus(isNetworkConnected());
 	}
 
 	public void pause() {
 		getContext().unregisterReceiver(mReceiver);
+		unregisterConnectReceiver();
 	}
 
 	public Context getContext() {
@@ -239,6 +319,9 @@ public class EthernetConfigController {
 					mDhcpSwitchTitle.setTextColor(0xFFFFCC00);
 				} else if (v.getId() == R.id.manual_switch_button) {
 					mManualSwitchTitle.setTextColor(0xFFFFCC00);
+				} else if (v instanceof EditText) {
+					EditText textView = (EditText) v;
+					textView.setSelection(0);
 				}
 			} else {
 				if (v.getId() == R.id.dhcp_switch_button) {
@@ -267,8 +350,10 @@ public class EthernetConfigController {
 		mGw.setFocusable(!enable);
 		mMask.setFocusable(!enable);
 
-		mDhcpConnectState.setVisibility(View.VISIBLE);
-		mManualConnectState.setVisibility(View.GONE);
+		if (isNetworkConnected()) {
+			mDhcpConnectState.setVisibility(View.VISIBLE);
+			mManualConnectState.setVisibility(View.GONE);
+		}
 
 		mManualSwitchButton.setNextFocusDownId(R.id.eth_savebutton);
 		mSaveButton.setNextFocusUpId(R.id.manual_switch_button);
@@ -289,15 +374,17 @@ public class EthernetConfigController {
 		mBackupDns.setFocusable(enable);
 		mGw.setFocusable(enable);
 		mMask.setFocusable(enable);
-		
+
 		mIpaddr.setNextFocusLeftId(R.id.gateway_serialnumber);
 		mDns.setNextFocusLeftId(R.id.gateway_serialnumber);
 		mBackupDns.setNextFocusLeftId(R.id.gateway_serialnumber);
 		mGw.setNextFocusLeftId(R.id.gateway_serialnumber);
 		mMask.setNextFocusLeftId(R.id.gateway_serialnumber);
 
-		mDhcpConnectState.setVisibility(View.GONE);
-		mManualConnectState.setVisibility(View.VISIBLE);
+		if (isNetworkConnected()) {
+			mDhcpConnectState.setVisibility(View.GONE);
+			mManualConnectState.setVisibility(View.VISIBLE);
+		}
 
 		mManualSwitchButton.setNextFocusDownId(R.id.eth_ip);
 		mSaveButton.setNextFocusUpId(R.id.eth_backup_dns);
