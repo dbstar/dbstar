@@ -407,7 +407,7 @@ Status	RCHAR(32) DEFAULT '0');", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ObjectName	NVARCHAR(64) DEFAULT '',\
-EntityID	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(128) DEFAULT '',\
 StrLang		NVARCHAR(32) DEFAULT '',\
 StrName		NVARCHAR(64) DEFAULT '',\
 Extension	NVARCHAR(64) DEFAULT '',\
@@ -419,7 +419,7 @@ PRIMARY KEY (ObjectName,EntityID,StrLang,StrName,Extension));", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ObjectName	NVARCHAR(64) DEFAULT '',\
-EntityID	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(128) DEFAULT '',\
 PosterID	NVARCHAR(64) DEFAULT '',\
 PosterName	NVARCHAR(64) DEFAULT '',\
 PosterURI	NVARCHAR(256) DEFAULT '',\
@@ -430,7 +430,7 @@ PRIMARY KEY (ObjectName,EntityID,PosterID));", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ObjectName	NVARCHAR(64) DEFAULT '',\
-EntityID	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(128) DEFAULT '',\
 TrailerID	NVARCHAR(64) DEFAULT '',\
 TrailerName	NVARCHAR(64) DEFAULT '',\
 TrailerURI	NVARCHAR(256) DEFAULT '',\
@@ -441,7 +441,7 @@ PRIMARY KEY (ObjectName,EntityID,TrailerID));", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ObjectName	NVARCHAR(64) DEFAULT '',\
-EntityID	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(128) DEFAULT '',\
 SubTitleID	NVARCHAR(64) DEFAULT '',\
 SubTitleName	NVARCHAR(64) DEFAULT '',\
 SubTitleLanguage	NVARCHAR(64) DEFAULT '',\
@@ -453,7 +453,7 @@ PRIMARY KEY (ObjectName,EntityID,SubTitleID));", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ObjectName	NVARCHAR(256) DEFAULT '',\
-EntityID	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(128) DEFAULT '',\
 Name	NVARCHAR(64) DEFAULT '',\
 Type	NVARCHAR(64) DEFAULT '',\
 PRIMARY KEY (ObjectName,EntityID,Name));", name);
@@ -463,7 +463,7 @@ PRIMARY KEY (ObjectName,EntityID,Name));", name);
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
 ObjectName	NVARCHAR(256) DEFAULT '',\
-EntityID	NVARCHAR(64) DEFAULT '',\
+EntityID	NVARCHAR(128) DEFAULT '',\
 FileID	NVARCHAR(64) DEFAULT '',\
 FileName	NVARCHAR(64) DEFAULT '',\
 FileURI	NVARCHAR(256) DEFAULT '',\
@@ -539,7 +539,7 @@ PublicationID	NVARCHAR(64) DEFAULT '',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 ProductID	NVARCHAR(64) DEFAULT '',\
 URI	NVARCHAR(256) DEFAULT '',\
-DescURI	NVARCHAR(256) DEFAULT '',\
+xmlURI	NVARCHAR(256) DEFAULT '',\
 TotalSize	NVARCHAR(64) DEFAULT '',\
 ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
@@ -654,15 +654,23 @@ PRIMARY KEY (DateValue,PublicationID));", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+Version	NVARCHAR(64) DEFAULT '',\
+StandardVersion	NVARCHAR(64) DEFAULT '',\
+ServiceID	NVARCHAR(64) DEFAULT '',\
 ReceiveType	NVARCHAR(64) DEFAULT '',\
-ProductDescID	NVARCHAR(64) DEFAULT '',\
+rootPath	NVARCHAR(256) DEFAULT '',\
+ProductDescID	NVARCHAR(128) DEFAULT '',\
+productID	NVARCHAR(64) DEFAULT '',\
 ID	NVARCHAR(64) DEFAULT '',\
+SetID	NVARCHAR(64) DEFAULT '',\
 TotalSize	NVARCHAR(64) DEFAULT '',\
 URI	NVARCHAR(256) DEFAULT '',\
-ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
+xmlURI	NVARCHAR(384) DEFAULT '',\
 PushStartTime	NVARCHAR(64) DEFAULT '',\
 PushEndTime	NVARCHAR(64) DEFAULT '',\
-PRIMARY KEY (ReceiveType,ID));", name);
+Columns	NVARCHAR(512) DEFAULT '',\
+ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
+PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
 			}
 			else if(!strcmp(name,"Preview"))
 			{
@@ -1111,17 +1119,22 @@ int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int recei
 	int ret = 0;
 	int (*sqlite_callback)(char **,int,int,void *,unsigned int) = str_read_cb;	/*sqlite_read_callback;*/
 
-	DEBUG("in transaction sqlite read: %s\n", sqlite_cmd);
-	
-/*
-	///open database
-	if(-1==openDatabase())
-	{
-		ERROROUT("Open database failed\n");
-		ret = -1;
+	if(NULL==sqlite_cmd || 0==strlen(sqlite_cmd)){
+		DEBUG("invalid argument\n");
+		return -1;
 	}
-	else{	// open database ok
-*/		
+	DEBUG("%s\n", sqlite_cmd);
+	
+	if(SQL_TRAN_STATUS_END == s_sql_tran_status){
+		DEBUG("######### SQLITE TRANSACTION STATUS is abnormally #########\n");
+		DEBUG("expect SQL_TRAN_STATUS_BEGIN but %d\n", s_sql_tran_status);
+		DEBUG("###########################################################\n");
+		return -1;
+		//ret = sqlite_transaction_begin();
+	}
+	
+	if(SQL_TRAN_STATUS_BEGIN == s_sql_tran_status || SQL_TRAN_STATUS_LOADING == s_sql_tran_status){
+		DEBUG("in transaction sqlite read: %s\n", sqlite_cmd);
 		if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg)
 			|| NULL!=errmsg)
 		{
@@ -1131,13 +1144,7 @@ int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int recei
 		}
 		else{ // inquire table ok
 			if(0==l_row){
-				DEBUG("no row, l_row=0, l_column=%d", l_column);
-				/*
-				int i = 0;
-				for(i=0;i<l_column;i++)
-					printf("\t\t%s", l_result[i]);
-				*/
-				printf("\n");
+				DEBUG("no row, l_row=0, l_column=%d\n", l_column);
 			}
 			else{
 				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
@@ -1145,20 +1152,12 @@ int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int recei
 					sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
 				else{
 					DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
-//					int i = 0;
-//					for(i=0;i<(l_column+1);i++)
-//						printf("\t\t%s\n", l_result[i]);
 				}
 			}
 			ret = l_row;
-/*
 		}
-*/
 		sqlite3_free_table(l_result);
 		sqlite3_free(errmsg);
-		/*
-		closeDatabase();
-		*/
 	}
 	
 	return ret;

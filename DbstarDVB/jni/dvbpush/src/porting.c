@@ -41,11 +41,12 @@ static char			s_column_res[256];
 static int			s_software_check = 1;
 
 static char			s_Language[64];
+static char			s_serviceID[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
 static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int date_str_size);
-
+static int serviceID_init();
 /* define some general interface function here */
 
 static void settingDefault_set(void)
@@ -124,8 +125,10 @@ char *setting_item_value(char *buf, unsigned int buf_len, char separator)
 
 int setting_init(void)
 {
-	if(1==s_settingInitFlag)
+	if(1==s_settingInitFlag){
+		DEBUG("setting is init already\n");
 		return 0;
+	}
 		
 	FILE* fp;
 	char tmp_buf[256];
@@ -137,46 +140,49 @@ int setting_init(void)
 	if (NULL == fp)
 	{
 		ERROROUT("open file %s faild! use default setting\n", SETTING_BASE);
-		return 0;
 	}
-	DEBUG("open file %s success\n", SETTING_BASE);
-	memset(tmp_buf, 0, sizeof(tmp_buf));
-	
-	while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
-		p_value = setting_item_value(tmp_buf, strlen(tmp_buf), ':');
-		if(NULL!=p_value)
-		{
-			//DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
-			if(strlen(tmp_buf)>0 && strlen(p_value)>0){
-				if(0==strcmp(tmp_buf, "server_id"))
-					strncpy(s_service_id, p_value, sizeof(s_service_id)-1);
-				else if(0==strcmp(tmp_buf, "root_channel"))
-					s_root_channel = atoi(p_value);
-				else if(0==strcmp(tmp_buf, "root_push_file"))
-					strncpy(s_root_push_file, p_value, sizeof(s_root_push_file)-1);
-				else if(0==strcmp(tmp_buf, "root_push_file_size"))
-					s_root_push_file_size = atoi(p_value);
-				else if(0==strcmp(tmp_buf, "prog_data_pid"))
-					s_prog_data_pid = atoi(p_value);
-				else if(0==strcmp(tmp_buf, "dbstar_database"))
-					strncpy(s_database_uri, p_value, sizeof(s_database_uri)-1);
-				else if(0==strcmp(tmp_buf, "dbstar_debug_level"))
-					s_debug_level = atoi(p_value);
-				else if(0==strcmp(tmp_buf, "parse_xml"))	/* this xml only for parse testing */
-					strncpy(s_xml, p_value, sizeof(s_xml)-1);
-				else if(0==strcmp(tmp_buf, "initialize_xml"))
-					strncpy(s_initialize_xml, p_value, sizeof(s_initialize_xml)-1);
-				else if(0==strcmp(tmp_buf, "localcolumn_res"))
-					strncpy(s_column_res, p_value, sizeof(s_column_res)-1);
-				else if(0==strcmp(tmp_buf, "software_check"))
-					s_software_check = atoi(p_value);
-			}
-		}
+	else{
+		DEBUG("open file %s success\n", SETTING_BASE);
 		memset(tmp_buf, 0, sizeof(tmp_buf));
+		
+		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
+			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), ':');
+			if(NULL!=p_value)
+			{
+				//DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
+				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
+					if(0==strcmp(tmp_buf, "server_id"))
+						strncpy(s_service_id, p_value, sizeof(s_service_id)-1);
+					else if(0==strcmp(tmp_buf, "root_channel"))
+						s_root_channel = atoi(p_value);
+					else if(0==strcmp(tmp_buf, "root_push_file"))
+						strncpy(s_root_push_file, p_value, sizeof(s_root_push_file)-1);
+					else if(0==strcmp(tmp_buf, "root_push_file_size"))
+						s_root_push_file_size = atoi(p_value);
+					else if(0==strcmp(tmp_buf, "prog_data_pid"))
+						s_prog_data_pid = atoi(p_value);
+					else if(0==strcmp(tmp_buf, "dbstar_database"))
+						strncpy(s_database_uri, p_value, sizeof(s_database_uri)-1);
+					else if(0==strcmp(tmp_buf, "dbstar_debug_level"))
+						s_debug_level = atoi(p_value);
+					else if(0==strcmp(tmp_buf, "parse_xml"))	/* this xml only for parse testing */
+						strncpy(s_xml, p_value, sizeof(s_xml)-1);
+					else if(0==strcmp(tmp_buf, "initialize_xml"))
+						strncpy(s_initialize_xml, p_value, sizeof(s_initialize_xml)-1);
+					else if(0==strcmp(tmp_buf, "localcolumn_res"))
+						strncpy(s_column_res, p_value, sizeof(s_column_res)-1);
+					else if(0==strcmp(tmp_buf, "software_check"))
+						s_software_check = atoi(p_value);
+				}
+			}
+			memset(tmp_buf, 0, sizeof(tmp_buf));
+		}
+		fclose(fp);
 	}
-	fclose(fp);
 	DEBUG("init settings OK\n");
 
+	serviceID_init();
+	
 	s_settingInitFlag = 1;
 	return 0;
 }
@@ -185,20 +191,6 @@ int setting_uninit()
 {
 	s_settingInitFlag = 0;
 	return 0;
-}
-
-/*
- 检查指定的产品id是否在特殊产品之列。
-*/
-int special_productid_check(char *productid)
-{
-	if(NULL==productid)
-		return -1;
-
-	if(0==strcmp(productid, "1"))
-		return 1;
-	else
-		return 0;
 }
 
 int root_channel_get(void)
@@ -909,4 +901,60 @@ char *multi_addr_get(void)
 	DEBUG("multi addr: %s\n", s_data_source);
 	
 	return s_data_source;
+}
+
+
+static int serviceID_init()
+{
+	char sqlite_cmd[512];
+	memset(s_serviceID, 0, sizeof(s_serviceID));
+	int (*sqlite_cb)(char **, int, int, void *,unsigned int) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_SERVICEID);
+
+	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sizeof(s_serviceID), sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read no serviceID from db\n");
+	}
+	else
+		DEBUG("read serviceID: %s\n", s_serviceID);
+	
+	return 0;
+}
+
+char *serviceID_get()
+{
+	return s_serviceID;
+}
+
+int serviceID_set(char *serv_id)
+{
+	return snprintf(s_serviceID,sizeof(s_serviceID),"%s",serv_id);
+}
+
+/*
+ 检查指定的产品id是否在特殊产品之列。
+*/
+int special_productid_check(char *productid)
+{
+	if(NULL==productid)
+		return -1;
+
+	if(0==strcmp(productid, "1"))
+		return 0;
+	else
+		return -1;
+}
+
+/*
+ 检查指定的产品id是否可以接收。
+*/
+int productid_check(char *productid)
+{
+	if(NULL==productid)
+		return -1;
+
+	if(0==strcmp(productid, "1"))
+		return 0;
+	else
+		return -1;
 }

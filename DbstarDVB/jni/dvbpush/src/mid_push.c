@@ -68,6 +68,8 @@ typedef struct tagPRG
 static int mid_push_regist(char *id, char *content_uri, long long content_len);
 static int push_monitor_regist(int regist_flag);
 static int push_decoder_buf_uninit();
+static int prog_name_fill();
+static int prog_reject_init();
 
 #define PROGS_NUM 64
 static PROG_S s_prgs[PROGS_NUM];
@@ -506,7 +508,7 @@ void usage()
 
 void callback(const char *path, long long size, int flag)
 {
-	DEBUG("path:%s, size:%lld, flag:%d\n", path, size, flag);
+	DEBUG("\n\n\n===========================path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
 	
 	/* 由于涉及到解析和数据库操作，这里不直接调用parseDoc，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
@@ -635,8 +637,8 @@ static int pushlist_sqlite_cb(char **result, int row, int column, void *receiver
 }
 
 /*
-初始化push monitor数组，一般情况是从数据库brand表中读取需要监控的节目。
-如果下发了新的brand.xml，解析xml并入库后，需要调用此函数刷新数组。
+初始化push monitor数组，一般情况是从数据库ProductDesc表中读取需要监控的节目。
+如果下发了新的ProductDesc.xml，解析xml并入库后，需要调用此函数刷新数组。
 需要确保刷新数组前就已经将数组中非空条目从push模块中反注册，避免监控垃圾信息。
 */
 int push_monitor_reset()
@@ -646,34 +648,13 @@ int push_monitor_reset()
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushlist_sqlite_cb;
 
 	pthread_mutex_lock(&mtx_push_monitor);
-#if 0	// only for test	
-	mid_push_regist("1","prog/video/1", 206237980LL);
-	mid_push_regist("2","prog/file/2", 18816360LL);
-	mid_push_regist("3","prog/audio/3", 38729433LL);
-	mid_push_regist("4","prog/video/4", 2206237980LL);
-	mid_push_regist("5","prog/file/5", 11118816360LL);
-	mid_push_regist("6","prog/audio/6", 30338729433LL);
-	mid_push_regist("7","prog/video/7", 21206237980LL);
-	mid_push_regist("8","prog/file/这是中文测试文件名", 1882316360LL);
-	mid_push_regist("9","prog/audio/9", 3872439433LL);
-	mid_push_regist("10","prog/video/10", 20625337980LL);
-	mid_push_regist("11","prog/file/11", 18816323460LL);
-	mid_push_regist("12","prog/audio/12", 38729423433LL);
-	mid_push_regist("13","prog/video/13", 206237942380LL);
-	mid_push_regist("14","prog/file/14", 1881636043LL);
-	mid_push_regist("15","中文长文件名测试，中文English混排，长文件名", 3872943433LL);
-	ret = 0;
-#else
 	/*
 	虽然投递单中还有成品集PublicationsSet、预告单GuideList、小片Preview，但与用户紧密相关的只有成品Publication
 	*/
-#if 0
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM ProductDesc;");
-#else
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM Publication WHERE ReceiveStatus='0' OR ReceiveStatus='1';");
-#endif
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI, TotalSize FROM ProductDesc WHERE ReceiveStatus='0' OR ReceiveStatus='1';");
 	ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
-#endif
+	
+	prog_name_fill();
 	pthread_mutex_unlock(&mtx_push_monitor);
 
 	return ret;
@@ -729,6 +710,10 @@ int mid_push_init(char *push_conf)
 		s_prgs[i].cur = 0LL;
 		s_prgs[i].total = 0LL;
 	}
+	
+	/*
+	monitor监控初始化放在push初始化之前，拒绝接收注册放在push初始化之后
+	*/
 	push_monitor_reset();
 	
 	/*
@@ -741,6 +726,13 @@ int mid_push_init(char *push_conf)
 	}
 	else
 		DEBUG("Init push lib success with %s!\n", push_conf);
+	
+	
+	/*
+	monitor监控初始化放在push初始化之前，拒绝接收注册放在push初始化之后。
+	但在push解码线程之前。
+	*/
+	prog_reject_init();
 	
 	/*
 	确保开机后至少有一次扫描机会，获得准确的下载进度。
@@ -820,7 +812,10 @@ unsigned char * TC_loader_get_push_buf_pointer(void)
 {
     return (unsigned char *)g_recvBuffer;
 }
-//注册节目
+
+/*
+注册节目
+*/
 static int mid_push_regist(char *id, char *content_uri, long long content_len)
 {
 	if(NULL==id || NULL==content_uri || 0==strlen(content_uri) || content_len<=0LL){
@@ -844,23 +839,11 @@ static int mid_push_regist(char *id, char *content_uri, long long content_len)
 			s_prgs[i].cur = 0;
 			s_prgs[i].total = content_len;
 			
-			char sqlite_cmd[256];
-			memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
-			int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='Publication' AND EntityID='%s' AND StrLang='%s' AND StrName='PublicationName' AND Extension='';", 
-				s_prgs[i].id, language_get());
-		
-			int ret_sqlexec = sqlite_read(sqlite_cmd, s_prgs[i].caption, sizeof(s_prgs[i].caption), sqlite_cb);
-			if(ret_sqlexec<=0){
-				DEBUG("read no Name from db, filled with id: %s\n", s_prgs[i].id);
-				strncpy(s_prgs[i].caption, s_prgs[i].id, sizeof(s_prgs[i].caption)-1);
-			}
-			
 			/*
 			只在需要查询时才注册，并在查询后反注册。避免push模块自身无意义的查询
 			push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
 			*/
-			DEBUG("regist to push %d: %s %lld\n", i, s_prgs[i].uri, s_prgs[i].total);
+			DEBUG("regist to push[%d]: %s %lld\n", i, s_prgs[i].uri, s_prgs[i].total);
 			break;
 		}
 	}
@@ -871,3 +854,101 @@ static int mid_push_regist(char *id, char *content_uri, long long content_len)
 	else
 		return 0;
 }
+
+/*
+填充节目的名称
+*/
+static int prog_name_fill()
+{
+	/*
+	* Notice:节目路径是一个相对路径，不要以'/'开头；
+	* 若节目单中给出的路径是"/vedios/pushvod/1944"，则去掉最开始的'/'，
+	* 用"vedios/pushvod/1944"进行注册。
+	*
+	* 此处PRG这个结构体是出于示例方便定义的，不一定适用于您的程序中
+	*/
+	int i;
+	for(i=0; i<PROGS_NUM; i++)
+	{
+		if(strlen(s_prgs[i].uri)>0){
+			char sqlite_cmd[256];
+			memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
+			int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID='%s' AND StrLang='%s' AND (StrName='ProductDescName' OR StrName='SProductName' OR StrName='ColumnName') AND Extension='%s';", 
+				s_prgs[i].id, language_get(),serviceID_get());
+		
+			int ret_sqlexec = sqlite_read(sqlite_cmd, s_prgs[i].caption, sizeof(s_prgs[i].caption), sqlite_cb);
+			if(ret_sqlexec<=0){
+				DEBUG("read no Name from db, filled with id: %s\n", s_prgs[i].id);
+				snprintf(s_prgs[i].caption, sizeof(s_prgs[i].caption), "%s", s_prgs[i].id);
+			}
+		}
+	}
+	
+	return 0;
+}
+
+int mid_push_reject(const char *prog_uri)
+{
+	if(NULL==prog_uri){
+		DEBUG("invalid prog_uri\n");
+		return -1;
+	}
+	
+	int ret = 0;
+	ret = push_dir_forbid(prog_uri);
+	if(0==ret)
+		DEBUG("push forbid: %s\n", prog_uri);
+	else if(-1==ret)
+		DEBUG("push forbid failed: %s, no such uri\n", prog_uri);
+	else
+		DEBUG("push forbid failed: %s, some other err(%d)\n", prog_uri, ret);
+	
+	ret = push_dir_remove(prog_uri);
+	if(0==ret)
+		DEBUG("push remove: %s\n", prog_uri);
+	else if(-1==ret)
+		DEBUG("push remove failed: %s, no such uri\n", prog_uri);
+	else
+		DEBUG("push remove failed: %s, some other err(%d)\n", prog_uri, ret);
+		
+	return ret;
+}
+
+static int prog_reject_sqlite_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
+	if(row<1){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+	
+	int i = 0;
+	int ret = 0;
+	for(i=1;i<row+1;i++)
+	{
+		//DEBUG("==%s:%s:%ld==\n", result[i*column], result[i*column+1], strtol(result[i*column+1], NULL, 0));
+		if(-2==atoi(result[i*column+1])){
+			ret = mid_push_reject(result[i*column]);
+		}
+	}
+	
+	return ret;
+}
+
+
+/*
+初始化拒绝接收节目列表
+*/
+static int prog_reject_init()
+{
+	int ret = -1;
+	char sqlite_cmd[256+128];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = prog_reject_sqlite_cb;
+
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID, URI FROM ProductDesc WHERE ReceiveStatus='-1' OR ReceiveStatus='-2';");
+	ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
+	
+	return ret;
+}
+

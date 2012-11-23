@@ -432,13 +432,13 @@ void *softdvb_thread()
 		else
 			left = MULTI_BUF_SIZE - p_read + p_write;
 		
-//		printf("left: %d\n", left);
+		//PRINTF("%d,%d,%d\n", p_write, p_read, left);
 		if(left<18800){
 			usleep(10000);
 			continue;
 		}
 		
-		if(p_buf)
+//		if(p_buf)
 			parse_ts_packet(p_buf,p_write,&p_read);	// make sure 'p_buf' is not NULL
 	}
 	DEBUG("exit from soft dvb thread\n");
@@ -469,7 +469,7 @@ int multicast_add()
 
 static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
 {
-	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p\n", row, column, filter_act);
+	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p, receiver_size=%u\n", row, column, filter_act,receiver_size);
 	if(row<1 || NULL==filter_act){
 		DEBUG("no record in table, return\n");
 		return 0;
@@ -477,20 +477,27 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 	
 	int i = 0;
 	
-	for(i=1;i<row+1;i++)
-	{
-		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
-		if(1==*((int *)filter_act) && CHANNEL_INEFFECTIVE==atoi(result[i*column+1])){
-			int ret = free_filter(pid);
-			DEBUG("free pid %d return with %d\n", pid, ret);
+	if(1==*((int *)filter_act)){
+		for(i=1;i<row+1;i++)
+		{
+			unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
+			if(CHANNEL_INEFFECTIVE==atoi(result[i*column+1])){
+				int ret = free_filter(pid);
+				DEBUG("free pid %d return with %d\n", pid, ret);
+			}
 		}
 	}
+	
 	for(i=1;i<row+1;i++)
 	{
 		DEBUG("PID --- %s:%s --- \n", result[i*column], result[i*column+1]);
 		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
 		if(1==*((int *)filter_act) && CHANNEL_EFFECTIVE==atoi(result[i*column+1])){
-			int filter = alloc_filter(pid, 1);
+			int filter = -1;
+			if(0x019C==pid || 0x019D==pid)
+				filter = alloc_filter(pid, 1);
+			else
+				filter = alloc_filter(pid, 0);
 			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
 		}
 		else{
@@ -530,11 +537,11 @@ int softdvb_init()
 	int filter1 = alloc_filter(root_pid, 0);
 	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
 	
-	memset(&param,0,sizeof(param));
-	param.filter[0] = 0xf0;
-	param.mask[0] = 0xff;
-	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
-	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
+//	memset(&param,0,sizeof(param));
+//	param.filter[0] = 0xf0;
+//	param.mask[0] = 0xff;
+//	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
+//	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0x1;

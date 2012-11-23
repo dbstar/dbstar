@@ -605,7 +605,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	unsigned short tmp16=0;
 	unsigned int stb_id_l=0,stb_id_h=0;
 	
-	if(s_print_cnt>20480)
+	if(s_print_cnt>1024)
 		s_print_cnt = 0;
 	else
 		s_print_cnt ++;
@@ -1144,6 +1144,7 @@ retry:
 	return 0;
 }
 
+static unsigned short last_pid=0;
 int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 {
 	static int p = 0;
@@ -1284,7 +1285,9 @@ resync:
 	if(p_avail && (left>0) && !sc)
 	{
 		chan = get_filter(pid);
-		//DEBUG("get channel [%d][%d]\n",chan,pid);
+//		if(last_pid!=pid)
+//			DEBUG("get channel [%d][%x]\n",chan,pid);
+//		last_pid = pid;
 		if(chan != -1)
 			parse_payload(chan, p1, left, ts_start, ptr);
 	}

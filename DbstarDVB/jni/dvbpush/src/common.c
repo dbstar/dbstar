@@ -482,3 +482,50 @@ int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, 
 	closedir(pdir);
 	return ret;   
 }
+
+/*
+清理字符串中的指定字符，比如：将字符串头尾的斜线去掉，原串为"/mnt/sda1/dbstar///"，指定清理头尾字符'/'，结果为"mnt/sda1/dbstar"
+flag——1表示清理开头，2表示清理末尾，3表示清理开头和结尾，0及其他表示全部清理
+返回值——0表示成功，-1表示失败
+考虑到效率，字符串长度不能大于4096。这个长度也能避免那些意外的字符串
+*/
+int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int flag)
+{
+	if(NULL==str_dad || 0==strlen(str_dad) || 0==str_dad_len || str_dad_len>4096){
+		DEBUG("invalid args, len=%d\n", str_dad_len);
+		return -1;
+	}
+	DEBUG("will clear %s with %d\n", str_dad, flag);
+	
+	int i = 0;
+	if(2==flag || 3==flag){
+		for(i=0; i<str_dad_len; i++){
+			if(sign_c!=str_dad[str_dad_len-1-i])
+				break;
+			else
+				str_dad[str_dad_len-1-i] = '\0';
+		}
+	}
+	
+	int len_now = str_dad_len>strlen(str_dad)?strlen(str_dad):str_dad_len;
+	if(1==flag || 3==flag){
+		for(i=0; i<len_now; i++){
+			if(sign_c!=str_dad[i])
+				break;
+		}
+		
+		if(i>0){
+			int j = 0;
+			for(;i<len_now;i++){
+				str_dad[j] = str_dad[i];
+				j++;
+			}
+			str_dad[j] = '\0';
+		}
+	}
+	
+	DEBUG("clear return: %s\n", str_dad);
+	
+	return 0;
+}
+

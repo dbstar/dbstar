@@ -61,12 +61,13 @@ typedef enum{
 #define DATABASE			WORKING_DATA_DIR"/Dbstar.db"
 
 #define	SERVICE_ID			"01"
-#define ROOT_CHANNEL		(400)
-#define PROG_DATA_PID_DF	(411)	// 0X19b
+#define ROOT_CHANNEL		(400)	// 0x190
+#define PROG_DATA_PID_DF	(411)	// 0x19b
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
 #define MULTI_BUF_SIZE		(12*1024*1316)	/* larger than 16M */
 
+#define SERVICEID_FILL		"0"
 #define XML_ROOT_ELEMENT	"RootElement"
 #define EXTENSION_STR_FILL	"Extension"
 #define OBJID_PAUSE			"_|_"
@@ -107,7 +108,7 @@ typedef enum{
 #define DEVICEMODEL_DFT				"DB_AML_M3"
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
-#define HDFOREWARNING_DFT			"20480"
+#define HDFOREWARNING_DFT			"10240"
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
@@ -150,6 +151,10 @@ typedef enum{
 	SERVICE_XML = 107,
 	SPRODUCT_XML = 108,
 	
+// defined myself
+	PRODUCTION_XML = 10000,
+	PREVIEW_XML = 10001,
+	
 	PUSH_XML_FLAG_MAXLINE = 1000
 }PUSH_XML_FLAG_E;
 
@@ -180,6 +185,16 @@ typedef enum{
 	SERVICE_STATUS_VALID	= 1,
 	SERVICE_STATUS_EFFECT	= 2
 }SERVICE_STATUS_E;
+
+
+/*
+	数据投递单中的节目类型
+*/
+typedef enum{
+	RECEIVETYPE_PUBLICATION	= 0,
+	RECEIVETYPE_SPRODUCT	= 1,
+	RECEIVETYPE_COLUMN		= 2
+}RECEIVETYPE_E;
 
 
 /*
@@ -318,18 +333,22 @@ typedef struct{
 }DBSTAR_GUIDELIST_S;
 
 typedef struct{
-	char	serviceID[64];
+	char	Version[64];
+	char	StandardVersion[64];
+	char	ServiceID[64];
 	char	ReceiveType[64];
-	char	ProductDescID[64];
 	char	rootPath[256];
+	char	ProductDescID[128];
 	char	productID[64];
 	char	SetID[64];
 	char	ID[64];
 	char	TotalSize[64];
 	char	URI[256];
+	char	xmlURI[384];
 	char	PushStartTime[64];
 	char	PushEndTime[64];
-	char	Columns[1024];	// it's better to use malloc and relloc
+	char	Columns[512];	// it's better to use malloc and relloc
+	char	ReceiveStatus[32];
 }DBSTAR_PRODUCTDESC_S;
 
 typedef struct{
@@ -457,6 +476,7 @@ int ipv4_simple_check(const char *ip_addr);
 int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, char *preferential_file);
 int check_tail(const char *str_dad, char *str_tail, int case_cmp);
 int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port);
+int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int flag);
 
 #endif
 

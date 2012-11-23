@@ -44,19 +44,36 @@ void *main_thread()
 		//return NULL;
 	}
 	
-//	char xml_uri[128];
-//	memset(xml_uri, 0, sizeof(xml_uri));
-//	parse_xml_get(xml_uri, sizeof(xml_uri));
-//	DEBUG("parse_xml: %s\n", xml_uri);
-//	if(strlen(xml_uri)>0)
-//	{
-//		// 可以开始解析指定的xml文件
-//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/initialize/Initialize.xml");
-//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/channel/Channel.xml");
-//		//return parseDoc("/mnt/sda1/dbstar/pushinfo/servicegroup/01/101/desc/Product_preview.xml");
-//		parse_xml(xml_uri, 0);
-//		return NULL;
-//	}
+	// only for xml parse testing
+	char xml_uri[128];
+	char sqlite_cmd[256];
+	memset(xml_uri, 0, sizeof(xml_uri));
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='XMLURI';");
+	int ret_sqlexec = sqlite_read(sqlite_cmd, xml_uri, sizeof(xml_uri), sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read no xml uri for parse testing\n");
+	}
+	else{
+		DEBUG("parse xml uri: %s\n", xml_uri);
+	}
+	
+	char xml_flag[128];
+	memset(xml_flag, 0, sizeof(xml_flag));
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='XMLFlag';");
+	ret_sqlexec = sqlite_read(sqlite_cmd, xml_flag, sizeof(xml_flag), sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read no xml flag for parse testing\n");
+	}
+	else{
+		DEBUG("parse xml flag: %s\n", xml_flag);
+	}
+	
+	if(strlen(xml_uri)>0)
+	{
+		parse_xml(xml_uri, atoi(xml_flag));
+		return NULL;
+	}
 	
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);

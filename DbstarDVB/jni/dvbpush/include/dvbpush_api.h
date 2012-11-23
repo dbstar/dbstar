@@ -37,6 +37,13 @@ typedef enum {
 	STATUS_PREVIEW_REFRESH			= 0x30015,    // 首页小片发生更新
 	STATUS_INTERFACE_REFRESH		= 0x30016,    // 界面产品发生更新
 	
+	
+	DRM_NOTICE_SMARTCARD_OUT		= 0x31000,		// 无智能卡
+	DRM_NOTICE_SMARTCARD_IN			= 0x31001,		// 无智能卡
+	DRM_NOTICE_SMARTCARD_INVALID	= 0x31002,		// 无效智能卡
+	
+	
+	
 	UPGRADE_NEW_VER                 = 0x20001,     // 有新版本到来，用户选择升级
 	UPGRADE_NEW_VER_FORCE           = 0x20002,     // 有新版本到来，强制升级
 	UPGRADE_START                   = 0x20003,     // 开始升级
