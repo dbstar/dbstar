@@ -61,6 +61,7 @@
 		</activity>
 		<activity android:name=".VideoPlayer.PlayerMenu" 
 			android:label="@string/main_activity"
+			android:theme="@style/PlayerTheme"
 			android:configChanges="mnc|mcc|orientation|keyboardHidden|screenSize|screenLayout">
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />

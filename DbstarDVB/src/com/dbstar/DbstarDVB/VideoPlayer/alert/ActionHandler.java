@@ -1,5 +1,7 @@
 package com.dbstar.DbstarDVB.VideoPlayer.alert;
 
+import com.dbstar.DbstarDVB.VideoPlayer.Common;
+
 import android.content.Context;
 import android.content.Intent;
 
@@ -22,13 +24,13 @@ public class ActionHandler {
 		switch (cmd) {
 		case COMMAND_REPLAY: {
 			intent = new Intent();
-			intent.setAction("com.dbstar.DbstarDVB.Action.REPLAY");
+			intent.setAction(Common.ActionReplay);
 			break;
 		}
 		
 		case COMMAND_EXIT_PLAYER: {
 			intent = new Intent();
-			intent.setAction("com.dbstar.DbstarDVB.Action.EXIT");
+			intent.setAction(Common.ActionExit);
 			break;
 		}
 		
@@ -38,7 +40,7 @@ public class ActionHandler {
 			String publicationSetId = mActionData.PublicationSetID;
 
 			intent = new Intent();
-			intent.setAction("com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE");
+			intent.setAction(Common.ActionAddToFavourite);
 			intent.putExtra("publication_id", publicationId);
 			if (publicationSetId != null) {
 				intent.putExtra("publicationset_id", publicationSetId);
@@ -50,7 +52,7 @@ public class ActionHandler {
 			String publicationSetId = mActionData.PublicationSetID;
 
 			intent = new Intent();
-			intent.setAction("com.dbstar.DbstarLauncher.Action.DELETE");
+			intent.setAction(Common.ActionDelete);
 			intent.putExtra("publication_id", publicationId);
 			if (publicationSetId != null) {
 				intent.putExtra("publicationset_id", publicationSetId);
