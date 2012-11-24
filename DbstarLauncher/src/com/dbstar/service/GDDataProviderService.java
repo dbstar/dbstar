@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.dbstar.util.GDNetworkUtil;
+import com.dbstar.util.*;
 import com.dbstar.util.upgrade.RebootUtils;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.settings.GDSettings;
@@ -130,6 +130,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 	String mUpgradePackageFile;
 	boolean mNeedUpgrade = false;
 
+	private GpioController mGpioController;
+
 	private class RequestTask {
 		public static final int INVALID = 0;
 		public static final int ACTIVE = 1;
@@ -204,6 +206,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 
 		mTaskQueue = new LinkedList<RequestTask>();
 		mFinishedTaskQueue = new LinkedList<RequestTask>();
+		mGpioController = new GpioController();
 
 		for (int i = 0; i < mThreadCount; i++) {
 			WorkerThread thread = new WorkerThread();
@@ -401,6 +404,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 				getMacAddress();
 				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
 				mIsNetworkReady = true;
+				mGpioController.setNetworkLedOn();
 				if (mIsStorageReady) {
 					startDbStarService();
 				}
@@ -411,6 +415,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 			case GDCommon.MSG_NETWORK_DISCONNECT:
 				Log.d(TAG, "++++++++++++ network disconnected +++++++++++");
 				mIsNetworkReady = false;
+				mGpioController.setNetworkLedOff();
 				notifyDbstarServiceNetworkStatus();
 				stopDbStarService();
 
@@ -1411,6 +1416,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 		filter.addAction(GDCommon.ActionSetNetworkInfo);
 
 		filter.addAction(GDCommon.ActionScreenOn);
+		filter.addAction(GDCommon.ActionScreenOff);
 
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
@@ -1626,6 +1632,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 				mHandler.sendMessage(msg);
 			} else if (action.equals(GDCommon.ActionScreenOn)) {
 				upgradeAfterSleep();
+			} else if (action.equals(GDCommon.ActionScreenOff)) {
+				mGpioController.setPowerLedOff();
 			}
 
 		}
