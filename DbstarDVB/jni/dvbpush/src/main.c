@@ -45,6 +45,7 @@ void *main_thread()
 	}
 	
 	// only for xml parse testing
+#if 0
 	char xml_uri[128];
 	char sqlite_cmd[256];
 	memset(xml_uri, 0, sizeof(xml_uri));
@@ -74,6 +75,7 @@ void *main_thread()
 		parse_xml(xml_uri, atoi(xml_flag));
 		return NULL;
 	}
+#endif
 	
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);

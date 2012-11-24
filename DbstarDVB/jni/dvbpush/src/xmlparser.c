@@ -19,7 +19,7 @@ static char s_push_root_path[512];
 static int global_insert(DBSTAR_GLOBAL_S *p);
 static pthread_mutex_t mtx_parse_xml = PTHREAD_MUTEX_INITIALIZER;
 
-static int serviceID_init();
+// static int serviceID_init();
 
 /*
  从数据表Global中读取push的根路径，此路径由上层写入数据库。
