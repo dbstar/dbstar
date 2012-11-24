@@ -47,6 +47,19 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 	OutputMode mDefaultVideoMode;
 
+	int mVideoSelectedMode = -1;
+	int mVideoLastSelectedMode = -1;
+
+	int mLastSelectedItem = -1;
+	int mSelectedItem = -1;
+	View mLastSelectedView = null, mSelectedView = null;
+
+	int mAudioSelectedMode = -1;
+
+	int mAudioLastSelectedItem = -1;
+	int mAudioSelectedItem = -1;
+	View mAudioLastSelectedView = null, mAudioSelectedView = null;
+
 	class OutputMode {
 		public String modeStr;
 		public String modeValue;
@@ -89,8 +102,6 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 					aMode.isSelected = false;
 				}
 			}
-
-			mAudioOutputModeAdapter.notifyDataSetChanged();
 		}
 
 		// Video output mode
@@ -159,23 +170,24 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 				mode.isSelected = true;
 			}
 		}
+
 		mVideoOutputModeAdapter.notifyDataSetChanged();
+		mAudioOutputModeAdapter.notifyDataSetChanged();
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
 
+		View v = mAudioOutputView.getSelectedView();
+		Log.d(TAG, "1 ================ v " + v);
+		showSelectedItem(v, false);
+
 		mVideoOutputView.requestFocus();
 	}
 
 	public void initializeView() {
 		super.initializeView();
-		mVideoOutputView = (ListView) findViewById(R.id.video_outputmode_list);
-		mAudioOutputView = (ListView) findViewById(R.id.audio_outputmode_list);
-
-		mVideoOutputModeAdapter = new ListAdapter(this);
-		mAudioOutputModeAdapter = new ListAdapter(this);
 
 		mVideoModeEntries = getResources().getStringArray(
 				R.array.outputmode_entries);
@@ -240,6 +252,12 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			Log.d(TAG, "audio mode " + aMode.modeStr + " " + aMode.modeValue);
 		}
 
+		mVideoOutputView = (ListView) findViewById(R.id.video_outputmode_list);
+		mAudioOutputView = (ListView) findViewById(R.id.audio_outputmode_list);
+
+		mVideoOutputModeAdapter = new ListAdapter(this);
+		mAudioOutputModeAdapter = new ListAdapter(this);
+
 		mVideoOutputModeAdapter.setDataSet(mVideoModes);
 		mAudioOutputModeAdapter.setDataSet(mAudioModes);
 
@@ -259,8 +277,6 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 		mAudioOutputView.setOnKeyListener(mAudioKeyListener);
 	}
 
-	int mVideoSelectedMode = -1;
-	int mVideoOldSelectedMode = -1;
 	OnItemClickListener mOnVideoModeClickedListener = new OnItemClickListener() {
 
 		@Override
@@ -275,15 +291,12 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 		if (mVideoSelectedMode == modeIndex)
 			return;
 
-		mVideoOldSelectedMode = mVideoSelectedMode;
+		mVideoLastSelectedMode = mVideoSelectedMode;
 		mVideoSelectedMode = modeIndex;
 
-		if (mVideoOldSelectedMode >= 0) {
-			setVideoModeSelected(mVideoOldSelectedMode, false, false);
+		if (mVideoLastSelectedMode >= 0) {
+			setVideoModeSelected(mVideoLastSelectedMode, false, false);
 		}
-
-		mVideoOutputModeAdapter.notifyDataSetChanged();
-		mVideoOutputView.invalidate();
 
 		if (modeIndex > 0) {
 			setVideoModeSelected(modeIndex, true, true);
@@ -299,6 +312,8 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			// "auto" mode
 			setVideoModeSelected(modeIndex, true, false);
 		}
+
+		mVideoOutputModeAdapter.notifyDataSetChanged();
 	}
 
 	@Override
@@ -314,20 +329,21 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 				sendBroadcast(saveIntent);
 
 			} else if (resultCode == Activity.RESULT_CANCELED) {
-				if (mVideoOldSelectedMode >= 0) {
-					setVideoModeSelected(mVideoOldSelectedMode, true, true);
+				if (mVideoLastSelectedMode >= 0) {
+					setVideoModeSelected(mVideoLastSelectedMode, true, true);
 				}
 
 				setVideoModeSelected(mVideoSelectedMode, false, false);
 
+				// set the selected mode
+				mVideoSelectedMode = mVideoLastSelectedMode;
+
 				mVideoOutputModeAdapter.notifyDataSetChanged();
-				mVideoOutputView.invalidate();
 			}
 			break;
 		}
 	}
 
-	int mAudioSelectedMode = -1;
 	OnItemClickListener mOnAudioModeSelectedListener = new OnItemClickListener() {
 
 		@Override
@@ -345,30 +361,20 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 	};
 
-	int mAudioLastSelectedItem = -1;
-	int mAudioSelectedItem = -1;
-	View mAudioLastSelectedView = null, mAudioSelectedView = null;
-
 	OnItemSelectedListener mAudioItemSelectedListener = new OnItemSelectedListener() {
 
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View view,
 				int position, long id) {
 
+			if (!mAudioOutputView.hasFocus())
+				return;
+
 			mAudioLastSelectedView = mAudioSelectedView;
 			mAudioSelectedView = view;
 
-			if (mAudioLastSelectedView != null) {
-				ListAdapter.ViewHolder holder = (ListAdapter.ViewHolder) mAudioLastSelectedView
-						.getTag();
-				holder.modeViewHighlight.setVisibility(View.GONE);
-				holder.modeView.setVisibility(View.VISIBLE);
-			}
-
-			ListAdapter.ViewHolder holder = (ListAdapter.ViewHolder) mAudioSelectedView
-					.getTag();
-			holder.modeViewHighlight.setVisibility(View.VISIBLE);
-			holder.modeView.setVisibility(View.GONE);
+			showSelectedItem(mAudioLastSelectedView, false);
+			showSelectedItem(mAudioSelectedView, true);
 		}
 
 		@Override
@@ -376,10 +382,6 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 		}
 
 	};
-
-	int mLastSelectedItem = -1;
-	int mSelectedItem = -1;
-	View mLastSelectedView = null, mSelectedView = null;
 
 	OnItemSelectedListener mVideoItemSelectedListener = new OnItemSelectedListener() {
 
@@ -390,17 +392,8 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			mLastSelectedView = mSelectedView;
 			mSelectedView = view;
 
-			if (mLastSelectedView != null) {
-				ListAdapter.ViewHolder holder = (ListAdapter.ViewHolder) mLastSelectedView
-						.getTag();
-				holder.modeViewHighlight.setVisibility(View.GONE);
-				holder.modeView.setVisibility(View.VISIBLE);
-			}
-
-			ListAdapter.ViewHolder holder = (ListAdapter.ViewHolder) mSelectedView
-					.getTag();
-			holder.modeViewHighlight.setVisibility(View.VISIBLE);
-			holder.modeView.setVisibility(View.GONE);
+			showSelectedItem(mLastSelectedView, false);
+			showSelectedItem(mSelectedView, true);
 		}
 
 		@Override
