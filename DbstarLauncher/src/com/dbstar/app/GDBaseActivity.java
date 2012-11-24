@@ -1,11 +1,13 @@
 package com.dbstar.app;
 
 import com.dbstar.R;
+import com.dbstar.app.alert.GDAlertDialog;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.service.GDDataProviderService.DataProviderBinder;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -24,16 +26,9 @@ import android.widget.TextView;
 public class GDBaseActivity extends Activity implements ClientObserver {
 	private static final String TAG = "GDBaseActivity";
 
+	protected static final int DLG_FILE_NOTEXIST = 0;
+
 	protected static final String INTENT_KEY_MENUPATH = "menu_path";
-
-	protected boolean mBound = false;
-	protected GDDataProviderService mService;
-
-	private ProgressDialog mLoadingDialog = null;
-	private String mLoadingText = null;
-
-	protected GDResourceAccessor mResource;
-
 	protected static final int MENU_LEVEL_1 = 0;
 	protected static final int MENU_LEVEL_2 = 1;
 	protected static final int MENU_LEVEL_3 = 2;
@@ -48,6 +43,14 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		TextView sTextView;
 		ImageView sDelimiter;
 	}
+
+	protected boolean mBound = false;
+	protected GDDataProviderService mService;
+
+	private ProgressDialog mLoadingDialog = null;
+	private String mLoadingText = null;
+
+	protected GDResourceAccessor mResource;
 
 	protected void initializeMenuPath() {
 
@@ -227,6 +230,37 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mLoadingDialog.setOnCancelListener(new LoadingCancelListener());
 		}
 	}
+
+	protected void showAlertDialog(int dialogId) {
+		showDialog(dialogId);
+	}
+
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog = null;
+		switch (id) {
+		case DLG_FILE_NOTEXIST: {
+			GDAlertDialog alertDlg = new GDAlertDialog(this, DLG_FILE_NOTEXIST);
+			alertDlg.setOnCreatedListener(mOnCreatedListener);
+			dialog = alertDlg;
+			break;
+		}
+		}
+
+		return dialog;
+	}
+
+	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
+
+		@Override
+		public void onCreated(GDAlertDialog dialog) {
+			if (dialog.getId() == DLG_FILE_NOTEXIST) {
+				dialog.setTitle(R.string.error_title);
+				dialog.setMessage(R.string.file_notexist);
+				dialog.showSingleButton();
+			}
+		}
+
+	};
 
 	protected void hideLoadingDialog() {
 		if (mLoadingDialog != null && mLoadingDialog.isShowing()

@@ -17,7 +17,7 @@ public class GDPlayerUtil {
 			ContentData content, String mainFile, String drmFile) {
 		Log.d(TAG, "file = " + mainFile);
 		Log.d(TAG, "drm file = " + drmFile);
-		if (!mainFile.equals("")) {
+		if (mainFile != null && !mainFile.equals("")) {
 			Intent intent = new Intent();
 
 			final String schema = "file://";
@@ -50,7 +50,7 @@ public class GDPlayerUtil {
 			intent.setAction("android.intent.action.View");
 
 			GDBaseActivity activity = (GDBaseActivity) context;
-			activity.startActivity(intent, false);
+			activity.startActivity(intent);
 		}
 	}
 }

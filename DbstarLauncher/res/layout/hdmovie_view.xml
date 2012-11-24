@@ -2,8 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
-    android:layout_height="720dp" 
-    android:background="@drawable/view_background">
+    android:layout_height="720dp"
+    android:background="@drawable/view_background" >
 
     <RelativeLayout
         android:id="@+id/view_header"

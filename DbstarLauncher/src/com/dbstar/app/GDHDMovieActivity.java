@@ -158,6 +158,12 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		String file = mService.getMediaFile(movie.Content);
 		String drmFile = mService.getDRMFile(movie.Content);
 
+		if (file == null || file.isEmpty()) {
+			showAlertDialog(DLG_FILE_NOTEXIST);
+			
+			return;
+		}
+		
 		GDPlayerUtil.playVideo(this, null, movie.Content, file, drmFile);
 	}
 

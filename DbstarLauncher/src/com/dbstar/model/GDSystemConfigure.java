@@ -250,6 +250,11 @@ public class GDSystemConfigure {
 		final String mainFile = content.MainFile.FileURI;
 		if (mainFile != null && !mainFile.isEmpty()) {
 			file = mStorageDir + "/" + mainFile;
+			
+			File f = new File(file);
+			if (!f.exists()) {
+				file = "";
+			}
 		}
 
 		return file;

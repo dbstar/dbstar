@@ -101,4 +101,7 @@
     <string name="popup_forceupgrade_notes">系统检测到新的版本，5秒后自动重启开始升级！</string>
     <string name="popup_upgrade_emphasized_message">在升级过程中请不要断电或进行其它操作，以保证系统升级正常完成！</string>
 
+    <!-- Error messages -->
+    <string name="error_title">错误</string>
+    <string name="file_notexist">文件不存在!</string>
 </resources>
