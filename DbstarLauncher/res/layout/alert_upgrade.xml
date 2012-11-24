@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="394dp"
-    android:layout_height="267dp"
+    android:layout_width="600dp"
+    android:layout_height="280dp"
     android:background="@drawable/popup_bg"
     android:orientation="vertical" >
 
@@ -9,14 +9,14 @@
         android:id="@+id/topPanel"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:minHeight="54dip"
+        android:minHeight="54dp"
         android:orientation="vertical" >
 
         <TextView
             android:id="@+id/alertTitle"
             style="?android:attr/textAppearanceLarge"
             android:layout_width="match_parent"
-            android:layout_height="0dip"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:ellipsize="end"
             android:gravity="center"
@@ -26,27 +26,27 @@
         <ImageView
             android:id="@+id/titleDivider"
             android:layout_width="match_parent"
-            android:layout_height="1dip"
+            android:layout_height="1dp"
             android:scaleType="fitXY"
             android:src="@android:drawable/divider_horizontal_dark" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="0dip"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:paddingBottom="8dip"
-        android:paddingLeft="10dip"
-        android:paddingRight="8dip"
-        android:paddingTop="4dip" >
+        android:paddingBottom="8dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="8dp"
+        android:paddingTop="4dp" >
 
         <TextView
             android:id="@+id/message"
             style="?android:attr/textAppearanceMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="5dip"
+            android:padding="5dp"
             android:text="@string/dialog_upgrade_notes" />
 
         <TextView
@@ -54,7 +54,7 @@
             style="?android:attr/textAppearanceMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="5dip"
+            android:padding="5dp"
             android:text="@string/popup_upgrade_emphasized_message"
             android:textColor="@color/red" />
     </LinearLayout>
@@ -64,16 +64,16 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:measureWithLargestChild="true"
-        android:minHeight="54dip"
+        android:minHeight="54dp"
         android:orientation="horizontal"
-        android:paddingBottom="8dip"
-        android:paddingLeft="2dip"
-        android:paddingRight="2dip"
-        android:paddingTop="4dip" >
+        android:paddingBottom="8dp"
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"
+        android:paddingTop="4dp" >
 
         <LinearLayout
             android:id="@+id/leftSpacer"
-            android:layout_width="0dip"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:orientation="horizontal" />
@@ -81,15 +81,14 @@
         <Button
             android:id="@+id/buttonOK"
             style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dip"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_gravity="left"
-            android:layout_weight="1"
             android:text="@string/button_text_ok" />
 
         <LinearLayout
             android:id="@+id/centerSpacer"
-            android:layout_width="0dip"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:orientation="horizontal" />
@@ -97,15 +96,14 @@
         <Button
             android:id="@+id/buttonCancel"
             style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dip"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
             android:text="@string/button_text_cancel" />
 
         <LinearLayout
             android:id="@+id/rightSpacer"
-            android:layout_width="0dip"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:orientation="horizontal" />
