@@ -1,5 +1,10 @@
 package com.dbstar.app.media;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.ContentData;
 
@@ -12,6 +17,7 @@ import android.util.Log;
 public class GDPlayerUtil {
 
 	private static final String TAG = "GDPlayerUtil";
+	private static final String Fb0Blank = "/sys/class/graphics/fb0/blank";
 
 	public static void playVideo(Context context, String publicationSetID,
 			ContentData content, String mainFile, String drmFile) {
@@ -49,8 +55,30 @@ public class GDPlayerUtil {
 					"com.dbstar.DbstarDVB.VideoPlayer.PlayerMenu"));
 			intent.setAction("android.intent.action.View");
 
+			writeSysfs(Fb0Blank, "1"); // hide OSD view
 			GDBaseActivity activity = (GDBaseActivity) context;
 			activity.startActivity(intent);
+		}
+	}
+	
+	public static int writeSysfs(String path, String val) {
+		if (!new File(path).exists()) {
+			Log.e(TAG, "File not found: " + path);
+			return 1;
+		}
+
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(path), 64);
+			try {
+				writer.write(val);
+			} finally {
+				writer.close();
+			}
+			return 0;
+
+		} catch (IOException e) {
+			Log.e(TAG, "IO Exception when write: " + path, e);
+			return 1;
 		}
 	}
 }
