@@ -198,14 +198,12 @@ public class GDWebBrowserActivity extends Activity {
 		}
 	}
 
-	private ConnectivityManager mConnectManager;
 	private String mMacAddress = "";
 
 	public String getMacAddress() {
 		Log.d(TAG, "getMacAddress");
 		if (mMacAddress.equals("")) {
-			mConnectManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-			mMacAddress = GDNetworkUtil.getMacAddress(this, mConnectManager);
+			mMacAddress = GDNetworkUtil.getMacAddress(this, true);
 		}
 
 		return mMacAddress;

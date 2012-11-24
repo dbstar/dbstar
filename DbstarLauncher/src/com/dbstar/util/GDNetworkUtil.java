@@ -13,43 +13,25 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 public class GDNetworkUtil {
-	
+
 	private static final String TAG = "GDNetworkUtil";
-	static public String getMacAddress(Context context, ConnectivityManager connMananger) {
+
+	static public String getMacAddress(Context context, boolean isEthernet) {
 		Log.d(TAG, "getMacAddress");
-		
+
 		String macAddress = "";
-
-		NetworkInfo info = connMananger.getActiveNetworkInfo();
-		if (info != null && info.isConnected()) {
-			int type = info.getType();
-			
-			Log.d(TAG, "connected type = " + type + " name " + info.getTypeName());
-
-			if (type == ConnectivityManager.TYPE_WIFI) {
-				WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-				WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-				macAddress = wifiInfo.getMacAddress();
-			} else if (type == ConnectivityManager.TYPE_ETHERNET || type == ConnectivityManager.TYPE_MOBILE) {
-				String addressFileName = "/sys/class/net/eth0/address";
-				File addressFile = new File(addressFileName);
-//				Log.d(TAG, "1");
-				
-				if (addressFile.exists()) {
-//					Log.d(TAG, "2");
-					macAddress = readString(addressFile);
-					Log.d(TAG, macAddress);
-				} else {
-					addressFileName = "/sys/class/net/eth1/address";
-					addressFile = new File(addressFileName);
-					if (addressFile.exists()) {
-						macAddress = readString(addressFile);
-						Log.d(TAG, macAddress);
-					}
-				}
-			} else {
-				//other type;
+		if (isEthernet) {
+			String addressFileName = "/sys/class/net/eth0/address";
+			File addressFile = new File(addressFileName);
+			if (addressFile.exists()) {
+				macAddress = readString(addressFile);
+				Log.d(TAG, macAddress);
 			}
+		} else {
+			WifiManager wifiManager = (WifiManager) context
+					.getSystemService(Context.WIFI_SERVICE);
+			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+			macAddress = wifiInfo.getMacAddress();
 		}
 		return macAddress;
 	}

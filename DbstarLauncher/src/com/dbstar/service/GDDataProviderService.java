@@ -401,7 +401,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 			}
 
 			case GDCommon.MSG_NETWORK_CONNECT:
-				getMacAddress();
 				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
 				mIsNetworkReady = true;
 				mGpioController.setNetworkLedOn();
@@ -1339,15 +1338,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 
 	public void getPushedMessage(List<String> retMessages) {
 		mConfigure.getPushedMessage(retMessages);
-	}
-
-	public String getMacAddress() {
-
-		if (mMacAddress.equals("")) {
-			mMacAddress = GDNetworkUtil.getMacAddress(this, mConnectManager);
-		}
-
-		return mMacAddress;
 	}
 
 	void queryDiskGuardSize() {

@@ -5,6 +5,7 @@ import java.util.Map;
 import com.dbstar.R;
 import com.dbstar.model.GDDiskInfo;
 import com.dbstar.model.GDDiskInfo.DiskInfo;
+import com.dbstar.util.GDNetworkUtil;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -47,7 +48,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		
 		mService.getDeviceInfo(this, mKeys);
 
-		mMacAddress += mService.getMacAddress();
+		mMacAddress += GDNetworkUtil.getMacAddress(this, true);
 		mMacAddressView.setText(mMacAddress);
 
 		String disk = mService.getStorageDisk();
