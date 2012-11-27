@@ -387,10 +387,12 @@ PRIMARY KEY (PushFlag,ServiceID));", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-pid	NVARCHAR(64) PRIMARY KEY,\
+pid	NVARCHAR(64) DEFAULT '',\
+ServiceID	NVARCHAR(64) DEFAULT '',\
 pidtype	NVARCHAR(64) DEFAULT '',\
 URI NVARCHAR(256) DEFAULT '',\
-EffectFlag INTEGER DEFAULT 1);", name);
+FreshFlag INTEGER DEFAULT 1,\
+PRIMARY KEY (pid,ServiceID));", name);
 			}
 			else if(!strcmp(name,"Service"))
 			{
@@ -398,82 +400,89 @@ EffectFlag INTEGER DEFAULT 1);", name);
 					"CREATE TABLE %s(\
 ServiceID	NVARCHAR(64) PRIMARY KEY,\
 RegionCode	NVARCHAR(64) DEFAULT '',\
-OnlineTime	RCHAR(32) DEFAULT '',\
-OfflineTime	RCHAR(32) DEFAULT '',\
+OnlineTime	DATETIME DEFAULT '',\
+OfflineTime	DATETIME DEFAULT '',\
 Status	RCHAR(32) DEFAULT '0');", name);
 			}
 			else if(!strcmp(name,"ResStr"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 StrLang		NVARCHAR(32) DEFAULT '',\
 StrName		NVARCHAR(64) DEFAULT '',\
 Extension	NVARCHAR(64) DEFAULT '',\
 StrValue	NVARCHAR(1024) DEFAULT '',\
-PRIMARY KEY (ObjectName,EntityID,StrLang,StrName,Extension));", name);
+PRIMARY KEY (ServiceID,ObjectName,EntityID,StrLang,StrName,Extension));", name);
 			}
 			else if(!strcmp(name,"ResPoster"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 PosterID	NVARCHAR(64) DEFAULT '',\
 PosterName	NVARCHAR(64) DEFAULT '',\
 PosterURI	NVARCHAR(256) DEFAULT '',\
-PRIMARY KEY (ObjectName,EntityID,PosterID));", name);
+PRIMARY KEY (ServiceID,ObjectName,EntityID,PosterID));", name);
 			}
 			else if(!strcmp(name,"ResTrailer"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 TrailerID	NVARCHAR(64) DEFAULT '',\
 TrailerName	NVARCHAR(64) DEFAULT '',\
 TrailerURI	NVARCHAR(256) DEFAULT '',\
-PRIMARY KEY (ObjectName,EntityID,TrailerID));", name);
+PRIMARY KEY (ServiceID,ObjectName,EntityID,TrailerID));", name);
 			}
 			else if(!strcmp(name,"ResSubTitle"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 SubTitleID	NVARCHAR(64) DEFAULT '',\
 SubTitleName	NVARCHAR(64) DEFAULT '',\
 SubTitleLanguage	NVARCHAR(64) DEFAULT '',\
 SubTitleURI	NVARCHAR(256) DEFAULT '',\
-PRIMARY KEY (ObjectName,EntityID,SubTitleID));", name);
+PRIMARY KEY (ServiceID,ObjectName,EntityID,SubTitleID));", name);
 			}
 			else if(!strcmp(name,"ResExtension"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(256) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 Name	NVARCHAR(64) DEFAULT '',\
 Type	NVARCHAR(64) DEFAULT '',\
-PRIMARY KEY (ObjectName,EntityID,Name));", name);
+PRIMARY KEY (ServiceID,ObjectName,EntityID,Name));", name);
 			}
 			else if(!strcmp(name,"ResExtensionFile"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(256) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 FileID	NVARCHAR(64) DEFAULT '',\
 FileName	NVARCHAR(64) DEFAULT '',\
 FileURI	NVARCHAR(256) DEFAULT '',\
-PRIMARY KEY (ObjectName,EntityID,FileID));", name);
+PRIMARY KEY (ServiceID,ObjectName,EntityID,FileID));", name);
 			}
 			else if(!strcmp(name,"Column"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ColumnID	NVARCHAR(64) PRIMARY KEY,\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
+ColumnID	NVARCHAR(64) DEFAULT '',\
 ParentID	NVARCHAR(64) DEFAULT '',\
 Path	NVARCHAR(256) DEFAULT '',\
 ColumnType	NVARCHAR(256) DEFAULT '',\
@@ -481,12 +490,14 @@ ColumnIcon_losefocus	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_getfocus	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_onclick	NVARCHAR(256) DEFAULT '',\
 SequenceNum	INTEGER,\
-URI	NVARCHAR(256));", name);
+URI	NVARCHAR(256),\
+PRIMARY KEY (ServiceID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"ColumnEntity"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(64) DEFAULT '',\
 EntityType	NVARCHAR(64) DEFAULT '');", name);
@@ -495,24 +506,30 @@ EntityType	NVARCHAR(64) DEFAULT '');", name);
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-ProductID	NVARCHAR(64) PRIMARY KEY,\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
+ProductID	NVARCHAR(64) DEFAULT '',\
 ProductType	NVARCHAR(64) DEFAULT '',\
 Flag	NVARCHAR(64) DEFAULT '',\
-OnlineDate	CHAR(32) DEFAULT '',\
-OfflineDate	CHAR(32) DEFAULT '',\
+OnlineDate	DATETIME DEFAULT '',\
+OfflineDate	DATETIME DEFAULT '',\
 IsReserved	CHAR(32) DEFAULT '',\
 Price	NVARCHAR(32) DEFAULT '',\
 CurrencyType	NVARCHAR(32) DEFAULT '',\
 DRMFile	NVARCHAR(256) DEFAULT '',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
-IsAuthorized	NVARCHAR(64) DEFAULT '',\
+Authorization	NVARCHAR(64) DEFAULT '',\
+Visible	CHAR(32) DEFAULT '',\
+Deleted	NVARCHAR(32) DEFAULT '',\
 VODNum	NVARCHAR(64) DEFAULT '',\
-VODPlatform	NVARCHAR(256));", name);
+VODPlatform	NVARCHAR(256),\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (ServiceID,ProductID));", name);
 			}
 			else if(!strcmp(name,"PublicationsSet"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 SetID	NVARCHAR(64) DEFAULT '',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 ProductID	NVARCHAR(64) DEFAULT '',\
@@ -520,8 +537,8 @@ URI	NVARCHAR(256) DEFAULT '',\
 TotalSize	NVARCHAR(64) DEFAULT '',\
 ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64) DEFAULT '',\
-PushEndTime	NVARCHAR(64) DEFAULT '',\
+PushStartTime	DATETIME DEFAULT '',\
+PushEndTime	DATETIME DEFAULT '',\
 IsReserved	NVARCHAR(64) DEFAULT '',\
 Visible	NVARCHAR(64) DEFAULT '1',\
 Favorite	NVARCHAR(64) DEFAULT '0',\
@@ -529,12 +546,21 @@ IsAuthorized	NVARCHAR(64) DEFAULT '',\
 VODNum	NVARCHAR(64) DEFAULT '',\
 VODPlatform	NVARCHAR(256) DEFAULT '',\
 Deleted NVARCHAR(256) DEFAULT '0',\
-PRIMARY KEY (SetID,ColumnID));", name);
+Title	NVARCHAR(128) DEFAULT '',\
+Starring	NVARCHAR(256) DEFAULT '',\
+Scenario	NVARCHAR(512) DEFAULT '',\
+Classification	NVARCHAR(64) DEFAULT '',\
+Period	NVARCHAR(64) DEFAULT '',\
+CollectionNumber	NVARCHAR(64) DEFAULT '',\
+Review	NVARCHAR(64) DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (ServiceID,SetID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"Publication"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 ProductID	NVARCHAR(64) DEFAULT '',\
@@ -543,8 +569,8 @@ xmlURI	NVARCHAR(256) DEFAULT '',\
 TotalSize	NVARCHAR(64) DEFAULT '',\
 ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64) DEFAULT '',\
-PushEndTime	NVARCHAR(64) DEFAULT '',\
+PushStartTime	DATETIME DEFAULT '',\
+PushEndTime	DATETIME DEFAULT '',\
 PublicationType	NVARCHAR(64) DEFAULT '',\
 IsReserved	CHAR(32) DEFAULT '',\
 Visible	CHAR(32) DEFAULT '1',\
@@ -566,12 +592,14 @@ Duration	NVARCHAR(32) DEFAULT '',\
 Resolution	NVARCHAR(32) DEFAULT '',\
 BitRate	NVARCHAR(32) DEFAULT '',\
 CodeFormat	NVARCHAR(32) DEFAULT '',\
-PRIMARY KEY (PublicationID,ColumnID));", name);
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (ServiceID,PublicationID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoVA"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
 infolang	NVARCHAR(64) DEFAULT '',\
 PublicationDesc	NVARCHAR(1024) DEFAULT '',\
@@ -586,12 +614,13 @@ Director	NVARCHAR(128) DEFAULT '',\
 Actor	NVARCHAR(256) DEFAULT '',\
 Audience	NVARCHAR(64) DEFAULT '',\
 Model	NVARCHAR(32) DEFAULT '',\
-PRIMARY KEY (PublicationID,infolang));", name);
+PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoRM"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
 infolang	NVARCHAR(64) DEFAULT '',\
 PublicationDesc	NVARCHAR(1024) DEFAULT '',\
@@ -603,41 +632,46 @@ Episode	NVARCHAR(32) DEFAULT '',\
 AspectRatio	NVARCHAR(32) DEFAULT '',\
 VolNum	NVARCHAR(64) DEFAULT '',\
 ISSN	NVARCHAR(64) DEFAULT '',\
-PRIMARY KEY (PublicationID,infolang));", name);
+PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoApp"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
 infolang	NVARCHAR(64) DEFAULT '',\
 PublicationDesc	NVARCHAR(1024) DEFAULT '',\
 Keywords	NVARCHAR(256) DEFAULT '',\
 Category	NVARCHAR(64) DEFAULT '',\
-Released	NVARCHAR(64) DEFAULT '',\
+Released	DATETIME DEFAULT '',\
 AppVersion	NVARCHAR(64) DEFAULT '',\
 Language	NVARCHAR(64) DEFAULT '',\
 Developer	NVARCHAR(64) DEFAULT '',\
 Rated	NVARCHAR(64) DEFAULT '',\
 Requirements	NVARCHAR(64) DEFAULT '',\
-PRIMARY KEY (PublicationID,infolang));", name);
+PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"Message"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 MessageID	NVARCHAR(64) DEFAULT '',\
 type	NVARCHAR(64) DEFAULT '',\
 displayForm	NVARCHAR(64) DEFAULT '',\
-StartTime	CHAR(32) DEFAULT '',\
-EndTime		CHAR(32) DEFAULT '',\
-Interval	CHAR(32) DEFAULT '');", name);
+StartTime	DATETIME DEFAULT '',\
+EndTime		DATETIME DEFAULT '',\
+Interval	CHAR(32) DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (ServiceID,MessageID));", name);
 			}
 			else if(!strcmp(name,"GuideList"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-DateValue	NVARCHAR(64) DEFAULT '',\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
+DateValue	DATETIME DEFAULT '',\
 GuideListID	NVARCHAR(64) DEFAULT '',\
 productID	NVARCHAR(64) DEFAULT '',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
@@ -645,17 +679,15 @@ URI	NVARCHAR(256) DEFAULT '',\
 TotalSize	NVARCHAR(64) DEFAULT '',\
 ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64) DEFAULT '',\
-PushEndTime	NVARCHAR(64) DEFAULT '',\
+PushStartTime	DATETIME DEFAULT '',\
+PushEndTime	DATETIME DEFAULT '',\
 UserStatus	NVARCHAR(64) DEFAULT '1',\
-PRIMARY KEY (DateValue,PublicationID));", name);
+PRIMARY KEY (ServiceID,DateValue,PublicationID));", name);
 			}
 			else if(!strcmp(name,"ProductDesc"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-Version	NVARCHAR(64) DEFAULT '',\
-StandardVersion	NVARCHAR(64) DEFAULT '',\
 ServiceID	NVARCHAR(64) DEFAULT '',\
 ReceiveType	NVARCHAR(64) DEFAULT '',\
 rootPath	NVARCHAR(256) DEFAULT '',\
@@ -666,21 +698,23 @@ SetID	NVARCHAR(64) DEFAULT '',\
 TotalSize	NVARCHAR(64) DEFAULT '',\
 URI	NVARCHAR(256) DEFAULT '',\
 xmlURI	NVARCHAR(384) DEFAULT '',\
-PushStartTime	NVARCHAR(64) DEFAULT '',\
-PushEndTime	NVARCHAR(64) DEFAULT '',\
+PushStartTime	DATETIME DEFAULT '',\
+PushEndTime	DATETIME DEFAULT '',\
 Columns	NVARCHAR(512) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
+FreshFlag INTEGER DEFAULT 1,\
 PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
 			}
 			else if(!strcmp(name,"Preview"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
-PreviewID	NVARCHAR(64) PRIMARY KEY,\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
+PreviewID	NVARCHAR(64) DEFAULT '0',\
 ProductID	NVARCHAR(64) DEFAULT '',\
 PreviewType	NVARCHAR(64) DEFAULT '',\
 PreviewSize	NVARCHAR(64) DEFAULT '',\
-ShowTime	NVARCHAR(64) DEFAULT '',\
+ShowTime	DATETIME DEFAULT '',\
 PreviewURI	NVARCHAR(256) DEFAULT '',\
 PreviewFormat	NVARCHAR(64) DEFAULT '',\
 Duration	NVARCHAR(64) DEFAULT '',\
@@ -691,11 +725,13 @@ URI	NVARCHAR(256) DEFAULT '',\
 TotalSize	NVARCHAR(64) DEFAULT '',\
 ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
-PushStartTime	NVARCHAR(64) DEFAULT '',\
-PushEndTime	NVARCHAR(64) DEFAULT '',\
-StartTime	CHAR(32) DEFAULT '',\
-EndTime	CHAR(32) DEFAULT '',\
-PlayMode	NVARCHAR(64) DEFAULT '');", name);
+PushStartTime	DATETIME DEFAULT '',\
+PushEndTime	DATETIME DEFAULT '',\
+StartTime	DATETIME DEFAULT '',\
+EndTime	DATETIME DEFAULT '',\
+PlayMode	NVARCHAR(64) DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (ServiceID,PreviewID));", name);
 			}
 			else if(!strcmp(name,"RejectRecv"))
 			{
@@ -705,17 +741,20 @@ ServiceID	NVARCHAR(64) DEFAULT '',\
 ID	NVARCHAR(64) DEFAULT '',\
 URI	NVARCHAR(512) DEFAULT '',\
 Type	NVARCHAR(64) DEFAULT '',\
-PushStartTime	NVARCHAR(64) DEFAULT '',\
-PushEndTime	NVARCHAR(64) DEFAULT '',\
+PushStartTime	DATETIME DEFAULT '',\
+PushEndTime	DATETIME DEFAULT '',\
 PRIMARY KEY (ServiceID,ID));", name);
 			}
 			else if(!strcmp(name,"SProduct"))
 			{
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
 					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
 SType	NVARCHAR(64) DEFAULT '',\
 Name	NVARCHAR(64) DEFAULT '',\
-URI	NVARCHAR(512) DEFAULT '');", name);
+URI	NVARCHAR(512) DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (ServiceID,SType));", name);
 			}
 			
 			else{
@@ -1171,7 +1210,7 @@ int sqlite_transaction_end(int commit_flag)
 {
 	int ret = -1;
 	
-	DEBUG("sqlite_transaction_end<< %s\n", 1==commit_flag?"commit":"rollback");
+	DEBUG("sqlite_transaction_end %s\n", 1==commit_flag?"commit >>":"<< rollback");
 	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
 		if(1==commit_flag){
 			DEBUG("commit transaction\n");
@@ -1199,6 +1238,31 @@ int sqlite_transaction_end(int commit_flag)
 	}
 	
 	return ret;
+}
+
+/*
+ 从指定的表中读取单个字段字符串
+ buf由调用者提供，并保障初始化正确。
+ 读取到一条记录返回0，否则返回-1。
+*/
+int str_sqlite_read(char *buf, unsigned int buf_size, char *sql_cmd)
+{
+	if(NULL==buf || NULL==sql_cmd || 0==strlen(sql_cmd) || 0==buf_size){
+		DEBUG("some args are invalid\n");
+		return -1;
+	}
+	
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+
+	int ret_sqlexec = sqlite_read(sql_cmd, buf, buf_size, sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read nothing for %s\n", sql_cmd);
+		return -1;
+	}
+	else{
+		DEBUG("read %s for %s\n", buf,sql_cmd);
+		return 0;
+	}
 }
 
 

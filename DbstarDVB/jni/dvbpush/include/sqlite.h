@@ -14,4 +14,6 @@ int sqlite_transaction_table_clear(char *table_name);
 int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size);
 int sqlite_transaction_end(int commit_flag);
 
+int str_sqlite_read(char *buf, unsigned int buf_size, char *sql_cmd);
+
 #endif

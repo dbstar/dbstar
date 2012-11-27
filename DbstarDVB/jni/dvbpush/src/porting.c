@@ -581,7 +581,9 @@ void upgrade_info_init()
 	{
 		DEBUG("read loader msg: %d", mark);
 		if(0!=mark){
+			DEBUG("clear upgrade mark and file\n");
 			set_loader_reboot_mark(0);
+			upgradefile_clear();
 		}
 		
 		char tmpinfo[128];
@@ -926,6 +928,10 @@ char *serviceID_get()
 	return s_serviceID;
 }
 
+/*
+ 仅set到全局变量中。至于数据库，则是在xml解析时在“数据库事务”设置的。
+ 由于此调用处在“事务”中，所以如果确实需要写入数据库，也需要调用“事务”中的数据库操作
+*/
 int serviceID_set(char *serv_id)
 {
 	return snprintf(s_serviceID,sizeof(s_serviceID),"%s",serv_id);
@@ -948,7 +954,7 @@ int special_productid_check(char *productid)
 /*
  检查指定的产品id是否可以接收。
 */
-int productid_check(char *productid)
+int check_productid_from_smartcard(char *productid)
 {
 	if(NULL==productid)
 		return -1;

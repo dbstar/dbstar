@@ -73,7 +73,7 @@ void *main_thread()
 	if(strlen(xml_uri)>0)
 	{
 		parse_xml(xml_uri, atoi(xml_flag));
-		return NULL;
+		//return NULL;
 	}
 #endif
 	

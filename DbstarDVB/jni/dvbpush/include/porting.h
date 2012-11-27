@@ -20,8 +20,9 @@ void upgrade_info_init();
 int drm_info_refresh();
 char *language_get();
 int software_check(void);
-int productid_check(char *productid);
+int check_productid_from_smartcard(char *productid);
 char *serviceID_get();
 int serviceID_set(char *serv_id);
+void upgrade_sign_set();
 
 #endif

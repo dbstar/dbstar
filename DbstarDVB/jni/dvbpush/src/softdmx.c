@@ -10,6 +10,7 @@
 #include "dvbpush_api.h"
 #include "bootloader.h"
 #include "softdmx_print.h"
+#include "porting.h"
 
 Channel_t chanFilter[MAX_CHAN_FILTER+1];
 int max_filter_num = 0;
@@ -27,6 +28,12 @@ extern unsigned char * TC_loader_get_push_buf_pointer(void);
 #define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
 #define COMMAND_FILE  "/cache/recovery/command0"
 #define LOADER_PACKAGE_SIZE		(4084)
+
+int upgradefile_clear()
+{
+	PRINTF("unlink %s\n", UPGRADEFILE_IMG);
+	return unlink(UPGRADEFILE_IMG);
+}
 
 #if 1
 unsigned int tc_crc32_table[256] =
@@ -243,6 +250,8 @@ reLoader:
 		msg_send2_UI(UPGRADE_NEW_VER, msg, strlen(msg));
 	}
 	fclose(cfp);
+	
+	upgrade_sign_set();
 	
 	TC_loader_filter_handle(0);
 #endif

@@ -126,15 +126,6 @@ typedef enum{
 }COLUMN_TYPE_E;
 
 /*
- 当前生效标记。当新的Channel序列下发时，将已有的pid标记为0，将新下发的pid标记为1。
- 这样是为了方便在事务中一起处理Channel
-*/
-typedef enum{
-	CHANNEL_INEFFECTIVE = 0,
-	CHANNEL_EFFECTIVE = 1
-}CHANNEL_EFFECTIVE_E;
-
-/*
 默认的初始化文件uri，相对于push根路径的uri，类似于Initialize.xml中Channel.xml的路径
 但在运行过程中可能会被更改
 */
@@ -142,20 +133,20 @@ typedef enum{
 	PUSH_XML_FLAG_UNDEFINED = -1,
 	PUSH_XML_FLAG_MINLINE = 0,
 	
-	INITIALIZE_XML = 100,
-	COLUMN_XML = 101,
-	GUIDELIST_XML = 102,
-	COMMANDS_XML = 104,
-	MESSAGE_XML = 105,
-	PRODUCTDESC_XML = 106,
-	SERVICE_XML = 107,
-	SPRODUCT_XML = 108,
+	INITIALIZE_XML			= 100,
+	COLUMN_XML				= 101,
+	GUIDELIST_XML			= 102,
+	COMMANDS_XML			= 104,
+	MESSAGE_XML				= 105,
+	PRODUCTDESC_XML			= 106,
+	SERVICE_XML				= 107,
+	SPRODUCT_XML			= 108,
 	
 // defined myself
-	PRODUCTION_XML = 10000,
-	PREVIEW_XML = 10001,
+	PRODUCTION_XML			= 10000,
 	
-	PUSH_XML_FLAG_MAXLINE = 1000
+	
+	PUSH_XML_FLAG_MAXLINE
 }PUSH_XML_FLAG_E;
 
 
@@ -177,7 +168,7 @@ typedef enum{
 /*
 	对于支持多业务、有需要考虑反注册接收的终端而言，需要记录业务的状态：
 	0——此业务无效
-	1——此业务是终端需要支持的业务之一，但不是当前生效的业务
+	1——此业务是终端需要支持的业务之一，但不是当前生效的业务。只有在多业务支持时，才需要此值。
 	2——此业务是终端的当前生效业务。
 */
 typedef enum{
@@ -196,6 +187,16 @@ typedef enum{
 	RECEIVETYPE_COLUMN		= 2
 }RECEIVETYPE_E;
 
+/*
+	接收状态
+*/
+typedef enum{
+	RECEIVESTATUS_REJECT	= -2,
+	RECEIVESTATUS_FAILED	= -1,
+	RECEIVESTATUS_WAITING	= 0,
+	RECEIVESTATUS_FINISH	= 1,
+	RECEIVESTATUS_HISTORY	= 2,
+}RECEIVESTATUS_E;
 
 /*
  dvbpush初始化依赖的条件
@@ -236,12 +237,14 @@ typedef struct{
 }DBSTAR_XMLINFO_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	pid[64];
 	char	pidtype[64];
 	char	multiURI[64];
 }DBSTAR_CHANNEL_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	ObjectName[64];
 	char	EntityID[64];
 	char	StrLang[32];
@@ -251,6 +254,7 @@ typedef struct{
 }DBSTAR_RESSTR_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	ObjectName[64];
 	char	EntityID[64];
 	char	SubTitleID[64];
@@ -260,6 +264,7 @@ typedef struct{
 }DBSTAR_RESSUBTITLE_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	ObjectName[64];
 	char	EntityID[64];
 	char	TrailerID[64];
@@ -268,6 +273,7 @@ typedef struct{
 }DBSTAR_RESTRAILER_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	ObjectName[64];
 	char	EntityID[64];
 	char	PosterID[64];
@@ -276,6 +282,7 @@ typedef struct{
 }DBSTAR_RESPOSTER_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	ObjectName[64];
 	char	EntityID[64];
 	char	Name[64];
@@ -283,6 +290,7 @@ typedef struct{
 }DBSTAR_RESEXTENSION_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	ObjectName[256];
 	char	EntityID[64];
 	char	FileID[64];
@@ -299,6 +307,7 @@ typedef struct{
 }DBSTAR_SERVICE_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	ProductID[64];
 	char	ProductType[64];
 	char	Flag[64];
@@ -316,6 +325,7 @@ typedef struct{
 }COLUMNICON_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	ColumnID[64];
 	char	ParentID[64];
 	char	Path[256];
@@ -326,6 +336,7 @@ typedef struct{
 }DBSTAR_COLUMN_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	DateValue[64];
 	char	GuideListID[64];
 	char	productID[64];
@@ -333,8 +344,6 @@ typedef struct{
 }DBSTAR_GUIDELIST_S;
 
 typedef struct{
-	char	Version[64];
-	char	StandardVersion[64];
 	char	ServiceID[64];
 	char	ReceiveType[64];
 	char	rootPath[256];
@@ -357,11 +366,13 @@ typedef struct{
 }DBSTAR_NAVIGATION_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	columnID[64];
 	char	EntityID[64];
 }DBSTAR_COLUMNENTITY_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	SetID[64];
 	char	ProductID[64];
 	char	PublicationID[64];
@@ -372,6 +383,7 @@ typedef struct{
 
 
 typedef struct{
+	char	ServiceID[64];
 	char	PublicationID[64];
 	char	FileID[64];
 	char	FileSize[64];
@@ -386,6 +398,7 @@ typedef struct{
 
 
 typedef struct{
+	char	ServiceID[64];
 	char	PublicationID[64];
 	char	PublicationType[64];
 	char	IsReserved[32];
@@ -394,6 +407,7 @@ typedef struct{
 }DBSTAR_PUBLICATION_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	PublicationID[64];
 	char	infolang[64];
 	char	*PublicationDesc;
@@ -411,6 +425,7 @@ typedef struct{
 }DBSTAR_MULTIPLELANGUAGEINFOVA_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	PublicationID[64];
 	char	infolang[64];
 	char	*PublicationDesc;
@@ -425,6 +440,7 @@ typedef struct{
 }DBSTAR_MULTIPLELANGUAGEINFORM_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	PublicationID[64];
 	char	infolang[64];
 	char	*PublicationDesc;
@@ -439,6 +455,7 @@ typedef struct{
 
 
 typedef struct{
+	char	ServiceID[64];
 	char	MessageID[64];
 	char	type[64];
 	char	displayForm[64];
@@ -448,6 +465,7 @@ typedef struct{
 }DBSTAR_MESSAGE_S;
 
 typedef struct{
+	char	ServiceID[64];
 	char	PreviewID[64];
 	char	PreviewType[64];
 	char	PreviewSize[64];

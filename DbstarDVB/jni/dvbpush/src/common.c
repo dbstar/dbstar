@@ -497,7 +497,7 @@ int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int 
 	}
 	DEBUG("will clear %s with %d\n", str_dad, flag);
 	
-	int i = 0;
+	unsigned int i = 0;
 	if(2==flag || 3==flag){
 		for(i=0; i<str_dad_len; i++){
 			if(sign_c!=str_dad[str_dad_len-1-i])
