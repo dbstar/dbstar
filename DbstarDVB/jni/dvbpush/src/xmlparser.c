@@ -14,53 +14,18 @@
 #include "multicast.h"
 #include "softdmx.h"
 #include "porting.h"
+#include "dvbpush_api.h"
 
-static char s_push_root_path[512];
 static int global_insert(DBSTAR_GLOBAL_S *p);
 static pthread_mutex_t mtx_parse_xml = PTHREAD_MUTEX_INITIALIZER;
-
-// static int serviceID_init();
-
-/*
- 从数据表Global中读取push的根路径，此路径由上层写入数据库。
- 此路径应当更新到push.conf中供push模块初始化使用。
- 之所以这么更新，是因为无法确保硬盘一定是挂在/mnt/sda1下。
-*/
-char *push_dir_get()
-{
-	return s_push_root_path;
-}
-
-static int push_dir_init()
-{
-	char sqlite_cmd[512];
-	
-	memset(s_push_root_path, 0, sizeof(s_push_root_path));
-	
-	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_PUSHDIR);
-
-	int ret_sqlexec = sqlite_read(sqlite_cmd, s_push_root_path, sizeof(s_push_root_path), sqlite_cb);
-	if(ret_sqlexec<=0 || strlen(s_push_root_path)<2){
-		DEBUG("read no PushDir from db, filled with %s\n", PUSH_DATA_DIR_DF);
-		snprintf(s_push_root_path, sizeof(s_push_root_path), "%s", PUSH_DATA_DIR_DF);
-	}
-	else
-		DEBUG("read PushDir: %s\n", s_push_root_path);
-		
-	return 0;
-}
+static int s_column_SequenceNum = 0;
 
 
 /*
  初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
 */
 int xmlparser_init(void)
-{
-	push_dir_init();
-	
-	DEBUG("end of xmlparser_init\n");
-	
+{	
 	return 0;
 }
 
@@ -355,11 +320,25 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	if(0==strlen(ptr->ParentID))
 		snprintf(ptr->ParentID, sizeof(ptr->ParentID), "-1");
 	
-	char sqlite_cmd[2048];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick) VALUES('%s','%s','%s','%s','%s','%s','%s','%s');",
-		ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,ptr->ColumnIcon_losefocus,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick);
+	s_column_SequenceNum++;
 	
-	return sqlite_transaction_exec(sqlite_cmd);
+	char *p_slash = strrchr(ptr->ColumnIcon_losefocus,'/');
+	if(p_slash)
+		p_slash++;
+	else
+		p_slash = ptr->ColumnIcon_losefocus;
+	
+	char from_file[256];
+	char to_file[256];
+	snprintf(from_file,sizeof(from_file),"%s/%s", push_dir_get(),ptr->ColumnIcon_losefocus);
+	snprintf(to_file,sizeof(to_file),"%s/%s",column_res_get(),p_slash);
+	fcopy_c(from_file,to_file);
+	
+	char cmd[2048];
+	snprintf(cmd, sizeof(cmd), "REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d);",
+		ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
+	
+	return sqlite_transaction_exec(cmd);
 }
 
 /*
@@ -2559,6 +2538,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 				char sqlite_cmd[256];
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='%d' AND ColumnType!='%d';", COLUMN_MYCENTER, COLUMN_SETTING);
 				sqlite_transaction_exec(sqlite_cmd);
+				s_column_SequenceNum = 0;
 						
 				DBSTAR_COLUMN_S column_s;
 				memset(&column_s, 0, sizeof(column_s));
@@ -2675,9 +2655,10 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag)
 				
 				push_recv_manage_refresh(0,NULL);
 			}
-			else if(INITIALIZE_XML==xml_flag){
-				columnicon_dup();
-			}
+			else if(COLUMN_XML==xml_flag)
+				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
+			else if(SPRODUCT_XML==xml_flag)
+				msg_send2_UI(STATUS_INTERFACE_REFRESH, NULL, 0);
 		}
 	}
 	
@@ -2729,11 +2710,5 @@ int parse_xml(char *xml_uri, PUSH_XML_FLAG_E xml_flag)
 	int ret = parseDoc(xml_uri, xml_flag);
 	
 	return ret;
-}
-
-
-int columnicon_dup()
-{
-	return 0;
 }
 

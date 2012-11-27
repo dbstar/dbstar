@@ -92,7 +92,7 @@ static int s_decoder_running = 0;
 static char *s_dvbpush_info = NULL;
 static int s_dvbpush_getinfo_start = 0;
 static int s_push_monitor_active = 0;
-static int s_monitor_interval = 10;
+static int s_monitor_interval = 1000;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
@@ -1042,7 +1042,6 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			cur_prog.type = atoi(result[i*column+1]);
 			cur_prog.cur = 0LL;
 			cur_prog.total = totalsize;
-			DEBUG("11111111111 %s\n", cur_prog.id);
 			mid_push_regist(&cur_prog);
 		}
 		else{ // RECEIVESTATUS_FAILED==receive_status || RECEIVESTATUS_HISTORY==receive_status

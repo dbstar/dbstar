@@ -495,6 +495,7 @@ int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, 
 int check_tail(const char *str_dad, char *str_tail, int case_cmp);
 int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port);
 int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int flag);
+int fcopy_c(char *from_file, char *to_file);
 
 #endif
 

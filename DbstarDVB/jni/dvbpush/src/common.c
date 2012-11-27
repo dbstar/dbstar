@@ -17,7 +17,6 @@
 #include <linux/if_ether.h>
 #include <net/if_arp.h>
 #include <semaphore.h>
-#include <sys/types.h>
 #include <dirent.h>
 
 #include "common.h"
@@ -528,4 +527,84 @@ int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int 
 	
 	return 0;
 }
+
+
+#define BUFFER_SIZE 1024
+int fcopy_c(char *from_file, char *to_file)
+{
+	int from_fd = 0, to_fd = 0;
+	int bytes_read = 0, bytes_write = 0;
+	char buffer[BUFFER_SIZE];
+	char *ptr = NULL;
+	int ret = -1;
+	
+	if(NULL==from_file || NULL==to_file)
+	{
+		DEBUG("some args are failed\n");
+		return -1;
+	}
+	else
+		DEBUG("copy %s to %s\n", from_file,to_file);
+	
+	/* 打开源文件 */
+	if((from_fd=open(from_file,O_RDONLY))==-1)  /*open file readonly,返回-1表示出错，否则返回文件描述符*/
+	{
+		ERROROUT("open %s to read failed\n", from_file);
+		return -1;
+	}
+	
+	/* 创建目的文件 */
+	/* 使用了O_CREAT选项-创建文件,open()函数需要第3个参数,
+	mode=S_IRUSR|S_IWUSR表示S_IRUSR 用户可以读 S_IWUSR 用户可以写*/
+	if((to_fd=open(to_file,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR))==-1) 
+	{
+		ERROROUT("open %s to write failed\n", to_file);
+		return -1;
+	}
+	
+	/* 以下代码是一个经典的拷贝文件的代码 */
+	while(bytes_read=read(from_fd,buffer,BUFFER_SIZE))
+	{
+		if(bytes_read>0)
+		{
+			ptr=buffer;
+			while(bytes_write=write(to_fd,ptr,bytes_read))
+			{
+				/* 写完了所有读的字节 */
+				if(bytes_write==bytes_read) 
+					break;
+				/* 只写了一部分,继续写 */
+				else if(bytes_write>0)
+				{
+					ptr+=bytes_write;
+					bytes_read-=bytes_write;
+				}
+				/* 一个致命错误发生了 */
+				else if((bytes_write==-1)&&(errno!=EINTR)){
+					ERROROUT("write1 failed\n");
+					ret = -1;
+					break;
+				}
+			}
+			/* 写的时候发生的致命错误 */
+			if(bytes_write==-1){
+				ERROROUT("write2 failed\n");
+				ret = -1;
+				break;
+			}
+		}
+		/* 一个致命的错误发生了 */
+		else if((bytes_read==-1)&&(errno!=EINTR)){
+			ERROROUT("read failed\n");
+			ret = -1;
+			break;
+		}
+	}
+	close(from_fd);
+	close(to_fd);
+	
+	return ret;
+}
+
+
 

@@ -45,7 +45,7 @@ void *main_thread()
 	}
 	
 	// only for xml parse testing
-#if 0
+#if 1
 	char xml_uri[128];
 	char sqlite_cmd[256];
 	memset(xml_uri, 0, sizeof(xml_uri));

@@ -42,11 +42,13 @@ static int			s_software_check = 1;
 
 static char			s_Language[64];
 static char			s_serviceID[64];
+static char			s_push_root_path[512];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
 static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int date_str_size);
 static int serviceID_init();
+static int push_dir_init();
 /* define some general interface function here */
 
 static void settingDefault_set(void)
@@ -182,6 +184,7 @@ int setting_init(void)
 	DEBUG("init settings OK\n");
 
 	serviceID_init();
+	push_dir_init();
 	
 	s_settingInitFlag = 1;
 	return 0;
@@ -251,13 +254,9 @@ int initialize_xml_get()
 	return atoi(s_initialize_xml);
 }
 
-int column_res_get(char *column_res, unsigned int uri_size)
+char *column_res_get()
 {
-	if(NULL==column_res || 0==uri_size)
-		return -1;
-	
-	strncpy(column_res, s_column_res, uri_size);
-	return 0;
+	return s_column_res;
 }
 
 int factory_renew(void)
@@ -936,6 +935,40 @@ int serviceID_set(char *serv_id)
 {
 	return snprintf(s_serviceID,sizeof(s_serviceID),"%s",serv_id);
 }
+
+
+
+/*
+ 从数据表Global中读取push的根路径，此路径由上层写入数据库。
+ 此路径应当更新到push.conf中供push模块初始化使用。
+ 之所以这么更新，是因为无法确保硬盘一定是挂在/mnt/sda1下。
+*/
+char *push_dir_get()
+{
+	return s_push_root_path;
+}
+
+static int push_dir_init()
+{
+	char sqlite_cmd[512];
+	
+	memset(s_push_root_path, 0, sizeof(s_push_root_path));
+	
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_PUSHDIR);
+
+	int ret_sqlexec = sqlite_read(sqlite_cmd, s_push_root_path, sizeof(s_push_root_path), sqlite_cb);
+	if(ret_sqlexec<=0 || strlen(s_push_root_path)<2){
+		DEBUG("read no PushDir from db, filled with %s\n", PUSH_DATA_DIR_DF);
+		snprintf(s_push_root_path, sizeof(s_push_root_path), "%s", PUSH_DATA_DIR_DF);
+	}
+	else
+		DEBUG("read PushDir: %s\n", s_push_root_path);
+		
+	return 0;
+}
+
+
 
 /*
  检查指定的产品id是否在特殊产品之列。

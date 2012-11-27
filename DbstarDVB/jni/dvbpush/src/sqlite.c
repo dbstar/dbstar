@@ -381,6 +381,7 @@ XMLName	NVARCHAR(64) DEFAULT '',\
 Version	NVARCHAR(64) DEFAULT '',\
 StandardVersion	NVARCHAR(32) DEFAULT '',\
 URI	NVARCHAR(256) DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (PushFlag,ServiceID));", name);
 			}
 			else if(!strcmp(name,"Channel"))
@@ -392,6 +393,7 @@ ServiceID	NVARCHAR(64) DEFAULT '',\
 pidtype	NVARCHAR(64) DEFAULT '',\
 URI NVARCHAR(256) DEFAULT '',\
 FreshFlag INTEGER DEFAULT 1,\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (pid,ServiceID));", name);
 			}
 			else if(!strcmp(name,"Service"))
@@ -402,7 +404,8 @@ ServiceID	NVARCHAR(64) PRIMARY KEY,\
 RegionCode	NVARCHAR(64) DEFAULT '',\
 OnlineTime	DATETIME DEFAULT '',\
 OfflineTime	DATETIME DEFAULT '',\
-Status	RCHAR(32) DEFAULT '0');", name);
+Status	RCHAR(32) DEFAULT '0',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')));", name);
 			}
 			else if(!strcmp(name,"ResStr"))
 			{
@@ -489,8 +492,10 @@ ColumnType	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_losefocus	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_getfocus	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_onclick	NVARCHAR(256) DEFAULT '',\
+ColumnIcon_spare	NVARCHAR(256) DEFAULT '',\
 SequenceNum	INTEGER,\
 URI	NVARCHAR(256),\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"ColumnEntity"))
@@ -500,7 +505,8 @@ PRIMARY KEY (ServiceID,ColumnID));", name);
 ServiceID	NVARCHAR(64) DEFAULT '0',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(64) DEFAULT '',\
-EntityType	NVARCHAR(64) DEFAULT '');", name);
+EntityType	NVARCHAR(64) DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')));", name);
 			}
 			else if(!strcmp(name,"Product"))
 			{
@@ -682,6 +688,7 @@ ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	DATETIME DEFAULT '',\
 PushEndTime	DATETIME DEFAULT '',\
 UserStatus	NVARCHAR(64) DEFAULT '1',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,DateValue,PublicationID));", name);
 			}
 			else if(!strcmp(name,"ProductDesc"))
@@ -703,6 +710,7 @@ PushEndTime	DATETIME DEFAULT '',\
 Columns	NVARCHAR(512) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 FreshFlag INTEGER DEFAULT 1,\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
 			}
 			else if(!strcmp(name,"Preview"))
@@ -743,6 +751,7 @@ URI	NVARCHAR(512) DEFAULT '',\
 Type	NVARCHAR(64) DEFAULT '',\
 PushStartTime	DATETIME DEFAULT '',\
 PushEndTime	DATETIME DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ID));", name);
 			}
 			else if(!strcmp(name,"SProduct"))
@@ -752,7 +761,8 @@ PRIMARY KEY (ServiceID,ID));", name);
 ServiceID	NVARCHAR(64) DEFAULT '0',\
 SType	NVARCHAR(64) DEFAULT '',\
 Name	NVARCHAR(64) DEFAULT '',\
-URI	NVARCHAR(512) DEFAULT '',\
+URI	NVARCHAR(256) DEFAULT '',\
+URI_spare	NVARCHAR(256) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,SType));", name);
 			}
@@ -1060,7 +1070,7 @@ int sqlite_transaction_begin()
 {
 	int ret = -1;
 	
-	DEBUG("sqlite_transaction_begin>>\n");
+	DEBUG("sqlite_transaction_begin >>\n");
 	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
 		DEBUG("######### SQLITE TRANSACTION STATUS is abnormally #########\n");
 		DEBUG("expect SQL_TRAN_STATUS_END but %d\n", s_sql_tran_status);
@@ -1210,7 +1220,7 @@ int sqlite_transaction_end(int commit_flag)
 {
 	int ret = -1;
 	
-	DEBUG("sqlite_transaction_end %s\n", 1==commit_flag?"commit >>":"<< rollback");
+	DEBUG("sqlite_transaction_end %s\n", 1==commit_flag?"commit <<>>":"<< rollback");
 	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
 		if(1==commit_flag){
 			DEBUG("commit transaction\n");

@@ -24,5 +24,7 @@ int check_productid_from_smartcard(char *productid);
 char *serviceID_get();
 int serviceID_set(char *serv_id);
 void upgrade_sign_set();
+char *column_res_get();
+char *push_dir_get();
 
 #endif
