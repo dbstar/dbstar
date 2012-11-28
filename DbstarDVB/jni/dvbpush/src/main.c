@@ -45,7 +45,7 @@ void *main_thread()
 	}
 	
 	// only for xml parse testing
-#if 1
+#if 0
 	char xml_uri[128];
 	char sqlite_cmd[256];
 	memset(xml_uri, 0, sizeof(xml_uri));
@@ -72,7 +72,7 @@ void *main_thread()
 	
 	if(strlen(xml_uri)>0)
 	{
-		parse_xml(xml_uri, atoi(xml_flag));
+		parse_xml(xml_uri, atoi(xml_flag), "3");
 		//return NULL;
 	}
 #endif

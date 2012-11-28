@@ -381,8 +381,9 @@ XMLName	NVARCHAR(64) DEFAULT '',\
 Version	NVARCHAR(64) DEFAULT '',\
 StandardVersion	NVARCHAR(32) DEFAULT '',\
 URI	NVARCHAR(256) DEFAULT '',\
+ID	NVARCHAR(64) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (PushFlag,ServiceID));", name);
+PRIMARY KEY (PushFlag,ServiceID,ID));", name);
 			}
 			else if(!strcmp(name,"Channel"))
 			{

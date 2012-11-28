@@ -563,12 +563,12 @@ int fcopy_c(char *from_file, char *to_file)
 	}
 	
 	/* 以下代码是一个经典的拷贝文件的代码 */
-	while(bytes_read=read(from_fd,buffer,BUFFER_SIZE))
+	while(0!=(bytes_read=read(from_fd,buffer,BUFFER_SIZE)))
 	{
 		if(bytes_read>0)
 		{
 			ptr=buffer;
-			while(bytes_write=write(to_fd,ptr,bytes_read))
+			while(0!=(bytes_write=write(to_fd,ptr,bytes_read)))
 			{
 				/* 写完了所有读的字节 */
 				if(bytes_write==bytes_read) 

@@ -2,8 +2,9 @@
 #define __MID_PUSH_H__
 
 typedef struct{
-	char uri[512];
-	int flag;
+	char	uri[512];
+	int		flag;
+	char	id[64];
 }PUSH_XML_S;
 
 void push_root_dir_init(char *push_conf);
@@ -24,6 +25,6 @@ void push_rely_condition_set(int rely_cond);
 int push_decoder_buf_init();
 int mid_push_reject(const char *prog_uri);
 int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed);
-int send_xml_to_parse(const char *path, int flag);
+int send_xml_to_parse(const char *path, int flag, char *id);
 
 #endif

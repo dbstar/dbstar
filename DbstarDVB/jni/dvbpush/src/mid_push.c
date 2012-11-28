@@ -41,7 +41,7 @@
 //#define MONITOR_MIN
 
 #define XML_NUM			8
-static PUSH_XML_S s_push_xml[XML_NUM];
+static PUSH_XML_S		s_push_xml[XML_NUM];
 
 static pthread_mutex_t mtx_xml = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_xml = PTHREAD_COND_INITIALIZER;
@@ -322,13 +322,13 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type)
 	else{
 		DEBUG("should parse: %s\n", xmlURI);
 		if(RECEIVETYPE_PUBLICATION==type){
-			send_xml_to_parse(xmlURI,PRODUCTION_XML);
+			send_xml_to_parse(xmlURI,PRODUCTION_XML,id);
 		}
 		else if(RECEIVETYPE_COLUMN==type){
-			send_xml_to_parse(xmlURI,COLUMN_XML);
+			send_xml_to_parse(xmlURI,COLUMN_XML,NULL);
 		}
 		else if(RECEIVETYPE_SPRODUCT==type){
-			send_xml_to_parse(xmlURI,SPRODUCT_XML);
+			send_xml_to_parse(xmlURI,SPRODUCT_XML,NULL);
 		}
 		else
 			DEBUG("this type can not be distinguish\n");
@@ -572,8 +572,11 @@ void *push_xml_parse_thread()
 			for(i=0; i<XML_NUM; i++){
 				if(strlen(s_push_xml[i].uri)>0){
 					DEBUG("will parse %s\n", s_push_xml[i].uri);
-					parse_xml(s_push_xml[i].uri, s_push_xml[i].flag);
+					parse_xml(s_push_xml[i].uri, s_push_xml[i].flag, s_push_xml[i].id);
+					
 					memset(s_push_xml[i].uri, 0, sizeof(s_push_xml[i].uri));
+					s_push_xml[i].flag = PUSH_XML_FLAG_UNDEFINED;
+					memset(s_push_xml[i].id, 0, sizeof(s_push_xml[i].id));
 				}
 			}
 		}
@@ -593,7 +596,7 @@ void usage()
 	exit(0);
 }
 
-int send_xml_to_parse(const char *path, int flag)
+int send_xml_to_parse(const char *path, int flag, char *id)
 {
 	int ret = 0;
 	
@@ -606,6 +609,8 @@ int send_xml_to_parse(const char *path, int flag)
 				if(0==strlen(s_push_xml[i].uri)){
 					snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s", path);
 					s_push_xml[i].flag = flag;
+					if(id)
+						snprintf(s_push_xml[i].id, sizeof(s_push_xml[i].id),"%s", id);
 					break;
 				}
 			}
@@ -639,7 +644,7 @@ void callback(const char *path, long long size, int flag)
 	
 	/* 由于涉及到解析和数据库操作，这里不直接调用parseDoc，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
-	send_xml_to_parse(path, flag);
+	send_xml_to_parse(path, flag, NULL);
 }
 
 /*
@@ -727,7 +732,8 @@ int mid_push_init(char *push_conf)
 	int i = 0;
 	for(i=0;i<XML_NUM;i++){
 		memset(s_push_xml[i].uri, 0, sizeof(s_push_xml[i].uri));
-		s_push_xml[i].flag = -1;
+		s_push_xml[i].flag = PUSH_XML_FLAG_UNDEFINED;
+		memset(s_push_xml[i].id, 0, sizeof(s_push_xml[i].id));
 	}
 	
 	for(i=0; i<PROGS_NUM; i++){
@@ -861,8 +867,7 @@ static int mid_push_regist(PROG_S *prog)
 	for(i=0; i<PROGS_NUM; i++)
 	{
 		if(1==prog_is_valid(&s_prgs[i]) && 0==strcmp(s_prgs[i].uri,prog->uri)){
-			DEBUG("Warning: this prog is already regist, cover old record\n");
-			DEBUG("progs[%d]: %s %s\n", i,s_prgs[i].id, s_prgs[i].uri);
+			DEBUG("Warning: this prog[id=%s] is already regist, cover old record\n",s_prgs[i].id);
 			
 			snprintf(s_prgs[i].id, sizeof(s_prgs[i].id), "%s", prog->id);
 			snprintf(s_prgs[i].uri, sizeof(s_prgs[i].uri), "%s", prog->uri);
@@ -870,9 +875,6 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].type = prog->type;
 			s_prgs[i].cur = prog->cur;
 			s_prgs[i].total = prog->total;
-			
-			push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
-			s_push_monitor_active++;
 			
 			DEBUG("regist to push[%d]:%s %s %s %lld\n",
 					i,

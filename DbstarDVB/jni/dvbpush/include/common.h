@@ -234,6 +234,7 @@ typedef struct{
 	char	Version[64];
 	char	StandardVersion[64];
 	char	URI[256];
+	char	ID[64];
 }DBSTAR_XMLINFO_S;
 
 typedef struct{
@@ -249,7 +250,7 @@ typedef struct{
 	char	EntityID[64];
 	char	StrLang[32];
 	char	StrName[64];
-	char	*StrValue;
+	char	StrValue[1024];
 	char	Extension[64];	// "Extension" or ""
 }DBSTAR_RESSTR_S;
 
@@ -379,24 +380,6 @@ typedef struct{
 	char	IndexInSet[64];
 }DBSTAR_PUBLICATIONSSET_S;
 
-
-
-
-typedef struct{
-	char	ServiceID[64];
-	char	PublicationID[64];
-	char	FileID[64];
-	char	FileSize[64];
-	char	FileURI[256];
-	char	FileType[64];
-	char	FileFormat[32];
-	char	Duration[32];
-	char	Resolution[32];
-	char	BitRate[32];
-	char	CodeFormat[32];
-}DBSTAR_MFILE_S;
-
-
 typedef struct{
 	char	ServiceID[64];
 	char	PublicationID[64];
@@ -404,13 +387,22 @@ typedef struct{
 	char	IsReserved[32];
 	char	Visible[32];
 	char	DRMFile[256];
+	char	FileID[64];
+	char	FileSize[64];
+	char	FileURI[256];
+	char	FileType[64];
+	char	Duration[32];
+	char	Resolution[32];
+	char	BitRate[32];
+	char	FileFormat[32];
+	char	CodeFormat[32];
 }DBSTAR_PUBLICATION_S;
 
 typedef struct{
 	char	ServiceID[64];
 	char	PublicationID[64];
 	char	infolang[64];
-	char	*PublicationDesc;
+	char	PublicationDesc[1024];
 	char	Keywords[256];
 	char	ImageDefinition[32];
 	char	Area[64];
