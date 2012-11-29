@@ -129,7 +129,8 @@ public class GDDataModel {
 			Publication.PUBLICATIONID, Publication.DESCURI,
 			Publication.TOTALSIZE, Publication.DRMFILE, Publication.INDEXINSET,
 			Publication.FILEID, Publication.FILESIZE, Publication.FILEURI,
-			Publication.BITRATE, Publication.RESOLUTION, Publication.CODEFORMAT };
+			Publication.BITRATE, Publication.RESOLUTION,
+			Publication.CODEFORMAT, Publication.BOOKMARK };
 	private final static int PublicationID = 0;
 	private final static int PublicationDescURI = PublicationID + 1;
 	private final static int PublicationTotalSize = PublicationDescURI + 1;
@@ -141,6 +142,7 @@ public class GDDataModel {
 	private final static int PublicationBitrate = PublicationFileURI + 1;
 	private final static int PublicationResolution = PublicationBitrate + 1;
 	private final static int PublicationCodeFormat = PublicationResolution + 1;
+	private final static int PublicationBookmark = PublicationCodeFormat + 1;
 
 	public ContentData[] getPublications(String columnId, String favorite) {
 
@@ -184,6 +186,8 @@ public class GDDataModel {
 					content.TotalSize = cursor.getInt(PublicationTotalSize);
 					content.DRMFile = cursor.getString(PublicationDrmFile);
 
+					content.BookMark = cursor.getInt(PublicationBookmark);
+
 					// Main file
 					content.MainFile = new ContentData.MFile();
 					content.MainFile.FileURI = cursor
@@ -206,6 +210,9 @@ public class GDDataModel {
 					item.URI = posterUri;
 					content.Posters = new ArrayList<ContentData.Poster>();
 					content.Posters.add(item);
+					
+					// Subtitle
+					getPublicationSubtitle(content);
 
 					// Name
 					content.Name = getPublicationResStr(content.Id,
@@ -470,6 +477,42 @@ public class GDDataModel {
 		}
 
 		return uri;
+	}
+
+	private static final String QuerySubtitleProjection[] = {
+			ResSubTitle.SUBTITLEID, ResSubTitle.SUBTITLENAME,
+			ResSubTitle.SUBTITLELANGUAGE, ResSubTitle.SUBTITLEURI };
+	private static final int SubtitleId = 0;
+	private static final int SubtitleName = 1;
+	private static final int SubtitleLanguage = 2;
+	private static final int SubtitleURI = 3;
+
+	public void getPublicationSubtitle(ContentData content) {
+		String selection = ResSubTitle.OBJECTNAME + "=? AND "
+				+ ResSubTitle.ENTITYID + "=?";
+		String[] selectionArgs = new String[] {
+				GDDVBDataContract.ObjectPublication, content.Id };
+
+		Cursor cursor = mDVBDataProvider.query(ResSubTitle.CONTENT_URI,
+				QuerySubtitleProjection, selection, selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				content.SubTitles = new ArrayList<ContentData.SubTitle>();
+				do {
+					ContentData.SubTitle subTitle = new ContentData.SubTitle();
+					subTitle.Id = cursor.getString(SubtitleId);
+					subTitle.Name = cursor.getString(SubtitleName);
+					subTitle.Language = cursor.getString(SubtitleLanguage);
+					subTitle.URI = cursor.getString(SubtitleURI);
+					content.SubTitles.add(subTitle);
+				} while (cursor.moveToNext());
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
 	}
 
 	// Query Guide list

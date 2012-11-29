@@ -13,7 +13,6 @@ public class ContentData {
 	public String Director;
 	public String Area;
 	public String Source;
-	public String SubTitle;
 	public String Language;
 	
 	public String Description;
@@ -25,6 +24,7 @@ public class ContentData {
 	public String Audience;
 	public String Model;
 	public int TotalSize;
+	public int BookMark;
 
 	public String DRMFile;
 	public List<Poster> Posters; 

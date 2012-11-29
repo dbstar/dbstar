@@ -4,9 +4,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.ContentData;
+import com.dbstar.model.ContentData.SubTitle;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -47,9 +49,21 @@ public class GDPlayerUtil {
 			intent.putExtra("director", content.Director);
 			intent.putExtra("actors", content.Actors);
 			intent.putExtra("type", content.Type);
-			// intent.setComponent(new ComponentName("com.farcore.videoplayer",
-			// "com.farcore.videoplayer.playermenu"));
-			// intent.setAction("android.intent.action.View");
+			intent.putExtra("area", content.Area);
+			intent.putExtra("resolution", content.MainFile.Resolution);
+			intent.putExtra("bitrate", content.MainFile.BitRate);
+			intent.putExtra("codeformat", content.MainFile.CodeFormat);
+			
+			intent.putExtra("bookmark", content.BookMark);
+
+			if (content.SubTitles != null && content.SubTitles.size() > 0) {
+				ArrayList<String> subtitleUris = new ArrayList<String>();
+				for (int i = 0; i < content.SubTitles.size(); i++) {
+					ContentData.SubTitle subtitle = content.SubTitles.get(i);
+					subtitleUris.add(subtitle.URI);
+				}
+				intent.putStringArrayListExtra("subtitle_uri", subtitleUris);
+			}
 
 			intent.setComponent(new ComponentName("com.dbstar.DbstarDVB",
 					"com.dbstar.DbstarDVB.VideoPlayer.PlayerMenu"));
@@ -60,7 +74,7 @@ public class GDPlayerUtil {
 			activity.startActivity(intent);
 		}
 	}
-	
+
 	public static int writeSysfs(String path, String val) {
 		if (!new File(path).exists()) {
 			Log.e(TAG, "File not found: " + path);
