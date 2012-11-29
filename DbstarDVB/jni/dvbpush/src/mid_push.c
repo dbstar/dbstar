@@ -92,7 +92,7 @@ static int s_decoder_running = 0;
 static char *s_dvbpush_info = NULL;
 static int s_dvbpush_getinfo_start = 0;
 static int s_push_monitor_active = 0;
-static int s_monitor_interval = 1000;
+static int s_monitor_interval = 10;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
@@ -1032,25 +1032,50 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	}
 	
 	int i = 0;
+	int j = 0;
+	int reject_flag = 0;
+	int tmp_init_flag = *((int *)receiver);
 	RECEIVESTATUS_E receive_status = RECEIVESTATUS_REJECT;
 	long long totalsize = 0LL;
+	
+	DEBUG("*receiver=%d\n", tmp_init_flag);
+	
 	for(i=1;i<row+1;i++)
 	{
 		receive_status = atoi(result[i*column+6]);
 		if(RECEIVESTATUS_REJECT==receive_status){
-			mid_push_reject(result[i*column+2]);
+			/*
+			拒绝接收时一定要小心，相同的Publication有可能既属于当前service，又属于其他service；尤其是，在其他Service中需要接收。
+			*/
+			reject_flag = 1;
+			for(j=1;j<row+1;j++){
+				if(0==strcmp(result[j*column+2],result[i*column+2]) && (RECEIVESTATUS_WAITING==atoi(result[j*column+6])|| RECEIVESTATUS_FINISH==atoi(result[j*column+6]))){
+					DEBUG("this prog(%s) is need recv in other service, do not reject it\n",result[i*column+2]);
+					reject_flag = 0;
+					break;
+				}
+			}
+			if(1==reject_flag)
+				mid_push_reject(result[i*column+2]);
 		}
 		else if(RECEIVESTATUS_WAITING==receive_status || RECEIVESTATUS_FINISH==receive_status){
-			sscanf(result[i*column+3],"%lld", &totalsize);
-			PROG_S cur_prog;
-			snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
-			snprintf(cur_prog.uri,sizeof(cur_prog.uri),"%s",result[i*column+2]);
-			memset(cur_prog.caption,0,sizeof(cur_prog.caption));
-			snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+5]);
-			cur_prog.type = atoi(result[i*column+1]);
-			cur_prog.cur = 0LL;
-			cur_prog.total = totalsize;
-			mid_push_regist(&cur_prog);
+			/*
+			如果是开机时注册，或者不是开机注册、但FreshFlag为1，则注册进度监控
+			*/
+			if(1==tmp_init_flag || (1!=tmp_init_flag && 1==atoi(result[i*column+7]))){
+				sscanf(result[i*column+3],"%lld", &totalsize);
+				
+				PROG_S cur_prog;
+				memset(&cur_prog,0,sizeof(cur_prog));
+				snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
+				snprintf(cur_prog.uri,sizeof(cur_prog.uri),"%s",result[i*column+2]);
+				memset(cur_prog.caption,0,sizeof(cur_prog.caption));
+				snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+5]);
+				cur_prog.type = atoi(result[i*column+1]);
+				cur_prog.cur = 0LL;
+				cur_prog.total = totalsize;
+				mid_push_regist(&cur_prog);
+			}
 		}
 		else{ // RECEIVESTATUS_FAILED==receive_status || RECEIVESTATUS_HISTORY==receive_status
 			DEBUG("[%d:%s] %s is ignored by push monitor\n", i,result[i*column],result[i*column+2]);
@@ -1093,13 +1118,11 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 */
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ProductDesc WHERE PushEndTime<'%s';", time_stamp);
 		sqlite_execute(sqlite_cmd);
-		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
 	}
-	else
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s' AND FreshFlag=1;", time_stamp,time_stamp);
 	
-	ret = sqlite_read(sqlite_cmd, time_stamp, strlen(time_stamp), sqlite_callback);
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
+	
+	ret = sqlite_read(sqlite_cmd, (void *)(&init_flag), sizeof(init_flag), sqlite_callback);
 	
 	if(ret>0){
 		prog_name_fill();

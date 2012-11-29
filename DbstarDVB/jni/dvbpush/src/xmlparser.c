@@ -205,13 +205,17 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	char to_file[256];
 	snprintf(from_file,sizeof(from_file),"%s/%s", push_dir_get(),ptr->ColumnIcon_losefocus);
 	snprintf(to_file,sizeof(to_file),"%s/%s",column_res_get(),p_slash);
-	fcopy_c(from_file,to_file);
-	
-	char cmd[2048];
-	snprintf(cmd, sizeof(cmd), "REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d);",
-		ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
-	
-	return sqlite_transaction_exec(cmd);
+	if(0==fcopy_c(from_file,to_file)){
+		char cmd[2048];
+		snprintf(cmd, sizeof(cmd), "REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d);",
+			ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
+		
+		return sqlite_transaction_exec(cmd);
+	}
+	else{
+		DEBUG("copy %s to %s failed\n",from_file,to_file);
+		return -1;
+	}
 }
 
 static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
@@ -297,6 +301,12 @@ ptr->ServiceID);
 	}
 	
 	DEBUG("I will %s this program(%s), serviceID:%s, ProductID:%s\n", 0==receive_status?"receive":"reject",ptr->ID,ptr->ServiceID,ptr->productID);
+	
+	/*
+	理论上，对于处在不同Service的Publication，如果需要拒绝接收，但其PublicationID已经存在于表中，则不需要再次入库；这意味着只有那些允许接收的Publication以及纯粹拒绝接收的Publication可以入库。
+	但是考虑到ProductDesc.xml和Service.xml到来的顺序不一定，有可能Service.xml到来的比较晚，因此这里忠实的体现所有Service——publicaiton组合。
+	对于那些相同PublicatonID既有允许接收，又有拒绝接收的冲突问题，放在注册时处理。
+	*/
 	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO ProductDesc(ServiceID,ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,xmlURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag) \
 VALUES('%s',\
@@ -1633,7 +1643,10 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(p_column->ServiceID,sizeof(p_column->ServiceID),"%s",tmp_serviceid);
 					
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
-					column_insert((DBSTAR_COLUMN_S *)ptr);
+					if(0!=column_insert((DBSTAR_COLUMN_S *)ptr)){
+						DEBUG("insert a column record to db failed\n");
+						process_over = XML_EXIT_ERROR;
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "Columns^Column^ColumnID")){
 					DBSTAR_COLUMN_S *p_column = (DBSTAR_COLUMN_S *)ptr;
@@ -2267,10 +2280,6 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 		snprintf(xml_uri, sizeof(xml_uri), "%s/%s", push_dir_get(), docname);
 	
 	DEBUG("parse xml file[%d]: %s\n", xml_flag, xml_uri);
-	
-	char ls_xml[128];
-	snprintf(ls_xml, sizeof(ls_xml), "ls -l %s", xml_uri);
-	system(ls_xml);
 	
 	doc = xmlParseFile(xml_uri);
 	if (doc == NULL ) {
