@@ -27,6 +27,8 @@ public class GDCommon {
 	
 	public static final int SYNC_STATUS_TODBSERVER = 16;
 
+	public static final int MSG_SAVE_BOOKMARK = 17;
+	
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "chi";
@@ -54,10 +56,12 @@ public class GDCommon {
 
 	public static final String KeyPublicationID = "publication_id";
 	public static final String KeyPublicationSetID = "publicationset_id";
+	public static final String KeyBookmark = "bookmark";
 
 	public static final String ActionAddFavourite = "com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE";
 	public static final String ActionDelete = "com.dbstar.DbstarLauncher.Action.DELETE";
 	public static final String ActionUpgradeCancelled = "com.dbstar.DbstarLauncher.Action.UPGRADE_CANCELLED";
+	public static final String ActionBookmark = "com.dbstar.DbstarLauncher.Action.BOOKMARK";
 
 	public static final String ActionGetNetworkInfo = "com.dbstar.DbstarLauncher.Action.GET_NETWORKINFO";
 	public static final String ActionUpateNetworkInfo = "com.dbstar.DbstarLauncher.Action.UPDATE_NETWORKINFO";

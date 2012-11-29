@@ -210,7 +210,7 @@ public class GDDataModel {
 					item.URI = posterUri;
 					content.Posters = new ArrayList<ContentData.Poster>();
 					content.Posters.add(item);
-					
+
 					// Subtitle
 					getPublicationSubtitle(content);
 
@@ -944,6 +944,16 @@ public class GDDataModel {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public boolean savePublicationBookmark(String publicationId, int bookmark) {
+		boolean result = false;
+		if (publicationId != null && !publicationId.isEmpty()) {
+			result = setPublicationProperty(publicationId,
+					Publication.BOOKMARK, String.valueOf(bookmark));
+		}
+
+		return result;
 	}
 
 	public boolean deletePublication(String setId, String publicationId) {

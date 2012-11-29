@@ -483,6 +483,16 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 				}
 				break;
 			}
+			case GDCommon.MSG_SAVE_BOOKMARK: {
+				String publicationId = msg.getData().getString(
+						GDCommon.KeyPublicationID);
+				
+				int bookmark = msg.getData().getInt(GDCommon.KeyBookmark);
+				if (mDataModel != null) {
+					mDataModel.savePublicationBookmark(publicationId, bookmark);
+				}
+				break;
+			}
 			case GDCommon.MSG_GET_NETWORKINFO: {
 				String[] keys = new String[5];
 				keys[0] = GDSettings.PropertyMulticastIP;
@@ -1566,8 +1576,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 
 			} else if (action.equals(GDCommon.ActionAddFavourite)) {
 				String publicationSetId = intent
-						.getStringExtra("publicationset_id");
-				String publicationId = intent.getStringExtra("publication_id");
+						.getStringExtra(GDCommon.KeyPublicationSetID);
+				String publicationId = intent.getStringExtra(GDCommon.KeyPublicationID);
 
 				Message msg = mHandler
 						.obtainMessage(GDCommon.MSG_ADD_TO_FAVOURITE);
@@ -1579,8 +1589,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 
 			} else if (action.equals(GDCommon.ActionDelete)) {
 				String publicationSetId = intent
-						.getStringExtra("publicationset_id");
-				String publicationId = intent.getStringExtra("publication_id");
+						.getStringExtra(GDCommon.KeyPublicationSetID);
+				String publicationId = intent.getStringExtra(GDCommon.KeyPublicationID);
+				
 				Message msg = mHandler.obtainMessage(GDCommon.MSG_DELETE);
 				Bundle data = new Bundle();
 				data.putString(GDCommon.KeyPublicationID, publicationId);
@@ -1593,6 +1604,18 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 				Message msg = mHandler
 						.obtainMessage(GDCommon.MSG_USER_UPGRADE_CANCELLED);
 				msg.obj = packageFile;
+				mHandler.sendMessage(msg);
+			} else if (action.equals(GDCommon.ActionBookmark)) {
+				String publicationId = intent.getStringExtra(GDCommon.KeyPublicationID);
+				int bookmark = intent.getIntExtra(GDCommon.KeyBookmark, 0);
+				
+				Message msg = mHandler
+						.obtainMessage(GDCommon.MSG_SAVE_BOOKMARK);
+				Bundle data = new Bundle();
+				data.putString(GDCommon.KeyPublicationID, publicationId);
+				data.putInt(GDCommon.KeyBookmark, bookmark);
+				msg.setData(data);
+				
 				mHandler.sendMessage(msg);
 			} else if (action.equals(GDCommon.ActionGetNetworkInfo)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_GET_NETWORKINFO);
