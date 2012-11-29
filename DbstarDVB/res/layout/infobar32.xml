@@ -130,7 +130,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="8dp"
                 android:gravity="center"
-                android:src="@drawable/sound_state" >
+                android:src="@drawable/sound_unmute" >
             </ImageView>
 
             <ImageView

@@ -285,6 +285,8 @@ public class PlayerMenu extends Activity {
 
 		mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
 				MSG_DIALOG_TIMEOUT);
+		
+		setMute(false);
 	}
 
 	@Override
@@ -609,8 +611,8 @@ public class PlayerMenu extends Activity {
 
 	void setMute(boolean mute) {
 		if (mIsMute != mute) {
-			int level = mute ? 1 : 0;
-			mSoundStateView.setImageLevel(level);
+			int resId = mute ? R.drawable.sound_mute : R.drawable.sound_unmute;
+			mSoundStateView.setImageResource(resId);
 			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mute);
 		}
 	}
@@ -645,7 +647,7 @@ public class PlayerMenu extends Activity {
 
 	void increaseVolume() {
 
-		if (mVolumeLevel == mMaxVolumeLevel)
+		if (mIsMute || mVolumeLevel == mMaxVolumeLevel)
 			return;
 
 		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
@@ -660,7 +662,7 @@ public class PlayerMenu extends Activity {
 	}
 
 	void decreaseVolume() {
-		if (mVolumeLevel == 0)
+		if (mIsMute || mVolumeLevel == 0)
 			return;
 
 		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
