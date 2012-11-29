@@ -536,7 +536,7 @@ int fcopy_c(char *from_file, char *to_file)
 	int bytes_read = 0, bytes_write = 0;
 	char buffer[BUFFER_SIZE];
 	char *ptr = NULL;
-	int ret = -1;
+	int ret = 0;
 	
 	if(NULL==from_file || NULL==to_file)
 	{
