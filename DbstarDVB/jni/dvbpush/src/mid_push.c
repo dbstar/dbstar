@@ -122,7 +122,7 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	//return 0;
 	
 	if (pkt_len < 16) {
-		printf("IP/MPE packet length = %d too small.\n", pkt_len);
+		PRINTF("IP/MPE packet length = %d too small.\n", pkt_len);
 		//		rx_errors++;
 		//		rx_length_errors++;
 		return res;
@@ -159,10 +159,10 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 		return res;
 	}
 	
-	if(NULL==g_recvBuffer){
-		DEBUG("g_recvBuffer is NULL\n");
-		return res;
-	}
+//	if(NULL==g_recvBuffer){
+//		DEBUG("g_recvBuffer is NULL\n");
+//		return res;
+//	}
 	
 	/*	if (g_wIndex == g_rIndex 
 	&& g_recvBuffer[g_wIndex].m_len) {
@@ -414,11 +414,11 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 					
 				if(0==i){
 					snprintf(s_dvbpush_info, info_size,
-						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur,s_prgs[i].total);
+						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
 				else{
 					snprintf(s_dvbpush_info+strlen(s_dvbpush_info), info_size-strlen(s_dvbpush_info),
-						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur,s_prgs[i].total);
+						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
 			}
 			pthread_mutex_unlock(&mtx_push_monitor);
@@ -498,9 +498,6 @@ void *push_monitor_thread()
 		outtime.tv_sec = now.tv_sec + s_monitor_interval;
 		outtime.tv_nsec = now.tv_usec;
 		retcode = pthread_cond_timedwait(&cond_push_monitor, &mtx_push_monitor, &outtime);
-		if(ETIMEDOUT!=retcode){
-			DEBUG("push monitor thread is awaked by external signal\n");
-		}
 		
 		if(1==s_dvbpush_getinfo_start){
 			msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
@@ -535,16 +532,15 @@ void *push_monitor_thread()
 				*/
 				long long rxb = push_dir_get_single(s_prgs[i].uri);
 				
-				DEBUG("PROG_S[%s]:%s %s %lld/%lld %-3lld%%\n",
+				DEBUG("PROG_S[%s]:%s %lld/%lld %-3lld%%\n",
 					s_prgs[i].id,
-					s_prgs[i].caption,
 					s_prgs[i].uri,
 					rxb,
 					s_prgs[i].total,
 					rxb*100/s_prgs[i].total);
-					
+				
+				s_prgs[i].cur = rxb;
 				if(s_prgs[i].cur>=s_prgs[i].total){
-					s_prgs[i].cur = s_prgs[i].total;
 					DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", s_prgs[i].uri);
 					push_prog_finish(s_prgs[i].id, s_prgs[i].type);
 				}
@@ -553,7 +549,11 @@ void *push_monitor_thread()
 		
 		pthread_mutex_unlock(&mtx_push_monitor);
 		
-		push_recv_manage_refresh(2,time_stamp);
+		if(ETIMEDOUT!=retcode){
+			DEBUG("push monitor thread is awaked by external signal\n");
+		}
+		else
+			push_recv_manage_refresh(2,time_stamp);
 	}
 	DEBUG("exit from push monitor thread\n");
 	
@@ -601,7 +601,8 @@ int send_xml_to_parse(const char *path, int flag, char *id)
 	int ret = 0;
 	
 	if(	PUSH_XML_FLAG_MINLINE<flag && flag<PUSH_XML_FLAG_MAXLINE){
-		if(0==check_tail(path, ".xml", 0)){
+//		if(0==check_tail(path, ".xml", 0))
+		{
 			pthread_mutex_lock(&mtx_xml);
 			
 			int i = 0;
@@ -625,10 +626,10 @@ int send_xml_to_parse(const char *path, int flag, char *id)
 				
 			pthread_mutex_unlock(&mtx_xml);
 		}
-		else{
-			DEBUG("this is not a xml\n");
-			ret = -1;
-		}
+//		else{
+//			DEBUG("this is not a xml\n");
+//			ret = -1;
+//		}
 	}
 	else{
 		DEBUG("this file(%d) is ignore\n", flag);
@@ -1013,7 +1014,12 @@ int mid_push_reject(const char *prog_uri)
 		DEBUG("push remove failed: %s, no such uri\n", prog_uri);
 	else
 		DEBUG("push remove failed: %s, some other err(%d)\n", prog_uri, ret);
-		
+	
+	char reject_uri[128];
+	snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),prog_uri);
+	unlink(reject_uri);
+	DEBUG("unlink(%s)\n", reject_uri);
+	
 	return ret;
 }
 
@@ -1095,18 +1101,16 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 	
 	ret = sqlite_read(sqlite_cmd, time_stamp, strlen(time_stamp), sqlite_callback);
 	
-	if(ret>0)
+	if(ret>0){
 		prog_name_fill();
-	
-//	if(1!=init_flag)
-	{
+		
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE ProductDesc SET FreshFlag=0 WHERE PushStartTime<='%s' AND PushEndTime>'%s' AND FreshFlag=1;", time_stamp,time_stamp);
 		sqlite_execute(sqlite_cmd);
-	}
-	
-	if(0==init_flag){
-		pthread_cond_signal(&cond_push_monitor);
-		DEBUG("refresh monitor arrary immediatly\n");
+		
+		if(0==init_flag){
+			pthread_cond_signal(&cond_push_monitor);
+			DEBUG("refresh monitor arrary immediatly\n");
+		}
 	}
 	
 	pthread_mutex_unlock(&mtx_push_monitor);
