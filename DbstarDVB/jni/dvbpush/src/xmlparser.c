@@ -169,8 +169,9 @@ static int product_insert(DBSTAR_PRODUCT_S *p)
 	char sqlite_cmd[512];
 	
 	if(0==strcmp(serviceID_get(),p->ServiceID)){
-		DEBUG("product %s in service %s is mine, receive it\n", p->ProductID,p->ServiceID);
+		DEBUG("product %s in service %s is mine, receive its publications\n", p->ProductID,p->ServiceID);
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE ProductDesc SET ReceiveStatus='%d',FreshFlag=1 where productID='%s' AND ReceiveStatus='%d';",RECEIVESTATUS_WAITING,p->ProductID,RECEIVESTATUS_REJECT);
+		sqlite_transaction_exec(sqlite_cmd);
 	}
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Product(ServiceID,ProductID,ProductType,Flag,OnlineDate,OfflineDate,IsReserved,Price,CurrencyType) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s');",
@@ -213,9 +214,6 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	return sqlite_transaction_exec(cmd);
 }
 
-/*
- GuideList.xml到来时，删除旧表，所以此处不用考虑UPDATE
-*/
 static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 {
 	if(NULL==ptr && strlen(ptr->DateValue)>0 && strlen(ptr->PublicationID)>0){
@@ -223,12 +221,21 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 		return -1;
 	}
 	
+	/*
+	 保留用户作出的“选择接收”
+	*/
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s','%s','%s','%s','%s','1');",
-		ptr->ServiceID,ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID);
-	sqlite_transaction_exec(sqlite_cmd);
-	
-	return 0;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM GuideList WHERE PublicationID='%s';",ptr->PublicationID);
+	if(0<sqlite_transaction_read(sqlite_cmd,NULL,0)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s','%s','%s','%s','%s',(select UserStatus from GuideList where PublicationID='%s'));",
+			ptr->ServiceID,ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID,ptr->PublicationID);
+		return sqlite_transaction_exec(sqlite_cmd);
+	}
+	else{
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s','%s','%s','%s','%s','1');",
+			ptr->ServiceID,ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID);
+		return sqlite_transaction_exec(sqlite_cmd);
+	}
 }
 
 
@@ -510,7 +517,7 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 		return -1;
 	
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Channel(pid,pidtype,FreshFlag) VALUES('%s','%s',1);",p->pid,p->pidtype);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Channel(pid,ServiceID,pidtype,FreshFlag) VALUES('%s','%s','%s',1);",p->pid,serviceID_get(),p->pidtype);
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
@@ -879,7 +886,7 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 			}
 			else if(	0==strcmp(xmlroute, "ProductDesc^ReceivePublications^Product^Publication^PublicationURI")
 					||	0==strcmp(xmlroute, "ProductDesc^ReceiveSProduct^SProductURI")
-					||	0==strcmp(xmlroute, "ProductDesc^ReceiveSProduct^ColumnURI")){
+					||	0==strcmp(xmlroute, "ProductDesc^ReceiveColumn^ColumnURI")){
 				DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"xmlURI", attrPtr->name)){
 					snprintf(p->xmlURI, sizeof(p->xmlURI), "%s", (char *)szAttr);
@@ -1189,13 +1196,20 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Service^Products")){
+					DBSTAR_SERVICE_S *p_service = (DBSTAR_SERVICE_S *)ptr;
+					
 					DBSTAR_PRODUCT_S product_s;
 					memset(&product_s, 0, sizeof(product_s));
+					snprintf(product_s.ServiceID,sizeof(product_s.ServiceID),"%s",p_service->ServiceID);
 					
 					parseNode(doc, cur, new_xmlroute, &product_s, NULL, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Service^Products^Product")){
+					DBSTAR_PRODUCT_S *p_product = (DBSTAR_PRODUCT_S *)ptr;
+					char service_id[64];
+					snprintf(service_id,sizeof(service_id),"%s",p_product->ServiceID);
 					memset(ptr, 0, sizeof(DBSTAR_PRODUCT_S));
+					snprintf(p_product->ServiceID,sizeof(p_product->ServiceID),"%s",service_id);
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
 					product_insert((DBSTAR_PRODUCT_S *)ptr);
 				}
@@ -2275,8 +2289,18 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 		memset(&xmlinfo, 0, sizeof(xmlinfo));
 		snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", xml_flag);
 		
+		char sqlite_cmd[256];
 		char old_xmlver[64];
 		memset(old_xmlver, 0, sizeof(old_xmlver));
+		
+		if(GUIDELIST_XML==xml_flag){
+#if 0	//  不能直接删除所有的记录，应保留用户选择“拒绝接收”的记录。只能删除昨天及以前的记录。
+			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+#else
+			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM GuideList WHERE DateValue<datetime('now','localtime','start of day');");
+			sqlite_execute(sqlite_cmd);
+#endif
+		}
 		
 		sqlite_transaction_begin();
 // Initialize.xml
@@ -2374,7 +2398,6 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				/*
 				 不能一股脑的清理掉Column的所有数据，保留本地菜单
 				*/
-				char sqlite_cmd[256];
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='%d' AND ColumnType!='%d';", COLUMN_MYCENTER, COLUMN_SETTING);
 				sqlite_transaction_exec(sqlite_cmd);
 				s_column_SequenceNum = 0;
@@ -2397,7 +2420,6 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				ret = -1;
 			}
 			else{
-				sqlite_transaction_table_clear("GuideList");
 				DBSTAR_GUIDELIST_S guidelist_s;
 				memset(&guidelist_s, 0, sizeof(guidelist_s));
 				snprintf(guidelist_s.ServiceID,sizeof(guidelist_s.ServiceID),"%s", xmlinfo.ServiceID);
@@ -2485,9 +2507,6 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 			}
 			else if(PRODUCTDESC_XML==xml_flag || SERVICE_XML==xml_flag){
 				DEBUG("refresh push monitor because of xml %d\n", xml_flag);
-				char sqlite_cmd[128];
-				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "select * from ProductDesc;");
-				sqlite_read(sqlite_cmd, NULL, 0, NULL);
 				
 				push_recv_manage_refresh(0,NULL);
 			}

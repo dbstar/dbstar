@@ -805,7 +805,7 @@ int str_read_cb(char **result, int row, int column, void *some_str, unsigned int
 {
 	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p\n", row, column, some_str);
 	if(row<1 || NULL==some_str){
-		DEBUG("no record in table, return\n");
+		DEBUG("no record in table, or no buffer to read, return\n");
 		return 0;
 	}
 	
@@ -934,7 +934,7 @@ int sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, in
 			}
 			else{
 				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
-				if(sqlite_callback)
+				if(sqlite_callback && receiver)
 					sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
 				else{
 					DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
@@ -1198,7 +1198,7 @@ int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int recei
 			}
 			else{
 				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
-				if(sqlite_callback)
+				if(sqlite_callback && receiver)
 					sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
 				else{
 					DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
