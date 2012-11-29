@@ -26,6 +26,7 @@ import com.dbstar.DbstarDVB.VideoPlayer.alert.DbVideoInfoDlg;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.res.Configuration;
@@ -46,6 +47,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.content.SharedPreferences;
 
@@ -132,19 +134,31 @@ public class PlayerMenu extends Activity {
 	private static int FB_SPEED[] = { 0, 2, 4, 8, 16, 32 };
 	private static int FF_STEP[] = { 0, 1, 2, 4, 8, 16 };
 	private static int FB_STEP[] = { 0, 1, 2, 4, 8, 16 };
+	private static int VOLUME_LEVEL[] = { 0, 2, 4, 6, 8, 10, 11, 12, 13, 14, 15 };
+	private static int VOLUME_ADJUST_STEP[] = { 2, 2, 2, 2, 2, 1, 1, 1, 1, 1 };
 
 	private static final int MID_FREESCALE = 0x10001;
 	private boolean mFB32 = false;
 
 	private SeekBar mProgressBar = null;
-	private ImageButton mPlayButton = null;
+	private ImageView mPlayButton = null;
 
 	private TextView mCurrentTimeView = null;
 	private TextView mTotalTimeView = null;
 
+	private ImageView mSoundStateView = null, mSoundVolumeView = null;
+
 	private LinearLayout mInfoBar = null;
 
 	Timer mInfoBarTimer = new Timer();
+
+	private static final int DefaultVolumeLevel = 10;
+	AudioManager mAudioManager;
+	boolean mIsMute = false;
+	int mMaxVolumeLevel = -1; // default is 15 on Android.
+	int mVolumeLevel = -1;
+	int mVolumeStep = -1;
+	int mVolumeAdjustStepIndex = 0;
 
 	// private AlertDialog mConfirmDialog = null;
 	Toast mFFToast = null;
@@ -437,7 +451,7 @@ public class PlayerMenu extends Activity {
 		finish();
 	}
 
-	public boolean onKeyDown(int keyCode, KeyEvent msg) {
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		Log.d(TAG, "onKeyDown " + keyCode);
 
@@ -446,99 +460,218 @@ public class PlayerMenu extends Activity {
 			mDuringKeyActions = true;
 		}
 
-		if (keyCode == KeyEvent.KEYCODE_POWER) {
-			if (!mSuspendFlag) {
-				if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
-					try {
-						mAmplayer.Pause();
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
-				}
-				mSuspendFlag = true;
-				keepScreenOff();
-			} else {
-				try {
-					mAmplayer.Resume();
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+		// if (keyCode == KeyEvent.KEYCODE_POWER) {
+		// if (!mSuspendFlag) {
+		// if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
+		// try {
+		// mAmplayer.Pause();
+		// } catch (RemoteException e) {
+		// e.printStackTrace();
+		// }
+		// }
+		// mSuspendFlag = true;
+		// keepScreenOff();
+		// } else {
+		// try {
+		// mAmplayer.Resume();
+		// } catch (RemoteException e) {
+		// e.printStackTrace();
+		// }
+		//
+		// mSuspendFlag = false;
+		// keepScreenOn();
+		// }
+		// return true;
+		// } else
 
-				mSuspendFlag = false;
-				keepScreenOn();
-			}
-			return true;
-		} else if (keyCode == KeyEvent.KEYCODE_BACK) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_BACK: {
 
 			exitPlayer();
 
 			return true;
 
-		} else if (keyCode == KeyEvent.KEYCODE_MENU
-				|| keyCode == KeyEvent.KEYCODE_9) {
+		}
+		case KeyEvent.KEYCODE_MENU:
+		case KeyEvent.KEYCODE_9: {
 			if (mInfoBar.getVisibility() == View.VISIBLE) {
 				hideInfoBar();
 			} else {
 				showInfoBar(true);
-
-				if (SystemProperties.getBoolean("ro.platform.has.mbxuimode",
-						false)) {
-					mPlayButton.requestFocus();
-				}
 			}
 			return true;
-		} else if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
-				|| keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-			mPlayButton.requestFocus();
+		}
 
+		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+		case KeyEvent.KEYCODE_DPAD_CENTER: {
 			showInfoBar(true);
 			playVideo();
 
 			return true;
-		} else if (keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD) {
+		}
+		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD: {
 			if (!INITOK)
 				return false;
 
 			showInfoBar(false);
 			fastForward();
-		} else if (keyCode == KeyEvent.KEYCODE_MEDIA_REWIND) {
+			return true;
+		}
+
+		case KeyEvent.KEYCODE_MEDIA_REWIND: {
 			if (!INITOK)
 				return false;
 
 			showInfoBar(false);
 			fastBackword();
-		} else if (keyCode == KeyEvent.KEYCODE_MUTE) {
+			return true;
+		}
+
+		case KeyEvent.KEYCODE_MUTE: {
 			showInfoBar(true);
-			mPlayButton.requestFocus();
-		} else if (keyCode == KeyEvent.KEYCODE_NOTIFICATION) {
+
+			setMute(!mIsMute);
+
+			return true;
+		}
+
+		case KeyEvent.KEYCODE_DPAD_DOWN: {
+			showInfoBar(true);
+			decreaseVolume();
+			return true;
+		}
+
+		case KeyEvent.KEYCODE_DPAD_UP: {
+			showInfoBar(true);
+			increaseVolume();
+			return true;
+		}
+
+		case KeyEvent.KEYCODE_NOTIFICATION: {
 			setOSDOn(true);
 			mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
 					MSG_DIALOG_TIMEOUT);
-		} else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT
-				|| keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-			showInfoBar(true);
-			mProgressBar.requestFocus();
-
-			if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
-				try {
-					mFFToast.cancel();
-					if (FF_FLAG)
-						mAmplayer.FastForward(0);
-					if (FB_FLAG)
-						mAmplayer.BackForward(0);
-					FF_FLAG = false;
-					FB_FLAG = false;
-					FF_LEVEL = 0;
-					FB_LEVEL = 0;
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-			}
-		} else {
-			return super.onKeyDown(keyCode, msg);
 		}
 
-		return true;
+		case KeyEvent.KEYCODE_DPAD_LEFT:
+		case KeyEvent.KEYCODE_DPAD_RIGHT: {
+			showInfoBar(true);
+			// mProgressBar.requestFocus();
+			//
+			// if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
+			// try {
+			// mFFToast.cancel();
+			// if (FF_FLAG)
+			// mAmplayer.FastForward(0);
+			// if (FB_FLAG)
+			// mAmplayer.BackForward(0);
+			// FF_FLAG = false;
+			// FB_FLAG = false;
+			// FF_LEVEL = 0;
+			// FB_LEVEL = 0;
+			// } catch (RemoteException e) {
+			// e.printStackTrace();
+			// }
+			// }
+
+			event.startTracking();
+			return true;
+		}
+		}
+
+		return super.onKeyDown(keyCode, event);
+	}
+
+	@Override
+	public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_DPAD_RIGHT: {
+			if (!INITOK)
+				return false;
+
+			showInfoBar(false);
+			fastForward();
+			return true;
+		}
+
+		case KeyEvent.KEYCODE_DPAD_LEFT: {
+			if (!INITOK)
+				return false;
+
+			showInfoBar(false);
+			fastBackword();
+			return true;
+		}
+		}
+
+		return super.onKeyLongPress(keyCode, event);
+	}
+
+	void setMute(boolean mute) {
+		if (mIsMute != mute) {
+			int level = mute ? 1 : 0;
+			mSoundStateView.setImageLevel(level);
+			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mute);
+		}
+	}
+
+	int getVolumeLevelByStepIndex(int stepIndex) {
+		int volume = 0;
+		for (int i = 0; i < stepIndex; i++) {
+			volume += VOLUME_ADJUST_STEP[stepIndex];
+		}
+
+		return volume;
+	}
+
+	int mVolumeLevelIndex = -1;
+	int mIncreaseStepIndex = -1, mDecreaseStepIndex = -1;
+
+	int getVolumeLevelIndex(int volume) {
+		int i = 0;
+
+		for (i = 0; i < VOLUME_LEVEL.length; i++) {
+			if (volume < VOLUME_LEVEL[i]) {
+				break;
+			}
+		}
+
+		if (i > 0) {
+			i--;
+		}
+
+		return i;
+	}
+
+	void increaseVolume() {
+
+		if (mVolumeLevel == mMaxVolumeLevel)
+			return;
+
+		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
+			mVolumeLevel += 1;
+		}
+		mVolumeLevel += VOLUME_ADJUST_STEP[mVolumeLevelIndex];
+		mVolumeLevelIndex++;
+
+		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
+				0);
+		mSoundVolumeView.setImageLevel(mVolumeLevelIndex);
+	}
+
+	void decreaseVolume() {
+		if (mVolumeLevel == 0)
+			return;
+
+		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
+			mVolumeLevel -= 1;
+		}
+
+		mVolumeLevel -= VOLUME_ADJUST_STEP[mVolumeLevelIndex - 1];
+		mVolumeLevelIndex--;
+		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
+				0);
+		mSoundVolumeView.setImageLevel(mVolumeLevelIndex);
 	}
 
 	void playVideo() {
@@ -1556,7 +1689,7 @@ public class PlayerMenu extends Activity {
 
 		if (mInfoBar.getVisibility() == View.GONE) {
 			mInfoBar.setVisibility(View.VISIBLE);
-			mInfoBar.requestFocus();
+			// mInfoBar.requestFocus();
 		}
 
 		if (mInfoBar.getVisibility() == View.VISIBLE) {
@@ -1625,10 +1758,13 @@ public class PlayerMenu extends Activity {
 
 	protected void initOSDView() {
 		mInfoBar = (LinearLayout) findViewById(R.id.infobarLayout);
-		mPlayButton = (ImageButton) findViewById(R.id.PlayBtn);
+		mPlayButton = (ImageView) findViewById(R.id.PlayBtn);
 		mProgressBar = (SeekBar) findViewById(R.id.SeekBar02);
 		mCurrentTimeView = (TextView) findViewById(R.id.TextView03);
 		mTotalTimeView = (TextView) findViewById(R.id.TextView04);
+
+		mSoundStateView = (ImageView) findViewById(R.id.sound_indicator);
+		mSoundVolumeView = (ImageView) findViewById(R.id.volume_indicator);
 
 		mInfoBar.setVisibility(View.GONE);
 
@@ -1704,16 +1840,19 @@ public class PlayerMenu extends Activity {
 		if (mPlayerStatus == VideoInfo.PLAYER_RUNNING)
 			mPlayButton.setImageResource(R.drawable.pause);
 
-		mPlayButton.setOnClickListener(new Button.OnClickListener() {
-			public void onClick(View v) {
-				playVideo();
-			}
-		});
-
 		if (mCurrentTime != 0)
 			mProgressBar.setProgress(mCurrentTime * 100 / mTotalTime);
 
 		mProgressBar.setOnSeekBarChangeListener(mProgressChangeListener);
+
+		mAudioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
+		mMaxVolumeLevel = mAudioManager
+				.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+		mVolumeLevel = mAudioManager
+				.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+
+		mVolumeLevelIndex = getVolumeLevelIndex(mVolumeLevel);
+		mSoundVolumeView.setImageLevel(mVolumeLevelIndex);
 	}
 
 	SeekBar.OnSeekBarChangeListener mProgressChangeListener = new SeekBar.OnSeekBarChangeListener() {
