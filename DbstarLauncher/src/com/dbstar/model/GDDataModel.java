@@ -28,6 +28,8 @@ public class GDDataModel {
 	GDSmartHomeProvider mSmartHomeProvider;
 	GDUserDataProvider mUserDataProvider;
 
+	String mStorageDir = null;
+
 	public GDDataModel() {
 		mDVBDataProvider = new GDDVBDataProvider();
 		mSmartHomeProvider = new GDSmartHomeProvider();
@@ -45,6 +47,8 @@ public class GDDataModel {
 		configure.setLocalization(language);
 
 		Log.d(TAG, "language = " + language);
+
+		mStorageDir = configure.getStorageDir();
 	}
 
 	public void deInitialize() {
@@ -504,8 +508,18 @@ public class GDDataModel {
 					subTitle.Id = cursor.getString(SubtitleId);
 					subTitle.Name = cursor.getString(SubtitleName);
 					subTitle.Language = cursor.getString(SubtitleLanguage);
-					subTitle.URI = cursor.getString(SubtitleURI);
-					content.SubTitles.add(subTitle);
+
+					String subtitleUri = cursor.getString(SubtitleURI);
+
+					if (subtitleUri != null && !subtitleUri.isEmpty()) {
+						subtitleUri = mStorageDir + "/" + subtitleUri;
+						File subtitleFile = new File(subtitleUri);
+						if (subtitleFile.exists()) {
+							subTitle.URI = subtitleUri;
+							content.SubTitles.add(subTitle);
+						}
+					}
+
 				} while (cursor.moveToNext());
 			}
 		}
