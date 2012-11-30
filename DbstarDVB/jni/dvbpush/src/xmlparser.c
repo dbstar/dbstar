@@ -349,7 +349,7 @@ receive_status);
 		// ÖÆ±í·û\t
 		char *p_HT = NULL;
 		while(NULL!=p_column){
-			p_HT = strchr(columns,'\t');
+			p_HT = strchr(p_column,'\t');
 			if(p_HT){
 				*p_HT = '\0';
 				p_HT ++;

@@ -26,5 +26,7 @@ int serviceID_set(char *serv_id);
 void upgrade_sign_set();
 char *column_res_get();
 char *push_dir_get();
+int guidelist_select_status(const char *publication_id);
+int guidelist_select_refresh();
 
 #endif

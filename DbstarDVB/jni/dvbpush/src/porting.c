@@ -23,6 +23,7 @@
 #include "sqlite.h"
 #include "prodrm20.h"
 #include "multicast.h"
+#include "porting.h"
 
 static int 			s_settingInitFlag = 0;
 
@@ -43,6 +44,7 @@ static int			s_software_check = 1;
 static char			s_Language[64];
 static char			s_serviceID[64];
 static char			s_push_root_path[512];
+static char 		*s_guidelist_unselect = NULL;
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
@@ -185,6 +187,7 @@ int setting_init(void)
 
 	serviceID_init();
 	push_dir_init();
+	guidelist_select_refresh();
 	
 	s_settingInitFlag = 1;
 	return 0;
@@ -482,6 +485,92 @@ void upgrade_sign_set()
 }
 
 /*
+ 检查指定的成品id是用户选择接收还是选择不接收
+ return 1——用户选择接收（默认）；return 0——用户选择不接收；return -1——检查失败
+*/
+int guidelist_select_status(const char *publication_id)
+{
+	// 制表符\t
+	char *p_HT = NULL;
+	char *p_list = s_guidelist_unselect;
+	int ret = 1;
+	
+	while(NULL!=p_list){
+		p_HT = strchr(p_list,'\t');
+		if(p_HT){
+			*p_HT = '\0';
+			p_HT ++;
+		}
+		
+		if(0==strcmp(publication_id,p_list)){
+			ret = 0;
+			break;
+		}
+		
+		p_list = p_HT;
+	}
+	
+	return ret;
+}
+
+static int guidelist_select_refresh_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
+	if(row<1){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+	
+	int i = 0;
+	int list_size = (64+1)*row;
+	char *p_list = (char *)malloc(list_size);
+	if(NULL==p_list){
+		DEBUG("malloc buffer %d failed\n", list_size);
+		return -1;
+	}
+	else
+		DEBUG("malloc buffer(%p) %d OK\n", p_list, list_size);
+		
+	memset(p_list,0,sizeof(p_list));
+	
+	for(i=1;i<row+1;i++)
+	{
+		if(i>1)
+			snprintf(p_list+strlen(p_list),list_size-strlen(p_list),"\t");
+		snprintf(p_list+strlen(p_list),list_size-strlen(p_list),"%s",result[i*column]);
+	}
+	*((char **)receiver) = p_list;
+	
+	return 0;
+}
+
+int guidelist_select_refresh()
+{
+	if(s_guidelist_unselect){
+		free(s_guidelist_unselect);
+		DEBUG("free %p\n", s_guidelist_unselect);
+	}
+	
+	char sqlite_cmd[256];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = guidelist_select_refresh_cb;
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM GuideList WHERE UserStatus='0';");
+	int ret = sqlite_read(sqlite_cmd, (void *)(&s_guidelist_unselect), sizeof(s_guidelist_unselect), sqlite_callback);
+	if(ret>0){
+		DEBUG("unselect by user[%p]: %s\n",s_guidelist_unselect,s_guidelist_unselect);
+		return 0;
+	}
+	else if(0==ret){
+		DEBUG("no guidelist unselect record\n");
+		return 0;
+	}
+	else{	// (ret<0)
+		DEBUG("guidelist_unselect_refresh failed\n");
+		return -1;
+	}
+}
+
+/*
  通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
  实际调用参见dvbpush_jni.c
 */
@@ -539,7 +628,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			upgrade_sign_set();
 			break;
 		case CMD_PUSH_SELECT:
-			DEBUG("CMD_PUSH_SELECT\n");
+			DEBUG("CMD_PUSH_SELECT: GuideList selected by user\n");
+			guidelist_select_refresh();
 			break;
 		
 		default:

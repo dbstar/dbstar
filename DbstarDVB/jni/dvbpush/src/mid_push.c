@@ -322,13 +322,29 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type)
 	else{
 		DEBUG("should parse: %s\n", xmlURI);
 		if(RECEIVETYPE_PUBLICATION==type){
+#if 0
 			send_xml_to_parse(xmlURI,PRODUCTION_XML,id);
+#else
+/*
+ 直接调用parse_xml的目的是避开线程，否则出现parse_xml和push_recv_manage_refresh同时使用sqlite库，导致异常
+ 但是否会死锁？
+*/
+			parse_xml(xmlURI,PRODUCTION_XML,id);
+#endif
 		}
 		else if(RECEIVETYPE_COLUMN==type){
+#if 0
 			send_xml_to_parse(xmlURI,COLUMN_XML,NULL);
+#else
+			parse_xml(xmlURI,COLUMN_XML,NULL);
+#endif
 		}
 		else if(RECEIVETYPE_SPRODUCT==type){
+#if 0
 			send_xml_to_parse(xmlURI,SPRODUCT_XML,NULL);
+#else
+			parse_xml(xmlURI,SPRODUCT_XML,NULL);
+#endif
 		}
 		else
 			DEBUG("this type can not be distinguish\n");
@@ -852,6 +868,10 @@ static int mid_push_regist(PROG_S *prog)
 		DEBUG("arg is invalid\n");
 		return -1;
 	}
+	if(0==prog_is_valid(prog)){
+		DEBUG("invalid prog to regist monitor\n");
+		return -1;
+	}
 	
 	/*
 	* Notice:节目路径是一个相对路径，不要以'/'开头；
@@ -1033,52 +1053,70 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	
 	int i = 0;
 	int j = 0;
-	int reject_flag = 0;
+	int recv_flag = 1;
 	int tmp_init_flag = *((int *)receiver);
 	RECEIVESTATUS_E receive_status = RECEIVESTATUS_REJECT;
 	long long totalsize = 0LL;
 	
-	DEBUG("*receiver=%d\n", tmp_init_flag);
+	DEBUG("*receiver(init flag)=%d\n", tmp_init_flag);
 	
 	for(i=1;i<row+1;i++)
 	{
-		receive_status = atoi(result[i*column+6]);
-		if(RECEIVESTATUS_REJECT==receive_status){
+		/*
+		如果是开机时注册；或者不是开机注册、但FreshFlag为1，则注册拒绝接收或进度监控
+		否则，不加处理。
+		*/
+		if(1==tmp_init_flag || (1!=tmp_init_flag && 1==atoi(result[i*column+8]))){
 			/*
-			拒绝接收时一定要小心，相同的Publication有可能既属于当前service，又属于其他service；尤其是，在其他Service中需要接收。
+			对于成品，如果用户选择不接收，则一定不接收，不需要更加详细的判断
+			否则，根据业务等条件进行判断
 			*/
-			reject_flag = 1;
-			for(j=1;j<row+1;j++){
-				if(0==strcmp(result[j*column+2],result[i*column+2]) && (RECEIVESTATUS_WAITING==atoi(result[j*column+6])|| RECEIVESTATUS_FINISH==atoi(result[j*column+6]))){
-					DEBUG("this prog(%s) is need recv in other service, do not reject it\n",result[i*column+2]);
-					reject_flag = 0;
-					break;
+			if(RECEIVETYPE_PUBLICATION==atoi(result[i*column+2]) && 0==guidelist_select_status((const char *)(result[i*column+1]))){
+				recv_flag = 0;
+				DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+7]);
+			}
+			else
+			{
+				receive_status = atoi(result[i*column+7]);
+				if(RECEIVESTATUS_REJECT==receive_status){
+					/*
+					拒绝接收时一定要小心，相同的Publication有可能既属于当前service，又属于其他service；尤其是，在其他Service中需要接收。
+					*/
+					recv_flag = 0;
+					for(j=1;j<row+1;j++){
+						if(0==strcmp(result[j*column+3],result[i*column+3]) && (RECEIVESTATUS_WAITING==atoi(result[j*column+7])|| RECEIVESTATUS_FINISH==atoi(result[j*column+7]))){
+							DEBUG("this prog(%s) is need recv in other service, do not reject it\n",result[i*column+3]);
+							recv_flag = 1;
+							break;
+						}
+					}
+				}
+				else if (RECEIVESTATUS_WAITING==receive_status || RECEIVESTATUS_FINISH==receive_status){
+					recv_flag = 1;
+				}
+				else{ // RECEIVESTATUS_FAILED==receive_status || RECEIVESTATUS_HISTORY==receive_status
+					DEBUG("[%d:%s] %s is ignored by push monitor\n", i,result[i*column],result[i*column+2]);
+					recv_flag = 0;
 				}
 			}
-			if(1==reject_flag)
-				mid_push_reject(result[i*column+2]);
-		}
-		else if(RECEIVESTATUS_WAITING==receive_status || RECEIVESTATUS_FINISH==receive_status){
-			/*
-			如果是开机时注册，或者不是开机注册、但FreshFlag为1，则注册进度监控
-			*/
-			if(1==tmp_init_flag || (1!=tmp_init_flag && 1==atoi(result[i*column+7]))){
-				sscanf(result[i*column+3],"%lld", &totalsize);
+			
+			if(0==recv_flag){
+				mid_push_reject(result[i*column+3]);
+			}
+			else{
+				sscanf(result[i*column+4],"%lld", &totalsize);
 				
 				PROG_S cur_prog;
 				memset(&cur_prog,0,sizeof(cur_prog));
 				snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
-				snprintf(cur_prog.uri,sizeof(cur_prog.uri),"%s",result[i*column+2]);
+				snprintf(cur_prog.uri,sizeof(cur_prog.uri),"%s",result[i*column+3]);
 				memset(cur_prog.caption,0,sizeof(cur_prog.caption));
-				snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+5]);
-				cur_prog.type = atoi(result[i*column+1]);
+				snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+6]);
+				cur_prog.type = atoi(result[i*column+2]);
 				cur_prog.cur = 0LL;
 				cur_prog.total = totalsize;
 				mid_push_regist(&cur_prog);
 			}
-		}
-		else{ // RECEIVESTATUS_FAILED==receive_status || RECEIVESTATUS_HISTORY==receive_status
-			DEBUG("[%d:%s] %s is ignored by push monitor\n", i,result[i*column],result[i*column+2]);
 		}
 	}
 	
@@ -1120,7 +1158,11 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 		sqlite_execute(sqlite_cmd);
 	}
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
+/*
+ 由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
+ 所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
+*/
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&init_flag), sizeof(init_flag), sqlite_callback);
 	
