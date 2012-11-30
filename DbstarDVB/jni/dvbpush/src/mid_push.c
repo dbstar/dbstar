@@ -92,7 +92,7 @@ static int s_decoder_running = 0;
 static char *s_dvbpush_info = NULL;
 static int s_dvbpush_getinfo_start = 0;
 static int s_push_monitor_active = 0;
-static int s_monitor_interval = 10;
+static int s_monitor_interval = 20;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
@@ -515,12 +515,12 @@ void *push_monitor_thread()
 		outtime.tv_nsec = now.tv_usec;
 		retcode = pthread_cond_timedwait(&cond_push_monitor, &mtx_push_monitor, &outtime);
 		
-		if(1==s_dvbpush_getinfo_start){
-			msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
-		}
+//		if(1==s_dvbpush_getinfo_start){
+//			msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
+//		}
 		
-		memset(time_stamp, 0, sizeof(time_stamp));
-		if(s_push_has_data>0){
+		if(s_push_has_data>0 && s_push_monitor_active>0){
+			memset(time_stamp, 0, sizeof(time_stamp));
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
 			if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
 				DEBUG("can not generate DATETIME for prog monitor\n");
@@ -568,8 +568,10 @@ void *push_monitor_thread()
 		if(ETIMEDOUT!=retcode){
 			DEBUG("push monitor thread is awaked by external signal\n");
 		}
-		else
-			push_recv_manage_refresh(2,time_stamp);
+		else{
+			if(s_push_has_data>0 && s_push_monitor_active>0)
+				push_recv_manage_refresh(2,time_stamp);
+		}
 	}
 	DEBUG("exit from push monitor thread\n");
 	
@@ -617,7 +619,7 @@ int send_xml_to_parse(const char *path, int flag, char *id)
 	int ret = 0;
 	
 	if(	PUSH_XML_FLAG_MINLINE<flag && flag<PUSH_XML_FLAG_MAXLINE){
-//		if(0==check_tail(path, ".xml", 0))
+		if(0==check_tail(path, ".xml", 0))
 		{
 			pthread_mutex_lock(&mtx_xml);
 			
@@ -642,10 +644,10 @@ int send_xml_to_parse(const char *path, int flag, char *id)
 				
 			pthread_mutex_unlock(&mtx_xml);
 		}
-//		else{
-//			DEBUG("this is not a xml\n");
-//			ret = -1;
-//		}
+		else{
+			DEBUG("this is not a xml\n");
+			ret = -1;
+		}
 	}
 	else{
 		DEBUG("this file(%d) is ignore\n", flag);

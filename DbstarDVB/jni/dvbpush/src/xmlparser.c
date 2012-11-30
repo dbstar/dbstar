@@ -354,7 +354,7 @@ receive_status);
 				*p_HT = '\0';
 				p_HT ++;
 			}
-			DEBUG("columns: %s, p_column: %s, p_HT: %s\n", columns, p_column, p_HT);
+			DEBUG("p_column: %s, p_HT: %s\n", p_column, p_HT);
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO Publication(ServiceID,PublicationID,ColumnID,ProductID,URI,xmlURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
 VALUES('%s',\
 '%s',\
@@ -387,7 +387,7 @@ ptr->SetID);
 		}
 	}
 	
-	return sqlite_transaction_exec(sqlite_cmd);
+	return 0;
 }
 
 /*
@@ -869,7 +869,7 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 				if(0==xmlStrcmp(BAD_CAST"startTime", attrPtr->name)){
 					snprintf(p->PushStartTime, sizeof(p->PushStartTime), "%s", (char *)szAttr);
 				}
-				if(0==xmlStrcmp(BAD_CAST"endTime", attrPtr->name)){
+				else if(0==xmlStrcmp(BAD_CAST"endTime", attrPtr->name)){
 					snprintf(p->PushEndTime, sizeof(p->PushEndTime), "%s", (char *)szAttr);
 				}
 				else
@@ -880,7 +880,7 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 					||	0==strcmp(xmlroute, "ProductDesc^ReceiveColumn")){
 				DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"rootPath", attrPtr->name)){
-					strncpy(p->rootPath, (char *)szAttr, sizeof(p->rootPath)-1);
+					snprintf(p->rootPath,sizeof(p->rootPath),"%s",(char *)szAttr);
 					signed_char_clear(p->rootPath, strlen(p->rootPath), '/', 3);
 				}
 				else
@@ -899,7 +899,14 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 					||	0==strcmp(xmlroute, "ProductDesc^ReceiveColumn^ColumnURI")){
 				DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"xmlURI", attrPtr->name)){
-					snprintf(p->xmlURI, sizeof(p->xmlURI), "%s", (char *)szAttr);
+					//snprintf(p->xmlURI, sizeof(p->xmlURI), "%s/%s", p->rootPath,(char *)szAttr);
+					char tmp_xmlURI[512];
+					snprintf(tmp_xmlURI, sizeof(tmp_xmlURI), "%s", (char *)szAttr);
+					
+					snprintf(p->xmlURI,sizeof(p->xmlURI),"%s",p->rootPath);
+					if('/'!=tmp_xmlURI[0])
+						snprintf(p->xmlURI+strlen(p->xmlURI),sizeof(p->xmlURI)-strlen(p->xmlURI),"/");
+					snprintf(p->xmlURI+strlen(p->xmlURI),sizeof(p->xmlURI)-strlen(p->xmlURI),"%s",tmp_xmlURI);
 				}
 				else
 					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
@@ -1895,8 +1902,11 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(tmp_URI,sizeof(tmp_URI),"%s",(char *)szKey);
 					xmlFree(szKey);
-					signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
-					snprintf(p->URI,sizeof(p->URI),"%s/%s",p->rootPath,tmp_URI);
+					//signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
+					snprintf(p->URI,sizeof(p->URI),"%s",p->rootPath);
+					if('/'!=tmp_URI[0])
+						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
+					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^Columns")){
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
@@ -1950,7 +1960,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 					
 					szKey = xmlNodeGetContent(cur);
-					snprintf(p->URI,sizeof(p->URI),"%s/%s",p->rootPath,(char *)szKey);
+					snprintf(p->TotalSize,sizeof(p->TotalSize),"%s",(char *)szKey);
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveSProduct^SProductURI")){
@@ -1961,8 +1971,11 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(tmp_URI,sizeof(tmp_URI),"%s",(char *)szKey);
 					xmlFree(szKey);
-					signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
-					snprintf(p->URI,sizeof(p->URI),"%s/%s",p->rootPath,tmp_URI);
+					//signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
+					snprintf(p->URI,sizeof(p->URI),"%s",p->rootPath);
+					if('/'!=tmp_URI[0])
+						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
+					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
 				}
 				
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveColumn")){
@@ -2017,8 +2030,11 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(tmp_URI,sizeof(tmp_URI),"%s",(char *)szKey);
 					xmlFree(szKey);
-					signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
-					snprintf(p->URI,sizeof(p->URI),"%s/%s",p->rootPath,tmp_URI);
+					//signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
+					snprintf(p->URI,sizeof(p->URI),"%s",p->rootPath);
+					if('/'!=tmp_URI[0])
+						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
+					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
 				}
 			}
 // PublicationsColumn.xml
