@@ -198,7 +198,7 @@ public class GDTVActivity extends GDBaseActivity {
 				mAdapter.setDataSet(mPageDatas.get(mPageNumber));
 				mSmallThumbnailView.setSelection(0);
 				mAdapter.notifyDataSetChanged();
-				mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+				mPageNumberView.setText(formPageText(mPageNumber + 1, mPageCount));
 
 				// request pages data from the first page.
 				mRequestPageIndex = 0;
@@ -280,7 +280,7 @@ public class GDTVActivity extends GDBaseActivity {
 		if ((mPageNumber - 1) >= 0) {
 			Log.d(TAG, "loadPrevPage " + (mPageNumber - 1));
 			mPageNumber--;
-			mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+			mPageNumberView.setText(formPageText(mPageNumber + 1, mPageCount));
 
 			TV[] tvs = mPageDatas.get(mPageNumber);
 			mAdapter.setDataSet(tvs);
@@ -294,7 +294,7 @@ public class GDTVActivity extends GDBaseActivity {
 
 		if ((mPageNumber + 1) < mPageDatas.size()) {
 			mPageNumber++;
-			mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+			mPageNumberView.setText(formPageText(mPageNumber + 1, mPageCount));
 
 			TV[] tvs = mPageDatas.get(mPageNumber);
 			mAdapter.setDataSet(tvs);

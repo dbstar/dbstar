@@ -27,21 +27,22 @@ public class GDDBStarClient {
 			"com.dbstar.DbstarDVB", "com.dbstar.DbstarDVB.DbstarService");
 
 	private boolean mIsBoundToServer = false;
+
 	public boolean isBoundToServer() {
 		return mIsBoundToServer;
 	}
-	
+
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
 
 			Log.d(TAG, "+++++++++++GDDBStarClient onServiceConnected+++++++++");
 
 			mDbstarService = IDbstarService.Stub.asInterface(service);
-			
+
 			mIsBoundToServer = true;
 
 			startDvbpush();
-			
+
 			if (!mIsServerCorrupted) {
 				mObserver.onServerStarted();
 			} else {
@@ -107,7 +108,7 @@ public class GDDBStarClient {
 		boolean result = false;
 		if (mDbstarService != null) {
 			try {
-				Intent it = mDbstarService.sendCommand(
+				mDbstarService.sendCommand(
 						DbstarServiceApi.CMD_DVBPUSH_GETINFO_START, null, 0);
 				result = true;
 				Log.d(TAG, "+++++++++++ startTaskInfo +++++++++++");
@@ -134,7 +135,7 @@ public class GDDBStarClient {
 		boolean result = false;
 		if (mDbstarService != null) {
 			try {
-				Intent it = mDbstarService.sendCommand(
+				mDbstarService.sendCommand(
 						DbstarServiceApi.CMD_DVBPUSH_GETINFO_STOP, null, 0);
 				result = true;
 				Log.d(TAG, "+++++++++++ stopTaskInfo +++++++++++");
@@ -144,6 +145,29 @@ public class GDDBStarClient {
 		}
 
 		return result;
+	}
+
+	public String getTSSignalStatus() {
+		String status = null;
+
+		try {
+			Intent intent = mDbstarService.sendCommand(
+					DbstarServiceApi.CMD_DVBPUSH_GETTS_STATUS, null, 0);
+
+			byte[] bytes = intent.getByteArrayExtra("result");
+
+			if (bytes != null) {
+				try {
+					status = new String(bytes, "utf-8");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+		return status;
 	}
 
 	// data format: "1001|task1|23932|23523094823\n1002|task2|234239|12349320\n"

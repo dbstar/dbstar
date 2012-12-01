@@ -29,6 +29,10 @@ public class GDCommon {
 
 	public static final int MSG_SAVE_BOOKMARK = 17;
 	
+	public static final int MSG_UPDATE_COLUMN = 18;
+	public static final int MSG_UPDATE_PREVIEW = 19;
+	public static final int MSG_UPDATE_UIRESOURCE = 20;
+	
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "chi";

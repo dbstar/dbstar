@@ -44,37 +44,38 @@ import android.os.Message;
 import android.util.Log;
 import android.os.Process;
 
-public class GDDataProviderService extends Service implements DbServiceObserver{
+public class GDDataProviderService extends Service implements DbServiceObserver {
 
 	private static final String TAG = "GDDataProviderService";
 
-	public static final int REQUESTTYPE_GETCOLUMNS = 1;
-	public static final int REQUESTTYPE_GETPUBLICATION = 2;
-	public static final int REQUESTTYPE_GETPUBLICATIONSET = 3;
-	public static final int REQUESTTYPE_GETPUBLICATIONS_OFSET = 4;
-	public static final int REQUESTTYPE_GETIMAGE = 6;
-	public static final int REQUESTTYPE_GETDETAILSDATA = 7;
-	public static final int REQUESTTYPE_GETDOWNLOADSTATUS = 8;
+	public static final int REQUESTTYPE_GETCOLUMNS = 0x1001;
+	public static final int REQUESTTYPE_GETPUBLICATION = 0x1002;
+	public static final int REQUESTTYPE_GETPUBLICATIONSET = 0x1003;
+	public static final int REQUESTTYPE_GETPUBLICATIONS_OFSET = 0x1004;
+	public static final int REQUESTTYPE_GETIMAGE = 0x1005;
+	public static final int REQUESTTYPE_GETDETAILSDATA = 0x1006;
+	public static final int REQUESTTYPE_GETGUIDELIST = 0x1007;
+	public static final int REQUESTTYPE_GETPREVIEWS = 0x1009;
 
-	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 9;
-	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 10;
+	public static final int REQUESTTYPE_UPDATEGUIDELIST = 0x1008;
 
-	public static final int REQUESTTYPE_SETSETTINGS = 11;
-	public static final int REQUESTTYPE_GETSETTINGS = 12;
+	public static final int REQUESTTYPE_STARTGETTASKINFO = 0x2001;
+	public static final int REQUESTTYPE_STOPGETTASKINFO = 0x2002;
+	public static final int REQUESTTYPE_GETTSSIGNALSTATUS = 0x2003;
+	public static final int REQUESTTYPE_GETDOWNLOADSTATUS = 0x2004;
 
-	public static final int REQUESTTYPE_STARTGETTASKINFO = 13;
-	public static final int REQUESTTYPE_STOPGETTASKINFO = 14;
+	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 0x3001;
+	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 0x3002;
 
-	public static final int REQUESTTYPE_GETFAVORITEMOVIE = 15;
-	public static final int REQUESTTYPE_GETFAVORITETV = 16;
-	public static final int REQUESTTYPE_GETFAVORITERECORD = 17;
-	public static final int REQUESTTYPE_GETFAVORITEENTERTAINMENT = 18;
+	public static final int REQUESTTYPE_SETSETTINGS = 0x4001;
+	public static final int REQUESTTYPE_GETSETTINGS = 0x4002;
 
-	public static final int REQUESTTYPE_GETGUIDELIST = 20;
-	public static final int REQUESTTYPE_UPDATEGUIDELIST = 21;
-	public static final int REQUESTTYPE_GETPREVIEWS = 22;
+	public static final int REQUESTTYPE_GETFAVORITEMOVIE = 0x5001;
+	public static final int REQUESTTYPE_GETFAVORITETV = 0x5002;
+	public static final int REQUESTTYPE_GETFAVORITERECORD = 0x5003;
+	public static final int REQUESTTYPE_GETFAVORITEENTERTAINMENT = 0x5004;
 
-	public static final int REQUESTTYPE_GETDEVICEINFO = 25;
+	public static final int REQUESTTYPE_GETDEVICEINFO = 0x6001;
 
 	private static final String PARAMETER_COLUMN_ID = "column_id";
 	private static final String PARAMETER_SET_ID = "set_id";
@@ -486,7 +487,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 			case GDCommon.MSG_SAVE_BOOKMARK: {
 				String publicationId = msg.getData().getString(
 						GDCommon.KeyPublicationID);
-				
+
 				int bookmark = msg.getData().getInt(GDCommon.KeyBookmark);
 				if (mDataModel != null) {
 					mDataModel.savePublicationBookmark(publicationId, bookmark);
@@ -559,9 +560,16 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 				}
 				break;
 			}
-			
+
 			case GDCommon.SYNC_STATUS_TODBSERVER: {
 				syncStatusToDbServer();
+				break;
+			}
+
+			case GDCommon.MSG_UPDATE_COLUMN:
+			case GDCommon.MSG_UPDATE_PREVIEW:
+			case GDCommon.MSG_UPDATE_UIRESOURCE: {
+				mApplicationObserver.handleNotifiy(msgId, null);
 				break;
 			}
 
@@ -612,6 +620,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 		case REQUESTTYPE_GETPREVIEWS:
 		case REQUESTTYPE_GETGUIDELIST:
 		case REQUESTTYPE_GETDEVICEINFO:
+		case REQUESTTYPE_GETTSSIGNALSTATUS:
 		case REQUESTTYPE_GETDOWNLOADSTATUS: {
 			if (task.Observer != null) {
 				// task.Observer.updateData(task.Type, task.PageNumber,
@@ -921,6 +930,13 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 					break;
 				}
 
+				case REQUESTTYPE_GETTSSIGNALSTATUS: {
+					String status = mDBStarClient.getTSSignalStatus();
+					task.Data = status;
+					taskFinished(task);
+					break;
+				}
+
 				case REQUESTTYPE_GETPOWERCONSUMPTION: {
 					Object value = null;
 					value = task.Parameters.get(PARAMETER_CCID);
@@ -984,7 +1000,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 				case REQUESTTYPE_UPDATEGUIDELIST: {
 					mDataModel.updateGuideList((GuideListItem[]) task.Data);
 					// taskFinished(task);
-
+					notifyDbstarService(DbstarServiceApi.CMD_PUSH_SELECT);
 					break;
 				}
 
@@ -1200,6 +1216,14 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 
 		// task.PageNumber = pageNumber;
 		// task.PageSize = pageSize;
+		enqueueTask(task);
+	}
+
+	public void getTSSignalStatus(ClientObserver observer) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETTSSIGNALSTATUS;
+
 		enqueueTask(task);
 	}
 
@@ -1541,10 +1565,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_SUCCESS: {
 					mIsDbServiceStarted = true;
-					
-					Log.d(TAG, " ========== DbstarServer init success ===========");
+
+					Log.d(TAG,
+							" ========== DbstarServer init success ===========");
 					if (mDBStarClient.isBoundToServer()) {
-						//syncStatusToDbServer();
+						// syncStatusToDbServer();
 						mHandler.sendEmptyMessage(GDCommon.SYNC_STATUS_TODBSERVER);
 					} else {
 						mStatusIsSynced = false;
@@ -1554,8 +1579,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_FAILED: {
 					mIsDbServiceStarted = false;
-					
-					Log.d(TAG, " ========== DbstarServer init failed ===========");
+
+					Log.d(TAG,
+							" ========== DbstarServer init failed ===========");
 					break;
 				}
 
@@ -1570,6 +1596,21 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 					break;
 				}
 
+				case DbstarServiceApi.STATUS_COLUMN_REFRESH: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_UPDATE_COLUMN);
+					break;
+				}
+
+				case DbstarServiceApi.STATUS_PREVIEW_REFRESH: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_UPDATE_PREVIEW);
+					break;
+				}
+
+				case DbstarServiceApi.STATUS_INTERFACE_REFRESH: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_UPDATE_UIRESOURCE);
+					break;
+				}
+
 				default:
 					break;
 				}
@@ -1577,7 +1618,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 			} else if (action.equals(GDCommon.ActionAddFavourite)) {
 				String publicationSetId = intent
 						.getStringExtra(GDCommon.KeyPublicationSetID);
-				String publicationId = intent.getStringExtra(GDCommon.KeyPublicationID);
+				String publicationId = intent
+						.getStringExtra(GDCommon.KeyPublicationID);
 
 				Message msg = mHandler
 						.obtainMessage(GDCommon.MSG_ADD_TO_FAVOURITE);
@@ -1590,8 +1632,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 			} else if (action.equals(GDCommon.ActionDelete)) {
 				String publicationSetId = intent
 						.getStringExtra(GDCommon.KeyPublicationSetID);
-				String publicationId = intent.getStringExtra(GDCommon.KeyPublicationID);
-				
+				String publicationId = intent
+						.getStringExtra(GDCommon.KeyPublicationID);
+
 				Message msg = mHandler.obtainMessage(GDCommon.MSG_DELETE);
 				Bundle data = new Bundle();
 				data.putString(GDCommon.KeyPublicationID, publicationId);
@@ -1606,16 +1649,17 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 				msg.obj = packageFile;
 				mHandler.sendMessage(msg);
 			} else if (action.equals(GDCommon.ActionBookmark)) {
-				String publicationId = intent.getStringExtra(GDCommon.KeyPublicationID);
+				String publicationId = intent
+						.getStringExtra(GDCommon.KeyPublicationID);
 				int bookmark = intent.getIntExtra(GDCommon.KeyBookmark, 0);
-				
+
 				Message msg = mHandler
 						.obtainMessage(GDCommon.MSG_SAVE_BOOKMARK);
 				Bundle data = new Bundle();
 				data.putString(GDCommon.KeyPublicationID, publicationId);
 				data.putInt(GDCommon.KeyBookmark, bookmark);
 				msg.setData(data);
-				
+
 				mHandler.sendMessage(msg);
 			} else if (action.equals(GDCommon.ActionGetNetworkInfo)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_GET_NETWORKINFO);
@@ -1669,7 +1713,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 			mDBStarClient
 					.notifyDbServer(DbstarServiceApi.CMD_NETWORK_DISCONNECT);
 		}
-		
+
 		return true;
 	}
 
@@ -1682,7 +1726,16 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 		} else {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_UNMOUNT);
 		}
-		
+
+		return true;
+	}
+
+	boolean notifyDbstarService(int command) {
+		if (!mIsDbServiceStarted) {
+			return false;
+		}
+
+		mDBStarClient.notifyDbServer(command);
 		return true;
 	}
 
@@ -1702,12 +1755,12 @@ public class GDDataProviderService extends Service implements DbServiceObserver{
 	public void onServerStopped() {
 		mStatusIsSynced = false;
 	}
-	
+
 	private void syncStatusToDbServer() {
 		Log.d(TAG, "syncStatusToDbServer " + mStatusIsSynced);
 		if (mStatusIsSynced)
 			return;
-		
+
 		mStatusIsSynced = notifyDbstarServiceNetworkStatus();
 		mStatusIsSynced = mStatusIsSynced && notifyDbstarServiceStorageStatus();
 	}

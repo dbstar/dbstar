@@ -1063,6 +1063,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		// showLoadingDialog();
 		mService.getColumns(this, COLUMN_LEVEL_1, -1, ROOT_COLUMN_PARENTID);
 	}
+	
+	// update previews when has new updates
+	void updatePreview() {
+		mMediaScheduler.updatePreviews();
+	}
+	
+	// update columns when has new updates
+	void updateColumn() {
+		mService.getColumns(this, COLUMN_LEVEL_1, -1, ROOT_COLUMN_PARENTID);
+	}
 
 	public void updateData(int type, int columnLevel, int index, Object data) {
 
@@ -1404,6 +1414,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			notifyUpgrade((String) data, false);
 			break;
 		}
+		
+		case GDCommon.MSG_UPDATE_COLUMN: {
+			updateColumn();
+			break;
+		}
+
+		case GDCommon.MSG_UPDATE_UIRESOURCE:
+		case GDCommon.MSG_UPDATE_PREVIEW:
 		default:
 			break;
 		}

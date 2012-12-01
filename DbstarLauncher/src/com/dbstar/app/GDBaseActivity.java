@@ -296,7 +296,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	protected String formPageText(int pageNumber, int pageCount) {
-		String str = (pageNumber + 1) + "/" + pageCount;
+		String str = pageNumber + "/" + pageCount;
 		return str;
 	}
 }

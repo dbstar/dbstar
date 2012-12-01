@@ -70,6 +70,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			case MSG_UPDATEPROGRESS: {
 				if (mService != null && mBound) {
 					mService.getDownloadStatus(mObserver);
+					mService.getTSSignalStatus(mObserver);
 				}
 				break;
 			}
@@ -286,10 +287,22 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	}
 
 	public void updateData(int type, Object key, Object data) {
-		if (type != GDDataProviderService.REQUESTTYPE_GETDOWNLOADSTATUS)
-			return;
+		if (type == GDDataProviderService.REQUESTTYPE_GETDOWNLOADSTATUS) {
+			updateDownloadStatus((ReceiveEntry[]) data);
+		} else if (type == GDDataProviderService.REQUESTTYPE_GETTSSIGNALSTATUS) {
+			if (data == null)
+				return;
+			
+			String status = (String) data;
+			mSignalState = status.equalsIgnoreCase("1") ? SignalStateOn
+					: SignalStateOff;
 
-		ReceiveEntry[] entries = (ReceiveEntry[]) data;
+			setSignalState(mSignalState);
+		}
+
+	}
+
+	public void updateDownloadStatus(ReceiveEntry[] entries) {
 
 		if (entries != null && entries.length > 0) {
 
@@ -539,8 +552,18 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 			holder.ProgressView.setProgress(mDataSet[position].nProgress);
 
-			String status = mDataSet[position].RawProgress > 0 ? mStatusDownloading
-					: mStatusWaitting;
+			String status = null;
+			long rawProgress = mDataSet[position].RawProgress;
+			if (rawProgress <= 0) {
+				status = mStatusWaitting;
+			} else {
+				if (rawProgress == mDataSet[position].RawTotal) {
+					status = mStatusFinished;
+				} else {
+					status = mStatusDownloading;
+				}
+			}
+
 			holder.Status.setText(status);
 
 			String strProgress = mDataSet[position].Progress + "/"

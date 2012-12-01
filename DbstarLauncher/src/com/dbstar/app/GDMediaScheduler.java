@@ -79,19 +79,20 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mUIReady = false;
 	}
 
-	// private boolean mEngineStarted = false;
-
 	public void start(GDDataProviderService service) {
-		// if (mEngineStarted)
-		// return;
-
-		// mEngineStarted = true;
 		mService = service;
 
+		mResourcesReady = false;
 		mResources = null;
 		mResourceIndex = -1;
-		mResourcesReady = false;
 
+		mService.getPreviews(this);
+	}
+
+	public void updatePreviews() {
+		mResourcesReady = false;
+		mResources = null;
+		mResourceIndex = -1;
 		mService.getPreviews(this);
 	}
 
@@ -112,7 +113,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 				mResources = (PreviewData[]) data;
 				mResourcesReady = true;
 				// playMedia();
-				mHandler.postDelayed(mUpdateTimeTask, 3000);
+				mHandler.postDelayed(mUpdateTimeTask, 200);
 			}
 		}
 	}
@@ -183,7 +184,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		if (!mResourcesReady || !mUIReady) {
 			return;
 		}
-		
+
 		if (mResources == null || mResources.length == 0) {
 			return;
 		}
@@ -214,7 +215,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		}
 	}
 
-	int getResourceType(String type) {
+	static int getResourceType(String type) {
 		if (type.equals(PreviewData.TypeVideo)) {
 			return RVideo;
 		} else if (type.equals(PreviewData.TypeImage)) {
@@ -306,7 +307,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 			if (mStoreState.Type == RVideo) {
 				if (mStoreState.PlayerState == PLAYER_STATE_PREPARED) {
-//					getResourceIndex();
+					// getResourceIndex();
 					mResourceIndex = mStoreState.index;
 				} else if (mStoreState.PlayerState == PLAYER_STATE_IDLE) {
 					mResourceIndex = mStoreState.index;
@@ -345,11 +346,11 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	public void resume() {
 		playMedia();
 	}
-	
+
 	public void pause() {
 		saveMediaState();
 	}
-	
+
 	private void saveMediaState() {
 		Log.d(TAG, "storeMediaState");
 
@@ -405,7 +406,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mStoreState.PlayerState = PLAYER_STATE_NONE;
 	}
 
-	class PlayState {
+	static class PlayState {
 		int Type;
 		String Url;
 		int index;

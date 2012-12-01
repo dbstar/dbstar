@@ -118,7 +118,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			Log.d(TAG, "loadPrevPage");
 
 			mPageNumber--;
-			mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+			mPageNumberView.setText(formPageText(mPageNumber + 1, mPageCount));
 
 			Movie[] movies = mPageDatas.get(mPageNumber);
 			mAdapter.setDataSet(movies);
@@ -134,7 +134,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 		if ((mPageNumber + 1) < mPageDatas.size()) {
 			mPageNumber++;
-			mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+			mPageNumberView.setText(formPageText(mPageNumber + 1, mPageCount));
 
 			Movie[] movies = mPageDatas.get(mPageNumber);
 			mAdapter.setDataSet(movies);
@@ -322,7 +322,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	}
 
 	private void updateViews(Movie[] movies) {
-		mPageNumberView.setText(formPageText(mPageNumber, mPageCount));
+		mPageNumberView.setText(formPageText(mPageNumber + 1, mPageCount));
 		mScrollBar.setRange(mPageCount);
 		mScrollBar.setPosition(mPageNumber);
 
@@ -336,7 +336,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		private Movie[] mDataSet = null;
 
 		public class ViewHolder {
-			TextView titleView;
+//			TextView titleView;
 			ImageView thumbnailView;
 		}
 
@@ -378,8 +378,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 					mSelectedView = inflater.inflate(
 							R.layout.small_thumbnail_item_focused, parent,
 							false);
-					holder.titleView = (TextView) mSelectedView
-							.findViewById(R.id.item_text);
+//					holder.titleView = (TextView) mSelectedView
+//							.findViewById(R.id.item_text);
 					holder.thumbnailView = (ImageView) mSelectedView
 							.findViewById(R.id.thumbnail);
 
@@ -399,8 +399,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				LayoutInflater inflater = getLayoutInflater();
 				convertView = inflater.inflate(
 						R.layout.small_thumbnail_item_normal, parent, false);
-				holder.titleView = (TextView) convertView
-						.findViewById(R.id.item_text);
+//				holder.titleView = (TextView) convertView
+//						.findViewById(R.id.item_text);
 				holder.thumbnailView = (ImageView) convertView
 						.findViewById(R.id.thumbnail);
 
@@ -411,7 +411,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 			Bitmap thumbnail = mDataSet[position].Thumbnail;
 			holder.thumbnailView.setImageBitmap(thumbnail);
-			holder.titleView.setText(mDataSet[position].Content.Name);
+//			holder.titleView.setText(mDataSet[position].Content.Name);
 
 			return convertView;
 		}
