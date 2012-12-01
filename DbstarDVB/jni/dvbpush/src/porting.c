@@ -622,6 +622,9 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			push_rely_condition_set(cmd);
 			net_rely_condition_set(cmd);
 			break;
+		case CMD_DVBPUSH_GETTS_STATUS:
+			data_stream_status_str_get(buf, (unsigned int *)len);
+			break;
 		
 		case CMD_UPGRADE_CANCEL:
 			DEBUG("CMD_UPGRADE_CANCEL\n");

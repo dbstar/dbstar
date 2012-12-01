@@ -16,6 +16,7 @@ typedef enum {
 	CMD_DVBPUSH_GETINFO_START       = 0x00031,    // 开始获取push下载状态
 	CMD_DVBPUSH_GETINFO				= 0x00032,    // 获取push下载状态
 	CMD_DVBPUSH_GETINFO_STOP        = 0x00033,    // 停止获取push下载状态
+	CMD_DVBPUSH_GETTS_STATUS		= 0x00034,    // 获取ts流状态
 	
 	CMD_UPGRADE_CANCEL              = 0x00041,    // 用户取消升级
 	CMD_UPGRADE_CONFIRM             = 0x00042,    // 用户确认升级

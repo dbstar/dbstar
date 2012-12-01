@@ -56,7 +56,9 @@ static pthread_cond_t cond_net_rely_condition = PTHREAD_COND_INITIALIZER;
 static int s_net_rely_condition = 0;
 static int s_igmp_restart = 0;
 static int s_igmp_recvbuf_init_flag = 0;
+
 static int s_data_stream_status = 0;	/* 标识ts流的状态 */
+static char s_data_stream_status_str[4];
 
 static int multicast_init()
 {
@@ -133,6 +135,15 @@ int data_stream_status_get()
 		return 1;
 	else
 		return 0;
+}
+
+int data_stream_status_str_get(char **p, unsigned int *len)
+{
+	snprintf(s_data_stream_status_str,sizeof(s_data_stream_status_str),"%s",s_data_stream_status>0?"1":"0");
+	*p = s_data_stream_status_str;
+	*len = strlen(s_data_stream_status_str);
+	
+	return 1;
 }
 
 static void *igmp_thread()

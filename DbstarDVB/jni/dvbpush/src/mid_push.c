@@ -32,7 +32,7 @@
 #include "multicast.h"
 
 #define MAX_PACK_LEN (1500)
-#define MAX_PACK_BUF (140000)		//定义缓冲区大小，单位：包	1500*200000=280M
+#define MAX_PACK_BUF (60000)		//定义缓冲区大小，单位：包	1500*200000=280M
 //#define MEMSET_PUSHBUF_SAFE			// if MAX_PACK_BUF<200000 define
 
 /*
@@ -374,7 +374,7 @@ void dvbpush_getinfo_start()
 {
 	DEBUG("dvbpush getinfo start >>\n");
 	
-	msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
+//	msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
 	
 	pthread_mutex_lock(&mtx_push_monitor);
 	s_dvbpush_getinfo_start = 1;
