@@ -49,7 +49,7 @@ ro.platform.has.mbxuimode=true
 ro.platform.has.1080scale=2
 ro.fontScale=1.3
 ro.platform.has.digitaudio=true
-ro.platform.has.defaulttvfreq=false
+ro.platform.has.defaulttvfreq=true
 ro.platform.has.hdmicec=false
 
 # Use OSD2 mouse patch
