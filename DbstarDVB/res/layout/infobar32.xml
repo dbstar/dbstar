@@ -91,6 +91,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="25"
+                android:focusable="false"
                 android:indeterminateOnly="false"
                 android:maxHeight="13dp"
                 android:minHeight="13dp"

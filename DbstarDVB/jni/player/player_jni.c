@@ -227,7 +227,7 @@ int update_player_info(int pid, player_info_t * info)
 		(*gJavaVm)->DetachCurrentThread(gJavaVm);
 	}
 	//LOGI("callback handler:end time:%d",time(NULL));
-	LOGI("pid:%d,status:0x%x,current ms:%d,total:%d,errcode:-0x%x\n", pid, info->status, info->current_ms, info->full_time, -(info->error_no));
+//	LOGI("pid:%d,status:0x%x,current ms:%d,total:%d,errcode:-0x%x\n", pid, info->status, info->current_ms, info->full_time, -(info->error_no));
 	return 0;
 }
 

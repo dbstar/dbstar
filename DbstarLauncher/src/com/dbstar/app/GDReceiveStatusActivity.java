@@ -311,7 +311,8 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 			preSize = computeAllPagesSize(mPageDatas);
 			curSize = computeEntriesSize(entries);
-
+			Log.d(TAG, "preSize=" + preSize + " curSize=" + curSize);
+			
 			float speed = (float) ((curSize - preSize) / 1024)
 					/ (float) UpdatePeriodInSecs;
 			String strSpeed = StringUtil.formatFloatValue(speed) + "KB/s";

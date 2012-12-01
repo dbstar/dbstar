@@ -36,6 +36,11 @@ public class DbstarServiceApi {
 
 	public static final int	STATUS_DVBPUSH_INIT_FAILED      = 0x30010;
 	public static final int	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011;
+	public static final int	STATUS_DATA_SIGNAL_ON           = 0x30012;
+	public static final int	STATUS_DATA_SIGNAL_OFF          = 0x30013;
+	public static final int	STATUS_COLUMN_REFRESH           = 0x30014;
+	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015;
+	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016;
 	
 	public static final int	UPGRADE_NEW_VER                 = 0x20001;
 	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;
