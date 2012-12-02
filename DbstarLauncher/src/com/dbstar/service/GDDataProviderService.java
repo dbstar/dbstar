@@ -865,7 +865,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					if (contents != null && contents.length > 0) {
 						for (int i = 0; i < contents.length; i++) {
 							// String xmlFile = getDetailsDataFile(contents[i]);
-							//
 							// mDataModel.getDetailsData(xmlFile, contents[i]);
 
 							mDataModel.getPublicationVAInfo(contents[i]);
@@ -890,7 +889,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					value = task.Parameters.get(PARAMETER_CONTENTDATA);
 					ContentData content = (ContentData) value;
 					// String xmlFile = getDetailsDataFile(content);
-					//
 					// mDataModel.getDetailsData(xmlFile, content);
 
 					mDataModel.getPublicationVAInfo(content);
@@ -1434,6 +1432,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
 		filter.addAction(GDCommon.ActionAddFavourite);
 		filter.addAction(GDCommon.ActionDelete);
+		filter.addAction(GDCommon.ActionBookmark);
 		filter.addAction(GDCommon.ActionUpgradeCancelled);
 
 		filter.addAction(GDCommon.ActionGetNetworkInfo);

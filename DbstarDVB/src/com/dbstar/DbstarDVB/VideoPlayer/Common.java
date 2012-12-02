@@ -5,4 +5,5 @@ public class Common {
 	public static final String ActionExit = "com.dbstar.DbstarDVB.Action.EXIT";
 	public static final String ActionAddToFavourite = "com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE";
 	public static final String ActionDelete = "com.dbstar.DbstarLauncher.Action.DELETE";
+	public static final String ActionBookmark = "com.dbstar.DbstarLauncher.Action.BOOKMARK";
 }

@@ -86,21 +86,20 @@ public class PlayerMenu extends PlayerActivity {
 
 	private static final String InputFile = "/sys/class/audiodsp/codec_mips";
 	private static final String OutputFile = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq";
-	private static final String ScaleaxisFile = "/sys/class/graphics/fb0/scale_axis";
-	private static final String ScaleFile = "/sys/class/graphics/fb0/scale";
+	// private static final String ScaleaxisFile =
+	// "/sys/class/graphics/fb0/scale_axis";
+	// private static final String ScaleFile = "/sys/class/graphics/fb0/scale";
 	private static final String RequestScaleFile = "/sys/class/graphics/fb0/request2XScale";
 	private static final String FormatMVC = "/sys/class/amhdmitx/amhdmitx0/config";
 	private static final String Filemap = "/sys/class/vfm/map";
 	private static final String File_amvdec_mpeg12 = "/sys/module/amvdec_mpeg12/parameters/dec_control";
 	private static final String File_amvdec_h264 = "/sys/module/amvdec_h264/parameters/dec_control";
 
-	private static final String VideoAxisFile = "/sys/class/video/axis";
-	private static final String RegFile = "/sys/class/display/wr_reg";
+	// private static final String VideoAxisFile = "/sys/class/video/axis";
+	// private static final String RegFile = "/sys/class/display/wr_reg";
 	private static final String Fb0Blank = "/sys/class/graphics/fb0/blank";
 	private static final String Fb1Blank = "/sys/class/graphics/fb1/blank";
-
 	// patch for hide OSD
-	private static final String OSD_BLANK_PATH = "/sys/class/graphics/fb0/blank";
 	private static final String OSD_BLOCK_MODE_PATH = "/sys/class/graphics/fb0/block_mode";
 
 	private static final String FormatMVC_3dtb = "3dtb";
@@ -121,8 +120,6 @@ public class PlayerMenu extends PlayerActivity {
 	private static int FB_SPEED[] = { 0, 2, 4, 8, 16, 32 };
 	private static int FF_STEP[] = { 0, 1, 2, 4, 8, 16 };
 	private static int FB_STEP[] = { 0, 1, 2, 4, 8, 16 };
-
-	private boolean mFB32 = false;
 
 	private SeekBar mProgressBar = null;
 	private ImageView mPlayButton = null;
@@ -185,6 +182,7 @@ public class PlayerMenu extends PlayerActivity {
 	// media file
 	private Uri mUri = null;
 	private String mFilePath = null;
+	private String mPublicationId = null;
 
 	private boolean retriveInputParameters(Intent intent) {
 		mUri = intent.getData();
@@ -202,6 +200,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		mPlayPosition = intent.getIntExtra("bookmark", 0);
 		mSubtitleFiles = intent.getStringArrayListExtra("subtitle_uri");
+		mPublicationId = intent.getStringExtra("publication_id");
 
 		Log.d(TAG, "bookmark is : " + mPlayPosition);
 
@@ -246,12 +245,8 @@ public class PlayerMenu extends PlayerActivity {
 		FrameLayout foreground = (FrameLayout) findViewById(android.R.id.content);
 		foreground.setForeground(null);
 
-		mFB32 = SystemProperties.get("sys.fb.bits", "16").equals("32");
-		if (mFB32) {
-			setContentView(R.layout.infobar32);
-		} else {
-			setContentView(R.layout.infobar);
-		}
+		// mFB32 = SystemProperties.get("sys.fb.bits", "16").equals("32");
+		setContentView(R.layout.infobar32);
 
 		SettingsVP.init(this);
 		SettingsVP.setVideoLayoutMode();
@@ -375,9 +370,6 @@ public class PlayerMenu extends PlayerActivity {
 					mAmplayer.Set3Dmode(0); // close 3D
 				}
 
-				if (!mFB32) {
-					mAmplayer.DisableColorKey();
-				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -549,6 +541,7 @@ public class PlayerMenu extends PlayerActivity {
 		}
 
 		case KeyEvent.KEYCODE_NOTIFICATION: {
+			Log.d(TAG, " osd state ======================= " + mOSDState);
 			setOSDOn(true);
 			mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
 					MSG_DIALOG_TIMEOUT);
@@ -843,15 +836,6 @@ public class PlayerMenu extends PlayerActivity {
 		if (mAmplayer != null)
 			Amplayer_stop();
 
-		if (!mFB32) {
-			// Hide the view with key color
-			LinearLayout layout = (LinearLayout) findViewById(R.id.BaseLayout1);
-			if (layout != null) {
-				layout.setVisibility(View.INVISIBLE);
-				layout.invalidate();
-			}
-		}
-
 		finish();
 	}
 
@@ -903,8 +887,6 @@ public class PlayerMenu extends PlayerActivity {
 				mAmplayer.Open(mUri.getPath(), startPosition);
 			}
 
-			mRotateHandler.sendEmptyMessageDelayed(GETROTATION,
-					GETROTATION_TIMEOUT);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -919,7 +901,6 @@ public class PlayerMenu extends PlayerActivity {
 
 		deinitializePlayer();
 
-		mRotateHandler.removeMessages(GETROTATION);
 	}
 
 	void deinitializePlayer() {
@@ -1026,14 +1007,14 @@ public class PlayerMenu extends PlayerActivity {
 
 	public void playbackComplete() {
 		// deinitializePlayer();
-		ResumePlay.saveResumePara(mFilePath, 0);
 		mPlayPosition = 0;
+		saveBookmark(0);
 
 		finish();
 	}
 
 	public void playbackStopped() {
-		ResumePlay.saveResumePara(mFilePath, mCurrentTime);
+		saveBookmark(mCurrentTime);
 	}
 
 	public void playbackError(int error) {
@@ -1041,7 +1022,7 @@ public class PlayerMenu extends PlayerActivity {
 			if (mAmplayer != null)
 				Amplayer_stop();
 
-			ResumePlay.saveResumePara(mFilePath, 0);
+			saveBookmark(0);
 			mPlayPosition = 0;
 			finish();
 		}
@@ -1052,7 +1033,6 @@ public class PlayerMenu extends PlayerActivity {
 		super.playbackInited();
 
 		if (mMediaInfo == null) {
-			// exit player
 			finish();
 			return;
 		}
@@ -1096,8 +1076,6 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		}
 
-		// initSubTitle();
-
 		openSubtitle();
 
 		if (setCodecMips() != 0) {
@@ -1111,16 +1089,6 @@ public class PlayerMenu extends PlayerActivity {
 				e.printStackTrace();
 			}
 		}
-
-		// if (!SystemProperties.getBoolean("vplayer.hideStatusBar.enable",
-		// false)) {
-		// Log.d(TAG, "hideStatusBar is false");
-		// try {
-		// SystemProperties.set("vplayer.hideStatusBar.enable", "true");
-		// } catch (RuntimeException e) {
-		// e.printStackTrace();
-		// }
-		// }
 	}
 
 	void openSubtitle() {
@@ -1152,6 +1120,18 @@ public class PlayerMenu extends PlayerActivity {
 		} else {
 			mSubtitleParameter.sub_id = null;
 		}
+	}
+
+	void saveBookmark(int playPosition) {
+		// ResumePlay.saveResumePara(mFilePath, playPosition);
+		Intent intent = new Intent(Common.ActionBookmark);
+		intent.putExtra("publication_id", mPublicationId);
+		intent.putExtra("bookmark", playPosition);
+
+		Log.d(TAG, "================= saveBookmark ===== " + playPosition
+				+ " id " + mPublicationId);
+
+		sendBroadcast(intent);
 	}
 
 	void switchSubtitle() {
@@ -1276,16 +1256,6 @@ public class PlayerMenu extends PlayerActivity {
 				}
 			}
 
-			// closeSubtitleView();
-
-			if (!mFB32) {
-				// Hide the view with key color
-				FrameLayout layout = (FrameLayout) findViewById(R.id.BaseLayout1);
-				if (layout != null) {
-					layout.setVisibility(View.INVISIBLE);
-					layout.invalidate();
-				}
-			}
 			// stop play
 			if (mAmplayer != null)
 				Amplayer_stop();
@@ -1312,27 +1282,6 @@ public class PlayerMenu extends PlayerActivity {
 			default:
 				break;
 			}
-		}
-	};
-
-	Handler mRotateHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case GETROTATION:
-				int getRotation = mWindowManager.getDefaultDisplay()
-						.getRotation();
-				// Log.d("sensor",
-				// "rotate angle: "+Integer.toString(getRotation));
-				if ((getRotation >= 0) && (getRotation <= 3)
-						&& (getRotation != mLastRotation)) {
-					SettingsVP.setVideoRotateAngle(angle_table[getRotation]);
-					mLastRotation = getRotation;
-				}
-				mRotateHandler.sendEmptyMessageDelayed(GETROTATION,
-						GETROTATION_TIMEOUT);
-				break;
-			}
-			super.handleMessage(msg);
 		}
 	};
 
@@ -1371,17 +1320,20 @@ public class PlayerMenu extends PlayerActivity {
 	public int set2XScale() {
 		if (SettingsVP.chkEnableOSD2XScale() == false)
 			return 0;
-		bSet2XScale = true;
+
 		Log.d(TAG, "request  2XScale");
+
+		bSet2XScale = true;
 		return Utils.writeSysfs(RequestScaleFile, " 1 ");
 	}
 
 	public int disable2XScale() {
 		if (bSet2XScale == false)
 			return 0;
-		bSet2XScale = false;
+
 		Log.d(TAG, "request disable2XScale");
 
+		bSet2XScale = false;
 		return Utils.writeSysfs(RequestScaleFile, " 2 ");
 	}
 
@@ -1420,18 +1372,6 @@ public class PlayerMenu extends PlayerActivity {
 		};
 
 		mInfoBarTimer.schedule(mHideInfoBarTask, 5000);
-	}
-
-	private void hideOSDView() {
-
-		hideInfoBar();
-
-		setOSDOn(false);
-	}
-
-	private void showOSDView() {
-		setOSDOn(true);
-		showInfoBar(true);
 	}
 
 	private void hideInfoBar() {
@@ -1490,24 +1430,22 @@ public class PlayerMenu extends PlayerActivity {
 
 			} else {
 				mOSDState = OSDHideAll;
-				Utils.writeSysfs(OSD_BLANK_PATH, "1");
+				Utils.writeSysfs(Fb0Blank, "1");
 				AmPlayer.setOSDOnFlag(false);
 			}
 		} else {
 			mOSDState = OSDShow;
-			Utils.writeSysfs(OSD_BLANK_PATH, "0");
+			Utils.writeSysfs(Fb0Blank, "0");
 			Utils.writeSysfs(OSD_BLOCK_MODE_PATH, "0");
 			AmPlayer.setOSDOnFlag(true);
 		}
 	}
 
 	private void initVideoView(int resourceId) {
-		if (mFB32) {
-			SurfaceView v = (SurfaceView) findViewById(resourceId);
-			if (v != null) {
-				v.getHolder().addCallback(mSHCallback);
-				v.getHolder().setFormat(PixelFormat.VIDEO_HOLE);
-			}
+		SurfaceView v = (SurfaceView) findViewById(resourceId);
+		if (v != null) {
+			v.getHolder().addCallback(mSHCallback);
+			v.getHolder().setFormat(PixelFormat.VIDEO_HOLE);
 		}
 	}
 
@@ -1539,9 +1477,7 @@ public class PlayerMenu extends PlayerActivity {
 					linearParams.width = 720;
 				linearParams.bottomMargin = SettingsVP.panel_height - 480 + 10;
 				mSubTitleView.setLayoutParams(linearParams);
-				if (mSubTitleView_sm != null
-						&& SystemProperties.getBoolean("3D_setting.enable",
-								false)) {
+				if (mSubTitleView_sm != null && m3DEnabled) {
 					mSubTitleView_sm.setLayoutParams(linearParams);
 				}
 			} else if (SettingsVP.display_mode.equals("720p")
@@ -1552,9 +1488,7 @@ public class PlayerMenu extends PlayerActivity {
 					linearParams.width = 1280;
 				linearParams.bottomMargin = SettingsVP.panel_height - 720 + 10;
 				mSubTitleView.setLayoutParams(linearParams);
-				if (mSubTitleView_sm != null
-						&& SystemProperties.getBoolean("3D_setting.enable",
-								false)) {
+				if (mSubTitleView_sm != null && m3DEnabled) {
 					mSubTitleView_sm.setLayoutParams(linearParams);
 				}
 			}

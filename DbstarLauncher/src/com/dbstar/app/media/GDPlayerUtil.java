@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.ContentData;
-import com.dbstar.model.ContentData.SubTitle;
 
 import android.content.ComponentName;
 import android.content.Context;

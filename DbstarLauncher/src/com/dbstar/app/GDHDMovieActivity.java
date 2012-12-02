@@ -160,10 +160,10 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 		if (file == null || file.isEmpty()) {
 			showAlertDialog(DLG_FILE_NOTEXIST);
-			
+
 			return;
 		}
-		
+
 		GDPlayerUtil.playVideo(this, null, movie.Content, file, drmFile);
 	}
 
@@ -336,7 +336,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		private Movie[] mDataSet = null;
 
 		public class ViewHolder {
-//			TextView titleView;
+			// TextView titleView;
 			ImageView thumbnailView;
 		}
 
@@ -378,8 +378,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 					mSelectedView = inflater.inflate(
 							R.layout.small_thumbnail_item_focused, parent,
 							false);
-//					holder.titleView = (TextView) mSelectedView
-//							.findViewById(R.id.item_text);
+					// holder.titleView = (TextView) mSelectedView
+					// .findViewById(R.id.item_text);
 					holder.thumbnailView = (ImageView) mSelectedView
 							.findViewById(R.id.thumbnail);
 
@@ -399,8 +399,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				LayoutInflater inflater = getLayoutInflater();
 				convertView = inflater.inflate(
 						R.layout.small_thumbnail_item_normal, parent, false);
-//				holder.titleView = (TextView) convertView
-//						.findViewById(R.id.item_text);
+				// holder.titleView = (TextView) convertView
+				// .findViewById(R.id.item_text);
 				holder.thumbnailView = (ImageView) convertView
 						.findViewById(R.id.thumbnail);
 
@@ -411,7 +411,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 			Bitmap thumbnail = mDataSet[position].Thumbnail;
 			holder.thumbnailView.setImageBitmap(thumbnail);
-//			holder.titleView.setText(mDataSet[position].Content.Name);
+			// holder.titleView.setText(mDataSet[position].Content.Name);
 
 			return convertView;
 		}
