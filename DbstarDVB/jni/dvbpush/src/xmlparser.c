@@ -84,6 +84,11 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 		return -1;
 	}
 	
+	if(0==strcmp("chi",p->StrLang)){
+		DEBUG("shit, here should be 'cho', not 'chi'\n");
+		snprintf(p->StrLang,sizeof(p->StrLang),"%s",CURLANGUAGE_DFT);
+	}
+	
 	char sqlite_cmd[2048];
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s','%s');",
