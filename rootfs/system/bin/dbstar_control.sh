@@ -29,6 +29,8 @@ dbstar_init()
 		echo "ColumnRes already inited!"
 	else
 		cp -rf /system/etc/dbstar/ColumnRes /data/dbstar/
+		chmod 777 /data
+		chmod 777 /data/dbstar
 		chmod 777 /data/dbstar/ColumnRes
 		chmod 777 /data/dbstar/ColumnRes/LocalColumnIcon
 		setprop dbstar.inited 1
