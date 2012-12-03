@@ -172,3 +172,6 @@ media.libplayer.ipv4only=1
 persist.sys.timezone=Asia/Shanghai
 #set default ethernet on
 ro.ethernet.default_on=true
+#set default language zh
+persist.sys.language=zh
+ro.product.locale.language=zh
