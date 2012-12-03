@@ -354,7 +354,7 @@ typedef struct{
 	char	ID[64];
 	char	TotalSize[64];
 	char	URI[256];
-	char	xmlURI[384];
+	char	DescURI[384];
 	char	PushStartTime[64];
 	char	PushEndTime[64];
 	char	Columns[512];	// it's better to use malloc and relloc

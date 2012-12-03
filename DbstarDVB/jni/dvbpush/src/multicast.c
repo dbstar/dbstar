@@ -143,7 +143,8 @@ int data_stream_status_str_get(char **p, unsigned int *len)
 	*p = s_data_stream_status_str;
 	*len = strlen(s_data_stream_status_str);
 	
-	return 1;
+	PRINTF("date stream status:%s(%d)\n", *p,s_data_stream_status);
+	return 0;
 }
 
 static void *igmp_thread()

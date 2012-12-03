@@ -92,7 +92,7 @@ static int s_decoder_running = 0;
 static char *s_dvbpush_info = NULL;
 static int s_dvbpush_getinfo_start = 0;
 static int s_push_monitor_active = 0;
-static int s_monitor_interval = 20;
+static int s_monitor_interval = 60;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
@@ -312,38 +312,38 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type)
 		return -1;
 	
 	char sqlite_cmd[256];
-	char xmlURI[256];
-	memset(xmlURI, 0, sizeof(xmlURI));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT xmlURI from ProductDesc where ProductDescID='%s' AND ReceiveType='%d';", id, type);
-	if(-1==str_sqlite_read(xmlURI,sizeof(xmlURI),sqlite_cmd)){
-		DEBUG("can not read xmlURI for id: %s, type: %d\n", id, type);
+	char DescURI[256];
+	memset(DescURI, 0, sizeof(DescURI));
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DescURI from ProductDesc where ProductDescID='%s' AND ReceiveType='%d';", id, type);
+	if(-1==str_sqlite_read(DescURI,sizeof(DescURI),sqlite_cmd)){
+		DEBUG("can not read DescURI for id: %s, type: %d\n", id, type);
 		return -1;
 	}
 	else{
-		DEBUG("should parse: %s\n", xmlURI);
+		DEBUG("should parse: %s\n", DescURI);
 		if(RECEIVETYPE_PUBLICATION==type){
 #if 0
-			send_xml_to_parse(xmlURI,PRODUCTION_XML,id);
+			send_xml_to_parse(DescURI,PRODUCTION_XML,id);
 #else
 /*
  直接调用parse_xml的目的是避开线程，否则出现parse_xml和push_recv_manage_refresh同时使用sqlite库，导致异常
  但是否会死锁？
 */
-			parse_xml(xmlURI,PRODUCTION_XML,id);
+			parse_xml(DescURI,PRODUCTION_XML,id);
 #endif
 		}
 		else if(RECEIVETYPE_COLUMN==type){
 #if 0
-			send_xml_to_parse(xmlURI,COLUMN_XML,NULL);
+			send_xml_to_parse(DescURI,COLUMN_XML,NULL);
 #else
-			parse_xml(xmlURI,COLUMN_XML,NULL);
+			parse_xml(DescURI,COLUMN_XML,NULL);
 #endif
 		}
 		else if(RECEIVETYPE_SPRODUCT==type){
 #if 0
-			send_xml_to_parse(xmlURI,SPRODUCT_XML,NULL);
+			send_xml_to_parse(DescURI,SPRODUCT_XML,NULL);
 #else
-			parse_xml(xmlURI,SPRODUCT_XML,NULL);
+			parse_xml(DescURI,SPRODUCT_XML,NULL);
 #endif
 		}
 		else
@@ -378,7 +378,8 @@ void dvbpush_getinfo_start()
 	
 	pthread_mutex_lock(&mtx_push_monitor);
 	s_dvbpush_getinfo_start = 1;
-	s_monitor_interval = 2;
+	s_monitor_interval = 5;
+	pthread_cond_signal(&cond_push_monitor);
 	pthread_mutex_unlock(&mtx_push_monitor);
 }
 
@@ -386,7 +387,7 @@ void dvbpush_getinfo_stop()
 {
 	pthread_mutex_lock(&mtx_push_monitor);
 	s_dvbpush_getinfo_start = 1;
-	s_monitor_interval = 600;
+	s_monitor_interval = 60;
 	pthread_mutex_unlock(&mtx_push_monitor);
 	
 	if(NULL!=s_dvbpush_info){
@@ -508,7 +509,9 @@ void *push_monitor_thread()
 	
 	while (1==s_monitor_running)
 	{
+		PRINTF("1\n");
 		pthread_mutex_lock(&mtx_push_monitor);
+		PRINTF("2 s_push_has_data:%d,s_push_monitor_active:%d\n",s_push_has_data,s_push_monitor_active);
 		
 		gettimeofday(&now, NULL);
 		outtime.tv_sec = now.tv_sec + s_monitor_interval;
@@ -564,7 +567,7 @@ void *push_monitor_thread()
 		}
 		
 		pthread_mutex_unlock(&mtx_push_monitor);
-		
+		PRINTF("3\n");
 		if(ETIMEDOUT!=retcode){
 			DEBUG("push monitor thread is awaked by external signal\n");
 		}
@@ -1045,6 +1048,9 @@ int mid_push_reject(const char *prog_uri)
 	return ret;
 }
 
+/*
+回调结束时，receiver携带是否有进度注册的标记，1表示有注册，0表示无注册。
+*/
 static int push_recv_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -1061,6 +1067,8 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	long long totalsize = 0LL;
 	
 	DEBUG("*receiver(init flag)=%d\n", tmp_init_flag);
+	
+	*((int *)receiver) = 0;
 	
 	for(i=1;i<row+1;i++)
 	{
@@ -1118,6 +1126,11 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 				cur_prog.cur = 0LL;
 				cur_prog.total = totalsize;
 				mid_push_regist(&cur_prog);
+				
+				/*
+				回调结束时，receiver携带是否有进度注册的标记，1表示有注册，0表示无注册。
+				*/
+				*((int *)receiver) = 1;
 			}
 		}
 	}
@@ -1133,7 +1146,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 */
 int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 {
-	DEBUG("init_flag: %d\n", init_flag);
+	DEBUG("init_flag: %d, time_stamp_pointed: %s\n", init_flag, time_stamp_pointed);
 	
 	int ret = -1;
 	char sqlite_cmd[256+128];
@@ -1141,7 +1154,7 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 	
 	char time_stamp[32];
 	memset(time_stamp, 0, sizeof(time_stamp));
-	if(NULL==time_stamp || 0==strlen(time_stamp)){
+	if(NULL==time_stamp_pointed || 0==strlen(time_stamp_pointed)){
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
 		if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
 			DEBUG("can not process push regist\n");
@@ -1152,6 +1165,7 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 		snprintf(time_stamp,sizeof(time_stamp),"%s",time_stamp_pointed);
 	
 	pthread_mutex_lock(&mtx_push_monitor);
+	
 	if(1==init_flag){
 /*
  开机初始化时，先删掉所有过期的节目
@@ -1160,24 +1174,32 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 		sqlite_execute(sqlite_cmd);
 	}
 	
+	int flag_carrier = init_flag;
+	
 /*
  由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
  所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
 */
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
 	
-	ret = sqlite_read(sqlite_cmd, (void *)(&init_flag), sizeof(init_flag), sqlite_callback);
-	
-	if(ret>0){
+	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
+/*
+回调结束时，flag_carrier携带是否有进度注册的标记，1表示有注册，0表示无注册。
+*/	
+	PRINTF("ret: %d, flag_carrier: %d\n", ret,flag_carrier);
+	if(ret>0 && flag_carrier>0){
 		prog_name_fill();
 		
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE ProductDesc SET FreshFlag=0 WHERE PushStartTime<='%s' AND PushEndTime>'%s' AND FreshFlag=1;", time_stamp,time_stamp);
 		sqlite_execute(sqlite_cmd);
-		
+
+#if 0
 		if(0==init_flag){
 			pthread_cond_signal(&cond_push_monitor);
 			DEBUG("refresh monitor arrary immediatly\n");
 		}
+#endif
+
 	}
 	
 	pthread_mutex_unlock(&mtx_push_monitor);

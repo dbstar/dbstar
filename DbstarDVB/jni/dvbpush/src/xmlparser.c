@@ -308,7 +308,7 @@ ptr->ServiceID);
 	对于那些相同PublicatonID既有允许接收，又有拒绝接收的冲突问题，放在注册时处理。
 	*/
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO ProductDesc(ServiceID,ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,xmlURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag) \
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO ProductDesc(ServiceID,ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag) \
 VALUES('%s',\
 '%s',\
 '%s',\
@@ -333,7 +333,7 @@ ptr->SetID,
 ptr->ID,
 ptr->TotalSize,
 ptr->URI,
-ptr->xmlURI,
+ptr->DescURI,
 ptr->PushStartTime,
 ptr->PushEndTime,
 ptr->Columns,
@@ -355,7 +355,7 @@ receive_status);
 				p_HT ++;
 			}
 			DEBUG("p_column: %s, p_HT: %s\n", p_column, p_HT);
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO Publication(ServiceID,PublicationID,ColumnID,ProductID,URI,xmlURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO Publication(ServiceID,PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
 VALUES('%s',\
 '%s',\
 '%s',\
@@ -373,7 +373,7 @@ ptr->ID,
 p_column,
 ptr->productID,
 ptr->URI,
-ptr->xmlURI,
+ptr->DescURI,
 ptr->TotalSize,
 ptr->ProductDescID,
 ptr->PushStartTime,
@@ -427,7 +427,7 @@ static void productdesc_clear(DBSTAR_PRODUCTDESC_S *ptr, int clear_flag)
 //	char	ID[64];
 //	char	TotalSize[64];
 //	char	URI[256];
-//	char	xmlURI[384];
+//	char	DescURI[384];
 //	char	PushStartTime[64];
 //	char	PushEndTime[64];
 //	char	Columns[512];
@@ -438,7 +438,7 @@ static void productdesc_clear(DBSTAR_PRODUCTDESC_S *ptr, int clear_flag)
 	memset(ptr->ID, 0, sizeof(ptr->ID));
 	memset(ptr->TotalSize, 0, sizeof(ptr->TotalSize));
 	memset(ptr->URI, 0, sizeof(ptr->URI));
-	memset(ptr->xmlURI, 0, sizeof(ptr->xmlURI));
+	memset(ptr->DescURI, 0, sizeof(ptr->DescURI));
 //	memset(ptr->PushStartTime, 0, sizeof(ptr->PushStartTime));
 //	memset(ptr->PushEndTime, 0, sizeof(ptr->PushEndTime));
 	memset(ptr->Columns, 0, sizeof(ptr->Columns));
@@ -899,14 +899,14 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 					||	0==strcmp(xmlroute, "ProductDesc^ReceiveColumn^ColumnURI")){
 				DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"xmlURI", attrPtr->name)){
-					//snprintf(p->xmlURI, sizeof(p->xmlURI), "%s/%s", p->rootPath,(char *)szAttr);
+					//snprintf(p->DescURI, sizeof(p->DescURI), "%s/%s", p->rootPath,(char *)szAttr);
 					char tmp_xmlURI[512];
 					snprintf(tmp_xmlURI, sizeof(tmp_xmlURI), "%s", (char *)szAttr);
 					
-					snprintf(p->xmlURI,sizeof(p->xmlURI),"%s",p->rootPath);
+					snprintf(p->DescURI,sizeof(p->DescURI),"%s",p->rootPath);
 					if('/'!=tmp_xmlURI[0])
-						snprintf(p->xmlURI+strlen(p->xmlURI),sizeof(p->xmlURI)-strlen(p->xmlURI),"/");
-					snprintf(p->xmlURI+strlen(p->xmlURI),sizeof(p->xmlURI)-strlen(p->xmlURI),"%s",tmp_xmlURI);
+						snprintf(p->DescURI+strlen(p->DescURI),sizeof(p->DescURI)-strlen(p->DescURI),"/");
+					snprintf(p->DescURI+strlen(p->DescURI),sizeof(p->DescURI)-strlen(p->DescURI),"%s",tmp_xmlURI);
 				}
 				else
 					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);

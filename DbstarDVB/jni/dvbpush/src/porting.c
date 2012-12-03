@@ -51,6 +51,8 @@ static dvbpush_notify_t dvbpush_notify = NULL;
 static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int date_str_size);
 static int serviceID_init();
 static int push_dir_init();
+static int cur_language_init();
+
 /* define some general interface function here */
 
 static void settingDefault_set(void)
@@ -184,7 +186,8 @@ int setting_init(void)
 		fclose(fp);
 	}
 	DEBUG("init settings OK\n");
-
+	
+	cur_language_init();
 	serviceID_init();
 	push_dir_init();
 	guidelist_select_refresh();
@@ -940,6 +943,26 @@ static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int 
 	sec_appointed += (drm_date*24*60*60);
 	p = localtime(&sec_appointed);
 	snprintf(date_str, date_str_size, "%04d-%02d-%02d", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday);
+	
+	return 0;
+}
+
+static int cur_language_init()
+{
+	if(0==strlen(s_Language)){
+		char sqlite_cmd[512];
+		
+		int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_CURLANGUAGE);
+	
+		int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sizeof(s_Language), sqlite_cb);
+		if(ret_sqlexec<=0){
+			DEBUG("read no Language from db, filled with %s\n", CURLANGUAGE_DFT);
+			snprintf(s_Language, sizeof(s_Language), "%s", CURLANGUAGE_DFT);
+		}
+		else
+			DEBUG("read Language: %s\n", s_Language);
+	}
 	
 	return 0;
 }
