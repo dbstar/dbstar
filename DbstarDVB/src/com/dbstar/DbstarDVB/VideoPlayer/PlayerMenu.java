@@ -30,6 +30,7 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -39,6 +40,7 @@ import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.provider.Settings.System;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.*;
 import android.widget.*;
 import android.graphics.Canvas;
@@ -234,7 +236,7 @@ public class PlayerMenu extends PlayerActivity {
 							.equals("720p")))) {
 			Intent intentVideoOn = new Intent(ACTION_REALVIDEO_ON);
 			sendBroadcast(intentVideoOn);
-			// SystemProperties.set("vplayer.hideStatusBar.enable", "true");
+			SystemProperties.set("vplayer.hideStatusBar.enable", "true");
 		}
 
 		if (AmPlayer.getProductType() == 1) {
@@ -310,14 +312,8 @@ public class PlayerMenu extends PlayerActivity {
 		keepScreenOff();
 		SystemProperties.set("vplayer.playing", "false");
 
-		if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
-			mVideoInfoDlg.dismiss();
-		}
-
 		unregisterReceiver(mMountReceiver);
 		unregisterCommandReceiver();
-
-		// SystemProperties.set("vplayer.hideStatusBar.enable", "false");
 
 		if (mSuspendFlag) {
 			if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
@@ -334,16 +330,10 @@ public class PlayerMenu extends PlayerActivity {
 				|| (m1080scale == 1 && (mOutputMode.equals("1080p")
 						|| mOutputMode.equals("1080i") || mOutputMode
 							.equals("720p")))) {
-			Utils.writeSysfs(Fb0Blank, "1");
 			Intent intentVideoOff = new Intent(ACTION_REALVIDEO_OFF);
 			sendBroadcast(intentVideoOff);
 		}
 
-		Utils.writeSysfs(FormatMVC, FormatMVC_3doff);
-		disable2XScale();
-		ScreenMode.setScreenMode("0");
-
-		setOSDOn(true);
 	}
 
 	public void onStop() {
@@ -361,7 +351,17 @@ public class PlayerMenu extends PlayerActivity {
 
 		closeSubtitleView();
 
-		Amplayer_stop();
+		if (m1080scale == 2
+				|| (m1080scale == 1 && (mOutputMode.equals("1080p")
+						|| mOutputMode.equals("1080i") || mOutputMode
+							.equals("720p")))) {
+
+			SystemProperties.set("vplayer.hideStatusBar.enable", "false");
+		}
+
+		Utils.writeSysfs(FormatMVC, FormatMVC_3doff);
+		disable2XScale();
+		ScreenMode.setScreenMode("0");
 
 		if (mAmplayer != null) {
 			try {
@@ -891,6 +891,18 @@ public class PlayerMenu extends PlayerActivity {
 			e.printStackTrace();
 		}
 	}
+	
+	private void replay() {
+		if (mAmplayer == null || INITOK == false) {
+			return;
+		}
+		
+		try {
+			mAmplayer.Seek(0);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void Amplayer_stop() {
 		try {
@@ -1010,7 +1022,8 @@ public class PlayerMenu extends PlayerActivity {
 		mPlayPosition = 0;
 		saveBookmark(0);
 
-		finish();
+		// finish();
+		exitPlayer();
 	}
 
 	public void playbackStopped() {
@@ -1019,12 +1032,13 @@ public class PlayerMenu extends PlayerActivity {
 
 	public void playbackError(int error) {
 		if (error < 0) {
-			if (mAmplayer != null)
-				Amplayer_stop();
+			// if (mAmplayer != null)
+			// Amplayer_stop();
 
 			saveBookmark(0);
 			mPlayPosition = 0;
-			finish();
+			// finish();
+			exitPlayer();
 		}
 	}
 
@@ -1033,7 +1047,7 @@ public class PlayerMenu extends PlayerActivity {
 		super.playbackInited();
 
 		if (mMediaInfo == null) {
-			finish();
+			// finish();
 			return;
 		}
 
@@ -1166,7 +1180,7 @@ public class PlayerMenu extends PlayerActivity {
 
 			if (!SystemProperties.getBoolean("ro.vout.player.exit", true)) {
 				SettingsVP.setVideoLayoutMode();
-				mInfoBar = null;
+				// mInfoBar = null;
 				initOSDView();
 				return;
 			}
@@ -1174,7 +1188,8 @@ public class PlayerMenu extends PlayerActivity {
 			if (!SystemProperties.getBoolean("ro.vout.dualdisplay", false)) {
 				if (mHdmiPlugged != plugged) {
 					mHdmiPlugged = plugged;
-					finish();
+					// finish();
+					exitPlayer();
 				}
 			}
 		}
@@ -1195,8 +1210,10 @@ public class PlayerMenu extends PlayerActivity {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 
+			Log.d(TAG, " ==================== action ===== " + action);
+
 			if (action.equals(Common.ActionReplay)) {
-				Amplayer_play(0);
+				replay();
 			} else if (action.equals(Common.ActionExit)) {
 				exitPlayer();
 			}
@@ -1225,12 +1242,13 @@ public class PlayerMenu extends PlayerActivity {
 			if (action.equals(Intent.ACTION_MEDIA_EJECT)) {
 				if (mFilePath != null) {
 					if (mFilePath.startsWith(path)) {
-						closeSubtitleView();
+						// closeSubtitleView();
 						// stop play
-						if (mAmplayer != null)
-							Amplayer_stop();
-
-						finish();
+						// if (mAmplayer != null)
+						// Amplayer_stop();
+						//
+						// finish();
+						exitPlayer();
 					}
 				}
 			} else if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {
@@ -1257,15 +1275,16 @@ public class PlayerMenu extends PlayerActivity {
 			}
 
 			// stop play
-			if (mAmplayer != null)
-				Amplayer_stop();
+			// if (mAmplayer != null)
+			// Amplayer_stop();
 
-			onPause(); // for disable 2Xscale
-			finish(); // will call onDestroy()
-			onDestroy(); // set freescale when exception
+			// onPause(); // for disable 2Xscale
+			// finish(); // will call onDestroy()
+			// onDestroy(); // set freescale when exception
+			exitPlayer();
 			Log.d(TAG, "----------------uncaughtException--------------------");
 
-			android.os.Process.killProcess(android.os.Process.myPid());
+			// android.os.Process.killProcess(android.os.Process.myPid());
 		}
 	};
 
@@ -1350,6 +1369,15 @@ public class PlayerMenu extends PlayerActivity {
 					mHideInfoBarTask = null;
 					if (!mDuringKeyActions) {
 						hideInfoBar();
+						
+						boolean hideOSD = true;
+						if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
+							hideOSD = false;
+						}
+						
+						if (hideOSD) {
+							setOSDOn(false);
+						}
 					}
 					break;
 				}
@@ -1468,6 +1496,8 @@ public class PlayerMenu extends PlayerActivity {
 
 		LinearLayout.LayoutParams linearParams = null;
 
+		Log.d(TAG, " +++ +++++ panel width, height=" + SettingsVP.panel_width
+				+ " , " + SettingsVP.panel_height);
 		if (AmPlayer.getProductType() == 1) {
 			if (SettingsVP.display_mode.equals("480p")
 					&& SettingsVP.panel_height > 480) {
@@ -1475,7 +1505,8 @@ public class PlayerMenu extends PlayerActivity {
 						.getLayoutParams();
 				if (SettingsVP.panel_width > 720)
 					linearParams.width = 720;
-				linearParams.bottomMargin = SettingsVP.panel_height - 480 + 10;
+				linearParams.bottomMargin = SettingsVP.panel_height - 480;// +
+																			// 10;
 				mSubTitleView.setLayoutParams(linearParams);
 				if (mSubTitleView_sm != null && m3DEnabled) {
 					mSubTitleView_sm.setLayoutParams(linearParams);
@@ -1486,7 +1517,8 @@ public class PlayerMenu extends PlayerActivity {
 						.getLayoutParams();
 				if (SettingsVP.panel_width > 1280)
 					linearParams.width = 1280;
-				linearParams.bottomMargin = SettingsVP.panel_height - 720 + 10;
+				linearParams.bottomMargin = SettingsVP.panel_height - 720;// +
+																			// 10;
 				mSubTitleView.setLayoutParams(linearParams);
 				if (mSubTitleView_sm != null && m3DEnabled) {
 					mSubTitleView_sm.setLayoutParams(linearParams);
@@ -1499,12 +1531,15 @@ public class PlayerMenu extends PlayerActivity {
 					.getLayoutParams();
 			linearParams.leftMargin = 50;
 			linearParams.width = 1180;
-			linearParams.bottomMargin = 40;
+			linearParams.bottomMargin = 0;
 			mSubTitleView.setLayoutParams(linearParams);
 			if (mSubTitleView_sm != null && m3DEnabled) {
 				mSubTitleView_sm.setLayoutParams(linearParams);
 			}
 		}
+
+		Log.d(TAG, " +++ +++++ bottomMargin=" + linearParams.bottomMargin);
+		Log.d(TAG, " +++ +++++ subtitle font=" + mSubtitleParameter.font);
 
 		if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
 			if (!FF_FLAG && !FB_FLAG)
@@ -1553,6 +1588,22 @@ public class PlayerMenu extends PlayerActivity {
 
 	// ----------------- Subtitle related ---------------------------------
 
+	int convertSP2Pixel(int size) {
+		Resources r = getResources();
+		float pixelSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+				size, r.getDisplayMetrics());
+
+		return (int) pixelSize;
+	}
+
+	int convertDIP2Pixel(int size) {
+		Resources r = getResources();
+		float pixelSize = TypedValue.applyDimension(
+				TypedValue.COMPLEX_UNIT_DIP, size, r.getDisplayMetrics());
+
+		return (int) pixelSize;
+	}
+
 	protected void initSubTitle() {
 
 		mSubtitleParameter = new SubtitleParameter();
@@ -1562,10 +1613,11 @@ public class PlayerMenu extends PlayerActivity {
 
 		SharedPreferences settings = getSharedPreferences(PREFS_SUBTITLE_NAME,
 				0);
+
 		mSubtitleParameter.enable = settings.getBoolean("enable", true);
 		mSubtitleParameter.color = settings.getInt("color",
 				android.graphics.Color.WHITE); // android.graphics.Color.WHITE;
-		mSubtitleParameter.font = settings.getInt("font", 20);// 20;
+		mSubtitleParameter.font = settings.getInt("font", convertSP2Pixel(28));
 		mSubtitleParameter.position_v = settings.getInt("position_v", 0);// 0;
 
 		mSubtitleParameter.sub_id = null;
@@ -1578,10 +1630,10 @@ public class PlayerMenu extends PlayerActivity {
 		mSubTitleView.setTextColor(mSubtitleParameter.color);
 		mSubTitleView.setTextSize(mSubtitleParameter.font);
 		mSubTitleView.setTextStyle(Typeface.BOLD);
-		mSubTitleView.setPadding(mSubTitleView.getPaddingLeft(),
-				mSubTitleView.getPaddingTop(), mSubTitleView.getPaddingRight(),
-				getWindowManager().getDefaultDisplay().getRawHeight()
-						* mSubtitleParameter.position_v / 20 + 10);
+//		mSubTitleView.setPadding(mSubTitleView.getPaddingLeft(),
+//				mSubTitleView.getPaddingTop(), mSubTitleView.getPaddingRight(),
+//				getWindowManager().getDefaultDisplay().getRawHeight()
+//						* mSubtitleParameter.position_v / 20);// + 10);
 
 		if (m3DEnabled) {
 			mSubTitleView_sm = (SubtitleView) findViewById(R.id.subTitle_sm);

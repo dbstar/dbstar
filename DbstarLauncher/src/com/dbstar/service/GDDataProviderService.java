@@ -989,7 +989,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				}
 
 				case REQUESTTYPE_GETGUIDELIST: {
-					GuideListItem[] items = mDataModel.getGuideList();
+					//GuideListItem[] items = mDataModel.getGuideList();
+					GuideListItem[] items = mDataModel.getLatestGuideList();
 					task.Data = items;
 					taskFinished(task);
 					break;

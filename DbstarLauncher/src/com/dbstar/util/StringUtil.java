@@ -1,7 +1,5 @@
 package com.dbstar.util;
 
-import android.util.Log;
-
 public class StringUtil {
 
 	public static final int DemicalLength = 3;

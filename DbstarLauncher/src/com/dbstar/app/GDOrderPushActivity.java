@@ -1,8 +1,12 @@
 package com.dbstar.app;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import com.dbstar.R;
 import com.dbstar.model.GDDiskInfo;
@@ -79,7 +83,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		}
 	}
 
-	class ReceiveTask {
+	static class ReceiveTask {
 
 		public String Date;
 
@@ -330,17 +334,14 @@ public class GDOrderPushActivity extends GDBaseActivity {
 
 		int i = 0;
 		for (i = 0; i < tasks.size(); i++) {
-			if (isDateBigger(date, tasks.get(i).Date) == 1) {
+			if (isDateGreater(date, tasks.get(i).Date) == 1) {
 				continue;
 			} else {
 				break;
 			}
 		}
 
-		if (i == 0) {
-			tasks.add(i, task);
-			Log.d(TAG, "add task " + tasks.size() + " " + (i) + " " + date);
-		} else if (i == tasks.size()) {
+		if (i == tasks.size()) {
 			tasks.add(task);
 			Log.d(TAG, "add task " + tasks.size() + " " + (i + 1) + " " + date);
 		} else {
@@ -351,42 +352,24 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		return task;
 	}
 
-	// srcDate is newer than destDate
-	int isDateBigger(String srcDate, String destDate) {
-		int year1, month1, day1;
-		int year2, month2, day2;
+	// date1 is greater than date2
+	// return value: -1: less 0:equal 1:greater
+	static int isDateGreater(String dateStr1, String dateStr2) {
 
-		year1 = Integer.valueOf(srcDate.substring(0, 4));
-		month1 = Integer.valueOf(srcDate.substring(4, 6));
-		day1 = Integer.valueOf(srcDate.substring(6, 8));
+		Log.d(TAG, "date1 = " + dateStr1 + " date2=" + dateStr2);
 
-		year2 = Integer.valueOf(destDate.substring(0, 4));
-		month2 = Integer.valueOf(destDate.substring(4, 6));
-		day2 = Integer.valueOf(destDate.substring(6, 8));
+		final String formats = "yyyy-MM-dd HH:mm:ss";
 
-		Log.d(TAG, "y m d" + year1 + " " + month1 + " " + day1);
-		Log.d(TAG, "y m d" + year2 + " " + month2 + " " + day2);
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat(formats);
+			Date date1 = sdf.parse(dateStr1);
+			Date data2 = sdf.parse(dateStr2);
 
-		if (year1 < year2) {
-			return -1;
-		} else if (year1 > year2) {
-			return 1;
-		} else {
-			// year1==year2
-			if (month1 < month2) {
-				return -1;
-			} else if (month1 > month2) {
-				return 1;
-			} else {
-				// month1 == month2
-				if (day1 < day2) {
-					return -1;
-				} else if (day1 > day2) {
-					return 1;
-				} else {
-					return 0;
-				}
-			}
+			return date1.compareTo(data2);
+		} catch (ParseException e) {
+			e.printStackTrace();
+
+			return -2;
 		}
 	}
 
@@ -398,7 +381,6 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			if (action == KeyEvent.ACTION_DOWN) {
 				Log.d(TAG, " ---- key code =  " + keyCode);
 				switch (keyCode) {
-				case 82: // just for test on emulator
 				case KeyEvent.KEYCODE_ENTER:
 				case KeyEvent.KEYCODE_DPAD_CENTER: {
 					ReceiveItem item = mReceiveItemCurrentPage[mReceiveItemIndex];
@@ -484,7 +466,8 @@ public class GDOrderPushActivity extends GDBaseActivity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 
-			holder.timeView.setText(mDataSet[position].Date);
+			holder.timeView.setText(mDataSet[position].Date.substring(0,
+					"1111-11-11".length()));
 
 			return convertView;
 		}

@@ -543,7 +543,7 @@ public class GDDataModel {
 
 		Log.d(TAG, "getGuideList");
 
-		GuideListItem[] items = null;
+		ArrayList<GuideListItem> items = null;
 
 		Cursor cursor = mDVBDataProvider.query(GuideList.CONTENT_URI,
 				ProjectionQueryGuideList, selection, selectionArgs, null);
@@ -551,11 +551,17 @@ public class GDDataModel {
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				Log.d(TAG, "query cursor size = " + cursor.getCount());
-				items = new GuideListItem[cursor.getCount()];
-				int i = 0;
+				items = new ArrayList<GuideListItem>();
 				do {
+					
+					String date = cursor.getString(QUERYGUIDELIST_DATEVALUE);
+					if (date == null || date.isEmpty()) {
+						//invalid item
+						continue;
+					}
+					
 					GuideListItem item = new GuideListItem();
-					item.Date = cursor.getString(QUERYGUIDELIST_DATEVALUE);
+					item.Date = date;
 					item.GuideListID = cursor
 							.getString(QUERYGUIDELIST_GUIDELISTID);
 					item.PublicationID = cursor
@@ -563,8 +569,7 @@ public class GDDataModel {
 					int status = cursor.getInt(QUERYGUIDELIST_USERSTATUS);
 					item.isSelected = item.originalSelected = status == 0 ? false
 							: true;
-					items[i] = item;
-					i++;
+					items.add(item);
 				} while (cursor.moveToNext());
 			}
 		}
@@ -573,19 +578,19 @@ public class GDDataModel {
 			cursor.close();
 		}
 
-		if (items != null && items.length > 0) {
+		if (items != null && items.size() > 0) {
 
-			for (int i = 0; i < items.length; i++) {
-				items[i].Name = getPublicationResStr(items[i].GuideListID,
+			for (int i = 0; i < items.size(); i++) {
+				items.get(i).Name = getPublicationResStr(items.get(i).GuideListID,
 						GDDVBDataContract.GUIDELISTTABLE,
 						GDDVBDataContract.ValuePublicationName);
-				items[i].ColumnType = getPublicationResStr(
-						items[i].GuideListID, GDDVBDataContract.GUIDELISTTABLE,
+				items.get(i).ColumnType = getPublicationResStr(
+						items.get(i).GuideListID, GDDVBDataContract.GUIDELISTTABLE,
 						GDDVBDataContract.ValueColumnName);
 			}
 		}
 
-		return items;
+		return items.toArray(new GuideListItem[items.size()]);
 	}
 
 	public GuideListItem[] getGuideList(String Date) {
@@ -597,6 +602,12 @@ public class GDDataModel {
 
 	public GuideListItem[] getGuideList() {
 		return getGuideList(null, null);
+	}
+	
+	public GuideListItem[] getLatestGuideList() {
+		String selection = GuideList.DATEVALUE + "> datetime('now','localtime')";
+
+		return getGuideList(selection, null);
 	}
 
 	public boolean updateGuideList(GuideListItem[] items) {

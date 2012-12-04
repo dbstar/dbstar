@@ -19,13 +19,13 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:focusable="false"
-        android:paddingLeft="6dip" >
+        android:paddingLeft="6dp" >
 
         <com.subtitleview.SubtitleView
             android:id="@+id/subTitle_sm"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dip"
+            android:paddingBottom="8dp"
             android:visibility="invisible" >
         </com.subtitleview.SubtitleView>
     </LinearLayout>
@@ -41,7 +41,7 @@
             android:id="@+id/subTitle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="10dip" >
+            android:paddingBottom="10dp" >
         </com.subtitleview.SubtitleView>
     </LinearLayout>
 
