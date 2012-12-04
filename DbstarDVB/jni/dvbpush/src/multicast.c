@@ -45,7 +45,7 @@ extern int loader_dsc_fid;
 
 static pthread_mutex_t mtx_getip = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_getip = PTHREAD_COND_INITIALIZER;
-static int igmp_running = 0;
+static int s_igmp_running = 0;
 static int softdvb_running = 0;
 static pthread_t pth_softdvb_id;
 static pthread_t pth_igmp_id;
@@ -88,7 +88,7 @@ int igmp_init()
 
 int igmp_uninit()
 {
-	if(0==igmp_running){
+	if(0==s_igmp_running){
 		net_rely_condition_set(RELY_CONDITION_EXIT);
 		
 		pthread_mutex_lock(&mtx_getip);
@@ -99,7 +99,7 @@ int igmp_uninit()
 	 soft_dvb_thread中要使用全局变量p_buf，因此要先停止soft_dvb，然后停止igmp（释放p_buf）
 	*/
 	softdvb_running = 0;
-	igmp_running = 0;
+	s_igmp_running = 0;
 	pthread_join(pth_igmp_id, NULL);
 	
 	return multicast_uninit();
@@ -323,9 +323,9 @@ MULTITASK_START:
 	if(-1==igmp_recvbuf_init())
 		return NULL;
 	
-	igmp_running = 1;
+	s_igmp_running = 1;
 	s_igmp_restart = 0;
-	while(1==igmp_running){
+	while(1==s_igmp_running){
         if (p_write >= p_read)
         {
         	dfree = MULTI_BUF_SIZE - p_write;
@@ -372,6 +372,8 @@ MULTITASK_START:
 	}
 	sock = -1;
 	
+	s_igmp_running = 0;
+	
 	if(1==s_igmp_restart)
 		goto MULTITASK_START;
 	
@@ -384,6 +386,10 @@ MULTITASK_START:
 
 void net_rely_condition_set(int cmd)
 {
+	if(1==s_igmp_running){
+		DEBUG("the igmp thead is running already, ignore cmd: %d\n", cmd);
+		return;
+	}
 /*
  OTA升级不使用硬盘，只使用网络。所以硬盘插拔不影响组播接收
 */
@@ -413,6 +419,35 @@ void net_rely_condition_set(int cmd)
 	}
 }
 
+
+/*
+	如果softdvb线程长时间没有数据，就有可能是DbstarDVB.apk被重启，igmp线程等不到网络连接信号所致。
+	为了救急，在softdvb的循环中提供唤醒功能。
+	flag——0，表示不需要急救，flag——1，表示需要急救计数
+*/
+static time_t s_igmp_sleep_time = 0;
+static int first_aid_for_igmp(int flag)
+{
+	if(0==flag){
+		s_igmp_sleep_time = 0;
+	}
+	else{
+		if(0==s_igmp_sleep_time)
+			s_igmp_sleep_time = time(NULL);
+		else{
+			time_t now_sec = time(NULL);
+			if(difftime(now_sec,s_igmp_sleep_time)>600){
+				DEBUG("Baby, the softdvb thread is in idle status for 10mins, I will awake igmp thread by CMD_NETWORK_CONNECT\n");
+				s_igmp_sleep_time = 0;
+				net_rely_condition_set(CMD_NETWORK_CONNECT);
+			}
+		}
+	}
+	
+	return 0;
+}
+
+
 void *softdvb_thread()
 {
 	int left = 0;
@@ -428,12 +463,15 @@ void *softdvb_thread()
 		if(1!=softdvb_running)
 			break;
 		
-		if(1==igmp_running)
+		if(1==s_igmp_running)
 			break;
-		else
+		else{
 			usleep(100000);
+			first_aid_for_igmp(1);
+		}
 	}
 	
+	first_aid_for_igmp(0);
 	/*
 	 组播任务的开启、关闭会根据网络情况处理，这里就不再判断igmp_running了，要不然逻辑很复杂。
 	*/
@@ -446,7 +484,7 @@ void *softdvb_thread()
 		
 		//PRINTF("%d,%d,%d\n", p_write, p_read, left);
 		if(left<18800){
-			usleep(10000);
+			usleep(100000);
 			continue;
 		}
 		

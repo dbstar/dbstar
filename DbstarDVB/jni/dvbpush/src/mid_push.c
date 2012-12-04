@@ -89,7 +89,7 @@ static pthread_t tidDecodeData;
 static int s_xmlparse_running = 0;
 static int s_monitor_running = 0;
 static int s_decoder_running = 0;
-static char *s_dvbpush_info = NULL;
+static char s_dvbpush_info_str[20480];
 static int s_dvbpush_getinfo_start = 0;
 static int s_push_monitor_active = 0;
 static int s_monitor_interval = 60;
@@ -218,7 +218,6 @@ void *push_decoder_thread()
 {
 	unsigned char *pBuf = NULL;
 	int rindex = 0;
-	int read_nothing_count = 0;
     short len;
 	
 	DEBUG("push decoder thread will goto main loop\n");
@@ -247,11 +246,11 @@ rewake:
 		else
 		{
 			usleep(20000);
-			read_nothing_count++;
-			if(read_nothing_count>=1024)
+			s_push_has_data--;
+			if(s_push_has_data <= -1024)
 			{
 				DEBUG("read nothing, read index %d\n", rindex);
-				read_nothing_count = 0;
+				s_push_has_data = 0;
 			}
 		}
 	}
@@ -374,7 +373,7 @@ void dvbpush_getinfo_start()
 {
 	DEBUG("dvbpush getinfo start >>\n");
 	
-//	msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
+	memset(s_dvbpush_info_str,0,sizeof(s_dvbpush_info_str));
 	
 	pthread_mutex_lock(&mtx_push_monitor);
 	s_dvbpush_getinfo_start = 1;
@@ -389,22 +388,28 @@ void dvbpush_getinfo_stop()
 	s_dvbpush_getinfo_start = 1;
 	s_monitor_interval = 60;
 	pthread_mutex_unlock(&mtx_push_monitor);
-	
-	if(NULL!=s_dvbpush_info){
-		DEBUG("FREE s_dvbpush_info=%p\n", s_dvbpush_info);
-		free(s_dvbpush_info);
-		s_dvbpush_info = NULL;
+
+#if 0	
+	if(NULL!=s_dvbpush_info_str){
+		DEBUG("FREE s_dvbpush_info_str=%p\n", s_dvbpush_info_str);
+		free(s_dvbpush_info_str);
+		s_dvbpush_info_str = NULL;
 	}
+#else
+	
+#endif
 	DEBUG("dvbpush getinfo stop <<\n");
 }
 
 int dvbpush_getinfo(char **p, unsigned int *len)
 {
-	if(NULL!=s_dvbpush_info){
-		DEBUG("FREE s_dvbpush_info=%p\n", s_dvbpush_info);
-		free(s_dvbpush_info);
-		s_dvbpush_info = NULL;
+#if 0
+	if(NULL!=s_dvbpush_info_str){
+		DEBUG("FREE s_dvbpush_info_str=%p\n", s_dvbpush_info_str);
+		free(s_dvbpush_info_str);
+		s_dvbpush_info_str = NULL;
 	}
+#endif
 	
 	int info_size;
 	int i = 0;
@@ -414,12 +419,16 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 	 其中：long long型转为10进制后最大长度为20
 	*/
 	if(s_push_has_data>0 && (s_push_monitor_active>0)){
+#if 0
 		info_size = s_push_monitor_active*(256+64+20+20+4) + 1;
-		s_dvbpush_info = malloc(info_size);
+		s_dvbpush_info_str = malloc(info_size);
+#else
+		info_size = sizeof(s_dvbpush_info_str);
+#endif
 		
-		if(s_dvbpush_info){
-			DEBUG("malloc %d B for push info, p=%p\n", info_size, s_dvbpush_info);
-			s_dvbpush_info[0]='\0';
+		if(1){
+			//DEBUG("malloc %d B for push info, p=%p\n", info_size, s_dvbpush_info_str);
+			s_dvbpush_info_str[0]='\0';
 			/*
 			监测节目接收进度
 			*/
@@ -430,19 +439,19 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 					continue;
 					
 				if(0==i){
-					snprintf(s_dvbpush_info, info_size,
+					snprintf(s_dvbpush_info_str, info_size,
 						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
 				else{
-					snprintf(s_dvbpush_info+strlen(s_dvbpush_info), info_size-strlen(s_dvbpush_info),
+					snprintf(s_dvbpush_info_str+strlen(s_dvbpush_info_str), info_size-strlen(s_dvbpush_info_str),
 						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
 			}
 			pthread_mutex_unlock(&mtx_push_monitor);
 			
-			*p = s_dvbpush_info;
-			*len = strlen(s_dvbpush_info);
-			DEBUG("%s\n", s_dvbpush_info);
+			*p = s_dvbpush_info_str;
+			*len = strlen(s_dvbpush_info_str);
+			DEBUG("%s\n", s_dvbpush_info_str);
 			
 			return 0;
 		}
@@ -517,10 +526,6 @@ void *push_monitor_thread()
 		outtime.tv_sec = now.tv_sec + s_monitor_interval;
 		outtime.tv_nsec = now.tv_usec;
 		retcode = pthread_cond_timedwait(&cond_push_monitor, &mtx_push_monitor, &outtime);
-		
-//		if(1==s_dvbpush_getinfo_start){
-//			msg_send2_UI(1==data_stream_status_get()?STATUS_DATA_SIGNAL_ON:STATUS_DATA_SIGNAL_OFF, NULL, 0);
-//		}
 		
 		if(s_push_has_data>0 && s_push_monitor_active>0){
 			memset(time_stamp, 0, sizeof(time_stamp));

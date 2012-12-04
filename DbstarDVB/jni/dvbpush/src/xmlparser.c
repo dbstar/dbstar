@@ -1121,7 +1121,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						strncpy(global_s.Name, GLB_NAME_SERVICEID, sizeof(global_s.Name)-1);
 						strncpy(global_s.Value, product_service_s.serviceID, sizeof(global_s.Value)-1);
 						global_insert(&global_s);
-						serviceID_set(product_service_s.productID);
+						serviceID_set(product_service_s.serviceID);
 						
 						sqlite_transaction_table_clear("Initialize");
 						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
