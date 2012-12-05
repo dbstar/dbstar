@@ -386,10 +386,6 @@ MULTITASK_START:
 
 void net_rely_condition_set(int cmd)
 {
-	if(1==s_igmp_running){
-		DEBUG("the igmp thead is running already, ignore cmd: %d\n", cmd);
-		return;
-	}
 /*
  OTA升级不使用硬盘，只使用网络。所以硬盘插拔不影响组播接收
 */
@@ -587,11 +583,11 @@ int softdvb_init()
 	int filter1 = alloc_filter(root_pid, 0);
 	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
 	
-//	memset(&param,0,sizeof(param));
-//	param.filter[0] = 0xf0;
-//	param.mask[0] = 0xff;
-//	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
-//	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
+	memset(&param,0,sizeof(param));
+	param.filter[0] = 0xf0;
+	param.mask[0] = 0xff;
+	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
+	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0x1;

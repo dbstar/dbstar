@@ -614,7 +614,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	unsigned short tmp16=0;
 	unsigned int stb_id_l=0,stb_id_h=0;
 	
-	if(s_print_cnt>1024)
+	if(s_print_cnt>512)
 		s_print_cnt = 0;
 	else
 		s_print_cnt ++;
