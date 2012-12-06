@@ -418,7 +418,7 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 	 每条记录预留长度：64位id + strlen(caption) + 20位当前长度 + 20位总长 + 4位分隔符
 	 其中：long long型转为10进制后最大长度为20
 	*/
-	if(s_push_has_data>0 && (s_push_monitor_active>0)){
+	if(s_push_monitor_active>0){
 #if 0
 		info_size = s_push_monitor_active*(256+64+20+20+4) + 1;
 		s_dvbpush_info_str = malloc(info_size);
