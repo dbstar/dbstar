@@ -7,6 +7,7 @@ import com.dbstar.R;
 import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
+import com.dbstar.model.GDCommon;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.model.Movie;
 import com.dbstar.model.GDDVBDataContract.Content;
@@ -288,6 +289,31 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			}
 
 			updateViews(movies);
+		} else if (type == EventData.EVENT_UPDATE_PROPERTY) {
+			EventData.UpdatePropertyEvent updateEvent = (EventData.UpdatePropertyEvent) event;
+			String publicationId = updateEvent.PublicationId;
+			Movie[] movies = mPageDatas.get(mPageNumber);
+			int i = 0;
+			boolean found = false;
+			for (i = 0; i < movies.length; i++) {
+				ContentData content = movies[i].Content;
+				if (content.Id.equals(publicationId)) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				ContentData content = movies[i].Content;
+				updatePropery(content, updateEvent.PropertyName,
+						updateEvent.PropertyValue);
+			}
+		}
+	}
+
+	private void updatePropery(ContentData content, String propery, Object value) {
+		if (propery.equals(GDCommon.KeyBookmark)) {
+			content.BookMark = (Integer)value;
 		}
 	}
 

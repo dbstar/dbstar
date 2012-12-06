@@ -492,6 +492,15 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				if (mDataModel != null) {
 					mDataModel.savePublicationBookmark(publicationId, bookmark);
 				}
+				
+				if (mPageOberser != null) {
+					EventData.UpdatePropertyEvent event = new EventData.UpdatePropertyEvent();
+					event.PublicationId = publicationId;
+					event.PropertyName = GDCommon.KeyBookmark;
+					event.PropertyValue = new Integer(bookmark);
+					mPageOberser.notifyEvent(EventData.EVENT_UPDATE_PROPERTY, event);
+				}
+				
 				break;
 			}
 			case GDCommon.MSG_GET_NETWORKINFO: {
