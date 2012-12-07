@@ -403,6 +403,13 @@ public class EthernetConfigController {
 	public void saveConfigure() {
 		Log.d(TAG, "device name = " + mDev);
 
+		boolean isDhcp = mEthInfo.getConnectMode().equals(
+				EthernetDevInfo.ETH_CONN_MODE_DHCP);
+
+		if (isDhcp && mDhcpSwitchIndicator.isChecked()) {
+			return;
+		}
+
 		if (mDev == null || mDev.isEmpty())
 			return;
 
