@@ -406,10 +406,16 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 		@Override
 		public void onFocusChange(View v, boolean hasFocus) {
+
 			if (v.getId() == R.id.video_outputmode_list) {
 				showSelectedItem(mSelectedView, hasFocus);
 			} else if (v.getId() == R.id.audio_outputmode_list) {
+
+				if (mAudioSelectedView == null) {
+					mAudioSelectedView = mAudioOutputView.getChildAt(0);
+				}
 				showSelectedItem(mAudioSelectedView, hasFocus);
+
 			}
 		}
 	};
