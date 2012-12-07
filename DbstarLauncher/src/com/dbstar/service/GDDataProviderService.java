@@ -492,6 +492,15 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				if (mDataModel != null) {
 					mDataModel.savePublicationBookmark(publicationId, bookmark);
 				}
+				
+				if (mPageOberser != null) {
+					EventData.UpdatePropertyEvent event = new EventData.UpdatePropertyEvent();
+					event.PublicationId = publicationId;
+					event.PropertyName = GDCommon.KeyBookmark;
+					event.PropertyValue = new Integer(bookmark);
+					mPageOberser.notifyEvent(EventData.EVENT_UPDATE_PROPERTY, event);
+				}
+				
 				break;
 			}
 			case GDCommon.MSG_GET_NETWORKINFO: {
@@ -1691,10 +1700,16 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				upgradeAfterSleep();
 			} else if (action.equals(GDCommon.ActionScreenOff)) {
 				mGpioController.setPowerLedOff();
+			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_IN)) {
+				mGpioController.setAudioOutputOff();
+			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_OUT)) {
+				mGpioController.setAudioOutputOn();
+			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
+				Log.d(TAG, "######: " + action);
+			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {
+				Log.d(TAG, "######: " + action);
 			}
-
 		}
-
 	};
 
 	void upgradeAfterSleep() {

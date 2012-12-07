@@ -11,7 +11,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="0dp"
-        android:layout_marginTop="0dp" >
+        android:layout_marginTop="0dp"
+        android:focusable="false" >
 
         <!--
              <ImageView
@@ -21,7 +22,7 @@
             android:layout_centerVertical="true"
             android:layout_marginLeft="40dp"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_dbstar" />
+            android:src="@drawable/logo_dbstar" />
         -->
 
         <TextView
@@ -32,6 +33,7 @@
             android:layout_alignParentTop="true"
             android:layout_marginLeft="1186dp"
             android:layout_marginTop="80dp"
+            android:focusable="false"
             android:gravity="top|center_horizontal"
             android:textColor="#ffffff"
             android:textSize="16sp" />
@@ -56,6 +58,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="54dp"
+                android:focusable="false"
                 android:gravity="left|center_vertical"
                 android:text="@string/display_resolution"
                 android:textColor="#000000"
@@ -72,6 +75,7 @@
                 android:drawSelectorOnTop="false"
                 android:listPreferredItemHeight="48dp"
                 android:listSelector="#00000000"
+                android:nextFocusRight="@+id/audio_outputmode_list"
                 android:paddingBottom="8dp"
                 android:paddingTop="8dp"
                 android:scrollbarAlwaysDrawVerticalTrack="true"
@@ -80,7 +84,8 @@
 
         <Space
             android:layout_width="20dp"
-            android:layout_height="0dp" />
+            android:layout_height="0dp"
+            android:focusable="false" />
 
         <LinearLayout
             android:layout_width="494dp"
@@ -93,6 +98,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="54dp"
+                android:focusable="false"
                 android:gravity="left|center_vertical"
                 android:text="@string/settings_audio"
                 android:textColor="#000000"
@@ -109,6 +115,7 @@
                 android:drawSelectorOnTop="false"
                 android:listPreferredItemHeight="48dp"
                 android:listSelector="#00000000"
+                android:nextFocusLeft="@+id/video_outputmode_list"
                 android:paddingBottom="8dp"
                 android:paddingTop="8dp"
                 android:scrollbarAlwaysDrawVerticalTrack="true"
@@ -122,7 +129,7 @@
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        layout="@layout/footerview" />
+        layout="@layout/footerview" />
     -->
 
 </RelativeLayout>

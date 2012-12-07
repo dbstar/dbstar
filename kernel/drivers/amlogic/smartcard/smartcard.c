@@ -41,6 +41,7 @@
 #include <linux/gpio.h>
 #include <linux/amsmc.h>
 #include <linux/platform_device.h>
+#include <linux/switch.h>
 
 #include "smc_reg.h"
 
@@ -113,6 +114,10 @@ static struct class_attribute smc_class_attrs[] = {
 static struct class smc_class = {
     .name = SMC_CLASS_NAME,
     .class_attrs = smc_class_attrs,
+};
+
+static struct switch_dev sdev = {//android ics switch device
+    .name = "smartcard",
 };
 
 //#ifdef CONFIG_ARCH_ARC700
@@ -602,10 +607,13 @@ static irqreturn_t smc_irq_handler(int irq, void *data)
 	
 	sc_reg0 = SMC_READ_REG(REG0);
 
-	if (sc_reg0_reg->card_detect)
+	if (sc_reg0_reg->card_detect) {
 		sc_reg0_reg->card_detect = 0;
-	else 
+		switch_set_state(&sdev, 0);
+	} else {
 		sc_reg0_reg->card_detect = 1;
+		switch_set_state(&sdev, 1);
+	}
 	smc->cardin = sc_reg0_reg->card_detect;
 	
 	SMC_WRITE_REG(INTR, sc_int|0x3FF);
@@ -1045,6 +1053,7 @@ static int __init smc_mod_init(void)
 		pr_error("register platform driver error\n");
 		goto error_platform_drv_register;
 	}
+	switch_dev_register(&sdev);
 	
 	return 0;
 error_platform_drv_register:
@@ -1058,6 +1067,8 @@ error_register_chrdev:
 
 static void __exit smc_mod_exit(void)
 {
+	switch_dev_unregister(&sdev);
+
 	platform_driver_unregister(&smc_driver);
 	class_unregister(&smc_class);
 	unregister_chrdev(smc_major, SMC_DEV_NAME);

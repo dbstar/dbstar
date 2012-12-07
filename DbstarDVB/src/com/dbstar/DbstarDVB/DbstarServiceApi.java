@@ -3,6 +3,10 @@ package com.dbstar.DbstarDVB;
 public class DbstarServiceApi {
 	
 	public static final String ACTION_NOTIFY = "com.dbstar.DbstarDVB.NOTIFY";
+	public static final String ACTION_HDMI_IN = "com.dbstar.DbstarDVB.HDMI_IN";
+	public static final String ACTION_HDMI_OUT = "com.dbstar.DbstarDVB.HDMI_OUT";
+	public static final String ACTION_SMARTCARD_IN = "com.dbstar.DbstarDVB.SMARTCARD_IN";
+	public static final String ACTION_SMARTCARD_OUT = "com.dbstar.DbstarDVB.SMARTCARD_OUT";
 	
 	
 	/* send command from UI to server */
@@ -16,16 +20,18 @@ public class DbstarServiceApi {
 	
 	public static final int CMD_DISK_MOUNT                  = 0x00021;
 	public static final int CMD_DISK_UNMOUNT                = 0x00022;
-	
+	public static final int CMD_DISK_FOREWARNING            = 0x00023;
+
 	public static final int CMD_DVBPUSH_GETINFO_START       = 0x00031;
 	public static final int CMD_DVBPUSH_GETINFO				= 0x00032;
 	public static final int CMD_DVBPUSH_GETINFO_STOP        = 0x00033;
+	public static final int CMD_DVBPUSH_GETTS_STATUS        = 0x00034;
 	
 	public static final int CMD_UPGRADE_CANCEL              = 0x00041;
 	public static final int CMD_UPGRADE_CONFIRM             = 0x00042;
 	public static final int CMD_UPGRADE_TIMEOUT             = 0x00043;
 	
-	public static final int CMD_PUSH_REJECT                 = 0x00051;
+	public static final int CMD_PUSH_SELECT                 = 0x00051;
 	public static final int CMD_MAX                         = 0x0FFFF;
 
 	/* NOTIFY STATUS or ERROR */
@@ -38,9 +44,9 @@ public class DbstarServiceApi {
 	public static final int	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011;
 	public static final int	STATUS_DATA_SIGNAL_ON           = 0x30012;
 	public static final int	STATUS_DATA_SIGNAL_OFF          = 0x30013;
-	public static final int	STATUS_COLUMN_REFRESH           = 0x30014;
-	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015;
-	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016;
+	public static final int	STATUS_COLUMN_REFRESH           = 0x30014; // Column has new update
+	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015; // Preview has new update
+	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016; // UI resource has new update
 	
 	public static final int	UPGRADE_NEW_VER                 = 0x20001;
 	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;

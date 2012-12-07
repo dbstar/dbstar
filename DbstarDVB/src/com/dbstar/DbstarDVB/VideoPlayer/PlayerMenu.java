@@ -1370,14 +1370,14 @@ public class PlayerMenu extends PlayerActivity {
 					if (!mDuringKeyActions) {
 						hideInfoBar();
 						
-						boolean hideOSD = true;
-						if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
-							hideOSD = false;
-						}
-						
-						if (hideOSD) {
-							setOSDOn(false);
-						}
+//						boolean hideOSD = true;
+//						if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
+//							hideOSD = false;
+//						}
+//						
+//						if (hideOSD) {
+//							setOSDOn(false);
+//						}
 					}
 					break;
 				}
@@ -1630,10 +1630,10 @@ public class PlayerMenu extends PlayerActivity {
 		mSubTitleView.setTextColor(mSubtitleParameter.color);
 		mSubTitleView.setTextSize(mSubtitleParameter.font);
 		mSubTitleView.setTextStyle(Typeface.BOLD);
-//		mSubTitleView.setPadding(mSubTitleView.getPaddingLeft(),
-//				mSubTitleView.getPaddingTop(), mSubTitleView.getPaddingRight(),
-//				getWindowManager().getDefaultDisplay().getRawHeight()
-//						* mSubtitleParameter.position_v / 20);// + 10);
+		mSubTitleView.setPadding(mSubTitleView.getPaddingLeft(),
+				mSubTitleView.getPaddingTop(), mSubTitleView.getPaddingRight(),
+				getWindowManager().getDefaultDisplay().getRawHeight()
+						* mSubtitleParameter.position_v / 20);// + 10);
 
 		if (m3DEnabled) {
 			mSubTitleView_sm = (SubtitleView) findViewById(R.id.subTitle_sm);

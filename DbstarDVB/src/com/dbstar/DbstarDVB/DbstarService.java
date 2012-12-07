@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
+import android.os.UEventObserver;
 import android.util.Log;
 
 import android.net.ConnectivityManager;
@@ -29,9 +30,57 @@ public class DbstarService extends Service {
 	private static Context mContext = null;
 	private DbstarPM mDPM = new DbstarPM();
 
+	private UEventObserver mHDMIObserver = new UEventObserver() {
+		public void onUEvent(UEventObserver.UEvent event) {
+			Log.d(TAG, "HDMI event: " + event.get("SWITCH_STATE"));
+			String msg = "";
+			if ("1".equals(event.get("SWITCH_STATE"))) {
+				msg = DbstarServiceApi.ACTION_HDMI_IN;
+			} else {
+				msg = DbstarServiceApi.ACTION_HDMI_OUT;
+			}
+			sendObserverMessage(msg);
+		}
+	};
+
+	private UEventObserver mSmartCardObserver = new UEventObserver() {
+		public void onUEvent(UEventObserver.UEvent event) {
+			Log.d(TAG, "SmartCard event:" + event.get("SWITCH_STATE"));
+			String msg = "";
+			if ("1".equals(event.get("SWITCH_STATE"))) {
+				msg = DbstarServiceApi.ACTION_SMARTCARD_IN;
+			} else {
+				msg = DbstarServiceApi.ACTION_SMARTCARD_OUT;
+			}
+			sendObserverMessage(msg);
+		}
+	};
+
+	private void sendObserverMessage(String msg) {
+		Intent it = new Intent();
+		it.setAction(msg);
+		if (DbstarService.mContext != null) {
+			Log.d(TAG, "sendMessage: " + msg);
+			DbstarService.mContext.sendBroadcast(it);
+		}
+	}
+
+	private void startObserving() {
+		Log.d(TAG, "startObserving()");
+		mHDMIObserver.startObserving("DEVPATH=/devices/virtual/switch/hdmi");
+		mSmartCardObserver.startObserving("DEVPATH=/devices/virtual/switch/smartcard");
+	}
+
+	private void stopObserving() {
+		Log.d(TAG, "stopObserving()");
+		mHDMIObserver.stopObserving();
+		mSmartCardObserver.stopObserving();
+	}
+
 	public void onCreate() {
 		Log.d(TAG, "----- onCreate ----");
 		mDPM.acquirePartialWakeLock(this);
+		startObserving();
 	}
 
 	public void onStart(Intent intent, int startId) {
@@ -50,6 +99,7 @@ public class DbstarService extends Service {
 	public void onDestroy() {
 		Log.d(TAG, "----- onDestroy ----");
 		mDPM.releaseWakeLock();
+		stopObserving();
 	}
 
 	public IBinder onBind(Intent intent) {
