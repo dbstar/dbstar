@@ -107,7 +107,8 @@
             android:layout_width="153dp"
             android:layout_height="47dp"
             android:background="@drawable/bluebutton_bg_selector"
-            android:text="@string/close_button_text" />
+            android:text="@string/close_button_text"
+            android:nextFocusLeft="@+id/delete_button" />
 
         <Space
             android:layout_width="40dp"
@@ -140,7 +141,8 @@
             android:layout_width="153dp"
             android:layout_height="47dp"
             android:background="@drawable/redbutton_bg_selector"
-            android:text="@string/delete_button_text" />
+            android:text="@string/delete_button_text"
+            android:nextFocusRight="@id/close_button" />
     </LinearLayout>
 
     <TextView
