@@ -3,6 +3,10 @@ package com.dbstar.DbstarDVB;
 public class DbstarServiceApi {
 	
 	public static final String ACTION_NOTIFY = "com.dbstar.DbstarDVB.NOTIFY";
+	public static final String ACTION_HDMI_IN = "com.dbstar.DbstarDVB.HDMI_IN";
+	public static final String ACTION_HDMI_OUT = "com.dbstar.DbstarDVB.HDMI_OUT";
+	public static final String ACTION_SMARTCARD_IN = "com.dbstar.DbstarDVB.SMARTCARD_IN";
+	public static final String ACTION_SMARTCARD_OUT = "com.dbstar.DbstarDVB.SMARTCARD_OUT";
 	
 	
 	/* send command from UI to server */
