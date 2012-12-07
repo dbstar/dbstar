@@ -189,6 +189,15 @@ static int createDatabase()
 					ret += createtable_ret;
 				}
 				
+				createtable_ret = createTable("SetInfo");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
 				createtable_ret = createTable("Publication");
 				if(-1==createtable_ret){
 					ret = -1;
@@ -553,6 +562,17 @@ IsAuthorized	NVARCHAR(64) DEFAULT '',\
 VODNum	NVARCHAR(64) DEFAULT '',\
 VODPlatform	NVARCHAR(256) DEFAULT '',\
 Deleted NVARCHAR(256) DEFAULT '0',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (ServiceID,SetID,ColumnID));", name);
+			}
+			else if(!strcmp(name,"SetInfo"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+ServiceID	NVARCHAR(64) DEFAULT '0',\
+SetID	NVARCHAR(64) DEFAULT '',\
+ProductID	NVARCHAR(64) DEFAULT '',\
+infolang	NVARCHAR(64) DEFAULT 'cho',\
 Title	NVARCHAR(128) DEFAULT '',\
 Starring	NVARCHAR(256) DEFAULT '',\
 Scenario	NVARCHAR(512) DEFAULT '',\
@@ -561,7 +581,7 @@ Period	NVARCHAR(64) DEFAULT '',\
 CollectionNumber	NVARCHAR(64) DEFAULT '',\
 Review	NVARCHAR(64) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,SetID,ColumnID));", name);
+PRIMARY KEY (ServiceID,SetID,infolang));", name);
 			}
 			else if(!strcmp(name,"Publication"))
 			{

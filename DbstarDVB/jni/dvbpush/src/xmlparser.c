@@ -360,7 +360,31 @@ receive_status);
 				p_HT ++;
 			}
 			DEBUG("p_column: %s, p_HT: %s\n", p_column, p_HT);
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO Publication(ServiceID,PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
+
+/*
+ 如果是剧集，将将Column信息拆分后存入PubliationsSet；如果是非剧集，则拆分后存入Publication
+*/
+			if(strlen(ptr->SetID)>0){
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO PublicationsSet(ServiceID,ColumnID,ProductID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
+VALUES('%s',\
+'%s',\
+'%s',\
+'%s',\
+'%s',\
+'%d',\
+'%s');",
+ptr->ServiceID,
+p_column,
+ptr->productID,
+ptr->PushStartTime,
+ptr->PushEndTime,
+receive_status,
+ptr->SetID);
+		
+				sqlite_transaction_exec(sqlite_cmd);
+			}
+			else{
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO Publication(ServiceID,PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
 VALUES('%s',\
 '%s',\
 '%s',\
@@ -386,9 +410,42 @@ ptr->PushEndTime,
 receive_status,
 ptr->SetID);
 		
-			sqlite_transaction_exec(sqlite_cmd);
-			
+				sqlite_transaction_exec(sqlite_cmd);
+			}
 			p_column = p_HT;
+		}
+
+/*
+如果是剧集，除了上面存入PublicationsSet外，还要存入单集Publication，但是不拆分Column信息
+*/		
+		if(strlen(ptr->SetID)>0){
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO Publication(ServiceID,PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
+VALUES('%s',\
+'%s',\
+'%s',\
+'%s',\
+'%s',\
+'%s',\
+'%s',\
+'%s',\
+'%s',\
+'%s',\
+'%d',\
+'%s');",
+ptr->ServiceID,
+ptr->ID,
+ptr->Columns,
+ptr->productID,
+ptr->URI,
+ptr->DescURI,
+ptr->TotalSize,
+ptr->ProductDescID,
+ptr->PushStartTime,
+ptr->PushEndTime,
+receive_status,
+ptr->SetID);
+		
+				sqlite_transaction_exec(sqlite_cmd);
 		}
 	}
 	
@@ -479,26 +536,26 @@ static int preview_insert_productid(char *PreviewID, char *ProductID)
 	
 	char sqlite_cmd[1024*4];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,StartTime,EndTime,PlayMode) \
-	VALUES('%s',\
-	'%s',\
-	(select PreviewType from Preview where PreviewID='%s'),\
-	(select PreviewSize from Preview where PreviewID='%s'),\
-	(select ShowTime from Preview where PreviewID='%s'),\
-	(select PreviewURI from Preview where PreviewID='%s'),\
-	(select PreviewFormat from Preview where PreviewID='%s'),\
-	(select Duration from Preview where PreviewID='%s'),\
-	(select Resolution from Preview where PreviewID='%s'),\
-	(select BitRate from Preview where PreviewID='%s'),\
-	(select CodeFormat from Preview where PreviewID='%s'),\
-	(select URI from Preview where PreviewID='%s'),\
-	(select TotalSize from Preview where PreviewID='%s'),\
-	(select ProductDescID from Preview where PreviewID='%s'),\
-	(select ReceiveStatus from Preview where PreviewID='%s'),\
-	(select PushStartTime from Preview where PreviewID='%s'),\
-	(select PushEndTime from Preview where PreviewID='%s'),\
-	(select StartTime from Preview where PreviewID='%s'),\
-	(select EndTime from Preview where PreviewID='%s'),\
-	(select PlayMode from Preview where PreviewID='%s'));",
+VALUES('%s',\
+'%s',\
+(select PreviewType from Preview where PreviewID='%s'),\
+(select PreviewSize from Preview where PreviewID='%s'),\
+(select ShowTime from Preview where PreviewID='%s'),\
+(select PreviewURI from Preview where PreviewID='%s'),\
+(select PreviewFormat from Preview where PreviewID='%s'),\
+(select Duration from Preview where PreviewID='%s'),\
+(select Resolution from Preview where PreviewID='%s'),\
+(select BitRate from Preview where PreviewID='%s'),\
+(select CodeFormat from Preview where PreviewID='%s'),\
+(select URI from Preview where PreviewID='%s'),\
+(select TotalSize from Preview where PreviewID='%s'),\
+(select ProductDescID from Preview where PreviewID='%s'),\
+(select ReceiveStatus from Preview where PreviewID='%s'),\
+(select PushStartTime from Preview where PreviewID='%s'),\
+(select PushEndTime from Preview where PreviewID='%s'),\
+(select StartTime from Preview where PreviewID='%s'),\
+(select EndTime from Preview where PreviewID='%s'),\
+(select PlayMode from Preview where PreviewID='%s'));",
 		PreviewID,
 		ProductID,
 		PreviewID,
@@ -626,6 +683,41 @@ static int publicationapp_info_insert(DBSTAR_MULTIPLELANGUAGEINFOAPP_S *p)
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 #endif
+
+static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
+{
+	if(NULL==p){
+		DEBUG("invalid NULL arg\n");
+		return -1;
+	}
+	
+	char sqlite_cmd[512];
+
+#if 0
+	char old_PublicationType[64];	memset(old_PublicationType,0,sizeof(old_PublicationType));
+	char old_IsReserved[64];		memset(old_IsReserved,0,sizeof(old_IsReserved));
+	char old_Visible[64];			memset(old_Visible,0,sizeof(old_Visible));
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationType FROM PublicationsSet WHERE SetID='%s';",xmlinfo->PushFlag,xmlinfo->ServiceID,xmlinfo->ID);
+	if(0<sqlite_transaction_read(sqlite_cmd,old_xmlver,old_xmlver_size)){
+		DEBUG("read xml old version: %s\n", old_xmlver);
+		return 0;
+	}
+	else{
+		DEBUG("read xml old version failed\n");
+		return -1;
+	}
+#endif
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE PublicationsSet SET PublicationType='%s',IsReserved='%s',Visible='%s' WHERE SetID='%s';",
+		p->PublicationType,p->IsReserved,p->Visible,p->SetID);
+	sqlite_transaction_exec(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO SetInfo(SetID,Title,Starring,Scenario,Classification,Period,CollectionNumber,Review) VALUES('%s','%s','%s','%s','%s','%s','%s','%s');",
+		p->SetID,p->Title,p->Starring,p->Scenario,p->Classification,p->Period,p->CollectionNumber,p->Review);
+	
+	return sqlite_transaction_exec(sqlite_cmd);
+}
 
 /*
  向字幕资源表ResSubTitle中插入字幕信息
@@ -1378,6 +1470,9 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&info_va_s, 0, sizeof(info_va_s));
 					snprintf(info_va_s.ServiceID, sizeof(info_va_s.ServiceID), "%s", p->ServiceID);
 					snprintf(info_va_s.PublicationID, sizeof(info_va_s.PublicationID), "%s", p->PublicationID);
+					snprintf(info_va_s.PublicationType, sizeof(info_va_s.PublicationType), "%s", p->PublicationType);
+					snprintf(info_va_s.IsReserved, sizeof(info_va_s.IsReserved), "%s", p->IsReserved);
+					snprintf(info_va_s.Visible, sizeof(info_va_s.Visible), "%s", p->Visible);
 					
 					parseProperty(cur, new_xmlroute, (void *)&info_va_s);
 					parseNode(doc, cur, new_xmlroute, (void *)&info_va_s, NULL, NULL, NULL, NULL);
@@ -1453,6 +1548,68 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_MULTIPLELANGUAGEINFOVA_S *p = (DBSTAR_MULTIPLELANGUAGEINFOVA_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
 					strncpy(p->Area, (char *)szKey, sizeof(p->Area)-1);
+					xmlFree(szKey);
+				}
+				
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo")){
+					DBSTAR_MULTIPLELANGUAGEINFOVA_S *p = (DBSTAR_MULTIPLELANGUAGEINFOVA_S *)ptr;
+					
+					DBSTAR_PUBLICATIONSSET_S sset_s;
+					memset(&sset_s,0,sizeof(sset_s));
+					snprintf(sset_s.ServiceID,sizeof(sset_s.ServiceID),"%s",p->ServiceID);
+					snprintf(sset_s.PublicationType, sizeof(sset_s.PublicationType), "%s", p->PublicationType);
+					snprintf(sset_s.IsReserved, sizeof(sset_s.IsReserved), "%s", p->IsReserved);
+					snprintf(sset_s.Visible, sizeof(sset_s.Visible), "%s", p->Visible);
+					
+					parseNode(doc, cur, new_xmlroute, &sset_s, NULL, NULL, NULL, NULL);
+					publicationsset_insert(&sset_s);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^Title")){
+					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->Title, sizeof(p->Title), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^Starring")){
+					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->Starring, sizeof(p->Starring), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^Scenario")){
+					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->Scenario, sizeof(p->Scenario), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^Classification")){
+					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->Classification, sizeof(p->Classification), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^Period")){
+					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->Period, sizeof(p->Period), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^SetID")){
+					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->SetID, sizeof(p->SetID), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^CollectionNumber")){
+					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->CollectionNumber, sizeof(p->CollectionNumber), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^Review")){
+					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->Review, sizeof(p->Review), "%s", (char *)szKey);
 					xmlFree(szKey);
 				}
 				

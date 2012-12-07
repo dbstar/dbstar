@@ -362,6 +362,21 @@ typedef struct{
 }DBSTAR_PRODUCTDESC_S;
 
 typedef struct{
+	char	ServiceID[64];
+	char	SetID[64];
+	char	PublicationType[64];
+	char	IsReserved[64];
+	char	Visible[64];
+	char	Title[128];
+	char	Starring[256];
+	char	Scenario[512];
+	char	Classification[64];
+	char	Period[64];
+	char	CollectionNumber[64];
+	char	Review[64];
+}DBSTAR_PUBLICATIONSSET_S;
+
+typedef struct{
 	char	serviceID[64];
 	char	navigationType[64];
 }DBSTAR_NAVIGATION_S;
@@ -371,14 +386,6 @@ typedef struct{
 	char	columnID[64];
 	char	EntityID[64];
 }DBSTAR_COLUMNENTITY_S;
-
-typedef struct{
-	char	ServiceID[64];
-	char	SetID[64];
-	char	ProductID[64];
-	char	PublicationID[64];
-	char	IndexInSet[64];
-}DBSTAR_PUBLICATIONSSET_S;
 
 typedef struct{
 	char	ServiceID[64];
@@ -398,6 +405,9 @@ typedef struct{
 	char	CodeFormat[32];
 }DBSTAR_PUBLICATION_S;
 
+/*
+ 成员PublicationType、IsReserved、Visible只是为了将结构体Publication中的信息透传给PublicationsSet
+*/
 typedef struct{
 	char	ServiceID[64];
 	char	PublicationID[64];
@@ -414,6 +424,9 @@ typedef struct{
 	char	Actor[256];
 	char	Audience[64];
 	char	Model[32];
+	char	PublicationType[64];
+	char	IsReserved[64];
+	char	Visible[64];
 }DBSTAR_MULTIPLELANGUAGEINFOVA_S;
 
 typedef struct{
