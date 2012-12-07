@@ -1700,10 +1700,16 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				upgradeAfterSleep();
 			} else if (action.equals(GDCommon.ActionScreenOff)) {
 				mGpioController.setPowerLedOff();
+			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_IN)) {
+				mGpioController.setAudioOutputOff();
+			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_OUT)) {
+				mGpioController.setAudioOutputOn();
+			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
+				Log.d(TAG, "######: " + action);
+			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {
+				Log.d(TAG, "######: " + action);
 			}
-
 		}
-
 	};
 
 	void upgradeAfterSleep() {
