@@ -2,7 +2,7 @@ package com.dbstar.util;
 
 public class StringUtil {
 
-	public static final int DemicalLength = 3;
+	public static final int DemicalLength = 2;
 	
 	public static final int UNIT_B = 0;
 	public static final int UNIT_K = 1;

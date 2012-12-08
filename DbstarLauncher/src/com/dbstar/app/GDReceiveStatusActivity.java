@@ -64,11 +64,14 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	Drawable mReceiveItemLightBackground, mReceiveItemDarkBackground;
 
+	Timer mTimer = null;
+	TimerTask mTask = null;
+
 	private Handler mUIUpdateHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_UPDATEPROGRESS: {
-				if (mService != null && mBound) {
+				if (mBound) {
 					mService.getDownloadStatus(mObserver);
 					mService.getTSSignalStatus(mObserver);
 				}
@@ -83,9 +86,6 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	private void callTask() {
 		mUIUpdateHandler.sendEmptyMessage(MSG_UPDATEPROGRESS);
 	}
-
-	Timer mTimer = new Timer();
-	TimerTask mTask = null;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -102,37 +102,66 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		// mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 
-		mTask = new TimerTask() {
-			public void run() {
-				callTask();
-			}
-		};
+		mTimer = new Timer();
 	}
 
 	public void onStart() {
 		super.onStart();
 
 		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		if (mBound) {
+			startUpdateTask();
+		}
 	}
 
 	public void onStop() {
 		super.onStop();
 
-		mTimer.cancel();
-		mTimer.purge();
+		stopUpdateTask();
 
 		mService.stopGetTaskInfo();
+	}
+
+	public void onDestroy() {
+		super.onDestroy();
+
+		mTimer.cancel();
 	}
 
 	public void onServiceStart() {
 		super.onServiceStart();
 
 		mService.startGetTaskInfo();
-		mTimer.schedule(mTask, 1000, UpdatePeriodInMills);
+
+		startUpdateTask();
 	}
 
 	public void onServiceStop() {
 		super.onServiceStop();
+
+		stopUpdateTask();
+	}
+
+	void startUpdateTask() {
+		if (mTask != null) {
+			mTask.cancel();
+		}
+
+		mTask = new TimerTask() {
+			public void run() {
+				callTask();
+			}
+		};
+
+		mTimer.schedule(mTask, 1000, UpdatePeriodInMills);
+	}
+
+	void stopUpdateTask() {
+		if (mTask == null)
+			return;
+
+		mTask.cancel();
+		mTask = null;
 	}
 
 	private void loadPrevPage() {
@@ -292,7 +321,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		} else if (type == GDDataProviderService.REQUESTTYPE_GETTSSIGNALSTATUS) {
 			if (data == null)
 				return;
-			
+
 			String status = (String) data;
 			mSignalState = status.equalsIgnoreCase("1") ? SignalStateOn
 					: SignalStateOff;
@@ -306,16 +335,22 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 		if (entries != null && entries.length > 0) {
 
-			long preSize = 0;
-			long curSize = 0;
+			float speed = 0;
+			if (mPageDatas.size() > 0) {
 
-			preSize = computeAllPagesSize(mPageDatas);
-			curSize = computeEntriesSize(entries);
-			Log.d(TAG, "preSize=" + preSize + " curSize=" + curSize);
-			
-			float speed = (float) ((curSize - preSize) / 1024)
-					/ (float) UpdatePeriodInSecs;
-			String strSpeed = StringUtil.formatFloatValue(speed) + "KB/s";
+				long preSize = 0;
+				long curSize = 0;
+
+				//TODO: this may cause overflow of long
+				preSize = computeAllPagesSize(mPageDatas);
+				curSize = computeEntriesSize(entries);
+				Log.d(TAG, "preSize=" + preSize + " curSize=" + curSize);
+
+				speed = (float) ((curSize - preSize) / 128)
+						/ (float) UpdatePeriodInSecs;
+			}
+
+			String strSpeed = StringUtil.formatFloatValue(speed) + "Kb/s";
 			mDownloadSpeedView.setText(strSpeed);
 
 			ArrayList<ReceiveEntry> entriesList = new ArrayList<ReceiveEntry>();

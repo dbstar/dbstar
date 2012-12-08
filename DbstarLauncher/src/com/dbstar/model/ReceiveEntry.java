@@ -44,7 +44,7 @@ public class ReceiveEntry {
 		Total = StringUtil.formatFloatValue(total) + StringUtil.getUnitString(TotalUnit);
 		float f = (float)RawProgress/RawTotal * 100.f;
 		nProgress = (int)f;
-		Percent = String.valueOf(StringUtil.formatFloatValue(f)) + "%";
+		Percent = StringUtil.formatFloatValue(f) + "%";
 	}
 
 }
