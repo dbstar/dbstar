@@ -80,9 +80,12 @@ public class PlayerMenu extends PlayerActivity {
 
 	public static final String PREFS_SUBTITLE_NAME = "subtitlesetting";
 
-	private static final String ACTION_REALVIDEO_ON = "android.intent.action.REALVIDEO_ON";
-	private static final String ACTION_REALVIDEO_OFF = "android.intent.action.REALVIDEO_OFF";
-	private static final String ACTION_VIDEOPOSITION_CHANGE = "android.intent.action.VIDEOPOSITION_CHANGE";
+	// private static final String ACTION_REALVIDEO_ON =
+	// "android.intent.action.REALVIDEO_ON";
+	// private static final String ACTION_REALVIDEO_OFF =
+	// "android.intent.action.REALVIDEO_OFF";
+	// private static final String ACTION_VIDEOPOSITION_CHANGE =
+	// "android.intent.action.VIDEOPOSITION_CHANGE";
 
 	private static final String STR_OUTPUT_MODE = "ubootenv.var.outputmode";
 
@@ -97,7 +100,7 @@ public class PlayerMenu extends PlayerActivity {
 	private static final String File_amvdec_mpeg12 = "/sys/module/amvdec_mpeg12/parameters/dec_control";
 	private static final String File_amvdec_h264 = "/sys/module/amvdec_h264/parameters/dec_control";
 
-	// private static final String VideoAxisFile = "/sys/class/video/axis";
+	private static final String VideoAxisFile = "/sys/class/video/axis";
 	// private static final String RegFile = "/sys/class/display/wr_reg";
 	private static final String Fb0Blank = "/sys/class/graphics/fb0/blank";
 	private static final String Fb1Blank = "/sys/class/graphics/fb1/blank";
@@ -168,10 +171,10 @@ public class PlayerMenu extends PlayerActivity {
 	private boolean mSuspendFlag = false;
 
 	private boolean mHdmiPlugged;
-	private boolean mPaused;
+	private boolean mPaused = false;
 
-	private final static int GETROTATION_TIMEOUT = 500;
-	private final static int GETROTATION = 0x0001;
+	private static final int GETROTATION_TIMEOUT = 500;
+	private static final int GETROTATION = 0x0001;
 	private int mLastRotation;
 
 	boolean mDuringKeyActions = false;
@@ -186,6 +189,9 @@ public class PlayerMenu extends PlayerActivity {
 	private String mFilePath = null;
 	private String mPublicationId = null;
 
+	private String mOriginalAxis = null;
+	private String mVideoAxis = null;
+	
 	private boolean retriveInputParameters(Intent intent) {
 		mUri = intent.getData();
 		if (mUri == null) {
@@ -230,12 +236,15 @@ public class PlayerMenu extends PlayerActivity {
 		m1080scale = SystemProperties.getInt("ro.platform.has.1080scale", 0);
 		mOutputMode = SystemProperties.get(STR_OUTPUT_MODE);
 
+		mOriginalAxis = Utils.readSysfs(VideoAxisFile);
+
 		if (m1080scale == 2
 				|| (m1080scale == 1 && (mOutputMode.equals("1080p")
 						|| mOutputMode.equals("1080i") || mOutputMode
 							.equals("720p")))) {
-			Intent intentVideoOn = new Intent(ACTION_REALVIDEO_ON);
-			sendBroadcast(intentVideoOn);
+			// Intent intentVideoOn = new Intent(ACTION_REALVIDEO_ON);
+			// sendBroadcast(intentVideoOn);
+			setVideoOn();
 			SystemProperties.set("vplayer.hideStatusBar.enable", "true");
 		}
 
@@ -254,9 +263,13 @@ public class PlayerMenu extends PlayerActivity {
 		SettingsVP.setVideoLayoutMode();
 		if (m1080scale == 2) {
 			// set video position for MBX
-			Intent changeIntent = new Intent(ACTION_VIDEOPOSITION_CHANGE);
-			sendBroadcast(changeIntent);
+			// Intent changeIntent = new Intent(ACTION_VIDEOPOSITION_CHANGE);
+			// sendBroadcast(changeIntent);
+			setVideoPositionChange();
 		}
+
+		mVideoAxis = Utils.readSysfs(VideoAxisFile);
+
 		SettingsVP.enableVideoLayout();
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mScreenLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, TAG);
@@ -279,6 +292,8 @@ public class PlayerMenu extends PlayerActivity {
 				MSG_DIALOG_TIMEOUT);
 
 		setMute(false);
+		
+		Utils.writeSysfs(blankFb0File, "0");
 	}
 
 	@Override
@@ -287,7 +302,6 @@ public class PlayerMenu extends PlayerActivity {
 
 		Log.d(TAG, " ============ onResume ================== ");
 
-		mPaused = false;
 		keepScreenOn();
 		SystemProperties.set("vplayer.playing", "true");
 
@@ -300,6 +314,14 @@ public class PlayerMenu extends PlayerActivity {
 		// install an intent filter to receive SD card related events.
 		registerUSBReceiver();
 		registerCommandReceiver();
+
+		if (mPaused) {
+			mPaused = false;
+			
+			Utils.writeSysfs(VideoAxisFile, mVideoAxis);
+
+			Amplayer_play(mCurrentTime);
+		}
 	}
 
 	@Override
@@ -315,23 +337,15 @@ public class PlayerMenu extends PlayerActivity {
 		unregisterReceiver(mMountReceiver);
 		unregisterCommandReceiver();
 
-		if (mSuspendFlag) {
-			if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
-				try {
-					mAmplayer.Pause();
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-			}
-			mSuspendFlag = false;
-		}
+		Amplayer_stop();
 
 		if (m1080scale == 2
 				|| (m1080scale == 1 && (mOutputMode.equals("1080p")
 						|| mOutputMode.equals("1080i") || mOutputMode
 							.equals("720p")))) {
-			Intent intentVideoOff = new Intent(ACTION_REALVIDEO_OFF);
-			sendBroadcast(intentVideoOff);
+			// Intent intentVideoOff = new Intent(ACTION_REALVIDEO_OFF);
+			// sendBroadcast(intentVideoOff);
+			setVideoOff();
 		}
 
 	}
@@ -360,6 +374,7 @@ public class PlayerMenu extends PlayerActivity {
 		}
 
 		Utils.writeSysfs(FormatMVC, FormatMVC_3doff);
+		Utils.writeSysfs(VideoAxisFile, mOriginalAxis);
 		disable2XScale();
 		ScreenMode.setScreenMode("0");
 
@@ -393,6 +408,173 @@ public class PlayerMenu extends PlayerActivity {
 		super.finish();
 
 		Log.d(TAG, " -=============== finsh ==================-");
+	}
+
+	private static final String PpscalerFile = "/sys/class/ppmgr/ppscaler";
+	private static final String PpscalerRectFile = "/sys/class/ppmgr/ppscaler_rect";
+	private static final String FreescaleFb0File = "/sys/class/graphics/fb0/free_scale";
+	private static final String FreescaleFb1File = "/sys/class/graphics/fb1/free_scale";
+	private static final String request2XScaleFile = "/sys/class/graphics/fb0/request2XScale";
+	private static final String scaleAxisOsd1File = "/sys/class/graphics/fb1/scale_axis";
+	private static final String scaleOsd1File = "/sys/class/graphics/fb1/scale";
+	private static final String blankFb0File = "/sys/class/graphics/fb0/blank";
+	
+	private static final String sel_480ioutput_x = "ubootenv.var.480ioutputx";
+	private static final String sel_480ioutput_y = "ubootenv.var.480ioutputy";
+	private static final String sel_480ioutput_width = "ubootenv.var.480ioutputwidth";
+	private static final String sel_480ioutput_height = "ubootenv.var.480ioutputheight";
+	private static final String sel_480poutput_x = "ubootenv.var.480poutputx";
+	private static final String sel_480poutput_y = "ubootenv.var.480poutputy";
+	private static final String sel_480poutput_width = "ubootenv.var.480poutputwidth";
+	private static final String sel_480poutput_height = "ubootenv.var.480poutputheight";
+	private static final String sel_576ioutput_x = "ubootenv.var.576ioutputx";
+	private static final String sel_576ioutput_y = "ubootenv.var.576ioutputy";
+	private static final String sel_576ioutput_width = "ubootenv.var.576ioutputwidth";
+	private static final String sel_576ioutput_height = "ubootenv.var.576ioutputheight";
+	private static final String sel_576poutput_x = "ubootenv.var.576poutputx";
+	private static final String sel_576poutput_y = "ubootenv.var.576poutputy";
+	private static final String sel_576poutput_width = "ubootenv.var.576poutputwidth";
+	private static final String sel_576poutput_height = "ubootenv.var.576poutputheight";
+	private static final String sel_720poutput_x = "ubootenv.var.720poutputx";
+	private static final String sel_720poutput_y = "ubootenv.var.720poutputy";
+	private static final String sel_720poutput_width = "ubootenv.var.720poutputwidth";
+	private static final String sel_720poutput_height = "ubootenv.var.720poutputheight";
+	private static final String sel_1080ioutput_x = "ubootenv.var.1080ioutputx";
+	private static final String sel_1080ioutput_y = "ubootenv.var.1080ioutputy";
+	private static final String sel_1080ioutput_width = "ubootenv.var.1080ioutputwidth";
+	private static final String sel_1080ioutput_height = "ubootenv.var.1080ioutputheight";
+	private static final String sel_1080poutput_x = "ubootenv.var.1080poutputx";
+	private static final String sel_1080poutput_y = "ubootenv.var.1080poutputy";
+	private static final String sel_1080poutput_width = "ubootenv.var.1080poutputwidth";
+	private static final String sel_1080poutput_height = "ubootenv.var.1080poutputheight";
+	
+	private final String[] mOutputModeList = { "480i", "480p", "576i", "576p",
+			"720p", "1080i", "1080p" };
+
+	private void setVideoOn() {
+		Utils.writeSysfs(blankFb0File, "1");
+		// surfaceflinger will set back to 0
+
+		String cur_mode = SystemProperties.get(STR_OUTPUT_MODE);
+		Utils.writeSysfs(PpscalerFile, "0");
+		Utils.writeSysfs(FreescaleFb0File, "0");
+		Utils.writeSysfs(FreescaleFb1File, "0");
+		if ((cur_mode.equals(mOutputModeList[0]))
+				|| (cur_mode.equals(mOutputModeList[1]))) {
+			Utils.writeSysfs(request2XScaleFile, "16 720 480");
+			Utils.writeSysfs(scaleAxisOsd1File, "1280 720 720 480");
+			Utils.writeSysfs(scaleOsd1File, "0x10001");
+		} else if ((cur_mode.equals(mOutputModeList[2]))
+				|| (cur_mode.equals(mOutputModeList[3]))) {
+			Utils.writeSysfs(request2XScaleFile, "16 720 576");
+			Utils.writeSysfs(scaleAxisOsd1File, "1280 720 720 576");
+			Utils.writeSysfs(scaleOsd1File, "0x10001");
+		} else if ((cur_mode.equals(mOutputModeList[5]))
+				|| (cur_mode.equals(mOutputModeList[6]))) {
+			Utils.writeSysfs(request2XScaleFile, "8");
+			Utils.writeSysfs(scaleAxisOsd1File, "1280 720 1920 1080");
+			Utils.writeSysfs(scaleOsd1File, "0x10001");
+		} else {
+			Utils.writeSysfs(request2XScaleFile, "16 1280 720");
+			// for setting blank to 0
+		}
+
+	}
+
+	void setVideoOff() {
+		Utils.writeSysfs(blankFb0File, "1"); 
+		// surfaceflinger will set back to 0
+		
+		int[] curPosition = { 0, 0, 1280, 720 };
+		String cur_mode = SystemProperties.get(STR_OUTPUT_MODE);
+		curPosition = getPosition(cur_mode);
+		
+		Log.d(TAG, "\n ++++++++ 1 VideoAxisFile " + Utils.readSysfs(VideoAxisFile));
+		Utils.writeSysfs(VideoAxisFile, "0 0 1280 720");
+		Log.d(TAG, "\n +++++++++ 2 VideoAxisFile " + Utils.readSysfs(VideoAxisFile));
+		
+		Utils.writeSysfs(PpscalerFile, "1");
+		Utils.writeSysfs(PpscalerRectFile, curPosition[0] + " "
+				+ curPosition[1] + " " + (curPosition[2] + curPosition[0] - 1)
+				+ " " + (curPosition[3] + curPosition[1] - 1) + " " + 0);
+		Utils.writeSysfs(FreescaleFb0File, "1");
+		Utils.writeSysfs(FreescaleFb1File, "1");
+		Utils.writeSysfs(request2XScaleFile, "2");
+		Utils.writeSysfs(scaleOsd1File, "0");
+		Utils.writeSysfs(PpscalerRectFile, curPosition[0] + " "
+				+ curPosition[1] + " " + (curPosition[2] + curPosition[0] - 1)
+				+ " " + (curPosition[3] + curPosition[1] - 1) + " " + 0);
+		
+		Utils.writeSysfs(blankFb0File, "0"); 
+	}
+
+	void setVideoPositionChange() {
+		int[] curPosition = { 0, 0, 0, 0 };
+		String cur_mode = SystemProperties.get(STR_OUTPUT_MODE);
+		curPosition = getPosition(cur_mode);
+		Utils.writeSysfs(VideoAxisFile, curPosition[0] + " " + curPosition[1]
+				+ " " + (curPosition[2] + curPosition[0] - 1) + " "
+				+ (curPosition[3] + curPosition[1] - 1));
+	}
+	
+	private int[] getPosition(String mode){
+		int[] curPosition = {0, 0, 1280, 720};
+		int index = 4;	//720p
+		for(int i = 0; i<mOutputModeList.length; i++){
+			if(mode.equalsIgnoreCase(mOutputModeList[i]))
+				index = i;
+		}
+		switch(index){
+			case 0:		//480i
+				curPosition[0] = SystemProperties.getInt(sel_480ioutput_x, 0);
+				curPosition[1] = SystemProperties.getInt(sel_480ioutput_y, 0);
+				curPosition[2] = SystemProperties.getInt(sel_480ioutput_width, 720);
+				curPosition[3] = SystemProperties.getInt(sel_480ioutput_height, 480);
+				break;
+			case 1:		//480p
+				curPosition[0] = SystemProperties.getInt(sel_480poutput_x, 0);
+				curPosition[1] = SystemProperties.getInt(sel_480poutput_y, 0);
+				curPosition[2] = SystemProperties.getInt(sel_480poutput_width, 720);
+				curPosition[3] = SystemProperties.getInt(sel_480poutput_height, 480);
+				break;
+			case 2:		//576i
+				curPosition[0] = SystemProperties.getInt(sel_576ioutput_x, 0);
+				curPosition[1] = SystemProperties.getInt(sel_576ioutput_y, 0);
+				curPosition[2] = SystemProperties.getInt(sel_576ioutput_width, 720);
+				curPosition[3] = SystemProperties.getInt(sel_576ioutput_height, 576);
+				break;
+			case 3:		//576p
+				curPosition[0] = SystemProperties.getInt(sel_576poutput_x, 0);
+				curPosition[1] = SystemProperties.getInt(sel_576poutput_y, 0);
+				curPosition[2] = SystemProperties.getInt(sel_576poutput_width, 720);
+				curPosition[3] = SystemProperties.getInt(sel_576poutput_height, 576);
+				break;
+			case 4:		//720p
+				curPosition[0] = SystemProperties.getInt(sel_720poutput_x, 0);
+				curPosition[1] = SystemProperties.getInt(sel_720poutput_y, 0);
+				curPosition[2] = SystemProperties.getInt(sel_720poutput_width, 1280);
+				curPosition[3] = SystemProperties.getInt(sel_720poutput_height, 720);
+				break;
+			case 5:		//1080i
+				curPosition[0] = SystemProperties.getInt(sel_1080ioutput_x, 0);
+				curPosition[1] = SystemProperties.getInt(sel_1080ioutput_y, 0);
+				curPosition[2] = SystemProperties.getInt(sel_1080ioutput_width, 1920);
+				curPosition[3] = SystemProperties.getInt(sel_1080ioutput_height, 1080);
+				break;
+			case 6:		//1080p
+				curPosition[0] = SystemProperties.getInt(sel_1080poutput_x, 0);
+				curPosition[1] = SystemProperties.getInt(sel_1080poutput_y, 0);
+				curPosition[2] = SystemProperties.getInt(sel_1080poutput_width, 1920);
+				curPosition[3] = SystemProperties.getInt(sel_1080poutput_height, 1080);
+				break;
+			default:	//720p
+				curPosition[0] = SystemProperties.getInt(sel_720poutput_x, 0);
+				curPosition[1] = SystemProperties.getInt(sel_720poutput_y, 0);
+				curPosition[2] = SystemProperties.getInt(sel_720poutput_width, 1280);
+				curPosition[3] = SystemProperties.getInt(sel_720poutput_height, 720);
+				break;
+		}
+		return curPosition;
 	}
 
 	protected Dialog onCreateDialog(int id) {
@@ -455,30 +637,6 @@ public class PlayerMenu extends PlayerActivity {
 		if (keyCode != KeyEvent.KEYCODE_UNKNOWN) {
 			mDuringKeyActions = true;
 		}
-
-		// if (keyCode == KeyEvent.KEYCODE_POWER) {
-		// if (!mSuspendFlag) {
-		// if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
-		// try {
-		// mAmplayer.Pause();
-		// } catch (RemoteException e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// mSuspendFlag = true;
-		// keepScreenOff();
-		// } else {
-		// try {
-		// mAmplayer.Resume();
-		// } catch (RemoteException e) {
-		// e.printStackTrace();
-		// }
-		//
-		// mSuspendFlag = false;
-		// keepScreenOn();
-		// }
-		// return true;
-		// } else
 
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK: {
@@ -891,12 +1049,12 @@ public class PlayerMenu extends PlayerActivity {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void replay() {
 		if (mAmplayer == null || INITOK == false) {
 			return;
 		}
-		
+
 		try {
 			mAmplayer.Seek(0);
 		} catch (RemoteException e) {
@@ -1369,15 +1527,16 @@ public class PlayerMenu extends PlayerActivity {
 					mHideInfoBarTask = null;
 					if (!mDuringKeyActions) {
 						hideInfoBar();
-						
-//						boolean hideOSD = true;
-//						if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
-//							hideOSD = false;
-//						}
-//						
-//						if (hideOSD) {
-//							setOSDOn(false);
-//						}
+
+						// boolean hideOSD = true;
+						// if (mVideoInfoDlg != null &&
+						// mVideoInfoDlg.isShowing()) {
+						// hideOSD = false;
+						// }
+						//
+						// if (hideOSD) {
+						// setOSDOn(false);
+						// }
 					}
 					break;
 				}
@@ -1551,7 +1710,7 @@ public class PlayerMenu extends PlayerActivity {
 		if (mTotalTime != 0)
 			mProgressBar.setProgress(mCurrentTime * 100 / mTotalTime);
 
-		mProgressBar.setOnSeekBarChangeListener(mProgressChangeListener);
+		// mProgressBar.setOnSeekBarChangeListener(mProgressChangeListener);
 
 		mAudioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
 		mMaxVolumeLevel = mAudioManager
@@ -1569,22 +1728,23 @@ public class PlayerMenu extends PlayerActivity {
 		mSpeedDrawables[5] = getResources().getDrawable(R.drawable.speed_32);
 	}
 
-	SeekBar.OnSeekBarChangeListener mProgressChangeListener = new SeekBar.OnSeekBarChangeListener() {
-		public void onStopTrackingTouch(SeekBar seekBar) {
-		}
-
-		public void onStartTrackingTouch(SeekBar seekBar) {
-		}
-
-		public void onProgressChanged(SeekBar seekBar, int progress,
-				boolean fromUser) {
-			if (fromUser == true) {
-				;
-			} else {
-				Log.d(TAG, " +++++++++++++++++++ progress ++++ " + progress);
-			}
-		}
-	};
+	// SeekBar.OnSeekBarChangeListener mProgressChangeListener = new
+	// SeekBar.OnSeekBarChangeListener() {
+	// public void onStopTrackingTouch(SeekBar seekBar) {
+	// }
+	//
+	// public void onStartTrackingTouch(SeekBar seekBar) {
+	// }
+	//
+	// public void onProgressChanged(SeekBar seekBar, int progress,
+	// boolean fromUser) {
+	// if (fromUser == true) {
+	// ;
+	// } else {
+	// Log.d(TAG, " +++++++++++++++++++ progress ++++ " + progress);
+	// }
+	// }
+	// };
 
 	// ----------------- Subtitle related ---------------------------------
 

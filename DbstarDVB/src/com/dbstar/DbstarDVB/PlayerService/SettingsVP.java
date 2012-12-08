@@ -103,6 +103,10 @@ public class SettingsVP {
 				dispMode = in.readLine();
 				
 				String dispaxis = in_axis.readLine();
+
+				Log.d(TAG, " =========== dispMode " + dispMode);
+				Log.d(TAG, " =========== dispaxis " + dispaxis);
+				
 				if(dispMode== null ||dispaxis== null){//not exist,default m2,lvds1080p
 					dispMode = "lvds1080p";
 					panel_width = 1919;
