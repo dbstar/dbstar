@@ -709,7 +709,7 @@ static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
 	}
 #endif
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE PublicationsSet SET PublicationType='%s',IsReserved='%s',Visible='%s' WHERE SetID='%s';",
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE PublicationsSet SET PublicationType='%s',IsReserved='%s',Visible='%s',ReceiveStatus='1' WHERE SetID='%s';",
 		p->PublicationType,p->IsReserved,p->Visible,p->SetID);
 	sqlite_transaction_exec(sqlite_cmd);
 	
@@ -1470,9 +1470,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&info_va_s, 0, sizeof(info_va_s));
 					snprintf(info_va_s.ServiceID, sizeof(info_va_s.ServiceID), "%s", p->ServiceID);
 					snprintf(info_va_s.PublicationID, sizeof(info_va_s.PublicationID), "%s", p->PublicationID);
-					snprintf(info_va_s.PublicationType, sizeof(info_va_s.PublicationType), "%s", p->PublicationType);
-					snprintf(info_va_s.IsReserved, sizeof(info_va_s.IsReserved), "%s", p->IsReserved);
-					snprintf(info_va_s.Visible, sizeof(info_va_s.Visible), "%s", p->Visible);
 					
 					parseProperty(cur, new_xmlroute, (void *)&info_va_s);
 					parseNode(doc, cur, new_xmlroute, (void *)&info_va_s, NULL, NULL, NULL, NULL);
@@ -1552,7 +1549,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 				
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo")){
-					DBSTAR_MULTIPLELANGUAGEINFOVA_S *p = (DBSTAR_MULTIPLELANGUAGEINFOVA_S *)ptr;
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
 					
 					DBSTAR_PUBLICATIONSSET_S sset_s;
 					memset(&sset_s,0,sizeof(sset_s));

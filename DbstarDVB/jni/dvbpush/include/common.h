@@ -424,9 +424,6 @@ typedef struct{
 	char	Actor[256];
 	char	Audience[64];
 	char	Model[32];
-	char	PublicationType[64];
-	char	IsReserved[64];
-	char	Visible[64];
 }DBSTAR_MULTIPLELANGUAGEINFOVA_S;
 
 typedef struct{

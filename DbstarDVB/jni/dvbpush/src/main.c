@@ -44,6 +44,9 @@ void *main_thread()
 		//return NULL;
 	}
 	
+	DEBUG("to read drm info\n");
+	drm_info_refresh();
+	
 	// only for xml parse testing
 #if 0
 	char xml_uri[128];
@@ -76,7 +79,7 @@ void *main_thread()
 		//return NULL;
 	}
 #endif
-	
+
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
 		//return NULL;
@@ -94,8 +97,6 @@ void *main_thread()
 	
 	upgrade_info_init();
 	
-	DEBUG("to read drm info\n");
-	drm_info_refresh();
 	
 	DEBUG("OK ================================ OK\n");
 	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);

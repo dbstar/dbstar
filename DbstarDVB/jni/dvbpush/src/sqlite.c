@@ -555,6 +555,7 @@ ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	DATETIME DEFAULT '',\
 PushEndTime	DATETIME DEFAULT '',\
+PublicationType	NVARCHAR(64) DEFAULT '',\
 IsReserved	NVARCHAR(64) DEFAULT '',\
 Visible	NVARCHAR(64) DEFAULT '1',\
 Favorite	NVARCHAR(64) DEFAULT '0',\

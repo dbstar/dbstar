@@ -597,9 +597,11 @@ void ca_section_handle(int fid, const unsigned char *data, int len, void *user_d
 		pid = ((data[12]&0x1f)<<8)|data[13];
 		if (pid != emmpid)
 		{
-			DEBUG("set emm pid =[%x]\n",pid);
-			if(0==drm_init())
+			DEBUG("set emm pid =[%x] start...\n",pid);
+			if(0==drm_init()){
 				CDCASTB_SetEmmPid(pid);
+				DEBUG("set emm pid =[%x] finished\n",pid);
+			}
 			else
 				DEBUG("drm init failed\n");
 		}
