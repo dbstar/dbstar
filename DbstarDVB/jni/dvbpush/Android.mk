@@ -94,16 +94,17 @@ LOCAL_PRELINK_MODULE := false
 include $(BUILD_SHARED_LIBRARY)
 
 
-#include $(CLEAR_VARS)
-#LOCAL_MODULE := drmtest
-#LOCAL_MODULE_TAGS := optional
-#LOCAL_PRELINK_MODULE := false
-#LOCAL_SRC_FILES := \
+include $(CLEAR_VARS)
+LOCAL_MODULE := drmtest
+LOCAL_MODULE_TAGS := optional
+LOCAL_PRELINK_MODULE := false
+LOCAL_SRC_FILES := \
+	src/softdmx.c \
 	src/drm/drmport.c \
 	src/drm/smcdrv.c \
-	src/drm/drmtest.c 
-#LOCAL_CFLAGS := -Wall
-#LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
-#LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/
-#LOCAL_SHARED_LIBRARIES += libc liblog
-#include $(BUILD_EXECUTABLE)
+	src/drm/drmtest.c
+LOCAL_CFLAGS := -Wall
+LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/
+LOCAL_SHARED_LIBRARIES += libc liblog
+include $(BUILD_EXECUTABLE)
