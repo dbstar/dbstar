@@ -23,6 +23,7 @@ public class GDResourceAccessor {
 	public String HeaderActors;
 	
 	public String HanZi_Di, HanZi_Ye, HanZi_Ji;
+	public String CH_Year, CH_Month, CH_Day;
 
 	private Context mContext;
 
@@ -62,6 +63,10 @@ public class GDResourceAccessor {
 		HanZi_Di = mContext.getResources().getString(R.string.text_di);
 		HanZi_Ye = mContext.getResources().getString(R.string.text_ye);
 		HanZi_Ji = mContext.getResources().getString(R.string.text_ji);
+		
+		CH_Year = mContext.getResources().getString(R.string.ch_year);
+		CH_Month = mContext.getResources().getString(R.string.ch_month);
+		CH_Day = mContext.getResources().getString(R.string.ch_day);;
 	}
 
 }

@@ -34,6 +34,9 @@
     <string name="conformation_text">确认</string>
     <string name="tv_view_description_header">剧情简介:</string>
     <string name="inputview_title">输入</string>
+    <string name="ch_year">年</string>
+    <string name="ch_month">月</string>
+    <string name="ch_day">日</string>
 
     <!-- Smart home -->
     <string name="context_view_mypower_title">我的用电</string>

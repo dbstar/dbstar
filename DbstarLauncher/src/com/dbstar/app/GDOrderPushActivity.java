@@ -87,6 +87,8 @@ public class GDOrderPushActivity extends GDBaseActivity {
 
 		public String Date;
 
+		public String DisplayDate;
+
 		int ItemsPageNumber;
 		int ItemsPageCount;
 
@@ -326,6 +328,12 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		ReceiveTask task = new ReceiveTask();
 		task.Date = date;
 
+		String strDate = task.Date.substring(0, "yyyy-mm-dd".length());
+		String month = strDate.substring(5, 7);
+		String day = strDate.substring(8);
+
+		task.DisplayDate = month + mResource.CH_Month + day + mResource.CH_Day;
+
 		if (tasks.size() == 0) {
 			tasks.add(task);
 			Log.d(TAG, "add task 0 " + date);
@@ -466,8 +474,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 
-			holder.timeView.setText(mDataSet[position].Date.substring(0,
-					"1111-11-11".length()));
+			holder.timeView.setText(mDataSet[position].DisplayDate);
 
 			return convertView;
 		}

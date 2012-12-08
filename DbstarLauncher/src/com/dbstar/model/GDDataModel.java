@@ -605,7 +605,7 @@ public class GDDataModel {
 	}
 	
 	public GuideListItem[] getLatestGuideList() {
-		String selection = GuideList.DATEVALUE + "> datetime('now','localtime')";
+		String selection = GuideList.DATEVALUE + ">= datetime('now','localtime')";
 
 		return getGuideList(selection, null);
 	}
