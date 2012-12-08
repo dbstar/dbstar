@@ -54,7 +54,9 @@ public class GDCommon {
 	public static final String ColumnIDGeneralInfoSettings = "9901";
 	public static final String ColumnIDMultimediaSettings = "9902";
 	public static final String ColumnIDNetworkSettings = "9903";
-
+	public static final String ColumnIDFileBrowser = "9904";
+	public static final String ColumnIDAdvancedSettings = "9905";
+	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
 

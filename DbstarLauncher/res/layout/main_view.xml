@@ -33,7 +33,7 @@
             android:layout_marginLeft="20dp"
             android:layout_toRightOf="@id/logo_dbstar"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_guodian" />
+            android:src="@drawable/logo_guodian" />
         -->
 
         <TextView
@@ -149,7 +149,8 @@
             android:layout_marginBottom="10dp"
             android:layout_marginTop="4dp"
             android:scaleType="fitXY"
-            android:src="@drawable/default_1" />
+            android:src="@drawable/default_1"
+            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/mypower_text"
@@ -160,7 +161,7 @@
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="12dp"
             android:orientation="vertical"
-            android:visibility="gone" >
+            android:visibility="visible" >
 
             <TextView
                 android:id="@+id/mypower_degree"
@@ -195,39 +196,48 @@
                 android:textSize="18sp" />
         </LinearLayout>
 
-        <RelativeLayout
-            android:layout_width="237dp"
-            android:layout_height="163dp"
+        <FrameLayout
+            android:layout_width="230dp"
+            android:layout_height="147dp"
             android:layout_above="@id/mypower_text"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="20dp"
-            android:background="@drawable/power_panel"
-            android:visibility="gone" >
+            android:visibility="visible" >
 
+            <ImageView
+                android:id="@+id/mypower_panel"
+                android:layout_width="230dp"
+                android:layout_height="127dp"
+                android:scaleType="fitXY"
+                android:layout_gravity="top|center_horizontal"
+                android:src="@drawable/power_panel" />
+            
             <TextView
                 android:id="@+id/mypower_paneltext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
+                android:layout_gravity="top|center_horizontal"
                 android:layout_marginTop="55dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
                 android:textColor="#ffffffff"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
 
             <ImageView
                 android:id="@+id/mypower_pointer"
-                android:layout_width="108dp"
-                android:layout_height="108dp"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:rotation="90"
+                android:layout_width="128dp"
+                android:layout_height="40dp"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="0dp"
+                android:layout_marginLeft="7dp"
+                android:rotation="60"
                 android:scaleType="fitXY"
-                android:src="@drawable/power_pointer" />
-        </RelativeLayout>
+                android:src="@drawable/power_pointer"
+                android:transformPivotX="108dp"
+                android:transformPivotY="20dp" />
+        </FrameLayout>
     </RelativeLayout>
 
     <!-- main menu list -->
