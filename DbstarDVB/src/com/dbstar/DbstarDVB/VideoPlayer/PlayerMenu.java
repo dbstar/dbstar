@@ -318,8 +318,8 @@ public class PlayerMenu extends PlayerActivity {
 			mPaused = false;
 
 			Utils.writeSysfs(VideoAxisFile, mVideoAxis);
-
 			Amplayer_play(mCurrentTime);
+			showOSD(true);
 		}
 	}
 
@@ -399,6 +399,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		unregisterReceiver(mHDMIEventReceiver);
 
+		showOSD(true);
 		super.onDestroy();
 	}
 
