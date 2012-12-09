@@ -25,6 +25,7 @@
 #define LOGE(...)
 #endif
 
+extern AM_ErrorCode_t AM_TIME_GetClock(int *clock);
 #if 0
 typedef struct {
 	char sn[CDCA_MAXLEN_SN + 1];
@@ -37,7 +38,7 @@ typedef struct {
 	CDCA_U32      timeouttime;
 } SCDCAFilterInfo;
 #endif
-#define CDCA_MAX_CARD_NUM 2
+//#define CDCA_MAX_CARD_NUM 2
 #define SMC_DEVICE  "/dev/smc0"
 #define BLOCK01_FILE "/data/dbstar/drm/entitle/block01"
 #define ENTITLE_FILE_PATH "/data/dbstar/drm/entitle"
@@ -49,7 +50,7 @@ int smc_fd = -1;
 
 FILE *block01_fd = NULL;
 
-SCDCACardEntitleInfo card_sn = {"", NULL}; //[CDCA_MAX_CARD_NUM];
+SCDCACardEntitleInfo card_sn = {"", -1}; //[CDCA_MAX_CARD_NUM];
 SCDCAFilterInfo dmx_filter[MAX_CHAN_FILTER];
 extern Channel_t chanFilter[];
 extern int max_filter_num;
@@ -303,12 +304,35 @@ static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_
 	wPid = filterinfo->wPID;
 	CDCASTB_PrivateDataGot(byReqID, CDCA_FALSE, wPid, data, len);
 	if ((byReqID & 0x80) == 0x80) {
-		if (checkTimeoutMark) {
+		if (checkTimeoutMark>0) {
 			checkTimeoutMark --;
 		}
 		dmx_filter[fid].timeouttime = 0;
 		CDSTBCA_ReleasePrivateDataFilter(byReqID, wPid);
 	}
+        else if (checkTimeoutMark>0)
+        {
+             int now,theni,i;
+
+             AM_TIME_GetClock(&now);
+ 
+             for(i=0; i<max_filter_num; i++)
+             {
+                 theni = dmx_filter[i].timeouttime;
+                 if (theni > 0)
+                 {
+                     if (theni <= now)
+                     {
+                         if (checkTimeoutMark>0) 
+                         {
+                             checkTimeoutMark --;
+                         }
+                         dmx_filter[i].timeouttime = 0;
+                         CDSTBCA_ReleasePrivateDataFilter(dmx_filter[i].byReqID, dmx_filter[i].wPID);
+                     }
+                 }
+             }
+        }
 }
 #endif
 
@@ -694,11 +718,12 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 	int ret = 0;
 	char fullentitle[CDCA_MAXLEN_SN_PATH];
 
+        *(int *)pFileHandle = -1;
 	sprintf(fullentitle, "%s/%s", ENTITLE_FILE_PATH, CardSN);
 	LOGD("open the entitle file [%s]\n", fullentitle);
 	if (access(fullentitle, 0)) { //not exsit
-		if (card_sn.fd) {
-			fclose(card_sn.fd);
+		if (card_sn.fd != -1) {
+			close(card_sn.fd);
 		}
 		ret = mkdirp(ENTITLE_FILE_PATH);
 		if (ret != 0) {
@@ -706,35 +731,35 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 			return CDCA_FALSE;
 		}
 		strncpy(card_sn.sn, fullentitle, CDCA_MAXLEN_SN_PATH);
-		card_sn.fd = fopen(fullentitle, "w+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
-		if (card_sn.fd) {
+		card_sn.fd = open(fullentitle, O_CREAT|O_RDWR); //"w+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
+		if (card_sn.fd >= 0) {
 			LOGD("open the entitle 0 successful\n");
 		}
-		*pFileHandle = card_sn.fd;
+		*pFileHandle = &card_sn.fd;
 	} else {
-		if (card_sn.fd) {
+		if (card_sn.fd >= 0) {
 			if (!strcmp(card_sn.sn, fullentitle)) {
-				*pFileHandle = card_sn.fd;
+				*pFileHandle = &card_sn.fd;
 			} else {
-				fclose(card_sn.fd);
+				close(card_sn.fd);
 				strncpy(card_sn.sn, fullentitle, CDCA_MAXLEN_SN_PATH);
-				card_sn.fd = fopen(card_sn.sn, "r+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
-				if (card_sn.fd) {
+				card_sn.fd = open(card_sn.sn, O_RDWR);//"r+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
+				if (card_sn.fd >= 0) {
 					LOGD("open the entitle 0 successful\n");
 				}
-				*pFileHandle = card_sn.fd;
+				*pFileHandle = &card_sn.fd;
 			}
 		} else {
 			strncpy(card_sn.sn, fullentitle, CDCA_MAXLEN_SN_PATH);
-			card_sn.fd = fopen(fullentitle, "r+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
-			if (card_sn.fd) {
+			card_sn.fd = open(fullentitle, O_RDWR);//"r+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
+			if (card_sn.fd >= 0) {
 				LOGD("open the entitle [0] successful\n");
 			}
-			*pFileHandle = card_sn.fd;
+			*pFileHandle = &card_sn.fd;
 		}
 	}
 
-	if (*pFileHandle) {
+	if ((int)(*pFileHandle) >= 0) {
 		return CDCA_TRUE;
 	}
 	LOGD("open the entitle file failed!!!!!\n");
@@ -745,8 +770,9 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 void CDSTBCA_DRM_CloseEntitleFile(void*  pFileHandle)
 {
 	LOGD("close the entitle file!!!!\n");
-	fclose(pFileHandle);
+	close(*(int *)pFileHandle);
 	memset(&card_sn, 0, sizeof(SCDCACardEntitleInfo));
+        card_sn.fd = -1;
 }
 
 /* 移动文件指针*/
@@ -757,25 +783,25 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 {
 	LOGD("seek the file ori=[%d] posk=[%lu] pos=[%lu] \n", byOrigin, dwOffsetKByte, dwOffsetByte);
 
-	if (!pFileHandle) {
+	if (*(int *)pFileHandle < 0) {
 		return CDCA_FALSE;
 	}
 	if (byOrigin == CDCA_SEEK_SET) {
-		if (fseek((FILE *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_SET)) {
+		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_SET)) {
 			LOGD("!!!!!!!!!!!!!!!!!!!!!!!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_CUR_BACKWARD) {
-		if (fseek((FILE *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_CUR)) {
+		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_CUR)) {
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_CUR_FORWARD) {
-		if (fseek((FILE *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_CUR)) {
+		if (lseek64(*(int *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_CUR)) {
 			LOGD("!!!!!!!!!!!!!!!!!!!!!!!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_END) {
-		if (fseek((FILE *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_END)) {
+		if (lseek64(*(int *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_END)) {
 			LOGD("!!!!!!!!!!!!!!!!!!!!!!!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
@@ -789,11 +815,11 @@ CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen
 {
 	int ret;
 	//LOGD("read file len [%d]\n", dwLen);
-	if (!pFileHandle) {
+	if ((*(int *)pFileHandle) < 0) {
 		return -1;
 	}
 
-	ret = fread(pBuf, 1, dwLen, (FILE *)pFileHandle);
+	ret = read((*(int *)pFileHandle), pBuf, dwLen);
 	if (ret > 0) {
 		//LOGD("read file successful[%d][%d]!!!!\n", ret, dwLen);
 	} else {
@@ -806,19 +832,20 @@ CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen
 CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen)
 {
 	CDCA_U32 ret;
+
 	LOGD("write file len [%lu]\n", dwLen);
-	if (!pFileHandle) {
+	if ((*(int *)pFileHandle) < 0) {
 		return -1;
 	}
-	for (ret = 0 ; ret < dwLen; ret++) {
+	/*for (ret = 0 ; ret < dwLen; ret++) {
 		LOGD("0x%x,", pBuf[ret]);
-	}
-	/*return*/ret =  fwrite(pBuf, 1, dwLen, (FILE *)pFileHandle);
+	}*/
+	/*return*/ret = write(*(int *)pFileHandle, pBuf, dwLen);
 	if (ret > 0) {
 		LOGD("write file successful[%lu][%lu]!!!!\n", ret, dwLen);
 	} else {
 		LOGD("write file failed!!!!!!\n");
 	}
-	fflush((FILE *)pFileHandle);
+	//fflush((FILE *)pFileHandle);
 	return ret;
 }

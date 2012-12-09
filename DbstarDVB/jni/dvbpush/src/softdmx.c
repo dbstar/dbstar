@@ -19,6 +19,8 @@ static LoaderInfo_t g_loaderInfo;
 static pthread_t loaderthread = 0;
 static int loaderAction = 0;
 static int s_print_cnt = 0;
+static unsigned char tc_tid = 0xff;
+static unsigned short tc_pid = 0xffff;
 
 extern int TC_loader_get_push_state(void);
 extern int TC_loader_get_push_buf_size(void);
@@ -36,7 +38,7 @@ int upgradefile_clear()
 }
 
 #if 1
-unsigned int tc_crc32_table[256] =
+const unsigned int tc_crc32_table[256] =
 {
   0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9,
   0x130476dc, 0x17c56b6b, 0x1a864db2, 0x1e475005,
@@ -104,7 +106,7 @@ unsigned int tc_crc32_table[256] =
   0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
 
-unsigned int tc_crc32(unsigned char *buf, int len)
+unsigned int tc_crc32(const unsigned char *buf, int len)
 {
 	unsigned int i_crc = 0xffffffff;
 	int i;
@@ -374,13 +376,13 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 	static unsigned char startWrite = 0, getMaxSeq = 0;
 	static unsigned char *recv_buf=NULL, *recv_mark=NULL;
 	unsigned char *datap = NULL;
-	static unsigned int total_loader=0, lastSeq=0, totalLen=0;
-	static unsigned int maxSeq = -1;
-	unsigned int seq=0;
+	static int total_loader=0, lastSeq=0, totalLen=0;
+	static int maxSeq = -1;
+	 int seq=0;
 	FILE *upgradefile=NULL;
 	
 	static int s_first_package_flag = -1;
-	unsigned int tmp_i = 0;
+	int tmp_i = 0;
 	
 	//DEBUG("call loader_section_handle\n");
 	if (len < 12)
@@ -406,7 +408,7 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 	
 	seq = datap[0]*0x100 + datap[2];
 	
-	if(s_first_package_flag>0 && (unsigned int)(s_first_package_flag)==seq){
+	if(s_first_package_flag>0 && (s_first_package_flag==seq)){
 		DEBUG("has recv %d/%d for one loop, lost such packages:\n", total_loader, maxSeq);
 		int count_need = 0;
 		for(tmp_i=0;tmp_i<maxSeq;tmp_i++){
@@ -768,22 +770,22 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	TC_free_filter(loader_dsc_fid);
 	datap += 4;
 	{
-		unsigned short pid;
-		unsigned char tid;
+		//unsigned short pid;
+		//unsigned char tid;
 		Filter_param param;
 		
-		pid = *datap;
+		tc_pid = *datap;
 		datap++;
-		pid = ((pid<<8)|(*datap));//&0x1fff;
+		tc_pid = ((tc_pid<<8)|(*datap));//&0x1fff;
 		datap++;
-		tid = *datap++;
-		DEBUG(">>>> pid = [%x]  tid=[%x] loader_section_handle=%p\n",pid,tid,loader_section_handle);
+		tc_tid = *datap++;
+		DEBUG(">>>> pid = [%x]  tid=[%x] loader_section_handle=%p\n",tc_pid,tc_tid,loader_section_handle);
 		TC_loader_filter_handle(1);
 		memset(&param,0,sizeof(param));
-		param.filter[0] = tid;
+		param.filter[0] = tc_tid;
 		param.mask[0] = 0xff;
-		g_loaderInfo.fid = TC_alloc_filter(pid, &param, loader_section_handle, NULL, 1);
-		DEBUG("pid: %d|0x%x, fid: %d\n", pid,pid, g_loaderInfo.fid);
+		g_loaderInfo.fid = TC_alloc_filter(tc_pid, &param, loader_section_handle, NULL, 1);
+		//DEBUG("pid: %d|0x%x, fid: %d\n", tc_pid,tc_pid, g_loaderInfo.fid);
 	}
 	
 	g_loaderInfo.file_type = *datap++;
@@ -1049,14 +1051,22 @@ retry:
 				
 				//DEBUG("payload [%d]\n",total);
 			}
-			else if(*chanbuf == 0xf1){
+#if 0
+			else if(*chanbuf == tc_tid) 
+                        {//0xf1){
 				//DEBUG("chan->pid: 0x%x\n", chan->pid);
-				loader_section_handle(0, chanbuf, sec_len, NULL);
+                                if(chan->pid == tc_pid)
+                                {
+				    loader_section_handle(0, chanbuf, sec_len, NULL);
+                                }
+                                else
+                                    goto chandle;
 			}
+#endif
 			else
 			{
 				//PRINTF("===== chan->pid: 0x%x", chan->pid);
-				int j = 0;
+        			int j;
 				for(j = 0; j < max_filter_num; j++)
 				{
 					unsigned char match = 1;
@@ -1155,7 +1165,7 @@ retry:
 	return 0;
 }
 
-static unsigned short last_pid=0;
+//static unsigned short last_pid=0;
 int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 {
 	static int p = 0;
@@ -1321,146 +1331,3 @@ void chanFilterInit(void)
 		chanFilter[i].fid = -1;
 	}
 }
-
-#if 0
-int main(void)
-{
-FILE *fd1,*fde;
-//int writer_p = 0;
-unsigned char buf[MULTI_BUF_SIZE];
-int ret,left,len,read,filter1,total;
-unsigned int dwnext = 0;
-unsigned int ennum=10;
-SCDCAPVODEntitleInfo einfo[10];
-
-char pbyBuffer[4*1024];
-int pdwBufferLen=4*1024;
-
-chanFilterInit();
-//Card_Entitle_init();
-#if 1
-if (CDCASTB_Init(0))
-DEBUG("DRM Init successful!!!!!!\n");
-else
-DEBUG("DRM Init failure!!!!!!!!!!\n");
-sleep(5);
-//CDCASTB_FormatBuffer();
-DEBUG("2222222222222222222\n");
-if (CDCASTB_SCInsert())
-DEBUG("CARD inserted!!!!!!!!!\n");
-else
-DEBUG("CARD out!!!!!!!!!!!!\n");
-CDCASTB_SetEmmPid(0x64);
-sleep(2);
-
-
-#if 1
-//fde = fopen("expentitle.txt","w+");
-//ret = CDCASTB_DRM_ExportEntitleFile("8000302100000333",fde);
-//fclose(fde);
-ret = CDCASTB_DRM_GetEntitleInfo(&dwnext,einfo,&ennum);
-
-DEBUG("ggggggget entitle info ret[%d],ennum[%d]\n",ret,ennum);
-
-while(1);
-#endif
-
-#endif
-//	filter1 = alloc_filter(123);
-//DEBUG("alloc _filter [%d]\n",filter1);
-//      fd1 = fopen("hytd.ts", "r");
-#if 1
-FILE *fp1,*fp2, *fp3;
-if ((fp1 = fopen("test.ts","r")) == NULL)
-//if ((fp1 = fopen("content1.txt","r")) == NULL)
-DEBUG("open content1.txt error\n");
-
-if ((fp2 = fopen("1.drm","r")) == NULL)
-//if ((fp2 = fopen("product1.drm","r")) == NULL)
-DEBUG("open product1.drm error\n");
-DEBUG("opening file.....\n");
-ret = CDCASTB_DRM_OpenFile((const void*)fp1,(const void*)fp2);
-
-DEBUG("!!!!!!!!!!!!!!!open the two file [%d]\n",ret);
-ret = CDCASTB_DRM_SyncEntitleToCard();
-DEBUG("sybc result [%d]\n",ret);
-while(1);
-if ((fp3 = fopen("result.txt","w+")) == NULL)
-DEBUG("open result.txt error\n");
-
-do
-{
-ret = CDCASTB_DRM_ReadFile((const void*)fp1,pbyBuffer,&pdwBufferLen);
-DEBUG("read file [%d][%d]\n",ret,pdwBufferLen);
-//if ((fp3 = fopen("result.txt","wt")) == NULL)
-//  DEBUG("open result.txt error\n");
-
-fwrite(pbyBuffer,1,pdwBufferLen,fp3);
-}while(ret == 0);
-
-DEBUG("ret = [%d]\n",ret);
-fclose(fp3);
-fclose(fp2);
-fclose(fp1);
-
-while(1)
-{
-usleep(100000);
-}
-#endif
-fd1 = fopen("3_DRM.ts", "r");
-if(!fd1) DEBUG("open file error\n");
-left = 0;
-read = 0;
-total = 0;
-if (!fd1)
-{
-DEBUG("open hytd.ts error\n");
-return -1;
-}
-
-while(1)
-{
-len = 1024;
-if ((left + len) < MULTI_BUF_SIZE)
-{
-ret = fread(buf+left,1,len,fd1);
-if (ret < 0) break;
-}
-else
-{
-len = MULTI_BUF_SIZE - left;
-if (len > 1024)
-len = 1024;
-ret = fread(buf+left,1,len,fd1);
-if (ret < 0) break;
-}
-if (ret > 0) {
-left += ret;
-total += ret;
-if (left >= MULTI_BUF_SIZE) left = 0;
-}
-else
-break;
-
-while(1)
-{
-if (left >= read)
-len = left - read;
-else
-len = MULTI_BUF_SIZE - read + left;
-if (len >188)
-parse_ts_packet(buf,left,&read);
-else
-break;
-}
-usleep(1);
-//DEBUG("total = [%d]\n",total);
-}
-DEBUG("total = [%d]\n",total);
-fclose(fd1);
-CDCASTB_Close();
-
-return 0;
-}
-#endif

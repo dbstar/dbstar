@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <linux/unistd.h>
 #include <linux/delay.h>
+#include <fcntl.h> 
 
 #include "prodrm20.h"
 
@@ -14,7 +15,7 @@ static char pbyBuffer[DRM_BUFF_LEN];
 
 int main(int argc, char **argv)
 {
-	FILE *fp1, *fp2, *fp3;
+	int fp1, fp2, fp3;
 	int ret= 0, total_len = 0;
 	int i = 0;
 	int posk = 0;
@@ -39,15 +40,15 @@ int main(int argc, char **argv)
 
 	sleep(2);
 
-	if ((fp1 = fopen(DRM_TEST_TS_FILE, "r")) == NULL) { //打开加密的视频文件
+	if ((fp1 = open(DRM_TEST_TS_FILE, O_RDONLY)) == -1) { //打开加密的视频文件
 		printf("open content1.txt error\n");
 	}
 
-	if ((fp2 = fopen(DRM_TEST_DRM_FILE, "r")) == NULL) { //打开授权文件
+	if ((fp2 = open(DRM_TEST_DRM_FILE, O_RDONLY)) == -1) { //打开授权文件
 		printf("open product1.drm error\n");
 	}
 
-	if ((fp3 = fopen(DRM_TEST_TS_OK_FILE, "w")) == NULL) {
+	if ((fp3 = open(DRM_TEST_TS_OK_FILE, O_WRONLY)) == NULL) {
 		printf("open ts error\n");
 	}
 
@@ -59,7 +60,7 @@ int main(int argc, char **argv)
 		ret = CDCASTB_DRM_ReadFile((const void*)fp1, pbyBuffer, &pdwBufferLen); //读解密后的数据
 		total_len += pdwBufferLen;
 		printf("read file [%d][%d], total_len=[%d]\n", ret, pdwBufferLen, total_len);
-		ret = fwrite(pbyBuffer, 1, pdwBufferLen, fp3);
+		ret = write(fp3, pbyBuffer, pdwBufferLen);
 		printf("write file [%d][%d], total_len=[%d]\n", ret, pdwBufferLen, total_len);
 	}
 #endif
@@ -81,9 +82,9 @@ int main(int argc, char **argv)
 	printf("CDCASTB_DRM_ReadFile()=%d, len=[%d]\n", ret, pdwBufferLen);
 #endif
 
-	fclose(fp3);
-	fclose(fp2);
-	fclose(fp1);
+	close(fp3);
+	close(fp2);
+	close(fp1);
 
 	return ret;
 }

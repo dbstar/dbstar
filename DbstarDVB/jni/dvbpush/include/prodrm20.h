@@ -227,7 +227,7 @@ typedef CDCA_U32  CDCA_Semaphore;
 
 typedef struct {
     char sn[CDCA_MAXLEN_SN_PATH];
-    FILE *fd;
+    int  fd;
 }SCDCACardEntitleInfo;
 
 typedef struct {

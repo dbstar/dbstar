@@ -87,7 +87,7 @@ int drm_sc_remove()
 }
 
 
-int drm_open(FILE *fd1, FILE *fd2)
+int drm_open(int fd1, int fd2)
 {
 	int ret = 0;
 
@@ -97,7 +97,7 @@ int drm_open(FILE *fd1, FILE *fd2)
 	return ret;
 }
 
-int drm_read(FILE *fd, unsigned char *buf, int size)
+int drm_read(int fd, unsigned char *buf, int size)
 {
 	int ret = 0;
 	int rdsize = size;
@@ -107,7 +107,7 @@ int drm_read(FILE *fd, unsigned char *buf, int size)
 	return rdsize;
 }
 
-int64_t drm_seek(FILE *fd, int pos, int whence)
+int64_t drm_seek(int fd, int pos, int whence)
 {
 	int success = 0;
 	int64_t ret = 0;
@@ -127,7 +127,7 @@ int64_t drm_seek(FILE *fd, int pos, int whence)
 	return ret;
 }
 
-void drm_close(FILE *fd)
+void drm_close(int fd)
 {
 	LOGD("DRM_CloseFile()\n");
 	CDCASTB_DRM_CloseFile((const void*)fd);

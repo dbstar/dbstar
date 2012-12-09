@@ -30,8 +30,8 @@ typedef struct {
 	int ready;
 	char filename_media[DRM_FILENAME_LEN];
 	char filename_drm[DRM_FILENAME_LEN];
-	FILE *fd_media;
-	FILE *fd_drm;
+	int fd_media;
+	int fd_drm;
 	int64_t curpos;
 	int64_t length;
 } drmvod_t;
@@ -84,7 +84,7 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 		tmp2 += 1;
 		strcpy(s_drmvod.filename_drm, tmp2); 
 	}
-	s_drmvod.fd_media = fopen(s_drmvod.filename_media, "r");
+	s_drmvod.fd_media = open(s_drmvod.filename_media, O_RDONLY);
 	if (!s_drmvod.fd_media) {
 		LOGE("########## open media(%s) ERROR!\n", s_drmvod.filename_media);
 		return -1;
@@ -112,7 +112,7 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 	}
 
 	if (s_drmvod.inited) {
-		s_drmvod.fd_drm = fopen(s_drmvod.filename_drm, "r");
+		s_drmvod.fd_drm = open(s_drmvod.filename_drm, O_RDONLY);
 		if (!s_drmvod.fd_drm) {
 			LOGE("########## open drm (%s) ERROR!\n", s_drmvod.filename_drm);
 			s_drmvod.ready = 0;
@@ -120,8 +120,8 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 			ret = drm_open(s_drmvod.fd_media, s_drmvod.fd_drm);
 			if (ret != 0) {
 				LOGE("########## drm_open() ERROR!, ret=%d\n", ret);
-				fclose(s_drmvod.fd_drm);
-				s_drmvod.fd_drm = NULL;
+				close(s_drmvod.fd_drm);
+				s_drmvod.fd_drm = -1;
 				return -1;
 			} else {
 				s_drmvod.ready = 1;
@@ -147,7 +147,7 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	if (s_drmvod.inited && s_drmvod.ready) {
 		ret = drm_read(drmvod->fd_media, buf, len);
 	} else {
-		ret = fread(buf, 1, len, drmvod->fd_media);
+		ret = read(drmvod->fd_media, buf, len);
 	}
 	
 	if (ret > 0) {
@@ -195,7 +195,7 @@ static int64_t drmvod_seek(URLContext *h, int64_t pos, int whence)
 	if (s_drmvod.inited && s_drmvod.ready) {
 		seekpos = drm_seek(drmvod->fd_media, seekpos, SEEK_SET);
 	} else {
-		seekpos = fseek(drmvod->fd_media, seekpos, SEEK_SET);
+		seekpos = lseek64(drmvod->fd_media, seekpos, SEEK_SET);
 	}
 	if (seekpos >= 0) {
 		drmvod->curpos = seekpos;
@@ -214,14 +214,14 @@ static int drmvod_close(URLContext *h)
 	if (s_drmvod.inited && s_drmvod.ready) {
 		drm_close(s_drmvod.fd_media);
 		if (drmvod->fd_drm) {
-			fclose(drmvod->fd_drm);
-			drmvod->fd_drm = NULL;
+			close(drmvod->fd_drm);
+			drmvod->fd_drm = -1;
 		}
 	}
 
 	if (drmvod->fd_media) {
-		fclose(drmvod->fd_media);
-		drmvod->fd_media = NULL;
+		close(drmvod->fd_media);
+		drmvod->fd_media = -1;
 	}
 	memset(&s_drmvod, 0, sizeof(drmvod_t));
 
