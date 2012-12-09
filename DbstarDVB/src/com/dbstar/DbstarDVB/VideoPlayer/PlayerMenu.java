@@ -137,6 +137,9 @@ public class PlayerMenu extends PlayerActivity {
 
 	private Drawable[] mSpeedDrawables = new Drawable[6];
 
+	boolean mIsFFKeyLongPressed = false;
+	boolean mIsFBKeyLongPressed = false;
+
 	private LinearLayout mInfoBar = null;
 
 	Timer mInfoBarTimer = new Timer();
@@ -443,6 +446,9 @@ public class PlayerMenu extends PlayerActivity {
 					mLongPressTask = null;
 				}
 
+				mIsFFKeyLongPressed = false;
+				mIsFBKeyLongPressed = false;
+
 				if (FF_FLAG)
 					mAmplayer.FastForward(0);
 				else if (FB_FLAG)
@@ -587,6 +593,7 @@ public class PlayerMenu extends PlayerActivity {
 			if (!INITOK)
 				return false;
 
+			mIsFFKeyLongPressed = true;
 			showInfoBar(false);
 			onFFButtonPressed();
 			handleLongPressDelayed();
@@ -597,6 +604,7 @@ public class PlayerMenu extends PlayerActivity {
 			if (!INITOK)
 				return false;
 
+			mIsFBKeyLongPressed = true;
 			showInfoBar(false);
 			onFBButtonPressed();
 
@@ -620,11 +628,14 @@ public class PlayerMenu extends PlayerActivity {
 				case 0x4e:
 					Log.d(TAG, "================ long press ==============");
 
-					if (FF_FLAG) {
+					if (mIsFFKeyLongPressed) {
 						onFFButtonPressed();
-					} else if (FB_FLAG) {
+					}
+
+					if (mIsFBKeyLongPressed) {
 						onFBButtonPressed();
 					}
+
 					break;
 				}
 				super.handleMessage(msg);
@@ -706,7 +717,8 @@ public class PlayerMenu extends PlayerActivity {
 				if (FF_LEVEL < FF_MAX) {
 					FF_LEVEL = FF_LEVEL + 1;
 				} else {
-					FF_LEVEL = 0;
+					// FF_LEVEL = 0;
+					return;
 				}
 
 				try {
@@ -770,7 +782,8 @@ public class PlayerMenu extends PlayerActivity {
 				if (FB_LEVEL < FB_MAX) {
 					FB_LEVEL = FB_LEVEL + 1;
 				} else {
-					FB_LEVEL = 0;
+					// FB_LEVEL = 0;
+					return;
 				}
 
 				try {
