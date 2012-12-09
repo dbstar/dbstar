@@ -350,6 +350,10 @@ public class PlayerActivity extends Activity {
 	public void exitPlayer() {
 
 	}
+	
+	public void searchOk() {
+		
+	}
 
 	// =========================================================
 	private Messenger mPlayerMsg = new Messenger(new Handler() {
