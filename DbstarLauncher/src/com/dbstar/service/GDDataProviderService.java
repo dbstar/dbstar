@@ -132,6 +132,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	boolean mNeedUpgrade = false;
 
 	private GpioController mGpioController;
+	GDPowerManager mPowerManger;
 
 	private class RequestTask {
 		public static final int INVALID = 0;
@@ -197,6 +198,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		mMainThreadId = Process.myTid();
 		mMainThreadPriority = Process.getThreadPriority(mMainThreadId);
 
+		mPowerManger = new GDPowerManager();
+		mPowerManger.acquirePartialWakeLock(this);
+		
 		mHandler = new SystemEventHandler();
 
 		mConfigure = new GDSystemConfigure();
@@ -278,6 +282,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	public void onDestroy() {
 		super.onDestroy();
 		Log.d(TAG, "onDestroy");
+
+		mPowerManger.releaseWakeLock();
 
 		stopDbStarService();
 		mDBStarClient.stop();
