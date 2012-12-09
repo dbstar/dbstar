@@ -553,13 +553,13 @@ public class GDDataModel {
 				Log.d(TAG, "query cursor size = " + cursor.getCount());
 				items = new ArrayList<GuideListItem>();
 				do {
-					
+
 					String date = cursor.getString(QUERYGUIDELIST_DATEVALUE);
 					if (date == null || date.isEmpty()) {
-						//invalid item
+						// invalid item
 						continue;
 					}
-					
+
 					GuideListItem item = new GuideListItem();
 					item.Date = date;
 					item.GuideListID = cursor
@@ -581,16 +581,20 @@ public class GDDataModel {
 		if (items != null && items.size() > 0) {
 
 			for (int i = 0; i < items.size(); i++) {
-				items.get(i).Name = getPublicationResStr(items.get(i).GuideListID,
+				items.get(i).Name = getPublicationResStr(
+						items.get(i).GuideListID,
 						GDDVBDataContract.GUIDELISTTABLE,
 						GDDVBDataContract.ValuePublicationName);
 				items.get(i).ColumnType = getPublicationResStr(
-						items.get(i).GuideListID, GDDVBDataContract.GUIDELISTTABLE,
+						items.get(i).GuideListID,
+						GDDVBDataContract.GUIDELISTTABLE,
 						GDDVBDataContract.ValueColumnName);
 			}
+
+			return items.toArray(new GuideListItem[items.size()]);
 		}
 
-		return items.toArray(new GuideListItem[items.size()]);
+		return null;
 	}
 
 	public GuideListItem[] getGuideList(String Date) {
@@ -603,9 +607,10 @@ public class GDDataModel {
 	public GuideListItem[] getGuideList() {
 		return getGuideList(null, null);
 	}
-	
+
 	public GuideListItem[] getLatestGuideList() {
-		String selection = GuideList.DATEVALUE + ">= datetime('now','localtime')";
+		String selection = GuideList.DATEVALUE
+				+ ">= datetime('now','localtime')";
 
 		return getGuideList(selection, null);
 	}
@@ -615,16 +620,14 @@ public class GDDataModel {
 
 		String sql = "UPDATE " + GDDVBDataContract.GUIDELISTTABLE + " SET "
 				+ GuideList.USERSTATUS + "=? WHERE " + GuideList.DATEVALUE
-				+ "=? AND " + GuideList.GUIDELISTID + "=? AND "
-				+ GuideList.PUBLICATIONID + "=?";
+				+ "=? AND " + GuideList.PUBLICATIONID + "=?";
 
 		String[][] bindArgs = new String[items.length][];
 		for (int i = 0; i < items.length; i++) {
-			String[] args = new String[4];
+			String[] args = new String[3];
 			args[0] = items[i].isSelected ? "1" : "0";
 			args[1] = items[i].Date;
-			args[2] = items[i].GuideListID;
-			args[3] = items[i].PublicationID;
+			args[2] = items[i].PublicationID;
 			bindArgs[i] = args;
 		}
 
