@@ -112,6 +112,8 @@ public class PlayerMenu extends PlayerActivity {
 
 	private static final int MID_FREESCALE = 0x10001;
 
+	private static final int DefaultSeekStep = 10; // 10s
+
 	private String mCodecMIPS = null;
 
 	private boolean FF_FLAG = false;
@@ -458,6 +460,9 @@ public class PlayerMenu extends PlayerActivity {
 				FB_FLAG = false;
 				FF_LEVEL = 0;
 				FB_LEVEL = 0;
+
+				mPlayButton.setImageResource(R.drawable.play);
+
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -545,26 +550,15 @@ public class PlayerMenu extends PlayerActivity {
 			return true;
 		}
 
-		case KeyEvent.KEYCODE_DPAD_LEFT:
+		case KeyEvent.KEYCODE_DPAD_LEFT: {
+			showInfoBar(true);
+			seekBackwardOneStep();
+			event.startTracking();
+			return true;
+		}
 		case KeyEvent.KEYCODE_DPAD_RIGHT: {
 			showInfoBar(true);
-
-			// if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
-			// try {
-			// mFFToast.cancel();
-			// if (FF_FLAG)
-			// mAmplayer.FastForward(0);
-			// if (FB_FLAG)
-			// mAmplayer.BackForward(0);
-			// FF_FLAG = false;
-			// FB_FLAG = false;
-			// FF_LEVEL = 0;
-			// FB_LEVEL = 0;
-			// } catch (RemoteException e) {
-			// e.printStackTrace();
-			// }
-			// }
-
+			seekForwardOneStep();
 			event.startTracking();
 			return true;
 		}
@@ -581,6 +575,38 @@ public class PlayerMenu extends PlayerActivity {
 		}
 
 		return super.onKeyDown(keyCode, event);
+	}
+
+	void seekForwardOneStep() {
+		if (mAmplayer == null || INITOK == false) {
+			return;
+		}
+
+		try {
+			int seekTo = mCurrentTime + DefaultSeekStep;
+			if (seekTo > mTotalTime) {
+				seekTo = mTotalTime;
+			}
+			mAmplayer.Seek(seekTo);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
+
+	void seekBackwardOneStep() {
+		if (mAmplayer == null || INITOK == false) {
+			return;
+		}
+
+		try {
+			int seekTo = mCurrentTime - DefaultSeekStep;
+			if (seekTo < 0) {
+				seekTo = 0;
+			}
+			mAmplayer.Seek(seekTo);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -988,7 +1014,7 @@ public class PlayerMenu extends PlayerActivity {
 
 	public void playbackStart() {
 		if (!FF_FLAG && !FB_FLAG)
-			mPlayButton.setImageResource(R.drawable.pause);
+			mPlayButton.setImageResource(R.drawable.play);
 
 		String videoFormat = mMediaInfo.getFullFileName(mUri.getPath());
 		if (videoFormat.endsWith(".mvc")) {
@@ -1000,7 +1026,7 @@ public class PlayerMenu extends PlayerActivity {
 
 	public void playbackPause() {
 		if (!FF_FLAG && !FB_FLAG)
-			mPlayButton.setImageResource(R.drawable.play);
+			mPlayButton.setImageResource(R.drawable.pause);
 	}
 
 	public void playbackExit() {
@@ -1044,6 +1070,11 @@ public class PlayerMenu extends PlayerActivity {
 			// finish();
 			exitPlayer();
 		}
+	}
+
+	public void searchOk() {
+		FF_FLAG = false;
+		FB_FLAG = false;
 	}
 
 	public void playbackInited() {
@@ -1549,7 +1580,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
 			if (!FF_FLAG && !FB_FLAG)
-				mPlayButton.setImageResource(R.drawable.pause);
+				mPlayButton.setImageResource(R.drawable.play);
 		}
 
 		mCurrentTimeView.setText(Utils.secToTime(mCurrentTime, false));
