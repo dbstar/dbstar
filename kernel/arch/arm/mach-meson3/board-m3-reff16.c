@@ -926,6 +926,7 @@ void mute_spk(struct snd_soc_codec* codec, int flag)
 #ifdef _AML_M3_HW_DEBUG_
 	printk("***Entered %s:%s\n", __FILE__,__func__);
 #endif
+#if 0
     if(flag){
 		set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 1);	 // mute speak
 		set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
@@ -933,6 +934,7 @@ void mute_spk(struct snd_soc_codec* codec, int flag)
 		set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 0);	 // unmute speak
 		set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
 	}
+#endif
 }
 
 #define APB_BASE 0x4000

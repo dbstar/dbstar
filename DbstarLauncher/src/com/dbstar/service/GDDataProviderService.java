@@ -131,7 +131,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	String mUpgradePackageFile;
 	boolean mNeedUpgrade = false;
 
-	private GpioController mGpioController;
+	private PeripheralController mPeripheralController;
 	GDPowerManager mPowerManger;
 
 	private class RequestTask {
@@ -211,7 +211,21 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		mTaskQueue = new LinkedList<RequestTask>();
 		mFinishedTaskQueue = new LinkedList<RequestTask>();
-		mGpioController = new GpioController();
+		mPeripheralController = new PeripheralController();
+
+		if (mPeripheralController.isHdmiIn()) {
+			Log.d(TAG, "Hdmi: IN");
+			mPeripheralController.setAudioOutputOff();
+		} else {
+			Log.d(TAG, "Hdmi: OUT");
+			mPeripheralController.setAudioOutputOn();
+		}
+
+		if (mPeripheralController.isSmartCardIn()) {
+			Log.d(TAG, "SmartCard: IN");
+		} else {
+			Log.d(TAG, "SmartCard: OUT");
+		}
 
 		for (int i = 0; i < mThreadCount; i++) {
 			WorkerThread thread = new WorkerThread();
@@ -410,7 +424,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			case GDCommon.MSG_NETWORK_CONNECT:
 				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
 				mIsNetworkReady = true;
-				mGpioController.setNetworkLedOn();
+				mPeripheralController.setNetworkLedOn();
 				if (mIsStorageReady) {
 					startDbStarService();
 				}
@@ -421,7 +435,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			case GDCommon.MSG_NETWORK_DISCONNECT:
 				Log.d(TAG, "++++++++++++ network disconnected +++++++++++");
 				mIsNetworkReady = false;
-				mGpioController.setNetworkLedOff();
+				mPeripheralController.setNetworkLedOff();
 				notifyDbstarServiceNetworkStatus();
 				stopDbStarService();
 
@@ -1457,6 +1471,12 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		filter.addAction(GDCommon.ActionScreenOn);
 		filter.addAction(GDCommon.ActionScreenOff);
 
+		filter.addAction(DbstarServiceApi.ACTION_HDMI_IN);
+		filter.addAction(DbstarServiceApi.ACTION_HDMI_OUT);
+
+		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_IN);
+		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
+
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
 
@@ -1705,11 +1725,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			} else if (action.equals(GDCommon.ActionScreenOn)) {
 				upgradeAfterSleep();
 			} else if (action.equals(GDCommon.ActionScreenOff)) {
-				mGpioController.setPowerLedOff();
+				mPeripheralController.setPowerLedOff();
 			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_IN)) {
-				mGpioController.setAudioOutputOff();
+				mPeripheralController.setAudioOutputOff();
 			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_OUT)) {
-				mGpioController.setAudioOutputOn();
+				mPeripheralController.setAudioOutputOn();
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
 				Log.d(TAG, "######: " + action);
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {

@@ -19,13 +19,17 @@ package com.dbstar.util;
 import android.util.Log;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-public class GpioController {
-	private static String TAG = "GPIOController";
-	private static String GPIO_CMD_FILE = "/sys/class/gpio/cmd";
+public class PeripheralController {
+	private static String TAG = "PeripheralController";
+	private static String SYSFILE_GPIO_CMD = "/sys/class/gpio/cmd";
+	private static String SYSFILE_HDMI_STATE = "/sys/class/switch/hdmi/state";
+	private static String SYSFILE_SMARTCARD_STATE = "/sys/class/switch/smartcard/state";
 	private static String CMD_SET_POWER_LED_ON = "w:o:10:1";
 	private static String CMD_SET_POWER_LED_OFF = "w:o:10:0";
 	private static String CMD_SET_NETWORK_LED_ON = "w:d:1:1";
@@ -69,16 +73,58 @@ public class GpioController {
 		return;
 	}
 
+	public boolean isHdmiIn() {
+		String state = readSysFile(SYSFILE_HDMI_STATE);
+		if (state != null && "1".equals(state)) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isSmartCardIn() {
+		String state = readSysFile(SYSFILE_SMARTCARD_STATE);
+		if (state != null && "1".equals(state)) {
+			return true;
+		}
+		return false;
+	}
+
 	private void setGpio(String cmd) {
-		try { 
-			BufferedWriter bw = new BufferedWriter(new FileWriter(GPIO_CMD_FILE), 32); 
+		writeSysFile(SYSFILE_GPIO_CMD, cmd);
+	}
+
+	private String readSysFile(String file) {
+		String buf = null;
+		if (file == null) {
+			Log.d(TAG, "writeSysFile ERROR!, file=null");
+			return null;
+		} else try {
+			BufferedReader br = new BufferedReader(new FileReader(file), 64);
 			try {
-				bw.write(cmd); 
+				buf = br.readLine();
 			} finally {
-				bw.close(); 
+				br.close();
+			}
+			return buf; 
+		} catch (IOException e) {
+			Log.e(TAG, "readSysFile error"); 
+			return null; 
+		}
+	}
+
+	private void writeSysFile(String file, String buf) {
+		if (file == null || buf == null) {
+			Log.d(TAG, "writeSysFile ERROR!, file=" + file + "buf=" + buf);
+			return;
+		} else try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(file), 64);
+			try {
+				bw.write(buf);
+			} finally {
+				bw.close();
 			}
 			return; 
-		} catch (IOException e) { 
+		} catch (IOException e) {
 			Log.e(TAG, "setGpio error"); 
 			return; 
 		}
