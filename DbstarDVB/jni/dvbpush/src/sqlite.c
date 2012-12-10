@@ -1472,7 +1472,7 @@ static int global_info_init()
 		GLB_NAME_HDFOREWARNING,HDFOREWARNING_DFT);
 	sqlite_transaction_exec(sqlite_cmd);
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','/data/dbstar/ColumnRes/LocalColumnIcon/Setting_losefocus.png','');");
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','LocalColumnIcon/Setting_losefocus.png','');");
 	sqlite_transaction_exec(sqlite_cmd);
 	
 	return sqlite_transaction_end(1);

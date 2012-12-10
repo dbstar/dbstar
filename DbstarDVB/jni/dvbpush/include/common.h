@@ -45,6 +45,13 @@ typedef enum{
 }BOOL_E;
 
 /*
+ 盒端版本号，不是从loader读取的，而是根据管理需要定义的，每次发布版本都要手工更新
+*/
+#define HARDWARE_VERSION	"03.01"
+#define LOADER_VERSION		"1.2.1"
+
+
+/*
 程序自行使用的配置、fifo文件等
 */
 #define	WORKING_DATA_DIR	"/data/dbstar"
@@ -105,7 +112,7 @@ typedef enum{
 #define COLUMN_RES			WORKING_DATA_DIR"/ColumnRes"
 
 #define CURLANGUAGE_DFT				"cho"
-#define DEVICEMODEL_DFT				"DB_AML_M3"
+#define DEVICEMODEL_DFT				"01"
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
 #define HDFOREWARNING_DFT			"10240"

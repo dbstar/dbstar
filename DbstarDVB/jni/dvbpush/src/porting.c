@@ -46,6 +46,8 @@ static char			s_serviceID[64];
 static char			s_push_root_path[512];
 static char 		*s_guidelist_unselect = NULL;
 
+static int 			s_disk_manage_buzy = 0;
+
 static dvbpush_notify_t dvbpush_notify = NULL;
 
 static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int date_str_size);
@@ -573,6 +575,23 @@ int guidelist_select_refresh()
 	}
 }
 
+
+void disk_manage()
+{
+	if(1==s_disk_manage_buzy)
+		return;
+	else{
+		s_disk_manage_buzy = 1;
+		push_pause();
+		
+		
+		
+		push_resume();
+		s_disk_manage_buzy = 0;
+	}
+}
+
+
 /*
  通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
  实际调用参见dvbpush_jni.c
@@ -638,6 +657,11 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			guidelist_select_refresh();
 			break;
 		
+		case CMD_DISK_FOREWARNING:
+			DEBUG("CMD_DISK_FOREWARNING: Disk alarm for capability\n");
+			disk_manage();
+			break;
+		
 		default:
 			break;
 	}
@@ -656,6 +680,7 @@ static void upgrade_info_refresh(char *info_name, char *info_value)
 	
 	memset(stbinfo, 0, sizeof(stbinfo));
 	int ret_sqlexec = sqlite_read(sqlite_cmd, stbinfo, sizeof(stbinfo), sqlite_cb);
+	
 	if(ret_sqlexec<=0 || strcmp(stbinfo, info_value)){
 		DEBUG("replace %s as %s to table 'Global'\n", info_name, info_value);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
@@ -685,13 +710,30 @@ void upgrade_info_init()
 		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", out.stb_id_h,out.stb_id_l);
 		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
 		DEBUG("stb id: %s\n", tmpinfo);
-		
+
+#if 0
 		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.hardware_version[0],out.hardware_version[1],out.hardware_version[2],out.hardware_version[3]);
 		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.software_version[0],out.software_version[1],out.software_version[2],out.software_version[3]);
 		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
 		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, tmpinfo);
+#else		
+/*
+下面三行才是航天传媒定义的显示在本地配置的版本号，其中：
+1、硬件版本号在同一批产品中不变，固定为“03.01”；
+2、软件版本号的前两段为2.0，第3段为大的功能版本号，第4段为提交的轮次；
+3、Loader没有独立的版本号，直接使用默认的版本号“1.2.1”，其中前两段“1.2”为固定，最后一段为版本轮次；
+4、设备型号固定使用分配的“01”
+*/
+		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, HARDWARE_VERSION);
+		
+		snprintf(tmpinfo, sizeof(tmpinfo), "2.0.%d.%d", out.software_version[2],out.software_version[3]);
+		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
+
+		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, LOADER_VERSION);		
+		upgrade_info_refresh(GLB_NAME_DEVICEMODEL, DEVICEMODEL_DFT);
+#endif
 	}
 	else
 		DEBUG("get loader message failed\n");

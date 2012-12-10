@@ -839,6 +839,36 @@ int mid_push_uninit()
 	return 0;
 }
 
+/*
+ 将push暂停，目前在清理硬盘前调用。
+*/
+int push_pause()
+{
+#if 0
+	push_destroy();
+#endif
+
+	return 0;
+}
+
+/*
+ 将push恢复，目前在清理硬盘后调用。
+*/
+int push_resume()
+{
+#if 0
+	if (push_init(push_conf) != 0)
+	{
+		DEBUG("Init push lib failed with %s!\n", push_conf);
+		return -1;
+	}
+	else
+		DEBUG("Init push lib success with %s!\n", push_conf);
+#endif
+	return 0;
+}
+
+
 int TC_loader_to_push_order(int ord)
 {
 	DEBUG("ord: %d\n", ord);
