@@ -73,6 +73,7 @@ typedef struct tagPRG
 }PROG_S;
 
 static int mid_push_regist(PROG_S *prog);
+static int mid_push_unregist(PROG_S *prog);
 static int push_decoder_buf_uninit();
 static int prog_name_fill();
 
@@ -90,16 +91,15 @@ static int s_xmlparse_running = 0;
 static int s_monitor_running = 0;
 static int s_decoder_running = 0;
 static char s_dvbpush_info_str[20480];
-static int s_dvbpush_getinfo_start = 0;
 static int s_push_monitor_active = 0;
-static int s_monitor_interval = 60;
+static int s_dvbpush_getinfo_flag = 0;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
 考虑到缓冲，在无数据后多查询几轮再停止查询，因此push数据时，置此值为3。
 考虑到开机最好给一次显示的机会，初始化为1。
 */
-static int s_push_has_data = 0;
+static int s_push_has_data = 3;
 
 int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 {
@@ -219,6 +219,7 @@ void *push_decoder_thread()
 	unsigned char *pBuf = NULL;
 	int rindex = 0;
     short len;
+    int push_loop_idle_cnt = 0;
 	
 	DEBUG("push decoder thread will goto main loop\n");
 	s_decoder_running = 1;
@@ -246,11 +247,11 @@ rewake:
 		else
 		{
 			usleep(20000);
-			s_push_has_data--;
-			if(s_push_has_data <= -1024)
+			push_loop_idle_cnt++;
+			if(push_loop_idle_cnt > 1024)
 			{
 				DEBUG("read nothing, read index %d\n", rindex);
-				s_push_has_data = 0;
+				push_loop_idle_cnt = 0;
 			}
 		}
 	}
@@ -371,24 +372,15 @@ static int prog_is_valid(PROG_S *prog)
 
 void dvbpush_getinfo_start()
 {
+	s_dvbpush_getinfo_flag = 1;
+	
 	DEBUG("dvbpush getinfo start >>\n");
 	
 	memset(s_dvbpush_info_str,0,sizeof(s_dvbpush_info_str));
-	
-	pthread_mutex_lock(&mtx_push_monitor);
-	s_dvbpush_getinfo_start = 1;
-	s_monitor_interval = 5;
-	pthread_cond_signal(&cond_push_monitor);
-	pthread_mutex_unlock(&mtx_push_monitor);
 }
 
 void dvbpush_getinfo_stop()
 {
-	pthread_mutex_lock(&mtx_push_monitor);
-	s_dvbpush_getinfo_start = 1;
-	s_monitor_interval = 60;
-	pthread_mutex_unlock(&mtx_push_monitor);
-
 #if 0	
 	if(NULL!=s_dvbpush_info_str){
 		DEBUG("FREE s_dvbpush_info_str=%p\n", s_dvbpush_info_str);
@@ -399,7 +391,47 @@ void dvbpush_getinfo_stop()
 	
 #endif
 	DEBUG("dvbpush getinfo stop <<\n");
+	s_dvbpush_getinfo_flag = 0;
 }
+
+
+static int prog_monitor(PROG_S *prog, char *time_stamp)
+{
+	if(NULL==prog)
+		return -1;
+	
+	if(NULL!=time_stamp && strcmp(time_stamp,prog->deadline)>0){
+		DEBUG("this prog[%s:%s] is overdue, compare with %s\n", prog->id,prog->deadline,time_stamp);
+		mid_push_unregist(prog);
+		return 0;
+	}
+	
+	if(s_push_has_data>0 && (prog->cur)<(prog->total)){
+		/*
+		* 获取指定节目的已接收字节大小，可算出百分比
+		由于管理上的错误，有可能出现当前长度大于总长的情况，在数组中忠实记录rxb的值，只有在UI执行getinfo时再控制cur<=total
+		*/
+		long long rxb = push_dir_get_single(prog->uri);
+		
+		DEBUG("PROG_S[%s]:%s %lld/%lld %-3lld%%\n",
+			prog->id,
+			prog->uri,
+			rxb,
+			prog->total,
+			rxb*100/prog->total);
+		
+		prog->cur = rxb;
+		if((prog->cur) >= (prog->total)){
+			DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", prog->uri);
+			push_prog_finish(prog->id, prog->type);
+		}
+	}
+	else
+		DEBUG("s_push_has_data=%d, prog->cur=%lld, prog->total=%lld, no need to monitor\n", s_push_has_data,prog->cur,prog->total);
+	
+	return 0;
+}
+
 
 int dvbpush_getinfo(char **p, unsigned int *len)
 {
@@ -410,7 +442,7 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 		s_dvbpush_info_str = NULL;
 	}
 #endif
-	
+
 	int info_size;
 	int i = 0;
 	/*
@@ -437,7 +469,9 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 			{
 				if(-1==prog_is_valid(&s_prgs[i]))
 					continue;
-					
+				
+				prog_monitor(&s_prgs[i],NULL);
+				
 				if(0==i){
 					snprintf(s_dvbpush_info_str, info_size,
 						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
@@ -447,6 +481,7 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
 			}
+			s_push_has_data --;
 			pthread_mutex_unlock(&mtx_push_monitor);
 			
 			*p = s_dvbpush_info_str;
@@ -458,6 +493,7 @@ int dvbpush_getinfo(char **p, unsigned int *len)
 		else
 			DEBUG("malloc %d Bs for push info failed\n", info_size);
 	}
+	
 	return -1;
 }
 
@@ -501,6 +537,21 @@ static int prog_overdue(char *my_time, char *deadline_time)
 #endif
 
 /*
+ 除非push有数据，并且监控的节目个数大于0，否则不需要monitor监控。
+ return 1——需要监控
+ return 0——不需要监控
+*/
+static int need_push_monitor()
+{
+	if(s_push_has_data>0 && s_push_monitor_active>0)
+		return 1;
+	else{
+		DEBUG("s_push_has_data: %d, s_push_monitor_active: %d\n", s_push_has_data, s_push_monitor_active);
+		return 0;
+	}
+}
+
+/*
 为避免无意义的查询硬盘，应完成下面两个工作：
 1、当节目接收完毕后不应再查询，数据库中记录的是100%
 2、只有UI上进入查看进度的界面后，通知底层去查询，其他时间查询没有意义。
@@ -515,23 +566,24 @@ void *push_monitor_thread()
 	int retcode = 0;
 	char sqlite_cmd[256];
 	char time_stamp[32];
+	int monitor_interval = 61;
 	
 	while (1==s_monitor_running)
 	{
-		PRINTF("1\n");
 		pthread_mutex_lock(&mtx_push_monitor);
 		PRINTF("2 s_push_has_data:%d,s_push_monitor_active:%d\n",s_push_has_data,s_push_monitor_active);
 		
 		gettimeofday(&now, NULL);
-		outtime.tv_sec = now.tv_sec + s_monitor_interval;
+		outtime.tv_sec = now.tv_sec + monitor_interval;
 		outtime.tv_nsec = now.tv_usec;
 		retcode = pthread_cond_timedwait(&cond_push_monitor, &mtx_push_monitor, &outtime);
 		
-		if(s_push_has_data>0 && s_push_monitor_active>0){
+		if(need_push_monitor()>0 && 0==s_dvbpush_getinfo_flag){
 			memset(time_stamp, 0, sizeof(time_stamp));
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
 			if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
 				DEBUG("can not generate DATETIME for prog monitor\n");
+				memset(time_stamp, 0, sizeof(time_stamp));
 			}
 			
 			int i = 0;
@@ -540,35 +592,9 @@ void *push_monitor_thread()
 				if(-1==prog_is_valid(&s_prgs[i]) || s_prgs[i].cur>=s_prgs[i].total)
 					continue;
 				
-				if(strcmp(time_stamp,s_prgs[i].deadline)>0){
-					DEBUG("this prog[%s:%s] is overdue, compare with %s\n", s_prgs[i].id,s_prgs[i].deadline,time_stamp);
-					memset(s_prgs[i].id, 0, sizeof(s_prgs[i].id));
-					memset(s_prgs[i].uri, 0, sizeof(s_prgs[i].uri));
-					memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
-					memset(s_prgs[i].deadline, 0, sizeof(s_prgs[i].deadline));
-					s_prgs[i].type = RECEIVETYPE_PUBLICATION;
-					s_prgs[i].cur = 0LL;
-					s_prgs[i].total = 0LL;
-				}
-				
-				/*
-				* 获取指定节目的已接收字节大小，可算出百分比
-				*/
-				long long rxb = push_dir_get_single(s_prgs[i].uri);
-				
-				DEBUG("PROG_S[%s]:%s %lld/%lld %-3lld%%\n",
-					s_prgs[i].id,
-					s_prgs[i].uri,
-					rxb,
-					s_prgs[i].total,
-					rxb*100/s_prgs[i].total);
-				
-				s_prgs[i].cur = rxb;
-				if(s_prgs[i].cur>=s_prgs[i].total){
-					DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", s_prgs[i].uri);
-					push_prog_finish(s_prgs[i].id, s_prgs[i].type);
-				}
+				prog_monitor(&s_prgs[i],time_stamp);
 			}
+			s_push_has_data--;
 		}
 		
 		pthread_mutex_unlock(&mtx_push_monitor);
@@ -577,7 +603,7 @@ void *push_monitor_thread()
 			DEBUG("push monitor thread is awaked by external signal\n");
 		}
 		else{
-			if(s_push_has_data>0 && s_push_monitor_active>0)
+			if(need_push_monitor()>0)
 				push_recv_manage_refresh(2,time_stamp);
 		}
 	}
@@ -764,13 +790,7 @@ int mid_push_init(char *push_conf)
 	}
 	
 	for(i=0; i<PROGS_NUM; i++){
-		memset(s_prgs[i].id, 0, sizeof(s_prgs[i].id));
-		memset(s_prgs[i].uri, 0, sizeof(s_prgs[i].uri));
-		memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
-		memset(s_prgs[i].deadline, 0, sizeof(s_prgs[i].deadline));
-		s_prgs[i].type = RECEIVETYPE_PUBLICATION;
-		s_prgs[i].cur = 0LL;
-		s_prgs[i].total = 0LL;
+		memset(&s_prgs[i], 0, sizeof(PROG_S));
 	}
 	
 	/*
@@ -793,7 +813,7 @@ int mid_push_init(char *push_conf)
 	/*
 	确保开机后至少有一次扫描机会，获得准确的下载进度。
 	*/
-	s_push_has_data = 1;
+	s_push_has_data = 3;
 	
 	push_set_notice_callback(callback);
 	
@@ -857,7 +877,7 @@ int push_pause()
 int push_resume()
 {
 #if 0
-	if (push_init(push_conf) != 0)
+	if (push_init(PUSH_CONF) != 0)
 	{
 		DEBUG("Init push lib failed with %s!\n", push_conf);
 		return -1;
@@ -984,7 +1004,7 @@ static int mid_push_regist(PROG_S *prog)
 /*
  反注册监控节目。
 */
-static int mid_push_unregist(int prog_index)
+static int mid_push_unregist(PROG_S *prog)
 {
 	/*
 	* Notice:节目路径是一个相对路径，不要以'/'开头；
@@ -994,23 +1014,18 @@ static int mid_push_unregist(int prog_index)
 	* 此处PRG这个结构体是出于示例方便定义的，不一定适用于您的程序中
 	*/
 	int ret = -1;
-	if(prog_index>=0 && prog_index<PROGS_NUM && 1==prog_is_valid(&s_prgs[prog_index])){
-		DEBUG("unregist from push monitor[%d]: %s %lld\n", prog_index, s_prgs[prog_index].uri, s_prgs[prog_index].total);
+	if(prog){
+		DEBUG("unregist from push monitor: %s %lld\n", prog->uri, prog->total);
 		
-		push_dir_unregister(s_prgs[prog_index].uri);
+		push_dir_unregister(prog->uri);
 		
-		memset(s_prgs[prog_index].id, 0, sizeof(s_prgs[prog_index].id));
-		memset(s_prgs[prog_index].uri, 0, sizeof(s_prgs[prog_index].uri));
-		memset(s_prgs[prog_index].caption, 0, sizeof(s_prgs[prog_index].caption));
-		s_prgs[prog_index].type = RECEIVETYPE_PUBLICATION;
-		s_prgs[prog_index].cur = 0LL;
-		s_prgs[prog_index].total = 0LL;
+		memset(prog, 0, sizeof(PROG_S));
 		
 		s_push_monitor_active--;
 		ret = 0;
 	}
 	else{
-		DEBUG("invalid arg: %d\n", prog_index);
+		DEBUG("invalid arg\n");
 		ret = -1;
 	}
 	
