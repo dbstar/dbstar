@@ -460,22 +460,28 @@ public class PlayerMenu extends PlayerActivity {
 				if (mLongPressTask != null) {
 					mLongPressTask.cancel();
 					mLongPressTask = null;
+
+					mIsFFKeyLongPressed = false;
+					mIsFBKeyLongPressed = false;
+
+					if (FF_FLAG)
+						mAmplayer.FastForward(0);
+					else if (FB_FLAG)
+						mAmplayer.BackForward(0);
+
+					FF_FLAG = false;
+					FB_FLAG = false;
+					FF_LEVEL = 0;
+					FB_LEVEL = 0;
+
+					mPlayButton.setImageResource(R.drawable.play);
+				} else {
+					if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+						seekBackwardOneStep();
+					} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+						seekForwardOneStep();
+					}
 				}
-
-				mIsFFKeyLongPressed = false;
-				mIsFBKeyLongPressed = false;
-
-				if (FF_FLAG)
-					mAmplayer.FastForward(0);
-				else if (FB_FLAG)
-					mAmplayer.BackForward(0);
-
-				FF_FLAG = false;
-				FB_FLAG = false;
-				FF_LEVEL = 0;
-				FB_LEVEL = 0;
-
-				mPlayButton.setImageResource(R.drawable.play);
 
 			} catch (RemoteException e) {
 				e.printStackTrace();
