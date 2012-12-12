@@ -322,6 +322,20 @@ public class PlayerMenu extends PlayerActivity {
 		if (mPaused) {
 			mPaused = false;
 
+			if (m1080scale == 2
+					|| (m1080scale == 1 && (mOutputMode.equals("1080p")
+							|| mOutputMode.equals("1080i") || mOutputMode
+								.equals("720p")))) {
+
+				// set scale parameters
+				Utils.setVideoOn();
+				SystemProperties.set("vplayer.hideStatusBar.enable", "true");
+			}
+
+			if (AmPlayer.getProductType() == 1) {
+				AmPlayer.disable_freescale(MID_FREESCALE);
+			}
+
 			Utils.writeSysfs(VideoAxisFile, mVideoAxis);
 			Amplayer_play(mCurrentTime);
 			showOSD(true);
@@ -552,13 +566,13 @@ public class PlayerMenu extends PlayerActivity {
 
 		case KeyEvent.KEYCODE_DPAD_LEFT: {
 			showInfoBar(true);
-//			seekBackwardOneStep();
+			// seekBackwardOneStep();
 			event.startTracking();
 			return true;
 		}
 		case KeyEvent.KEYCODE_DPAD_RIGHT: {
 			showInfoBar(true);
-//			seekForwardOneStep();
+			// seekForwardOneStep();
 			event.startTracking();
 			return true;
 		}
@@ -1073,8 +1087,8 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void searchOk() {
-//		FF_FLAG = false;
-//		FB_FLAG = false;
+		// FF_FLAG = false;
+		// FB_FLAG = false;
 	}
 
 	public void playbackInited() {
