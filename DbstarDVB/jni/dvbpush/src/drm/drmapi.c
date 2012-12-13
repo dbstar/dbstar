@@ -45,27 +45,37 @@ int drm_init()
 
 	drm_sc_insert();
 	sleep(2);
+	LOGD("drm_init(),s_drm_inited=%d\n",s_drm_inited);
 
 	return 0;
 }
 
+static int s_SCInsert_flag = 0;
 int drm_sc_insert()
 {
 	int ret = 0;
 
-	LOGD("DRM SCInsert()\n");
-
+	LOGD("drm_sc_insert() s_drm_inited=%d, s_SCInsert_flag=%d\n", s_drm_inited,s_SCInsert_flag);
 	if (s_drm_inited == 0) {
 		LOGD("DRM not inited!\n");
 		return -1;
+	}
+	else{
+		if(1==s_SCInsert_flag){
+			LOGD("CDCASTB_SCInsert() already called\n");
+			return 1;
+		}
 	}
 
 	ret = CDCASTB_SCInsert();
 	LOGD("DRM SCInsert() ret=%d\n", ret);
 	if (ret == 0) {
+		s_SCInsert_flag = 0;
 		LOGD("DRM SCInsert() FAILED!\n");
 		return -1;
 	}
+	else
+		s_SCInsert_flag = 1;
 
 	return ret;
 }
@@ -91,7 +101,7 @@ int drm_open(int fd1, int fd2)
 {
 	int ret = 0;
 
-	ret = CDCASTB_DRM_OpenFile((const void*)fd1, (const void*)fd2);
+	ret = CDCASTB_DRM_OpenFile((const void*)&fd1, (const void*)&fd2);
 	LOGD("DRM_OPEN()=%d\n", ret);
 
 	return ret;
@@ -100,24 +110,24 @@ int drm_open(int fd1, int fd2)
 int drm_read(int fd, unsigned char *buf, int size)
 {
 	int ret = 0;
-	int rdsize = size;
-	ret = CDCASTB_DRM_ReadFile((const void*)fd, buf, &rdsize);
+	unsigned int rdsize = (unsigned int)size;
+	ret = CDCASTB_DRM_ReadFile((const void*)&fd, buf, &rdsize);
 	//LOGD("DRM_READ(size=%d)=%d, rdsize=%d\n", size, ret, rdsize);
 
-	return rdsize;
+	return (int)rdsize;
 }
 
-int64_t drm_seek(int fd, int pos, int whence)
+int64_t drm_seek(int fd, int64_t pos, int whence)
 {
 	int success = 0;
 	int64_t ret = 0;
-	int posb;
-	int posk;
+	unsigned int posb;
+	unsigned int posk;
 
-	posk = pos >> 10;
-	posb = pos % 1024;
-	success = CDCASTB_DRM_SeekFilePos((const void*)fd, posk, posb);
-	LOGD("DRM_SEEK(pos=%d, posk=%d, posb=%d)\n", pos, posk, posb);
+	posk = (unsigned int)(pos >> 10);
+	posb = (unsigned int)(pos % 1024);
+	success = CDCASTB_DRM_SeekFilePos((const void*)&fd, posk, posb);
+	LOGD("DRM_SEEK(pos=%lld, posk=%d, posb=%d)\n", pos, posk, posb);
 
 	if (success) {
 		ret = pos;
@@ -130,7 +140,7 @@ int64_t drm_seek(int fd, int pos, int whence)
 void drm_close(int fd)
 {
 	LOGD("DRM_CloseFile()\n");
-	CDCASTB_DRM_CloseFile((const void*)fd);
+	CDCASTB_DRM_CloseFile((const void*)&fd);
 }
 
 int drm_set_emmpid()
@@ -163,3 +173,4 @@ void drm_uninit()
 	drm_sc_remove();
 	CDCASTB_Close();
 }
+

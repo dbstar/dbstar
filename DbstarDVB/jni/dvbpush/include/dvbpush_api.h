@@ -40,7 +40,7 @@ typedef enum {
 	
 	
 	DRM_NOTICE_SMARTCARD_OUT		= 0x31000,		// 无智能卡
-	DRM_NOTICE_SMARTCARD_IN			= 0x31001,		// 无智能卡
+	DRM_NOTICE_SMARTCARD_IN			= 0x31001,		// 智能卡插上
 	DRM_NOTICE_SMARTCARD_INVALID	= 0x31002,		// 无效智能卡
 	
 	

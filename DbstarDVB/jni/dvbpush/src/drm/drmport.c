@@ -786,23 +786,25 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 	if (*(int *)pFileHandle < 0) {
 		return CDCA_FALSE;
 	}
+	
+	LOGD("aaaaaaaaa *(int *)pFileHandle=%d\n", *(int *)pFileHandle);
 	if (byOrigin == CDCA_SEEK_SET) {
-		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_SET)) {
-			LOGD("!!!!!!!!!!!!!!!!!!!!!!!!!!fseek error\n");
+		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_SET)<0) {
+			LOGD("!!!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_SET!!fseek error\n");
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_CUR_BACKWARD) {
-		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_CUR)) {
+		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_CUR)<0) {
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_CUR_FORWARD) {
-		if (lseek64(*(int *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_CUR)) {
-			LOGD("!!!!!!!!!!!!!!!!!!!!!!!!!!fseek error\n");
+		if (lseek64(*(int *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_CUR)<0) {
+			LOGD("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_CUR_FORWARD!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_END) {
-		if (lseek64(*(int *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_END)) {
-			LOGD("!!!!!!!!!!!!!!!!!!!!!!!!!!fseek error\n");
+		if (lseek64(*(int *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_END)<0) {
+			LOGD("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_END!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
 	}
