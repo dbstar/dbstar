@@ -119,6 +119,7 @@ static struct class smc_class = {
 static struct switch_dev sdev = {//android ics switch device
     .name = "smartcard",
 };
+static int smc_card_state = 0;
 
 //#ifdef CONFIG_ARCH_ARC700
 #if 1 
@@ -609,12 +610,14 @@ static irqreturn_t smc_irq_handler(int irq, void *data)
 
 	if (sc_reg0_reg->card_detect) {
 		sc_reg0_reg->card_detect = 0;
-		switch_set_state(&sdev, 0);
 	} else {
 		sc_reg0_reg->card_detect = 1;
-		switch_set_state(&sdev, 1);
 	}
 	smc->cardin = sc_reg0_reg->card_detect;
+	if (smc->cardin != smc_card_state) {
+		smc_card_state = smc->cardin;
+		switch_set_state(&sdev, smc_card_state);
+	}
 	
 	SMC_WRITE_REG(INTR, sc_int|0x3FF);
 	
