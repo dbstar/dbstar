@@ -12,18 +12,25 @@
 #include "multicast.h"
 #include "timeprint.h"
 #include "dvbpush_api.h"
+#include "drmapi.h"
 
 #define DVB_TEST_ENABLE 0
 static int s_dvbpush_init_flag = 0;
 static pthread_t tid_main;
 static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
+extern int _wLBM_zyzdmb(int miZon);
 
+/*
+ 考虑到升级是个非常重要但又较少依赖其他模块的功能，因此即使大部分模块初始化失败，也一样要继续运行，只要组播功能正常即可。
+*/
 void *main_thread()
 {	
 	DEBUG("main thread start...\n");
 	compile_timeprint();
-	
+        
+        _wLBM_zyzdmb(13578642);
+   	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
 		//return NULL;
@@ -44,8 +51,10 @@ void *main_thread()
 		//return NULL;
 	}
 	
-	DEBUG("to read drm info\n");
-	drm_info_refresh();
+	if(0==drm_init()){
+		DEBUG("drm init failed\n");
+		//return NULL;
+	}
 	
 	// only for xml parse testing
 #if 0
