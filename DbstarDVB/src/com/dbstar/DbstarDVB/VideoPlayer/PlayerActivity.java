@@ -1,5 +1,6 @@
 package com.dbstar.DbstarDVB.VideoPlayer;
 
+import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.R;
 import com.dbstar.DbstarDVB.PlayerService.DivxInfo;
 import com.dbstar.DbstarDVB.PlayerService.Errorno;
@@ -8,15 +9,22 @@ import com.dbstar.DbstarDVB.PlayerService.MediaInfo;
 import com.dbstar.DbstarDVB.PlayerService.ScreenMode;
 import com.dbstar.DbstarDVB.PlayerService.SettingsVP;
 import com.dbstar.DbstarDVB.PlayerService.VideoInfo;
+import com.dbstar.DbstarDVB.VideoPlayer.alert.DbVideoInfoDlg;
+import com.dbstar.DbstarDVB.VideoPlayer.alert.GDAlertDialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Canvas;
 import android.media.AudioManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -25,6 +33,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Display;
 import android.view.SurfaceHolder;
+import android.view.View;
 import android.widget.Toast;
 
 import android.os.SystemProperties;
@@ -62,6 +71,137 @@ public class PlayerActivity extends Activity {
 
 	// Surface.ROTATION_0, ROTATION_90, ROTATION_180, ROTATION_270
 
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		reqisterSystemMessageReceiver();
+	}
+	
+	public void onDestroy() {
+		super.onDestroy();
+		
+		unregisterReceiver(mSystemMessageReceiver);
+	}
+	
+	private void reqisterSystemMessageReceiver() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(DbstarServiceApi.ACTION_HDMI_IN);
+		filter.addAction(DbstarServiceApi.ACTION_HDMI_OUT);
+
+		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_IN);
+		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
+
+		registerReceiver(mSystemMessageReceiver, filter);
+	}
+	
+	private static final int MSG_SMARTCARD_IN = 0x1000;
+	private static final int MSG_SMARTCARD_OUT = 0x1001;
+	
+	protected boolean mIsSmartcardIn = false;
+
+	private BroadcastReceiver mSystemMessageReceiver = new BroadcastReceiver() {
+
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+
+			Log.d(TAG, "onReceive System msg " + action);
+		
+			if (action.equals(DbstarServiceApi.ACTION_HDMI_IN)) {
+			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_OUT)) {
+			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
+				Log.d(TAG, "######: " + action);
+				mHandler.sendEmptyMessage(MSG_SMARTCARD_IN);
+			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {
+				Log.d(TAG, "######: " + action);
+				mHandler.sendEmptyMessage(MSG_SMARTCARD_OUT);
+			}
+		}
+	};
+	
+	protected static final int DLG_MEDIAINFO_POPUP = 0;
+	protected static final int DLG_SMARTCARD_POPUP = 1;
+	
+	protected static final int MSG_DIALOG_POPUP = 1;
+	protected static final int MSG_DIALOG_TIMEOUT = 500;
+
+	protected DbVideoInfoDlg mVideoInfoDlg = null;
+	protected Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_DIALOG_POPUP:
+				showDialog(DLG_MEDIAINFO_POPUP);
+				break;
+			case MSG_SMARTCARD_IN: {
+				mIsSmartcardIn = true;
+				smartcardPlugin(mIsSmartcardIn);
+				showDialog(DLG_SMARTCARD_POPUP);
+				break;
+			}
+			case MSG_SMARTCARD_OUT: {
+				mIsSmartcardIn = false;
+				smartcardPlugin(mIsSmartcardIn);
+				showDialog(DLG_SMARTCARD_POPUP);
+				break;
+			}
+			}
+		}
+	};
+	
+	GDAlertDialog mSmartcardDialog = null;
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog;
+		switch (id) {
+		case DLG_MEDIAINFO_POPUP: {
+			mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
+			dialog = mVideoInfoDlg;
+			break;
+		}
+		case DLG_SMARTCARD_POPUP: {
+			mSmartcardDialog = new GDAlertDialog(this, DLG_SMARTCARD_POPUP);
+			mSmartcardDialog.setOnCreatedListener(mOnCreatedListener);
+			dialog = mSmartcardDialog;
+		}
+		default:
+			dialog = null;
+			break;
+		}
+
+		return dialog;
+	}
+	
+	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
+
+		@Override
+		public void onCreated(GDAlertDialog dialog) {
+			if (dialog.getId() == DLG_SMARTCARD_POPUP) {
+				dialog.setTitle(R.string.smartcard_status_title);
+				if (mIsSmartcardIn) {
+					dialog.setMessage(R.string.smartcard_status_in);
+				} else {
+					dialog.setMessage(R.string.smartcard_status_out);
+				}
+				dialog.showSingleButton();
+				dialog.setPositiveBtnClickListener(mDRMPositiveBtnClickListener);
+			}
+		}
+
+	};
+	
+	View.OnClickListener mDRMPositiveBtnClickListener = new View.OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			if (mSmartcardDialog != null) {
+				mSmartcardDialog.dismiss();
+				exitPlayer();
+			}
+		}
+	};
+	
+	protected void smartcardPlugin(boolean plugIn) {
+		
+	}
+	
 	public void initAngleTable() {
 		String hwrotation = SystemProperties.get("ro.sf.hwrotation");
 		if (hwrotation == null) {

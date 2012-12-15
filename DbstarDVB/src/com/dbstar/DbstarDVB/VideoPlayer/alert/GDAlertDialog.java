@@ -26,7 +26,7 @@ public class GDAlertDialog extends Dialog {
 	}
 
 	public GDAlertDialog(Context context, int id) {
-		super(context, R.style.GDAlertDialog);
+		super(context, R.style.DbDialog);
 
 		mId = id;
 	}
