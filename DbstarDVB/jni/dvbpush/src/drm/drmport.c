@@ -787,7 +787,7 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 		return CDCA_FALSE;
 	}
 	
-	LOGD("aaaaaaaaa *(int *)pFileHandle=%d\n", *(int *)pFileHandle);
+	LOGD("%s *(int *)pFileHandle=%d\n", __FUNCTION__,*(int *)pFileHandle);
 	if (byOrigin == CDCA_SEEK_SET) {
 		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_SET)<0) {
 			LOGD("!!!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_SET!!fseek error\n");
@@ -816,14 +816,14 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen)
 {
 	int ret;
-	//LOGD("read file len [%d]\n", dwLen);
+	LOGD("read file len [%d]\n", dwLen);
 	if ((*(int *)pFileHandle) < 0) {
 		return -1;
 	}
 
 	ret = read((*(int *)pFileHandle), pBuf, dwLen);
 	if (ret > 0) {
-		//LOGD("read file successful[%d][%d]!!!!\n", ret, dwLen);
+		LOGD("read file successful[%d][%d],[%d]!!!!\n", (*(int *)pFileHandle), dwLen, ret);
 	} else {
 		LOGD("read file failed!!!!!! \n");
 	}

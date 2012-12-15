@@ -85,14 +85,19 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 		strcpy(s_drmvod.filename_drm, tmp2); 
 	}
 	s_drmvod.fd_media = open(s_drmvod.filename_media, O_RDONLY);
-	if (!s_drmvod.fd_media) {
-		LOGE("########## open media(%s) ERROR!\n", s_drmvod.filename_media);
+	if (-1==s_drmvod.fd_media) {
+		LOGE("########## open media(%s) ERROR! %d\n", s_drmvod.filename_media,s_drmvod.fd_media);
 		return -1;
+	}
+	else{
+//		long long seekpos = lseek64(s_drmvod.fd_media, DRM_TS_OFFSET, SEEK_SET);
+//		LOGE(">>>>>>>>>>>>>>>>> open [%d][%s] and seek to %lld\n", s_drmvod.fd_media,s_drmvod.filename_media,seekpos);
+		LOGE("########## open media(%s) success, %d\n", s_drmvod.filename_media,s_drmvod.fd_media);
 	}
 
 	ret = stat(s_drmvod.filename_media, &st);
 	if (ret == 0) {
-		s_drmvod.length = st.st_size - DRM_TS_OFFSET;
+		s_drmvod.length = st.st_size;
 		s_drmvod.curpos = 0;
 	} else {
 		LOGD("########## stat() ERROR. %s\n", strerror(errno));
@@ -108,16 +113,17 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 		} else {
 			s_drmvod.inited = 0;
 			LOGD("########## drm_init() Failed.\n");
+			return -1;
 		}
 	}
 
 	if (s_drmvod.inited) {
 		s_drmvod.fd_drm = open(s_drmvod.filename_drm, O_RDONLY);
-		if (!s_drmvod.fd_drm) {
+		if (-1==s_drmvod.fd_drm) {
 			LOGE("########## open drm (%s) ERROR!\n", s_drmvod.filename_drm);
 			s_drmvod.ready = 0;
 		} else {
-			ret = drm_open(s_drmvod.fd_media, s_drmvod.fd_drm);
+			ret = drm_open(&s_drmvod.fd_media, &s_drmvod.fd_drm);
 			if (ret != 0) {
 				LOGE("########## drm_open() ERROR!, ret=%d\n", ret);
 				close(s_drmvod.fd_drm);
@@ -125,6 +131,7 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 				return -1;
 			} else {
 				s_drmvod.ready = 1;
+				s_drmvod.length = st.st_size - DRM_TS_OFFSET;
 			}
 		}
 	}
@@ -138,14 +145,16 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	int ret = 0;
 	int len = 0;
 	drmvod_t *drmvod = (drmvod_t *)h->priv_data;
-
+	
+	LOGD("aaaaaaaa size=%d,drmvod->length=%lld,drmvod->curpos=%lld",size,drmvod->length,drmvod->curpos);
 	len = MIN(size, (drmvod->length - drmvod->curpos));
 	if (len <= 0) {
 		return 0;
 	}
-	//LOGD("########## 1. %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
+	LOGD("########## 1. %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
 	if (s_drmvod.inited && s_drmvod.ready) {
-		ret = drm_read(drmvod->fd_media, buf, len);
+		LOGD("read drm file\n");
+		ret = drm_read(&drmvod->fd_media, buf, len);
 	} else {
 		ret = read(drmvod->fd_media, buf, len);
 	}
@@ -173,7 +182,7 @@ static int64_t drmvod_seek(URLContext *h, int64_t pos, int whence)
 
 	switch (whence) {
 	case AVSEEK_SIZE: //65536
-		LOGD("########## %s(pos=%lld,whence=%d), ret=%lld\n", __FUNCTION__, pos, whence, drmvod->length);
+		LOGD("########## %s(pos=%lld,whence=%d), drmvod->length=%lld\n", __FUNCTION__, pos, whence, drmvod->length);
 		return drmvod->length;
 	case SEEK_CUR:
 		seekpos = drmvod->curpos + pos;
@@ -193,7 +202,7 @@ static int64_t drmvod_seek(URLContext *h, int64_t pos, int whence)
 	}
 
 	if (s_drmvod.inited && s_drmvod.ready) {
-		seekpos = drm_seek(drmvod->fd_media, seekpos, SEEK_SET);
+		seekpos = drm_seek(&drmvod->fd_media, seekpos, SEEK_SET);
 	} else {
 		seekpos = lseek64(drmvod->fd_media, seekpos, SEEK_SET);
 	}
@@ -212,7 +221,7 @@ static int drmvod_close(URLContext *h)
 	LOGD("########## %s()\n", __FUNCTION__);
 
 	if (s_drmvod.inited && s_drmvod.ready) {
-		drm_close(s_drmvod.fd_media);
+		drm_close(&s_drmvod.fd_media);
 		if (drmvod->fd_drm) {
 			close(drmvod->fd_drm);
 			drmvod->fd_drm = -1;

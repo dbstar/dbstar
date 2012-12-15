@@ -344,10 +344,10 @@ int smc_test(void)
 	//CDCASTB_PrivateDataGot(0x81,0, 0x10, data1, 104);
 	sleep(5);
 	printf("opening file.....\n");
-	ret = CDCASTB_DRM_OpenFile((const void*)fp1, (const void*)fp2);
+	ret = CDCASTB_DRM_OpenFile((const void*)&fp1, (const void*)fp2);
 	printf("open the two file [%d]\n", ret);
 	pdwBufferLen = 2048;
-	ret = CDCASTB_DRM_ReadFile((const void*)fp1, pbyBuffer, &pdwBufferLen);
+	ret = CDCASTB_DRM_ReadFile((const void*)&fp1, pbyBuffer, &pdwBufferLen);
 	printf("read file [%d][%d]\n", ret, pdwBufferLen);
 	fwrite(pbyBuffer, 1, pdwBufferLen, fp3);
 	fclose(fp3);

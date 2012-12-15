@@ -97,27 +97,27 @@ int drm_sc_remove()
 }
 
 
-int drm_open(int fd1, int fd2)
+int drm_open(int *fd1, int *fd2)
 {
 	int ret = 0;
 
-	ret = CDCASTB_DRM_OpenFile((const void*)&fd1, (const void*)&fd2);
+	ret = CDCASTB_DRM_OpenFile((const void*)fd1, (const void*)fd2);
 	LOGD("DRM_OPEN()=%d\n", ret);
 
 	return ret;
 }
 
-int drm_read(int fd, unsigned char *buf, int size)
+int drm_read(int *fd, unsigned char *buf, int size)
 {
 	int ret = 0;
 	unsigned int rdsize = (unsigned int)size;
-	ret = CDCASTB_DRM_ReadFile((const void*)&fd, buf, &rdsize);
-	//LOGD("DRM_READ(size=%d)=%d, rdsize=%d\n", size, ret, rdsize);
+	ret = CDCASTB_DRM_ReadFile((const void*)fd, buf, &rdsize);
+	LOGD("DRM_READ[%d](size=%d)=%d, rdsize=%d\n", fd,size, ret, rdsize);
 
 	return (int)rdsize;
 }
 
-int64_t drm_seek(int fd, int64_t pos, int whence)
+int64_t drm_seek(int *fd, int64_t pos, int whence)
 {
 	int success = 0;
 	int64_t ret = 0;
@@ -126,7 +126,7 @@ int64_t drm_seek(int fd, int64_t pos, int whence)
 
 	posk = (unsigned int)(pos >> 10);
 	posb = (unsigned int)(pos % 1024);
-	success = CDCASTB_DRM_SeekFilePos((const void*)&fd, posk, posb);
+	success = CDCASTB_DRM_SeekFilePos((const void*)fd, posk, posb);
 	LOGD("DRM_SEEK(pos=%lld, posk=%d, posb=%d)\n", pos, posk, posb);
 
 	if (success) {
@@ -137,10 +137,10 @@ int64_t drm_seek(int fd, int64_t pos, int whence)
 	return ret;
 }
 
-void drm_close(int fd)
+void drm_close(int *fd)
 {
 	LOGD("DRM_CloseFile()\n");
-	CDCASTB_DRM_CloseFile((const void*)&fd);
+	CDCASTB_DRM_CloseFile((const void*)fd);
 }
 
 int drm_set_emmpid()

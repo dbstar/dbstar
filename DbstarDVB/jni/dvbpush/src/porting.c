@@ -760,7 +760,7 @@ static void drm_errors(char *fun, CDCA_U16 ret)
 #define DRMENTITLE	"DRMProduct"
 int drm_info_refresh()
 {
-	return 0;
+	//return 0;
 	
 	if(0==drm_init()){
 		char		smartcard_sn[CDCA_MAXLEN_SN+1];
