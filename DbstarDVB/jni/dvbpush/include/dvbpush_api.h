@@ -23,6 +23,10 @@ typedef enum {
 	CMD_UPGRADE_TIMEOUT             = 0x00043,    // 用户操作对话框超时
 	
 	CMD_PUSH_SELECT                 = 0x00051,    // 用户从“选择接收”页面退出，选择完毕。
+
+	CMD_DRM_SC_INSERT               = 0x00061,    // DRM smartcard Insert
+	CMD_DRM_SC_REMOVE               = 0x00062,    // DRM smartcard Remove
+
 	CMD_MAX                         = 0x0FFFF,
 
 	MSG_MARQUEE                     = 0x10000,    // 跑马灯

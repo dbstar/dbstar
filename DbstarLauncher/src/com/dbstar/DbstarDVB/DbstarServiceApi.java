@@ -32,6 +32,10 @@ public class DbstarServiceApi {
 	public static final int CMD_UPGRADE_TIMEOUT             = 0x00043;
 	
 	public static final int CMD_PUSH_SELECT                 = 0x00051;
+
+	public static final int CMD_DRM_SC_INSERT               = 0x00061;
+	public static final int CMD_DRM_SC_REMOVE               = 0x00062;
+
 	public static final int CMD_MAX                         = 0x0FFFF;
 
 	/* NOTIFY STATUS or ERROR */
