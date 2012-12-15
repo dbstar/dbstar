@@ -2,6 +2,8 @@ package com.dbstar.app;
 
 import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
+import com.dbstar.model.EventData;
+import com.dbstar.model.GDCommon;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.service.GDDataProviderService.DataProviderBinder;
@@ -16,7 +18,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +31,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	private static final String TAG = "GDBaseActivity";
 
 	protected static final int DLG_FILE_NOTEXIST = 0;
+	protected static final int DLG_SMARTCARD_INFO = 1;
 
 	protected static final String INTENT_KEY_MENUPATH = "menu_path";
 	protected static final int MENU_LEVEL_1 = 0;
@@ -38,6 +43,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected MenuPathItem[] mMenuPathItems = new MenuPathItem[MENU_LEVEL_COUNT];
 	// Menu path container view
 	protected ViewGroup mMenuPathContainer;
+
+	protected boolean mIsSmartcardIn = false;
 
 	protected class MenuPathItem {
 		TextView sTextView;
@@ -192,6 +199,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		Log.d(TAG, "onServiceStart");
 
 		mService.registerPageObserver(this);
+		mIsSmartcardIn = mService.isSmartcardPlugIn();
 	}
 
 	protected void onServiceStop() {
@@ -209,7 +217,12 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	public void notifyEvent(int type, Object event) {
+		if (type == EventData.EVENT_SMARTCARD_STATUS) {
+			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
+			boolean plugIn = status.isPlugIn;
 
+			notifySmartcardStatusChanged(plugIn);
+		}
 	}
 
 	protected boolean checkLoadingIsFinished() {
@@ -238,8 +251,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
 		switch (id) {
-		case DLG_FILE_NOTEXIST: {
-			GDAlertDialog alertDlg = new GDAlertDialog(this, DLG_FILE_NOTEXIST);
+		case DLG_FILE_NOTEXIST:
+		case DLG_SMARTCARD_INFO: {
+			GDAlertDialog alertDlg = new GDAlertDialog(this, id);
 			alertDlg.setOnCreatedListener(mOnCreatedListener);
 			dialog = alertDlg;
 			break;
@@ -256,6 +270,14 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			if (dialog.getId() == DLG_FILE_NOTEXIST) {
 				dialog.setTitle(R.string.error_title);
 				dialog.setMessage(R.string.file_notexist);
+				dialog.showSingleButton();
+			} else if (dialog.getId() == DLG_SMARTCARD_INFO) {
+				dialog.setTitle(R.string.smartcard_status_title);
+				if (mIsSmartcardIn) {
+					dialog.setMessage(R.string.smartcard_status_in);
+				} else {
+					dialog.setMessage(R.string.smartcard_status_out);
+				}
 				dialog.showSingleButton();
 			}
 		}
@@ -298,5 +320,32 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected String formPageText(int pageNumber, int pageCount) {
 		String str = pageNumber + "/" + pageCount;
 		return str;
+	}
+
+	protected static final int MSG_SMARTCARD_STATUSCHANGED = 0x80001;
+	protected static final int MSG_SMARTCARD_PLUGIN = 0;
+	protected static final int MSG_SMARTCARD_PLUGOUT = 1;
+
+	protected void notifySmartcardStatusChanged(boolean plugIn) {
+		Message message = mHandler.obtainMessage(MSG_SMARTCARD_STATUSCHANGED);
+		message.arg1 = plugIn ? MSG_SMARTCARD_PLUGIN : MSG_SMARTCARD_PLUGOUT;
+		mHandler.sendMessage(message);
+	}
+
+	protected Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_SMARTCARD_STATUSCHANGED: {
+				boolean plugIn = msg.arg1 == MSG_SMARTCARD_PLUGIN ? true
+						: false;
+				showSmartcardInfo(plugIn);
+			}
+			}
+		}
+	};
+
+	protected void showSmartcardInfo(boolean plugIn) {
+		mIsSmartcardIn = plugIn;
+		showDialog(DLG_SMARTCARD_INFO);
 	}
 }

@@ -1432,6 +1432,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		case GDCommon.MSG_UPDATE_UIRESOURCE:
 		case GDCommon.MSG_UPDATE_PREVIEW:
+			break;
+			
+		case GDCommon.MSG_SMARTCARD_IN: {
+			notifySmartcardStatusChanged(true);
+			break;
+		}
+		case GDCommon.MSG_SMARTCARD_OUT: {
+			notifySmartcardStatusChanged(false);
+			break;
+		}
 		default:
 			break;
 		}

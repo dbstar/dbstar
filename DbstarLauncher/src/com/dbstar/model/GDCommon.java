@@ -33,6 +33,9 @@ public class GDCommon {
 	public static final int MSG_UPDATE_PREVIEW = 19;
 	public static final int MSG_UPDATE_UIRESOURCE = 20;
 	
+	public static final int MSG_SMARTCARD_IN = 0x40001;
+	public static final int MSG_SMARTCARD_OUT = 0x40002;
+	
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "chi";

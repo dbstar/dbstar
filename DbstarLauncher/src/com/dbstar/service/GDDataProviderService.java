@@ -126,6 +126,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	boolean mIsStorageReady = false;
 	boolean mIsNetworkReady = false;
 
+	boolean mIsSmartcardIn = false;
+
 	String mMacAddress = "";
 
 	String mUpgradePackageFile;
@@ -200,7 +202,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		mPowerManger = new GDPowerManager();
 		mPowerManger.acquirePartialWakeLock(this);
-		
+
 		mHandler = new SystemEventHandler();
 
 		mConfigure = new GDSystemConfigure();
@@ -274,6 +276,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		initializeNetEngine();
 
 		queryDiskGuardSize();
+
+		mIsSmartcardIn = mPeripheralController.isSmartCardIn();
 	}
 
 	void initializeDataEngine() {
@@ -512,15 +516,16 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				if (mDataModel != null) {
 					mDataModel.savePublicationBookmark(publicationId, bookmark);
 				}
-				
+
 				if (mPageOberser != null) {
 					EventData.UpdatePropertyEvent event = new EventData.UpdatePropertyEvent();
 					event.PublicationId = publicationId;
 					event.PropertyName = GDCommon.KeyBookmark;
 					event.PropertyValue = new Integer(bookmark);
-					mPageOberser.notifyEvent(EventData.EVENT_UPDATE_PROPERTY, event);
+					mPageOberser.notifyEvent(EventData.EVENT_UPDATE_PROPERTY,
+							event);
 				}
-				
+
 				break;
 			}
 			case GDCommon.MSG_GET_NETWORKINFO: {
@@ -602,11 +607,36 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				break;
 			}
 
+			case GDCommon.MSG_SMARTCARD_IN: {
+				mIsSmartcardIn = true;
+				notifyDbstarServiceSDStatus();
+				notifySmartcardStatusChange(mIsSmartcardIn);
+				break;
+			}
+			case GDCommon.MSG_SMARTCARD_OUT: {
+				mIsSmartcardIn = false;
+				notifyDbstarServiceSDStatus();
+				notifySmartcardStatusChange(mIsSmartcardIn);
+				break;
+			}
+
 			default:
 				break;
 			}
 		}
 
+	}
+
+	private void notifySmartcardStatusChange(boolean plugIn) {
+		EventData.SmartcardStatus event = new EventData.SmartcardStatus();
+		event.isPlugIn = plugIn;
+		if (mPageOberser != null) {
+			mPageOberser.notifyEvent(EventData.EVENT_SMARTCARD_STATUS, event);
+		} else if (mApplicationObserver != null) {
+			mApplicationObserver.handleNotifiy(
+					plugIn ? GDCommon.MSG_SMARTCARD_IN
+							: GDCommon.MSG_SMARTCARD_OUT, null);
+		}
 	}
 
 	private void sendNetworkInfo(Intent intent) {
@@ -1018,7 +1048,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				}
 
 				case REQUESTTYPE_GETGUIDELIST: {
-					//GuideListItem[] items = mDataModel.getGuideList();
+					// GuideListItem[] items = mDataModel.getGuideList();
 					GuideListItem[] items = mDataModel.getLatestGuideList();
 					task.Data = items;
 					taskFinished(task);
@@ -1309,6 +1339,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		task.Type = REQUESTTYPE_GETPREVIEWS;
 
 		enqueueTask(task);
+	}
+	
+	public boolean isSmartcardPlugIn() {
+		return mIsSmartcardIn;
 	}
 
 	private String getThumbnailFile(ContentData content) {
@@ -1732,8 +1766,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				mPeripheralController.setAudioOutputOn();
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
 				Log.d(TAG, "######: " + action);
+				mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_IN);
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {
 				Log.d(TAG, "######: " + action);
+				mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_OUT);
 			}
 		}
 	};
@@ -1771,6 +1807,19 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		return true;
 	}
 
+	boolean notifyDbstarServiceSDStatus() {
+		if (!mIsDbServiceStarted)
+			return false;
+
+		if (mIsSmartcardIn) {
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DRM_SC_INSERT);
+		} else {
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DRM_SC_REMOVE);
+		}
+
+		return true;
+	}
+
 	boolean notifyDbstarService(int command) {
 		if (!mIsDbServiceStarted) {
 			return false;
@@ -1802,6 +1851,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		if (mStatusIsSynced)
 			return;
 
+		notifyDbstarServiceSDStatus();
 		mStatusIsSynced = notifyDbstarServiceNetworkStatus();
 		mStatusIsSynced = mStatusIsSynced && notifyDbstarServiceStorageStatus();
 	}
