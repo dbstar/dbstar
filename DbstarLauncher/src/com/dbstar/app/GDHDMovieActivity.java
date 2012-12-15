@@ -164,6 +164,11 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 			return;
 		}
+		
+		if (drmFile != null && !drmFile.isEmpty() && !mIsSmartcardIn) {
+			showSmartcardInfo(false);
+			return;
+		}
 
 		GDPlayerUtil.playVideo(this, null, movie.Content, file, drmFile);
 	}
@@ -258,6 +263,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 	@Override
 	public void notifyEvent(int type, Object event) {
+		super.notifyEvent(type, event);
 
 		if (type == EventData.EVENT_DELETE) {
 			EventData.DeleteEvent deleteEvent = (EventData.DeleteEvent) event;

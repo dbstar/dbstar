@@ -107,4 +107,9 @@
     <!-- Error messages -->
     <string name="error_title">错误</string>
     <string name="file_notexist">文件不存在!</string>
+    
+    <!-- Smartcard -->
+    <string name="smartcard_status_title">智能卡</string>
+    <string name="smartcard_status_in">智能卡已经插入！</string>
+    <string name="smartcard_status_out">智能卡已经拔出!</string>
 </resources>

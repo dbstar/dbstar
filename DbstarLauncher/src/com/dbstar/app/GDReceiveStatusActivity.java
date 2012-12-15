@@ -421,6 +421,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	@Override
 	public void notifyEvent(int type, Object event) {
+		super.notifyEvent(type, event);
 
 		if (type == EventData.EVENT_DATASIGNAL) {
 			EventData.DataSignalEvent signalEvent = (EventData.DataSignalEvent) event;
