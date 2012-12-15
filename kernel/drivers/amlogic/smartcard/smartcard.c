@@ -42,6 +42,7 @@
 #include <linux/amsmc.h>
 #include <linux/platform_device.h>
 #include <linux/switch.h>
+#include <linux/kthread.h>
 
 #include "smc_reg.h"
 
@@ -119,7 +120,9 @@ static struct class smc_class = {
 static struct switch_dev sdev = {//android ics switch device
     .name = "smartcard",
 };
-static int smc_card_state = 0;
+static int s_smc_card_state = -1;
+static int s_smc_task_state = -1;
+static struct task_struct *s_smc_task = NULL;
 
 //#ifdef CONFIG_ARCH_ARC700
 #if 1 
@@ -546,6 +549,23 @@ static int smc_hw_start_send(smc_dev_t *smc)
 	return 0;
 }
 
+static int smc_task_handle(void *data)
+{
+	int ret = 0;
+	smc_dev_t *smc = (smc_dev_t*)data;
+
+	while (s_smc_task_state == 1) {
+		if (s_smc_card_state != smc->cardin) {
+			s_smc_card_state = smc->cardin;
+			printk("[***smc***] smartcard->state: %d\n", s_smc_card_state);
+			switch_set_state(&sdev, s_smc_card_state);
+		}
+		msleep(500);
+	}
+
+	return ret;
+}
+
 static irqreturn_t smc_irq_handler(int irq, void *data)
 {
 	smc_dev_t *smc = (smc_dev_t*)data;
@@ -614,10 +634,6 @@ static irqreturn_t smc_irq_handler(int irq, void *data)
 		sc_reg0_reg->card_detect = 1;
 	}
 	smc->cardin = sc_reg0_reg->card_detect;
-	if (smc->cardin != smc_card_state) {
-		smc_card_state = smc->cardin;
-		switch_set_state(&sdev, smc_card_state);
-	}
 	
 	SMC_WRITE_REG(INTR, sc_int|0x3FF);
 	
@@ -1004,9 +1020,12 @@ static int smc_probe(struct platform_device *pdev)
 	
 		if ((ret=smc_dev_init(smc, i))<0) {
 			smc = NULL;
+		} else {
+			s_smc_task_state = 1;
+			s_smc_task = kthread_run(smc_task_handle, (void *)smc, "kthread_smc");
 		}
 	}
-	
+
 	mutex_unlock(&smc_lock);
 	
 	return smc ? 0 : -1;
@@ -1018,6 +1037,9 @@ static int smc_remove(struct platform_device *pdev)
 	
 	mutex_lock(&smc_lock);
 	
+	s_smc_task_state = 0;
+	kthread_stop(s_smc_task);
+
 	smc_dev_deinit(smc);
 	
 	mutex_unlock(&smc_lock);
