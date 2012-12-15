@@ -23,6 +23,7 @@
 #endif
 
 static int s_drm_inited = 0;
+static int s_drm_sc_in = 0;
 
 int drm_init()
 {
@@ -50,32 +51,39 @@ int drm_init()
 	return 0;
 }
 
-static int s_SCInsert_flag = 0;
+int drm_sc_check()
+{
+	int ret = 0;
+
+	if (s_drm_sc_in == 1) {
+		LOGD("drm_sc_check() OK\n");
+		ret = 0;
+	} else {
+		LOGD("drm_sc_check() FAILED.\n");
+		ret = -1;
+	}
+
+	return ret;
+}
+
 int drm_sc_insert()
 {
 	int ret = 0;
 
-	LOGD("drm_sc_insert() s_drm_inited=%d, s_SCInsert_flag=%d\n", s_drm_inited,s_SCInsert_flag);
+	LOGD("drm_sc_insert()\n");
 	if (s_drm_inited == 0) {
 		LOGD("DRM not inited!\n");
 		return -1;
-	}
-	else{
-		if(1==s_SCInsert_flag){
-			LOGD("CDCASTB_SCInsert() already called\n");
-			return 1;
-		}
 	}
 
 	ret = CDCASTB_SCInsert();
 	LOGD("DRM SCInsert() ret=%d\n", ret);
 	if (ret == 0) {
-		s_SCInsert_flag = 0;
 		LOGD("DRM SCInsert() FAILED!\n");
 		return -1;
+	} else {
+		s_drm_sc_in = 1;
 	}
-	else
-		s_SCInsert_flag = 1;
 
 	return ret;
 }
@@ -91,11 +99,11 @@ int drm_sc_remove()
 		return -1;
 	}
 
+	s_drm_sc_in = 0;
 	CDCASTB_SCRemove();
 
 	return ret;
 }
-
 
 int drm_open(int *fd1, int *fd2)
 {

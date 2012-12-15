@@ -4,6 +4,7 @@
 int drm_init();
 int drm_sc_insert();
 int drm_sc_remove();
+int drm_sc_check();
 int drm_set_emmpid();
 void drm_uninit();
 int drm_open(int *fd1, int *fd2);
