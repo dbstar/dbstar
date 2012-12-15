@@ -22,13 +22,14 @@ public class EthernetSettings implements View.OnClickListener {
 	CheckBox mEthernetSwitchIndicator;
 	TextView mEthSwitchTitle;
 	Button mSaveButton;
+	CheckBox mWifiSwitchIndicator;
 
 	EthernetEnabler mEthEnabler;
 	EthernetConfigController mController;
 
 	View mEthConfigView;
 	View mWifiConfigView;
-	
+
 	OnSaveListener mSaveListener;
 
 	public boolean isEthernetOn() {
@@ -45,6 +46,8 @@ public class EthernetSettings implements View.OnClickListener {
 		mEthernetSwitchButton.setOnClickListener(this);
 		mEthernetSwitchIndicator = (CheckBox) activity
 				.findViewById(R.id.eth_switch_indicator);
+		mWifiSwitchIndicator = (CheckBox) activity
+				.findViewById(R.id.wifi_switch_indicator);
 
 		mEthSwitchTitle = (TextView) activity
 				.findViewById(R.id.eth_switch_title);
@@ -86,7 +89,7 @@ public class EthernetSettings implements View.OnClickListener {
 		if (mEthEnabler != null) {
 			mEthEnabler.resume();
 		}
-		
+
 		if (mController != null) {
 			mController.resume();
 		}
@@ -96,7 +99,7 @@ public class EthernetSettings implements View.OnClickListener {
 		if (mEthEnabler != null) {
 			mEthEnabler.pause();
 		}
-		
+
 		if (mController != null) {
 			mController.pause();
 		}
@@ -106,6 +109,8 @@ public class EthernetSettings implements View.OnClickListener {
 	public void onClick(View view) {
 		if (view.getId() == R.id.eth_switch_button) {
 			mEthernetSwitchIndicator.toggle();
+			mWifiSwitchIndicator.setChecked(!mEthernetSwitchIndicator
+					.isChecked());
 
 		} else if (view.getId() == R.id.eth_savebutton) {
 			mController.saveConfigure();

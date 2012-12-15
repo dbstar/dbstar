@@ -1,5 +1,8 @@
 package com.dbstar.app;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
 import com.dbstar.model.EventData;
@@ -142,6 +145,10 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			unbindService(mConnection);
 			mBound = false;
 		}
+		
+		if (mDlgTimer != null) {
+			mDlgTimer.cancel();
+		}
 	}
 
 	@Override
@@ -257,7 +264,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		case DLG_SMARTCARD_INFO: {
 			mSmartcardDlg = new GDAlertDialog(this, id);
 			mSmartcardDlg.setOnCreatedListener(mOnCreatedListener);
-//			mSmartcardDlg.setOnShowListener(mOnShowListener);
 			dialog = mSmartcardDlg;
 			break;
 		}
@@ -286,22 +292,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		}
 
 	};
-
-//	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {
-//
-//		@Override
-//		public void onShow(DialogInterface dlg) {
-//			if (dlg instanceof GDAlertDialog) {
-//				GDAlertDialog alertDlg = (GDAlertDialog) dlg;
-//				if (mIsSmartcardIn) {
-//					alertDlg.setMessage(R.string.smartcard_status_in);
-//				} else {
-//					alertDlg.setMessage(R.string.smartcard_status_out);
-//				}
-//			}
-//		}
-//
-//	};
 
 	protected void hideLoadingDialog() {
 		if (mLoadingDialog != null && mLoadingDialog.isShowing()
@@ -363,17 +353,65 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		}
 	};
 
+	Timer mDlgTimer = null;
+	TimerTask mTimeoutTask = null;
+
+	void hideDlgDelay() {
+		final Handler handler = new Handler() {
+
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case 0x4ef:
+					mTimeoutTask.cancel();
+					mTimeoutTask = null;
+					mDlgTimer.cancel();
+					mDlgTimer = null;
+
+					if (mSmartcardDlg != null && mSmartcardDlg.isShowing()) {
+						mSmartcardDlg.dismiss();
+					}
+					break;
+				}
+				super.handleMessage(msg);
+			}
+
+		};
+
+		if (mTimeoutTask != null) {
+			mTimeoutTask.cancel();
+		}
+
+		mTimeoutTask = new TimerTask() {
+
+			public void run() {
+				Message message = Message.obtain();
+				message.what = 0x4ef;
+				handler.sendMessage(message);
+			}
+		};
+
+		if (mDlgTimer != null) {
+			mDlgTimer.cancel();
+		}
+
+		mDlgTimer = new Timer();
+		mDlgTimer.schedule(mTimeoutTask, DLG_TIMEOUT);
+	}
+
+	private static final int DLG_TIMEOUT = 3000;
+
 	protected void showSmartcardInfo(boolean plugIn) {
 		mIsSmartcardIn = plugIn;
 		if (mSmartcardDlg == null) {
 			showDialog(DLG_SMARTCARD_INFO);
+
 		} else {
 			if (mIsSmartcardIn) {
 				mSmartcardDlg.setMessage(R.string.smartcard_status_in);
 			} else {
 				mSmartcardDlg.setMessage(R.string.smartcard_status_out);
 			}
-			
+
 			mSmartcardDlg.show();
 		}
 	}
