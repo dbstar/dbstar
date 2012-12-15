@@ -73,7 +73,7 @@ public class WifiSettings {
 	View mWifiSwitchButton;
 	TextView mWifiSwitchTitle;
 	CheckBox mWifiSwitchIndicator;
-
+	CheckBox mEthernetSwitchIndicator;
 	private final IntentFilter mFilter;
 	private final BroadcastReceiver mReceiver;
 	private final Scanner mScanner;
@@ -148,7 +148,8 @@ public class WifiSettings {
 				.findViewById(R.id.wifi_switch_title);
 		mWifiSwitchIndicator = (CheckBox) mActivity
 				.findViewById(R.id.wifi_switch_indicator);
-
+		mEthernetSwitchIndicator = (CheckBox) mActivity
+				.findViewById(R.id.eth_switch_indicator);
 		mAccessPointListView = (ListView) mActivity
 				.findViewById(R.id.wifi_aplist);
 
@@ -492,6 +493,9 @@ public class WifiSettings {
 				return;
 
 			mWifiSwitchIndicator.toggle();
+
+			mEthernetSwitchIndicator.setChecked(!mWifiSwitchIndicator
+					.isChecked());
 		}
 	};
 
