@@ -248,14 +248,17 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		showDialog(dialogId);
 	}
 
+	GDAlertDialog mSmartcardDlg = null;
+
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
 		switch (id) {
 		case DLG_FILE_NOTEXIST:
 		case DLG_SMARTCARD_INFO: {
-			GDAlertDialog alertDlg = new GDAlertDialog(this, id);
-			alertDlg.setOnCreatedListener(mOnCreatedListener);
-			dialog = alertDlg;
+			mSmartcardDlg = new GDAlertDialog(this, id);
+			mSmartcardDlg.setOnCreatedListener(mOnCreatedListener);
+//			mSmartcardDlg.setOnShowListener(mOnShowListener);
+			dialog = mSmartcardDlg;
 			break;
 		}
 		}
@@ -283,6 +286,22 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		}
 
 	};
+
+//	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {
+//
+//		@Override
+//		public void onShow(DialogInterface dlg) {
+//			if (dlg instanceof GDAlertDialog) {
+//				GDAlertDialog alertDlg = (GDAlertDialog) dlg;
+//				if (mIsSmartcardIn) {
+//					alertDlg.setMessage(R.string.smartcard_status_in);
+//				} else {
+//					alertDlg.setMessage(R.string.smartcard_status_out);
+//				}
+//			}
+//		}
+//
+//	};
 
 	protected void hideLoadingDialog() {
 		if (mLoadingDialog != null && mLoadingDialog.isShowing()
@@ -346,6 +365,16 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected void showSmartcardInfo(boolean plugIn) {
 		mIsSmartcardIn = plugIn;
-		showDialog(DLG_SMARTCARD_INFO);
+		if (mSmartcardDlg == null) {
+			showDialog(DLG_SMARTCARD_INFO);
+		} else {
+			if (mIsSmartcardIn) {
+				mSmartcardDlg.setMessage(R.string.smartcard_status_in);
+			} else {
+				mSmartcardDlg.setMessage(R.string.smartcard_status_out);
+			}
+			
+			mSmartcardDlg.show();
+		}
 	}
 }
