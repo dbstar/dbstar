@@ -294,7 +294,7 @@ public class PlayerMenu extends PlayerActivity {
 		super.onStart();
 		Log.d(TAG, " ============ onStart ================== ");
 
-		mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
+		mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
 				MSG_DIALOG_TIMEOUT);
 
 		setMute(false);
@@ -429,21 +429,6 @@ public class PlayerMenu extends PlayerActivity {
 		Log.d(TAG, " -=============== finsh ==================-");
 	}
 
-	protected Dialog onCreateDialog(int id) {
-		Dialog dialog;
-		switch (id) {
-		case MSG_DIALOG_POPUP:
-			mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
-			dialog = mVideoInfoDlg;
-			break;
-		default:
-			dialog = null;
-			break;
-		}
-
-		return dialog;
-	}
-
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode != KeyEvent.KEYCODE_UNKNOWN) {
 			mDuringKeyActions = false;
@@ -565,7 +550,7 @@ public class PlayerMenu extends PlayerActivity {
 		case KeyEvent.KEYCODE_NOTIFICATION: {
 			Log.d(TAG, " osd state ======================= " + mOSDState);
 			setOSDOn(true);
-			mDialogHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
+			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
 					MSG_DIALOG_TIMEOUT);
 			return true;
 		}
@@ -1343,22 +1328,6 @@ public class PlayerMenu extends PlayerActivity {
 		}
 	};
 
-	private static final int MSG_DIALOG_POPUP = 1;
-	private static final int MSG_DIALOG_TIMEOUT = 500;
-
-	DbVideoInfoDlg mVideoInfoDlg = null;
-	Handler mDialogHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case MSG_DIALOG_POPUP:
-				showDialog(MSG_DIALOG_POPUP);
-				break;
-			default:
-				break;
-			}
-		}
-	};
-
 	protected void keepScreenOn() {
 		if (mScreenLock.isHeld() == false)
 			mScreenLock.acquire();
@@ -1424,16 +1393,6 @@ public class PlayerMenu extends PlayerActivity {
 					mHideInfoBarTask = null;
 					if (!mDuringKeyActions) {
 						hideInfoBar();
-
-						// boolean hideOSD = true;
-						// if (mVideoInfoDlg != null &&
-						// mVideoInfoDlg.isShowing()) {
-						// hideOSD = false;
-						// }
-						//
-						// if (hideOSD) {
-						// setOSDOn(false);
-						// }
 					}
 					break;
 				}
