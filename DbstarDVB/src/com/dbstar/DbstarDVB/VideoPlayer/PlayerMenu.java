@@ -193,6 +193,8 @@ public class PlayerMenu extends PlayerActivity {
 	private Uri mUri = null;
 	private String mFilePath = null;
 	private String mPublicationId = null;
+	private String mDRMFile = null;
+	private boolean mHasKey = false;
 
 	private String mOriginalAxis = null;
 	private String mVideoAxis = null;
@@ -210,6 +212,11 @@ public class PlayerMenu extends PlayerActivity {
 		mFilePath = Utils.getFilePath(mUri);
 		if (mFilePath == null || mFilePath.isEmpty())
 			return false;
+		
+		mDRMFile = Utils.getDRMFilePath(mUri);
+		if (mDRMFile != null && !mDRMFile.isEmpty()) {
+			mHasKey = true;
+		}
 
 		mPlayPosition = intent.getIntExtra("bookmark", 0);
 		mSubtitleFiles = intent.getStringArrayListExtra("subtitle_uri");
@@ -973,6 +980,15 @@ public class PlayerMenu extends PlayerActivity {
 				Utils.writeSysfs(File_amvdec_mpeg12, "0");
 			}
 		}
+	}
+	
+	@Override
+	public void smartcardPlugin(boolean plugIn) {
+		if (!mHasKey) {
+			return;
+		}
+		
+		onPlayButtonPressed();
 	}
 
 	public void updatePlaybackTimeInfo(int currentTime, int totalTime) {

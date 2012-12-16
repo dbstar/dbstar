@@ -145,7 +145,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			unbindService(mConnection);
 			mBound = false;
 		}
-		
+
 		if (mDlgTimer != null) {
 			mDlgTimer.cancel();
 		}
@@ -414,5 +414,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 			mSmartcardDlg.show();
 		}
+
+		hideDlgDelay();
 	}
 }

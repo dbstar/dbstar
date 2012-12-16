@@ -1,5 +1,8 @@
 package com.dbstar.DbstarDVB.VideoPlayer;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.R;
 import com.dbstar.DbstarDVB.PlayerService.DivxInfo;
@@ -73,16 +76,16 @@ public class PlayerActivity extends Activity {
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		reqisterSystemMessageReceiver();
 	}
-	
+
 	public void onDestroy() {
 		super.onDestroy();
-		
+
 		unregisterReceiver(mSystemMessageReceiver);
 	}
-	
+
 	private void reqisterSystemMessageReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(DbstarServiceApi.ACTION_HDMI_IN);
@@ -93,10 +96,10 @@ public class PlayerActivity extends Activity {
 
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
-	
+
 	private static final int MSG_SMARTCARD_IN = 0x1000;
 	private static final int MSG_SMARTCARD_OUT = 0x1001;
-	
+
 	protected boolean mIsSmartcardIn = false;
 
 	private BroadcastReceiver mSystemMessageReceiver = new BroadcastReceiver() {
@@ -105,9 +108,11 @@ public class PlayerActivity extends Activity {
 			String action = intent.getAction();
 
 			Log.d(TAG, "onReceive System msg " + action);
-		
+
 			if (action.equals(DbstarServiceApi.ACTION_HDMI_IN)) {
+
 			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_OUT)) {
+
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
 				Log.d(TAG, "######: " + action);
 				mHandler.sendEmptyMessage(MSG_SMARTCARD_IN);
@@ -117,14 +122,15 @@ public class PlayerActivity extends Activity {
 			}
 		}
 	};
-	
+
 	protected static final int DLG_MEDIAINFO_POPUP = 0;
 	protected static final int DLG_SMARTCARD_POPUP = 1;
-	
+
 	protected static final int MSG_DIALOG_POPUP = 1;
 	protected static final int MSG_DIALOG_TIMEOUT = 500;
 
 	protected DbVideoInfoDlg mVideoInfoDlg = null;
+
 	protected Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -134,20 +140,40 @@ public class PlayerActivity extends Activity {
 			case MSG_SMARTCARD_IN: {
 				mIsSmartcardIn = true;
 				smartcardPlugin(mIsSmartcardIn);
-				showDialog(DLG_SMARTCARD_POPUP);
+				showSmartcardInfo(true);
 				break;
 			}
 			case MSG_SMARTCARD_OUT: {
 				mIsSmartcardIn = false;
 				smartcardPlugin(mIsSmartcardIn);
-				showDialog(DLG_SMARTCARD_POPUP);
+				showSmartcardInfo(false);
 				break;
 			}
 			}
 		}
 	};
-	
+
+	protected void showSmartcardInfo(boolean plugIn) {
+
+		Log.d(TAG, " ==================showSmartcardInfo=================== ");
+
+		if (mSmartcardDialog == null) {
+			showDialog(DLG_SMARTCARD_POPUP);
+		} else {
+			if (mIsSmartcardIn) {
+				mSmartcardDialog.setMessage(R.string.smartcard_status_in);
+			} else {
+				mSmartcardDialog.setMessage(R.string.smartcard_status_out);
+			}
+
+			mSmartcardDialog.show();
+		}
+		
+		hideDlgDelay();
+	}
+
 	GDAlertDialog mSmartcardDialog = null;
+
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog;
 		switch (id) {
@@ -168,7 +194,7 @@ public class PlayerActivity extends Activity {
 
 		return dialog;
 	}
-	
+
 	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
 
 		@Override
@@ -181,27 +207,72 @@ public class PlayerActivity extends Activity {
 					dialog.setMessage(R.string.smartcard_status_out);
 				}
 				dialog.showSingleButton();
-				dialog.setPositiveBtnClickListener(mDRMPositiveBtnClickListener);
+				dialog.setOnDismissListener(mDlgDismissListener);
 			}
 		}
 
 	};
-	
-	View.OnClickListener mDRMPositiveBtnClickListener = new View.OnClickListener() {
+
+	private static final int DLG_TIMEOUT = 3000;
+	Timer mDlgTimer = null;
+	TimerTask mTimeoutTask = null;
+
+	void hideDlgDelay() {
+		final Handler handler = new Handler() {
+
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case 0x4ef:
+					mTimeoutTask.cancel();
+					mTimeoutTask = null;
+					mDlgTimer.cancel();
+					mDlgTimer = null;
+
+					if (mSmartcardDialog != null
+							&& mSmartcardDialog.isShowing()) {
+						mSmartcardDialog.dismiss();
+					}
+					break;
+				}
+				super.handleMessage(msg);
+			}
+
+		};
+
+		if (mTimeoutTask != null) {
+			mTimeoutTask.cancel();
+		}
+
+		mTimeoutTask = new TimerTask() {
+
+			public void run() {
+				Message message = Message.obtain();
+				message.what = 0x4ef;
+				handler.sendMessage(message);
+			}
+		};
+
+		if (mDlgTimer != null) {
+			mDlgTimer.cancel();
+		}
+
+		mDlgTimer = new Timer();
+		mDlgTimer.schedule(mTimeoutTask, DLG_TIMEOUT);
+	}
+
+	DialogInterface.OnDismissListener mDlgDismissListener = new DialogInterface.OnDismissListener() {
 
 		@Override
-		public void onClick(View v) {
-			if (mSmartcardDialog != null) {
-				mSmartcardDialog.dismiss();
-				exitPlayer();
-			}
+		public void onDismiss(DialogInterface dialog) {
+			exitPlayer();
 		}
+
 	};
-	
+
 	protected void smartcardPlugin(boolean plugIn) {
-		
+
 	}
-	
+
 	public void initAngleTable() {
 		String hwrotation = SystemProperties.get("ro.sf.hwrotation");
 		if (hwrotation == null) {
@@ -381,14 +452,14 @@ public class PlayerActivity extends Activity {
 			}
 
 			// auto play
-			try {
-				final short color = ((0x8 >> 3) << 11) | ((0x30 >> 2) << 5)
-						| ((0x8 >> 3) << 0);
-				mAmplayer.SetColorKey(color);
-				Log.d(TAG, "set colorkey() color=" + color);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				final short color = ((0x8 >> 3) << 11) | ((0x30 >> 2) << 5)
+//						| ((0x8 >> 3) << 0);
+//				mAmplayer.SetColorKey(color);
+//				Log.d(TAG, "set colorkey() color=" + color);
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
 
 			Amplayer_play(mPlayPosition);
 		}
@@ -490,9 +561,9 @@ public class PlayerActivity extends Activity {
 	public void exitPlayer() {
 
 	}
-	
+
 	public void searchOk() {
-		
+
 	}
 
 	// =========================================================

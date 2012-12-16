@@ -207,6 +207,18 @@ public class Utils {
 		return path;
 	}
 	
+	public static String getDRMFilePath(Uri uri) {
+		String path = uri.getPath();
+		int idx = -1;
+		
+		idx = path.lastIndexOf("|");
+		if (idx > 0) {
+			path = path.substring(idx + 1);
+		}
+		
+		return path;
+	}
+	
 	public static int writeSysfs(String path, String val) {
 		if (!new File(path).exists()) {
 			Log.e(TAG, "File not found: " + path);

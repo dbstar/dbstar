@@ -311,6 +311,14 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 		} else {
 			// "auto" mode
 			setVideoModeSelected(modeIndex, true, false);
+			
+			OutputMode mode = mVideoModes.get(mVideoModes.size() - 1);
+			Intent intent = new Intent(this, OutputSetConfirm.class);
+			intent.putExtra("set_mode", mode.modeValue);
+			if (mHasCVBSOutput) {
+				intent.putExtra("cvbs_mode", mCVBSIndex);
+			}
+			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
 		}
 
 		mVideoOutputModeAdapter.notifyDataSetChanged();
