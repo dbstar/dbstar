@@ -11,8 +11,8 @@ import android.widget.TextView;
 public class GDAlertDialog extends Dialog {
 
 	private TextView mTitleView, mMessageView;
-	private Button mOkButton, mCancelButton;
-	private View mCenterSpacer;
+	public Button mOkButton, mCancelButton;
+	public View mCenterSpacer;
 	private int mId = -1;
 
 	public static interface OnCreatedListener {

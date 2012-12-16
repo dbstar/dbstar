@@ -212,7 +212,7 @@ public class PlayerMenu extends PlayerActivity {
 		mFilePath = Utils.getFilePath(mUri);
 		if (mFilePath == null || mFilePath.isEmpty())
 			return false;
-		
+
 		mDRMFile = Utils.getDRMFilePath(mUri);
 		if (mDRMFile != null && !mDRMFile.isEmpty()) {
 			mHasKey = true;
@@ -300,9 +300,9 @@ public class PlayerMenu extends PlayerActivity {
 	public void onStart() {
 		super.onStart();
 		Log.d(TAG, " ============ onStart ================== ");
+		reqisterSystemMessageReceiver();
 
-		mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
-				MSG_DIALOG_TIMEOUT);
+		mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP, MSG_DIALOG_TIMEOUT);
 
 		setMute(false);
 	}
@@ -377,6 +377,8 @@ public class PlayerMenu extends PlayerActivity {
 
 	public void onStop() {
 		super.onStop();
+
+		unregisterSystemMessageReceiver();
 
 		Log.d(TAG, " ============ onStop ================== ");
 	}
@@ -981,13 +983,14 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		}
 	}
-	
+
 	@Override
 	public void smartcardPlugin(boolean plugIn) {
+
 		if (!mHasKey) {
 			return;
 		}
-		
+
 		onPlayButtonPressed();
 	}
 
@@ -1468,7 +1471,7 @@ public class PlayerMenu extends PlayerActivity {
 		Utils.writeSysfs(Fb0Blank, value);
 	}
 
-	void setOSDOn(boolean on) {
+	public void setOSDOn(boolean on) {
 
 		if (!on && !mPaused) {
 			if (isSubtitleOn()) {

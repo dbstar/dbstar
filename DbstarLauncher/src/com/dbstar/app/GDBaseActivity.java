@@ -48,6 +48,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected ViewGroup mMenuPathContainer;
 
 	protected boolean mIsSmartcardIn = false;
+	protected boolean mIsStopped = false;
 
 	protected class MenuPathItem {
 		TextView sTextView;
@@ -59,6 +60,21 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	private ProgressDialog mLoadingDialog = null;
 	private String mLoadingText = null;
+
+	GDAlertDialog mSmartcardDlg = null;
+	GDAlertDialog mAlertDlg = null;
+
+	protected Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_SMARTCARD_STATUSCHANGED: {
+				boolean plugIn = msg.arg1 == MSG_SMARTCARD_PLUGIN ? true
+						: false;
+				showSmartcardInfo(plugIn);
+			}
+			}
+		}
+	};
 
 	protected GDResourceAccessor mResource;
 
@@ -126,6 +142,20 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			Intent intent = new Intent(this, GDDataProviderService.class);
 			bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		mIsStopped = false;
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		mIsStopped = true;
 	}
 
 	@Override
@@ -227,6 +257,11 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		if (type == EventData.EVENT_SMARTCARD_STATUS) {
 			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
 			boolean plugIn = status.isPlugIn;
+			mIsSmartcardIn = plugIn;
+			
+			if (mIsStopped) {
+				return;
+			}
 
 			notifySmartcardStatusChanged(plugIn);
 		}
@@ -250,48 +285,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mLoadingDialog.setOnCancelListener(new LoadingCancelListener());
 		}
 	}
-
-	protected void showAlertDialog(int dialogId) {
-		showDialog(dialogId);
-	}
-
-	GDAlertDialog mSmartcardDlg = null;
-
-	protected Dialog onCreateDialog(int id) {
-		Dialog dialog = null;
-		switch (id) {
-		case DLG_FILE_NOTEXIST:
-		case DLG_SMARTCARD_INFO: {
-			mSmartcardDlg = new GDAlertDialog(this, id);
-			mSmartcardDlg.setOnCreatedListener(mOnCreatedListener);
-			dialog = mSmartcardDlg;
-			break;
-		}
-		}
-
-		return dialog;
-	}
-
-	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
-
-		@Override
-		public void onCreated(GDAlertDialog dialog) {
-			if (dialog.getId() == DLG_FILE_NOTEXIST) {
-				dialog.setTitle(R.string.error_title);
-				dialog.setMessage(R.string.file_notexist);
-				dialog.showSingleButton();
-			} else if (dialog.getId() == DLG_SMARTCARD_INFO) {
-				dialog.setTitle(R.string.smartcard_status_title);
-				if (mIsSmartcardIn) {
-					dialog.setMessage(R.string.smartcard_status_in);
-				} else {
-					dialog.setMessage(R.string.smartcard_status_out);
-				}
-				dialog.showSingleButton();
-			}
-		}
-
-	};
 
 	protected void hideLoadingDialog() {
 		if (mLoadingDialog != null && mLoadingDialog.isShowing()
@@ -331,30 +324,93 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		return str;
 	}
 
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog = null;
+		switch (id) {
+		case DLG_FILE_NOTEXIST: {
+			mAlertDlg = new GDAlertDialog(this, id);
+			mAlertDlg.setOnCreatedListener(mOnCreatedListener);
+			dialog = mAlertDlg;
+			break;
+		}
+		case DLG_SMARTCARD_INFO: {
+			mSmartcardDlg = new GDAlertDialog(this, id);
+			mSmartcardDlg.setOnCreatedListener(mOnCreatedListener);
+			dialog = mSmartcardDlg;
+			break;
+		}
+		}
+
+		return dialog;
+	}
+
+	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
+
+		@Override
+		public void onCreated(GDAlertDialog dialog) {
+			if (dialog.getId() == DLG_FILE_NOTEXIST) {
+				dialog.setTitle(R.string.error_title);
+				dialog.setMessage(R.string.file_notexist);
+				dialog.showSingleButton();
+			} else if (dialog.getId() == DLG_SMARTCARD_INFO) {
+				dialog.setTitle(R.string.smartcard_status_title);
+				if (mIsSmartcardIn) {
+					dialog.setMessage(R.string.smartcard_status_in);
+				} else {
+					dialog.setMessage(R.string.smartcard_status_out);
+				}
+				dialog.showSingleButton();
+			}
+
+			dialog.mOkButton.requestFocus();
+		}
+
+	};
+
+	private static final int DLG_TIMEOUT = 3000;
 	protected static final int MSG_SMARTCARD_STATUSCHANGED = 0x80001;
 	protected static final int MSG_SMARTCARD_PLUGIN = 0;
 	protected static final int MSG_SMARTCARD_PLUGOUT = 1;
+
+	Timer mDlgTimer = null;
+	TimerTask mTimeoutTask = null;
 
 	protected void notifySmartcardStatusChanged(boolean plugIn) {
 		Message message = mHandler.obtainMessage(MSG_SMARTCARD_STATUSCHANGED);
 		message.arg1 = plugIn ? MSG_SMARTCARD_PLUGIN : MSG_SMARTCARD_PLUGOUT;
 		mHandler.sendMessage(message);
 	}
-
-	protected Handler mHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case MSG_SMARTCARD_STATUSCHANGED: {
-				boolean plugIn = msg.arg1 == MSG_SMARTCARD_PLUGIN ? true
-						: false;
-				showSmartcardInfo(plugIn);
-			}
-			}
+	
+	@SuppressWarnings("deprecation")
+	protected void showAlertDialog(int dialogId) {
+		if (mAlertDlg == null) {
+			showDialog(dialogId);
+		} else {
+			mAlertDlg.show();
 		}
-	};
+	}
 
-	Timer mDlgTimer = null;
-	TimerTask mTimeoutTask = null;
+	protected void showSmartcardInfo(boolean plugIn) {
+
+		if (mSmartcardDlg == null) {
+			showDialog(DLG_SMARTCARD_INFO);
+		} else {
+			if (mIsSmartcardIn) {
+				mSmartcardDlg.setMessage(R.string.smartcard_status_in);
+			} else {
+				mSmartcardDlg.setMessage(R.string.smartcard_status_out);
+			}
+
+			mSmartcardDlg.showSingleButton();
+			mSmartcardDlg.mOkButton.requestFocus();
+
+			mSmartcardDlg.show();
+		}
+
+		if (mIsSmartcardIn) {
+			hideDlgDelay();
+		}
+	}
 
 	void hideDlgDelay() {
 		final Handler handler = new Handler() {
@@ -396,25 +452,5 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 		mDlgTimer = new Timer();
 		mDlgTimer.schedule(mTimeoutTask, DLG_TIMEOUT);
-	}
-
-	private static final int DLG_TIMEOUT = 3000;
-
-	protected void showSmartcardInfo(boolean plugIn) {
-		mIsSmartcardIn = plugIn;
-		if (mSmartcardDlg == null) {
-			showDialog(DLG_SMARTCARD_INFO);
-
-		} else {
-			if (mIsSmartcardIn) {
-				mSmartcardDlg.setMessage(R.string.smartcard_status_in);
-			} else {
-				mSmartcardDlg.setMessage(R.string.smartcard_status_out);
-			}
-
-			mSmartcardDlg.show();
-		}
-
-		hideDlgDelay();
 	}
 }

@@ -91,4 +91,11 @@
     <string name="property_region">制片国家/地区</string>
     <string name="property_rate">推荐指数</string>
     <string name="property_episodes">集数</string>
+    
+    <!-- Smartcard -->
+    <string name="smartcard_status_title">智能卡</string>
+    <string name="smartcard_status_in">智能卡已经插入！</string>
+    <string name="smartcard_status_out">请插入智能卡!</string>
+    <string name="button_text_ok">确定</string>
+    <string name="button_text_cancel">取消</string>
 </resources>

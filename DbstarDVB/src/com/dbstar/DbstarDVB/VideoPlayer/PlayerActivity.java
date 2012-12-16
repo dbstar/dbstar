@@ -74,19 +74,7 @@ public class PlayerActivity extends Activity {
 
 	// Surface.ROTATION_0, ROTATION_90, ROTATION_180, ROTATION_270
 
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		reqisterSystemMessageReceiver();
-	}
-
-	public void onDestroy() {
-		super.onDestroy();
-
-		unregisterReceiver(mSystemMessageReceiver);
-	}
-
-	private void reqisterSystemMessageReceiver() {
+	protected void reqisterSystemMessageReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(DbstarServiceApi.ACTION_HDMI_IN);
 		filter.addAction(DbstarServiceApi.ACTION_HDMI_OUT);
@@ -95,6 +83,10 @@ public class PlayerActivity extends Activity {
 		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
 
 		registerReceiver(mSystemMessageReceiver, filter);
+	}
+
+	protected void unregisterSystemMessageReceiver() {
+		unregisterReceiver(mSystemMessageReceiver);
 	}
 
 	private static final int MSG_SMARTCARD_IN = 0x1000;
@@ -139,7 +131,6 @@ public class PlayerActivity extends Activity {
 				break;
 			case MSG_SMARTCARD_IN: {
 				mIsSmartcardIn = true;
-				smartcardPlugin(mIsSmartcardIn);
 				showSmartcardInfo(true);
 				break;
 			}
@@ -153,27 +144,6 @@ public class PlayerActivity extends Activity {
 		}
 	};
 
-	protected void showSmartcardInfo(boolean plugIn) {
-
-		Log.d(TAG, " ==================showSmartcardInfo=================== ");
-
-		if (mSmartcardDialog == null) {
-			showDialog(DLG_SMARTCARD_POPUP);
-		} else {
-			if (mIsSmartcardIn) {
-				mSmartcardDialog.setMessage(R.string.smartcard_status_in);
-			} else {
-				mSmartcardDialog.setMessage(R.string.smartcard_status_out);
-			}
-
-			mSmartcardDialog.show();
-		}
-		
-		hideDlgDelay();
-	}
-
-	GDAlertDialog mSmartcardDialog = null;
-
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog;
 		switch (id) {
@@ -186,6 +156,7 @@ public class PlayerActivity extends Activity {
 			mSmartcardDialog = new GDAlertDialog(this, DLG_SMARTCARD_POPUP);
 			mSmartcardDialog.setOnCreatedListener(mOnCreatedListener);
 			dialog = mSmartcardDialog;
+			break;
 		}
 		default:
 			dialog = null;
@@ -193,6 +164,34 @@ public class PlayerActivity extends Activity {
 		}
 
 		return dialog;
+	}
+
+	private static final int DLG_TIMEOUT = 3000;
+	GDAlertDialog mSmartcardDialog = null;
+	Timer mDlgTimer = null;
+	TimerTask mTimeoutTask = null;
+
+	protected void showSmartcardInfo(boolean plugIn) {
+
+		Log.d(TAG, " ==================showSmartcardInfo=================== ");
+
+		setOSDOn(true);
+
+		if (mSmartcardDialog == null) {
+			showDialog(DLG_SMARTCARD_POPUP);
+		} else {
+			if (mIsSmartcardIn) {
+				mSmartcardDialog.setMessage(R.string.smartcard_status_in);
+			} else {
+				mSmartcardDialog.setMessage(R.string.smartcard_status_out);
+			}
+			mSmartcardDialog.showSingleButton();
+			mSmartcardDialog.show();
+		}
+
+		if (mIsSmartcardIn) {
+			hideDlgDelay();
+		}
 	}
 
 	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
@@ -212,10 +211,6 @@ public class PlayerActivity extends Activity {
 		}
 
 	};
-
-	private static final int DLG_TIMEOUT = 3000;
-	Timer mDlgTimer = null;
-	TimerTask mTimeoutTask = null;
 
 	void hideDlgDelay() {
 		final Handler handler = new Handler() {
@@ -264,12 +259,20 @@ public class PlayerActivity extends Activity {
 
 		@Override
 		public void onDismiss(DialogInterface dialog) {
-			exitPlayer();
+			if (!mIsSmartcardIn) {
+				exitPlayer();
+			} else {
+				smartcardPlugin(mIsSmartcardIn);
+			}
 		}
 
 	};
 
 	protected void smartcardPlugin(boolean plugIn) {
+
+	}
+
+	protected void setOSDOn(boolean on) {
 
 	}
 
@@ -452,14 +455,14 @@ public class PlayerActivity extends Activity {
 			}
 
 			// auto play
-//			try {
-//				final short color = ((0x8 >> 3) << 11) | ((0x30 >> 2) << 5)
-//						| ((0x8 >> 3) << 0);
-//				mAmplayer.SetColorKey(color);
-//				Log.d(TAG, "set colorkey() color=" + color);
-//			} catch (RemoteException e) {
-//				e.printStackTrace();
-//			}
+			// try {
+			// final short color = ((0x8 >> 3) << 11) | ((0x30 >> 2) << 5)
+			// | ((0x8 >> 3) << 0);
+			// m.SetColorKey(color);
+			// Log.d(TAG, "set colorkey() color=" + color);
+			// } catch (RemoteException e) {
+			// e.printStackTrace();
+			// }
 
 			Amplayer_play(mPlayPosition);
 		}
