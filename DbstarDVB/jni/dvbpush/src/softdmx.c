@@ -22,6 +22,8 @@ static int s_print_cnt = 0;
 static unsigned char tc_tid = 0xff;
 static unsigned short tc_pid = 0xffff;
 
+static unsigned char software_version[4];
+
 extern int TC_loader_get_push_state(void);
 extern int TC_loader_get_push_buf_size(void);
 extern unsigned char * TC_loader_get_push_buf_pointer(void);
@@ -31,8 +33,10 @@ extern unsigned char * TC_loader_get_push_buf_pointer(void);
 #define COMMAND_FILE  "/cache/recovery/command0"
 #define LOADER_PACKAGE_SIZE		(4084)
 
+//extern  int test_tc();
 int upgradefile_clear()
 {
+//test_tc();
 	PRINTF("unlink %s\n", UPGRADEFILE_IMG);
 	return unlink(UPGRADEFILE_IMG);
 }
@@ -217,8 +221,7 @@ reLoader:
 			//              fprintf(cfp,"--wipe_data\n");
 			//              fprintf(cfp,"--wipe_cache\n");
 			fprintf(cfp,"--orifile=%s\n",UPGRADEFILE_IMG);
-			snprintf(msg, sizeof(msg),"%.2x%.2x%.2x%.2x",g_loaderInfo.software_version[0],
-			g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
+			snprintf(msg, sizeof(msg),"%.2x%.2x%.2x%.2x",software_version[0],software_version[1],software_version[2],software_version[3]);
 			fprintf(cfp,"%s\n",msg);
 			snprintf(msg, sizeof(msg),"%s",UPGRADEFILE_IMG);
 		}
@@ -239,8 +242,7 @@ reLoader:
 			//                fprintf(cfp,"--wipe_data\n");
 			//                fprintf(cfp,"--wipe_cache\n");
 			fprintf(cfp,"--orifile=%s\n",UPGRADEFILE_IMG);
-			snprintf(msg, sizeof(msg),"%.2x%.2x%.2x%.2x",g_loaderInfo.software_version[0],
-			g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
+			snprintf(msg, sizeof(msg),"%.2x%.2x%.2x%.2x",software_version[0],software_version[1],software_version[2],software_version[3]);
 			fprintf(cfp,"%s\n",msg);
 
 			snprintf(msg, sizeof(msg),"%s",UPGRADEFILE_IMG);
@@ -641,21 +643,22 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		INTERMITTENT_PRINT("loader info too small!!!!!!!!!![%d]\n",len);
 		//        return;
 	}
-
+#if 0
 	if (tc_crc32(data,len))
 	{
 		INTERMITTENT_PRINT("loader des error !!!!!!!!!!!!!!!!!!!!\n");
 		return;
 	}
-
+#endif
 	datap = (unsigned char *)data+4;
 	//if ((datap[0] != datap[1])||(datap[2] != datap[3]))
 	//    DEBUG("!!!!!!!!!!!!!!!!error section number,need modify code!\n");
 	
 	datap += 4;
-	
+#if 0	
 	memset(&g_loaderInfo, 0, sizeof(g_loaderInfo));
 	get_loader_message(&mark,&g_loaderInfo);
+#endif
 	
 	//oui
 	tmp16 = *datap;
@@ -708,12 +711,14 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		}
 	}
 	else
+        {
 		INTERMITTENT_PRINT("software version is not equal, do upgrade\n");
-		
-	g_loaderInfo.software_version[0] = datap[0];
-	g_loaderInfo.software_version[1] = datap[1];
-	g_loaderInfo.software_version[2] = datap[2];
-	g_loaderInfo.software_version[3] = datap[3];
+	}
+	
+	software_version[0] = datap[0];
+	software_version[1] = datap[1];
+	software_version[2] = datap[2];
+	software_version[3] = datap[3];
 	//DEBUG("get software version..\n");
 	//stb_id
 	datap += 4;
@@ -764,6 +769,13 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	}
 	else
 		datap += 4;
+
+        if (tc_crc32(data,len))  //verify the desc section data
+        {
+                INTERMITTENT_PRINT("loader des error !!!!!!!!!!!!!!!!!!!!\n");
+                return;
+        }
+
 	
 	INTERMITTENT_PRINT("loader_dsc_fid: %d=%x\n", loader_dsc_fid,loader_dsc_fid);
 	s_print_cnt = 0;
@@ -1063,6 +1075,13 @@ retry:
                                     goto chandle;
 			}
 #endif
+                        else if (chan->pid == 0x1)
+                        {
+                             if(*chanbuf == 0x1)
+                             {
+                                 ca_section_handle(0, chanbuf, sec_len, NULL);
+                             }
+                        }
 			else
 			{
 				//PRINTF("===== chan->pid: 0x%x", chan->pid);
@@ -1331,3 +1350,4 @@ void chanFilterInit(void)
 		chanFilter[i].fid = -1;
 	}
 }
+
