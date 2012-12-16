@@ -112,19 +112,31 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 		sqlite_transaction_exec(sqlite_cmd);
 		
 		if(strlen(xmlinfo->XMLName)>0){
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET XMLName='%s'WHERE PushFlag='%s';", xmlinfo->XMLName, xmlinfo->PushFlag);
+			if(PRODUCTION_XML==strtol(xmlinfo->PushFlag,NULL,0))
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET XMLName='%s' WHERE PushFlag='%s' AND ID='%s';", xmlinfo->XMLName, xmlinfo->PushFlag, xmlinfo->ID);
+			else
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET XMLName='%s' WHERE PushFlag='%s';", xmlinfo->XMLName, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->Version)>0){
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET Version='%s'WHERE PushFlag='%s';", xmlinfo->Version, xmlinfo->PushFlag);
+			if(PRODUCTION_XML==strtol(xmlinfo->PushFlag,NULL,0))
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET Version='%s' WHERE PushFlag='%s' AND ID='%s';", xmlinfo->Version, xmlinfo->PushFlag, xmlinfo->ID);
+			else
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET Version='%s' WHERE PushFlag='%s';", xmlinfo->Version, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->StandardVersion)>0){
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET StandardVersion='%s'WHERE PushFlag='%s';", xmlinfo->StandardVersion, xmlinfo->PushFlag);
+			if(PRODUCTION_XML==strtol(xmlinfo->PushFlag,NULL,0))
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET StandardVersion='%s' WHERE PushFlag='%s' AND ID='%s';", xmlinfo->StandardVersion, xmlinfo->PushFlag, xmlinfo->ID);
+			else
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET StandardVersion='%s' WHERE PushFlag='%s';", xmlinfo->StandardVersion, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->URI)>0){
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET URI='%s'WHERE PushFlag='%s';", xmlinfo->URI, xmlinfo->PushFlag);
+			if(PRODUCTION_XML==strtol(xmlinfo->PushFlag,NULL,0))
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET URI='%s' WHERE PushFlag='%s' AND ID='%s';", xmlinfo->URI, xmlinfo->PushFlag, xmlinfo->ID);
+			else
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET URI='%s' WHERE PushFlag='%s';", xmlinfo->URI, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 	}
@@ -599,7 +611,7 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 static int channel_ineffective_set()
 {
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Channel SET FreshFlag=0;");
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Channel SET FreshFlag=0,ServiceID='-1';");
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 

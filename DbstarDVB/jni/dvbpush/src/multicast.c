@@ -523,33 +523,31 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 	
 	int i = 0;
 	
-	if(1==*((int *)filter_act)){
-		for(i=1;i<row+1;i++)
-		{
-			unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
-			if(0==atoi(result[i*column+1])){
-				int ret = free_filter(pid);
-				DEBUG("free pid %d return with %d\n", pid, ret);
-			}
+	for(i=1;i<row+1;i++)
+	{
+		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
+		if(0==*((int *)filter_act) || 0==atoi(result[i*column+2])){
+			int ret = free_filter(pid);
+			DEBUG("free pid %d[%s] return with %d\n", pid, result[i*column], ret);
 		}
 	}
 	
 	for(i=1;i<row+1;i++)
 	{
-		DEBUG("PID --- %s:%s --- \n", result[i*column], result[i*column+1]);
+		DEBUG("PID --- %s:%s:%s --- \n", result[i*column],result[i*column+1],result[i*column+2]);
 		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
-		if(1==*((int *)filter_act) && 1==atoi(result[i*column+1])){
+		if(1==*((int *)filter_act) && 1==atoi(result[i*column+2])){
 			int filter = -1;
-			if(0x019C==pid || 0x019D==pid)
+			if(0==strcmp(result[i*column+1],"file"))
 				filter = alloc_filter(pid, 1);
 			else
 				filter = alloc_filter(pid, 0);
 			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
 		}
-		else{
-			int ret = free_filter(pid);
-			DEBUG("free pid %d return with %d\n", pid, ret);
-		}
+//		else{
+//			int ret = free_filter(pid);
+//			DEBUG("free pid %d return with %d\n", pid, ret);
+//		}
 	}
 	
 	return 0;
@@ -565,7 +563,7 @@ int pid_init(int act_flag)
 	char sqlite_cmd[256+128];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = allpid_sqlite_cb;
 
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT pid,FreshFlag FROM Channel;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT pid,pidtype,FreshFlag FROM Channel;");
 	// 1 means alloc filter
 	int filter_act = act_flag;
 	return sqlite_read(sqlite_cmd, &filter_act, sizeof(filter_act), sqlite_callback);
