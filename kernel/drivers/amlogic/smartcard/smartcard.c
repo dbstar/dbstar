@@ -507,11 +507,7 @@ static int smc_hw_get_status(smc_dev_t *smc, int *sret)
 	
 	reg_val = SMC_READ_REG(REG0);
 	
-	if (reg->card_detect)
-		reg->card_detect = 0;
-	else
-		reg->card_detect = 1;
-	smc->cardin = reg->card_detect;
+	smc->cardin = (reg->card_detect == 1) ? 0 : 1;
 	*sret = smc->cardin;
 	
 	spin_unlock_irqrestore(&smc->slock, flags);
@@ -553,8 +549,17 @@ static int smc_task_handle(void *data)
 {
 	int ret = 0;
 	smc_dev_t *smc = (smc_dev_t*)data;
+	unsigned long flags;
+	unsigned int  reg_val;
+	SMCCARD_HW_Reg0_t *reg = (SMCCARD_HW_Reg0_t*)&reg_val;
 
 	while (s_smc_task_state == 1) {
+		spin_lock_irqsave(&smc->slock, flags);
+		reg_val = SMC_READ_REG(REG0);
+		smc->cardin = (reg->card_detect == 1) ? 0 : 1;
+		spin_unlock_irqrestore(&smc->slock, flags);
+
+		//printk("[***smc***] smartcard->state_reg: 0x%x\n", reg_val);
 		if (s_smc_card_state != smc->cardin) {
 			s_smc_card_state = smc->cardin;
 			printk("[***smc***] smartcard->state: %d\n", s_smc_card_state);
@@ -628,12 +633,7 @@ static irqreturn_t smc_irq_handler(int irq, void *data)
 	
 	sc_reg0 = SMC_READ_REG(REG0);
 
-	if (sc_reg0_reg->card_detect) {
-		sc_reg0_reg->card_detect = 0;
-	} else {
-		sc_reg0_reg->card_detect = 1;
-	}
-	smc->cardin = sc_reg0_reg->card_detect;
+	smc->cardin = (sc_reg0_reg->card_detect == 1) ? 0 : 1;
 	
 	SMC_WRITE_REG(INTR, sc_int|0x3FF);
 	

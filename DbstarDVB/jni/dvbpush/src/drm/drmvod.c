@@ -155,6 +155,9 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	if (s_drmvod.inited && s_drmvod.ready) {
 		LOGD("read drm file\n");
 		ret = drm_read(&drmvod->fd_media, buf, len);
+		if (ret == 0) {
+			LOGD("DRM_READ ERROR!\n");
+		}
 	} else {
 		ret = read(drmvod->fd_media, buf, len);
 	}

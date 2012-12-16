@@ -120,6 +120,10 @@ int drm_read(int *fd, unsigned char *buf, int size)
 	int ret = 0;
 	unsigned int rdsize = (unsigned int)size;
 	ret = CDCASTB_DRM_ReadFile((const void*)fd, buf, &rdsize);
+	if (ret != 0) {
+		rdsize = 0;
+		LOGD("@@@@@@@@@@@ DRM_READ ERROR [%d](size=%d)=%d, rdsize=%d\n", fd,size, ret, rdsize);
+	}
 	LOGD("DRM_READ[%d](size=%d)=%d, rdsize=%d\n", fd,size, ret, rdsize);
 
 	return (int)rdsize;

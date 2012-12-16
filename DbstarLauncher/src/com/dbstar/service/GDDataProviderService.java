@@ -1781,6 +1781,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 
 	boolean notifyDbstarServiceNetworkStatus() {
+		Log.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started " + mIsDbServiceStarted);
+		
 		if (!mIsDbServiceStarted)
 			return false;
 
@@ -1795,9 +1797,13 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 
 	boolean notifyDbstarServiceStorageStatus() {
+		
+		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started " + mIsDbServiceStarted);
+		
 		if (!mIsDbServiceStarted)
 			return false;
 
+		//TODO: At this point, the disk maybe not mount now.
 		if (mIsStorageReady) {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT);
 		} else {
@@ -1808,6 +1814,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 
 	boolean notifyDbstarServiceSDStatus() {
+		
+		Log.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started " + mIsDbServiceStarted);
+		
 		if (!mIsDbServiceStarted)
 			return false;
 

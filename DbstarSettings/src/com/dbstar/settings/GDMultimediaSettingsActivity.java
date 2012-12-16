@@ -102,6 +102,9 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 					aMode.isSelected = false;
 				}
 			}
+		} else {
+			mAudioSelectedMode = 0;
+			setAudioModeSelected(0, true);
 		}
 
 		// Video output mode
