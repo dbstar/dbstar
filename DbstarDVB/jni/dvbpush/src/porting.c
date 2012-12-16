@@ -24,6 +24,7 @@
 #include "prodrm20.h"
 #include "multicast.h"
 #include "porting.h"
+#include "drmapi.h"
 
 static int 			s_settingInitFlag = 0;
 
@@ -47,6 +48,8 @@ static char			s_push_root_path[512];
 static char 		*s_guidelist_unselect = NULL;
 
 static int 			s_disk_manage_buzy = 0;
+static char			s_drmlib_ver[64];
+static char			s_smartcard_sn[CDCA_MAXLEN_SN+1];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
@@ -578,6 +581,7 @@ int guidelist_select_refresh()
 
 void disk_manage()
 {
+#if 0
 	if(1==s_disk_manage_buzy)
 		return;
 	else{
@@ -589,8 +593,61 @@ void disk_manage()
 		push_resume();
 		s_disk_manage_buzy = 0;
 	}
+#endif
 }
 
+static void drm_errors(char *fun, CDCA_U16 ret)
+{
+	switch(ret){
+		case CDCA_RC_CARD_INVALID:
+			DEBUG("[%s] none or invalid smart card\n", fun);
+			break;
+		case CDCA_RC_POINTER_INVALID:
+			DEBUG("[%s] null pointor\n", fun);
+			break;
+		case CDCA_RC_DATA_NOT_FIND:
+			DEBUG("[%s] no such operator\n", fun);
+			break;
+		default:
+			DEBUG("[%s] such return can not distinguished: %d\n", fun, ret);
+			break;
+	}
+}
+
+static int smartcard_sn_get(char **p, unsigned int *len)
+{
+	int ret = -1;
+	
+	memset(s_smartcard_sn, 0, sizeof(s_smartcard_sn));
+	ret = CDCASTB_GetCardSN(s_smartcard_sn);
+	if(CDCA_RC_OK==ret){
+		DEBUG("read smartcard sn OK: %s\n", s_smartcard_sn);
+		ret = 0;
+	}
+	else{
+		drm_errors("CDCASTB_GetCardSN", ret);
+		snprintf(s_smartcard_sn,sizeof(s_smartcard_sn),"SMARTCARD_USELESS");
+		ret = -1;
+	}
+	*p = s_smartcard_sn;
+	*len = strlen(s_smartcard_sn);
+	
+	return ret;
+}
+
+static int drmlib_version_get(char **p, unsigned int *len)
+{
+/*
+ 查询CA_LIB版本号，要求机顶盒以16进制显示
+*/
+	snprintf(s_drmlib_ver,sizeof(s_drmlib_ver),"3.0(0x%lx)", CDCASTB_GetVer());
+	DEBUG("CA_LIB Ver: %s\n", s_drmlib_ver);
+	
+	*p = s_drmlib_ver;
+	*len = strlen(s_drmlib_ver);
+	
+	return 0;
+}
 
 /*
  通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
@@ -661,6 +718,23 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("CMD_DISK_FOREWARNING: Disk alarm for capability\n");
 			disk_manage();
 			break;
+		
+		case CMD_DRM_SC_REMOVE:
+			DEBUG("CMD_SMARTCARD_REMOVE\n");
+			drm_sc_remove();
+			break;
+		case CMD_DRM_SC_INSERT:
+			DEBUG("CMD_SMARTCARD_INSERT\n");
+			drm_sc_insert();
+			break;
+//		case CMD_SMARTCARD_SN:
+//			DEBUG("CMD_SMARTCARD_SN\n");
+//			smartcard_sn_get(buf, (unsigned int *)len);
+//			break;
+//		case CMD_CALIB_VERSION:
+//			DEBUG("CMD_CALIB_VERSION\n");
+//			drmlib_version_get(buf, (unsigned int *)len);
+//			break;
 		
 		default:
 			break;
@@ -739,172 +813,151 @@ void upgrade_info_init()
 		DEBUG("get loader message failed\n");
 }
 
-static void drm_errors(char *fun, CDCA_U16 ret)
-{
-	switch(ret){
-		case CDCA_RC_CARD_INVALID:
-			DEBUG("[%s] none or invalid smart card\n", fun);
-			break;
-		case CDCA_RC_POINTER_INVALID:
-			DEBUG("[%s] null pointor\n", fun);
-			break;
-		case CDCA_RC_DATA_NOT_FIND:
-			DEBUG("[%s] no such operator\n", fun);
-			break;
-		default:
-			DEBUG("[%s] such return can not distinguished: %d\n", fun, ret);
-			break;
-	}
-}
-
-#define DRMENTITLE	"DRMProduct"
-int drm_info_refresh()
-{
-	//return 0;
-	
-	if(0==drm_init()){
-		char		smartcard_sn[CDCA_MAXLEN_SN+1];
-		CDCA_U16	wArrTvsID[CDCA_MAXNUM_OPERATOR];
-		CDCA_U8		bySlotID[CDCA_MAXNUM_SLOT];
-		CDCA_U32	ACArray[CDCA_MAXNUM_ACLIST];
-		CDCA_U8		index = 0;
-		CDCA_U16	j = 0;
-		SCDCAEntitles Entitle;
-		CDCA_U16	ret = CDCA_RC_OK;
-		CDCA_U16	OperatorCount = 0;
-		SCDCAOperatorInfo OperatorInfo;
-		char		BeginDate[64];
-		char		ExpireDate[64];
-		
-/*
- 查询CA_LIB版本号，要求机顶盒以16进制显示
-*/
-		DEBUG("CA_LIB Ver: 3.0(0x%lx)\n", CDCASTB_GetVer());
-		
-/*
- 智能卡号
-*/
-		memset(smartcard_sn, 0, sizeof(smartcard_sn));
-		ret = CDCASTB_GetCardSN(smartcard_sn);
-		if(CDCA_RC_OK==ret){
-			DEBUG("read smartcard sn OK: %s\n", smartcard_sn);
-		}
-		else{
-			drm_errors("CDCASTB_GetCardSN", ret);
-			return -1;
-		}
-
-/*
- 运营商ID列表
-*/		
-		memset(wArrTvsID, 0, sizeof(wArrTvsID));
-		ret = CDCASTB_GetOperatorIds(wArrTvsID);
-		if(CDCA_RC_OK==ret){
-			for(index=0;index<CDCA_MAXNUM_OPERATOR;index++){
-				if(0==wArrTvsID[index]){
-					//DEBUG("OperatorID list end\n");
-					break;
-				}
-				else
-					DEBUG("OperatorID: %d\n", wArrTvsID[index]);
-			}
-		}
-		else{
-			drm_errors("CDCASTB_GetOperatorIds", ret);
-			return -1;
-		}
-		
-		OperatorCount = index;
-		for(j=0;j<OperatorCount;j++){
-/*
- 运营商信息
-*/
-			ret = CDCASTB_GetOperatorInfo(wArrTvsID[j], &OperatorInfo);
-			if(CDCA_RC_OK==ret){
-				DEBUG("[%d]: %s\n", wArrTvsID[j], OperatorInfo.m_szTVSPriInfo);
-			}
-			else
-				drm_errors("CDCASTB_GetServiceEntitles", ret);
-			
-/*
- 普通授权节目购买情况
-*/
-			memset(&Entitle, 0, sizeof(Entitle));
-			ret = CDCASTB_GetServiceEntitles(wArrTvsID[j],&Entitle);
-			if(CDCA_RC_OK==ret){
-				DEBUG("Operator %d has %d entitles\n", wArrTvsID[j],Entitle.m_wProductCount);
-				for(index=0;index<Entitle.m_wProductCount;index++){
-					memset(BeginDate, 0, sizeof(BeginDate));
-					memset(ExpireDate, 0, sizeof(ExpireDate));
-					if(		0==drm_date_convert(Entitle.m_Entitles[index].m_tBeginDate, BeginDate, sizeof(BeginDate))
-						&& 	0==drm_date_convert(Entitle.m_Entitles[index].m_tExpireDate, ExpireDate, sizeof(ExpireDate))){
-						DEBUG("[Operator %d]Product id: %lu, Product Expire: %s-%s, CanTape: %d\n", wArrTvsID[j],Entitle.m_Entitles[index].m_dwProductID,
-							BeginDate,ExpireDate,Entitle.m_Entitles[index].m_bCanTape);
-					}
-				}
-			}
-			else{
-				drm_errors("CDCASTB_GetServiceEntitles", ret);
-				return -1;
-			}
-			
-/*
- 查询钱包ID列表
-*/
-			memset(bySlotID, 0, sizeof(bySlotID));
-			ret = CDCASTB_GetSlotIDs(wArrTvsID[j], bySlotID);
-			if(CDCA_RC_OK==ret){
-				SCDCATVSSlotInfo SlotInfo;
-				for(index=0;index<CDCA_MAXNUM_SLOT;index++){
-/*
- 查询钱包的详细信息
-*/
-					memset(&SlotInfo, 0, sizeof(SlotInfo));
-					ret = CDCASTB_GetSlotInfo(wArrTvsID[j],bySlotID[index],&SlotInfo);
-					if(CDCA_RC_OK==ret)
-						DEBUG("bySlotID[%d]: %d, CreditLimit:%lu, Balance:%lu\n", index, bySlotID[index],SlotInfo.m_wCreditLimit, SlotInfo.m_wBalance);
-					else{
-						char tmp_str[128];
-						snprintf(tmp_str, sizeof(tmp_str), "CDCASTB_GetSlotInfo Operator: %d, bySlotID: %d", wArrTvsID[j],bySlotID[index]);
-						drm_errors(tmp_str, ret);
-					}
-				}
-			}
-			else
-				drm_errors("CDCASTB_GetSlotIDs", ret);
-			
-/*
- 查询用户特征
-*/
-			memset(ACArray, 0, sizeof(ACArray));
-			ret = CDCASTB_GetACList(wArrTvsID[j], ACArray);
-			if(CDCA_RC_OK==ret){
-				for(index=0;index<CDCA_MAXNUM_ACLIST;index++)
-					if(0!=ACArray[index])
-						DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
-			}
-			else
-				drm_errors("CDCASTB_GetSlotIDs", ret);
-		}
-		
-/*
- 查询授权信息
-*/
-		CDCA_U32 dwFrom = 0, dwNum = 0;
-		SCDCAPVODEntitleInfo EntitleInfo;
-		memset(&EntitleInfo, 0, sizeof(EntitleInfo));
-		ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,&EntitleInfo,&dwNum);
-		if(CDCA_RC_OK==ret)
-			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
-		else
-			drm_errors("CDCASTB_GetSlotIDs", ret);
-	}
-	else
-		DEBUG("drm init failed\n");
-	
-	
-	return -1;
-}
+//int drm_info_refresh()
+//{
+//	if(0==drm_init()){
+//		char		smartcard_sn[CDCA_MAXLEN_SN+1];
+//		CDCA_U16	wArrTvsID[CDCA_MAXNUM_OPERATOR];
+//		CDCA_U8		bySlotID[CDCA_MAXNUM_SLOT];
+//		CDCA_U32	ACArray[CDCA_MAXNUM_ACLIST];
+//		CDCA_U8		index = 0;
+//		CDCA_U16	j = 0;
+//		SCDCAEntitles Entitle;
+//		CDCA_U16	ret = CDCA_RC_OK;
+//		CDCA_U16	OperatorCount = 0;
+//		SCDCAOperatorInfo OperatorInfo;
+//		char		BeginDate[64];
+//		char		ExpireDate[64];
+//		
+///*
+// 查询CA_LIB版本号，要求机顶盒以16进制显示
+//*/
+//		DEBUG("CA_LIB Ver: 3.0(0x%lx)\n", CDCASTB_GetVer());
+//		
+///*
+// 智能卡号
+//*/
+//		memset(smartcard_sn, 0, sizeof(smartcard_sn));
+//		ret = CDCASTB_GetCardSN(smartcard_sn);
+//		if(CDCA_RC_OK==ret){
+//			DEBUG("read smartcard sn OK: %s\n", smartcard_sn);
+//		}
+//		else{
+//			drm_errors("CDCASTB_GetCardSN", ret);
+//			return -1;
+//		}
+//
+///*
+// 运营商ID列表
+//*/		
+//		memset(wArrTvsID, 0, sizeof(wArrTvsID));
+//		ret = CDCASTB_GetOperatorIds(wArrTvsID);
+//		if(CDCA_RC_OK==ret){
+//			for(index=0;index<CDCA_MAXNUM_OPERATOR;index++){
+//				if(0==wArrTvsID[index]){
+//					//DEBUG("OperatorID list end\n");
+//					break;
+//				}
+//				else
+//					DEBUG("OperatorID: %d\n", wArrTvsID[index]);
+//			}
+//		}
+//		else{
+//			drm_errors("CDCASTB_GetOperatorIds", ret);
+//			return -1;
+//		}
+//		
+//		OperatorCount = index;
+//		for(j=0;j<OperatorCount;j++){
+///*
+// 运营商信息
+//*/
+//			ret = CDCASTB_GetOperatorInfo(wArrTvsID[j], &OperatorInfo);
+//			if(CDCA_RC_OK==ret){
+//				DEBUG("[%d]: %s\n", wArrTvsID[j], OperatorInfo.m_szTVSPriInfo);
+//			}
+//			else
+//				drm_errors("CDCASTB_GetServiceEntitles", ret);
+//			
+///*
+// 普通授权节目购买情况
+//*/
+//			memset(&Entitle, 0, sizeof(Entitle));
+//			ret = CDCASTB_GetServiceEntitles(wArrTvsID[j],&Entitle);
+//			if(CDCA_RC_OK==ret){
+//				DEBUG("Operator %d has %d entitles\n", wArrTvsID[j],Entitle.m_wProductCount);
+//				for(index=0;index<Entitle.m_wProductCount;index++){
+//					memset(BeginDate, 0, sizeof(BeginDate));
+//					memset(ExpireDate, 0, sizeof(ExpireDate));
+//					if(		0==drm_date_convert(Entitle.m_Entitles[index].m_tBeginDate, BeginDate, sizeof(BeginDate))
+//						&& 	0==drm_date_convert(Entitle.m_Entitles[index].m_tExpireDate, ExpireDate, sizeof(ExpireDate))){
+//						DEBUG("[Operator %d]Product id: %lu, Product Expire: %s-%s, CanTape: %d\n", wArrTvsID[j],Entitle.m_Entitles[index].m_dwProductID,
+//							BeginDate,ExpireDate,Entitle.m_Entitles[index].m_bCanTape);
+//					}
+//				}
+//			}
+//			else{
+//				drm_errors("CDCASTB_GetServiceEntitles", ret);
+//				return -1;
+//			}
+//			
+///*
+// 查询钱包ID列表
+//*/
+//			memset(bySlotID, 0, sizeof(bySlotID));
+//			ret = CDCASTB_GetSlotIDs(wArrTvsID[j], bySlotID);
+//			if(CDCA_RC_OK==ret){
+//				SCDCATVSSlotInfo SlotInfo;
+//				for(index=0;index<CDCA_MAXNUM_SLOT;index++){
+///*
+// 查询钱包的详细信息
+//*/
+//					memset(&SlotInfo, 0, sizeof(SlotInfo));
+//					ret = CDCASTB_GetSlotInfo(wArrTvsID[j],bySlotID[index],&SlotInfo);
+//					if(CDCA_RC_OK==ret)
+//						DEBUG("bySlotID[%d]: %d, CreditLimit:%lu, Balance:%lu\n", index, bySlotID[index],SlotInfo.m_wCreditLimit, SlotInfo.m_wBalance);
+//					else{
+//						char tmp_str[128];
+//						snprintf(tmp_str, sizeof(tmp_str), "CDCASTB_GetSlotInfo Operator: %d, bySlotID: %d", wArrTvsID[j],bySlotID[index]);
+//						drm_errors(tmp_str, ret);
+//					}
+//				}
+//			}
+//			else
+//				drm_errors("CDCASTB_GetSlotIDs", ret);
+//			
+///*
+// 查询用户特征
+//*/
+//			memset(ACArray, 0, sizeof(ACArray));
+//			ret = CDCASTB_GetACList(wArrTvsID[j], ACArray);
+//			if(CDCA_RC_OK==ret){
+//				for(index=0;index<CDCA_MAXNUM_ACLIST;index++)
+//					if(0!=ACArray[index])
+//						DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
+//			}
+//			else
+//				drm_errors("CDCASTB_GetSlotIDs", ret);
+//		}
+//		
+///*
+// 查询授权信息
+//*/
+//		CDCA_U32 dwFrom = 0, dwNum = 0;
+//		SCDCAPVODEntitleInfo EntitleInfo;
+//		memset(&EntitleInfo, 0, sizeof(EntitleInfo));
+//		ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,&EntitleInfo,&dwNum);
+//		if(CDCA_RC_OK==ret)
+//			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
+//		else
+//			drm_errors("CDCASTB_GetSlotIDs", ret);
+//	}
+//	else
+//		DEBUG("drm init failed\n");
+//	
+//	
+//	return -1;
+//}
 
 /*
 struct tm{

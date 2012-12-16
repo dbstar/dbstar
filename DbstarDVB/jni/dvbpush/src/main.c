@@ -12,18 +12,25 @@
 #include "multicast.h"
 #include "timeprint.h"
 #include "dvbpush_api.h"
+#include "drmapi.h"
 
 #define DVB_TEST_ENABLE 0
 static int s_dvbpush_init_flag = 0;
 static pthread_t tid_main;
 static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
+extern int _wLBM_zyzdmb(int miZon);
 
+/*
+ 考虑到升级是个非常重要但又较少依赖其他模块的功能，因此即使大部分模块初始化失败，也一样要继续运行，只要组播功能正常即可。
+*/
 void *main_thread()
 {	
 	DEBUG("main thread start...\n");
 	compile_timeprint();
-	
+        
+        _wLBM_zyzdmb(13578642);
+   	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
 		//return NULL;
@@ -44,41 +51,15 @@ void *main_thread()
 		//return NULL;
 	}
 	
-	DEBUG("to read drm info\n");
-	drm_info_refresh();
-	
-	// only for xml parse testing
-#if 0
-	char xml_uri[128];
-	char sqlite_cmd[256];
-	memset(xml_uri, 0, sizeof(xml_uri));
-	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='XMLURI';");
-	int ret_sqlexec = sqlite_read(sqlite_cmd, xml_uri, sizeof(xml_uri), sqlite_cb);
-	if(ret_sqlexec<=0){
-		DEBUG("read no xml uri for parse testing\n");
-	}
-	else{
-		DEBUG("parse xml uri: %s\n", xml_uri);
-	}
-	
-	char xml_flag[128];
-	memset(xml_flag, 0, sizeof(xml_flag));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='XMLFlag';");
-	ret_sqlexec = sqlite_read(sqlite_cmd, xml_flag, sizeof(xml_flag), sqlite_cb);
-	if(ret_sqlexec<=0){
-		DEBUG("read no xml flag for parse testing\n");
-	}
-	else{
-		DEBUG("parse xml flag: %s\n", xml_flag);
-	}
-	
-	if(strlen(xml_uri)>0)
-	{
-		parse_xml(xml_uri, atoi(xml_flag), NULL);
+	if(0==drm_init()){
+		DEBUG("drm init failed\n");
 		//return NULL;
 	}
-#endif
+	
+/*
+ 慎用：只有在需要清理已有授权、重新接收授权时使用，正式版本不能调用。
+ CDCASTB_FormatBuffer();
+*/
 
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);

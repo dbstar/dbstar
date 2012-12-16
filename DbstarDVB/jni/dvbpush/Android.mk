@@ -21,12 +21,33 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := lib/$(mylib)
 include $(PREBUILD_STATIC_LIBRARY)
 
+#include $(CLEAR_VARS)
+#mylib := libpush.a
+#LOCAL_MODULE := $(mylib)
+#LOCAL_MODULE_TAGS := optional
+#LOCAL_SRC_FILES := lib/libpush.a
+#include $(PREBUILD_STATIC_LIBRARY)
+
 include $(CLEAR_VARS)
-mylib := libpush.a
+mylib := libfileapi.so
 LOCAL_MODULE := $(mylib)
 LOCAL_MODULE_TAGS := optional
-LOCAL_SRC_FILES := lib/libpush.a
-include $(PREBUILD_STATIC_LIBRARY)
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_SRC_FILES := lib/$(mylib)
+OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+mylib := libpush.so
+LOCAL_MODULE := $(mylib)
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_SRC_FILES := lib/$(mylib)
+OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+include $(BUILD_PREBUILT)
+
 
 include $(CLEAR_VARS)
 mylib := libxml2.so
@@ -69,9 +90,9 @@ LOCAL_SRC_FILES += \
 	src/sha_verify.c \
 	src/mtdutils.c 
 LOCAL_CFLAGS += -W -Wall
-LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -lpush -ldbstardrm
+LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libxml2 libiconv
+LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libfileapi libpush libxml2 libiconv
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -94,17 +115,17 @@ LOCAL_PRELINK_MODULE := false
 include $(BUILD_SHARED_LIBRARY)
 
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := drmtest
-LOCAL_MODULE_TAGS := optional
-LOCAL_PRELINK_MODULE := false
-LOCAL_SRC_FILES := \
-	src/softdmx.c \
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := drmtest
+#LOCAL_MODULE_TAGS := optional
+#LOCAL_PRELINK_MODULE := false
+#LOCAL_SRC_FILES := \
 	src/drm/drmport.c \
 	src/drm/smcdrv.c \
-	src/drm/drmtest.c
-LOCAL_CFLAGS := -Wall
-LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/
-LOCAL_SHARED_LIBRARIES += libc liblog
-include $(BUILD_EXECUTABLE)
+	src/drm/drmtest.c 
+#LOCAL_CFLAGS := -Wall
+#LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
+#LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/
+#LOCAL_SHARED_LIBRARIES += libc liblog
+#include $(BUILD_EXECUTABLE)
+
