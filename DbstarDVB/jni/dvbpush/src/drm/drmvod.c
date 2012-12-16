@@ -43,6 +43,7 @@ static int drmvod_close(URLContext *h);
 static int drmvod_write(URLContext *h, unsigned char *buf, int size);
 static int64_t drmvod_seek(URLContext *h, int64_t pos, int whence);
 static int drmvod_get_file_handle(URLContext *h);
+extern int set_player_errno(int errno);
 
 URLProtocol drmvod_protocol = {
 	"drmvod",
@@ -125,9 +126,10 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 		} else {
 			ret = drm_open(&s_drmvod.fd_media, &s_drmvod.fd_drm);
 			if (ret != 0) {
-				LOGE("########## drm_open() ERROR!, ret=%d\n", ret);
+				LOGE("########## drm_open() ERROR!, ret=%d ####\n", ret);
 				close(s_drmvod.fd_drm);
 				s_drmvod.fd_drm = -1;
+				set_player_errno(ret);
 				return -1;
 			} else {
 				s_drmvod.ready = 1;

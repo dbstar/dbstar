@@ -350,6 +350,8 @@ public class AmPlayer extends Service {
 			{
 				s_message.arg2 = error_no;
 				error_no = 0;
+				Log.d(TAG,"*** player->status = " + Integer.toHexString(s_message.arg1));
+				Log.d(TAG,"*** player->errno  = " + Integer.toHexString(s_message.arg2));
 			}
             if(player_status == VideoInfo.DIVX_AUTHOR_ERR)
             {
@@ -360,7 +362,7 @@ public class AmPlayer extends Service {
               Log.d(TAG, "Divx expired");
             }
 
-			Log.d(TAG,"player status changed to: " + Integer.toHexString(player_status));
+			Log.d(TAG,"*** player status changed to: " + Integer.toHexString(player_status));
 			try {
 				mClient.send(s_message);
 			} catch (RemoteException e) {

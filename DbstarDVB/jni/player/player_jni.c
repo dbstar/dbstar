@@ -28,6 +28,7 @@
 #define PLAYER_INFO_POP_INTERVAL 500 // 0.5s
 //ugly code....
 static play_control_t _plCtrl;
+static int g_player_errno = 0;
 
 static JavaVM* gJavaVm = NULL;
 static jmethodID gPostMid = NULL;
@@ -186,11 +187,17 @@ jclass DivxInfo_getClass(JNIEnv *env)
 
 int onUpdate_player_info_java(JNIEnv *env, int pid, player_info_t * info)
 {
+	int error_no = info->error_no;
 	if (gMplayerClazz != NULL && gPostMid != NULL) {
 		//LOGI("call java update method in JNI env 1");
+		if (g_player_errno != 0) {
+			error_no = g_player_errno;
+			LOGE("player ERRNO: %x\n", g_player_errno);
+			g_player_errno = 0;
+		}
 		(*env)->CallStaticVoidMethod(env, gMplayerClazz, gPostMid, pid,
 		                             info->status, info->full_time, info->current_ms, info->last_time,
-		                             info->error_no, info->drm_rental);
+		                             error_no, info->drm_rental);
 		//LOGI("call java update method in JNI env 2");
 		return 0;
 	}
@@ -198,6 +205,15 @@ int onUpdate_player_info_java(JNIEnv *env, int pid, player_info_t * info)
 	return -1;
 
 }
+
+int set_player_errno(int err)
+{
+	LOGD("$$$$$$$$$$$$$$$$$ set_player_errno(%x)\n", err);
+	g_player_errno = err;
+
+	return 0;
+}
+
 int update_player_info(int pid, player_info_t * info)
 {
 	JNIEnv *env;

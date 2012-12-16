@@ -1095,15 +1095,11 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void playbackError(int error) {
-		if (error < 0) {
-			// if (mAmplayer != null)
-			// Amplayer_stop();
+		Log.d(TAG, "@@@@@@@@@@@@@  playbackError: " + Integer.toHexString(error));
 
-			saveBookmark(0);
-			mPlayPosition = 0;
-			// finish();
-			exitPlayer();
-		}
+		saveBookmark(0);
+		mPlayPosition = 0;
+		exitPlayer();
 	}
 
 	public void searchOk() {

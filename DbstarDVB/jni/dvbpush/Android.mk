@@ -39,6 +39,16 @@ OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
+mylib := libfileapic.so
+LOCAL_MODULE := $(mylib)
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_SRC_FILES := lib/$(mylib)
+OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
 mylib := libpush.so
 LOCAL_MODULE := $(mylib)
 LOCAL_MODULE_TAGS := optional
@@ -92,27 +102,27 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS += -W -Wall
 LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libfileapi libpush libxml2 libiconv
+LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libfileapi libfileapic libpush libxml2 libiconv
 include $(BUILD_SHARED_LIBRARY)
 
-include $(CLEAR_VARS)
-LOCAL_MODULE := libdrmvod
-LOCAL_MODULE_TAGS := optional
-LOCAL_PRELINK_MODULE := false
-LOCAL_SRC_FILES := \
+#include $(CLEAR_VARS)
+#LOCAL_MODULE := libdrmvod
+#LOCAL_MODULE_TAGS := optional
+#LOCAL_PRELINK_MODULE := false
+#LOCAL_SRC_FILES := \
 	src/drm/drmvod.c 
-LIBPLAYER_PATH := $(LOCAL_PATH)/../../../../amlogic/LibPlayer
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/include \
+#LIBPLAYER_PATH := $(LOCAL_PATH)/../../../../amlogic/LibPlayer
+#LOCAL_C_INCLUDES := $(LOCAL_PATH)/include \
 	$(LIBPLAYER_PATH)/amplayer/player/include \
     $(LIBPLAYER_PATH)/amplayer/control/include \
     $(LIBPLAYER_PATH)/amcodec/include \
     $(LIBPLAYER_PATH)/amffmpeg \
     $(JNI_H_INCLUDE) 
-LOCAL_CFLAGS := -Wall
-LOCAL_SHARED_LIBRARIES += liblog libdvbpushjni
-LOCAL_PROGUARD_ENABLED := disabled
-LOCAL_PRELINK_MODULE := false
-include $(BUILD_SHARED_LIBRARY)
+#LOCAL_CFLAGS := -Wall
+#LOCAL_SHARED_LIBRARIES += liblog libdvbpushjni libplayerjni
+#LOCAL_PROGUARD_ENABLED := disabled
+#LOCAL_PRELINK_MODULE := false
+#include $(BUILD_SHARED_LIBRARY)
 
 
 #include $(CLEAR_VARS)
