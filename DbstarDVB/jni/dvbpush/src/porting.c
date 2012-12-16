@@ -721,11 +721,11 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		
 		case CMD_DRM_SC_REMOVE:
 			DEBUG("CMD_SMARTCARD_REMOVE\n");
-			drm_sc_insert();
+			drm_sc_remove();
 			break;
 		case CMD_DRM_SC_INSERT:
 			DEBUG("CMD_SMARTCARD_INSERT\n");
-			drm_sc_remove();
+			drm_sc_insert();
 			break;
 //		case CMD_SMARTCARD_SN:
 //			DEBUG("CMD_SMARTCARD_SN\n");
