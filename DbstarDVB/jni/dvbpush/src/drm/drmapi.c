@@ -44,8 +44,6 @@ int drm_init()
 		s_drm_inited = 1;
 	}
 
-	drm_sc_insert();
-	sleep(2);
 	LOGD("drm_init(),s_drm_inited=%d\n",s_drm_inited);
 
 	return 0;
