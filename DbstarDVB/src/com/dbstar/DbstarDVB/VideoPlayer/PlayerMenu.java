@@ -991,6 +991,16 @@ public class PlayerMenu extends PlayerActivity {
 			return;
 		}
 
+		if (!plugIn) {
+			if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
+				return;
+			}
+		} else {
+			if (mPlayerStatus != VideoInfo.PLAYER_PAUSE) {
+				return;
+			}
+		}
+		
 		onPlayButtonPressed();
 	}
 
