@@ -719,13 +719,21 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			disk_manage();
 			break;
 		
-		case CMD_DRM_SC_REMOVE:
-			DEBUG("CMD_SMARTCARD_REMOVE\n");
-			drm_sc_remove();
-			break;
 		case CMD_DRM_SC_INSERT:
 			DEBUG("CMD_SMARTCARD_INSERT\n");
-			drm_sc_insert();
+			if(-1==drm_sc_insert())
+				msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+			else
+				msg_send2_UI(DRM_SC_INSERT_OK, NULL, 0);
+				
+			break;
+		case CMD_DRM_SC_REMOVE:
+			DEBUG("CMD_SMARTCARD_REMOVE\n");
+			if(-1==drm_sc_remove())
+				msg_send2_UI(DRM_SC_REMOVE_FAILED, NULL, 0);
+			else
+				msg_send2_UI(DRM_SC_REMOVE_OK, NULL, 0);
+			
 			break;
 //		case CMD_SMARTCARD_SN:
 //			DEBUG("CMD_SMARTCARD_SN\n");

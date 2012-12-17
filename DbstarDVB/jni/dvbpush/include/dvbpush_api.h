@@ -26,6 +26,9 @@ typedef enum {
 
 	CMD_DRM_SC_INSERT               = 0x00061,    // DRM smartcard Insert
 	CMD_DRM_SC_REMOVE               = 0x00062,    // DRM smartcard Remove
+	CMD_DRM_SC_USELESS              = 0x00063,    // DRM smartcard useless
+	CMD_DRM_SC_SN_READ	            = 0x00064,    // DRM smartcard sn read
+	CMD_DRMLIB_VER_READ				= 0x00065,    // DRM lib version read
 
 	CMD_MAX                         = 0x0FFFF,
 
@@ -42,19 +45,14 @@ typedef enum {
 	STATUS_PREVIEW_REFRESH			= 0x30015,    // 首页小片发生更新
 	STATUS_INTERFACE_REFRESH		= 0x30016,    // 界面产品发生更新
 	
-	
-	DRM_NOTICE_SMARTCARD_OUT		= 0x31000,		// 无智能卡
-	DRM_NOTICE_SMARTCARD_IN			= 0x31001,		// 智能卡插上
-	DRM_NOTICE_SMARTCARD_INVALID	= 0x31002,		// 无效智能卡
-	
-	
-	
 	UPGRADE_NEW_VER                 = 0x20001,     // 有新版本到来，用户选择升级
 	UPGRADE_NEW_VER_FORCE           = 0x20002,     // 有新版本到来，强制升级
-	UPGRADE_START                   = 0x20003,     // 开始升级
-	UPGRADE_PERCENT                 = 0x20004,     // 升级进度百分比
-	UPGRADE_SUCCESS                 = 0x21000,     // 升级成功
-	UPGRADE_FAILED                  = 0x21001      // 升级失败
+	
+	DRM_SC_INSERT_OK				= 0x20100,    // DRM smartcard Insert OK
+	DRM_SC_INSERT_FAILED			= 0x20101,    // DRM smartcard Insert failed
+	DRM_SC_REMOVE_OK				= 0x20102,    // DRM smartcard Remove OK
+	DRM_SC_REMOVE_FAILED			= 0x20103,    // DRM smartcard Remove failed
+	
 }DBSTAR_CMD_MSG_E;
 
 typedef int (* dvbpush_notify_t)(int type, char *msg, int len);
