@@ -71,6 +71,7 @@ public class GDAlertDialog extends Dialog {
 	public void showSingleButton() {
 		mCancelButton.setVisibility(View.GONE);
 		mCenterSpacer.setVisibility(View.GONE);
+		mOkButton.requestFocus();
 	}
 
 	public int getId() {

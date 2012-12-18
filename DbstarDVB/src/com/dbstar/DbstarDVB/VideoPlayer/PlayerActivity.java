@@ -14,6 +14,7 @@ import com.dbstar.DbstarDVB.PlayerService.SettingsVP;
 import com.dbstar.DbstarDVB.PlayerService.VideoInfo;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.DbVideoInfoDlg;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.GDAlertDialog;
+import com.dbstar.DbstarDVB.VideoPlayer.alert.PlayerErrorInfo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -81,6 +82,8 @@ public class PlayerActivity extends Activity {
 
 		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_IN);
 		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
+		
+		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
 
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
@@ -91,8 +94,18 @@ public class PlayerActivity extends Activity {
 
 	private static final int MSG_SMARTCARD_IN = 0x1000;
 	private static final int MSG_SMARTCARD_OUT = 0x1001;
+	private static final int MSG_SMARTCARD_RESETOK = 0x1002;
 
 	protected boolean mIsSmartcardIn = false;
+
+	protected static final int SMARTCARD_STATUS_NONE = 0;
+	protected static final int SMARTCARD_STATUS_INSERTING = 1;
+	protected static final int SMARTCARD_STATUS_INSERTED = 2;
+	protected static final int SMARTCARD_STATUS_REMOVING = 3;
+	protected static final int SMARTCARD_STATUS_REMOVED = 4;
+	protected static final int SMARTCARD_STATUS_INVALID = 5;
+
+	protected int mSmartcardState = SMARTCARD_STATUS_NONE;
 
 	private BroadcastReceiver mSystemMessageReceiver = new BroadcastReceiver() {
 
@@ -107,16 +120,40 @@ public class PlayerActivity extends Activity {
 
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
 				Log.d(TAG, "######: " + action);
+				mSmartcardState = SMARTCARD_STATUS_INSERTING;
 				mHandler.sendEmptyMessage(MSG_SMARTCARD_IN);
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {
 				Log.d(TAG, "######: " + action);
+				mSmartcardState = SMARTCARD_STATUS_REMOVING;
 				mHandler.sendEmptyMessage(MSG_SMARTCARD_OUT);
+			} else if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
+				int type = intent.getIntExtra("type", 0);
+				switch (type) {
+				case DbstarServiceApi.DRM_SC_INSERT_OK: {
+					mSmartcardState = SMARTCARD_STATUS_INSERTED;
+					mHandler.sendEmptyMessage(MSG_SMARTCARD_RESETOK);
+					break;
+				}
+				case DbstarServiceApi.DRM_SC_INSERT_FAILED: {
+					mSmartcardState = SMARTCARD_STATUS_INVALID;
+					break;
+				}
+				case DbstarServiceApi.DRM_SC_REMOVE_OK: {
+					mSmartcardState = SMARTCARD_STATUS_REMOVED;
+					break;
+				}
+				case DbstarServiceApi.DRM_SC_REMOVE_FAILED: {
+					mSmartcardState = SMARTCARD_STATUS_INVALID;
+					break;
+				}
+				}
 			}
 		}
 	};
 
 	protected static final int DLG_MEDIAINFO_POPUP = 0;
 	protected static final int DLG_SMARTCARD_POPUP = 1;
+	private static final int DLG_ERRORINFO = 2;
 
 	protected static final int MSG_DIALOG_POPUP = 1;
 	protected static final int MSG_DIALOG_TIMEOUT = 500;
@@ -140,6 +177,11 @@ public class PlayerActivity extends Activity {
 				showSmartcardInfo(false);
 				break;
 			}
+			case MSG_SMARTCARD_RESETOK: {
+				smartcardResetOK();
+				break;
+			}
+
 			}
 		}
 	};
@@ -153,9 +195,15 @@ public class PlayerActivity extends Activity {
 			break;
 		}
 		case DLG_SMARTCARD_POPUP: {
-			mSmartcardDialog = new GDAlertDialog(this, DLG_SMARTCARD_POPUP);
+			mSmartcardDialog = new GDAlertDialog(this, id);
 			mSmartcardDialog.setOnCreatedListener(mOnCreatedListener);
 			dialog = mSmartcardDialog;
+			break;
+		}
+		case DLG_ERRORINFO: {
+			mErrorInfoDlg = new GDAlertDialog(this, id);
+			mErrorInfoDlg.setOnCreatedListener(mOnCreatedListener);
+			dialog = mErrorInfoDlg;
 			break;
 		}
 		default:
@@ -180,18 +228,22 @@ public class PlayerActivity extends Activity {
 		if (mSmartcardDialog == null) {
 			showDialog(DLG_SMARTCARD_POPUP);
 		} else {
-			if (mIsSmartcardIn) {
-				mSmartcardDialog.setMessage(R.string.smartcard_status_in);
-			} else {
-				mSmartcardDialog.setMessage(R.string.smartcard_status_out);
-			}
-			mSmartcardDialog.showSingleButton();
+			buildSmartcardDlg();
 			mSmartcardDialog.show();
 		}
 
 		if (mIsSmartcardIn) {
 			hideDlgDelay();
 		}
+	}
+	
+	void buildSmartcardDlg() {
+		if (mIsSmartcardIn) {
+			mSmartcardDialog.setMessage(R.string.smartcard_status_in);
+		} else {
+			mSmartcardDialog.setMessage(R.string.smartcard_status_out);
+		}
+		mSmartcardDialog.showSingleButton();
 	}
 
 	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
@@ -200,13 +252,10 @@ public class PlayerActivity extends Activity {
 		public void onCreated(GDAlertDialog dialog) {
 			if (dialog.getId() == DLG_SMARTCARD_POPUP) {
 				dialog.setTitle(R.string.smartcard_status_title);
-				if (mIsSmartcardIn) {
-					dialog.setMessage(R.string.smartcard_status_in);
-				} else {
-					dialog.setMessage(R.string.smartcard_status_out);
-				}
-				dialog.showSingleButton();
+				buildSmartcardDlg();
 				dialog.setOnDismissListener(mDlgDismissListener);
+			} else if (dialog.getId() == DLG_ERRORINFO) {
+				buildErrorInfoDlg();
 			}
 		}
 
@@ -259,11 +308,17 @@ public class PlayerActivity extends Activity {
 
 		@Override
 		public void onDismiss(DialogInterface dialog) {
-			if (!mIsSmartcardIn) {
-				exitPlayer();
-			} else {
-				smartcardPlugin(mIsSmartcardIn);
+			if (dialog instanceof GDAlertDialog) {
+				GDAlertDialog alertDlg = (GDAlertDialog) dialog;
+				if (alertDlg.getId() == DLG_SMARTCARD_POPUP) {
+					if (!mIsSmartcardIn) {
+						exitPlayer();
+					}
+				} else if (alertDlg.getId() == DLG_ERRORINFO) {
+					exitPlayer();
+				}
 			}
+			
 		}
 
 	};
@@ -272,8 +327,31 @@ public class PlayerActivity extends Activity {
 
 	}
 
+	protected void smartcardResetOK() {
+
+	}
+
 	protected void setOSDOn(boolean on) {
 
+	}
+	
+	protected GDAlertDialog mErrorInfoDlg = null;
+	protected int mErrorCode = -1;
+	void buildErrorInfoDlg() {
+		String errorStr = PlayerErrorInfo.getErrorString(this.getResources(), mErrorCode);
+		mErrorInfoDlg.setMessage(errorStr);
+		mErrorInfoDlg.showSingleButton();
+		mErrorInfoDlg.setOnDismissListener(mDlgDismissListener);
+	}
+	
+	void showErrorInfoDlg(int errorCode) {
+		mErrorCode = errorCode;
+		if (mErrorInfoDlg == null) {
+			showDialog(DLG_ERRORINFO);
+		} else {
+			buildErrorInfoDlg();
+			mErrorInfoDlg.show();
+		}
 	}
 
 	public void initAngleTable() {

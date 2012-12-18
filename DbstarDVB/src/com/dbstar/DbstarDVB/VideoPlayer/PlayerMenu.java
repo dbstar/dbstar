@@ -993,15 +993,24 @@ public class PlayerMenu extends PlayerActivity {
 
 		if (!plugIn) {
 			if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
+				// plug out card in paused state
 				return;
 			}
-		} else {
-			if (mPlayerStatus != VideoInfo.PLAYER_PAUSE) {
-				return;
-			}
+
+			// pause player
+			onPlayButtonPressed();
 		}
-		
-		onPlayButtonPressed();
+	}
+
+	@Override
+	public void smartcardResetOK() {
+		if (!mHasKey) {
+			return;
+		}
+
+		if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
+			onPlayButtonPressed();
+		}
 	}
 
 	public void updatePlaybackTimeInfo(int currentTime, int totalTime) {
@@ -1095,11 +1104,15 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void playbackError(int error) {
-		Log.d(TAG, "@@@@@@@@@@@@@  playbackError: " + Integer.toHexString(error));
-
-		saveBookmark(0);
-		mPlayPosition = 0;
-		exitPlayer();
+		Log.d(TAG,
+				"@@@@@@@@@@@@@  playbackError: " + Integer.toHexString(error));
+		showErrorInfoDlg(error);
+		
+//		if (error < 0) {
+//			saveBookmark(0);
+//			mPlayPosition = 0;
+//			exitPlayer();
+//		}
 	}
 
 	public void searchOk() {
