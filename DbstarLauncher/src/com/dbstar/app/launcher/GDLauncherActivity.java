@@ -122,6 +122,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mShowPopupMenuAnimation, mHidePopupMenuAnimation, mFocusZoomOut,
 			mFocusZoomIn, mGallerySlideToRightAnim, mGallerySlideToLeftAnim,
 			mGallerySlideToBottomAnim, mGallerySlideFromBottomAnim;
+	
+	LayoutAnimationController mAnimController = null;
+	
+	// true: gallery is during the animation of moving from bottom
+	boolean mIsParentMenuBeingUp = false;
+	
+	// true: user press enter key and be entering sub menu
+	boolean mEnterSubmenu = false;
 
 	private Handler mUIUpdateHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -185,7 +193,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		super.onStart();
 
 		Log.d(TAG, "++++++onStart");
-		
+
 		mCelanderThread.setUpdate(true);
 
 		turnOnMarqeeView(false);
@@ -194,9 +202,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public void onResume() {
 		super.onResume();
-		
+
 		mMainMenu.requestFocus();
-		
+
 		mMediaScheduler.resume();
 	}
 
@@ -209,7 +217,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onStop() {
 		super.onStop();
 		Log.d(TAG, "++++++onStop");
-		
+
 		mCelanderThread.setUpdate(false);
 
 		hideMarqeeView();
@@ -285,13 +293,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		if (mMenuStack.size() > 1) {
 			ret = true;
 			mMenuStack.pop();
+			
+			mAnimController.setAnimation(mGallerySlideToLeftAnim);
 
-			LayoutAnimationController controller = mMainMenu
-					.getLayoutAnimation();
-			controller.setAnimation(mGallerySlideToLeftAnim);
+			long time = AnimationUtils.currentAnimationTimeMillis();
+
+			if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
+				mHidePopupMenuAnimation.setStartTime(time);
+				mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
+			}
 			mMainMenu.startLayoutAnimation();
-
-			mMainMenu.postDelayed(mDelayedShowParentMenuAnim, 400);
 		}
 
 		return ret;
@@ -395,20 +406,18 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void showHighlightMenuItem() {
+		if (mIsParentMenuBeingUp)
+			return;
 
 		long time = AnimationUtils.currentAnimationTimeMillis();
-		mShowHighlightAnimation.setStartTime(time);
-		mPopupMenuFocusedAnimation.setStartTime(time);
 		mFocusZoomOut.setStartTime(time);
 
-		if (mMoveLeft) {
-			mLeftArrow.startAnimation(mShowHighlightAnimation);
-		} else {
-			mRightArrow.startAnimation(mShowHighlightAnimation);
-		}
-
-		mFocusItemBackground.startAnimation(mFocusZoomOut);
-		mPopupMenuContainer.startAnimation(mPopupMenuFocusedAnimation);
+//		mShowHighlightAnimation.setStartTime(time);
+//		if (mMoveLeft) {
+//			mLeftArrow.startAnimation(mShowHighlightAnimation);
+//		} else {
+//			mRightArrow.startAnimation(mShowHighlightAnimation);
+//		}
 
 		Menu menu = mMenuStack.peek();
 		MenuItem[] menuItems = menu.Items;
@@ -438,21 +447,62 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		if (menuItem.SubMenu != null) {
+			
+//			if (mHidePopupMenuAnimation.hasStarted() && !mHidePopupMenuAnimation.hasEnded()) {
+//				// is hiding
+//				mHidePopupMenuAnimation.cancel();
+//				mHidePopupMenuAnimation.reset();
+//				return;
+//			}
+			
 			Menu subMenu = menuItem.SubMenu;
 			ColumnData[] subMenuItem = subMenu.Columns;
 
-			if (!mIsPopupMenuHided) {
-				displayPopupMenu(true);
-			}
 			mPopupMenu.clearChoices();
 			mPopupMenuAdapter.setDataSet(subMenuItem);
 			mPopupMenuAdapter.notifyDataSetChanged();
+			
+			
+//			if (mShowPopupMenuAnimation.hasStarted() && !mShowPopupMenuAnimation.hasEnded()) {
+//				// is showing
+//				return;
+//			}
+//
+			Log.d(TAG, " mPopupMenuContainer.getVisibility() " + mPopupMenuContainer.getVisibility());
+			if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
+				mShowPopupMenuAnimation.setStartTime(time);
+				mFocusItemBackground.startAnimation(mFocusZoomOut);
+				mPopupMenuContainer.startAnimation(mShowPopupMenuAnimation);
+			} else {
+				mPopupMenuFocusedAnimation.setStartTime(time);
+				mFocusItemBackground.startAnimation(mFocusZoomOut);
+				mPopupMenuContainer.startAnimation(mPopupMenuFocusedAnimation);
+			}
 		} else {
-			displayPopupMenu(false);
-
-			mPopupMenu.clearChoices();
-			mPopupMenuAdapter.setDataSet(null);
-			mPopupMenuAdapter.notifyDataSetChanged();
+			if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
+				
+//				if (mHidePopupMenuAnimation.hasStarted() && !mHidePopupMenuAnimation.hasEnded()) {
+//					// is hiding
+//					return;
+//				}
+				
+//				if (mShowPopupMenuAnimation.hasStarted() && !mShowPopupMenuAnimation.hasEnded()) {
+//					// is showing
+////					displayPopupMenu(false);
+//					mShowPopupMenuAnimation.cancel();
+//					mShowPopupMenuAnimation.reset();
+////					return;
+//				}
+				
+//				mHidePopupMenuAnimation.setStartTime(time);
+//				mFocusItemBackground.startAnimation(mFocusZoomOut);
+//				mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
+				
+				displayPopupMenu(false);
+				mPopupMenu.clearChoices();
+				mPopupMenuAdapter.setDataSet(null);
+				mPopupMenuAdapter.notifyDataSetChanged();
+			}
 		}
 
 		showMenuPath();
@@ -502,7 +552,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent.setComponent(new ComponentName("com.android.settings",
 					"com.android.settings.Settings"));
 			intent.setAction("android.intent.action.VIEW");
-		} 
+		}
 
 		if (intent != null) {
 			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
@@ -525,142 +575,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		return startSettingsComponent("com.dbstar.settings", activityName);
 	}
 
-	public class PopupMenuAdapter extends BaseAdapter {
-
-		ColumnData[] mDataSet = null;
-
-		public void setDataSet(ColumnData[] dataSet) {
-			mDataSet = dataSet;
-		}
-
-		private class ItemHolder {
-			TextView text;
-		}
-
-		public PopupMenuAdapter(Context context) {
-		}
-
-		public int getCount() {
-			int size = 0;
-
-			if (mDataSet != null) {
-				size = mDataSet.length;
-			}
-
-			return size;
-		}
-
-		public Object getItem(int position) {
-			return null;
-		}
-
-		public long getItemId(int position) {
-			return GDAdapterView.INVALID_ROW_ID;
-		}
-
-		public View getView(int position, View convertView, ViewGroup parent) {
-			ItemHolder holder = null;
-
-			if (convertView == null) {
-				holder = new ItemHolder();
-				convertView = getLayoutInflater().inflate(
-						R.layout.menu_level_2_item, null);
-
-				holder.text = (TextView) convertView
-						.findViewById(R.id.item_text);
-
-				convertView.setTag(holder);
-			} else {
-				holder = (ItemHolder) convertView.getTag();
-			}
-
-			holder.text.setText(mDataSet[position].Name);
-
-			return convertView;
-		}
-
-	}
-
-	public class MainMenuAdapter extends BaseAdapter {
-
-		Context mContext;
-
-		MenuItem[] mDataSet = null;
-
-		public class ItemHolder {
-			TextView text;
-			ImageView icon;
-		}
-
-		public void setDataSet(MenuItem[] data) {
-			mDataSet = data;
-		}
-
-		public MainMenuAdapter(Context context) {
-			mContext = context;
-		}
-
-		public int getCount() {
-			int size = 0;
-
-			if (mDataSet != null) {
-				size = mDataSet.length;
-			}
-
-			return size;
-		}
-
-		public Object getItem(int position) {
-			return null;
-		}
-
-		public long getItemId(int position) {
-			return GDAdapterView.INVALID_ROW_ID;
-		}
-
-		public View getView(int position, View convertView, ViewGroup parent) {
-
-			Log.d(TAG, "get position= " + position);
-
-			ItemHolder holder = null;
-
-			if (convertView == null) {
-				holder = new ItemHolder();
-
-				LayoutInflater inflater = getLayoutInflater();
-				convertView = inflater.inflate(R.layout.menu_level_1_item,
-						parent, false);
-				holder.text = (TextView) convertView
-						.findViewById(R.id.item_text);
-				holder.icon = (ImageView) convertView
-						.findViewById(R.id.item_icon);
-				convertView.setTag(holder);
-			} else {
-				holder = (ItemHolder) convertView.getTag();
-			}
-
-			position = position % mDataSet.length;
-			holder.text.setText(mDataSet[position].MenuText());
-
-			Log.d(TAG, "mSelectedItemPosition=" + mSelectedItemPosition
-					+ " position=" + position);
-			// if (mSelectedItemPosition == position) {
-			// holder.icon
-			// .setImageBitmap(mDataSet[position].MenuIconFocused());
-			// holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-			// } else {
-			// holder.icon.setImageBitmap(mDataSet[position].MenuIcon());
-			// holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-			// }
-
-			holder.icon.setImageBitmap(mDataSet[position].MenuIcon());
-			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-
-			return convertView;
-		}
-
-	}
-
 	private void enterSubMenu(Menu newMenu) {
 
 		mMenuStack.add(newMenu);
@@ -674,81 +588,21 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		long time = AnimationUtils.currentAnimationTimeMillis();
 		mFocusZoomIn.setStartTime(time);
-		mGallerySlideToBottomAnim.setStartTime(time);
-		mFocusItemBackground.startAnimation(mFocusZoomIn);
-		mMainMenu.startAnimation(mGallerySlideToBottomAnim);
+		if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
+			mEnterSubmenu = true;
+
+			mHidePopupMenuAnimation.setStartTime(time);
+			mFocusItemBackground.startAnimation(mFocusZoomIn);
+			mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
+		} else {
+			mGallerySlideToBottomAnim.setStartTime(time);
+			mMainMenu.startAnimation(mGallerySlideToBottomAnim);
+		}
 
 		mOldSelectedItemPosition = -1;
 		mSelectedItemPosition = -1;
 
 		mSubMenuItems = menuItems;
-	}
-
-	Runnable mDelayedShowParentMenuAnim = new Runnable() {
-
-		@Override
-		public void run() {
-			onChildMenuHided();
-		}
-
-	};
-
-	Runnable mDelayedShowChidMenuAnim = new Runnable() {
-
-		@Override
-		public void run() {
-			onParentMenuHided();
-		}
-
-	};
-
-	void onParentMenuHided() {
-		LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
-		// controller.setAnimation(null);
-
-		mMainMenuAdapter.setDataSet(mSubMenuItems);
-		mMainMenuAdapter.notifyDataSetChanged();
-		mMainMenu.setSelectionByForce(0);
-
-		controller.setAnimation(mGallerySlideToRightAnim);
-		mMainMenu.startLayoutAnimation();
-	}
-
-	void onChildMenuHided() {
-		long time = AnimationUtils.currentAnimationTimeMillis();
-		mGallerySlideFromBottomAnim.setStartTime(time);
-		mMainMenu.startAnimation(mGallerySlideFromBottomAnim);
-	}
-
-	void onParentMenuShown() {
-		// mMainMenuAdapter.notifyDataSetChanged();
-		// Menu menu = mMenuStack.peek();
-		// mMainMenu.setSelectionByForce(menu.FocusedPosition);
-
-		showMenuPath();
-	}
-
-	private void showPopupMenu() {
-		mIsPopupMenuHided = false;
-		displayPopupMenu(true);
-
-		long time = AnimationUtils.currentAnimationTimeMillis();
-		mShowPopupMenuAnimation.setStartTime(time);
-		mPopupMenuContainer.startAnimation(mShowPopupMenuAnimation);
-	}
-
-	private void hidePopupMenu() {
-		mIsPopupMenuHided = true;
-		// displayPopupMenu(false);
-
-		long time = AnimationUtils.currentAnimationTimeMillis();
-		mHidePopupMenuAnimation.setStartTime(time);
-
-		mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
-	}
-
-	private boolean isPopupMenuShown() {
-		return mPopupMenuContainer.getVisibility() == View.VISIBLE;
 	}
 
 	private void displayPopupMenu(boolean show) {
@@ -867,7 +721,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		AssetManager am = getAssets();
 
 		try {
-			InputStream is = am.open("default/default_0.jpg");
+			InputStream is = am.open("default/default_0.png");
 			mDefaultPoster = BitmapFactory.decodeStream(is);
 			Log.d(TAG, "mDefaultPoster = " + mDefaultPoster);
 			is.close();
@@ -909,13 +763,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	private void initializeAnimation() {
-		mGallerySlideToBottomAnim
-				.setAnimationListener(new Animation.AnimationListener() {
+
+		mGallerySlideToBottomAnim.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
-						// onParentMenuHided();
-						mMainMenu.post(mDelayedShowChidMenuAnim);
+						onParentMenuHided();
 					}
 
 					@Override
@@ -928,8 +781,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 				});
 
-		mGallerySlideFromBottomAnim
-				.setAnimationListener(new Animation.AnimationListener() {
+		mGallerySlideFromBottomAnim.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
@@ -951,13 +803,40 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					}
 
 				});
-
-		mHidePopupMenuAnimation
-				.setAnimationListener(new Animation.AnimationListener() {
+		
+		mGallerySlideToLeftAnim.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
-						displayPopupMenu(false);
+						if (mAnimController != null) {
+							if (mAnimController.isDone()) {
+								Log.d(TAG, "==================================");
+								onChildMenuHided();
+							}
+						}
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
+
+					@Override
+					public void onAnimationStart(Animation animation) {
+					}
+
+				});
+		
+		mGallerySlideToRightAnim.setAnimationListener(new Animation.AnimationListener() {
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						if (mAnimController != null) {
+							if (mAnimController.isDone()) {
+								// TODO: this callback is not called, the
+								// problem ??
+								onChildMenuShown();
+							}
+						}
 					}
 
 					@Override
@@ -970,22 +849,101 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 				});
 
-		mFocusZoomIn.setAnimationListener(new Animation.AnimationListener() {
+		mHidePopupMenuAnimation.setAnimationListener(new Animation.AnimationListener() {
 
-			@Override
-			public void onAnimationEnd(Animation animation) {
-				// displayPopupMenu(false);
-			}
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						onPopupMenuHide();
+					}
 
-			@Override
-			public void onAnimationRepeat(Animation animation) {
-			}
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
 
-			@Override
-			public void onAnimationStart(Animation animation) {
-			}
+					@Override
+					public void onAnimationStart(Animation animation) {
+					}
 
-		});
+				});
+
+		mShowPopupMenuAnimation.setAnimationListener(new Animation.AnimationListener() {
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
+
+					@Override
+					public void onAnimationStart(Animation animation) {
+						Log.d(TAG, " show pop up start");
+						displayPopupMenu(true);
+					}
+
+				});
+
+	}
+	
+	// Animation callback
+
+	// Animation sequence:
+	// 1. First display: Gallery slide to right, popup menu popup.
+	// 2. Press Enter key, enter submenu: Gallery slide to bottom -> submenu slide to right, popup menu popup
+	// 3. Press Back key, leave submenu: popup menu hide, submenu slide to left -> gallery slide from bottom
+	
+	// Gallery slide to bottom end:
+	// . slide to menu to right, and show popup menu
+	void onParentMenuHided() {
+		mMainMenuAdapter.setDataSet(mSubMenuItems);
+		mMainMenuAdapter.notifyDataSetChanged();
+		// TODO: should call this in onChildMenuShown !
+		// but onChildMenuShown is not called.
+		mMainMenu.setSelectionByForce(0);
+		
+		mAnimController.setAnimation(mGallerySlideToRightAnim);
+		mMainMenu.startLayoutAnimation();
+	}
+	
+	// submenu slide to right end
+	void onChildMenuShown() {
+		Log.d(TAG, " +++++++++++++ onChildMenuShown ++++++++++++++");
+//		mMainMenu.setSelectionByForce(0);
+	}
+
+	// submenu slide to left end:
+	// . slide gallery from bottom
+	void onChildMenuHided() {
+		long time = AnimationUtils.currentAnimationTimeMillis();
+		mIsParentMenuBeingUp = true;
+		mGallerySlideFromBottomAnim.setStartTime(time);
+		mMainMenu.startAnimation(mGallerySlideFromBottomAnim);
+	}
+
+	// gallery slide from bottom end:
+	// . show popup menu
+	void onParentMenuShown() {
+		// mMainMenuAdapter.notifyDataSetChanged();
+		// Menu menu = mMenuStack.peek();
+		// mMainMenu.setSelectionByForce(menu.FocusedPosition);
+
+		mIsParentMenuBeingUp = false;
+		showHighlightMenuItem();
+	}
+	
+	// hide popup menu end:
+	// . if enter submenu, slide gallery to bottom
+	void onPopupMenuHide() {
+		displayPopupMenu(false);
+
+		if (mEnterSubmenu) {
+			mEnterSubmenu = false;
+			// slide down main menu
+			long time = AnimationUtils.currentAnimationTimeMillis();
+			mGallerySlideToBottomAnim.setStartTime(time);
+			mMainMenu.startAnimation(mGallerySlideToBottomAnim);
+		}
 	}
 
 	// Menu
@@ -1015,7 +973,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		public MenuItem() {
 			HasSubMenu = NONE;
-			// Columns = null;
 			SubMenu = null;
 		}
 
@@ -1073,12 +1030,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		// showLoadingDialog();
 		mService.getColumns(this, COLUMN_LEVEL_1, -1, ROOT_COLUMN_PARENTID);
 	}
-	
+
 	// update previews when has new updates
 	void updatePreview() {
 		mMediaScheduler.updatePreviews();
 	}
-	
+
 	// update columns when has new updates
 	void updateColumn() {
 		mService.getColumns(this, COLUMN_LEVEL_1, -1, ROOT_COLUMN_PARENTID);
@@ -1092,10 +1049,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 			Log.d(TAG, "updateData columnLevel " + columnLevel + " columns "
 					+ columns);
-
-			// if (columns == null || columns.length == 0) {
-			// return;
-			// }
 
 			if (columnLevel == COLUMN_LEVEL_1) {
 
@@ -1159,15 +1112,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 				Menu topMenu = mMenuStack.peek();
 				if (index == topMenu.FocusedPosition) {
-					// try to show the popup menu
-					if (!mIsPopupMenuHided) {
-						displayPopupMenu(true);
-					}
 
 					mPopupMenu.clearChoices();
 					mPopupMenuAdapter.setDataSet(columns);
 					mPopupMenuAdapter.notifyDataSetChanged();
+
 					// TODO: add animation
+					if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
+						displayPopupMenu(true);
+					}
 				}
 
 			} else {
@@ -1339,6 +1292,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
 		mMainMenu.setAnimationDuration(120);
+		mAnimController = mMainMenu.getLayoutAnimation();
 
 		mMainMenuAdapter = new MainMenuAdapter(this);
 		mMainMenuAdapter.setDataSet(mMainMenuItems);
@@ -1393,7 +1347,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	@Override
 	public void initializeApp() {
 		Log.d(TAG, "++++++++++==========initializeApp ================");
-		// mMediaScheduler.start(mService);
 		startEngine();
 
 		initializeData();
@@ -1424,7 +1377,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			notifyUpgrade((String) data, false);
 			break;
 		}
-		
+
 		case GDCommon.MSG_UPDATE_COLUMN: {
 			updateColumn();
 			break;
@@ -1433,7 +1386,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		case GDCommon.MSG_UPDATE_UIRESOURCE:
 		case GDCommon.MSG_UPDATE_PREVIEW:
 			break;
-			
+
 		case GDCommon.MSG_SMARTCARD_IN: {
 			notifySmartcardStatusChanged(true);
 			break;
@@ -1487,6 +1440,142 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		// mMediaScheduler.start(mService);
 		// mPowerController.start(mService);
 		// mWeatherController.start(mService);
+	}
+	
+	public class PopupMenuAdapter extends BaseAdapter {
+
+		ColumnData[] mDataSet = null;
+
+		public void setDataSet(ColumnData[] dataSet) {
+			mDataSet = dataSet;
+		}
+
+		private class ItemHolder {
+			TextView text;
+		}
+
+		public PopupMenuAdapter(Context context) {
+		}
+
+		public int getCount() {
+			int size = 0;
+
+			if (mDataSet != null) {
+				size = mDataSet.length;
+			}
+
+			return size;
+		}
+
+		public Object getItem(int position) {
+			return null;
+		}
+
+		public long getItemId(int position) {
+			return GDAdapterView.INVALID_ROW_ID;
+		}
+
+		public View getView(int position, View convertView, ViewGroup parent) {
+			ItemHolder holder = null;
+
+			if (convertView == null) {
+				holder = new ItemHolder();
+				convertView = getLayoutInflater().inflate(
+						R.layout.menu_level_2_item, null);
+
+				holder.text = (TextView) convertView
+						.findViewById(R.id.item_text);
+
+				convertView.setTag(holder);
+			} else {
+				holder = (ItemHolder) convertView.getTag();
+			}
+
+			holder.text.setText(mDataSet[position].Name);
+
+			return convertView;
+		}
+
+	}
+
+	public class MainMenuAdapter extends BaseAdapter {
+
+		Context mContext;
+
+		MenuItem[] mDataSet = null;
+
+		public class ItemHolder {
+			TextView text;
+			ImageView icon;
+		}
+
+		public void setDataSet(MenuItem[] data) {
+			mDataSet = data;
+		}
+
+		public MainMenuAdapter(Context context) {
+			mContext = context;
+		}
+
+		public int getCount() {
+			int size = 0;
+
+			if (mDataSet != null) {
+				size = mDataSet.length;
+			}
+
+			return size;
+		}
+
+		public Object getItem(int position) {
+			return null;
+		}
+
+		public long getItemId(int position) {
+			return GDAdapterView.INVALID_ROW_ID;
+		}
+
+		public View getView(int position, View convertView, ViewGroup parent) {
+
+			Log.d(TAG, "get position= " + position);
+
+			ItemHolder holder = null;
+
+			if (convertView == null) {
+				holder = new ItemHolder();
+
+				LayoutInflater inflater = getLayoutInflater();
+				convertView = inflater.inflate(R.layout.menu_level_1_item,
+						parent, false);
+				holder.text = (TextView) convertView
+						.findViewById(R.id.item_text);
+				holder.icon = (ImageView) convertView
+						.findViewById(R.id.item_icon);
+				convertView.setTag(holder);
+			} else {
+				holder = (ItemHolder) convertView.getTag();
+			}
+
+			position = position % mDataSet.length;
+			holder.text.setText(mDataSet[position].MenuText());
+
+			Log.d(TAG, "mSelectedItemPosition=" + mSelectedItemPosition
+					+ " position=" + position);
+			// if (mSelectedItemPosition == position) {
+			// holder.icon
+			// .setImageBitmap(mDataSet[position].MenuIconFocused());
+			// holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+			// } else {
+			// holder.icon.setImageBitmap(mDataSet[position].MenuIcon());
+			// holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+			// }
+
+			holder.icon.setImageBitmap(mDataSet[position].MenuIcon());
+			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+
+			return convertView;
+		}
+
 	}
 
 }

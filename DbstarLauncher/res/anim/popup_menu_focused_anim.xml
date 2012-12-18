@@ -4,10 +4,8 @@
 
     <translate
         android:duration="100"
-        android:fromXDelta="0"
         android:fromYDelta="0"
         android:interpolator="@android:anim/decelerate_interpolator"
-        android:toXDelta="0"
         android:toYDelta="-14" />
 
 </set>
