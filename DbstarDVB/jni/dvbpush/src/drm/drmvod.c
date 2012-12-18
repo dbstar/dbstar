@@ -5,6 +5,7 @@
 #include <fcntl.h> 
 #include <linux/unistd.h>
 #include <android/log.h>
+#include <pthread.h>
 
 #include "player.h"
 #include "drmapi.h"
@@ -36,6 +37,7 @@ typedef struct {
 	int64_t length;
 } drmvod_t;
 static drmvod_t s_drmvod;
+static pthread_mutex_t s_drmvod_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int drmvod_open(URLContext *h, const char *filename, int flags);
 static int drmvod_read(URLContext *h, unsigned char *buf, int size);
@@ -64,12 +66,14 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 	struct stat st;
 
 	LOGD("########## %s(%s, %d)\n", __FUNCTION__, filename, flags);
+
 	tmp = strstr(filename, "drmvod://");
 	if (tmp == NULL) {
 		LOGD("########## %s(%s, %d) failed!\n", __FUNCTION__, filename, flags);
 		return -1;
 	}
 
+	pthread_mutex_init(&s_drmvod_mutex, NULL);
 	memset(&s_drmvod, 0, sizeof(drmvod_t));
 
 	tmp += strlen("drmvod://");
@@ -151,8 +155,10 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	LOGD("aaaaaaaa size=%d,drmvod->length=%lld,drmvod->curpos=%lld",size,drmvod->length,drmvod->curpos);
 	len = MIN(size, (drmvod->length - drmvod->curpos));
 	if (len <= 0) {
+		LOGD("drmvod_read() len<=0, return!\n");
 		return 0;
 	}
+	pthread_mutex_lock(&s_drmvod_mutex);
 	LOGD("########## 1. %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
 	if (s_drmvod.inited && s_drmvod.ready) {
 		LOGD("read drm file\n");
@@ -167,6 +173,7 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	if (ret > 0) {
 		drmvod->curpos += ret;
 	}
+	pthread_mutex_unlock(&s_drmvod_mutex);
 	//LOGD("########## 2. %s(size=%d)=%d, curpos=%lld\n", __FUNCTION__, size, ret, drmvod->curpos);
 	return ret;
 }
@@ -238,6 +245,7 @@ static int drmvod_close(URLContext *h)
 		drmvod->fd_media = -1;
 	}
 	memset(&s_drmvod, 0, sizeof(drmvod_t));
+	pthread_mutex_destroy(&s_drmvod_mutex);
 
 	return 0;
 }
