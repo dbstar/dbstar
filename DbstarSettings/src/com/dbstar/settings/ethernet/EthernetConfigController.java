@@ -294,11 +294,13 @@ public class EthernetConfigController {
 					enableDhcp(true);
 
 					DhcpInfo dhcpInfo = mEthManager.getDhcpInfo();
-					mIpaddr.setText(getAddress(dhcpInfo.ipAddress));
-					mMask.setText(getAddress(dhcpInfo.netmask));
-					mGw.setText(getAddress(dhcpInfo.gateway));
-					mDns.setText(getAddress(dhcpInfo.dns1));
-					mBackupDns.setText(getAddress(dhcpInfo.dns2));
+					if (dhcpInfo != null) {
+						mIpaddr.setText(getAddress(dhcpInfo.ipAddress));
+						mMask.setText(getAddress(dhcpInfo.netmask));
+						mGw.setText(getAddress(dhcpInfo.gateway));
+						mDns.setText(getAddress(dhcpInfo.dns1));
+						mBackupDns.setText(getAddress(dhcpInfo.dns2));
+					}
 
 				} else {
 					enableManual(true);
@@ -403,15 +405,24 @@ public class EthernetConfigController {
 	public void saveConfigure() {
 		Log.d(TAG, "device name = " + mDev);
 
-		boolean isDhcp = mEthInfo.getConnectMode().equals(
-				EthernetDevInfo.ETH_CONN_MODE_DHCP);
-
-		if (isDhcp && mDhcpSwitchIndicator.isChecked()) {
-			return;
-		}
-
 		if (mDev == null || mDev.isEmpty())
 			return;
+		
+		if (mEthInfo == null) {
+			if (mEthManager.isEthConfigured()) {
+				mEthInfo = mEthManager.getSavedEthConfig();
+			}
+		}
+		
+		if (mEthInfo != null) {
+			boolean isDhcp = mEthInfo.getConnectMode().equals(
+					EthernetDevInfo.ETH_CONN_MODE_DHCP);
+			if (isDhcp && mDhcpSwitchIndicator.isChecked()) {
+				// if current configure is Dhcp, and user choose it again,
+				// it doesn't need to save it.
+				return;
+			}
+		}
 
 		EthernetDevInfo info = new EthernetDevInfo();
 		info.setIfName(mDev);
