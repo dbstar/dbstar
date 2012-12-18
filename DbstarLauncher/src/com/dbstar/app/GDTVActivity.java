@@ -1,6 +1,7 @@
 package com.dbstar.app;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -99,10 +100,21 @@ public class GDTVActivity extends GDBaseActivity {
 			TV[] tvs = mPageDatas.get(i);
 			for (int j = 0; j < tvs.length; j++) {
 				TV tv = tvs[j];
-				if (tv.Thumbnail != null) {
-					tv.Thumbnail.recycle();
-				}
+				recycleAllImages(tv.Thumbnails);
 			}
+		}
+	}
+	
+	private void recycleAllImages(List<Bitmap> images) {
+		if (images == null || images.size() == 0) {
+			return;
+		}
+
+		int size = images.size();
+
+		for (int i=0 ; i< size ; i++) {
+			Bitmap image = images.get(i);
+			image.recycle();
 		}
 	}
 
@@ -214,12 +226,22 @@ public class GDTVActivity extends GDBaseActivity {
 		TV[] tvs = mPageDatas.get(pageNumber);
 		mRequestCount = tvs.length;
 		for (int j = 0; j < tvs.length; j++) {
-			mService.getImage(this, pageNumber, j, tvs[j].Content);
 			mService.getPublicationsOfSet(this, tvs[j].Content.Id, pageNumber,
 					j);
 		}
 	}
 
+	private ContentData[] sortEpisodes(ContentData[] contents) {
+		List<ContentData> list = new ArrayList<ContentData>();
+		for (int i=0; i<contents.length ; i++) {
+			list.add(contents[i]);
+		}
+
+		Collections.sort(list);
+		
+		return list.toArray(new ContentData[list.size()]);
+	}
+	
 	public void updateData(int type, int param1, int param2, Object data) {
 
 		if (type == GDDataProviderService.REQUESTTYPE_GETPUBLICATIONS_OFSET) {
@@ -228,6 +250,15 @@ public class GDTVActivity extends GDBaseActivity {
 
 			ContentData[] contents = (ContentData[]) data;
 			if (contents != null && contents.length > 0) {
+
+				// request thumbnails of each episode
+				for (int i=0; i< contents.length ; i++) {
+					mService.getImage(this, pageNumber, index, contents[i]);
+				}
+
+				// sort episode by index
+				contents = sortEpisodes(contents);
+				
 				TV.EpisodeItem[] items = new TV.EpisodeItem[contents.length];
 				for (int j = 0; j < contents.length; j++) {
 
@@ -268,9 +299,15 @@ public class GDTVActivity extends GDBaseActivity {
 					+ index);
 
 			TV[] tvs = mPageDatas.get(pageNumber);
-			tvs[index].Thumbnail = (Bitmap) data;
+			TV tv = tvs[index];
+			if (tv.Thumbnails == null) {
+				tv.Thumbnails = new ArrayList<Bitmap>();
+			}
 
-			if (pageNumber == mPageNumber) {
+			tv.Thumbnails.add((Bitmap)data);
+
+			if (pageNumber == mPageNumber && tv.Thumbnails.size() == 1) {
+				// only update thumbnail one time
 				mAdapter.notifyDataSetChanged();
 			}
 		}
@@ -449,8 +486,8 @@ public class GDTVActivity extends GDBaseActivity {
 					mSelectedView = inflater.inflate(
 							R.layout.small_thumbnail_item2_focused, parent,
 							false);
-					holder.titleView = (TextView) mSelectedView
-							.findViewById(R.id.item_text);
+//					holder.titleView = (TextView) mSelectedView
+//							.findViewById(R.id.item_text);
 					holder.thumbnailView = (ImageView) mSelectedView
 							.findViewById(R.id.thumbnail);
 
@@ -470,8 +507,8 @@ public class GDTVActivity extends GDBaseActivity {
 				LayoutInflater inflater = getLayoutInflater();
 				convertView = inflater.inflate(
 						R.layout.small_thumbnail_item2_normal, parent, false);
-				holder.titleView = (TextView) convertView
-						.findViewById(R.id.item_text);
+//				holder.titleView = (TextView) convertView
+//						.findViewById(R.id.item_text);
 				holder.thumbnailView = (ImageView) convertView
 						.findViewById(R.id.thumbnail);
 				convertView.setTag(holder);
@@ -479,9 +516,12 @@ public class GDTVActivity extends GDBaseActivity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 
-			Bitmap thumbnail = mDataSet[position].Thumbnail;
-			holder.thumbnailView.setImageBitmap(thumbnail);
-			holder.titleView.setText(mDataSet[position].Content.Name);
+			List<Bitmap> images = mDataSet[position].Thumbnails;
+			if (images != null && images.size() > 0) {
+				Bitmap thumbnail = images.get(0);
+				holder.thumbnailView.setImageBitmap(thumbnail);
+			}
+//			holder.titleView.setText(mDataSet[position].Content.Name);
 
 			return convertView;
 		}

@@ -13,6 +13,7 @@ public class GDDVBDataContract {
 	public static final String PRODUCTTABLE = "Product";
 	public static final String PUBLICATIONSETTABLE = "PublicationsSet";
 	public static final String PUBLICATIONTABLE = "Publication";
+	public static final String SETINFOTABLE = "SetInfo";
 	public static final String MULTIPLELANGUAGEINFOVATABLE = "MultipleLanguageInfoVA";
 	public static final String MULTIPLELANGUAGEINFORMTABLE = "MultipleLanguageInfoRM";
 	public static final String MULTIPLELANGUAGEINFOAPPTABLE = "MultipleLanguageInfoApp";
@@ -143,6 +144,23 @@ public class GDDVBDataContract {
 		public static final String VODNUM = "VODNum";
 		public static final String VODPLATFORM = "VODPlatform";
 		public static final String DELETED = "Deleted";
+	}
+	
+	public static final class SetInfo implements BaseColumns {
+
+		public static final Uri CONTENT_URI = Uri.withAppendedPath(
+				AUTHORITY_URI, "SetInfo");
+
+		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/com.dbstar.provider.SetInfo";
+		public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/com.dbstar.provider.SetInfo";
+
+		public static final String SETID = "SetID";
+		public static final String TITLE = "Title";
+		public static final String ACTORS = "Starring";
+		public static final String DESCRIPTION = "Scenario";
+		public static final String TYPE = "Classification";
+		public static final String YEAR = "Period";
+		public static final String EPISODECOUNT = "CollectionNumber";
 	}
 
 	public static final class Publication implements BaseColumns {

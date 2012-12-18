@@ -131,7 +131,7 @@ public class GDDataModel {
 
 	private final static String[] ProjectionQueryPublications = {
 			Publication.PUBLICATIONID, Publication.DESCURI,
-			Publication.TOTALSIZE, Publication.DRMFILE, Publication.INDEXINSET,
+			Publication.TOTALSIZE, Publication.DRMFILE, 
 			Publication.FILEID, Publication.FILESIZE, Publication.FILEURI,
 			Publication.BITRATE, Publication.RESOLUTION,
 			Publication.CODEFORMAT, Publication.BOOKMARK };
@@ -139,8 +139,7 @@ public class GDDataModel {
 	private final static int PublicationDescURI = PublicationID + 1;
 	private final static int PublicationTotalSize = PublicationDescURI + 1;
 	private final static int PublicationDrmFile = PublicationTotalSize + 1;
-	private final static int PublicationIndexInSet = PublicationDrmFile + 1;
-	private final static int PublicationFileID = PublicationIndexInSet + 1;
+	private final static int PublicationFileID = PublicationDrmFile + 1;
 	private final static int PublicationFileSize = PublicationFileID + 1;
 	private final static int PublicationFileURI = PublicationFileSize + 1;
 	private final static int PublicationBitrate = PublicationFileURI + 1;
@@ -205,8 +204,6 @@ public class GDDataModel {
 					content.MainFile.CodeFormat = cursor
 							.getString(PublicationCodeFormat);
 
-					content.IndexInSet = cursor.getShort(PublicationIndexInSet);
-
 					// Posters
 					String posterUri = getPublicationPoster(
 							GDDVBDataContract.ObjectPublication, content.Id);
@@ -242,13 +239,15 @@ public class GDDataModel {
 			MultipleLanguageInfoVA.PUBLICATIONDESC,
 			MultipleLanguageInfoVA.IMAGEDEFINITION,
 			MultipleLanguageInfoVA.AREA, MultipleLanguageInfoVA.DIRECTOR,
-			MultipleLanguageInfoVA.ACTOR };
+			MultipleLanguageInfoVA.ACTOR,
+			MultipleLanguageInfoVA.EPISODE};
 
 	private final static int VAInfoPublicationDesc = 0;
 	private final static int VAInfoImageDefinition = 1;
 	private final static int VAInfoArea = 2;
 	private final static int VAInfoDirector = 3;
 	private final static int VAInfoActor = 4;
+	private final static int VAEpisode = 5;
 
 	public void getPublicationVAInfo(ContentData content) {
 
@@ -270,6 +269,7 @@ public class GDDataModel {
 				content.Area = cursor.getString(VAInfoArea);
 				content.Director = cursor.getString(VAInfoDirector);
 				content.Actors = cursor.getString(VAInfoActor);
+				content.IndexInSet = cursor.getInt(VAEpisode);
 			}
 		}
 
@@ -314,15 +314,7 @@ public class GDDataModel {
 					content.Id = cursor.getString(PublicationsSetID);
 					content.XMLFilePath = cursor.getString(PublicationsSetURI);
 
-					content.Name = getPublicationSetName(content.Id);
-					content.Description = getPublicationSetDescription(content.Id);
-					String posterUri = getPublicationPoster(
-							GDDVBDataContract.ObjectPublicationSet, content.Id);
-					ContentData.Poster item = new ContentData.Poster();
-					item.URI = posterUri;
-					content.Posters = new ArrayList<ContentData.Poster>();
-					content.Posters.add(item);
-
+					getPublicationSetInfo(content);
 					contents[i] = content;
 					i++;
 				} while (cursor.moveToNext());
@@ -334,6 +326,39 @@ public class GDDataModel {
 		}
 
 		return contents;
+	}
+	
+	private final static String[] ProjectionQuerySetInfo = {
+		SetInfo.TITLE,  SetInfo.ACTORS, SetInfo.DESCRIPTION,
+		SetInfo.TYPE, SetInfo.YEAR, SetInfo.EPISODECOUNT};
+	private final static int SetTitle = 0;
+	private final static int SetActors = 1;
+	private final static int SetDescription = 2;
+	private final static int SetType = 3;
+	private final static int SetYear = 4;
+	private final static int SetEpisodeCount = 5;
+
+	private void getPublicationSetInfo(ContentData content) {
+		String selection = SetInfo.SETID + "=?";
+		String[] selectionArgs = new String[] { content.Id };
+
+		Cursor cursor = mDVBDataProvider.query(SetInfo.CONTENT_URI,
+				ProjectionQuerySetInfo, selection, selectionArgs, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				content.Name = cursor.getString(SetTitle);
+				content.Actors = cursor.getString(SetActors);
+				content.Description = cursor.getString(SetDescription);
+				content.Type = cursor.getString(SetType);
+				content.Year = cursor.getString(SetYear);
+				content.EpisodesCount = cursor.getInt(SetEpisodeCount);
+			}
+		}
+
+		if (cursor != null) {
+			cursor.close();
+		}
 	}
 
 	public int getPublicationSetItemCount(String setId, String favorite) {
@@ -371,7 +396,7 @@ public class GDDataModel {
 		return count;
 	}
 
-	public ContentData[] getPublicationsEx(String setId, String favorite) {
+	public ContentData[] getPublicationsBySetId(String setId, String favorite) {
 		ContentData[] contents = null;
 
 		String selection = Publication.SETID + "=? AND ("

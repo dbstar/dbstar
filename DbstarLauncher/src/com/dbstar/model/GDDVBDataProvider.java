@@ -47,6 +47,7 @@ public class GDDVBDataProvider extends GDDBProvider {
 	private static final int RESTRAILERTABLE = 1016;
 
 	private static final int COLUMNENTITYTABLE = 1017;
+	private static final int SETINFOTABLE = 1018;
 
 	static {
 		sURIMatcher.addURI(GDDVBDataContract.AUTHORITY,
@@ -88,6 +89,8 @@ public class GDDVBDataProvider extends GDDBProvider {
 				GDDVBDataContract.RESSUBTITLETABLE, RESSUBTITLETABLE);
 		sURIMatcher.addURI(GDDVBDataContract.AUTHORITY,
 				GDDVBDataContract.RESTRAILERTABLE, RESTRAILERTABLE);
+		sURIMatcher.addURI(GDDVBDataContract.AUTHORITY,
+				GDDVBDataContract.SETINFOTABLE, SETINFOTABLE);
 	}
 
 	interface Tables {
@@ -109,6 +112,7 @@ public class GDDVBDataProvider extends GDDBProvider {
 		String RESSTR = GDDVBDataContract.RESSTRTABLE;
 		String RESSUBTITLE = GDDVBDataContract.RESSUBTITLETABLE;
 		String RESTRAILER = GDDVBDataContract.RESTRAILERTABLE;
+		String SETINFO = GDDVBDataContract.SETINFOTABLE;
 	}
 
 	public interface GlobalQuery {
@@ -454,6 +458,9 @@ public class GDDVBDataProvider extends GDDBProvider {
 		case RESTRAILERTABLE:
 			typeStr = GDDVBDataContract.ResTrailer.CONTENT_TYPE;
 			break;
+		case SETINFOTABLE:
+			typeStr = GDDVBDataContract.SetInfo.CONTENT_TYPE;
+			break;
 		default:
 			typeStr = null;
 			break;
@@ -520,6 +527,9 @@ public class GDDVBDataProvider extends GDDBProvider {
 			break;
 		case RESTRAILERTABLE:
 			table = Tables.RESTRAILER;
+			break;
+		case SETINFOTABLE:
+			table = Tables.SETINFO;
 			break;
 		default:
 			break;

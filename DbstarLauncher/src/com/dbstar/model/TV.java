@@ -11,7 +11,7 @@ public class TV {
 	public String Region;
 	public String Rate;
 	public String Description;
-	public Bitmap Thumbnail;
+	public List<Bitmap> Thumbnails;
 	public int EpisodesCount;
 	
 	public EpisodeItem[] Episodes;
@@ -23,7 +23,7 @@ public class TV {
 	public TV() {
 		Content = null;
 		Description = null;
-		Thumbnail = null;
+		Thumbnails = null;
 		
 		EpisodesPages = null;
 	}

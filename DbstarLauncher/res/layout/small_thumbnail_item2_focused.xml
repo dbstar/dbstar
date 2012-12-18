@@ -2,18 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="173dp"
     android:layout_height="244dp"
-    android:background="@drawable/tv_item_focused_bg">
+    android:background="@drawable/thumbnail_focused_bg">
 
     <ImageView
         android:id="@+id/thumbnail"
         android:layout_width="163dp"
-        android:layout_height="203dp"
+        android:layout_height="234dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="5dp"
         android:scaleType="fitXY"/>
 
-    <TextView
+    <!-- <TextView
         android:id="@+id/item_text"
         android:layout_width="fill_parent"
         android:layout_height="31dp"
@@ -26,6 +26,6 @@
         android:maxLines="1"
         android:singleLine="true"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="18sp" />-->
 
 </RelativeLayout>

@@ -918,7 +918,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					value = task.Parameters.get(PARAMETER_SET_ID);
 					String setId = String.valueOf(value);
 
-					ContentData[] contents = mDataModel.getPublicationsEx(
+					ContentData[] contents = mDataModel.getPublicationsBySetId(
 							setId, null);
 
 					if (contents != null && contents.length > 0) {
@@ -962,11 +962,13 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					value = task.Parameters.get(PARAMETER_CONTENTDATA);
 					ContentData content = (ContentData) value;
 					String file = getThumbnailFile(content);
-
-					Bitmap image = mDataModel.getImage(file);
-					task.Data = image;
-
-					taskFinished(task);
+					
+					if (file != null && !file.isEmpty()) {
+						Bitmap image = mDataModel.getImage(file);
+						task.Data = image;
+	
+						taskFinished(task);
+					}
 					break;
 				}
 

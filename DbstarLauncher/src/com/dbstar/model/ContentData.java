@@ -2,12 +2,13 @@ package com.dbstar.model;
 
 import java.util.List;
 
-public class ContentData {
+public class ContentData implements Comparable<ContentData> {
 	public String Id;
 	public String XMLFilePath;
 
 	public String Name;
 	public String Type;
+	public String Year;
 	public String Keywords;
 	public String Actors;
 	public String Director;
@@ -64,5 +65,22 @@ public class ContentData {
 		public String BitRate;
 		public String FileFormat;
 		public String CodeFormat;
+	}
+	
+	// Extensions For TV
+	public int EpisodesCount;
+
+	@Override
+	public int compareTo(ContentData content) {
+		int targetIndex = content.IndexInSet;
+		if (IndexInSet == targetIndex) {
+			return 0;
+		} else {
+			if (IndexInSet < targetIndex) {
+				return -1;
+			} else {
+				return 1;
+			}
+		}
 	}
 }
