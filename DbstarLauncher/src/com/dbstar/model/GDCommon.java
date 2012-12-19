@@ -38,27 +38,27 @@ public class GDCommon {
 	
 	public static final String KeyDisk = "disk";
 
-	public static final String LangCN = "chi";
+	public static final String LangCN = "cho";
 	public static final String LangEN = "eng";
 
-	public static final String ColumnTypeTV = "2";
 	public static final String ColumnTypeMovie = "1";
+	public static final String ColumnTypeTV = "2";
 	public static final String ColumnTypePreview = "3";
-	public static final String ColumnTypeGuodian = "100";
-	public static final String ColumnTypeSettings = "99";
-	public static final String ColumnTypeUserCenter = "98";
 	public static final String ColumnTypeMyFavourites = "7";
 	public static final String ColumnTypeRecord = "8";
 	public static final String ColumnTypeEntertainment = "9";
+	public static final String ColumnTypeSettings = "L99";
+	public static final String ColumnTypeUserCenter = "L98";
+	public static final String ColumnTypeGuodian = "100";
 
-	public static final String ColumnIDReceiveChooser = "9801";
-	public static final String ColumnIDDownloadStatus = "9802";
+	public static final String ColumnIDReceiveChooser = "L9801";
+	public static final String ColumnIDDownloadStatus = "L9802";
 
-	public static final String ColumnIDGeneralInfoSettings = "9901";
-	public static final String ColumnIDMultimediaSettings = "9902";
-	public static final String ColumnIDNetworkSettings = "9903";
-	public static final String ColumnIDFileBrowser = "9904";
-	public static final String ColumnIDAdvancedSettings = "9905";
+	public static final String ColumnIDGeneralInfoSettings = "L9901";
+	public static final String ColumnIDMultimediaSettings = "L9902";
+	public static final String ColumnIDNetworkSettings = "L9903";
+	public static final String ColumnIDFileBrowser = "L9904";
+	public static final String ColumnIDAdvancedSettings = "L9905";
 	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";

@@ -47,6 +47,8 @@ public class GDDVBDataContract {
 	public static final String PropertyHardwareType = "DeviceModel";
 	public static final String PropertySoftwareVersion = "SoftwareVersion";
 	public static final String PropertyLoaderVersion = "LoaderVersion";
+	
+	public static final String PropertyDefaultColumnIcon = "ColumnIconDft";
 
 	public static final class Global implements BaseColumns {
 

@@ -133,6 +133,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	String mUpgradePackageFile;
 	boolean mNeedUpgrade = false;
 
+	String mDefaultColumnIconFile = null;
+	
 	private PeripheralController mPeripheralController;
 	GDPowerManager mPowerManger;
 
@@ -875,9 +877,15 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 						coloumns[i].IconFocused = mDataModel
 								.getImage(iconRootPath + "/"
 										+ column.IconFocusedPath);
-						// coloumns[i].IconClicked =
-						// mDataModel.getImage(iconRootPath + "/" +
-						// column.IconClickedPath);
+						
+						if (coloumns[i].IconNormal == null) {
+							if (mDefaultColumnIconFile == null) {
+								mDefaultColumnIconFile = mDataModel.queryGlobalProperty(GDDVBDataContract.PropertyDefaultColumnIcon);
+							}
+							
+							coloumns[i].IconNormal = mDataModel
+									.getImage(iconRootPath + "/" + mDefaultColumnIconFile);
+						}
 					}
 
 					task.Data = coloumns;
