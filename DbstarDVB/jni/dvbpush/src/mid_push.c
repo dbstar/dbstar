@@ -90,7 +90,6 @@ static pthread_t tidDecodeData;
 static int s_xmlparse_running = 0;
 static int s_monitor_running = 0;
 static int s_decoder_running = 0;
-static char s_dvbpush_info_str[20480];
 static int s_push_monitor_active = 0;
 static int s_dvbpush_getinfo_flag = 0;
 
@@ -375,21 +374,10 @@ void dvbpush_getinfo_start()
 	s_dvbpush_getinfo_flag = 1;
 	
 	DEBUG("dvbpush getinfo start >>\n");
-	
-	memset(s_dvbpush_info_str,0,sizeof(s_dvbpush_info_str));
 }
 
 void dvbpush_getinfo_stop()
 {
-#if 0	
-	if(NULL!=s_dvbpush_info_str){
-		DEBUG("FREE s_dvbpush_info_str=%p\n", s_dvbpush_info_str);
-		free(s_dvbpush_info_str);
-		s_dvbpush_info_str = NULL;
-	}
-#else
-	
-#endif
 	DEBUG("dvbpush getinfo stop <<\n");
 	s_dvbpush_getinfo_flag = 0;
 }
@@ -433,68 +421,44 @@ static int prog_monitor(PROG_S *prog, char *time_stamp)
 }
 
 
-int dvbpush_getinfo(char **p, unsigned int *len)
+int dvbpush_getinfo(char *buf, unsigned int size)
 {
-#if 0
-	if(NULL!=s_dvbpush_info_str){
-		DEBUG("FREE s_dvbpush_info_str=%p\n", s_dvbpush_info_str);
-		free(s_dvbpush_info_str);
-		s_dvbpush_info_str = NULL;
-	}
-#endif
-
-	int info_size;
-	int i = 0;
-	/*
-	 形如：1001\taaaaaaname\t23932\t23523094823\n1002\tbbbbbbname\t234239\t12349320\n1003\tcccccname\t0\t213984902943
-	 每条记录预留长度：64位id + strlen(caption) + 20位当前长度 + 20位总长 + 4位分隔符
-	 其中：long long型转为10进制后最大长度为20
-	*/
-	if(s_push_monitor_active>0){
-#if 0
-		info_size = s_push_monitor_active*(256+64+20+20+4) + 1;
-		s_dvbpush_info_str = malloc(info_size);
-#else
-		info_size = sizeof(s_dvbpush_info_str);
-#endif
-		
-		if(1){
-			//DEBUG("malloc %d B for push info, p=%p\n", info_size, s_dvbpush_info_str);
-			s_dvbpush_info_str[0]='\0';
-			/*
-			监测节目接收进度
-			*/
-			pthread_mutex_lock(&mtx_push_monitor);
-			for(i=0; i<PROGS_NUM; i++)
-			{
-				if(-1==prog_is_valid(&s_prgs[i]))
-					continue;
-				
-				prog_monitor(&s_prgs[i],NULL);
-				
-				if(0==i){
-					snprintf(s_dvbpush_info_str, info_size,
-						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
-				}
-				else{
-					snprintf(s_dvbpush_info_str+strlen(s_dvbpush_info_str), info_size-strlen(s_dvbpush_info_str),
-						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
-				}
-			}
-			s_push_has_data --;
-			pthread_mutex_unlock(&mtx_push_monitor);
-			
-			*p = s_dvbpush_info_str;
-			*len = strlen(s_dvbpush_info_str);
-			DEBUG("%s\n", s_dvbpush_info_str);
-			
-			return 0;
-		}
-		else
-			DEBUG("malloc %d Bs for push info failed\n", info_size);
+	if(NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
 	}
 	
-	return -1;
+	int i = 0;
+	if(s_push_monitor_active>0){
+		/*
+		监测节目接收进度
+		*/
+		pthread_mutex_lock(&mtx_push_monitor);
+		for(i=0; i<PROGS_NUM; i++)
+		{
+			if(-1==prog_is_valid(&s_prgs[i]))
+				continue;
+			
+			prog_monitor(&s_prgs[i],NULL);
+			
+			if(0==i){
+				snprintf(buf, size,
+					"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
+			}
+			else{
+				snprintf(buf+strlen(buf), size-strlen(buf),
+					"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
+			}
+		}
+		s_push_has_data --;
+		pthread_mutex_unlock(&mtx_push_monitor);
+	
+		DEBUG("%s\n", buf);
+	}
+	else
+		DEBUG("no program in monitor\n");
+	
+	return 0;
 }
 
 #if 0

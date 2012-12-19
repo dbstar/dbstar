@@ -27,8 +27,15 @@ typedef enum {
 	CMD_DRM_SC_INSERT               = 0x00061,    // DRM smartcard Insert
 	CMD_DRM_SC_REMOVE               = 0x00062,    // DRM smartcard Remove
 	CMD_DRM_SC_USELESS              = 0x00063,    // DRM smartcard useless
-	CMD_DRM_SC_SN_READ	            = 0x00064,    // DRM smartcard sn read
-	CMD_DRMLIB_VER_READ				= 0x00065,    // DRM lib version read
+	CMD_DRM_SC_SN_READ				= 0x00064,    // 智能卡号
+	CMD_DRMLIB_VER_READ				= 0x00065,    // DRM库版本号
+	CMD_DRM_SC_EIGENVALUE_READ		= 0x00066,    // 特征值
+	CMD_DRM_ENTITLEINFO_READ		= 0x00067,    // 读取授权信息
+	CMD_DRM_ENTITLEINFO_OUTPUT		= 0x00068,    // 授权信息导出
+	CMD_DRM_ENTITLEINFO_INPUT		= 0x00069,    // 授权信息导入
+	CMD_DRM_EMAILHEADS_READ			= 0x0006a,    // 读取所有邮件头
+	CMD_DRM_EMAILCONTENT_READ		= 0x0006b,    // 读取指定邮件内容
+	CMD_DRM_PVODPROGRAMINFO_READ	= 0x0006c,    // 读取加密文件信息
 
 	CMD_MAX                         = 0x0FFFF,
 
@@ -52,6 +59,11 @@ typedef enum {
 	DRM_SC_INSERT_FAILED			= 0x20101,    // DRM smartcard Insert failed
 	DRM_SC_REMOVE_OK				= 0x20102,    // DRM smartcard Remove OK
 	DRM_SC_REMOVE_FAILED			= 0x20103,    // DRM smartcard Remove failed
+	DRM_EMAIL_ICONHIDE				= 0x20104,    // DRM 隐藏邮件通知图标
+	DRM_EMAIL_NEW					= 0x20105,    // DRM 新邮件到达
+	DRM_EMAIL_SPACEEXHAUST			= 0x20106,    // DRM 邮箱已满
+	DRM_OSD_SHOW					= 0x20107,    // DRM OSD需要显示
+	DRM_OSD_HIDE					= 0x20108,    // DRM OSD需要隐藏
 	
 }DBSTAR_CMD_MSG_E;
 

@@ -16,7 +16,7 @@ int push_monitor_reset();
 
 void dvbpush_getinfo_start();
 void dvbpush_getinfo_stop();
-int dvbpush_getinfo(char **p, unsigned int *len);
+int dvbpush_getinfo(char *buf, unsigned int size);
 
 int push_decoder_pause();
 int push_decoder_resume();

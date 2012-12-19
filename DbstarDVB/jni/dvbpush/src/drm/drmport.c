@@ -13,6 +13,9 @@
 #include "prodrm20.h"
 #include "softdmx.h"
 #include "common.h"
+#include "prodrm20.h"
+#include "dvbpush_api.h"
+#include "porting.h"
 
 #define DRMVOD_LOG_TAG "DRMLIB"
 #if 1
@@ -564,19 +567,35 @@ void CDSTBCA_HideIPPVDlg(CDCA_U16 wEcmPid)
 /* 邮件通知 */
 void CDSTBCA_EmailNotifyIcon(CDCA_U8 byShow, CDCA_U32 dwEmailID)
 {
-	LOGD("##################### CDSTBCA_EmailNotifyIcon not implemented\n");
+	LOGD("##################### CDSTBCA_EmailNotifyIcon byShow=%d, dwEmailID=%lu\n", byShow,dwEmailID);
+
+	if(CDCA_Email_New==byShow)
+		msg_send2_UI(DRM_EMAIL_NEW, NULL, 0);
+	else if(CDCA_Email_IconHide==byShow)
+		msg_send2_UI(DRM_EMAIL_ICONHIDE, NULL, 0);
+	else if(CDCA_Email_SpaceExhaust==byShow)
+		msg_send2_UI(DRM_EMAIL_SPACEEXHAUST, NULL, 0);
+	else
+		DEBUG("do nothing for email with this byShow=%d\n", byShow);
 }
 
+static char s_DRM_OSD_msg[CDCA_MAXLEN_OSD+32];
 /* 显示OSD信息 */
-void CDSTBCA_ShowOSDMessage(CDCA_U8     byStyle, const char* szMessage)
+void CDSTBCA_ShowOSDMessage(CDCA_U8	byStyle, const char* szMessage)
 {
-	LOGD("##################### CDSTBCA_ShowOSDMessage not implemented\n");
+	LOGD("##################### CDSTBCA_ShowOSDMessage byStyle=%d,szMessage=%s\n",byStyle,szMessage);
+	
+	snprintf(s_DRM_OSD_msg,sizeof(s_DRM_OSD_msg),"%d\t%s",byStyle,szMessage);
+	msg_send2_UI(DRM_EMAIL_NEW, s_DRM_OSD_msg, strlen(s_DRM_OSD_msg));
 }
 
 /* 隐藏OSD信息*/
 void CDSTBCA_HideOSDMessage(CDCA_U8 byStyle)
 {
-	LOGD("##################### CDSTBCA_HideOSDMessage not implemented\n");
+	LOGD("##################### CDSTBCA_HideOSDMessage byStyle=%d\n", byStyle);
+	
+	snprintf(s_DRM_OSD_msg,sizeof(s_DRM_OSD_msg),"%d",byStyle);
+	msg_send2_UI(DRM_OSD_HIDE, s_DRM_OSD_msg, strlen(s_DRM_OSD_msg));
 }
 
 
@@ -816,14 +835,14 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen)
 {
 	int ret;
-	LOGD("read file len [%d]\n", dwLen);
+	LOGD("read file len [%lu]\n", dwLen);
 	if ((*(int *)pFileHandle) < 0) {
 		return -1;
 	}
 
 	ret = read((*(int *)pFileHandle), pBuf, dwLen);
 	if (ret > 0) {
-		LOGD("read file successful[%d][%d],[%d]!!!!\n", (*(int *)pFileHandle), dwLen, ret);
+		LOGD("read file successful[%d][%lu],[%d]!!!!\n", (*(int *)pFileHandle), dwLen, ret);
 	} else {
 		LOGD("read file failed!!!!!! \n");
 	}

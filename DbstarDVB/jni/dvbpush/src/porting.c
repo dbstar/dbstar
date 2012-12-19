@@ -48,8 +48,7 @@ static char			s_push_root_path[512];
 static char 		*s_guidelist_unselect = NULL;
 
 static int 			s_disk_manage_buzy = 0;
-static char			s_drmlib_ver[64];
-static char			s_smartcard_sn[CDCA_MAXLEN_SN+1];
+static char			s_jni_cmd_public_space[20480];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
@@ -614,40 +613,333 @@ static void drm_errors(char *fun, CDCA_U16 ret)
 	}
 }
 
-static int smartcard_sn_get(char **p, unsigned int *len)
+static int smartcard_sn_get(char *buf, unsigned int size)
 {
+	if(NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+	
 	int ret = -1;
 	
-	memset(s_smartcard_sn, 0, sizeof(s_smartcard_sn));
-	ret = CDCASTB_GetCardSN(s_smartcard_sn);
+	ret = CDCASTB_GetCardSN(buf);
 	if(CDCA_RC_OK==ret){
-		DEBUG("read smartcard sn OK: %s\n", s_smartcard_sn);
+		DEBUG("read smartcard sn OK: %s\n", buf);
 		ret = 0;
 	}
 	else{
 		drm_errors("CDCASTB_GetCardSN", ret);
-		snprintf(s_smartcard_sn,sizeof(s_smartcard_sn),"SMARTCARD_USELESS");
+		snprintf(buf,size,"SMARTCARD_USELESS");
 		ret = -1;
 	}
-	*p = s_smartcard_sn;
-	*len = strlen(s_smartcard_sn);
 	
 	return ret;
 }
 
-static int drmlib_version_get(char **p, unsigned int *len)
+static int drmlib_version_get(char *buf, unsigned int size)
 {
+	if(NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
 /*
  查询CA_LIB版本号，要求机顶盒以16进制显示
 */
-	snprintf(s_drmlib_ver,sizeof(s_drmlib_ver),"3.0(0x%lx)", CDCASTB_GetVer());
-	DEBUG("CA_LIB Ver: %s\n", s_drmlib_ver);
-	
-	*p = s_drmlib_ver;
-	*len = strlen(s_drmlib_ver);
+	snprintf(buf,size,"3.0(0x%lx)", CDCASTB_GetVer());
+	DEBUG("CA_LIB Ver: %s\n", buf);
 	
 	return 0;
 }
+
+#if 0
+static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
+{
+	if(NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+/*
+ 查询智能卡特征码
+*/
+	CDCA_U16	wArrTvsID[CDCA_MAXNUM_OPERATOR];
+	CDCA_U32	ACArray[CDCA_MAXNUM_ACLIST];	
+	CDCA_U8		index = 0;
+	CDCA_U16	j = 0;
+	
+	memset(wArrTvsID, 0, sizeof(wArrTvsID));
+	CDCA_U16 ret = CDCASTB_GetOperatorIds(wArrTvsID);
+	if(CDCA_RC_OK==ret){
+		for(index=0;index<CDCA_MAXNUM_OPERATOR;index++){
+			if(0==wArrTvsID[index]){
+				DEBUG("OperatorID list end\n");
+				break;
+			}
+			else{
+				DEBUG("OperatorID: %d\n", wArrTvsID[index]);
+				memset(ACArray, 0, sizeof(ACArray));
+				ret = CDCASTB_GetACList(wArrTvsID[j], ACArray);
+				if(CDCA_RC_OK==ret){
+					int max_ac_num = CDCA_MAXNUM_ACLIST>6?6:CDCA_MAXNUM_ACLIST;
+					for(index=0;index<max_ac_num;index++){
+						if(0!=ACArray[index]){
+							DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
+							if(0==index)
+								snprintf(buf, size, "ID%d: %lu",index,ACArray[index]);
+							else
+								snprintf(buf+strlen(buf), size-strlen(buf), "\nID%d: %lu",index,ACArray[index]);
+						}
+					}
+				}
+				else
+					drm_errors("CDCASTB_GetSlotIDs", ret);
+			}
+		}
+	}
+	else{
+		drm_errors("CDCASTB_GetOperatorIds", ret);
+		return -1;
+	}
+	
+	DEBUG("%s\n", buf);
+	
+	return 0;
+}
+
+
+static int smartcard_entitleinfo_get(char *buf, unsigned int size)
+{
+	if(NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+	
+/*
+ 查询授权信息
+*/
+	CDCA_U32 dwFrom = 0, dwNum = 128;
+	int i = 0;
+	SCDCAPVODEntitleInfo EntitleInfo[128];
+	char		BeginDate[64];
+	char		ExpireDate[64];
+
+	int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
+	if(CDCA_RC_OK==ret){
+		DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
+		for(i=0;i<dwNum;i++){
+			if(0!=EntitleInfo[i].m_ID){
+				memset(BeginDate, 0, sizeof(BeginDate));
+				memset(ExpireDate, 0, sizeof(ExpireDate));
+				if(		0==drm_date_convert(EntitleInfo[i].m_ProductStartTime, BeginDate, sizeof(BeginDate))
+					&& 	0==drm_date_convert(EntitleInfo[i].m_ProductEndTime, ExpireDate, sizeof(ExpireDate))){
+					;
+				}
+				
+				if(0==i)
+					snprintf(buf,size,"%d\t%lu\t%s\t%s\t%lu",EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,BeginDate,ExpireDate,EntitleInfo[i].m_LimitTotaltValue);
+				else
+					snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%lu\t%s\t%s\t%lu",EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,BeginDate,ExpireDate,EntitleInfo[i].m_LimitTotaltValue);
+			}
+		}
+		DEBUG("%s\n", buf);
+		
+		return 0;
+	}
+	else{
+		drm_errors("CDCASTB_GetSlotIDs", ret);
+		return -1;
+	}
+	
+}
+
+#define ENTITLE_STORE "/sdcard/external_sdcard/sc_entitle"
+static int smartcard_EntitleFile_output()
+{
+	char CardSN[CDCA_MAXLEN_SN+1];
+	
+	memset(CardSN,0,sizeof(CardSN));
+	int ret = CDCASTB_GetCardSN(CardSN);
+	if(CDCA_RC_OK==ret){
+		DEBUG("read smartcard sn OK: %s\n", CardSN);
+		int fd = open(ENTITLE_STORE,O_WRONLY);
+		if(-1!=fd){
+			ret = CDCASTB_DRM_ExportEntitleFile(CardSN,(void *)&fd);
+			if(CDCA_RC_OK==ret){
+				DEBUG("output entitle file OK\n");
+				ret = 0;
+			}
+			else{
+				drm_errors("CDCASTB_DRM_ExportEntitleFile", ret);
+				ret = -1;
+			}
+			close(fd);
+		}
+		else{
+			DEBUG("open %s to save entitle failed\n", ENTITLE_STORE);
+			ret = -1;
+		}
+	}
+	else{
+		drm_errors("CDCASTB_GetCardSN", ret);
+		ret = -1;
+	}
+	
+	return ret;
+}
+
+static int smartcard_EntitleFile_input()
+{
+	int ret = -1;
+	
+	int fd = open(ENTITLE_STORE,O_RDONLY);
+	if(-1!=fd){
+		ret = CDCASTB_DRM_ImportEntitleFile((void *)&fd);
+		if(CDCA_RC_OK==ret){
+			DEBUG("output entitle file OK\n");
+			ret = 0;
+		}
+		else{
+			drm_errors("CDCASTB_DRM_ImportEntitleFile", ret);
+			ret = -1;
+		}
+		close(fd);
+	}
+	else{
+		DEBUG("open %s to save entitle failed\n", ENTITLE_STORE);
+		ret = -1;
+	}
+	
+	return ret;
+}
+
+static int DRM_emailheads_get(char *buf, unsigned int size)
+{
+	if(NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+	
+	SCDCAEmailHead EmailHeads[8];
+	CDCA_U8 byCount = 0;
+	CDCA_U8 byFromIndex = 0;
+	int i = 0;
+	char email_createtime[64];
+	int ret = -1;
+	
+	while(1){
+		ret = CDCASTB_GetEmailHeads(EmailHeads,&byCount,&byFromIndex);
+		if(CDCA_RC_OK==ret){
+/*
+应当根据邮件的日期顺序排序
+*/
+			for(i=0;i<byCount;i++)
+			{
+				memset(email_createtime,0,sizeof(email_createtime));
+				drm_date_convert(EmailHeads[i].m_tCreateTime, email_createtime, sizeof(email_createtime));
+				if(0==i)
+					snprintf(buf,size,"%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,EmailHeads[i].m_bNewEmail,EmailHeads[i].m_szEmailHead);
+				else
+					snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,EmailHeads[i].m_bNewEmail,EmailHeads[i].m_szEmailHead);
+			}
+			
+			if(byCount<10){
+				DEBUG("get email head finish\n");
+				break;
+			}
+		}
+		else{
+			drm_errors("CDCASTB_GetEmailHeads", ret);
+			break;
+		}
+	}
+	
+	return ret;
+}
+
+static int DRM_emailcontent_get(char *emailID, char *buf, unsigned int size)
+{
+	if(NULL==emailID || NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+
+	SCDCAEmailContent EmailContent;
+	memset(&EmailContent,0,sizeof(EmailContent));
+	
+	int ret = CDCASTB_GetEmailContent(strtol(emailID,NULL,0),&EmailContent);
+	if(CDCA_RC_OK==ret){
+		snprintf(buf,size,"%s", EmailContent.m_szEmail);
+		return 0;
+	}
+	else{
+		drm_errors("CDCASTB_GetEmailContent", ret);
+		return -1;
+	}
+}
+
+static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size)
+{
+	if(NULL==PublicationID || NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+
+	SCDCAPVODProgramInfo ProgramInfo[8];
+	CDCA_U32 dwFrom = 0;
+	CDCA_U32 dwNum = 8;
+	char		BeginDate[64];
+	char		ExpireDate[64];
+	int i = 0;
+	
+	char sqlite_cmd[256];
+	char DRMFile[256];
+	memset(DRMFile, 0, sizeof(DRMFile));
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DRMFile from Publication where PublicationID='%s';",PublicationID);
+	if(-1==str_sqlite_read(DRMFile,sizeof(DRMFile),sqlite_cmd)){
+		DEBUG("can not read DRMFile for PublicationID: %s\n", PublicationID);
+		return -1;
+	}
+	else{
+		DEBUG("should op DRMFile: %s\n", DRMFile);
+		int fd = open(DRMFile,O_RDONLY);
+		if(-1!=fd){
+			int ret = CDCASTB_DRM_GetProgramInfo((void *)&fd,&dwFrom,ProgramInfo,&dwNum);
+			if(CDCA_RC_OK==ret){
+				for(i=0;i<dwNum;i++){
+					if(0==i)
+						snprintf(buf,size,"%d",ProgramInfo[i].m_OperatorID);
+					else
+						snprintf(buf+strlen(buf),size-strlen(buf),"\n%d",ProgramInfo[i].m_OperatorID);
+					
+					int j = 0;
+					
+					for(j=0;j<ProgramInfo[i].m_PackNum;j++){
+						memset(BeginDate, 0, sizeof(BeginDate));
+						memset(ExpireDate, 0, sizeof(ExpireDate));
+						if(		0==drm_date_convert(ProgramInfo[i].m_Packs[j].m_IssueStartTime, BeginDate, sizeof(BeginDate))
+							&& 	0==drm_date_convert(ProgramInfo[i].m_Packs[j].m_IssueEndTime, ExpireDate, sizeof(ExpireDate))){
+							;
+						}
+						if(0==i)
+							snprintf(buf,size,"%d\t%d\t%s\t%s",ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
+						else
+							snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%d\t%s\t%s",ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
+					}
+				}
+				DEBUG("%s\n", buf);
+				return 0;
+			}
+			else{
+				drm_errors("CDCASTB_DRM_GetProgramInfo", ret);
+				return -1;
+			}
+		}
+		else{
+			ERROROUT("open %s failed\n",DRMFile);
+			return -1;
+		}
+	}
+}
+#endif
 
 /*
  通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
@@ -684,12 +976,14 @@ int dvbpush_command(int cmd, char **buf, int *len)
 	int ret = 0;
 
 	DEBUG("command: %d=0x%x\n", cmd,cmd);
+	memset(s_jni_cmd_public_space,0,sizeof(s_jni_cmd_public_space));
+	
 	switch (cmd) {
 		case CMD_DVBPUSH_GETINFO_START:
 			dvbpush_getinfo_start();
 			break;
 		case CMD_DVBPUSH_GETINFO:
-			dvbpush_getinfo(buf, (unsigned int *)len);
+			dvbpush_getinfo(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
 		case CMD_DVBPUSH_GETINFO_STOP:
 			dvbpush_getinfo_stop();
@@ -702,7 +996,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			net_rely_condition_set(cmd);
 			break;
 		case CMD_DVBPUSH_GETTS_STATUS:
-			data_stream_status_str_get(buf, (unsigned int *)len);
+			data_stream_status_str_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
 		
 		case CMD_UPGRADE_CANCEL:
@@ -735,18 +1029,50 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				msg_send2_UI(DRM_SC_REMOVE_OK, NULL, 0);
 			
 			break;
-//		case CMD_SMARTCARD_SN:
-//			DEBUG("CMD_SMARTCARD_SN\n");
-//			smartcard_sn_get(buf, (unsigned int *)len);
-//			break;
-//		case CMD_CALIB_VERSION:
-//			DEBUG("CMD_CALIB_VERSION\n");
-//			drmlib_version_get(buf, (unsigned int *)len);
-//			break;
-		
+		case CMD_DRM_SC_SN_READ:
+			DEBUG("CMD_DRM_SC_SN_READ\n");
+			smartcard_sn_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			break;
+		case CMD_DRMLIB_VER_READ:
+			DEBUG("CMD_DRMLIB_VER_READ\n");
+			drmlib_version_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			break;
+#if 0
+		case CMD_DRM_SC_EIGENVALUE_READ:
+			DEBUG("CMD_DRM_SC_EIGENVALUE_READ\n");
+			smartcard_eigenuvalue_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			break;
+		case CMD_DRM_ENTITLEINFO_READ:
+			DEBUG("CMD_DRM_ENTITLEINFO_READ\n");
+			smartcard_entitleinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			break;
+		case CMD_DRM_ENTITLEINFO_OUTPUT:
+			DEBUG("CMD_DRM_ENTITLEINFO_OUTPUT\n");
+			smartcard_EntitleFile_output();
+			break;
+		case CMD_DRM_ENTITLEINFO_INPUT:
+			DEBUG("CMD_DRM_ENTITLEINFO_INPUT\n");
+			smartcard_EntitleFile_input();
+			break;
+		case CMD_DRM_EMAILHEADS_READ:
+			DEBUG("CMD_DRM_EMAILHEADS_READ\n");
+			DRM_emailheads_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			break;
+		case CMD_DRM_EMAILCONTENT_READ:
+			DEBUG("CMD_DRM_EMAILCONTENT_READ\n");
+			DRM_emailcontent_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			break;
+		case CMD_DRM_PVODPROGRAMINFO_READ:
+			DEBUG("CMD_DRM_PVODPROGRAMINFO_READ\n");
+			DRM_programinfo_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			break;
+#endif	
 		default:
 			break;
 	}
+	
+	*buf = s_jni_cmd_public_space;
+	*len = strlen(s_jni_cmd_public_space);
 
 	return ret;
 }

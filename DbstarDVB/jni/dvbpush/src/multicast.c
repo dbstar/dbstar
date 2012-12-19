@@ -58,7 +58,6 @@ static int s_igmp_restart = 0;
 static int s_igmp_recvbuf_init_flag = 0;
 
 static int s_data_stream_status = 0;	/* 标识ts流的状态 */
-static char s_data_stream_status_str[4];
 
 static int multicast_init()
 {
@@ -137,13 +136,16 @@ int data_stream_status_get()
 		return 0;
 }
 
-int data_stream_status_str_get(char **p, unsigned int *len)
+int data_stream_status_str_get(char *buf, unsigned int size)
 {
-	snprintf(s_data_stream_status_str,sizeof(s_data_stream_status_str),"%s",s_data_stream_status>0?"1":"0");
-	*p = s_data_stream_status_str;
-	*len = strlen(s_data_stream_status_str);
+	if(NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
 	
-	PRINTF("date stream status:%s(%d)\n", *p,s_data_stream_status);
+	snprintf(buf,size,"%s",s_data_stream_status>0?"1":"0");
+	
+	PRINTF("date stream status:%s(%d)\n", buf,s_data_stream_status);
 	return 0;
 }
 
