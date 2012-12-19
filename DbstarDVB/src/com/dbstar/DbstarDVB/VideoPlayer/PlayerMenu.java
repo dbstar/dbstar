@@ -302,7 +302,8 @@ public class PlayerMenu extends PlayerActivity {
 		Log.d(TAG, " ============ onStart ================== ");
 		reqisterSystemMessageReceiver();
 
-		mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP, MSG_DIALOG_TIMEOUT);
+		if (!mHasError)
+			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP, MSG_DIALOG_TIMEOUT);
 
 		setMute(false);
 	}
@@ -1106,6 +1107,8 @@ public class PlayerMenu extends PlayerActivity {
 	public void playbackError(int error) {
 		Log.d(TAG,
 				"@@@@@@@@@@@@@  playbackError: " + Integer.toHexString(error));
+		
+		mHasError = true;
 		showErrorInfoDlg(error);
 		
 //		if (error < 0) {

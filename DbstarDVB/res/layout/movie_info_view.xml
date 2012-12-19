@@ -11,7 +11,10 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="20dp"
+        android:layout_marginRight="100dp"
         android:layout_marginTop="38dp"
+        android:ellipsize="end"
+        android:singleLine="true"
         android:textColor="#ffffff"
         android:textSize="24sp"
         android:textStyle="bold" />
@@ -24,8 +27,8 @@
         android:layout_alignParentTop="true"
         android:layout_marginRight="20dp"
         android:layout_marginTop="38dp"
-        android:gravity="center"
         android:background="@drawable/timeout_view_bg"
+        android:gravity="center"
         android:textColor="#ffffff"
         android:textSize="22sp" />
 
@@ -37,6 +40,7 @@
         android:layout_below="@id/title_view"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="20dp"
         android:orientation="vertical" >
 
         <LinearLayout
@@ -46,7 +50,7 @@
 
             <TextView
                 android:id="@+id/director_view"
-                android:layout_width="wrap_content"
+                android:layout_width="160dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
                 android:textSize="16sp" />
@@ -56,12 +60,21 @@
                 android:layout_height="fill_parent" />
 
             <TextView
-                android:id="@+id/actor_view"
-                android:layout_width="wrap_content"
+                android:id="@+id/scenarist_view"
+                android:layout_width="160dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
                 android:textSize="16sp" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/actors_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="#ffffff"
+            android:textSize="16sp" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -69,8 +82,30 @@
             android:orientation="horizontal" >
 
             <TextView
-                android:id="@+id/type_view"
-                android:layout_width="wrap_content"
+                android:id="@+id/codeformat_view"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="100dp"
+                android:layout_height="fill_parent" />
+
+            <TextView
+                android:id="@+id/bitrate_view"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:textColor="#ffffff"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="100dp"
+                android:layout_height="fill_parent" />
+
+            <TextView
+                android:id="@+id/resolution_view"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
                 android:textSize="16sp" />
@@ -107,8 +142,8 @@
             android:layout_width="153dp"
             android:layout_height="47dp"
             android:background="@drawable/bluebutton_bg_selector"
-            android:text="@string/close_button_text"
-            android:nextFocusLeft="@+id/delete_button" />
+            android:nextFocusLeft="@+id/delete_button"
+            android:text="@string/close_button_text" />
 
         <Space
             android:layout_width="40dp"
@@ -141,8 +176,8 @@
             android:layout_width="153dp"
             android:layout_height="47dp"
             android:background="@drawable/redbutton_bg_selector"
-            android:text="@string/delete_button_text"
-            android:nextFocusRight="@id/close_button" />
+            android:nextFocusRight="@id/close_button"
+            android:text="@string/delete_button_text" />
     </LinearLayout>
 
     <TextView

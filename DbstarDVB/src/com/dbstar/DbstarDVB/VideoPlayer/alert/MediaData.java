@@ -7,6 +7,9 @@ public class MediaData {
 	public String Actors;
 	public String Type;
 	public String Region;
+	public String CodeFormat;
+	public String Resolution;
+	public String Bitrate;
 	public String PublicationId = null;
 	public String PublicationSetID = null;
 }

@@ -22,11 +22,11 @@ public class PlayerErrorInfo {
 			break;
 		}
 		case CDCA_RC_NOT_ISSUETIME: {
-			errStr = res.getString(R.string.drm_error_notwatchtime);
+			errStr = res.getString(R.string.drm_error_notissuetime);
 			break;
 		}
 		case CDCA_RC_NOT_WATCHTIME: {
-			errStr = res.getString(R.string.drm_error_notissuetime);
+			errStr = res.getString(R.string.drm_error_notwatchtime);
 			break;
 		}
 		case CDCA_RC_RIGHT_LIMIT: {

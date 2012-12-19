@@ -57,6 +57,7 @@ public class PlayerActivity extends Activity {
 
 	protected int mTotalTime = 0;
 	protected int mCurrentTime = 0;
+	protected boolean mHasError = false;
 
 	// used for resume. last played position when player exit.
 	protected int mPlayPosition = 0;
@@ -192,17 +193,20 @@ public class PlayerActivity extends Activity {
 		case DLG_MEDIAINFO_POPUP: {
 			mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
 			dialog = mVideoInfoDlg;
+			mVideoInfoDlg.setOnShowListener(mOnShowListener);
 			break;
 		}
 		case DLG_SMARTCARD_POPUP: {
 			mSmartcardDialog = new GDAlertDialog(this, id);
 			mSmartcardDialog.setOnCreatedListener(mOnCreatedListener);
 			dialog = mSmartcardDialog;
+			mSmartcardDialog.setOnShowListener(mOnShowListener);
 			break;
 		}
 		case DLG_ERRORINFO: {
 			mErrorInfoDlg = new GDAlertDialog(this, id);
 			mErrorInfoDlg.setOnCreatedListener(mOnCreatedListener);
+			mSmartcardDialog.setOnShowListener(mOnShowListener);
 			dialog = mErrorInfoDlg;
 			break;
 		}
@@ -322,6 +326,23 @@ public class PlayerActivity extends Activity {
 		}
 
 	};
+	
+	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {
+
+		@Override
+		public void onShow(DialogInterface dialog) {
+			if (dialog instanceof DbVideoInfoDlg) {
+				if (mSmartcardDialog != null && mSmartcardDialog.isShowing()) {
+					dialog.dismiss();
+				}
+			} else if (dialog instanceof GDAlertDialog) {
+				if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
+					mVideoInfoDlg.dismiss();
+				}
+			}
+		}
+		
+	};
 
 	protected void smartcardPlugin(boolean plugIn) {
 
@@ -345,6 +366,10 @@ public class PlayerActivity extends Activity {
 	}
 	
 	void showErrorInfoDlg(int errorCode) {
+		if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
+			mVideoInfoDlg.dismiss();
+		}
+
 		mErrorCode = errorCode;
 		if (mErrorInfoDlg == null) {
 			showDialog(DLG_ERRORINFO);

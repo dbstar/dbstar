@@ -3,6 +3,7 @@ package com.dbstar.DbstarDVB.VideoPlayer.alert;
 import com.dbstar.DbstarDVB.R;
 
 import android.app.Dialog;
+import android.content.res.Resources;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -21,8 +22,9 @@ public class NormalState extends TimerViewState {
 	TextView mMovieDescription;
 	TextView mMovieDirector;
 	TextView mMovieActors;
-	TextView mMovieType;
-	TextView mMovieRegion;
+	TextView mCodeformat;
+	TextView mBitrate;
+	TextView mResolution;
 
 	Button mCloseButton, mReplayButton, mAddFavouriteButton, mDeleteButton;
 	MediaData mMediaData;
@@ -71,8 +73,10 @@ public class NormalState extends TimerViewState {
 		mMovieTitle = (TextView) dlg.findViewById(R.id.title_view);
 		mMovieDescription = (TextView) dlg.findViewById(R.id.description_view);
 		mMovieDirector = (TextView) dlg.findViewById(R.id.director_view);
-		mMovieActors = (TextView) dlg.findViewById(R.id.actor_view);
-		mMovieType = (TextView) dlg.findViewById(R.id.type_view);
+		mMovieActors = (TextView) dlg.findViewById(R.id.actors_view);
+		mCodeformat = (TextView) dlg.findViewById(R.id.codeformat_view);
+		mBitrate = (TextView) dlg.findViewById(R.id.bitrate_view);
+		mResolution = (TextView) dlg.findViewById(R.id.resolution_view);
 
 		mCloseButton = (Button) dlg.findViewById(R.id.close_button);
 		mReplayButton = (Button) dlg.findViewById(R.id.replay_button);
@@ -172,19 +176,38 @@ public class NormalState extends TimerViewState {
 				mMovieDescription.setText(mMediaData.Description);
 			}
 
-			String director = dlg.getContext().getResources()
+			Resources res = dlg.getContext().getResources();
+			String director = res
 					.getString(R.string.property_director);
 			if (mMediaData.Director != null) {
-				director += ": " + mMediaData.Director;
+				director += mMediaData.Director;
 			}
 			mMovieDirector.setText(director);
 
-			String actors = dlg.getContext().getResources()
+			String actors = res
 					.getString(R.string.property_actors);
 			if (mMediaData.Actors != null) {
-				actors += ": " + mMediaData.Actors;
+				actors += mMediaData.Actors;
 			}
 			mMovieActors.setText(actors);
+			
+			String videoFormat = res.getString(R.string.property_codeformat);
+			if (mMediaData.CodeFormat != null) {
+				videoFormat += mMediaData.CodeFormat;
+			}
+			mCodeformat.setText(videoFormat);
+			
+			String bitrate = res.getString(R.string.property_bitrate);
+			if (mMediaData.Bitrate != null) {
+				bitrate += mMediaData.Bitrate;
+			}
+			mCodeformat.setText(bitrate);
+			
+			String resolution = res.getString(R.string.property_resolution);
+			if (mMediaData.Resolution != null) {
+				resolution += mMediaData.Resolution;
+			}
+			mCodeformat.setText(resolution);
 		}
 	}
 }

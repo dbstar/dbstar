@@ -83,14 +83,11 @@
     <string name="button_text_notdelete">不删除</string>
     <string name="button_text_delete">删除</string>
     
-    <string name="property_title">名字</string>
-    <string name="property_director">导演</string>
-    <string name="property_actors">主演</string>
-    <string name="property_type">类型</string>
-    <string name="property_year">年代</string>
-    <string name="property_region">制片国家/地区</string>
-    <string name="property_rate">推荐指数</string>
-    <string name="property_episodes">集数</string>
+    <string name="property_director">导演:</string>
+    <string name="property_actors">主演:</string>
+    <string name="property_codeformat">视频编码格式:</string>
+    <string name="property_bitrate">码率:</string>
+    <string name="property_resolution">分辨率:</string>
     
     <!-- Smartcard -->
     <string name="smartcard_status_title">智能卡</string>
