@@ -62,6 +62,7 @@ public class GDTVActivity extends GDBaseActivity {
 	TextView mTVActors;
 	TextView mTVType;
 	TextView mTVRegion;
+	TextView mTVYear;
 
 	GDGridView mEpisodesView;
 	GDScrollBar mScrollBar;
@@ -139,6 +140,9 @@ public class GDTVActivity extends GDBaseActivity {
 		mTVDescription = (TextView) findViewById(R.id.tv_description);
 		mTVActors = (TextView) findViewById(R.id.tv_actors);
 		mTVType = (TextView) findViewById(R.id.tv_type);
+		mTVYear = (TextView) findViewById(R.id.tv_year);
+		mTVDirector = (TextView) findViewById(R.id.tv_director);
+		mTVRegion = (TextView) findViewById(R.id.tv_area);
 
 		mScrollBar = (GDScrollBar) findViewById(R.id.scrollbar);
 		mEpisodesView = (GDGridView) findViewById(R.id.tv_episodes_view);
@@ -349,20 +353,41 @@ public class GDTVActivity extends GDBaseActivity {
 		TV[] tvs = mPageDatas.get(mPageNumber);
 		TV tv = tvs[position];
 		mTV = tv;
+		ContentData content = tv.Content;
 
-		if (tv.Content.Name != null) {
-			mTVTitle.setText(tv.Content.Name);
-		}
+		if (content != null) {
+			if (content.Name != null) {
+				mTVTitle.setText(content.Name);
+			}
 
-		if (tv.Content.Description != null) {
-			mTVDescription.setText(tv.Content.Description);
-		}
+			if (content.Type != null) {
+				mTVType.setText(content.Type);
+			}
 
-		String actors = mResource.HeaderActors;
-		if (tv.Content.Actors != null) {
-			actors += tv.Content.Actors;
+			if (content.Year != null) {
+				mTVYear.setText(content.Year);
+			}
+
+			if (content.Area != null) {
+				mTVRegion.setText(content.Area);
+			}
+
+			if (content.Description != null) {
+				mTVDescription.setText(content.Description);
+			}
+
+			String actors = mResource.HeaderActors;
+			if (content.Actors != null) {
+				actors += content.Actors;
+			}
+			mTVActors.setText(actors);
+
+			String director = mResource.HeaderDirector;
+			if (content.Director != null) {
+				director += content.Director;
+			}
+			mTVDirector.setText(director);
 		}
-		mTVActors.setText(actors);
 
 		if (tv.EpisodesPages == null) {
 			formEpisodesPages(tv);
