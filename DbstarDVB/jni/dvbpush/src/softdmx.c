@@ -15,7 +15,7 @@
 Channel_t chanFilter[MAX_CHAN_FILTER+1];
 int max_filter_num = 0;
 int loader_dsc_fid;
-static LoaderInfo_t g_loaderInfo;
+LoaderInfo_t g_loaderInfo;
 static pthread_t loaderthread = 0;
 static int loaderAction = 0;
 static int s_print_cnt = 0;
@@ -666,7 +666,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	tmp16 = (tmp16<<8)|(*datap);
 //	INTERMITTENT_PRINT("loader info oui = [%x]\n",tmp16);
 	if (tmp16 != g_loaderInfo.oui){
-		INTERMITTENT_PRINT("loader oui check failed [%x]\n",tmp16);
+		INTERMITTENT_PRINT("loader oui check failed [0x%x], compare with my oui [0x%x]\n",tmp16,g_loaderInfo.oui);
 		return;
 	}
 	

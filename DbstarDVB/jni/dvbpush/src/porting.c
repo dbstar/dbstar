@@ -1102,10 +1102,13 @@ static void upgrade_info_refresh(char *info_name, char *info_value)
 void upgrade_info_init()
 {
 	unsigned char mark = 0;
-	LoaderInfo_t out;
-	
-	memset(&out, 0, sizeof(out));
-	if(0==get_loader_message(&mark, &out))
+#if 0
+	LoaderInfo_t g_loaderInfo;
+#else
+	extern LoaderInfo_t g_loaderInfo;
+#endif
+	memset(&g_loaderInfo, 0, sizeof(g_loaderInfo));
+	if(0==get_loader_message(&mark, &g_loaderInfo))
 	{
 		DEBUG("read loader msg: %d", mark);
 		if(0!=mark){
@@ -1115,15 +1118,15 @@ void upgrade_info_init()
 		}
 		
 		char tmpinfo[128];
-		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", out.stb_id_h,out.stb_id_l);
+		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
 		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
 		DEBUG("stb id: %s\n", tmpinfo);
 
 #if 0
-		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.hardware_version[0],out.hardware_version[1],out.hardware_version[2],out.hardware_version[3]);
+		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
 		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
 		
-		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", out.software_version[0],out.software_version[1],out.software_version[2],out.software_version[3]);
+		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
 		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
 		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, tmpinfo);
 #else		
@@ -1136,7 +1139,7 @@ void upgrade_info_init()
 */
 		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, HARDWARE_VERSION);
 		
-		snprintf(tmpinfo, sizeof(tmpinfo), "2.0.%d.%d", out.software_version[2],out.software_version[3]);
+		snprintf(tmpinfo, sizeof(tmpinfo), "2.0.%d.%d", g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
 		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
 
 		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, LOADER_VERSION);		
