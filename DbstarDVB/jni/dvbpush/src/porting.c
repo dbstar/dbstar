@@ -57,6 +57,8 @@ static int serviceID_init();
 static int push_dir_init();
 static int cur_language_init();
 
+static int special_productid_init();
+
 /* define some general interface function here */
 
 static void settingDefault_set(void)
@@ -195,6 +197,8 @@ int setting_init(void)
 	serviceID_init();
 	push_dir_init();
 	guidelist_select_refresh();
+	
+	special_productid_init();
 	
 	s_settingInitFlag = 1;
 	return 0;
@@ -1517,6 +1521,23 @@ static int push_dir_init()
 }
 
 
+static char s_special_ProductID[64];
+static int special_productid_init()
+{
+// only for test
+	char sqlite_cmd[256];
+	memset(s_special_ProductID, 0, sizeof(s_special_ProductID));
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='SpecialServiceID_Test';");
+	if(-1==str_sqlite_read(s_special_ProductID,sizeof(s_special_ProductID),sqlite_cmd)){
+		DEBUG("can not read s_special_ProductID\n");
+		return -1;
+	}
+	else{
+		DEBUG("read s_special_ProductID: %s\n", s_special_ProductID);
+	}
+	
+	return 0;
+}
 
 /*
  检查指定的产品id是否在特殊产品之列。
@@ -1525,8 +1546,8 @@ int special_productid_check(char *productid)
 {
 	if(NULL==productid)
 		return -1;
-
-	if(0==strcmp(productid, "9"))
+	
+	if(0==strcmp(productid, s_special_ProductID))
 		return 0;
 	else
 		return -1;
