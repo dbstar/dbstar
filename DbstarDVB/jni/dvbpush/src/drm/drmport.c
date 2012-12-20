@@ -437,6 +437,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 		smc_fd = open(SMC_DEVICE, O_RDWR);
 		if (smc_fd == -1) {
 			LOGD("cannot open device smc0\n");
+			msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
 			return CDCA_FALSE;
 		} else {
 			LOGD("open the smc device succeful [%d]\n", smc_fd);
@@ -450,7 +451,8 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 		//AM_TRY(AM_SMC_GetCardStatus(SMC_DEV_NO, &status));
 		if (ioctl(smc_fd, AMSMC_IOC_GET_STATUS, &ds)) {
 			LOGD("get card status failed\n");
-			return -1;
+			msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+			return CDCA_FALSE;
 		}
 
 		status = ds ? AM_SMC_CARD_IN : AM_SMC_CARD_OUT;
@@ -458,6 +460,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 		i++;
 		if (i > 50) {
 			LOGD("########### there is no smard card in \n");
+			msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
 			return CDCA_FALSE;
 		}
 	} while (status == AM_SMC_CARD_OUT);
@@ -470,6 +473,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	LOGD("&&&&&&&&&&&&&&&&&&&&&&&&&& reset the card = [%d]\n", smc_fd);
 	if (ioctl(smc_fd, AMSMC_IOC_RESET, &abuf)) {
 		LOGD("reset the card failed");
+		msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
 		return  CDCA_FALSE;
 	}
 
@@ -479,6 +483,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	for (i = 0; i < *pbyLen; i++) {
 		LOGD("0x%x,", abuf.atr[i]);
 	}
+	msg_send2_UI(DRM_SC_INSERT_OK, NULL, 0);
 	return CDCA_TRUE;
 }
 

@@ -1021,9 +1021,13 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("CMD_SMARTCARD_INSERT\n");
 			if(-1==drm_sc_insert())
 				msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+#if 0
+// drm_sc_insert调用成功并不意味着智能卡复位成功，因此成功的信号不在这里发送。
 			else
 				msg_send2_UI(DRM_SC_INSERT_OK, NULL, 0);
-				
+#else
+			DEBUG("call drm_sc_insert success, but it not means reset card OK, wait a moment...\n");
+#endif				
 			break;
 		case CMD_DRM_SC_REMOVE:
 			DEBUG("CMD_SMARTCARD_REMOVE\n");
