@@ -791,7 +791,7 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 }
 
 /* 关闭授权文件 */
-void CDSTBCA_DRM_CloseEntitleFile(void*  pFileHandle)
+void CDSTBCA_DRM_CloseEntitleFile(const void*  pFileHandle)
 {
 	LOGD("close the entitle file!!!!\n");
 	close(*(int *)pFileHandle);

@@ -189,6 +189,7 @@ typedef CDCA_U8 CDCA_BOOL;
 #define CDCA_RC_IN_SYNC				0x3F  /* 同步授权中  */
 
 
+#define CDCA_RC_NOCALIBOPER_TYPE		0x42  /*卡中不存在移植库定制运营商-add by rw  20120524 */ 
 
 /*--------- 文件操作参数 --------*/
 #define CDCA_SEEK_SET                          0x00  /* 从文件头开始向后 */
@@ -668,9 +669,7 @@ extern CDCA_U16 CDCASTB_DRM_OpenFile(const void*    pDataFileHnd,
                                         
 /* 关闭节目文件 */
 extern void CDCASTB_DRM_CloseFile(const void*  pDataFileHnd);
-
-extern void CDSTBCA_HDDec_CloseDecrypter(const void *pCtx);
-//liukevin
+   
 
 
 /* 读取文件数据 */
@@ -754,7 +753,7 @@ extern void  CDSTBCA_Memcpy( void*       pDestBuf,
 
 
 /*--------- 存储空间（Flash）管理 ---------*/
-#if 1
+
 /* 读取存储空间 */
 extern void CDSTBCA_ReadBuffer( CDCA_U8   byBlockID,
                                 CDCA_U8*  pbyData,
@@ -764,7 +763,7 @@ extern void CDSTBCA_ReadBuffer( CDCA_U8   byBlockID,
 extern void CDSTBCA_WriteBuffer( CDCA_U8        byBlockID,
                                  const CDCA_U8* pbyData,
                                  CDCA_U32       dwLen );
-#endif
+
 
 /*-------- TS流管理 --------*/
 
@@ -912,7 +911,7 @@ extern CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN+1],
                                       void** pFileHandle);
 
 /* 关闭授权文件 */
-extern void CDSTBCA_DRM_CloseEntitleFile ( void*  pFileHandle);
+extern void CDSTBCA_DRM_CloseEntitleFile (const void*  pFileHandle);
 
 
 
