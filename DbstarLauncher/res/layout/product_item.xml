@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+    <TextView
+        android:id="@+id/operator_id"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/product_id"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/start_time"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/end_time"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/limit_count"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="16sp" />
+
+</LinearLayout>
