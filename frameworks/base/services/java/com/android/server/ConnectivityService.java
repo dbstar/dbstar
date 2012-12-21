@@ -1849,7 +1849,8 @@ private NetworkStateTracker makeWimaxStateTracker() {
                             log("Not broadcasting CONNECT_ACTION " +
                                 "to torn down network " + info.getTypeName());
                         }
-                        teardown(thisNet);
+                        log("***** Do not tear down network: " + info.getTypeName());
+                        //teardown(thisNet);
                         return;
                     }
                 } else {
@@ -1873,7 +1874,7 @@ private NetworkStateTracker makeWimaxStateTracker() {
                             log("Policy requires " + otherNet.getNetworkInfo().getTypeName() +
                                 " teardown");
                         }
-                        log("****** Do not teardown connectivity: " + otherNet.getNetworkInfo().getTypeName());
+                        log("****** Do not tear down network: " + otherNet.getNetworkInfo().getTypeName());
                         /*
                         if (!teardown(otherNet)) {
                             loge("Network declined teardown request");
