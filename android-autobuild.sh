@@ -399,7 +399,7 @@ do_select()
 {
 	echo "Autobuild android system:"
 	echo "Please select:"
-	select var in "patch" "dbstar" "kernel" "recovery" "rootfs" "dbstar" "all" "release"; do
+	select var in "patch" "dbstar" "kernel" "recovery" "rootfs" "otapackage" "all" "release"; do
 		break
 	done
 	echo "You have selected $var"
