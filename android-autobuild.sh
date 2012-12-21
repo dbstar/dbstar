@@ -281,6 +281,10 @@ dbstar_patch()
 {
 	logger "START patch dbstar"
 	call cd $ANDROID_SRC
+	echo ">>>> patching bionic ..."
+	cp -rf $DBSTAR_SRC/bionic/* $ANDROID_SRC/bionic/
+	echo ">>>> patching frameworks ..."
+	cp -rf $DBSTAR_SRC/frameworks/* $ANDROID_SRC/frameworks/
 	echo ">>>> patching kernel ..."
 	cp -rf $DBSTAR_SRC/kernel/* $ANDROID_SRC/kernel/
 	echo ">>>> patching device ..."
@@ -344,6 +348,7 @@ autobuild()
 		otapackage_make
 	fi
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_RELEASE ]; then
+		rootfs_clean
 		dbstar_patch
 		rootfs_make
 		dbstar_make
@@ -383,10 +388,22 @@ Example: $0 kernel       # build kernel
          $0 dbstar       # build dbstar package
          $0 patch        # patch dbstar kernel and device
          $0 all          # patch and build dbstar/kernel/otapackage
+         $0 release      # patch, clean, and rebuild all
 
 
 HELP
 	exit 0
+}
+
+do_select()
+{
+	echo "Autobuild android system:"
+	echo "Please select:"
+	select var in "patch" "dbstar" "kernel" "recovery" "rootfs" "dbstar" "all" "release"; do
+		break
+	done
+	echo "You have selected $var"
+	check_args  $var
 }
 
 check_args()
@@ -427,7 +444,9 @@ check_args()
 #################################################################################
 # auto building android
 #################################################################################
-if [ $# -eq 1 ]; then
+if [ $# -eq 0 ]; then
+	do_select
+elif [ $# -eq 1 ]; then
 	check_args $1
 elif [ $# -eq 2 ]; then
 	check_args $1 $2
