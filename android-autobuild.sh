@@ -9,12 +9,12 @@
 #################################################################################
 # basic configs
 #################################################################################
-BASEDIR="/mnt/fileroot/peifu"
-ANDROID_SRC=$BASEDIR/ics-db
+BASEDIR="/android"
+ANDROID_SRC=$BASEDIR/ics
 KERNEL_SRC=$ANDROID_SRC/kernel
 UBOOT_SRC=$ANDROID_SRC/uboot
 DBSTAR_SRC=$ANDROID_SRC/packages/dbstar
-BUILD_OUT=$BASEDIR/buildoutput/ics-db/
+BUILD_OUT=$BASEDIR/f16-autobuild-out
 ROOTFS_OUT=$ANDROID_SRC/out/target/product/f16ref
 LOG_REPO=$BUILD_OUT/repo.log
 LOG_UBOOT=$BUILD_OUT/uboot.log
@@ -28,7 +28,7 @@ GIT_BRANCH="ics-amlogic-0702"
 ANDROID_LUNCH="18"
 UBOOT_CONFIG="m3_mbox_config"
 KERNEL_CONFIG="meson_reff16_defconfig"
-MAKE_ARGS="-j49"
+#MAKE_ARGS="-j3"
 TIMESTAMP=`date +%Y%m%d`
 
 
