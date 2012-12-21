@@ -1,6 +1,7 @@
 package com.dbstar.service.client;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,6 +13,8 @@ import android.util.Log;
 
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.IDbstarService;
+import com.dbstar.model.EMailItem;
+import com.dbstar.model.ProductItem;
 import com.dbstar.model.ReceiveEntry;
 
 public class GDDBStarClient {
@@ -168,6 +171,139 @@ public class GDDBStarClient {
 		}
 
 		return status;
+	}
+
+	public Object getSmartcardInfo(int type) {
+		Object data = null;
+
+		try {
+			Intent intent = mDbstarService.sendCommand(type, null, 0);
+
+			byte[] bytes = intent.getByteArrayExtra("result");
+
+			if (bytes != null) {
+				data = parseSmartcardInfo(type, bytes);
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+		return data;
+	}
+
+	public String getEMailContent(String mailId) {
+		String content = null;
+
+		try {
+			Intent intent = mDbstarService.sendCommand(
+					DbstarServiceApi.CMD_DRM_EMAILCONTENT_READ, mailId,
+					mailId.length());
+
+			byte[] bytes = intent.getByteArrayExtra("result");
+
+			if (bytes != null) {
+				try {
+					content = new String(bytes, "utf-8");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+		return content;
+	}
+
+	private Object parseSmartcardInfo(int type, byte[] bytes) {
+		Object info = null;
+		String data = null;
+		try {
+			data = new String(bytes, "utf-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+
+		if (type == DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ) {
+			String[] ids = data.split("\n");
+			info = ids;
+		} else if (type == DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ) {
+			String[] items = data.split("\n");
+			if (items.length == 0) {
+				Log.d(TAG, " no product info !");
+			} else {
+				ArrayList<ProductItem> products = new ArrayList<ProductItem>();
+				for (int i = 0; i < items.length; i++) {
+					String[] item = items[i].split("\t");
+
+					if (item.length == 0) {
+						continue;
+					}
+
+					ProductItem product = new ProductItem();
+					product.OperatorID = item[0];
+					product.ProductID = item[1];
+					product.StartTime = item[2];
+					product.EndTime = item[3];
+					product.LimitCount = item[4];
+
+					products.add(product);
+				}
+
+				if (products.size() > 0) {
+					info = products.toArray(new ProductItem[products.size()]);
+				}
+			}
+		} else if (type == DbstarServiceApi.CMD_DRM_EMAILHEADS_READ) {
+			String[] items = data.split("\n");
+			if (items.length == 0) {
+				Log.d(TAG, " no mails !");
+			} else {
+				ArrayList<EMailItem> mails = new ArrayList<EMailItem>();
+				for (int i = 0; i < items.length; i++) {
+					String[] item = items[i].split("\t");
+
+					if (item.length == 0) {
+						continue;
+					}
+
+					EMailItem mail = new EMailItem();
+					mail.ID = item[0];
+					mail.Date = item[1];
+					mail.Flag = Integer.valueOf(item[2]);
+					mail.Title = item[3];
+					mails.add(mail);
+				}
+
+				if (mails.size() > 0) {
+					info = mails.toArray(new EMailItem[mails.size()]);
+				}
+			}
+		}
+
+		return info;
+	}
+
+	public String manageCA(int cmd) {
+		String ret = null;
+
+		try {
+			Intent intent = mDbstarService.sendCommand(cmd, null, 0);
+
+			byte[] bytes = intent.getByteArrayExtra("result");
+
+			if (bytes != null) {
+				try {
+					ret = new String(bytes, "utf-8");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+		return ret;
 	}
 
 	// data format: "1001|task1|23932|23523094823\n1002|task2|234239|12349320\n"

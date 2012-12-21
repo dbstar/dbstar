@@ -36,6 +36,8 @@ public class GDCommon {
 	public static final int MSG_SMARTCARD_IN = 0x40001;
 	public static final int MSG_SMARTCARD_OUT = 0x40002;
 	
+	public static final int MSG_NEW_MAIL = 0x50001;
+	
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "cho";
@@ -59,6 +61,7 @@ public class GDCommon {
 	public static final String ColumnIDNetworkSettings = "L9903";
 	public static final String ColumnIDFileBrowser = "L9904";
 	public static final String ColumnIDAdvancedSettings = "L9905";
+	public static final String ColumnIDSmartcardSettings = "L9906";
 	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";

@@ -49,6 +49,7 @@
             android:name=".app.alert.GDForceUpgradeActivity"
             android:theme="@style/popup_activity" />
         <activity android:name=".app.settings.GDGeneralInfoActivity" />
+        <activity android:name=".app.settings.GDSmartcardActivity" />
         
         <activity android:name=".app.GDVideoPlayer" />
         <activity android:name=".app.GDEReaderActivity" />

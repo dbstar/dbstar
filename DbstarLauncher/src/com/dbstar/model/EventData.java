@@ -1,10 +1,11 @@
 package com.dbstar.model;
 
 public class EventData {
-	public static final int EVENT_DELETE = 0;
-	public static final int EVENT_DATASIGNAL = 1;
-	public static final int EVENT_UPDATE_PROPERTY = 2;
-	public static final int EVENT_SMARTCARD_STATUS = 3;
+	public static final int EVENT_DELETE = 0x10001;
+	public static final int EVENT_DATASIGNAL = 0x10002;
+	public static final int EVENT_UPDATE_PROPERTY = 0x10003;
+	public static final int EVENT_SMARTCARD_STATUS = 0x10004;
+	public static final int EVENT_NEWMAIL = 0x10005;
 	
 	public static class DeleteEvent {
 		public String PublicationId;
@@ -23,5 +24,9 @@ public class EventData {
 	
 	public static class SmartcardStatus {
 		public boolean isPlugIn;
+	}
+	
+	public static class NewMail {
+		
 	}
 }

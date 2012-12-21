@@ -8,7 +8,6 @@
         android:layout_width="1280dp"
         android:layout_height="720dp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:background="@drawable/webview_background"/>
+        android:layout_alignParentLeft="true" />
 
 </RelativeLayout>

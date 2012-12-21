@@ -63,7 +63,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	public static final int REQUESTTYPE_STOPGETTASKINFO = 0x2002;
 	public static final int REQUESTTYPE_GETTSSIGNALSTATUS = 0x2003;
 	public static final int REQUESTTYPE_GETDOWNLOADSTATUS = 0x2004;
-
+	public static final int REQUESTTYPE_GETSMARTCARDINFO = 0x2005;
+	public static final int REQUESTTYPE_MANAGECA = 0x2006;
+	public static final int REQUESTTYPE_GETMAILCONTENT = 0x2007;
+	
 	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 0x3001;
 	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 0x3002;
 
@@ -88,7 +91,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	private static final String PARAMETER_DATEEND = "date_end";
 	private static final String PARAMETER_CHAREGTYPE = "charge_type";
 	private static final String PARAMETER_KEYS = "keys";
-
 	private static final String PARAMETER_KEY = "key";
 	private static final String PARAMETER_VALUE = "value";
 
@@ -621,6 +623,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				notifySmartcardStatusChange(mIsSmartcardIn);
 				break;
 			}
+			
+			case GDCommon.MSG_NEW_MAIL: {
+				notifyNewMail();
+				break;
+			}
 
 			default:
 				break;
@@ -638,6 +645,12 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			mApplicationObserver.handleNotifiy(
 					plugIn ? GDCommon.MSG_SMARTCARD_IN
 							: GDCommon.MSG_SMARTCARD_OUT, null);
+		}
+	}
+	
+	private void notifyNewMail() {
+		if (mPageOberser != null) {
+			mPageOberser.notifyEvent(EventData.EVENT_NEWMAIL, null);
 		}
 	}
 
@@ -699,6 +712,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			break;
 		}
 
+		case REQUESTTYPE_GETSMARTCARDINFO:
+		case REQUESTTYPE_MANAGECA:
+		case REQUESTTYPE_GETMAILCONTENT:
 		case REQUESTTYPE_GETSETTINGS: {
 			if (task.Observer != null) {
 				task.Observer.updateData(task.Type, task.Key, task.Data);
@@ -993,6 +1009,36 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				case REQUESTTYPE_GETDOWNLOADSTATUS: {
 					ReceiveEntry[] entries = mDBStarClient.getTaskInfo();
 					task.Data = entries;
+					taskFinished(task);
+					break;
+				}
+				
+				case REQUESTTYPE_GETSMARTCARDINFO: {
+					int type = (Integer) task.Key;
+					
+					Object data = mDBStarClient.getSmartcardInfo(type);
+					
+					task.Data = data;
+					taskFinished(task);
+					break;
+				}
+				
+				case REQUESTTYPE_GETMAILCONTENT: {
+					String id = (String) task.Key;
+					
+					Object data = mDBStarClient.getEMailContent(id);
+					
+					task.Data = data;
+					taskFinished(task);
+					break;
+				}
+				
+				case REQUESTTYPE_MANAGECA: {
+					int type = (Integer) task.Key;
+					
+					String result = mDBStarClient.manageCA(type);
+					
+					task.Data = result;
 					taskFinished(task);
 					break;
 				}
@@ -1300,6 +1346,33 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		task.Observer = null;
 		// task.Id = System.currentTimeMillis();
 		task.Type = REQUESTTYPE_STOPGETTASKINFO;
+
+		enqueueTask(task);
+	}
+	
+	public void getSmartcardInfo(ClientObserver observer, int type) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETSMARTCARDINFO;
+		task.Key = new Integer(type);
+
+		enqueueTask(task);
+	}
+	
+	public void getMailContent(ClientObserver observer, String id) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETMAILCONTENT;
+		task.Key = id;
+
+		enqueueTask(task);
+	}
+	
+	public void manageCA(ClientObserver observer, int cmd) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_MANAGECA;
+		task.Key = new Integer(cmd);
 
 		enqueueTask(task);
 	}
@@ -1687,6 +1760,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 				case DbstarServiceApi.STATUS_INTERFACE_REFRESH: {
 					mHandler.sendEmptyMessage(GDCommon.MSG_UPDATE_UIRESOURCE);
+					break;
+				}
+				
+				case DbstarServiceApi.DRM_EMAIL_NEW: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_NEW_MAIL);
 					break;
 				}
 

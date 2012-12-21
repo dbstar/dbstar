@@ -107,9 +107,52 @@
     <!-- Error messages -->
     <string name="error_title">错误</string>
     <string name="file_notexist">文件不存在!</string>
-    
+
     <!-- Smartcard -->
     <string name="smartcard_status_title">智能卡</string>
     <string name="smartcard_status_in">智能卡已经插入！</string>
     <string name="smartcard_status_out">请插入智能卡!</string>
+
+    <!-- Smartcard settings -->
+    <string name="smartcard_info">智能卡信息</string>
+    <string name="authorization_manage">授权管理</string>
+    <string name="mailbox">邮件</string>
+    
+    <string name="smartcard_number">智能卡号:</string>
+    <string name="smartcard_state">智能卡状态:</string>
+    <string name="smartcard_eigenvalue">特征值:</string>
+    <string name="smartcard_authorization">授权信息:</string>
+    <string name="operator_id">运营商ID</string>
+    <string name="product_id">产品ID</string>
+    <string name="start_time">开始时间</string>
+    <string name="end_time">结束时间</string>
+    <string name="limit_count">限量</string>
+    
+    <string name="ca_edition">CA版本:</string>
+    <string name="import_ca">导入授权</string>
+    <string name="export_ca">导出授权</string>
+    
+    <string name="smarcard_state_not_in">无智能卡，请插入智能卡</string>
+    <string name="smarcard_state_invalid">智能卡无效</string>
+    <string name="smarcard_state_normal">正常</string>
+    
+    <!-- CA message -->
+    <string name="alert_title">提示</string>
+    <string name="ca_message_no_entitle">无记录导出</string>
+    <string name="ca_message_no_device">请插入SD卡</string>
+    <string name="ca_message_no_space">空间不足</string>
+    <string name="ca_message_export_finished">授权导出完成</string>
+    <string name="ca_message_import_failed">授权导入失败，请检查SD卡</string>
+    <string name="ca_message_import_finished">授权导入完成</string>
+    
+    <!-- Mail -->
+    <string name="email_id">ID</string>
+    <string name="email_date">日期</string>
+    <string name="email_flag">阅读标记</string>
+    <string name="email_title">标题</string>
+    <string name="email_flag_notread">未阅读</string>
+    <string name="email_flag_read">已阅读</string>
+    
+    <string name="email_newmail">有新邮件</string>
+
 </resources>

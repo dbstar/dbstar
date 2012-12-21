@@ -18,6 +18,7 @@ import com.dbstar.app.alert.GDForceUpgradeActivity;
 import com.dbstar.app.alert.GDUpgradeActivity;
 import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGeneralInfoActivity;
+import com.dbstar.app.settings.GDSmartcardActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.GDApplicationObserver;
@@ -552,6 +553,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent.setComponent(new ComponentName("com.android.settings",
 					"com.android.settings.Settings"));
 			intent.setAction("android.intent.action.VIEW");
+		} else if (columnId.equals(GDCommon.ColumnIDSmartcardSettings)) {
+			intent = new Intent();
+			intent.setClass(this, GDSmartcardActivity.class);
 		}
 
 		if (intent != null) {

@@ -14,6 +14,7 @@ public class GDAlertDialog extends Dialog {
 	public Button mOkButton, mCancelButton;
 	public View mCenterSpacer;
 	private int mId = -1;
+	private int mType = -1;
 
 	public static interface OnCreatedListener {
 		public void onCreated(GDAlertDialog dialog);
@@ -75,6 +76,14 @@ public class GDAlertDialog extends Dialog {
 
 	public int getId() {
 		return mId;
+	}
+	
+	public int getType() {
+		return mType;
+	}
+	
+	public void setType(int type) {
+		mType = type;
 	}
 
 	private void closeDialog() {

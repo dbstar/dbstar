@@ -19,5 +19,8 @@
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
     <color name="semitransparent_white">#80ffffff</color>
+    
+    
+    <drawable name="transparent">#00000000</drawable>
 
 </resources>

@@ -6,7 +6,6 @@ import java.util.TimerTask;
 import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
 import com.dbstar.model.EventData;
-import com.dbstar.model.GDCommon;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.service.GDDataProviderService.DataProviderBinder;
@@ -33,8 +32,11 @@ import android.widget.TextView;
 public class GDBaseActivity extends Activity implements ClientObserver {
 	private static final String TAG = "GDBaseActivity";
 
-	protected static final int DLG_FILE_NOTEXIST = 0;
-	protected static final int DLG_SMARTCARD_INFO = 1;
+	protected static final int DLG_ID_ALERT = 0;
+	
+	protected static final int DLG_TYPE_FILE_NOTEXIST = 0;
+	protected static final int DLG_TYPE_SMARTCARD_INFO = 1;
+	protected static final int DLG_TYPE_NEWMAIL_INFO = 2;
 
 	protected static final String INTENT_KEY_MENUPATH = "menu_path";
 	protected static final int MENU_LEVEL_1 = 0;
@@ -61,8 +63,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	private ProgressDialog mLoadingDialog = null;
 	private String mLoadingText = null;
 
-	GDAlertDialog mSmartcardDlg = null;
 	GDAlertDialog mAlertDlg = null;
+	int mAlertType = -1;
 
 	protected Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -70,7 +72,12 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			case MSG_SMARTCARD_STATUSCHANGED: {
 				boolean plugIn = msg.arg1 == MSG_SMARTCARD_PLUGIN ? true
 						: false;
-				showSmartcardInfo(plugIn);
+				alertSmartcardInfo(plugIn);
+				break;
+			}
+			case MSG_NEW_MAIL: {
+				alertNewMail();
+				break;
 			}
 			}
 		}
@@ -264,6 +271,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			}
 
 			notifySmartcardStatusChanged(plugIn);
+		} else if (type == EventData.EVENT_NEWMAIL) {
+			notifyNewMail();
 		}
 	}
 
@@ -327,16 +336,10 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog = null;
 		switch (id) {
-		case DLG_FILE_NOTEXIST: {
+		case DLG_ID_ALERT: {
 			mAlertDlg = new GDAlertDialog(this, id);
-			mAlertDlg.setOnCreatedListener(mOnCreatedListener);
+			mAlertDlg.setOnShowListener(mOnShowListener);
 			dialog = mAlertDlg;
-			break;
-		}
-		case DLG_SMARTCARD_INFO: {
-			mSmartcardDlg = new GDAlertDialog(this, id);
-			mSmartcardDlg.setOnCreatedListener(mOnCreatedListener);
-			dialog = mSmartcardDlg;
 			break;
 		}
 		}
@@ -344,33 +347,52 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		return dialog;
 	}
 
-	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
+	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {
 
 		@Override
-		public void onCreated(GDAlertDialog dialog) {
-			if (dialog.getId() == DLG_FILE_NOTEXIST) {
-				dialog.setTitle(R.string.error_title);
-				dialog.setMessage(R.string.file_notexist);
-				dialog.showSingleButton();
-			} else if (dialog.getId() == DLG_SMARTCARD_INFO) {
-				dialog.setTitle(R.string.smartcard_status_title);
-				if (mIsSmartcardIn) {
-					dialog.setMessage(R.string.smartcard_status_in);
-				} else {
-					dialog.setMessage(R.string.smartcard_status_out);
-				}
-				dialog.showSingleButton();
+		public void onShow(DialogInterface dialog) {
+			if (dialog instanceof GDAlertDialog) {
+				displayAlertDlg((GDAlertDialog) dialog, mAlertType);
 			}
-
-			dialog.mOkButton.requestFocus();
+			
 		}
-
 	};
+	
+	void displayAlertDlg(GDAlertDialog dialog, int type) {
+		switch(mAlertType) {
+		case DLG_TYPE_FILE_NOTEXIST: {
+			dialog.setTitle(R.string.error_title);
+			dialog.setMessage(R.string.file_notexist);
+			dialog.showSingleButton();
+			break;
+		}
+		case DLG_TYPE_SMARTCARD_INFO: {
+			dialog.setTitle(R.string.smartcard_status_title);
+			if (mIsSmartcardIn) {
+				dialog.setMessage(R.string.smartcard_status_in);
+			} else {
+				dialog.setMessage(R.string.smartcard_status_out);
+			}
+			dialog.showSingleButton();
+			break;
+		}
+		case DLG_TYPE_NEWMAIL_INFO: {
+			dialog.setTitle(R.string.alert_title);
+			dialog.setMessage(R.string.email_newmail);
+			dialog.showSingleButton();
+			break;
+		}
+		}
+		
+		dialog.mOkButton.requestFocus();
+	}
 
 	private static final int DLG_TIMEOUT = 3000;
 	protected static final int MSG_SMARTCARD_STATUSCHANGED = 0x80001;
 	protected static final int MSG_SMARTCARD_PLUGIN = 0;
 	protected static final int MSG_SMARTCARD_PLUGOUT = 1;
+	
+	protected static final int MSG_NEW_MAIL = 2;
 
 	Timer mDlgTimer = null;
 	TimerTask mTimeoutTask = null;
@@ -381,30 +403,34 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		mHandler.sendMessage(message);
 	}
 	
-	@SuppressWarnings("deprecation")
-	protected void showAlertDialog(int dialogId) {
+	protected void notifyNewMail() {
+		mHandler.sendEmptyMessage(MSG_NEW_MAIL);
+	}
+
+	protected void alertFileNotExist() {
 		if (mAlertDlg == null) {
-			showDialog(dialogId);
+			mAlertType = DLG_TYPE_FILE_NOTEXIST;
+			showDialog(DLG_ID_ALERT);
 		} else {
 			mAlertDlg.show();
 		}
 	}
-
-	protected void showSmartcardInfo(boolean plugIn) {
-
-		if (mSmartcardDlg == null) {
-			showDialog(DLG_SMARTCARD_INFO);
+	
+	protected void alertNewMail() {
+		if (mAlertDlg == null) {
+			mAlertType = DLG_TYPE_NEWMAIL_INFO;
+			showDialog(DLG_ID_ALERT);
 		} else {
-			if (mIsSmartcardIn) {
-				mSmartcardDlg.setMessage(R.string.smartcard_status_in);
-			} else {
-				mSmartcardDlg.setMessage(R.string.smartcard_status_out);
-			}
-
-			mSmartcardDlg.showSingleButton();
-			mSmartcardDlg.mOkButton.requestFocus();
-
-			mSmartcardDlg.show();
+			mAlertDlg.show();
+		}
+	}
+	
+	protected void alertSmartcardInfo(boolean plugIn) {
+		if (mAlertDlg == null) {
+			mAlertType = DLG_TYPE_SMARTCARD_INFO;
+			showDialog(DLG_ID_ALERT);
+		} else {
+			mAlertDlg.show();
 		}
 
 		if (mIsSmartcardIn) {
@@ -423,8 +449,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 					mDlgTimer.cancel();
 					mDlgTimer = null;
 
-					if (mSmartcardDlg != null && mSmartcardDlg.isShowing()) {
-						mSmartcardDlg.dismiss();
+					if (mAlertDlg != null && mAlertDlg.isShowing()) {
+						mAlertDlg.dismiss();
 					}
 					break;
 				}

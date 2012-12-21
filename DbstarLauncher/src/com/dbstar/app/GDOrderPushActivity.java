@@ -184,8 +184,8 @@ public class GDOrderPushActivity extends GDBaseActivity {
 				mReceiveItemIndex = position;
 				view.setBackgroundDrawable(mReceiveItemFocusedBackground);
 
-				mOldReceiveItemIndex = mReceiveItemIndex;
-				mReceiveItemIndex = position;
+//				mOldReceiveItemIndex = mReceiveItemIndex;
+//				mReceiveItemIndex = position;
 			}
 
 			@Override
