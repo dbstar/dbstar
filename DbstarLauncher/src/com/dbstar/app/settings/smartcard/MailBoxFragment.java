@@ -82,23 +82,41 @@ public class MailBoxFragment extends BaseFragment {
 		} else if (type == GDDataProviderService.REQUESTTYPE_GETMAILCONTENT) {
 			String id = (String) key;
 			String content = (String) data;
-			mMailContentView.setText(content);
+
+			int length = mMails.length;
+			for(int i=0; i<length; i++) {
+				EMailItem item = mMails[i];
+				if (item.ID.equals(id)) {
+					item.Content = content;
+					break;
+				}
+			}
+
+			if (mMailContentView.getVisibility() == View.VISIBLE) {
+				mMailContentView.setText(content);
+			}
 		}
 	}
 
 	public void notifyEvent(FragmentObserver observer, int type, Object event) {
 		if (observer != this)
 			return;
-
-		// if (type == )
 	}
 
 	void displayMailContent(int index) {
 		mMailListContainer.setVisibility(View.GONE);
+		
+		mMailContentView.setText("");
 		mMailContentView.setVisibility(View.VISIBLE);
 
-		mMails[index].Flag = 1;
-		mEngine.getMailContent(this, mMails[index].ID);
+		EMailItem mail = mMails[index];
+
+		mail.Flag = 1;
+		if (mail.Content == null) {
+			mEngine.getMailContent(this, mail.ID);
+		} else {
+			mMailContentView.setText(mail.Content);
+		}
 	}
 
 	public boolean onBackkeyPress() {

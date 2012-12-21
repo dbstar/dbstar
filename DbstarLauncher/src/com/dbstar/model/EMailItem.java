@@ -6,4 +6,8 @@ public class EMailItem {
 	public int Flag;
 	public String Title;
 	public String Content;
+	
+	public EMailItem() {
+		Content = null;
+	}
 }
