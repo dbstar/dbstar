@@ -76,23 +76,6 @@ public class PlayerActivity extends Activity {
 
 	// Surface.ROTATION_0, ROTATION_90, ROTATION_180, ROTATION_270
 
-	protected void reqisterSystemMessageReceiver() {
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(DbstarServiceApi.ACTION_HDMI_IN);
-		filter.addAction(DbstarServiceApi.ACTION_HDMI_OUT);
-
-		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_IN);
-		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
-		
-		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
-
-		registerReceiver(mSystemMessageReceiver, filter);
-	}
-
-	protected void unregisterSystemMessageReceiver() {
-		unregisterReceiver(mSystemMessageReceiver);
-	}
-
 	private static final int MSG_SMARTCARD_IN = 0x1000;
 	private static final int MSG_SMARTCARD_OUT = 0x1001;
 	private static final int MSG_SMARTCARD_RESETOK = 0x1002;
@@ -107,6 +90,23 @@ public class PlayerActivity extends Activity {
 	protected static final int SMARTCARD_STATUS_INVALID = 5;
 
 	protected int mSmartcardState = SMARTCARD_STATUS_NONE;
+
+	protected void reqisterSystemMessageReceiver() {
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(DbstarServiceApi.ACTION_HDMI_IN);
+		filter.addAction(DbstarServiceApi.ACTION_HDMI_OUT);
+
+		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_IN);
+		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
+
+		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
+
+		registerReceiver(mSystemMessageReceiver, filter);
+	}
+
+	protected void unregisterSystemMessageReceiver() {
+		unregisterReceiver(mSystemMessageReceiver);
+	}
 
 	private BroadcastReceiver mSystemMessageReceiver = new BroadcastReceiver() {
 
@@ -152,20 +152,11 @@ public class PlayerActivity extends Activity {
 		}
 	};
 
-	protected static final int DLG_MEDIAINFO_POPUP = 0;
-	protected static final int DLG_SMARTCARD_POPUP = 1;
-	private static final int DLG_ERRORINFO = 2;
-
-	protected static final int MSG_DIALOG_POPUP = 1;
-	protected static final int MSG_DIALOG_TIMEOUT = 500;
-
-	protected DbVideoInfoDlg mVideoInfoDlg = null;
-
 	protected Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_DIALOG_POPUP:
-				showDialog(DLG_MEDIAINFO_POPUP);
+				showDialog(DLG_ID_MEDIAINFO);
 				break;
 			case MSG_SMARTCARD_IN: {
 				mIsSmartcardIn = true;
@@ -187,29 +178,49 @@ public class PlayerActivity extends Activity {
 		}
 	};
 
+	protected static final int DLG_ID_MEDIAINFO = 0;
+	protected static final int DLG_ID_SMARTCARDINFO = 1;
+	protected static final int DLG_ID_ALERT = 2;
+
+	private static final int ALERT_TYPE_ERRORINFO = 1;
+
+	protected static final int MSG_DIALOG_POPUP = 1;
+	protected static final int MSG_DIALOG_TIMEOUT = 500;
+
+	private static final int DLG_TIMEOUT = 3000;
+	Timer mDlgTimer = null;
+	TimerTask mTimeoutTask = null;
+
+	protected DbVideoInfoDlg mVideoInfoDlg = null;
+	protected GDAlertDialog mSmartcardDialog = null;
+	protected GDAlertDialog mAlertDlg = null;
+	protected int mErrorCode = -1;
+	protected int mAlertType = -1;
+
 	protected Dialog onCreateDialog(int id) {
 		Dialog dialog;
 		switch (id) {
-		case DLG_MEDIAINFO_POPUP: {
+		case DLG_ID_MEDIAINFO: {
 			mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
-			dialog = mVideoInfoDlg;
 			mVideoInfoDlg.setOnShowListener(mOnShowListener);
+			dialog = mVideoInfoDlg;
 			break;
 		}
-		case DLG_SMARTCARD_POPUP: {
+		case DLG_ID_SMARTCARDINFO: {
 			mSmartcardDialog = new GDAlertDialog(this, id);
-			mSmartcardDialog.setOnCreatedListener(mOnCreatedListener);
+			mSmartcardDialog.setOnShowListener(mOnShowListener);
+			mSmartcardDialog.setOnDismissListener(mOnDismissListener);
 			dialog = mSmartcardDialog;
-			mSmartcardDialog.setOnShowListener(mOnShowListener);
 			break;
 		}
-		case DLG_ERRORINFO: {
-			mErrorInfoDlg = new GDAlertDialog(this, id);
-			mErrorInfoDlg.setOnCreatedListener(mOnCreatedListener);
-			mSmartcardDialog.setOnShowListener(mOnShowListener);
-			dialog = mErrorInfoDlg;
+		case DLG_ID_ALERT: {
+			mAlertDlg = new GDAlertDialog(this, id);
+			mAlertDlg.setOnShowListener(mOnShowListener);
+			mAlertDlg.setOnDismissListener(mOnDismissListener);
+			dialog = mAlertDlg;
 			break;
 		}
+
 		default:
 			dialog = null;
 			break;
@@ -218,30 +229,23 @@ public class PlayerActivity extends Activity {
 		return dialog;
 	}
 
-	private static final int DLG_TIMEOUT = 3000;
-	GDAlertDialog mSmartcardDialog = null;
-	Timer mDlgTimer = null;
-	TimerTask mTimeoutTask = null;
-
 	protected void showSmartcardInfo(boolean plugIn) {
 
-		Log.d(TAG, " ==================showSmartcardInfo=================== ");
+		Log.d(TAG, " ================== showSmartcardInfo =================== ");
 
 		setOSDOn(true);
-
-		if (mSmartcardDialog == null) {
-			showDialog(DLG_SMARTCARD_POPUP);
-		} else {
-			buildSmartcardDlg();
-			mSmartcardDialog.show();
-		}
-
-		if (mIsSmartcardIn) {
-			hideDlgDelay();
-		}
+		showDialog(DLG_ID_SMARTCARDINFO);
 	}
-	
-	void buildSmartcardDlg() {
+
+	void showErrorInfoDlg(int errorCode) {
+		mErrorCode = errorCode;
+		mAlertType = ALERT_TYPE_ERRORINFO;
+
+		showDialog(DLG_ID_ALERT);
+	}
+
+	void setupSmartcardInfoDlg() {
+		mSmartcardDialog.setTitle(R.string.smartcard_status_title);
 		if (mIsSmartcardIn) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_in);
 		} else {
@@ -250,17 +254,60 @@ public class PlayerActivity extends Activity {
 		mSmartcardDialog.showSingleButton();
 	}
 
-	GDAlertDialog.OnCreatedListener mOnCreatedListener = new GDAlertDialog.OnCreatedListener() {
+	void setupErrorInfoDlg() {
+		String errorStr = PlayerErrorInfo.getErrorString(this.getResources(),
+				mErrorCode);
+		mAlertDlg.setMessage(errorStr);
+		mAlertDlg.showSingleButton();
+	}
+
+	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {
 
 		@Override
-		public void onCreated(GDAlertDialog dialog) {
-			if (dialog.getId() == DLG_SMARTCARD_POPUP) {
-				dialog.setTitle(R.string.smartcard_status_title);
-				buildSmartcardDlg();
-				dialog.setOnDismissListener(mDlgDismissListener);
-			} else if (dialog.getId() == DLG_ERRORINFO) {
-				buildErrorInfoDlg();
+		public void onShow(DialogInterface dialog) {
+			if (dialog instanceof DbVideoInfoDlg) {
+				if (mSmartcardDialog != null && mSmartcardDialog.isShowing()) {
+					Log.d(TAG, " ========= hide vido info dlg =====");
+					mVideoInfoDlg.dismiss();
+				}
+			} else if (dialog instanceof GDAlertDialog) {
+				if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
+					mVideoInfoDlg.dismiss();
+				}
+
+				GDAlertDialog alertDlg = (GDAlertDialog) dialog;
+
+				if (alertDlg.getId() == DLG_ID_SMARTCARDINFO) {
+					setupSmartcardInfoDlg();
+
+					if (mIsSmartcardIn) {
+						hideDlgDelay();
+					}
+				} else if (alertDlg.getId() == DLG_ID_ALERT) {
+					if (mAlertType == ALERT_TYPE_ERRORINFO) {
+						setupErrorInfoDlg();
+					}
+				}
 			}
+		}
+
+	};
+
+	DialogInterface.OnDismissListener mOnDismissListener = new DialogInterface.OnDismissListener() {
+
+		@Override
+		public void onDismiss(DialogInterface dialog) {
+			if (dialog instanceof GDAlertDialog) {
+				GDAlertDialog alertDlg = (GDAlertDialog) dialog;
+				if (alertDlg.getId() == DLG_ID_SMARTCARDINFO) {
+					if (!mIsSmartcardIn) {
+						exitPlayer();
+					}
+				} else if (alertDlg.getId() == DLG_ID_ALERT) {
+					exitPlayer();
+				}
+			}
+
 		}
 
 	};
@@ -306,77 +353,6 @@ public class PlayerActivity extends Activity {
 
 		mDlgTimer = new Timer();
 		mDlgTimer.schedule(mTimeoutTask, DLG_TIMEOUT);
-	}
-
-	DialogInterface.OnDismissListener mDlgDismissListener = new DialogInterface.OnDismissListener() {
-
-		@Override
-		public void onDismiss(DialogInterface dialog) {
-			if (dialog instanceof GDAlertDialog) {
-				GDAlertDialog alertDlg = (GDAlertDialog) dialog;
-				if (alertDlg.getId() == DLG_SMARTCARD_POPUP) {
-					if (!mIsSmartcardIn) {
-						exitPlayer();
-					}
-				} else if (alertDlg.getId() == DLG_ERRORINFO) {
-					exitPlayer();
-				}
-			}
-			
-		}
-
-	};
-	
-	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {
-
-		@Override
-		public void onShow(DialogInterface dialog) {
-			if (dialog instanceof DbVideoInfoDlg) {
-				if (mSmartcardDialog != null && mSmartcardDialog.isShowing()) {
-					dialog.dismiss();
-				}
-			} else if (dialog instanceof GDAlertDialog) {
-				if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
-					mVideoInfoDlg.dismiss();
-				}
-			}
-		}
-		
-	};
-
-	protected void smartcardPlugin(boolean plugIn) {
-
-	}
-
-	protected void smartcardResetOK() {
-
-	}
-
-	protected void setOSDOn(boolean on) {
-
-	}
-	
-	protected GDAlertDialog mErrorInfoDlg = null;
-	protected int mErrorCode = -1;
-	void buildErrorInfoDlg() {
-		String errorStr = PlayerErrorInfo.getErrorString(this.getResources(), mErrorCode);
-		mErrorInfoDlg.setMessage(errorStr);
-		mErrorInfoDlg.showSingleButton();
-		mErrorInfoDlg.setOnDismissListener(mDlgDismissListener);
-	}
-	
-	void showErrorInfoDlg(int errorCode) {
-		if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
-			mVideoInfoDlg.dismiss();
-		}
-
-		mErrorCode = errorCode;
-		if (mErrorInfoDlg == null) {
-			showDialog(DLG_ERRORINFO);
-		} else {
-			buildErrorInfoDlg();
-			mErrorInfoDlg.show();
-		}
 	}
 
 	public void initAngleTable() {
@@ -669,6 +645,18 @@ public class PlayerActivity extends Activity {
 	}
 
 	public void searchOk() {
+
+	}
+
+	protected void smartcardPlugin(boolean plugIn) {
+
+	}
+
+	protected void smartcardResetOK() {
+
+	}
+
+	protected void setOSDOn(boolean on) {
 
 	}
 
