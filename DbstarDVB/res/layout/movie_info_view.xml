@@ -6,17 +6,16 @@
 
     <TextView
         android:id="@+id/title_view"
-        android:layout_width="wrap_content"
+        android:layout_width="1000dp"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="20dp"
-        android:layout_marginRight="60dp"
         android:layout_marginTop="38dp"
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="#ffffff"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textStyle="bold" />
 
     <TextView
@@ -29,18 +28,18 @@
         android:layout_marginTop="38dp"
         android:background="@drawable/timeout_view_bg"
         android:gravity="center"
-        android:textColor="#ffffff"
-        android:textSize="22sp" />
+        android:textColor="#3ec0f2"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:id="@+id/metadata_view"
-        android:layout_width="fill_parent"
+        android:layout_width="1080dp"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@id/title_view"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="30dp"
-        android:layout_marginRight="20dp"
         android:orientation="vertical" >
 
         <LinearLayout
@@ -50,10 +49,10 @@
 
             <TextView
                 android:id="@+id/director_view"
-                android:layout_width="160dp"
+                android:layout_width="400dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="22sp" />
 
             <Space
                 android:layout_width="20dp"
@@ -61,10 +60,10 @@
 
             <TextView
                 android:id="@+id/scenarist_view"
-                android:layout_width="160dp"
+                android:layout_width="400dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="22sp" />
         </LinearLayout>
 
         <TextView
@@ -74,7 +73,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="#ffffff"
-            android:textSize="16sp" />
+            android:textSize="22sp" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -83,32 +82,32 @@
 
             <TextView
                 android:id="@+id/codeformat_view"
-                android:layout_width="80dp"
+                android:layout_width="220dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="22sp" />
 
             <Space
-                android:layout_width="100dp"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/bitrate_view"
-                android:layout_width="80dp"
+                android:layout_width="220dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="22sp" />
 
             <Space
-                android:layout_width="100dp"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/resolution_view"
-                android:layout_width="80dp"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="22sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -120,12 +119,14 @@
         android:layout_alignParentLeft="true"
         android:layout_below="@id/metadata_view"
         android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginRight="20dp"
         android:ellipsize="end"
         android:lineSpacingMultiplier="1.2"
         android:maxLines="3"
         android:textColor="#ffffff"
-        android:textSize="16sp" />
+        android:textSize="22sp" />
 
     <LinearLayout
         android:id="@+id/button_container"

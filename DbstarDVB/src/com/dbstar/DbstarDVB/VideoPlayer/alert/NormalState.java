@@ -201,13 +201,13 @@ public class NormalState extends TimerViewState {
 			if (mMediaData.Bitrate != null) {
 				bitrate += mMediaData.Bitrate;
 			}
-			mCodeformat.setText(bitrate);
+			mBitrate.setText(bitrate);
 			
 			String resolution = res.getString(R.string.property_resolution);
 			if (mMediaData.Resolution != null) {
 				resolution += mMediaData.Resolution;
 			}
-			mCodeformat.setText(resolution);
+			mResolution.setText(resolution);
 		}
 	}
 }
