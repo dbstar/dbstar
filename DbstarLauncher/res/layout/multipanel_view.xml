@@ -49,7 +49,7 @@
 
         <LinearLayout
             android:id="@+id/headers"
-            android:layout_width="400dp"
+            android:layout_width="240dp"
             android:layout_height="fill_parent"
             android:layout_marginLeft="0dp"
             android:layout_marginRight="10dp"
@@ -70,14 +70,14 @@
                 android:paddingBottom="8dp"
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp"
-                android:paddingTop="8dp"
+                android:paddingTop="20dp"
                 android:scrollbarAlwaysDrawVerticalTrack="true"
                 android:scrollbarStyle="outsideOverlay" />
         </LinearLayout>
 
         <FrameLayout
             android:id="@+id/frame"
-            android:layout_width="700dp"
+            android:layout_width="860dp"
             android:layout_height="fill_parent"
             android:background="@drawable/bg_white"
             android:visibility="gone" />

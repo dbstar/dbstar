@@ -66,7 +66,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	public static final int REQUESTTYPE_GETSMARTCARDINFO = 0x2005;
 	public static final int REQUESTTYPE_MANAGECA = 0x2006;
 	public static final int REQUESTTYPE_GETMAILCONTENT = 0x2007;
-	
+
 	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 0x3001;
 	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 0x3002;
 
@@ -129,6 +129,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	boolean mIsNetworkReady = false;
 
 	boolean mIsSmartcardIn = false;
+	boolean mIsSmartcardValid = false;
 
 	String mMacAddress = "";
 
@@ -136,7 +137,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	boolean mNeedUpgrade = false;
 
 	String mDefaultColumnIconFile = null;
-	
+
 	private PeripheralController mPeripheralController;
 	GDPowerManager mPowerManger;
 
@@ -614,16 +615,22 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			case GDCommon.MSG_SMARTCARD_IN: {
 				mIsSmartcardIn = true;
 				notifyDbstarServiceSDStatus();
-				notifySmartcardStatusChange(mIsSmartcardIn);
+				notifySmartcardStatusChange(mIsSmartcardIn, mIsSmartcardValid);
 				break;
 			}
 			case GDCommon.MSG_SMARTCARD_OUT: {
 				mIsSmartcardIn = false;
 				notifyDbstarServiceSDStatus();
-				notifySmartcardStatusChange(mIsSmartcardIn);
+				notifySmartcardStatusChange(mIsSmartcardIn, mIsSmartcardValid);
 				break;
 			}
 			
+			case GDCommon.MSG_SMARTCARD_INSERT_OK: {
+				mIsSmartcardValid = true;
+				
+				break;
+			}
+
 			case GDCommon.MSG_NEW_MAIL: {
 				notifyNewMail();
 				break;
@@ -636,9 +643,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	}
 
-	private void notifySmartcardStatusChange(boolean plugIn) {
+	private void notifySmartcardStatusChange(boolean plugIn, boolean valid) {
 		EventData.SmartcardStatus event = new EventData.SmartcardStatus();
 		event.isPlugIn = plugIn;
+		event.isValid = valid;
 		if (mPageOberser != null) {
 			mPageOberser.notifyEvent(EventData.EVENT_SMARTCARD_STATUS, event);
 		} else if (mApplicationObserver != null) {
@@ -647,7 +655,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 							: GDCommon.MSG_SMARTCARD_OUT, null);
 		}
 	}
-	
+
 	private void notifyNewMail() {
 		if (mPageOberser != null) {
 			mPageOberser.notifyEvent(EventData.EVENT_NEWMAIL, null);
@@ -893,14 +901,16 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 						coloumns[i].IconFocused = mDataModel
 								.getImage(iconRootPath + "/"
 										+ column.IconFocusedPath);
-						
+
 						if (coloumns[i].IconNormal == null) {
 							if (mDefaultColumnIconFile == null) {
-								mDefaultColumnIconFile = mDataModel.queryGlobalProperty(GDDVBDataContract.PropertyDefaultColumnIcon);
+								mDefaultColumnIconFile = mDataModel
+										.queryGlobalProperty(GDDVBDataContract.PropertyDefaultColumnIcon);
 							}
-							
+
 							coloumns[i].IconNormal = mDataModel
-									.getImage(iconRootPath + "/" + mDefaultColumnIconFile);
+									.getImage(iconRootPath + "/"
+											+ mDefaultColumnIconFile);
 						}
 					}
 
@@ -986,11 +996,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					value = task.Parameters.get(PARAMETER_CONTENTDATA);
 					ContentData content = (ContentData) value;
 					String file = getThumbnailFile(content);
-					
+
 					if (file != null && !file.isEmpty()) {
 						Bitmap image = mDataModel.getImage(file);
 						task.Data = image;
-	
+
 						taskFinished(task);
 					}
 					break;
@@ -1012,32 +1022,32 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					taskFinished(task);
 					break;
 				}
-				
+
 				case REQUESTTYPE_GETSMARTCARDINFO: {
 					int type = (Integer) task.Key;
-					
+
 					Object data = mDBStarClient.getSmartcardInfo(type);
-					
+
 					task.Data = data;
 					taskFinished(task);
 					break;
 				}
-				
+
 				case REQUESTTYPE_GETMAILCONTENT: {
 					String id = (String) task.Key;
-					
+
 					Object data = mDBStarClient.getEMailContent(id);
-					
+
 					task.Data = data;
 					taskFinished(task);
 					break;
 				}
-				
+
 				case REQUESTTYPE_MANAGECA: {
 					int type = (Integer) task.Key;
-					
+
 					String result = mDBStarClient.manageCA(type);
-					
+
 					task.Data = result;
 					taskFinished(task);
 					break;
@@ -1349,7 +1359,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		enqueueTask(task);
 	}
-	
+
 	public void getSmartcardInfo(ClientObserver observer, int type) {
 		RequestTask task = new RequestTask();
 		task.Observer = observer;
@@ -1358,7 +1368,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		enqueueTask(task);
 	}
-	
+
 	public void getMailContent(ClientObserver observer, String id) {
 		RequestTask task = new RequestTask();
 		task.Observer = observer;
@@ -1367,7 +1377,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		enqueueTask(task);
 	}
-	
+
 	public void manageCA(ClientObserver observer, int cmd) {
 		RequestTask task = new RequestTask();
 		task.Observer = observer;
@@ -1423,9 +1433,13 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		enqueueTask(task);
 	}
-	
+
 	public boolean isSmartcardPlugIn() {
 		return mIsSmartcardIn;
+	}
+	
+	public boolean isSmartcardValid() {
+		return mIsSmartcardValid;
 	}
 
 	private String getThumbnailFile(ContentData content) {
@@ -1762,7 +1776,21 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					mHandler.sendEmptyMessage(GDCommon.MSG_UPDATE_UIRESOURCE);
 					break;
 				}
-				
+
+				case DbstarServiceApi.DRM_SC_INSERT_OK: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_INSERT_OK);
+					break;
+				}
+				case DbstarServiceApi.DRM_SC_INSERT_FAILED: {
+					break;
+				}
+				case DbstarServiceApi.DRM_SC_REMOVE_OK: {
+					break;
+				}
+				case DbstarServiceApi.DRM_SC_REMOVE_FAILED: {
+					break;
+				}
+
 				case DbstarServiceApi.DRM_EMAIL_NEW: {
 					mHandler.sendEmptyMessage(GDCommon.MSG_NEW_MAIL);
 					break;
@@ -1869,8 +1897,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 
 	boolean notifyDbstarServiceNetworkStatus() {
-		Log.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started " + mIsDbServiceStarted);
-		
+		Log.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
+				+ mIsDbServiceStarted);
+
 		if (!mIsDbServiceStarted)
 			return false;
 
@@ -1885,13 +1914,14 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 
 	boolean notifyDbstarServiceStorageStatus() {
-		
-		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started " + mIsDbServiceStarted);
-		
+
+		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
+				+ mIsDbServiceStarted);
+
 		if (!mIsDbServiceStarted)
 			return false;
 
-		//TODO: At this point, the disk maybe not mount now.
+		// TODO: At this point, the disk maybe not mount now.
 		if (mIsStorageReady) {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT);
 		} else {
@@ -1902,9 +1932,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 
 	boolean notifyDbstarServiceSDStatus() {
-		
-		Log.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started " + mIsDbServiceStarted);
-		
+
+		Log.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
+				+ mIsDbServiceStarted);
+
 		if (!mIsDbServiceStarted)
 			return false;
 

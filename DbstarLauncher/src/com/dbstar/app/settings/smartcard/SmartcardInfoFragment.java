@@ -4,6 +4,7 @@ import com.dbstar.R;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.base.BaseFragment;
 import com.dbstar.app.base.FragmentObserver;
+import com.dbstar.model.EventData;
 import com.dbstar.model.ProductItem;
 
 import android.content.Context;
@@ -46,28 +47,36 @@ public class SmartcardInfoFragment extends BaseFragment {
 	// Request data at this point
 	public void serviceStart() {
 		mIsSmartcardIn = mService.isSmartcardPlugIn();
+		mIsSmartcardValid = mService.isSmartcardValid();
 		if (mIsSmartcardIn && mIsSmartcardValid) {
-			mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRM_SC_SN_READ);
-			mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRMLIB_VER_READ);
-			mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ);
-			mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ);
+			getSmartcardData();
 		}
+	}
+	
+	void getSmartcardData() {
+		mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRM_SC_SN_READ);
+		mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRMLIB_VER_READ);
+		mEngine.getSmartcardInfo(this,
+				DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ);
+		mEngine.getSmartcardInfo(this,
+				DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ);
 	}
 
 	// Receive data at this point
-	public void updateData(FragmentObserver observer, int type, Object key, Object data) {
+	public void updateData(FragmentObserver observer, int type, Object key,
+			Object data) {
 
 		if (observer != this || data == null)
 			return;
-		
+
 		int requestType = (Integer) key;
 		if (requestType == DbstarServiceApi.CMD_DRM_SC_SN_READ) {
 			mSmartcardSN = (String) data;
-			
+
 			updateSmartcardSN();
 		} else if (requestType == DbstarServiceApi.CMD_DRMLIB_VER_READ) {
 			mSmartcardVersion = (String) data;
-			
+
 			updateSmartcardVersion();
 		} else if (requestType == DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ) {
 			String[] ids = (String[]) data;
@@ -77,61 +86,80 @@ public class SmartcardInfoFragment extends BaseFragment {
 			}
 
 			mIDValues = new String[ids.length];
-			for (int i=0; i<ids.length ; i++) {
+			for (int i = 0; i < ids.length; i++) {
 				mIDValues[i] = ids[i];
 			}
 
 			updateSmartcardIds();
 		} else if (requestType == DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ) {
 			mProductItems = (ProductItem[]) data;
-			
+
 			updateProducts();
 		}
-		
+
 	}
 
 	// handle event at this point
 	public void notifyEvent(FragmentObserver observer, int type, Object event) {
 		if (observer != this)
 			return;
-		
-		//if (type == )
+
+		if (type == EventData.EVENT_SMARTCARD_STATUS) {
+			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
+			mIsSmartcardIn = status.isPlugIn;
+			mIsSmartcardValid = status.isValid;
+
+			updateSmartcardState();
+		}
 	}
-	
-	void updateSmartcardSN () {
+
+	void updateSmartcardSN() {
 		mSmartcardNumberView.setText(mSmartcardSN);
 	}
-	
+
 	void updateSmartcardVersion() {
 		mSmartcardVersionView.setText(mSmartcardVersion);
 	}
-	
+
 	void updateSmartcardState() {
 		if (!mIsSmartcardIn) {
 			mSmartcardStateView.setText(R.string.smarcard_state_not_in);
 		} else {
 			if (!mIsSmartcardValid) {
 				mSmartcardStateView.setText(R.string.smarcard_state_invalid);
+				clearSmartcardData();
 			} else {
 				mSmartcardStateView.setText(R.string.smarcard_state_normal);
+				getSmartcardData();
 			}
 		}
 	}
-	
+
 	void updateSmartcardIds() {
 		if (mIDValues == null || mIDValues.length == 0)
 			return;
 
-		for (int i=0; i< mIDValues.length ; i++) {
+		for (int i = 0; i < mIDValues.length; i++) {
 			mEignevalueIDView[i].setText(mIDValues[i]);
 		}
 	}
-	
+
 	void updateProducts() {
 		if (mProductItems == null && mProductItems.length == 0)
 			return;
-		
+
 		mAdapter.setDataSet(mProductItems);
+		mAdapter.notifyDataSetChanged();
+	}
+
+	void clearSmartcardData() {
+		mSmartcardNumberView.setText("");
+		mSmartcardVersionView.setText("");
+		for (int i = 0; i < mIDValues.length; i++) {
+			mEignevalueIDView[i].setText("");
+		}
+		
+		mAdapter.setDataSet(null);
 		mAdapter.notifyDataSetChanged();
 	}
 

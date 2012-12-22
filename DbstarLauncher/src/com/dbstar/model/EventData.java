@@ -24,6 +24,12 @@ public class EventData {
 	
 	public static class SmartcardStatus {
 		public boolean isPlugIn;
+		public boolean isValid;
+		
+		public SmartcardStatus() {
+			isPlugIn = false;
+			isValid = false;
+		}
 	}
 	
 	public static class NewMail {

@@ -35,6 +35,7 @@ public class GDCommon {
 	
 	public static final int MSG_SMARTCARD_IN = 0x40001;
 	public static final int MSG_SMARTCARD_OUT = 0x40002;
+	public static final int MSG_SMARTCARD_INSERT_OK = 0x40003;
 	
 	public static final int MSG_NEW_MAIL = 0x50001;
 	
