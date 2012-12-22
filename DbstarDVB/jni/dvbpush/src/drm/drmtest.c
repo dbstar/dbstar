@@ -7,97 +7,119 @@
 #include "prodrm20.h"
 #include "common.h"
 
-#define DRM_TEST_TS_FILE "/mnt/sda1/dbstar/pushroot/drmfile/154/111.ts"
-#define DRM_TEST_TS_OK_FILE "/mnt/sda1/dbstar/pushroot/drmfile/154/111_ok.ts"
-#define DRM_TEST_DRM_FILE "/mnt/sda1/dbstar/pushroot/drmfile/154/154.drm"
-//#define DRM_BUFF_LEN 128*1024
+#define debug printf
+//#define debug PRINTF
+
+#define BASE_PATH "/mnt/sdb1/"
+#define TS_FILE "/mnt/sda1/dbstar/pushroot_bk/pushfile/105/content/D0018-0825-E1.ts"
+#define DRMTS_FILE "/mnt/sda1/dbstar/pushroot_bk/pushfile/105/content/D0018-0825-E1.ts"
+#define DRM_FILE "/mnt/sda1/dbstar/pushroot_bk/drm_10G_test/5.drm"
+
+
 #define DRM_BUFF_LEN 150000
-static char pbyBuffer[DRM_BUFF_LEN];
+static char buff[DRM_BUFF_LEN];
+static char filename[256];
 
 int main(int argc, char **argv)
 {
-	int fp1, fp2, fp3;
+	int fd1, fd2, fd3, fdw;
 	int ret= 0, total_len = 0;
 	int i = 0;
 	int posk = 0;
 	int pos = 0;
 	int read_cnt = 10;
-	int pdwBufferLen = DRM_BUFF_LEN;
+	int len = 0;
+	long long seek = 0;
+	long long offset = 0;
 
+	if (argc != 3) {
+		debug("drmtest [pos] [len] \n");
+		return -1;
+	}
+	seek = atoll(argv[1]);
+	len = atoi(argv[2]);
+	posk = seek/1024;
+	pos = seek%1024;
+	debug("** posk=%d, pos=%d, seek=%lld, len=%d\n", posk, pos, seek, len);
 
 	if (CDCASTB_Init(0)) { //初始化drm库
-		PRINTF("DRM Init successful!!!!!!\n");
+		debug("DRM Init successful!!!!!!\n");
 	} else {
-		PRINTF("DRM Init failure!!!!!!!!!!\n");
+		debug("DRM Init failure!!!!!!!!!!\n");
 	}
 
 	if (CDCASTB_SCInsert()) { //初始化smart card
-		PRINTF("CARD inserted!!!!!!!!!\n");
+		debug("CARD inserted!!!!!!!!!\n");
 	} else {
-		PRINTF("CARD out!!!!!!!!!!!!\n");
+		debug("CARD out!!!!!!!!!!!!\n");
 	}
 
-	//CDCASTB_SetEmmPid(0x64);  //设置EMM滤波器
+	sleep(6);
+	debug(">>>>>>>>>>>>>>>>>\n");
 
-	sleep(10);
-	PRINTF(">>>>>>>>>>>>>>>>>\n");
-
-	if ((fp1 = open(DRM_TEST_TS_FILE, O_RDONLY)) == -1) { //打开加密的视频文件
-		PRINTF("open encrypted ts file(%s) failed\n", DRM_TEST_TS_FILE);
+	if ((fd1 = open(DRMTS_FILE, O_RDONLY)) == -1) { //打开加密的视频文件
+		debug("open encrypted ts file(%s) failed\n", DRMTS_FILE);
 		return -1;
 	}
 	else
-		PRINTF("open encrypted ts file: %s\n", DRM_TEST_TS_FILE);
+		debug("open encrypted ts file: %s\n", DRMTS_FILE);
 
-	if ((fp2 = open(DRM_TEST_DRM_FILE, O_RDONLY)) == -1) { //打开授权文件
-		PRINTF("open drm file(%s) failed\n", DRM_TEST_DRM_FILE);
+	if ((fd2 = open(DRM_FILE, O_RDONLY)) == -1) { //打开授权文件
+		debug("open drm file(%s) failed\n", DRM_FILE);
 		return -1;
 	}
 	else
-		PRINTF("open drm file: %s\n", DRM_TEST_DRM_FILE);
+		debug("open drm file: %s\n", DRM_FILE);
 
-	if ((fp3 = open(DRM_TEST_TS_OK_FILE, O_WRONLY)) == -1) {
-		PRINTF("open output file(%s) failed\n", DRM_TEST_TS_OK_FILE);
+	if ((fd3 = open(TS_FILE, O_RDONLY)) == -1) {
+		debug("open output file(%s) failed\n", TS_FILE);
 		return -1;
 	}
 	else
-		PRINTF("open output file: %s\n", DRM_TEST_TS_OK_FILE);
+		debug("open output file: %s\n", TS_FILE);
 
-	ret = CDCASTB_DRM_OpenFile((const void*)&fp1, (const void*)&fp2); //DRM库打开文件，同时验证授权，如果返回0，表示有授权，否则，会有不同提示
-	PRINTF("@@@@@@@@@@@@@ CDCASTB_DRM_OpenFile() [%d]\n", ret);
-
-#if 1
-	while (pdwBufferLen > 0) {
-		ret = CDCASTB_DRM_ReadFile((const void*)&fp1, pbyBuffer, &pdwBufferLen); //读解密后的数据
-		total_len += pdwBufferLen;
-		printf("read file [%d][%d], total_len=[%d]\n", ret, pdwBufferLen, total_len);
-		ret = write(fp3, pbyBuffer, pdwBufferLen);
-		printf("write file [%d][%d], total_len=[%d]\n", ret, pdwBufferLen, total_len);
-	}
-#endif
+	ret = CDCASTB_DRM_OpenFile((const void*)&fd1, (const void*)&fd2); //DRM库打开文件，同时验证授权，如果返回0，表示有授权，否则，会有不同提示
+	debug("@@@@@@@@@@@@@ CDCASTB_DRM_OpenFile() [%d]\n", ret);
 
 #if 0
-	posk = 0;
-	pos = 500;
-	printf("@@@@@@@@@@@@@ CDCASTB_DRM_SeekFilePos(%d, %d)=%d\n", posk, pos, ret);
-	ret = CDCASTB_DRM_SeekFilePos((const void*)&fp1, posk, pos);
-	ret = CDCASTB_DRM_ReadFile((const void*)&fp1, pbyBuffer, &pdwBufferLen);
-	printf("CDCASTB_DRM_ReadFile()=%d, len=[%d]\n", ret, pdwBufferLen);
-
-	//436547547
-	posk = 426169;
-	pos = 546;
-	printf("@@@@@@@@@@@@@ CDCASTB_DRM_SeekFilePos(%d, %d)=%d\n", posk, pos, ret);
-	ret = CDCASTB_DRM_SeekFilePos((const void*)&fp1, posk, pos);
-	ret = CDCASTB_DRM_ReadFile((const void*)&fp1, pbyBuffer, &pdwBufferLen);
-	printf("CDCASTB_DRM_ReadFile()=%d, len=[%d]\n", ret, pdwBufferLen);
+	while (len > 0) {
+		ret = CDCASTB_DRM_ReadFile((const void*)&fd1, buff, &len); //读解密后的数据
+		total_len += len;
+		debug("read file [%d][%d], total_len=[%d]\n", ret, len, total_len);
+		ret = write(fd3, buff, len);
+		debug("write file [%d][%d], total_len=[%d]\n", ret, len, total_len);
+	}
 #endif
 
-	close(fp3);
-	close(fp2);
-	close(fp1);
+#if 1
+	debug("@@@@@@@@@@@@@ CDCASTB_DRM_SeekFilePos(%d, %d)=%d\n", posk, pos, ret);
+	ret = CDCASTB_DRM_SeekFilePos((const void*)&fd1, posk, pos);
+	ret = CDCASTB_DRM_ReadFile((const void*)&fd1, buff, &len);
+	sprintf(filename, "%s/pos-%lld_len%d_drmts.ts", BASE_PATH, seek, len);
+	debug("CDCASTB_DRM_ReadFile()=%d, len=[%d]\n", ret, len);
+	if ((fdw = open(filename, O_WRONLY | O_CREAT)) > 0) {
+		ret = write(fdw, buff, len);
+		debug("write(%d) to %s OK\n", ret, filename);
+		close(fdw);
+	}
+
+	offset = lseek64(fd3, seek,  SEEK_SET);
+	debug("@@@@@@@@@@@@@ lseek64(%lld)=%lld\n", seek, offset);
+	len = read(fd3, buff, len);
+	debug("read(%d)=%d\n", len, ret);
+	sprintf(filename, "%s/pos-%lld_len%d_ts.ts", BASE_PATH, seek, len);
+	if ((fdw = open(filename, O_WRONLY | O_CREAT)) > 0) {
+		ret = write(fdw, buff, len);
+		debug("write(%d) to %s OK\n", ret, filename);
+		close(fdw);
+	}
+#endif
+
+	close(fd3);
+	close(fd2);
+	close(fd1);
 	
-	PRINTF("drm test finish\n");
+	debug("drm test finish\n");
 
 	return ret;
 }
