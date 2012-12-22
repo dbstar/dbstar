@@ -805,7 +805,11 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
                           CDCA_U32    dwOffsetKByte,
                           CDCA_U32    dwOffsetByte)
 {
-	LOGD("seek the file ori=[%d] posk=[%lu] pos=[%lu] \n", byOrigin, dwOffsetKByte, dwOffsetByte);
+	long long posk = (long long)dwOffsetKByte;
+	long long posb = (long long)dwOffsetByte;
+	long long offset = 1024 * posk + posb;
+	LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] seekpos=[%llu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, 1024 * dwOffsetKByte + dwOffsetByte);
+	LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] offset=[%llu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, offset);
 
 	if (*(int *)pFileHandle < 0) {
 		return CDCA_FALSE;
@@ -813,21 +817,22 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 	
 	LOGD("%s *(int *)pFileHandle=%d\n", __FUNCTION__,*(int *)pFileHandle);
 	if (byOrigin == CDCA_SEEK_SET) {
-		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_SET)<0) {
+		if (offset = lseek64(*(int *)pFileHandle, offset, SEEK_SET)<0) {
 			LOGD("!!!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_SET!!fseek error\n");
 			return CDCA_FALSE;
 		}
+		LOGD("++++++ lseek64(%lld)=[%lld]\n", 1024 * dwOffsetKByte + dwOffsetByte, offset);
 	} else if (byOrigin == CDCA_SEEK_CUR_BACKWARD) {
-		if (lseek64(*(int *)pFileHandle, 1024 * dwOffsetKByte + dwOffsetByte, SEEK_CUR)<0) {
+		if (lseek64(*(int *)pFileHandle, offset, SEEK_CUR)<0) {
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_CUR_FORWARD) {
-		if (lseek64(*(int *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_CUR)<0) {
+		if (lseek64(*(int *)pFileHandle, -offset, SEEK_CUR)<0) {
 			LOGD("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_CUR_FORWARD!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_END) {
-		if (lseek64(*(int *)pFileHandle, -(1024 * dwOffsetKByte + dwOffsetByte), SEEK_END)<0) {
+		if (lseek64(*(int *)pFileHandle, -offset, SEEK_END)<0) {
 			LOGD("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_END!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
