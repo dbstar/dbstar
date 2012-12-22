@@ -11,11 +11,11 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="20dp"
-        android:layout_marginTop="38dp"
+        android:layout_marginTop="30dp"
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="#ffffff"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:textStyle="bold" />
 
     <TextView
@@ -29,7 +29,7 @@
         android:background="@drawable/timeout_view_bg"
         android:gravity="center"
         android:textColor="#3ec0f2"
-        android:textSize="22sp"
+        android:textSize="16sp"
         android:textStyle="bold" />
 
     <LinearLayout
@@ -39,7 +39,7 @@
         android:layout_alignParentLeft="true"
         android:layout_below="@id/title_view"
         android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="20dp"
         android:orientation="vertical" >
 
         <LinearLayout
@@ -52,7 +52,7 @@
                 android:layout_width="400dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
-                android:textSize="22sp" />
+                android:textSize="16sp" />
 
             <Space
                 android:layout_width="20dp"
@@ -63,7 +63,7 @@
                 android:layout_width="400dp"
                 android:layout_height="wrap_content"
                 android:textColor="#ffffff"
-                android:textSize="22sp" />
+                android:textSize="16sp" />
         </LinearLayout>
 
         <TextView
@@ -73,7 +73,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="#ffffff"
-            android:textSize="22sp" />
+            android:textSize="16sp" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -82,32 +82,38 @@
 
             <TextView
                 android:id="@+id/codeformat_view"
-                android:layout_width="220dp"
+                android:layout_width="320dp"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
                 android:textColor="#ffffff"
-                android:textSize="22sp" />
+                android:textSize="16sp" />
 
             <Space
-                android:layout_width="80dp"
+                android:layout_width="10dp"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/bitrate_view"
-                android:layout_width="220dp"
+                android:layout_width="320dp"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
                 android:textColor="#ffffff"
-                android:textSize="22sp" />
+                android:textSize="16sp" />
 
             <Space
-                android:layout_width="80dp"
+                android:layout_width="10dp"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/resolution_view"
-                android:layout_width="200dp"
+                android:layout_width="280dp"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
                 android:textColor="#ffffff"
-                android:textSize="22sp" />
+                android:textSize="16sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -118,15 +124,15 @@
         android:layout_above="@+id/button_container"
         android:layout_alignParentLeft="true"
         android:layout_below="@id/metadata_view"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
+        android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
         android:ellipsize="end"
         android:lineSpacingMultiplier="1.2"
         android:maxLines="3"
         android:textColor="#ffffff"
-        android:textSize="22sp" />
+        android:textSize="16sp" />
 
     <LinearLayout
         android:id="@+id/button_container"
