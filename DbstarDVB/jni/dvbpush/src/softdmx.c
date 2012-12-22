@@ -4,6 +4,10 @@
 #include <string.h>
 #include <pthread.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
 #include "common.h"
 #include "softdmx.h"
 #include "prodrm20.h"
@@ -15,6 +19,7 @@
 Channel_t chanFilter[MAX_CHAN_FILTER+1];
 int max_filter_num = 0;
 int loader_dsc_fid;
+int tdt_dsc_fid = -1;;
 LoaderInfo_t g_loaderInfo;
 static pthread_t loaderthread = 0;
 static int loaderAction = 0;
@@ -27,6 +32,8 @@ static unsigned char software_version[4];
 extern int TC_loader_get_push_state(void);
 extern int TC_loader_get_push_buf_size(void);
 extern unsigned char * TC_loader_get_push_buf_pointer(void);
+
+int TC_loader_filter_handle(int aof);
 
 #define UPGRADEFILE_ALL "/tmp/upgrade.zip"
 #define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
@@ -573,6 +580,39 @@ patch0:
 		}
 		DEBUG("maxSeq=%d, lastSeq=%d, seq=%d, startWrite=%d, totalLen=%d, total_loader=%d\n", maxSeq, lastSeq, seq, startWrite, totalLen, total_loader);
 	}
+}
+
+void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_data)
+{
+    int year,month,day;
+    int mjd;
+    char tdt[64];
+
+    if (len < 8)
+    {
+        return;
+    }
+    
+    mjd = (int)((data[3]<<8)|data[4]);
+    year = (int)((mjd -15078.2)/365.25);
+    month = (int)((mjd - 14956.1 - (int)(year*365.25))/30.6001);
+    day   = mjd - 14956 - (int)(year*365.25) - (int)(month*30.6001);
+    if ((month == 14)||(month == 15))
+    {
+        year += 1;
+        month -= 13; 
+    }
+    else
+    {
+        month -= 1;
+    }
+    
+    snprintf(tdt,sizeof(tdt),"%4d-%2d-%2d %2x:%2x:%2x",year+1900,month,day,data[5],data[6],data[7]);
+    msg_send2_UI(TDT_TIME_SYNC, tdt, strlen(tdt));
+    
+	TC_free_filter(tdt_dsc_fid);
+	DEBUG("catch tdt time(%s) and free tdt_dsc_fid(%d)\n",tdt,tdt_dsc_fid);
+	tdt_dsc_fid = -1;
 }
 
 void ca_section_handle(int fid, const unsigned char *data, int len, void *user_data)

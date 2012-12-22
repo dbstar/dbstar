@@ -531,6 +531,7 @@ void *push_monitor_thread()
 	char sqlite_cmd[256];
 	char time_stamp[32];
 	int monitor_interval = 61;
+	unsigned int loop_cnt = 0;
 	
 	while (1==s_monitor_running)
 	{
@@ -569,6 +570,17 @@ void *push_monitor_thread()
 		else{
 			if(need_push_monitor()>0)
 				push_recv_manage_refresh(2,time_stamp);
+		}
+		
+		// 每隔12个小时，打开tdt pid进行时间同步，这里只是借用了monitor这个低频循环。
+		loop_cnt ++;
+		if(loop_cnt>(12*60)){
+			time_t timep;
+			struct tm *p_tm;
+			timep = time(NULL);
+			p_tm = localtime(&timep); /*获取本地时区时间*/ 
+			DEBUG("it's time to awake tdt time sync, %4d-%2d-%2d %2d:%2d:%2d\n", (p_tm->tm_year+1900), (p_tm->tm_mon+1), p_tm->tm_mday, p_tm->tm_hour, p_tm->tm_min, p_tm->tm_sec);
+			tdt_time_sync_awake();
 		}
 	}
 	DEBUG("exit from push monitor thread\n");

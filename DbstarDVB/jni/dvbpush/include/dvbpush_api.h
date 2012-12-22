@@ -39,19 +39,6 @@ typedef enum {
 
 	CMD_MAX                         = 0x0FFFF,
 
-	MSG_MARQUEE                     = 0x10000,    // 跑马灯
-	MSG_UPGRADE                     = 0x20000,    // 升级成功
-	MSG_STATUS						= 0x30000,    // 信息状态提示
-	MSG_ERROR                       = 0x40000,    // 错误提示
-
-	STATUS_DVBPUSH_INIT_FAILED      = 0x30010,    // dvbpush初始化失败
-	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011,    // dvbpush初始化成功
-	STATUS_DATA_SIGNAL_ON			= 0x30012,    // 信号正常，即有ts流
-	STATUS_DATA_SIGNAL_OFF			= 0x30013,    // 无信号，即无ts流
-	STATUS_COLUMN_REFRESH			= 0x30014,    // 动态栏目发生更新
-	STATUS_PREVIEW_REFRESH			= 0x30015,    // 首页小片发生更新
-	STATUS_INTERFACE_REFRESH		= 0x30016,    // 界面产品发生更新
-	
 	UPGRADE_NEW_VER                 = 0x20001,     // 有新版本到来，用户选择升级
 	UPGRADE_NEW_VER_FORCE           = 0x20002,     // 有新版本到来，强制升级
 	
@@ -64,6 +51,15 @@ typedef enum {
 	DRM_EMAIL_SPACEEXHAUST			= 0x20106,    // DRM 邮箱已满
 	DRM_OSD_SHOW					= 0x20107,    // DRM OSD需要显示
 	DRM_OSD_HIDE					= 0x20108,    // DRM OSD需要隐藏
+	
+	STATUS_DVBPUSH_INIT_FAILED      = 0x30010,    // dvbpush初始化失败
+	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011,    // dvbpush初始化成功
+	STATUS_DATA_SIGNAL_ON			= 0x30012,    // 信号正常，即有ts流
+	STATUS_DATA_SIGNAL_OFF			= 0x30013,    // 无信号，即无ts流
+	STATUS_COLUMN_REFRESH			= 0x30014,    // 动态栏目发生更新
+	STATUS_PREVIEW_REFRESH			= 0x30015,    // 首页小片发生更新
+	STATUS_INTERFACE_REFRESH		= 0x30016,    // 界面产品发生更新
+	TDT_TIME_SYNC					= 0x30017,    // 将TDT表中获取的时间上报给UI，用于时间同步
 	
 }DBSTAR_CMD_MSG_E;
 

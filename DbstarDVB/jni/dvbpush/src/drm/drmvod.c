@@ -45,7 +45,7 @@ static int drmvod_close(URLContext *h);
 static int drmvod_write(URLContext *h, unsigned char *buf, int size);
 static int64_t drmvod_seek(URLContext *h, int64_t pos, int whence);
 static int drmvod_get_file_handle(URLContext *h);
-extern int set_player_errno(int errno);
+extern int set_player_errno(int err);
 
 URLProtocol drmvod_protocol = {
 	"drmvod",

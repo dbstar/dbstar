@@ -42,6 +42,7 @@ static int p_read;
 static int p_write;
 static unsigned char *p_buf = NULL;
 extern int loader_dsc_fid;
+extern int tdt_dsc_fid;
 
 static pthread_mutex_t mtx_getip = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_getip = PTHREAD_COND_INITIALIZER;
@@ -578,22 +579,24 @@ int softdvb_init()
 	
 	chanFilterInit();
 	
-	// prog/file
+	// xml 根pid
 	unsigned short root_pid = root_channel_get();
 	int filter1 = alloc_filter(root_pid, 0);
-	DEBUG("set dvb filter1, pid=%d, fid=%d\n", root_pid, filter1);
+	DEBUG("set dvb filter, pid=%d, fid=%d\n", root_pid, filter1);
 	
+	// 升级pid
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0xf0;
 	param.mask[0] = 0xff;
 	loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 0);
-	DEBUG("set upgrade filter1, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
+	DEBUG("set upgrade filter, pid=0x1ff0, fid=%d\n", loader_dsc_fid);
 	
+	// ca pid
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0x1;
 	param.mask[0] = 0xff;
 	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
-	DEBUG("set ca filter1, pid=0x1, fid=%d\n", ca_dsc_fid);
+	DEBUG("set ca filter, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
 #ifdef PUSH_LOCAL_TEST
 	// prog/video
@@ -616,6 +619,8 @@ int softdvb_init()
 		return -1;
 	}
 #endif
+	
+	tdt_time_sync_awake();
 	
 	if(0==pthread_create(&pth_softdvb_id, NULL, softdvb_thread, NULL)){
 		//pthread_detach(pth_softdvb_id);
@@ -665,4 +670,22 @@ int softdvb_uninit()
 #endif
 
 	return ret;
+}
+
+// TDT 时间同步
+int tdt_time_sync_awake()
+{
+	if(-1==tdt_dsc_fid){
+		Filter_param param;
+		
+		memset(&param,0,sizeof(param));
+		param.filter[0] = 0x70;
+		param.mask[0] = 0xff;
+		tdt_dsc_fid=TC_alloc_filter(0x0014, &param, tdt_section_handle, NULL, 0);
+		DEBUG("set tdt filter, pid=0x0014, fid=%d\n", tdt_dsc_fid);
+	}
+	else
+		DEBUG("tdt_dsc_fid(%d) is already in use, waiting for next try\n",tdt_dsc_fid);
+	
+	return 0;
 }

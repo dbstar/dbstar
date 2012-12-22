@@ -2596,7 +2596,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				*/
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='%d' AND ColumnType!='%d';", COLUMN_MYCENTER, COLUMN_SETTING);
 				sqlite_transaction_exec(sqlite_cmd);
-				s_column_SequenceNum = 0;
+				s_column_SequenceNum = 10;	// 允许一些内置的栏目排在下发栏目之前，故SequenceNum从10计起
 						
 				DBSTAR_COLUMN_S column_s;
 				memset(&column_s, 0, sizeof(column_s));

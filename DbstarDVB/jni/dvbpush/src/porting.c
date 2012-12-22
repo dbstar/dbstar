@@ -755,7 +755,7 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	
 }
 
-#define ENTITLE_STORE "/sdcard/external_sdcard/sc_entitle"
+#define ENTITLE_STORE "/mnt/sdcard/external_sdcard/sc_entitle"
 static int smartcard_EntitleFile_output()
 {
 	char CardSN[CDCA_MAXLEN_SN+1];
@@ -778,7 +778,7 @@ static int smartcard_EntitleFile_output()
 			close(fd);
 		}
 		else{
-			DEBUG("open %s to save entitle failed\n", ENTITLE_STORE);
+			ERROROUT("open %s to save entitle failed\n", ENTITLE_STORE);
 			ret = -1;
 		}
 	}
@@ -892,7 +892,7 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 	CDCA_U32 dwNum = 8;
 	char		BeginDate[64];
 	char		ExpireDate[64];
-	int i = 0;
+	CDCA_U32 i = 0;
 	
 	char sqlite_cmd[256];
 	char DRMFile[256];
@@ -924,9 +924,9 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 							;
 						}
 						if(0==i)
-							snprintf(buf,size,"%d\t%d\t%s\t%s",ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
+							snprintf(buf,size,"%d\t%lu\t%s\t%s",ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
 						else
-							snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%d\t%s\t%s",ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
+							snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%lu\t%s\t%s",ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
 					}
 				}
 				DEBUG("%s\n", buf);
@@ -1550,6 +1550,8 @@ int special_productid_check(char *productid)
 {
 	if(NULL==productid)
 		return -1;
+	
+	DEBUG("productid=%s, s_special_ProductID=%s\n", productid,s_special_ProductID);
 	
 	if(0==strcmp(productid, s_special_ProductID))
 		return 0;
