@@ -655,7 +655,7 @@ static int drmlib_version_get(char *buf, unsigned int size)
 	return 0;
 }
 
-#if 0
+#if 1
 static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 {
 	if(NULL==buf || 0==size){
@@ -1045,7 +1045,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("CMD_DRMLIB_VER_READ\n");
 			drmlib_version_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
-#if 0
+#if 1
 		case CMD_DRM_SC_EIGENVALUE_READ:
 			DEBUG("CMD_DRM_SC_EIGENVALUE_READ\n");
 			smartcard_eigenuvalue_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
