@@ -112,6 +112,7 @@
     <string name="smartcard_status_title">智能卡</string>
     <string name="smartcard_status_in">智能卡已经插入！</string>
     <string name="smartcard_status_out">请插入智能卡!</string>
+    <string name="smartcard_status_invlid">智能卡无效，请检查智能卡！</string>
 
     <!-- Smartcard settings -->
     <string name="smartcard_info">智能卡信息</string>

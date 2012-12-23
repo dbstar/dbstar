@@ -6,6 +6,7 @@ import java.util.TimerTask;
 import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
 import com.dbstar.model.EventData;
+import com.dbstar.model.GDCommon;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.service.GDDataProviderService.DataProviderBinder;
@@ -33,7 +34,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	private static final String TAG = "GDBaseActivity";
 
 	protected static final int DLG_ID_ALERT = 0;
-	
+
 	protected static final int DLG_TYPE_FILE_NOTEXIST = 0;
 	protected static final int DLG_TYPE_SMARTCARD_INFO = 1;
 	protected static final int DLG_TYPE_NEWMAIL_INFO = 2;
@@ -49,8 +50,17 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	// Menu path container view
 	protected ViewGroup mMenuPathContainer;
 
-	protected boolean mIsSmartcardIn = false;
 	protected boolean mIsStopped = false;
+	protected boolean mSmartcardPopup = false; // true to allow activity show alert
+	protected int mSmartcardState = GDCommon.SMARTCARD_STATE_NONE;
+
+	protected boolean isSmartcardReady() {
+		if (mService != null) {
+			return mService.isSmartcardPlugIn();
+		}
+
+		return false;
+	}
 
 	protected class MenuPathItem {
 		TextView sTextView;
@@ -70,9 +80,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_SMARTCARD_STATUSCHANGED: {
-				boolean plugIn = msg.arg1 == MSG_SMARTCARD_PLUGIN ? true
-						: false;
-				alertSmartcardInfo(plugIn);
+				alertSmartcardInfo();
 				break;
 			}
 			case MSG_NEW_MAIL: {
@@ -243,7 +251,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		Log.d(TAG, "onServiceStart");
 
 		mService.registerPageObserver(this);
-		mIsSmartcardIn = mService.isSmartcardPlugIn();
 	}
 
 	protected void onServiceStop() {
@@ -263,14 +270,12 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	public void notifyEvent(int type, Object event) {
 		if (type == EventData.EVENT_SMARTCARD_STATUS) {
 			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
-			boolean plugIn = status.isPlugIn;
-			mIsSmartcardIn = plugIn;
-			
-			if (mIsStopped) {
-				return;
+			mSmartcardState = status.State;
+
+			if (!mIsStopped && !mSmartcardPopup) {
+				notifySmartcardStatusChanged();
 			}
 
-			notifySmartcardStatusChanged(plugIn);
 		} else if (type == EventData.EVENT_NEWMAIL) {
 			notifyNewMail();
 		}
@@ -354,12 +359,12 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			if (dialog instanceof GDAlertDialog) {
 				displayAlertDlg((GDAlertDialog) dialog, mAlertType);
 			}
-			
+
 		}
 	};
-	
+
 	void displayAlertDlg(GDAlertDialog dialog, int type) {
-		switch(mAlertType) {
+		switch (type) {
 		case DLG_TYPE_FILE_NOTEXIST: {
 			dialog.setTitle(R.string.error_title);
 			dialog.setMessage(R.string.file_notexist);
@@ -368,12 +373,17 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		}
 		case DLG_TYPE_SMARTCARD_INFO: {
 			dialog.setTitle(R.string.smartcard_status_title);
-			if (mIsSmartcardIn) {
-				dialog.setMessage(R.string.smartcard_status_in);
-			} else {
-				dialog.setMessage(R.string.smartcard_status_out);
-			}
 			dialog.showSingleButton();
+
+			if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
+				dialog.setMessage(R.string.smartcard_status_in);
+			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTFAILED) {
+				dialog.setMessage(R.string.smartcard_status_invlid);
+			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {
+				dialog.setMessage(R.string.smartcard_status_out);
+			} else {
+				dialog = null;
+			}
 			break;
 		}
 		case DLG_TYPE_NEWMAIL_INFO: {
@@ -383,26 +393,24 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			break;
 		}
 		}
-		
-		dialog.mOkButton.requestFocus();
+
+		if (dialog != null) {
+			dialog.mOkButton.requestFocus();
+		}
 	}
 
 	private static final int DLG_TIMEOUT = 3000;
 	protected static final int MSG_SMARTCARD_STATUSCHANGED = 0x80001;
-	protected static final int MSG_SMARTCARD_PLUGIN = 0;
-	protected static final int MSG_SMARTCARD_PLUGOUT = 1;
-	
+
 	protected static final int MSG_NEW_MAIL = 2;
 
 	Timer mDlgTimer = null;
 	TimerTask mTimeoutTask = null;
 
-	protected void notifySmartcardStatusChanged(boolean plugIn) {
-		Message message = mHandler.obtainMessage(MSG_SMARTCARD_STATUSCHANGED);
-		message.arg1 = plugIn ? MSG_SMARTCARD_PLUGIN : MSG_SMARTCARD_PLUGOUT;
-		mHandler.sendMessage(message);
+	protected void notifySmartcardStatusChanged() {
+		mHandler.sendEmptyMessage(MSG_SMARTCARD_STATUSCHANGED);
 	}
-	
+
 	protected void notifyNewMail() {
 		mHandler.sendEmptyMessage(MSG_NEW_MAIL);
 	}
@@ -415,7 +423,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mAlertDlg.show();
 		}
 	}
-	
+
 	protected void alertNewMail() {
 		if (mAlertDlg == null) {
 			mAlertType = DLG_TYPE_NEWMAIL_INFO;
@@ -424,8 +432,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mAlertDlg.show();
 		}
 	}
-	
-	protected void alertSmartcardInfo(boolean plugIn) {
+
+	protected void alertSmartcardInfo() {
 		if (mAlertDlg == null) {
 			mAlertType = DLG_TYPE_SMARTCARD_INFO;
 			showDialog(DLG_ID_ALERT);
@@ -433,7 +441,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mAlertDlg.show();
 		}
 
-		if (mIsSmartcardIn) {
+		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
 			hideDlgDelay();
 		}
 	}

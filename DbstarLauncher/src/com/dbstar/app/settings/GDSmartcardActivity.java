@@ -2,10 +2,18 @@ package com.dbstar.app.settings;
 
 import java.util.List;
 
+import android.os.Bundle;
+
 import com.dbstar.R;
 import com.dbstar.app.base.MultiPanelActivity;
 
 public class GDSmartcardActivity extends MultiPanelActivity {
+
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		mSmartcardPopup = true;
+	}
 
 	public void onBuildHeaders(List<Header> target) {
 		Header scInfoHeader = new Header();

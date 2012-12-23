@@ -165,8 +165,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			return;
 		}
 		
-		if (drmFile != null && !drmFile.isEmpty() && !mIsSmartcardIn) {
-			alertSmartcardInfo(false);
+		if (drmFile != null && !drmFile.isEmpty() && !isSmartcardReady()) {
+			alertSmartcardInfo();
 			return;
 		}
 

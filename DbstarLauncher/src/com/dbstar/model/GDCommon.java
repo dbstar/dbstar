@@ -33,10 +33,6 @@ public class GDCommon {
 	public static final int MSG_UPDATE_PREVIEW = 19;
 	public static final int MSG_UPDATE_UIRESOURCE = 20;
 	
-	public static final int MSG_SMARTCARD_IN = 0x40001;
-	public static final int MSG_SMARTCARD_OUT = 0x40002;
-	public static final int MSG_SMARTCARD_INSERT_OK = 0x40003;
-	
 	public static final int MSG_NEW_MAIL = 0x50001;
 	
 	public static final String KeyDisk = "disk";
@@ -82,4 +78,22 @@ public class GDCommon {
 
 	public static final String ActionScreenOn = Intent.ACTION_SCREEN_ON;
 	public static final String ActionScreenOff = Intent.ACTION_SCREEN_OFF;
+	
+	// Message to UI for smart card
+	public static final int MSG_SMARTCARD_IN = 0x40001;
+	public static final int MSG_SMARTCARD_OUT = 0x40002;
+	public static final int MSG_SMARTCARD_INSERT_OK = 0x40003;
+	public static final int MSG_SMARTCARD_INSERT_FAILED = 0x40004;
+	public static final int MSG_SMARTCARD_REMOVE_OK = 0x40005;
+	public static final int MSG_SMARTCARD_REMOVE_FAILED = 0x40006;
+	
+	// smart card state
+	public static final int SMARTCARD_STATE_INERTING = 0x1001;
+	public static final int SMARTCARD_STATE_INERTOK = 0x1002;
+	public static final int SMARTCARD_STATE_INERTFAILED = 0x1003;
+	public static final int SMARTCARD_STATE_REMOVING = 0x1004;
+	public static final int SMARTCARD_STATE_REMOVEOK = 0x1005;
+	public static final int SMARTCARD_STATE_REMOVEFAILED = 0x1006;
+	public static final int SMARTCARD_STATE_NONE = 0x1000;
+	
 }

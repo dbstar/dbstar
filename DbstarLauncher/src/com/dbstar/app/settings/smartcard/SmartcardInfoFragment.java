@@ -5,6 +5,7 @@ import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.base.BaseFragment;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.model.EventData;
+import com.dbstar.model.GDCommon;
 import com.dbstar.model.ProductItem;
 
 import android.content.Context;
@@ -24,9 +25,10 @@ public class SmartcardInfoFragment extends BaseFragment {
 	TextView[] mEignevalueIDView = new TextView[6];
 	ListView mAthorizationInfoView;
 	ListAdapter mAdapter;
-	String mSmartcardSN, mSmartcardState, mSmartcardVersion;
+	String mSmartcardSN, mSmartcardStateStr, mSmartcardVersion;
 	String[] mIDValues;
 	ProductItem[] mProductItems;
+	int mSmartcardState = GDCommon.SMARTCARD_STATE_NONE;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -41,18 +43,13 @@ public class SmartcardInfoFragment extends BaseFragment {
 		initializeView();
 	}
 
-	boolean mIsSmartcardIn = false;
-	boolean mIsSmartcardValid = false;
-
 	// Request data at this point
 	public void serviceStart() {
-		mIsSmartcardIn = mService.isSmartcardPlugIn();
-		mIsSmartcardValid = mService.isSmartcardValid();
-		if (mIsSmartcardIn && mIsSmartcardValid) {
+		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
 			getSmartcardData();
 		}
 	}
-	
+
 	void getSmartcardData() {
 		mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRM_SC_SN_READ);
 		mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRMLIB_VER_READ);
@@ -76,7 +73,6 @@ public class SmartcardInfoFragment extends BaseFragment {
 			updateSmartcardSN();
 		} else if (requestType == DbstarServiceApi.CMD_DRMLIB_VER_READ) {
 			mSmartcardVersion = (String) data;
-
 			updateSmartcardVersion();
 		} else if (requestType == DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ) {
 			String[] ids = (String[]) data;
@@ -106,8 +102,7 @@ public class SmartcardInfoFragment extends BaseFragment {
 
 		if (type == EventData.EVENT_SMARTCARD_STATUS) {
 			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
-			mIsSmartcardIn = status.isPlugIn;
-			mIsSmartcardValid = status.isValid;
+			mSmartcardState = status.State;
 
 			updateSmartcardState();
 		}
@@ -122,17 +117,17 @@ public class SmartcardInfoFragment extends BaseFragment {
 	}
 
 	void updateSmartcardState() {
-		if (!mIsSmartcardIn) {
+		if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {
 			mSmartcardStateView.setText(R.string.smarcard_state_not_in);
-		} else {
-			if (!mIsSmartcardValid) {
-				mSmartcardStateView.setText(R.string.smarcard_state_invalid);
-				clearSmartcardData();
-			} else {
-				mSmartcardStateView.setText(R.string.smarcard_state_normal);
-				getSmartcardData();
-			}
+			clearSmartcardData();
+		} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTFAILED) {
+			mSmartcardStateView.setText(R.string.smarcard_state_invalid);
+			clearSmartcardData();
+		} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
+			mSmartcardStateView.setText(R.string.smarcard_state_normal);
+			getSmartcardData();
 		}
+
 	}
 
 	void updateSmartcardIds() {
@@ -155,10 +150,12 @@ public class SmartcardInfoFragment extends BaseFragment {
 	void clearSmartcardData() {
 		mSmartcardNumberView.setText("");
 		mSmartcardVersionView.setText("");
-		for (int i = 0; i < mIDValues.length; i++) {
-			mEignevalueIDView[i].setText("");
+		if (mIDValues != null) {
+			for (int i = 0; i < mIDValues.length; i++) {
+				mEignevalueIDView[i].setText("");
+			}
 		}
-		
+
 		mAdapter.setDataSet(null);
 		mAdapter.notifyDataSetChanged();
 	}

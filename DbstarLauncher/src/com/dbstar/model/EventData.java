@@ -23,12 +23,10 @@ public class EventData {
 	}
 	
 	public static class SmartcardStatus {
-		public boolean isPlugIn;
-		public boolean isValid;
+		public int State;
 		
 		public SmartcardStatus() {
-			isPlugIn = false;
-			isValid = false;
+			State = GDCommon.SMARTCARD_STATE_NONE;
 		}
 	}
 	

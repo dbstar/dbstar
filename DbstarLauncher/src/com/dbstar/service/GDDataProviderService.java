@@ -128,8 +128,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	boolean mIsStorageReady = false;
 	boolean mIsNetworkReady = false;
 
-	boolean mIsSmartcardIn = false;
-	boolean mIsSmartcardValid = false;
+	int mSmartcardState = GDCommon.SMARTCARD_STATE_NONE;
 
 	String mMacAddress = "";
 
@@ -281,8 +280,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		initializeNetEngine();
 
 		queryDiskGuardSize();
-
-		mIsSmartcardIn = mPeripheralController.isSmartCardIn();
 	}
 
 	void initializeDataEngine() {
@@ -613,21 +610,43 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			}
 
 			case GDCommon.MSG_SMARTCARD_IN: {
-				mIsSmartcardIn = true;
+				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTING;
 				notifyDbstarServiceSDStatus();
-				notifySmartcardStatusChange(mIsSmartcardIn, mIsSmartcardValid);
+//				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 			case GDCommon.MSG_SMARTCARD_OUT: {
-				mIsSmartcardIn = false;
+				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVING;
 				notifyDbstarServiceSDStatus();
-				notifySmartcardStatusChange(mIsSmartcardIn, mIsSmartcardValid);
+				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 			
 			case GDCommon.MSG_SMARTCARD_INSERT_OK: {
-				mIsSmartcardValid = true;
-				
+				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTOK;
+				Log.d(TAG, "===========Smartcard========== rest ok!");
+				notifySmartcardStatusChange(mSmartcardState);
+				break;
+			}
+			
+			case GDCommon.MSG_SMARTCARD_INSERT_FAILED: {
+				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTFAILED;
+				Log.d(TAG, "===========Smartcard========== invalid!");
+				notifySmartcardStatusChange(mSmartcardState);
+				break;
+			}
+			
+			case GDCommon.MSG_SMARTCARD_REMOVE_OK: {
+				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVEOK;
+				Log.d(TAG, "===========Smartcard========== remove ok!");
+//				notifySmartcardStatusChange(mSmartcardState);
+				break;
+			}
+			
+			case GDCommon.MSG_SMARTCARD_REMOVE_FAILED: {
+				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVEFAILED;
+				Log.d(TAG, "===========Smartcard========== remove failed!");
+//				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 
@@ -643,16 +662,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	}
 
-	private void notifySmartcardStatusChange(boolean plugIn, boolean valid) {
+	private void notifySmartcardStatusChange(int state) {
 		EventData.SmartcardStatus event = new EventData.SmartcardStatus();
-		event.isPlugIn = plugIn;
-		event.isValid = valid;
+		event.State = state;
 		if (mPageOberser != null) {
 			mPageOberser.notifyEvent(EventData.EVENT_SMARTCARD_STATUS, event);
-		} else if (mApplicationObserver != null) {
-			mApplicationObserver.handleNotifiy(
-					plugIn ? GDCommon.MSG_SMARTCARD_IN
-							: GDCommon.MSG_SMARTCARD_OUT, null);
 		}
 	}
 
@@ -1433,13 +1447,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		enqueueTask(task);
 	}
-
-	public boolean isSmartcardPlugIn() {
-		return mIsSmartcardIn;
-	}
 	
-	public boolean isSmartcardValid() {
-		return mIsSmartcardValid;
+	public boolean isSmartcardPlugIn() {
+		return mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK;
 	}
 
 	private String getThumbnailFile(ContentData content) {
@@ -1735,7 +1745,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					Log.d(TAG,
 							" ========== DbstarServer init success ===========");
 					if (mDBStarClient.isBoundToServer()) {
-						// syncStatusToDbServer();
 						mHandler.sendEmptyMessage(GDCommon.SYNC_STATUS_TODBSERVER);
 					} else {
 						mStatusIsSynced = false;
@@ -1782,12 +1791,15 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					break;
 				}
 				case DbstarServiceApi.DRM_SC_INSERT_FAILED: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_INSERT_FAILED);
 					break;
 				}
 				case DbstarServiceApi.DRM_SC_REMOVE_OK: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_REMOVE_OK);
 					break;
 				}
 				case DbstarServiceApi.DRM_SC_REMOVE_FAILED: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_REMOVE_FAILED);
 					break;
 				}
 
@@ -1939,7 +1951,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		if (!mIsDbServiceStarted)
 			return false;
 
-		if (mIsSmartcardIn) {
+		if (mPeripheralController.isSmartCardIn()) {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DRM_SC_INSERT);
 		} else {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DRM_SC_REMOVE);

@@ -220,6 +220,7 @@ public class GDDBStarClient {
 		String data = null;
 		try {
 			data = new String(bytes, "utf-8");
+			Log.d(TAG, " =========== smartcard info == " + type + " " + data);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
