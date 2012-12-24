@@ -877,6 +877,23 @@ int sqlite_uninit()
 	return 0;
 }
 
+
+/*
+ 数据库事务使用规则：
+ 1、事务的开始和结束必须是成对出现的。事务不允许嵌套。
+ 2、对于整体替换的数据表，应将数据表清除、数据录入工作封装在一个事务中。
+ 3、所有Res开头的数据表，它们的数据都是依存于其他数据表才有意义，
+ 	因此这些数据表的插入、删除、更新等动作，均是某个宿主事务的一部分，它们自身不构成一个单独的事务。
+*/
+typedef enum{
+	SQL_STATUS_IDLE = 0,
+	SQL_STATUS_BUSY = 1,		// 普通的sqlite调用
+	SQL_STATUS_TRANS = 2,		// sqlite事务中
+}SQL_STATUS;
+static SQL_STATUS s_sql_status = SQL_STATUS_IDLE;
+
+
+
 /***getGlobalPara() brief get some global variables from sqlite, such as 'version'.
  * param name[in], the name of global param
  *
@@ -886,26 +903,43 @@ int sqlite_execute(char *exec_str)
 {
 	char* errmsg=NULL;
 	int ret = -1;
+	int waiting_cnt = 0;
 	
-	//open database
-	if(-1==openDatabase())
-	{
-		ERROROUT("Open database failed\n");
+	while(SQL_STATUS_IDLE!=s_sql_status && waiting_cnt<=15){
+		usleep(100000);
+		waiting_cnt ++;
+	}
+	DEBUG("waiting_cnt=%d\n", waiting_cnt);
+	
+	if(SQL_STATUS_IDLE!=s_sql_status){
+		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
 		ret = -1;
 	}
 	else{
-		DEBUG("%s\n", exec_str);
-		if(sqlite3_exec(g_db,exec_str,NULL,NULL,&errmsg)){
-			DEBUG("sqlite3 errmsg: %s\n", errmsg);
+		s_sql_status = SQL_STATUS_BUSY;
+		
+		//open database
+		if(-1==openDatabase())
+		{
+			ERROROUT("Open database failed\n");
 			ret = -1;
 		}
 		else{
-			//DEBUG("sqlite3_exec success\n");
-			ret = 0;
+			DEBUG("%s\n", exec_str);
+			if(sqlite3_exec(g_db,exec_str,NULL,NULL,&errmsg)){
+				DEBUG("sqlite3 errmsg: %s\n", errmsg);
+				ret = -1;
+			}
+			else{
+				//DEBUG("sqlite3_exec success\n");
+				ret = 0;
+			}
+			
+			sqlite3_free(errmsg);								///	release the memery possessed by error message
+			closeDatabase();									///	close database
 		}
 		
-		sqlite3_free(errmsg);								///	release the memery possessed by error message
-		closeDatabase();									///	close database
+		s_sql_status = SQL_STATUS_IDLE;
 	}
 	
 	return ret;	
@@ -928,47 +962,65 @@ int sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, in
 	int ret = 0;
 	int (*sqlite_callback)(char **,int,int,void *,unsigned int) = sqlite_read_callback;
 
+	int waiting_cnt = 0;
+	
+	while(SQL_STATUS_IDLE!=s_sql_status && waiting_cnt<=15){
+		usleep(100000);
+		waiting_cnt ++;
+	}
+	DEBUG("waiting_cnt=%d\n", waiting_cnt);
+	
 	DEBUG("sqlite read: %s\n", sqlite_cmd);
 	
-	///open database
-	if(-1==openDatabase())
-	{
-		ERROROUT("Open database failed\n");
+	if(SQL_STATUS_IDLE!=s_sql_status){
+		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
 		ret = -1;
 	}
-	else{	// open database ok
+	else{
+		s_sql_status = SQL_STATUS_BUSY;
 		
-		if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg)
-			|| NULL!=errmsg)
+		///open database
+		if(-1==openDatabase())
 		{
-			ERROROUT("sqlite cmd: %s\n", sqlite_cmd);
-			DEBUG("errmsg: %s\n", errmsg);
+			ERROROUT("Open database failed\n");
 			ret = -1;
 		}
-		else{ // inquire table ok
-			if(0==l_row){
-				DEBUG("no row, l_row=0, l_column=%d", l_column);
-				int i = 0;
-				for(i=0;i<l_column;i++)
-					printf("\t\t%s", l_result[i]);
-				printf("\n");
+		else{
+			// open database ok
+			if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg)
+				|| NULL!=errmsg)
+			{
+				ERROROUT("sqlite cmd: %s\n", sqlite_cmd);
+				DEBUG("errmsg: %s\n", errmsg);
+				ret = -1;
 			}
-			else{
-				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
-				if(sqlite_callback && receiver)
-					sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
-				else{
-					DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
-//					int i = 0;
-//					for(i=0;i<(l_column+1);i++)
-//						printf("\t\t%s\n", l_result[i]);
+			else{ // inquire table ok
+				if(0==l_row){
+					DEBUG("no row, l_row=0, l_column=%d", l_column);
+					int i = 0;
+					for(i=0;i<l_column;i++)
+						printf("\t\t%s", l_result[i]);
+					printf("\n");
 				}
+				else{
+					DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
+					if(sqlite_callback && receiver)
+						sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
+					else{
+						DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
+	//					int i = 0;
+	//					for(i=0;i<(l_column+1);i++)
+	//						printf("\t\t%s\n", l_result[i]);
+					}
+				}
+				ret = l_row;
 			}
-			ret = l_row;
+			sqlite3_free_table(l_result);
+			sqlite3_free(errmsg);
+			closeDatabase();
 		}
-		sqlite3_free_table(l_result);
-		sqlite3_free(errmsg);
-		closeDatabase();
+		
+		s_sql_status = SQL_STATUS_IDLE;
 	}
 	
 	return ret;
@@ -1070,20 +1122,6 @@ int sqlite_transaction(char *sqlite_cmd)
 }
 #endif
 
-/*
- 数据库事务使用规则：
- 1、事务的开始和结束必须是成对出现的。事务不允许嵌套。
- 2、对于整体替换的数据表，应将数据表清除、数据录入工作封装在一个事务中。
- 3、所有Res开头的数据表，它们的数据都是依存于其他数据表才有意义，
- 	因此这些数据表的插入、删除、更新等动作，均是某个宿主事务的一部分，它们自身不构成一个单独的事务。
-*/
-typedef enum{
-	SQL_TRAN_STATUS_END = 0,
-	SQL_TRAN_STATUS_BEGIN,
-	SQL_TRAN_STATUS_LOADING
-}SQL_TRAN_STATUS_E;
-static SQL_TRAN_STATUS_E s_sql_tran_status = SQL_TRAN_STATUS_END;
-
 
 /*
  函数1：事务开始
@@ -1093,29 +1131,27 @@ int sqlite_transaction_begin()
 	int ret = -1;
 	
 	DEBUG("sqlite_transaction_begin >>\n");
-	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
-		DEBUG("######### SQLITE TRANSACTION STATUS is abnormally #########\n");
-		DEBUG("expect SQL_TRAN_STATUS_END but %d\n", s_sql_tran_status);
-		DEBUG("###########################################################\n");
-		return -1;
-		// ret = sqlite_transaction_end(0);
+	if(SQL_STATUS_IDLE!=s_sql_status){
+		DEBUG("s_sql_status=%d, transaction begin failed\n", s_sql_status);
+		ret = -1;
 	}
-	
-	if(SQL_TRAN_STATUS_END == s_sql_tran_status){
+	else{
+		s_sql_status = SQL_STATUS_TRANS;
 		if(-1==openDatabase())
 		{
 			ERROROUT("Open database failed\n");
+			s_sql_status = SQL_STATUS_IDLE;
 			ret = -1;
 		}
 		else{
 			ret = sqlite3_exec(g_db, "begin transaction", NULL, NULL, NULL);
 			if(SQLITE_OK == ret){
-				s_sql_tran_status = SQL_TRAN_STATUS_BEGIN;
 				ret = 0;
-				//DEBUG(">>>>>>>>>>>>>>>> 	ok\n");
 			}
 			else{
 				DEBUG("sqlite3 errmsg: %s\n", sqlite3_errmsg(g_db));
+				closeDatabase();
+				s_sql_status = SQL_STATUS_IDLE;
 				ret = -1;
 			}
 		}
@@ -1136,18 +1172,13 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 	
 	int ret = -1;
 	
-	if(SQL_TRAN_STATUS_END == s_sql_tran_status){
-		DEBUG("######### SQLITE TRANSACTION STATUS is abnormally #########\n");
-		DEBUG("expect SQL_TRAN_STATUS_BEGIN but %d\n", s_sql_tran_status);
-		DEBUG("###########################################################\n");
-		return -1;
-		//ret = sqlite_transaction_begin();
+	if(SQL_STATUS_TRANS!=s_sql_status){
+		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
+		ret = -1;
 	}
-	
-	if(SQL_TRAN_STATUS_BEGIN == s_sql_tran_status || SQL_TRAN_STATUS_LOADING == s_sql_tran_status){
+	else{
 		ret = sqlite3_exec(g_db, sqlite_cmd, NULL, NULL, NULL);
 		if(SQLITE_OK == ret){
-			s_sql_tran_status = SQL_TRAN_STATUS_LOADING;
 			ret = 0;
 		}
 		else{
@@ -1196,16 +1227,11 @@ int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int recei
 	}
 	DEBUG("%s\n", sqlite_cmd);
 	
-	if(SQL_TRAN_STATUS_END == s_sql_tran_status){
-		DEBUG("######### SQLITE TRANSACTION STATUS is abnormally #########\n");
-		DEBUG("expect SQL_TRAN_STATUS_BEGIN but %d\n", s_sql_tran_status);
-		DEBUG("###########################################################\n");
-		return -1;
-		//ret = sqlite_transaction_begin();
+	if(SQL_STATUS_TRANS!=s_sql_status){
+		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
+		ret = -1;
 	}
-	
-	if(SQL_TRAN_STATUS_BEGIN == s_sql_tran_status || SQL_TRAN_STATUS_LOADING == s_sql_tran_status){
-		DEBUG("in transaction sqlite read: %s\n", sqlite_cmd);
+	else{
 		if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg)
 			|| NULL!=errmsg)
 		{
@@ -1243,7 +1269,11 @@ int sqlite_transaction_end(int commit_flag)
 	int ret = -1;
 	
 	DEBUG("sqlite_transaction_end %s\n", 1==commit_flag?"commit <<>>":"<< rollback");
-	if(SQL_TRAN_STATUS_BEGIN==s_sql_tran_status || SQL_TRAN_STATUS_LOADING==s_sql_tran_status){
+	if(SQL_STATUS_TRANS!=s_sql_status){
+		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
+		ret = -1;
+	}
+	else{
 		if(1==commit_flag){
 			DEBUG("commit transaction\n");
 			ret = sqlite3_exec(g_db, "commit transaction", NULL, NULL, NULL);
@@ -1254,19 +1284,15 @@ int sqlite_transaction_end(int commit_flag)
 		}
 		
 		if(SQLITE_OK == ret){
-			s_sql_tran_status = SQL_TRAN_STATUS_END;
 			ret = 0;
-			//DEBUG("<<<<<<<<<<<<<<<<<<<< 	ok\n");
 		}
 		else{
 			DEBUG("%s\n", sqlite3_errmsg(g_db));
 			ret = -1;
 		}
 		closeDatabase();
-	}
-	else{
-		DEBUG("sqlite transaction is end, do nothing\n");
-		ret = -1;
+		
+		s_sql_status = SQL_STATUS_IDLE;
 	}
 	
 	return ret;
@@ -1304,12 +1330,12 @@ int str_sqlite_read(char *buf, unsigned int buf_size, char *sql_cmd)
 */
 int localcolumn_init()
 {
-	char sqlite_cmd[512];
-	
 	DEBUG("init local column, such as 'Settings' or 'My Center\n");
 	
-	sqlite_transaction_begin();
+	if(-1==sqlite_transaction_begin())
+		return -1;
 	
+	char sqlite_cmd[512];
 	
 	/*
 	 一级菜单“个人中心”
@@ -1499,8 +1525,10 @@ static int global_info_init()
 {
 	DEBUG("init table 'Global', set default records\n");
 	
+	if(-1==sqlite_transaction_begin())
+		return -1;
+	
 	char sqlite_cmd[1024];
-	sqlite_transaction_begin();
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 		GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);

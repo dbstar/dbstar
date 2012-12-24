@@ -2498,218 +2498,216 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 #endif
 		}
 		
-		sqlite_transaction_begin();
-// Initialize.xml
-		if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			/*
-			 Initalize.xml本身不区分ServiceID，只是为了统一，将其ServiceID固定为‘0’
-			*/
-			snprintf(xmlinfo.ServiceID,sizeof(xmlinfo.ServiceID),"%s",SERVICEID_FILL);
-			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-			if(strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)){
-				DEBUG("[%s]same Version: %s, no need to parse\n", xmlinfo.PushFlag, old_xmlver);
-				ret = -1;
-			}
-			else{
-				ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, old_xmlver);
-				
-				ret = PROCESS_OVER_CHECK(ret);
-				if(0==ret){
-					snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize.xml");
-					/*
-					 Initialize.xml是所有service共用的，不存在单独的serviceID属性，这里只是起到填充作用
-					*/
-					snprintf(xmlinfo.ServiceID, sizeof(xmlinfo.XMLName), "%s", SERVICEID_FILL);
-				}
-			}
-		}
-// Service.xml
-		else if(0==xmlStrcmp(cur->name, BAD_CAST"Service")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-			/*
-			 由于需要反注册，所以需要解析所有serviceID的投递内容做反向注册
-			 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
-			*/
-			if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
-				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-						old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-				ret = -1;
-			}
-			else
-			{
-				/*
-				在父节点上定义子节点的结构体，并清空
-				*/
-				DBSTAR_SERVICE_S service_s;
-				memset(&service_s, 0, sizeof(service_s));
-				snprintf(service_s.ServiceID, sizeof(service_s.ServiceID), "%s", xmlinfo.ServiceID);
-				ret = parseNode(doc, cur, "Service", &service_s, &xmlinfo, "Service", NULL, old_xmlver);
-				service_insert(&service_s);
-				
-				ret = PROCESS_OVER_CHECK(ret);
-			}
-		}
-
-// Publication.xml
-		else if(0==xmlStrcmp(cur->name, BAD_CAST"Publication")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			
-			/*
-			 针对Publication.xml，在Initialize.xml表中记录的ServiceID复用为其自身的PublicationID
-			*/
-			snprintf(xmlinfo.ID,sizeof(xmlinfo.ID),"%s",id);
-			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-			
-			/*
-			 Publication已经通过接收单进行了业务级别的过滤，这里不需要比对
-			 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
-			*/
-			if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
-				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-						old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-				ret = -1;
-			}
-			else{
-				DBSTAR_PUBLICATION_S publication_s;
-				memset(&publication_s, 0, sizeof(publication_s));
-				snprintf(publication_s.ServiceID,sizeof(publication_s.ServiceID),"%s", xmlinfo.ServiceID);
-				ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, old_xmlver);
-				publication_insert(&publication_s);
-				
-				ret = PROCESS_OVER_CHECK(ret);
-			}
-		}
-// Column.xml
-		else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-			if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-						old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-				ret = -1;
-			}
-			else{
-				/*
-				 不能一股脑的清理掉Column的所有数据，保留本地菜单
-				*/
-				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='L98' AND ColumnType!='L99' AND ColumnType!='SmartLife';");
-				sqlite_transaction_exec(sqlite_cmd);
-				s_column_SequenceNum = 10;	// 允许一些内置的栏目排在下发栏目之前，故SequenceNum从10计起
-						
-				DBSTAR_COLUMN_S column_s;
-				memset(&column_s, 0, sizeof(column_s));
-				snprintf(column_s.ServiceID,sizeof(column_s.ServiceID),"%s", xmlinfo.ServiceID);
-				ret = parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", NULL, old_xmlver);
-				
-				ret = PROCESS_OVER_CHECK(ret);
-			}
-		}
-// GuideList.xml
-		else if(0==xmlStrcmp(cur->name, BAD_CAST"GuideList")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-			if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-						old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-				ret = -1;
-			}
-			else{
-				DBSTAR_GUIDELIST_S guidelist_s;
-				memset(&guidelist_s, 0, sizeof(guidelist_s));
-				snprintf(guidelist_s.ServiceID,sizeof(guidelist_s.ServiceID),"%s", xmlinfo.ServiceID);
-				ret = parseNode(doc, cur, "GuideList", &guidelist_s, &xmlinfo, "GuideList", NULL, old_xmlver);
-				
-				ret = PROCESS_OVER_CHECK(ret);
-			}
-		}
-// ProductDesc.xml 当前投递单
-		else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-			/*
-			 由于需要反注册，所以需要解析所有serviceID的投递内容做反向注册
-			 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
-			*/
-			if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
-				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-						old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-				ret = -1;
-			}
-			else{
-				DEBUG("old ver: %s, new ver: %s\n",old_xmlver, xmlinfo.Version);
-				DBSTAR_PRODUCTDESC_S productdesc_s;
-				memset(&productdesc_s, 0, sizeof(productdesc_s));
-				snprintf(productdesc_s.ServiceID,sizeof(productdesc_s.ServiceID),"%s", xmlinfo.ServiceID);
-				ret = parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", NULL, old_xmlver);
-				
-				ret = PROCESS_OVER_CHECK(ret);
-			}
-		}
-		
-// Message.xml
-		else if(0==xmlStrcmp(cur->name, BAD_CAST"Messages")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-			if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-						old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-				ret = -1;
-			}
-			else{
-				ret = parseNode(doc, cur, "Messages", NULL, &xmlinfo, "Messages", NULL, old_xmlver);
-				
-				ret = PROCESS_OVER_CHECK(ret);
-			}
-		}
-#if 0
-// Preview.xml
-		else if(0==xmlStrcmp(cur->name, BAD_CAST"Preview")){
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-			if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-						old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-				ret = -1;
-			}
-			else{
-				DBSTAR_PREVIEW_S preview_s;
-				memset(&preview_s, 0, sizeof(preview_s));
-				ret = parseNode(doc, cur, "Preview", &preview_s, &xmlinfo, "Preview", NULL, old_xmlver);
-				preview_insert(&preview_s);
-				
-				ret = PROCESS_OVER_CHECK(ret);
-			}
-		}
-#endif		
-		else{
-			ERROROUT("xml file has wrong root node with '%s'\n", cur->name);
+		if(-1==sqlite_transaction_begin()){
 			ret = -1;
 		}
+		else{
 		
-		if(-1==ret)
-			sqlite_transaction_end(0);
-		else if(0==ret){
-			if(docname)
-				snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", docname);
-			xmlinfo_insert(&xmlinfo);
-			
-			sqlite_transaction_end(1);
-			
-			if(INITIALIZE_XML==xml_flag){
-				pid_init(1);
-				channel_ineffective_clear();
+// Initialize.xml
+			if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				/*
+				 Initalize.xml本身不区分ServiceID，只是为了统一，将其ServiceID固定为‘0’
+				*/
+				snprintf(xmlinfo.ServiceID,sizeof(xmlinfo.ServiceID),"%s",SERVICEID_FILL);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				if(strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)){
+					DEBUG("[%s]same Version: %s, no need to parse\n", xmlinfo.PushFlag, old_xmlver);
+					ret = -1;
+				}
+				else{
+					ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, old_xmlver);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+					if(0==ret){
+						snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize.xml");
+						/*
+						 Initialize.xml是所有service共用的，不存在单独的serviceID属性，这里只是起到填充作用
+						*/
+						snprintf(xmlinfo.ServiceID, sizeof(xmlinfo.XMLName), "%s", SERVICEID_FILL);
+					}
+				}
 			}
-			else if(PRODUCTDESC_XML==xml_flag || SERVICE_XML==xml_flag){
-				DEBUG("refresh push monitor because of xml %d\n", xml_flag);
+// Service.xml
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"Service")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				/*
+				 由于需要反注册，所以需要解析所有serviceID的投递内容做反向注册
+				 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
+				*/
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					ret = -1;
+				}
+				else
+				{
+					/*
+					在父节点上定义子节点的结构体，并清空
+					*/
+					DBSTAR_SERVICE_S service_s;
+					memset(&service_s, 0, sizeof(service_s));
+					snprintf(service_s.ServiceID, sizeof(service_s.ServiceID), "%s", xmlinfo.ServiceID);
+					ret = parseNode(doc, cur, "Service", &service_s, &xmlinfo, "Service", NULL, old_xmlver);
+					service_insert(&service_s);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+				}
+			}
+// Publication.xml
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"Publication")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				
-				push_recv_manage_refresh(0,NULL);
+				/*
+				 针对Publication.xml，在Initialize.xml表中记录的ServiceID复用为其自身的PublicationID
+				*/
+				snprintf(xmlinfo.ID,sizeof(xmlinfo.ID),"%s",id);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				
+				/*
+				 Publication已经通过接收单进行了业务级别的过滤，这里不需要比对
+				 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
+				*/
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					ret = -1;
+				}
+				else{
+					DBSTAR_PUBLICATION_S publication_s;
+					memset(&publication_s, 0, sizeof(publication_s));
+					snprintf(publication_s.ServiceID,sizeof(publication_s.ServiceID),"%s", xmlinfo.ServiceID);
+					ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, old_xmlver);
+					publication_insert(&publication_s);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+				}
 			}
-			else if(COLUMN_XML==xml_flag)
-				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
-			else if(SPRODUCT_XML==xml_flag)
-				msg_send2_UI(STATUS_INTERFACE_REFRESH, NULL, 0);
+// Column.xml
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					ret = -1;
+				}
+				else{
+					/*
+					 不能一股脑的清理掉Column的所有数据，保留本地菜单
+					*/
+					snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='L98' AND ColumnType!='L99' AND ColumnType!='SmartLife';");
+					sqlite_transaction_exec(sqlite_cmd);
+					s_column_SequenceNum = 10;	// 允许一些内置的栏目排在下发栏目之前，故SequenceNum从10计起
+							
+					DBSTAR_COLUMN_S column_s;
+					memset(&column_s, 0, sizeof(column_s));
+					snprintf(column_s.ServiceID,sizeof(column_s.ServiceID),"%s", xmlinfo.ServiceID);
+					ret = parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", NULL, old_xmlver);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+				}
+			}
+// GuideList.xml
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"GuideList")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					ret = -1;
+				}
+				else{
+					DBSTAR_GUIDELIST_S guidelist_s;
+					memset(&guidelist_s, 0, sizeof(guidelist_s));
+					snprintf(guidelist_s.ServiceID,sizeof(guidelist_s.ServiceID),"%s", xmlinfo.ServiceID);
+					ret = parseNode(doc, cur, "GuideList", &guidelist_s, &xmlinfo, "GuideList", NULL, old_xmlver);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+				}
+			}
+// ProductDesc.xml 当前投递单
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				/*
+				 由于需要反注册，所以需要解析所有serviceID的投递内容做反向注册
+				 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
+				*/
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					ret = -1;
+				}
+				else{
+					DEBUG("old ver: %s, new ver: %s\n",old_xmlver, xmlinfo.Version);
+					DBSTAR_PRODUCTDESC_S productdesc_s;
+					memset(&productdesc_s, 0, sizeof(productdesc_s));
+					snprintf(productdesc_s.ServiceID,sizeof(productdesc_s.ServiceID),"%s", xmlinfo.ServiceID);
+					ret = parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", NULL, old_xmlver);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+				}
+			}
+// Message.xml
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"Messages")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					ret = -1;
+				}
+				else{
+					ret = parseNode(doc, cur, "Messages", NULL, &xmlinfo, "Messages", NULL, old_xmlver);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+				}
+			}
+// Preview.xml
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"Preview")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					ret = -1;
+				}
+				else{
+					DBSTAR_PREVIEW_S preview_s;
+					memset(&preview_s, 0, sizeof(preview_s));
+					ret = parseNode(doc, cur, "Preview", &preview_s, &xmlinfo, "Preview", NULL, old_xmlver);
+					preview_insert(&preview_s);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+				}
+			}
+		
+			else{
+				ERROROUT("xml file has wrong root node with '%s'\n", cur->name);
+				ret = -1;
+			}
+		
+			if(-1==ret)
+				sqlite_transaction_end(0);
+			else if(0==ret){
+				if(docname)
+					snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", docname);
+				xmlinfo_insert(&xmlinfo);
+				
+				sqlite_transaction_end(1);
+				
+				if(INITIALIZE_XML==xml_flag){
+					pid_init(1);
+					channel_ineffective_clear();
+				}
+				else if(PRODUCTDESC_XML==xml_flag || SERVICE_XML==xml_flag){
+					DEBUG("refresh push monitor because of xml %d\n", xml_flag);
+					
+					push_recv_manage_refresh(0,NULL);
+				}
+			}
 		}
 	}
 	
@@ -2718,9 +2716,18 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 PARSE_XML_END:
 	DEBUG("parse xml end\n");
 	pthread_mutex_unlock(&mtx_parse_xml);
+
+// 不要放在事务或线程锁内部发送这些信号	
+	if(0==ret){
+		if(COLUMN_XML==xml_flag)
+			column_refresh_flag_set(1);
+		else if(SPRODUCT_XML==xml_flag)
+			interface_refresh_flag_set(1);
+	}
 	
 	return ret;
 }
+
 
 /*
  此函数本意：如果xml依赖于serviceID才能解析，则返回1，否则返回0

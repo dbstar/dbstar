@@ -93,6 +93,10 @@ static int s_decoder_running = 0;
 static int s_push_monitor_active = 0;
 static int s_dvbpush_getinfo_flag = 0;
 
+static int s_column_refresh = 0;
+static int s_interface_refresh = 0;
+
+
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
 考虑到缓冲，在无数据后多查询几轮再停止查询，因此push数据时，置此值为3。
@@ -321,25 +325,27 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type)
 	else{
 		DEBUG("should parse: %s\n", DescURI);
 		if(RECEIVETYPE_PUBLICATION==type){
-#if 0
+#if 1
 			send_xml_to_parse(DescURI,PRODUCTION_XML,id);
 #else
 /*
  直接调用parse_xml的目的是避开线程，否则出现parse_xml和push_recv_manage_refresh同时使用sqlite库，导致异常
  但是否会死锁？
+ 靠。但是直接调用parse_xml会导致其中的事务交叉引起sqlite错误：out of memory
+ 咋办呢？？？目前只能在sqlite的事务调用处搞一个互斥保护。
 */
 			parse_xml(DescURI,PRODUCTION_XML,id);
 #endif
 		}
 		else if(RECEIVETYPE_COLUMN==type){
-#if 0
+#if 1
 			send_xml_to_parse(DescURI,COLUMN_XML,NULL);
 #else
 			parse_xml(DescURI,COLUMN_XML,NULL);
 #endif
 		}
 		else if(RECEIVETYPE_SPRODUCT==type){
-#if 0
+#if 1
 			send_xml_to_parse(DescURI,SPRODUCT_XML,NULL);
 #else
 			parse_xml(DescURI,SPRODUCT_XML,NULL);
@@ -515,6 +521,16 @@ static int need_push_monitor()
 	}
 }
 
+void column_refresh_flag_set(int flag)
+{
+	s_column_refresh = flag;
+}
+
+void interface_refresh_flag_set(int flag)
+{
+	s_interface_refresh = flag;
+}
+
 /*
 为避免无意义的查询硬盘，应完成下面两个工作：
 1、当节目接收完毕后不应再查询，数据库中记录的是100%
@@ -582,6 +598,22 @@ void *push_monitor_thread()
 			DEBUG("it's time to awake tdt time sync, %4d-%2d-%2d %2d:%2d:%2d\n", (p_tm->tm_year+1900), (p_tm->tm_mon+1), p_tm->tm_mday, p_tm->tm_hour, p_tm->tm_min, p_tm->tm_sec);
 			tdt_time_sync_awake();
 			loop_cnt = 0;
+		}
+		
+		// 当栏目和界面产品发生改变时，不能直接在parse_xml()函数中通过JNI向UI发送notify，否则很容易导致Launcher死掉。
+		if(s_column_refresh>0){
+			s_column_refresh ++;
+			if(s_column_refresh>2){
+				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
+				s_column_refresh = 0;
+			}
+		}
+		if(s_interface_refresh>0){
+			s_interface_refresh ++;
+			if(s_interface_refresh>2){
+				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
+				s_interface_refresh = 0;
+			}
 		}
 	}
 	DEBUG("exit from push monitor thread\n");
