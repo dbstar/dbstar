@@ -1353,7 +1353,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Log.d(TAG, "++++++++++==========initializeApp ================");
 		startEngine();
 
-		initializeData();
+//		initializeData();
 	}
 
 	@Override

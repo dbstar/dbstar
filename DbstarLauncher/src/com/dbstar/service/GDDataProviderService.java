@@ -228,12 +228,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			mPeripheralController.setAudioOutputOn();
 		}
 
-		if (mPeripheralController.isSmartCardIn()) {
-			Log.d(TAG, "SmartCard: IN");
-		} else {
-			Log.d(TAG, "SmartCard: OUT");
-		}
-
 		for (int i = 0; i < mThreadCount; i++) {
 			WorkerThread thread = new WorkerThread();
 			thread.start();
@@ -246,7 +240,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		reqisterSystemMessageReceiver();
 
 		// read configure
-		mConfigure.readConfigure();
+		mConfigure.configureSystem();
 
 		// check storage
 		if (mConfigure.configureStorage()) {
@@ -382,17 +376,14 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				// Log.d(TAG, "mount storage = " + disk);
 				Log.d(TAG, "++++++++ mount storage ++++++++" + disk);
 
-				String storage = "";
-				if (mConfigure.configureStorage()) {
-					storage = mConfigure.getStorageDisk();
+				if (!mConfigure.configureStorage()) {
+					return;
 				}
+				
+				String storage = mConfigure.getStorageDisk();
 
 				if (disk.equals(storage) && mApplicationObserver != null) {
 					mIsStorageReady = true;
-					mConfigure.readConfigure();
-					mConfigure.configureStorage();
-
-					initializeDataEngine();
 
 					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
 					mDiskMonitor.removeDiskFromMonitor(disk);
@@ -422,7 +413,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 					notifyDbstarServiceStorageStatus();
 
-					deinitializeDataEngine();
 					mApplicationObserver.deinitializeApp();
 				}
 				break;
@@ -867,7 +857,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			Log.d(TAG, "Worker Thread [" + mThreadId + "] Priority ["
 					+ mThreadPriority + "]");
 
-			Process.setThreadPriority(Process.THREAD_PRIORITY_LESS_FAVORABLE);
+			Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE);
 			mThreadPriority = Process.getThreadPriority(mThreadId);
 			Log.d(TAG, "Worker Thread [" + mThreadId + "] Priority ["
 					+ mThreadPriority + "]");
@@ -1124,7 +1114,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					value = task.Parameters.get(PARAMETER_VALUE);
 					String sValue = (String) value;
 
-					boolean ret = mDataModel.setSettingValue(key, sValue);
+					mDataModel.setSettingValue(key, sValue);
 					break;
 				}
 

@@ -27,7 +27,7 @@ public class GDDataModel {
 	GDDVBDataProvider mDVBDataProvider;
 	GDSmartHomeProvider mSmartHomeProvider;
 	GDUserDataProvider mUserDataProvider;
-
+	
 	String mStorageDir = null;
 
 	public GDDataModel() {
@@ -37,7 +37,6 @@ public class GDDataModel {
 	}
 
 	public void initialize(GDSystemConfigure configure) {
-		// setLocalization(configure.getLocalization());
 		mDVBDataProvider.initialize(configure);
 		mSmartHomeProvider.initialize(configure);
 		// mUserDataProvider.initialize(configure);
@@ -47,7 +46,7 @@ public class GDDataModel {
 		configure.setLocalization(language);
 
 		Log.d(TAG, "language = " + language);
-
+		
 		mStorageDir = configure.getStorageDir();
 	}
 

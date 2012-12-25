@@ -114,9 +114,6 @@ public class GDDBProvider {
 
 		Log.d(TAG, "++++++++++++++++++createDatabase " + dbFile);
 
-		// if (!mConfigure.isDiskAvailable())
-		// return;
-
 		if (!isFileExist(dbFile)) {
 			SQLiteDatabase db = null;
 			db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
@@ -138,8 +135,6 @@ public class GDDBProvider {
 
 		Log.d(TAG, "open dbFile = " + dbFile);
 
-		// if (!mConfigure.isDiskAvailable())
-		// return null;
 		if (!isFileExist(dbFile))
 			return null;
 
@@ -175,9 +170,6 @@ public class GDDBProvider {
 
 	protected synchronized SQLiteDatabase getReadableDatabase() {
 		String dbFile = mDbFile;
-		// if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
-		// return null;
-		// }
 
 		if (!isFileExist(dbFile)) {
 			return null;
@@ -205,9 +197,6 @@ public class GDDBProvider {
 
 	protected synchronized SQLiteDatabase getWriteableDatabase() {
 		String dbFile = mDbFile;
-		// if (!mConfigure.isDiskAvailable() || !isFileExist(dbFile)) {
-		// return null;
-		// }
 
 		if (!isFileExist(dbFile)) {
 			return null;

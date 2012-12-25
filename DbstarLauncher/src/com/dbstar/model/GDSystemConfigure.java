@@ -14,15 +14,14 @@ public class GDSystemConfigure {
 	private static final String TAG = "GDSystemConfigure";
 
 	public static final String EBooKFolder = "ebook";
-	private static final String GuodianServer = "GuodianServer";
-	public static final String DVBDatabaseFile = "Dbstar.db";
-	public static final String UserDatabaseFile = "userdb.db";
 
 	// Default Property values
-	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
 	public static final String DefaultStorageDisk = "/mnt/sda1";
+	public static final String DefaultPushDir = "/mnt/sda1";
+
+	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
+	public static final String UserDatabaseFile = "/data/dbstar/userdb.db";
 	public static final String SmartHomeDatabase = "/data/dbstar/Smarthome.db";
-	public static final String DefaultPushDir = "/mnt/sda1/dbstar";
 	public static final String DefaultDbstarDBFile = "/data/dbstar/Dbstar.db";
 	public static final String DefaultColumnResDir = "/data/dbstar/ColumnRes";
 	public static final String DefaultDesFile = "/info/desc/Publication.xml";
@@ -32,6 +31,8 @@ public class GDSystemConfigure {
 	private static final String PROPERTY_DBSTARDATABSE = "DbstarDatabase";
 	private static final String PROPERTY_PUSH_DIR = "PushDir";
 	private static final String PROPERTY_COLUMNRES_DIR = "ColumnRes";
+	private static final String PROPERTY_GUODIANSERVER = "GuodianServer";
+	private static final String PROPERTY_PUSHEDMESSAGE = "PushedMessage";
 
 	private String Property_GuoWangDongTai;
 	private String Property_GuoWangKuaiXun;
@@ -58,94 +59,68 @@ public class GDSystemConfigure {
 			{ Property_YongDianMingXi, "" }, { Property_YongDianTiYan, "" },
 			{ Property_JieNengChangShi, "" } };
 
-	// the storage disk:
-	// 1. it maybe set in the configure file
-	// 2. if not set in configure file, we will first get the default one,
-	// if the default one is not available, try to get from the mounted disk
-	// that has the "dbstar" folder.
-	private String mStorageDisk = "";
-	private String mStorageDir = "";
-	private String mIconRootDir = "";
-
+	// These values: get from configure file or hard coded.
+	private String mDefaultStorageDisk = null;
+	private String mIconRootDir = null;
 	private String mLocalization = GDCommon.LangCN;
+	private String mGuodianServer = null;
+	private String mDbstarDatabase = null;
+
 	// demo data for push message
 	List<String> mPushedMessage = null;
-	private String mGuodianServer = "";
-	private String mDbstarDatabase = "";
 
-	// read configure from file
-	// call this method every time the disk is mounted or unmounted
-	public boolean readConfigure() {
+	// TODO: these two string maybe access in different thread.
+	// how to make it safe to multiple-thread!
+	private String mStorageDisk = null;
+	private String mStorageDir = null;
 
-		File configureFile = new File(ConfigureFile);
-		if (configureFile == null || !configureFile.exists()) {
-			return false;
-		}
-
-		// clear the cached path value
-		mStorageDir = "";
+	// configure system variables
+	// call this when system started.
+	// it will read the default variables from configure files first.
+	// if not set in configure file, it will use hard coded values.
+	public boolean configureSystem() {
 
 		// read configures
-		if (!parseConfigure(configureFile)) {
-			return false;
-		}
+		boolean ret = parseConfigure();
 
-		return true;
+		defaultValueInit();
+
+		return ret;
 	}
 
-	// get the storage directory
-	// call this method every time the disk is mounted or unmounted
+	private void defaultValueInit() {
+		if (mDefaultStorageDisk == null || mDefaultStorageDisk.isEmpty()) {
+			mDefaultStorageDisk = DefaultStorageDisk;
+		}
+
+		if (mIconRootDir != null && !mIconRootDir.isEmpty()) {
+			mIconRootDir = DefaultColumnResDir;
+		}
+
+		if (mDbstarDatabase == null || mDbstarDatabase.isEmpty()) {
+			mDbstarDatabase = DefaultDbstarDBFile;
+		}
+	}
+
+	// find the storage disk and push directory.
+	// call this when disk is mounted or unmounted
+	// it check whether the default disk and push dir exists.
 	public boolean configureStorage() {
-		// 1. step
-		// if this disk is already set, check whether it is valid
-		if (!mStorageDir.equals("")) {
-			File storageDir = new File(mStorageDir);
-			if (storageDir != null && storageDir.exists()) {
-				setStorageDir(mStorageDir);
-				return true;
-			}
+		mStorageDir = mStorageDisk = null;
+
+		String disk = mDefaultStorageDisk;
+		File file = new File(disk);
+		if (file.exists()) {
+			mStorageDir = mStorageDisk = disk;
+			return true;
 		}
 
-		// clear the cached disk path
-		mStorageDir = "";
-
-		// 2. setp: get default disk
-		File defaultDir = new File(DefaultStorageDisk + "/dbstar");
-		if (defaultDir.exists()) {
-			mStorageDisk = DefaultStorageDisk;
-			mStorageDir = DefaultStorageDisk + "/dbstar";
-		} else {
-			// 3. step: get from mounted disks
-			String paths[] = getMountedDisks();
-			for (String path : paths) {
-				File dbstarFolder = new File(path + "/dbstar");
-
-				if (dbstarFolder.exists()) {
-					File[] files = dbstarFolder.listFiles();
-					if (files != null && files.length > 0) {
-						mStorageDisk = path;
-						mStorageDir = path + "/dbstar";
-						Log.d(TAG, "root dir = " + mStorageDir);
-						break;
-					}
-				}
-			}
-		}
-
-		if (mStorageDir.isEmpty()) {
-			return false;
-		}
-
-		return true;
+		return false;
 	}
 
 	// Parameters for Flash/Local storage
 	public String getIconRootDir() {
-		if (mIconRootDir != null && !mIconRootDir.isEmpty()) {
-			return mIconRootDir;
-		}
-
-		return DefaultColumnResDir;
+		return mIconRootDir;
 	}
 
 	public String getLocalization() {
@@ -157,73 +132,20 @@ public class GDSystemConfigure {
 	}
 
 	public String getDVBDatabaseFile() {
-		if (mDbstarDatabase == null || mDbstarDatabase.isEmpty())
-			return DefaultDbstarDBFile;
-
 		return mDbstarDatabase;
 	}
 
 	public String getSmartHomeDBFile() {
-		String dbFile = SmartHomeDatabase;
-
-		return dbFile;
+		return SmartHomeDatabase;
 	}
 
-	// Parameters for Removable storage
-	public void setStorageDir(String storageDir) {
-		if (storageDir != null && !storageDir.isEmpty()) {
-			mStorageDir = storageDir;
-
-			int index = storageDir.indexOf("dbstar");
-			if (index > 0) {
-				String disk = storageDir.substring(0, index);
-				if (disk != null && !disk.isEmpty()) {
-					mStorageDisk = disk;
-					Log.d(TAG, "storage disk = " + disk);
-				}
-			}
-		}
-	}
-
-	public boolean isStorageDisk(String disk) {
-		boolean ret = false;
-
-		File dataFolder = new File(disk + "/dbstar");
-		if (dataFolder != null && dataFolder.exists()) {
-			ret = true;
-		}
-
-		return ret;
-	}
-
-	public boolean isDiskAvailable() {
-		boolean available = false;
-		Log.d(TAG, "check disk available " + mStorageDisk);
-
-		if (mStorageDisk == null || mStorageDisk.isEmpty())
-			return available;
-
-		File file = new File(mStorageDisk);
-		if (file != null && file.exists())
-			available = true;
-		Log.d(TAG, "=" + available);
-		return available;
-	}
-
+	// Need thread safe
 	public String getStorageDisk() {
 		return mStorageDisk;
 	}
 
 	public String getStorageDir() {
 		return mStorageDir;
-	}
-
-	public String getUserDatabaseFile() {
-		if (mStorageDir == null || mStorageDir.isEmpty())
-			return "";
-
-		String dbFile = new String(mStorageDir + "/" + UserDatabaseFile);
-		return dbFile;
 	}
 
 	public String getDetailsDataFile(ContentData content) {
@@ -250,7 +172,7 @@ public class GDSystemConfigure {
 		final String mainFile = content.MainFile.FileURI;
 		if (mainFile != null && !mainFile.isEmpty()) {
 			file = mStorageDir + "/" + mainFile;
-			
+
 			File f = new File(file);
 			if (!f.exists()) {
 				file = "";
@@ -341,6 +263,10 @@ public class GDSystemConfigure {
 		return content;
 	}
 
+	public String getUserDatabaseFile() {
+		return UserDatabaseFile;
+	}
+
 	public String getGuodianServer() {
 		return mGuodianServer;
 	}
@@ -355,7 +281,12 @@ public class GDSystemConfigure {
 		}
 	}
 
-	private boolean parseConfigure(File configureFile) {
+	private boolean parseConfigure() {
+
+		File configureFile = new File(ConfigureFile);
+		if (configureFile == null || !configureFile.exists()) {
+			return false;
+		}
 
 		try {
 			String UTF8 = "utf8";
@@ -389,7 +320,7 @@ public class GDSystemConfigure {
 					if (property[0].equals(PROPERTY_DBSTARDATABSE)) {
 						mDbstarDatabase = property[1].trim();
 					} else if (property[0].equals(PROPERTY_PUSH_DIR)) {
-						mStorageDir = property[1].trim();
+						mDefaultStorageDisk = property[1].trim();
 					} else if (property[0].equals(PROPERTY_COLUMNRES_DIR)) {
 						mIconRootDir = property[1].trim();
 					} else if (property[0].equals(PROPERTY_LOCALIZATION)) {
@@ -422,9 +353,9 @@ public class GDSystemConfigure {
 						Property_ZaZhi = property[1].trim();
 					} else if (property[0].equals("Property_BaoZhi")) {
 						Property_BaoZhi = property[1].trim();
-					} else if (property[0].equals("GuodianServer")) {
+					} else if (property[0].equals(PROPERTY_GUODIANSERVER)) {
 						mGuodianServer = property[1].trim();
-					} else if (property[0].equals("PushedMessage")) {
+					} else if (property[0].equals(PROPERTY_PUSHEDMESSAGE)) {
 						if (mPushedMessage == null) {
 							mPushedMessage = new ArrayList<String>();
 						}
