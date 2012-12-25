@@ -23,6 +23,7 @@ import com.dbstar.model.GDNetModel;
 import com.dbstar.model.GuideListItem;
 import com.dbstar.model.PreviewData;
 import com.dbstar.model.ReceiveEntry;
+import com.dbstar.model.TDTTimeController;
 import com.dbstar.service.client.DbServiceObserver;
 import com.dbstar.service.client.GDDBStarClient;
 
@@ -1805,6 +1806,22 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 				case DbstarServiceApi.DRM_EMAIL_NEW: {
 					mHandler.sendEmptyMessage(GDCommon.MSG_NEW_MAIL);
+					break;
+				}
+				
+				case DbstarServiceApi.TDT_TIME_SYNC: {
+					byte[] bytes = intent.getByteArrayExtra("message");
+					if (bytes != null) {
+						try {
+							String time = new String(bytes, "utf-8");
+							Log.d(TAG, "==========handle TDT time ======== " + time);
+							long tdtTime = Long.parseLong(time);
+							TDTTimeController.handleTDTTime(tdtTime*1000L);
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						}
+					}
+					
 					break;
 				}
 
