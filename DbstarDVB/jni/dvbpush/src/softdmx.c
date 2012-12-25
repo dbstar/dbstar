@@ -582,6 +582,7 @@ patch0:
 	}
 }
 
+static char s_time_sync_2_ui[128];
 void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_data)
 {
     int year,month,day;
@@ -608,10 +609,19 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
     }
     
     snprintf(tdt,sizeof(tdt),"%4d-%2d-%2d %2x:%2x:%2x",year+1900,month,day,data[5],data[6],data[7]);
-    msg_send2_UI(TDT_TIME_SYNC, tdt, strlen(tdt));
+    TC_free_filter(tdt_dsc_fid);
+    DEBUG("catch tdt time(%s) and free tdt_dsc_fid(%d)\n",tdt,tdt_dsc_fid);
     
-	TC_free_filter(tdt_dsc_fid);
-	DEBUG("catch tdt time(%s) and free tdt_dsc_fid(%d)\n",tdt,tdt_dsc_fid);
+    struct tm tm_tdt;
+	scanf("%d-%d-%d %d:%d:%d",&(tm_tdt.tm_year),&(tm_tdt.tm_mon),&(tm_tdt.tm_mday),&(tm_tdt.tm_hour),&(tm_tdt.tm_min),&(tm_tdt.tm_sec));
+    
+	tm_tdt.tm_year-=1900;	/*年份值减去1900，得到tm结构中保存的年份序数*/
+	tm_tdt.tm_mon-=1;		/*月份值减去1，得到tm结构中保存的月份序数*/
+    snprintf(s_time_sync_2_ui,sizeof(s_time_sync_2_ui),"%ld",mktime(&tm_tdt));
+	
+    msg_send2_UI(TDT_TIME_SYNC, s_time_sync_2_ui, strlen(s_time_sync_2_ui));
+    
+    DEBUG("distill %4d-%2d-%2d %2d:%2d:%2d, send to UI %s\n",(tm_tdt.tm_year),(tm_tdt.tm_mon),(tm_tdt.tm_mday),(tm_tdt.tm_hour),(tm_tdt.tm_min),(tm_tdt.tm_sec),s_time_sync_2_ui);
 	tdt_dsc_fid = -1;
 }
 
