@@ -1007,7 +1007,7 @@ int sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, in
 					if(sqlite_callback && receiver)
 						sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
 					else{
-						DEBUG("l_row=%d, l_column=%d\n", l_row, l_column);
+						DEBUG("no sqlite callback, l_row=%d, l_column=%d\n", l_row, l_column);
 	//					int i = 0;
 	//					for(i=0;i<(l_column+1);i++)
 	//						printf("\t\t%s\n", l_result[i]);

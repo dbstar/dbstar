@@ -582,6 +582,45 @@ int guidelist_select_refresh()
 }
 
 
+#define REMOTE_FUTURE		"9999-99-99 99:99:99"
+#define TIME_STAMP_MIN		"2013-01-01 00:00:00"
+#define DELETE_SIZE_ONCE	(107374182400LL)
+//(107374182400)==(100*1024*1024*1024)==100G
+static int disk_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
+	if(row<1){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+	
+	int i = 0;
+	long long total_size = 0LL;
+	long long delete_total_size = 0LL;
+	char total_uri[512];
+	
+	for(i=1;i<row+1;i++)
+	{
+		sscanf(result[i*column+2],"%lld", &total_size);
+		DEBUG("%s\t#%s\t#%s=%lld\t#%s\t#%s\t#%s\n",result[i*column],result[i*column+1],result[i*column+2],total_size,result[i*column+3],result[i*column+4],result[i*column+5]);
+		
+		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
+		//unlink(total_uri);
+		delete_total_size += total_size;
+		if(delete_total_size>=DELETE_SIZE_ONCE){
+			DEBUG("delete %lld finished, %s, total finish!\n", delete_total_size,total_uri);
+			break;
+		}
+		else
+			DEBUG("delete %lld finished, %s\n", delete_total_size, total_uri);
+	}
+	
+	// 还需要找个机会删除这些Publication对应的ResStr、ResPoster等附属记录
+	
+	return 0;
+}
+
+
 void disk_manage()
 {
 #if 0
@@ -597,6 +636,38 @@ void disk_manage()
 		s_disk_manage_buzy = 0;
 	}
 #endif
+	
+// 目前只做一个简单的磁盘整理，不考虑未纳入数据库管理的文件（需要扫描磁盘才能实现）
+	char sqlite_cmd[256];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = disk_manage_cb;
+	char time_stamp[32];
+	memset(time_stamp,0,sizeof(time_stamp));
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
+	if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
+		DEBUG("can not process push regist\n");
+		return -1;
+	}
+	
+	if(strcmp(time_stamp,TIME_STAMP_MIN)<0){
+		DEBUG("such time stamp for now is invalid: %s, replace it as %s\n", time_stamp,REMOTE_FUTURE);
+		snprintf(time_stamp,sizeof(time_stamp),"%s",REMOTE_FUTURE);
+	}
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted from Publication where PushEndTime<'%s' order by Deleted DESC,TimeStamp;",time_stamp);
+	int ret = sqlite_read(sqlite_cmd, time_stamp, strlen(time_stamp), sqlite_callback);
+	if(ret>0){
+		DEBUG("select progs for disk manage OK\n");
+		return 0;
+	}
+	else if(0==ret){
+		DEBUG("select no progs for disk manage OK\n");
+		return 0;
+	}
+	else{	// (ret<0)
+		DEBUG("select progs for disk manage failed\n");
+		return -1;
+	}	
 }
 
 static void drm_errors(char *fun, CDCA_U16 ret)
@@ -1014,7 +1085,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		
 		case CMD_DISK_FOREWARNING:
 			DEBUG("CMD_DISK_FOREWARNING: Disk alarm for capability\n");
-			disk_manage();
+			disk_manage_flag_set(1);
 			break;
 		
 		case CMD_DRM_SC_INSERT:

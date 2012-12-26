@@ -53,6 +53,7 @@ static pthread_mutex_t mtx_push_rely_condition = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_push_rely_condition = PTHREAD_COND_INITIALIZER;
 static int s_push_rely_condition = 0;
 static int push_idle = 0;
+static int s_disk_manage_flag = 0;
 
 //数据包结构
 typedef struct tagDataBuffer
@@ -506,6 +507,12 @@ static int prog_overdue(char *my_time, char *deadline_time)
 }
 #endif
 
+void disk_manage_flag_set(int flag)
+{
+	s_disk_manage_flag = flag;
+	DEBUG("s_disk_manage_flag=%d\n\n\n", s_disk_manage_flag);
+}
+
 /*
  除非push有数据，并且监控的节目个数大于0，否则不需要monitor监控。
  return 1——需要监控
@@ -614,6 +621,12 @@ void *push_monitor_thread()
 				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
 				s_interface_refresh = 0;
 			}
+		}
+		
+		if(1==s_disk_manage_flag){
+			DEBUG("will clean disk\n");
+			disk_manage();
+			s_disk_manage_flag = 0;
 		}
 	}
 	DEBUG("exit from push monitor thread\n");
