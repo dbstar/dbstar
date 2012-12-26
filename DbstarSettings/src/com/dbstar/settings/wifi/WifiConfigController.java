@@ -106,18 +106,19 @@ public class WifiConfigController {
 		mConfirmButton.setOnClickListener(mClickListener);
 
 		mAccessPoint = accessPoint;
-		mAccessPointSecurity = (accessPoint == null) ? AccessPoint.SECURITY_NONE
-				: accessPoint.security;
+		mAccessPointSecurity = accessPoint.security;
 	}
 
 	WifiConfiguration getConfig() {
-
-		WifiConfiguration config = new WifiConfiguration();
-
+		WifiConfiguration config = null;
 		if (mAccessPoint.networkId == INVALID_NETWORK_ID) {
+			// if this access point is not configured
+			// try to create a configure, and then save it.
+			config = new WifiConfiguration();
+
 			config.SSID = AccessPoint.convertToQuotedString(mAccessPoint.ssid);
 		} else {
-			config.networkId = mAccessPoint.networkId;
+			config = mAccessPoint.getConfig();
 		}
 
 		switch (mAccessPointSecurity) {

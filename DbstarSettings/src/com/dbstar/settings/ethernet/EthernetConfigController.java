@@ -3,6 +3,8 @@ package com.dbstar.settings.ethernet;
 import java.util.List;
 
 import com.dbstar.settings.R;
+import com.dbstar.settings.base.PageManager;
+import com.dbstar.settings.utils.SettingsCommon;
 import com.dbstar.settings.utils.Utils;
 
 import android.app.Activity;
@@ -55,6 +57,8 @@ public class EthernetConfigController {
 	private EditText mGw;
 	private EditText mMask;
 
+	Button mOkButton, mPrevButton;
+
 	private EthernetManager mEthManager;
 	private EthernetDevInfo mEthInfo;
 
@@ -62,7 +66,6 @@ public class EthernetConfigController {
 	private Handler mHandler;
 
 	private boolean mEnablePending;
-	Button mSaveButton;
 
 	private Context mContext;
 	private Activity mActivity;
@@ -228,7 +231,6 @@ public class EthernetConfigController {
 	}
 
 	public int buildDialogContent(Context context) {
-		mSaveButton = (Button) mActivity.findViewById(R.id.eth_savebutton);
 		mDhcpSwitchButton = (View) mActivity
 				.findViewById(R.id.dhcp_switch_button);
 		mDhcpSwitchIndicator = (CheckBox) mActivity
@@ -249,6 +251,9 @@ public class EthernetConfigController {
 		mManualConnectState = (TextView) mActivity
 				.findViewById(R.id.manual_conncetion_state);
 
+		mOkButton = (Button) mActivity.findViewById(R.id.okbutton);
+		mPrevButton = (Button) mActivity.findViewById(R.id.prevbutton);
+
 		mDhcpSwitchButton.setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -267,6 +272,8 @@ public class EthernetConfigController {
 
 		mDhcpSwitchButton.setOnFocusChangeListener(mFocusChangeListener);
 		mManualSwitchButton.setOnFocusChangeListener(mFocusChangeListener);
+
+		mDhcpSwitchButton.requestFocus();
 
 		mIpaddr = (EditText) mActivity.findViewById(R.id.eth_ip);
 		mMask = (EditText) mActivity.findViewById(R.id.eth_mask);
@@ -357,8 +364,10 @@ public class EthernetConfigController {
 			mManualConnectState.setVisibility(View.GONE);
 		}
 
-		mManualSwitchButton.setNextFocusDownId(R.id.eth_savebutton);
-		mSaveButton.setNextFocusUpId(R.id.manual_switch_button);
+		mManualSwitchButton.setNextFocusDownId(R.id.prevbutton);
+
+		mPrevButton.setNextFocusUpId(R.id.manual_switch_button);
+		mOkButton.setNextFocusUpId(R.id.manual_switch_button);
 	}
 
 	private void enableManual(boolean enable) {
@@ -389,7 +398,8 @@ public class EthernetConfigController {
 		}
 
 		mManualSwitchButton.setNextFocusDownId(R.id.eth_ip);
-		mSaveButton.setNextFocusUpId(R.id.eth_backup_dns);
+		mOkButton.setNextFocusUpId(R.id.eth_backup_dns);
+		mPrevButton.setNextFocusUpId(R.id.eth_backup_dns);
 	}
 
 	private void getEthernetDevice(String[] Devs) {
@@ -407,13 +417,13 @@ public class EthernetConfigController {
 
 		if (mDev == null || mDev.isEmpty())
 			return;
-		
+
 		if (mEthInfo == null) {
 			if (mEthManager.isEthConfigured()) {
 				mEthInfo = mEthManager.getSavedEthConfig();
 			}
 		}
-		
+
 		if (mEthInfo != null) {
 			boolean isDhcp = mEthInfo.getConnectMode().equals(
 					EthernetDevInfo.ETH_CONN_MODE_DHCP);

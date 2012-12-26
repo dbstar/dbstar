@@ -1,204 +1,151 @@
 package com.dbstar.settings;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import com.dbstar.settings.R;
-import com.dbstar.settings.ethernet.EthernetSettings;
-import com.dbstar.settings.wifi.WifiSettings;
+import com.dbstar.settings.base.PageManager;
+import com.dbstar.settings.utils.SettingsCommon;
 
 public class GDNetworkSettingsActivity extends GDBaseActivity implements
-		OnSaveListener {
+		PageManager {
 
 	private static final String TAG = "GDNetworkSettingsActivity";
-	private static final String ActionGetNetworkInfo = "com.dbstar.DbstarLauncher.Action.GET_NETWORKINFO";
-	private static final String ActionUpateNetworkInfo = "com.dbstar.DbstarLauncher.Action.UPDATE_NETWORKINFO";
-	private static final String ActionSetNetworkInfo = "com.dbstar.DbstarLauncher.Action.SET_NETWORKINFO";
+	private static final String BACK_STACK_PREFS = ":android:prefs";
 
-	public static final String PropertyGatewaySerialNumber = "SmarthomeSN";
-	public static final String PropertyGatewayIP = "SmarthomeServerIP";
-	public static final String PropertyGatewayPort = "SmarthomeServerPort";
-	public static final String PropertyMulticastIP = "DBDataServerIP";
-	public static final String PropertyMulticastPort = "DBDataServerPort";
+	private static final String PACKAGENAME = "com.dbstar.settings.network";
 
-	private TextView mGatewaySerialNumber, mMulticastIP, mMulticastPort,
-			mGatewayIP, mGatewayPort;
-
-	private EthernetSettings mEthSettings;
-	private WifiSettings mWifiSettings;
-
-	private Handler mHandler;
+	Page[] mPages;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		constructPages();
+
 		setContentView(R.layout.network_settings);
 
-		registerGetInfoReceiver();
-
-		initializeView();
-
-		// Intent intent = getIntent();
-		// mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
-
-		mEthSettings = new EthernetSettings(this, this);
-		mWifiSettings = new WifiSettings(this);
-
-		mWifiSettings.onActivityCreated(savedInstanceState);
-
-		mHandler = new Handler();
-
-		mHandler.postDelayed(new Runnable() {
-
-			@Override
-			public void run() {
-				onShow();
-			}
-
-		}, 300);
+		switchToPage(SettingsCommon.PAGE_GATEWAY);
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
 
-		// mGatewaySerialNumber.requestFocus();
-		getNetworkInfo();
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-
-		// setNetworkInfo();
-		unregisterReceiver(mReceiver);
 	}
 
-	private void onShow() {
-		// hide soft keyboard
-		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
-				InputMethodManager.HIDE_IMPLICIT_ONLY);
+	protected void switchToPageInternal(String fragmentName, Bundle args) {
+		getFragmentManager().popBackStack(BACK_STACK_PREFS,
+				FragmentManager.POP_BACK_STACK_INCLUSIVE);
+		Fragment f = Fragment.instantiate(this, fragmentName, args);
+		FragmentTransaction transaction = getFragmentManager()
+				.beginTransaction();
+		transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+		transaction.replace(R.id.frame, f);
+		transaction.commitAllowingStateLoss();
 	}
 
-	public void initializeView() {
-		super.initializeView();
+	int getPageIndexById(int id) {
+		int size = mPages.length;
+		for (int i = 0; i < size; i++) {
 
-		mGatewaySerialNumber = (TextView) findViewById(R.id.gateway_serialnumber);
-		mMulticastIP = (TextView) findViewById(R.id.multicast_ip);
-		mMulticastPort = (TextView) findViewById(R.id.multicast_port);
-		mGatewayIP = (TextView) findViewById(R.id.gateway_ip);
-		mGatewayPort = (TextView) findViewById(R.id.gateway_port);
-
-		mGatewaySerialNumber.setOnFocusChangeListener(mFocusChangedListener);
-		mMulticastIP.setOnFocusChangeListener(mFocusChangedListener);
-		mMulticastPort.setOnFocusChangeListener(mFocusChangedListener);
-		mGatewayIP.setOnFocusChangeListener(mFocusChangedListener);
-		mGatewayPort.setOnFocusChangeListener(mFocusChangedListener);
-	}
-
-	void registerGetInfoReceiver() {
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(ActionUpateNetworkInfo);
-		registerReceiver(mReceiver, filter);
-	}
-
-	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
-
-			Log.d("@@@", "onReceive msg " + action);
-
-			if (action.equals(ActionUpateNetworkInfo)) {
-				String gatewaySerialNumber = intent
-						.getStringExtra(PropertyGatewaySerialNumber);
-				String gatewayIP = intent.getStringExtra(PropertyGatewayIP);
-				String gatewayPort = intent.getStringExtra(PropertyGatewayPort);
-				String multicastIP = intent.getStringExtra(PropertyMulticastIP);
-				String multicastPort = intent
-						.getStringExtra(PropertyMulticastPort);
-
-				mGatewaySerialNumber.setText(gatewaySerialNumber);
-				mMulticastIP.setText(multicastIP);
-				mMulticastPort.setText(multicastPort);
-				mGatewayIP.setText(gatewayIP);
-				mGatewayPort.setText(gatewayPort);
-			}
+			if (mPages[i].Id == id)
+				return i;
 		}
-	};
 
-	void getNetworkInfo() {
-		Intent intent = new Intent();
-		intent.setAction(ActionGetNetworkInfo);
-		sendBroadcast(intent);
+		return -1;
 	}
 
-	void setNetworkInfo() {
-		String gatewaySerialNumber = mGatewaySerialNumber.getText().toString();
-		String gatewayIP = mGatewayIP.getText().toString();
-		String gatewayPort = mGatewayPort.getText().toString();
-		String multicastIP = mMulticastIP.getText().toString();
-		String multicastPort = mMulticastPort.getText().toString();
+	int getNextPage(int currentPageId) {
 
-		Intent intent = new Intent();
-		intent.setAction(ActionSetNetworkInfo);
+		return -1;
+	}
 
-		intent.putExtra(PropertyGatewaySerialNumber, gatewaySerialNumber);
-		intent.putExtra(PropertyGatewayIP, gatewayIP);
-		intent.putExtra(PropertyGatewayPort, gatewayPort);
-		intent.putExtra(PropertyMulticastIP, multicastIP);
-		intent.putExtra(PropertyMulticastPort, multicastPort);
-
-		sendBroadcast(intent);
+	int getPrevPage(int currentPageId) {
+		return -1;
+	}
+	
+	private void switchToPage(int pageId) {
+		int toPageIndex = getPageIndexById(pageId);
+		if (toPageIndex < 0)
+			return;
+		
+		Page toPage = mPages[toPageIndex];
+		switchToPageInternal(toPage.ComponentName, toPage.Args);
 	}
 
 	@Override
-	public void onResume() {
-		super.onResume();
+	public void nextPage(int currentPageId, int nextPageId) {
+		int toPageIndex = getPageIndexById(nextPageId);
+		if (toPageIndex < 0)
+			return;
 
-		mEthSettings.onResume();
+		int currentPageIndex = getPageIndexById(currentPageId);
+		Page currentPage = mPages[currentPageIndex];
+		Page toPage = mPages[toPageIndex];
 
-		mWifiSettings.onResume();
+		currentPage.NextPageId = nextPageId;
+		toPage.PrevPageId = currentPageId;
+
+		switchToPageInternal(toPage.ComponentName, toPage.Args);
 	}
 
 	@Override
-	public void onPause() {
-		super.onPause();
+	public void prevPage(int currentPageId) {
+		int currentPageIndex = getPageIndexById(currentPageId);
+		Page currentPage = mPages[currentPageIndex];
 
-		mEthSettings.onPause();
-		mWifiSettings.onPause();
+		int toPageId = currentPage.PrevPageId;
+		if (toPageId < 0)
+			return;
+
+		int prevPageIndex = getPageIndexById(toPageId);
+		Page toPage = mPages[prevPageIndex];
+
+		currentPage.PrevPageId = -1;
+		toPage.NextPageId = -1;
+
+		switchToPageInternal(toPage.ComponentName, toPage.Args);
 	}
 
-	@Override
-	public void onSave() {
-		setNetworkInfo();
+	void constructPages() {
+		mPages = new Page[6];
+		Page page = new Page();
+		page.Id = SettingsCommon.PAGE_GATEWAY;
+		page.ComponentName = PACKAGENAME + ".GatewaySettingsPage";
+		mPages[SettingsCommon.PAGE_GATEWAY] = page;
 
-		finish();
+		page = new Page();
+		page.Id = SettingsCommon.PAGE_CHANNELSELECTOR;
+		page.ComponentName = PACKAGENAME + ".ChannelSelectorPage";
+		mPages[SettingsCommon.PAGE_CHANNELSELECTOR] = page;
+
+		page = new Page();
+		page.Id = SettingsCommon.PAGE_ETHERNET;
+		page.ComponentName = PACKAGENAME + ".EthernetSettingsPage";
+		mPages[SettingsCommon.PAGE_ETHERNET] = page;
+
+		page = new Page();
+		page.Id = SettingsCommon.PAGE_WIFI;
+		page.ComponentName = PACKAGENAME + ".WifiSettingsPage";
+		mPages[SettingsCommon.PAGE_WIFI] = page;
+
+		page = new Page();
+		page.Id = SettingsCommon.PAGE_ETHERNET2;
+		page.ComponentName = PACKAGENAME + ".EthernetSettings2Page";
+		mPages[SettingsCommon.PAGE_ETHERNET2] = page;
+
+		page = new Page();
+		page.Id = SettingsCommon.PAGE_FINISH;
+		page.ComponentName = PACKAGENAME + ".FinishSettingsPage";
+		mPages[SettingsCommon.PAGE_FINISH] = page;
 	}
 
-	View.OnFocusChangeListener mFocusChangedListener = new View.OnFocusChangeListener() {
-
-		@Override
-		public void onFocusChange(View v, boolean hasFocus) {
-			if (v instanceof EditText) {
-				if (hasFocus) {
-					EditText textView = (EditText) v;
-					textView.setSelection(0);
-				}
-			}
-
-		}
-	};
 }

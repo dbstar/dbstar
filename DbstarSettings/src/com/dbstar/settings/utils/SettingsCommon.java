@@ -30,5 +30,13 @@ public class SettingsCommon {
 	public static final String OUTPUT_MODE = "output_mode";
 	
 	public static final int GET_USER_OPERATION = 1;
+	
+	
+	public static final int PAGE_GATEWAY = 0;
+	public static final int PAGE_CHANNELSELECTOR = 1;
+	public static final int PAGE_ETHERNET = 2;
+	public static final int PAGE_WIFI = 3;
+	public static final int PAGE_ETHERNET2 = 4;
+	public static final int PAGE_FINISH = 5;
 
 }

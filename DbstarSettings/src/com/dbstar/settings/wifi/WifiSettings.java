@@ -70,16 +70,11 @@ public class WifiSettings {
 	private static final int WIFI_RESCAN_INTERVAL_MS = 10 * 1000;
 	private static final int WIFI_DIALOG_ID = 1;
 
-	View mWifiSwitchButton;
-	TextView mWifiSwitchTitle;
-	CheckBox mWifiSwitchIndicator;
-	CheckBox mEthernetSwitchIndicator;
 	private final IntentFilter mFilter;
 	private final BroadcastReceiver mReceiver;
 	private final Scanner mScanner;
 
 	private WifiManager mWifiManager;
-	private WifiEnabler mWifiEnabler;
 
 	private DetailedState mLastState;
 	private WifiInfo mLastInfo;
@@ -98,13 +93,6 @@ public class WifiSettings {
 	private AccessPoint mDlgAccessPoint;
 	private Bundle mAccessPointSavedState;
 	private Activity mActivity;
-
-	View mEthConfigView;
-	View mWifiConfigView;
-
-	public boolean isWifiOn() {
-		return mWifiSwitchIndicator.isChecked();
-	}
 
 	public WifiSettings(Activity activity) {
 		mActivity = activity;
@@ -137,24 +125,8 @@ public class WifiSettings {
 				.getSystemService(Context.WIFI_SERVICE);
 		mWifiManager.asyncConnect(mActivity, new WifiServiceHandler());
 
-		mEthConfigView = (View) mActivity.findViewById(R.id.eth_config);
-		mWifiConfigView = (View) mActivity.findViewById(R.id.wifi_aplist);
-
-		mWifiSwitchButton = (View) mActivity
-				.findViewById(R.id.wifi_switch_button);
-		mWifiSwitchButton.setOnClickListener(mEnablerClickListener);
-		mWifiSwitchButton.setOnFocusChangeListener(mFocusChangeListener);
-		mWifiSwitchTitle = (TextView) mActivity
-				.findViewById(R.id.wifi_switch_title);
-		mWifiSwitchIndicator = (CheckBox) mActivity
-				.findViewById(R.id.wifi_switch_indicator);
-		mEthernetSwitchIndicator = (CheckBox) mActivity
-				.findViewById(R.id.eth_switch_indicator);
 		mAccessPointListView = (ListView) mActivity
 				.findViewById(R.id.wifi_aplist);
-
-		mWifiEnabler = new WifiEnabler(mActivity, mWifiSwitchIndicator,
-				mWifiConfigView);
 
 		mAPAdapter = new AccessPointsAdapter(mActivity);
 		mAPAdapter.setDataSet(mAccessPointList);
@@ -164,27 +136,7 @@ public class WifiSettings {
 		mAccessPointListView.setOnItemSelectedListener(mItemSelectedListener);
 	}
 
-	View.OnFocusChangeListener mFocusChangeListener = new View.OnFocusChangeListener() {
-
-		@Override
-		public void onFocusChange(View v, boolean hasFocus) {
-			if (hasFocus == true) {
-				if (v.getId() == R.id.wifi_switch_button) {
-					mWifiSwitchTitle.setTextColor(0xFFFFCC00);
-				}
-			} else {
-				if (v.getId() == R.id.wifi_switch_button) {
-					mWifiSwitchTitle.setTextColor(0xFF000000);
-				}
-			}
-
-		}
-	};
-
 	public void onResume() {
-		if (mWifiEnabler != null) {
-			mWifiEnabler.resume();
-		}
 
 		mActivity.registerReceiver(mReceiver, mFilter);
 		if (mKeyStoreNetworkId != INVALID_NETWORK_ID
@@ -197,10 +149,6 @@ public class WifiSettings {
 	}
 
 	public void onPause() {
-		if (mWifiEnabler != null) {
-			mWifiEnabler.pause();
-		}
-
 		mActivity.unregisterReceiver(mReceiver);
 		mScanner.pause();
 	}
@@ -486,19 +434,6 @@ public class WifiSettings {
 		}
 	}
 
-	View.OnClickListener mEnablerClickListener = new View.OnClickListener() {
-		@Override
-		public void onClick(View view) {
-			if (view.getId() != R.id.wifi_switch_button)
-				return;
-
-			mWifiSwitchIndicator.toggle();
-
-			mEthernetSwitchIndicator.setChecked(!mWifiSwitchIndicator
-					.isChecked());
-		}
-	};
-
 	View mLastSelectedView = null, mSelectedView = null;
 	OnItemSelectedListener mItemSelectedListener = new OnItemSelectedListener() {
 
@@ -551,12 +486,16 @@ public class WifiSettings {
 
 	void onAccessPointSelected(int index) {
 		mSelectedAccessPoint = mAccessPointList.get(index);
-		/** Bypass dialog for unsecured, unsaved networks */
-		if (mSelectedAccessPoint.security == AccessPoint.SECURITY_NONE
-				&& mSelectedAccessPoint.networkId == INVALID_NETWORK_ID) {
+		if (mSelectedAccessPoint.networkId != INVALID_NETWORK_ID)  {
+			if (!requireKeyStore(mSelectedAccessPoint.getConfig())) {
+                mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
+            }
+		} else if (mSelectedAccessPoint.security == AccessPoint.SECURITY_NONE) {
+			/** Bypass dialog for unsecured, unsaved networks */
 			mSelectedAccessPoint.generateOpenNetworkConfig();
 			mWifiManager.connectNetwork(mSelectedAccessPoint.getConfig());
 		} else {
+			// configure access point
 			showConfigUi(mSelectedAccessPoint);
 		}
 	}
@@ -602,11 +541,14 @@ public class WifiSettings {
 			}
 		} else {
 			mWifiManager.connectNetwork(config);
+			mWifiManager.saveNetwork(config);
 		}
 
 		if (mWifiManager.isWifiEnabled()) {
 			mScanner.resume();
 		}
+		
+		updateAccessPoints();
 	}
 
 	private class AccessPointsAdapter extends BaseAdapter {
