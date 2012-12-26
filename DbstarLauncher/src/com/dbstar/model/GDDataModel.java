@@ -745,6 +745,7 @@ public class GDDataModel {
 				Id = 0;
 				oldValue = cursor
 						.getString(GDDVBDataProvider.GlobalQuery.VALUE);
+				Log.d(TAG, "=========== global table=== "+ property + " old value = " + oldValue);
 			}
 		}
 
@@ -766,7 +767,10 @@ public class GDDataModel {
 			if (retUri != null)
 				ret = true;
 		} else {
-			if (!oldValue.equals(value)) {
+			
+			Log.d(TAG, "=========== global === " + oldValue + " " + value);
+
+			if (oldValue != null && !oldValue.equals(value)) {
 				// update
 				ContentValues values = new ContentValues();
 				values.put(GDDVBDataContract.Global.VALUE, value);

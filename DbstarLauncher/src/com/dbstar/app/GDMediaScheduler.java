@@ -109,8 +109,10 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	public void updateData(int type, Object key, Object data) {
 		if (type == GDDataProviderService.REQUESTTYPE_GETPREVIEWS) {
 			if (data != null) {
-				Log.d(TAG, "updateData ");
 				mResources = (PreviewData[]) data;
+
+				Log.d(TAG, "updateData " + mResources + " " + mResources.length);
+
 				mResourcesReady = true;
 				// playMedia();
 				mHandler.postDelayed(mUpdateTimeTask, 200);

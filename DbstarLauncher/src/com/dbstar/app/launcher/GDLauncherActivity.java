@@ -123,12 +123,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mShowPopupMenuAnimation, mHidePopupMenuAnimation, mFocusZoomOut,
 			mFocusZoomIn, mGallerySlideToRightAnim, mGallerySlideToLeftAnim,
 			mGallerySlideToBottomAnim, mGallerySlideFromBottomAnim;
-	
+
 	LayoutAnimationController mAnimController = null;
-	
+
 	// true: gallery is during the animation of moving from bottom
 	boolean mIsParentMenuBeingUp = false;
-	
+
 	// true: user press enter key and be entering sub menu
 	boolean mEnterSubmenu = false;
 
@@ -294,7 +294,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		if (mMenuStack.size() > 1) {
 			ret = true;
 			mMenuStack.pop();
-			
+
 			mAnimController.setAnimation(mGallerySlideToLeftAnim);
 
 			long time = AnimationUtils.currentAnimationTimeMillis();
@@ -360,41 +360,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent.setClass(this, GDTVActivity.class);
 			startActivity(intent);
 
-		} else if (menuItem.Type().equals(GDCommon.ColumnTypeGuodian)) {
-
-			if (index == MENULEVEL2_GUOWANG_KUAIXUNINDEX) {
-				String category = menuItem.MenuText();
-				String url = mService.getCategoryContent(category);
-				Log.d(TAG, category + " url = " + url);
-
-				if (!url.equals("")) {
-					Intent intent = new Intent();
-					intent.putExtra("url", url);
-					intent.setClass(this, GDWebBrowserActivity.class);
-					startActivity(intent);
-				}
-			} else if (index == MENULEVEL2_GUOWANG_SHIPININDEX) {
-				Intent intent = new Intent();
-				intent.putExtra(Content.COLUMN_ID, menuItem.ColumnId());
-				intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-				intent.setClass(this, GDHDMovieActivity.class);
-				startActivity(intent);
-			} else {
-				// show baozhi
-			}
-
-		} else if (menuItem.Type().equals(GDCommon.ColumnTypeGuodian)) {
-			String category = menuItem.MenuText();
-			String url = mService.getCategoryContent(category);
-			Log.d(TAG, category + " url = " + url);
-
-			if (!url.equals("")) {
-				Intent intent = new Intent();
-				intent.putExtra("url", url);
-				intent.setClass(this, GDWebBrowserActivity.class);
-				startActivity(intent);
-			}
-
+		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSmartLife)) {
+			showGuodianApp(menuItem.ColumnId());
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSettings)) {
 			showSettingView(menuItem.ColumnId());
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeUserCenter)) {
@@ -413,12 +380,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		long time = AnimationUtils.currentAnimationTimeMillis();
 		mFocusZoomOut.setStartTime(time);
 
-//		mShowHighlightAnimation.setStartTime(time);
-//		if (mMoveLeft) {
-//			mLeftArrow.startAnimation(mShowHighlightAnimation);
-//		} else {
-//			mRightArrow.startAnimation(mShowHighlightAnimation);
-//		}
+		// mShowHighlightAnimation.setStartTime(time);
+		// if (mMoveLeft) {
+		// mLeftArrow.startAnimation(mShowHighlightAnimation);
+		// } else {
+		// mRightArrow.startAnimation(mShowHighlightAnimation);
+		// }
 
 		Menu menu = mMenuStack.peek();
 		MenuItem[] menuItems = menu.Items;
@@ -448,28 +415,30 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		if (menuItem.SubMenu != null) {
-			
-//			if (mHidePopupMenuAnimation.hasStarted() && !mHidePopupMenuAnimation.hasEnded()) {
-//				// is hiding
-//				mHidePopupMenuAnimation.cancel();
-//				mHidePopupMenuAnimation.reset();
-//				return;
-//			}
-			
+
+			// if (mHidePopupMenuAnimation.hasStarted() &&
+			// !mHidePopupMenuAnimation.hasEnded()) {
+			// // is hiding
+			// mHidePopupMenuAnimation.cancel();
+			// mHidePopupMenuAnimation.reset();
+			// return;
+			// }
+
 			Menu subMenu = menuItem.SubMenu;
 			ColumnData[] subMenuItem = subMenu.Columns;
 
 			mPopupMenu.clearChoices();
 			mPopupMenuAdapter.setDataSet(subMenuItem);
 			mPopupMenuAdapter.notifyDataSetChanged();
-			
-			
-//			if (mShowPopupMenuAnimation.hasStarted() && !mShowPopupMenuAnimation.hasEnded()) {
-//				// is showing
-//				return;
-//			}
-//
-			Log.d(TAG, " mPopupMenuContainer.getVisibility() " + mPopupMenuContainer.getVisibility());
+
+			// if (mShowPopupMenuAnimation.hasStarted() &&
+			// !mShowPopupMenuAnimation.hasEnded()) {
+			// // is showing
+			// return;
+			// }
+			//
+			Log.d(TAG, " mPopupMenuContainer.getVisibility() "
+					+ mPopupMenuContainer.getVisibility());
 			if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
 				mShowPopupMenuAnimation.setStartTime(time);
 				mFocusItemBackground.startAnimation(mFocusZoomOut);
@@ -481,24 +450,26 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			}
 		} else {
 			if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
-				
-//				if (mHidePopupMenuAnimation.hasStarted() && !mHidePopupMenuAnimation.hasEnded()) {
-//					// is hiding
-//					return;
-//				}
-				
-//				if (mShowPopupMenuAnimation.hasStarted() && !mShowPopupMenuAnimation.hasEnded()) {
-//					// is showing
-////					displayPopupMenu(false);
-//					mShowPopupMenuAnimation.cancel();
-//					mShowPopupMenuAnimation.reset();
-////					return;
-//				}
-				
-//				mHidePopupMenuAnimation.setStartTime(time);
-//				mFocusItemBackground.startAnimation(mFocusZoomOut);
-//				mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
-				
+
+				// if (mHidePopupMenuAnimation.hasStarted() &&
+				// !mHidePopupMenuAnimation.hasEnded()) {
+				// // is hiding
+				// return;
+				// }
+
+				// if (mShowPopupMenuAnimation.hasStarted() &&
+				// !mShowPopupMenuAnimation.hasEnded()) {
+				// // is showing
+				// // displayPopupMenu(false);
+				// mShowPopupMenuAnimation.cancel();
+				// mShowPopupMenuAnimation.reset();
+				// // return;
+				// }
+
+				// mHidePopupMenuAnimation.setStartTime(time);
+				// mFocusItemBackground.startAnimation(mFocusZoomOut);
+				// mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
+
 				displayPopupMenu(false);
 				mPopupMenu.clearChoices();
 				mPopupMenuAdapter.setDataSet(null);
@@ -544,15 +515,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if (columnId.equals(GDCommon.ColumnIDNetworkSettings)) {
 			intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
 		} else if (columnId.equals(GDCommon.ColumnIDFileBrowser)) {
-			intent = new Intent();
-			intent.setComponent(new ComponentName("com.fb.FileBrower",
-					"com.fb.FileBrower.FileBrower"));
-			intent.setAction("android.intent.action.VIEW");
+			intent = startComponent("com.fb.FileBrower", "FileBrower");
 		} else if (columnId.equals(GDCommon.ColumnIDAdvancedSettings)) {
-			intent = new Intent();
-			intent.setComponent(new ComponentName("com.android.settings",
-					"com.android.settings.Settings"));
-			intent.setAction("android.intent.action.VIEW");
+			intent = startComponent("com.android.settings", "Settings");
 		} else if (columnId.equals(GDCommon.ColumnIDSmartcardSettings)) {
 			intent = new Intent();
 			intent.setClass(this, GDSmartcardActivity.class);
@@ -564,7 +529,30 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 	}
 
-	private Intent startSettingsComponent(String packageName,
+	private void showGuodianApp(String columnId) {
+		if (columnId == null || columnId.isEmpty()) {
+			return;
+		}
+
+		Intent intent = null;
+
+		if (columnId.equals(GDCommon.ColumnIDGuodianSmartPower)) {
+			intent = startGuodianActivity("app.GDSmartPowerActivity");
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianHomeEfficiency)) {
+			intent = startGuodianActivity("app.GDHomeEfficiencyActivity");
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianSmartHome)) {
+			intent = startGuodianActivity("app.GDSmartHomeActivity");
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianNews)) {
+			intent = startGuodianActivity("app.GDGuodianNewsActivity");
+		}
+
+		if (intent != null) {
+			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+			startActivity(intent);
+		}
+	}
+
+	private Intent startComponent(String packageName,
 			String activityName) {
 		Intent intent = new Intent();
 		String componentName = packageName + "." + activityName;
@@ -576,7 +564,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	private Intent startDbstarSettingActivity(String activityName) {
-		return startSettingsComponent("com.dbstar.settings", activityName);
+		return startComponent("com.dbstar.settings", activityName);
+	}
+
+	private Intent startGuodianActivity(String activityName) {
+		return startComponent("com.guodian", activityName);
 	}
 
 	private void enterSubMenu(Menu newMenu) {
@@ -768,7 +760,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private void initializeAnimation() {
 
-		mGallerySlideToBottomAnim.setAnimationListener(new Animation.AnimationListener() {
+		mGallerySlideToBottomAnim
+				.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
@@ -785,7 +778,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 				});
 
-		mGallerySlideFromBottomAnim.setAnimationListener(new Animation.AnimationListener() {
+		mGallerySlideFromBottomAnim
+				.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
@@ -807,8 +801,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					}
 
 				});
-		
-		mGallerySlideToLeftAnim.setAnimationListener(new Animation.AnimationListener() {
+
+		mGallerySlideToLeftAnim
+				.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
@@ -829,8 +824,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					}
 
 				});
-		
-		mGallerySlideToRightAnim.setAnimationListener(new Animation.AnimationListener() {
+
+		mGallerySlideToRightAnim
+				.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
@@ -853,7 +849,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 				});
 
-		mHidePopupMenuAnimation.setAnimationListener(new Animation.AnimationListener() {
+		mHidePopupMenuAnimation
+				.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
@@ -870,7 +867,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 				});
 
-		mShowPopupMenuAnimation.setAnimationListener(new Animation.AnimationListener() {
+		mShowPopupMenuAnimation
+				.setAnimationListener(new Animation.AnimationListener() {
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
@@ -889,14 +887,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				});
 
 	}
-	
+
 	// Animation callback
 
 	// Animation sequence:
 	// 1. First display: Gallery slide to right, popup menu popup.
-	// 2. Press Enter key, enter submenu: Gallery slide to bottom -> submenu slide to right, popup menu popup
-	// 3. Press Back key, leave submenu: popup menu hide, submenu slide to left -> gallery slide from bottom
-	
+	// 2. Press Enter key, enter submenu: Gallery slide to bottom -> submenu
+	// slide to right, popup menu popup
+	// 3. Press Back key, leave submenu: popup menu hide, submenu slide to left
+	// -> gallery slide from bottom
+
 	// Gallery slide to bottom end:
 	// . slide to menu to right, and show popup menu
 	void onParentMenuHided() {
@@ -905,15 +905,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		// TODO: should call this in onChildMenuShown !
 		// but onChildMenuShown is not called.
 		mMainMenu.setSelectionByForce(0);
-		
+
 		mAnimController.setAnimation(mGallerySlideToRightAnim);
 		mMainMenu.startLayoutAnimation();
 	}
-	
+
 	// submenu slide to right end
 	void onChildMenuShown() {
 		Log.d(TAG, " +++++++++++++ onChildMenuShown ++++++++++++++");
-//		mMainMenu.setSelectionByForce(0);
+		// mMainMenu.setSelectionByForce(0);
 	}
 
 	// submenu slide to left end:
@@ -935,7 +935,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mIsParentMenuBeingUp = false;
 		showHighlightMenuItem();
 	}
-	
+
 	// hide popup menu end:
 	// . if enter submenu, slide gallery to bottom
 	void onPopupMenuHide() {
@@ -1353,7 +1353,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Log.d(TAG, "++++++++++==========initializeApp ================");
 		startEngine();
 
-//		initializeData();
+		// initializeData();
 	}
 
 	@Override
@@ -1436,7 +1436,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		// mPowerController.start(mService);
 		// mWeatherController.start(mService);
 	}
-	
+
 	public class PopupMenuAdapter extends BaseAdapter {
 
 		ColumnData[] mDataSet = null;

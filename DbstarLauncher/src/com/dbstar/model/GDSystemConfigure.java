@@ -93,7 +93,7 @@ public class GDSystemConfigure {
 			mDefaultStorageDisk = DefaultStorageDisk;
 		}
 
-		if (mIconRootDir != null && !mIconRootDir.isEmpty()) {
+		if (mIconRootDir == null || mIconRootDir.isEmpty()) {
 			mIconRootDir = DefaultColumnResDir;
 		}
 
@@ -111,7 +111,9 @@ public class GDSystemConfigure {
 		String disk = mDefaultStorageDisk;
 		File file = new File(disk);
 		if (file.exists()) {
-			mStorageDir = mStorageDisk = disk;
+			mStorageDir = disk;
+			mStorageDisk = disk;
+			Log.d(TAG, " disk is ready ===  " + mStorageDisk);
 			return true;
 		}
 
@@ -224,7 +226,7 @@ public class GDSystemConfigure {
 		}
 
 		file = mStorageDir + "/" + data.URI;
-
+		
 		File f = new File(file);
 		if (!f.exists()) {
 			file = "";

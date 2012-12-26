@@ -48,7 +48,7 @@ public class GDCommon {
 	public static final String ColumnTypeEntertainment = "9";
 	public static final String ColumnTypeSettings = "L99";
 	public static final String ColumnTypeUserCenter = "L98";
-	public static final String ColumnTypeGuodian = "100";
+	public static final String ColumnTypeSmartLife = "SmartLife";
 
 	public static final String ColumnIDReceiveChooser = "L9801";
 	public static final String ColumnIDDownloadStatus = "L9802";
@@ -59,6 +59,11 @@ public class GDCommon {
 	public static final String ColumnIDFileBrowser = "L9904";
 	public static final String ColumnIDAdvancedSettings = "L9905";
 	public static final String ColumnIDSmartcardSettings = "L9906";
+
+	public static final String ColumnIDGuodianSmartPower = "G1";
+	public static final String ColumnIDGuodianHomeEfficiency = "G2";
+	public static final String ColumnIDGuodianSmartHome = "G3";
+	public static final String ColumnIDGuodianNews = "G4";
 	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";

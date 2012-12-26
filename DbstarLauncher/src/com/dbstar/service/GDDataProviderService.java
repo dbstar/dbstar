@@ -243,6 +243,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		mConfigure.configureSystem();
 
 		// check storage
+		// the disk is not mounted at this point,
+		// so wait for mount event.
 		if (mConfigure.configureStorage()) {
 			String disk = mConfigure.getStorageDisk();
 			Log.d(TAG, "monitor disk " + disk);
@@ -275,11 +277,14 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		initializeNetEngine();
 
 		queryDiskGuardSize();
+		if(mIsStorageReady) {
+			mDataModel.setPushDir(mConfigure.getStorageDir());
+		}
 	}
 
 	void initializeDataEngine() {
 		mDataModel.initialize(mConfigure);
-		mDataModel.setPushDir(mConfigure.getStorageDir());
+//		mDataModel.setPushDir(mConfigure.getStorageDir());
 	}
 
 	void deinitializeDataEngine() {
@@ -384,6 +389,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 				if (disk.equals(storage) && mApplicationObserver != null) {
 					mIsStorageReady = true;
+					String dir = mConfigure.getStorageDir();
+					Log.d(TAG, "11111111111111111  dir === " + dir);
+					mDataModel.setPushDir(dir);
 
 					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
 					mDiskMonitor.removeDiskFromMonitor(disk);
@@ -1141,6 +1149,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 						for (int i = 0; i < data.length; i++) {
 							String uri = getPreviewFile(data[i]);
+							
 							if (uri != null && !uri.isEmpty()) {
 								data[i].FileURI = uri;
 								previews.add(data[i]);
