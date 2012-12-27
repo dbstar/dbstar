@@ -24,7 +24,7 @@ typedef enum{
 
 #define WORKSPACE_SURFIX	"/data/dbstar/smarthome/"
 #define DATABASE_DIR 		WORKSPACE_SURFIX"database/"
-#define DATABASE			DATABASE_DIR"smarthome.db"	//sqlite3 database
+#define DATABASE			"/data/dbstar/Smarthome.db"	//sqlite3 database
 #define SETTING_BASE		WORKSPACE_SURFIX"settings/base.ini"	//serverconfig path on ppc
 #define SQLITECMDLEN 256							//the max number byte contained in "cmdStr"---command string--sqlite.cpp
 #define WAITRES	600									//wait 600*myDelay(5) ms, if no response, return "#ff ff ff ffff#ff#ff ff#ff#"
