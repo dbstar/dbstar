@@ -447,7 +447,7 @@ static int recvfrom_serial(unsigned char *buf, unsigned int buf_size, unsigned c
 		}
 		
 		DEBUG("catch_valid_cmd_head_flag=%d, has_read=%d\n", catch_valid_cmd_head_flag, has_read);
-		if(has_read>64)	// 接收太多的串口没有意义，即便是先接收到一些错误的串口返回命令，长度为64也足以得到3组。
+		if(has_read>96)	// 接收太多的串口没有意义，即便是先接收到一些错误的串口返回命令，长度为96也足以得到4组。
 			break;
 	}
 	DEBUG("has read total %d bytes\n", has_read);

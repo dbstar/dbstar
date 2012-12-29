@@ -487,9 +487,9 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 	int ret = 0;
 	
 	for(i=0;i<(cmd_len-SERIAL_RESPONSE_LEN_MIN);i++){
-		if(0x68==*(serial_cmd_son+i) || 0x68==*(serial_cmd_son+7+i)){
-			DEBUG("catch valid cmd head\n");
-			ret==smart_socket_serial_cmd_parse_son(serial_cmd_son+i, cmd_len_son-i, socket_action, socket_id, result);
+		if(0x68==*(serial_cmd_son+i) && 0x68==*(serial_cmd_son+7+i)){
+			DEBUG("catch valid cmd head,i=%d\n",i);
+			ret = smart_socket_serial_cmd_parse_son(serial_cmd_son+i, cmd_len_son-i, socket_action, socket_id, result);
 			if(-1==ret){
 				DEBUG("cmd parse failed thoroughly\n");
 				break;
@@ -501,8 +501,11 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			else if(-2==ret){
 				DEBUG("this parse failed, but will try again\n");
 			}
+			else
+				DEBUG("look this return value: %d, what a fucking meaning\n", ret);
 		}
 	}
+	DEBUG("parse action finished\n");
 	
 	if(0!=ret)
 		ret = -1;
@@ -555,7 +558,7 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 	memset(socket_addr, 0, sizeof(socket_addr));
 	snprintf(socket_addr, sizeof(socket_addr), "%02x%02x%02x%02x%02x%02x", serial_cmd[1],serial_cmd[2],serial_cmd[3],serial_cmd[4],serial_cmd[5],serial_cmd[6]);
 	if(strcmp(socket_addr, socket_id)){
-		DEBUG("socket id can not match: id in cmd is %s, and mirror with %s\n", socket_addr, socket_id);
+		DEBUG("socket id can not match: id in cmd is %s, but I want %s\n", socket_addr, socket_id);
 		return -2;
 	}
 
@@ -672,6 +675,7 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 				DEBUG("serial instruction invalide, err code: 0x%02x\n", (int)(*result));
 				ret = -2;
 			}
+			break;
 		case SMART_SOCKET_COMMUNICATION_FAILD:		// Í¨Ñ¶Ê§°Ü
 			// 68 a0 a1 a2 a3 a4 a5 68 C5 03 xx xx xx cs 16
 			if(serial_cmd[13]!=serialcmd_checksum(serial_cmd, 13)){
@@ -683,12 +687,13 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 				DEBUG("serial control communication failed, err code: 0x%02x 0x%02x 0x%02x\n", serial_cmd[10], serial_cmd[11], serial_cmd[12]);
 				ret = -2;
 			}
+			break;
 		default:
 			DEBUG("can not support this action of smart socket\n");
 			ret = -2;
 			break;
 	}
-
+	
 	return ret;
 }
 
