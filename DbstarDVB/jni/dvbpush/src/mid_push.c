@@ -71,6 +71,7 @@ typedef struct tagPRG
 	RECEIVETYPE_E	type;
 	long long		cur;
 	long long		total;
+	int				parsed;
 }PROG_S;
 
 static int mid_push_regist(PROG_S *prog);
@@ -417,8 +418,13 @@ static int prog_monitor(PROG_S *prog, char *time_stamp)
 		
 		prog->cur = rxb;
 		if((prog->cur) >= (prog->total)){
-			DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", prog->uri);
-			push_prog_finish(prog->id, prog->type);
+			if(0==prog->parsed){
+				DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", prog->uri);
+				push_prog_finish(prog->id, prog->type);
+			}
+			else{
+				DEBUG("%s download finished, wipe off from monitor. It is parsed already\n", prog->uri);
+			}
 		}
 	}
 	else
@@ -978,6 +984,7 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].type = prog->type;
 			s_prgs[i].cur = prog->cur;
 			s_prgs[i].total = prog->total;
+			s_prgs[i].parsed = prog->parsed;
 			
 			DEBUG("regist to push[%d]:%s %s %s %lld\n",
 					i,
@@ -999,6 +1006,7 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].type = prog->type;
 			s_prgs[i].cur = prog->cur;
 			s_prgs[i].total = prog->total;
+			s_prgs[i].parsed = prog->parsed;
 			
 			push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
 			s_push_monitor_active++;
@@ -1197,6 +1205,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 				cur_prog.type = atoi(result[i*column+2]);
 				cur_prog.cur = 0LL;
 				cur_prog.total = totalsize;
+				cur_prog.parsed = atoi(result[i*column+9]);
 				mid_push_regist(&cur_prog);
 				
 				/*
@@ -1252,7 +1261,7 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
  由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
  所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
 */
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*

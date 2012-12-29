@@ -625,6 +625,13 @@ static int channel_ineffective_clear()
 	return sqlite_execute(sqlite_cmd);
 }
 
+static int publication_parsed_set(char *publicationID, int parsed_flag)
+{
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE ReceiveType='%d' AND ID='%s';", RECEIVETYPE_PUBLICATION,publicationID);
+	return sqlite_transaction_exec(sqlite_cmd);
+}
+
 /*
  向成品表Publication插入成品信息，需要先判断是否存在，然后才能决定是Insert还是Update
 */
@@ -2559,10 +2566,6 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 			else if(0==xmlStrcmp(cur->name, BAD_CAST"Publication")){
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				
-				/*
-				 针对Publication.xml，在Initialize.xml表中记录的ServiceID复用为其自身的PublicationID
-				*/
-				snprintf(xmlinfo.ID,sizeof(xmlinfo.ID),"%s",id);
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 				
 				/*
@@ -2580,6 +2583,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					snprintf(publication_s.ServiceID,sizeof(publication_s.ServiceID),"%s", xmlinfo.ServiceID);
 					ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, old_xmlver);
 					publication_insert(&publication_s);
+					snprintf(xmlinfo.ID,sizeof(xmlinfo.ID),"%s",publication_s.PublicationID);
 					
 					ret = PROCESS_OVER_CHECK(ret);
 				}
@@ -2695,6 +2699,11 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				if(docname)
 					snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", docname);
 				xmlinfo_insert(&xmlinfo);
+				
+				if(PRODUCTION_XML==xml_flag){
+					DEBUG("this is a Publication xml, set parsed as 1\n");
+					publication_parsed_set(id, 1);
+				}
 				
 				sqlite_transaction_end(1);
 				

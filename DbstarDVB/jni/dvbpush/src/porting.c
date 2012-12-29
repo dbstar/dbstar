@@ -586,6 +586,8 @@ int guidelist_select_refresh()
 #define TIME_STAMP_MIN		"2013-01-01 00:00:00"
 #define DELETE_SIZE_ONCE	(107374182400LL)
 //(107374182400)==(100*1024*1024*1024)==100G
+static long long s_delete_total_size = 0LL;
+
 static int disk_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -596,8 +598,8 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 	
 	int i = 0;
 	long long total_size = 0LL;
-	long long delete_total_size = 0LL;
 	char total_uri[512];
+	char *ids = (char *)receiver;
 	
 	for(i=1;i<row+1;i++)
 	{
@@ -605,14 +607,26 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 		DEBUG("%s\t#%s\t#%s=%lld\t#%s\t#%s\t#%s\n",result[i*column],result[i*column+1],result[i*column+2],total_size,result[i*column+3],result[i*column+4],result[i*column+5]);
 		
 		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
-		//unlink(total_uri);
-		delete_total_size += total_size;
-		if(delete_total_size>=DELETE_SIZE_ONCE){
-			DEBUG("delete %lld finished, %s, total finish!\n", delete_total_size,total_uri);
+		unlink(total_uri);
+		
+		if(strlen(ids)>0)
+			snprintf(ids+strlen(ids),receiver_size-strlen(ids),"\t");
+		snprintf(ids+strlen(ids),receiver_size-strlen(ids),"%s",result[i*column]);
+		
+		s_delete_total_size += total_size;
+		if(s_delete_total_size>=DELETE_SIZE_ONCE){
+			DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
 			break;
 		}
 		else
-			DEBUG("delete %lld finished, %s\n", delete_total_size, total_uri);
+			DEBUG("delete %lld finished, %s\n", s_delete_total_size, total_uri);
+		
+		if(strlen(ids)>(receiver_size-64)){
+			DEBUG("receiver can load no more than such PublicationID\n");
+			break;
+		}
+		else
+			DEBUG("publication in delete queue: %s", ids);
 	}
 	
 	// 还需要找个机会删除这些Publication对应的ResStr、ResPoster等附属记录
@@ -638,10 +652,12 @@ void disk_manage()
 #endif
 	
 // 目前只做一个简单的磁盘整理，不考虑未纳入数据库管理的文件（需要扫描磁盘才能实现）
-	char sqlite_cmd[256];
+	char sqlite_cmd[1024];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = disk_manage_cb;
 	char time_stamp[32];
 	memset(time_stamp,0,sizeof(time_stamp));
+	char deleted_publicationids[1024];
+	memset(deleted_publicationids,0,sizeof(deleted_publicationids));
 	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
 	if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
@@ -653,11 +669,96 @@ void disk_manage()
 		DEBUG("such time stamp for now is invalid: %s, replace it as %s\n", time_stamp,REMOTE_FUTURE);
 		snprintf(time_stamp,sizeof(time_stamp),"%s",REMOTE_FUTURE);
 	}
-	
+
+/*
+ 仔细考虑时，还应当加入ReceiveStatus条件，这些没有收全的文件应当被优先删除。
+*/
+	s_delete_total_size = 0LL;
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted from Publication where PushEndTime<'%s' order by Deleted DESC,TimeStamp;",time_stamp);
-	int ret = sqlite_read(sqlite_cmd, time_stamp, strlen(time_stamp), sqlite_callback);
+	int ret = sqlite_read(sqlite_cmd, deleted_publicationids, sizeof(deleted_publicationids), sqlite_callback);
 	if(ret>0){
-		DEBUG("select progs for disk manage OK\n");
+		DEBUG("delete such Publications: %s\n", deleted_publicationids);
+		char *p_publicationid = deleted_publicationids;
+		
+		// 制表符\t
+		char *p_HT = NULL;
+		int first_publicaiton_flag = 1;
+		
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Publication WHERE ");
+		
+		char sqlite_cmd_ResStr[1024];
+		snprintf(sqlite_cmd_ResStr, sizeof(sqlite_cmd_ResStr), "DELETE FROM ResStr WHERE ");
+		
+		char sqlite_cmd_ResPoster[1024];
+		snprintf(sqlite_cmd_ResPoster, sizeof(sqlite_cmd_ResPoster), "DELETE FROM ResPoster WHERE ");
+		
+		char sqlite_cmd_ResSubTitle[1024];
+		snprintf(sqlite_cmd_ResSubTitle, sizeof(sqlite_cmd_ResSubTitle), "DELETE FROM ResSubTitle WHERE ");
+		
+		char sqlite_cmd_MultipleLanguageInfoVA[1024];
+		snprintf(sqlite_cmd_MultipleLanguageInfoVA, sizeof(sqlite_cmd_MultipleLanguageInfoVA), "DELETE FROM MultipleLanguageInfoVA WHERE ");
+		
+		char sqlite_cmd_Initialize[1024];
+		snprintf(sqlite_cmd_Initialize, sizeof(sqlite_cmd_Initialize), "DELETE FROM Initialize WHERE ");
+		
+		while(NULL!=p_publicationid){
+			p_HT = strchr(p_publicationid,'\t');
+			if(p_HT){
+				*p_HT = '\0';
+				p_HT ++;
+			}
+			DEBUG("p_publicationid: %s, p_HT: %s\n", p_publicationid, p_HT);
+			
+			if(strlen(p_publicationid)>0){
+				if(0==first_publicaiton_flag){
+					snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR");
+					snprintf(sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr)," OR");
+					snprintf(sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster)," OR");
+					snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle)," OR");
+					snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA)," OR");
+					snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize)," OR");
+				}
+				
+				snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'", p_publicationid);
+				snprintf(sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
+				snprintf(sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
+				snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
+				snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA)," PublicationID='%s'", p_publicationid);
+				snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize)," (PushFlag='%d' AND ID='%s')", PRODUCTION_XML,p_publicationid);
+				
+				if(1==first_publicaiton_flag)
+					first_publicaiton_flag = 0;
+			}
+				
+			p_publicationid = p_HT;
+		}
+		
+		if(0==first_publicaiton_flag){
+			snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
+			snprintf(sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr),";");
+			snprintf(sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster),";");
+			snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle),";");
+			snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA),";");
+			snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize),";");
+			
+			if(-1==sqlite_transaction_begin()){
+				ret = -1;
+			}
+			else{
+				sqlite_transaction_exec(sqlite_cmd);
+				sqlite_transaction_exec(sqlite_cmd_ResStr);
+				sqlite_transaction_exec(sqlite_cmd_ResPoster);
+				sqlite_transaction_exec(sqlite_cmd_ResSubTitle);
+				sqlite_transaction_exec(sqlite_cmd_MultipleLanguageInfoVA);
+				sqlite_transaction_exec(sqlite_cmd_Initialize);
+				
+				sqlite_transaction_end(1);
+			}
+			DEBUG("disk manage finished\n");
+		}
+		else
+			DEBUG("no publication has deleted\n");
+
 		return 0;
 	}
 	else if(0==ret){

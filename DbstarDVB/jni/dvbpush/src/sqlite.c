@@ -732,6 +732,7 @@ PushEndTime	DATETIME DEFAULT '',\
 Columns	NVARCHAR(512) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 FreshFlag INTEGER DEFAULT 1,\
+Parsed	NVARCHAR(32) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
 			}

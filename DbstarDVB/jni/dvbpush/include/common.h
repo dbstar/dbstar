@@ -122,16 +122,6 @@ typedef enum{
 	NAVIGATIONTYPE_COLUMN
 }NAVIGATIONTYPE_E;
 
-
-typedef enum{
-	COLUMN_MOVIE = 1,
-	COLUMN_TV = 2,
-	COLUMN_GUIDE = 3,
-	COLUMN_SG = 4,
-	COLUMN_MYCENTER = 98,	// 本地内置的菜单，“个人中心”
-	COLUMN_SETTING = 99,	// 本地内置的菜单，“设置”
-}COLUMN_TYPE_E;
-
 /*
 默认的初始化文件uri，相对于push根路径的uri，类似于Initialize.xml中Channel.xml的路径
 但在运行过程中可能会被更改
