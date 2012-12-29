@@ -7,6 +7,7 @@ int getGlobalPara(char* name);
 int sqlite_execute(char *exec_str);
 INSTRUCTION_RESULT_E read_model_with_id(int model_id, MODEL_S *model_array, unsigned int *model_num);
 INSTRUCTION_RESULT_E read_equipment_with_type_id(int type_id, EQUIPMENT_S *equipment);
+int str_sqlite_read(char *buf, char *sql_cmd);
 
 ///debug functions
 #ifdef SMARTHOME_DEBUG

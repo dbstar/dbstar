@@ -4,7 +4,7 @@
 int socket_init();
 void socket_mainloop(void);
 
-unsigned int smart_power_cmds_open(CMD_ARRAY_OP_E cmd_op, BOOL_E insert_flag);
+int smart_power_cmds_open(CMD_ARRAY_OP_E cmd_op, BOOL_E insert_flag);
 int smart_power_cmds_close(unsigned int index, int close_flag);
 int smart_power_instruction_set(int index_p, char *str, unsigned int str_len);
 int smart_power_instruction_get(int index_p, char *str, unsigned int str_len);

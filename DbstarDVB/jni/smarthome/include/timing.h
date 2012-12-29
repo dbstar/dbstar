@@ -8,7 +8,7 @@
 
 #define TIMER_NUM	256
 typedef struct{
-	unsigned int	id;
+	int	id;
 	TIMER_TYPE_E	type;				
 	struct timeval 	tv_timer;
 	int				arg1;

@@ -115,7 +115,7 @@ static int UART0_Open(char* port)
 	}
 #endif
 
-	DEBUG("fd = %d\n",fd);
+	DEBUG("serial port=%s, fd=%d\n", port, fd);
 	return fd;
 }
 /*******************************************************************
@@ -148,7 +148,7 @@ static void UART0_Close(int fd)
 *******************************************************************/
 static int UART0_Set(int fd,int speed,int flow_ctrl,int databits,int stopbits,int parity)
 {
-	int   i;
+	unsigned int   i;
 	int   speed_arr[] = { B115200, B19200, B9600, B4800, B2400, B1200, B300};
 	int   name_arr[] = {115200,  19200,  9600,  4800,  2400,  1200,  300};
 	
@@ -294,7 +294,7 @@ static int UART0_Recv(int fd, unsigned char *rcv_buf,int data_len)
 	FD_SET(fd,&fs_read);
 	
 	time.tv_sec = 0;
-	time.tv_usec = 100000;
+	time.tv_usec = 200000;
 	
 	//使用select实现串口的多路通信
 	fs_sel = select(fd+1,&fs_read,NULL,NULL,&time);
@@ -350,7 +350,7 @@ static int sendto_serial(unsigned char *buf, unsigned int len)
 		return -1;
 	}
 	
-	int i = 0;
+	unsigned int i = 0;
 	printf("---------------------------------------- %d chars\n", len);
 	for(i=0;i<len;i++)
 		printf(" %02x", buf[i]);
@@ -358,8 +358,10 @@ static int sendto_serial(unsigned char *buf, unsigned int len)
 	
 	int ret = UART0_Send(g_serialfd, buf, len);
 	
-	if(ret==len)
+	if((unsigned int)ret==len){
+		DEBUG("send to serial OK\n");
 		return 0;
+	}
 	else
 		return -1;
 }
@@ -374,7 +376,7 @@ static int ascinasc(unsigned char *dad_buf, unsigned int dad_len, unsigned char 
 	if(0==dad_len || 0==son_len)
 		return -1;
 	
-	int i = 0, j = 0;
+	unsigned int i = 0, j = 0;
 	for(i=0;i<(dad_len-son_len);i++){
 		j = 0;
 		for(j=0;j<son_len;j++){
@@ -382,8 +384,8 @@ static int ascinasc(unsigned char *dad_buf, unsigned int dad_len, unsigned char 
 				//DEBUG("dad_buf[%d]=0x%02x, son_buf[%d]=0x%02x	break\n", i+j, dad_buf[i+j], j, son_buf[j]);
 				break;
 			}
-			else
-				;//DEBUG("dad_buf[%d]=0x%02x, son_buf[%d]=0x%02x	==\n", i+j, dad_buf[i+j], j, son_buf[j]);
+			//else
+				//;//DEBUG("dad_buf[%d]=0x%02x, son_buf[%d]=0x%02x	==\n", i+j, dad_buf[i+j], j, son_buf[j]);
 				
 		}
 		if(j==son_len)

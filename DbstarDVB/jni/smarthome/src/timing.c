@@ -194,7 +194,7 @@ static int timing_task_activation_callback(char **result, int row, int column, v
 		DEBUG("select from table 'time' for 0 line\n");
 		return -1;
 	}
-	DEBUG("select from table 'time' by typeID, row=%d, column=%d\n", row, column);
+	DEBUG("select from table 'time' by typeID, row=%d, column=%d, receiver=%p\n", row, column, receiver);
 	int i=0;
 	INSTRUCTION_S timing_inst;
 	for(i=1; i<row+1; i++){

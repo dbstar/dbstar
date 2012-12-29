@@ -359,7 +359,7 @@ static int model_select_callback(char **result, int row, int column, void *recei
 		strncpy(model.remark, result[i*column+5], MIN_LOCAL(sizeof(model.remark)-1, strlen(result[i*column+5])));
 		DEBUG("model_array[%d].type_id=0x%06x, cmd_type=0x%02x, control_val=0x%04x, control_time=%d, frequency=0x%02x, remark=%s\n", 
 				i-1, model.type_id, model.cmd_type, model.control_val, model.control_time, model.frequency, model.remark);
-		memcpy(receiver+(i-1)*sizeof(MODEL_S), &model, sizeof(MODEL_S));
+		memcpy(((char *)receiver)+(i-1)*sizeof(MODEL_S), &model, sizeof(MODEL_S));
 	}
 	return 0;
 }
@@ -477,7 +477,45 @@ static int bcdChange(unsigned char input)
 注意：	目前存在这样的情况，串口返回的命令串重复了多遍，需要能兼容这种情况，形如下面的结果是读取有功功率时一次返回的：
 		68 20 11 12 21 06 36 68 81 05 63 e9 33 33 33 db 16 68 20 11 12 21 06 36 68 c5 03 e9 01 63 85 16 68 20 11 06 00 41 56 68 81 06 43 c3 3c 33 33 33 00 16
 */
+static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result);
 int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result)
+{
+	unsigned char *serial_cmd_son = serial_cmd;
+	unsigned int cmd_len_son = cmd_len;
+	
+	unsigned int i = 0;
+	int ret = 0;
+	
+	for(i=0;i<(cmd_len-SERIAL_RESPONSE_LEN_MIN);i++){
+		if(0x68==*(serial_cmd_son+i) || 0x68==*(serial_cmd_son+7+i)){
+			DEBUG("catch valid cmd head\n");
+			ret==smart_socket_serial_cmd_parse_son(serial_cmd_son+i, cmd_len_son-i, socket_action, socket_id, result);
+			if(-1==ret){
+				DEBUG("cmd parse failed thoroughly\n");
+				break;
+			}
+			else if(0==ret){
+				DEBUG("cmd parse successfully\n");
+				break;
+			}
+			else if(-2==ret){
+				DEBUG("this parse failed, but will try again\n");
+			}
+		}
+	}
+	
+	if(0!=ret)
+		ret = -1;
+		
+	return ret;
+}
+
+/*
+ 返回值：
+ -1：指令解析彻底失败，无法继续解析
+ -2：指令解析的结果没有达到最佳预期（比如，期望解析得到电压值，但是解析的结果是通信失败），但应当继续解析
+*/
+static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result)
 {
 	if(NULL==serial_cmd || 0>=cmd_len){
 		DEBUG("can not splice smart socket serial cmd because of null buf\n");
@@ -490,16 +528,16 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 		return -1;
 	}
 
-//	int i = 0;
-//	DEBUG("splice serial cmd(len=%d):", cmd_len);
-//	for(i=0; i<cmd_len; i++)
-//		printf(" %02x", serial_cmd[i]);
-//	printf("\n");
+	int i = 0;
+	DEBUG("splice serial cmd(len=%d):", cmd_len);
+	for(i=0; i<cmd_len; i++)
+		printf(" %02x", serial_cmd[i]);
+	printf("\n");
 	
 	if(0x68!=serial_cmd[0] || 0x68!=serial_cmd[7])	/*  || 0x16!=serial_cmd[cmd_len-1] */
 	{
 		DEBUG("this cmd has invalid header and tailer signal\n");
-		return -1;
+		return -2;
 	}
 
 	// 68 a0 a1 a2 a3 a4 a5 68 C4 01 XX cs 16		指令错误
@@ -518,7 +556,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 	snprintf(socket_addr, sizeof(socket_addr), "%02x%02x%02x%02x%02x%02x", serial_cmd[1],serial_cmd[2],serial_cmd[3],serial_cmd[4],serial_cmd[5],serial_cmd[6]);
 	if(strcmp(socket_addr, socket_id)){
 		DEBUG("socket id can not match: id in cmd is %s, and mirror with %s\n", socket_addr, socket_id);
-		return -1;
+		return -2;
 	}
 
 	int ret = 0;
@@ -527,7 +565,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 81 06 43 C3 xx xx xx xx cs 16
 			if(serial_cmd[16]!=serialcmd_checksum(serial_cmd, 16)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = bcdChange(serial_cmd[14]-0x33)*100+bcdChange(serial_cmd[13]-0x33)*1+bcdChange(serial_cmd[12]-0x33)*0.01;
@@ -537,7 +575,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 81 04 44 E9 xx xx cs 16
 			if(serial_cmd[14]!=serialcmd_checksum(serial_cmd, 14)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = bcdChange(serial_cmd[13]-0x33)*100+bcdChange(serial_cmd[12]-0x33)*1;
@@ -547,7 +585,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 81 04 54 E9 xx xx cs 16
 			if(serial_cmd[14]!=serialcmd_checksum(serial_cmd, 14)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = bcdChange(serial_cmd[13]-0x33)*1+bcdChange(serial_cmd[12]-0x33)*0.01;
@@ -557,7 +595,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 81 05 63 E9 xx xx xx cs 16
 			if(serial_cmd[15]!=serialcmd_checksum(serial_cmd, 15)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = bcdChange(serial_cmd[14]-0x33)*1+bcdChange(serial_cmd[13]-0x33)*0.01+bcdChange(serial_cmd[12]-0x33)*0.0001;
@@ -567,7 +605,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 81 04 73 E9 xx xx cs 16
 			if(serial_cmd[14]!=serialcmd_checksum(serial_cmd, 14)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = bcdChange(serial_cmd[13]-0x33)*1+bcdChange(serial_cmd[12]-0x33)*0.01;
@@ -577,7 +615,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 81 04 83 E9 xx xx cs 16
 			if(serial_cmd[14]!=serialcmd_checksum(serial_cmd, 14)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = bcdChange(serial_cmd[13]-0x33)*0.01+bcdChange(serial_cmd[12]-0x33)*0.0001;
@@ -587,7 +625,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 84 02 88 xx cs 16
 			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				ret = socket_relay_status_trans(serial_cmd[11], result);
@@ -597,7 +635,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 84 02 89 xx cs 16
 			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				ret = socket_relay_status_trans(serial_cmd[11], result);
@@ -607,7 +645,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 81 03 93 E9 xx cs 16
 			if(serial_cmd[13]!=serialcmd_checksum(serial_cmd, 13)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				ret = socket_relay_status_trans(serial_cmd[12], result);
@@ -617,7 +655,7 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 87 06 33 33 33 33 33 33 cs 16
 			if(serial_cmd[16]!=serialcmd_checksum(serial_cmd, 16)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = 1;
@@ -627,25 +665,27 @@ int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_le
 			// 68 a0 a1 a2 a3 a4 a5 68 C4 01 XX cs 16
 			if(serial_cmd[10]!=serialcmd_checksum(serial_cmd, 10)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = serial_cmd[11];
 				DEBUG("serial instruction invalide, err code: 0x%02x\n", (int)(*result));
+				ret = -2;
 			}
 		case SMART_SOCKET_COMMUNICATION_FAILD:		// 通讯失败
 			// 68 a0 a1 a2 a3 a4 a5 68 C5 03 xx xx xx cs 16
 			if(serial_cmd[13]!=serialcmd_checksum(serial_cmd, 13)){
 				DEBUG("check sum failed\n");
-				ret = -1;
+				ret = -2;
 			}
 			else{
 				*result = (serial_cmd[10]<<16) | (serial_cmd[11]<<8) | serial_cmd[12];
 				DEBUG("serial control communication failed, err code: 0x%02x 0x%02x 0x%02x\n", serial_cmd[10], serial_cmd[11], serial_cmd[12]);
+				ret = -2;
 			}
 		default:
 			DEBUG("can not support this action of smart socket\n");
-			ret = -1;
+			ret = -2;
 			break;
 	}
 
@@ -1384,7 +1424,7 @@ static INSTRUCTION_RESULT_E electric_equipment_insert(INSTRUCTION_S *instruction
 		strncpy(room_name, p_tmp, MIN_LOCAL(strlen(p_tmp),(sizeof(room_name)-1)));
 	}
 	else{
-		strncpy(room_name, p_tmp, MIN_LOCAL(abs(p_tmp-p_star),(sizeof(room_name)-1)));
+		strncpy(room_name, p_tmp, MIN_LOCAL((unsigned int)(abs(p_tmp-p_star)),(sizeof(room_name)-1)));
 		p_star += 2;
 		strncpy(dev_name, p_star, MIN_LOCAL(strlen(p_star), (sizeof(dev_name)-1)));
 	}
@@ -1401,7 +1441,7 @@ static INSTRUCTION_RESULT_E electric_equipment_insert(INSTRUCTION_S *instruction
 		return ret_sqlexec;
 	}
 	else	// 0==ret_sqlexec
-		;
+		DEBUG("read equipment from database none\n");
 		
 	sprintf(sqlite_cmd_str,"INSERT INTO devlist(typeID,locationID,iconID,operID,socketID,roomName,devName) VALUES(%d,%d,%d,%d,'%s','%s','%s');",\
 			instruction->type_id,location_id,icon_id,oper_id,socket_id,room_name,dev_name);
@@ -1468,7 +1508,7 @@ static INSTRUCTION_RESULT_E electric_equipment_update(INSTRUCTION_S *instruction
 				strncpy(room_name, p_tmp, MIN_LOCAL(strlen(p_tmp),(sizeof(room_name)-1)));
 			}
 			else{
-				strncpy(room_name, p_tmp, MIN_LOCAL(abs(p_tmp-p_star),(sizeof(room_name)-1)));
+				strncpy(room_name, p_tmp, MIN_LOCAL((unsigned int)(abs(p_tmp-p_star)),(sizeof(room_name)-1)));
 				p_star += 2;
 				strncpy(dev_name, p_star, MIN_LOCAL(strlen(p_star), (sizeof(dev_name)-1)));
 			}

@@ -32,9 +32,9 @@ typedef enum{
 #define CMD_SIZE		4096
 #define ALTERABLE_ENTITY_SIZE	4096
 
-#define SN_DEFAULT_TEST			"89277089728430810813"		//WARNING: only for test, the lenght of sn is 20 currently
-#define SW_VERSION				"20120816"
-#define SMARTPOWER_SERVER_IP		"211.99.30.254"		// the ip of baidu.com is "61.135.169.105"
+#define SN_DEFAULT_TEST			"72392061919421673185"		//WARNING: only for test, the lenght of sn is 20 currently
+#define SW_VERSION				"1.2.1"
+#define SMARTPOWER_SERVER_IP		"211.160.203.86"		// the ip of baidu.com is "61.135.169.105"
 #define	SMARTPOWER_SERVER_PORT		(9999)
 
 #define PREFIX_REGIST				"#rs#"
@@ -236,7 +236,7 @@ typedef enum{
 //#define TEST_SERIAL_CMD_ONLY_ONCE	// 仅在调试串口时使用，每次执行可执行程序，只对串口操作一个write-read组合
 //#define HEARTBEAT_SUPPORT		// 是否发送心跳。目前暂不发送
 
-#define SERIAL_RECV_RETRY		(12)	// 从串口接收命令尝试的次数，这个值和select的超时时间共同决定了串口接收时的反应速度
+#define SERIAL_RECV_RETRY		(16)	// 从串口接收命令尝试的次数，这个值和select的超时时间共同决定了串口接收时的反应速度
 #define TIMEZONE_EMENDATION		(8)	// 北京时间，在0时区时间基础上加8个小时。
 
 int appoint_str2int(char *str, unsigned int str_len, unsigned int start_position, unsigned int appoint_len, int base);

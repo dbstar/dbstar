@@ -48,6 +48,7 @@ static int openDatabase()
 				ret = -1;
 			}
 			else{
+				DEBUG("open database(%s) OK\n", DATABASE);
 				/// open foreign key support
 				if(sqlite3_exec(g_db,"PRAGMA foreign_keys=ON;",NULL,NULL,&errmsgOpen)
 					|| NULL!=errmsgOpen){
@@ -530,6 +531,57 @@ INSTRUCTION_RESULT_E table_clear(char *table_name)
 	else{
 		DEBUG("table '%s' reset failed\n", table_name);
 		return -1;
+	}
+}
+
+
+
+/*
+ 回调：只用于读取单个字符串类型字段的单个值
+*/
+static int str_read_cb(char **result, int row, int column, void *some_str)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p\n", row, column, some_str);
+	if(row<1 || NULL==some_str){
+		DEBUG("no record in table, or no buffer to read, return\n");
+		return 0;
+	}
+	
+	int i = 1;
+//	for(i=1;i<row+1;i++)
+	{
+		//DEBUG("==%s:%s:%ld==\n", result[i*column], result[i*column+1], strtol(result[i*column+1], NULL, 0));
+		if(result[i*column])
+			sprintf((char *)some_str, "%s", result[i*column]);
+		else
+			DEBUG("NULL value\n");
+	}
+	
+	return 0;
+}
+
+/*
+ 从指定的表中读取单个字段字符串
+ buf由调用者提供，并保障初始化正确。
+ 读取到一条记录返回0，否则返回-1。
+*/
+int str_sqlite_read(char *buf, char *sql_cmd)
+{
+	if(NULL==buf || NULL==sql_cmd || 0==strlen(sql_cmd)){
+		DEBUG("some args are invalid\n");
+		return -1;
+	}
+	
+	int (*sqlite_cb)(char **, int, int, void *) = str_read_cb;
+
+	int ret_sqlexec = sqlite_read(sql_cmd, buf, sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read nothing for %s\n", sql_cmd);
+		return -1;
+	}
+	else{
+		DEBUG("read %s for %s\n", buf,sql_cmd);
+		return 0;
 	}
 }
 

@@ -54,8 +54,8 @@ int setting_init(void)
 		
 	FILE* fp;
 	char tmp_buf[256];
-	int i=0;
-	int j=0;
+	unsigned int i=0;
+	unsigned int j=0;
 	char *p_value;
 
 	settingDefault_set();

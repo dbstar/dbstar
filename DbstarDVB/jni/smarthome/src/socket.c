@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <semaphore.h>
+#include <sys/select.h>
 
 #include "common.h"
 #include "socket.h"
@@ -117,7 +118,7 @@ static int smart_power_cmds_init(void)
 返回：	
 说明：	为了避免处在数组后部的命令由于新命令频繁而得不到处理，对于write、process、read操作都记录了开始查找的位置，避免饥饿。
 */
-unsigned int smart_power_cmds_open(CMD_ARRAY_OP_E cmd_op, BOOL_E insert_flag)
+int smart_power_cmds_open(CMD_ARRAY_OP_E cmd_op, BOOL_E insert_flag)
 {
 	int i_start = 0;
 	char op_note[32];
@@ -186,7 +187,7 @@ unsigned int smart_power_cmds_open(CMD_ARRAY_OP_E cmd_op, BOOL_E insert_flag)
 // close flag: -1 -- close, and abandon the cmd record
 int smart_power_cmds_close(unsigned int index, int close_flag)
 {
-	if(index<0 || index>=SMART_POWER_CMD_NUM){
+	if(index>=SMART_POWER_CMD_NUM){
 		DEBUG("this index(%d) is invalid\n", index);
 		return -1;
 	}
@@ -240,7 +241,7 @@ int smart_power_cmds_close(unsigned int index, int close_flag)
 
 static int issue_cmd_basic_check(char *cmd_str, unsigned int str_len)
 {
-	int i = 0;
+	unsigned int i = 0;
 	int n = 0;
 
 	// do str*** action with a NULL string will get segmentation error
@@ -264,7 +265,7 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 	char *p_str = NULL;
 	char *p_mark = NULL;
 	char *p_tmp_entity = NULL;
-	unsigned int index_w = 0;
+	int index_w = 0;
 	char tmp_serv_str[128];
 	
 	if(NULL==cmd_str || 0==str_len){
@@ -553,10 +554,12 @@ void socket_mainloop()
 	struct sockaddr_in server_addr;
 	int delay_sec = 0;
 	int cmd_header = CMD_HEADER_UNDEFINED;
-
+	
+	char sqlite_cmd[256];
 	char serial_num[33];											//serial num, actual len is 32B
 	char software_version[33];
 	char server_ip[16];
+	char server_port_str[32];
 	int server_port = 8080;
 	int index_r = -1;
 #ifdef HEARTBEAT_SUPPORT
@@ -568,10 +571,43 @@ void socket_mainloop()
 	memset(serial_num, 0, sizeof(serial_num));
 	memset(software_version, 0, sizeof(software_version));
 	memset(server_ip, 0, sizeof(server_ip));
+	memset(server_port_str,0,sizeof(server_port_str));
+#if 0
 	serialNum_get(serial_num, sizeof(serial_num));
 	softwareVersion_get(software_version, sizeof(software_version));
 	smartpower_server_ip_get(server_ip, sizeof(server_ip));
 	server_port = smartpower_server_port_get();
+#else
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select value from global where name='SmarthomeSN';");
+	str_sqlite_read(serial_num,sqlite_cmd);
+	if(0==strlen(serial_num) || strlen(serial_num)>sizeof(serial_num)){
+		snprintf(serial_num,sizeof(serial_num),"%s", SN_DEFAULT_TEST);
+		DEBUG("get invalid serial_num, use default value: %s\n",serial_num);
+	}
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select value from global where name='version';");
+	str_sqlite_read(software_version,sqlite_cmd);
+	if(0==strlen(software_version) || strlen(software_version)>sizeof(software_version)){
+		snprintf(software_version,sizeof(software_version),"%s", SW_VERSION);
+		DEBUG("get invalid software_version, use default value: %s\n",software_version);
+	}
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select value from global where name='SmarthomeServerIP';");
+	str_sqlite_read(server_ip,sqlite_cmd);
+	if(0==strlen(server_ip) || strlen(server_ip)>sizeof(server_ip)){
+		snprintf(server_ip,sizeof(server_ip),"%s", SMARTPOWER_SERVER_IP);
+		DEBUG("get invalid server_ip, use default value: %s\n",server_ip);
+	}
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select value from global where name='SmarthomeServerPort';");
+	str_sqlite_read(server_port_str,sqlite_cmd);
+	if(0==strlen(server_port_str) || strlen(server_port_str)>sizeof(server_port_str)){
+		snprintf(server_port_str,sizeof(server_port_str),"%d", SMARTPOWER_SERVER_PORT);
+		DEBUG("get invalid server_port_str, use default value: %s\n",server_port_str);
+	}
+	server_port = atoi(server_port_str);
+	
+#endif
 	DEBUG("get serial num: %s, software_version: %s, server ip: %s, server port: %d\n", serial_num, software_version, server_ip, server_port);
 	
 	//argument of function select
@@ -898,7 +934,8 @@ static int sendToServer(int l_socket_fd,char *l_send_buf, unsigned int buf_len)
 	struct timeval s_time={0,0};
 	int ret_select = -1;
 	int ret = -1;
-	fd_set l_wrfds = {};
+	fd_set l_wrfds;
+	FD_ZERO(&l_wrfds);
 
 	if(l_socket_fd<3 || NULL==l_send_buf || 0==buf_len){
 		DEBUG("can not send to server, socket: %d\n", l_socket_fd);
@@ -954,7 +991,8 @@ static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_bu
 	int ret_select = -1;					//select return
 	int ret = -1;
 	int ret_recv = -1;
-	fd_set l_rdfds = {};
+	fd_set l_rdfds;
+	FD_ZERO(&l_rdfds);
 	
 	if(l_socket_fd<3 || NULL==l_recv_buf || 0==recv_buf_len){
 		DEBUG("can not send to server, socket: %d\n", l_socket_fd);
