@@ -304,7 +304,7 @@ static int createTable(char* name)
 				///serialNUM
 				memset(tmp_str, 0, sizeof(tmp_str));
 				initial_serial_num_get(tmp_str, sizeof(tmp_str)-1);
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'serialNUM','%s');", tmp_str);
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmarthomeSN','%s');", tmp_str);
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
 					ERROROUT("insert 'global' failed.");
@@ -315,7 +315,7 @@ static int createTable(char* name)
 				///serverIP
 				memset(tmp_str, 0, sizeof(tmp_str));
 				initial_server_ip_get(tmp_str, sizeof(tmp_str)-1);
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'serverIP','%s');", tmp_str);
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmarthomeServerIP','%s');", tmp_str);
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
 					ERROROUT("insert 'global' failed.");
@@ -324,7 +324,7 @@ static int createTable(char* name)
 				}
 				sqlite3_free(errmsg);
 				///port
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'port','%d');", initial_server_port_get());
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmarthomeServerPort','%d');", initial_server_port_get());
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
 					ERROROUT("insert 'global' failed.");
