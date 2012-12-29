@@ -181,7 +181,6 @@ PRODUCT_COPY_FILES += \
 
 #dbstar
 PRODUCT_PACKAGES += \
-	dbstar \
 	DbstarLauncher \
 	DbstarSettings \
 	DbstarDVB

@@ -181,6 +181,16 @@ otapackage_make()
 	fi
 }
 
+wifi_make()
+{
+	cd $WIFI_SRC
+	if [ $1 = "clean" ]; then
+		make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- KSRC=$KERNEL_SRC clean
+	else
+		make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- KSRC=$KERNEL_SRC all
+	fi
+}
+
 modules_make()
 {
 	logger "START make modules"
@@ -188,11 +198,14 @@ modules_make()
 	call cd $KERNEL_SRC
 	if [ $REBUILD_FLAG -eq 1 ]; then
 		call make distclean
+		call wifi_make clean
 	fi
 	call make $KERNEL_CONFIG
 	call make uImage $MAKE_ARGS
 	call make modules
+	call wifi_make
 
+	call cd $KERNEL_SRC
 	if [ $? -eq 0 ]; then
 		call cp drivers/amlogic/mali/mali.ko $BUILD_OUT
 		call cp drivers/amlogic/ump/ump.ko $BUILD_OUT
@@ -203,6 +216,7 @@ modules_make()
 		call cp drivers/amlogic/mali/mali.ko $ROOTFS_OUT/root/boot/
 		call cp drivers/amlogic/ump/ump.ko $ROOTFS_OUT/root/boot/
 		call cp drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $ROOTFS_OUT/system/lib/
+		call cp drivers/amlogic/wifi/rtl8xxx_EU/8188eu.ko $ROOTFS_OUT/system/lib/
 		call cp net/wireless/cfg80211.ko $ROOTFS_OUT/system/lib/
 		call cp drivers/scsi/scsi_wait_scan.ko $ROOTFS_OUT/system/lib/
 
@@ -281,12 +295,12 @@ dbstar_patch()
 {
 	logger "START patch dbstar"
 	call cd $ANDROID_SRC
+	echo ">>>> patching kernel ..."
+	cp -rf $DBSTAR_SRC/kernel/* $ANDROID_SRC/kernel/
 	echo ">>>> patching bionic ..."
 	cp -rf $DBSTAR_SRC/bionic/* $ANDROID_SRC/bionic/
 	echo ">>>> patching frameworks ..."
 	cp -rf $DBSTAR_SRC/frameworks/* $ANDROID_SRC/frameworks/
-	echo ">>>> patching kernel ..."
-	cp -rf $DBSTAR_SRC/kernel/* $ANDROID_SRC/kernel/
 	echo ">>>> patching device ..."
 	cp -rf $DBSTAR_SRC/device/* $ANDROID_SRC/device/
 	echo ">>>> patching build ..."
