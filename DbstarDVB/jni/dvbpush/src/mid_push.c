@@ -327,7 +327,7 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type)
 	else{
 		DEBUG("should parse: %s\n", DescURI);
 		if(RECEIVETYPE_PUBLICATION==type){
-#if 1
+#if 0
 			send_xml_to_parse(DescURI,PRODUCTION_XML,id);
 #else
 /*
@@ -340,14 +340,14 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type)
 #endif
 		}
 		else if(RECEIVETYPE_COLUMN==type){
-#if 1
+#if 0
 			send_xml_to_parse(DescURI,COLUMN_XML,NULL);
 #else
 			parse_xml(DescURI,COLUMN_XML,NULL);
 #endif
 		}
 		else if(RECEIVETYPE_SPRODUCT==type){
-#if 1
+#if 0
 			send_xml_to_parse(DescURI,SPRODUCT_XML,NULL);
 #else
 			parse_xml(DescURI,SPRODUCT_XML,NULL);
@@ -391,7 +391,11 @@ void dvbpush_getinfo_stop()
 }
 
 
-static int prog_monitor(PROG_S *prog, char *time_stamp)
+/*
+从目前测试的情况看，只有在监控线程调用prog_monitor时，接收完毕的节目才能直接调用xml解析。
+如果是从JNI的dvbpush_getinfo接口调用过来，则不能解析xml，否则导致Launcher死掉。
+*/
+static int prog_monitor(int can_parse_xml, PROG_S *prog, char *time_stamp)
 {
 	if(NULL==prog)
 		return -1;
@@ -419,11 +423,11 @@ static int prog_monitor(PROG_S *prog, char *time_stamp)
 		prog->cur = rxb;
 		if((prog->cur) >= (prog->total)){
 			if(0==prog->parsed){
-				DEBUG("%s download finished, wipe off from monitor, and set 'ready'\n", prog->uri);
+				DEBUG("%s download finished, parse it\n", prog->uri);
 				push_prog_finish(prog->id, prog->type);
 			}
 			else{
-				DEBUG("%s download finished, wipe off from monitor. It is parsed already\n", prog->uri);
+				DEBUG("%s download finished. It is parsed already\n", prog->uri);
 			}
 		}
 	}
@@ -452,7 +456,7 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 			if(-1==prog_is_valid(&s_prgs[i]))
 				continue;
 			
-			prog_monitor(&s_prgs[i],NULL);
+			prog_monitor(0, &s_prgs[i],NULL);
 			
 			if(0==i){
 				snprintf(buf, size,
@@ -586,19 +590,19 @@ void *push_monitor_thread()
 				if(-1==prog_is_valid(&s_prgs[i]) || s_prgs[i].cur>=s_prgs[i].total)
 					continue;
 				
-				prog_monitor(&s_prgs[i],time_stamp);
+				prog_monitor(1,&s_prgs[i],time_stamp);
 			}
 			s_push_has_data--;
 		}
 		
 		pthread_mutex_unlock(&mtx_push_monitor);
-		PRINTF("3\n");
+		
 		if(ETIMEDOUT!=retcode){
 			DEBUG("push monitor thread is awaked by external signal\n");
 		}
 		else{
-			if(need_push_monitor()>0)
-				push_recv_manage_refresh(2,time_stamp);
+//			if(need_push_monitor()>0)
+//				push_recv_manage_refresh(2,time_stamp);
 		}
 		
 		// 每隔12个小时，打开tdt pid进行时间同步，这里只是借用了monitor这个低频循环。
@@ -642,16 +646,19 @@ void *push_monitor_thread()
 
 void *push_xml_parse_thread()
 {
+	int i = 0;
+	
 	s_xmlparse_running = 1;
 	while (1==s_xmlparse_running)
 	{
 		pthread_mutex_lock(&mtx_xml);
 		pthread_cond_wait(&cond_xml,&mtx_xml); //wait
+		DEBUG("awaked and parse xml\n");
 		if(1==s_xmlparse_running){
-			int i = 0;
 			for(i=0; i<XML_NUM; i++){
+				DEBUG("xml queue[%d]: %s\n", i, s_push_xml[i].uri);
 				if(strlen(s_push_xml[i].uri)>0){
-					DEBUG("will parse %s\n", s_push_xml[i].uri);
+					DEBUG("will parse[%d] %s\n", i, s_push_xml[i].uri);
 					parse_xml(s_push_xml[i].uri, s_push_xml[i].flag, s_push_xml[i].id);
 					
 					memset(s_push_xml[i].uri, 0, sizeof(s_push_xml[i].uri));
@@ -661,6 +668,7 @@ void *push_xml_parse_thread()
 			}
 		}
 		pthread_mutex_unlock(&mtx_xml);
+		sleep(1);
 	}
 	DEBUG("exit from xml parse thread\n");
 	
@@ -683,11 +691,13 @@ int send_xml_to_parse(const char *path, int flag, char *id)
 	if(	PUSH_XML_FLAG_MINLINE<flag && flag<PUSH_XML_FLAG_MAXLINE){
 		if(0==check_tail(path, ".xml", 0))
 		{
+			DEBUG("path: %s\n", path);
 			pthread_mutex_lock(&mtx_xml);
 			
 			int i = 0;
 			for(i=0; i<XML_NUM; i++){
 				if(0==strlen(s_push_xml[i].uri)){
+					DEBUG("add to index %d: [%s]path: %s\n", i,id,path);
 					snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s", path);
 					s_push_xml[i].flag = flag;
 					if(id)
@@ -705,6 +715,7 @@ int send_xml_to_parse(const char *path, int flag, char *id)
 			}
 				
 			pthread_mutex_unlock(&mtx_xml);
+			DEBUG("path in queue: %s ok\n", path);
 		}
 		else{
 			DEBUG("this is not a xml\n");
@@ -727,50 +738,6 @@ void callback(const char *path, long long size, int flag)
 	// settings/allpid/allpid.xml
 	send_xml_to_parse(path, flag, NULL);
 }
-
-/*
- 如果传入参数为空，则寻找“/etc/push.conf”文件。详细约束参考push_init()说明
- 此函数需要及早调用，xml解析模块也需要此值。目前在main()中调用。
-*/
-//void push_root_dir_init(char *push_conf)
-//{
-//	FILE* fp = NULL;
-//	char tmp_buf[256];
-//	char *p_value;
-//	
-//	if(NULL==push_conf)
-//		fp = fopen(PUSH_CONF_DF, "r");
-//	else
-//		fp = fopen(push_conf, "r");
-//	
-//	memset(s_push_data_dir, 0, sizeof(s_push_data_dir));
-//	if(fp){
-//		memset(tmp_buf, 0, sizeof(tmp_buf));
-//		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
-//			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), '=');
-//			if(NULL!=p_value)
-//			{
-//				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
-//					if(0==strcmp(tmp_buf, "DATA_DIR")){
-//						strncpy(s_push_data_dir, p_value, sizeof(s_push_data_dir)-1);
-//						break;
-//					}
-//				}
-//			}
-//			memset(tmp_buf, 0, sizeof(tmp_buf));
-//		}
-//		fclose(fp);
-//	}
-//	
-//	if(0==strlen(s_push_data_dir)){
-//		DEBUG("waring: open %s to get push data dir failed, use %s instead\n",s_push_data_dir, PUSH_DATA_DIR_DF);
-//		strncpy(s_push_data_dir, PUSH_DATA_DIR_DF, sizeof(s_push_data_dir)-1);
-//	}
-//	else{
-//		if('/'==s_push_data_dir[strlen(s_push_data_dir)-1])
-//			s_push_data_dir[strlen(s_push_data_dir)-1] = '\0';
-//	}
-//}
 
 
 int push_decoder_buf_init()
@@ -1223,7 +1190,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
  当下发新的ProductDesc.xml或Service.xml时刷新push拒绝接收注册和进度监控注册
  init_flag——1：初始化，表示需要处理ProductDesc所有的节目
  init_flag——0：非初始化，表示是动态处理，接收到新的Service.xml和ProductDesc.xml，只处理FreshFlag为1的节目
- init_flag——2：从monitor中调用的实时监控，目的是清理掉过期的栏目不再进行进度监控，避免终端几天不关机后监控累积
+ init_flag——2：从monitor中调用的实时监控，目的是清理掉过期的节目不再进行进度监控，避免终端几天不关机后监控累积
 */
 int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 {

@@ -625,10 +625,10 @@ static int channel_ineffective_clear()
 	return sqlite_execute(sqlite_cmd);
 }
 
-static int publication_parsed_set(char *publicationID, int parsed_flag)
+static int publication_parsed_set(char *xml_uri, int parsed_flag)
 {
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE ReceiveType='%d' AND ID='%s';", RECEIVETYPE_PUBLICATION,publicationID);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
@@ -2451,7 +2451,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 	int ret = 0;
 	char xml_uri[512];
 	
-	DEBUG("xml_flag: %d\n", xml_flag);
+	DEBUG("xml_flag: %d, id: %s\n", xml_flag, id);
 	pthread_mutex_lock(&mtx_parse_xml);
 //	if(NULL==docname){
 //		DEBUG("CAUTION: name of xml file is NULL\n");
@@ -2700,9 +2700,9 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", docname);
 				xmlinfo_insert(&xmlinfo);
 				
-				if(PRODUCTION_XML==xml_flag){
-					DEBUG("this is a Publication xml, set parsed as 1\n");
-					publication_parsed_set(id, 1);
+				if(PRODUCTION_XML==xml_flag || COLUMN_XML==xml_flag || SPRODUCT_XML==xml_flag){
+					DEBUG("%s is in monitor, set parsed as 1\n",docname);
+					publication_parsed_set(docname, 1);
 				}
 				
 				sqlite_transaction_end(1);
@@ -2733,7 +2733,7 @@ PARSE_XML_END:
 		else if(SPRODUCT_XML==xml_flag)
 			interface_refresh_flag_set(1);
 	}
-	
+
 	return ret;
 }
 

@@ -63,8 +63,7 @@ typedef enum{
 /*
 程序运行过程中产生的数据，包括：下载的片源、对应的数据库
 */
-#define USR_DATA_ROOT_DIR	"/mnt/sda1/dbstar"
-#define PUSH_DATA_DIR_DF	USR_DATA_ROOT_DIR		// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
+#define PUSH_DATA_DIR_DF	"/mnt/sda1"		// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
 #define DATABASE			WORKING_DATA_DIR"/Dbstar.db"
 
 #define	SERVICE_ID			"01"
@@ -115,7 +114,7 @@ typedef enum{
 #define DEVICEMODEL_DFT				"01"
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
-#define HDFOREWARNING_DFT			"10240"
+#define HDFOREWARNING_DFT			"51200"
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
