@@ -235,6 +235,7 @@ kernel_make()
 	LOG_LOGGER=$LOG_KERNEL
 	call cd $KERNEL_SRC
 	modules_make
+	call make $KERNEL_CONFIG
 	call make uImage $MAKE_ARGS
 	if [ $? -eq 0 ]; then
 		call cp ./arch/arm/boot/uImage $BUILD_OUT
@@ -364,6 +365,7 @@ autobuild()
 		otapackage_make
 	fi
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_RELEASE ]; then
+		REBUILD_FLAG=1
 		rootfs_clean
 		dbstar_patch
 		rootfs_make
