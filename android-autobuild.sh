@@ -12,6 +12,7 @@
 BASEDIR="/android"
 ANDROID_SRC=$BASEDIR/ics
 KERNEL_SRC=$ANDROID_SRC/kernel
+WIFI_SRC=$ANDROID_SRC/kernel/drivers/amlogic/wifi/rtl8xxx_EU
 UBOOT_SRC=$ANDROID_SRC/uboot
 DBSTAR_SRC=$ANDROID_SRC/packages/dbstar
 BUILD_OUT=$BASEDIR/f16-autobuild-out
@@ -184,7 +185,7 @@ otapackage_make()
 wifi_make()
 {
 	cd $WIFI_SRC
-	if [ $1 = "clean" ]; then
+	if [ "$1" = "clean" ]; then
 		make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- KSRC=$KERNEL_SRC clean
 	else
 		make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- KSRC=$KERNEL_SRC all
@@ -201,7 +202,7 @@ modules_make()
 		call wifi_make clean
 	fi
 	call make $KERNEL_CONFIG
-	call make uImage $MAKE_ARGS
+#call make uImage $MAKE_ARGS
 	call make modules
 	call wifi_make
 
@@ -210,6 +211,7 @@ modules_make()
 		call cp drivers/amlogic/mali/mali.ko $BUILD_OUT
 		call cp drivers/amlogic/ump/ump.ko $BUILD_OUT
 		call cp drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $BUILD_OUT
+		call cp drivers/amlogic/wifi/rtl8xxx_EU/8188eu.ko $BUILD_OUT
 		call cp net/wireless/cfg80211.ko $BUILD_OUT
 		call cp drivers/scsi/scsi_wait_scan.ko $BUILD_OUT
 
