@@ -82,14 +82,23 @@ public class ChannelSelectorPage extends BaseFragment {
 		mPrevButton.setOnClickListener(mOnClickListener);
 
 		mEthernetSwitchButton.requestFocus();
+		
+		
+//		mActivity.getSharedPreferences(SettingsCommon.PREF_NAME_NETWORK);
 	}
 
 	boolean mIsEthernetSelected = false;
 	boolean mIsWirelessSelected = false;
 
 	private void onWifiChecked() {
-		mWifiManager.setWifiEnabled(true);
 		mEthManager.setEthEnabled(true);
+		
+		int wifiApState = mWifiManager.getWifiApState();
+		if ((wifiApState == WifiManager.WIFI_AP_STATE_ENABLING) || (wifiApState == WifiManager.WIFI_AP_STATE_ENABLED)) {
+			mWifiManager.setWifiApEnabled(null, false);
+		}
+
+		mWifiManager.setWifiEnabled(true);
 	}
 
 	private void onEthernetChecked() {

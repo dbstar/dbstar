@@ -123,6 +123,7 @@ public class WifiSettings {
 
 		mWifiManager = (WifiManager) mActivity
 				.getSystemService(Context.WIFI_SERVICE);
+		
 		mWifiManager.asyncConnect(mActivity, new WifiServiceHandler());
 
 		mAccessPointListView = (ListView) mActivity

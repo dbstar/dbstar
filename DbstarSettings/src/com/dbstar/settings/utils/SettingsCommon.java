@@ -38,5 +38,9 @@ public class SettingsCommon {
 	public static final int PAGE_WIFI = 3;
 	public static final int PAGE_ETHERNET2 = 4;
 	public static final int PAGE_FINISH = 5;
-
+	
+	public static final String PREF_NAME_NETWORK = "dbstar.settings.network";
+	public static final String KeyChannelName = "channel_name";
+	public static final String ChannelEthernet = "channel_ethernet";
+	public static final String ChannelWireless = "channel_wireless";
 }

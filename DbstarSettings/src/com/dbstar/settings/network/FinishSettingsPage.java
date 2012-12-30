@@ -67,7 +67,7 @@ public class FinishSettingsPage extends BaseFragment {
 	}
 
 	void checkConfigResult() {
-		
+		mStateView.setText(R.string.network_setup_success);
 	}
 	
 	void finishNetsettings() {
