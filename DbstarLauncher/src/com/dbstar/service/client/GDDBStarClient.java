@@ -181,6 +181,8 @@ public class GDDBStarClient {
 
 			byte[] bytes = intent.getByteArrayExtra("result");
 
+			Log.d(TAG, "========= get type " + type + " bytes " + bytes);
+			
 			if (bytes != null) {
 				data = parseSmartcardInfo(type, bytes);
 			}
@@ -280,6 +282,8 @@ public class GDDBStarClient {
 					info = mails.toArray(new EMailItem[mails.size()]);
 				}
 			}
+		} else {
+			info = data;
 		}
 
 		return info;

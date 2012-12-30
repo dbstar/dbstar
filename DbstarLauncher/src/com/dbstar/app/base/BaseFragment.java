@@ -61,6 +61,11 @@ public class BaseFragment extends Fragment implements DialogCreatable, FragmentO
 		}
 	}
 	
+	public void serviceStop() {
+		mEngine = null;
+		mService = null;
+	}
+	
 	// Method used to request data and receive data or event.
 	// Request data at this point
 	public void serviceStart() {

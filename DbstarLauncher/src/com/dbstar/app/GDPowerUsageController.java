@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import com.dbstar.model.GDCommon;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.app.launcher.GDLauncherActivity;
 import com.dbstar.app.settings.GDSettings;
@@ -128,9 +129,9 @@ public class GDPowerUsageController implements ClientObserver {
 
 			String consumption = (String) data;
 			Message message = mUiHandler
-					.obtainMessage(GDLauncherActivity.MSG_UPDATE_POWERCONSUMPTION);
+					.obtainMessage(GDCommon.MSG_UPDATE_POWERCONSUMPTION);
 			Bundle parm = new Bundle();
-			parm.putString(GDLauncherActivity.KeyPowerConsumption, consumption);
+			parm.putString(GDCommon.KeyPowerConsumption, consumption);
 			message.setData(parm);
 			mUiHandler.sendMessage(message);
 		} else if (type == GDDataProviderService.REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE) {
@@ -139,9 +140,9 @@ public class GDPowerUsageController implements ClientObserver {
 			String totalCost = (String) data;
 
 			Message message = mUiHandler
-					.obtainMessage(GDLauncherActivity.MSG_UPDATE_POWERTOTALCOST);
+					.obtainMessage(GDCommon.MSG_UPDATE_POWERTOTALCOST);
 			Bundle parm = new Bundle();
-			parm.putString(GDLauncherActivity.KeyPowerTotalCost, totalCost);
+			parm.putString(GDCommon.KeyPowerTotalCost, totalCost);
 			message.setData(parm);
 			mUiHandler.sendMessage(message);
 		} else {

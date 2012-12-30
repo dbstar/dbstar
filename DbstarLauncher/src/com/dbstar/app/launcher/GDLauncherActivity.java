@@ -11,6 +11,7 @@ import com.dbstar.app.GDCelanderThread;
 import com.dbstar.app.GDHDMovieActivity;
 import com.dbstar.app.GDMediaScheduler;
 import com.dbstar.app.GDOrderPushActivity;
+import com.dbstar.app.GDPowerController;
 import com.dbstar.app.GDPowerUsageController;
 import com.dbstar.app.GDReceiveStatusActivity;
 import com.dbstar.app.GDTVActivity;
@@ -20,8 +21,11 @@ import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGeneralInfoActivity;
 import com.dbstar.app.settings.GDSmartcardActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
+import com.dbstar.guodian.data.LoginData;
+import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.GDApplicationObserver;
+import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.service.GDDataProviderService;
@@ -62,23 +66,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final int COLUMN_LEVEL_1 = 1;
 	private static final String ROOT_COLUMN_PARENTID = "-1";
 
-	private static final int MENULEVEL2_GUOWANG_KUAIXUNINDEX = 0;
-	private static final int MENULEVEL2_GUOWANG_SHIPININDEX = 1;
-
-	// message from engine
-	public static final int MSG_UPDATE_POWERCONSUMPTION = 0;
-	public static final int MSG_UPDATE_POWERTOTALCOST = 1;
-	public static final int MSG_UPDATE_WEATHER = 2;
-
-	public static final String KeyPowerConsumption = "power_consumption";
-	public static final String KeyPowerTotalCost = "power_total_cost";
-
 	// Resources
 	Bitmap mDefaultPoster = null;
-	String Yuan, Degree;
 
 	// Engine
-	GDPowerUsageController mPowerController;
 	GDCelanderThread mCelanderThread;
 
 	// Video
@@ -102,19 +93,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// Calendar View
 	TextView mTimeView, mDateView, mWeekView;
 
-	// Power View
-	TextView mPowerUsedDegreeView, mPowerUsedCostView, mPowerUsedPanelText;
-	ImageView mPanelPointer;
-	private String mPowerConsumption = "0";
-	private String mPowerCost = "0";
-
-	private static final float POWER_MAX = 200.f;
-	private static final float POWER_MIN = 0.f;
-
-	private float powerUsedToDegree(float powerUsed) {
-		return 180.f * (powerUsed / (POWER_MAX - POWER_MIN));
-	}
-
 	// Animation
 	boolean mMoveLeft = true;
 	ImageView mLeftArrow, mRightArrow, mFocusItemBackground;
@@ -132,28 +110,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// true: user press enter key and be entering sub menu
 	boolean mEnterSubmenu = false;
 
-	private Handler mUIUpdateHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case MSG_UPDATE_POWERCONSUMPTION: {
-				Bundle data = msg.getData();
-				String powerConsumption = data.getString(KeyPowerConsumption);
-				updatePowerView(powerConsumption, "");
-				break;
-			}
+	GDPowerController mPowerController = null;
 
-			case MSG_UPDATE_POWERTOTALCOST: {
-				Bundle data = msg.getData();
-				String powerTotalCost = data.getString(KeyPowerTotalCost);
-				updatePowerView("", powerTotalCost);
-				break;
-			}
-
-			default:
-				break;
-			}
-		}
-	};
+	private Handler mUIUpdateHandler = new Handler();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -182,6 +141,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		initializeData();
 		startEngine();
+		updatePowerView();
 	}
 
 	public void onServiceStop() {
@@ -552,8 +512,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 	}
 
-	private Intent startComponent(String packageName,
-			String activityName) {
+	private Intent startComponent(String packageName, String activityName) {
 		Intent intent = new Intent();
 		String componentName = packageName + "." + activityName;
 		intent.setComponent(new ComponentName(packageName, componentName));
@@ -644,32 +603,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMenuPath = builder.toString();
 	}
 
-	private void updatePowerView(String powerUsed, String cost) {
-
-		if (!powerUsed.isEmpty()) {
-			mPowerConsumption = powerUsed;
-
-			String powerUsedDegree = getResources().getString(
-					R.string.mypower_powerusage);
-			mPowerUsedDegreeView.setText(powerUsedDegree + powerUsed + Degree);
-
-			mPowerUsedPanelText.setText(powerUsed + Degree);
-
-			float powerUsedValue = Float.valueOf(powerUsed).floatValue();
-			float degree = powerUsedToDegree(powerUsedValue);
-			mPanelPointer.setRotation(degree);
-		}
-
-		if (!cost.isEmpty()) {
-			mPowerCost = cost;
-
-			String powerUsedCost = getResources().getString(
-					R.string.mypower_powercost);
-			mPowerUsedCostView.setText(powerUsedCost + cost + Yuan);
-		}
-
-	}
-
 	private void turnOnMarqeeView(boolean on) {
 		mShowMenuPathIsOn = !on;
 		mMarqeeViewIsOn = on;
@@ -725,9 +658,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		Yuan = getResources().getString(R.string.string_yuan);
-		Degree = getResources().getString(R.string.string_degree);
 	}
 
 	private void loadAnimation() {
@@ -1286,12 +1216,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mDateView = (TextView) findViewById(R.id.date_view);
 		mWeekView = (TextView) findViewById(R.id.week_view);
 
-		// Power View
-		mPowerUsedDegreeView = (TextView) findViewById(R.id.mypower_degree);
-		mPowerUsedCostView = (TextView) findViewById(R.id.mypower_cost);
-		mPowerUsedPanelText = (TextView) findViewById(R.id.mypower_paneltext);
-		mPanelPointer = (ImageView) findViewById(R.id.mypower_pointer);
-
 		mVideoView = (GDVideoView) findViewById(R.id.player_view);
 
 		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
@@ -1332,10 +1256,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Drawable d = new BitmapDrawable(getResources(), mDefaultPoster);
 		mVideoView.setBackgroundDrawable(d);
 
-		// updatePowerView(mPowerConsumption, mPowerCost);
 		// mIsPopupMenuHided = true;
 		mIsPopupMenuHided = false;
 		// displayPopupMenu(false);
+
+		mPowerController = new GDPowerController(this);
 	}
 
 	private void initializeEngine() {
@@ -1345,7 +1270,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mCelanderThread.start();
 
 		mMediaScheduler = new GDMediaScheduler(this, mVideoView);
-		mPowerController = new GDPowerUsageController(mUIUpdateHandler);
 	}
 
 	@Override
@@ -1390,9 +1314,32 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		case GDCommon.MSG_UPDATE_UIRESOURCE:
 		case GDCommon.MSG_UPDATE_PREVIEW:
 			break;
+
+		case EventData.EVENT_CONNECTED: {
+			break;
+		}
+
+		case EventData.EVENT_LOGIN_SUCCESSED: {
+			updatePowerView();
+			break;
+		}
 		default:
 			break;
 		}
+	}
+
+	void loginFinished() {
+		if (!mBound)
+			return;
+
+		PowerPanelData data = mService.getPowerPanelData();
+		if (data != null)
+			mPowerController.updatePowerPanel(data);
+	}
+	
+	void updatePowerView() {
+		if (!mBound)
+			return;
 	}
 
 	String mUpgradePackageFile = "";
@@ -1427,14 +1374,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private void startEngine() {
 		mMediaScheduler.start(mService);
-		// mPowerController.start(mService);
-		// mWeatherController.start(mService);
+		mPowerController.start(mService);
 	}
 
 	private void stopEngine() {
 		// mMediaScheduler.start(mService);
-		// mPowerController.start(mService);
-		// mWeatherController.start(mService);
 	}
 
 	public class PopupMenuAdapter extends BaseAdapter {

@@ -1,11 +1,14 @@
 package com.dbstar.model;
 
 public class EventData {
-	public static final int EVENT_DELETE = 0x10001;
-	public static final int EVENT_DATASIGNAL = 0x10002;
-	public static final int EVENT_UPDATE_PROPERTY = 0x10003;
-	public static final int EVENT_SMARTCARD_STATUS = 0x10004;
-	public static final int EVENT_NEWMAIL = 0x10005;
+	public static final int EVENT_DELETE = 0xa0001;
+	public static final int EVENT_DATASIGNAL = 0xa0002;
+	public static final int EVENT_UPDATE_PROPERTY = 0xa0003;
+	public static final int EVENT_SMARTCARD_STATUS = 0xa0004;
+	public static final int EVENT_NEWMAIL = 0xa0005;
+	
+	public static final int EVENT_CONNECTED = 0xa0006;
+	public static final int EVENT_LOGIN_SUCCESSED = 0xa0007;
 	
 	public static class DeleteEvent {
 		public String PublicationId;

@@ -156,4 +156,28 @@
     
     <string name="email_newmail">有新邮件</string>
 
+    
+    <!-- Guo dian -->
+    <string name="str_degree">度</string>
+    <string name="str_yuan">元</string>
+    <!-- My power -->
+    <string name="mypower_text_yearpowercost">本年用电花费</string>
+    <string name="mypower_text_yearpoweramount">本年用电量</string>
+    <string name="mypower_text_target">已达到你设定目标的</string>
+    <string name="mypower_text_smartsocket_data">智能插座数据</string>
+    <string name="mypower_text_devicepowercost">所控电器用电费用</string>
+    <string name="mypower_text_devicepoweramount">所控电器用电量</string>
+    <string name="mypower_text_powerprice">度/元</string>
+    
+    <string name="mypower_text_zero">0</string>
+    
+    <string name="demo_str_1">100度</string>
+    <string name="demo_str_2">200元</string>
+    <string name="demo_str_3">第二阶梯</string>
+    <string name="demo_str_4">0.123490090909009090</string>
+    <string name="demo_str_5">高峰时段</string>
+    <string name="demo_str_6">8:00-12:00</string>
+    <string name="demo_str_7">第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯</string>
+    <string name="demo_str_r1">100</string>
+    <string name="demo_str_r2">200</string>
 </resources>

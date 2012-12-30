@@ -45,6 +45,11 @@ public class SmartcardInfoFragment extends BaseFragment {
 
 	// Request data at this point
 	public void serviceStart() {
+		Log.d(TAG, "=== service is started ===");
+		
+		mSmartcardState = mService.getSmartcardState();
+		updateSmartcardState();
+
 		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
 			getSmartcardData();
 		}

@@ -12,6 +12,11 @@ import com.dbstar.util.*;
 import com.dbstar.util.upgrade.RebootUtils;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.settings.GDSettings;
+import com.dbstar.guodian.GDClientObserver;
+import com.dbstar.guodian.GDEngine;
+import com.dbstar.guodian.data.ElectricityPrice;
+import com.dbstar.guodian.data.LoginData;
+import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
@@ -140,6 +145,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	private PeripheralController mPeripheralController;
 	GDPowerManager mPowerManger;
+	
+	GDEngine mGuodianEngine;
 
 	private class RequestTask {
 		public static final int INVALID = 0;
@@ -215,6 +222,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		mNetModel = new GDNetModel();
 		mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
 		mDBStarClient = new GDDBStarClient(this);
+		
+		mGuodianEngine = new GDEngine(this);
 
 		mTaskQueue = new LinkedList<RequestTask>();
 		mFinishedTaskQueue = new LinkedList<RequestTask>();
@@ -277,9 +286,28 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		initializeNetEngine();
 
 		queryDiskGuardSize();
+		
 		if(mIsStorageReady) {
 			mDataModel.setPushDir(mConfigure.getStorageDir());
 		}
+		
+		if (mIsNetworkReady) {
+			startGuodianEngine();
+		}
+	}
+	
+	void startGuodianEngine() {
+		Log.d(TAG, "========== startGuodianEngine ==========");
+		String serverIP = mDataModel.getSettingValue(GDSettings.PropertyGatewayIP);
+		String serverPort = mDataModel.getSettingValue(GDSettings.PropertyGatewayPort);
+		if (serverIP == null || serverIP.isEmpty() || serverPort==null || serverPort.isEmpty())
+			return;
+
+		mGuodianEngine.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
+	}
+	
+	void stopGuodianEngine() {
+		mGuodianEngine.stop();
 	}
 
 	void initializeDataEngine() {
@@ -326,6 +354,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		synchronized (mTaskQueueLock) {
 			mTaskQueueLock.notifyAll();
 		}
+		
+		stopGuodianEngine();
 	}
 
 	private void startDbStarService() {
@@ -435,6 +465,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				}
 
 				notifyDbstarServiceNetworkStatus();
+				
+				startGuodianEngine();
 
 				break;
 			case GDCommon.MSG_NETWORK_DISCONNECT:
@@ -444,6 +476,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				notifyDbstarServiceNetworkStatus();
 				stopDbStarService();
 
+				stopGuodianEngine();
 				break;
 
 			case GDCommon.MSG_DISK_SPACEWARNING: {
@@ -1451,6 +1484,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	public boolean isSmartcardPlugIn() {
 		return mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK;
 	}
+	
+	public int getSmartcardState() {
+		return mSmartcardState;
+	}
 
 	private String getThumbnailFile(ContentData content) {
 		return mConfigure.getThumbnailFile(content);
@@ -2011,5 +2048,36 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		mStatusIsSynced = notifyDbstarServiceNetworkStatus();
 		mStatusIsSynced = mStatusIsSynced && notifyDbstarServiceStorageStatus();
 	}
+	
+	
+	// Guodian related code
+	GDClientObserver mGDObserver = new GDClientObserver() {
 
+		@Override
+		public void notifyEvent(int type, Object event) {
+			switch(type) {
+			case EventData.EVENT_CONNECTED: {
+				if (mApplicationObserver != null) {
+					mApplicationObserver.handleNotifiy(EventData.EVENT_CONNECTED, event);
+				}
+				break;
+			}
+			case EventData.EVENT_LOGIN_SUCCESSED: {
+				if (mApplicationObserver != null) {
+					mApplicationObserver.handleNotifiy(EventData.EVENT_CONNECTED, event);
+				}
+				break;
+			}
+			}
+		}
+		
+	};
+	
+	public PowerPanelData getPowerPanelData() {
+		return mGuodianEngine.getPowerPanelData();
+	}
+
+	public ElectricityPrice getPowerPriceData() {
+		return mGuodianEngine.getPowerPriceData();
+	}
 }

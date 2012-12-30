@@ -3,37 +3,44 @@ package com.dbstar.model;
 import android.content.Intent;
 
 public class GDCommon {
-	public static final int MSG_TASK_FINISHED = 1;
-	public static final int MSG_MEDIA_MOUNTED = 2;
-	public static final int MSG_MEDIA_REMOVED = 3;
-	public static final int MSG_NETWORK_CONNECT = 4;
-	public static final int MSG_NETWORK_DISCONNECT = 5;
-	public static final int MSG_DISK_SPACEWARNING = 6;
-	public static final int MSG_SYSTEM_UPGRADE = 7;
-	public static final int MSG_SYSTEM_FORCE_UPGRADE = 8;
-	public static final int MSG_USER_UPGRADE_CANCELLED = 9;
+	public static final int MSG_TASK_FINISHED = 0x10001;
+	public static final int MSG_MEDIA_MOUNTED = 0x10002;
+	public static final int MSG_MEDIA_REMOVED = 0x10003;
+	public static final int MSG_NETWORK_CONNECT = 0x10004;
+	public static final int MSG_NETWORK_DISCONNECT = 0x10005;
+	public static final int MSG_DISK_SPACEWARNING = 0x10006;
+	public static final int MSG_SYSTEM_UPGRADE = 0x10007;
+	public static final int MSG_SYSTEM_FORCE_UPGRADE = 0x10008;
+	public static final int MSG_USER_UPGRADE_CANCELLED = 0x10009;
 
-	public static final int MSG_ADD_TO_FAVOURITE = 10;
-	public static final int MSG_DELETE = 11;
+	public static final int MSG_ADD_TO_FAVOURITE = 0x10010;
+	public static final int MSG_DELETE = 0x10011;
 
-	public static final int MSG_USER_CHANGE_GUIDELIST = 12;
+	public static final int MSG_USER_CHANGE_GUIDELIST = 0x10012;
 
-	public static final int MSG_GET_NETWORKINFO = 13;
-	public static final int MSG_SET_NETWORKINFO = 14;
+	public static final int MSG_GET_NETWORKINFO = 0x10013;
+	public static final int MSG_SET_NETWORKINFO = 0x10014;
 
-	public static final int MSG_DATA_SIGNAL_STATUS = 15;
+	public static final int MSG_DATA_SIGNAL_STATUS = 0x10015;
 	public static final int STATUS_HASSIGNAL = 0;
 	public static final int STATUS_NOSIGNAL = 1;
 	
-	public static final int SYNC_STATUS_TODBSERVER = 16;
+	public static final int SYNC_STATUS_TODBSERVER = 0x10016;
 
-	public static final int MSG_SAVE_BOOKMARK = 17;
+	public static final int MSG_SAVE_BOOKMARK = 0x10017;
 	
-	public static final int MSG_UPDATE_COLUMN = 18;
-	public static final int MSG_UPDATE_PREVIEW = 19;
-	public static final int MSG_UPDATE_UIRESOURCE = 20;
+	public static final int MSG_UPDATE_COLUMN = 0x10018;
+	public static final int MSG_UPDATE_PREVIEW = 0x10019;
+	public static final int MSG_UPDATE_UIRESOURCE = 0x10020;
 	
 	public static final int MSG_NEW_MAIL = 0x50001;
+	
+	public static final int MSG_UPDATE_POWERCONSUMPTION = 0x60001;
+	public static final int MSG_UPDATE_POWERTOTALCOST = 0x60002;
+	public static final String KeyPowerConsumption = "number";
+	public static final String KeyPowerTotalCost = "cost";
+	
+	//0xa0001 ~ 0xa000f reserved for events
 	
 	public static final String KeyDisk = "disk";
 

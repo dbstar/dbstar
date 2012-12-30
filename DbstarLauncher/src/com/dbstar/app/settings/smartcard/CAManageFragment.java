@@ -3,6 +3,7 @@ package com.dbstar.app.settings.smartcard;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,8 @@ import com.dbstar.app.base.BaseFragment;
 import com.dbstar.app.base.FragmentObserver;
 
 public class CAManageFragment extends BaseFragment {
+
+	private static final String TAG = "CAManageFragment";
 
 	private static final int DLG_CA_ALERT = 0;
 
@@ -53,11 +56,14 @@ public class CAManageFragment extends BaseFragment {
 	public void updateData(FragmentObserver observer, int type, Object key,
 			Object data) {
 
+		Log.d(TAG, " ============== manage CA message === ");
 		if (observer != this || data == null)
 			return;
 
 		int requestType = (Integer) key;
 		mCAMessage = (String) data;
+		
+		Log.d(TAG, "====== ca message ====== " + mCAMessage);
 
 		showDialog(DLG_CA_ALERT);
 	}

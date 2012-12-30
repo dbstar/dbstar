@@ -1,33 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <resources>
 
+    <attr name="startAngle" format="float" />
+    <attr name="sweepAngle" format="float" />
+    <attr name="color" format="color|reference" />
+    <attr name="text" format="string" />
+    <attr name="textColor" format="color|reference" />
+    <attr name="textSize" format="dimension" />
+    <attr name="circleRadius" format="float" />
+
     <declare-styleable name="GDMarqeeTextView">
-        <attr name="text" format="string" />
-        <attr name="textColor" format="color" />
-        <attr name="textSize" format="dimension" />
+        <attr name="text"/>
+        <attr name="textColor"/>
+        <attr name="textSize"/>
     </declare-styleable>
- 
+
     <declare-styleable name="GDGallery">
         <attr name="spacing" format="dimension" />
         <attr name="animationDuration" format="integer" min="0" />
         <attr name="unselectedAlpha" format="float" />
     </declare-styleable>
-    
+
     <declare-styleable name="GDHorizontalScrollView">
-        <attr name="fillViewport" format="boolean"/>
+        <attr name="fillViewport" format="boolean" />
     </declare-styleable>
-    
+
     <declare-styleable name="GDGridView">
-        <attr name="android:gravity"/>
+        <attr name="android:gravity" />
         <!-- Defines the default horizontal spacing between columns. -->
         <attr name="horizontalSpacing" format="dimension" />
         <!-- Defines the default vertical spacing between rows. -->
         <attr name="verticalSpacing" format="dimension" />
         <!-- Defines how columns should stretch to fill the available empty space, if any. -->
         <attr name="stretchMode">
+
             <!-- Stretching is disabled. -->
-            <enum name="none" value="0"/>
+            <enum name="none" value="0" />
             <!-- The spacing between each column is stretched. -->
             <enum name="spacingWidth" value="1" />
             <!-- Each column is stretched equally. -->
@@ -41,44 +49,73 @@
         <attr name="columnHeight" format="dimension" />
         <!-- Defines how many columns to show. -->
         <attr name="numColumns" format="integer" min="0">
+
             <!-- Display as many columns as possible to fill the available space. -->
             <enum name="auto_fit" value="-1" />
         </attr>
-         <!-- Drawable used to indicate the currently selected item in the list. -->
+        <!-- Drawable used to indicate the currently selected item in the list. -->
         <attr name="listSelector" format="color|reference" />
-        <!-- When set to true, the selector will be drawn over the selected item.
+        <!--
+             When set to true, the selector will be drawn over the selected item.
              Otherwise the selector is drawn behind the selected item. The default
-             value is false. -->
+             value is false.
+        -->
         <attr name="drawSelectorOnTop" format="boolean" />
         <!-- Used by ListView and GridView to stack their content from the bottom. -->
         <attr name="stackFromBottom" format="boolean" />
 
-        <!-- Sets the transcript mode for the list. In transcript mode, the list
-             scrolls to the bottom to make new items visible when they are added. -->
+        <!--
+             Sets the transcript mode for the list. In transcript mode, the list
+             scrolls to the bottom to make new items visible when they are added.
+        -->
         <attr name="transcriptMode">
+
             <!-- Disables transcript mode. This is the default value. -->
-            <enum name="disabled" value="0"/>
-            <!-- The list will automatically scroll to the bottom when
+            <enum name="disabled" value="0" />
+            <!--
+                 The list will automatically scroll to the bottom when
                  a data set change notification is received and only if the last item is
-                 already visible on screen. -->
+                 already visible on screen.
+            -->
             <enum name="normal" value="1" />
-            <!-- The list will automatically scroll to the bottom, no matter what items
-                 are currently visible. -->
+            <!--
+                 The list will automatically scroll to the bottom, no matter what items
+                 are currently visible.
+            -->
             <enum name="alwaysScroll" value="2" />
         </attr>
-        <!-- Indicates that this list will always be drawn on top of solid, single-color
-             opaque background. This allows the list to optimize drawing. -->
+        <!--
+             Indicates that this list will always be drawn on top of solid, single-color
+             opaque background. This allows the list to optimize drawing.
+        -->
         <attr name="cacheColorHint" format="color" />
-        <!-- Enables the fast scroll thumb that can be dragged to quickly scroll through
-             the list. -->
+        <!--
+             Enables the fast scroll thumb that can be dragged to quickly scroll through
+             the list.
+        -->
 
         <attr name="smoothScrollbar" format="boolean" />
-
     </declare-styleable>
-    
+
     <declare-styleable name="GDScrollBar">
         <attr name="background" format="reference" />
-    	<attr name="tracker" format="reference" />
+        <attr name="tracker" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="GDArcView">
+        <attr name="circleRadius"/>
+        <attr name="startAngle" />
+        <attr name="sweepAngle" />
+        <attr name="color" />
+    </declare-styleable>
+
+    <declare-styleable name="GDCircleTextView">
+        <attr name="startAngle" />
+        <attr name="sweepAngle" />
+        <attr name="circleRadius" />
+        <attr name="text" />
+        <attr name="textColor" />
+        <attr name="textSize" />
     </declare-styleable>
 
 </resources>

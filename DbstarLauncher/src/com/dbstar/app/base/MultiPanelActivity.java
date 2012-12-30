@@ -330,6 +330,25 @@ public class MultiPanelActivity extends GDBaseActivity implements EngineInterfac
 		}
 	}
 
+	
+	@Override
+	public void onServiceStart() {
+		super.onServiceStart();
+		
+		if (mObserver != null) {
+			mObserver.serviceReady(this);
+		}
+	}
+	
+	@Override
+	public void onServiceStop() {
+		super.onServiceStop();
+		
+		if (mObserver != null) {
+			mObserver.serviceStop();
+		}
+	}
+	
 	@Override
 	public Service getService() {
 		return mService;
