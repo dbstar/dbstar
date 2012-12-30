@@ -267,11 +267,11 @@ int check_productid_from_db_in_trans(char *productid)
 	char sqlite_cmd[512];
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select ProductID from Product where ProductID='%s';",productid);
 	if(0<sqlite_transaction_read(sqlite_cmd,read_productid,sizeof(read_productid))){
-		DEBUG("check ServiceID %s OK\n", productid);
+		DEBUG("check ServiceID %s from datebase OK\n", productid);
 		return 0;
 	}
 	else{
-		DEBUG("check ServiceID %s failed\n", productid);
+		DEBUG("check ServiceID %s from datebase failed\n", productid);
 		return -1;
 	}
 }

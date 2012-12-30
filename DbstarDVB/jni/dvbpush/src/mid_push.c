@@ -458,13 +458,15 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 			
 			prog_monitor(0, &s_prgs[i],NULL);
 			
-			if(0==i){
-				snprintf(buf, size,
-					"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
-			}
-			else{
-				snprintf(buf+strlen(buf), size-strlen(buf),
-					"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
+			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type){
+				if(0==i){
+					snprintf(buf, size,
+						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
+				}
+				else{
+					snprintf(buf+strlen(buf), size-strlen(buf),
+						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
+				}
 			}
 		}
 		s_push_has_data --;

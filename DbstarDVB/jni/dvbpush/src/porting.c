@@ -867,7 +867,7 @@ static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 					}
 				}
 				else
-					drm_errors("CDCASTB_GetSlotIDs", ret);
+					drm_errors("CDCASTB_GetACList", ret);
 			}
 		}
 	}
@@ -921,7 +921,7 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 		return 0;
 	}
 	else{
-		drm_errors("CDCASTB_GetSlotIDs", ret);
+		drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
 		return -1;
 	}
 	
@@ -1454,7 +1454,7 @@ void upgrade_info_init()
 //						DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
 //			}
 //			else
-//				drm_errors("CDCASTB_GetSlotIDs", ret);
+//				drm_errors("CDCASTB_GetACList", ret);
 //		}
 //		
 ///*
@@ -1467,7 +1467,7 @@ void upgrade_info_init()
 //		if(CDCA_RC_OK==ret)
 //			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
 //		else
-//			drm_errors("CDCASTB_GetSlotIDs", ret);
+//			drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
 //	}
 //	else
 //		DEBUG("drm init failed\n");
@@ -1716,12 +1716,59 @@ static int special_productid_init()
 }
 
 /*
+ 从智能卡中查询指定的产品信息。
+*/
+int check_productid_from_smartcard(char *productid)
+{
+	if(NULL==productid){
+		DEBUG("invalid arg\n");
+		return -1;
+	}
+	
+/*
+ 查询授权信息
+*/
+	CDCA_U32 dwFrom = 0, dwNum = 128;
+	int i = 0;
+	SCDCAPVODEntitleInfo EntitleInfo[128];
+	char		BeginDate[64];
+	char		ExpireDate[64];
+
+	int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
+	if(CDCA_RC_OK==ret){
+		DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
+		long check_productid = strtol(productid,NULL,0);
+		for(i=0;i<dwNum;i++){
+			if(check_productid==EntitleInfo[i].m_ID){
+				DEBUG("check %s ok, mirror with %lu\n", productid, EntitleInfo[i].m_ID);
+				return 0;
+			}
+			else
+				DEBUG("EntitleInfo[%d].m_ID=%lu\n", i, EntitleInfo[i].m_ID);
+		}
+		
+		return -1;
+	}
+	else{
+		drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
+		return -1;
+	}
+}
+
+
+
+/*
  检查指定的产品id是否在特殊产品之列。
 */
 int special_productid_check(char *productid)
 {
 	if(NULL==productid)
 		return -1;
+	
+	if(0==check_productid_from_smartcard(productid)){
+		DEBUG("check %s from smartcard entitle OK\n", productid);
+		return 0;
+	}
 	
 	DEBUG("productid=%s, s_special_ProductID=%s\n", productid,s_special_ProductID);
 	
@@ -1731,16 +1778,4 @@ int special_productid_check(char *productid)
 		return -1;
 }
 
-/*
- 检查指定的产品id是否可以接收。
-*/
-int check_productid_from_smartcard(char *productid)
-{
-	if(NULL==productid)
-		return -1;
 
-	if(0==strcmp(productid, "1"))
-		return 0;
-	else
-		return -1;
-}
