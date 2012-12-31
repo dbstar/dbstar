@@ -808,7 +808,7 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 	long long posk = (long long)dwOffsetKByte;
 	long long posb = (long long)dwOffsetByte;
 	long long offset = 1024 * posk + posb;
-	LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] seekpos=[%llu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, 1024 * dwOffsetKByte + dwOffsetByte);
+	LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] seekpos=[%lu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, 1024 * dwOffsetKByte + dwOffsetByte);
 	LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] offset=[%llu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, offset);
 
 	if (*(int *)pFileHandle < 0) {
@@ -821,7 +821,7 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 			LOGD("!!!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_SET!!fseek error\n");
 			return CDCA_FALSE;
 		}
-		LOGD("++++++ lseek64(%lld)=[%lld]\n", 1024 * dwOffsetKByte + dwOffsetByte, offset);
+		LOGD("++++++ lseek64(%ld)=[%lld]\n", 1024 * dwOffsetKByte + dwOffsetByte, offset);
 	} else if (byOrigin == CDCA_SEEK_CUR_BACKWARD) {
 		if (lseek64(*(int *)pFileHandle, offset, SEEK_CUR)<0) {
 			return CDCA_FALSE;

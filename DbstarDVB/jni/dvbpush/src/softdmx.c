@@ -613,7 +613,7 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
     DEBUG("catch tdt time(%s) and free tdt_dsc_fid(%d)\n",tdt,tdt_dsc_fid);
     
     struct tm tm_tdt;
-	scanf("%d-%d-%d %d:%d:%d",&(tm_tdt.tm_year),&(tm_tdt.tm_mon),&(tm_tdt.tm_mday),&(tm_tdt.tm_hour),&(tm_tdt.tm_min),&(tm_tdt.tm_sec));
+	sscanf("%d-%d-%d %d:%d:%d",tdt,&(tm_tdt.tm_year),&(tm_tdt.tm_mon),&(tm_tdt.tm_mday),&(tm_tdt.tm_hour),&(tm_tdt.tm_min),&(tm_tdt.tm_sec));
     
 	tm_tdt.tm_year-=1900;	/*年份值减去1900，得到tm结构中保存的年份序数*/
 	tm_tdt.tm_mon-=1;		/*月份值减去1，得到tm结构中保存的月份序数*/
@@ -623,6 +623,12 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
     
     DEBUG("distill %4d-%2d-%2d %2d:%2d:%2d, send to UI %s\n",(tm_tdt.tm_year),(tm_tdt.tm_mon),(tm_tdt.tm_mday),(tm_tdt.tm_hour),(tm_tdt.tm_min),(tm_tdt.tm_sec),s_time_sync_2_ui);
 	tdt_dsc_fid = -1;
+	
+	// following code only for test, check the seconds if correctly.
+	time_t timep = strtol(s_time_sync_2_ui,NULL,0);
+	struct tm *check_tdt = localtime(&timep);
+	DEBUG("check tdt time which is send to UI, seconds_str:%s, seconds_long: %ld, localtime: %4d-%2d-%2d %2d:%2d:%2d\n", s_time_sync_2_ui,timep,
+		check_tdt->tm_year+1900,check_tdt->tm_mon+1,check_tdt->tm_mday,check_tdt->tm_hour,check_tdt->tm_min,check_tdt->tm_sec);
 }
 
 void ca_section_handle(int fid, const unsigned char *data, int len, void *user_data)
@@ -670,7 +676,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	unsigned short tmp16=0;
 	unsigned int stb_id_l=0,stb_id_h=0;
 	
-	if(s_print_cnt>512)
+	if(s_print_cnt>2048)
 		s_print_cnt = 0;
 	else
 		s_print_cnt ++;

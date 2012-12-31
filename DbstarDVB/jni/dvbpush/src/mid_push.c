@@ -66,6 +66,7 @@ typedef struct tagPRG
 {
 	char			id[32];
 	char			uri[256];
+	char			descURI[384];
 	char			caption[256];
 	char			deadline[32];
 	RECEIVETYPE_E	type;
@@ -311,54 +312,55 @@ void push_rely_condition_set(int cmd)
 	pthread_mutex_unlock(&mtx_push_rely_condition);
 }
 
-static int push_prog_finish(char *id, RECEIVETYPE_E type)
+//#define PARSE_XML_VIA_THREAD
+static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 {
-	if(NULL==id)
-		return -1;
-	
-	char sqlite_cmd[256];
-	char DescURI[256];
-	memset(DescURI, 0, sizeof(DescURI));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DescURI from ProductDesc where ProductDescID='%s' AND ReceiveType='%d';", id, type);
-	if(-1==str_sqlite_read(DescURI,sizeof(DescURI),sqlite_cmd)){
-		DEBUG("can not read DescURI for id: %s, type: %d\n", id, type);
+	if(NULL==DescURI || NULL==DescURI){
+		DEBUG("invalid args\n");
 		return -1;
 	}
-	else{
-		DEBUG("should parse: %s\n", DescURI);
-		if(RECEIVETYPE_PUBLICATION==type){
-#if 0
-			send_xml_to_parse(DescURI,PRODUCTION_XML,id);
+	
+	DEBUG("should parse: %s\n", DescURI);
+	if(RECEIVETYPE_PUBLICATION==type){
+#ifdef PARSE_XML_VIA_THREAD
+		send_xml_to_parse(DescURI,PRODUCTION_XML,id);
 #else
 /*
- 直接调用parse_xml的目的是避开线程，否则出现parse_xml和push_recv_manage_refresh同时使用sqlite库，导致异常
- 但是否会死锁？
- 靠。但是直接调用parse_xml会导致其中的事务交叉引起sqlite错误：out of memory
- 咋办呢？？？目前只能在sqlite的事务调用处搞一个互斥保护。
+直接调用parse_xml的目的是避开线程，否则出现parse_xml和push_recv_manage_refresh同时使用sqlite库，导致异常
+但是否会死锁？
+靠。但是直接调用parse_xml会导致其中的事务交叉引起sqlite错误：out of memory
+咋办呢？？？目前只能在sqlite的事务调用处搞一个互斥保护。
 */
-			parse_xml(DescURI,PRODUCTION_XML,id);
+		parse_xml(DescURI,PRODUCTION_XML,id);
 #endif
-		}
-		else if(RECEIVETYPE_COLUMN==type){
-#if 0
-			send_xml_to_parse(DescURI,COLUMN_XML,NULL);
-#else
-			parse_xml(DescURI,COLUMN_XML,NULL);
-#endif
-		}
-		else if(RECEIVETYPE_SPRODUCT==type){
-#if 0
-			send_xml_to_parse(DescURI,SPRODUCT_XML,NULL);
-#else
-			parse_xml(DescURI,SPRODUCT_XML,NULL);
-#endif
-		}
-		else
-			DEBUG("this type can not be distinguish\n");
-		
-		return 0;
 	}
+	else if(RECEIVETYPE_COLUMN==type){
+#ifdef PARSE_XML_VIA_THREAD
+		send_xml_to_parse(DescURI,COLUMN_XML,NULL);
+#else
+		parse_xml(DescURI,COLUMN_XML,NULL);
+#endif
+	}
+	else if(RECEIVETYPE_SPRODUCT==type){
+#ifdef PARSE_XML_VIA_THREAD
+		send_xml_to_parse(DescURI,SPRODUCT_XML,NULL);
+#else
+		parse_xml(DescURI,SPRODUCT_XML,NULL);
+#endif
+	}
+	else
+		DEBUG("this type can not be distinguish\n");
+	
+	return 0;
 }
+
+static int productdesc_parsed_set(char *xml_uri)
+{
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
+	return sqlite_execute(sqlite_cmd);
+}
+
 
 /*
  功能判断是否是合法节目
@@ -395,7 +397,7 @@ void dvbpush_getinfo_stop()
 从目前测试的情况看，只有在监控线程调用prog_monitor时，接收完毕的节目才能直接调用xml解析。
 如果是从JNI的dvbpush_getinfo接口调用过来，则不能解析xml，否则导致Launcher死掉。
 */
-static int prog_monitor(int can_parse_xml, PROG_S *prog, char *time_stamp)
+static int prog_monitor(PROG_S *prog, char *time_stamp)
 {
 	if(NULL==prog)
 		return -1;
@@ -413,27 +415,19 @@ static int prog_monitor(int can_parse_xml, PROG_S *prog, char *time_stamp)
 		*/
 		long long rxb = push_dir_get_single(prog->uri);
 		
-		DEBUG("PROG_S[%s]:%s %lld/%lld %-3lld%%\n",
+		DEBUG("PROG_S[%s]:%s %s %lld/%lld %-3lld%%\n",
 			prog->id,
 			prog->uri,
+			prog->descURI,
 			rxb,
 			prog->total,
 			rxb*100/prog->total);
 		
 		prog->cur = rxb;
-		if((prog->cur) >= (prog->total)){
-			if(0==prog->parsed){
-				DEBUG("%s download finished, parse it\n", prog->uri);
-				push_prog_finish(prog->id, prog->type);
-			}
-			else{
-				DEBUG("%s download finished. It is parsed already\n", prog->uri);
-			}
-		}
 	}
 	else
 		DEBUG("s_push_has_data=%d, prog->cur=%lld, prog->total=%lld, no need to monitor\n", s_push_has_data,prog->cur,prog->total);
-	
+
 	return 0;
 }
 
@@ -456,7 +450,7 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 			if(-1==prog_is_valid(&s_prgs[i]))
 				continue;
 			
-			prog_monitor(0, &s_prgs[i],NULL);
+			prog_monitor(&s_prgs[i],NULL);
 			
 			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type){
 				if(0==i){
@@ -567,6 +561,7 @@ void *push_monitor_thread()
 	char time_stamp[32];
 	int monitor_interval = 61;
 	unsigned int loop_cnt = 0;
+	int i = 0;
 	
 	while (1==s_monitor_running)
 	{
@@ -586,15 +581,27 @@ void *push_monitor_thread()
 				memset(time_stamp, 0, sizeof(time_stamp));
 			}
 			
-			int i = 0;
 			for(i=0; i<PROGS_NUM; i++)
 			{
 				if(-1==prog_is_valid(&s_prgs[i]) || s_prgs[i].cur>=s_prgs[i].total)
 					continue;
 				
-				prog_monitor(1,&s_prgs[i],time_stamp);
+				prog_monitor(&s_prgs[i],time_stamp);
 			}
 			s_push_has_data--;
+		}
+		
+		for(i=0; i<PROGS_NUM; i++)
+		{
+			if(-1==prog_is_valid(&s_prgs[i]))
+				continue;
+			
+			if(0==s_prgs[i].parsed && (s_prgs[i].cur) >= (s_prgs[i].total)){
+				DEBUG("%s download finished, parse %s\n", s_prgs[i].uri,s_prgs[i].descURI);
+				push_prog_finish(s_prgs[i].id,s_prgs[i].type,s_prgs[i].descURI);
+				productdesc_parsed_set(s_prgs[i].descURI);
+				s_prgs[i].parsed = 1;
+			}
 		}
 		
 		pthread_mutex_unlock(&mtx_push_monitor);
@@ -656,6 +663,8 @@ void *push_xml_parse_thread()
 		pthread_mutex_lock(&mtx_xml);
 		pthread_cond_wait(&cond_xml,&mtx_xml); //wait
 		DEBUG("awaked and parse xml\n");
+		sleep(1);
+		
 		if(1==s_xmlparse_running){
 			for(i=0; i<XML_NUM; i++){
 				DEBUG("xml queue[%d]: %s\n", i, s_push_xml[i].uri);
@@ -670,7 +679,6 @@ void *push_xml_parse_thread()
 			}
 		}
 		pthread_mutex_unlock(&mtx_xml);
-		sleep(1);
 	}
 	DEBUG("exit from xml parse thread\n");
 	
@@ -949,17 +957,19 @@ static int mid_push_regist(PROG_S *prog)
 			
 			snprintf(s_prgs[i].id, sizeof(s_prgs[i].id), "%s", prog->id);
 			snprintf(s_prgs[i].uri, sizeof(s_prgs[i].uri), "%s", prog->uri);
+			snprintf(s_prgs[i].descURI, sizeof(s_prgs[i].descURI), "%s", prog->descURI);
 			snprintf(s_prgs[i].deadline, sizeof(s_prgs[i].deadline), "%s", prog->deadline);
 			s_prgs[i].type = prog->type;
 			s_prgs[i].cur = prog->cur;
 			s_prgs[i].total = prog->total;
 			s_prgs[i].parsed = prog->parsed;
 			
-			DEBUG("regist to push[%d]:%s %s %s %lld\n",
+			DEBUG("regist to push[%d]:%s %s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].caption,
 					s_prgs[i].uri,
+					s_prgs[i].descURI,
 					s_prgs[i].total);
 			
 			return 0;
@@ -971,6 +981,7 @@ static int mid_push_regist(PROG_S *prog)
 		if(-1==prog_is_valid(&s_prgs[i])){
 			snprintf(s_prgs[i].id, sizeof(s_prgs[i].id), "%s", prog->id);
 			snprintf(s_prgs[i].uri, sizeof(s_prgs[i].uri), "%s", prog->uri);
+			snprintf(s_prgs[i].descURI, sizeof(s_prgs[i].descURI), "%s", prog->descURI);
 			snprintf(s_prgs[i].deadline, sizeof(s_prgs[i].deadline), "%s", prog->deadline);
 			s_prgs[i].type = prog->type;
 			s_prgs[i].cur = prog->cur;
@@ -980,10 +991,11 @@ static int mid_push_regist(PROG_S *prog)
 			push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
 			s_push_monitor_active++;
 			
-			DEBUG("regist to push[%d]:%s %s %lld\n",
+			DEBUG("regist to push[%d]:%s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].uri,
+					s_prgs[i].descURI,
 					s_prgs[i].total);
 			break;
 		}
@@ -1107,7 +1119,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 		DEBUG("no record in table, return\n");
 		return 0;
 	}
-	
+//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed
 	int i = 0;
 	int j = 0;
 	int recv_flag = 1;
@@ -1125,25 +1137,25 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 		如果是开机时注册；或者不是开机注册、但FreshFlag为1，则注册拒绝接收或进度监控
 		否则，不加处理。
 		*/
-		if(1==tmp_init_flag || (1!=tmp_init_flag && 1==atoi(result[i*column+8]))){
+		if(1==tmp_init_flag || (1!=tmp_init_flag && 1==atoi(result[i*column+9]))){
 			/*
 			对于成品，如果用户选择不接收，则一定不接收，不需要更加详细的判断
 			否则，根据业务等条件进行判断
 			*/
 			if(RECEIVETYPE_PUBLICATION==atoi(result[i*column+2]) && 0==guidelist_select_status((const char *)(result[i*column+1]))){
 				recv_flag = 0;
-				DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+7]);
+				DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+3]);
 			}
 			else
 			{
-				receive_status = atoi(result[i*column+7]);
+				receive_status = atoi(result[i*column+8]);
 				if(RECEIVESTATUS_REJECT==receive_status){
 					/*
 					拒绝接收时一定要小心，相同的Publication有可能既属于当前service，又属于其他service；尤其是，在其他Service中需要接收。
 					*/
 					recv_flag = 0;
 					for(j=1;j<row+1;j++){
-						if(0==strcmp(result[j*column+3],result[i*column+3]) && (RECEIVESTATUS_WAITING==atoi(result[j*column+7])|| RECEIVESTATUS_FINISH==atoi(result[j*column+7]))){
+						if(0==strcmp(result[j*column+3],result[i*column+3]) && (RECEIVESTATUS_WAITING==atoi(result[j*column+8])|| RECEIVESTATUS_FINISH==atoi(result[j*column+8]))){
 							DEBUG("this prog(%s) is need recv in other service, do not reject it\n",result[i*column+3]);
 							recv_flag = 1;
 							break;
@@ -1154,7 +1166,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 					recv_flag = 1;
 				}
 				else{ // RECEIVESTATUS_FAILED==receive_status || RECEIVESTATUS_HISTORY==receive_status
-					DEBUG("[%d:%s] %s is ignored by push monitor\n", i,result[i*column],result[i*column+2]);
+					DEBUG("[%d:%s] %s is ignored by push monitor\n", i,result[i*column],result[i*column+3]);
 					recv_flag = 0;
 				}
 			}
@@ -1163,18 +1175,19 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 				mid_push_reject(result[i*column+3]);
 			}
 			else{
-				sscanf(result[i*column+4],"%lld", &totalsize);
+				sscanf(result[i*column+5],"%lld", &totalsize);
 				
 				PROG_S cur_prog;
 				memset(&cur_prog,0,sizeof(cur_prog));
 				snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
 				snprintf(cur_prog.uri,sizeof(cur_prog.uri),"%s",result[i*column+3]);
+				snprintf(cur_prog.descURI,sizeof(cur_prog.descURI),"%s",result[i*column+4]);
 				memset(cur_prog.caption,0,sizeof(cur_prog.caption));
-				snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+6]);
+				snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+7]);
 				cur_prog.type = atoi(result[i*column+2]);
 				cur_prog.cur = 0LL;
 				cur_prog.total = totalsize;
-				cur_prog.parsed = atoi(result[i*column+9]);
+				cur_prog.parsed = atoi(result[i*column+10]);
 				mid_push_regist(&cur_prog);
 				
 				/*
@@ -1230,7 +1243,7 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
  由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
  所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
 */
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*

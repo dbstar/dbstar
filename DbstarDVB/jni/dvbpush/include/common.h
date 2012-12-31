@@ -477,6 +477,13 @@ typedef struct{
 }DBSTAR_PREVIEW_S;
 
 
+typedef struct{
+	char	ServiceID[64];
+	char	SType[64];
+	char	Name[64];
+	char	URI[256];
+}DBSTAR_SPRODUCT_S;
+
 
 int appoint_str2int(char *str, unsigned int str_len, unsigned int start_position, unsigned int appoint_len, int base);
 unsigned int randint();

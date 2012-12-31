@@ -28,5 +28,6 @@ char *column_res_get();
 char *push_dir_get();
 int guidelist_select_status(const char *publication_id);
 int guidelist_select_refresh();
+int disk_manage();
 
 #endif

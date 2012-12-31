@@ -47,7 +47,7 @@ static char			s_serviceID[64];
 static char			s_push_root_path[512];
 static char 		*s_guidelist_unselect = NULL;
 
-static int 			s_disk_manage_buzy = 0;
+//static int 			s_disk_manage_buzy = 0;
 static char			s_jni_cmd_public_space[20480];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
@@ -635,7 +635,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 }
 
 
-void disk_manage()
+int disk_manage()
 {
 #if 0
 	if(1==s_disk_manage_buzy)
@@ -893,7 +893,7 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
  查询授权信息
 */
 	CDCA_U32 dwFrom = 0, dwNum = 128;
-	int i = 0;
+	unsigned int i = 0;
 	SCDCAPVODEntitleInfo EntitleInfo[128];
 	char		BeginDate[64];
 	char		ExpireDate[64];
@@ -1720,6 +1720,9 @@ static int special_productid_init()
 */
 int check_productid_from_smartcard(char *productid)
 {
+	DEBUG("not check from smartcard currently\n");
+	return -1;
+	
 	if(NULL==productid){
 		DEBUG("invalid arg\n");
 		return -1;
@@ -1729,17 +1732,15 @@ int check_productid_from_smartcard(char *productid)
  查询授权信息
 */
 	CDCA_U32 dwFrom = 0, dwNum = 128;
-	int i = 0;
+	unsigned int i = 0;
 	SCDCAPVODEntitleInfo EntitleInfo[128];
-	char		BeginDate[64];
-	char		ExpireDate[64];
 
 	int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
 	if(CDCA_RC_OK==ret){
 		DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
 		long check_productid = strtol(productid,NULL,0);
 		for(i=0;i<dwNum;i++){
-			if(check_productid==EntitleInfo[i].m_ID){
+			if(((unsigned long)check_productid)==EntitleInfo[i].m_ID){
 				DEBUG("check %s ok, mirror with %lu\n", productid, EntitleInfo[i].m_ID);
 				return 0;
 			}

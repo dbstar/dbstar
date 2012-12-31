@@ -325,7 +325,7 @@ ptr->ServiceID);
 	对于那些相同PublicatonID既有允许接收，又有拒绝接收的冲突问题，放在注册时处理。
 	*/
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO ProductDesc(ServiceID,ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag) \
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO ProductDesc(ServiceID,ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag,Parsed) \
 VALUES('%s',\
 '%s',\
 '%s',\
@@ -340,7 +340,8 @@ VALUES('%s',\
 '%s',\
 '%s',\
 '%d',\
-1);",
+1,\
+'0');",
 ptr->ServiceID,
 ptr->ReceiveType,
 ptr->ProductDescID,
@@ -625,13 +626,6 @@ static int channel_ineffective_clear()
 	return sqlite_execute(sqlite_cmd);
 }
 
-static int publication_parsed_set(char *xml_uri, int parsed_flag)
-{
-	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
-	return sqlite_transaction_exec(sqlite_cmd);
-}
-
 /*
  向成品表Publication插入成品信息，需要先判断是否存在，然后才能决定是Insert还是Update
 */
@@ -866,6 +860,29 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+
+static int sproduct_insert(DBSTAR_SPRODUCT_S *p)
+{
+	if(NULL==p || 0==strlen(p->SType)){
+		DEBUG("invalid arguments\n");
+		return -1;
+	}
+	
+	char sqlite_cmd[1024*4];
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO SProduct(ServiceID,SType,Name,URI) \
+	VALUES('%s',\
+	'%s',\
+	'%s',\
+	'%s');",
+	p->ServiceID,
+	p->SType,
+	p->Name,
+	p->URI);
+		
+	return sqlite_transaction_exec(sqlite_cmd);
+}
+
+
 /*
 功能：	解析xml结点中的属性
 输入：	cur		——待解析的xml结点
@@ -1046,6 +1063,18 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 				}
 				else if(0==xmlStrcmp(BAD_CAST"displayForm", attrPtr->name)){
 					strncpy(p->displayForm, (char *)szAttr, sizeof(p->displayForm)-1);
+				}
+				else
+					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
+			}
+// SProduct.xml
+			else if(0==strncmp(xmlroute, "SProduct^SProductInfo^", strlen("SProduct^SProductInfo^"))){
+				DBSTAR_SPRODUCT_S *p = (DBSTAR_SPRODUCT_S *)ptr;
+				if(0==xmlStrcmp(BAD_CAST"name", attrPtr->name)){
+					strncpy(p->Name, (char *)szAttr, sizeof(p->Name)-1);
+				}
+				else if(0==xmlStrcmp(BAD_CAST"uri", attrPtr->name)){
+					strncpy(p->URI, (char *)szAttr, sizeof(p->URI)-1);
 				}
 				else
 					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
@@ -2415,6 +2444,58 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 			}
 			
+// SProduct.xml
+			else if(0==strncmp(new_xmlroute, "SProduct^", strlen("SProduct^"))){
+				if(0==strcmp(new_xmlroute, "SProduct^SProductInfo")){
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "SProduct^SProductInfo^BGPicture")){
+					DBSTAR_SPRODUCT_S sproduct_s;
+					memset(&sproduct_s,0,sizeof(sproduct_s));
+					snprintf(sproduct_s.ServiceID,sizeof(sproduct_s.ServiceID),"%s",(char *)ptr);
+					
+					snprintf(sproduct_s.SType,sizeof(sproduct_s.SType),"BGPicture");
+					parseProperty(cur, new_xmlroute, &sproduct_s);
+					sproduct_insert(&sproduct_s);
+				}
+				else if(0==strcmp(new_xmlroute, "SProduct^SProductInfo^WelcomeAV")){
+					DBSTAR_SPRODUCT_S sproduct_s;
+					memset(&sproduct_s,0,sizeof(sproduct_s));
+					snprintf(sproduct_s.ServiceID,sizeof(sproduct_s.ServiceID),"%s",(char *)ptr);
+					
+					snprintf(sproduct_s.SType,sizeof(sproduct_s.SType),"WelcomeAV");
+					parseProperty(cur, new_xmlroute, &sproduct_s);
+					sproduct_insert(&sproduct_s);
+				}
+				else if(0==strcmp(new_xmlroute, "SProduct^SProductInfo^AppLogo")){
+					DBSTAR_SPRODUCT_S sproduct_s;
+					memset(&sproduct_s,0,sizeof(sproduct_s));
+					snprintf(sproduct_s.ServiceID,sizeof(sproduct_s.ServiceID),"%s",(char *)ptr);
+					
+					snprintf(sproduct_s.SType,sizeof(sproduct_s.SType),"AppLogo");
+					parseProperty(cur, new_xmlroute, &sproduct_s);
+					sproduct_insert(&sproduct_s);
+				}
+				else if(0==strcmp(new_xmlroute, "SProduct^SProductInfo^AppBG")){
+					DBSTAR_SPRODUCT_S sproduct_s;
+					memset(&sproduct_s,0,sizeof(sproduct_s));
+					snprintf(sproduct_s.ServiceID,sizeof(sproduct_s.ServiceID),"%s",(char *)ptr);
+					
+					snprintf(sproduct_s.SType,sizeof(sproduct_s.SType),"AppBG");
+					parseProperty(cur, new_xmlroute, &sproduct_s);
+					sproduct_insert(&sproduct_s);
+				}
+				else if(0==strcmp(new_xmlroute, "SProduct^SProductInfo^ServicePic")){
+					DBSTAR_SPRODUCT_S sproduct_s;
+					memset(&sproduct_s,0,sizeof(sproduct_s));
+					snprintf(sproduct_s.ServiceID,sizeof(sproduct_s.ServiceID),"%s",(char *)ptr);
+					
+					snprintf(sproduct_s.SType,sizeof(sproduct_s.SType),"ServicePic");
+					parseProperty(cur, new_xmlroute, &sproduct_s);
+					sproduct_insert(&sproduct_s);
+				}
+			}
+			
 			
 			
 	//		else
@@ -2687,6 +2768,23 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					ret = PROCESS_OVER_CHECK(ret);
 				}
 			}
+// SProduct.xml
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"SProduct")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
+					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
+							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					ret = -1;
+				}
+				else{
+					char SProduct_ServiceID[64];
+					snprintf(SProduct_ServiceID,sizeof(SProduct_ServiceID),"%s", xmlinfo.ServiceID);
+					ret = parseNode(doc, cur, "SProduct", SProduct_ServiceID, &xmlinfo, "SProduct", NULL, old_xmlver);
+					
+					ret = PROCESS_OVER_CHECK(ret);
+				}
+			}
 		
 			else{
 				ERROROUT("xml file has wrong root node with '%s'\n", cur->name);
@@ -2699,11 +2797,6 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				if(docname)
 					snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", docname);
 				xmlinfo_insert(&xmlinfo);
-				
-				if(PRODUCTION_XML==xml_flag || COLUMN_XML==xml_flag || SPRODUCT_XML==xml_flag){
-					DEBUG("%s is in monitor, set parsed as 1\n",docname);
-					publication_parsed_set(docname, 1);
-				}
 				
 				sqlite_transaction_end(1);
 				
@@ -2739,41 +2832,12 @@ PARSE_XML_END:
 
 
 /*
- 此函数本意：如果xml依赖于serviceID才能解析，则返回1，否则返回0
- 但是目前的系统将Initialize.xml单独占用初始化通道，其他xml在另外一个文件通道，此文件通道是由初始化通道开启的，所以Initialize.xml一定是第一个到来的
-*/
-static int depent_on_serviceID(PUSH_XML_FLAG_E xml_flag)
-{
-/*
-	ProductDesc.xml和Service.xml涉及到push拒绝注册，因此不论Initialize.xml的serviceID是否解析到，都要解析入库
-		|| PRODUCTDESC_XML == xml_flag
-		|| SERVICE_XML == xml_flag
-*/
-	if(	COLUMN_XML == xml_flag
-		|| GUIDELIST_XML == xml_flag
-		|| COMMANDS_XML == xml_flag
-		|| MESSAGE_XML == xml_flag
-		|| SPRODUCT_XML == xml_flag )
-		return 1;
-	else
-		return 0;
-}
-
-/*
  允许xml_name是空，但是必须有xml_flag。如果xml_uri不为空，则直接使用此uri
  此函数需要独占调用，因为如果当前解析的是Initialize.xml的话，解析完毕后还要自动扫描解析那些依赖于serviceID的xml。
  但同时，push系统的回调也有可能刚好得到这些xml而引起解析。
 */
 int parse_xml(char *xml_uri, PUSH_XML_FLAG_E xml_flag, char *id)
 {
-	/*
-	 如果还未获得serviceID，则那些依赖于serviceID进行判断的xml不能解析
-	if(0==strlen(serviceID_get()) && depent_on_serviceID(xml_flag)){
-		DEBUG("has no serviceID already, waiting please. xml: %s\n", xml_uri);
-		return -1;
-	}
-	*/
-	
 	int ret = parseDoc(xml_uri, xml_flag, id);
 	
 	return ret;

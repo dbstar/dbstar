@@ -27,4 +27,6 @@ int mid_push_reject(const char *prog_uri);
 int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed);
 int send_xml_to_parse(const char *path, int flag, char *id);
 
+void disk_manage_flag_set(int flag);
+
 #endif
