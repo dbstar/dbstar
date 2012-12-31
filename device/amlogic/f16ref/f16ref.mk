@@ -58,10 +58,6 @@ PRODUCT_PACKAGES += \
 	MusicPlayer	
 
 PRODUCT_COPY_FILES += \
-	device/amlogic/f16ref/ump.ko:root/boot/ump.ko \
-	device/amlogic/f16ref/mali.ko:root/boot/mali.ko \
-	device/amlogic/f16ref/8192cu.ko:system/lib/8192cu.ko \
-	device/amlogic/f16ref/cfg80211.ko:system/lib/cfg80211.ko \
 	device/amlogic/f16ref/ath6kl_usb.ko:system/lib/ath6kl_usb.ko \
 	device/amlogic/f16ref/cfg80211_ath6kl.ko:system/lib/cfg80211_ath6kl.ko \
 	device/amlogic/f16ref/compat.ko:system/lib/compat.ko \
