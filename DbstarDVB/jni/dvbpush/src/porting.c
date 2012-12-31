@@ -857,6 +857,7 @@ static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 				if(CDCA_RC_OK==ret){
 					int max_ac_num = CDCA_MAXNUM_ACLIST>6?6:CDCA_MAXNUM_ACLIST;
 					for(index=0;index<max_ac_num;index++){
+						DEBUG("ACArray[%d]=(%d)\n",index, ACArray[index]);
 						if(0!=ACArray[index]){
 							DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
 							if(0==index)

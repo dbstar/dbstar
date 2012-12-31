@@ -56,10 +56,13 @@ void *main_thread()
 		//return NULL;
 	}
 	
+#if 0
 /*
  慎用：只有在需要清理已有授权、重新接收授权时使用，正式版本不能调用。
- CDCASTB_FormatBuffer();
 */
+DEBUG("\n\nWarning: you call function CDCASTB_FormatBuffer, it is an unnormal action\n\n\n");
+CDCASTB_FormatBuffer();
+#endif
 
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);

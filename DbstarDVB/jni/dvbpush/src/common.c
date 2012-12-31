@@ -553,10 +553,15 @@ int fcopy_c(char *from_file, char *to_file)
 		return -1;
 	}
 	
+//	mode_t new_umask, old_umask;
+//	new_umask=0111;  
+//	old_umask=umask(new_umask);
+//	DEBUG("old umask: %o, change to new umask: %o\n", old_umask,new_umask);
+	
 	/* 创建目的文件 */
 	/* 使用了O_CREAT选项-创建文件,open()函数需要第3个参数,
 	mode=S_IRUSR|S_IWUSR表示S_IRUSR 用户可以读 S_IWUSR 用户可以写*/
-	if((to_fd=open(to_file,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR))==-1) 
+	if((to_fd=open(to_file,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))==-1) 
 	{
 		ERROROUT("open %s to write failed\n", to_file);
 		return -1;

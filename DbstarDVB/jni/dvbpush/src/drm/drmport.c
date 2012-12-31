@@ -7,6 +7,9 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <android/log.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "am/am_smc.h"
 #include "linux/amsmc.h"
@@ -572,7 +575,7 @@ void CDSTBCA_HideIPPVDlg(CDCA_U16 wEcmPid)
 /* 邮件通知 */
 void CDSTBCA_EmailNotifyIcon(CDCA_U8 byShow, CDCA_U32 dwEmailID)
 {
-	LOGD("##################### CDSTBCA_EmailNotifyIcon byShow=%d, dwEmailID=%lu\n", byShow,dwEmailID);
+	LOGD("\n\n\n\n\n##################### CDSTBCA_EmailNotifyIcon byShow=%d, dwEmailID=%lu\n\n\n\n\n\n", byShow,dwEmailID);
 
 	if(CDCA_Email_New==byShow)
 		msg_send2_UI(DRM_EMAIL_NEW, NULL, 0);
@@ -588,7 +591,7 @@ static char s_DRM_OSD_msg[CDCA_MAXLEN_OSD+32];
 /* 显示OSD信息 */
 void CDSTBCA_ShowOSDMessage(CDCA_U8	byStyle, const char* szMessage)
 {
-	LOGD("##################### CDSTBCA_ShowOSDMessage byStyle=%d,szMessage=%s\n",byStyle,szMessage);
+	LOGD("\n\n\n\n\n##################### CDSTBCA_ShowOSDMessage byStyle=%d,szMessage=%s\n\n\n\n\n\n",byStyle,szMessage);
 	
 	snprintf(s_DRM_OSD_msg,sizeof(s_DRM_OSD_msg),"%d\t%s",byStyle,szMessage);
 	msg_send2_UI(DRM_EMAIL_NEW, s_DRM_OSD_msg, strlen(s_DRM_OSD_msg));
@@ -741,8 +744,8 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 {
 	int ret = 0;
 	char fullentitle[CDCA_MAXLEN_SN_PATH];
-
-        *(int *)pFileHandle = -1;
+	
+	*(int *)pFileHandle = -1;
 	sprintf(fullentitle, "%s/%s", ENTITLE_FILE_PATH, CardSN);
 	LOGD("open the entitle file [%s]\n", fullentitle);
 	if (access(fullentitle, 0)) { //not exsit
@@ -755,7 +758,7 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 			return CDCA_FALSE;
 		}
 		strncpy(card_sn.sn, fullentitle, CDCA_MAXLEN_SN_PATH);
-		card_sn.fd = open(fullentitle, O_CREAT|O_RDWR); //"w+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
+		card_sn.fd = open(fullentitle, O_CREAT|O_RDWR,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH); //"w+"); //a+ 以附加方式打开可读写的文件。若不存在，建立，存在，加到文件尾后
 		if (card_sn.fd >= 0) {
 			LOGD("open the entitle 0 successful\n");
 		}
