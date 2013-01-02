@@ -236,6 +236,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			Log.d(TAG, "Hdmi: OUT");
 			mPeripheralController.setAudioOutputOn();
 		}
+		mPeripheralController.setPowerLedOff();
 
 		for (int i = 0; i < mThreadCount; i++) {
 			WorkerThread thread = new WorkerThread();
