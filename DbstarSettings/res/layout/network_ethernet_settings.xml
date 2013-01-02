@@ -30,6 +30,7 @@
             android:focusable="true"
             android:layout_marginTop="12dp"
             android:nextFocusLeft="@+id/gateway_serialnumber"
+            android:nextFocusUp="@+id/prevbutton"
             android:orientation="horizontal" >
 
             <CheckBox

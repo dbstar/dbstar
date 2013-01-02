@@ -1,5 +1,7 @@
 package com.dbstar.settings;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
@@ -12,7 +14,7 @@ public class DbstarNetSettingsReceiver extends BroadcastReceiver {
 
 	private static final String ACTION_BOOT_COMPLETED = "android.intent.action.BOOT_COMPLETED";
 
-	public static final String filePath = "/data/data/com.dbstar.settings/files/flag";
+	public static final String flagFile = "flag";
 
 	protected class MyException extends Exception {
 		protected MyException(String msg) {
@@ -25,15 +27,26 @@ public class DbstarNetSettingsReceiver extends BroadcastReceiver {
 
 		if (ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
 			try {
-				int count, i = 0;
-				char[] buf = new char[100];
-				FileReader rd = new FileReader(filePath);
-				count = rd.read(buf, 0, 1);
-				buf[count] = '\n';
-				String vlues = new String(buf, 0, count);
+				int count = 0;
+				byte[] buf = new byte[100];
+				FileInputStream in = context.openFileInput(flagFile);
+				BufferedInputStream bIn = new BufferedInputStream(in);
+				count = bIn.read(buf, 0, buf.length);
+				bIn.close();
 
-				if ((vlues.compareTo("1")) == 0)
-					throw new MyException("Default OutPutMode Detected, exit");
+				boolean exist = false;
+				if (count > 0) {
+					String vlues = new String(buf, 0, count);
+
+					if ((vlues.compareTo("1")) == 0) {
+						exist = true;
+					}
+				}
+
+				if (exist) {
+					throw new MyException(
+							"Default Network Settings Detected, exit");
+				}
 			} catch (FileNotFoundException e1) {
 				Intent starterIntent = new Intent(context,
 						GDNetworkSettingsActivity.class);

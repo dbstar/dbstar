@@ -123,7 +123,7 @@ public class WifiSettings {
 
 		mWifiManager = (WifiManager) mActivity
 				.getSystemService(Context.WIFI_SERVICE);
-		
+
 		mWifiManager.asyncConnect(mActivity, new WifiServiceHandler());
 
 		mAccessPointListView = (ListView) mActivity
@@ -135,6 +135,8 @@ public class WifiSettings {
 
 		mAccessPointListView.setOnItemClickListener(mOnAPSelectedListener);
 		mAccessPointListView.setOnItemSelectedListener(mItemSelectedListener);
+
+		// mAccessPointListView.requestFocus();
 	}
 
 	public void onResume() {
@@ -487,11 +489,21 @@ public class WifiSettings {
 
 	void onAccessPointSelected(int index) {
 		mSelectedAccessPoint = mAccessPointList.get(index);
-		if (mSelectedAccessPoint.networkId != INVALID_NETWORK_ID)  {
+
+		if (mSelectedAccessPoint.networkId != INVALID_NETWORK_ID) {
+			WifiConfiguration config = mSelectedAccessPoint.getConfig();
+
+			if (config.status == WifiConfiguration.Status.DISABLED
+					&& config.disableReason == WifiConfiguration.DISABLED_AUTH_FAILURE) {
+				showConfigUi(mSelectedAccessPoint);
+				return;
+			}
+
 			if (!requireKeyStore(mSelectedAccessPoint.getConfig())) {
-                mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
-            }
-		} else if (mSelectedAccessPoint.security == AccessPoint.SECURITY_NONE) {
+				mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
+			}
+		} else if (mSelectedAccessPoint.security == AccessPoint.SECURITY_NONE
+				|| mSelectedAccessPoint.networkId == INVALID_NETWORK_ID) {
 			/** Bypass dialog for unsecured, unsaved networks */
 			mSelectedAccessPoint.generateOpenNetworkConfig();
 			mWifiManager.connectNetwork(mSelectedAccessPoint.getConfig());
@@ -531,6 +543,15 @@ public class WifiSettings {
 		return false;
 	}
 
+	/* package */void forget() {
+		mWifiManager.forgetNetwork(mSelectedAccessPoint.networkId);
+
+		if (mWifiManager.isWifiEnabled()) {
+			mScanner.resume();
+		}
+		updateAccessPoints();
+	}
+
 	void submit(WifiConfigController configController) {
 		final WifiConfiguration config = configController.getConfig();
 
@@ -541,14 +562,14 @@ public class WifiSettings {
 				mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
 			}
 		} else {
-			mWifiManager.connectNetwork(config);
 			mWifiManager.saveNetwork(config);
+			mWifiManager.connectNetwork(config);
 		}
 
 		if (mWifiManager.isWifiEnabled()) {
 			mScanner.resume();
 		}
-		
+
 		updateAccessPoints();
 	}
 

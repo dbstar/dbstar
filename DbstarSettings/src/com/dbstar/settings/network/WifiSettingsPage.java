@@ -37,7 +37,7 @@ public class WifiSettingsPage extends BaseFragment {
 
 		mNextButton.setOnClickListener(mOnClickListener);
 		mPrevButton.setOnClickListener(mOnClickListener);
-
+		
 		mPrevButton.requestFocus();
 	}
 

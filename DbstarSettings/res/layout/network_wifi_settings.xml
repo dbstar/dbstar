@@ -26,7 +26,9 @@
         <ListView
             android:id="@+id/wifi_aplist"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="400dp"
+            android:nextFocusLeft="@+id/prevbutton"
+            android:nextFocusRight="@+id/prevbutton"
             android:cacheColorHint="@android:color/transparent"
             android:clipToPadding="false"
             android:divider="#00000000"

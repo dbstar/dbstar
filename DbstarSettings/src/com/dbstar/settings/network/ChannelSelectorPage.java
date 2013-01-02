@@ -16,6 +16,7 @@ import com.dbstar.settings.base.BaseFragment;
 import com.dbstar.settings.utils.SettingsCommon;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.net.ethernet.EthernetManager;
 
@@ -82,9 +83,16 @@ public class ChannelSelectorPage extends BaseFragment {
 		mPrevButton.setOnClickListener(mOnClickListener);
 
 		mEthernetSwitchButton.requestFocus();
-		
-		
-//		mActivity.getSharedPreferences(SettingsCommon.PREF_NAME_NETWORK);
+
+		SharedPreferences settings = mActivity.getSharedPreferences(
+				NetworkCommon.PREF_NAME_NETWORK, 0);
+		String channel = settings.getString(NetworkCommon.KeyChannel,
+				NetworkCommon.ChannelEthernet);
+		if (channel.equals(NetworkCommon.ChannelEthernet)) {
+			setChannelEthernet();
+		} else {
+			setChannelWireless();
+		}
 	}
 
 	boolean mIsEthernetSelected = false;
@@ -92,9 +100,10 @@ public class ChannelSelectorPage extends BaseFragment {
 
 	private void onWifiChecked() {
 		mEthManager.setEthEnabled(true);
-		
+
 		int wifiApState = mWifiManager.getWifiApState();
-		if ((wifiApState == WifiManager.WIFI_AP_STATE_ENABLING) || (wifiApState == WifiManager.WIFI_AP_STATE_ENABLED)) {
+		if ((wifiApState == WifiManager.WIFI_AP_STATE_ENABLING)
+				|| (wifiApState == WifiManager.WIFI_AP_STATE_ENABLED)) {
 			mWifiManager.setWifiApEnabled(null, false);
 		}
 
@@ -107,28 +116,34 @@ public class ChannelSelectorPage extends BaseFragment {
 	}
 
 	private void setChannel() {
-		try {
-			String channelValues = null;
-			if (mIsEthernetSelected) {
-				channelValues = NetworkCommon.ChannelEthernet;
-			} else {
-				channelValues = NetworkCommon.ChannelBoth;
-			}
-			
-			byte[] channel = channelValues.getBytes();
-			FileOutputStream fos = mActivity.openFileOutput(NetworkCommon.ChannelModeFile,
-					Context.MODE_WORLD_READABLE);
-			fos.write(channel);
-			
-			fos.close();
-		} catch (Exception e) {
-			Log.e(TAG,
-					"Exception Occured: Trying to add set setflag : "
-							+ e.toString());
-			Log.e(TAG, "Finishing the Application");
+		String channelValues = null;
+		if (mIsEthernetSelected) {
+			channelValues = NetworkCommon.ChannelEthernet;
+		} else {
+			channelValues = NetworkCommon.ChannelBoth;
 		}
+
+		SharedPreferences settings = mActivity.getSharedPreferences(
+				NetworkCommon.PREF_NAME_NETWORK, 0);
+		SharedPreferences.Editor editor = settings.edit();
+		editor.putString(NetworkCommon.KeyChannel, channelValues);
+		editor.commit();
 	}
-	
+
+	void setChannelEthernet() {
+		mIsEthernetSelected = true;
+		mIsWirelessSelected = false;
+		mEthernetSwitchIndicator.setChecked(true);
+		mWifiSwitchIndicator.setChecked(false);
+	}
+
+	void setChannelWireless() {
+		mIsWirelessSelected = true;
+		mIsEthernetSelected = false;
+		mWifiSwitchIndicator.setChecked(true);
+		mEthernetSwitchIndicator.setChecked(false);
+	}
+
 	private View.OnClickListener mOnClickListener = new View.OnClickListener() {
 
 		@Override
@@ -144,11 +159,11 @@ public class ChannelSelectorPage extends BaseFragment {
 				mWifiSwitchIndicator.setChecked(mIsWirelessSelected);
 				mEthernetSwitchIndicator.setChecked(mIsEthernetSelected);
 			} else if (v.getId() == R.id.nextbutton) {
+				setChannel();
 				if (mIsEthernetSelected) {
+					onEthernetChecked();
 					mManager.nextPage(SettingsCommon.PAGE_CHANNELSELECTOR,
 							SettingsCommon.PAGE_ETHERNET);
-					setChannel();
-					onEthernetChecked();
 				} else {
 					onWifiChecked();
 					mManager.nextPage(SettingsCommon.PAGE_CHANNELSELECTOR,

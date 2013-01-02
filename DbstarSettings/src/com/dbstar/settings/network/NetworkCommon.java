@@ -9,4 +9,7 @@ public class NetworkCommon {
 	public static final String ChannelModeFile = "channel"; 
 	public static final String ChannelEthernet = "1";
 	public static final String ChannelBoth = "2";
+	
+	public static final String PREF_NAME_NETWORK = "dbstar.settings.network";
+	public static final String KeyChannel = "channel";
 }
