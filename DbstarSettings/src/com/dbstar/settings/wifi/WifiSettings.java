@@ -502,8 +502,7 @@ public class WifiSettings {
 			if (!requireKeyStore(mSelectedAccessPoint.getConfig())) {
 				mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
 			}
-		} else if (mSelectedAccessPoint.security == AccessPoint.SECURITY_NONE
-				|| mSelectedAccessPoint.networkId == INVALID_NETWORK_ID) {
+		} else if (mSelectedAccessPoint.security == AccessPoint.SECURITY_NONE) {
 			/** Bypass dialog for unsecured, unsaved networks */
 			mSelectedAccessPoint.generateOpenNetworkConfig();
 			mWifiManager.connectNetwork(mSelectedAccessPoint.getConfig());
