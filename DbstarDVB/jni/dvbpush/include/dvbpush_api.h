@@ -38,7 +38,8 @@ typedef enum {
 	CMD_DRM_PVODPROGRAMINFO_READ	= 0x0006c,    // 读取加密文件信息
 
 	CMD_MAX                         = 0x0FFFF,
-
+	
+	DIALOG_NOTICE					= 0x20000,		// 通用信息提示对话框
 	UPGRADE_NEW_VER                 = 0x20001,     // 有新版本到来，用户选择升级
 	UPGRADE_NEW_VER_FORCE           = 0x20002,     // 有新版本到来，强制升级
 	

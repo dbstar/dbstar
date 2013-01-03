@@ -857,7 +857,7 @@ static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 				if(CDCA_RC_OK==ret){
 					int max_ac_num = CDCA_MAXNUM_ACLIST>6?6:CDCA_MAXNUM_ACLIST;
 					for(index=0;index<max_ac_num;index++){
-						DEBUG("ACArray[%d]=(%d)\n",index, ACArray[index]);
+						DEBUG("ACArray[%d]=(%lu)\n",index, ACArray[index]);
 						if(0!=ACArray[index]){
 							DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
 							if(0==index)
@@ -1283,6 +1283,8 @@ static void upgrade_info_refresh(char *info_name, char *info_value)
 void upgrade_info_init()
 {
 	unsigned char mark = 0;
+	char tmpinfo[128];
+	char msg_2_UI[128];
 #if 0
 	LoaderInfo_t g_loaderInfo;
 #else
@@ -1296,20 +1298,43 @@ void upgrade_info_init()
 			DEBUG("clear upgrade mark and file\n");
 			set_loader_reboot_mark(0);
 			upgradefile_clear();
-		}
-		
-		char tmpinfo[128];
-		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
-		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
-		DEBUG("stb id: %s\n", tmpinfo);
+			
+			if(255==g_loaderInfo.software_version[0] && 255==g_loaderInfo.software_version[1]
+				&& 255==g_loaderInfo.software_version[2] && 255==g_loaderInfo.software_version[3]){
+				DEBUG("It has a repeat upgrade, only for upgrade test\n");
+				
+				char sqlite_cmd[256];
+				char repeat_upgrade_count[8];
+				memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
+				if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
+					DEBUG("can not read RepeatUpgradeCount\n");
+				}
+				else{
+					DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
+				}
+				
+				snprintf(tmpinfo,sizeof(tmpinfo),"%d", atoi(repeat_upgrade_count)+1);
+				upgrade_info_refresh("RepeatUpgradeCount", tmpinfo);
+				
+				snprintf(msg_2_UI,sizeof(msg_2_UI),"Repeat upgrade count: %d\n", atoi(repeat_upgrade_count)+1);
+				msg_send2_UI(DIALOG_NOTICE, msg_2_UI, strlen(msg_2_UI));
+			}
+			else{
+				DEBUG("It has a normal upgrade\n");
+			}
+			
+			snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
+			upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
+			DEBUG("stb id: %s\n", tmpinfo);
 
 #if 0
-		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
-		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
-		
-		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
-		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
-		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, tmpinfo);
+			snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
+			upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
+			
+			snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
+			upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
+			upgrade_info_refresh(GLB_NAME_LOADER_VERSION, tmpinfo);
 #else		
 /*
 下面三行才是航天传媒定义的显示在本地配置的版本号，其中：
@@ -1318,14 +1343,15 @@ void upgrade_info_init()
 3、Loader没有独立的版本号，直接使用默认的版本号“1.2.1”，其中前两段“1.2”为固定，最后一段为版本轮次；
 4、设备型号固定使用分配的“01”
 */
-		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, HARDWARE_VERSION);
-		
-		snprintf(tmpinfo, sizeof(tmpinfo), "2.0.%d.%d", g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
-		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
-
-		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, LOADER_VERSION);		
-		upgrade_info_refresh(GLB_NAME_DEVICEMODEL, DEVICEMODEL_DFT);
+			upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, HARDWARE_VERSION);
+			
+			snprintf(tmpinfo, sizeof(tmpinfo), "2.0.%d.%d", g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
+			upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
+	
+			upgrade_info_refresh(GLB_NAME_LOADER_VERSION, LOADER_VERSION);		
+			upgrade_info_refresh(GLB_NAME_DEVICEMODEL, DEVICEMODEL_DFT);
 #endif
+		}
 	}
 	else
 		DEBUG("get loader message failed\n");
