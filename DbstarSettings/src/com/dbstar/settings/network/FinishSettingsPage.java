@@ -2,7 +2,13 @@ package com.dbstar.settings.network;
 
 import java.io.FileOutputStream;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -17,14 +23,86 @@ import com.dbstar.settings.base.BaseFragment;
 import com.dbstar.settings.utils.SettingsCommon;
 
 public class FinishSettingsPage extends BaseFragment {
-	
+
 	private static final String TAG = "FinishSettingsPage";
-	
+
 	TextView mStateView;
 	Button mOkButton, mPrevButton;
-	
-	private Handler mHander;
 
+	boolean mIsChecked = false;
+	boolean mFirstDisconnectInfo = true;
+	
+	private Handler mHandler;
+	ConnectivityManager mConnectManager;
+	private IntentFilter mConnectIntentFilter;
+
+	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
+
+		public void onReceive(Context context, Intent intent) {
+			
+			if (!mIsChecked)
+				return;
+
+			String action = intent.getAction();
+			
+			if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
+				return;
+
+			boolean noConnectivity = intent.getBooleanExtra(
+					ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
+
+			Log.d(TAG, "noConnectivity = " + noConnectivity);
+			if (noConnectivity) {
+				if (mFirstDisconnectInfo) {
+					// we will first receive a disconnect message, so skip it here.
+					mFirstDisconnectInfo = false;
+					return;
+				}
+				
+				// There are no connected networks at all
+				handleNetConnected();
+				return;
+			}
+
+			// case 1: attempting to connect to another network, just wait for
+			// another broadcast
+			// case 2: connected
+			// NetworkInfo networkInfo = (NetworkInfo) intent
+			// .getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+
+			NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
+
+			if (networkInfo != null) {
+				Log.d(TAG, "getTypeName() = " + networkInfo.getTypeName());
+				Log.d(TAG, "isConnected() = " + networkInfo.isConnected());
+
+				if ((networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET ||
+						networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
+						&& networkInfo.isConnected()) {
+					handleNetConnected();
+				}
+			}
+		}
+
+	};
+	
+	public boolean isNetworkConnected() {
+		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
+		return networkInfo != null
+				&& (networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET ||
+				networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
+				&& networkInfo.isConnected();
+	}
+	
+	void handleNetConnected() {
+
+		mHandler.post(new Runnable() {
+			public void run() {
+				handleNetworkConnectStatus();
+			}
+		});
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -37,21 +115,35 @@ public class FinishSettingsPage extends BaseFragment {
 		super.onActivityCreated(savedInstanceState);
 
 		initializeView();
+
+		mHandler = new Handler();
 		
-		mHander = new Handler();
+		mConnectIntentFilter = new IntentFilter(
+				ConnectivityManager.CONNECTIVITY_ACTION);
+
+		mConnectManager = (ConnectivityManager) mActivity
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
 	}
-	
+
 	public void onStart() {
 		super.onStart();
-		
-		mHander.postDelayed(new Runnable() {
+
+		reqisterConnectReceiver();
+
+		mHandler.postDelayed(new Runnable() {
 
 			@Override
 			public void run() {
 				checkConfigResult();
 			}
-			
+
 		}, 2000);
+	}
+	
+	public void onStop() {
+		super.onStop();
+		
+		unregisterConnectReceiver();
 	}
 
 	void initializeView() {
@@ -66,18 +158,63 @@ public class FinishSettingsPage extends BaseFragment {
 		mPrevButton.requestFocus();
 	}
 
+	private void reqisterConnectReceiver() {
+		mActivity.registerReceiver(mNetworkReceiver, mConnectIntentFilter);
+	}
+
+	private void unregisterConnectReceiver() {
+		mActivity.unregisterReceiver(mNetworkReceiver);
+	}
+
 	void checkConfigResult() {
-		mStateView.setText(R.string.network_setup_success);
+		
+		 mIsChecked = true;
+
+		 NetworkInfo netInfo = mConnectManager.getActiveNetworkInfo();
+		 Log.d(TAG, "============== checkConfigResult " + netInfo);
+		 Log.d(TAG, "============== checkConfigResult " + mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET));
+		 
+		 if (netInfo != null) {
+			 
+			 Log.d(TAG, "============== checkConfigResult " + netInfo.getState() + " " + netInfo.getDetailedState());
+			 
+			 if(netInfo.getState() == NetworkInfo.State.CONNECTED) {
+				 mStateView.setText(R.string.network_setup_success);
+			 } else {
+				 if (netInfo.getState() == NetworkInfo.State.CONNECTING ||
+						 netInfo.getState() == NetworkInfo.State.DISCONNECTING) {
+					 return;
+				 }
+				 
+				 if (netInfo.getState() == NetworkInfo.State.DISCONNECTED || 
+						 netInfo.getState() == NetworkInfo.State.SUSPENDED) {
+					 mStateView.setText(R.string.network_setup_failed);
+					 return;
+				 }
+			 }
+		 }
+		 // else {
+		 // there is no connect now, so just wait the message, and handle it there.
+		 //}
 	}
 	
+	void handleNetworkConnectStatus() {
+		boolean connected = isNetworkConnected();
+		if (connected) {
+			mStateView.setText(R.string.network_setup_success);
+		} else {
+			mStateView.setText(R.string.network_setup_failed);
+		}
+	}
+
 	void finishNetsettings() {
 		try {
 			String setflagValues = "1";
 			byte[] setflag = setflagValues.getBytes();
-			FileOutputStream fos = mActivity.openFileOutput(NetworkCommon.FlagFile,
-					Context.MODE_WORLD_READABLE);
+			FileOutputStream fos = mActivity.openFileOutput(
+					NetworkCommon.FlagFile, Context.MODE_WORLD_READABLE);
 			fos.write(setflag);
-			
+
 			fos.close();
 		} catch (Exception e) {
 			Log.e(TAG,

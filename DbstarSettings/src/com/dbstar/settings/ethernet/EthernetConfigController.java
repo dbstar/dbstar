@@ -62,7 +62,7 @@ public class EthernetConfigController {
 	private EthernetManager mEthManager;
 	private EthernetDevInfo mEthInfo;
 
-	private final IntentFilter mIntentFilter, mConnectIntentFilter;
+	private IntentFilter mIntentFilter, mConnectIntentFilter;
 	private Handler mHandler;
 
 	private boolean mEnablePending;
@@ -173,7 +173,10 @@ public class EthernetConfigController {
 		if (connected) {
 			if (mDhcpSwitchIndicator.isChecked()) {
 				mDhcpConnectState.setVisibility(View.VISIBLE);
+				
+				updateDhcpInfo();
 			}
+
 			if (mManualSwitchIndicator.isChecked()) {
 				mManualConnectState.setVisibility(View.VISIBLE);
 			}
@@ -181,7 +184,10 @@ public class EthernetConfigController {
 		} else {
 			if (mDhcpSwitchIndicator.isChecked()) {
 				mDhcpConnectState.setVisibility(View.INVISIBLE);
+				
+				updateDhcpInfo();
 			}
+
 			if (mManualSwitchIndicator.isChecked()) {
 				mManualConnectState.setVisibility(View.INVISIBLE);
 			}
@@ -300,14 +306,7 @@ public class EthernetConfigController {
 
 					enableDhcp(true);
 
-					DhcpInfo dhcpInfo = mEthManager.getDhcpInfo();
-					if (dhcpInfo != null) {
-						mIpaddr.setText(getAddress(dhcpInfo.ipAddress));
-						mMask.setText(getAddress(dhcpInfo.netmask));
-						mGw.setText(getAddress(dhcpInfo.gateway));
-						mDns.setText(getAddress(dhcpInfo.dns1));
-						mBackupDns.setText(getAddress(dhcpInfo.dns2));
-					}
+					updateDhcpInfo();
 
 				} else {
 					enableManual(true);
@@ -317,6 +316,17 @@ public class EthernetConfigController {
 			}
 		}
 		return 0;
+	}
+	
+	void updateDhcpInfo() {
+		DhcpInfo dhcpInfo = mEthManager.getDhcpInfo();
+		if (dhcpInfo != null) {
+			mIpaddr.setText(getAddress(dhcpInfo.ipAddress));
+			mMask.setText(getAddress(dhcpInfo.netmask));
+			mGw.setText(getAddress(dhcpInfo.gateway));
+			mDns.setText(getAddress(dhcpInfo.dns1));
+			mBackupDns.setText(getAddress(dhcpInfo.dns2));
+		}
 	}
 
 	View.OnFocusChangeListener mFocusChangeListener = new View.OnFocusChangeListener() {
