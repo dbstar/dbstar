@@ -220,9 +220,12 @@ public class GDClient {
 	}
 
 	private boolean isOutputAvailable() {
+		if (mSocket == null)
+			return false;
+
 		Log.d(TAG, "isOutputShutdown " + mSocket.isOutputShutdown());
+
 		return isConnectionSetup() && !mSocket.isClosed();
-		// mSocket.isOutputShutdown();
 	}
 
 	private void doRequest(Task task) {

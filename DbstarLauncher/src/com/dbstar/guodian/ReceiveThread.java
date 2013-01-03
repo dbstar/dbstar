@@ -21,46 +21,52 @@ public class ReceiveThread extends Thread {
 
 		mExit = new AtomicBoolean();
 		mExit.set(false);
-		
+
 		mSocket = socket;
 		mIn = in;
-		
+
 		mClientHander = handler;
 	}
-	
+
 	public void setExit() {
 		mExit.set(true);
 	}
 
 	public void run() {
 
-		while(!mExit.get()) {
+		while (!mExit.get()) {
 			Log.d(TAG, " receive thread run ============== !");
-			
-			if (mSocket.isConnected() && !mSocket.isClosed()) {
+
+			if (mSocket != null && mSocket.isConnected() && !mSocket.isClosed()) {
 				try {
 					String data = new String();
 					String temp = null;
-					
+
 					Log.d(TAG, " === read start==== ");
-					
+
 					do {
 						temp = mIn.readLine();
-						Log.d(TAG, " ===== read == " + temp + " size=" + temp.length());
+						Log.d(TAG,
+								" ===== read == " + temp + " size="
+										+ temp.length());
 						if (temp == null || temp.isEmpty()) {
 							break;
 						} else {
 							data += temp;
 						}
-					} while(true);
-					
+					} while (true);
+
 					Log.d(TAG, " === read end ==== " + data);
-					Message msg = mClientHander.obtainMessage(GDClient.MSG_RESPONSE);
+					Message msg = mClientHander
+							.obtainMessage(GDClient.MSG_RESPONSE);
 					msg.obj = data;
 					msg.sendToTarget();
-					
+
 				} catch (IOException e) {
 					e.printStackTrace();
+					mSocket = null;
+					mExit.set(true);
+					Log.d(TAG, "Exit receive thread!");
 				}
 			}
 		}
