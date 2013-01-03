@@ -129,19 +129,19 @@ public class GDClient {
 			if (mSocket != null) {
 				if (mSocket.isConnected() && !mSocket.isClosed()) {
 					return;
-				}					
-				
+				}
+
 				mSocket = null;
 			}
 
 			Log.d(TAG, " server ip = " + mHostAddr + " port=" + mHostPort);
-			
+
 			mSocket = new Socket(mHostAddr, mHostPort);
 			mIn = new BufferedReader(new InputStreamReader(
 					mSocket.getInputStream()));
-			
+
 			Log.d(TAG, " ==== mIn " + mSocket.isInputShutdown());
-			
+
 			mOut = new BufferedWriter(new OutputStreamWriter(
 					mSocket.getOutputStream()));
 
@@ -167,15 +167,15 @@ public class GDClient {
 	private boolean isOutputAvailable() {
 		Log.d(TAG, "isOutputShutdown " + mSocket.isOutputShutdown());
 		return isConnectionSetup() && !mSocket.isClosed();
-		//mSocket.isOutputShutdown();
+		// mSocket.isOutputShutdown();
 	}
 
 	private void doRequest(Task task) {
-		
+
 		Log.d(TAG, "======= doRequest =========");
 		Log.d(TAG, "task type" + task.TaskType);
 		Log.d(TAG, "task cmd" + task.Command);
-		
+
 		if (!isOutputAvailable()) {
 			Log.d(TAG, "======= no connection to server =========");
 			return;
@@ -228,22 +228,37 @@ public class GDClient {
 
 	public void stop() {
 		// mClientHandler.
-		mClientThread.quit();
-
-		try {
-			if (mIn != null) {
-				mIn.close();
-			}
-
-			if (mOut != null) {
-				mOut.close();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Log.d(TAG, " ============ stop GDClient thread ============");
 
 		if (mInThread != null) {
 			mInThread.setExit();
 		}
+
+		Log.d(TAG, " ============ stop 1 ============");
+
+		mClientThread.quit();
+
+		Log.d(TAG, " ============ stop 2 ============");
+
+		try {
+			if (mSocket != null && (mSocket.isClosed() || !mSocket.isClosed())) {
+				mSocket.close();
+				mSocket = null;
+			}
+
+			// if (mIn != null) {
+			// mIn.close();
+			// }
+			//
+			// if (mOut != null) {
+			// mOut.close();
+			// }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		mWaitingQueue.clear();
+
+		Log.d(TAG, " ============ stop 3 ============");
 	}
 }
