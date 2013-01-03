@@ -16,7 +16,6 @@ dbstar_init()
 	else
 		cp -rf /system/etc/dbstar/Dbstar.db /data/dbstar/
 		sync
-		sleep 1
 		chown system /data/dbstar/Dbstar.db
 		chmod 666 /data/dbstar/Dbstar.db
 		setprop dbstar.inited 1
@@ -26,7 +25,6 @@ dbstar_init()
 	else
 		cp -rf /system/etc/dbstar/Smarthome.db /data/dbstar/
 		sync
-		sleep 1
 		chown system /data/dbstar/Smarthome.db
 		chmod 666 /data/dbstar/Smarthome.db
 		setprop dbstar.inited 1
@@ -36,7 +34,6 @@ dbstar_init()
 	else
 		cp -rf /system/etc/dbstar/ColumnRes /data/dbstar/
 		sync
-		sleep 1
 		chown system /data/dbstar/ColumnRes
 		chmod 777 /data
 		chmod 777 /data/dbstar
