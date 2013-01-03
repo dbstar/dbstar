@@ -1119,10 +1119,9 @@ static int connectRetry(int l_socket_fd,struct sockaddr_in server_addr)
 			}
 			else	//if l_sec<MAXSLEEP,set l_sec=1
 			{
-#if 0
-				printf("connect error,retry after %dsec......\n",l_sec);
+#if 1
+				DEBUG("connect error,retry after %dsec......\n",l_sec);
 				sleep(l_sec);
-				l_sec=1;
 #else
 				return -1;
 #endif

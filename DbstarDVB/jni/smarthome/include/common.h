@@ -20,7 +20,7 @@ typedef enum{
 
 #define MAXCMD 5									//max cmd/msg number
 #define MAXLEN 4096									//the size of the transmission
-#define MAXSLEEP 64									//the max sleep time of reconnect
+#define MAXSLEEP 128									//the max sleep time of reconnect
 
 #define WORKSPACE_SURFIX	"/data/dbstar/smarthome/"
 #define DATABASE_DIR 		WORKSPACE_SURFIX"database/"
