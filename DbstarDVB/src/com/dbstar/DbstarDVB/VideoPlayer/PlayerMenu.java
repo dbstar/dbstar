@@ -169,7 +169,8 @@ public class PlayerMenu extends PlayerActivity {
 	private SubtitleView mSubTitleView_sm = null;
 
 	int mSubtitleTotalNumber = 0;
-	int mCurrentSubtitleIndex = 0;
+	int mCurrentSubtitleIndex = -1;
+	boolean mIsSubtitleShown = false;
 
 	private WindowManager mWindowManager;
 	PowerManager.WakeLock mScreenLock = null;
@@ -228,7 +229,7 @@ public class PlayerMenu extends PlayerActivity {
 			mSubtitleTotalNumber = mSubtitleFiles.size();
 			Log.d(TAG, "subtitle is : " + mSubtitleTotalNumber);
 			if (mSubtitleTotalNumber > 0) {
-				mCurrentSubtitleIndex = 0;
+				mCurrentSubtitleIndex = -1;
 				Log.d(TAG, "subtitle file is : " + mSubtitleFiles.get(0));
 			}
 		}
@@ -303,7 +304,8 @@ public class PlayerMenu extends PlayerActivity {
 		reqisterSystemMessageReceiver();
 
 		if (!mHasError)
-			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP, MSG_DIALOG_TIMEOUT);
+			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
+					MSG_DIALOG_TIMEOUT);
 
 		setMute(false);
 	}
@@ -579,11 +581,13 @@ public class PlayerMenu extends PlayerActivity {
 		}
 
 		case KeyEvent.KEYCODE_TV_SUBTITLE: {
+			setOSDOn(true);
 			switchSubtitle();
 			return true;
 		}
 
 		case KeyEvent.KEYCODE_TV_SHORTCUTKEY_VOICEMODE: {
+			setOSDOn(true);
 			switchAudioStreamToNext();
 			return true;
 		}
@@ -1107,15 +1111,15 @@ public class PlayerMenu extends PlayerActivity {
 	public void playbackError(int error) {
 		Log.d(TAG,
 				"@@@@@@@@@@@@@  playbackError: " + Integer.toHexString(error));
-		
+
 		mHasError = true;
 		showErrorInfoDlg(error);
-		
-//		if (error < 0) {
-//			saveBookmark(0);
-//			mPlayPosition = 0;
-//			exitPlayer();
-//		}
+
+		// if (error < 0) {
+		// saveBookmark(0);
+		// mPlayPosition = 0;
+		// exitPlayer();
+		// }
 	}
 
 	public void searchOk() {
@@ -1171,7 +1175,7 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		}
 
-		openSubtitle();
+		// openSubtitle();
 
 		if (setCodecMips() != 0) {
 			Log.d(TAG, "setCodecMips Failed");
@@ -1230,14 +1234,29 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	void switchSubtitle() {
-		if (mSubtitleTotalNumber == 0)
+		if (mSubtitleTotalNumber == 0) {
+			showNotification(NOTIFY_SUBTITLE, ID_NO_SUBTITLE);
 			return;
+		}
 
 		Log.d(TAG, " ==================== switchSubtitle ================ ");
 
+		if (!mIsSubtitleShown) {
+			mIsSubtitleShown = true;
+			showNotification(NOTIFY_SUBTITLE, ID_SHOW_SUBTITLE);
+			return;
+		} else {
+			if (mCurrentSubtitleIndex == mSubtitleTotalNumber) {
+				mCurrentSubtitleIndex = -1;
+				mIsSubtitleShown = false;
+				showNotification(NOTIFY_SUBTITLE, ID_NO_SUBTITLE);
+				return;
+			}
+		}
+
 		mCurrentSubtitleIndex++;
 		mCurrentSubtitleIndex = mCurrentSubtitleIndex % mSubtitleTotalNumber;
-
+		showNotification(NOTIFY_SUBTITLE, mCurrentSubtitleIndex);
 		openSubtitle();
 	}
 
@@ -1535,6 +1554,38 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	protected void initOSDView() {
+
+		mSubtitleIcons = new Drawable[SUBTILE_ICON_COUNT];
+		mAudioTrackIcons = new Drawable[AUTIOTRACK_ICON_COUNT];
+		mSubtitleIcons[0] = this.getResources().getDrawable(
+				R.drawable.subtitle_1);
+		mSubtitleIcons[1] = this.getResources().getDrawable(
+				R.drawable.subtitle_2);
+		mSubtitleIcons[2] = this.getResources().getDrawable(
+				R.drawable.subtitle_3);
+		mSubtitleIcons[3] = this.getResources().getDrawable(
+				R.drawable.subtitle_4);
+		mSubtitleIcons[4] = this.getResources().getDrawable(
+				R.drawable.subtitle_5);
+
+		mAudioTrackIcons[0] = this.getResources().getDrawable(
+				R.drawable.audiotrack_1);
+		mAudioTrackIcons[1] = this.getResources().getDrawable(
+				R.drawable.audiotrack_2);
+		mAudioTrackIcons[2] = this.getResources().getDrawable(
+				R.drawable.audiotrack_3);
+		mAudioTrackIcons[3] = this.getResources().getDrawable(
+				R.drawable.audiotrack_4);
+		mAudioTrackIcons[4] = this.getResources().getDrawable(
+				R.drawable.audiotrack_5);
+
+		mNoSubtitleIcon = getResources().getDrawable(R.drawable.no_subtitle);
+		mShowSubtitleIcon = getResources()
+				.getDrawable(R.drawable.show_subtitle);
+		
+		mNoDubbingIcon = getResources().getDrawable(R.drawable.no_dubbing);
+		mHasDubbingIcon = getResources().getDrawable(R.drawable.has_dubbing);
+
 		mInfoBar = (LinearLayout) findViewById(R.id.infobarLayout);
 		mPlayButton = (ImageView) findViewById(R.id.PlayBtn);
 		mProgressBar = (SeekBar) findViewById(R.id.SeekBar02);

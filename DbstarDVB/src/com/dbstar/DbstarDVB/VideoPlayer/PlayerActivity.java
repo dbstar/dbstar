@@ -15,10 +15,13 @@ import com.dbstar.DbstarDVB.PlayerService.VideoInfo;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.DbVideoInfoDlg;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.GDAlertDialog;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.PlayerErrorInfo;
+import com.dbstar.DbstarDVB.VideoPlayer.alert.ToastDialogFragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -27,6 +30,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,8 +40,12 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import android.os.SystemProperties;
@@ -45,6 +53,19 @@ import android.os.SystemProperties;
 public class PlayerActivity extends Activity {
 
 	private static final String TAG = "PlayerActivity";
+	protected static final int SUBTILE_ICON_COUNT = 5;
+	protected static final int AUTIOTRACK_ICON_COUNT = 5;
+	protected static final int ID_NO_SUBTITLE = -2;
+	protected static final int ID_SHOW_SUBTITLE = -1;
+	protected static final int ID_NO_DUBBING = -2;
+	protected static final int ID_HAS_DUBBING = -1;
+
+	Drawable mNoSubtitleIcon = null, mShowSubtitleIcon = null;
+	protected Drawable[] mSubtitleIcons = null;
+	Drawable mNoDubbingIcon = null, mHasDubbingIcon = null;
+	protected Drawable[] mAudioTrackIcons = null;
+	protected int mSubtitleIconId = ID_NO_SUBTITLE;
+	protected int mAudioTrackIconId = -1;
 
 	protected IPlayerService mAmplayer = null;
 	protected int mPlayerStatus = VideoInfo.PLAYER_UNKNOWN;
@@ -563,9 +584,20 @@ public class PlayerActivity extends Activity {
 	};
 
 	protected void switchAudioStreamToNext() {
-		if (mMediaInfo != null && mMediaInfo.getAudioTrackCount() > 1) {
+		if (mMediaInfo == null)
+			return;
+
+		if (mMediaInfo.getAudioTrackCount() < 2) {
+			showNotification(NOTIFY_AUDIOTRACK, ID_NO_DUBBING);
+			return;
+		}
+
+		{
 			int nextAudioStream = (mCurrentAudioStream + 1)
 					% mTotalAudioStreamNumber;
+
+			showNotification(NOTIFY_AUDIOTRACK, nextAudioStream);
+
 			try {
 				mAmplayer.SwitchAID(AudioTrackOperation.AudioStreamInfo
 						.get(nextAudioStream).audio_id);
@@ -583,6 +615,97 @@ public class PlayerActivity extends Activity {
 			}
 		}
 	}
+
+	// private Toast mToast = null;
+	protected static final int NOTIFY_AUDIOTRACK = 1;
+	protected static final int NOTIFY_SUBTITLE = 2;
+
+	// private ImageView mView = null;
+	// private ViewGroup mRootView = null;
+
+	protected void showNotification(int type, int id) {
+		// Log.d(TAG, " ======= show toast ============ mToast " + mToast
+		// + " type= " + type + " id=" + id);
+
+		// if (mToast != null) {
+		// mToast.cancel();
+		// }
+		//
+		// mToast = new Toast(this);
+		//
+		// if (mRootView == null) {
+		// LayoutInflater inflater = getLayoutInflater();
+		// mRootView = (ViewGroup) inflater.inflate(R.layout.toast_layout,
+		// null);
+		// mView = (ImageView) mRootView.findViewById(R.id.icon);
+		// }
+		//
+		// if (type == NOTIFY_AUDIOTRACK) {
+		// if (id == ID_NO_DUBBING) {
+		// mView.setImageDrawable(mNoDubbingIcon);
+		// } else if (id == ID_HAS_DUBBING) {
+		// mView.setImageDrawable(mHasDubbingIcon);
+		// } else {
+		// mView.setImageDrawable(mAudioTrackIcons[id]);
+		// }
+		// } else if (type == NOTIFY_SUBTITLE) {
+		// if (id == ID_NO_SUBTITLE) {
+		// mView.setImageDrawable(mNoSubtitleIcon);
+		// } else if (id == ID_SHOW_SUBTITLE) {
+		// mView.setImageDrawable(mShowSubtitleIcon);
+		// } else {
+		// mView.setImageDrawable(mAudioTrackIcons[id]);
+		// }
+		// }
+		//
+		// mToast.setDuration(Toast.LENGTH_SHORT);
+		// mToast.setGravity(Gravity.TOP | Gravity.LEFT, 1100, 80);
+		// mToast.setView(mRootView);
+		//
+		// mToast.show();
+
+		Log.d(TAG, " ======= show toast ============ type= " + type + " id=" + id);
+				
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
+		Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+		if (prev != null) {
+			ft.remove(prev);
+		}
+		ft.addToBackStack(null);
+
+		// Create and show the dialog.
+		ToastDialogFragment newFragment = ToastDialogFragment.newInstance();
+		newFragment.setDuration(2000);
+		newFragment.setMessage(type, id);
+		newFragment.setListener(mToastListener);
+
+		newFragment.show(ft, "dialog");
+	}
+
+	protected ToastDialogFragment.ToastDialogListener mToastListener = new ToastDialogFragment.ToastDialogListener() {
+
+		@Override
+		public void onShow(ImageView view, int type, int id) {
+			if (type == NOTIFY_AUDIOTRACK) {
+				if (id == ID_NO_DUBBING) {
+					view.setImageDrawable(mNoDubbingIcon);
+				} else if (id == ID_HAS_DUBBING) {
+					view.setImageDrawable(mHasDubbingIcon);
+				} else {
+					view.setImageDrawable(mAudioTrackIcons[id]);
+				}
+			} else if (type == NOTIFY_SUBTITLE) {
+				if (id == ID_NO_SUBTITLE) {
+					view.setImageDrawable(mNoSubtitleIcon);
+				} else if (id == ID_SHOW_SUBTITLE) {
+					view.setImageDrawable(mShowSubtitleIcon);
+				} else {
+					view.setImageDrawable(mAudioTrackIcons[id]);
+				}
+			}
+		}
+
+	};
 
 	protected void updatePlaybackTimeInfo(int currentTime, int totalTime) {
 
