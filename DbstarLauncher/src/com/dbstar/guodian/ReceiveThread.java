@@ -43,11 +43,6 @@ public class ReceiveThread extends Thread {
 					String temp = null;
 					
 					Log.d(TAG, " === read start==== ");
-
-//					while ((temp = mIn.readLine()) != null) {
-//						Log.d(TAG, " === read ==== " + temp);
-//						data += temp;
-//					}
 					
 					do {
 						temp = mIn.readLine();

@@ -308,7 +308,13 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 	
 	void stopGuodianEngine() {
+		Log.d(TAG, "========== stopGuodianEngine ==========");
 		mGuodianEngine.stop();
+	}
+	
+	void destroyGuodianEngine() {
+		Log.d(TAG, "========== destroyGuodianEngine ==========");
+		mGuodianEngine.destroy();
 	}
 
 	void initializeDataEngine() {
@@ -356,7 +362,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			mTaskQueueLock.notifyAll();
 		}
 		
-		stopGuodianEngine();
+		destroyGuodianEngine();
 	}
 
 	private void startDbStarService() {

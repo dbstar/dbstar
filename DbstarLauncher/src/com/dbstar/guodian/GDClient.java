@@ -27,6 +27,7 @@ public class GDClient {
 
 	// Command type
 	public static final int CMD_CONNECT = 0x2001;
+	public static final int CMD_STOP = 0x2002;
 
 	// Request type
 	public static final int REQUEST_LOGIN = 0x3001;
@@ -109,6 +110,20 @@ public class GDClient {
 		msg.sendToTarget();
 	}
 
+	public void stop() {
+		Log.d(TAG, " ============ stop GDClient thread ============");
+		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
+		msg.arg1 = CMD_STOP;
+		msg.sendToTarget();
+	}
+
+	public void destroy() {
+		Log.d(TAG, " ============ destroy GDClient thread ============");
+		mClientThread.quit();
+
+		doStop();
+	}
+
 	// run in client thread
 	private void performCommand(int cmdType, Object cmdData) {
 		switch (cmdType) {
@@ -116,11 +131,51 @@ public class GDClient {
 			doConnectToServer();
 			break;
 		}
+		case CMD_STOP: {
+			doStop();
+			break;
+		}
 		}
 	}
 
 	private void performRequest(Task task) {
 		doRequest(task);
+	}
+
+	private void handleResponse(String response) {
+		Log.d(TAG, " ++++++++++++handleResponse++++++++" + response);
+
+		String[] data = GDCmdHelper.processResponse(response);
+		String id = data[0];
+		Task task = null;
+		for (Task t : mWaitingQueue) {
+			if (t.TaskId.equals(id)) {
+				mWaitingQueue.remove(t);
+				task = t;
+				task.ResponseData = data;
+				processResponse(task);
+			}
+		}
+	}
+
+	private void processResponse(Task task) {
+
+		Log.d(TAG, " ++++++++++++processResponse++++++++" + task.TaskType);
+
+		switch (task.TaskType) {
+		case REQUEST_LOGIN: {
+			LoginData loginData = LoginDataHandler.parse(task.ResponseData[6]);
+			task.ParsedData = loginData;
+			break;
+		}
+		}
+
+		if (mAppHander != null) {
+			Message msg = mAppHander
+					.obtainMessage(GDEngine.MSG_REQUEST_FINISHED);
+			msg.obj = task;
+			msg.sendToTarget();
+		}
 	}
 
 	private void doConnectToServer() {
@@ -190,69 +245,24 @@ public class GDClient {
 		}
 	}
 
-	private void handleResponse(String response) {
-		Log.d(TAG, " ++++++++++++handleResponse++++++++" + response);
-
-		String[] data = GDCmdHelper.processResponse(response);
-		String id = data[0];
-		Task task = null;
-		for (Task t : mWaitingQueue) {
-			if (t.TaskId.equals(id)) {
-				mWaitingQueue.remove(t);
-				task = t;
-				task.ResponseData = data;
-				processResponse(task);
-			}
-		}
-	}
-
-	private void processResponse(Task task) {
-
-		Log.d(TAG, " ++++++++++++processResponse++++++++" + task.TaskType);
-
-		switch (task.TaskType) {
-		case REQUEST_LOGIN: {
-			LoginData loginData = LoginDataHandler.parse(task.ResponseData[6]);
-			task.ParsedData = loginData;
-			break;
-		}
-		}
-
-		if (mAppHander != null) {
-			Message msg = mAppHander
-					.obtainMessage(GDEngine.MSG_REQUEST_FINISHED);
-			msg.obj = task;
-			msg.sendToTarget();
-		}
-	}
-
-	public void stop() {
-		// mClientHandler.
-		Log.d(TAG, " ============ stop GDClient thread ============");
+	// stop receive thread, 
+	// close socket.
+	private void doStop() {
+		Log.d(TAG, " ============ doStop ============");
 
 		if (mInThread != null) {
 			mInThread.setExit();
+			mInThread = null;
 		}
 
 		Log.d(TAG, " ============ stop 1 ============");
 
-		mClientThread.quit();
-
-		Log.d(TAG, " ============ stop 2 ============");
-
 		try {
-			if (mSocket != null && (mSocket.isClosed() || !mSocket.isClosed())) {
+			if (mSocket != null && (mSocket.isConnected() || !mSocket.isClosed())) {
 				mSocket.close();
-				mSocket = null;
 			}
-
-			// if (mIn != null) {
-			// mIn.close();
-			// }
-			//
-			// if (mOut != null) {
-			// mOut.close();
-			// }
+			
+			mSocket = null;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

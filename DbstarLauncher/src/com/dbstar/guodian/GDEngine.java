@@ -55,8 +55,12 @@ public class GDEngine {
 	}
 
 	public void stop() {
-		mObserver = null;
 		mClient.stop();
+	}
+	
+	public void destroy() {
+		mObserver = null;
+		mClient.destroy();
 	}
 	
 	public PowerPanelData getPowerPanelData() {
