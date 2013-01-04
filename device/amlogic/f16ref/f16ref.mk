@@ -179,4 +179,5 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	DbstarLauncher \
 	DbstarSettings \
-	DbstarDVB
+	DbstarDVB \
+	GuodianApp
