@@ -756,24 +756,25 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	//DEBUG("loader info software version = [%x][%x]\n",tmp32,g_loaderInfo.software_version);
 	INTERMITTENT_PRINT("new software ver: [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
 	INTERMITTENT_PRINT("cur software ver: [%u][%u][%u][%u]\n",g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
-	if ((datap[0] == g_loaderInfo.software_version[0])&&(datap[1] == g_loaderInfo.software_version[1])
-	&&(datap[2] == g_loaderInfo.software_version[2])&&(datap[3] == g_loaderInfo.software_version[3]))
-	{
-		if(-1==software_check()){
-			INTERMITTENT_PRINT("software version is equal, but ignore it and continue to do upgrade\n");
-		}
-		else if(255==g_loaderInfo.software_version[0] && 255==g_loaderInfo.software_version[1]
-			&& 255==g_loaderInfo.software_version[2] && 255==g_loaderInfo.software_version[3]){
-			INTERMITTENT_PRINT("software version is equal, but ignore 255.255.255.255 and continue to do upgrade\n");
-		}
-		else{
-			INTERMITTENT_PRINT("software version is equal, do no upgrade\n");
-			return;
-		}
+	if(255==datap[0] && 255==datap[1] && 255==datap[2] && 255==datap[3]){
+		INTERMITTENT_PRINT("software version is 255.255.255.255, do upgrade directly\n");
 	}
-	else
-        {
-		INTERMITTENT_PRINT("software version is not equal, do upgrade\n");
+	else{
+		if ((datap[0] == g_loaderInfo.software_version[0])&&(datap[1] == g_loaderInfo.software_version[1])
+		&&(datap[2] == g_loaderInfo.software_version[2])&&(datap[3] == g_loaderInfo.software_version[3]))
+		{
+//			if(-1==software_check()){
+//				INTERMITTENT_PRINT("software version is equal, but ignore it and continue to do upgrade\n");
+//			}
+//			else{
+				INTERMITTENT_PRINT("software version is equal, do not upgrade\n");
+				return;
+//			}
+		}
+		else
+	    {
+			INTERMITTENT_PRINT("software version is not equal, do upgrade\n");
+		}
 	}
 	
 	software_version[0] = datap[0];
