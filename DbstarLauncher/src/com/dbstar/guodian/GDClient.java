@@ -4,7 +4,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.DataOutputStream;
+import java.io.BufferedOutputStream;
 import java.net.Socket;
 import java.util.LinkedList;
 
@@ -44,7 +45,7 @@ public class GDClient {
 	private int mHostPort = 0;
 	private Socket mSocket = null;
 	private BufferedReader mIn = null;
-	private BufferedWriter mOut = null;
+	private BufferedOutputStream mOut = null;
 	ReceiveThread mInThread;
 	HandlerThread mClientThread = null;
 	Handler mClientHandler = null;
@@ -199,8 +200,8 @@ public class GDClient {
 
 			Log.d(TAG, " ==== mIn " + mSocket.isInputShutdown());
 
-			mOut = new BufferedWriter(new OutputStreamWriter(
-					mSocket.getOutputStream(), "UTF-8"));
+			mOut = new BufferedOutputStream(new DataOutputStream(
+					mSocket.getOutputStream()));
 
 			Log.d(TAG, " ==== mOut " + mSocket.isOutputShutdown());
 
@@ -244,7 +245,7 @@ public class GDClient {
 		mWaitingQueue.add(task);
 
 		try {
-			mOut.write(task.Command);
+			mOut.write(task.Command.getBytes());
 			mOut.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
