@@ -52,6 +52,14 @@
 				<action android:name="android.intent.action.MAIN" />
 			</intent-filter>
 		</activity>
+		<activity
+			android:name=".Test.DiskTest"
+			android:label="@string/DiskTest"
+			android:screenOrientation="landscape" >
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>
 		<activity android:name=".VideoPlayer.FileList"
 			android:theme="@style/theme_trans"
 			android:label="@string/app_name" >

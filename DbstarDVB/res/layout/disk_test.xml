@@ -6,44 +6,43 @@
 	>
 
 	<TextView
-	android:id="@+id/DbstarTest"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:text="@string/DbstarTest"
-	android:gravity="center_horizontal"
-	android:textSize="18sp"
-	/>
-	<Button
-	android:id="@+id/TestButton01"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:text="@string/DvbpushTest"
-	android:gravity="center_horizontal"
-	android:textSize="18sp"
-	/>
-	<Button
-	android:id="@+id/TestButton02"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:text="@string/PlayerTest"
-	android:gravity="center_horizontal"
-	android:textSize="18sp"
-	/>
-	<Button
-	android:id="@+id/TestButton03"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:text="@string/UpgradeTest"
-	android:gravity="center_horizontal"
-	android:textSize="18sp"
-	/>
-	<Button
-	android:id="@+id/TestButton04"
+	android:id="@+id/DiskTest"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
 	android:text="@string/DiskTest"
 	android:gravity="center_horizontal"
 	android:textSize="18sp"
 	/>
-
+	<Button
+	android:id="@+id/DiskButton01"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DiskButton01"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<Button
+	android:id="@+id/DiskButton02"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DiskButton02"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<Button
+	android:id="@+id/DiskButton03"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DiskButton03"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<TextView
+	android:id="@+id/Info"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/Info"
+	android:gravity="left" android:paddingLeft="100px"
+	android:textSize="18sp"
+	/>
 </LinearLayout>

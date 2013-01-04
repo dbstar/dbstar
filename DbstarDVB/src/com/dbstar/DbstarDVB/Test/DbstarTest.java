@@ -29,7 +29,7 @@ public class DbstarTest extends Activity implements OnClickListener {
 	private static final String TAG = "DbsterTest";
 
 	private Toast mToast = null;
-	private View Button01, Button02, Button03;
+	private View Button01, Button02, Button03, Button04;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -41,6 +41,8 @@ public class DbstarTest extends Activity implements OnClickListener {
 		Button02.setOnClickListener(this);
 		Button03 = this.findViewById(R.id.TestButton03);
 		Button03.setOnClickListener(this);
+		Button04 = this.findViewById(R.id.TestButton04);
+		Button04.setOnClickListener(this);
 
 		/* register broadcast receiver */
 		IntentFilter filter = new IntentFilter();
@@ -81,6 +83,13 @@ public class DbstarTest extends Activity implements OnClickListener {
 			it.setAction("android.intent.action.MAIN");
 			startActivity(it);
 			break;
+		case R.id.TestButton04:
+			it.setComponent(new ComponentName("com.dbstar.DbstarDVB",
+					"com.dbstar.DbstarDVB.Test.DiskTest"));
+			it.setAction("android.intent.action.MAIN");
+			startActivity(it);
+			break;
+
 		default:
 			break;
 		}

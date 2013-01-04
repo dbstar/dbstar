@@ -197,7 +197,7 @@ int serialNum_get(char *sn, unsigned int len)
 	int (*sqlite_callback)(char **, int, int, void *) = setting_sqlite_callback;
 
 	memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT value FROM global WHERE name='serialNUM';");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT value FROM global WHERE name='SmarthomeSN';");
 	INSTRUCTION_RESULT_E ret = sqlite_read(sqlite_cmd, sn, sqlite_callback);
 	if(ret<=RESULT_OK){
 		DEBUG("read 'sn' from table 'global' failed, read from ini\n");
