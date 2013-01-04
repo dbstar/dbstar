@@ -195,12 +195,12 @@ public class GDClient {
 			mSocket.setKeepAlive(true);
 
 			mIn = new BufferedReader(new InputStreamReader(
-					mSocket.getInputStream()));
+					mSocket.getInputStream(), "UTF-8"));
 
 			Log.d(TAG, " ==== mIn " + mSocket.isInputShutdown());
 
 			mOut = new BufferedWriter(new OutputStreamWriter(
-					mSocket.getOutputStream()));
+					mSocket.getOutputStream(), "UTF-8"));
 
 			Log.d(TAG, " ==== mOut " + mSocket.isOutputShutdown());
 
