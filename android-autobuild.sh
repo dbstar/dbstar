@@ -77,7 +77,7 @@ logger()
 checkout()
 {
 	logger "START Android repo checkout"
-	LOG_LOGGER=$LOG_REPO
+	LOG_LOGGER=$LOG_REPO.$TIMESTAMP
 	call mkdir -p $ANDROID_SRC
 	call cd $ANDROID_SRC
 #call repo init --repo-url=$REPO_URL -u $GIT_SREVER -b $GIT_BRANCH
@@ -97,7 +97,7 @@ checkout()
 repo_sync()
 {
 	logger "START Android repo sync"
-	LOG_LOGGER=$LOG_REPO
+	LOG_LOGGER=$LOG_REPO.$TIMESTAMP
 	call cd $ANDROID_SRC
 	call repo sync $MAKE_ARGS
 
@@ -114,7 +114,7 @@ repo_sync()
 uboot_make()
 {
 	logger "START make uboot"
-	LOG_LOGGER=$LOG_UBOOT
+	LOG_LOGGER=$LOG_UBOOT.$TIMESTAMP
 	call cd $UBOOT_SRC
 	call rm -rf build
 	call make $UBOOT_CONFIG
@@ -139,7 +139,7 @@ lunch_setup()
 rootfs_clean()
 {
 	logger "START clean rootfs"
-	LOG_LOGGER=$LOG_ROOTFS
+	LOG_LOGGER=$LOG_ROOTFS.$TIMESTAMP
 	call cd $ANDROID_SRC
 	call rm -rf ./out
 	logger "FINISH clean rootfs"
@@ -148,7 +148,7 @@ rootfs_clean()
 rootfs_make()
 {
 	logger "START make rootfs"
-	LOG_LOGGER=$LOG_ROOTFS
+	LOG_LOGGER=$LOG_ROOTFS.$TIMESTAMP
 
 	call cd $ANDROID_SRC
 	if [ $REBUILD_FLAG -eq 1 ]; then
@@ -167,7 +167,7 @@ otapackage_make()
 {
 	logger "START make otapackage"
 
-	LOG_LOGGER=$LOG_OTAPACKAGE
+	LOG_LOGGER=$LOG_OTAPACKAGE.$TIMESTAMP
 	call cp $BUILD_OUT/uImage $ROOTFS_OUT
 	call cp $BUILD_OUT/uImage_recovery $ROOTFS_OUT
 
@@ -195,14 +195,14 @@ wifi_make()
 modules_make()
 {
 	logger "START make modules"
-	LOG_LOGGER=$LOG_KERNEL
+	LOG_LOGGER=$LOG_KERNEL.$TIMESTAMP
 	call cd $KERNEL_SRC
 	if [ $REBUILD_FLAG -eq 1 ]; then
 		call make distclean
 		call wifi_make clean
 	fi
 	call make $KERNEL_CONFIG
-#call make uImage $MAKE_ARGS
+	call make uImage $MAKE_ARGS
 	call make modules
 	call wifi_make
 
@@ -232,9 +232,9 @@ modules_make()
 kernel_make()
 {
 	logger "START make kernel"
-	LOG_LOGGER=$LOG_KERNEL
-	call cd $KERNEL_SRC
+	LOG_LOGGER=$LOG_KERNEL.$TIMESTAMP
 	modules_make
+	call cd $KERNEL_SRC
 	call make $KERNEL_CONFIG
 	call make uImage $MAKE_ARGS
 	if [ $? -eq 0 ]; then
@@ -249,7 +249,7 @@ kernel_make()
 bootable_make()
 {
 	logger "START make bootable recovery"
-	LOG_LOGGER=$LOG_ROOTFS
+	LOG_LOGGER=$LOG_ROOTFS.$TIMESTAMP
 	call cd $ANDROID_SRC
 	if [ $REBUILD_FLAG -eq 1 ]; then
 		mmm $ANDROID_SRC/bootable/recovery -B
@@ -268,7 +268,7 @@ recovery_make()
 {
 	bootable_make
 	logger "START make recovery"
-	LOG_LOGGER=$LOG_KERNEL
+	LOG_LOGGER=$LOG_KERNEL.$TIMESTAMP
 	call cd $KERNEL_SRC
 
 	if [ $REBUILD_FLAG -eq 1 ]; then
@@ -314,7 +314,7 @@ dbstar_patch()
 dbstar_make()
 {
 	logger "START make dbstar"
-	LOG_LOGGER=$LOG_ROOTFS
+	LOG_LOGGER=$LOG_ROOTFS.$TIMESTAMP
 	call cd $ANDROID_SRC
 	call mmm $DBSTAR_SRC/rootfs
 	if [ $REBUILD_FLAG -eq 1 ]; then
