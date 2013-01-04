@@ -90,7 +90,7 @@ public class GDCmdHelper {
 				+ macaddr    + CmdDelimiterTag
 				+ DeviceVersion + CmdDelimiterTag
 				+ DeviceId   + CmdDelimiterTag
-				+ toJson("macaddr", macaddr) + CmdEndTag;
+				+ toJson("macaddr", macaddr) + CmdEndTag + "\n";
 		return cmdStr;
 	}
 	

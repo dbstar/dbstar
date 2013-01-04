@@ -245,6 +245,7 @@ public class GDClient {
 
 		try {
 			mOut.write(task.Command);
+			mOut.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
