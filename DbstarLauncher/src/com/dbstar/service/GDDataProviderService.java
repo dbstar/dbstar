@@ -100,8 +100,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	private static final String PARAMETER_KEY = "key";
 	private static final String PARAMETER_VALUE = "value";
 
-	private static final String SmartHomePrepertyName = "dbstar.smarthome.started";
-
 	private Object mTaskQueueLock = new Object();
 	private LinkedList<RequestTask> mTaskQueue = null;
 
@@ -299,8 +297,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	
 	void startGuodianEngine() {
 		Log.d(TAG, "========== startGuodianEngine ==========");
-		String serverIP = mDataModel.getSettingValue(GDSettings.PropertyGatewayIP);
-		String serverPort = mDataModel.getSettingValue(GDSettings.PropertyGatewayPort);
+		String serverIP = mDataModel.getSettingValue(GDSettings.PropertyGuodianServerIP);
+		String serverPort = mDataModel.getSettingValue(GDSettings.PropertyGuodianServerPort);
 		if (serverIP == null || serverIP.isEmpty() || serverPort==null || serverPort.isEmpty())
 			return;
 
@@ -373,13 +371,15 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		mIsSmartHomeServiceStarted = true;
 
-		SharedPreferences settings = null;
-		SharedPreferences.Editor editor = null;
-
-		settings = getSharedPreferences(SmartHomePrepertyName, 0);
-		editor = settings.edit();
-		editor.putInt(SmartHomePrepertyName, 1);
-		editor.commit();
+//		SharedPreferences settings = null;
+//		SharedPreferences.Editor editor = null;
+//
+//		settings = getSharedPreferences(SmartHomePrepertyName, 0);
+//		editor = settings.edit();
+//		editor.putInt(SmartHomePrepertyName, 1);
+//		editor.commit();
+		
+		SystemUtils.startSmartHomeServer();
 	}
 
 	private void stopDbStarService() {
@@ -390,13 +390,15 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		Log.d(TAG, "stopDbStarService");
 
-		SharedPreferences settings = null;
-		SharedPreferences.Editor editor = null;
-
-		settings = getSharedPreferences(SmartHomePrepertyName, 0);
-		editor = settings.edit();
-		editor.putInt(SmartHomePrepertyName, 0);
-		editor.commit();
+//		SharedPreferences settings = null;
+//		SharedPreferences.Editor editor = null;
+//
+//		settings = getSharedPreferences(SmartHomePrepertyName, 0);
+//		editor = settings.edit();
+//		editor.putInt(SmartHomePrepertyName, 0);
+//		editor.commit();
+		
+		SystemUtils.stopSmartHomeServer();
 	}
 
 	class SystemEventHandler extends Handler {

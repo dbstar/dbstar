@@ -61,7 +61,7 @@ public class GDCmdHelper {
 
 	public static String constructLoginCmd(String cmdId, String macaddr) {
 		String cmdStr = cmdId + CmdDelimiterTag
-				+ "auth"     + CmdDelimiterTag
+				+ "aut"     + CmdDelimiterTag
 				+ "m008f001" + CmdDelimiterTag
 				+ macaddr    + CmdDelimiterTag
 				+ DeviceVersion + CmdDelimiterTag
