@@ -51,9 +51,10 @@ public class ReceiveThread extends Thread {
 										+ temp.length());
 						if (temp == null || temp.isEmpty()) {
 							break;
-						} else {
-							data += temp;
-						}
+						} 
+
+						data += temp;
+
 					} while (true);
 
 					Log.d(TAG, " === read end ==== " + data);
