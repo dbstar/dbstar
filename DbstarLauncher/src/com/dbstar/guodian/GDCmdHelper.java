@@ -97,11 +97,22 @@ public class GDCmdHelper {
 	
 	public static String[] processResponse(String response) {
 		String data = response;//response.substring(CmdStartTag.length(), response.length() - CmdEndTag.length());
-		Log.d(TAG, "receive rawdata = " + response);
 		Log.d(TAG, "receive data = " + data);
-		String decryptedStr = FormatCMD.decryptCMD(data);
+		if (!isValideCommand(data))
+			return null;
+		
+		String cmd = data.substring(CmdStartTag.length(), data.length() - CmdEndTag.length());
+		String decryptedStr = FormatCMD.decryptCMD(cmd);
 		Log.d(TAG, "decrypt data = " + decryptedStr);
 		return decryptedStr.split(CmdDelimiterTag);
+	}
+	
+	private static boolean isValideCommand(String cmd) {
+		int startTagLen = CmdStartTag.length();
+		int endTagLen = CmdEndTag.length();
+		String startTag = cmd.substring(0, startTagLen);
+		String endTag = cmd.substring(cmd.length() - endTagLen);
+		return CmdStartTag.equals(startTag) && CmdEndTag.equals(endTag);
 	}
 
 }
