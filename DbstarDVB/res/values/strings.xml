@@ -6,6 +6,7 @@
 	<string name="DvbpushTest">DvbpushTest</string>
 	<string name="PlayerTest">PlayerTest</string>
 	<string name="UpgradeTest">UpgradeTest</string>
+	<string name="DiskTest">DiskTest</string>
 
 	<string name="DvbButton01">Init Dvbpush</string>
 	<string name="DvbButton02">Start Taskinfo </string>
@@ -14,9 +15,14 @@
 	<string name="DvbButton05">Uninit Dvbpush</string>
 	<string name="Command">Command</string>
 	<string name="Progress">Progress</string>
+	<string name="Info">Info</string>
 
 	<string name="NormalPlay">Play Normal File</string>
 	<string name="DRMPlay">Play DRM File</string>
+
+	<string name="DiskButton01">Get Disk Info</string>
+	<string name="DiskButton02">Create Disk Partition</string>
+	<string name="DiskButton03">Delete Disk Partition</string>
 
 	<string name="sub_font">font:</string>
 	<string name="sub_position_v">position:</string>

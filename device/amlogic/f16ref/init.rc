@@ -859,4 +859,14 @@ on property:service.smarthome.started=1
 on property:service.smarthome.started=0
 	stop smarthome
 
+# disk_manage
+service disk_manage /system/bin/logwrapper /system/bin/disk_manage.sh
+    class main
+    group system system
+    disabled
+    oneshot
+
+on property:service.disk_manage.state=running
+	start disk_manage
+
 
