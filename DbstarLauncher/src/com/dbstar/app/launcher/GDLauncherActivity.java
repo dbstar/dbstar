@@ -1286,6 +1286,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	public void handleNotifiy(int what, Object data) {
+		
+		Log.d(TAG, " ====  handleNotifiy === " + what);
+		
 		switch (what) {
 		case GDCommon.MSG_DISK_SPACEWARNING: {
 			String disk = (String) data;
@@ -1320,7 +1323,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		case EventData.EVENT_LOGIN_SUCCESSED: {
-			updatePowerView();
+			loginFinished();
 			break;
 		}
 		default:
@@ -1329,6 +1332,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void loginFinished() {
+		Log.d(TAG, " === loginFinished ===");
+		
 		if (!mBound)
 			return;
 

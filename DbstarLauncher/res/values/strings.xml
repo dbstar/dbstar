@@ -38,13 +38,6 @@
     <string name="ch_month">月</string>
     <string name="ch_day">日</string>
 
-    <!-- Smart home -->
-    <string name="context_view_mypower_title">我的用电</string>
-    <string name="mypower_powerusage">本月用电:</string>
-    <string name="mypower_powercost">本月花费:</string>
-    <string name="string_degree">度</string>
-    <string name="string_yuan">元</string>
-
     <!-- General Info -->
     <string name="product_info">产品信息</string>
 
@@ -156,10 +149,17 @@
     
     <string name="email_newmail">有新邮件</string>
 
+	<!-- Smart home -->
+    <string name="context_view_mypower_title">我的用电</string>
+    <string name="mypower_powerusage">本月可控电器电量: </string>
+    <string name="mypower_powercost">本月可控电器花费: </string>
+    <string name="string_degree">度</string>
+    <string name="string_yuan">元</string>
     
     <!-- Guo dian -->
     <string name="str_degree">度</string>
     <string name="str_yuan">元</string>
+
     <!-- My power -->
     <string name="mypower_text_yearpowercost">本年用电花费</string>
     <string name="mypower_text_yearpoweramount">本年用电量</string>
@@ -170,6 +170,10 @@
     <string name="mypower_text_powerprice">度/元</string>
     
     <string name="mypower_text_zero">0</string>
+    
+    <string name="step_1">第一阶梯</string>
+    <string name="step_2">第二阶梯</string>
+    <string name="step_3">第三阶梯</string>
     
     <string name="demo_str_1">100度</string>
     <string name="demo_str_2">200元</string>

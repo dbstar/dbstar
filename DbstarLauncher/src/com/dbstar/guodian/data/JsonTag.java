@@ -23,8 +23,10 @@ public class JsonTag {
 	public static final String TAGUserInfo = "userInfo";
 	public static final String TAGUserVipMenu = "userVipMenu";
 
-	public static final String TAGPowerCount = "num_count";
-	public static final String TAGPowerFee = "num_fee";
+	public static final String TAGNumCount = "num_count";
+	public static final String TAGNumFee = "num_fee";
+	public static final String TAGPowerNum = "power_num";
+	public static final String TAGPowerFee = "power_fee";
 	public static final String TAGNumGuid = "num_guid";
 	public static final String TAGNumCCGuid = "num_cc_guid";
 	public static final String TAGNumOrFee = "numOrFee";

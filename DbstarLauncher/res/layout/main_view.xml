@@ -204,7 +204,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@id/mypower_text"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="4dp"
             android:visibility="gone" >
 
             <ImageView
@@ -249,7 +249,7 @@
                 android:layout_marginBottom="76dp"
                 android:layout_marginRight="96dp"
                 android:adjustViewBounds="true"
-                android:rotation="90"
+                android:rotation="0"
                 android:src="@drawable/timingpower_pointer"
                 android:transformPivotX="44dp"
                 android:transformPivotY="14dp" />
@@ -277,7 +277,7 @@
                  android:layout_marginLeft="30dp"
                  app:circleRadius="124"
                  app:startAngle="180"
-                 app:sweepAngle="90"
+                 app:sweepAngle="0"
                  app:color="#add05f" />
 
             <!-- <TextView
@@ -356,6 +356,7 @@
             
             <!-- ruler -->
             <TextView
+                android:id="@+id/timingpower_ruler_step0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|left"
@@ -400,7 +401,7 @@
             android:layout_height="204dp"
             android:layout_above="@id/mypower_text"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="4dp"
             android:visibility="visible" >
 
             <ImageView
@@ -469,6 +470,7 @@
             
             <!-- ruler -->
             <TextView
+                android:id="@+id/steppower_ruler_step0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"

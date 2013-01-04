@@ -2064,6 +2064,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		@Override
 		public void notifyEvent(int type, Object event) {
+			
+			Log.d(TAG, " == notifyEvent == " + type);
+			
 			switch(type) {
 			case EventData.EVENT_CONNECTED: {
 				if (mApplicationObserver != null) {
@@ -2073,7 +2076,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			}
 			case EventData.EVENT_LOGIN_SUCCESSED: {
 				if (mApplicationObserver != null) {
-					mApplicationObserver.handleNotifiy(EventData.EVENT_CONNECTED, event);
+					mApplicationObserver.handleNotifiy(EventData.EVENT_LOGIN_SUCCESSED, event);
 				}
 				break;
 			}

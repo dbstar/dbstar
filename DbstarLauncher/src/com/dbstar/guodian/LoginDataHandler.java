@@ -24,9 +24,12 @@ public class LoginDataHandler {
 
 	private static final String TAG = "LoginDataHandler";
 
-	public static LoginData parse(String jsonData) {
+	public static LoginData parse(String data) {
 
-		Log.d(TAG, "json data = " + jsonData);
+		Log.d(TAG, "json data = " + data);
+		
+		// remove []
+		String jsonData = data.substring(1, data.length() - 1);
 
 		LoginData loginData = new LoginData();
 
@@ -98,8 +101,8 @@ public class LoginDataHandler {
 		Log.d(TAG, "parsePower");
 
 		PowerData data = new PowerData();
-		data.Count = (String) object.getString(JsonTag.TAGPowerCount);
-		data.Fee = (String) object.getString(JsonTag.TAGPowerFee);
+		data.Count = (String) object.getString(JsonTag.TAGNumCount);
+		data.Fee = (String) object.getString(JsonTag.TAGNumFee);
 
 		return data;
 	}
@@ -111,7 +114,7 @@ public class LoginDataHandler {
 		target.Guid = (String) object.getString(JsonTag.TAGNumGuid);
 		target.CCGuid = (String) object.getString(JsonTag.TAGNumCCGuid);
 		target.mPower = new PowerData();
-		target.mPower.Count = (String) object.getString(JsonTag.TAGPowerCount);
+		target.mPower.Count = (String) object.getString(JsonTag.TAGPowerNum);
 		target.mPower.Fee = (String) object.getString(JsonTag.TAGPowerFee);
 		target.Type = (String) object.getString(JsonTag.TAGNumOrFee);
 		return target;
@@ -128,7 +131,7 @@ public class LoginDataHandler {
 		status.CycleType = (String) object.getString(JsonTag.TAGVC2CycleType);
 		status.Step = (String) object.getString(JsonTag.TAGVC2CurrenStep);
 
-		status.PeriodType = (String) object.getString(JsonTag.TAGVC2PeriodType);
+		status.CurrentPeriodType = (String) object.getString(JsonTag.TAGVC2CurrentPeriodType);
 		status.Period = (String) object.getString(JsonTag.TAGVC2PeriodDetail);
 		status.Price = (String) object.getString(JsonTag.TAGNumElePrice);
 

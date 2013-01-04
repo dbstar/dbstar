@@ -147,6 +147,11 @@ public class GDClient {
 		Log.d(TAG, " ++++++++++++handleResponse++++++++" + response);
 
 		String[] data = GDCmdHelper.processResponse(response);
+		
+		if (data == null) {
+			return;
+		}
+		
 		String id = data[0];
 		Task task = null;
 		for (Task t : mWaitingQueue) {
@@ -163,9 +168,19 @@ public class GDClient {
 
 		Log.d(TAG, " ++++++++++++processResponse++++++++" + task.TaskType);
 
+		String contentType = task.ResponseData[5];
+		
+		Log.d(TAG, "==========response content= " + contentType);
+		
+		if (contentType.equals("error")) {
+			Log.d(TAG, "========== error ==== " + task.ResponseData[7]);
+			return;
+		}
+		
+		
 		switch (task.TaskType) {
 		case REQUEST_LOGIN: {
-			LoginData loginData = LoginDataHandler.parse(task.ResponseData[6]);
+			LoginData loginData = LoginDataHandler.parse(task.ResponseData[7]);
 			task.ParsedData = loginData;
 			break;
 		}

@@ -28,10 +28,17 @@ public class GDNetworkUtil {
 				Log.d(TAG, macAddress);
 			}
 		} else {
-			WifiManager wifiManager = (WifiManager) context
-					.getSystemService(Context.WIFI_SERVICE);
-			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-			macAddress = wifiInfo.getMacAddress();
+//			WifiManager wifiManager = (WifiManager) context
+//					.getSystemService(Context.WIFI_SERVICE);
+//			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+//			macAddress = wifiInfo.getMacAddress();
+
+			String addressFileName = "/sys/class/net/wlan0/address";
+			File addressFile = new File(addressFileName);
+			if (addressFile.exists()) {
+				macAddress = readString(addressFile);
+				Log.d(TAG, macAddress);
+			}
 		}
 		return macAddress;
 	}

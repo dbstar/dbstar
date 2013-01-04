@@ -34,6 +34,8 @@ public class GDCommon {
 	public static final int MSG_UPDATE_UIRESOURCE = 0x10020;
 	
 	public static final int MSG_NEW_MAIL = 0x50001;
+
+	public static final int MSG_DHCP_PRIVATEIP_READY = 0x60001;
 	
 	public static final int MSG_UPDATE_POWERCONSUMPTION = 0x60001;
 	public static final int MSG_UPDATE_POWERTOTALCOST = 0x60002;
