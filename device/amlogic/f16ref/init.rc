@@ -676,6 +676,12 @@ service media /system/bin/mediaserver
     group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc
     ioprio rt 4
 
+# dbstart
+service dbstar /system/bin/logwrapper /system/bin/dbstar_control.sh init
+    class main
+    group system system
+    oneshot
+
 service bootanim /system/bin/bootanimation
     class main
     user graphics
@@ -847,15 +853,10 @@ service smarthome /system/bin/logwrapper /system/bin/smarthome
     disabled
     oneshot
 
-on property:dbstar.smarthome.started=1
+on property:service.smarthome.started=1
 	start smarthome
 
-on property:dbstar.smarthome.started=0
+on property:service.smarthome.started=0
 	stop smarthome
 
-# dbstart
-service dbstar /system/bin/logwrapper /system/bin/dbstar_control.sh init
-    class main
-    group system system
-    oneshot
 

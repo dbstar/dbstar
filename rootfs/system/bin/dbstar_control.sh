@@ -46,14 +46,12 @@ dbstar_init()
 
 dbstar_start()
 {
-#	setprop dbstar.dvbpush.started 1
-	setprop dbstar.smarthome.started 1
+	setprop service.smarthome.started 1
 }
 
 dbstar_stop()
 {
-	setprop dbstar.dvbpush.started 0
-	setprop dbstar.smarthome.started 0
+	setprop service.smarthome.started 0
 }
 
 case $1 in
