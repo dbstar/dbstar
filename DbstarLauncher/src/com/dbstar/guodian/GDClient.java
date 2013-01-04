@@ -192,6 +192,8 @@ public class GDClient {
 			Log.d(TAG, " server ip = " + mHostAddr + " port=" + mHostPort);
 
 			mSocket = new Socket(mHostAddr, mHostPort);
+			mSocket.setKeepAlive(true);
+
 			mIn = new BufferedReader(new InputStreamReader(
 					mSocket.getInputStream()));
 
@@ -262,6 +264,14 @@ public class GDClient {
 
 		try {
 			if (mSocket != null && (mSocket.isConnected() || !mSocket.isClosed())) {
+				if (!mSocket.isInputShutdown()) {
+					mSocket.shutdownInput();
+				}
+				
+				if (!mSocket.isOutputShutdown()) {
+					mSocket.shutdownOutput();
+				}
+
 				mSocket.close();
 			}
 			
