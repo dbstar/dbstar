@@ -46,12 +46,14 @@ public class ReceiveThread extends Thread {
 
 					do {
 						temp = mIn.readLine();
+
+						if (temp == null || temp.isEmpty()) {
+							break;
+						}
+
 						Log.d(TAG,
 								" ===== read == " + temp + " size="
 										+ temp.length());
-						if (temp == null || temp.isEmpty()) {
-							break;
-						} 
 
 						data += temp;
 
