@@ -76,28 +76,34 @@ public class GDCmdHelper {
 		return cmdStr;
 	}
 	
-	public static String constructGetPowerPanelDataCmd(String cmdId, String macaddr) {
+	public static String constructGetPowerPanelDataCmd(String cmdId, String ctrlNoGuid, String macaddr) {
 		String[] keys = new String[2];
 		String[] values = new String[2];
 		keys[0]=JsonTag.TAGNumCCGuid;
 		keys[1]="user_type";
-		values[0]="";
+		values[0]=ctrlNoGuid;
 		values[1]="";
 		
-		String cmdStr = CmdStartTag + cmdId + CmdDelimiterTag
+		String cmdStr = cmdId + CmdDelimiterTag
 				+ "elc"     + CmdDelimiterTag
 				+ "m008f001" + CmdDelimiterTag
 				+ macaddr    + CmdDelimiterTag
 				+ DeviceVersion + CmdDelimiterTag
 				+ DeviceId   + CmdDelimiterTag
-				+ toJson("macaddr", macaddr) + CmdEndTag + "\n";
+				+ toJson(keys, values);
+		
+		String encryptStr = FormatCMD.encryptCMD(cmdStr);
+		cmdStr = CmdStartTag + encryptStr + CmdEndTag+"\n";
+		Log.d(TAG, " cmd ===== " + cmdStr);
+		
 		return cmdStr;
 	}
 	
 	
 	public static String[] processResponse(String response) {
-		String data = response;//response.substring(CmdStartTag.length(), response.length() - CmdEndTag.length());
+		String data = response;
 		Log.d(TAG, "receive data = " + data);
+		
 		if (!isValideCommand(data))
 			return null;
 		
@@ -108,11 +114,17 @@ public class GDCmdHelper {
 	}
 	
 	private static boolean isValideCommand(String cmd) {
+		boolean valid = false;
+		int cmdLength = cmd.length();
 		int startTagLen = CmdStartTag.length();
 		int endTagLen = CmdEndTag.length();
-		String startTag = cmd.substring(0, startTagLen);
-		String endTag = cmd.substring(cmd.length() - endTagLen);
-		return CmdStartTag.equals(startTag) && CmdEndTag.equals(endTag);
+		if (cmdLength > (startTagLen + endTagLen)) {
+			String startTag = cmd.substring(0, startTagLen);
+			String endTag = cmd.substring(cmd.length() - endTagLen);
+			valid = CmdStartTag.equals(startTag) && CmdEndTag.equals(endTag);
+		}
+		
+		return valid;
 	}
 
 }
