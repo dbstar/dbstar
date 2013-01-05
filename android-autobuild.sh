@@ -168,8 +168,8 @@ otapackage_make()
 	logger "START make otapackage"
 
 	LOG_LOGGER=$LOG_OTAPACKAGE.$TIMESTAMP
-	call cp $BUILD_OUT/uImage $ROOTFS_OUT
-	call cp $BUILD_OUT/uImage_recovery $ROOTFS_OUT
+	cp $BUILD_OUT/uImage $ROOTFS_OUT
+	cp $BUILD_OUT/uImage_recovery $ROOTFS_OUT
 
 	call cd $ANDROID_SRC
 	call make otapackage $MAKE_ARGS
@@ -201,9 +201,14 @@ modules_make()
 		call make distclean
 		call wifi_make clean
 	fi
+	call cd $KERNEL_SRC
 	call make $KERNEL_CONFIG
 	call make uImage $MAKE_ARGS
 	call make modules
+	if [ $? -ne 0 ]; then
+		logger "ERROR make modules"
+		exit 1
+	fi
 	call wifi_make
 
 	call cd $KERNEL_SRC
@@ -366,7 +371,6 @@ autobuild()
 	fi
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_RELEASE ]; then
 		REBUILD_FLAG=1
-		rootfs_clean
 		dbstar_patch
 		rootfs_make
 		dbstar_make
