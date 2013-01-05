@@ -60,10 +60,13 @@ public class ReceiveThread extends Thread {
 					} while (true);
 
 					Log.d(TAG, " === read end ==== " + data);
-					Message msg = mClientHander
-							.obtainMessage(GDClient.MSG_RESPONSE);
-					msg.obj = data;
-					msg.sendToTarget();
+					
+					if (!data.isEmpty()) {
+						Message msg = mClientHander
+								.obtainMessage(GDClient.MSG_RESPONSE);
+						msg.obj = data;
+						msg.sendToTarget();
+					}
 
 				} catch (IOException e) {
 					e.printStackTrace();
