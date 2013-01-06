@@ -62,7 +62,7 @@ public class EthernetConfigController {
 	private EthernetManager mEthManager;
 	private EthernetDevInfo mEthInfo;
 
-	private IntentFilter mIntentFilter, mConnectIntentFilter;
+	private IntentFilter mEthIntentFilter, mConnectIntentFilter;
 	private Handler mHandler;
 
 	private boolean mEnablePending;
@@ -73,20 +73,20 @@ public class EthernetConfigController {
 	ConnectivityManager mConnectManager;
 
 	String mDev = null;
+	
+	boolean mIsEthHWConnected = false;
 
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			int state = intent.getIntExtra(EthernetManager.EXTRA_ETH_STATE,
 					EthernetStateTracker.EVENT_HW_DISCONNECTED);
+
 			Log.d(TAG, " recv state=" + state);
-			if (state == EthernetStateTracker.EVENT_HW_CONNECTED
-					|| state == EthernetStateTracker.EVENT_HW_PHYCONNECTED) {
+
+			if (state == EthernetStateTracker.EVENT_HW_CONNECTED) {
 				handleEthStateChanged(true);
 			} else if (state == EthernetStateTracker.EVENT_HW_DISCONNECTED) {
-				// || state == EthernetStateTracker.EVENT_HW_CHANGED) {
-				// Unfortunately, the interface will still be listed when this
-				// intent is sent, so delay updating.
 				handleEthStateChanged(false);
 			}
 		}
@@ -155,8 +155,6 @@ public class EthernetConfigController {
 		});
 	}
 
-	boolean mIsEthHWConnected = false;
-
 	void handleEthStateChanged(boolean ethHWConnected) {
 		mIsEthHWConnected = ethHWConnected;
 		mHandler.post(new Runnable() {
@@ -200,7 +198,7 @@ public class EthernetConfigController {
 		mEthManager = ethManager;
 		mContext = activity;
 
-		mIntentFilter = new IntentFilter(
+		mEthIntentFilter = new IntentFilter(
 				EthernetManager.ETH_STATE_CHANGED_ACTION);
 
 		mConnectIntentFilter = new IntentFilter(
@@ -217,7 +215,7 @@ public class EthernetConfigController {
 	}
 
 	public void resume() {
-		getContext().registerReceiver(mReceiver, mIntentFilter);
+		getContext().registerReceiver(mReceiver, mEthIntentFilter);
 		reqisterConnectReceiver();
 
 		setConnectionStatus(isNetworkConnected());
@@ -306,7 +304,7 @@ public class EthernetConfigController {
 
 					enableDhcp(true);
 
-					updateDhcpInfo();
+//					updateDhcpInfo();
 
 				} else {
 					enableManual(true);
