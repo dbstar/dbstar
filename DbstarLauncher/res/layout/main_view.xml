@@ -550,24 +550,30 @@
         android:focusable="false"
         android:scaleType="fitXY"
         android:src="@drawable/menulevel1_focuseditem_bg" />
-
-    <com.dbstar.widget.GDMenuGallery
-        android:id="@+id/menu_level_1"
+
+    <RelativeLayout
         android:layout_width="1072dp"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="78dp"
-        android:layout_marginRight="104dp"
-        android:background="#00000000"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:gravity="bottom|left"
-        android:layoutAnimation="@anim/gallery_slide_to_right"
-        app:spacing="0dp" >
+        android:layout_marginRight="104dp" >
 
-        <requestFocus />
-    </com.dbstar.widget.GDMenuGallery>
+        <com.dbstar.widget.GDMenuGallery
+            android:id="@+id/menu_level_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|left"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="bottom|left"
+            android:background="#00000000"
+            android:layoutAnimation="@anim/gallery_slide_to_right"
+            app:spacing="0dp" >
+
+            <requestFocus />
+        </com.dbstar.widget.GDMenuGallery>
+    </RelativeLayout>
 
     <!-- level 2 menu -->
 

@@ -30,6 +30,7 @@ import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.View.MeasureSpec;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.AnimationUtils;
@@ -251,6 +252,29 @@ public class GDLoopGallery extends GDAbsSpinner {
         mInLayout = true;
         layout(0, false);
         mInLayout = false;
+    }
+    
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    	super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    	
+    	int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+    	
+    	int width = getMeasuredWidth();
+    	int height = getMeasuredHeight();
+    	
+    	int numCount = getCount();
+    	int viewWidth = (width + mSpacing )* numCount - mSpacing;
+    	
+    	int parentWidth = MeasureSpec.getSize(widthMeasureSpec);
+    	
+    	if (widthMode == MeasureSpec.AT_MOST) {
+    		viewWidth = Math.min(viewWidth, parentWidth);
+    	}
+    	
+    	Log.d(TAG, "onMeasure widthxheight = " + viewWidth + "x" + height);
+
+    	setMeasuredDimension(viewWidth, height);
     }
 
     @Override
@@ -558,7 +582,8 @@ public class GDLoopGallery extends GDAbsSpinner {
             mShouldStopFling = true;
         }
                 
-        while (curLeftEdge < galleryRight && getChildCount() < getCount()) {
+        //while (curLeftEdge < galleryRight && getChildCount() < getCount()) {
+        while (curLeftEdge < galleryRight && getChildCount() <= getCount()) {
         	
         	int index =  curPosition % numItems;
         	
