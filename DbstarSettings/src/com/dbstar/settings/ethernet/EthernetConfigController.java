@@ -288,8 +288,9 @@ public class EthernetConfigController {
 		enableDhcp(true);
 
 		String[] Devs = mEthManager.getDeviceNameList();
-		Log.d(TAG, "Devices = " + Devs + " count " + Devs.length);
+		
 		if (Devs != null) {
+			Log.d(TAG, "Devices = " + Devs + " count " + Devs.length);
 			if (mEthManager.isEthConfigured()) {
 				mEthInfo = mEthManager.getSavedEthConfig();
 
