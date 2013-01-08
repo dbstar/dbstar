@@ -1,0 +1,67 @@
+package com.dbstar.guodian.parse;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import android.util.Log;
+
+import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.guodian.data.PowerPanelData;
+
+public class PanelDataHandler {
+
+	private static final String TAG = "PanelDataHandler";
+
+	public static PowerPanelData parse(String data) {
+		Log.d(TAG, "json data = " + data);
+
+		// remove []
+		String jsonData = data.substring(1, data.length() - 1);
+
+		PowerPanelData panelData = null;
+
+		JSONTokener jsonParser = new JSONTokener(jsonData);
+
+		try {
+			JSONObject rootObject = (JSONObject) jsonParser.nextValue();
+
+			// begin to read tag
+			panelData = new PowerPanelData();
+
+			JSONObject object = (JSONObject) rootObject
+					.getJSONObject(JsonTag.TAGYearPower);
+
+			panelData.YearPower = DataHandler.parsePower(object);
+
+			object = (JSONObject) rootObject
+					.getJSONObject(JsonTag.TAGMonthPower);
+			panelData.MonthPower = DataHandler.parsePower(object);
+			
+			object = (JSONObject) rootObject
+					.getJSONObject(JsonTag.TAGPowerNumFee);
+			panelData.RemainPower = DataHandler.parsePower(object);
+
+			panelData.DailyFee = (String) rootObject
+					.getString(JsonTag.TAGDailyAverFee);
+
+			object = (JSONObject) rootObject
+					.getJSONObject(JsonTag.TAGUserPrice);
+			panelData.PriceStatus = DataHandler.parseUserPriceStatus(object);
+			
+			object = (JSONObject) rootObject
+					.getJSONObject(JsonTag.TAGDefaultTarget);
+			panelData.DefaultTarget = DataHandler.parsePower(object);
+
+			object = (JSONObject) rootObject
+					.getJSONObject(JsonTag.TAGPowerTarget);
+			panelData.Target = DataHandler.parsePowerTarget(object);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return panelData;
+	}
+
+}

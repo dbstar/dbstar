@@ -10,6 +10,9 @@ import java.net.Socket;
 import java.util.LinkedList;
 
 import com.dbstar.guodian.data.LoginData;
+import com.dbstar.guodian.data.PowerPanelData;
+import com.dbstar.guodian.parse.LoginDataHandler;
+import com.dbstar.guodian.parse.PanelDataHandler;
 import com.dbstar.util.GDNetworkUtil;
 
 import android.content.Context;
@@ -32,6 +35,7 @@ public class GDClient {
 
 	// Request type
 	public static final int REQUEST_LOGIN = 0x3001;
+	public static final int REQUEST_POWERPANELDATA = 0x3002;
 
 	class Task {
 		public int TaskType;
@@ -111,6 +115,20 @@ public class GDClient {
 		msg.sendToTarget();
 	}
 
+	public void getPowerPanelData(String ctrlNoGuid, String userId) {
+		Task task = new Task();
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetPowerPanelDataCmd(taskId, ctrlNoGuid, userId);
+
+		task.TaskType = REQUEST_POWERPANELDATA;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		msg.sendToTarget();
+	}
+
 	public void stop() {
 		Log.d(TAG, " ============ stop GDClient thread ============");
 		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
@@ -182,6 +200,12 @@ public class GDClient {
 		case REQUEST_LOGIN: {
 			LoginData loginData = LoginDataHandler.parse(task.ResponseData[7]);
 			task.ParsedData = loginData;
+			break;
+		}
+
+		case REQUEST_POWERPANELDATA: {
+			PowerPanelData panelData = PanelDataHandler.parse(task.ResponseData[7]);
+			task.ParsedData = panelData;
 			break;
 		}
 		}

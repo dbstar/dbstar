@@ -2068,28 +2068,27 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			Log.d(TAG, " == notifyEvent == " + type);
 			
 			switch(type) {
-			case EventData.EVENT_CONNECTED: {
-				if (mApplicationObserver != null) {
-					mApplicationObserver.handleNotifiy(EventData.EVENT_CONNECTED, event);
-				}
-				break;
-			}
 			case EventData.EVENT_LOGIN_SUCCESSED: {
 				if (mApplicationObserver != null) {
-					mApplicationObserver.handleNotifiy(EventData.EVENT_LOGIN_SUCCESSED, event);
+					mApplicationObserver.handleEvent(EventData.EVENT_LOGIN_SUCCESSED, event);
 				}
 				break;
 			}
+			
+			case EventData.EVENT_GUODIAN_DATA: {
+				if (mApplicationObserver != null) {
+					mApplicationObserver.handleEvent(EventData.EVENT_GUODIAN_DATA, event);
+				}
+				break;
+			}
+
 			}
 		}
 		
 	};
 	
-	public PowerPanelData getPowerPanelData() {
-		return mGuodianEngine.getPowerPanelData();
-	}
-
-	public ElectricityPrice getPowerPriceData() {
-		return mGuodianEngine.getPowerPriceData();
+	// Guodian Related interface
+	public void requestPowerData (int type) {
+		mGuodianEngine.requestData(type);
 	}
 }

@@ -3,7 +3,9 @@ package com.dbstar.app;
 import java.util.List;
 
 import com.dbstar.R;
+import com.dbstar.guodian.GDConstract;
 import com.dbstar.guodian.data.ElectricityPrice;
+import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.service.GDDataProviderService;
@@ -12,6 +14,8 @@ import com.dbstar.widget.GDCircleTextView;
 
 import android.app.Activity;
 import android.content.res.Resources;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +25,9 @@ import android.widget.TextView;
 public class GDPowerController {
 	private static final String TAG = "GDPowerController";
 
+	private static final int MSG_GETPOWER = 0xef1;
+	private static final int SCHEDULE_INTERVAL = 60000;
+	
 	// message from engine
 	public static final int PriceTypeSingle = 0;
 	public static final int PriceTypeStep = 1;
@@ -35,6 +42,9 @@ public class GDPowerController {
 
 	Activity mActivity;
 	GDDataProviderService mService;
+	
+	LoginData mLoginData;
+	boolean mIsLogined = false;
 
 	// Power View
 	TextView mPowerUsedDegreeView, mPowerUsedCostView;
@@ -59,6 +69,8 @@ public class GDPowerController {
 
 	String mPowerUsageStr, mPowerCostStr;
 	String Yuan, Degree;
+	
+	private Handler mHandler = null;
 
 	public GDPowerController(Activity activity) {
 		mActivity = activity;
@@ -137,15 +149,52 @@ public class GDPowerController {
 		mTimePowerPeriodView.setText("");
 		mTimePowerPeriodTimeView.setText("");
 		mTimingPowerPeriodPointer.setRotation(0);
+		
+		
+		mHandler = new Handler() {
+			
+			@Override
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case MSG_GETPOWER: {
+					getPowerData();
+					break;
+				}
+				}
+			}
+		};
 	}
 
 	public void start(GDDataProviderService service) {
 		mService = service;
 	}
+	
+	public void stop() {
+		mHandler.removeMessages(MSG_GETPOWER);
+	}
+	
+	public void getPowerData() {
+		if (mService != null) {
+			mService.requestPowerData(GDConstract.DATATYPE_POWERPANELDATA);
+		}
+		
+		mHandler.sendEmptyMessageDelayed(MSG_GETPOWER, SCHEDULE_INTERVAL);
+	}
 
+	public void handleLogin(LoginData data) {
+		mLoginData = data;
+		if (mLoginData != null) {
+			mIsLogined = true;
+			updatePowerPanel(mLoginData.PanelData);
+		}
+		
+		getPowerData();
+	}
+	
 	public void updatePowerPanel(PowerPanelData data) {
 		
 		Log.d(TAG, " ===== updatePowerPanel ===== ");
+		
 		if (data == null)
 			return;
 		
@@ -161,9 +210,6 @@ public class GDPowerController {
 		mPowerUsedCostView.setText(mPowerCostStr + " "  + powerFee + " " + Yuan);
 
 		UserPriceStatus status = data.PriceStatus;
-
-		Log.d(TAG, " ===== status ===== " + status);
-		Log.d(TAG, " ===== powerNum ===== " + powerNum);
 		
 		if (status == null)
 			return;
@@ -189,7 +235,7 @@ public class GDPowerController {
 			return;
 		}
 
-		ElectricityPrice priceData = mService.getPowerPriceData();
+		ElectricityPrice priceData = mLoginData.ElecPrice;
 
 		if (priceData == null)
 			return;

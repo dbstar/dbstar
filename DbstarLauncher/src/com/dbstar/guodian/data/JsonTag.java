@@ -7,12 +7,14 @@ public class JsonTag {
 	public static final String TAGTimeTaskList = "timeTaskList";
 	public static final String TAGYearPower = "yearPowerNumAndFee";
 	public static final String TAGLastPower = "lastPowerNumAndFee";
+	public static final String TAGPowerNumFee = "powernumfee";
 	public static final String TAGMonthPower = "monthPowerNumAndFee";
 	public static final String TAGDefaultTarget = "defaultTarget";
 	public static final String TAGPowerTarget = "powerTarget";
 	public static final String TAGUserPrice = "userPriceStatus";
 	public static final String TAGElecPrice = "electricityPrice";
 	public static final String TAGDailyFee = "dailyFee";
+	public static final String TAGDailyAverFee = "dailyaverfee";
 	public static final String TAGUserMenu = "userMenu";
 	public static final String TAGCtrlNo = "ctrlNo";
 	public static final String TAGCtrlNoGuid = "ctrlNoGuid";

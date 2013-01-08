@@ -41,9 +41,7 @@ public class GDCommon {
 	public static final int MSG_UPDATE_POWERTOTALCOST = 0x60002;
 	public static final String KeyPowerConsumption = "number";
 	public static final String KeyPowerTotalCost = "cost";
-	
-	//0xa0001 ~ 0xa000f reserved for events
-	
+
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "cho";
