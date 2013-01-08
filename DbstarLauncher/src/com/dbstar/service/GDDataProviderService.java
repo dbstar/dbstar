@@ -503,8 +503,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 			case GDCommon.MSG_SYSTEM_FORCE_UPGRADE:
 			case GDCommon.MSG_SYSTEM_UPGRADE: {
-				String packageFile = msg.getData().getString(
-						GDCommon.KeyPackgeFile);
+				String packageFile = (String) msg.obj;
 				mApplicationObserver.handleNotifiy(msgId, packageFile);
 
 				break;
@@ -695,6 +694,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				notifyNewMail();
 				break;
 			}
+			
+			case GDCommon.MSG_DISP_NOTIFICATION: {
+				diplayNotification((String)msg.obj);
+				break;
+			}
 
 			default:
 				break;
@@ -714,6 +718,12 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	private void notifyNewMail() {
 		if (mPageOberser != null) {
 			mPageOberser.notifyEvent(EventData.EVENT_NEWMAIL, null);
+		}
+	}
+	
+	private void diplayNotification(String message) {
+		if (mPageOberser != null) {
+			mPageOberser.notifyEvent(EventData.EVENT_NOTIFICATION, message);
 		}
 	}
 
@@ -1754,18 +1764,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				case DbstarServiceApi.UPGRADE_NEW_VER: {
 					byte[] bytes = intent.getByteArrayExtra("message");
 					if (bytes != null) {
-						String packageFile = "";
-
-						try {
-							packageFile = new String(bytes, "utf-8");
-						} catch (UnsupportedEncodingException e) {
-							e.printStackTrace();
-						}
+						String packageFile = StringUtil.getUTF8String(bytes);
 
 						Log.d(TAG, "onReceive packageFile " + packageFile);
-
-						Bundle data = new Bundle();
-						data.putString(GDCommon.KeyPackgeFile, packageFile);
 
 						int msgId = 0;
 						if (type == DbstarServiceApi.UPGRADE_NEW_VER) {
@@ -1777,12 +1778,21 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 						}
 
 						Message msg = mHandler.obtainMessage(msgId);
-						msg.setData(data);
+						msg.obj = packageFile;
 						mHandler.sendMessage(msg);
-
 					}
 					break;
-
+				}
+				
+				case DbstarServiceApi.DIALOG_NOTICE: {
+					byte[] bytes = intent.getByteArrayExtra("message");
+					if (bytes != null) {
+						String info = StringUtil.getUTF8String(bytes);
+						Message msg = mHandler.obtainMessage(GDCommon.MSG_DISP_NOTIFICATION);
+						msg.obj = info;
+						mHandler.sendMessage(msg);
+					}
+					break;
 				}
 
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_SUCCESS: {
@@ -1853,7 +1863,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					mHandler.sendEmptyMessage(GDCommon.MSG_NEW_MAIL);
 					break;
 				}
-				
+
 				case DbstarServiceApi.TDT_TIME_SYNC: {
 					byte[] bytes = intent.getByteArrayExtra("message");
 					if (bytes != null) {
