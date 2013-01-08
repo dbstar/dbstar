@@ -628,7 +628,7 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
 	// following code only for test, check the seconds if correctly.
 	time_t timep = strtol(s_time_sync_2_ui,NULL,0);
 	struct tm *check_tdt = localtime(&timep);
-	DEBUG("check tdt time which is send to UI, seconds(str type): %s, seconds(long type): %ld, localtime: %4d-%2d-%2d %2d:%2d:%2d\n", s_time_sync_2_ui,timep,
+	DEBUG("check tdt time which is send to UI, seconds(str type): %s, seconds(long type): %ld, localtime: %04d-%02d-%02d %02d:%02d:%02d\n", s_time_sync_2_ui,timep,
 		check_tdt->tm_year+1900,check_tdt->tm_mon+1,check_tdt->tm_mday,check_tdt->tm_hour,check_tdt->tm_min,check_tdt->tm_sec);
 }
 

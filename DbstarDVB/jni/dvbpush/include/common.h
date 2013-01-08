@@ -246,7 +246,7 @@ typedef struct{
 	char	EntityID[64];
 	char	StrLang[32];
 	char	StrName[64];
-	char	StrValue[1024];
+	char	StrValue[4096];
 	char	Extension[64];	// "Extension" or ""
 }DBSTAR_RESSTR_S;
 

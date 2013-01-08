@@ -1578,10 +1578,13 @@ static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int 
 	tm_appointed.tm_mday = 1;
 	tm_appointed.tm_mon = 0;
 	tm_appointed.tm_year = (2000-1900);
+	tm_appointed.tm_isdst = 0;
 	sec_appointed = mktime(&tm_appointed);
 	sec_appointed += (drm_date*24*60*60);
 	p = localtime(&sec_appointed);
 	snprintf(date_str, date_str_size, "%04d-%02d-%02d", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday);
+	
+	DEBUG("origine drm date=%u, trans as %s\n", drm_date,date_str);
 	
 	return 0;
 }

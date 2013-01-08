@@ -65,7 +65,7 @@ static int global_insert(DBSTAR_GLOBAL_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[2048];
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','%s');",
 		p->Name, p->Value, p->Param);
@@ -89,7 +89,7 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 		snprintf(p->StrLang,sizeof(p->StrLang),"%s",CURLANGUAGE_DFT);
 	}
 	
-	char sqlite_cmd[2048];
+	char sqlite_cmd[8192];
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s','%s');",
 		p->ServiceID, p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
@@ -106,7 +106,7 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 	
 	DEBUG("%s,%s,%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->ServiceID, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI, xmlinfo->ID);
 	if(strlen(xmlinfo->Version)>0 || strlen(xmlinfo->StandardVersion)>0 || strlen(xmlinfo->URI)>0){
-		char sqlite_cmd[512];
+		char sqlite_cmd[2048];
 		
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Initialize(PushFlag,ServiceID,ID) VALUES('%s','%s','%s');", xmlinfo->PushFlag, xmlinfo->ServiceID, xmlinfo->ID);
 		sqlite_transaction_exec(sqlite_cmd);
@@ -155,7 +155,7 @@ static int service_insert(DBSTAR_SERVICE_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[2048];
 	
 	SERVICE_STATUS_E service_status = SERVICE_STATUS_INVALID;
 	if(0==strcmp(serviceID_get(),p->ServiceID)){
@@ -183,7 +183,7 @@ static int product_insert(DBSTAR_PRODUCT_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[4096];
 	
 	if(0==strcmp(serviceID_get(),p->ServiceID)){
 		DEBUG("product %s in service %s is mine, receive its publications\n", p->ProductID,p->ServiceID);
@@ -223,7 +223,7 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	snprintf(from_file,sizeof(from_file),"%s/%s", push_dir_get(),ptr->ColumnIcon_losefocus);
 	snprintf(to_file,sizeof(to_file),"%s/%s",column_res_get(),p_slash);
 	if(0==fcopy_c(from_file,to_file)){
-		char cmd[2048];
+		char cmd[4096];
 		snprintf(cmd, sizeof(cmd), "REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d);",
 			ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
 		
@@ -245,7 +245,7 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 	/*
 	 保留用户作出的“选择接收”
 	*/
-	char sqlite_cmd[512];
+	char sqlite_cmd[2048];
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM GuideList WHERE PublicationID='%s';",ptr->PublicationID);
 	if(0<sqlite_transaction_read(sqlite_cmd,NULL,0)){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s','%s','%s','%s','%s',(select UserStatus from GuideList where PublicationID='%s'));",
@@ -287,7 +287,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		return -1;
 	}
 	
-	char sqlite_cmd[2048];
+	char sqlite_cmd[4096];
 
 #if 0
 	if(strlen(ptr->PushStartTime)>0){
@@ -547,7 +547,7 @@ static int preview_insert_productid(char *PreviewID, char *ProductID)
 		return -1;
 	}
 	
-	char sqlite_cmd[1024*4];
+	char sqlite_cmd[8192];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,StartTime,EndTime,PlayMode) \
 VALUES('%s',\
 '%s',\
@@ -636,7 +636,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[1024];
+	char sqlite_cmd[2048];
 	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Publication SET PublicationType='%s',IsReserved='%s',Visible='%s',DRMFile='%s',FileID='%s',FileSize='%s',FileURI='%s',FileType='%s',Duration='%s',Resolution='%s',BitRate='%s',FileFormat='%s',CodeFormat='%s',ReceiveStatus='1',TimeStamp=datetime('now','localtime') WHERE PublicationID='%s';",
 		p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,p->PublicationID);
@@ -654,7 +654,7 @@ static int publicationva_info_insert(DBSTAR_MULTIPLELANGUAGEINFOVA_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[1024*4];
+	char sqlite_cmd[8192];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO MultipleLanguageInfoVA(ServiceID,PublicationID,infolang,PublicationDesc,ImageDefinition,Keywords,Area,Language,Episode,AspectRatio,AudioChannel,Director,Actor,Audience,Model) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
 		p->ServiceID,p->PublicationID,p->infolang,p->PublicationDesc,p->ImageDefinition,p->Keywords,p->Area,p->Language,p->Episode,p->AspectRatio,p->AudioChannel,p->Director,p->Actor,p->Audience,p->Model);
 	
@@ -704,7 +704,7 @@ static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[8192];
 
 #if 0
 	char old_PublicationType[64];	memset(old_PublicationType,0,sizeof(old_PublicationType));
@@ -743,7 +743,7 @@ static int subtitle_insert(DBSTAR_RESSUBTITLE_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[2048];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResSubTitle(ServiceID,ObjectName,EntityID,SubTitleID,SubTitleName,SubTitleLanguage,SubTitleURI) VALUES('%s','%s','%s','%s','%s','%s','%s');",
 		p->ServiceID,p->ObjectName,p->EntityID,p->SubTitleID,p->SubTitleName,p->SubTitleLanguage,p->SubTitleURI);
 	
@@ -761,7 +761,7 @@ static int poster_insert(DBSTAR_RESPOSTER_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[2048];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResPoster(ServiceID,ObjectName,EntityID,PosterID,PosterName,PosterURI) VALUES('%s','%s','%s','%s','%s','%s');",
 		p->ServiceID,p->ObjectName, p->EntityID, p->PosterID, p->PosterName, p->PosterURI);
 	
@@ -779,7 +779,7 @@ static int trailer_insert(DBSTAR_RESTRAILER_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[2048];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResTrailer(ServiceID,ObjectName,EntityID,TrailerID,TrailerName,TrailerURI) VALUES('%s','%s','%s','%s','%s','%s');",
 		p->ServiceID,p->ObjectName, p->EntityID, p->TrailerID, p->TrailerName, p->TrailerURI);
 	
@@ -797,7 +797,7 @@ static int message_insert(DBSTAR_MESSAGE_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[512];
+	char sqlite_cmd[8192];
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Message(MessageID,type,displayForm,StartTime,EndTime,Interval) VALUES('%s','%s','%s','%s','%s','%s');",
 		p->MessageID, p->type, p->displayForm, p->StartTime, p->EndTime, p->Interval);
@@ -815,7 +815,7 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[1024*4];
+	char sqlite_cmd[4096];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,StartTime,EndTime,PlayMode) \
 	VALUES('%s',\
 	(select ProductID from Preview where PreviewID='%s'),\
@@ -868,7 +868,7 @@ static int sproduct_insert(DBSTAR_SPRODUCT_S *p)
 		return -1;
 	}
 	
-	char sqlite_cmd[1024*4];
+	char sqlite_cmd[4096];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO SProduct(ServiceID,SType,Name,URI) \
 	VALUES('%s',\
 	'%s',\
