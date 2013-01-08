@@ -49,6 +49,7 @@ static char 		*s_guidelist_unselect = NULL;
 
 //static int 			s_disk_manage_buzy = 0;
 static char			s_jni_cmd_public_space[20480];
+static int			s_smart_card_insert_flag = 0;
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
@@ -1204,6 +1205,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DRM_SC_REMOVE:
 			DEBUG("CMD_SMARTCARD_REMOVE\n");
+			smart_card_insert_flag_set(0);
 			if(-1==drm_sc_remove())
 				msg_send2_UI(DRM_SC_REMOVE_FAILED, NULL, 0);
 			else
@@ -1745,16 +1747,30 @@ static int special_productid_init()
 	return 0;
 }
 
+void xml_reset_at_sc_insert()
+{
+	char xmluri[256];
+	snprintf(xmluri,sizeof(xmluri),"%s/initialize", push_dir_get());
+	DEBUG("unlink %s, %d\n", xmluri, unlink(xmluri));
+}
+
+void smart_card_insert_flag_set(int insert_flag)
+{
+	s_smart_card_insert_flag = insert_flag;
+}
+
 /*
  从智能卡中查询指定的产品信息。
 */
-int check_productid_from_smartcard(char *productid)
+static int check_productid_from_smartcard(char *productid)
 {
-	DEBUG("not check from smartcard currently\n");
-	return -1;
-	
 	if(NULL==productid){
 		DEBUG("invalid arg\n");
+		return -1;
+	}
+	
+	if(0==s_smart_card_insert_flag){
+		DEBUG("no smart card has inserted\n");
 		return -1;
 	}
 	

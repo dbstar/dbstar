@@ -19,7 +19,7 @@
 static int global_insert(DBSTAR_GLOBAL_S *p);
 static pthread_mutex_t mtx_parse_xml = PTHREAD_MUTEX_INITIALIZER;
 static int s_column_SequenceNum = 0;
-
+static int s_detect_valid_productID = 0;
 
 /*
  初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
@@ -313,7 +313,7 @@ ptr->ServiceID);
 	if(0==strcmp(ptr->ServiceID,serviceID_get())){
 		if(	RECEIVETYPE_SPRODUCT==strtol(ptr->ReceiveType,NULL,10)
 			|| RECEIVETYPE_COLUMN==strtol(ptr->ReceiveType,NULL,10)
-			|| (RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10) && (0==check_productid_from_smartcard(ptr->productID) || 0==check_productid_from_db_in_trans(ptr->productID))) )
+			|| (RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10) && (0==special_productid_check(ptr->productID) || 0==check_productid_from_db_in_trans(ptr->productID))) )
 			receive_status = RECEIVESTATUS_WAITING;
 	}
 	
@@ -1256,6 +1256,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					parseProperty(cur, new_xmlroute, (void *)&product_service_s);
 					if(0==special_productid_check(product_service_s.productID)){
 						DEBUG("detect valid productID: %s\n", product_service_s.productID);
+						s_detect_valid_productID = 1;
 						DBSTAR_GLOBAL_S global_s;
 						memset(&global_s, 0, sizeof(global_s));
 						strncpy(global_s.Name, GLB_NAME_SERVICEID, sizeof(global_s.Name)-1);
@@ -2604,15 +2605,23 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					ret = -1;
 				}
 				else{
+					s_detect_valid_productID = 0;
+					
 					ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, old_xmlver);
 					
 					ret = PROCESS_OVER_CHECK(ret);
 					if(0==ret){
-						snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize.xml");
-						/*
-						 Initialize.xml是所有service共用的，不存在单独的serviceID属性，这里只是起到填充作用
-						*/
-						snprintf(xmlinfo.ServiceID, sizeof(xmlinfo.XMLName), "%s", SERVICEID_FILL);
+						if(s_detect_valid_productID){
+							snprintf(xmlinfo.XMLName, sizeof(xmlinfo.XMLName), "Initialize.xml");
+							/*
+							 Initialize.xml是所有service共用的，不存在单独的serviceID属性，这里只是起到填充作用
+							*/
+							snprintf(xmlinfo.ServiceID, sizeof(xmlinfo.XMLName), "%s", SERVICEID_FILL);
+						}
+						else{
+							DEBUG("detect no valid special productID, make return as -1\n");
+							ret = -1;
+						}
 					}
 				}
 			}

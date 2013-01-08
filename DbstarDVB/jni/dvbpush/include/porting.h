@@ -20,7 +20,6 @@ void upgrade_info_init();
 int drm_info_refresh();
 char *language_get();
 int software_check(void);
-int check_productid_from_smartcard(char *productid);
 char *serviceID_get();
 int serviceID_set(char *serv_id);
 void upgrade_sign_set();
@@ -29,5 +28,7 @@ char *push_dir_get();
 int guidelist_select_status(const char *publication_id);
 int guidelist_select_refresh();
 int disk_manage();
+void smart_card_insert_flag_set(int insert_flag);
+void xml_reset_at_sc_insert();
 
 #endif
