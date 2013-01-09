@@ -76,13 +76,14 @@ public class GDCmdHelper {
 		return cmdStr;
 	}
 	
-	public static String constructGetPowerPanelDataCmd(String cmdId, String ctrlNoGuid, String userId) {
+	public static String constructGetPowerPanelDataCmd(String cmdId, String ctrlNoGuid, 
+			String userId, String userType) {
 		String[] keys = new String[2];
 		String[] values = new String[2];
 		keys[0]=JsonTag.TAGNumCCGuid;
 		keys[1]="user_type";
 		values[0]=ctrlNoGuid;
-		values[1]="";
+		values[1]= userType;
 		
 		String cmdStr = cmdId + CmdDelimiterTag
 				+ "elc"     + CmdDelimiterTag

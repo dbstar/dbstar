@@ -28,6 +28,7 @@ public class GDEngine {
 	
 	private LoginData mLoginData;
 	private String mCtrlNoGuid;
+	private String mUserType;
 
 	public GDEngine(Context context) {
 		mContext = context;
@@ -76,7 +77,7 @@ public class GDEngine {
 	}
 	
 	private void getPowerPanelData() {
-		mClient.getPowerPanelData(mCtrlNoGuid, UserId);
+		mClient.getPowerPanelData(mCtrlNoGuid, UserId, mUserType);
 	}
 
 	private void handleFinishedRequest(Task task) {
@@ -105,8 +106,14 @@ public class GDEngine {
 		
 		mLoginData = data;
 		
-		if (data != null && data.CtrlNo != null) {
-			mCtrlNoGuid = data.CtrlNo.CtrlNoGuid;
+		if (data != null) {
+			if (data.CtrlNo != null) {
+				mCtrlNoGuid = data.CtrlNo.CtrlNoGuid;
+			}
+			
+			if (data.UserData != null && data.UserData.UserInfo != null) {
+				mUserType = data.UserData.UserInfo.UserType;
+			}
 		}
 		
 		EventData.GuodianEvent event = new EventData.GuodianEvent();

@@ -115,10 +115,10 @@ public class GDClient {
 		msg.sendToTarget();
 	}
 
-	public void getPowerPanelData(String ctrlNoGuid, String userId) {
+	public void getPowerPanelData(String ctrlNoGuid, String userId, String userType) {
 		Task task = new Task();
 		String taskId = GDCmdHelper.generateUID();
-		String cmdStr = GDCmdHelper.constructGetPowerPanelDataCmd(taskId, ctrlNoGuid, userId);
+		String cmdStr = GDCmdHelper.constructGetPowerPanelDataCmd(taskId, ctrlNoGuid, userId, userType);
 
 		task.TaskType = REQUEST_POWERPANELDATA;
 		task.TaskId = taskId;
