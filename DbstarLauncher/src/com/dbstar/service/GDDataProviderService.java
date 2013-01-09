@@ -722,6 +722,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 	
 	private void diplayNotification(String message) {
+		
+		Log.d(TAG, "======= diplayNotification ==== observer = " + mPageOberser + " message " + message);
+		
 		if (mPageOberser != null) {
 			mPageOberser.notifyEvent(EventData.EVENT_NOTIFICATION, message);
 		}
@@ -1786,8 +1789,14 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				
 				case DbstarServiceApi.DIALOG_NOTICE: {
 					byte[] bytes = intent.getByteArrayExtra("message");
+					
+					Log.d(TAG, "=======receive notification " + bytes);
+					
 					if (bytes != null) {
 						String info = StringUtil.getUTF8String(bytes);
+						
+						Log.d(TAG, "======= notification " + info);
+						
 						Message msg = mHandler.obtainMessage(GDCommon.MSG_DISP_NOTIFICATION);
 						msg.obj = info;
 						mHandler.sendMessage(msg);

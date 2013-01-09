@@ -276,6 +276,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	public void notifyEvent(int type, Object event) {
+		
+		Log.d(TAG, "======= notifyEvent ==== type "+ type + " event " + event);
+		
 		if (type == EventData.EVENT_SMARTCARD_STATUS) {
 			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
 			mSmartcardState = status.State;
@@ -448,29 +451,19 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected void alertFileNotExist() {
 		mAlertType = DLG_TYPE_FILE_NOTEXIST;
 
-		if (mAlertDlg == null) {
-			showDialog(DLG_ID_ALERT);
-		} else {
-			mAlertDlg.show();
-		}
+		showDialog(DLG_ID_ALERT);
 	}
 
 	protected void alertNewMail() {
 		mAlertType = DLG_TYPE_NEWMAIL_INFO;
-		if (mAlertDlg == null) {
-			showDialog(DLG_ID_ALERT);
-		} else {
-			mAlertDlg.show();
-		}
+
+		showDialog(DLG_ID_ALERT);
 	}
 
 	protected void alertSmartcardInfo() {
 		mAlertType = DLG_TYPE_SMARTCARD_INFO;
-		if (mAlertDlg == null) {
-			showDialog(DLG_ID_ALERT);
-		} else {
-			mAlertDlg.show();
-		}
+
+		showDialog(DLG_ID_ALERT);
 
 		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
 			hideDlgDelay();
@@ -481,11 +474,10 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		mNotification = message;
 
 		mAlertType = DLG_TYPE_NOTIFICATION;
-		if (mAlertDlg == null) {
-			showDialog(DLG_ID_ALERT);
-		} else {
-			mAlertDlg.show();
-		}
+		
+		Log.d(TAG, " ==== displayNotification === type = " + mAlertType + " " + mNotification);
+		
+		showDialog(DLG_ID_ALERT);
 	}
 
 	void hideDlgDelay() {
