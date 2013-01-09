@@ -212,7 +212,7 @@ static int timing_task_activation_callback(char **result, int row, int column, v
 
 static int timing_task_ring_callback(struct timeval *tv_datum, int type_id, int absolute_sec)
 {
-	DEBUG("timing task ring, type_id=%d, absolute_sec=%d\n", type_id, absolute_sec);
+	DEBUG("timing task ring, type_id=%d, absolute_sec=%d, tv_datum=%p\n", type_id, absolute_sec, tv_datum);
 	int (*sqlite_callback)(char **,int,int,void *) = timing_task_activation_callback;
 
 	char sqlite_cmd[128];

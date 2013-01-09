@@ -486,6 +486,11 @@ int serial_access(unsigned char *buf, unsigned int buf_len, unsigned int buf_siz
 	int i = 0;
 	int read_len = -1;
 	
+	if(NULL==buf || buf_len<SERIAL_CMD_SEND_LEN_MIN || buf_len>SERIAL_CMD_SEND_LEN_MAX){
+		DEBUG("invalid serial cmd, len=%u\n", buf_len);
+		return -1;
+	}
+	
 	sem_wait(&s_sem_serial);
 	/*
 	间隔1s，确保串口操作安全。其实这个1s不太准确，完全有可能不足1s但仍能通过

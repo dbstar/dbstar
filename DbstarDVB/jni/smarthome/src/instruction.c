@@ -531,7 +531,7 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 		return -1;
 	}
 
-	int i = 0;
+	unsigned int i = 0;
 	DEBUG("splice serial cmd(len=%d):", cmd_len);
 	for(i=0; i<cmd_len; i++)
 		printf(" %02x", serial_cmd[i]);
@@ -931,6 +931,11 @@ static INSTRUCTION_RESULT_E immediatly_task_run(INSTRUCTION_S *instruction)
 	}
 	else
 	{
+		return ERR_FORMAT;
+	}
+	
+	if(serial_cmd_len<SERIAL_CMD_SEND_LEN_MIN || serial_cmd_len>SERIAL_CMD_SEND_LEN_MAX){
+		DEBUG("invalid serial cmd len£º%d\n", serial_cmd_len);
 		return ERR_FORMAT;
 	}
 	
@@ -1472,7 +1477,7 @@ static INSTRUCTION_RESULT_E electric_equipment_update(INSTRUCTION_S *instruction
 	int icon_id = 0;
 	int oper_id = 0;
 	// invoke 0000 0000 0000
-	int socket_id = 0;
+	char socketid_str[32];
 	// invoke 0000
 	char room_name[128];
 	char dev_name[128];
@@ -1484,27 +1489,39 @@ static INSTRUCTION_RESULT_E electric_equipment_update(INSTRUCTION_S *instruction
 			sprintf(sqlite_cmd_str,"UPDATE devlist SET operID=%d WHERE typeID=%d;",atoi(instruction->alterable_entity), instruction->type_id);
 			break;
 		case 0x02:
-			sprintf(sqlite_cmd_str,"UPDATE devlist SET socketID=%d WHERE typeID=%d;",atoi(instruction->alterable_entity), instruction->type_id);
+			sprintf(sqlite_cmd_str,"UPDATE devlist SET socketID='%s' WHERE typeID=%d;",instruction->alterable_entity, instruction->type_id);
 			break;
 		case 0x03:
-			sprintf(sqlite_cmd_str,"UPDATE devlist SET devName=%s WHERE typeID=%d;",instruction->alterable_entity, instruction->type_id);
+			sprintf(sqlite_cmd_str,"UPDATE devlist SET devName='%s' WHERE typeID=%d;",instruction->alterable_entity, instruction->type_id);
 			break;
 		case 0x04:
 			sprintf(sqlite_cmd_str,"UPDATE devlist SET locationID=%d WHERE typeID=%d;",atoi(instruction->alterable_entity), instruction->type_id);
 			break;
 		case 0x05:
-			sprintf(sqlite_cmd_str,"UPDATE devlist SET roomName=%s WHERE typeID=%d;",instruction->alterable_entity, instruction->type_id);
+			sprintf(sqlite_cmd_str,"UPDATE devlist SET roomName='%s' WHERE typeID=%d;",instruction->alterable_entity, instruction->type_id);
 			break;
 		case 0x06:
 			sprintf(sqlite_cmd_str,"UPDATE devlist SET iconID=%d WHERE typeID=%d;",atoi(instruction->alterable_entity), instruction->type_id);
 			break;
-		case 0x07:
+		case 0x07:	// 000900002011070071420000A**\u7535\u89c62\u7535\u89c6
 			location_id = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 0, 2, 16);
 			icon_id = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 2, 2, 16);
 			oper_id = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 4, 16);
+#if 0
 			// invoke 0000 0000 0000
 			socket_id = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 20, 12, 16);
-			// invoke 0000
+#else		// 2013-01-09, use pc App to operate smart socket, when update, instruction as follows:
+			// 000900002011070071420000A**\u7535\u89c62\u7535\u89c6
+			// do not invoke 12 0s, the socket id is 201107007142
+			memset(socketid_str,0,sizeof(socketid_str));
+			strncpy(socketid_str,p_tmp+8,12);
+#endif
+			p_tmp += 20;
+			
+			// invoke 0000, it is the tail of socket id
+			
+			p_tmp += 4;
+			
 			memset(room_name, 0, sizeof(room_name));
 			memset(dev_name, 0, sizeof(dev_name));
 			p_star = strstr(p_tmp, "**");
@@ -1517,8 +1534,8 @@ static INSTRUCTION_RESULT_E electric_equipment_update(INSTRUCTION_S *instruction
 				p_star += 2;
 				strncpy(dev_name, p_star, MIN_LOCAL(strlen(p_star), (sizeof(dev_name)-1)));
 			}
-			sprintf(sqlite_cmd_str,"UPDATE devlist SET locationID=%d, iconID=%d, operID=%d, socketID=%d, roomName='%s', devName='%s' WHERE typeID=%d;",
-									location_id, icon_id, oper_id, socket_id, room_name, dev_name, instruction->type_id);
+			sprintf(sqlite_cmd_str,"UPDATE devlist SET locationID=%d, iconID=%d, operID=%d, socketID='%s', roomName='%s', devName='%s' WHERE typeID=%d;",
+									location_id, icon_id, oper_id, socketid_str, room_name, dev_name, instruction->type_id);
 			break;
 		default:
 			DEBUG("can not support this arg2: 0x%02x\n", instruction->arg2);
@@ -1820,8 +1837,10 @@ INSTRUCTION_RESULT_E instruction_dispatch(INSTRUCTION_S *instruction)
 					}
 					break;
 				case 0x02:
-					if(0x05==instruction->alterable_flag)
+					if(0x05==instruction->alterable_flag){
+						DEBUG("update electric equipment\n");
 						return electric_equipment_update(instruction);
+					}
 					else{
 						DEBUG("the alterable_flag is invalid\n");
 						return ERR_FORMAT;
@@ -2120,7 +2139,7 @@ void instruction_mainloop()
 								inst_result = instruction_parse(instruction_str, sizeof(instruction_str), &instruction);
 								instruction.index_in_cmds = index_p;
 								if(-1==inst_result ){
-									DEBUG("instruction phase failed\n");
+									DEBUG("instruction parse failed\n");
 								}
 								else{
 									inst_result = instruction_dispatch(&instruction);

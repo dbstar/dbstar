@@ -60,7 +60,11 @@ typedef enum{
 #define DEV_TTY_3		"/dev/ttyS3"
 
 #define SERIAL_RESPONSE_LEN_MIN	12
-#define SERIAL_RESPONSE_LEN_MAX	24
+
+// 68 a0 a1 a2 a3 a4 a5 68 01 02 43 C3 cs 16
+// 发往串口的命令，长度至少包括：一个开始符68，6个标识socket id，socket id结束符68，校验符cs，指令结束符16
+#define SERIAL_CMD_SEND_LEN_MIN	10
+#define SERIAL_CMD_SEND_LEN_MAX	64
 
 typedef enum{
 	SOCKET_STATUS_EXCEPTION = -1,
