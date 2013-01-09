@@ -1,5 +1,7 @@
 package com.dbstar.util;
 
+import java.io.UnsupportedEncodingException;
+
 public class StringUtil {
 
 	public static final int DemicalLength = 2;
@@ -85,6 +87,17 @@ public class StringUtil {
 		}
 
 		return valueStr;
+	}
+	
+	public static String getUTF8String(byte[] data) {
+		String str = "";
+		try {
+			str = new String(data, "utf-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		
+		return str;
 	}
 	
 }

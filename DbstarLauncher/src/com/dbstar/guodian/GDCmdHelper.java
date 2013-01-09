@@ -76,24 +76,26 @@ public class GDCmdHelper {
 		return cmdStr;
 	}
 	
-	public static String constructGetPowerPanelDataCmd(String cmdId, String ctrlNoGuid, String macaddr) {
+	public static String constructGetPowerPanelDataCmd(String cmdId, String ctrlNoGuid, 
+			String userId, String userType) {
 		String[] keys = new String[2];
 		String[] values = new String[2];
 		keys[0]=JsonTag.TAGNumCCGuid;
 		keys[1]="user_type";
 		values[0]=ctrlNoGuid;
-		values[1]="";
+		values[1]= userType;
 		
 		String cmdStr = cmdId + CmdDelimiterTag
 				+ "elc"     + CmdDelimiterTag
 				+ "m008f001" + CmdDelimiterTag
-				+ macaddr    + CmdDelimiterTag
+				+ userId    + CmdDelimiterTag
 				+ DeviceVersion + CmdDelimiterTag
 				+ DeviceId   + CmdDelimiterTag
 				+ toJson(keys, values);
 		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag+"\n";
+		
 		Log.d(TAG, " cmd ===== " + cmdStr);
 		
 		return cmdStr;

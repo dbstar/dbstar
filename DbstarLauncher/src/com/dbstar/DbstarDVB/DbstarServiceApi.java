@@ -35,7 +35,7 @@ public class DbstarServiceApi {
 
 	public static final int CMD_DRM_SC_INSERT               = 0x00061;
 	public static final int CMD_DRM_SC_REMOVE               = 0x00062;
-
+	
 	public static final int DRM_SC_INSERT_OK				= 0x20100;    // DRM smartcard Insert OK
 	public static final int DRM_SC_INSERT_FAILED			= 0x20101;    // DRM smartcard Insert failed
 	public static final int DRM_SC_REMOVE_OK				= 0x20102;    // DRM smartcard Remove OK
@@ -60,6 +60,7 @@ public class DbstarServiceApi {
 	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015; // Preview has new update
 	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016; // UI resource has new update
 	
+	public static final int DIALOG_NOTICE                   = 0x20000;    // Update times info
 	public static final int	UPGRADE_NEW_VER                 = 0x20001;
 	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;
 	public static final int	UPGRADE_START                   = 0x20003;

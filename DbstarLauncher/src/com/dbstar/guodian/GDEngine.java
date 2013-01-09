@@ -17,14 +17,18 @@ public class GDEngine {
 	public static final int MSG_CONNECT_SUCCESSED = 0x1001;
 	public static final int MSG_REQUEST_FINISHED = 0x1002;
 
-	GDClient mClient = null;
-	Handler mHander = null;
-	Context mContext = null;
+	private static final String UserId = "daotang0104";
 
-	boolean mIsConnected = false;
-	GDClientObserver mObserver;
+	private GDClient mClient = null;
+	private Handler mHander = null;
+	private Context mContext = null;
+
+	private boolean mIsConnected = false;
+	private GDClientObserver mObserver;
 	
-	LoginData mLoginData;
+	private LoginData mLoginData;
+	private String mCtrlNoGuid;
+	private String mUserType;
 
 	public GDEngine(Context context) {
 		mContext = context;
@@ -62,43 +66,71 @@ public class GDEngine {
 		mObserver = null;
 		mClient.destroy();
 	}
-	
-	public PowerPanelData getPowerPanelData() {
-		if (mLoginData != null)
-			return mLoginData.PanelData;
-		
-		return null;
+
+	public void requestData(int type) {
+		switch(type) {
+		case GDConstract.DATATYPE_POWERPANELDATA: {
+			getPowerPanelData();
+			break;
+		}
+		}
 	}
 	
-	public ElectricityPrice getPowerPriceData() {
-		return mLoginData.ElecPrice;
+	private void getPowerPanelData() {
+		mClient.getPowerPanelData(mCtrlNoGuid, UserId, mUserType);
 	}
 
-	void handleFinishedRequest(Task task) {
+	private void handleFinishedRequest(Task task) {
 		int requestType = task.TaskType;
 		switch (requestType) {
 		case GDClient.REQUEST_LOGIN: {
 			loginFinished((LoginData) task.ParsedData);
 			break;
 		}
+		
+		case GDClient.REQUEST_POWERPANELDATA: {
+			requestFinished(GDConstract.DATATYPE_POWERPANELDATA, task.ParsedData);
+			break;
+		}
 		}
 	}
 
-	void connectSuccessed() {
+	private void connectSuccessed() {
 		Log.d(TAG, "======= connectSuccessed=========");
 		mIsConnected = true;
 		mClient.login();
-		notifyEvent(EventData.EVENT_CONNECTED, null);
 	}
 
-	void loginFinished(LoginData data) {
+	private void loginFinished(LoginData data) {
 		Log.d(TAG, "======= loginFinished=========");
 		
 		mLoginData = data;
-		notifyEvent(EventData.EVENT_LOGIN_SUCCESSED, data);
+		
+		if (data != null) {
+			if (data.CtrlNo != null) {
+				mCtrlNoGuid = data.CtrlNo.CtrlNoGuid;
+			}
+			
+			if (data.UserData != null && data.UserData.UserInfo != null) {
+				mUserType = data.UserData.UserInfo.UserType;
+			}
+		}
+		
+		EventData.GuodianEvent event = new EventData.GuodianEvent();
+		event.Type = GDConstract.DATATYPE_LOGIN;
+		event.Data = data;
+
+		notifyEvent(EventData.EVENT_LOGIN_SUCCESSED, event);
+	}
+	
+	private void requestFinished(int type, Object data) {
+		EventData.GuodianEvent event = new EventData.GuodianEvent();
+		event.Type = type;
+		event.Data = data;
+		notifyEvent(EventData.EVENT_GUODIAN_DATA, event);
 	}
 
-	void notifyEvent(int type, Object event) {
+	private void notifyEvent(int type, Object event) {
 		if (mObserver != null) {
 			mObserver.notifyEvent(type, event);
 		}

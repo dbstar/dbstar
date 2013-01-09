@@ -12,7 +12,7 @@ public class GDSmartcardActivity extends MultiPanelActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		mSmartcardPopup = true;
+		mBlockSmartcardPopup = true;
 	}
 
 	public void onBuildHeaders(List<Header> target) {

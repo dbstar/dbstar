@@ -94,84 +94,14 @@ public class PlayerActivity extends Activity {
 	protected int mVolumeLevelIndex = -1;
 
 	protected int[] angle_table = { 0, 1, 2, 3 };
-
 	// Surface.ROTATION_0, ROTATION_90, ROTATION_180, ROTATION_270
 
-	private static final int MSG_SMARTCARD_IN = 0x1000;
-	private static final int MSG_SMARTCARD_OUT = 0x1001;
-	private static final int MSG_SMARTCARD_RESETOK = 0x1002;
-
+	// Application Message
+	protected static final int MSG_DIALOG_POPUP = 0x30001;
+	
 	protected boolean mIsSmartcardIn = false;
-
-	protected static final int SMARTCARD_STATUS_NONE = 0;
-	protected static final int SMARTCARD_STATUS_INSERTING = 1;
-	protected static final int SMARTCARD_STATUS_INSERTED = 2;
-	protected static final int SMARTCARD_STATUS_REMOVING = 3;
-	protected static final int SMARTCARD_STATUS_REMOVED = 4;
-	protected static final int SMARTCARD_STATUS_INVALID = 5;
-
-	protected int mSmartcardState = SMARTCARD_STATUS_NONE;
-
-	protected void reqisterSystemMessageReceiver() {
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(DbstarServiceApi.ACTION_HDMI_IN);
-		filter.addAction(DbstarServiceApi.ACTION_HDMI_OUT);
-
-		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_IN);
-		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
-
-		filter.addAction(DbstarServiceApi.ACTION_NOTIFY);
-
-		registerReceiver(mSystemMessageReceiver, filter);
-	}
-
-	protected void unregisterSystemMessageReceiver() {
-		unregisterReceiver(mSystemMessageReceiver);
-	}
-
-	private BroadcastReceiver mSystemMessageReceiver = new BroadcastReceiver() {
-
-		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
-
-			Log.d(TAG, "onReceive System msg " + action);
-
-			if (action.equals(DbstarServiceApi.ACTION_HDMI_IN)) {
-
-			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_OUT)) {
-
-			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
-				Log.d(TAG, "######: " + action);
-				mSmartcardState = SMARTCARD_STATUS_INSERTING;
-				mHandler.sendEmptyMessage(MSG_SMARTCARD_IN);
-			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {
-				Log.d(TAG, "######: " + action);
-				mSmartcardState = SMARTCARD_STATUS_REMOVING;
-				mHandler.sendEmptyMessage(MSG_SMARTCARD_OUT);
-			} else if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
-				int type = intent.getIntExtra("type", 0);
-				switch (type) {
-				case DbstarServiceApi.DRM_SC_INSERT_OK: {
-					mSmartcardState = SMARTCARD_STATUS_INSERTED;
-					mHandler.sendEmptyMessage(MSG_SMARTCARD_RESETOK);
-					break;
-				}
-				case DbstarServiceApi.DRM_SC_INSERT_FAILED: {
-					mSmartcardState = SMARTCARD_STATUS_INVALID;
-					break;
-				}
-				case DbstarServiceApi.DRM_SC_REMOVE_OK: {
-					mSmartcardState = SMARTCARD_STATUS_REMOVED;
-					break;
-				}
-				case DbstarServiceApi.DRM_SC_REMOVE_FAILED: {
-					mSmartcardState = SMARTCARD_STATUS_INVALID;
-					break;
-				}
-				}
-			}
-		}
-	};
+	
+	protected SmartcardStateTracker mSmartcardTacker = null;
 
 	protected Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -179,19 +109,22 @@ public class PlayerActivity extends Activity {
 			case MSG_DIALOG_POPUP:
 				showDialog(DLG_ID_MEDIAINFO);
 				break;
-			case MSG_SMARTCARD_IN: {
-				mIsSmartcardIn = true;
-				showSmartcardInfo(true);
+			case SmartcardStateTracker.MSG_SMARTCARD_INSERTING: {
+				showSmartcardInfo();
 				break;
 			}
-			case MSG_SMARTCARD_OUT: {
-				mIsSmartcardIn = false;
-				smartcardPlugin(mIsSmartcardIn);
-				showSmartcardInfo(false);
+			case SmartcardStateTracker.MSG_SMARTCARD_INSERTED: {
+				smartcardPlugin(true);
+				showSmartcardInfo();
 				break;
 			}
-			case MSG_SMARTCARD_RESETOK: {
-				smartcardResetOK();
+			case SmartcardStateTracker.MSG_SMARTCARD_INVALID: {
+				showSmartcardInfo();
+				break;
+			}
+			case SmartcardStateTracker.MSG_SMARTCARD_REMOVED: {
+				smartcardPlugin(false);
+				showSmartcardInfo();
 				break;
 			}
 
@@ -205,7 +138,6 @@ public class PlayerActivity extends Activity {
 
 	private static final int ALERT_TYPE_ERRORINFO = 1;
 
-	protected static final int MSG_DIALOG_POPUP = 1;
 	protected static final int MSG_DIALOG_TIMEOUT = 500;
 
 	private static final int DLG_TIMEOUT = 3000;
@@ -250,7 +182,7 @@ public class PlayerActivity extends Activity {
 		return dialog;
 	}
 
-	protected void showSmartcardInfo(boolean plugIn) {
+	protected void showSmartcardInfo() {
 
 		Log.d(TAG, " ================== showSmartcardInfo =================== ");
 
@@ -265,13 +197,20 @@ public class PlayerActivity extends Activity {
 		showDialog(DLG_ID_ALERT);
 	}
 
-	void setupSmartcardInfoDlg() {
+	void setupSmartcardInfoDlg(int smartcardState) {
 		mSmartcardDialog.setTitle(R.string.smartcard_status_title);
-		if (mIsSmartcardIn) {
+		
+		if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTING ||
+				smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_in);
-		} else {
+		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVING ||
+				smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVEOK ||
+				smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVEFAILED) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_out);
+		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTFAILED) {
+			mSmartcardDialog.setMessage(R.string.smartcard_status_invlid);
 		}
+
 		mSmartcardDialog.showSingleButton();
 	}
 
@@ -299,9 +238,11 @@ public class PlayerActivity extends Activity {
 				GDAlertDialog alertDlg = (GDAlertDialog) dialog;
 
 				if (alertDlg.getId() == DLG_ID_SMARTCARDINFO) {
-					setupSmartcardInfoDlg();
+					int state = mSmartcardTacker.getSmartcardState();
 
-					if (mIsSmartcardIn) {
+					setupSmartcardInfoDlg(state);
+
+					if (state == SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
 						hideDlgDelay();
 					}
 				} else if (alertDlg.getId() == DLG_ID_ALERT) {
@@ -321,7 +262,8 @@ public class PlayerActivity extends Activity {
 			if (dialog instanceof GDAlertDialog) {
 				GDAlertDialog alertDlg = (GDAlertDialog) dialog;
 				if (alertDlg.getId() == DLG_ID_SMARTCARDINFO) {
-					if (!mIsSmartcardIn) {
+					int state = mSmartcardTacker.getSmartcardState();
+					if (state != SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
 						exitPlayer();
 					}
 				} else if (alertDlg.getId() == DLG_ID_ALERT) {
@@ -441,8 +383,8 @@ public class PlayerActivity extends Activity {
 		mVolumeLevel += VOLUME_ADJUST_STEP[mVolumeLevelIndex];
 		mVolumeLevelIndex++;
 
-		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
-				0);
+		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel, 0);
+
 		updateSoundVolumeView();
 	}
 
@@ -458,6 +400,7 @@ public class PlayerActivity extends Activity {
 		mVolumeLevelIndex--;
 		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
 				0);
+
 		updateSoundVolumeView();
 	}
 
@@ -620,52 +563,11 @@ public class PlayerActivity extends Activity {
 	protected static final int NOTIFY_AUDIOTRACK = 1;
 	protected static final int NOTIFY_SUBTITLE = 2;
 
-	// private ImageView mView = null;
-	// private ViewGroup mRootView = null;
-
 	protected void showNotification(int type, int id) {
-		// Log.d(TAG, " ======= show toast ============ mToast " + mToast
-		// + " type= " + type + " id=" + id);
 
-		// if (mToast != null) {
-		// mToast.cancel();
-		// }
-		//
-		// mToast = new Toast(this);
-		//
-		// if (mRootView == null) {
-		// LayoutInflater inflater = getLayoutInflater();
-		// mRootView = (ViewGroup) inflater.inflate(R.layout.toast_layout,
-		// null);
-		// mView = (ImageView) mRootView.findViewById(R.id.icon);
-		// }
-		//
-		// if (type == NOTIFY_AUDIOTRACK) {
-		// if (id == ID_NO_DUBBING) {
-		// mView.setImageDrawable(mNoDubbingIcon);
-		// } else if (id == ID_HAS_DUBBING) {
-		// mView.setImageDrawable(mHasDubbingIcon);
-		// } else {
-		// mView.setImageDrawable(mAudioTrackIcons[id]);
-		// }
-		// } else if (type == NOTIFY_SUBTITLE) {
-		// if (id == ID_NO_SUBTITLE) {
-		// mView.setImageDrawable(mNoSubtitleIcon);
-		// } else if (id == ID_SHOW_SUBTITLE) {
-		// mView.setImageDrawable(mShowSubtitleIcon);
-		// } else {
-		// mView.setImageDrawable(mAudioTrackIcons[id]);
-		// }
-		// }
-		//
-		// mToast.setDuration(Toast.LENGTH_SHORT);
-		// mToast.setGravity(Gravity.TOP | Gravity.LEFT, 1100, 80);
-		// mToast.setView(mRootView);
-		//
-		// mToast.show();
+		Log.d(TAG, " ======= show toast ============ type= " + type + " id="
+				+ id);
 
-		Log.d(TAG, " ======= show toast ============ type= " + type + " id=" + id);
-				
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		Fragment prev = getFragmentManager().findFragmentByTag("dialog");
 		if (prev != null) {
@@ -775,9 +677,9 @@ public class PlayerActivity extends Activity {
 
 	}
 
-	protected void smartcardResetOK() {
-
-	}
+//	protected void smartcardResetOK() {
+//
+//	}
 
 	protected void setOSDOn(boolean on) {
 

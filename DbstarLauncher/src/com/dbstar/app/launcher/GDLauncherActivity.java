@@ -21,6 +21,7 @@ import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGeneralInfoActivity;
 import com.dbstar.app.settings.GDSmartcardActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
+import com.dbstar.guodian.GDConstract;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.model.ColumnData;
@@ -141,7 +142,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		initializeData();
 		startEngine();
-		updatePowerView();
 	}
 
 	public void onServiceStop() {
@@ -1317,34 +1317,37 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		case GDCommon.MSG_UPDATE_UIRESOURCE:
 		case GDCommon.MSG_UPDATE_PREVIEW:
 			break;
-
-		case EventData.EVENT_CONNECTED: {
-			break;
-		}
-
-		case EventData.EVENT_LOGIN_SUCCESSED: {
-			loginFinished();
-			break;
-		}
 		default:
 			break;
 		}
 	}
-
-	void loginFinished() {
-		Log.d(TAG, " === loginFinished ===");
+	
+	public void handleEvent(int type, Object event) {
+		switch(type) {
+		case EventData.EVENT_LOGIN_SUCCESSED: {
+			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+			loginFinished((LoginData)guodianEvent.Data);
+			break;
+		}
 		
-		if (!mBound)
-			return;
+		case EventData.EVENT_GUODIAN_DATA: {
+			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+			handlePowerData(guodianEvent.Type, guodianEvent.Data);
+			break;
+		}
+		}
+	}
 
-		PowerPanelData data = mService.getPowerPanelData();
-		if (data != null)
-			mPowerController.updatePowerPanel(data);
+	void loginFinished(LoginData loginData) {
+		Log.d(TAG, " === loginFinished ===");
+
+		mPowerController.handleLogin(loginData);
 	}
 	
-	void updatePowerView() {
-		if (!mBound)
-			return;
+	void handlePowerData(int type, Object data) {
+		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
+			mPowerController.updatePowerPanel((PowerPanelData) data);
+		}
 	}
 
 	String mUpgradePackageFile = "";
@@ -1380,10 +1383,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private void startEngine() {
 		mMediaScheduler.start(mService);
 		mPowerController.start(mService);
+		
+		checkSmartcardStatus();
 	}
 
 	private void stopEngine() {
 		// mMediaScheduler.start(mService);
+		// mPowerController.stop();
 	}
 
 	public class PopupMenuAdapter extends BaseAdapter {

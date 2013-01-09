@@ -296,12 +296,13 @@ public class PlayerMenu extends PlayerActivity {
 
 		startPlayerService();
 		registerHDMIReceiver();
+		
+		mSmartcardTacker = new SmartcardStateTracker(this, mHandler);
 	}
 
 	public void onStart() {
 		super.onStart();
 		Log.d(TAG, " ============ onStart ================== ");
-		reqisterSystemMessageReceiver();
 
 		if (!mHasError)
 			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
@@ -381,8 +382,6 @@ public class PlayerMenu extends PlayerActivity {
 	public void onStop() {
 		super.onStop();
 
-		unregisterSystemMessageReceiver();
-
 		Log.d(TAG, " ============ onStop ================== ");
 	}
 
@@ -390,6 +389,8 @@ public class PlayerMenu extends PlayerActivity {
 	public void onDestroy() {
 
 		Log.d(TAG, " ================= onDestroy ================== ");
+
+		mSmartcardTacker.destroy();
 
 		mLongPressTimer.cancel();
 
@@ -1004,17 +1005,10 @@ public class PlayerMenu extends PlayerActivity {
 
 			// pause player
 			onPlayButtonPressed();
-		}
-	}
-
-	@Override
-	public void smartcardResetOK() {
-		if (!mHasKey) {
-			return;
-		}
-
-		if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
-			onPlayButtonPressed();
+		} else {
+			if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
+				onPlayButtonPressed();
+			}
 		}
 	}
 

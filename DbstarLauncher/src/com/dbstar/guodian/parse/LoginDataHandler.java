@@ -1,4 +1,4 @@
-package com.dbstar.guodian;
+package com.dbstar.guodian.parse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,31 +45,32 @@ public class LoginDataHandler {
 			array = (JSONArray) rootObject.getJSONArray(JsonTag.TAGModeList);
 			array = (JSONArray) rootObject
 					.getJSONArray(JsonTag.TAGTimeTaskList);
+
 			JSONObject object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGYearPower);
 
 			loginData.PanelData = new PowerPanelData();
-			loginData.PanelData.YearPower = parsePower(object);
+			loginData.PanelData.YearPower = DataHandler.parsePower(object);
 
 			object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGLastPower);
-			loginData.PanelData.RemainPower = parsePower(object);
+			loginData.PanelData.RemainPower = DataHandler.parsePower(object);
 
 			object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGMonthPower);
-			loginData.PanelData.MonthPower = parsePower(object);
+			loginData.PanelData.MonthPower = DataHandler.parsePower(object);
 
 			object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGDefaultTarget);
-			loginData.PanelData.DefaultTarget = parsePower(object);
+			loginData.PanelData.DefaultTarget = DataHandler.parsePower(object);
 
 			object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGPowerTarget);
-			loginData.PanelData.Target = parsePowerTarget(object);
+			loginData.PanelData.Target = DataHandler.parsePowerTarget(object);
 
 			object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGUserPrice);
-			loginData.PanelData.PriceStatus = parseUserPriceStatus(object);
+			loginData.PanelData.PriceStatus = DataHandler.parseUserPriceStatus(object);
 
 			object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGElecPrice);
@@ -95,47 +96,6 @@ public class LoginDataHandler {
 		}
 
 		return loginData;
-	}
-
-	static PowerData parsePower(JSONObject object) throws JSONException {
-		Log.d(TAG, "parsePower");
-
-		PowerData data = new PowerData();
-		data.Count = (String) object.getString(JsonTag.TAGNumCount);
-		data.Fee = (String) object.getString(JsonTag.TAGNumFee);
-
-		return data;
-	}
-
-	static PowerTarget parsePowerTarget(JSONObject object) throws JSONException {
-		Log.d(TAG, "parsePowerTarget");
-
-		PowerTarget target = new PowerTarget();
-		target.Guid = (String) object.getString(JsonTag.TAGNumGuid);
-		target.CCGuid = (String) object.getString(JsonTag.TAGNumCCGuid);
-		target.mPower = new PowerData();
-		target.mPower.Count = (String) object.getString(JsonTag.TAGPowerNum);
-		target.mPower.Fee = (String) object.getString(JsonTag.TAGPowerFee);
-		target.Type = (String) object.getString(JsonTag.TAGNumOrFee);
-		return target;
-	}
-
-	static UserPriceStatus parseUserPriceStatus(JSONObject object)
-			throws JSONException {
-
-		Log.d(TAG, "parseUserPriceStatus");
-
-		UserPriceStatus status = new UserPriceStatus();
-
-		status.PriceType = (String) object.getString(JsonTag.TAGVC2PriceType);
-		status.CycleType = (String) object.getString(JsonTag.TAGVC2CycleType);
-		status.Step = (String) object.getString(JsonTag.TAGVC2CurrenStep);
-
-		status.CurrentPeriodType = (String) object.getString(JsonTag.TAGVC2CurrentPeriodType);
-		status.Period = (String) object.getString(JsonTag.TAGVC2PeriodDetail);
-		status.Price = (String) object.getString(JsonTag.TAGNumElePrice);
-
-		return status;
 	}
 
 	static ElectricityPrice parseElecPrice(JSONObject object)
