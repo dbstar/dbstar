@@ -98,6 +98,7 @@ static int s_dvbpush_getinfo_flag = 0;
 
 static int s_column_refresh = 0;
 static int s_interface_refresh = 0;
+static int s_preview_refresh = 0;
 
 
 /*
@@ -544,6 +545,11 @@ void interface_refresh_flag_set(int flag)
 	s_interface_refresh = flag;
 }
 
+void preview_refresh_flag_set(int flag)
+{
+	s_preview_refresh = flag;
+}
+
 /*
 为避免无意义的查询硬盘，应完成下面两个工作：
 1、当节目接收完毕后不应再查询，数据库中记录的是100%
@@ -637,8 +643,15 @@ void *push_monitor_thread()
 		if(s_interface_refresh>0){
 			s_interface_refresh ++;
 			if(s_interface_refresh>2){
-				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
+				msg_send2_UI(STATUS_INTERFACE_REFRESH, NULL, 0);
 				s_interface_refresh = 0;
+			}
+		}
+		if(s_preview_refresh>0){
+			s_preview_refresh ++;
+			if(s_preview_refresh>2){
+				msg_send2_UI(STATUS_PREVIEW_REFRESH, NULL, 0);
+				s_preview_refresh = 0;
 			}
 		}
 		

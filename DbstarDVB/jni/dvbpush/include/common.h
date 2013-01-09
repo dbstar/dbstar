@@ -464,6 +464,7 @@ typedef struct{
 
 typedef struct{
 	char	ServiceID[64];
+	char	PublicationID[64];
 	char	PreviewID[64];
 	char	PreviewType[64];
 	char	PreviewSize[64];

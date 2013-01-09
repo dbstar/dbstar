@@ -20,6 +20,7 @@ static int global_insert(DBSTAR_GLOBAL_S *p);
 static pthread_mutex_t mtx_parse_xml = PTHREAD_MUTEX_INITIALIZER;
 static int s_column_SequenceNum = 0;
 static int s_detect_valid_productID = 0;
+static int s_preview_publication = 0;
 
 /*
  初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
@@ -104,7 +105,13 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 	if(NULL==xmlinfo)
 		return -1;
 	
+	if(PRODUCTION_XML==atoi(xmlinfo->PushFlag) || COLUMN_XML==atoi(xmlinfo->PushFlag) || SPRODUCT_XML==atoi(xmlinfo->PushFlag)){
+		DEBUG("this xml [%s] if controled by column 'Parsed' in table ProductDesc, don't insert to table Initialize\n",xmlinfo->PushFlag);
+		return -1;
+	}
+	
 	DEBUG("%s,%s,%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->ServiceID, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI, xmlinfo->ID);
+	
 	if(strlen(xmlinfo->Version)>0 || strlen(xmlinfo->StandardVersion)>0 || strlen(xmlinfo->URI)>0){
 		char sqlite_cmd[2048];
 		
@@ -538,62 +545,6 @@ static int column_entity_insert(DBSTAR_COLUMNENTITY_S *p, char *entity_type)
 }
 
 /*
- 只在Previews表中插入PreviewsID和ProductID之间的对应关系
-*/
-static int preview_insert_productid(char *PreviewID, char *ProductID)
-{
-	if(NULL==PreviewID || NULL==ProductID || 0==strlen(PreviewID) || 0==strlen(ProductID)){
-		DEBUG("invalid args\n");
-		return -1;
-	}
-	
-	char sqlite_cmd[8192];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,StartTime,EndTime,PlayMode) \
-VALUES('%s',\
-'%s',\
-(select PreviewType from Preview where PreviewID='%s'),\
-(select PreviewSize from Preview where PreviewID='%s'),\
-(select ShowTime from Preview where PreviewID='%s'),\
-(select PreviewURI from Preview where PreviewID='%s'),\
-(select PreviewFormat from Preview where PreviewID='%s'),\
-(select Duration from Preview where PreviewID='%s'),\
-(select Resolution from Preview where PreviewID='%s'),\
-(select BitRate from Preview where PreviewID='%s'),\
-(select CodeFormat from Preview where PreviewID='%s'),\
-(select URI from Preview where PreviewID='%s'),\
-(select TotalSize from Preview where PreviewID='%s'),\
-(select ProductDescID from Preview where PreviewID='%s'),\
-(select ReceiveStatus from Preview where PreviewID='%s'),\
-(select PushStartTime from Preview where PreviewID='%s'),\
-(select PushEndTime from Preview where PreviewID='%s'),\
-(select StartTime from Preview where PreviewID='%s'),\
-(select EndTime from Preview where PreviewID='%s'),\
-(select PlayMode from Preview where PreviewID='%s'));",
-		PreviewID,
-		ProductID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID,
-		PreviewID);
-	return sqlite_transaction_exec(sqlite_cmd);
-}
-
-
-/*
  channel新记录入库时，记FreshFlag为有效。
 */
 static int channel_insert(DBSTAR_CHANNEL_S *p)
@@ -816,47 +767,16 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 	}
 	
 	char sqlite_cmd[4096];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(PreviewID,ProductID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,URI,TotalSize,ProductDescID,ReceiveStatus,PushStartTime,PushEndTime,StartTime,EndTime,PlayMode) \
-	VALUES('%s',\
-	(select ProductID from Preview where PreviewID='%s'),\
-	'%s',\
-	'%s',\
-	'%s',\
-	'%s',\
-	'%s',\
-	'%s',\
-	'%s',\
-	'%s',\
-	'%s',\
-	(select URI from Preview where PreviewID='%s'),\
-	(select TotalSize from Preview where PreviewID='%s'),\
-	(select ProductDescID from Preview where PreviewID='%s'),\
-	(select ReceiveStatus from Preview where PreviewID='%s'),\
-	(select PushStartTime from Preview where PreviewID='%s'),\
-	(select PushEndTime from Preview where PreviewID='%s'),\
-	(select StartTime from Preview where PreviewID='%s'),\
-	(select EndTime from Preview where PreviewID='%s'),\
-	(select PlayMode from Preview where PreviewID='%s'));",
-		p->PreviewID,
-		p->PreviewID,
-		p->PreviewType,
-		p->PreviewSize,
-		p->ShowTime,
-		p->PreviewURI,
-		p->PreviewFormat,
-		p->Duration,
-		p->Resolution,
-		p->BitRate,
-		p->CodeFormat,
-		p->PreviewID,
-		p->PreviewID,
-		p->PreviewID,
-		p->PreviewID,
-		p->PreviewID,
-		p->PreviewID,
-		p->PreviewID,
-		p->PreviewID,
-		p->PreviewID);
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Publication SET ColumnID='-1' WHERE PublicationID='%s';",p->PublicationID);
+	sqlite_transaction_exec(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(ServiceID,PreviewID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,ReceiveStatus) \
+VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','1');",
+p->ServiceID,p->PreviewID,p->PreviewType,p->PreviewSize,p->ShowTime,p->PreviewURI,p->PreviewFormat,p->Duration,p->Resolution,p->BitRate,p->CodeFormat);
+	
+	s_preview_publication = 1;
+	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
@@ -1846,6 +1766,101 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					strncpy(p->CodeFormat, (char *)szKey, sizeof(p->CodeFormat)-1);
 					xmlFree(szKey);
 				}
+				
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					
+					DBSTAR_PREVIEW_S preview_s;
+					memset(&preview_s,0,sizeof(preview_s));
+					snprintf(preview_s.ServiceID,sizeof(preview_s.ServiceID),"%s",p->ServiceID);
+					snprintf(preview_s.PublicationID,sizeof(preview_s.PublicationID),"%s",p->PublicationID);
+					
+					parseNode(doc, cur, new_xmlroute, &preview_s, NULL, NULL, NULL, NULL);
+					
+					preview_insert(&preview_s);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewID")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->PreviewID, (char *)szKey, sizeof(p->PreviewID)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewNames")){
+//					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewNames^PreviewName")){
+//					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+//					
+//					DBSTAR_RESSTR_S resstr_s;
+//					memset(&resstr_s, 0, sizeof(resstr_s));
+//					
+//					snprintf(resstr_s.ServiceID,sizeof(resstr_s.ServiceID),"%s",p->ServiceID);
+//					strncpy(resstr_s.ObjectName, OBJ_MFILE, sizeof(resstr_s.ObjectName)-1);
+//					//DEBUG("ProductID: %s\n", p_product->ProductID);
+//					if(strlen(p->PublicationID)>0)
+//						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s", p->PublicationID);
+//					else
+//						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s%s", OBJID_PAUSE, OBJ_MFILE);
+//					strncpy(resstr_s.StrName, "FileName", sizeof(resstr_s.StrName)-1);
+//					
+//					parseProperty(cur, new_xmlroute, (void *)(&resstr_s));
+//					
+//					resstr_insert(&resstr_s);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewType")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->PreviewType, (char *)szKey, sizeof(p->PreviewType)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewSize")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->PreviewSize, (char *)szKey, sizeof(p->PreviewSize)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^Duration")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->Duration, (char *)szKey, sizeof(p->Duration)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^ShowTime")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->ShowTime, (char *)szKey, sizeof(p->ShowTime)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewURI")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->PreviewURI, (char *)szKey, sizeof(p->PreviewURI)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^Resolution")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->Resolution, (char *)szKey, sizeof(p->Resolution)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^BitRate")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->BitRate, (char *)szKey, sizeof(p->BitRate)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewFormat")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->PreviewFormat, (char *)szKey, sizeof(p->PreviewFormat)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^CodeFormat")){
+					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->CodeFormat, (char *)szKey, sizeof(p->CodeFormat)-1);
+					xmlFree(szKey);
+				}
 			}
 			
 // Column.xml
@@ -2533,6 +2548,8 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 	int ret = 0;
 	char xml_uri[512];
 	
+	s_preview_publication = 0;
+	
 	DEBUG("xml_flag: %d, id: %s\n", xml_flag, id);
 	pthread_mutex_lock(&mtx_parse_xml);
 //	if(NULL==docname){
@@ -2759,6 +2776,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					ret = PROCESS_OVER_CHECK(ret);
 				}
 			}
+#if 0	//preview in Publications.xml
 // Preview.xml
 			else if(0==xmlStrcmp(cur->name, BAD_CAST"Preview")){
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
@@ -2777,6 +2795,8 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					ret = PROCESS_OVER_CHECK(ret);
 				}
 			}
+#endif
+
 // SProduct.xml
 			else if(0==xmlStrcmp(cur->name, BAD_CAST"SProduct")){
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
@@ -2834,6 +2854,11 @@ PARSE_XML_END:
 			column_refresh_flag_set(1);
 		else if(SPRODUCT_XML==xml_flag)
 			interface_refresh_flag_set(1);
+		
+		if(1==s_preview_publication){
+			DEBUG("this Publication is a preview\n");
+			preview_refresh_flag_set(1);
+		}
 	}
 
 	return ret;

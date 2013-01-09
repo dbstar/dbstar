@@ -1300,31 +1300,31 @@ void upgrade_info_init()
 			DEBUG("clear upgrade mark and file\n");
 			set_loader_reboot_mark(0);
 			upgradefile_clear();
-		}
-		
-		if(255==g_loaderInfo.software_version[0] && 255==g_loaderInfo.software_version[1]
-			&& 255==g_loaderInfo.software_version[2] && 255==g_loaderInfo.software_version[3]){
-			DEBUG("It has a repeat upgrade, only for upgrade test\n");
 			
-			char sqlite_cmd[256];
-			char repeat_upgrade_count[8];
-			memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
-			if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
-				DEBUG("can not read RepeatUpgradeCount\n");
+			if(255==g_loaderInfo.software_version[0] && 255==g_loaderInfo.software_version[1]
+				&& 255==g_loaderInfo.software_version[2] && 255==g_loaderInfo.software_version[3]){
+				DEBUG("It has a repeat upgrade, only for upgrade test\n");
+				
+				char sqlite_cmd[256];
+				char repeat_upgrade_count[8];
+				memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
+				if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
+					DEBUG("can not read RepeatUpgradeCount\n");
+				}
+				else{
+					DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
+				}
+				
+				snprintf(tmpinfo,sizeof(tmpinfo),"%d", atoi(repeat_upgrade_count)+1);
+				upgrade_info_refresh("RepeatUpgradeCount", tmpinfo);
+				
+				snprintf(msg_2_UI,sizeof(msg_2_UI),"Repeat upgrade count: %d\n", atoi(repeat_upgrade_count)+1);
+				msg_send2_UI(DIALOG_NOTICE, msg_2_UI, strlen(msg_2_UI));
 			}
 			else{
-				DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
+				DEBUG("It has a normal upgrade\n");
 			}
-			
-			snprintf(tmpinfo,sizeof(tmpinfo),"%d", atoi(repeat_upgrade_count)+1);
-			upgrade_info_refresh("RepeatUpgradeCount", tmpinfo);
-			
-			snprintf(msg_2_UI,sizeof(msg_2_UI),"Repeat upgrade count: %d\n", atoi(repeat_upgrade_count)+1);
-			msg_send2_UI(DIALOG_NOTICE, msg_2_UI, strlen(msg_2_UI));
-		}
-		else{
-			DEBUG("It has a normal upgrade\n");
 		}
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
