@@ -213,7 +213,7 @@ typedef enum{
 
 typedef struct{
 	char	Name[64];
-	char	Value[128];
+	char	Value[512];
 	char	Param[256];
 }DBSTAR_GLOBAL_S;
 
@@ -242,11 +242,11 @@ typedef struct{
 
 typedef struct{
 	char	ServiceID[64];
-	char	ObjectName[64];
+	char	ObjectName[128];
 	char	EntityID[64];
 	char	StrLang[32];
 	char	StrName[64];
-	char	StrValue[4096];
+	char	StrValue[8192];
 	char	Extension[64];	// "Extension" or ""
 }DBSTAR_RESSTR_S;
 
@@ -364,8 +364,8 @@ typedef struct{
 	char	IsReserved[64];
 	char	Visible[64];
 	char	Title[128];
-	char	Starring[256];
-	char	Scenario[512];
+	char	Starring[1024];
+	char	Scenario[8192];
 	char	Classification[64];
 	char	Period[64];
 	char	CollectionNumber[64];
@@ -408,17 +408,17 @@ typedef struct{
 	char	ServiceID[64];
 	char	PublicationID[64];
 	char	infolang[64];
-	char	PublicationDesc[1024];
-	char	Keywords[256];
+	char	PublicationDesc[8192];
+	char	Keywords[1024];
 	char	ImageDefinition[32];
-	char	Area[64];
+	char	Area[512];
 	char	Language[64];
 	char	Episode[32];
 	char	AspectRatio[32];
 	char	AudioChannel[32];
-	char	Director[128];
-	char	Actor[256];
-	char	Audience[64];
+	char	Director[512];
+	char	Actor[1024];
+	char	Audience[512];
 	char	Model[32];
 }DBSTAR_MULTIPLELANGUAGEINFOVA_S;
 

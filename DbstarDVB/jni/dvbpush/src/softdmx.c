@@ -620,6 +620,11 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
 	tm_tdt.tm_isdst = 0;
     snprintf(s_time_sync_2_ui,sizeof(s_time_sync_2_ui),"%ld",mktime(&tm_tdt));
 	
+// only for test
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"replace into RejectRecv(ID,URI) values('%s','%s');",s_time_sync_2_ui,tdt);
+	sqlite_execute(sqlite_cmd);
+	
     msg_send2_UI(TDT_TIME_SYNC, s_time_sync_2_ui, strlen(s_time_sync_2_ui));
     
     DEBUG("distill %4d-%2d-%2d %2d:%2d:%2d, send to UI %s\n",(tm_tdt.tm_year),(tm_tdt.tm_mon),(tm_tdt.tm_mday),(tm_tdt.tm_hour),(tm_tdt.tm_min),(tm_tdt.tm_sec),s_time_sync_2_ui);
