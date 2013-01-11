@@ -1012,7 +1012,7 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 					||	0==strcmp(xmlroute, "Messages^Message^Content^SubContent")
 					||	0==strcmp(xmlroute, "Preview^PreviewNames^PreviewName")
 					||	0==strcmp(xmlroute, "GuideList^Date^Product^Item^PublicationNames^PublicationName")
-					||	0==strcmp(xmlroute, "GuideList^Date^Product^Item^ColumNames^ColumName")
+					||	0==strcmp(xmlroute, "GuideList^Date^Product^Item^ColumnNames^ColumnName")
 					||	0==strcmp(xmlroute, "GuideList^Date^Product^Item^PublicationDescs^PublicationDesc")
 					||	0==strcmp(xmlroute, "ProductDesc^ReceivePublications^Product^Publication^PublicationNames^PublicationName")
 					||	0==strcmp(xmlroute, "ProductDesc^ReceiveSProduct^SProductNames^SProductName")
@@ -2009,10 +2009,10 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					
 					resstr_insert(&resstr_s);
 				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^ColumNames")){
+				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^ColumnNames")){
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
 				}
-				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^ColumNames^ColumName")){
+				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^ColumnNames^ColumnName")){
 					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
 					
 					DBSTAR_RESSTR_S resstr_s;
@@ -2024,7 +2024,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s", p_guidelist->GuideListID);
 					else
 						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s%s", OBJID_PAUSE, OBJ_GUIDELIST);
-					strncpy(resstr_s.StrName, "ColumName", sizeof(resstr_s.StrName)-1);
+					strncpy(resstr_s.StrName, "ColumnName", sizeof(resstr_s.StrName)-1);
 					
 					parseProperty(cur, new_xmlroute, (void *)(&resstr_s));
 					
@@ -2051,6 +2051,8 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					
 					resstr_insert(&resstr_s);
 				}
+				else
+					DEBUG("can not parse such xml route:[%s]\n",new_xmlroute);
  			}
 
 
