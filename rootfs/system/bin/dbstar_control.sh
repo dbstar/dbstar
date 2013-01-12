@@ -9,7 +9,10 @@ system_init()
 
 dbstar_init()
 {
-	mv /system/app/Launcher2.apk /system/app/Launcher2.apk.bk
+	if [ -e "/system/app/Launcher2.apk" ]; then
+		mv /system/app/Launcher2.apk /system/app/Launcher2.apk.bk
+	fi
+
 	if [ -e "/data/dbstar/Dbstar.db" ]; then
 		echo "dbstar already inited!"
 	else
@@ -19,6 +22,7 @@ dbstar_init()
 		chmod 666 /data/dbstar/Dbstar.db
 		setprop dbstar.inited 1
 	fi
+
 	if [ -e "/data/dbstar/Smarthome.db" ]; then
 		echo "Smarthome.db already inited!"
 	else
@@ -28,6 +32,7 @@ dbstar_init()
 		chmod 666 /data/dbstar/Smarthome.db
 		setprop dbstar.inited 1
 	fi
+
 	if [ -e "/data/dbstar/ColumnRes" ]; then
 		echo "ColumnRes already inited!"
 	else
@@ -39,6 +44,10 @@ dbstar_init()
 		chmod 777 /data/dbstar/ColumnRes
 		chmod 777 /data/dbstar/ColumnRes/LocalColumnIcon
 		setprop dbstar.inited 1
+	fi
+
+	if [ -e "/data/misc/dhcp/dhcpcd-eth0.lease" ]; then
+		rm /data/misc/dhcp/dhcpcd-eth0.lease
 	fi
 }
 

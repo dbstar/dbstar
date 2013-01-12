@@ -240,6 +240,7 @@ on boot
 # create dhcpcd dir
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     chmod 0770 /data/misc/dhcp
+    chmod 0777 /data/misc/dhcp/dhcpcd-eth0.lease
 
 # create dbstar dir
     mkdir /data/dbstar 0777 system system
