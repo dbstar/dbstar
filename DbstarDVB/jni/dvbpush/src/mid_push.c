@@ -44,7 +44,7 @@
 static PUSH_XML_S		s_push_xml[XML_NUM];
 
 static pthread_mutex_t mtx_xml = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond_xml = PTHREAD_COND_INITIALIZER;
+//static pthread_cond_t cond_xml = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mtx_push_monitor = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_push_monitor = PTHREAD_COND_INITIALIZER;
 
@@ -672,16 +672,17 @@ void *push_xml_parse_thread()
 	int i = 0;
 	
 	s_xmlparse_running = 1;
+	int has_parse_xml = 0;
 	while (1==s_xmlparse_running)
 	{
 		pthread_mutex_lock(&mtx_xml);
-		pthread_cond_wait(&cond_xml,&mtx_xml); //wait
-		DEBUG("awaked and parse xml\n");
-		sleep(1);
+		//pthread_cond_wait(&cond_xml,&mtx_xml); //wait
+		//DEBUG("awaked and parse xml\n");
 		
+		has_parse_xml = 0;
 		if(1==s_xmlparse_running){
 			for(i=0; i<XML_NUM; i++){
-				DEBUG("xml queue[%d]: %s\n", i, s_push_xml[i].uri);
+				//DEBUG("xml queue[%d]: %s\n", i, s_push_xml[i].uri);
 				if(strlen(s_push_xml[i].uri)>0){
 					DEBUG("will parse[%d] %s\n", i, s_push_xml[i].uri);
 					parse_xml(s_push_xml[i].uri, s_push_xml[i].flag, s_push_xml[i].id);
@@ -689,10 +690,17 @@ void *push_xml_parse_thread()
 					memset(s_push_xml[i].uri, 0, sizeof(s_push_xml[i].uri));
 					s_push_xml[i].flag = PUSH_XML_FLAG_UNDEFINED;
 					memset(s_push_xml[i].id, 0, sizeof(s_push_xml[i].id));
+					DEBUG("finish parse[%d] %s\n", i, s_push_xml[i].uri);
+					has_parse_xml = 1;
 				}
 			}
 		}
 		pthread_mutex_unlock(&mtx_xml);
+		
+		if(1==has_parse_xml)
+			sleep(2);
+		else
+			sleep(3);
 	}
 	DEBUG("exit from xml parse thread\n");
 	
@@ -734,7 +742,7 @@ int send_xml_to_parse(const char *path, int flag, char *id)
 				ret = -1;
 			}
 			else{
-				pthread_cond_signal(&cond_xml); //send sianal
+				//pthread_cond_signal(&cond_xml); //send sianal
 				ret = 0;
 			}
 				
@@ -859,7 +867,7 @@ int mid_push_uninit()
 	
 	pthread_mutex_lock(&mtx_xml);
 	s_xmlparse_running = 0;
-	pthread_cond_signal(&cond_xml);
+	//pthread_cond_signal(&cond_xml);
 	pthread_mutex_unlock(&mtx_xml);
 	
 	pthread_mutex_lock(&mtx_push_monitor);
