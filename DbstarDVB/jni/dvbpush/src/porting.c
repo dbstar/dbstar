@@ -608,7 +608,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 		DEBUG("%s\t#%s\t#%s=%lld\t#%s\t#%s\t#%s\n",result[i*column],result[i*column+1],result[i*column+2],total_size,result[i*column+3],result[i*column+4],result[i*column+5]);
 		
 		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
-		unlink(total_uri);
+		remove_force(total_uri);
 		
 		if(strlen(ids)>0)
 			snprintf(ids+strlen(ids),receiver_size-strlen(ids),"\t");
@@ -637,21 +637,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 
 
 int disk_manage()
-{
-#if 0
-	if(1==s_disk_manage_buzy)
-		return;
-	else{
-		s_disk_manage_buzy = 1;
-		push_pause();
-		
-		
-		
-		push_resume();
-		s_disk_manage_buzy = 0;
-	}
-#endif
-	
+{	
 // 目前只做一个简单的磁盘整理，不考虑未纳入数据库管理的文件（需要扫描磁盘才能实现）
 	char sqlite_cmd[1024];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = disk_manage_cb;
@@ -1749,9 +1735,14 @@ static int special_productid_init()
 
 void xml_reset_at_sc_insert()
 {
-	char xmluri[256];
-	snprintf(xmluri,sizeof(xmluri),"%s/initialize", push_dir_get());
-	DEBUG("unlink %s, %d\n", xmluri, unlink(xmluri));
+	if(0==strlen(s_serviceID)){
+		DEBUG("I has no serviceID currently, so remove initialize.xml\n");
+		
+		char xmluri[256];
+		snprintf(xmluri,sizeof(xmluri),"%s/pushroot/initialize/Initialize.xml", push_dir_get());
+		remove(xmluri);
+		DEBUG("remove %s\n", xmluri);
+	}
 }
 
 void smart_card_insert_flag_set(int insert_flag)
