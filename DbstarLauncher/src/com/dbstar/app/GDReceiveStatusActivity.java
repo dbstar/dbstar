@@ -32,7 +32,7 @@ import com.dbstar.util.StringUtil;
 public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	private static final String TAG = "GDReceiveStatusActivity";
-	private static final int PageSize = 10;
+	private static final int PageSize = 9;
 
 	private static final int UpdatePeriodInMills = 5000;
 	private static final int UpdatePeriodInSecs = 5;

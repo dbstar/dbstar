@@ -27,39 +27,50 @@ public class PanelDataHandler {
 			JSONObject rootObject = (JSONObject) jsonParser.nextValue();
 
 			// begin to read tag
-			panelData = new PowerPanelData();
-
-			JSONObject object = (JSONObject) rootObject
-					.getJSONObject(JsonTag.TAGYearPower);
-
-			panelData.YearPower = DataHandler.parsePower(object);
-
-			object = (JSONObject) rootObject
-					.getJSONObject(JsonTag.TAGMonthPower);
-			panelData.MonthPower = DataHandler.parsePower(object);
-			
-			object = (JSONObject) rootObject
-					.getJSONObject(JsonTag.TAGPowerNumFee);
-			panelData.RemainPower = DataHandler.parsePower(object);
-
-			panelData.DailyFee = (String) rootObject
-					.getString(JsonTag.TAGDailyAverFee);
-
-			object = (JSONObject) rootObject
-					.getJSONObject(JsonTag.TAGUserPrice);
-			panelData.PriceStatus = DataHandler.parseUserPriceStatus(object);
-			
-			object = (JSONObject) rootObject
-					.getJSONObject(JsonTag.TAGDefaultTarget);
-			panelData.DefaultTarget = DataHandler.parsePower(object);
-
-			object = (JSONObject) rootObject
-					.getJSONObject(JsonTag.TAGPowerTarget);
-			panelData.Target = DataHandler.parsePowerTarget(object);
+			if (rootObject != null) {
+				panelData = parsePanelData(rootObject);
+			}
 
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
+		return panelData;
+	}
+
+	private static PowerPanelData parsePanelData(JSONObject rootObject)
+			throws JSONException {
+		PowerPanelData panelData = null;
+
+		panelData = new PowerPanelData();
+
+		JSONObject object = (JSONObject) rootObject
+				.getJSONObject(JsonTag.TAGYearPower);
+
+		panelData.YearPower = DataHandler.parsePower(object);
+
+		object = (JSONObject) rootObject.getJSONObject(JsonTag.TAGMonthPower);
+
+		panelData.MonthPower = DataHandler.parsePower(object);
+
+		object = (JSONObject) rootObject.getJSONObject(JsonTag.TAGPowerNumFee);
+		panelData.RemainPower = DataHandler.parsePower(object);
+
+		panelData.DailyFee = (String) rootObject
+				.getString(JsonTag.TAGDailyAverFee);
+
+		object = (JSONObject) rootObject.getJSONObject(JsonTag.TAGPriceStatus);
+
+		panelData.PriceStatus = DataHandler.parseUserPriceStatus(object);
+
+		object = (JSONObject) rootObject
+				.getJSONObject(JsonTag.TAGDefaulttarget);
+
+		panelData.DefaultTarget = DataHandler.parsePower(object);
+
+		object = (JSONObject) rootObject.getJSONObject(JsonTag.TAGPowertarget);
+
+		panelData.Target = DataHandler.parsePowerTarget(object);
 
 		return panelData;
 	}

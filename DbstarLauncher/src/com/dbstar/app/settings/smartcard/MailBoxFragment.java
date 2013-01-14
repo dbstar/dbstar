@@ -18,12 +18,11 @@ import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
-import com.dbstar.app.base.BaseFragment;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.model.EMailItem;
 import com.dbstar.service.GDDataProviderService;
 
-public class MailBoxFragment extends BaseFragment {
+public class MailBoxFragment extends GDSmartcardFragment {
 
 	TextView mMailContentView;
 	ViewGroup mMailListContainer;
@@ -50,8 +49,8 @@ public class MailBoxFragment extends BaseFragment {
 	}
 
 	public void serviceStart() {
-		if (mEngine != null) {
-			mEngine.getSmartcardInfo(this,
+		if (mSmartcardEngine != null) {
+			mSmartcardEngine.getSmartcardInfo(this,
 					DbstarServiceApi.CMD_DRM_EMAILHEADS_READ);
 		}
 	}
@@ -113,7 +112,7 @@ public class MailBoxFragment extends BaseFragment {
 
 		mail.Flag = 1;
 		if (mail.Content == null) {
-			mEngine.getMailContent(this, mail.ID);
+			mSmartcardEngine.getMailContent(this, mail.ID);
 		} else {
 			mMailContentView.setText(mail.Content);
 		}

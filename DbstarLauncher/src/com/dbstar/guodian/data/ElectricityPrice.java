@@ -12,6 +12,10 @@ public class ElectricityPrice {
 	public static final String STEP_2 = "2";
 	public static final String STEP_3 = "3";
 	
+	public static final String PERIOD_1 = "1";
+	public static final String PERIOD_2 = "2";
+	public static final String PERIOD_3 = "3";
+	
 	public static final String CYCLETYPE_MONTH = "M";
 	public static final String CYCLETYPE_YEAR = "Y";
 	

@@ -1,17 +1,29 @@
-package com.dbstar.guodian;
+package com.dbstar.guodian.egine;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.DataOutputStream;
 import java.io.BufferedOutputStream;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import com.dbstar.guodian.data.BillDetailData;
+import com.dbstar.guodian.data.BillDetailListData;
+import com.dbstar.guodian.data.BusinessArea;
 import com.dbstar.guodian.data.LoginData;
+import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.data.PowerPanelData;
+import com.dbstar.guodian.parse.BillDetailDataHandler;
+import com.dbstar.guodian.parse.BillDetailOfRecentDataHandler;
+import com.dbstar.guodian.parse.BillMonthListHandler;
+import com.dbstar.guodian.parse.BusinessAreaHandler;
 import com.dbstar.guodian.parse.LoginDataHandler;
+import com.dbstar.guodian.parse.NoticeDataHandler;
 import com.dbstar.guodian.parse.PanelDataHandler;
 import com.dbstar.util.GDNetworkUtil;
 
@@ -36,6 +48,13 @@ public class GDClient {
 	// Request type
 	public static final int REQUEST_LOGIN = 0x3001;
 	public static final int REQUEST_POWERPANELDATA = 0x3002;
+	public static final int REQUEST_BILLMONTHLIST = 0x3003;
+	public static final int REQUEST_BILLDETAILOFMONTH = 0x3004;
+	public static final int REQUEST_BILLDETAILOFRECENT = 0x3005;
+	public static final int REQUEST_NOTICE = 0x3006;
+	public static final int REQUEST_BUSINESSAREA = 0x3007;
+
+	// not include current month, just before;
 
 	class Task {
 		public int TaskType;
@@ -50,13 +69,21 @@ public class GDClient {
 	private Socket mSocket = null;
 	private BufferedReader mIn = null;
 	private BufferedOutputStream mOut = null;
-	ReceiveThread mInThread;
-	HandlerThread mClientThread = null;
-	Handler mClientHandler = null;
-	Context mContext = null;
+	private ReceiveThread mInThread;
+	private HandlerThread mClientThread = null;
+	private Handler mClientHandler = null;
+	private Context mContext = null;
 
-	LinkedList<Task> mWaitingQueue = new LinkedList<Task>();
-	Handler mAppHander = null;
+	private LinkedList<Task> mWaitingQueue = new LinkedList<Task>();
+	private Handler mAppHander = null;
+
+	private UncaughtExceptionHandler mExceptionHandler = new UncaughtExceptionHandler() {
+		public void uncaughtException(Thread thread, Throwable ex) {
+
+			Log.d(TAG,
+					" ======== uncaughtException ========== " + ex.getMessage());
+		}
+	};
 
 	public GDClient(Context context, Handler handler) {
 		mContext = context;
@@ -64,6 +91,9 @@ public class GDClient {
 
 		mClientThread = new HandlerThread("GDClient",
 				Process.THREAD_PRIORITY_BACKGROUND);
+
+		// mClientThread.setUncaughtExceptionHandler(mExceptionHandler);
+
 		mClientThread.start();
 
 		mClientHandler = new Handler(mClientThread.getLooper()) {
@@ -115,18 +145,99 @@ public class GDClient {
 		msg.sendToTarget();
 	}
 
-	public void getPowerPanelData(String ctrlNoGuid, String userId, String userType) {
-		Task task = new Task();
-		String taskId = GDCmdHelper.generateUID();
-		String cmdStr = GDCmdHelper.constructGetPowerPanelDataCmd(taskId, ctrlNoGuid, userId, userType);
+	public void getPowerPanelData(String userId, String ctrlNoGuid,
+			String userType) {
 
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetPowerPanelDataCmd(taskId,
+				userId, ctrlNoGuid, userType);
+
+		Task task = new Task();
 		task.TaskType = REQUEST_POWERPANELDATA;
 		task.TaskId = taskId;
 		task.Command = cmdStr;
 
 		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
 		msg.obj = task;
-		msg.sendToTarget();
+		mClientHandler.sendMessage(msg);
+	}
+
+	public void getBillMonthList(String userId, String ctrlNoGuid,
+			String yearNum) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetBillMonthListCmd(taskId,
+				userId, ctrlNoGuid, yearNum);
+
+		Task task = new Task();
+		task.TaskType = REQUEST_BILLMONTHLIST;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
+	}
+
+	public void getBillDetailOfMonth(String userId, String ctrlNoGuid,
+			String date) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetBillDetailOfMonthCmd(taskId,
+				userId, ctrlNoGuid, date);
+
+		Task task = new Task();
+		task.TaskType = REQUEST_BILLDETAILOFMONTH;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
+	}
+
+	public void getBillDetailOfRecent(String userId, String ctrlNoGuid,
+			String dateNum) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetBillDetailOfRecentCmd(taskId,
+				userId, ctrlNoGuid, dateNum);
+
+		Task task = new Task();
+		task.TaskType = REQUEST_BILLDETAILOFRECENT;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
+	}
+
+	public void getNotices(String userId, String ctrlNoGuid) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetNoticeCmd(taskId, userId,
+				ctrlNoGuid);
+
+		Task task = new Task();
+		task.TaskType = REQUEST_NOTICE;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
+	}
+
+	public void getBusinessArea(String userId, String areaId) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetBusinessAreaCmd(taskId, userId,
+				areaId);
+
+		Task task = new Task();
+		task.TaskType = REQUEST_BUSINESSAREA;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
 	}
 
 	public void stop() {
@@ -165,21 +276,27 @@ public class GDClient {
 		Log.d(TAG, " ++++++++++++handleResponse++++++++" + response);
 
 		String[] data = GDCmdHelper.processResponse(response);
-		
+
 		if (data == null) {
 			return;
 		}
-		
+
 		String id = data[0];
 		Task task = null;
+
 		for (Task t : mWaitingQueue) {
 			if (t.TaskId.equals(id)) {
 				mWaitingQueue.remove(t);
 				task = t;
-				task.ResponseData = data;
-				processResponse(task);
+				break;
 			}
 		}
+		
+		if (task != null) {
+			task.ResponseData = data;
+			processResponse(task);
+		}
+
 	}
 
 	private void processResponse(Task task) {
@@ -187,15 +304,14 @@ public class GDClient {
 		Log.d(TAG, " ++++++++++++processResponse++++++++" + task.TaskType);
 
 		String contentType = task.ResponseData[5];
-		
+
 		Log.d(TAG, "==========response content= " + contentType);
-		
+
 		if (contentType.equals("error")) {
 			Log.d(TAG, "========== error ==== " + task.ResponseData[7]);
 			return;
 		}
-		
-		
+
 		switch (task.TaskType) {
 		case REQUEST_LOGIN: {
 			LoginData loginData = LoginDataHandler.parse(task.ResponseData[7]);
@@ -204,8 +320,43 @@ public class GDClient {
 		}
 
 		case REQUEST_POWERPANELDATA: {
-			PowerPanelData panelData = PanelDataHandler.parse(task.ResponseData[7]);
+			PowerPanelData panelData = PanelDataHandler
+					.parse(task.ResponseData[7]);
 			task.ParsedData = panelData;
+			break;
+		}
+
+		case REQUEST_BILLMONTHLIST: {
+			ArrayList<String> list = BillMonthListHandler
+					.parse(task.ResponseData[7]);
+			task.ParsedData = list;
+			break;
+		}
+		case REQUEST_BILLDETAILOFMONTH: {
+			BillDetailData detail = BillDetailDataHandler
+					.parse(task.ResponseData[7]);
+			task.ParsedData = detail;
+			break;
+		}
+
+		case REQUEST_BILLDETAILOFRECENT: {
+			BillDetailListData details = BillDetailOfRecentDataHandler
+					.parse(task.ResponseData[7]);
+			task.ParsedData = details;
+			break;
+		}
+
+		case REQUEST_NOTICE: {
+			ArrayList<Notice> notices = NoticeDataHandler
+					.parse(task.ResponseData[7]);
+			task.ParsedData = notices;
+			break;
+		}
+
+		case REQUEST_BUSINESSAREA: {
+			ArrayList<BusinessArea> business = BusinessAreaHandler
+					.parse(task.ResponseData[7]);
+			task.ParsedData = business;
 			break;
 		}
 		}
@@ -219,11 +370,20 @@ public class GDClient {
 	}
 
 	private void doConnectToServer() {
+		boolean connected = false;
+
 		try {
 			Log.d(TAG, " ====== doConnectToServer ===");
 			if (mSocket != null) {
-				if (mSocket.isConnected() && !mSocket.isClosed()) {
+				if (mSocket.isConnected()) {
+					// socket has already been connected.
+					// TODO: send a callback to caller?
+					mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECT_ALREADY);
 					return;
+				} else {
+					if (!mSocket.isClosed()) {
+						mSocket.close();
+					}
 				}
 
 				mSocket = null;
@@ -250,10 +410,15 @@ public class GDClient {
 			Log.d(TAG, " ====== doConnectToServer ===" + mSocket.isConnected());
 
 			if (mSocket.isConnected()) {
-				mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECT_SUCCESSED);
+				connected = true;
+				mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECTED);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+
+		if (!connected) {
+			mAppHander.sendEmptyMessage(GDEngine.MSG_DISCONNECTED);
 		}
 	}
 
@@ -291,7 +456,7 @@ public class GDClient {
 		}
 	}
 
-	// stop receive thread, 
+	// stop receive thread,
 	// close socket.
 	private void doStop() {
 		Log.d(TAG, " ============ doStop ============");
@@ -304,24 +469,27 @@ public class GDClient {
 		Log.d(TAG, " ============ stop 1 ============");
 
 		try {
-			if (mSocket != null && (mSocket.isConnected() || !mSocket.isClosed())) {
+			if (mSocket != null
+					&& (mSocket.isConnected() || !mSocket.isClosed())) {
 				if (!mSocket.isInputShutdown()) {
 					mSocket.shutdownInput();
 				}
-				
+
 				if (!mSocket.isOutputShutdown()) {
 					mSocket.shutdownOutput();
 				}
 
 				mSocket.close();
 			}
-			
+
 			mSocket = null;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		mWaitingQueue.clear();
+
+		mAppHander.sendEmptyMessage(GDEngine.MSG_DISCONNECTED);
 
 		Log.d(TAG, " ============ stop 3 ============");
 	}

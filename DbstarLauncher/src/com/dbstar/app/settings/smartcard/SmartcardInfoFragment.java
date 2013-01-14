@@ -18,7 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class SmartcardInfoFragment extends BaseFragment {
+public class SmartcardInfoFragment extends GDSmartcardFragment {
 	private static final String TAG = "SmartcardInfoFragment";
 
 	TextView mSmartcardNumberView, mSmartcardStateView, mSmartcardVersionView;
@@ -56,11 +56,11 @@ public class SmartcardInfoFragment extends BaseFragment {
 	}
 
 	void getSmartcardData() {
-		mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRM_SC_SN_READ);
-		mEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRMLIB_VER_READ);
-		mEngine.getSmartcardInfo(this,
+		mSmartcardEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRM_SC_SN_READ);
+		mSmartcardEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRMLIB_VER_READ);
+		mSmartcardEngine.getSmartcardInfo(this,
 				DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ);
-		mEngine.getSmartcardInfo(this,
+		mSmartcardEngine.getSmartcardInfo(this,
 				DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ);
 	}
 

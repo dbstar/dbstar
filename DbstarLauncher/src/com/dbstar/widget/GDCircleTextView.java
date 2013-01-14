@@ -89,7 +89,10 @@ public class GDCircleTextView extends View {
 //			mCircle.addArc(oval, mStartAngle, mSweepAngle);
 		}
 
-//		canvas.drawPath(mCircle, cPaint);
-		canvas.drawTextOnPath(mText, mCircle, mHOffset, 20, mTPaint);
+		canvas.drawPath(mCircle, cPaint);
+
+		if (mText != null && !mText.isEmpty()) {
+			canvas.drawTextOnPath(mText, mCircle, mHOffset, 20, mTPaint);
+		}
 	}
 }

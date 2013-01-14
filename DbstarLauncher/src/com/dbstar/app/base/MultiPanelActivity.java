@@ -8,7 +8,6 @@ import com.dbstar.app.GDBaseActivity;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -18,7 +17,6 @@ import android.os.Parcelable;
 import android.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +28,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class MultiPanelActivity extends GDBaseActivity implements EngineInterface {
+public class MultiPanelActivity extends GDBaseActivity {
 
 	private static final String TAG = "MultiPanelActivity";
 	private static final String BACK_STACK_PREFS = ":android:prefs";
@@ -72,23 +70,6 @@ public class MultiPanelActivity extends GDBaseActivity implements EngineInterfac
 //			switchToHeader(h);
 			onHeaderClick(h, 0);
 		}
-	}
-	
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		boolean ret = false;
-		if (event.getAction() == KeyEvent.ACTION_DOWN) {
-			if (keyCode == KeyEvent.KEYCODE_BACK) {
-				if (mObserver != null) {
-					ret = mObserver.onBackkeyPress();
-				}
-			}
-		}
-		
-		if (ret) {
-			return ret;
-		}
-		
-		return super.onKeyDown(keyCode, event);
 	}
 
 	public void switchToHeader(Header header) {
@@ -312,73 +293,4 @@ public class MultiPanelActivity extends GDBaseActivity implements EngineInterfac
 		}
 	}
 
-	FragmentObserver mObserver = null;
-	
-	public void updateData(int type, Object key, Object data) {
-		super.updateData(type, key, data);
-		
-		if (mObserver != null) {
-			mObserver.updateData(mObserver, type, key, data);
-		}
-	}
-
-	public void notifyEvent(int type, Object event) {
-		super.notifyEvent(type, event);
-		
-		if (mObserver != null) {
-			mObserver.notifyEvent(mObserver, type, event);
-		}
-	}
-
-	
-	@Override
-	public void onServiceStart() {
-		super.onServiceStart();
-		
-		if (mObserver != null) {
-			mObserver.serviceReady(this);
-		}
-	}
-	
-	@Override
-	public void onServiceStop() {
-		super.onServiceStop();
-		
-		if (mObserver != null) {
-			mObserver.serviceStop();
-		}
-	}
-	
-	@Override
-	public Service getService() {
-		return mService;
-	}
-	
-	public void registerObserver(FragmentObserver observer) {
-		mObserver = observer;
-	}
-	
-	public void unregisterObserver(FragmentObserver observer) {
-		if (mObserver == observer) {
-			mObserver = null;
-		}
-	}
-	
-	public void getSmartcardInfo(FragmentObserver observer, int type) {
-		if (mService != null) {
-			mService.getSmartcardInfo(this, type);
-		}
-	}
-	
-	public void manageCA(FragmentObserver observer, int type) {
-		if (mService != null) {
-			mService.manageCA(this, type);
-		}
-	}
-	
-	public void getMailContent(FragmentObserver observer, String id) {
-		if (mService != null) {
-			mService.getMailContent(this, id);
-		}
-	}
 }

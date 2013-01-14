@@ -10,8 +10,11 @@ public class JsonTag {
 	public static final String TAGPowerNumFee = "powernumfee";
 	public static final String TAGMonthPower = "monthPowerNumAndFee";
 	public static final String TAGDefaultTarget = "defaultTarget";
+	public static final String TAGDefaulttarget = "defaulttarget";
 	public static final String TAGPowerTarget = "powerTarget";
+	public static final String TAGPowertarget = "powertarget";
 	public static final String TAGUserPrice = "userPriceStatus";
+	public static final String TAGPriceStatus = "pricestatus";
 	public static final String TAGElecPrice = "electricityPrice";
 	public static final String TAGDailyFee = "dailyFee";
 	public static final String TAGDailyAverFee = "dailyaverfee";
@@ -71,6 +74,32 @@ public class JsonTag {
 	public static final String TAGVC2UserType = "vc2_usertype";
 	public static final String TAGNumUserAction = "num_user_action";
 	public static final String TAGAreaIdPath = "areaidPath";
+
+	// Bill related tag
+	public static final String TAGDateStart = "date_start";
+	public static final String TAGDateEnd = "date_end";
+	public static final String TAGNumSum = "num_sum";
+	public static final String TAGVC2BillItem = "vc2_bill_item";
+	public static final String TAGBillList = "List<BillItem>";
+	public static final String TAGBillDetail = "billDetail";
+	public static final String TAGBillDetailList = "billDetailList";
+	public static final String TAGBillItems = "billitems";
+	public static final String TAGBillMonthList = "billmonthlist";
+	public static final String TAGServiceSysDate = "serviceSysDate";
+	
+	//Notice
+	public static final String TAGNoticeList = "noticelist";
+	public static final String TAGNumNoticeGuid = "num_notice_guid";
+	public static final String TAGVC2Title = "vc2_title";
+	public static final String TAGVC2Content = "vc2_content";
+	public static final String TAGDateTime = "dat_time";
+	
+	//Business
+	public static final String TAGBusinessList = "businesslist";
+	public static final String TAGVC2Name = "vc2_name";
+	public static final String TAGVC2Address = "vc2_address";
+	public static final String TAGVC2Telephone = "vc2_telephone";
+	public static final String TAGVC2WorkTime = "vc2_work_time";
 
 	// public static final String TAG = "";
 

@@ -59,6 +59,10 @@
         <activity android:name=".app.GDEReaderActivity" />
         <activity android:name=".browser.GDWebBrowserActivity" />
         <activity android:name=".app.settings.GDDiskManagementActivity" />
+                <activity android:name=".guodian.app.mypower.GDMypowerActivity" />
+        <activity android:name=".guodian.app.mypower.GDBillActivity" />
+        <activity android:name=".guodian.app.mypower.GDBusinessAreaActvity" />
+        <activity android:name=".guodian.app.mypower.GDNoticeActivity" />
 
         <service
             android:name=".service.GDDataProviderService"

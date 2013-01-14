@@ -205,7 +205,7 @@
             android:layout_above="@id/mypower_text"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="4dp"
-            android:visibility="gone" >
+            android:visibility="visible" >
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -402,7 +402,7 @@
             android:layout_above="@id/mypower_text"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="4dp"
-            android:visibility="visible" >
+            android:visibility="gone" >
 
             <ImageView
                 android:layout_width="wrap_content"

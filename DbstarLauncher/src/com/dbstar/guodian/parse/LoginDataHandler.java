@@ -27,7 +27,7 @@ public class LoginDataHandler {
 	public static LoginData parse(String data) {
 
 		Log.d(TAG, "json data = " + data);
-		
+
 		// remove []
 		String jsonData = data.substring(1, data.length() - 1);
 
@@ -46,10 +46,11 @@ public class LoginDataHandler {
 			array = (JSONArray) rootObject
 					.getJSONArray(JsonTag.TAGTimeTaskList);
 
+			loginData.PanelData = new PowerPanelData();
+
 			JSONObject object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGYearPower);
 
-			loginData.PanelData = new PowerPanelData();
 			loginData.PanelData.YearPower = DataHandler.parsePower(object);
 
 			object = (JSONObject) rootObject
@@ -70,7 +71,8 @@ public class LoginDataHandler {
 
 			object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGUserPrice);
-			loginData.PanelData.PriceStatus = DataHandler.parseUserPriceStatus(object);
+			loginData.PanelData.PriceStatus = DataHandler
+					.parseUserPriceStatus(object);
 
 			object = (JSONObject) rootObject
 					.getJSONObject(JsonTag.TAGElecPrice);
@@ -105,27 +107,35 @@ public class LoginDataHandler {
 		ElectricityPrice priceData = new ElectricityPrice();
 
 		priceData.Type = (String) object.getString(JsonTag.TAGEleType);
-		priceData.SinglePrice = (String) object
-				.getString(JsonTag.TAGEleSinglePrice);
-
-		if (priceData.Type.equals(ElectricityPrice.PRICETYPE_STEP)) {
+		if (priceData.Type.equals(ElectricityPrice.PRICETYPE_SINGLE)) {
+			priceData.SinglePrice = (String) object
+					.getString(JsonTag.TAGEleSinglePrice);
+		} else if (priceData.Type.equals(ElectricityPrice.PRICETYPE_STEP)) {
 			JSONArray stepPrice = (JSONArray) object
 					.getJSONArray(JsonTag.TAGStepPriceList);
-			priceData.StepPriceList = parseStepPriceList(stepPrice);
-		} else if (priceData.Type.equals(ElectricityPrice.PRICETYPE_STEPPLUSTIMING)) {
+			priceData.StepPriceList = parseStepPriceList(stepPrice, false);
+		} else if (priceData.Type
+				.equals(ElectricityPrice.PRICETYPE_STEPPLUSTIMING)) {
 			JSONArray stepPrice = (JSONArray) object
 					.getJSONArray(JsonTag.TAGStepPriceList);
-			priceData.StepPriceList = parseStepPriceList(stepPrice);
+			priceData.StepPriceList = parseStepPriceList(stepPrice, true);
+		} else if (priceData.Type.equals(ElectricityPrice.PRICETYPE_TIMING)) {
+			JSONArray periodPrice = (JSONArray) object
+					.getJSONArray(JsonTag.TAGPeriodPriceList);
+			priceData.PeriodPriceList = parsePeriodPriceList(periodPrice);
 		}
 
 		return priceData;
 	}
 
-	static List<ElectricityPrice.StepPrice> parseStepPriceList(JSONArray array)
-			throws JSONException {
+	static List<ElectricityPrice.StepPrice> parseStepPriceList(JSONArray array,
+			boolean timingStepPower) throws JSONException {
 		Log.d(TAG, "parseStepPriceList");
 
 		List<ElectricityPrice.StepPrice> stepPriceList = new ArrayList<ElectricityPrice.StepPrice>();
+
+		Log.d(TAG, " step size = " + array.length());
+		
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject object = (JSONObject) array.getJSONObject(i);
 
@@ -145,8 +155,12 @@ public class LoginDataHandler {
 					.getString(JsonTag.TAGNumEnd);
 			stepPrice.StepPrice = (String) object
 					.getString(JsonTag.TAGNumStepPrice);
-			stepPrice.PeriodPriceList = parsePeriodPriceList(object
-					.getJSONArray(JsonTag.TAGPeriodPriceList));
+
+			if (timingStepPower) {
+				stepPrice.PeriodPriceList = parsePeriodPriceList(object
+						.getJSONArray(JsonTag.TAGPeriodPriceList));
+			}
+			
 			stepPriceList.add(stepPrice);
 		}
 

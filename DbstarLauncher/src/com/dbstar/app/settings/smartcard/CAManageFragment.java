@@ -12,10 +12,9 @@ import android.widget.Button;
 import com.dbstar.R;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.alert.GDAlertDialog;
-import com.dbstar.app.base.BaseFragment;
 import com.dbstar.app.base.FragmentObserver;
 
-public class CAManageFragment extends BaseFragment {
+public class CAManageFragment extends GDSmartcardFragment {
 
 	private static final String TAG = "CAManageFragment";
 
@@ -39,17 +38,17 @@ public class CAManageFragment extends BaseFragment {
 	}
 
 	void importCA() {
-		if (mEngine == null)
+		if (mSmartcardEngine == null)
 			return;
 
-		mEngine.manageCA(this, DbstarServiceApi.CMD_DRM_ENTITLEINFO_INPUT);
+		mSmartcardEngine.manageCA(this, DbstarServiceApi.CMD_DRM_ENTITLEINFO_INPUT);
 	}
 
 	void exportCA() {
-		if (mEngine == null)
+		if (mSmartcardEngine == null)
 			return;
 
-		mEngine.manageCA(this, DbstarServiceApi.CMD_DRM_ENTITLEINFO_OUTPUT);
+		mSmartcardEngine.manageCA(this, DbstarServiceApi.CMD_DRM_ENTITLEINFO_OUTPUT);
 	}
 
 	// Receive data at this point

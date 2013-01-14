@@ -94,6 +94,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			}
 			case MSG_DISP_NOTIFICATION: {
 				displayNotification((String) msg.obj);
+				break;
 			}
 			}
 		}
@@ -379,6 +380,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	};
 
 	void displayAlertDlg(GDAlertDialog dialog, int type) {
+		
+		Log.d(TAG, " ====  displayAlertDlg == " + type);
+		
 		switch (type) {
 		case DLG_TYPE_FILE_NOTEXIST: {
 			dialog.setTitle(R.string.error_title);

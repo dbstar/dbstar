@@ -12,11 +12,11 @@ import com.dbstar.util.*;
 import com.dbstar.util.upgrade.RebootUtils;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.settings.GDSettings;
-import com.dbstar.guodian.GDClientObserver;
-import com.dbstar.guodian.GDEngine;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
+import com.dbstar.guodian.egine.GDClientObserver;
+import com.dbstar.guodian.egine.GDEngine;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
@@ -112,39 +112,40 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	private int mMainThreadId;
 	private int mMainThreadPriority;
 
-	GDSystemConfigure mConfigure = null;
+	private GDSystemConfigure mConfigure = null;
 
-	GDDataModel mDataModel = null;
-	GDNetModel mNetModel = null;
+	private GDDataModel mDataModel = null;
+	private GDNetModel mNetModel = null;
 
-	ConnectivityManager mConnectManager;
-	GDDiskSpaceMonitor mDiskMonitor;
+	private ConnectivityManager mConnectManager;
+	private GDDiskSpaceMonitor mDiskMonitor;
 
-	GDDBStarClient mDBStarClient;
-	GDApplicationObserver mApplicationObserver = null;
-	ClientObserver mPageOberser = null;
+	private GDDBStarClient mDBStarClient;
+	private GDApplicationObserver mApplicationObserver = null;
+	private ClientObserver mPageOberser = null;
+	private NetworkController mEthernetController = null;
 
 	private final IBinder mBinder = new DataProviderBinder();
-	SystemEventHandler mHandler = null;
+	private SystemEventHandler mHandler = null;
 
 	boolean mIsSmartHomeServiceStarted = false;
 	boolean mIsDbServiceStarted = false;
 	boolean mIsStorageReady = false;
 	boolean mIsNetworkReady = false;
 
-	int mSmartcardState = GDCommon.SMARTCARD_STATE_NONE;
+	private int mSmartcardState = GDCommon.SMARTCARD_STATE_NONE;
 
-	String mMacAddress = "";
+	private String mMacAddress = "";
 
-	String mUpgradePackageFile;
-	boolean mNeedUpgrade = false;
+	private String mUpgradePackageFile;
+	private boolean mNeedUpgrade = false;
 
-	String mDefaultColumnIconFile = null;
+	private String mDefaultColumnIconFile = null;
 
 	private PeripheralController mPeripheralController;
-	GDPowerManager mPowerManger;
+	private GDPowerManager mPowerManger;
 	
-	GDEngine mGuodianEngine;
+	private GDEngine mGuodianEngine;
 
 	private class RequestTask {
 		public static final int INVALID = 0;
@@ -293,6 +294,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		if (mIsNetworkReady) {
 			startGuodianEngine();
 		}
+		
+		mEthernetController = new NetworkController(this, mHandler);
 	}
 	
 	void startGuodianEngine() {
@@ -465,7 +468,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				break;
 			}
 
-			case GDCommon.MSG_NETWORK_CONNECT:
+			case GDCommon.MSG_NETWORK_CONNECT: {
 				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
 				mIsNetworkReady = true;
 				mPeripheralController.setNetworkLedOn();
@@ -473,21 +476,32 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					startDbStarService();
 				}
 
-				notifyDbstarServiceNetworkStatus();
+//				notifyDbstarServiceNetworkStatus();
 				
 				startGuodianEngine();
 
 				break;
-			case GDCommon.MSG_NETWORK_DISCONNECT:
+			}
+			case GDCommon.MSG_NETWORK_DISCONNECT: {
 				Log.d(TAG, "++++++++++++ network disconnected +++++++++++");
 				mIsNetworkReady = false;
 				mPeripheralController.setNetworkLedOff();
-				notifyDbstarServiceNetworkStatus();
+//				notifyDbstarServiceNetworkStatus();
 				stopDbStarService();
 
 				stopGuodianEngine();
 				break;
-
+			}
+			
+			case GDCommon.MSG_ETHERNET_PHYCONECTED: {
+				notifyDbstarServiceNetworkStatus();
+				break;
+			}
+			
+			case GDCommon.MSG_ETHERNET_PHYDISCONECTED: {
+				notifyDbstarServiceNetworkStatus();
+				break;
+			}
 			case GDCommon.MSG_DISK_SPACEWARNING: {
 				Bundle data = msg.getData();
 				String disk = (String) data.get(GDCommon.KeyDisk);
@@ -1633,6 +1647,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	public boolean isNetworkConnected() {
 		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
+		
+		if (networkInfo != null) {
+			Log.d(TAG, " === connected netwrok === type = " + networkInfo.getType());
+		}
 
 		return networkInfo != null && networkInfo.isConnected();
 	}
@@ -1724,6 +1742,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
 
 			Log.d(TAG, "noConnectivity = " + noConnectivity);
+
 			if (noConnectivity) {
 				// There are no connected networks at all
 				mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_DISCONNECT);
@@ -1996,7 +2015,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		if (!mIsDbServiceStarted)
 			return false;
 
-		if (isNetworkConnected()) {
+		if (mEthernetController.isEthernetPhyConnected()) {
 			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_NETWORK_CONNECT);
 		} else {
 			mDBStarClient
@@ -2067,6 +2086,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		mStatusIsSynced = false;
 	}
 
+	// Call this when:
+	// 1. dbstarDVB init ok;
+	// 2. sdcard, network, or storage state changed.
 	private void syncStatusToDbServer() {
 		Log.d(TAG, "syncStatusToDbServer " + mStatusIsSynced);
 		if (mStatusIsSynced)
@@ -2095,8 +2117,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			}
 			
 			case EventData.EVENT_GUODIAN_DATA: {
-				if (mApplicationObserver != null) {
-					mApplicationObserver.handleEvent(EventData.EVENT_GUODIAN_DATA, event);
+				if (mPageOberser != null) {
+					mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA, event);
 				}
 				break;
 			}
@@ -2107,7 +2129,12 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	};
 	
 	// Guodian Related interface
-	public void requestPowerData (int type) {
-		mGuodianEngine.requestData(type);
+	public void requestPowerData (int type, Object args) {
+		mGuodianEngine.requestData(type, args);
+	}
+	
+	// query cached data
+	public ElectricityPrice getElecPrice() {
+		return mGuodianEngine.getElecPrice();
 	}
 }

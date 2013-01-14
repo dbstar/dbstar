@@ -112,10 +112,10 @@
     <string name="authorization_manage">授权管理</string>
     <string name="mailbox">邮件</string>
     
-    <string name="smartcard_number">智能卡号:</string>
-    <string name="smartcard_state">智能卡状态:</string>
-    <string name="smartcard_eigenvalue">特征值:</string>
-    <string name="smartcard_authorization">授权信息:</string>
+    <string name="smartcard_number">智能卡号:&#160;</string>
+    <string name="smartcard_state">智能卡状态:&#160;</string>
+    <string name="smartcard_eigenvalue">特征值:&#160;</string>
+    <string name="smartcard_authorization">授权信息:&#160;</string>
     <string name="operator_id">运营商ID</string>
     <string name="product_id">产品ID</string>
     <string name="start_time">开始时间</string>
@@ -151,8 +151,8 @@
 
 	<!-- Smart home -->
     <string name="context_view_mypower_title">我的用电</string>
-    <string name="mypower_powerusage">本月可控电器电量: </string>
-    <string name="mypower_powercost">本月可控电器花费: </string>
+    <string name="mypower_powerusage">本月可控电器电量:&#160;</string>
+    <string name="mypower_powercost">本月可控电器花费:&#160;</string>
     <string name="string_degree">度</string>
     <string name="string_yuan">元</string>
     
@@ -175,6 +175,10 @@
     <string name="step_2">第二阶梯</string>
     <string name="step_3">第三阶梯</string>
     
+    <string name="period_1">高峰</string>
+    <string name="period_2">平断</string>
+    <string name="period_3">低谷 </string>
+    
     <string name="demo_str_1">100度</string>
     <string name="demo_str_2">200元</string>
     <string name="demo_str_3">第二阶梯</string>
@@ -182,6 +186,45 @@
     <string name="demo_str_5">高峰时段</string>
     <string name="demo_str_6">8:00-12:00</string>
     <string name="demo_str_7">第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯第二阶梯</string>
+    <string name="demo_str_8">0~340（含）</string>
+    <string name="demo_str_9">高峰时段  0.12313</string>
+    
+    <string name="demo_str_10">王丽</string>
+    <string name="demo_str_11">123456789</string>
+    <string name="demo_str_12">北京市丰台区航丰路1号时代财富大厦28层</string>
+    
     <string name="demo_str_r1">100</string>
     <string name="demo_str_r2">200</string>
+    
+    <string name="head_step_level">分档</string>
+    <string name="head_price_interval">用电量水平（度/户）</string>
+    <string name="head_price_level">时段/电价水平（元/度）</string>
+    <string name="suffix_str_han">（含）</string>
+    
+	<string name="str_step_1">第一档电量</string>
+	<string name="str_step_2">第二档电量</string>
+	<string name="str_step_3">第三档电量</string>
+	
+	<string name="str_period_1">高峰时段</string>
+    <string name="str_period_2">平断时段</string>
+    <string name="str_period_3">低谷时段</string>
+    
+    <string name="str_acount">账户名&#160;:&#160;</string>
+    <string name="str_deviceno">电表号&#160;:&#160;</string>
+    <string name="str_address">地址&#160;:&#160;</string>
+    
+    <string name="str_billperiod">账单周期</string>
+    <string name="str_poweramount">用电量（度）</string>
+    <string name="str_cost">金额（元）</string>
+    <string name="str_month">月份</string>
+    
+    <string name="str_province">省/直辖市</string>
+    <string name="str_city">市</string>
+    <string name="str_district">区</string>
+    <string name="str_index">序号</string>
+    <string name="str_business_name">营业厅名称</string>
+    <string name="str_phone">电话</string>
+    <string name="str_business_address">营业厅地址</string>
+    <string name="str_worktime">营业时间</string>
+ 
 </resources>

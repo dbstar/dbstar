@@ -11,8 +11,6 @@ import com.dbstar.app.GDCelanderThread;
 import com.dbstar.app.GDHDMovieActivity;
 import com.dbstar.app.GDMediaScheduler;
 import com.dbstar.app.GDOrderPushActivity;
-import com.dbstar.app.GDPowerController;
-import com.dbstar.app.GDPowerUsageController;
 import com.dbstar.app.GDReceiveStatusActivity;
 import com.dbstar.app.GDTVActivity;
 import com.dbstar.app.alert.GDForceUpgradeActivity;
@@ -21,9 +19,10 @@ import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGeneralInfoActivity;
 import com.dbstar.app.settings.GDSmartcardActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
-import com.dbstar.guodian.GDConstract;
+import com.dbstar.guodian.app.mypower.GDPowerController;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
+import com.dbstar.guodian.egine.GDConstract;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.model.EventData;
@@ -167,12 +166,21 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMainMenu.requestFocus();
 
 		mMediaScheduler.resume();
+		
+		if (mPowerController != null) {
+			mPowerController.resume();
+		}
+		
 	}
 
 	public void onPause() {
 		super.onPause();
 
 		mMediaScheduler.pause();
+		
+		if (mPowerController != null) {
+			mPowerController.pause();
+		}
 	}
 
 	public void onStop() {
@@ -496,8 +504,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		Intent intent = null;
 
-		if (columnId.equals(GDCommon.ColumnIDGuodianSmartPower)) {
-			intent = startGuodianActivity("app.GDSmartPowerActivity");
+		if (columnId.equals(GDCommon.ColumnIDGuodianMyPower)
+				|| columnId.equals(GDCommon.ColumnIDGuodianPowerBill)
+				|| columnId.equals(GDCommon.ColumnIDGuodianFeeRecord)
+				|| columnId.equals(GDCommon.ColumnIDGuodianPowerNews)
+				|| columnId.equals(GDCommon.ColumnIDGuodianBusinessNet)) {
+			intent = startLocalGuodianActivity(columnId, mMenuPath);
 		} else if (columnId.equals(GDCommon.ColumnIDGuodianHomeEfficiency)) {
 			intent = startGuodianActivity("app.GDHomeEfficiencyActivity");
 		} else if (columnId.equals(GDCommon.ColumnIDGuodianSmartHome)) {
@@ -528,6 +540,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private Intent startGuodianActivity(String activityName) {
 		return startComponent("com.guodian", activityName);
+	}
+
+	private Intent startLocalGuodianActivity(String columnId, String menuPath) {
+		return mPowerController.startGuoidanActivity(columnId, menuPath);
 	}
 
 	private void enterSubMenu(Menu newMenu) {
@@ -1286,9 +1302,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	public void handleNotifiy(int what, Object data) {
-		
+
 		Log.d(TAG, " ====  handleNotifiy === " + what);
-		
+
 		switch (what) {
 		case GDCommon.MSG_DISK_SPACEWARNING: {
 			String disk = (String) data;
@@ -1321,20 +1337,23 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			break;
 		}
 	}
-	
+
 	public void handleEvent(int type, Object event) {
-		switch(type) {
+		switch (type) {
 		case EventData.EVENT_LOGIN_SUCCESSED: {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
-			loginFinished((LoginData)guodianEvent.Data);
+			loginFinished((LoginData) guodianEvent.Data);
 			break;
 		}
-		
-		case EventData.EVENT_GUODIAN_DATA: {
+		}
+	}
+
+	public void notifyEvent(int type, Object event) {
+		super.notifyEvent(type, event);
+
+		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
-			break;
-		}
 		}
 	}
 
@@ -1343,7 +1362,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mPowerController.handleLogin(loginData);
 	}
-	
+
 	void handlePowerData(int type, Object data) {
 		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
 			mPowerController.updatePowerPanel((PowerPanelData) data);
@@ -1383,7 +1402,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private void startEngine() {
 		mMediaScheduler.start(mService);
 		mPowerController.start(mService);
-		
+
 		checkSmartcardStatus();
 	}
 

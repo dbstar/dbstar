@@ -1,19 +1,21 @@
-package com.dbstar.app;
+package com.dbstar.guodian.app.mypower;
 
 import java.util.List;
 
 import com.dbstar.R;
-import com.dbstar.guodian.GDConstract;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
+import com.dbstar.guodian.egine.GDConstract;
+import com.dbstar.guodian.parse.Util;
+import com.dbstar.model.GDCommon;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.widget.GDArcView;
 import com.dbstar.widget.GDCircleTextView;
 
 import android.app.Activity;
-import android.content.res.Resources;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -27,49 +29,44 @@ public class GDPowerController {
 
 	private static final int MSG_GETPOWER = 0xef1;
 	private static final int SCHEDULE_INTERVAL = 60000;
-	
-	// message from engine
-	public static final int PriceTypeSingle = 0;
-	public static final int PriceTypeStep = 1;
-	public static final int PriceTypeStepPlusTiming = 2;
-	public static final int PriceTypeTiming = 3;
 
 	private static final float StepRulerStep1Angle = 50;
 	private static final float StepRulerStep2Angle = 126;
-	
+
 	private static final float TimingRulerStep1Angle = 40;
 	private static final float TimingRulerStep2Angle = 140;
 
-	Activity mActivity;
-	GDDataProviderService mService;
-	
-	LoginData mLoginData;
-	boolean mIsLogined = false;
+	private Activity mActivity;
+	private GDDataProviderService mService;
+
+	private LoginData mLoginData;
+	private boolean mIsLogined = false;
 
 	// Power View
-	TextView mPowerUsedDegreeView, mPowerUsedCostView;
+	private TextView mPowerUsedDegreeView, mPowerUsedCostView;
 
-	ViewGroup mStepPowerPanel, mTimingPowerPanel;
+	private ViewGroup mStepPowerPanel, mTimingPowerPanel;
 
-	int mPriceType = -1;
+	private int mPriceType = -1;
 
 	// Step Power
-	ImageView mStepPowerPointer;
-	TextView mStepPowerStepView;
-	TextView mStepPowerPriceView;
-	TextView mStepPowerRulerStep0, mStepPowerRulerStep1, mStepPowerRulerStep2;
+	private ImageView mStepPowerPointer;
+	private TextView mStepPowerStepView;
+	private TextView mStepPowerPriceView;
+	private TextView mStepPowerRulerStep0, mStepPowerRulerStep1, mStepPowerRulerStep2;
 
 	// Timing power
-	ImageView mTimingPowerPointer;
-	GDCircleTextView mTimingPowerStepView;
-	TextView mTimingPowerPriceView;
-	TextView mTimingPowerRulerStep0, mTimingPowerRulerStep1, mTimingPowerRulerStep2;
-	TextView mTimePowerPeriodView, mTimePowerPeriodTimeView;
-	GDArcView mTimingPowerPeriodPointer;
+	private ImageView mTimingPowerPointer;
+	private GDCircleTextView mTimingPowerStepView;
+	private TextView mTimingPowerPriceView;
+	private TextView mTimingPowerRulerStep0, mTimingPowerRulerStep1,
+			mTimingPowerRulerStep2;
+	private TextView mTimePowerPeriodView, mTimePowerPeriodTimeView;
+	private GDArcView mTimingPowerPeriodPointer;
 
-	String mPowerUsageStr, mPowerCostStr;
-	String Yuan, Degree;
-	
+	private String mPowerUsageStr, mPowerCostStr;
+	private String Yuan, Degree;
+
 	private Handler mHandler = null;
 
 	public GDPowerController(Activity activity) {
@@ -100,7 +97,7 @@ public class GDPowerController {
 				.findViewById(R.id.steppower_step);
 		mStepPowerPriceView = (TextView) activity
 				.findViewById(R.id.steppower_powerprice);
-		
+
 		mStepPowerRulerStep0 = (TextView) activity
 				.findViewById(R.id.steppower_ruler_step0);
 		mStepPowerRulerStep1 = (TextView) activity
@@ -115,10 +112,10 @@ public class GDPowerController {
 				.findViewById(R.id.timingppower_step);
 		mTimingPowerPriceView = (TextView) activity
 				.findViewById(R.id.timingpower_powerprice);
-		
+
 		mTimingPowerRulerStep0 = (TextView) activity
 				.findViewById(R.id.timingpower_ruler_step0);
-		
+
 		mTimingPowerRulerStep1 = (TextView) activity
 				.findViewById(R.id.timingpower_ruler_step1);
 		mTimingPowerRulerStep2 = (TextView) activity
@@ -129,8 +126,7 @@ public class GDPowerController {
 				.findViewById(R.id.timingpower_time);
 		mTimingPowerPeriodPointer = (GDArcView) activity
 				.findViewById(R.id.timingpower_periodpointer);
-		
-		
+
 		mPowerUsedDegreeView.setText(mPowerUsageStr + " 0 " + Degree);
 		mPowerUsedCostView.setText(mPowerCostStr + " 0 " + Yuan);
 		mStepPowerPointer.setRotation(0);
@@ -139,7 +135,7 @@ public class GDPowerController {
 		mStepPowerRulerStep0.setText("");
 		mStepPowerRulerStep1.setText("");
 		mStepPowerRulerStep2.setText("");
-		
+
 		mTimingPowerPointer.setRotation(0);
 		mTimingPowerStepView.setText("");
 		mTimingPowerPriceView.setText("");
@@ -149,10 +145,9 @@ public class GDPowerController {
 		mTimePowerPeriodView.setText("");
 		mTimePowerPeriodTimeView.setText("");
 		mTimingPowerPeriodPointer.setRotation(0);
-		
-		
+
 		mHandler = new Handler() {
-			
+
 			@Override
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
@@ -168,16 +163,26 @@ public class GDPowerController {
 	public void start(GDDataProviderService service) {
 		mService = service;
 	}
-	
+
+	public void resume() {
+		if (mIsLogined) {
+			getPowerData();
+		}
+	}
+
+	public void pause() {
+		mHandler.removeMessages(MSG_GETPOWER);
+	}
+
 	public void stop() {
 		mHandler.removeMessages(MSG_GETPOWER);
 	}
-	
+
 	public void getPowerData() {
 		if (mService != null) {
-			mService.requestPowerData(GDConstract.DATATYPE_POWERPANELDATA);
+			mService.requestPowerData(GDConstract.DATATYPE_POWERPANELDATA, null);
 		}
-		
+
 		mHandler.sendEmptyMessageDelayed(MSG_GETPOWER, SCHEDULE_INTERVAL);
 	}
 
@@ -187,47 +192,48 @@ public class GDPowerController {
 			mIsLogined = true;
 			updatePowerPanel(mLoginData.PanelData);
 		}
-		
+
 		getPowerData();
 	}
-	
+
 	public void updatePowerPanel(PowerPanelData data) {
-		
+
 		Log.d(TAG, " ===== updatePowerPanel ===== ");
-		
+
 		if (data == null)
 			return;
-		
+
 		if (data.MonthPower == null)
 			return;
-		
+
 		String powerNum = data.MonthPower.Count;
 		String powerFee = data.MonthPower.Fee;
 		float powerNumValue = Float.valueOf(powerNum);
 		float powerFeeValue = Float.valueOf(powerFee);
-		
-		mPowerUsedDegreeView.setText(mPowerUsageStr + " " + powerNum + " " + Degree);
-		mPowerUsedCostView.setText(mPowerCostStr + " "  + powerFee + " " + Yuan);
+
+		mPowerUsedDegreeView.setText(mPowerUsageStr + " " + powerNum + " "
+				+ Degree);
+		mPowerUsedCostView.setText(mPowerCostStr + " " + powerFee + " " + Yuan);
 
 		UserPriceStatus status = data.PriceStatus;
-		
+
 		if (status == null)
 			return;
-		
+
 		if (status.PriceType == null) {
 			return;
 		}
-		
+
 		String priceType = status.PriceType;
-		
-		Log.d(TAG, " ===== PriceType ===== " + priceType );
-		
+
+		Log.d(TAG, " ===== PriceType ===== " + priceType);
+
 		if (priceType.equals(ElectricityPrice.PRICETYPE_STEP)) {
-			mPriceType = PriceTypeStep;
+			mPriceType = GDConstract.PriceTypeStep;
 			mStepPowerPanel.setVisibility(View.VISIBLE);
 			mTimingPowerPanel.setVisibility(View.GONE);
 		} else if (priceType.equals(ElectricityPrice.PRICETYPE_STEPPLUSTIMING)) {
-			mPriceType = PriceTypeStepPlusTiming;
+			mPriceType = GDConstract.PriceTypeStepPlusTiming;
 
 			mStepPowerPanel.setVisibility(View.GONE);
 			mTimingPowerPanel.setVisibility(View.VISIBLE);
@@ -240,9 +246,9 @@ public class GDPowerController {
 		if (priceData == null)
 			return;
 
-		if (mPriceType == PriceTypeStep) {
+		if (mPriceType == GDConstract.PriceTypeStep) {
 
-			mStepPowerStepView.setText(getStepStr(status.Step));
+			mStepPowerStepView.setText(Util.getStepStr(mActivity, status.Step));
 			mStepPowerPriceView.setText(status.Price);
 
 			List<ElectricityPrice.StepPrice> stepPriceList = priceData.StepPriceList;
@@ -250,13 +256,13 @@ public class GDPowerController {
 				return;
 
 			for (ElectricityPrice.StepPrice stepPrice : stepPriceList) {
-				
+
 				Log.d(TAG, "step " + stepPrice.Step);
 				Log.d(TAG, "step start " + stepPrice.StepStartValue);
 				Log.d(TAG, "step end " + stepPrice.StepEndValue);
 				Log.d(TAG, "step price " + stepPrice.StepPrice);
 				Log.d(TAG, "step period " + stepPrice.PeriodPriceList);
-				
+
 				if (stepPrice.Step.equals(ElectricityPrice.STEP_1)) {
 					mStepPowerRulerStep0.setText(stepPrice.StepStartValue);
 					mStepPowerRulerStep1.setText(stepPrice.StepEndValue);
@@ -270,15 +276,15 @@ public class GDPowerController {
 				return;
 			}
 
-			ElectricityPrice.StepPrice currentStep = getStep(stepPriceList,
-					powerNum);
-			
+			ElectricityPrice.StepPrice currentStep = Util.getStep(
+					stepPriceList, powerNum);
+
 			Log.d(TAG, "current step " + currentStep);
 
 			if (currentStep == null) {
 				return;
 			}
-			
+
 			Log.d(TAG, "current step " + currentStep);
 
 			if (currentStep.Step.equals(ElectricityPrice.STEP_1)) {
@@ -294,7 +300,8 @@ public class GDPowerController {
 				float startValue = Float.valueOf(currentStep.StepStartValue);
 				if (endValue != startValue) {
 					float powerValue = Float.valueOf(powerNum);
-					float angle = StepRulerStep1Angle + (StepRulerStep2Angle - StepRulerStep1Angle)
+					float angle = StepRulerStep1Angle
+							+ (StepRulerStep2Angle - StepRulerStep1Angle)
 							* (powerValue / (endValue - startValue));
 					mStepPowerPointer.setRotation(angle);
 				}
@@ -303,12 +310,15 @@ public class GDPowerController {
 				mStepPowerPointer.setRotation(angle);
 			}
 
-		} else if (mPriceType == PriceTypeStepPlusTiming) {
-			mTimingPowerStepView.setText(getStepStr(status.Step));
+		} else if (mPriceType == GDConstract.PriceTypeStepPlusTiming) {
+			mTimingPowerStepView.setText(Util
+					.getStepStr(mActivity, status.Step));
 			mTimingPowerPriceView.setText(status.Price);
-			
+
 			mTimePowerPeriodView.setText(status.CurrentPeriodType);
-			mTimePowerPeriodTimeView.setText(status.Period);
+
+			String periodStr = Util.getPeriodStr(mActivity, status.Period);
+			mTimePowerPeriodTimeView.setText(periodStr);
 
 			List<ElectricityPrice.StepPrice> stepPriceList = priceData.StepPriceList;
 			if (stepPriceList == null)
@@ -328,9 +338,9 @@ public class GDPowerController {
 				return;
 			}
 
-			ElectricityPrice.StepPrice currentStep = getStep(stepPriceList,
-					powerNum);
-			
+			ElectricityPrice.StepPrice currentStep = Util.getStep(
+					stepPriceList, powerNum);
+
 			if (currentStep == null)
 				return;
 
@@ -339,7 +349,8 @@ public class GDPowerController {
 				float endValue = Float.valueOf(stepEnd);
 				if (endValue != 0) {
 					float powerValue = Float.valueOf(powerNum);
-					float angle = TimingRulerStep1Angle * (powerValue / endValue);
+					float angle = TimingRulerStep1Angle
+							* (powerValue / endValue);
 					mTimingPowerPointer.setRotation(angle);
 				}
 			} else if (currentStep.Step.equals(ElectricityPrice.STEP_2)) {
@@ -347,7 +358,8 @@ public class GDPowerController {
 				float startValue = Float.valueOf(currentStep.StepStartValue);
 				if (endValue != startValue) {
 					float powerValue = Float.valueOf(powerNum);
-					float angle = TimingRulerStep1Angle + (TimingRulerStep2Angle - TimingRulerStep1Angle)
+					float angle = TimingRulerStep1Angle
+							+ (TimingRulerStep2Angle - TimingRulerStep1Angle)
 							* (powerValue / (endValue - startValue));
 					mTimingPowerPointer.setRotation(angle);
 				}
@@ -355,47 +367,45 @@ public class GDPowerController {
 				float angle = TimingRulerStep2Angle + 20;
 				mTimingPowerPointer.setRotation(angle);
 			}
-			
+
 		}
 
 	}
 
-	ElectricityPrice.StepPrice getStep(
-			List<ElectricityPrice.StepPrice> stepPriceList, String monthPower) {
-		for (ElectricityPrice.StepPrice step : stepPriceList) {
-			String start = step.StepStartValue;
-			String end = step.StepEndValue;
-			float startValue = Float.valueOf(start);
-			float endValue = Float.valueOf(end);
-			float powerValue = Float.valueOf(monthPower);
-
-			if (powerValue > startValue && powerValue < endValue) {
-				return step;
+	public Intent startGuoidanActivity(String columnId, String menuPath) {
+		Intent intent = null;
+		if (columnId.equals(GDCommon.ColumnIDGuodianMyPower)) {
+			intent = new Intent();
+			intent.setClass(mActivity, GDMypowerActivity.class);
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianPowerBill)) {
+			intent = new Intent();
+			if (mLoginData != null && mLoginData.UserData != null
+					&& mLoginData.UserData.UserInfo != null) {
+				intent.putExtra(GDConstract.KeyUserName,
+						mLoginData.UserData.UserInfo.Name);
+				intent.putExtra(GDConstract.KeyDeviceNo,
+						mLoginData.UserData.UserInfo.ElecCard);
+				intent.putExtra(GDConstract.KeyUserAddress,
+						mLoginData.UserData.UserInfo.Address);
 			}
-		}
+			intent.setClass(mActivity, GDBillActivity.class);
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianFeeRecord)) {
 
-		return null;
-	}
-
-	ElectricityPrice.PeriodPrice getPeriod(
-			List<ElectricityPrice.PeriodPrice> periodList, String periodType) {
-		for(ElectricityPrice.PeriodPrice  period : periodList) {
-			return null;
-		}
-		
-		return null;
-	}
-	
-	String getStepStr(String step) {
-		Resources res = mActivity.getResources();
-		if (step.equals(ElectricityPrice.STEP_1)) {
-			return res.getString(R.string.step_1);
-		} else if (step.equals(ElectricityPrice.STEP_2)) {
-			return res.getString(R.string.step_2);
-		} else if (step.equals(ElectricityPrice.STEP_3)) {
-			return res.getString(R.string.step_3);
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianPowerNews)) {
+			intent = new Intent();
+			intent.setClass(mActivity, GDNoticeActivity.class);
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianBusinessNet)) {
+			intent = new Intent();
+			if (mLoginData != null && mLoginData.UserData != null
+					&& mLoginData.UserData.UserInfo != null) {
+				intent.putExtra(GDConstract.KeyUserAreaId,
+						mLoginData.UserData.UserInfo.AreaIdPath);
+			}
+			intent.setClass(mActivity, GDBusinessAreaActvity.class);
 		} else {
-			return "";
+
 		}
+
+		return intent;
 	}
 }

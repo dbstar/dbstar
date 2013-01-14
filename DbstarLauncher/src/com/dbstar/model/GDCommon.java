@@ -44,6 +44,9 @@ public class GDCommon {
 	
 	public static final int MSG_DISP_NOTIFICATION = 0x80001;
 	
+	// Ethernet phy connected/disconnected
+	public static final int MSG_ETHERNET_PHYCONECTED = 0x90001;
+	public static final int MSG_ETHERNET_PHYDISCONECTED = 0x90002;
 
 	public static final String KeyDisk = "disk";
 
@@ -74,6 +77,12 @@ public class GDCommon {
 	public static final String ColumnIDGuodianHomeEfficiency = "G2";
 	public static final String ColumnIDGuodianSmartHome = "G3";
 	public static final String ColumnIDGuodianNews = "G4";
+	
+	public static final String ColumnIDGuodianMyPower = "G101";
+	public static final String ColumnIDGuodianPowerBill = "G102";
+	public static final String ColumnIDGuodianFeeRecord = "G103";
+	public static final String ColumnIDGuodianPowerNews = "G104";
+	public static final String ColumnIDGuodianBusinessNet = "G105";
 	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
