@@ -122,12 +122,12 @@ public class GDBillActivity extends GDBaseActivity {
 		}
 
 		mYearAdapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_spinner_item, mYearList);
+				R.layout.spinner_item, mYearList);
 		mYearSpinner.setAdapter(mYearAdapter);
 		mYearSpinner.setSelection(0);
 
 		mMonthAdapter = new ArrayAdapter<String>(this,
-				android.R.layout.simple_spinner_item, mMonthList);
+				R.layout.spinner_item, mMonthList);
 
 		mMonthSpinner.setAdapter(mMonthAdapter);
 		mMonthSpinner.setSelection(month);
@@ -147,15 +147,22 @@ public class GDBillActivity extends GDBaseActivity {
 	void queryBillData() {
 		int yearIndex = mYearSpinner.getSelectedItemPosition();
 		int monthIndex = mMonthSpinner.getSelectedItemPosition();
+		
+		Log.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex=" + monthIndex);
 
 		if (monthIndex > 0) {
-			String year = mYearList.get(monthIndex);
-			String month = mMonthList.get(yearIndex);
+			String year = mYearList.get(yearIndex);
+			String month = mMonthList.get(monthIndex);
 			// TODO: how to construct the datetime?
-			String date = DateUtil.constructDateStr(year, month, "01",
-					DateUtil.DateFormat1);
+			if (monthIndex < 10) {
+				month = "0" + month;
+			}
+			String date = year + "-" + month + "-" + "01 00:00:00";
+			
+			Log.d(TAG, " === date ==" + date);
+			
 			mService.requestPowerData(GDConstract.DATATYPE_BILLDETAILOFMONTH,
-					"");
+					date);
 		} else {
 			mService.requestPowerData(GDConstract.DATATYPE_BILLDETAILOFRECENT,
 					"12");
