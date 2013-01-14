@@ -23,7 +23,7 @@ int push_decoder_resume();
 void push_rely_condition_set(int rely_cond);
 
 int push_decoder_buf_init();
-int mid_push_reject(const char *prog_uri);
+int mid_push_reject(const char *prog_uri,long long total_size);
 int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed);
 int send_xml_to_parse(const char *path, int flag, char *id);
 

@@ -370,6 +370,7 @@ int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port)
 	return 0;
 }
 
+#if 0
 /*
  从路径path中获取第一个文件格式为filefmt的文件，优先匹配preferential_file，
  将获得的文件uri存放在file中
@@ -481,6 +482,7 @@ int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, 
 	closedir(pdir);
 	return ret;   
 }
+#endif
 
 /*
 清理字符串中的指定字符，比如：将字符串头尾的斜线去掉，原串为"/mnt/sda1/dbstar///"，指定清理头尾字符'/'，结果为"mnt/sda1/dbstar"
@@ -609,6 +611,75 @@ int fcopy_c(char *from_file, char *to_file)
 	close(to_fd);
 	
 	return ret;
+}
+
+
+
+/*
+ 将uri下的文件夹和文件递归删除，rmdir不能删除非空文件夹
+*/
+int remove_force(const char *uri)
+{
+	DIR * pdir = NULL;
+	struct dirent *ptr = NULL;
+	char newpath[512];
+	struct stat filestat;
+	int ret = -1;
+	
+	if(NULL==uri || 0==strlen(uri)){
+		DEBUG("can not rm such uri, it is NULL, or length is 0\n");
+		return -1;
+	}
+	
+	DEBUG("process %s\n", uri);
+	
+	if(stat(uri, &filestat) != 0){
+		ERROROUT("can not stat(%s)\n", uri);
+		return -1;
+	}
+	if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
+		pdir = opendir(uri);
+		if(pdir){
+			while((ptr = readdir(pdir))!=NULL)
+			{
+				if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
+					continue;
+				
+				snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
+#if 0
+				if(stat(newpath, &filestat) != 0){
+					DEBUG("The file or path(%s) can not be get stat!\n", newpath);
+					continue;
+				}
+
+				/* Check if it is dir. */
+				if((filestat.st_mode & S_IFDIR) == S_IFDIR){
+					remove_force((const char *)newpath);
+				}
+				else if((filestat.st_mode & S_IFREG) == S_IFREG){
+					DEBUG("remove File: %s\n", newpath);
+					remove(uri);
+				}
+#else
+				remove_force((const char *)newpath);
+#endif
+			}
+			closedir(pdir);
+		}
+		else{
+			ERROROUT("opendir(%s) failed\n", uri);
+			ret = -1;
+		}
+		
+		DEBUG("remove Dir: %s\n", uri);
+		remove(uri);
+	}
+	else{
+		DEBUG("remove File: %s\n", uri);
+		remove(uri);
+	}
+	
+	return ret;   
 }
 
 

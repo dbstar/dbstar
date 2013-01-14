@@ -1087,7 +1087,12 @@ static int prog_name_fill()
 				serviceID_get(),s_prgs[i].id,language_get());
 			
 			if(0==str_sqlite_read(s_prgs[i].caption,sizeof(s_prgs[i].caption),sqlite_cmd)){
-				DEBUG("read prog caption success: %s\n", s_prgs[i].caption);
+				if(0==strlen(s_prgs[i].caption)){
+					DEBUG("length of caption is 0, filled with prog id: %s\n",s_prgs[i].id);
+					snprintf(s_prgs[i].caption, sizeof(s_prgs[i].caption), "%s", s_prgs[i].id);
+				}
+				else
+					DEBUG("read prog caption success: %s\n", s_prgs[i].caption);
 			}
 			else{
 				DEBUG("read prog caption failed, filled with prog id: %s\n",s_prgs[i].id);
@@ -1099,7 +1104,7 @@ static int prog_name_fill()
 	return 0;
 }
 
-int mid_push_reject(const char *prog_uri)
+int mid_push_reject(const char *prog_uri,long long total_size)
 {
 	if(NULL==prog_uri){
 		DEBUG("invalid prog_uri\n");
@@ -1107,26 +1112,34 @@ int mid_push_reject(const char *prog_uri)
 	}
 	
 	int ret = 0;
-	ret = push_dir_forbid(prog_uri);
-	if(0==ret)
-		DEBUG("push forbid: %s\n", prog_uri);
-	else if(-1==ret)
-		DEBUG("push forbid failed: %s, no such uri\n", prog_uri);
-	else
-		DEBUG("push forbid failed: %s, some other err(%d)\n", prog_uri, ret);
+	ret = push_dir_register(prog_uri, total_size, 0);
+	if(0==ret){
+		DEBUG("regist %s to push for forbid\n", prog_uri);
 	
-	ret = push_dir_remove(prog_uri);
-	if(0==ret)
-		DEBUG("push remove: %s\n", prog_uri);
-	else if(-1==ret)
-		DEBUG("push remove failed: %s, no such uri\n", prog_uri);
-	else
-		DEBUG("push remove failed: %s, some other err(%d)\n", prog_uri, ret);
-	
-	char reject_uri[128];
-	snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),prog_uri);
-	unlink(reject_uri);
-	DEBUG("unlink(%s)\n", reject_uri);
+		ret = push_dir_forbid(prog_uri);
+		if(0==ret){
+			DEBUG("push forbid: %s\n", prog_uri);
+			ret = push_dir_remove(prog_uri);
+			if(0==ret)
+				DEBUG("push remove: %s\n", prog_uri);
+			else if(-1==ret)
+				DEBUG("push remove failed: %s, no such uri\n", prog_uri);
+			else
+				DEBUG("push remove failed: %s, some other err(%d)\n", prog_uri, ret);
+			
+			char reject_uri[128];
+			snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),prog_uri);
+			remove_force(reject_uri);
+			DEBUG("remove(%s) finished\n", reject_uri);
+		}
+		else if(-1==ret)
+			DEBUG("push forbid failed: %s, no such uri\n", prog_uri);
+		else
+			DEBUG("push forbid failed: %s, some other err(%d)\n", prog_uri, ret);
+	}
+	else{
+		DEBUG("regist %s to push for forbid failed: %d\n", prog_uri, ret);
+	}
 	
 	return ret;
 }
@@ -1193,12 +1206,12 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 				}
 			}
 			
+			sscanf(result[i*column+5],"%lld", &totalsize);
+			
 			if(0==recv_flag){
-				mid_push_reject(result[i*column+3]);
+				mid_push_reject(result[i*column+3],totalsize);
 			}
 			else{
-				sscanf(result[i*column+5],"%lld", &totalsize);
-				
 				PROG_S cur_prog;
 				memset(&cur_prog,0,sizeof(cur_prog));
 				snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
