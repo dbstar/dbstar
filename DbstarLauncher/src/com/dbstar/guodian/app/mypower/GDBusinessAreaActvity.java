@@ -26,7 +26,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 	private static final int PageSize = 8;
 	private ArrayList<BusinessArea[]> mPagesData;
 	private int mPageCount, mPageNumber;
-	
+
 	private ListView mListView;
 	private ListAdapter mBusinessAdapter;
 
@@ -48,11 +48,11 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 
 	public void initializeView() {
 		super.initializeView();
-		
+
 		mListView = (ListView) findViewById(R.id.listview);
 		mBusinessAdapter = new ListAdapter();
 		mListView.setAdapter(mBusinessAdapter);
-		
+
 		mListView.setOnKeyListener(new View.OnKeyListener() {
 
 			@Override
@@ -72,7 +72,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 					}
 					case KeyEvent.KEYCODE_DPAD_DOWN: {
 						int selectedIndex = mListView.getSelectedItemPosition();
-						if (selectedIndex == PageSize
+						if (selectedIndex == (PageSize - 1)
 								&& mPageNumber < mPageCount - 1) {
 							loadNextPage();
 							ret = true;
@@ -117,13 +117,13 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 			displayPage(mPageNumber);
 		}
 	}
-	
+
 	private void displayPage(int pageNumber) {
 		BusinessArea[] page = mPagesData.get(pageNumber);
 		mBusinessAdapter.setDataSet(page);
 		mBusinessAdapter.notifyDataSetChanged();
 	}
-	
+
 	private void constructPages(ArrayList<BusinessArea> items) {
 		int size = items.size();
 		if (size == 0) {
@@ -152,7 +152,6 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 		}
 	}
 
-	
 	private void loadPrevPage() {
 		Log.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
 				+ mPageNumber);
@@ -172,14 +171,13 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 				+ mPageNumber);
 
 		mPageNumber++;
-		
+
 		BusinessArea[] items = mPagesData.get(mPageNumber);
 		mBusinessAdapter.setDataSet(items);
 		mListView.clearChoices();
 		mListView.setSelection(0);
 		mBusinessAdapter.notifyDataSetChanged();
 	}
-
 
 	private class ListAdapter extends BaseAdapter {
 
@@ -224,7 +222,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 			ViewHolder holder = null;
 			if (null == convertView) {
 				LayoutInflater inflater = getLayoutInflater();
-				convertView = inflater.inflate(R.layout.mypower_billlist_item,
+				convertView = inflater.inflate(R.layout.mypower_business_listitem,
 						parent, false);
 
 				holder = new ViewHolder();

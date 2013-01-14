@@ -213,7 +213,7 @@ public class LoginDataHandler {
 		userInfo.Sexual = (String) object.getString(JsonTag.TAGVC2UserSexual);
 		userInfo.Mobile = (String) object.getString(JsonTag.TAGVC2UserMobile);
 		userInfo.Phone = (String) object.getString(JsonTag.TAGVC2UserPhone);
-		userInfo.Address = (String) object.getString(JsonTag.TAGVC2UserAddress);
+		userInfo.Address = (String) object.getString(JsonTag.TAGVC2UserAddress);		
 		userInfo.Email = (String) object.getString(JsonTag.TAGVC2UserEmail);
 		userInfo.PriceType = (String) object.getString(JsonTag.TAGNumPriceType);
 		userInfo.PriceGroupName = (String) object

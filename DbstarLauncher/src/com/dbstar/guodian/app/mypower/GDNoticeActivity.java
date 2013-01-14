@@ -29,7 +29,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 	private static final int MODE_LIST = 0;
 	private static final int MODE_DETAIL = 1;
 
-	private static final int PageSize = 8;
+	private static final int PageSize = 14;
 	private ArrayList<Notice[]> mPagesData;
 	private int mPageCount, mPageNumber;
 
@@ -97,6 +97,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				Log.d(TAG, " ===== onKey === " + keyCode);
 				boolean ret = false;
 				int action = event.getAction();
 				if (action == KeyEvent.ACTION_DOWN) {
@@ -112,7 +113,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 					}
 					case KeyEvent.KEYCODE_DPAD_DOWN: {
 						int selectedIndex = mListView.getSelectedItemPosition();
-						if (selectedIndex == PageSize
+						if (selectedIndex == (PageSize - 1)
 								&& mPageNumber < mPageCount - 1) {
 							loadNextPage();
 							ret = true;

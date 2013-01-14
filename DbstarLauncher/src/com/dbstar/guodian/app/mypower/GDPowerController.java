@@ -53,7 +53,8 @@ public class GDPowerController {
 	private ImageView mStepPowerPointer;
 	private TextView mStepPowerStepView;
 	private TextView mStepPowerPriceView;
-	private TextView mStepPowerRulerStep0, mStepPowerRulerStep1, mStepPowerRulerStep2;
+	private TextView mStepPowerRulerStep0, mStepPowerRulerStep1,
+			mStepPowerRulerStep2;
 
 	// Timing power
 	private ImageView mTimingPowerPointer;
