@@ -29,4 +29,10 @@ int send_xml_to_parse(const char *path, int flag, char *id);
 
 void disk_manage_flag_set(int flag);
 
+
+void column_refresh_flag_set(int flag);
+void interface_refresh_flag_set(int flag);
+void preview_refresh_flag_set(int flag);
+
+
 #endif

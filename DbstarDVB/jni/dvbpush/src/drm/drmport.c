@@ -488,7 +488,6 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	}
 	msg_send2_UI(DRM_SC_INSERT_OK, NULL, 0);
 	smart_card_insert_flag_set(1);
-	xml_reset_at_sc_insert();
 	
 	return CDCA_TRUE;
 }

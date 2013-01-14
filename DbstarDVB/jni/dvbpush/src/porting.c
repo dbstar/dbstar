@@ -50,6 +50,7 @@ static char 		*s_guidelist_unselect = NULL;
 //static int 			s_disk_manage_buzy = 0;
 static char			s_jni_cmd_public_space[20480];
 static int			s_smart_card_insert_flag = 0;
+static char			s_special_ProductID[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
@@ -1268,49 +1269,64 @@ static void upgrade_info_refresh(char *info_name, char *info_value)
 		DEBUG("same %s: %s\n", info_name, info_value);
 }
 
+/*
+ 0:		normal upgrade
+ 255:	repeat upgrade
+*/
+static int upgrade_type_check( unsigned char *software_version)
+{
+	if(255==software_version[0] && 255==software_version[1]
+		&& 255==software_version[2] && 255==software_version[3]){
+		DEBUG("It has finish a repeat upgrade\n");
+		return 255;
+	}
+	else{
+		DEBUG("It has finish a normal upgrade\n");
+		return 0;
+	}
+}
+
 void upgrade_info_init()
 {
 	unsigned char mark = 0;
 	char tmpinfo[128];
 	char msg_2_UI[128];
-#if 0
-	LoaderInfo_t g_loaderInfo;
-#else
+	
+	char sqlite_cmd[256];
+	char repeat_upgrade_count[8];
+	
 	extern LoaderInfo_t g_loaderInfo;
-#endif
+	
 	memset(&g_loaderInfo, 0, sizeof(g_loaderInfo));
 	if(0==get_loader_message(&mark, &g_loaderInfo))
 	{
 		DEBUG("read loader msg: %d", mark);
+		
+		if(255==upgrade_type_check(g_loaderInfo.software_version)){
+			memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
+			if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
+				DEBUG("can not read RepeatUpgradeCount\n");
+			}
+			else{
+				DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
+			}
+		}
+		
 		if(0!=mark){
 			DEBUG("clear upgrade mark and file\n");
 			set_loader_reboot_mark(0);
 			upgradefile_clear();
 			
-			if(255==g_loaderInfo.software_version[0] && 255==g_loaderInfo.software_version[1]
-				&& 255==g_loaderInfo.software_version[2] && 255==g_loaderInfo.software_version[3]){
-				DEBUG("It has a repeat upgrade, only for upgrade test\n");
-				
-				char sqlite_cmd[256];
-				char repeat_upgrade_count[8];
-				memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
-				if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
-					DEBUG("can not read RepeatUpgradeCount\n");
-				}
-				else{
-					DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
-				}
-				
+			if(255==upgrade_type_check(g_loaderInfo.software_version)){
 				snprintf(tmpinfo,sizeof(tmpinfo),"%d", atoi(repeat_upgrade_count)+1);
 				upgrade_info_refresh("RepeatUpgradeCount", tmpinfo);
-				
-				snprintf(msg_2_UI,sizeof(msg_2_UI),"Repeat upgrade count: %d\n", atoi(repeat_upgrade_count)+1);
-				msg_send2_UI(DIALOG_NOTICE, msg_2_UI, strlen(msg_2_UI));
 			}
-			else{
-				DEBUG("It has a normal upgrade\n");
-			}
+		}
+		
+		if(255==upgrade_type_check(g_loaderInfo.software_version)){
+			snprintf(msg_2_UI,sizeof(msg_2_UI),"Repeat upgrade count: %s\n", tmpinfo);
+			msg_send2_UI(DIALOG_NOTICE, msg_2_UI, strlen(msg_2_UI));
 		}
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
@@ -1715,7 +1731,6 @@ static int push_dir_init()
 }
 
 
-static char s_special_ProductID[64];
 static int special_productid_init()
 {
 // only for test
@@ -1733,21 +1748,48 @@ static int special_productid_init()
 	return 0;
 }
 
-void xml_reset_at_sc_insert()
+
+int intialize_xml_reset(void)
 {
-	if(0==strlen(s_serviceID)){
-		DEBUG("I has no serviceID currently, so remove initialize.xml\n");
+	char *ServiceID = serviceID_get();
+	if(0==strlen(ServiceID)){
+		DEBUG("I have no serviceID currently, so remove initialize.xml\n");
+#if 0		
+		char sqlite_cmd[256];
+		char initialize_xml_uri[512];
 		
-		char xmluri[256];
-		snprintf(xmluri,sizeof(xmluri),"%s/pushroot/initialize/Initialize.xml", push_dir_get());
-		remove(xmluri);
-		DEBUG("remove %s\n", xmluri);
+		memset(initialize_xml_uri, 0, sizeof(initialize_xml_uri));
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag='%d';", INITIALIZE_XML);
+		if(-1==str_sqlite_read(initialize_xml_uri,sizeof(initialize_xml_uri),sqlite_cmd)){
+			DEBUG("can not read initialize_xml_uri\n");
+			return -1;
+		}
+		else{
+			DEBUG("read initialize_xml_uri: %s\n", initialize_xml_uri);
+			
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize WHERE PushFlag='%d';", INITIALIZE_XML);
+			sqlite_execute(sqlite_cmd);
+			
+			char total_xmluri[256];
+			snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),initialize_xml_uri);
+			remove_force(total_xmluri);
+			DEBUG("remove %s\n", total_xmluri);
+		}
+#endif
 	}
+	else
+		DEBUG("ServiceID: %s", ServiceID);
+	
+	return 0;
 }
 
-void smart_card_insert_flag_set(int insert_flag)
+int smart_card_insert_flag_set(int insert_flag)
 {
 	s_smart_card_insert_flag = insert_flag;
+	
+	intialize_xml_reset();
+	
+	return 0;
 }
 
 /*
