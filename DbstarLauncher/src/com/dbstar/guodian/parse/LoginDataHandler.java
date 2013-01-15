@@ -26,7 +26,7 @@ public class LoginDataHandler {
 
 	public static LoginData parse(String data) {
 
-		Log.d(TAG, "json data = " + data);
+//		Log.d(TAG, "json data = " + data);
 
 		// remove []
 		String jsonData = data.substring(1, data.length() - 1);

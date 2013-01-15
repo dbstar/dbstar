@@ -77,10 +77,10 @@
 
         <FrameLayout
             android:id="@+id/frame"
-            android:layout_width="860dp"
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="@drawable/bg_white"
-            android:visibility="gone" />
+            android:visibility="visible" />
     </LinearLayout>
 
     <include

@@ -18,7 +18,7 @@ public class BillDetailOfRecentDataHandler {
 
 	public static BillDetailListData parse(String data) {
 
-		Log.d(TAG, "json data = " + data);
+//		Log.d(TAG, "json data = " + data);
 		// remove []
 		String jsonData = data.substring(1, data.length() - 1);
 		JSONTokener jsonParser = new JSONTokener(jsonData);

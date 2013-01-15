@@ -50,7 +50,7 @@ import android.os.Message;
 import android.util.Log;
 import android.os.Process;
 
-public class GDDataProviderService extends Service implements DbServiceObserver {
+public class GDDataProviderService extends Service {
 
 	private static final String TAG = "GDDataProviderService";
 
@@ -144,7 +144,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	private PeripheralController mPeripheralController;
 	private GDPowerManager mPowerManger;
-	
+
 	private GDEngine mGuodianEngine;
 
 	private class RequestTask {
@@ -221,12 +221,14 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		mNetModel = new GDNetModel();
 		mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
 		mDBStarClient = new GDDBStarClient(this);
-		
+
 		mGuodianEngine = new GDEngine(this);
 
 		mTaskQueue = new LinkedList<RequestTask>();
 		mFinishedTaskQueue = new LinkedList<RequestTask>();
+
 		mPeripheralController = new PeripheralController();
+		mEthernetController = new NetworkController(this, mHandler);
 
 		if (mPeripheralController.isHdmiIn()) {
 			Log.d(TAG, "Hdmi: IN");
@@ -270,49 +272,48 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		mIsNetworkReady = isNetworkConnected();
 		Log.d(TAG, "network is connected " + mIsNetworkReady);
 
-		// start Dbstar service
-		mIsDbServiceStarted = false;
-		mDBStarClient.setObserver(this);
-		mDBStarClient.start();
-
-		// start smart home service
-		mIsSmartHomeServiceStarted = false;
-		if (mIsStorageReady && mIsNetworkReady) {
-			startDbStarService();
-		}
-
 		// initialize engine
 		initializeDataEngine();
 		initializeNetEngine();
 
 		queryDiskGuardSize();
-		
-		if(mIsStorageReady) {
+
+		if (mIsStorageReady) {
 			mDataModel.setPushDir(mConfigure.getStorageDir());
 		}
-		
+
+		// start smart home service
+		mIsSmartHomeServiceStarted = false;
+
 		if (mIsNetworkReady) {
+			startDbStarService();
 			startGuodianEngine();
 		}
-		
-		mEthernetController = new NetworkController(this, mHandler);
+
+		// start Dbstar service
+		mIsDbServiceStarted = false;
+		mDBStarClient.start();
 	}
-	
+
 	void startGuodianEngine() {
 		Log.d(TAG, "========== startGuodianEngine ==========");
-		String serverIP = mDataModel.getSettingValue(GDSettings.PropertyGuodianServerIP);
-		String serverPort = mDataModel.getSettingValue(GDSettings.PropertyGuodianServerPort);
-		if (serverIP == null || serverIP.isEmpty() || serverPort==null || serverPort.isEmpty())
+		String serverIP = mDataModel
+				.getSettingValue(GDSettings.PropertyGuodianServerIP);
+		String serverPort = mDataModel
+				.getSettingValue(GDSettings.PropertyGuodianServerPort);
+		if (serverIP == null || serverIP.isEmpty() || serverPort == null
+				|| serverPort.isEmpty())
 			return;
 
-		mGuodianEngine.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
+		mGuodianEngine
+				.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
 	}
-	
+
 	void stopGuodianEngine() {
 		Log.d(TAG, "========== stopGuodianEngine ==========");
 		mGuodianEngine.stop();
 	}
-	
+
 	void destroyGuodianEngine() {
 		Log.d(TAG, "========== destroyGuodianEngine ==========");
 		mGuodianEngine.destroy();
@@ -320,7 +321,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	void initializeDataEngine() {
 		mDataModel.initialize(mConfigure);
-//		mDataModel.setPushDir(mConfigure.getStorageDir());
+		// mDataModel.setPushDir(mConfigure.getStorageDir());
 	}
 
 	void deinitializeDataEngine() {
@@ -362,7 +363,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		synchronized (mTaskQueueLock) {
 			mTaskQueueLock.notifyAll();
 		}
-		
+
 		destroyGuodianEngine();
 	}
 
@@ -374,14 +375,14 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		mIsSmartHomeServiceStarted = true;
 
-//		SharedPreferences settings = null;
-//		SharedPreferences.Editor editor = null;
-//
-//		settings = getSharedPreferences(SmartHomePrepertyName, 0);
-//		editor = settings.edit();
-//		editor.putInt(SmartHomePrepertyName, 1);
-//		editor.commit();
-		
+		// SharedPreferences settings = null;
+		// SharedPreferences.Editor editor = null;
+		//
+		// settings = getSharedPreferences(SmartHomePrepertyName, 0);
+		// editor = settings.edit();
+		// editor.putInt(SmartHomePrepertyName, 1);
+		// editor.commit();
+
 		SystemUtils.startSmartHomeServer();
 	}
 
@@ -393,14 +394,14 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		Log.d(TAG, "stopDbStarService");
 
-//		SharedPreferences settings = null;
-//		SharedPreferences.Editor editor = null;
-//
-//		settings = getSharedPreferences(SmartHomePrepertyName, 0);
-//		editor = settings.edit();
-//		editor.putInt(SmartHomePrepertyName, 0);
-//		editor.commit();
-		
+		// SharedPreferences settings = null;
+		// SharedPreferences.Editor editor = null;
+		//
+		// settings = getSharedPreferences(SmartHomePrepertyName, 0);
+		// editor = settings.edit();
+		// editor.putInt(SmartHomePrepertyName, 0);
+		// editor.commit();
+
 		SystemUtils.stopSmartHomeServer();
 	}
 
@@ -426,7 +427,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				if (!mConfigure.configureStorage()) {
 					return;
 				}
-				
+
 				String storage = mConfigure.getStorageDisk();
 
 				if (disk.equals(storage) && mApplicationObserver != null) {
@@ -476,8 +477,8 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					startDbStarService();
 				}
 
-//				notifyDbstarServiceNetworkStatus();
-				
+				// notifyDbstarServiceNetworkStatus();
+
 				startGuodianEngine();
 
 				break;
@@ -486,18 +487,18 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				Log.d(TAG, "++++++++++++ network disconnected +++++++++++");
 				mIsNetworkReady = false;
 				mPeripheralController.setNetworkLedOff();
-//				notifyDbstarServiceNetworkStatus();
+				// notifyDbstarServiceNetworkStatus();
 				stopDbStarService();
 
 				stopGuodianEngine();
 				break;
 			}
-			
+
 			case GDCommon.MSG_ETHERNET_PHYCONECTED: {
 				notifyDbstarServiceNetworkStatus();
 				break;
 			}
-			
+
 			case GDCommon.MSG_ETHERNET_PHYDISCONECTED: {
 				notifyDbstarServiceNetworkStatus();
 				break;
@@ -666,7 +667,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			case GDCommon.MSG_SMARTCARD_IN: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTING;
 				notifyDbstarServiceSDStatus();
-//				notifySmartcardStatusChange(mSmartcardState);
+				// notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 			case GDCommon.MSG_SMARTCARD_OUT: {
@@ -675,32 +676,32 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
-			
+
 			case GDCommon.MSG_SMARTCARD_INSERT_OK: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTOK;
 				Log.d(TAG, "===========Smartcard========== rest ok!");
 				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
-			
+
 			case GDCommon.MSG_SMARTCARD_INSERT_FAILED: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTFAILED;
 				Log.d(TAG, "===========Smartcard========== invalid!");
 				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
-			
+
 			case GDCommon.MSG_SMARTCARD_REMOVE_OK: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVEOK;
 				Log.d(TAG, "===========Smartcard========== remove ok!");
-//				notifySmartcardStatusChange(mSmartcardState);
+				// notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
-			
+
 			case GDCommon.MSG_SMARTCARD_REMOVE_FAILED: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVEFAILED;
 				Log.d(TAG, "===========Smartcard========== remove failed!");
-//				notifySmartcardStatusChange(mSmartcardState);
+				// notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 
@@ -708,9 +709,9 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 				notifyNewMail();
 				break;
 			}
-			
+
 			case GDCommon.MSG_DISP_NOTIFICATION: {
-				diplayNotification((String)msg.obj);
+				diplayNotification((String) msg.obj);
 				break;
 			}
 
@@ -734,11 +735,12 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 			mPageOberser.notifyEvent(EventData.EVENT_NEWMAIL, null);
 		}
 	}
-	
+
 	private void diplayNotification(String message) {
-		
-		Log.d(TAG, "======= diplayNotification ==== observer = " + mPageOberser + " message " + message);
-		
+
+		Log.d(TAG, "======= diplayNotification ==== observer = " + mPageOberser
+				+ " message " + message);
+
 		if (mPageOberser != null) {
 			mPageOberser.notifyEvent(EventData.EVENT_NOTIFICATION, message);
 		}
@@ -1218,7 +1220,7 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 						for (int i = 0; i < data.length; i++) {
 							String uri = getPreviewFile(data[i]);
-							
+
 							if (uri != null && !uri.isEmpty()) {
 								data[i].FileURI = uri;
 								previews.add(data[i]);
@@ -1516,11 +1518,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 		enqueueTask(task);
 	}
-	
+
 	public boolean isSmartcardPlugIn() {
 		return mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK;
 	}
-	
+
 	public int getSmartcardState() {
 		return mSmartcardState;
 	}
@@ -1647,9 +1649,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	public boolean isNetworkConnected() {
 		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
-		
+
 		if (networkInfo != null) {
-			Log.d(TAG, " === connected netwrok === type = " + networkInfo.getType());
+			Log.d(TAG,
+					" === connected netwrok === type = "
+							+ networkInfo.getType());
 		}
 
 		return networkInfo != null && networkInfo.isConnected();
@@ -1805,18 +1809,19 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					}
 					break;
 				}
-				
+
 				case DbstarServiceApi.DIALOG_NOTICE: {
 					byte[] bytes = intent.getByteArrayExtra("message");
-					
+
 					Log.d(TAG, "=======receive notification " + bytes);
-					
+
 					if (bytes != null) {
 						String info = StringUtil.getUTF8String(bytes);
-						
+
 						Log.d(TAG, "======= notification " + info);
-						
-						Message msg = mHandler.obtainMessage(GDCommon.MSG_DISP_NOTIFICATION);
+
+						Message msg = mHandler
+								.obtainMessage(GDCommon.MSG_DISP_NOTIFICATION);
 						msg.obj = info;
 						mHandler.sendMessage(msg);
 					}
@@ -1830,8 +1835,6 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 							" ========== DbstarServer init success ===========");
 					if (mDBStarClient.isBoundToServer()) {
 						mHandler.sendEmptyMessage(GDCommon.SYNC_STATUS_TODBSERVER);
-					} else {
-						mStatusIsSynced = false;
 					}
 					break;
 				}
@@ -1897,14 +1900,15 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 					if (bytes != null) {
 						try {
 							String time = new String(bytes, "utf-8");
-							Log.d(TAG, "==========handle TDT time ======== " + time);
+							Log.d(TAG, "==========handle TDT time ======== "
+									+ time);
 							long tdtTime = Long.parseLong(time);
-							TDTTimeController.handleTDTTime(tdtTime*1000L);
+							TDTTimeController.handleTDTTime(tdtTime * 1000L);
 						} catch (UnsupportedEncodingException e) {
 							e.printStackTrace();
 						}
 					}
-					
+
 					break;
 				}
 
@@ -2009,8 +2013,11 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 	}
 
 	boolean notifyDbstarServiceNetworkStatus() {
-		Log.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
-				+ mIsDbServiceStarted);
+//		Log.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
+//				+ mIsDbServiceStarted);
+
+		System.out.print("NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
+				+ mIsDbServiceStarted + "\n\n");
 
 		if (!mIsDbServiceStarted)
 			return false;
@@ -2027,8 +2034,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	boolean notifyDbstarServiceStorageStatus() {
 
-		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
-				+ mIsDbServiceStarted);
+//		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
+//				+ mIsDbServiceStarted);
+		System.out.print("STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
+				+ mIsDbServiceStarted + "\n\n");
 
 		if (!mIsDbServiceStarted)
 			return false;
@@ -2045,8 +2054,10 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 
 	boolean notifyDbstarServiceSDStatus() {
 
-		Log.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
-				+ mIsDbServiceStarted);
+//		Log.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
+//				+ mIsDbServiceStarted);
+		System.out.print("SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
+				+ mIsDbServiceStarted + "\n\n");
 
 		if (!mIsDbServiceStarted)
 			return false;
@@ -2060,7 +2071,17 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		return true;
 	}
 
-	boolean notifyDbstarService(int command) {
+	// Call this when:
+	// 1. dbstarDVB init ok;
+	// 2. sdcard, network, or storage state changed.
+	private void syncStatusToDbServer() {
+		Log.d(TAG, "syncStatusToDbServer ");
+		notifyDbstarServiceSDStatus();
+		notifyDbstarServiceNetworkStatus();
+		notifyDbstarServiceStorageStatus();
+	}
+	
+	private boolean notifyDbstarService(int command) {
 		if (!mIsDbServiceStarted) {
 			return false;
 		}
@@ -2069,70 +2090,41 @@ public class GDDataProviderService extends Service implements DbServiceObserver 
 		return true;
 	}
 
-	boolean mStatusIsSynced = false;
-
-	@Override
-	public void onServerStarted() {
-		syncStatusToDbServer();
-	}
-
-	@Override
-	public void onServerRestarted() {
-		syncStatusToDbServer();
-	}
-
-	@Override
-	public void onServerStopped() {
-		mStatusIsSynced = false;
-	}
-
-	// Call this when:
-	// 1. dbstarDVB init ok;
-	// 2. sdcard, network, or storage state changed.
-	private void syncStatusToDbServer() {
-		Log.d(TAG, "syncStatusToDbServer " + mStatusIsSynced);
-		if (mStatusIsSynced)
-			return;
-
-		notifyDbstarServiceSDStatus();
-		mStatusIsSynced = notifyDbstarServiceNetworkStatus();
-		mStatusIsSynced = mStatusIsSynced && notifyDbstarServiceStorageStatus();
-	}
-	
-	
 	// Guodian related code
 	GDClientObserver mGDObserver = new GDClientObserver() {
 
 		@Override
 		public void notifyEvent(int type, Object event) {
-			
+
 			Log.d(TAG, " == notifyEvent == " + type);
-			
-			switch(type) {
+
+			switch (type) {
 			case EventData.EVENT_LOGIN_SUCCESSED: {
 				if (mApplicationObserver != null) {
-					mApplicationObserver.handleEvent(EventData.EVENT_LOGIN_SUCCESSED, event);
+					mApplicationObserver.handleEvent(
+							EventData.EVENT_LOGIN_SUCCESSED, event);
 				}
 				break;
 			}
-			
+
 			case EventData.EVENT_GUODIAN_DATA: {
 				if (mPageOberser != null) {
-					mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA, event);
+					mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA,
+							event);
 				}
 				break;
 			}
 
 			}
 		}
-		
+
 	};
-	
+
 	// Guodian Related interface
-	public void requestPowerData (int type, Object args) {
+	public void requestPowerData(int type, Object args) {
 		mGuodianEngine.requestData(type, args);
 	}
-	
+
 	// query cached data
 	public ElectricityPrice getElecPrice() {
 		return mGuodianEngine.getElecPrice();

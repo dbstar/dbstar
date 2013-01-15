@@ -14,7 +14,7 @@ public class PanelDataHandler {
 	private static final String TAG = "PanelDataHandler";
 
 	public static PowerPanelData parse(String data) {
-		Log.d(TAG, "json data = " + data);
+//		Log.d(TAG, "json data = " + data);
 
 		// remove []
 		String jsonData = data.substring(1, data.length() - 1);

@@ -72,7 +72,7 @@ public class GDCmdHelper {
 		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag+"\n";
-		Log.d(TAG, " cmd ===== " + cmdStr);
+//		Log.d(TAG, " cmd ===== " + cmdStr);
 		return cmdStr;
 	}
 	
@@ -93,10 +93,12 @@ public class GDCmdHelper {
 				+ DeviceId   + CmdDelimiterTag
 				+ toJson(keys, values);
 		
+		Log.d(TAG, "cmd data = " + cmdStr);
+		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag+"\n";
 		
-		Log.d(TAG, " cmd ===== " + cmdStr);
+//		Log.d(TAG, " cmd ===== " + cmdStr);
 		
 		return cmdStr;
 	}
@@ -117,10 +119,12 @@ public class GDCmdHelper {
 				+ DeviceId   + CmdDelimiterTag
 				+ toJson(keys, values);
 		
+		Log.d(TAG, "cmd data = " + cmdStr);
+		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag+"\n";
 		
-		Log.d(TAG, " cmd ===== " + cmdStr);
+//		Log.d(TAG, " cmd ===== " + cmdStr);
 		
 		return cmdStr;
 	}
@@ -141,10 +145,12 @@ public class GDCmdHelper {
 				+ DeviceId   + CmdDelimiterTag
 				+ toJson(keys, values);
 		
+		Log.d(TAG, "cmd data = " + cmdStr);
+		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag+"\n";
 		
-		Log.d(TAG, " cmd ===== " + cmdStr);
+//		Log.d(TAG, " cmd ===== " + cmdStr);
 		
 		return cmdStr;
 	}
@@ -166,10 +172,12 @@ public class GDCmdHelper {
 				+ DeviceId   + CmdDelimiterTag
 				+ toJson(keys, values);
 		
+		Log.d(TAG, "cmd data = " + cmdStr);
+		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag+"\n";
 		
-		Log.d(TAG, " cmd ===== " + cmdStr);
+//		Log.d(TAG, " cmd ===== " + cmdStr);
 		
 		return cmdStr;
 	}
@@ -192,10 +200,12 @@ public class GDCmdHelper {
 				+ DeviceId   + CmdDelimiterTag
 				+ toJson(keys, values);
 
+		Log.d(TAG, "cmd data = " + cmdStr);
+		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag + "\n";
 
-		Log.d(TAG, " cmd ===== " + cmdStr);
+//		Log.d(TAG, " cmd ===== " + cmdStr);
 
 		return cmdStr;
 	}
@@ -211,10 +221,12 @@ public class GDCmdHelper {
 				+ DeviceId   + CmdDelimiterTag
 				+ toJson(JsonTag.TAGNumCCGuid, ctrlNoGuid);
 
+		Log.d(TAG, "cmd data = " + cmdStr);
+		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag + "\n";
 
-		Log.d(TAG, " cmd ===== " + cmdStr);
+//		Log.d(TAG, " cmd ===== " + cmdStr);
 
 		return cmdStr;
 	}
@@ -230,24 +242,28 @@ public class GDCmdHelper {
 				+ DeviceId   + CmdDelimiterTag
 				+ toJson("num_area_id", areaId);
 
+		Log.d(TAG, "cmd data = " + cmdStr);
+		
 		String encryptStr = FormatCMD.encryptCMD(cmdStr);
 		cmdStr = CmdStartTag + encryptStr + CmdEndTag + "\n";
 
-		Log.d(TAG, " cmd ===== " + cmdStr);
+//		Log.d(TAG, " cmd ===== " + cmdStr);
 
 		return cmdStr;
 	}
 	
 	public static String[] processResponse(String response) {
 		String data = response;
-		Log.d(TAG, "receive data = " + data);
+//		Log.d(TAG, "receive data = " + data);
 		
 		if (!isValideCommand(data))
 			return null;
 		
 		String cmd = data.substring(CmdStartTag.length(), data.length() - CmdEndTag.length());
 		String decryptedStr = FormatCMD.decryptCMD(cmd);
+		
 		Log.d(TAG, "decrypt data = " + decryptedStr);
+		
 		return decryptedStr.split(CmdDelimiterTag);
 	}
 	

@@ -45,14 +45,6 @@ public class GDDBStarClient {
 			mIsBoundToServer = true;
 
 			startDvbpush();
-
-			if (!mIsServerCorrupted) {
-				mObserver.onServerStarted();
-			} else {
-				mIsServerCorrupted = false;
-				mObserver.onServerRestarted();
-			}
-
 		}
 
 		// this is called when server is stopped abnormally.
@@ -60,7 +52,7 @@ public class GDDBStarClient {
 			Log.d(TAG, "+++++++++GDDBStarClient onServiceDisconnected+++++++");
 
 			mDbstarService = null;
-			mIsServerCorrupted = true;
+//			mIsServerCorrupted = true;
 			mIsBoundToServer = false;
 		}
 	};

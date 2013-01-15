@@ -19,7 +19,7 @@ public class BillDetailDataHandler {
 
 	public static BillDetailData parse(String data) {
 
-		Log.d(TAG, "json data = " + data);
+//		Log.d(TAG, "json data = " + data);
 
 		BillDetailData detailData = null;
 

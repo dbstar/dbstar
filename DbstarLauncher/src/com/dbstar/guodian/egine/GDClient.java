@@ -273,7 +273,7 @@ public class GDClient {
 	}
 
 	private void handleResponse(String response) {
-		Log.d(TAG, " ++++++++++++handleResponse++++++++" + response);
+//		Log.d(TAG, " ++++++++++++handleResponse++++++++" + response);
 
 		String[] data = GDCmdHelper.processResponse(response);
 
@@ -305,7 +305,7 @@ public class GDClient {
 
 		String contentType = task.ResponseData[5];
 
-		Log.d(TAG, "==========response content= " + contentType);
+//		Log.d(TAG, "==========response content= " + contentType);
 
 		if (contentType.equals("error")) {
 			Log.d(TAG, "========== error ==== " + task.ResponseData[7]);

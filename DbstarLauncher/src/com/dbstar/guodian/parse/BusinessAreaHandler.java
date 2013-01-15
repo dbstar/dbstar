@@ -16,7 +16,7 @@ public class BusinessAreaHandler {
 	private static final String TAG = "BusinessAreaHandler";
 
 	public static ArrayList<BusinessArea> parse(String data) {
-		Log.d(TAG, "json data = " + data);
+//		Log.d(TAG, "json data = " + data);
 
 		ArrayList<BusinessArea> businessAreas = null;
 

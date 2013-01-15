@@ -51,15 +51,13 @@ public class ReceiveThread extends Thread {
 							break;
 						}
 
-						Log.d(TAG,
-								" ===== read == " + temp + " size="
-										+ temp.length());
+						Log.d(TAG," ===== read == size=" + temp.length());
 
 						data += temp;
 
 					} while (true);
 
-					Log.d(TAG, " === read end ==== " + data);
+					Log.d(TAG, " === read end ==== ");
 					
 					if (!data.isEmpty()) {
 						Message msg = mClientHander
