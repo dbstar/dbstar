@@ -78,7 +78,7 @@ public class NetworkController extends BroadcastReceiver {
 		case EthernetStateTracker.EVENT_HW_PHYCONNECTED:
 			Log.d(TAG, "============== ethernet connected ===========");
 			mEthernetPhyConnect = true;
-			mEthernetPhyState = ETHERNET_PHYDISCONNECTED;
+			mEthernetPhyState = ETHERNET_PHYCONNECTED;
 			configEthernet();
 			mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_PHYCONECTED);
 			return;
