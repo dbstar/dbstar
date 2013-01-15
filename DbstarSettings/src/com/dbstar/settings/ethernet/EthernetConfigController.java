@@ -183,7 +183,7 @@ public class EthernetConfigController {
 			if (mDhcpSwitchIndicator.isChecked()) {
 				mDhcpConnectState.setVisibility(View.INVISIBLE);
 				
-				updateDhcpInfo();
+//				updateDhcpInfo();
 			}
 
 			if (mManualSwitchIndicator.isChecked()) {
