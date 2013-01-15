@@ -672,12 +672,15 @@ int remove_force(const char *uri)
 		}
 		
 		DEBUG("remove Dir: %s\n", uri);
-		remove(uri);
 	}
 	else{
 		DEBUG("remove File: %s\n", uri);
-		remove(uri);
+		
 	}
+	
+	ret = remove(uri);
+	if(0!=ret)
+		ERROROUT("remove failed\n");
 	
 	return ret;   
 }

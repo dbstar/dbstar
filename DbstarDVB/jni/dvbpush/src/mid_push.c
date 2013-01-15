@@ -35,10 +35,7 @@
 #define MAX_PACK_BUF (60000)		//定义缓冲区大小，单位：包	1500*200000=280M
 //#define MEMSET_PUSHBUF_SAFE			// if MAX_PACK_BUF<200000 define
 
-/*
- 只有在进入“下载状态”页面才查询进度，不能用在当前push库中，因为需要通过监控下载进度获取节目下载完毕。
-*/
-//#define MONITOR_MIN
+#define CLEAR_COLUMN_AFTER_PARSED
 
 #define XML_NUM			8
 static PUSH_XML_S		s_push_xml[XML_NUM];
@@ -79,6 +76,7 @@ static int mid_push_regist(PROG_S *prog);
 static int mid_push_unregist(PROG_S *prog);
 static int push_decoder_buf_uninit();
 static int prog_name_fill();
+static int mid_push_forbid(const char *prog_uri, unsigned int sleep_sec_before_remove);
 
 #define PROGS_NUM 64
 static PROG_S s_prgs[PROGS_NUM];
@@ -355,10 +353,17 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 	return 0;
 }
 
-static int productdesc_parsed_set(char *xml_uri)
+static int productdesc_parsed_set(char *xml_uri, RECEIVETYPE_E prog_type)
 {
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
+
+#ifdef CLEAR_COLUMN_AFTER_PARSED
+	if(RECEIVETYPE_COLUMN==prog_type)
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1',ReceiveStatus='-2' WHERE DescURI='%s';", xml_uri);
+	else
+#endif
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
+	
 	return sqlite_execute(sqlite_cmd);
 }
 
@@ -606,7 +611,7 @@ void *push_monitor_thread()
 			if(0==s_prgs[i].parsed && (s_prgs[i].cur) >= (s_prgs[i].total)){
 				DEBUG("%s download finished, parse %s\n", s_prgs[i].uri,s_prgs[i].descURI);
 				push_prog_finish(s_prgs[i].id,s_prgs[i].type,s_prgs[i].descURI);
-				productdesc_parsed_set(s_prgs[i].descURI);
+				productdesc_parsed_set(s_prgs[i].descURI, s_prgs[i].type);
 				s_prgs[i].parsed = 1;
 			}
 		}
@@ -639,6 +644,20 @@ void *push_monitor_thread()
 			if(s_column_refresh>2){
 				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
 				s_column_refresh = 0;
+				
+#ifdef CLEAR_COLUMN_AFTER_PARSED
+				for(i=0; i<PROGS_NUM; i++)
+				{
+					if(-1==prog_is_valid(&s_prgs[i]))
+						continue;
+					
+					if(RECEIVETYPE_COLUMN==s_prgs[i].type){
+						DEBUG("reject and clear column dir(%s) after processed\n", s_prgs[i].uri);
+						mid_push_forbid(s_prgs[i].uri,2);
+						break;
+					}
+				}
+#endif
 			}
 		}
 		if(s_interface_refresh>0){
@@ -1104,7 +1123,46 @@ static int prog_name_fill()
 	return 0;
 }
 
-int mid_push_reject(const char *prog_uri,long long total_size)
+static int mid_push_forbid(const char *prog_uri, unsigned int sleep_sec_before_remove)
+{
+	if(NULL==prog_uri || 0==strlen(prog_uri) || sleep_sec_before_remove>10){
+		DEBUG("invalid args, sleep_sec_before_remove=%u\n", sleep_sec_before_remove);
+		return -1;
+	}
+	
+	int ret = 0;
+	
+	/*
+	调用push_dir_forbid之前，此节目必须先注册
+	*/
+	ret = push_dir_forbid(prog_uri);
+	if(0==ret){
+		DEBUG("push forbid: %s\n", prog_uri);
+		ret = push_dir_remove(prog_uri);
+		if(0==ret)
+			DEBUG("push remove: %s\n", prog_uri);
+		else if(-1==ret)
+			DEBUG("push remove failed: %s, no such uri\n", prog_uri);
+		else
+			DEBUG("push remove failed: %s, some other err(%d)\n", prog_uri, ret);
+		
+		if(sleep_sec_before_remove>0)
+			sleep(sleep_sec_before_remove);
+		
+		char reject_uri[128];
+		snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),prog_uri);
+		remove_force(reject_uri);
+		DEBUG("remove(%s) finished\n", reject_uri);
+	}
+	else if(-1==ret)
+		DEBUG("push forbid failed: %s, no such uri\n", prog_uri);
+	else
+		DEBUG("push forbid failed: %s, some other err(%d)\n", prog_uri, ret);
+	
+	return ret;
+}
+
+static int mid_push_reject(const char *prog_uri,long long total_size)
 {
 	if(NULL==prog_uri){
 		DEBUG("invalid prog_uri\n");
@@ -1116,26 +1174,7 @@ int mid_push_reject(const char *prog_uri,long long total_size)
 	if(0==ret){
 		DEBUG("regist %s to push for forbid\n", prog_uri);
 	
-		ret = push_dir_forbid(prog_uri);
-		if(0==ret){
-			DEBUG("push forbid: %s\n", prog_uri);
-			ret = push_dir_remove(prog_uri);
-			if(0==ret)
-				DEBUG("push remove: %s\n", prog_uri);
-			else if(-1==ret)
-				DEBUG("push remove failed: %s, no such uri\n", prog_uri);
-			else
-				DEBUG("push remove failed: %s, some other err(%d)\n", prog_uri, ret);
-			
-			char reject_uri[128];
-			snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),prog_uri);
-			remove_force(reject_uri);
-			DEBUG("remove(%s) finished\n", reject_uri);
-		}
-		else if(-1==ret)
-			DEBUG("push forbid failed: %s, no such uri\n", prog_uri);
-		else
-			DEBUG("push forbid failed: %s, some other err(%d)\n", prog_uri, ret);
+		ret = mid_push_forbid(prog_uri, 0);
 	}
 	else{
 		DEBUG("regist %s to push for forbid failed: %d\n", prog_uri, ret);
