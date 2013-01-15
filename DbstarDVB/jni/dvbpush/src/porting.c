@@ -1748,13 +1748,12 @@ static int special_productid_init()
 	return 0;
 }
 
-
 int intialize_xml_reset(void)
 {
 	char *ServiceID = serviceID_get();
 	if(0==strlen(ServiceID)){
-		DEBUG("I have no serviceID currently, so remove initialize.xml\n");
-#if 0		
+		DEBUG("have no serviceID currently, so remove initialize.xml\n");
+		
 		char sqlite_cmd[256];
 		char initialize_xml_uri[512];
 		
@@ -1775,10 +1774,9 @@ int intialize_xml_reset(void)
 			remove_force(total_xmluri);
 			DEBUG("remove %s\n", total_xmluri);
 		}
-#endif
 	}
 	else
-		DEBUG("ServiceID: %s", ServiceID);
+		DEBUG("already have ServiceID: %s", ServiceID);
 	
 	return 0;
 }
@@ -1787,10 +1785,14 @@ int smart_card_insert_flag_set(int insert_flag)
 {
 	s_smart_card_insert_flag = insert_flag;
 	
-	intialize_xml_reset();
-	
 	return 0;
 }
+
+int smart_card_insert_flag_get()
+{
+	return s_smart_card_insert_flag;
+}
+
 
 /*
  从智能卡中查询指定的产品信息。

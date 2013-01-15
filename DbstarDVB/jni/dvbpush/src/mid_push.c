@@ -51,6 +51,7 @@ static pthread_cond_t cond_push_rely_condition = PTHREAD_COND_INITIALIZER;
 static int s_push_rely_condition = 0;
 static int push_idle = 0;
 static int s_disk_manage_flag = 0;
+static int s_smart_card_insert_action = 0;
 
 //数据包结构
 typedef struct tagDataBuffer
@@ -679,6 +680,17 @@ void *push_monitor_thread()
 			DEBUG("will clean disk\n");
 			disk_manage();
 			s_disk_manage_flag = 0;
+		}
+		
+		if(0==s_smart_card_insert_action && 1==smart_card_insert_flag_get()){
+			DEBUG("have a smart card insert action\n");
+			intialize_xml_reset();
+			
+			s_smart_card_insert_action = 1;
+		}
+		else if(1==s_smart_card_insert_action && 0==smart_card_insert_flag_get()){
+			DEBUG("have a smart card remove action\n");
+			s_smart_card_insert_action = 0;
 		}
 	}
 	DEBUG("exit from push monitor thread\n");

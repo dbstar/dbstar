@@ -29,5 +29,7 @@ int guidelist_select_status(const char *publication_id);
 int guidelist_select_refresh();
 int disk_manage();
 int smart_card_insert_flag_set(int insert_flag);
+int smart_card_insert_flag_get();
+int intialize_xml_reset(void);
 
 #endif
