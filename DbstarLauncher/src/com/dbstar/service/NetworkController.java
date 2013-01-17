@@ -26,6 +26,8 @@ public class NetworkController extends BroadcastReceiver {
 	private static final int ETHERNET_PHYDISCONNECTED = 0x02;
 
 	private Context mContext;
+	private EthernetManager mEthManager;
+
 	private int mEthernetPhyState = ETHERNET_PHYNONE;
 	private boolean mEthernetWaitingDHCP;
 	private boolean mEthernetPhyConnect = false;
@@ -35,6 +37,17 @@ public class NetworkController extends BroadcastReceiver {
 	public NetworkController(Context context, Handler handler) {
 		mContext = context;
 		mHandler = handler;
+
+		mEthManager = (EthernetManager) mContext
+				.getSystemService(mContext.ETH_SERVICE);
+
+		if (mEthManager.isEthDeviceAdded()) {
+			mEthernetPhyState = ETHERNET_PHYCONNECTED;
+
+			configEthernet();
+		} else {
+			mEthernetPhyState = ETHERNET_PHYCONNECTED;
+		}
 
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(EthernetManager.ETH_STATE_CHANGED_ACTION);
@@ -58,18 +71,21 @@ public class NetworkController extends BroadcastReceiver {
 		final int event = intent.getIntExtra(EthernetManager.EXTRA_ETH_STATE,
 				EthernetStateTracker.EVENT_HW_DISCONNECTED);
 
-//		Log.d(TAG, "============== ethernet event ===========" + event);
-		System.out.print("============== ethernet event ===========" + event + "\n\n");
-		
+		// Log.d(TAG, "============== ethernet event ===========" + event);
+		System.out.print("============== ethernet event ===========" + event
+				+ "\n\n");
+
 		switch (event) {
 		case EthernetStateTracker.EVENT_HW_CONNECTED:
 			Log.d(TAG, "============== ethernet EVENT_HW_CONNECTED ===========");
 			return;
 		case EthernetStateTracker.EVENT_INTERFACE_CONFIGURATION_SUCCEEDED:
-			Log.d(TAG, "============== ethernet EVENT_INTERFACE_CONFIGURATION_SUCCEEDED ===========");
+			Log.d(TAG,
+					"============== ethernet EVENT_INTERFACE_CONFIGURATION_SUCCEEDED ===========");
 			return;
 		case EthernetStateTracker.EVENT_INTERFACE_CONFIGURATION_FAILED:
-			Log.d(TAG, "============== ethernet EVENT_INTERFACE_CONFIGURATION_FAILED ===========");
+			Log.d(TAG,
+					"============== ethernet EVENT_INTERFACE_CONFIGURATION_FAILED ===========");
 			return;
 
 		case EthernetStateTracker.EVENT_DHCP_START:
@@ -77,19 +93,22 @@ public class NetworkController extends BroadcastReceiver {
 			return;
 		case EthernetStateTracker.EVENT_HW_PHYCONNECTED:
 			Log.d(TAG, "============== ethernet connected ===========");
-			mEthernetPhyConnect = true;
-			mEthernetPhyState = ETHERNET_PHYCONNECTED;
-			configEthernet();
-			mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_PHYCONECTED);
+			if (mEthernetPhyState != ETHERNET_PHYCONNECTED) {
+				mEthernetPhyState = ETHERNET_PHYCONNECTED;
+				configEthernet();
+				mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_PHYCONECTED);
+			}
 			return;
 		case EthernetStateTracker.EVENT_HW_PHYDISCONNECTED:
 			Log.d(TAG, "============== ethernet disconnected ===========");
-			mEthernetPhyConnect = false;
-			mEthernetPhyState = ETHERNET_PHYDISCONNECTED;
-			mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_PHYDISCONECTED);
+			if (mEthernetPhyState != ETHERNET_PHYDISCONNECTED) {
+				mEthernetPhyState = ETHERNET_PHYDISCONNECTED;
+				mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_PHYDISCONECTED);
+			}
 			return;
 		case EthernetStateTracker.EVENT_HW_DISCONNECTED:
-			Log.d(TAG, "============== ethernet EVENT_HW_DISCONNECTED ===========");
+			Log.d(TAG,
+					"============== ethernet EVENT_HW_DISCONNECTED ===========");
 			boolean eth_onboard = SystemProperties.getBoolean(
 					"ro.hw.ethernet.onboard", false);
 			if (eth_onboard) {
@@ -109,10 +128,7 @@ public class NetworkController extends BroadcastReceiver {
 	}
 
 	private void dhcpFailed() {
-		EthernetManager ethManager = (EthernetManager) mContext
-				.getSystemService(mContext.ETH_SERVICE);
-
-		DhcpInfo dhcpInfo = ethManager.getDhcpInfo();
+		DhcpInfo dhcpInfo = mEthManager.getDhcpInfo();
 
 		boolean privateIpValide = false;
 		if (dhcpInfo != null) {
@@ -127,13 +143,11 @@ public class NetworkController extends BroadcastReceiver {
 	}
 
 	public void configEthernet() {
-		EthernetManager ethManager = (EthernetManager) mContext
-				.getSystemService(Context.ETH_SERVICE);
-		if (ethManager.isEthConfigured()) {
-			EthernetDevInfo ethInfo = ethManager.getSavedEthConfig();
+		if (mEthManager.isEthConfigured()) {
+			EthernetDevInfo ethInfo = mEthManager.getSavedEthConfig();
 			if (ethInfo.getConnectMode().equals(
 					EthernetDevInfo.ETH_CONN_MODE_DHCP)) {
-				ethManager.updateEthDevInfo(ethInfo);
+				mEthManager.updateEthDevInfo(ethInfo);
 			}
 		}
 	}
