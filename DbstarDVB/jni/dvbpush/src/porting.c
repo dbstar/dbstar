@@ -54,10 +54,10 @@ static char			s_special_ProductID[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
-static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int date_str_size);
 static int serviceID_init();
 static int push_dir_init();
 static int cur_language_init();
+static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
 
 static int special_productid_init();
 
@@ -894,8 +894,8 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 			if(0!=EntitleInfo[i].m_ID){
 				memset(BeginDate, 0, sizeof(BeginDate));
 				memset(ExpireDate, 0, sizeof(ExpireDate));
-				if(		0==drm_date_convert(EntitleInfo[i].m_ProductStartTime, BeginDate, sizeof(BeginDate))
-					&& 	0==drm_date_convert(EntitleInfo[i].m_ProductEndTime, ExpireDate, sizeof(ExpireDate))){
+				if(		0==drm_time_convert(EntitleInfo[i].m_ProductStartTime, BeginDate, sizeof(BeginDate))
+					&& 	0==drm_time_convert(EntitleInfo[i].m_ProductEndTime, ExpireDate, sizeof(ExpireDate))){
 					;
 				}
 				
@@ -999,7 +999,7 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 			for(i=0;i<byCount;i++)
 			{
 				memset(email_createtime,0,sizeof(email_createtime));
-				drm_date_convert(EmailHeads[i].m_tCreateTime, email_createtime, sizeof(email_createtime));
+				drm_time_convert(EmailHeads[i].m_tCreateTime, email_createtime, sizeof(email_createtime));
 				if(0==i)
 					snprintf(buf,size,"%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,EmailHeads[i].m_bNewEmail,EmailHeads[i].m_szEmailHead);
 				else
@@ -1080,8 +1080,8 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 					for(j=0;j<ProgramInfo[i].m_PackNum;j++){
 						memset(BeginDate, 0, sizeof(BeginDate));
 						memset(ExpireDate, 0, sizeof(ExpireDate));
-						if(		0==drm_date_convert(ProgramInfo[i].m_Packs[j].m_IssueStartTime, BeginDate, sizeof(BeginDate))
-							&& 	0==drm_date_convert(ProgramInfo[i].m_Packs[j].m_IssueEndTime, ExpireDate, sizeof(ExpireDate))){
+						if(		0==drm_time_convert(ProgramInfo[i].m_Packs[j].m_IssueStartTime, BeginDate, sizeof(BeginDate))
+							&& 	0==drm_time_convert(ProgramInfo[i].m_Packs[j].m_IssueEndTime, ExpireDate, sizeof(ExpireDate))){
 							;
 						}
 						if(0==i)
@@ -1437,8 +1437,8 @@ void upgrade_info_init()
 //				for(index=0;index<Entitle.m_wProductCount;index++){
 //					memset(BeginDate, 0, sizeof(BeginDate));
 //					memset(ExpireDate, 0, sizeof(ExpireDate));
-//					if(		0==drm_date_convert(Entitle.m_Entitles[index].m_tBeginDate, BeginDate, sizeof(BeginDate))
-//						&& 	0==drm_date_convert(Entitle.m_Entitles[index].m_tExpireDate, ExpireDate, sizeof(ExpireDate))){
+//					if(		0==drm_time_convert(Entitle.m_Entitles[index].m_tBeginDate, BeginDate, sizeof(BeginDate))
+//						&& 	0==drm_time_convert(Entitle.m_Entitles[index].m_tExpireDate, ExpireDate, sizeof(ExpireDate))){
 //						DEBUG("[Operator %d]Product id: %lu, Product Expire: %s-%s, CanTape: %d\n", wArrTvsID[j],Entitle.m_Entitles[index].m_dwProductID,
 //							BeginDate,ExpireDate,Entitle.m_Entitles[index].m_bCanTape);
 //					}
@@ -1567,7 +1567,7 @@ void drm_date_time_test()
 /*
  参考drm_date_time_test实现，将drm中的date转换为年月日。date为自2000年1月1日开始的天数，详见drm移植文档。
 */
-static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int date_str_size)
+static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size)
 {
 	if(NULL==date_str || 0==date_str_size){
 		DEBUG("invalid args\n");
@@ -1584,11 +1584,23 @@ static int drm_date_convert(unsigned int drm_date, char *date_str, unsigned int 
 	tm_appointed.tm_year = (2000-1900);
 	tm_appointed.tm_isdst = 0;
 	sec_appointed = mktime(&tm_appointed);
-	sec_appointed += (drm_date*24*60*60);
-	p = localtime(&sec_appointed);
-	snprintf(date_str, date_str_size, "%04d-%02d-%02d", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday);
 	
-	DEBUG("origine drm date=%u, trans as %s\n", drm_date,date_str);
+	p = localtime(&sec_appointed);
+	//DEBUG("%dYear %dMon %dDay: %dHour %dMin %dSec\n", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
+	
+	unsigned int drm_date	= ((drm_time & 0xffff0000)>>16);
+	unsigned int drm_hour	= ((drm_time & 0x0000f800)>>11);
+	unsigned int drm_min	= ((drm_time & 0x000007e0)>>5);
+	unsigned int drm_2secs	= (drm_time & 0x0000001f);
+	
+	DEBUG("drm_time=%u, drm_date=%u, drm_hour=%u, drm_min=%u, drm_2secs=%u\n", drm_time,drm_date,drm_hour,drm_min, drm_2secs);
+	
+	sec_appointed += ((drm_date*24*60*60)+(drm_hour*60*60)+(drm_min*60)+(drm_2secs*2));
+	
+	p = localtime(&sec_appointed);
+	snprintf(date_str, date_str_size, "%04d-%02d-%02d %02d:%02d:%02d", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
+	
+	DEBUG("origine drm_time=%u, trans as %s\n", drm_time,date_str);
 	
 	return 0;
 }

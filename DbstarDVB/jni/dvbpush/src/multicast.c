@@ -54,7 +54,6 @@ static pthread_t pth_igmp_id;
 
 static pthread_mutex_t mtx_net_rely_condition = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_net_rely_condition = PTHREAD_COND_INITIALIZER;
-static int s_net_rely_condition = 0;
 static int s_igmp_restart = 0;
 static int s_igmp_recvbuf_init_flag = 0;
 
@@ -170,22 +169,24 @@ static void *igmp_thread()
 
 MULTITASK_START:
 	pthread_mutex_lock(&mtx_net_rely_condition);
+#if 0
 	pthread_cond_wait(&cond_net_rely_condition,&mtx_net_rely_condition); //wait
+#else
+	gettimeofday(&now, NULL);
+	outtime.tv_sec = now.tv_sec + 120;
+	outtime.tv_nsec = now.tv_usec;
+	retcode = pthread_cond_timedwait(&cond_net_rely_condition, &mtx_net_rely_condition, &outtime);
+	if(ETIMEDOUT!=retcode){
+		DEBUG("igmp thread is awaked by external signal\n");
+	}
+	else
+		DEBUG("igmp thread is awaked timeout\n");
+#endif
 	pthread_mutex_unlock(&mtx_net_rely_condition);
 	
 	/*
 	 只要具备网络条件即可启动组播业务，不需要等待硬盘。因为升级不需要硬盘，有flash即可。
 	*/
-	if(RELY_CONDITION_NET & s_net_rely_condition)
-		DEBUG("network condition is ready\n");
-	else if(s_net_rely_condition&RELY_CONDITION_EXIT){
-		DEBUG("exit from here by external action\n");
-		return NULL;
-	}
-	else{
-		DEBUG("net rely condition is not ready, %d\n", s_net_rely_condition);
-		goto MULTITASK_START;
-	}
 	
 	sleep(2);
 	DEBUG("igmp thread will goto its main loop\n");
@@ -352,7 +353,7 @@ MULTITASK_START:
 				s_data_stream_status --;
 		}
 		
-		if (recv_len < 1024)
+		if (recv_len < 16)
 		{
             usleep(10000);
             if(1==s_igmp_restart){
@@ -394,20 +395,14 @@ void net_rely_condition_set(int cmd)
 */
 	if(CMD_NETWORK_DISCONNECT==cmd || CMD_NETWORK_CONNECT==cmd){
 		pthread_mutex_lock(&mtx_net_rely_condition);
-		int tmp_cond = s_net_rely_condition;
 		if(CMD_NETWORK_DISCONNECT==cmd){
+			DEBUG("this is a network disconnect signal\n");
 			s_igmp_restart = 1;
-			s_net_rely_condition = s_net_rely_condition & (~RELY_CONDITION_NET);
 		}
-		else if(CMD_NETWORK_CONNECT==cmd){
-			s_net_rely_condition = s_net_rely_condition | RELY_CONDITION_NET;
+		else{	// (CMD_NETWORK_CONNECT==cmd)
+			DEBUG("this is a network connect signal\n");
+			pthread_cond_signal(&cond_net_rely_condition);
 		}
-		else{
-			DEBUG("what a fucking check you do, such cmd: 0x%x\n", cmd);
-			pthread_mutex_unlock(&mtx_net_rely_condition);
-		}
-		DEBUG("net origine %d, cmd 0x%x, so s_net_rely_condition is %d\n", tmp_cond, cmd, s_net_rely_condition);
-		pthread_cond_signal(&cond_net_rely_condition);
 		pthread_mutex_unlock(&mtx_net_rely_condition);
 		
 		return;
@@ -452,18 +447,21 @@ void *softdvb_thread()
 	int left = 0;
 	
 	softdvb_running = 1;
-	
+
+#if 0	
 	/*
 	由于加入组播组是在一个线程中进行的，容易出现加入组播工作还未完毕，这里就已经开始判断igmp_running，从而导致错误退出。
 	所以这里延迟一下判断。
 	*/
 	int i = 0;
-	for(i=0; i<100; i++){
+	for(i=0; i<1000; i++){
 		if(1!=softdvb_running)
 			break;
 		
-		if(1==s_igmp_running)
+		if(1==s_igmp_running){
+			DEBUG("s_igmp_running is 1\n");
 			break;
+		}
 		else{
 			usleep(100000);
 			first_aid_for_igmp(1);
@@ -471,6 +469,9 @@ void *softdvb_thread()
 	}
 	
 	first_aid_for_igmp(0);
+#endif
+
+	DEBUG("go to softdvb_thread mainloop\n");
 	/*
 	 组播任务的开启、关闭会根据网络情况处理，这里就不再判断igmp_running了，要不然逻辑很复杂。
 	*/
