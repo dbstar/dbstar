@@ -413,7 +413,7 @@ void net_rely_condition_set(int cmd)
 	}
 }
 
-
+#if 0
 /*
 	如果softdvb线程长时间没有数据，就有可能是DbstarDVB.apk被重启，igmp线程等不到网络连接信号所致。
 	为了救急，在softdvb的循环中提供唤醒功能。
@@ -440,7 +440,7 @@ static int first_aid_for_igmp(int flag)
 	
 	return 0;
 }
-
+#endif
 
 void *softdvb_thread()
 {

@@ -642,11 +642,12 @@ int disk_manage()
 // 目前只做一个简单的磁盘整理，不考虑未纳入数据库管理的文件（需要扫描磁盘才能实现）
 	char sqlite_cmd[1024];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = disk_manage_cb;
-	char time_stamp[32];
-	memset(time_stamp,0,sizeof(time_stamp));
 	char deleted_publicationids[1024];
 	memset(deleted_publicationids,0,sizeof(deleted_publicationids));
-	
+
+#if 0
+	char time_stamp[32];
+	memset(time_stamp,0,sizeof(time_stamp));
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
 	if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
 		DEBUG("can not process push regist\n");
@@ -661,8 +662,15 @@ int disk_manage()
 /*
  仔细考虑时，还应当加入ReceiveStatus条件，这些没有收全的文件应当被优先删除。
 */
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted FROM Publication WHERE PushEndTime<'%s' GROUP BY PublicationID ORDER BY Deleted DESC,TimeStamp;",time_stamp);
+#else
+
+/*
+ 节目下载完毕后，才插入Publication，因此从Publication表中直接读取时，节目一定是下载完毕了，可以删除，无需判断PushEndTime和ReceiveStatus。
+*/
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted FROM Publication GROUP BY PublicationID ORDER BY Deleted DESC,TimeStamp;");
+#endif
 	s_delete_total_size = 0LL;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted from Publication where PushEndTime<'%s' order by Deleted DESC,TimeStamp;",time_stamp);
 	int ret = sqlite_read(sqlite_cmd, deleted_publicationids, sizeof(deleted_publicationids), sqlite_callback);
 	if(ret>0){
 		DEBUG("delete such Publications: %s\n", deleted_publicationids);
@@ -708,7 +716,7 @@ int disk_manage()
 				}
 				
 				snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'", p_publicationid);
-				snprintf(sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
+				snprintf(sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr)," ((ObjectName='Publication' OR ObjectName='MFile') AND EntityID='%s')", p_publicationid);
 				snprintf(sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
 				snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
 				snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA)," PublicationID='%s'", p_publicationid);
