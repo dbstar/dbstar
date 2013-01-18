@@ -771,9 +771,13 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Publication SET ColumnID='-1' WHERE PublicationID='%s';",p->PublicationID);
 	sqlite_transaction_exec(sqlite_cmd);
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(ServiceID,PreviewID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,ReceiveStatus) \
-VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','1');",
-p->ServiceID,p->PreviewID,p->PreviewType,p->PreviewSize,p->ShowTime,p->PreviewURI,p->PreviewFormat,p->Duration,p->Resolution,p->BitRate,p->CodeFormat);
+/*
+ 警告，修改后的Preview是Publication的一种，因此将Preview表中的ProductDescID字段用作PublicationID，用以建立Publication和Preview之间的关系
+*/
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(ServiceID,PreviewID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,ProductDescID,ReceiveStatus) \
+VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','1');",
+p->ServiceID,p->PreviewID,p->PreviewType,p->PreviewSize,p->ShowTime,p->PreviewURI,p->PreviewFormat,p->Duration,p->Resolution,p->BitRate,p->CodeFormat,p->PublicationID);
 	
 	s_preview_publication = 1;
 	
