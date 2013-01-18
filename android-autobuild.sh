@@ -326,10 +326,12 @@ dbstar_make()
 		call mmm $DBSTAR_SRC/DbstarDVB -B
 		call mmm $DBSTAR_SRC/DbstarLauncher -B
 		call mmm $DBSTAR_SRC/DbstarSettings -B
+		call mmm $DBSTAR_SRC/GuodianApp -B
 	else
 		call mmm $DBSTAR_SRC/DbstarDVB
 		call mmm $DBSTAR_SRC/DbstarLauncher
 		call mmm $DBSTAR_SRC/DbstarSettings
+		call mmm $DBSTAR_SRC/GuodianApp
 	fi
 	if [ $? -eq 0 ]; then
 		logger "FINISH make dbstar"
