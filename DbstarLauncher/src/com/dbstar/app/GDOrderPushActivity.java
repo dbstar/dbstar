@@ -53,7 +53,6 @@ public class GDOrderPushActivity extends GDBaseActivity {
 	int mTasksPageNumber;
 	int mTasksPageCount;
 	ReceiveTask mCurrentTask;
-	int mTaskIndex = -1;
 
 	ReceiveItem[] mReceiveItemCurrentPage;
 	int mReceiveItemIndex = -1;
@@ -145,18 +144,13 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			public void onItemSelected(GDAdapterView<?> parent, View view,
 					int position, long id) {
 
-				Log.d(TAG, "old mTaskIndex = " + mTaskIndex + " new pos = "
-						+ position);
-
-				mTaskIndex = position;
-
 				ReceiveTask[] tasks = mTaskPages.get(mTasksPageNumber);
 				mCurrentTask = tasks[position];
 				mReceiveItemCurrentPage = mCurrentTask.ItemPages
 						.get(mCurrentTask.ItemsPageNumber);
 				mReceiveItemAdapter.setDataSet(mReceiveItemCurrentPage);
 				mReceiveItemAdapter.notifyDataSetChanged();
-
+				mListView.setSelection(0);
 				mListView.invalidate();
 			}
 
@@ -242,15 +236,14 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			if (index == (pageSize - 1)) {
 				if (mTasksPageNumber < (mTasksPageCount - 1)) {
 					mTasksPageNumber++;
-
-					mTaskIndex = -1;
+					mReceiveItemIndex = -1;
 					ReceiveTask[] tasks = mTaskPages.get(mTasksPageNumber);
 					mTimelineAdapter.setDataSet(tasks);
 					mTimelineAdapter.notifyDataSetChanged();
 					mTimelineView.setSelection(0);
 				}
 			} else {
-				if (index >= 0) {
+				if (index >= 0 && index < (pageSize - 1)) {
 					mTimelineView.setSelection(index + 1);
 				} else {
 					mTimelineView.setSelection(0);
@@ -264,7 +257,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			if (index == 0) {
 				if (mTasksPageNumber > 0) {
 					mTasksPageNumber--;
-
+					mReceiveItemIndex = -1;
 					ReceiveTask[] tasks = mTaskPages.get(mTasksPageNumber);
 					mTimelineAdapter.setDataSet(tasks);
 					mTimelineAdapter.notifyDataSetChanged();
@@ -328,7 +321,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 					mListView.setSelection(0);
 				}
 			} else {
-				if (index >= 0) {
+				if (index >= 0 && index < (pageSize - 1)) {
 					mListView.setSelection(index + 1);
 				} else {
 					mListView.setSelection(0);
@@ -493,10 +486,13 @@ public class GDOrderPushActivity extends GDBaseActivity {
 				switch (keyCode) {
 				case KeyEvent.KEYCODE_ENTER:
 				case KeyEvent.KEYCODE_DPAD_CENTER: {
-					ReceiveItem item = mReceiveItemCurrentPage[mReceiveItemIndex];
-					item.setIsReceive(!item.isReceive());
+					int index = mListView.getSelectedItemPosition();
+					if (index >= 0 && index < mReceiveItemAdapter.getCount()) {
+						ReceiveItem item = mReceiveItemCurrentPage[index];
+						item.setIsReceive(!item.isReceive());
 
-					mReceiveItemAdapter.notifyDataSetChanged();
+						mReceiveItemAdapter.notifyDataSetChanged();
+					}
 					return true;
 				}
 				}
@@ -646,9 +642,6 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			Drawable d = mDataSet[position].isReceive() ? mReceiveItemChecked
 					: mReceiveItemUnchecked;
 			holder.checkerView.setImageDrawable(d);
-			// Log.d(TAG, "get view position = " + position
-			// + " mReceiveItemIndex " + mReceiveItemIndex + " checked = " +
-			// mDataSet[position].isReceive);
 
 			if (position == mListView.getSelectedItemPosition()) {
 				convertView
