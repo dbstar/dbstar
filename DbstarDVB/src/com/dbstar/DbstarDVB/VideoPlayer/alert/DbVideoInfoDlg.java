@@ -94,15 +94,24 @@ public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 	public boolean dispatchKeyEvent(KeyEvent event) {
 
 		if (event.getAction() == KeyEvent.ACTION_DOWN) {
-			Log.d("DbVideoInfoDlg",
-					"==== onKeyDown keyCode ====" + event.getKeyCode());
 
-			if (mState != null) {
+			if (mState != null
+					&& event.getKeyCode() != KeyEvent.KEYCODE_NOTIFICATION) {
 				mState.keyEvent(event.getKeyCode(), event);
 			}
 		}
 
 		return super.dispatchKeyEvent(event);
+	}
+
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+		if (keyCode == KeyEvent.KEYCODE_NOTIFICATION) {
+			this.dismiss();
+			return true;
+		}
+
+		return super.onKeyDown(keyCode, event);
 	}
 
 	public ViewState getState(String id) {

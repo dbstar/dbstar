@@ -9,10 +9,16 @@
         <item name="android:windowBackground">@color/transparent_background</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@style/PlayerDialogAnimation</item>
     </style>
-    
+
     <style name="PlayerTheme" parent="@android:style/Theme.NoTitleBar.Fullscreen">
         <item name="android:windowBackground">@drawable/trans</item>
+    </style>
+
+    <style name="PlayerDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
     </style>
 
 </resources>

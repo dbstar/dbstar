@@ -563,8 +563,9 @@ public class PlayerMenu extends PlayerActivity {
 		case KeyEvent.KEYCODE_NOTIFICATION: {
 			Log.d(TAG, " osd state ======================= " + mOSDState);
 			setOSDOn(true);
-			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
-					MSG_DIALOG_TIMEOUT);
+//			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
+//					MSG_DIALOG_TIMEOUT);
+			showDialog(DLG_ID_MEDIAINFO);
 			return true;
 		}
 
