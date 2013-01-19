@@ -366,6 +366,7 @@ autobuild()
 	fi
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_ALL ]; then
 		dbstar_patch
+		rootfs_make
 		dbstar_make
 		kernel_make
 		recovery_make
