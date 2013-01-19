@@ -506,15 +506,15 @@ public class PlayerMenu extends PlayerActivity {
 			return true;
 
 		}
-		case KeyEvent.KEYCODE_MENU:
-		case KeyEvent.KEYCODE_9: {
-			if (mInfoBar.getVisibility() == View.VISIBLE) {
-				hideInfoBar();
-			} else {
-				showInfoBar(true);
-			}
-			return true;
-		}
+//		case KeyEvent.KEYCODE_MENU:
+//		case KeyEvent.KEYCODE_9: {
+//			if (mInfoBar.getVisibility() == View.VISIBLE) {
+//				hideInfoBar();
+//			} else {
+//				showInfoBar(true);
+//			}
+//			return true;
+//		}
 
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 		case KeyEvent.KEYCODE_DPAD_CENTER: {
