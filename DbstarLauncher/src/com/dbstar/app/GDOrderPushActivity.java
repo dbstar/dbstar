@@ -53,10 +53,10 @@ public class GDOrderPushActivity extends GDBaseActivity {
 	int mTasksPageNumber;
 	int mTasksPageCount;
 	ReceiveTask mCurrentTask;
-	int mTaskIndex = -1, mOldTaskIndex = -1;
+	int mTaskIndex = -1;
 
 	ReceiveItem[] mReceiveItemCurrentPage;
-	int mReceiveItemIndex = -1, mOldReceiveItemIndex = -1;
+	int mReceiveItemIndex = -1;
 
 	class ReceiveItem {
 
@@ -148,7 +148,6 @@ public class GDOrderPushActivity extends GDBaseActivity {
 				Log.d(TAG, "old mTaskIndex = " + mTaskIndex + " new pos = "
 						+ position);
 
-				mOldTaskIndex = mTaskIndex;
 				mTaskIndex = position;
 
 				ReceiveTask[] tasks = mTaskPages.get(mTasksPageNumber);
@@ -178,14 +177,13 @@ public class GDOrderPushActivity extends GDBaseActivity {
 					View oldSel = mListView.getChildAt(mReceiveItemIndex);
 					Drawable d = position % 2 == 0 ? mReceiveItemLightBackground
 							: mReceiveItemDarkBackground;
-					oldSel.setBackgroundDrawable(d);
+					if (oldSel != null) {
+						oldSel.setBackgroundDrawable(d);
+					}
 				}
 
 				mReceiveItemIndex = position;
 				view.setBackgroundDrawable(mReceiveItemFocusedBackground);
-
-//				mOldReceiveItemIndex = mReceiveItemIndex;
-//				mReceiveItemIndex = position;
 			}
 
 			@Override
@@ -236,6 +234,108 @@ public class GDOrderPushActivity extends GDBaseActivity {
 							.toArray(new GuideListItem[items.size()]));
 				}
 			}
+		} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+
+			int index = mTimelineView.getSelectedItemPosition();
+			int pageSize = Math.min(TIMELINE_ITEMS_COUNT,
+					mTimelineAdapter.getCount());
+			if (index == (pageSize - 1)) {
+				if (mTasksPageNumber < (mTasksPageCount - 1)) {
+					mTasksPageNumber++;
+
+					mTaskIndex = -1;
+					ReceiveTask[] tasks = mTaskPages.get(mTasksPageNumber);
+					mTimelineAdapter.setDataSet(tasks);
+					mTimelineAdapter.notifyDataSetChanged();
+					mTimelineView.setSelection(0);
+				}
+			} else {
+				if (index >= 0) {
+					mTimelineView.setSelection(index + 1);
+				} else {
+					mTimelineView.setSelection(0);
+				}
+			}
+
+			return true;
+
+		} else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+			int index = mTimelineView.getSelectedItemPosition();
+			if (index == 0) {
+				if (mTasksPageNumber > 0) {
+					mTasksPageNumber--;
+
+					ReceiveTask[] tasks = mTaskPages.get(mTasksPageNumber);
+					mTimelineAdapter.setDataSet(tasks);
+					mTimelineAdapter.notifyDataSetChanged();
+					mTimelineView.setSelection(TIMELINE_ITEMS_COUNT - 1);
+				}
+			} else {
+				if (index > 0) {
+					mTimelineView.setSelection(index - 1);
+				} else {
+					mTimelineView.setSelection(TIMELINE_ITEMS_COUNT - 1);
+				}
+			}
+
+			return true;
+
+		} else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+			int pageNumber = mCurrentTask.ItemsPageNumber;
+			int index = mListView.getSelectedItemPosition();
+			if (index == 0) {
+				if (pageNumber > 0) {
+					mCurrentTask.ItemsPageNumber--;
+					pageNumber = mCurrentTask.ItemsPageNumber;
+
+					mReceiveItemIndex = -1;
+					mReceiveItemCurrentPage = mCurrentTask.ItemPages
+							.get(pageNumber);
+					mReceiveItemAdapter.setDataSet(mReceiveItemCurrentPage);
+					mReceiveItemAdapter.notifyDataSetChanged();
+					mListView.setSelection(RECEIVE_ITEMS_COUNT - 1);
+				}
+			} else {
+
+				if (index > 0) {
+					mListView.setSelection(index - 1);
+				} else {
+					mListView.setSelection(RECEIVE_ITEMS_COUNT - 1);
+				}
+			}
+
+			return true;
+
+		} else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+			int pageNumber = mCurrentTask.ItemsPageNumber;
+
+			int index = mListView.getSelectedItemPosition();
+
+			int pageSize = Math.min(RECEIVE_ITEMS_COUNT,
+					mReceiveItemAdapter.getCount());
+
+			if (index == (pageSize - 1)) {
+				if (pageNumber < (mCurrentTask.ItemsPageCount - 1)) {
+					mCurrentTask.ItemsPageNumber++;
+					pageNumber = mCurrentTask.ItemsPageNumber;
+
+					mReceiveItemIndex = -1;
+					mReceiveItemCurrentPage = mCurrentTask.ItemPages
+							.get(pageNumber);
+					mReceiveItemAdapter.setDataSet(mReceiveItemCurrentPage);
+					mReceiveItemAdapter.notifyDataSetChanged();
+
+					mListView.setSelection(0);
+				}
+			} else {
+				if (index >= 0) {
+					mListView.setSelection(index + 1);
+				} else {
+					mListView.setSelection(0);
+				}
+			}
+
+			return true;
 		}
 
 		return super.onKeyDown(keyCode, event);
@@ -296,7 +396,9 @@ public class GDOrderPushActivity extends GDBaseActivity {
 
 	void formItemsPages(ReceiveTask task) {
 		task.ItemPages = new ArrayList<ReceiveItem[]>();
+		task.ItemsPageNumber = 0;
 		ArrayList<GuideListItem> items = task.allItems;
+		task.ItemsCount = items.size();
 		while (items.size() > 0) {
 			int pageSize = RECEIVE_ITEMS_COUNT;
 			if (items.size() < RECEIVE_ITEMS_COUNT) {
@@ -311,7 +413,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 				listItems[i] = item;
 			}
 			task.ItemPages.add(listItems);
-			task.ItemsCount++;
+			task.ItemsPageCount++;
 		}
 	}
 
