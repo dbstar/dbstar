@@ -502,8 +502,11 @@ public class GDHDMovieActivity extends GDBaseActivity {
 							ret = true;
 						}
 					} else if (currentItem == (mAdapter.getCount() - 1)) {
-						// mSmallThumbnailView.setSelection(0);
-						loadNextPage();
+						if (currentItem == (PageSize - 1)) {
+							loadNextPage();
+						} else {
+							mSmallThumbnailView.setSelection(0);
+						}
 						ret = true;
 					} else {
 					}
