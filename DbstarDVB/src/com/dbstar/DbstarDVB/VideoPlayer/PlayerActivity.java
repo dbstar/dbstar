@@ -98,9 +98,9 @@ public class PlayerActivity extends Activity {
 
 	// Application Message
 	protected static final int MSG_DIALOG_POPUP = 0x30001;
-	
+
 	protected boolean mIsSmartcardIn = false;
-	
+
 	protected SmartcardStateTracker mSmartcardTacker = null;
 
 	protected Handler mHandler = new Handler() {
@@ -199,13 +199,13 @@ public class PlayerActivity extends Activity {
 
 	void setupSmartcardInfoDlg(int smartcardState) {
 		mSmartcardDialog.setTitle(R.string.smartcard_status_title);
-		
-		if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTING ||
-				smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
+
+		if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTING
+				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_in);
-		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVING ||
-				smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVEOK ||
-				smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVEFAILED) {
+		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVING
+				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVEOK
+				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVEFAILED) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_out);
 		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTFAILED) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_invlid);
@@ -373,8 +373,11 @@ public class PlayerActivity extends Activity {
 	}
 
 	void increaseVolume() {
+		if (mIsMute) {
+			setMute(false);
+		}
 
-		if (mIsMute || mVolumeLevel == mMaxVolumeLevel)
+		if (mVolumeLevel == mMaxVolumeLevel)
 			return;
 
 		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
@@ -383,13 +386,18 @@ public class PlayerActivity extends Activity {
 		mVolumeLevel += VOLUME_ADJUST_STEP[mVolumeLevelIndex];
 		mVolumeLevelIndex++;
 
-		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel, 0);
+		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
+				0);
 
 		updateSoundVolumeView();
 	}
 
 	void decreaseVolume() {
-		if (mIsMute || mVolumeLevel == 0)
+		if (mIsMute) {
+			setMute(false);
+		}
+
+		if (mVolumeLevel == 0)
 			return;
 
 		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
@@ -402,6 +410,10 @@ public class PlayerActivity extends Activity {
 				0);
 
 		updateSoundVolumeView();
+	}
+
+	protected void setMute(boolean mute) {
+
 	}
 
 	protected void displayInit() {
@@ -677,9 +689,9 @@ public class PlayerActivity extends Activity {
 
 	}
 
-//	protected void smartcardResetOK() {
-//
-//	}
+	// protected void smartcardResetOK() {
+	//
+	// }
 
 	protected void setOSDOn(boolean on) {
 

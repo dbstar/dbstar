@@ -706,7 +706,7 @@ public class PlayerMenu extends PlayerActivity {
 		mLongPressTimer.schedule(mLongPressTask, 3000, 3000);
 	}
 
-	void setMute(boolean mute) {
+	public void setMute(boolean mute) {
 		if (mIsMute != mute) {
 			mIsMute = mute;
 			int resId = mute ? R.drawable.sound_mute : R.drawable.sound_unmute;
