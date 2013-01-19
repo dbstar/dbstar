@@ -49,6 +49,8 @@ public class NetworkController extends BroadcastReceiver {
 			mEthernetPhyState = ETHERNET_PHYDISCONNECTED;
 		}
 
+		Log.d(TAG, "=========== hw  ====== " + mEthernetPhyState);
+
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(EthernetManager.ETH_STATE_CHANGED_ACTION);
 
@@ -64,6 +66,9 @@ public class NetworkController extends BroadcastReceiver {
 	}
 
 	public boolean isEthernetPhyConnected() {
+		Log.d(TAG, "========= isEthernetPhyConnected ==========="
+				+ mEthernetPhyState);
+
 		return mEthernetPhyState == ETHERNET_PHYCONNECTED;
 	}
 
@@ -71,9 +76,7 @@ public class NetworkController extends BroadcastReceiver {
 		final int event = intent.getIntExtra(EthernetManager.EXTRA_ETH_STATE,
 				EthernetStateTracker.EVENT_HW_DISCONNECTED);
 
-		// Log.d(TAG, "============== ethernet event ===========" + event);
-		System.out.print("============== ethernet event ===========" + event
-				+ "\n\n");
+		Log.d(TAG, "============== ethernet event ===========" + event);
 
 		switch (event) {
 		case EthernetStateTracker.EVENT_HW_CONNECTED:
@@ -92,7 +95,8 @@ public class NetworkController extends BroadcastReceiver {
 			Log.d(TAG, "============== ethernet EVENT_DHCP_START ===========");
 			return;
 		case EthernetStateTracker.EVENT_HW_PHYCONNECTED:
-			Log.d(TAG, "============== ethernet connected ===========");
+			Log.d(TAG, "============== ethernet connected ==========="
+					+ mEthernetPhyState);
 			if (mEthernetPhyState != ETHERNET_PHYCONNECTED) {
 				mEthernetPhyState = ETHERNET_PHYCONNECTED;
 				configEthernet();
@@ -100,20 +104,23 @@ public class NetworkController extends BroadcastReceiver {
 			}
 			return;
 		case EthernetStateTracker.EVENT_HW_PHYDISCONNECTED:
-			Log.d(TAG, "============== ethernet disconnected ===========");
-			if (mEthernetPhyState != ETHERNET_PHYDISCONNECTED) {
-				mEthernetPhyState = ETHERNET_PHYDISCONNECTED;
-				mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_PHYDISCONECTED);
-			}
-			return;
 		case EthernetStateTracker.EVENT_HW_DISCONNECTED:
-			Log.d(TAG,
-					"============== ethernet EVENT_HW_DISCONNECTED ===========");
+			Log.d(TAG, "========= ethernet EVENT_HW_DISCONNECTED ==========="
+					+ mEthernetPhyState);
 			boolean eth_onboard = SystemProperties.getBoolean(
 					"ro.hw.ethernet.onboard", false);
 			if (eth_onboard) {
 				mEthernetPhyConnect = false;
 				mEthernetWaitingDHCP = false;
+
+				Log.d(TAG, "========= ethernet EVENT_HW_DISCONNECTED ======="
+						+ mEthernetPhyState);
+				int hwState = mEthManager.isEthDeviceAdded() ? ETHERNET_PHYCONNECTED
+						: ETHERNET_PHYDISCONNECTED;
+				if (mEthernetPhyState != hwState && hwState == ETHERNET_PHYDISCONNECTED) {
+					mEthernetPhyState = hwState;
+					mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_PHYDISCONECTED);
+				}
 			}
 			return;
 		case EthernetStateTracker.EVENT_HW_CHANGED:
