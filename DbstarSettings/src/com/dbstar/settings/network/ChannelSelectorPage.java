@@ -149,13 +149,19 @@ public class ChannelSelectorPage extends BaseFragment {
 		@Override
 		public void onClick(View v) {
 			if (v.getId() == R.id.cable_check_button) {
-				mIsEthernetSelected = !mEthernetSwitchIndicator.isChecked();
-				mIsWirelessSelected = !mIsEthernetSelected;
+				if (mEthernetSwitchIndicator.isChecked())
+					return;
+				
+				mIsEthernetSelected = true;
+				mIsWirelessSelected = false;
 				mEthernetSwitchIndicator.setChecked(mIsEthernetSelected);
 				mWifiSwitchIndicator.setChecked(mIsWirelessSelected);
 			} else if (v.getId() == R.id.wireless_check_button) {
-				mIsWirelessSelected = !mWifiSwitchIndicator.isChecked();
-				mIsEthernetSelected = !mIsWirelessSelected;
+				if (mWifiSwitchIndicator.isChecked()) {
+					return;
+				}
+				mIsWirelessSelected = true;
+				mIsEthernetSelected = false;
 				mWifiSwitchIndicator.setChecked(mIsWirelessSelected);
 				mEthernetSwitchIndicator.setChecked(mIsEthernetSelected);
 			} else if (v.getId() == R.id.nextbutton) {
