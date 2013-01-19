@@ -4,6 +4,7 @@ public class MediaData {
 	public String Title;
 	public String Description;
 	public String Director;
+	public String Scenarist;
 	public String Actors;
 	public String Type;
 	public String Region;

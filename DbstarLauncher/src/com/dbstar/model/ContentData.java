@@ -12,6 +12,7 @@ public class ContentData implements Comparable<ContentData> {
 	public String Keywords;
 	public String Actors;
 	public String Director;
+	public String Scenarist;
 	public String Area;
 	public String Source;
 	public String Language;

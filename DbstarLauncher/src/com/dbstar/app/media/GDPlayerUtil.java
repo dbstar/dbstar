@@ -45,14 +45,15 @@ public class GDPlayerUtil {
 			intent.putExtra("publication_id", content.Id);
 			intent.putExtra("title", content.Name);
 			intent.putExtra("description", content.Description);
-			intent.putExtra("director", content.Director);
+			intent.putExtra("director", content.Director);	
+			intent.putExtra("scenarist", content.Scenarist);
 			intent.putExtra("actors", content.Actors);
 			intent.putExtra("type", content.Type);
 			intent.putExtra("area", content.Area);
 			intent.putExtra("resolution", content.MainFile.Resolution);
 			intent.putExtra("bitrate", content.MainFile.BitRate);
 			intent.putExtra("codeformat", content.MainFile.CodeFormat);
-			
+
 			intent.putExtra("bookmark", content.BookMark);
 
 			if (content.SubTitles != null && content.SubTitles.size() > 0) {

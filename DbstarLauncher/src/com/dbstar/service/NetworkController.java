@@ -46,7 +46,7 @@ public class NetworkController extends BroadcastReceiver {
 
 			configEthernet();
 		} else {
-			mEthernetPhyState = ETHERNET_PHYCONNECTED;
+			mEthernetPhyState = ETHERNET_PHYDISCONNECTED;
 		}
 
 		IntentFilter filter = new IntentFilter();

@@ -21,6 +21,7 @@ public class NormalState extends TimerViewState {
 	TextView mMovieTitle;
 	TextView mMovieDescription;
 	TextView mMovieDirector;
+	TextView mScenarist;
 	TextView mMovieActors;
 	TextView mCodeformat;
 	TextView mBitrate;
@@ -73,6 +74,7 @@ public class NormalState extends TimerViewState {
 		mMovieTitle = (TextView) dlg.findViewById(R.id.title_view);
 		mMovieDescription = (TextView) dlg.findViewById(R.id.description_view);
 		mMovieDirector = (TextView) dlg.findViewById(R.id.director_view);
+		mScenarist = (TextView) dlg.findViewById(R.id.scenarist_view);
 		mMovieActors = (TextView) dlg.findViewById(R.id.actors_view);
 		mCodeformat = (TextView) dlg.findViewById(R.id.codeformat_view);
 		mBitrate = (TextView) dlg.findViewById(R.id.bitrate_view);
@@ -184,6 +186,13 @@ public class NormalState extends TimerViewState {
 			}
 			mMovieDirector.setText(director);
 
+			String scenarist = res
+					.getString(R.string.property_scenarist);
+			if (mMediaData.Scenarist != null) {
+				scenarist += mMediaData.Scenarist;
+			}
+			mScenarist.setText(scenarist);
+			
 			String actors = res
 					.getString(R.string.property_actors);
 			if (mMediaData.Actors != null) {

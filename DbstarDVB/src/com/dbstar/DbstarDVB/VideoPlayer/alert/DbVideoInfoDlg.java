@@ -150,6 +150,7 @@ public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 		mediaData.Title = intent.getStringExtra("title");
 		mediaData.Description = intent.getStringExtra("description");
 		mediaData.Director = intent.getStringExtra("director");
+		mediaData.Scenarist = intent.getStringExtra("scenarist");
 		mediaData.Actors = intent.getStringExtra("actors");
 		mediaData.Type = intent.getStringExtra("type");
 		mediaData.CodeFormat = intent.getStringExtra("codeformat");

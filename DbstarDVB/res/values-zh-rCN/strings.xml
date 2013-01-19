@@ -83,11 +83,12 @@
     <string name="button_text_notdelete">不删除</string>
     <string name="button_text_delete">删除</string>
     
-    <string name="property_director">导演:</string>
-    <string name="property_actors">主演:</string>
-    <string name="property_codeformat">视频编码格式:</string>
-    <string name="property_bitrate">码率:</string>
-    <string name="property_resolution">分辨率:</string>
+    <string name="property_director">导演:&#160;</string>
+    <string name="property_actors">主演:&#160;</string>
+    <string name="property_scenarist">编剧:&#160;</string>
+    <string name="property_codeformat">视频编码格式:&#160;</string>
+    <string name="property_bitrate">码率:&#160;</string>
+    <string name="property_resolution">分辨率:&#160;</string>
     
     <!-- Smartcard -->
     <string name="smartcard_status_title">智能卡</string>
