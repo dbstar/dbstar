@@ -4,7 +4,7 @@
 #define __COMMON_H__
 #include <errno.h>
 
-#define DEBUG(x...) do{printf("[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);printf(x);}while(0)
+#define DEBUG(x...) do{printf("[%s:%d] ", __FUNCTION__, __LINE__);printf(x);}while(0)
 
 #define ERROROUT(ERRSTR...) \
 			do{printf("[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);\
