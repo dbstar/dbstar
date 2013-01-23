@@ -152,14 +152,14 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	int len = 0;
 	drmvod_t *drmvod = (drmvod_t *)h->priv_data;
 	
-	LOGD("aaaaaaaa size=%d,drmvod->length=%lld,drmvod->curpos=%lld",size,drmvod->length,drmvod->curpos);
+//	LOGD("aaaaaaaa size=%d,drmvod->length=%lld,drmvod->curpos=%lld",size,drmvod->length,drmvod->curpos);
 	len = MIN(size, (drmvod->length - drmvod->curpos));
 	if (len <= 0) {
 		LOGD("drmvod_read() len<=0, return!\n");
 		return 0;
 	}
 	pthread_mutex_lock(&s_drmvod_mutex);
-	LOGD("########## 1. %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
+//	LOGD("########## 1. %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
 	if (s_drmvod.inited && s_drmvod.ready) {
 		LOGD("read drm file\n");
 		ret = drm_read(&drmvod->fd_media, buf, len);
