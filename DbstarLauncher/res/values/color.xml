@@ -22,5 +22,8 @@
     <color name="orange">#FF8C00</color>
     
     <drawable name="transparent">#00000000</drawable>
+    <drawable name="yellow">#FFFF00</drawable>
+    <drawable name="blue">#0000FF</drawable>
+    <drawable name="purple">#800080</drawable>
 
 </resources>

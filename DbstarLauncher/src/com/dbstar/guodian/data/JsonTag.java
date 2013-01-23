@@ -100,6 +100,17 @@ public class JsonTag {
 	public static final String TAGVC2Address = "vc2_address";
 	public static final String TAGVC2Telephone = "vc2_telephone";
 	public static final String TAGVC2WorkTime = "vc2_work_time";
+	public static final String TAGProvinceList = "provinceList";
+	public static final String TAGDefaultArea = "defaultArea";
+	public static final String TAGAreaGuid = "area_guid";
+	public static final String TAGPid = "pid";
+	public static final String TAGArea_Name = "area_name";
+	public static final String TAGProvinceId = "provinceId";
+	public static final String TAGProvinceName = "province";
+	public static final String TAGCityId = "cityId";
+	public static final String TAGCityName = "city";
+	public static final String TAGZoneId = "zoneId";
+	public static final String TAGZoneName = "zone";
 
 	// public static final String TAG = "";
 

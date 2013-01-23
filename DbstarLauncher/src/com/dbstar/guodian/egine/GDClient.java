@@ -12,12 +12,14 @@ import java.util.LinkedList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.dbstar.guodian.data.AreaInfo;
 import com.dbstar.guodian.data.BillDetailData;
 import com.dbstar.guodian.data.BillDetailListData;
 import com.dbstar.guodian.data.BusinessArea;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.data.PowerPanelData;
+import com.dbstar.guodian.parse.AreaInfoHandler;
 import com.dbstar.guodian.parse.BillDetailDataHandler;
 import com.dbstar.guodian.parse.BillDetailOfRecentDataHandler;
 import com.dbstar.guodian.parse.BillMonthListHandler;
@@ -52,7 +54,8 @@ public class GDClient {
 	public static final int REQUEST_BILLDETAILOFMONTH = 0x3004;
 	public static final int REQUEST_BILLDETAILOFRECENT = 0x3005;
 	public static final int REQUEST_NOTICE = 0x3006;
-	public static final int REQUEST_BUSINESSAREA = 0x3007;
+	public static final int REQUEST_USERAREAINFO = 0x3007;
+	public static final int REQUEST_BUSINESSAREA = 0x3008;
 
 	// not include current month, just before;
 
@@ -225,6 +228,21 @@ public class GDClient {
 		mClientHandler.sendMessage(msg);
 	}
 
+	public void getUserAreaInfo(String userId, String areaIdPath) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetUserAreaInfoCmd(taskId, userId,
+				areaIdPath);
+
+		Task task = new Task();
+		task.TaskType = REQUEST_USERAREAINFO;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
+	}
+	
 	public void getBusinessArea(String userId, String areaId) {
 		String taskId = GDCmdHelper.generateUID();
 		String cmdStr = GDCmdHelper.constructGetBusinessAreaCmd(taskId, userId,
@@ -357,6 +375,13 @@ public class GDClient {
 			ArrayList<BusinessArea> business = BusinessAreaHandler
 					.parse(task.ResponseData[7]);
 			task.ParsedData = business;
+			break;
+		}
+		
+		case REQUEST_USERAREAINFO: {
+			AreaInfo areaInfo = AreaInfoHandler
+					.parse(task.ResponseData[7]);
+			task.ParsedData = areaInfo;
 			break;
 		}
 		}

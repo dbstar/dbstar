@@ -1,42 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/price_dlg_bg"
-    android:orientation="vertical" >
+    android:background="@drawable/price_dlg_bg" >
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/list_header"
+        android:layout_width="942dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="40dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
         android:layout_marginTop="40dp"
+        android:background="@drawable/list_header_bg"
         android:orientation="horizontal" >
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:gravity="left"
             android:text="@string/head_step_level"
             android:textColor="#000000"
             android:textSize="18sp" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="240dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
             android:gravity="left"
             android:text="@string/head_price_interval"
             android:textColor="#000000"
             android:textSize="18sp" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="360dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
             android:gravity="left"
             android:text="@string/head_price_level"
             android:textColor="#000000"
@@ -45,12 +44,13 @@
 
     <ListView
         android:id="@+id/price_list"
-        android:layout_width="match_parent"
+        android:layout_width="942dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_below="@+id/list_header"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
         android:cacheColorHint="@android:color/transparent"
         android:clipToPadding="false"
         android:divider="#00000000"
@@ -61,4 +61,4 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbarStyle="outsideOverlay" />
 
-</LinearLayout>
+</RelativeLayout>

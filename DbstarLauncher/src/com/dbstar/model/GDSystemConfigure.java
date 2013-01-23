@@ -226,6 +226,7 @@ public class GDSystemConfigure {
 		}
 
 		file = mStorageDir + "/" + data.URI;
+		Log.d(TAG, "preivew path == " + file);
 		
 		File f = new File(file);
 		if (!f.exists()) {

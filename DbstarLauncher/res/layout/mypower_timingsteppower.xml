@@ -413,13 +413,16 @@
         
         <Button
             android:id="@+id/mypower_query_button"
-            android:layout_width="wrap_content"
+            android:layout_width="160dp"
             android:layout_height="wrap_content"
             android:layout_below="@id/mypower_smartsocket_data_title"
             android:layout_marginLeft="80dp"
             android:layout_marginTop="20dp"
             android:layout_toRightOf="@id/powerdata_view"
-            android:background="@drawable/querypower_btn_bg" />
+            android:background="@drawable/btn_normal_bg"
+            android:text="@string/text_querypower"
+            android:textColor="#ffffff"
+            android:textSize="18sp" />
  
     </RelativeLayout>
 

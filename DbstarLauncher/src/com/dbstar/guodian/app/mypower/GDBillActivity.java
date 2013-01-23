@@ -121,13 +121,13 @@ public class GDBillActivity extends GDBaseActivity {
 			mMonthList.add(String.valueOf(i));
 		}
 
-		mYearAdapter = new ArrayAdapter<String>(this,
-				R.layout.spinner_item, mYearList);
+		mYearAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+				mYearList);
 		mYearSpinner.setAdapter(mYearAdapter);
 		mYearSpinner.setSelection(0);
 
-		mMonthAdapter = new ArrayAdapter<String>(this,
-				R.layout.spinner_item, mMonthList);
+		mMonthAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+				mMonthList);
 
 		mMonthSpinner.setAdapter(mMonthAdapter);
 		mMonthSpinner.setSelection(month);
@@ -147,8 +147,9 @@ public class GDBillActivity extends GDBaseActivity {
 	void queryBillData() {
 		int yearIndex = mYearSpinner.getSelectedItemPosition();
 		int monthIndex = mMonthSpinner.getSelectedItemPosition();
-		
-		Log.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex=" + monthIndex);
+
+		Log.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex="
+				+ monthIndex);
 
 		if (monthIndex > 0) {
 			String year = mYearList.get(yearIndex);
@@ -158,9 +159,9 @@ public class GDBillActivity extends GDBaseActivity {
 				month = "0" + month;
 			}
 			String date = year + "-" + month + "-" + "01 00:00:00";
-			
+
 			Log.d(TAG, " === date ==" + date);
-			
+
 			mService.requestPowerData(GDConstract.DATATYPE_BILLDETAILOFMONTH,
 					date);
 		} else {
@@ -213,6 +214,30 @@ public class GDBillActivity extends GDBaseActivity {
 				initializeData(mServiceDate);
 			}
 
+			ArrayList<BillDetail> detailList = listData.DetailList;
+			if (detailList != null && detailList.size() > 0) {
+				int size = detailList.size();
+				BillDataItem[] items = new BillDataItem[size];
+
+				for(int i=0 ; i<size ; i++) {
+					BillDetail billDetail = detailList.get(i);
+					String startDate = billDetail.StartDate;
+					String year="0", month="0";
+					if (startDate != null && !startDate.isEmpty()) {
+						String[] times = startDate.split(" ");
+						String date = times[0];
+						String[] dates = date.split("-");
+						year = dates[0];
+						if (dates.length > 1) {
+							month = dates[1];
+						}
+					}
+					 
+					items[i] = constructBillData(billDetail, year, month);
+				}
+				mBillAdaper.setDataSet(items);
+				mBillAdaper.notifyDataSetChanged();
+			}
 		}
 	}
 

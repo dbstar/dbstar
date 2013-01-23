@@ -274,6 +274,10 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			return true;
 
 		} else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+			if (mCurrentTask == null) {
+				return true;
+			}
+
 			int pageNumber = mCurrentTask.ItemsPageNumber;
 			int index = mListView.getSelectedItemPosition();
 			if (index == 0) {
@@ -300,6 +304,10 @@ public class GDOrderPushActivity extends GDBaseActivity {
 			return true;
 
 		} else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+			if (mCurrentTask == null) {
+				return true;
+			}
+
 			int pageNumber = mCurrentTask.ItemsPageNumber;
 
 			int index = mListView.getSelectedItemPosition();

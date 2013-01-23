@@ -129,6 +129,12 @@ public class GDEngine {
 			break;
 		}
 		
+		case GDConstract.DATATYPE_USERAREAINFO: {
+			String areaIdPath = (String) args;
+			getUserAreaInfo(areaIdPath);
+			break;
+		}
+		
 		case GDConstract.DATATYPE_BUSINESSAREA: {
 			String areaId = (String) args;
 			getBusinessAreas(areaId);
@@ -176,6 +182,12 @@ public class GDEngine {
 		}
 	}
 	
+	private void getUserAreaInfo(String areaIdPath) {
+		if (mState == STATE_CONNECTED) {
+			mClient.getUserAreaInfo(UserId, areaIdPath);
+		}
+	}
+	
 	private void getBusinessAreas(String areaId) {
 		if (mState == STATE_CONNECTED) {
 			mClient.getBusinessArea(UserId, areaId);
@@ -210,6 +222,10 @@ public class GDEngine {
 		}
 		case GDClient.REQUEST_NOTICE: {
 			requestFinished(GDConstract.DATATYPE_NOTICES, task.ParsedData);
+			break;
+		}
+		case GDClient.REQUEST_USERAREAINFO: {
+			requestFinished(GDConstract.DATATYPE_USERAREAINFO, task.ParsedData);
 			break;
 		}
 		case GDClient.REQUEST_BUSINESSAREA: {

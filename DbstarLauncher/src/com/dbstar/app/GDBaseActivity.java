@@ -284,6 +284,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
 			mSmartcardState = status.State;
 
+			Log.d(TAG, " === mIsStarted == " + mIsStarted + " mBlockSmartcardPopup ="+mBlockSmartcardPopup);
+			
 			if (mIsStarted && !mBlockSmartcardPopup) {
 				notifySmartcardStatusChanged();
 			}
@@ -455,19 +457,31 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected void alertFileNotExist() {
 		mAlertType = DLG_TYPE_FILE_NOTEXIST;
 
-		showDialog(DLG_ID_ALERT);
+		if (mAlertDlg == null || !mAlertDlg.isShowing()) {
+			showDialog(DLG_ID_ALERT);
+		} else {
+			displayAlertDlg(mAlertDlg, mAlertType);
+		}
 	}
 
 	protected void alertNewMail() {
 		mAlertType = DLG_TYPE_NEWMAIL_INFO;
 
-		showDialog(DLG_ID_ALERT);
+		if (mAlertDlg == null || !mAlertDlg.isShowing()) {
+			showDialog(DLG_ID_ALERT);
+		} else {
+			displayAlertDlg(mAlertDlg, mAlertType);
+		}
 	}
 
 	protected void alertSmartcardInfo() {
 		mAlertType = DLG_TYPE_SMARTCARD_INFO;
 
-		showDialog(DLG_ID_ALERT);
+		if (mAlertDlg == null || !mAlertDlg.isShowing()) {
+			showDialog(DLG_ID_ALERT);
+		} else {
+			displayAlertDlg(mAlertDlg, mAlertType);
+		}
 
 		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
 			hideDlgDelay();
@@ -481,7 +495,11 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		
 		Log.d(TAG, " ==== displayNotification === type = " + mAlertType + " " + mNotification);
 		
-		showDialog(DLG_ID_ALERT);
+		if (mAlertDlg == null || !mAlertDlg.isShowing()) {
+			showDialog(DLG_ID_ALERT);
+		} else {
+			displayAlertDlg(mAlertDlg, mAlertType);
+		}
 	}
 
 	void hideDlgDelay() {

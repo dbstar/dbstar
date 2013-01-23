@@ -227,4 +227,6 @@
     <string name="str_business_address">营业厅地址</string>
     <string name="str_worktime">营业时间</string>
  
+    <string name="text_querypower">查询电价</string>
+    <string name="text_query">查询</string>
 </resources>

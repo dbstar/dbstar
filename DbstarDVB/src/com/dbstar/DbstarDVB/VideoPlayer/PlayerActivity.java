@@ -187,14 +187,29 @@ public class PlayerActivity extends Activity {
 		Log.d(TAG, " ================== showSmartcardInfo =================== ");
 
 		setOSDOn(true);
-		showDialog(DLG_ID_SMARTCARDINFO);
+
+		int state = mSmartcardTacker.getSmartcardState();
+
+		if (mSmartcardDialog == null || !mSmartcardDialog.isShowing()) {
+			showDialog(DLG_ID_SMARTCARDINFO);
+		} else {
+			setupSmartcardInfoDlg(state);
+		}
+
+		if (state == SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
+			hideDlgDelay();
+		}
 	}
 
 	void showErrorInfoDlg(int errorCode) {
 		mErrorCode = errorCode;
 		mAlertType = ALERT_TYPE_ERRORINFO;
 
-		showDialog(DLG_ID_ALERT);
+		if (mAlertDlg == null || !mAlertDlg.isShowing()) {
+			showDialog(DLG_ID_ALERT);
+		} else {
+			setupErrorInfoDlg();
+		}
 	}
 
 	void setupSmartcardInfoDlg(int smartcardState) {
@@ -239,12 +254,8 @@ public class PlayerActivity extends Activity {
 
 				if (alertDlg.getId() == DLG_ID_SMARTCARDINFO) {
 					int state = mSmartcardTacker.getSmartcardState();
-
 					setupSmartcardInfoDlg(state);
 
-					if (state == SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
-						hideDlgDelay();
-					}
 				} else if (alertDlg.getId() == DLG_ID_ALERT) {
 					if (mAlertType == ALERT_TYPE_ERRORINFO) {
 						setupErrorInfoDlg();
