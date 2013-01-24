@@ -46,9 +46,6 @@
 #endif
 #endif // CONFIG_PLATFORM_SPRD
 
-#ifdef CONFIG_RTL8188E
-#include <rtl8188e_hal.h>
-#endif
 
 #include <hal_intf.h>
 #include <sdio_hal.h>
@@ -58,7 +55,13 @@
 
 #ifdef CONFIG_PLATFORM_ARM_SUNxI
 #if defined(CONFIG_MMC_SUNXI_POWER_CONTROL)
-#define SDIOID (CONFIG_CHIP_ID==1123 ? 0 : 1)
+
+#ifdef CONFIG_WITS_EVB_V13
+#define SDIOID	0
+#else
+#define SDIOID (CONFIG_CHIP_ID==1123 ? 3 : 1)
+#endif
+
 #define SUNXI_SDIO_WIFI_NUM_RTL8189ES  10
 extern void sunximmc_rescan_card(unsigned id, unsigned insert);
 extern int mmc_pm_get_mod_type(void);
@@ -391,7 +394,7 @@ static void rtw_dev_unload(PADAPTER padapter)
 #ifdef CONFIG_WOWLAN
 			if (padapter->pwrctrlpriv.bSupportRemoteWakeup == _TRUE && 
 				padapter->pwrctrlpriv.wowlan_mode ==_TRUE) {
-				DBG_871X_LEVEL(_drv_always_, "%s bSupportWakeOnWlan==_TRUE  do not run rtw_hal_deinit()\n",__FUNCTION__);
+				DBG_871X_LEVEL(_drv_always_, "%s bSupportRemoteWakeup==_TRUE  do not run rtw_hal_deinit()\n",__FUNCTION__);
 			}
 			else
 #endif
@@ -800,9 +803,6 @@ static int rtw_sdio_suspend(struct device *dev)
 		padapter->pwrctrlpriv.wowlan_mode==_TRUE){
 		poidparam.subcode=WOWLAN_ENABLE;
 		padapter->HalFunc.SetHwRegHandler(padapter,HW_VAR_WOWLAN,(u8 *)&poidparam);
-		padapter->pwrctrlpriv.wowlan_wake_reason = rtw_read8(padapter, REG_WOWLAN_WAKE_REASON);
-		DBG_871X_LEVEL(_drv_always_, "wowlan_wake_reason: 0x%02x\n",
-					padapter->pwrctrlpriv.wowlan_wake_reason);
 	} else
 #else
 	{
@@ -862,6 +862,8 @@ static int rtw_sdio_suspend(struct device *dev)
 			DBG_871X_LEVEL(_drv_always_, "%s: fw_under_linking\n", __func__);
 			rtw_indicate_disconnect(padapter);
 		}
+
+		rtw_set_ps_mode(padapter, PS_MODE_MIN, 0, 0);
 	}
 #else
 	//s2-2.  indicate disconnect to os
@@ -949,22 +951,9 @@ int rtw_resume_process(_adapter *padapter)
 	DBG_871X("==> %s (%s:%d)\n",__FUNCTION__, current->comm, current->pid);
 
 #ifdef CONFIG_WOWLAN
-	DBG_871X_LEVEL(_drv_always_, "wakeup_reason: 0x%02x\n", padapter->pwrctrlpriv.wowlan_wake_reason);
-
-	if(padapter->pwrctrlpriv.wowlan_mode){
-		value = rtw_read32(padapter, SDIO_LOCAL_BASE+SDIO_REG_HISR);
-		DBG_871X_LEVEL(_drv_always_, "Reset SDIO HISR(0x%08x) original:0x%08x\n", 
-			SDIO_LOCAL_BASE+SDIO_REG_HISR, value);
-		//value |= BIT19;
-		rtw_write32(padapter, SDIO_LOCAL_BASE+SDIO_REG_HISR, 0xffffffff);
-
-		value = rtw_read8(padapter, SDIO_LOCAL_BASE+SDIO_REG_HIMR+2);
-		DBG_871X_LEVEL(_drv_always_, "Reset SDIO HIMR CPWM2(0x%08x) original:0x%02x\n", 
-			SDIO_LOCAL_BASE+SDIO_REG_HIMR + 2, value);
-	} else {
-		DBG_871X_LEVEL(_drv_always_, "wowlan mode is off\n");
-	}
-
+	rtw_set_ps_mode(padapter, PS_MODE_ACTIVE, 0, 0);
+	LPS_RF_ON_check(padapter, 100);
+	
 	if (!padapter->pwrctrlpriv.wowlan_mode){
 	if (padapter) {
 		pnetdev = padapter->pnetdev;
@@ -1067,8 +1056,6 @@ int rtw_resume_process(_adapter *padapter)
 	rtw_unlock_suspend();
 	#endif //CONFIG_RESUME_IN_WORKQUEUE
 
-	pwrpriv->bInSuspend = _FALSE;
-
 #ifdef CONFIG_WOWLAN
 	if (padapter->pwrctrlpriv.wowlan_wake_reason & FWDecisionDisconnect)
 		rtw_indicate_disconnect(padapter);
@@ -1086,8 +1073,9 @@ int rtw_resume_process(_adapter *padapter)
 #endif //CONFIG_WOWLAN
 
 exit:
-	DBG_871X_LEVEL(_drv_always_, "sdio resume success in %d ms\n",
-			rtw_get_passing_time_ms(start_time));
+	pwrpriv->bInSuspend = _FALSE;
+	DBG_871X_LEVEL(_drv_always_, "sdio resume ret:%d in %d ms\n", ret,
+		rtw_get_passing_time_ms(start_time));
 
 	_func_exit_;
 	
@@ -1103,11 +1091,6 @@ static int rtw_sdio_resume(struct device *dev)
 	 int ret = 0;
 
 	DBG_871X("==> %s (%s:%d)\n",__FUNCTION__, current->comm, current->pid);
-#ifdef CONFIG_WOWLAN
-	padapter->pwrctrlpriv.wowlan_wake_reason = rtw_read8(padapter, REG_WOWLAN_WAKE_REASON);
-	// Reset wakeup reason
-	rtw_write8(padapter, REG_WOWLAN_WAKE_REASON, 0);
-#endif
 
 	if(pwrpriv->bInternalAutoSuspend ){
  		ret = rtw_resume_process(padapter);
@@ -1158,6 +1141,12 @@ static int __init rtw_drv_entry(void)
 {
 	int ret = 0;
 
+#ifdef CONFIG_PLATFORM_ARM_SUNxI
+/*depends on sunxi power control */
+#if defined CONFIG_MMC_SUNXI_POWER_CONTROL
+	unsigned int mod_sel = mmc_pm_get_mod_type();
+#endif
+#endif
        DBG_871X_LEVEL(_drv_always_, "module init start version:"DRIVERVERSION"\n");
 
 //	DBG_871X(KERN_INFO "+%s", __func__);
@@ -1168,7 +1157,7 @@ static int __init rtw_drv_entry(void)
 #ifdef CONFIG_PLATFORM_ARM_SUNxI
 /*depends on sunxi power control */
 #if defined CONFIG_MMC_SUNXI_POWER_CONTROL
-	unsigned int mod_sel = mmc_pm_get_mod_type();
+
 	if(mod_sel == SUNXI_SDIO_WIFI_NUM_RTL8189ES)
 	{
 		rtl8189es_sdio_powerup();

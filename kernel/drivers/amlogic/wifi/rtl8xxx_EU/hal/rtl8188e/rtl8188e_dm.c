@@ -289,8 +289,10 @@ static void Init_ODM_ComInfo_88E(PADAPTER	Adapter)
 	
 	ODM_CmnInfoInit(pDM_Odm,ODM_CMNINFO_PLATFORM,ODM_CE);
 
-	
-	ODM_CmnInfoInit(pDM_Odm,ODM_CMNINFO_INTERFACE,Adapter->interface_type);//RTL871X_HCI_TYPE
+	if(Adapter->interface_type == RTW_GSPI )
+		ODM_CmnInfoInit(pDM_Odm,ODM_CMNINFO_INTERFACE,ODM_ITRF_SDIO);
+	else
+		ODM_CmnInfoInit(pDM_Odm,ODM_CMNINFO_INTERFACE,Adapter->interface_type);//RTL871X_HCI_TYPE
 	
 	ODM_CmnInfoInit(pDM_Odm,ODM_CMNINFO_IC_TYPE,ODM_RTL8188E);
 
@@ -491,33 +493,10 @@ rtl8188e_HalDmWatchDog(
 	if( (hw_init_completed == _TRUE)
 		&& ((!bFwCurrentInPSMode) && bFwPSAwake))
 	{
-#ifdef CONFIG_CONCURRENT_MODE
-		if(check_fwstate(&Adapter->mlmepriv, WIFI_AP_STATE) &&
-				check_buddy_fwstate(Adapter, _FW_LINKED))
-		{
-			if(Adapter->iface_type == IFACE_PORT1)
-			{
-				//reset TSF
-				rtw_write8(Adapter, REG_DUAL_TSF_RST, BIT(1));
-				//BCN1 TSF will sync to BCN0 TSF with offset(0x518) if if1_sta linked
-				rtw_write8(Adapter, REG_DUAL_TSF_RST, BIT(3));
-			}
-			else if(Adapter->iface_type == IFACE_PORT0)
-			{
-				//reset TSF
-				rtw_write8(Adapter, REG_DUAL_TSF_RST, BIT(0));
-				//BCN0 TSF will sync to BCN1 TSF with offset(0x518) if if2_sta linked
-				rtw_write8(Adapter, REG_DUAL_TSF_RST, BIT(2));
-			}
-			else
-				DBG_8192C("Error Condition\n");
-		}
-#endif
 		//
 		// Calculate Tx/Rx statistics.
 		//
 		dm_CheckStatistics(Adapter);
-	
 	
 #ifdef CONFIG_CONCURRENT_MODE
 		if(Adapter->adapter_type > PRIMARY_ADAPTER)

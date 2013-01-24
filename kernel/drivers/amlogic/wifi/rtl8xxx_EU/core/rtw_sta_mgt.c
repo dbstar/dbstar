@@ -376,6 +376,8 @@ _func_enter_;
 		psta->rssi_stat.UndecoratedSmoothedPWDB = (-1);
 		psta->rssi_stat.UndecoratedSmoothedCCK = (-1);
 		
+		/* init for the sequence number of received management frame */
+		psta->RxMgmtFrameSeqNum = 0xffff;
 	}
 	
 exit:
@@ -511,7 +513,8 @@ _func_enter_;
 		
 	}
 	DBG_871X("%s\n",__FUNCTION__);
-	rtw_hal_set_odm_var(padapter, HAL_ODM_STA_INFO, psta, _FALSE);
+	if (!(psta->state & WIFI_AP_STATE))
+		rtw_hal_set_odm_var(padapter, HAL_ODM_STA_INFO, psta, _FALSE);
 			
 #ifdef CONFIG_AP_MODE
 

@@ -387,6 +387,10 @@ void	rtw_hal_set_chan(_adapter *padapter, u8 channel)
 
 void	rtw_hal_dm_watchdog(_adapter *padapter)
 {
+#if defined(CONFIG_CONCURRENT_MODE)
+	if (padapter->adapter_type != PRIMARY_ADAPTER)
+		return;
+#endif	
 	if(padapter->HalFunc.hal_dm_watchdog)
 		padapter->HalFunc.hal_dm_watchdog(padapter);
 }
@@ -491,5 +495,13 @@ void rtw_hal_reset_security_engine(_adapter * adapter)
 {
 	if(adapter->HalFunc.hal_reset_security_engine)
 		adapter->HalFunc.hal_reset_security_engine(adapter);
+}
+
+s32 rtw_hal_c2h_handler(_adapter *adapter, struct c2h_evt_hdr *c2h_evt)
+{
+	s32 ret = _FAIL;
+	if (adapter->HalFunc.c2h_handler)
+		ret = adapter->HalFunc.c2h_handler(adapter, c2h_evt);
+	return ret;
 }
 

@@ -105,7 +105,7 @@ enum TXDESC_SC{
 #define SGI					BIT(6)
 #define USB_TXAGG_NUM_SHT	24
 
-typedef struct txdescriptor_8188e
+typedef struct txdesc_88e
 {
 	//Offset 0
 	u32 pktlen:16;
@@ -206,12 +206,53 @@ typedef struct txdescriptor_8188e
 
 	//Offset 28
 	u32 checksum:16;	// TxBuffSize(PCIe)/CheckSum(USB)
-	u32 mcsg4_max_len:4;
-	u32 mcsg5_max_len:4;
-	u32 mcsg6_max_len:4;
+	u32 sw0:8; /* offset 30 */
+	u32 sw1:4;
 	u32 mcs15_sgi_max_len:4;
 }TXDESC, *PTXDESC;
 
+#define txdesc_set_ccx_sw_88e(txdesc, value) \
+	do { \
+		((struct txdesc_88e *)(txdesc))->sw1 = (((value)>>8) & 0x0f); \
+		((struct txdesc_88e *)(txdesc))->sw0 = ((value) & 0xff); \
+	} while (0)
+
+struct txrpt_ccx_88e {
+	/* offset 0 */
+	u8 tag1:1;
+	u8 pkt_num:3;
+	u8 txdma_underflow:1;
+	u8 int_bt:1;
+	u8 int_tri:1;
+	u8 int_ccx:1;
+
+	/* offset 1 */
+	u8 mac_id:6;
+	u8 pkt_ok:1;
+	u8 bmc:1;
+
+	/* offset 2 */
+	u8 retry_cnt:6;
+	u8 lifetime_over:1;
+	u8 retry_over:1;
+
+	/* offset 3 */
+	u8 ccx_qtime0;
+	u8 ccx_qtime1;
+
+	/* offset 5 */
+	u8 final_data_rate;
+
+	/* offset 6 */
+	u8 sw1:4;
+	u8 qsel:4;
+
+	/* offset 7 */
+	u8 sw0;
+};
+
+#define txrpt_ccx_sw_88e(txrpt_ccx) ((txrpt_ccx)->sw0 + ((txrpt_ccx)->sw1<<8))
+#define txrpt_ccx_qtime_88e(txrpt_ccx) ((txrpt_ccx)->ccx_qtime0+((txrpt_ccx)->ccx_qtime1<<8))
 
 void rtl8188e_fill_fake_txdesc(PADAPTER	padapter,u8*pDesc,u32 BufferLen,u8 IsPsPoll,u8	IsBTQosNull);
 #ifdef CONFIG_SDIO_HCI
@@ -220,14 +261,9 @@ void rtl8188es_free_xmit_priv(PADAPTER padapter);
 s32 rtl8188es_hal_xmit(PADAPTER padapter, struct xmit_frame *pxmitframe);
 s32 rtl8188es_mgnt_xmit(PADAPTER padapter, struct xmit_frame *pmgntframe);
 thread_return rtl8188es_xmit_thread(thread_context context);
-
-#ifdef CONFIG_SDIO_TX_MULTI_QUEUE
-s32 rtw_sdio_xmit_buf_handler(PADAPTER padapter);
-#define hal_xmit_handler rtw_sdio_xmit_buf_handler
-#else
 s32 rtl8188es_xmit_buf_handler(PADAPTER padapter);
 #define hal_xmit_handler rtl8188es_xmit_buf_handler
-#endif
+
 #ifdef CONFIG_SDIO_TX_TASKLET
 void rtl8188es_xmit_tasklet(void *priv);
 #endif
@@ -259,6 +295,14 @@ void rtl8188ee_xmit_tasklet(void *priv);
 #ifdef CONFIG_TX_EARLY_MODE
 void UpdateEarlyModeInfo8188E(struct xmit_priv *pxmitpriv,struct xmit_buf *pxmitbuf );
 #endif
+
+#ifdef CONFIG_XMIT_ACK
+void dump_txrpt_ccx_88e(void *buf);
+void handle_txrpt_ccx_88e(_adapter *adapter, u8 *buf);
+#else
+#define dump_txrpt_ccx_88e(buf) do {} while(0)
+#define handle_txrpt_ccx_88e(adapter, buf) do {} while(0)
+#endif //CONFIG_XMIT_ACK
 
 void _dbg_dump_tx_info(_adapter	*padapter,int frame_tag,struct tx_desc *ptxdesc);
 #endif //__RTL8188E_XMIT_H__

@@ -30,10 +30,10 @@
 
 
 enum RTL871X_HCI_TYPE {
-	RTW_PCIE,
-	RTW_USB,
-	RTW_SDIO,
-	RTW_SPI
+	RTW_PCIE	= BIT0,
+	RTW_USB 	= BIT1,
+	RTW_SDIO 	= BIT2,
+	RTW_GSPI	= BIT3,
 };
 
 enum _CHIP_TYPE {
@@ -116,7 +116,6 @@ typedef enum _HW_VARIABLES{
 	HW_VAR_WOWLAN,
 #endif
 	HW_VAR_NAV_UPPER,
-	HW_VAR_C2H_HANDLE,
 	HW_VAR_RPT_TIMER_SETTING,
 	HW_VAR_TX_RPT_MAX_MACID,	
 	HW_VAR_H2C_MEDIA_STATUS_RPT,
@@ -253,6 +252,7 @@ struct hal_ops {
 #endif
 	void (*hal_notch_filter)(_adapter * adapter, bool enable);
 	void (*hal_reset_security_engine)(_adapter * adapter);
+	s32 (*c2h_handler)(_adapter *padapter, struct c2h_evt_hdr *c2h_evt);
 };
 
 typedef	enum _RT_EEPROM_TYPE{
@@ -455,6 +455,8 @@ s32 rtw_hal_xmit_thread_handler(_adapter *padapter);
 
 void rtw_hal_notch_filter(_adapter * adapter, bool enable);
 void rtw_hal_reset_security_engine(_adapter * adapter);
+
+s32 rtw_hal_c2h_handler(_adapter *adapter, struct c2h_evt_hdr *c2h_evt);
 
 #endif //__HAL_INTF_H__
 

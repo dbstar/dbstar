@@ -838,9 +838,9 @@ ODM_DMWatchdog(
 	if( 	(pDM_Odm->Adapter->pwrctrlpriv.pwr_mode != PS_MODE_ACTIVE) &&// in LPS mode
 		( 			
 			(pDM_Odm->SupportICType & (ODM_RTL8723A ) )||
-		   	(pDM_Odm->SupportICType & (ODM_RTL8188E) &&((pDM_Odm->SupportInterface  == ODM_ITRF_SDIO)||(pDM_Odm->SupportInterface == ODM_ITRF_GSPI)) ) 
+		   	(pDM_Odm->SupportICType & (ODM_RTL8188E) &&((pDM_Odm->SupportInterface  == ODM_ITRF_SDIO)) ) 
 			
-		//&&((pDM_Odm->SupportInterface  == ODM_ITRF_SDIO)||(pDM_Odm->SupportInterface == ODM_ITRF_GSPI))
+		//&&((pDM_Odm->SupportInterface  == ODM_ITRF_SDIO))
 	  	)	
 	)
 	{
@@ -1224,35 +1224,7 @@ ODM_CmnInfoUpdate(
 			pDM_Odm->bBtDisableEdcaTurbo = (BOOLEAN)Value;
 			break;
 #endif
-/*
-		case	ODM_CMNINFO_OP_MODE:
-			pDM_Odm->OPMode = (u1Byte)Value;
-			break;
 
-		case	ODM_CMNINFO_WM_MODE:
-			pDM_Odm->WirelessMode = (u1Byte)Value;
-			break;
-
-		case	ODM_CMNINFO_BAND:
-			pDM_Odm->BandType = (u1Byte)Value;
-			break;
-
-		case	ODM_CMNINFO_SEC_CHNL_OFFSET:
-			pDM_Odm->SecChOffset = (u1Byte)Value;
-			break;
-
-		case	ODM_CMNINFO_SEC_MODE:
-			pDM_Odm->Security = (u1Byte)Value;
-			break;
-
-		case	ODM_CMNINFO_BW:
-			pDM_Odm->BandWidth = (u1Byte)Value;
-			break;
-
-		case	ODM_CMNINFO_CHNL:
-			pDM_Odm->Channel = (u1Byte)Value;
-			break;			
-*/	
 	}
 
 	
@@ -4335,18 +4307,57 @@ odm_RSSIMonitorCheckCE(
 	u8 	sta_cnt=0;
 	u32 PWDB_rssi[NUM_STA]={0};//[0~15]:MACID, [16~31]:PWDB_rssi
 
-	if(check_fwstate(&Adapter->mlmepriv, _FW_LINKED) != _TRUE)
+	if(!check_fwstate(&Adapter->mlmepriv, _FW_LINKED) 
+		#ifdef CONFIG_CONCURRENT_MODE
+		&& !check_buddy_fwstate(Adapter, _FW_LINKED)
+		#endif
+	) {
 		return;
-		
+	}
 
 	//if(check_fwstate(&Adapter->mlmepriv, WIFI_AP_STATE|WIFI_ADHOC_STATE|WIFI_ADHOC_MASTER_STATE) == _TRUE)
 	{
+		#if 1
+		struct sta_info *psta;
+		struct sta_priv *pstapriv = &Adapter->stapriv;
+		u8 bcast_addr[ETH_ALEN]= {0xff,0xff,0xff,0xff,0xff,0xff};
+		
+		for(i=0; i<ODM_ASSOCIATE_ENTRY_NUM; i++) {
+			if (IS_STA_VALID(psta = pDM_Odm->pODM_StaInfo[i])
+				&& (psta->state & WIFI_ASOC_STATE)
+				&& _rtw_memcmp(psta->hwaddr, bcast_addr, ETH_ALEN) == _FALSE
+				&& _rtw_memcmp(psta->hwaddr, myid(&Adapter->eeprompriv), ETH_ALEN) == _FALSE
+				#ifdef CONFIG_CONCURRENT_MODE
+				&& (!Adapter->pbuddy_adapter || _rtw_memcmp(psta->hwaddr, myid(&Adapter->pbuddy_adapter->eeprompriv), ETH_ALEN) == _FALSE)
+				#endif
+				) {
+					if(psta->rssi_stat.UndecoratedSmoothedPWDB < tmpEntryMinPWDB)
+						tmpEntryMinPWDB = psta->rssi_stat.UndecoratedSmoothedPWDB;
+
+					if(psta->rssi_stat.UndecoratedSmoothedPWDB > tmpEntryMaxPWDB)
+						tmpEntryMaxPWDB = psta->rssi_stat.UndecoratedSmoothedPWDB;
+
+					#if 0
+					DBG_871X("%s mac_id:%u, mac:"MAC_FMT", rssi:%d\n", __func__,
+						psta->mac_id, MAC_ARG(psta->hwaddr), psta->rssi_stat.UndecoratedSmoothedPWDB);
+					#endif
+
+					if(psta->rssi_stat.UndecoratedSmoothedPWDB != (-1)) {
+						#if(RTL8192D_SUPPORT==1)
+						PWDB_rssi[sta_cnt++] = (psta->mac_id | (psta->rssi_stat.UndecoratedSmoothedPWDB<<16) | ((Adapter->stapriv.asoc_sta_count+1) << 8));
+						#else
+						PWDB_rssi[sta_cnt++] = (psta->mac_id | (psta->rssi_stat.UndecoratedSmoothedPWDB<<16) );
+						#endif
+					}
+			}
+		}
+		#else
 		_irqL irqL;
 		_list	*plist, *phead;
 		struct sta_info *psta;
 		struct sta_priv *pstapriv = &Adapter->stapriv;
 		u8 bcast_addr[ETH_ALEN]= {0xff,0xff,0xff,0xff,0xff,0xff};
-	
+
 		_enter_critical_bh(&pstapriv->sta_hash_lock, &irqL);
 
 		for(i=0; i< NUM_STA; i++)
@@ -4388,6 +4399,7 @@ odm_RSSIMonitorCheckCE(
 		}
 	
 		_exit_critical_bh(&pstapriv->sta_hash_lock, &irqL);
+		#endif
 
 		//printk("%s==> sta_cnt(%d)\n",__FUNCTION__,sta_cnt);
 
@@ -4411,8 +4423,6 @@ odm_RSSIMonitorCheckCE(
 			}
 		}		
 	}
-
-
 
 	if(tmpEntryMaxPWDB != 0)	// If associated entry is found
 	{
@@ -4730,7 +4740,8 @@ odm_TXPowerTrackingCheckCE(
 	if(!pDM_Odm->RFCalibrateInfo.TM_Trigger)		//at least delay 1 sec
 	{
 		//pHalData->TxPowerCheckCnt++;	//cosa add for debug
-		ODM_SetRFReg(pDM_Odm, RF_PATH_A, RF_T_METER, bRFRegOffsetMask, 0x60);
+		//ODM_SetRFReg(pDM_Odm, RF_PATH_A, RF_T_METER, bRFRegOffsetMask, 0x60);
+		PHY_SetRFReg(Adapter, RF_PATH_A, RF_T_METER_88E, BIT17 | BIT16, 0x03);
 		//DBG_8192C("Trigger 92C Thermal Meter!!\n");
 		
 		pDM_Odm->RFCalibrateInfo.TM_Trigger = 1;

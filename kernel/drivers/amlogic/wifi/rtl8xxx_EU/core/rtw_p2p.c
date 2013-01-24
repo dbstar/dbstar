@@ -3217,7 +3217,10 @@ _func_enter_;
 	{
 		return;
 	}
-
+#ifdef CONFIG_CONCURRENT_MODE
+	if(padapter->iface_type != IFACE_PORT0) 
+		return;
+#endif
 	if(IELength <= _BEACON_IE_OFFSET_)
 		return;
 	
@@ -3801,8 +3804,10 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 	
 					if(tx)
 					{
+#ifdef CONFIG_DRV_ISSUE_PROV_REQ // IOT FOR S2
 						if(pwdev_priv->provdisc_req_issued == _FALSE)
 							rtw_cfg80211_issue_p2p_provision_request(padapter, buf, len);
+#endif //CONFIG_DRV_ISSUE_PROV_REQ					
 
 						//pwdev_priv->provdisc_req_issued = _FALSE;
 						
@@ -3889,7 +3894,9 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 							}
 							else
 							{
+								#ifdef CONFIG_DEBUG_CFG80211
 								DBG_871X("provdisc_req_issued is _TRUE\n");
+								#endif //CONFIG_DEBUG_CFG80211
 								pwdev_priv->provdisc_req_issued = _TRUE;//case: p2p_devices connection before Nego req.
 							}
 												
@@ -3908,8 +3915,8 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 		}
 		else
 		{
-			DBG_871X("ACTION_CATEGORY_PUBLIC: action=%d, OUI=0x%x, OUI_Subtype=%d, dialogToken=%d\n",
-					action, cpu_to_be32( *( ( u32* ) ( frame_body + 2 ) ) ), OUI_Subtype, dialogToken);
+			DBG_871X("RTW_%s:ACTION_CATEGORY_PUBLIC: action=%d, OUI=0x%x, OUI_Subtype=%d, dialogToken=%d\n",
+					(tx==_TRUE)?"TX":"RX", action, cpu_to_be32( *( ( u32* ) ( frame_body + 2 ) ) ), OUI_Subtype, dialogToken);
 		}
 		
 	}	
@@ -3947,7 +3954,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 	}	
 	else 
 	{
-		DBG_871X("%s, action frame category=%d\n", __func__, category);
+		DBG_871X("RTW_%s:action frame category=%d\n", (tx==_TRUE)?"TX":"RX", category);
 		//is_p2p_frame = (-1);		
 	}
 
@@ -4426,8 +4433,13 @@ void init_wifidirect_info( _adapter* padapter, enum P2P_ROLE role)
 	_rtw_memset( pwdinfo->rx_prov_disc_info.strconfig_method_desc_of_prov_disc_req, '0', 3 );
 	_rtw_memset( &pwdinfo->groupid_info, 0x00, sizeof( struct group_id_info ) );
 #ifdef CONFIG_CONCURRENT_MODE
+#ifdef CONFIG_IOCTL_CFG80211
+	pwdinfo->ext_listen_interval = 2000;
+	pwdinfo->ext_listen_period = 500;
+#else //!CONFIG_IOCTL_CFG80211
 	pwdinfo->ext_listen_interval = 3000;
 	pwdinfo->ext_listen_period = 400;
+#endif //!CONFIG_IOCTL_CFG80211
 #endif
 	pwdinfo->wfd_tdls_enable = 0;
 	_rtw_memset( pwdinfo->p2p_peer_interface_addr, 0x00, ETH_ALEN );

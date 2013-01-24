@@ -1940,10 +1940,10 @@ static void traffic_status_watchdog(_adapter *padapter)
 #ifdef CONFIG_FTP_PROTECT
 		DBG_871X("RX in period:%d, TX in period:%d, ftp_lock_flag:%d\n", 
 			pmlmepriv->LinkDetectInfo.NumRxOkInPeriod,
-			pmlmepriv->LinkDetectInfo.NumRxOkInPeriod,
+			pmlmepriv->LinkDetectInfo.NumTxOkInPeriod,
 			pmlmepriv->ftp_lock_flag);
 		
-		bPktCount = pmlmepriv->LinkDetectInfo.NumRxOkInPeriod + pmlmepriv->LinkDetectInfo.NumRxOkInPeriod;
+		bPktCount = pmlmepriv->LinkDetectInfo.NumRxOkInPeriod + pmlmepriv->LinkDetectInfo.NumTxOkInPeriod;
 		if (bPktCount > 20 && !pmlmepriv->ftp_lock_flag) {
 			pmlmepriv->ftp_lock_flag = 1;
 			rtw_lock_suspend();
@@ -2448,7 +2448,7 @@ exit:
 }
 #endif
 
-u8 rtw_c2h_wk_cmd(PADAPTER padapter)
+u8 rtw_c2h_wk_cmd(PADAPTER padapter, u8 *c2h_evt)
 {
 	struct cmd_obj *ph2c;
 	struct drvextra_cmd_parm *pdrvextra_cmd_parm;
@@ -2469,8 +2469,8 @@ u8 rtw_c2h_wk_cmd(PADAPTER padapter)
 	}
 
 	pdrvextra_cmd_parm->ec_id = C2H_WK_CID;
-	pdrvextra_cmd_parm->type_size = 0;
-	pdrvextra_cmd_parm->pbuf = NULL;
+	pdrvextra_cmd_parm->type_size = c2h_evt?16:0;
+	pdrvextra_cmd_parm->pbuf = c2h_evt;
 
 	init_h2fwcmd_w_parm_no_rsp(ph2c, pdrvextra_cmd_parm, GEN_CMD_CODE(_Set_Drv_Extra));
 
@@ -2479,6 +2479,25 @@ u8 rtw_c2h_wk_cmd(PADAPTER padapter)
 exit:
 	
 	return res;
+}
+
+s32 c2h_cmd_hdl(_adapter *adapter, struct c2h_evt_hdr *c2h_evt)
+{
+	s32 ret = _FAIL;
+	u8 buf[16];
+
+	if (!c2h_evt) {
+		/* No c2h event in cmd_obj, read c2h event before handling*/
+		while (c2h_evt_read(adapter, buf) == _SUCCESS) {
+			c2h_evt = (struct c2h_evt_hdr *)buf;
+			ret = rtw_hal_c2h_handler(adapter, c2h_evt);
+		}
+	} else {
+		c2h_evt_clear(adapter);
+		ret = rtw_hal_c2h_handler(adapter, c2h_evt);
+	}
+exit:
+	return ret;
 }
 
 u8 rtw_drvextra_cmd_hdl(_adapter *padapter, unsigned char *pbuf)
@@ -2535,7 +2554,7 @@ u8 rtw_drvextra_cmd_hdl(_adapter *padapter, unsigned char *pbuf)
 #endif //CONFIG_INTEL_WIDI
 
 		case C2H_WK_CID:
-			rtw_hal_set_hwreg(padapter, HW_VAR_C2H_HANDLE, NULL);
+			c2h_cmd_hdl(padapter, (struct c2h_evt_hdr *)pdrvextra_cmd->pbuf);
 			break;
 
 		default:

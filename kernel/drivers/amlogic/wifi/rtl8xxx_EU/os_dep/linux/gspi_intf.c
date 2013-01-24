@@ -353,8 +353,8 @@ static void rtw_dev_unload(PADAPTER padapter)
 		if (padapter->bSurpriseRemoved == _FALSE)
 		{
 #ifdef CONFIG_WOWLAN
-			if (padapter->pwrctrlpriv.bSupportWakeOnWlan == _TRUE) {
-				DBG_871X("%s bSupportWakeOnWlan==_TRUE  do not run rtw_hal_deinit()\n",__FUNCTION__);
+			if (padapter->pwrctrlpriv.bSupportRemoteWakeup == _TRUE) {
+				DBG_871X("%s bSupportRemoteWakeup==_TRUE  do not run rtw_hal_deinit()\n",__FUNCTION__);
 			}
 			else
 #endif
@@ -410,7 +410,7 @@ static PADAPTER rtw_gspi_if1_init(struct dvobj_priv *dvobj)
 	padapter->psetbw_mutex = &drvpriv.setbw_mutex;
 #endif
 
-	padapter->interface_type = RTW_SPI;
+	padapter->interface_type = RTW_GSPI;
 	decide_chip_type_by_device_id(padapter);
 
 	//3 1. init network device data
@@ -700,7 +700,7 @@ static int rtw_gspi_suspend(struct spi_device *spi, pm_message_t mesg)
 		rtw_netif_stop_queue(pnetdev);
 	}
 #ifdef CONFIG_WOWLAN
-	padapter->pwrctrlpriv.bSupportWakeOnWlan=_TRUE;
+	padapter->pwrctrlpriv.bSupportRemoteWakeup=_TRUE;
 #else
 	//s2.
 	//s2-1.  issue rtw_disassoc_cmd to fw
@@ -829,8 +829,8 @@ int rtw_resume_process(_adapter *padapter)
 	rtw_unlock_suspend();
 	#endif //CONFIG_RESUME_IN_WORKQUEUE
 
-	pwrpriv->bInSuspend = _FALSE;
 exit:
+	pwrpriv->bInSuspend = _FALSE;
 	DBG_871X("<===  %s return %d.............. in %dms\n", __FUNCTION__
 		, ret, rtw_get_passing_time_ms(start_time));
 

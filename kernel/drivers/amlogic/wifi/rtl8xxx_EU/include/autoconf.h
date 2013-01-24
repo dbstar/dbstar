@@ -52,6 +52,8 @@
 	//#define RTW_USE_CFG80211_STA_EVENT /* Opne this for Android 4.1's wpa_supplicant */
 	#define CONFIG_CFG80211_FORCE_COMPATIBLE_2_6_37_UNDER
 	//#define CONFIG_DEBUG_CFG80211 1
+	//#define CONFIG_DRV_ISSUE_PROV_REQ // IOT FOR S2
+	#define CONFIG_SET_SCAN_DENY_TIMER
 #endif
 
 /*
@@ -63,6 +65,7 @@
 #define CONFIG_EMBEDDED_FWIMG	1
 //#define CONFIG_FILE_FWIMG
 
+#define CONFIG_XMIT_ACK
 
 #define CONFIG_80211N_HT	1
 
@@ -103,7 +106,8 @@
 	#define CONFIG_HW_ANTENNA_DIVERSITY		
 	#endif
 
-	#define CONFIG_CONCURRENT_MODE 1
+
+	//#define CONFIG_CONCURRENT_MODE 1
 	#ifdef CONFIG_CONCURRENT_MODE
 		//#define CONFIG_HWPORT_SWAP				//Port0->Sec , Port1 -> Pri
 		#define CONFIG_TSF_RESET_OFFLOAD 1			// For 2 PORT TSF SYNC.
@@ -136,13 +140,13 @@
 #define CONFIG_P2P	1
 #ifdef CONFIG_P2P
 	//The CONFIG_WFD is for supporting the Wi-Fi display
-	#define CONFIG_WFD	1
+	//#define CONFIG_WFD	1
 	
 	#ifndef CONFIG_WIFI_TEST
 		#define CONFIG_P2P_REMOVE_GROUP_INFO
 	#endif
 	//#define CONFIG_DBG_P2P
-	//#define CONFIG_P2P_IPS
+	#define CONFIG_P2P_IPS
 #endif
 
 //	Added by Kurt 20110511
@@ -272,25 +276,21 @@
  * Platform  Related Config
  */
 #ifdef CONFIG_PLATFORM_MN10300
-#define CONFIG_SPECIAL_SETTING_FOR_FUNAI_TV
+	#define CONFIG_SPECIAL_SETTING_FOR_FUNAI_TV
+	#define CONFIG_USE_USB_BUFFER_ALLOC_RX 1
+	
+	#if	defined (CONFIG_SW_ANTENNA_DIVERSITY)
+		#undef CONFIG_SW_ANTENNA_DIVERSITY
+		#define CONFIG_HW_ANTENNA_DIVERSITY
+	#endif
 
-#if	defined (CONFIG_SW_ANTENNA_DIVERSITY)
-	#undef CONFIG_SW_ANTENNA_DIVERSITY
-	#define CONFIG_HW_ANTENNA_DIVERSITY
-#endif
-
-#define CONFIG_USE_USB_BUFFER_ALLOC_RX 1
+	#if	defined (CONFIG_POWER_SAVING)
+		#undef CONFIG_POWER_SAVING
+	#endif
+	
 #endif//CONFIG_PLATFORM_MN10300
 
 
-#if	defined (CONFIG_POWER_SAVING)
-	#undef CONFIG_POWER_SAVING
-#endif
-//#endif//CONFIG_PLATFORM_MN10300
-
-#ifdef CONFIG_WISTRON_PLATFORM
-
-#endif
 
 #ifdef CONFIG_PLATFORM_TI_DM365
 #define CONFIG_USE_USB_BUFFER_ALLOC_RX 1

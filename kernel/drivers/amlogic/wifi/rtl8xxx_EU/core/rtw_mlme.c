@@ -130,6 +130,8 @@ static void rtw_free_mlme_ie_data(u8 **ppie, u32 *plen)
 void rtw_free_mlme_priv_ie_data(struct mlme_priv *pmlmepriv)
 {
 #if defined (CONFIG_AP_MODE) && defined (CONFIG_NATIVEAP_MLME)
+	rtw_buf_free(&pmlmepriv->assoc_req, &pmlmepriv->assoc_req_len);
+	rtw_buf_free(&pmlmepriv->assoc_rsp, &pmlmepriv->assoc_rsp_len);
 	rtw_free_mlme_ie_data(&pmlmepriv->wps_beacon_ie, &pmlmepriv->wps_beacon_ie_len);
 	rtw_free_mlme_ie_data(&pmlmepriv->wps_probe_req_ie, &pmlmepriv->wps_probe_req_ie_len);
 	rtw_free_mlme_ie_data(&pmlmepriv->wps_probe_resp_ie, &pmlmepriv->wps_probe_resp_ie_len);
@@ -1506,6 +1508,9 @@ _func_enter_;
 		rtw_os_indicate_disconnect(padapter);
 
 #ifdef CONFIG_LPS
+#ifdef CONFIG_WOWLAN
+	if(padapter->pwrctrlpriv.wowlan_mode==_FALSE)
+#endif //CONFIG_WOWLAN
 	rtw_lps_ctrl_wk_cmd(padapter, LPS_CTRL_DISCONNECT, 1);
 #endif
 
@@ -1698,9 +1703,14 @@ static void rtw_joinbss_update_network(_adapter *padapter, struct wlan_network *
 				
 	//update fw_state //will clr _FW_UNDER_LINKING here indirectly
 	switch(pnetwork->network.InfrastructureMode)
-	{
+	{	
 		case Ndis802_11Infrastructure:						
-				pmlmepriv->fw_state = WIFI_STATION_STATE;
+			
+				if(pmlmepriv->fw_state&WIFI_UNDER_WPS)
+					pmlmepriv->fw_state = WIFI_STATION_STATE|WIFI_UNDER_WPS;
+				else
+					pmlmepriv->fw_state = WIFI_STATION_STATE;
+				
 				break;
 		case Ndis802_11IBSS:		
 				pmlmepriv->fw_state = WIFI_ADHOC_STATE;
@@ -2424,9 +2434,6 @@ static void rtw_auto_scan_handler(_adapter *padapter)
 		pmlmepriv->scan_interval--;
 		if(pmlmepriv->scan_interval==0)
 		{
-			if( pwrctrlpriv->power_mgnt != PS_MODE_ACTIVE )
-				return;			
-
 /*		
 			if (check_fwstate(pmlmepriv, _FW_UNDER_SURVEY|_FW_UNDER_LINKING) == _TRUE) 
 			{
@@ -2488,7 +2495,7 @@ void rtw_dynamic_check_timer_handlder(_adapter *adapter)
 #ifdef CONFIG_CONCURRENT_MODE
 	if(pbuddy_adapter)
 	{
-	if(adapter->net_closed == _TRUE && pbuddy_adapter->net_closed == _TRUE)
+		if(adapter->net_closed == _TRUE && pbuddy_adapter->net_closed == _TRUE)
 		{
 			return;
 		}		
@@ -2563,11 +2570,13 @@ void rtw_set_scan_deny_timer_hdl(_adapter *adapter)
 	struct mlme_priv *mlmepriv = &adapter->mlmepriv;
 
 	//allowed set scan
+	DBG_871X("clear scan deny\n");
 	ATOMIC_SET(&mlmepriv->set_scan_deny, 0);
 }
 
 void rtw_set_scan_deny(struct mlme_priv *mlmepriv, u32 ms)
 {
+	DBG_871X("%s\n", __func__);
 	ATOMIC_SET(&mlmepriv->set_scan_deny, 1);
 	_set_timer(&mlmepriv->set_scan_deny_timer, ms);
 }

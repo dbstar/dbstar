@@ -1378,7 +1378,9 @@ static int recvbuf2recvframe(_adapter *padapter, _pkt *pskb)
 				
 			//enqueue recvframe to txrtp queue
 			if(pattrib->pkt_rpt_type == TX_REPORT1){
-				DBG_8192C("rx CCX \n");
+				//DBG_8192C("rx CCX \n");
+				//CCX-TXRPT ack for xmit mgmt frames.
+				handle_txrpt_ccx_88e(padapter, precvframe->u.hdr.rx_data);
 			}
 			else if(pattrib->pkt_rpt_type == TX_REPORT2){
 				//DBG_8192C("rx TX RPT \n");

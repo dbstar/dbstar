@@ -414,23 +414,6 @@ _InitQueueReservedPage(
 	}
 }
 
-static void _InitID(IN  PADAPTER Adapter)
-{
-	int i;	 
-	EEPROM_EFUSE_PRIV *pEEPROM = GET_EEPROM_EFUSE_PRIV(Adapter);
-	
-	for(i=0; i<6; i++)
-	{
-#ifdef  CONFIG_CONCURRENT_MODE
-		if(Adapter->iface_type == IFACE_PORT1)
-			rtw_write8(Adapter, (REG_MACID1+i), pEEPROM->mac_addr[i]);		 	
-		else 
-#endif
-		rtw_write8(Adapter, (REG_MACID+i), pEEPROM->mac_addr[i]);		 	
-	}
-}
-
-
 static VOID
 _InitTxBufferBoundary(
 	IN PADAPTER Adapter,
@@ -1587,6 +1570,38 @@ u32 rtl8188eu_hal_init(PADAPTER Adapter)
 _func_enter_;
 	
 HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_BEGIN);
+
+#ifdef CONFIG_WOWLAN
+	
+	Adapter->pwrctrlpriv.wowlan_wake_reason = rtw_read8(Adapter, REG_WOWLAN_WAKE_REASON);
+	DBG_8192C("%s wowlan_wake_reason: 0x%02x\n", 
+				__func__, Adapter->pwrctrlpriv.wowlan_wake_reason);
+
+	if(rtw_read8(Adapter, REG_MCUFWDL)&BIT7){ /*&&
+		(Adapter->pwrctrlpriv.wowlan_wake_reason & FWDecisionDisconnect)) {*/
+		u8 reg_val=0;
+		DBG_8192C("+Reset Entry+\n");
+		rtw_write8(Adapter, REG_MCUFWDL, 0x00);
+		_8051Reset88E(Adapter);
+		//reset BB
+		reg_val = rtw_read8(Adapter, REG_SYS_FUNC_EN);
+		reg_val &= ~(BIT(0) | BIT(1));
+		rtw_write8(Adapter, REG_SYS_FUNC_EN, reg_val);
+		//reset RF
+		rtw_write8(Adapter, REG_RF_CTRL, 0);
+		//reset TRX path
+		rtw_write16(Adapter, REG_CR, 0);
+		//reset MAC, Digital Core
+		reg_val = rtw_read8(Adapter, REG_SYS_FUNC_EN+1);
+		reg_val &= ~(BIT(4) | BIT(7));
+		rtw_write8(Adapter, REG_SYS_FUNC_EN+1, reg_val);
+		reg_val = rtw_read8(Adapter, REG_SYS_FUNC_EN+1);
+		reg_val |= BIT(4) | BIT(7);
+		rtw_write8(Adapter, REG_SYS_FUNC_EN+1, reg_val);
+		DBG_8192C("-Reset Entry-\n");
+	}
+#endif //CONFIG_WOWLAN
+
 	if(Adapter->pwrctrlpriv.bkeepfwalive)
 	{
 		_ps_open_RF(Adapter);
@@ -1698,7 +1713,13 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_DOWNLOAD_FW);
 	Adapter->bFWReady = _FALSE; //because no fw for test chip	
 	pHalData->fw_ractrl = _FALSE;
 	#else
+
+#ifdef CONFIG_WOWLAN
+	status = rtl8188e_FirmwareDownload(Adapter, _FALSE);
+#else
 	status = rtl8188e_FirmwareDownload(Adapter);
+#endif //CONFIG_WOWLAN
+
 	if (status != _SUCCESS) {
 		DBG_871X("%s: Download Firmware failed!!\n", __FUNCTION__);
 		Adapter->bFWReady = _FALSE;
@@ -1754,7 +1775,7 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_MISC02);
 	_InitDriverInfoSize(Adapter, DRVINFO_SZ);
 
 	_InitInterrupt(Adapter);
-	_InitID(Adapter);//set mac_address
+	hal_init_macaddr(Adapter);//set mac_address
 	_InitNetworkType(Adapter);//set msr	
 	_InitWMACSetting(Adapter);
 	_InitAdaptiveCtrl(Adapter);
@@ -1984,6 +2005,9 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_INIT_HAL_DM);
 	//tynli_test_tx_report.
 	rtw_write16(Adapter, REG_TX_RPT_TIME, 0x3DF0);
 	//RT_TRACE(COMP_INIT, DBG_TRACE, ("InitializeAdapter8188EUsb() <====\n"));
+
+	//enable tx DMA to drop the redundate data of packet
+	rtw_write16(Adapter,REG_TXDMA_OFFSET_CHK, (rtw_read16(Adapter,REG_TXDMA_OFFSET_CHK) | DROP_DATA_EN));
 	
 HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_IQK);
 	// 2010/08/26 MH Merge from 8192CE.
@@ -2027,22 +2051,10 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_MISC31);
 
 	rtw_write8(Adapter, REG_USB_HRPWM, 0);
 
-	//misc
-	{
-		int i;		
-		u8 mac_addr[6];
-		for(i=0; i<6; i++)
-		{			
-#ifdef CONFIG_CONCURRENT_MODE
-			if(Adapter->iface_type == IFACE_PORT1)
-				mac_addr[i] = rtw_read8(Adapter, REG_MACID1+i);
-			else
-#endif
-			mac_addr[i] = rtw_read8(Adapter, REG_MACID+i);		
-		}
-		
-		DBG_8192C("MAC Address from REG_MACID = "MAC_FMT"\n", MAC_ARG(mac_addr));
-	}
+#ifdef CONFIG_XMIT_ACK
+	//ack for xmit mgmt frames.
+	rtw_write32(Adapter, REG_FWHW_TXQ_CTRL, rtw_read32(Adapter, REG_FWHW_TXQ_CTRL)|BIT(12));
+#endif //CONFIG_XMIT_ACK
 
 exit:
 HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_END);
@@ -2911,6 +2923,7 @@ readAdapterInfo_8188EU(
 	Hal_ReadTxPowerInfo88E(padapter, pEEPROM->efuse_eeprom_data, pEEPROM->bautoload_fail_flag);	
 	Hal_EfuseParseEEPROMVer88E(padapter, pEEPROM->efuse_eeprom_data, pEEPROM->bautoload_fail_flag);
 	rtl8188e_EfuseParseChnlPlan(padapter, pEEPROM->efuse_eeprom_data, pEEPROM->bautoload_fail_flag);
+	Hal_EfuseParseXtal_8188E(padapter, pEEPROM->efuse_eeprom_data, pEEPROM->bautoload_fail_flag);
 	Hal_EfuseParseCustomerID88E(padapter, pEEPROM->efuse_eeprom_data, pEEPROM->bautoload_fail_flag);
 	Hal_ReadAntennaDiversity88E(padapter, pEEPROM->efuse_eeprom_data, pEEPROM->bautoload_fail_flag);
 	Hal_EfuseParseBoardType88E(padapter, pEEPROM->efuse_eeprom_data, pEEPROM->bautoload_fail_flag);
@@ -2920,6 +2933,9 @@ readAdapterInfo_8188EU(
 	// The following part initialize some vars by PG info.
 	//
 	Hal_InitChannelPlan(padapter);
+#if defined(CONFIG_WOWLAN) && defined(CONFIG_SDIO_HCI)
+	Hal_DetectWoWMode(padapter);
+#endif //CONFIG_WOWLAN && CONFIG_SDIO_HCI
 	Hal_CustomizeByCustomerID_8188EU(padapter);
 
 	_ReadLEDSetting(padapter, pEEPROM->efuse_eeprom_data, pEEPROM->bautoload_fail_flag);
@@ -2981,7 +2997,7 @@ _ReadRFType(
 
 static int _ReadAdapterInfo8188EU(PADAPTER	Adapter)
 {
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
+	//HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 	u32 start=rtw_get_current_time();
 	
 	MSG_8192C("====> %s\n", __FUNCTION__);
@@ -3087,7 +3103,7 @@ static void hw_var_set_opmode(PADAPTER Adapter, u8 variable, u8* val)
 {
 	u8	val8;
 	u8	mode = *((u8 *)val);
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
+	//HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 
 #ifdef CONFIG_CONCURRENT_MODE
 	if(Adapter->iface_type == IFACE_PORT1)
@@ -3479,7 +3495,7 @@ static void hw_var_set_correct_tsf(PADAPTER Adapter, u8 variable, u8* val)
 static void hw_var_set_mlme_disconnect(PADAPTER Adapter, u8 variable, u8* val)
 {
 #ifdef CONFIG_CONCURRENT_MODE
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
+	//HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 	PADAPTER pbuddy_adapter = Adapter->pbuddy_adapter;
 			
 				
@@ -3676,7 +3692,7 @@ _func_enter_;
 		case HW_VAR_SET_OPMODE:
 			hw_var_set_opmode(Adapter, variable, val);
 			break;
-                case HW_VAR_MAC_ADDR:
+		case HW_VAR_MAC_ADDR:
 			hw_var_set_macaddr(Adapter, variable, val);			
 			break;
 		case HW_VAR_BSSID:
@@ -4367,7 +4383,7 @@ _func_enter_;
 					}
 					else
 					{
-						//DBG_871X("no packet in tx packet buffer (%d)\n", i);
+						DBG_871X("no packet in tx packet buffer (%d)\n", i);
 						break;
 					}
 				}
@@ -4378,6 +4394,100 @@ _func_enter_;
 			}
 #endif
 			break;
+
+#ifdef CONFIG_WOWLAN
+		case HW_VAR_WOWLAN:
+		{
+			struct wowlan_ioctl_param *poidparam;
+			struct recv_buf *precvbuf;
+			int res, i;
+			u32 tmp;
+			u16 len = 0;
+			u8 mstatus = (*(u8 *)val);
+			u8 trycnt = 100;
+			u8 data[4];
+
+			poidparam = (struct wowlan_ioctl_param *)val;
+			switch (poidparam->subcode){
+				case WOWLAN_ENABLE:
+					DBG_871X_LEVEL(_drv_always_, "WOWLAN_ENABLE\n");
+
+					SetFwRelatedForWoWLAN8188ES(Adapter, _TRUE);
+
+					//Set Pattern
+					//if(Adapter->pwrctrlpriv.wowlan_pattern==_TRUE)
+					//	rtw_wowlan_reload_pattern(Adapter);
+
+					//RX DMA stop
+					DBG_871X_LEVEL(_drv_always_, "Pause DMA\n");
+					rtw_write32(Adapter,REG_RXPKT_NUM,(rtw_read32(Adapter,REG_RXPKT_NUM)|RW_RELEASE_EN));
+					do{
+						if((rtw_read32(Adapter, REG_RXPKT_NUM)&RXDMA_IDLE)) {
+							DBG_871X_LEVEL(_drv_always_, "RX_DMA_IDLE is true\n");
+							break;
+						} else {
+							// If RX_DMA is not idle, receive one pkt from DMA
+							DBG_871X_LEVEL(_drv_always_, "RX_DMA_IDLE is not true\n");
+						}
+					}while(trycnt--);
+					if(trycnt ==0)
+						DBG_871X_LEVEL(_drv_always_, "Stop RX DMA failed...... \n");
+
+					//Set WOWLAN H2C command.
+					DBG_871X_LEVEL(_drv_always_, "Set WOWLan cmd\n");
+					rtl8188es_set_wowlan_cmd(Adapter, 1);
+
+					mstatus = rtw_read8(Adapter, REG_WOW_CTRL);
+					trycnt = 10;
+
+					while(!(mstatus&BIT1) && trycnt>1) {
+						mstatus = rtw_read8(Adapter, REG_WOW_CTRL);
+						DBG_871X_LEVEL(_drv_always_, "Loop index: %d :0x%02x\n", trycnt, mstatus);
+						trycnt --;
+						rtw_msleep_os(2);
+					}
+
+					Adapter->pwrctrlpriv.wowlan_wake_reason = rtw_read8(Adapter, REG_WOWLAN_WAKE_REASON);
+					DBG_871X_LEVEL(_drv_always_, "wowlan_wake_reason: 0x%02x\n",
+										Adapter->pwrctrlpriv.wowlan_wake_reason);
+
+					/* Invoid SE0 reset signal during suspending*/
+					rtw_write8(Adapter, REG_RSV_CTRL, 0x20);
+					rtw_write8(Adapter, REG_RSV_CTRL, 0x60);
+
+					//rtw_msleep_os(10);
+					break;
+				case WOWLAN_DISABLE:
+					DBG_871X_LEVEL(_drv_always_, "WOWLAN_DISABLE\n");
+					trycnt = 10;
+					rtl8188es_set_wowlan_cmd(Adapter, 0);
+					mstatus = rtw_read8(Adapter, REG_WOW_CTRL);
+					DBG_871X_LEVEL(_drv_info_, "%s mstatus:0x%02x\n", __func__, mstatus);
+
+					while(mstatus&BIT1 && trycnt>1) {
+						mstatus = rtw_read8(Adapter, REG_WOW_CTRL);
+						DBG_871X_LEVEL(_drv_always_, "Loop index: %d :0x%02x\n", trycnt, mstatus);
+						trycnt --;
+						rtw_msleep_os(2);
+					}
+
+					if (mstatus & BIT1)
+						printk("System did not release RX_DMA\n");
+					else
+						SetFwRelatedForWoWLAN8188ES(Adapter, _FALSE);
+
+					rtw_msleep_os(2);
+					if(!(Adapter->pwrctrlpriv.wowlan_wake_reason & FWDecisionDisconnect))
+						rtl8188e_set_FwJoinBssReport_cmd(Adapter, 1);
+					//rtw_msleep_os(10);
+					break;
+				default:
+					break;
+			}
+		}
+		break;
+#endif //CONFIG_WOWLAN
+
 	#if (RATE_ADAPTIVE_SUPPORT == 1)
 		case HW_VAR_TX_RPT_MAX_MACID:
 			{
@@ -4439,15 +4549,13 @@ _func_enter_;
 				}
 				else
 				{
-					// refine by scott
-					u32	valCR;
-		                    		valCR = rtw_read8(Adapter, REG_CR);
-		                   		valCR &= 0xC0;
-
-		                    		if(valCR)
-		                        			val[0] = _TRUE;
-		                    		else
+					u32 valRCR;
+					valRCR = rtw_read32(Adapter, REG_RCR);
+					valRCR &= 0x00070000;
+					if(valRCR)
 						val[0] = _FALSE;
+					else
+						val[0] = _TRUE;
 				}
 			}
 			break;
@@ -4862,7 +4970,7 @@ void UpdateHalRAMask8188EUsb(PADAPTER padapter, u32 mac_id, u8 rssi_level)
 void SetBeaconRelatedRegisters8188EUsb(PADAPTER padapter)
 {
 	u32	value32;
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
+	//HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 	u32 bcn_ctrl_reg 			= REG_BCN_CTRL;

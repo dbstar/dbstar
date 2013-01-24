@@ -371,13 +371,16 @@ struct  submit_ctx{
 };
 
 enum {
+	RTW_SCTX_SUBMITTED = -1,
 	RTW_SCTX_DONE_SUCCESS = 0,
 	RTW_SCTX_DONE_UNKNOWN,
+	RTW_SCTX_DONE_TIMEOUT,
 	RTW_SCTX_DONE_BUF_ALLOC,
 	RTW_SCTX_DONE_BUF_FREE,
 	RTW_SCTX_DONE_WRITE_PORT_ERR,
 	RTW_SCTX_DONE_TX_DESC_NA,
 	RTW_SCTX_DONE_TX_DENY,
+	RTW_SCTX_DONE_CCX_PKT_FAIL,
 };
 
 
@@ -484,6 +487,10 @@ struct xmit_frame
 #endif
 #endif
 
+#ifdef CONFIG_XMIT_ACK
+	u8 ack_report;
+#endif
+
 };
 
 struct tx_servq {
@@ -584,6 +591,8 @@ struct	xmit_priv	{
 	struct hw_xmit *hwxmits;
 	u8	hwxmit_entry;
 
+	u8	wmm_para_seq[4];//sequence for wmm ac parameter strength from large to small. it's value is 0->vo, 1->vi, 2->be, 3->bk.
+
 #ifdef CONFIG_USB_HCI
 	_sema	tx_retevt;//all tx return event;
 	u8		txirp_cnt;//
@@ -622,18 +631,6 @@ struct	xmit_priv	{
 	struct tasklet_struct xmit_tasklet;
 #endif
 #endif
-#ifdef CONFIG_SDIO_TX_MULTI_QUEUE
-	_queue tx_pending_queue[3];// HIQ,MIQ,LOQ
-	u8	tx_page_full_mask;
-	u8	requiredPage;
-	u8	PageIndex;
-
-	//per AC pending irp
-	int	beq_cnt;
-	int	bkq_cnt;
-	int	viq_cnt;
-	int	voq_cnt;
-#endif
 #endif
 
 	_queue free_xmitbuf_queue;
@@ -658,6 +655,13 @@ struct	xmit_priv	{
 	
 	struct agg_pkt_info agg_pkt[MAX_AGG_PKT_NUM];
 	#endif
+
+#ifdef CONFIG_XMIT_ACK
+	int	ack_tx;
+	_mutex ack_tx_mutex;
+	struct submit_ctx ack_tx_ops;
+#endif
+	
 };
 
 extern struct xmit_buf *rtw_alloc_xmitbuf_ext(struct xmit_priv *pxmitpriv);
@@ -722,6 +726,12 @@ thread_return	rtw_xmit_thread(thread_context context);
 #endif
 
 u32	rtw_get_ff_hwaddr(struct xmit_frame	*pxmitframe);
+
+#ifdef CONFIG_XMIT_ACK
+int rtw_ack_tx_wait(struct xmit_priv *pxmitpriv, u32 timeout_ms);
+void rtw_ack_tx_done(struct xmit_priv *pxmitpriv, int status);
+#endif //CONFIG_XMIT_ACK
+
 
 //include after declaring struct xmit_buf, in order to avoid warning
 #include <xmit_osdep.h>

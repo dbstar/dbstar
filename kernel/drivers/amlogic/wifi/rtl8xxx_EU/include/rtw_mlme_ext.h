@@ -500,6 +500,7 @@ struct mlme_ext_priv
 	u8 update_channel_plan_by_ap_done;
 #endif
 	//recv_decache check for Action_public frame 
+	u8 action_public_dialog_token;
 	u16 	 action_public_rxseq;
 };
 
@@ -612,6 +613,7 @@ void update_mgnt_tx_rate(_adapter *padapter, u8 rate);
 void update_mgntframe_attrib(_adapter *padapter, struct pkt_attrib *pattrib);
 void dump_mgntframe(_adapter *padapter, struct xmit_frame *pmgntframe);
 s32 dump_mgntframe_and_wait(_adapter *padapter, struct xmit_frame *pmgntframe, int timeout_ms);
+s32 dump_mgntframe_and_wait_ack(_adapter *padapter, struct xmit_frame *pmgntframe);
 
 #ifdef CONFIG_P2P
 void issue_probersp_p2p(_adapter *padapter, unsigned char *da);

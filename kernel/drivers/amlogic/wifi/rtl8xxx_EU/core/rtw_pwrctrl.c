@@ -33,7 +33,20 @@ void ips_enter(_adapter * padapter)
 {
 	struct pwrctrl_priv *pwrpriv = &padapter->pwrctrlpriv;
 	struct mlme_priv *pmlmepriv = &(padapter->mlmepriv);
+	struct xmit_priv *pxmit_priv = &padapter->xmitpriv;
 
+#if (MP_DRIVER == 1)
+	if (padapter->registrypriv.mp_mode == 1)
+		return;
+#endif
+
+	if (pxmit_priv->free_xmitbuf_cnt != NR_XMITBUFF ||
+		pxmit_priv->free_xmit_extbuf_cnt != NR_XMIT_EXTBUFF) {
+		DBG_871X_LEVEL(_drv_always_, "There are some pkts to transmit\n");
+		DBG_871X_LEVEL(_drv_info_, "free_xmitbuf_cnt: %d, free_xmit_extbuf_cnt: %d\n", 
+			pxmit_priv->free_xmitbuf_cnt, pxmit_priv->free_xmit_extbuf_cnt);	
+		return;
+	}
 
 	_enter_pwrlock(&pwrpriv->lock);
 
@@ -144,9 +157,10 @@ bool rtw_pwr_unassociated_idle(_adapter *adapter)
 		goto exit;
 	}
 
-	if (check_fwstate(pmlmepriv, _FW_LINKED|_FW_UNDER_SURVEY|_FW_UNDER_LINKING) == _TRUE
-		|| check_fwstate(pmlmepriv, WIFI_AP_STATE) == _TRUE
-		|| check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE | WIFI_ADHOC_STATE) == _TRUE
+	if (check_fwstate(pmlmepriv, WIFI_ASOC_STATE|WIFI_SITE_MONITOR)
+		|| check_fwstate(pmlmepriv, WIFI_UNDER_LINKING|WIFI_UNDER_WPS)
+		|| check_fwstate(pmlmepriv, WIFI_AP_STATE)
+		|| check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE|WIFI_ADHOC_STATE)
 		#if defined(CONFIG_P2P) && defined(CONFIG_IOCTL_CFG80211) && defined(CONFIG_P2P_IPS)
 		|| pcfg80211_wdinfo->is_ro_ch
 		#elif defined(CONFIG_P2P)
@@ -165,10 +179,11 @@ bool rtw_pwr_unassociated_idle(_adapter *adapter)
 		struct cfg80211_wifidirect_info *b_pcfg80211_wdinfo = &buddy->cfg80211_wdinfo;
 		#endif
 		#endif
-		
-		if (check_fwstate(b_pmlmepriv, _FW_LINKED|_FW_UNDER_SURVEY|_FW_UNDER_LINKING) == _TRUE
-			|| check_fwstate(b_pmlmepriv, WIFI_AP_STATE) == _TRUE
-			|| check_fwstate(b_pmlmepriv, WIFI_ADHOC_MASTER_STATE | WIFI_ADHOC_STATE) == _TRUE
+
+		if (check_fwstate(b_pmlmepriv, WIFI_ASOC_STATE|WIFI_SITE_MONITOR)
+			|| check_fwstate(b_pmlmepriv, WIFI_UNDER_LINKING|WIFI_UNDER_WPS)
+			|| check_fwstate(b_pmlmepriv, WIFI_AP_STATE)
+			|| check_fwstate(b_pmlmepriv, WIFI_ADHOC_MASTER_STATE|WIFI_ADHOC_STATE)
 			#if defined(CONFIG_P2P) && defined(CONFIG_IOCTL_CFG80211) && defined(CONFIG_P2P_IPS)
 			|| b_pcfg80211_wdinfo->is_ro_ch
 			#elif defined(CONFIG_P2P)
@@ -470,10 +485,15 @@ u8 PS_RDY_CHECK(_adapter * padapter)
 		(check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE) == _TRUE) ||
 		(check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) == _TRUE) )
 		return _FALSE;
-
+#ifdef CONFIG_WOWLAN
+	if(_TRUE == pwrpriv->bInSuspend && pwrpriv->wowlan_mode)
+		return _TRUE;
+	else
+		return _FALSE;
+#else
 	if(_TRUE == pwrpriv->bInSuspend )
 		return _FALSE;
-
+#endif
 	if( (padapter->securitypriv.dot11AuthAlgrthm == dot11AuthAlgrthm_8021X) && (padapter->securitypriv.binstallGrpkey == _FALSE) )
 	{
 		DBG_871X("Group handshake still in progress !!!\n");
@@ -666,13 +686,39 @@ void LPS_Enter(PADAPTER padapter)
 {
 	struct pwrctrl_priv	*pwrpriv = &padapter->pwrctrlpriv;
 	struct mlme_priv	*pmlmepriv = &(padapter->mlmepriv);
+	_adapter *buddy = padapter->pbuddy_adapter;
 
 _func_enter_;
 
 //	DBG_871X("+LeisurePSEnter\n");
 
-#if defined(CONFIG_CONCURRENT_MODE)
-	return; /* Skip power saving for concurrent mode */
+#ifdef CONFIG_CONCURRENT_MODE
+	if (padapter->iface_type != IFACE_PORT0)
+		return; /* Skip power saving for concurrent mode port 1*/
+
+	/* consider buddy, if exist */
+	if (buddy) {
+		struct mlme_priv *b_pmlmepriv = &(buddy->mlmepriv);
+		#ifdef CONFIG_P2P
+		struct wifidirect_info *b_pwdinfo = &(buddy->wdinfo);
+		#ifdef CONFIG_IOCTL_CFG80211		
+		struct cfg80211_wifidirect_info *b_pcfg80211_wdinfo = &buddy->cfg80211_wdinfo;
+		#endif
+		#endif
+		
+		if (check_fwstate(b_pmlmepriv, WIFI_ASOC_STATE|WIFI_SITE_MONITOR)
+			|| check_fwstate(b_pmlmepriv, WIFI_UNDER_LINKING|WIFI_UNDER_WPS)
+			|| check_fwstate(b_pmlmepriv, WIFI_AP_STATE)
+			|| check_fwstate(b_pmlmepriv, WIFI_ADHOC_MASTER_STATE|WIFI_ADHOC_STATE)
+			#if defined(CONFIG_P2P) && defined(CONFIG_IOCTL_CFG80211) && defined(CONFIG_P2P_IPS)
+			|| b_pcfg80211_wdinfo->is_ro_ch
+			#elif defined(CONFIG_P2P)
+			|| !rtw_p2p_chk_state(b_pwdinfo, P2P_STATE_NONE)
+			#endif
+		) {
+			return;
+		}
+	}
 #endif
 
 	if (PS_RDY_CHECK(padapter) == _FALSE)
@@ -713,8 +759,9 @@ void LPS_Leave(PADAPTER padapter)
 
 _func_enter_;
 
-#if defined(CONFIG_CONCURRENT_MODE)
-	return; /* Skip power saving for concurrent mode */
+#ifdef CONFIG_CONCURRENT_MODE
+	if (padapter->iface_type != IFACE_PORT0)
+		return; /* Skip power saving for concurrent mode port 1*/
 #endif
 
 //	DBG_871X("+LeisurePSLeave\n");
@@ -1544,6 +1591,9 @@ int _rtw_pwr_wakeup(_adapter *padapter, u32 ips_deffer_ms, const char *caller)
 	int ret = _SUCCESS;
 
 #ifdef CONFIG_CONCURRENT_MODE
+	if (padapter->pbuddy_adapter)
+		LeaveAllPowerSaveMode(padapter->pbuddy_adapter);
+
 	if ((padapter->isprimary == _FALSE) && padapter->pbuddy_adapter){
 		padapter = padapter->pbuddy_adapter;
 		pwrpriv = &padapter->pwrctrlpriv;

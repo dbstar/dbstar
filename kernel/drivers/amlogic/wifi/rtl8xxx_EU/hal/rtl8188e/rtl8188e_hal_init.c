@@ -324,6 +324,11 @@ void _8051Reset88E(PADAPTER padapter)
 	DBG_871X("=====> _8051Reset88E(): 8051 reset success .\n");
 
 }
+
+#ifdef CONFIG_FILE_FWIMG
+extern char *rtw_fw_file_path;
+u8	FwBuffer8188E[FW_8188E_SIZE];
+#endif //CONFIG_FILE_FWIMG
 #ifdef CONFIG_WOWLAN
 //
 //	Description:
@@ -373,16 +378,26 @@ s32 rtl8188e_FirmwareDownload(PADAPTER padapter)
 	
 //	RT_TRACE(_module_hal_init_c_, _drv_err_, ("rtl8723a_FirmwareDownload: %s\n", pFwImageFileName));
 
-#ifdef CONFIG_EMBEDDED_FWIMG
-	pFirmware->eFWSource = FW_SOURCE_HEADER_FILE;
-#else
-	pFirmware->eFWSource = FW_SOURCE_IMG_FILE; // We should decided by Reg.
-#endif
+	#ifdef CONFIG_FILE_FWIMG
+	if(rtw_is_file_readable(rtw_fw_file_path) == _TRUE)
+	{
+		DBG_871X("%s accquire FW from file:%s\n", __FUNCTION__, rtw_fw_file_path);
+		pFirmware->eFWSource = FW_SOURCE_IMG_FILE;
+	}
+	else
+	#endif //CONFIG_FILE_FWIMG
+	{
+		pFirmware->eFWSource = FW_SOURCE_HEADER_FILE;
+	}
 
 	switch(pFirmware->eFWSource)
 	{
 		case FW_SOURCE_IMG_FILE:
-			//TODO:
+			#ifdef CONFIG_FILE_FWIMG
+			rtStatus = rtw_retrive_from_file(rtw_fw_file_path, FwBuffer8188E, FW_8188E_SIZE);
+			pFirmware->ulFwLength = rtStatus>=0?rtStatus:0;
+			pFirmware->szFwBuffer = FwBuffer8188E;
+			#endif //CONFIG_FILE_FWIMG
 			break;
 		case FW_SOURCE_HEADER_FILE:
 			if (FwImageLen > FW_8188E_SIZE) {
@@ -3149,7 +3164,9 @@ void Hal_ReadPowerSavingMode88E(
 				
 		// decide hw if support remote wakeup function
 		// if hw supported, 8051 (SIE) will generate WeakUP signal( D+/D- toggle) when autoresume
-		padapter->pwrctrlpriv.bSupportRemoteWakeup = (hwinfo[EEPROM_RF_FEATURE_OPTION_88E] & BIT6)?_TRUE :_FALSE;
+#ifdef CONFIG_USB_HCI
+		padapter->pwrctrlpriv.bSupportRemoteWakeup = (hwinfo[EEPROM_USB_OPTIONAL_FUNCTION0] & BIT1)?_TRUE :_FALSE;
+#endif //CONFIG_USB_HCI
 
 		//if(SUPPORT_HW_RADIO_DETECT(Adapter))	
 			//Adapter->registrypriv.usbss_enable = Adapter->pwrctrlpriv.bSupportRemoteWakeup ;

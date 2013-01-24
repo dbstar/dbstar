@@ -365,8 +365,8 @@ int rtw_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 		goto exit;
 	}
 
-	//DBG_871X("%s: Android private cmd \"%s\" on %s\n"
-	//	, __FUNCTION__, command, ifr->ifr_name);
+	DBG_871X("%s: Android private cmd \"%s\" on %s\n"
+		, __FUNCTION__, command, ifr->ifr_name);
 
 	cmd_num = rtw_android_cmdstr_to_num(command);
 	
