@@ -235,7 +235,7 @@ rewake:
 			* 调用PUSH数据解析接口解析数据，该函数是阻塞的，所以应该使用一个较大
 			* 的缓冲区来暂时存储源源不断的数据。
 			*/
-			//DEBUG("push_parse %d\n", len);
+			//DEBUG("push_parse[%d] %d\n", rindex,len);
 			push_parse((char *)pBuf, len);
 			s_push_has_data = 3;
 			
@@ -294,7 +294,7 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 	DEBUG("should parse: %s\n", DescURI);
 	if(RECEIVETYPE_PUBLICATION==type){
 #ifdef PARSE_XML_VIA_THREAD
-		mid_push_cb(DescURI,PRODUCTION_XML,id);
+		mid_push_cb(DescURI,PUBLICATION_XML,id);
 #else
 /*
 直接调用parse_xml的目的是避开线程，否则出现parse_xml和push_recv_manage_refresh同时使用sqlite库，导致异常
@@ -302,7 +302,7 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 靠。但是直接调用parse_xml会导致其中的事务交叉引起sqlite错误：out of memory
 咋办呢？？？目前只能在sqlite的事务调用处搞一个互斥保护。
 */
-		parse_xml(DescURI,PRODUCTION_XML,id);
+		parse_xml(DescURI,PUBLICATION_XML,id);
 #endif
 	}
 	else if(RECEIVETYPE_COLUMN==type){
@@ -326,7 +326,7 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 }
 #endif
 
-int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag)
+int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_ext)
 {
 	char sqlite_cmd[512];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
@@ -334,7 +334,7 @@ int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag)
 	
 	if(COLUMN_XML==push_flag){
 		char reject_uri[512];
-		snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),xml_uri);
+		snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),arg_ext);
 		remove_force(reject_uri);
 		DEBUG("remove(%s) finished\n", reject_uri);
 	}
@@ -606,6 +606,7 @@ void *push_monitor_thread()
 		
 		// 当栏目和界面产品发生改变时，不能直接在parse_xml()函数中通过JNI向UI发送notify，否则很容易导致Launcher死掉。
 		if(s_column_refresh>0){
+			DEBUG("column refresh\n");
 			s_column_refresh ++;
 			if(s_column_refresh>2){
 				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
@@ -613,6 +614,7 @@ void *push_monitor_thread()
 			}
 		}
 		if(s_interface_refresh>0){
+			DEBUG("interface refresh\n");
 			s_interface_refresh ++;
 			if(s_interface_refresh>2){
 				msg_send2_UI(STATUS_INTERFACE_REFRESH, NULL, 0);
@@ -620,6 +622,7 @@ void *push_monitor_thread()
 			}
 		}
 		if(s_preview_refresh>0){
+			DEBUG("preview refresh\n");
 			s_preview_refresh ++;
 			if(s_preview_refresh>2){
 				msg_send2_UI(STATUS_PREVIEW_REFRESH, NULL, 0);
@@ -667,11 +670,11 @@ void *push_xml_parse_thread()
 				//DEBUG("xml queue[%d]: %s\n", i, s_push_xml[i].uri);
 				if(strlen(s_push_xml[i].uri)>0){
 					DEBUG("will parse[%d] %s\n", i, s_push_xml[i].uri);
-					parse_xml(s_push_xml[i].uri, s_push_xml[i].flag, s_push_xml[i].id);
+					parse_xml(s_push_xml[i].uri, s_push_xml[i].flag, s_push_xml[i].arg_ext);
 					
 					memset(s_push_xml[i].uri, 0, sizeof(s_push_xml[i].uri));
 					s_push_xml[i].flag = PUSH_XML_FLAG_UNDEFINED;
-					memset(s_push_xml[i].id, 0, sizeof(s_push_xml[i].id));
+					memset(s_push_xml[i].arg_ext, 0, sizeof(s_push_xml[i].arg_ext));
 					DEBUG("finish parse[%d] %s\n", i, s_push_xml[i].uri);
 					has_parse_xml = 1;
 				}
@@ -698,7 +701,7 @@ void usage()
 	exit(0);
 }
 
-int mid_push_cb(const char *path, int flag, char *id)
+int mid_push_cb(const char *path, int flag)
 {
 	int ret = 0;
 	char xml_uri[512];
@@ -716,7 +719,9 @@ int mid_push_cb(const char *path, int flag, char *id)
 			if(0==strcmp(s_prgs[i].uri, path)){
 				snprintf(xml_uri,sizeof(xml_uri),"%s",s_prgs[i].descURI);
 				
+				s_prgs[i].cur = s_prgs[i].total;
 				s_prgs[i].parsed = 1;
+				break;
 			}
 		}
 		pthread_mutex_unlock(&mtx_push_monitor);
@@ -730,7 +735,7 @@ int mid_push_cb(const char *path, int flag, char *id)
 	}
 	
 	if(	PUBLICATION_DIR<=flag && flag<PUSH_XML_FLAG_MAXLINE){
-		if(0==check_tail(xml_uri, ".xml", 0))
+		if(0==strtailcmp(xml_uri, ".xml", 0))
 		{
 			DEBUG("xml_uri: %s\n", xml_uri);
 			pthread_mutex_lock(&mtx_xml);
@@ -738,11 +743,10 @@ int mid_push_cb(const char *path, int flag, char *id)
 			int i = 0;
 			for(i=0; i<XML_NUM; i++){
 				if(0==strlen(s_push_xml[i].uri)){
-					DEBUG("add to index %d: [%s]xml_uri: %s\n", i,id,xml_uri);
+					DEBUG("add to index %d: xml_uri: %s\n", i,xml_uri);
 					snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s", xml_uri);
 					s_push_xml[i].flag = flag;
-					if(id)
-						snprintf(s_push_xml[i].id, sizeof(s_push_xml[i].id),"%s", id);
+					snprintf(s_push_xml[i].arg_ext, sizeof(s_push_xml[i].arg_ext),"%s", path);
 					break;
 				}
 			}
@@ -778,7 +782,7 @@ void callback(const char *path, long long size, int flag)
 	
 	/* 由于涉及到解析和数据库操作，这里不直接调用parse_xml，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
-	mid_push_cb(path, flag, NULL);
+	mid_push_cb(path, flag);
 }
 
 
@@ -823,7 +827,7 @@ int mid_push_init(char *push_conf)
 	for(i=0;i<XML_NUM;i++){
 		memset(s_push_xml[i].uri, 0, sizeof(s_push_xml[i].uri));
 		s_push_xml[i].flag = PUSH_XML_FLAG_UNDEFINED;
-		memset(s_push_xml[i].id, 0, sizeof(s_push_xml[i].id));
+		memset(s_push_xml[i].arg_ext, 0, sizeof(s_push_xml[i].arg_ext));
 	}
 	
 	for(i=0; i<PROGS_NUM; i++){
@@ -1021,7 +1025,15 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].total = prog->total;
 			s_prgs[i].parsed = prog->parsed;
 			
-			push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
+/*
+ 已经解析过的节目，无需注册到push库中，只需要UI上显示即可。
+*/
+			if((s_prgs[i].cur)<(s_prgs[i].total)){
+				push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
+			}
+			else{
+				DEBUG("prog [%s]%s is download finish, no need to monitor\n", s_prgs[i].id,s_prgs[i].uri);
+			}
 			s_push_monitor_active++;
 			
 			DEBUG("regist to push[%d]:%s %s %s %lld\n",
@@ -1468,13 +1480,14 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 
 /*
  已经解析过的节目，无需注册到push库中，只需要UI上显式即可。
-*/			
-			if(0==cur_prog.parsed)
-				mid_push_regist(&cur_prog);
-			else{
-				DEBUG("%s is parsed already, no need to regist to push, monitor it only\n", cur_prog.uri);
+*/
+			if(1==cur_prog.parsed){
+				DEBUG("[%s]%s is parsed already, make cur as total directly\n", cur_prog.id,cur_prog.uri);
 				cur_prog.cur = cur_prog.total;
 			}
+			
+			mid_push_regist(&cur_prog);
+			
 			/*
 			回调结束时，receiver携带是否有进度注册的标记，1表示有注册，0表示无注册。
 			*/
@@ -1520,8 +1533,6 @@ int push_recv_manage_refresh()
 
 	return ret;
 }
-
-
 #endif
 
 static int info_xml_refresh_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
@@ -1534,19 +1545,20 @@ static int info_xml_refresh_cb(char **result, int row, int column, void *receive
 //ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed
 	int i = 0;
 	int regist_flag = *((int *)receiver);
+	int ret = 0;
 	
 	for(i=1;i<row+1;i++)
 	{
 		if(0==regist_flag){
-			push_file_unregister(result[i*column+1]);
-			//push_dir_unregister(result[i*column+1]);
-			DEBUG("unregist %s\n", result[i*column+1]);
+			ret = push_file_unregister(result[i*column+1]);
+			//ret = push_dir_unregister(result[i*column+1]);
 		}
 		else{
-			push_file_register(result[i*column+1]);
-			//push_dir_register(result[i*column+1], 0, 0);
-			DEBUG("regist[%s] %s\n", result[i*column], result[i*column+1]);
+			ret = push_file_register(result[i*column+1]);
+			//ret = push_dir_register(result[i*column+1], 0, 0);
 		}
+		
+		DEBUG("%s(%s) return with %d\n", 0==regist_flag?"unregist":"regist",result[i*column+1],ret);
 	}
 	
 	return 0;
@@ -1566,10 +1578,11 @@ int info_xml_refresh(int regist_flag, int push_flag)
 	
 	int resgist_action = regist_flag;
 	
+	DEBUG("regist action: %d, push_flag: %d\n", regist_flag, push_flag);
 	if(PUSH_XML_FLAG_UNDEFINED==push_flag)
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE PushFlag!=%d AND PushFlag!=%d AND PushFlag!=%d;", COLUMN_XML,PRODUCTDESC_XML,PRODUCTION_XML);
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE PushFlag!='%d' AND PushFlag!='%d' AND PushFlag!='%d' AND PushFlag!='%d';", COLUMN_XML,SPRODUCT_XML,PUBLICATION_XML,INITIALIZE_XML);
 	else
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE PushFlag=%d;", push_flag);
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE PushFlag='%d';", push_flag);
 		
 	ret = sqlite_read(sqlite_cmd, (void *)(&resgist_action), sizeof(resgist_action), sqlite_callback);
 /*

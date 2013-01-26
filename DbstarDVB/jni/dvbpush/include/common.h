@@ -139,7 +139,7 @@ typedef enum{
 	SPRODUCT_XML			= 108,
 	
 // defined myself
-	PRODUCTION_XML			= 10000,
+	PUBLICATION_XML			= 10000,
 	
 	
 	PUSH_XML_FLAG_MAXLINE
@@ -498,7 +498,7 @@ char *strrstr_s(const char *str_dad, char *str_son, char signchr);
 char *time_serial();
 int ipv4_simple_check(const char *ip_addr);
 int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, char *preferential_file);
-int check_tail(const char *str_dad, char *str_tail, int case_cmp);
+int strtailcmp(const char *str_dad, char *str_tail, int case_cmp);
 int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port);
 int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int flag);
 int fcopy_c(char *from_file, char *to_file);

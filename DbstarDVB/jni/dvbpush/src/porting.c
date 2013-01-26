@@ -709,7 +709,7 @@ int disk_manage()
 				snprintf(sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
 				snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
 				snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA)," PublicationID='%s'", p_publicationid);
-				snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize)," (PushFlag='%d' AND ID='%s')", PRODUCTION_XML,p_publicationid);
+				snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize)," (PushFlag='%d' AND ID='%s')", PUBLICATION_XML,p_publicationid);
 				snprintf(sqlite_cmd_Preview+strlen(sqlite_cmd_Preview),sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview)," (ProductDescID='%s')", p_publicationid);
 				
 				if(1==first_publicaiton_flag)

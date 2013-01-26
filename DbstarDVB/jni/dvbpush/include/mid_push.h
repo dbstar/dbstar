@@ -4,7 +4,7 @@
 typedef struct{
 	char	uri[512];
 	int		flag;
-	char	id[64];
+	char	arg_ext[512];
 }PUSH_XML_S;
 
 void push_root_dir_init(char *push_conf);
@@ -25,7 +25,7 @@ void push_rely_condition_set(int rely_cond);
 int push_decoder_buf_init();
 int push_recv_manage_refresh();
 int send_xml_to_parse(const char *path, int flag, char *id);
-int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag);
+int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_ext);
 
 void disk_manage_flag_set(int flag);
 void column_refresh_flag_set(int flag);

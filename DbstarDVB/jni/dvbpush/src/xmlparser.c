@@ -105,9 +105,9 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 	if(NULL==xmlinfo)
 		return -1;
 	
-	if(PRODUCTION_XML==atoi(xmlinfo->PushFlag) || COLUMN_XML==atoi(xmlinfo->PushFlag) || SPRODUCT_XML==atoi(xmlinfo->PushFlag)){
-		DEBUG("this xml [%s] if controled by column 'Parsed' in table ProductDesc, don't insert to table Initialize\n",xmlinfo->PushFlag);
-		return -1;
+	if(PUBLICATION_XML==atoi(xmlinfo->PushFlag) || COLUMN_XML==atoi(xmlinfo->PushFlag) || SPRODUCT_XML==atoi(xmlinfo->PushFlag)){
+		DEBUG("this xml [%s] is controled by column 'Parsed' in table ProductDesc, don't insert to table Initialize\n",xmlinfo->PushFlag);
+		return 0;
 	}
 	
 	DEBUG("%s,%s,%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->ServiceID, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI, xmlinfo->ID);
@@ -119,28 +119,28 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 		sqlite_transaction_exec(sqlite_cmd);
 		
 		if(strlen(xmlinfo->XMLName)>0){
-			if(PRODUCTION_XML==strtol(xmlinfo->PushFlag,NULL,0))
+			if(PUBLICATION_XML==strtol(xmlinfo->PushFlag,NULL,0))
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET XMLName='%s' WHERE PushFlag='%s' AND ID='%s';", xmlinfo->XMLName, xmlinfo->PushFlag, xmlinfo->ID);
 			else
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET XMLName='%s' WHERE PushFlag='%s';", xmlinfo->XMLName, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->Version)>0){
-			if(PRODUCTION_XML==strtol(xmlinfo->PushFlag,NULL,0))
+			if(PUBLICATION_XML==strtol(xmlinfo->PushFlag,NULL,0))
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET Version='%s' WHERE PushFlag='%s' AND ID='%s';", xmlinfo->Version, xmlinfo->PushFlag, xmlinfo->ID);
 			else
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET Version='%s' WHERE PushFlag='%s';", xmlinfo->Version, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->StandardVersion)>0){
-			if(PRODUCTION_XML==strtol(xmlinfo->PushFlag,NULL,0))
+			if(PUBLICATION_XML==strtol(xmlinfo->PushFlag,NULL,0))
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET StandardVersion='%s' WHERE PushFlag='%s' AND ID='%s';", xmlinfo->StandardVersion, xmlinfo->PushFlag, xmlinfo->ID);
 			else
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET StandardVersion='%s' WHERE PushFlag='%s';", xmlinfo->StandardVersion, xmlinfo->PushFlag);
 			sqlite_transaction_exec(sqlite_cmd);
 		}
 		if(strlen(xmlinfo->URI)>0){
-			if(PRODUCTION_XML==strtol(xmlinfo->PushFlag,NULL,0))
+			if(PUBLICATION_XML==strtol(xmlinfo->PushFlag,NULL,0))
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET URI='%s' WHERE PushFlag='%s' AND ID='%s';", xmlinfo->URI, xmlinfo->PushFlag, xmlinfo->ID);
 			else
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Initialize SET URI='%s' WHERE PushFlag='%s';", xmlinfo->URI, xmlinfo->PushFlag);
@@ -940,7 +940,6 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 					||	0==strcmp(xmlroute, "ProductDesc^ReceiveColumn^ColumnURI")){
 				DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 				if(0==xmlStrcmp(BAD_CAST"xmlURI", attrPtr->name)){
-					//snprintf(p->DescURI, sizeof(p->DescURI), "%s/%s", p->rootPath,(char *)szAttr);
 					char tmp_xmlURI[512];
 					snprintf(tmp_xmlURI, sizeof(tmp_xmlURI), "%s", (char *)szAttr);
 					
@@ -1216,8 +1215,9 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					if(strcmp("InvalidPushFlag", xmlinfo.PushFlag)){
 						parseProperty(cur, new_xmlroute, (void *)(&xmlinfo));
 						snprintf(xmlinfo.ServiceID, sizeof(xmlinfo.ServiceID), "%s", serviceID_get());
-						if('/'==xmlinfo.URI[strlen(xmlinfo.URI)-1] || 1==check_tail(xmlinfo.URI, ".xml", 0))
+						if('/'==xmlinfo.URI[strlen(xmlinfo.URI)-1] || 0!=strtailcmp(xmlinfo.URI, ".xml", 0))
 							snprintf(xmlinfo.URI+strlen(xmlinfo.URI), sizeof(xmlinfo.URI)-strlen(xmlinfo.URI), "/%s", xmlinfo.XMLName);
+						signed_char_clear(xmlinfo.URI, strlen(xmlinfo.URI), '/', 1);
 						xmlinfo_insert(&xmlinfo);
 					}
 				}
@@ -2115,7 +2115,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(tmp_URI,sizeof(tmp_URI),"%s",(char *)szKey);
 					xmlFree(szKey);
-					//signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
 					snprintf(p->URI,sizeof(p->URI),"%s",p->rootPath);
 					if('/'!=tmp_URI[0])
 						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
@@ -2184,7 +2183,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(tmp_URI,sizeof(tmp_URI),"%s",(char *)szKey);
 					xmlFree(szKey);
-					//signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
 					snprintf(p->URI,sizeof(p->URI),"%s",p->rootPath);
 					if('/'!=tmp_URI[0])
 						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
@@ -2243,7 +2241,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(tmp_URI,sizeof(tmp_URI),"%s",(char *)szKey);
 					xmlFree(szKey);
-					//signed_char_clear(tmp_URI,sizeof(tmp_URI),'/',3);
 					snprintf(p->URI,sizeof(p->URI),"%s",p->rootPath);
 					if('/'!=tmp_URI[0])
 						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
@@ -2531,27 +2528,23 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 #endif
 }
 
-static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *id)
+static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
 {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
 	int ret = 0;
 	char xml_uri[512];
+	PUSH_XML_FLAG_E actual_xml_flag = xml_flag;
 	
 	s_preview_publication = 0;
 	
-	DEBUG("xml_flag: %d, id: %s\n", xml_flag, id);
+	DEBUG("xml_flag: %d, arg_ext: %s\n", actual_xml_flag, arg_ext);
 	pthread_mutex_lock(&mtx_parse_xml);
-//	if(NULL==xml_relative_uri){
-//		DEBUG("CAUTION: name of xml file is NULL\n");
-//		ret = -1;
-//		goto PARSE_XML_END;
-//	}
 	
 	memset(xml_uri, 0, sizeof(xml_uri));
 	if(NULL==xml_relative_uri){
 		char tmp_uri[512];
-		if(-1==xmluri_get(xml_flag, tmp_uri, sizeof(tmp_uri))){
+		if(-1==xmluri_get(actual_xml_flag, tmp_uri, sizeof(tmp_uri))){
 			DEBUG("can not get valid xml uri to parse\n");
 			ret = -1;
 			goto PARSE_XML_END;
@@ -2562,7 +2555,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *id)
 	else
 		snprintf(xml_uri, sizeof(xml_uri), "%s/%s", push_dir_get(), xml_relative_uri);
 	
-	DEBUG("parse xml file[%d]: %s\n", xml_flag, xml_uri);
+	DEBUG("parse xml file[%d]: %s\n", actual_xml_flag, xml_uri);
 	
 	doc = xmlParseFile(xml_uri);
 	if (doc == NULL ) {
@@ -2579,14 +2572,14 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *id)
 	else{
 		DBSTAR_XMLINFO_S xmlinfo;
 		memset(&xmlinfo, 0, sizeof(xmlinfo));
-		snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", xml_flag);
+		snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", actual_xml_flag);
 		
 		char sqlite_cmd[256];
 		char old_xmlver[64];
 		memset(old_xmlver, 0, sizeof(old_xmlver));
 
 // Initialize.xml不存在Service判断问题	
-		if(INITIALIZE_XML==xml_flag){
+		if(INITIALIZE_XML==actual_xml_flag){
 			info_xml_refresh(0,PUSH_XML_FLAG_UNDEFINED);
 		}
 		
@@ -2656,6 +2649,10 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *id)
 			}
 // Publication.xml
 			else if(0==xmlStrcmp(cur->name, BAD_CAST"Publication")){
+				// 成品、栏目和特殊产品均通过文件通道下发，原始PushFlag都是0，故此处进行修正
+				snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", PUBLICATION_XML);
+				actual_xml_flag = PUBLICATION_XML;
+				
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
@@ -2678,9 +2675,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *id)
 			}
 // Column.xml
 			else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
-				
-				// 栏目和特殊产品均通过文件通道下发，原始PushFlag都是Publication，故此处进行修正
+				// 成品、栏目和特殊产品均通过文件通道下发，原始PushFlag都是0，故此处进行修正
 				snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", COLUMN_XML);
+				actual_xml_flag = COLUMN_XML;
 				
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
@@ -2777,8 +2774,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *id)
 
 // SProduct.xml
 			else if(0==xmlStrcmp(cur->name, BAD_CAST"SProduct")){
-				// 栏目和特殊产品均通过文件通道下发，原始PushFlag都是Publication，故此处进行修正
+				// 成品、栏目和特殊产品均通过文件通道下发，原始PushFlag都是0，故此处进行修正
 				snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", SPRODUCT_XML);
+				actual_xml_flag = SPRODUCT_XML;
 				
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
@@ -2816,33 +2814,33 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *id)
 	xmlFreeDoc(doc);
 
 PARSE_XML_END:
-	DEBUG("parse xml end\n");
+	DEBUG("parse xml end, actual_xml_flag=%d, ret=%d\n", actual_xml_flag, ret);
 	pthread_mutex_unlock(&mtx_parse_xml);
 
 // 不要放在事务或线程锁内部发送这些信号	
 	if(0==ret){
-		if(PRODUCTION_XML==xml_flag){
+		if(PUBLICATION_XML==actual_xml_flag){
 			if(1==s_preview_publication){
 				DEBUG("this Publication is a preview\n");
 				preview_refresh_flag_set(1);
 			}
 			
-			productdesc_parsed_set(xml_relative_uri, xml_flag);
+			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
 		}
-		else if(COLUMN_XML==xml_flag){
+		else if(COLUMN_XML==actual_xml_flag){
 			column_refresh_flag_set(1);
-			productdesc_parsed_set(xml_relative_uri, xml_flag);
+			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
 		}
-		else if(SPRODUCT_XML==xml_flag){
+		else if(SPRODUCT_XML==actual_xml_flag){
 			interface_refresh_flag_set(1);
-			productdesc_parsed_set(xml_relative_uri, xml_flag);
+			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
 		}
-		else if(PRODUCTDESC_XML==xml_flag){	//  || SERVICE_XML==xml_flag 只接收本service的播发单数据，无需根据Service.xml进行刷新
-			DEBUG("refresh push monitor because of xml %d\n", xml_flag);
+		else if(PRODUCTDESC_XML==actual_xml_flag){	//  || SERVICE_XML==actual_xml_flag 只接收本service的播发单数据，无需根据Service.xml进行刷新
+			DEBUG("refresh push monitor because of xml %d\n", actual_xml_flag);
 			
 			push_recv_manage_refresh(1,NULL);
 		}
-		else if(INITIALIZE_XML==xml_flag){
+		else if(INITIALIZE_XML==actual_xml_flag){
 			pid_init(1);
 			channel_ineffective_clear();
 			
@@ -2859,9 +2857,9 @@ PARSE_XML_END:
  此函数需要独占调用，因为如果当前解析的是Initialize.xml的话，解析完毕后还要自动扫描解析那些依赖于serviceID的xml。
  但同时，push系统的回调也有可能刚好得到这些xml而引起解析。
 */
-int parse_xml(char *relative, PUSH_XML_FLAG_E xml_flag, char *id)
+int parse_xml(char *relative, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
 {
-	int ret = parseDoc(relative, xml_flag, id);
+	int ret = parseDoc(relative, xml_flag, arg_ext);
 	
 	return ret;
 }
