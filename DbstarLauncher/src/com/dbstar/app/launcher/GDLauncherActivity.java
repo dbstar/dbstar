@@ -95,9 +95,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	// Animation
 	boolean mMoveLeft = true;
-	ImageView mLeftArrow, mRightArrow, mFocusItemBackground;
+	ImageView mFocusItemBackground;
 
-	AnimationSet mShowHighlightAnimation, mPopupMenuFocusedAnimation,
+	AnimationSet mPopupMenuFocusedAnimation,
 			mShowPopupMenuAnimation, mHidePopupMenuAnimation, mFocusZoomOut,
 			mFocusZoomIn, mGallerySlideToRightAnim, mGallerySlideToLeftAnim,
 			mGallerySlideToBottomAnim, mGallerySlideFromBottomAnim;
@@ -347,13 +347,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		long time = AnimationUtils.currentAnimationTimeMillis();
 		mFocusZoomOut.setStartTime(time);
-
-		// mShowHighlightAnimation.setStartTime(time);
-		// if (mMoveLeft) {
-		// mLeftArrow.startAnimation(mShowHighlightAnimation);
-		// } else {
-		// mRightArrow.startAnimation(mShowHighlightAnimation);
-		// }
 
 		Menu menu = mMenuStack.peek();
 		MenuItem[] menuItems = menu.Items;
@@ -678,8 +671,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private void loadAnimation() {
 		// Animation
-		mShowHighlightAnimation = (AnimationSet) AnimationUtils.loadAnimation(
-				this, R.anim.show_highlight_animation);
 
 		mPopupMenuFocusedAnimation = (AnimationSet) AnimationUtils
 				.loadAnimation(this, R.anim.popup_menu_focused_anim);
@@ -1223,8 +1214,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mMarqeeView = (GDMarqeeTextView) findViewById(R.id.marqeeView);
 
-		mLeftArrow = (ImageView) findViewById(R.id.main_menu_left_arrow);
-		mRightArrow = (ImageView) findViewById(R.id.main_menu_right_arrow);
 		mFocusItemBackground = (ImageView) findViewById(R.id.focus_item_bg);
 
 		// Calendar View

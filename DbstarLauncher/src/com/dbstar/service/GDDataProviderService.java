@@ -410,11 +410,13 @@ public class GDDataProviderService extends Service {
 			int msgId = msg.what;
 			switch (msgId) {
 			case GDCommon.MSG_TASK_FINISHED: {
-				RequestTask task = dequeueFinishedTask();
+				// RequestTask task = dequeueFinishedTask();
+				RequestTask task = (RequestTask) msg.obj;
 
 				if (task != null) {
 					handleTaskFinished(task);
 				}
+
 				break;
 			}
 
@@ -666,6 +668,7 @@ public class GDDataProviderService extends Service {
 
 			case GDCommon.MSG_SMARTCARD_IN: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTING;
+
 				notifyDbstarServiceSDStatus();
 				// notifySmartcardStatusChange(mSmartcardState);
 				break;
@@ -679,7 +682,7 @@ public class GDDataProviderService extends Service {
 
 			case GDCommon.MSG_SMARTCARD_INSERT_OK: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTOK;
-				Log.d(TAG, "===========Smartcard========== rest ok!");
+				Log.d(TAG, "===========Smartcard========== rest ok! ");
 				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
@@ -853,11 +856,16 @@ public class GDDataProviderService extends Service {
 	private void enqueueFinishedTask(RequestTask task) {
 
 		if (task != null && task.Flag == RequestTask.ACTIVE) {
-			synchronized (mFinishedTaskQueueLock) {
-				mFinishedTaskQueue.add(task);
-			}
+			// synchronized (mFinishedTaskQueueLock) {
+			// mFinishedTaskQueue.add(task);
+			// }
+			//
+			// mHandler.sendEmptyMessage(GDCommon.MSG_TASK_FINISHED);
 
-			mHandler.sendEmptyMessage(GDCommon.MSG_TASK_FINISHED);
+			Message msg = mHandler.obtainMessage(GDCommon.MSG_TASK_FINISHED);
+			msg.obj = task;
+			msg.sendToTarget();
+
 		} else {
 			Log.d(TAG, "taskFinished : invalide task, dropped!");
 		}
@@ -1520,6 +1528,10 @@ public class GDDataProviderService extends Service {
 	}
 
 	public boolean isSmartcardPlugIn() {
+		return mPeripheralController.isSmartCardIn();
+	}
+	
+	public boolean isSmartcardReady() {
 		return mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK;
 	}
 
@@ -2013,11 +2025,8 @@ public class GDDataProviderService extends Service {
 	}
 
 	boolean notifyDbstarServiceNetworkStatus() {
-//		Log.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
-//				+ mIsDbServiceStarted);
-
-		System.out.print("NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
-				+ mIsDbServiceStarted + "\n\n");
+		Log.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
+				+ mIsDbServiceStarted);
 
 		if (!mIsDbServiceStarted)
 			return false;
@@ -2034,10 +2043,8 @@ public class GDDataProviderService extends Service {
 
 	boolean notifyDbstarServiceStorageStatus() {
 
-//		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
-//				+ mIsDbServiceStarted);
-		System.out.print("STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
-				+ mIsDbServiceStarted + "\n\n");
+		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
+				+ mIsDbServiceStarted);
 
 		if (!mIsDbServiceStarted)
 			return false;
@@ -2054,10 +2061,8 @@ public class GDDataProviderService extends Service {
 
 	boolean notifyDbstarServiceSDStatus() {
 
-//		Log.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
-//				+ mIsDbServiceStarted);
-		System.out.print("SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
-				+ mIsDbServiceStarted + "\n\n");
+		Log.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
+				+ mIsDbServiceStarted);
 
 		if (!mIsDbServiceStarted)
 			return false;
@@ -2076,11 +2081,12 @@ public class GDDataProviderService extends Service {
 	// 2. sdcard, network, or storage state changed.
 	private void syncStatusToDbServer() {
 		Log.d(TAG, "syncStatusToDbServer ");
+
 		notifyDbstarServiceSDStatus();
 		notifyDbstarServiceNetworkStatus();
 		notifyDbstarServiceStorageStatus();
 	}
-	
+
 	private boolean notifyDbstarService(int command) {
 		if (!mIsDbServiceStarted) {
 			return false;

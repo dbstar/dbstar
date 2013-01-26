@@ -185,7 +185,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		// show target
 		if (data.Target != null && data.Target.mPower != null) {
 			String myTarget = data.Target.mPower.Count;
-			mMypowerCountView.setText(myTarget);
+			mMypowerCountView.setText(myTarget + " " + mStrDegree);
 			float targetValue = Float.valueOf(myTarget);
 			if (targetValue != 0) {
 				int progress = (int) (yearPowerValue / targetValue);

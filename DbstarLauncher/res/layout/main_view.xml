@@ -513,7 +513,7 @@
 
     <!-- main menu list -->
 
-    <ImageView
+    <!-- <ImageView
         android:id="@+id/main_menu_right_arrow"
         android:layout_width="30dp"
         android:layout_height="60dp"
@@ -537,7 +537,7 @@
         android:background="#00000000"
         android:focusable="false"
         android:scaleType="fitXY"
-        android:src="@drawable/home_arrow_left" />
+        android:src="@drawable/home_arrow_left" /> -->
 
     <ImageView
         android:id="@+id/focus_item_bg"
@@ -550,7 +550,7 @@
         android:focusable="false"
         android:scaleType="fitXY"
         android:src="@drawable/menulevel1_focuseditem_bg" />
-
+
     <RelativeLayout
         android:layout_width="1072dp"
         android:layout_height="wrap_content"

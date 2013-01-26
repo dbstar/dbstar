@@ -37,7 +37,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 	private ListView mListView;
 	private ListAdapter mNoticesAdapter;
 	private int mViewMode;
-	private ViewGroup mDetailContainer;
+	private ViewGroup mDetailContainer, mListContainer;
 	private TextView mTitle, mContent;
 	private TextView mItemCountView, mPageNumberView;
 
@@ -86,6 +86,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 		mItemCountView = (TextView) findViewById(R.id.notices_count);
 		mPageNumberView = (TextView) findViewById(R.id.notices_pages);
 
+		mListContainer = (ViewGroup) findViewById(R.id.list_view);
 		mListView = (ListView) findViewById(R.id.listview);
 		mNoticesAdapter = new ListAdapter();
 		mListView.setAdapter(mNoticesAdapter);
@@ -245,7 +246,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 	private void displayPageNumber(int pageNumber) {
 		mItemCountView.setText(mStrGong + mNoticesCount + mStrTiao);
 		mPageNumberView.setText(mStrDi + (pageNumber + 1) + mStrYe + "/"
-				+ mStrGong + (mPageCount + 1) + mStrYe);
+				+ mStrGong + mPageCount + mStrYe);
 	}
 
 	private void showDetail(boolean show) {
@@ -258,13 +259,13 @@ public class GDNoticeActivity extends GDBaseActivity {
 			mTitle.setText(notice.Title);
 			mContent.setText(notice.Content);
 
-			mListView.setVisibility(View.GONE);
+			mListContainer.setVisibility(View.GONE);
 			mDetailContainer.setVisibility(View.VISIBLE);
 			mViewMode = MODE_DETAIL;
 
 			mDetailContainer.requestLayout();
 		} else {
-			mListView.setVisibility(View.VISIBLE);
+			mListContainer.setVisibility(View.VISIBLE);
 			mDetailContainer.setVisibility(View.GONE);
 			mViewMode = MODE_LIST;
 		}
@@ -325,7 +326,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 
-			int index = mPageNumber * PageSize + position;
+			int index = mPageNumber * PageSize + position + 1;
 			holder.index.setText(String.valueOf(index));
 			holder.title.setText(mDataSet[position].Title);
 			holder.date.setText(mDataSet[position].Date);

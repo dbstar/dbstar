@@ -2,9 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/price_dlg_bg"
-    android:minHeight="450dp"
-    android:minWidth="1000dp" >
+    android:background="@drawable/price_dlg_bg" >
 
     <LinearLayout
         android:id="@+id/list_header"
@@ -20,7 +18,7 @@
         android:orientation="horizontal" >
 
         <TextView
-            android:layout_width="180dp"
+            android:layout_width="260dp"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/head_step_level"
@@ -28,7 +26,7 @@
             android:textSize="18sp" />
 
         <TextView
-            android:layout_width="240dp"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:gravity="left"
             android:paddingLeft="10dp"
@@ -37,7 +35,7 @@
             android:textSize="18sp" />
 
         <TextView
-            android:layout_width="360dp"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:gravity="left"
             android:paddingLeft="10dp"

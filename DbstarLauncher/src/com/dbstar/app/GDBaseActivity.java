@@ -34,6 +34,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	private static final String TAG = "GDBaseActivity";
 
 	protected static final int DLG_ID_ALERT = 0;
+	protected static final int DLG_ID_SMARTCARD = 1;
 
 	protected static final int DLG_TYPE_FILE_NOTEXIST = 0;
 	protected static final int DLG_TYPE_SMARTCARD_INFO = 1;
@@ -59,6 +60,14 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected boolean isSmartcardReady() {
 		if (mService != null) {
+			return mService.isSmartcardReady();
+		}
+
+		return false;
+	}
+
+	protected boolean isSmartcardPlugIn() {
+		if (mService != null) {
 			return mService.isSmartcardPlugIn();
 		}
 
@@ -76,9 +85,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	private ProgressDialog mLoadingDialog = null;
 	private String mLoadingText = null;
 
-	GDAlertDialog mAlertDlg = null;
+	GDAlertDialog mAlertDlg = null, mSmartcardDlg = null;
 	int mAlertType = -1;
-	
+
 	private String mNotification = "";
 
 	protected Handler mHandler = new Handler() {
@@ -260,6 +269,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		Log.d(TAG, "onServiceStart");
 
 		mService.registerPageObserver(this);
+		// get the init state of smart card.
+		mSmartcardState = mService.getSmartcardState();
 	}
 
 	protected void onServiceStop() {
@@ -277,15 +288,16 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	public void notifyEvent(int type, Object event) {
-		
-		Log.d(TAG, "======= notifyEvent ==== type "+ type + " event " + event);
-		
+
+		Log.d(TAG, "======= notifyEvent ==== type " + type + " event " + event);
+
 		if (type == EventData.EVENT_SMARTCARD_STATUS) {
 			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
 			mSmartcardState = status.State;
 
-			Log.d(TAG, " === mIsStarted == " + mIsStarted + " mBlockSmartcardPopup ="+mBlockSmartcardPopup);
-			
+			Log.d(TAG, " === mIsStarted == " + mIsStarted
+					+ " mBlockSmartcardPopup =" + mBlockSmartcardPopup);
+
 			if (mIsStarted && !mBlockSmartcardPopup) {
 				notifySmartcardStatusChanged();
 			}
@@ -365,6 +377,12 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			dialog = mAlertDlg;
 			break;
 		}
+		case DLG_ID_SMARTCARD: {
+			mSmartcardDlg = new GDAlertDialog(this, id);
+			mSmartcardDlg.setOnShowListener(mOnShowListener);
+			dialog = mSmartcardDlg;
+			break;
+		}
 		}
 
 		return dialog;
@@ -382,9 +400,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	};
 
 	void displayAlertDlg(GDAlertDialog dialog, int type) {
-		
+
 		Log.d(TAG, " ====  displayAlertDlg == " + type);
-		
+
 		switch (type) {
 		case DLG_TYPE_FILE_NOTEXIST: {
 			dialog.setTitle(R.string.error_title);
@@ -477,14 +495,31 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected void alertSmartcardInfo() {
 		mAlertType = DLG_TYPE_SMARTCARD_INFO;
 
-		if (mAlertDlg == null || !mAlertDlg.isShowing()) {
-			showDialog(DLG_ID_ALERT);
+		Log.d(TAG, " ============== display smartcard state dialog ==== "
+				+ mSmartcardState);
+
+		if (mSmartcardDlg == null || !mSmartcardDlg.isShowing()) {
+			if (mSmartcardDlg == null
+					&& mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
+				// not display insert ok dialog.
+				return;
+			}
+
+			showDialog(DLG_ID_SMARTCARD);
 		} else {
-			displayAlertDlg(mAlertDlg, mAlertType);
+			displayAlertDlg(mSmartcardDlg, mAlertType);
 		}
 
 		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
 			hideDlgDelay();
+		} else {
+			if (mTimeoutTask != null) {
+				mTimeoutTask.cancel();
+			}
+
+			if (mDlgTimer != null) {
+				mDlgTimer.cancel();
+			}
 		}
 	}
 
@@ -492,9 +527,10 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		mNotification = message;
 
 		mAlertType = DLG_TYPE_NOTIFICATION;
-		
-		Log.d(TAG, " ==== displayNotification === type = " + mAlertType + " " + mNotification);
-		
+
+		Log.d(TAG, " ==== displayNotification === type = " + mAlertType + " "
+				+ mNotification);
+
 		if (mAlertDlg == null || !mAlertDlg.isShowing()) {
 			showDialog(DLG_ID_ALERT);
 		} else {
@@ -513,8 +549,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 					mDlgTimer.cancel();
 					mDlgTimer = null;
 
-					if (mAlertDlg != null && mAlertDlg.isShowing()) {
-						mAlertDlg.dismiss();
+					if (mSmartcardDlg != null && mSmartcardDlg.isShowing()) {
+						mSmartcardDlg.dismiss();
 					}
 					break;
 				}

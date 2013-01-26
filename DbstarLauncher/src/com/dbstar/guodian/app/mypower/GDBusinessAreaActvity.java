@@ -423,7 +423,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 	private void displayPageNumber(int pageNumber) {
 		mItemCountView.setText(mStrGong + mItemsCount + mStrTiao);
 		mPageNumberView.setText(mStrDi + (pageNumber + 1) + mStrYe + "/"
-				+ mStrGong + (mPageCount + 1) + mStrYe);
+				+ mStrGong + mPageCount + mStrYe);
 	}
 
 	private void constructPages(ArrayList<BusinessArea> items) {
@@ -545,7 +545,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 				holder = (ViewHolder) convertView.getTag();
 			}
 
-			int index = mPageNumber * PageSize + position;
+			int index = mPageNumber * PageSize + position + 1;
 			holder.index.setText(String.valueOf(index));
 			holder.name.setText(mDataSet[position].Name);
 			holder.phone.setText(mDataSet[position].Telephone);

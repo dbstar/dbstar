@@ -91,6 +91,10 @@ public class GDTVActivity extends GDBaseActivity {
 	public void onStart() {
 		super.onStart();
 
+		if (mAdapter.getCount() > 0) {
+			mSmallThumbnailView.setSelection(mSeletedItemIndex);
+		}
+
 		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 	}
 
@@ -105,7 +109,7 @@ public class GDTVActivity extends GDBaseActivity {
 			}
 		}
 	}
-	
+
 	private void recycleAllImages(List<Bitmap> images) {
 		if (images == null || images.size() == 0) {
 			return;
@@ -113,7 +117,7 @@ public class GDTVActivity extends GDBaseActivity {
 
 		int size = images.size();
 
-		for (int i=0 ; i< size ; i++) {
+		for (int i = 0; i < size; i++) {
 			Bitmap image = images.get(i);
 			image.recycle();
 		}
@@ -214,7 +218,8 @@ public class GDTVActivity extends GDBaseActivity {
 				mAdapter.setDataSet(mPageDatas.get(mPageNumber));
 				mSmallThumbnailView.setSelection(0);
 				mAdapter.notifyDataSetChanged();
-				mPageNumberView.setText(formPageText(mPageNumber + 1, mPageCount));
+				mPageNumberView.setText(formPageText(mPageNumber + 1,
+						mPageCount));
 
 				// request pages data from the first page.
 				mRequestPageIndex = 0;
@@ -237,15 +242,15 @@ public class GDTVActivity extends GDBaseActivity {
 
 	private ContentData[] sortEpisodes(ContentData[] contents) {
 		List<ContentData> list = new ArrayList<ContentData>();
-		for (int i=0; i<contents.length ; i++) {
+		for (int i = 0; i < contents.length; i++) {
 			list.add(contents[i]);
 		}
 
 		Collections.sort(list);
-		
+
 		return list.toArray(new ContentData[list.size()]);
 	}
-	
+
 	public void updateData(int type, int param1, int param2, Object data) {
 
 		if (type == GDDataProviderService.REQUESTTYPE_GETPUBLICATIONS_OFSET) {
@@ -256,13 +261,13 @@ public class GDTVActivity extends GDBaseActivity {
 			if (contents != null && contents.length > 0) {
 
 				// request thumbnails of each episode
-				for (int i=0; i< contents.length ; i++) {
+				for (int i = 0; i < contents.length; i++) {
 					mService.getImage(this, pageNumber, index, contents[i]);
 				}
 
 				// sort episode by index
 				contents = sortEpisodes(contents);
-				
+
 				TV.EpisodeItem[] items = new TV.EpisodeItem[contents.length];
 				for (int j = 0; j < contents.length; j++) {
 
@@ -308,7 +313,7 @@ public class GDTVActivity extends GDBaseActivity {
 				tv.Thumbnails = new ArrayList<Bitmap>();
 			}
 
-			tv.Thumbnails.add((Bitmap)data);
+			tv.Thumbnails.add((Bitmap) data);
 
 			if (pageNumber == mPageNumber && tv.Thumbnails.size() == 1) {
 				// only update thumbnail one time
@@ -437,6 +442,9 @@ public class GDTVActivity extends GDBaseActivity {
 
 	void playTV() {
 
+		Log.d(TAG, "mTV = " + mTV + " EpisodesPages =" + mTV.EpisodesPages
+				+ " size =" + mTV.EpisodesPages.size());
+
 		TV.EpisodeItem[] items = mTV.EpisodesPages.get(mTV.EpisodesPageNumber);
 
 		TV.EpisodeItem item = items[mSelectedEpisodeIndex];
@@ -502,17 +510,14 @@ public class GDTVActivity extends GDBaseActivity {
 
 			ViewHolder holder = new ViewHolder();
 
-			final int selectedPosition = mSmallThumbnailView
-					.getSelectedItemPosition();
-
-			if (selectedPosition == position) {
+			if (mSmallThumbnailView.getSelectedItemPosition() == position) {
 				if (mSelectedView == null) {
 					LayoutInflater inflater = getLayoutInflater();
 					mSelectedView = inflater.inflate(
 							R.layout.small_thumbnail_item2_focused, parent,
 							false);
-//					holder.titleView = (TextView) mSelectedView
-//							.findViewById(R.id.item_text);
+					// holder.titleView = (TextView) mSelectedView
+					// .findViewById(R.id.item_text);
 					holder.thumbnailView = (ImageView) mSelectedView
 							.findViewById(R.id.thumbnail);
 
@@ -522,6 +527,7 @@ public class GDTVActivity extends GDBaseActivity {
 				if (convertView != mSelectedView) {
 					convertView = mSelectedView;
 				}
+
 			} else {
 				if (convertView == mSelectedView) {
 					convertView = null;
@@ -532,8 +538,8 @@ public class GDTVActivity extends GDBaseActivity {
 				LayoutInflater inflater = getLayoutInflater();
 				convertView = inflater.inflate(
 						R.layout.small_thumbnail_item2_normal, parent, false);
-//				holder.titleView = (TextView) convertView
-//						.findViewById(R.id.item_text);
+				// holder.titleView = (TextView) convertView
+				// .findViewById(R.id.item_text);
 				holder.thumbnailView = (ImageView) convertView
 						.findViewById(R.id.thumbnail);
 				convertView.setTag(holder);
@@ -545,8 +551,10 @@ public class GDTVActivity extends GDBaseActivity {
 			if (images != null && images.size() > 0) {
 				Bitmap thumbnail = images.get(0);
 				holder.thumbnailView.setImageBitmap(thumbnail);
+			} else {
+				holder.thumbnailView.setImageDrawable(null);
 			}
-//			holder.titleView.setText(mDataSet[position].Content.Name);
+			// holder.titleView.setText(mDataSet[position].Content.Name);
 
 			return convertView;
 		}
@@ -719,15 +727,6 @@ public class GDTVActivity extends GDBaseActivity {
 				int position, long id) {
 			Log.d(TAG, "mEpisodesView item " + position + " seletected!");
 
-			// TV.EpisodeItem[] items = mTV.EpisodesPages
-			// .get(mTV.EpisodesPageNumber);
-			// View oldSel = mEpisodesView.getChildAt(mSelectedEpisodeIndex);
-			// if (items[mSelectedEpisodeIndex].Watched) {
-			// oldSel.setBackgroundDrawable(mEpisodesWatchedBackground);
-			// } else {
-			// oldSel.setBackgroundDrawable(mEpisodesNormalBackground);
-			// }
-			// view.setBackgroundDrawable(mEpisodesFocusedBackground);
 			mSelectedEpisodeIndex = position;
 		}
 

@@ -23,7 +23,7 @@
             android:layout_centerVertical="true"
             android:layout_marginLeft="40dp"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_dbstar" />
+            android:src="@drawable/logo_dbstar" />
         -->
 
         <TextView

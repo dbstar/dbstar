@@ -118,7 +118,7 @@
                 android:layout_width="320dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left|center_vertical"
-                android:layout_marginLeft="10dp"
+                android:layout_marginLeft="0dp"
                 android:background="@null"
                 android:indeterminateOnly="false"
                 android:max="100"
@@ -133,9 +133,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left|center_vertical"
                 android:gravity="left|center_vertical"
+                android:layout_marginLeft="20dp"
                 android:textColor="#000000"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:textSize="18sp" />
         </LinearLayout>
     </RelativeLayout>
 

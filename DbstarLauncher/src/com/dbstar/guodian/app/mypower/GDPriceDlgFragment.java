@@ -63,6 +63,10 @@ public class GDPriceDlgFragment extends DialogFragment {
 		super.onActivityCreated(savedInstanceState);
 		mActivity = getActivity();
 		initializeView();
+		
+		int width = getResources().getDimensionPixelSize(R.dimen.popup_window_width);
+		int height = getResources().getDimensionPixelSize(R.dimen.popup_window_height);        
+		getDialog().getWindow().setLayout(width, height);
 	}
 
 	private void initializeView() {

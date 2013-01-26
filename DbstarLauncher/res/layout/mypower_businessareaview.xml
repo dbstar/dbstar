@@ -52,9 +52,9 @@
             android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="40dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginLeft="80dp"
+            android:layout_marginRight="80dp"
+            android:layout_marginTop="40dp"
             android:orientation="horizontal" >
 
             <Spinner
@@ -76,7 +76,7 @@
                 android:textSize="18sp" />
 
             <Space
-                android:layout_width="80dp"
+                android:layout_width="40dp"
                 android:layout_height="0dp" />
 
             <Spinner
@@ -98,7 +98,7 @@
                 android:textSize="18sp" />
 
             <Space
-                android:layout_width="80dp"
+                android:layout_width="40dp"
                 android:layout_height="0dp" />
 
             <Spinner
@@ -120,7 +120,7 @@
                 android:textSize="18sp" />
 
             <Space
-                android:layout_width="80dp"
+                android:layout_width="40dp"
                 android:layout_height="0dp" />
 
             <Button
