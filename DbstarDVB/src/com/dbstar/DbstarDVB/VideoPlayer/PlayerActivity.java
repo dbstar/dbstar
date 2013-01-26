@@ -107,7 +107,7 @@ public class PlayerActivity extends Activity {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_DIALOG_POPUP:
-				showDialog(DLG_ID_MEDIAINFO);
+				showMediaInfoDlg();
 				break;
 			case SmartcardStateTracker.MSG_SMARTCARD_INSERTING: {
 				showSmartcardInfo();
@@ -151,12 +151,14 @@ public class PlayerActivity extends Activity {
 	protected int mAlertType = -1;
 
 	protected Dialog onCreateDialog(int id) {
-		Dialog dialog;
+		Dialog dialog = null;
 		switch (id) {
 		case DLG_ID_MEDIAINFO: {
-			mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
-			mVideoInfoDlg.setOnShowListener(mOnShowListener);
-			dialog = mVideoInfoDlg;
+			if (!mHasError) {
+				mVideoInfoDlg = new DbVideoInfoDlg(this, getIntent());
+				mVideoInfoDlg.setOnShowListener(mOnShowListener);
+				dialog = mVideoInfoDlg;
+			}
 			break;
 		}
 		case DLG_ID_SMARTCARDINFO: {
@@ -180,6 +182,14 @@ public class PlayerActivity extends Activity {
 		}
 
 		return dialog;
+	}
+
+	void showMediaInfoDlg() {
+		if (mAlertDlg != null && mAlertDlg.isShowing()) {
+			return;
+		}
+
+		showDialog(DLG_ID_MEDIAINFO);
 	}
 
 	protected void showSmartcardInfo() {
@@ -234,6 +244,12 @@ public class PlayerActivity extends Activity {
 				mErrorCode);
 		mAlertDlg.setMessage(errorStr);
 		mAlertDlg.showSingleButton();
+	}
+
+	protected void clearScreen() {
+		if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
+			mVideoInfoDlg.dismiss();
+		}
 	}
 
 	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {

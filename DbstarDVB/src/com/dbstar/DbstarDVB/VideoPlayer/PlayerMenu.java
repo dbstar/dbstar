@@ -1108,6 +1108,7 @@ public class PlayerMenu extends PlayerActivity {
 				"@@@@@@@@@@@@@  playbackError: " + Integer.toHexString(error));
 
 		mHasError = true;
+		clearScreen();
 		showErrorInfoDlg(error);
 
 		// if (error < 0) {
