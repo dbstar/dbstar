@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="40dp"
     android:background="@drawable/notices_listitem_bg"
     android:orientation="horizontal" >
 
     <TextView
         android:id="@+id/index"
-        android:layout_width="wrap_content"
+        android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:gravity="center"
@@ -16,21 +16,23 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
+        android:layout_width="680dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:layout_weight="3"
+        android:ellipsize="end"
         android:gravity="left"
+        android:singleLine="true"
         android:textColor="#ffffff"
         android:textSize="18sp" />
 
     <TextView
         android:id="@+id/date"
-        android:layout_width="wrap_content"
+        android:layout_width="400dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:layout_weight="1"
+        android:ellipsize="end"
         android:gravity="center"
+        android:singleLine="true"
         android:textColor="#ffffff"
         android:textSize="18sp" />
 

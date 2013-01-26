@@ -164,7 +164,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 			return;
 		}
-		
+
 		if (drmFile != null && !drmFile.isEmpty() && !isSmartcardReady()) {
 			alertSmartcardInfo();
 			return;
@@ -319,7 +319,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 	private void updatePropery(ContentData content, String propery, Object value) {
 		if (propery.equals(GDCommon.KeyBookmark)) {
-			content.BookMark = (Integer)value;
+			content.BookMark = (Integer) value;
 		}
 	}
 
@@ -485,7 +485,13 @@ public class GDHDMovieActivity extends GDBaseActivity {
 					} else if (currentItem == 0) {
 						// mSmallThumbnailView
 						// .setSelection(mAdapter.getCount() - 1);
-						loadPrevPage();
+						if (mPageNumber > 0) {
+							loadPrevPage();
+						} else {
+							mSmallThumbnailView
+									.setSelection(mSmallThumbnailView
+											.getCount() - 1);
+						}
 						ret = true;
 					} else {
 					}

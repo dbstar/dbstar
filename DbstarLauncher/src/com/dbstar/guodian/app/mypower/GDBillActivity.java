@@ -33,6 +33,7 @@ public class GDBillActivity extends GDBaseActivity {
 	private String StrYear, StrMonth;
 
 	private TextView mUserNameView, mDeviceNoView, mAddressView;
+	private TextView mItemsCountView;
 	private ListView mBillListView;
 	private ListAdapter mBillAdaper;
 	private Spinner mYearSpinner, mMonthSpinner;
@@ -74,7 +75,7 @@ public class GDBillActivity extends GDBaseActivity {
 		mUserNameView = (TextView) findViewById(R.id.user_name);
 		mDeviceNoView = (TextView) findViewById(R.id.device_no);
 		mAddressView = (TextView) findViewById(R.id.user_address);
-
+		mItemsCountView = (TextView) findViewById(R.id.items_number);
 		mYearSpinner = (Spinner) findViewById(R.id.year_spinner);
 		mMonthSpinner = (Spinner) findViewById(R.id.month_spinner);
 
@@ -201,11 +202,16 @@ public class GDBillActivity extends GDBaseActivity {
 
 			BillDataItem item = constructBillData(detailData.Detail, year,
 					month);
+
 			if (item != null) {
 				BillDataItem[] items = new BillDataItem[1];
 				items[0] = item;
 				mBillAdaper.setDataSet(items);
 				mBillAdaper.notifyDataSetChanged();
+
+				String strGong = getResources().getString(R.string.text_gong);
+				String strTiao = getResources().getString(R.string.text_tiao);
+				mItemsCountView.setText(strGong + "1" + strTiao);
 			}
 		} else if (type == GDConstract.DATATYPE_BILLDETAILOFRECENT) {
 			BillDetailListData listData = (BillDetailListData) data;
@@ -218,11 +224,10 @@ public class GDBillActivity extends GDBaseActivity {
 			if (detailList != null && detailList.size() > 0) {
 				int size = detailList.size();
 				BillDataItem[] items = new BillDataItem[size];
-
-				for(int i=0 ; i<size ; i++) {
+				for (int i = 0; i < size; i++) {
 					BillDetail billDetail = detailList.get(i);
 					String startDate = billDetail.StartDate;
-					String year="0", month="0";
+					String year = "0", month = "0";
 					if (startDate != null && !startDate.isEmpty()) {
 						String[] times = startDate.split(" ");
 						String date = times[0];
@@ -232,11 +237,15 @@ public class GDBillActivity extends GDBaseActivity {
 							month = dates[1];
 						}
 					}
-					 
+
 					items[i] = constructBillData(billDetail, year, month);
 				}
 				mBillAdaper.setDataSet(items);
 				mBillAdaper.notifyDataSetChanged();
+
+				String strGong = getResources().getString(R.string.text_gong);
+				String strTiao = getResources().getString(R.string.text_tiao);
+				mItemsCountView.setText(strGong + size + strTiao);
 			}
 		}
 	}

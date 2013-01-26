@@ -3,11 +3,11 @@
 
     <item
         android:id="@+id/icon"
-        android:drawable="@drawable/dropdown_spinner_bg"/>
+        android:drawable="@drawable/querypower_btn_bg"/>
 
     <item
         android:id="@+id/frame"
-        android:drawable="@drawable/spinner_frame">
+        android:drawable="@drawable/querypower_btn_frame">
         <size
             android:height="30dp"
             android:width="182dp" />

@@ -22,6 +22,7 @@ import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.guodian.data.AreaInfo;
 import com.dbstar.guodian.data.BusinessArea;
+import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.egine.GDConstract;
 import com.dbstar.model.EventData;
 
@@ -29,7 +30,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 	private static final String TAG = "GDBusinessAreaActvity";
 
 	private String mAreaId = null;
-	private static final int PageSize = 8;
+	private static final int PageSize = 6;
 	private ArrayList<BusinessArea[]> mPagesData;
 	private int mPageCount, mPageNumber;
 	private String mUserProvinceId, mUserCityId, mUserZoneId;
@@ -40,8 +41,10 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 	private ArrayAdapter<String> mProvinceAdapter, mCityAdapter, mZoneAdapter;
 	private ArrayList<String> mProvinceList, mCityList, mZoneList;
 	private int mCurProvinceIndex = -1, mCurCityIndex = -1, mCurZoneIndex = -1;
-
 	private AreaInfo mAreaData;
+	private String mStrGong, mStrTiao, mStrDi, mStrYe;
+	private TextView mItemCountView, mPageNumberView;
+	private int mItemsCount;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -76,6 +79,14 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 
 	public void initializeView() {
 		super.initializeView();
+
+		mStrGong = getResources().getString(R.string.text_gong);
+		mStrTiao = getResources().getString(R.string.text_tiao);
+		mStrDi = getResources().getString(R.string.text_di);
+		mStrYe = getResources().getString(R.string.text_ye);
+
+		mItemCountView = (TextView) findViewById(R.id.count);
+		mPageNumberView = (TextView) findViewById(R.id.pages);
 
 		mProvinceSpinner = (Spinner) findViewById(R.id.province_spinner);
 		mCitySpinner = (Spinner) findViewById(R.id.city_spinner);
@@ -351,7 +362,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 
 				userZone = zones.get(mCurZoneIndex);
 			}
-			
+
 			mZoneAdapter.notifyDataSetChanged();
 		}
 
@@ -405,10 +416,19 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 		BusinessArea[] page = mPagesData.get(pageNumber);
 		mBusinessAdapter.setDataSet(page);
 		mBusinessAdapter.notifyDataSetChanged();
+		
+		displayPageNumber(pageNumber);
+	}
+	
+	private void displayPageNumber(int pageNumber) {
+		mItemCountView.setText(mStrGong + mItemsCount + mStrTiao);
+		mPageNumberView.setText(mStrDi + (pageNumber + 1) + mStrYe + "/"
+				+ mStrGong + (mPageCount + 1) + mStrYe);
 	}
 
 	private void constructPages(ArrayList<BusinessArea> items) {
 		int size = items.size();
+		mItemsCount = size;
 		if (size == 0) {
 			mPageNumber = size;
 			mPageCount = size;
@@ -447,6 +467,8 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 		mListView.clearChoices();
 		mListView.setSelection(items.length);
 		mBusinessAdapter.notifyDataSetChanged();
+		
+		displayPageNumber(mPageNumber);
 	}
 
 	private void loadNextPage() {
@@ -460,6 +482,8 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 		mListView.clearChoices();
 		mListView.setSelection(0);
 		mBusinessAdapter.notifyDataSetChanged();
+		
+		displayPageNumber(mPageNumber);
 	}
 
 	private class ListAdapter extends BaseAdapter {

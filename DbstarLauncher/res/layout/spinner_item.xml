@@ -10,5 +10,4 @@
     android:singleLine="true"
     android:textColor="#ffffff"
     android:textSize="14sp" >
-
 </TextView>

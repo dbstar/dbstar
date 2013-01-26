@@ -33,8 +33,7 @@
             android:layout_marginTop="80dp"
             android:gravity="top|center_horizontal"
             android:textColor="#3d3d3d"
-            android:textSize="16sp" />
-        -->
+            android:textSize="16sp" />        -->
     </RelativeLayout>
 
     <LinearLayout
@@ -49,7 +48,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_marginBottom="40dp"
             android:layout_marginLeft="80dp"
             android:layout_marginRight="80dp"
@@ -118,7 +117,7 @@
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="40dp"
             android:orientation="horizontal" >
@@ -128,6 +127,7 @@
                 android:layout_width="182dp"
                 android:layout_height="30dp"
                 android:layout_gravity="center"
+                android:popupBackground="@drawable/spinner_dropdown_bg"
                 android:background="@drawable/spinner_bg"
                 android:spinnerMode="dropdown" />
 
@@ -149,6 +149,7 @@
                 android:layout_width="182dp"
                 android:layout_height="30dp"
                 android:layout_gravity="center"
+                android:popupBackground="@drawable/spinner_dropdown_bg"
                 android:background="@drawable/spinner_bg"
                 android:spinnerMode="dropdown" />
 
@@ -169,15 +170,12 @@
                 android:id="@+id/mypower_query_button"
                 android:layout_width="140dp"
                 android:layout_height="wrap_content"
-                android:text="@string/text_query"
-                android:textColor="#ffffff"
-                android:textSize="18sp"
-                android:background="@drawable/gd_btn_bg" />
+                android:background="@drawable/query_btn_bg" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginLeft="80dp"
             android:layout_marginRight="80dp"
@@ -187,6 +185,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/str_billperiod"
@@ -196,6 +195,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/str_poweramount"
@@ -205,6 +205,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/str_cost"
@@ -215,12 +216,11 @@
         <ListView
             android:id="@+id/bill_list"
             android:layout_width="1021dp"
-            android:layout_height="wrap_content"
+            android:layout_height="260dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="20dp"
             android:layout_marginLeft="80dp"
             android:layout_marginRight="80dp"
-            android:layout_marginTop="8dp"
             android:cacheColorHint="@android:color/transparent"
             android:clipToPadding="false"
             android:divider="#00000000"
@@ -230,6 +230,15 @@
             android:listSelector="#00000000"
             android:scrollbarAlwaysDrawVerticalTrack="true"
             android:scrollbarStyle="outsideOverlay" />
+
+        <TextView
+            android:id="@+id/items_number"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginLeft="920dp"
+            android:gravity="left"
+            android:textColor="#ffffff"
+            android:textSize="18sp" />
     </LinearLayout>
 
     <include
