@@ -2,9 +2,9 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:state_focused="true"
-        android:drawable="@drawable/spinner_focused_bg" />
+        android:drawable="@drawable/query_btn_focus_bg" />
     
     <item android:state_focused="false"
-        android:drawable="@drawable/dropdown_spinner_bg" />
+        android:drawable="@drawable/query_button_bg" />
 
 </selector>

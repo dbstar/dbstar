@@ -53,7 +53,7 @@ public class GDPriceDlgFragment extends DialogFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.mypower_priceview, container, true);
+		View v = inflater.inflate(R.layout.mypower_priceview, null, false);
 		mListView = (ListView) v.findViewById(R.id.price_list);
 		return v;
 	}

@@ -103,24 +103,39 @@
                     android:textSize="20sp"
                     android:textStyle="italic" />
             </LinearLayout>
+        </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="40dp" >
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="320dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="left|center_vertical"
-                android:orientation="horizontal" >
+                android:layout_marginLeft="10dp"
+                android:background="@null"
+                android:indeterminateOnly="false"
+                android:max="100"
+                android:maxHeight="28dp"
+                android:minHeight="28dp"
+                android:progress="20"
+                android:progressDrawable="@drawable/mypower_progressbar_layer" />
 
-                <TextView
-                    android:id="@+id/mypower_target"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="left|center_vertical"
-                    android:gravity="left|center_vertical"
-                    android:text="@string/mypower_text_target"
-                    android:textColor="#000000"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/mypower_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left|center_vertical"
+                android:gravity="left|center_vertical"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </RelativeLayout>
 
@@ -192,7 +207,7 @@
                 android:rotation="0"
                 android:src="@drawable/timingpower_panel_shadow"
                 android:transformPivotX="66dp"
-                android:transformPivotY="23dp" />
+                android:transformPivotY="23dp" />
         -->
 
         <com.dbstar.widget.GDArcView
@@ -217,7 +232,7 @@
                 android:layout_marginTop="30dp"
                 android:text="@string/demo_str_3"
                 android:textColor="#ba4710"
-                android:textSize="12sp" />
+                android:textSize="12sp" />
         -->
 
         <com.dbstar.widget.GDCircleTextView
@@ -410,7 +425,7 @@
                     android:textSize="18sp" />
             </TableRow>
         </TableLayout>
-        
+
         <Button
             android:id="@+id/mypower_query_button"
             android:layout_width="160dp"
@@ -419,11 +434,7 @@
             android:layout_marginLeft="80dp"
             android:layout_marginTop="20dp"
             android:layout_toRightOf="@id/powerdata_view"
-            android:background="@drawable/btn_normal_bg"
-            android:text="@string/text_querypower"
-            android:textColor="#ffffff"
-            android:textSize="18sp" />
- 
+            android:background="@drawable/querypower_btn_bg" />
     </RelativeLayout>
 
 </RelativeLayout>

@@ -3,14 +3,10 @@
 
     <item
         android:id="@+id/icon"
-        android:drawable="@drawable/dropdown_spinner_bg"/>
+        android:drawable="@drawable/query_button_bg"/>
 
     <item
         android:id="@+id/frame"
-        android:drawable="@drawable/spinner_frame">
-        <size
-            android:height="30dp"
-            android:width="182dp" />
-    </item>
+        android:drawable="@drawable/query_btn_frame"/>
 
 </layer-list>

@@ -29,15 +29,19 @@ public class GDNoticeActivity extends GDBaseActivity {
 	private static final int MODE_LIST = 0;
 	private static final int MODE_DETAIL = 1;
 
-	private static final int PageSize = 14;
+	private static final int PageSize = 8;
 	private ArrayList<Notice[]> mPagesData;
 	private int mPageCount, mPageNumber;
+	private int mNoticesCount;
 
 	private ListView mListView;
 	private ListAdapter mNoticesAdapter;
 	private int mViewMode;
 	private ViewGroup mDetailContainer;
 	private TextView mTitle, mContent;
+	private TextView mItemCountView, mPageNumberView;
+
+	private String mStrGong, mStrTiao, mStrDi, mStrYe;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -72,7 +76,15 @@ public class GDNoticeActivity extends GDBaseActivity {
 	public void initializeView() {
 		super.initializeView();
 
+		mStrGong = getResources().getString(R.string.text_gong);
+		mStrTiao = getResources().getString(R.string.text_tiao);
+		mStrDi = getResources().getString(R.string.text_di);
+		mStrYe = getResources().getString(R.string.text_ye);
+
 		mViewMode = MODE_LIST;
+
+		mItemCountView = (TextView) findViewById(R.id.notices_count);
+		mPageNumberView = (TextView) findViewById(R.id.notices_pages);
 
 		mListView = (ListView) findViewById(R.id.listview);
 		mNoticesAdapter = new ListAdapter();
@@ -142,6 +154,8 @@ public class GDNoticeActivity extends GDBaseActivity {
 		mListView.clearChoices();
 		mListView.setSelection(notices.length);
 		mNoticesAdapter.notifyDataSetChanged();
+		
+		displayPageNumber(mPageNumber);
 	}
 
 	private void loadNextPage() {
@@ -155,6 +169,8 @@ public class GDNoticeActivity extends GDBaseActivity {
 		mListView.clearChoices();
 		mListView.setSelection(0);
 		mNoticesAdapter.notifyDataSetChanged();
+		
+		displayPageNumber(mPageNumber);
 	}
 
 	protected void onServiceStart() {
@@ -189,6 +205,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 
 	private void constructPages(ArrayList<Notice> notices) {
 		int size = notices.size();
+		mNoticesCount = size;
 		if (size == 0) {
 			mPageNumber = size;
 			mPageCount = size;
@@ -217,9 +234,18 @@ public class GDNoticeActivity extends GDBaseActivity {
 	}
 
 	private void displayPage(int pageNumber) {
+
 		Notice[] page = mPagesData.get(pageNumber);
 		mNoticesAdapter.setDataSet(page);
 		mNoticesAdapter.notifyDataSetChanged();
+		
+		displayPageNumber(pageNumber);
+	}
+	
+	private void displayPageNumber(int pageNumber) {
+		mItemCountView.setText(mStrGong + mNoticesCount + mStrTiao);
+		mPageNumberView.setText(mStrDi + (pageNumber + 1) + mStrYe + "/"
+				+ mStrGong + (mPageCount + 1) + mStrYe);
 	}
 
 	private void showDetail(boolean show) {

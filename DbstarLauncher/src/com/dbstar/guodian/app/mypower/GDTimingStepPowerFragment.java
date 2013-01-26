@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.dbstar.R;
@@ -29,7 +30,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	private static final String TAG = "GDTimingStepPowerFragment";
 	private static final float TimingRulerStep1Angle = 40;
 	private static final float TimingRulerStep2Angle = 140;
-	
+
 	private TextView mYearCostView, mYearAmountView;
 	private TextView mMonthCostView, mMonthAmountView;
 	private ImageView mTimingPowerPointer;
@@ -39,11 +40,13 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			mTimingPowerRulerStep2;
 	private TextView mTimePowerPeriodView, mTimePowerPeriodTimeView;
 	private GDArcView mTimingPowerPeriodPointer;
-	
+	private ProgressBar mMypowerProgressBar;
+	private TextView mMypowerCountView;
 	private Button mPriceButton;
 
 	private int mPriceType;
-	
+	private String mStrDegree;
+
 	private ElectricityPrice mElecPrice = null;
 
 	@Override
@@ -51,7 +54,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		super.onCreate(savedInstanceState);
 		// mNum = getArguments().getInt("num");
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -67,6 +70,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	}
 
 	void initializeView() {
+		mStrDegree = mActivity.getResources().getString(R.string.str_degree);
 		mYearAmountView = (TextView) mActivity
 				.findViewById(R.id.mypower_poweramount);
 		mYearCostView = (TextView) mActivity
@@ -98,10 +102,17 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		mTimingPowerPeriodPointer = (GDArcView) mActivity
 				.findViewById(R.id.timingpower_periodpointer);
 
+		mMypowerProgressBar = (ProgressBar) mActivity
+				.findViewById(R.id.progress_bar);
+		mMypowerCountView = (TextView) mActivity
+				.findViewById(R.id.mypower_count);
+
 		mYearAmountView.setText("0");
 		mYearCostView.setText("0");
 		mMonthCostView.setText("0");
 		mMonthAmountView.setText("0");
+		mMypowerCountView.setText("0" + mStrDegree);
+		mMypowerProgressBar.setProgress(0);
 
 		mTimingPowerPointer.setRotation(0);
 		mTimingPowerStepView.setText("");
@@ -112,7 +123,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		mTimePowerPeriodView.setText("");
 		mTimePowerPeriodTimeView.setText("");
 		mTimingPowerPeriodPointer.setRotation(0);
-		
+
 		mPriceButton = (Button) mActivity
 				.findViewById(R.id.mypower_query_button);
 		mPriceButton.setOnClickListener(new View.OnClickListener() {
@@ -123,7 +134,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			}
 		});
 	}
-	
+
 	public void serviceStart() {
 		if (mService == null)
 			return;
@@ -154,7 +165,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		if (data == null)
 			return;
 
-		float powerNumValue = 0, powerFeeValue = 0;
+		float powerNumValue = 0, powerFeeValue = 0, yearPowerValue = 0;
 		String powerNum = "", powerFee = "";
 
 		if (data.MonthPower != null) {
@@ -167,6 +178,19 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		if (data.YearPower != null) {
 			mYearAmountView.setText(data.YearPower.Count);
 			mYearCostView.setText(data.YearPower.Fee);
+
+			yearPowerValue = Float.valueOf(data.YearPower.Count);
+		}
+
+		// show target
+		if (data.Target != null && data.Target.mPower != null) {
+			String myTarget = data.Target.mPower.Count;
+			mMypowerCountView.setText(myTarget);
+			float targetValue = Float.valueOf(myTarget);
+			if (targetValue != 0) {
+				int progress = (int) (yearPowerValue / targetValue);
+				mMypowerProgressBar.setProgress(progress);
+			}
 		}
 
 		UserPriceStatus status = data.PriceStatus;
@@ -191,7 +215,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		if (mElecPrice == null) {
 			mElecPrice = mService.getElecPrice();
 		}
-		
+
 		ElectricityPrice priceData = mElecPrice;
 
 		if (priceData == null)
@@ -199,7 +223,8 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 
 		if (mPriceType == GDConstract.PriceTypeStep) {
 
-			mTimingPowerStepView.setText(Util.getStepStr(mActivity, status.Step));
+			mTimingPowerStepView.setText(Util
+					.getStepStr(mActivity, status.Step));
 			mTimingPowerPriceView.setText(status.Price);
 
 			List<ElectricityPrice.StepPrice> stepPriceList = priceData.StepPriceList;
@@ -243,7 +268,8 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 				float endValue = Float.valueOf(stepEnd);
 				if (endValue != 0) {
 					float powerValue = Float.valueOf(powerNum);
-					float angle = TimingRulerStep1Angle * (powerValue / endValue);
+					float angle = TimingRulerStep1Angle
+							* (powerValue / endValue);
 					mTimingPowerPointer.setRotation(angle);
 				}
 			} else if (currentStep.Step.equals(ElectricityPrice.STEP_2)) {
@@ -262,7 +288,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			}
 		}
 	}
-	
+
 	void showPriceDialog() {
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		Fragment prev = getFragmentManager().findFragmentByTag("price_dialog");
@@ -271,7 +297,8 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		}
 		ft.addToBackStack(null);
 
-		GDPriceDlgFragment newFragment = GDPriceDlgFragment.newInstance(mElecPrice);
+		GDPriceDlgFragment newFragment = GDPriceDlgFragment
+				.newInstance(mElecPrice);
 		newFragment.show(ft, "price_dialog");
 	}
 }

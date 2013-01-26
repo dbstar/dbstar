@@ -2,13 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="1021dp"
     android:layout_height="wrap_content"
-    android:background="@drawable/listitem_selected_bg"
+    android:background="@drawable/powerbill_listitem_bg"
     android:orientation="horizontal" >
 
     <TextView
         android:id="@+id/period"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
         android:layout_weight="1"
         android:gravity="center"
         android:textColor="#ffffff"
@@ -18,6 +19,7 @@
         android:id="@+id/amount"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
         android:layout_weight="1"
         android:gravity="center"
         android:textColor="#ffffff"
@@ -27,6 +29,7 @@
         android:id="@+id/cost"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
         android:layout_weight="1"
         android:gravity="center"
         android:textColor="#ffffff"
