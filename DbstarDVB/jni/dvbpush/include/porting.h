@@ -31,5 +31,6 @@ int disk_manage();
 int smart_card_insert_flag_set(int insert_flag);
 int smart_card_insert_flag_get();
 int intialize_xml_reset(void);
+int setting_init_with_datebase();
 
 #endif

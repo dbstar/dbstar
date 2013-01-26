@@ -685,5 +685,25 @@ int remove_force(const char *uri)
 	return ret;   
 }
 
-
+// e.g.: 2013-01-26 09:23:05
+int localtime_rf(char *time_str, unsigned int time_str_size)
+{
+	if(NULL==time_str){
+		DEBUG("invalid arg\n");
+		return -1;
+	}
+	
+	time_t now_sec = 0;
+	if(-1==time(&now_sec)){
+		DEBUG("get time failed\n");
+		return -1;
+	}
+	
+	struct tm now_tm;
+	localtime_r(&now_sec, &now_tm);
+	snprintf(time_str,time_str_size,"%04d-%02d-%02d %02d:%02d:%02d", now_tm.tm_year+1900,now_tm.tm_mon+1,now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
+	DEBUG("seconds(long type): %ld, localtime: %s\n", now_sec,time_str);
+	
+	return 0;
+}
 

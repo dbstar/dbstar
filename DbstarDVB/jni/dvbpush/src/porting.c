@@ -30,14 +30,14 @@ static int 			s_settingInitFlag = 0;
 
 static char			s_service_id[32];
 static int			s_root_channel;
-static char			s_root_push_file[128];
+static char			s_root_push_file[256];
 static unsigned int	s_root_push_file_size = 0;
-static char			s_data_source[64];
+static char			s_data_source[256];
 static int			s_prog_data_pid = 0;
 
-static char			s_database_uri[64];
+static char			s_database_uri[256];
 static int			s_debug_level = 0;
-static char			s_xml[128];
+static char			s_xml[256];
 static char			s_initialize_xml[256];
 static char			s_column_res[256];
 static int			s_software_check = 1;
@@ -54,12 +54,7 @@ static char			s_special_ProductID[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
-static int serviceID_init();
-static int push_dir_init();
-static int cur_language_init();
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
-
-static int special_productid_init();
 
 /* define some general interface function here */
 
@@ -194,13 +189,6 @@ int setting_init(void)
 		fclose(fp);
 	}
 	DEBUG("init settings OK\n");
-	
-	cur_language_init();
-	serviceID_init();
-	push_dir_init();
-	guidelist_select_refresh();
-	
-	special_productid_init();
 	
 	s_settingInitFlag = 1;
 	return 0;
@@ -1169,7 +1157,6 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_NETWORK_DISCONNECT:
 		case CMD_DISK_MOUNT:
 		case CMD_DISK_UNMOUNT:
-			push_rely_condition_set(cmd);
 			net_rely_condition_set(cmd);
 			break;
 		case CMD_DVBPUSH_GETTS_STATUS:
@@ -1287,6 +1274,7 @@ static void upgrade_info_refresh(char *info_name, char *info_value)
 */
 static int upgrade_type_check( unsigned char *software_version)
 {
+	DEBUG("%03d.%03d.%03d.%03d\n",software_version[1],software_version[2],software_version[2],software_version[3]);
 	if(255==software_version[0] && 255==software_version[1]
 		&& 255==software_version[2] && 255==software_version[3]){
 		DEBUG("It has finish a repeat upgrade\n");
@@ -1884,4 +1872,15 @@ int special_productid_check(char *productid)
 		return -1;
 }
 
+int setting_init_with_datebase()
+{
+	cur_language_init();
+	serviceID_init();
+	push_dir_init();
+	guidelist_select_refresh();
+	
+	special_productid_init();
+	
+	return 0;
+}
 

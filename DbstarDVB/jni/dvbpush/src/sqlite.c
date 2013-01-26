@@ -25,7 +25,7 @@ static void closeDatabase();
 static int localcolumn_init();
 static int global_info_init();
 
-static int createDatabase()
+static int createDatabase(char *database_uri)
 {
 	char	*errmsgOpen=NULL;
 	int		ret = 0;
@@ -36,14 +36,6 @@ static int createDatabase()
 	}
 	else
 	{
-		char database_uri[64];
-		memset(database_uri, 0, sizeof(database_uri));
-		if(-1==database_uri_get(database_uri, sizeof(database_uri))){
-			DEBUG("get database uri failed\n");
-			return -1;
-		}
-		
-		DEBUG("database uri: %s\n", database_uri);
 		if(-1==dir_exist_ensure(database_uri)){
 			return -1;
 		}
@@ -854,20 +846,33 @@ int sqlite_init()
 {
 	if(0==s_sqlite_init_flag){
 		g_db = NULL;
-		int ret = createDatabase();
-		if(0==ret)
-			DEBUG("open database success\n");
-		else if(ret>0){
-			DEBUG("create database success(some/all tables are created)\n");
-			localcolumn_init();
-			global_info_init();
-		}
-		else{						///open database failed
-			DEBUG("create/open database failed\n");
+		
+		char database_uri[256];
+		memset(database_uri, 0, sizeof(database_uri));
+		if(-1==database_uri_get(database_uri, sizeof(database_uri))){
+			DEBUG("get database uri failed\n");
 			return -1;
 		}
+		else{
+			DEBUG("database uri: %s\n", database_uri);
 			
-		s_sqlite_init_flag = 1;
+			int ret = createDatabase(database_uri);
+			if(ret>=0){
+				if(ret>0){
+					DEBUG("create database success(some/all tables are created)\n");
+					chmod(database_uri,0666);
+				}
+				DEBUG("open database success\n");
+				localcolumn_init();
+				global_info_init();
+			}
+			else{						///open database failed
+				DEBUG("create/open database failed\n");
+				return -1;
+			}
+				
+			s_sqlite_init_flag = 1;
+		}
 	}
 
 	return 0;						/// quit
@@ -1324,14 +1329,33 @@ int str_sqlite_read(char *buf, unsigned int buf_size, char *sql_cmd)
 	}
 }
 
+static int check_record_in_trans(char *table_name, char *column_name, char *column_value)
+{
+	if(NULL==table_name || 0==strlen(table_name) || NULL==column_name || 0==strlen(column_name))
+		return -1;
+	
+	char read_column_value[64];
+	char sqlite_cmd[512];
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT %s FROM %s WHERE %s='%s';", column_name, table_name, column_name, column_value);
+	memset(read_column_value,0,sizeof(read_column_value));
+	if(0<sqlite_transaction_read(sqlite_cmd,read_column_value,sizeof(read_column_value))){
+		DEBUG("%s has %s=%s already\n", table_name, column_name, column_value);
+		return 0;
+	}
+	else{
+		DEBUG("%s has NO %s=%s\n", table_name, column_name, column_value);
+		return -1;
+	}
+}
 
 /*
- 本地栏目的初始化，目前是“设置”和“个人中心”
+ 本地栏目的初始化
  注意和下发的Column.xml字段识别保持一致
 */
 int localcolumn_init()
 {
 	DEBUG("init local column, such as 'Settings' or 'My Center\n");
+	int insert_column_cnt = 0;
 	
 	if(-1==sqlite_transaction_begin())
 		return -1;
@@ -1341,185 +1365,305 @@ int localcolumn_init()
 	/*
 	 一级菜单“个人中心”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',98);",
-		"L98","-1","L98","L98","LocalColumnIcon/MyCenter_losefocus.png","LocalColumnIcon/MyCenter_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L98",CURLANGUAGE_DFT,"DisplayName","个人中心","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L98","eng","DisplayName","My Center","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","L98")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',98);",
+			"L98","-1","L98","L98","LocalColumnIcon/MyCenter_losefocus.png","LocalColumnIcon/MyCenter_losefocus.png","98");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L98",CURLANGUAGE_DFT,"DisplayName","个人中心","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L98","eng","DisplayName","My Center","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	/*
 	 二级菜单“选择接收”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
-		"L9801","L98","L98/L9801","L98","LocalColumnIcon/Receiving_losefocus.png","LocalColumnIcon/Receiving_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9801",CURLANGUAGE_DFT,"DisplayName","选择接收","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9801","eng","DisplayName","Receiving","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","L9801")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
+			"L9801","L98","L98/L9801","L98","LocalColumnIcon/Receiving_losefocus.png","LocalColumnIcon/Receiving_losefocus.png","1");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9801",CURLANGUAGE_DFT,"DisplayName","选择接收","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9801","eng","DisplayName","Receiving","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	/*
 	 二级菜单“下载状态”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',2);",
-		"L9802","L98","L98/L9802","L98","LocalColumnIcon/Download_losefocus.png","LocalColumnIcon/Download_losefocus.png","g");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9802",CURLANGUAGE_DFT,"DisplayName","下载状态","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9802","eng","DisplayName","Download","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","L9802")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',2);",
+			"L9802","L98","L98/L9802","L98","LocalColumnIcon/Download_losefocus.png","LocalColumnIcon/Download_losefocus.png","2");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9802",CURLANGUAGE_DFT,"DisplayName","下载状态","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9802","eng","DisplayName","Download","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	
 	
 	/*
 	 一级菜单“设置”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',99);",
-		"L99","-1","L99","L99","LocalColumnIcon/Setting_losefocus.png","LocalColumnIcon/Setting_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L99",CURLANGUAGE_DFT,"DisplayName","设置","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L99","eng","DisplayName","Setting","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","L99")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',99);",
+			"L99","-1","L99","L99","LocalColumnIcon/Setting_losefocus.png","LocalColumnIcon/Setting_losefocus.png","99");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L99",CURLANGUAGE_DFT,"DisplayName","设置","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L99","eng","DisplayName","Setting","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+	/*
+	 二级菜单“设置－基本信息”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","L9901")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
+			"L9901","L99","L99/L9901","L99","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png","1");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9901",CURLANGUAGE_DFT,"DisplayName","基本信息","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9901","eng","DisplayName","Basic Info","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+	/*
+	 二级菜单“设置－媒体设置”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","L9902")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',2);",
+			"L9902","L99","L99/L9902","L99","LocalColumnIcon/Media_losefocus.png","LocalColumnIcon/Media_losefocus.png","2");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9902",CURLANGUAGE_DFT,"DisplayName","媒体设置","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9902","eng","DisplayName","Media","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	/*
 	 二级菜单“设置－网络设置”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
-		"L9901","L99","L99/L9901","L99","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9901",CURLANGUAGE_DFT,"DisplayName","基本信息","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9901","eng","DisplayName","Basic Info","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“设置－视频设置”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',2);",
-		"L9902","L99","L99/L9902","L99","LocalColumnIcon/Media_losefocus.png","LocalColumnIcon/Media_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9902",CURLANGUAGE_DFT,"DisplayName","媒体设置","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9902","eng","DisplayName","Media","");
-	sqlite_transaction_exec(sqlite_cmd);
-	/*
-	 二级菜单“设置－音频设置”
-	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',3);",
-		"L9903","L99","L99/L9903","L99","LocalColumnIcon/Network_losefocus.png","LocalColumnIcon/Network_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9903",CURLANGUAGE_DFT,"DisplayName","网络设置","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9903","eng","DisplayName","Network","");
-	sqlite_transaction_exec(sqlite_cmd);
-
+	if(-1==check_record_in_trans("Column","ColumnID","L9903")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',3);",
+			"L9903","L99","L99/L9903","L99","LocalColumnIcon/Network_losefocus.png","LocalColumnIcon/Network_losefocus.png","3");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9903",CURLANGUAGE_DFT,"DisplayName","网络设置","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9903","eng","DisplayName","Network","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	/*
 	 二级菜单“设置－文件浏览”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',4);",
-		"L9904","L99","L99/L9904","L99","LocalColumnIcon/FileBrowser_losefocus.png","LocalColumnIcon/FileBrowser_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9904",CURLANGUAGE_DFT,"DisplayName","文件浏览","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9904","eng","DisplayName","File Browser","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","L9904")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',4);",
+			"L9904","L99","L99/L9904","L99","LocalColumnIcon/FileBrowser_losefocus.png","LocalColumnIcon/FileBrowser_losefocus.png","4");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9904",CURLANGUAGE_DFT,"DisplayName","文件浏览","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9904","eng","DisplayName","FileBrowser","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	/*
 	 二级菜单“设置－高级设置”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',5);",
-		"L9905","L99","L99/L9905","L99","LocalColumnIcon/Setting_losefocus.png","LocalColumnIcon/Setting_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9905",CURLANGUAGE_DFT,"DisplayName","高级设置","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9905","eng","DisplayName","Advance","");
-	sqlite_transaction_exec(sqlite_cmd);
-
+	if(-1==check_record_in_trans("Column","ColumnID","L9905")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',5);",
+			"L9905","L99","L99/L9905","L99","LocalColumnIcon/Setting_losefocus.png","LocalColumnIcon/Setting_losefocus.png","5");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9905",CURLANGUAGE_DFT,"DisplayName","高级设置","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9905","eng","DisplayName","Advance","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	/*
 	 二级菜单“设置－DRM”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',6);",
-		"L9906","L99","L99/L9906","L99","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9906",CURLANGUAGE_DFT,"DisplayName","DRM","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","L9906","eng","DisplayName","DRM","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","L9906")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',6);",
+			"L9906","L99","L99/L9906","L99","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","6");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9906",CURLANGUAGE_DFT,"DisplayName","DRM","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9906","eng","DisplayName","DRM","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	
 	
 	/*
 	 一级菜单“智能用电”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
-		"G1","-1","G1","SmartLife","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","G1",CURLANGUAGE_DFT,"DisplayName","智能用电","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","G1","eng","DisplayName","SmartPower","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","G1")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
+			"G1","-1","G1","SmartLife","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png","1");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G1",CURLANGUAGE_DFT,"DisplayName","智能用电","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G1","eng","DisplayName","SmartPower","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+	/*
+	 二级菜单“我的用电”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","G101")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
+			"G101","G1","G101/G1","SmartLife","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png","1");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G101",CURLANGUAGE_DFT,"DisplayName","我的用电","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G101","eng","DisplayName","MyPower","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}	
+	/*
+	 二级菜单“用电账单”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","G102")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
+			"G102","G1","G102/G1","SmartLife","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png","2");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G102",CURLANGUAGE_DFT,"DisplayName","用电账单","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G102","eng","DisplayName","MyBill","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+#if 0
+	/*
+	 二级菜单“缴费记录”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","G103")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
+			"G103","G1","G103/G1","SmartLife","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png","3");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G103",CURLANGUAGE_DFT,"DisplayName","缴费记录","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G103","eng","DisplayName","PaymentRecord","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+#endif
+	/*
+	 二级菜单“电力公告”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","G104")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
+			"G104","G1","G104/G1","SmartLife","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png","4");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G104",CURLANGUAGE_DFT,"DisplayName","电力公告","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G104","eng","DisplayName","Announcement","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+	/*
+	 二级菜单“营业网点”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","G105")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
+			"G105","G1","G105/G1","SmartLife","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png","5");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G105",CURLANGUAGE_DFT,"DisplayName","营业网点","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G105","eng","DisplayName","BusinessOutlets","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	
-	
+		
 	/*
 	 一级菜单“家庭能效”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',2);",
-		"G2","-1","G2","SmartLife","LocalColumnIcon/PowerEfficiency_losefocus.png","LocalColumnIcon/PowerEfficiency_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","G2",CURLANGUAGE_DFT,"DisplayName","家庭能效","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","G2","eng","DisplayName","PowerEfficiency","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","G2")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',2);",
+			"G2","-1","G2","SmartLife","LocalColumnIcon/PowerEfficiency_losefocus.png","LocalColumnIcon/PowerEfficiency_losefocus.png","2");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G2",CURLANGUAGE_DFT,"DisplayName","家庭能效","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G2","eng","DisplayName","PowerEfficiency","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	
 	
 	/*
 	 一级菜单“智能家居”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',3);",
-		"G3","-1","G3","SmartLife","LocalColumnIcon/SmartHousehold_losefocus.png","LocalColumnIcon/SmartHousehold_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","G3",CURLANGUAGE_DFT,"DisplayName","智能家居","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","G3","eng","DisplayName","SmartHousehold","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","G3")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',3);",
+			"G3","-1","G3","SmartLife","LocalColumnIcon/SmartHousehold_losefocus.png","LocalColumnIcon/SmartHousehold_losefocus.png","3");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G3",CURLANGUAGE_DFT,"DisplayName","智能家居","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G3","eng","DisplayName","SmartHousehold","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	
 	
 	/*
 	 一级菜单“国网动态”
 	*/
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',4);",
-		"G4","-1","G4","SmartLife","LocalColumnIcon/StateGridNews_losefocus.png","LocalColumnIcon/StateGridNews_losefocus.png","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","G4",CURLANGUAGE_DFT,"DisplayName","国网动态","");
-	sqlite_transaction_exec(sqlite_cmd);
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
-		"Column","G4","eng","DisplayName","StateGridNews","");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Column","ColumnID","G4")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',4);",
+			"G4","-1","G4","SmartLife","LocalColumnIcon/StateGridNews_losefocus.png","LocalColumnIcon/StateGridNews_losefocus.png","4");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G4",CURLANGUAGE_DFT,"DisplayName","国网动态","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","G4","eng","DisplayName","StateGridNews","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	
-	return sqlite_transaction_end(1);
+	if(insert_column_cnt>0)
+		return sqlite_transaction_end(1);
+	else
+		return sqlite_transaction_end(0);
 }
 
 static int global_info_init()
@@ -1529,34 +1673,66 @@ static int global_info_init()
 	if(-1==sqlite_transaction_begin())
 		return -1;
 	
+	int insert_record_cnt = 0;
+	char key_value[128];
 	char sqlite_cmd[1024];
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-		GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
-	sqlite_transaction_exec(sqlite_cmd);
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_PREVIEWPATH);
+	if(-1==check_record_in_trans("Global","Name",key_value)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-		GLB_NAME_CURLANGUAGE,CURLANGUAGE_DFT);
-	sqlite_transaction_exec(sqlite_cmd);
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_CURLANGUAGE);
+	if(-1==check_record_in_trans("Global","Name",key_value)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			GLB_NAME_CURLANGUAGE,CURLANGUAGE_DFT);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-		GLB_NAME_DEVICEMODEL,DEVICEMODEL_DFT);
-	sqlite_transaction_exec(sqlite_cmd);
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DEVICEMODEL);
+	if(-1==check_record_in_trans("Global","Name",key_value)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			GLB_NAME_DEVICEMODEL,DEVICEMODEL_DFT);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-		GLB_NAME_DBDATASERVERIP,DBDATASERVERIP_DFT);
-	sqlite_transaction_exec(sqlite_cmd);
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DBDATASERVERIP);
+	if(-1==check_record_in_trans("Global","Name",key_value)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			GLB_NAME_DBDATASERVERIP,DBDATASERVERIP_DFT);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-		GLB_NAME_DBDATASERVERPORT,DBDATASERVERPORT_DFT);
-	sqlite_transaction_exec(sqlite_cmd);
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DBDATASERVERPORT);
+	if(-1==check_record_in_trans("Global","Name",key_value)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			GLB_NAME_DBDATASERVERPORT,DBDATASERVERPORT_DFT);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-		GLB_NAME_HDFOREWARNING,HDFOREWARNING_DFT);
-	sqlite_transaction_exec(sqlite_cmd);
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_HDFOREWARNING);
+	if(-1==check_record_in_trans("Global","Name",key_value)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			GLB_NAME_HDFOREWARNING,HDFOREWARNING_DFT);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','LocalColumnIcon/DefaultIcon_losefocus.png','');");
-	sqlite_transaction_exec(sqlite_cmd);
+	if(-1==check_record_in_trans("Global","Name","ColumnIconDft")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','LocalColumnIcon/DefaultIcon_losefocus.png','');");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 	
-	return sqlite_transaction_end(1);
+	if(insert_record_cnt>0)
+		return sqlite_transaction_end(1);
+	else
+		return sqlite_transaction_end(0);
 }

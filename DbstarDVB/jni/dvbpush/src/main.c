@@ -29,7 +29,7 @@ void *main_thread()
 	DEBUG("main thread start...\n");
 	compile_timeprint();
         
-        _wLBM_zyzdmb(13578642);
+	_wLBM_zyzdmb(13578642);
    	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
@@ -45,6 +45,8 @@ void *main_thread()
 		DEBUG("sqlite init failed\n");
 		//return NULL;
 	}
+	
+	setting_init_with_datebase();
 	
 	if(-1==xmlparser_init()){
 		DEBUG("xmlparser init failed\n");

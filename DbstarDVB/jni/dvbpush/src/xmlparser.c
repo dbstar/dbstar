@@ -284,7 +284,6 @@ int check_productid_from_db_in_trans(char *productid)
 }
 
 /*
- 播发单ProductDesc.xml，成品Publication和成品集PublicationsSet直接存放到对应表中，而小片Preview和预告单GuideList则存放在播发单表ProductDesc中
  如果先解析ProductDesc后解析Service，则有可能本应接收的Product被拒绝。
 */
 static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
@@ -296,21 +295,6 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	
 	char sqlite_cmd[4096];
 
-#if 0
-	if(strlen(ptr->PushStartTime)>0){
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE ProductDesc SET PushStartTime='%s' WHERE ServiceID='%s' AND PushStartTime='';", \
-ptr->PushStartTime,
-ptr->ServiceID);
-		sqlite_transaction_exec(sqlite_cmd);
-	}
-	
-	if(strlen(ptr->PushEndTime)>0){
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE ProductDesc SET PushEndTime='%s' WHERE ServiceID='%s' AND PushEndTime='';", \
-ptr->PushEndTime,
-ptr->ServiceID);
-		sqlite_transaction_exec(sqlite_cmd);
-	}
-#endif
 	
 	/*
 	还需要检查用户在选择接收界面的反选
@@ -1080,7 +1064,7 @@ static int read_xmlver_in_trans(DBSTAR_XMLINFO_S *xmlinfo,char *old_xmlver,unsig
 		return -1;
 		
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Version FROM Initialize WHERE PushFlag='%s' AND ServiceID='%s' AND ID='%s';",xmlinfo->PushFlag,xmlinfo->ServiceID,xmlinfo->ID);
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Version FROM Initialize WHERE PushFlag='%s' AND ID='%s';",xmlinfo->PushFlag,xmlinfo->ID);
 	if(0<sqlite_transaction_read(sqlite_cmd,old_xmlver,old_xmlver_size)){
 		DEBUG("read xml old version: %s\n", old_xmlver);
 		return 0;
@@ -1108,7 +1092,7 @@ static int read_xmlver_in_trans(DBSTAR_XMLINFO_S *xmlinfo,char *old_xmlver,unsig
  0——成功
  -1——失败
 */
-static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, DBSTAR_XMLINFO_S *xmlinfo, char *rootelement, int *p_child_tree_is_valid, char *old_xmlver)
+static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, DBSTAR_XMLINFO_S *xmlinfo, char *rootelement, char *old_xmlver)
 {
 	if(NULL==doc || NULL==cur || NULL==xmlroute){
 		DEBUG("some arguments are invalide\n");
@@ -1172,7 +1156,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 // Initialize.xml
 			if(0==strncmp(new_xmlroute, "Initialize^", strlen("Initialize^"))){
 				if(0==strcmp(new_xmlroute, "Initialize^ServiceInits")){
-					process_over = parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
+					process_over = parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit")){
 					DBSTAR_PRODUCT_SERVICE_S product_service_s;
@@ -1189,7 +1173,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						serviceID_set(product_service_s.serviceID);
 						
 						sqlite_transaction_table_clear("Initialize");
-						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
+						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL);
 						process_over = XML_EXIT_MOVEUP;
 						DEBUG("process over moveup on valid serviceID %s\n", serviceID_get());
 					}
@@ -1199,7 +1183,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels")){
 					channel_ineffective_set();
-					parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels^Channel")){
 					DBSTAR_CHANNEL_S channel_s;
@@ -1244,7 +1228,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 // Service.xml
 			else if(0==strncmp(new_xmlroute, "Service^", strlen("Service^"))){
 				if(0==strcmp(new_xmlroute, "Service^ServiceNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Service^ServiceNames^ServiceName")){
 					DBSTAR_SERVICE_S *p_service = (DBSTAR_SERVICE_S *)ptr;
@@ -1289,7 +1273,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&product_s, 0, sizeof(product_s));
 					snprintf(product_s.ServiceID,sizeof(product_s.ServiceID),"%s",p_service->ServiceID);
 					
-					parseNode(doc, cur, new_xmlroute, &product_s, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, &product_s, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Service^Products^Product")){
 					DBSTAR_PRODUCT_S *p_product = (DBSTAR_PRODUCT_S *)ptr;
@@ -1297,7 +1281,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(service_id,sizeof(service_id),"%s",p_product->ServiceID);
 					memset(ptr, 0, sizeof(DBSTAR_PRODUCT_S));
 					snprintf(p_product->ServiceID,sizeof(p_product->ServiceID),"%s",service_id);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 					product_insert((DBSTAR_PRODUCT_S *)ptr);
 				}
 				else if(0==strcmp(new_xmlroute, "Service^Products^Product^ProductID")){
@@ -1319,7 +1303,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Service^Products^Product^ProductNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Service^Products^Product^ProductNames^ProductName")){
 					DBSTAR_PRODUCT_S *p_product = (DBSTAR_PRODUCT_S *)ptr;
@@ -1381,7 +1365,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationNames^PublicationName")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
@@ -1422,7 +1406,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^DRMFile")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^DRMFile^FileURI")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
@@ -1431,10 +1415,10 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MultipleLanguageInfos")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MultipleLanguageInfos^MultipleLanguageInfo")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
@@ -1445,7 +1429,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(info_va_s.PublicationID, sizeof(info_va_s.PublicationID), "%s", p->PublicationID);
 					
 					parseProperty(cur, new_xmlroute, (void *)&info_va_s);
-					parseNode(doc, cur, new_xmlroute, (void *)&info_va_s, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, (void *)&info_va_s, NULL, NULL, NULL);
 					publicationva_info_insert(&info_va_s);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MultipleLanguageInfos^MultipleLanguageInfo^PublicationDesc")){
@@ -1531,7 +1515,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(sset_s.IsReserved, sizeof(sset_s.IsReserved), "%s", p->IsReserved);
 					snprintf(sset_s.Visible, sizeof(sset_s.Visible), "%s", p->Visible);
 					
-					parseNode(doc, cur, new_xmlroute, &sset_s, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, &sset_s, NULL, NULL, NULL);
 					publicationsset_insert(&sset_s);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^Title")){
@@ -1584,7 +1568,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 				
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SubTitles")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SubTitles^SubTitle")){
 					DBSTAR_MULTIPLELANGUAGEINFOVA_S *p = (DBSTAR_MULTIPLELANGUAGEINFOVA_S *)ptr;
@@ -1593,7 +1577,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&subtitle_s, 0, sizeof(subtitle_s));
 					strncpy(subtitle_s.ObjectName, OBJ_PUBLICATION, sizeof(subtitle_s.ObjectName)-1);
 					strncpy(subtitle_s.EntityID, p->PublicationID, sizeof(subtitle_s.EntityID)-1);
-					parseNode(doc, cur, new_xmlroute, &subtitle_s, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, &subtitle_s, NULL, NULL, NULL);
 					subtitle_insert(&subtitle_s);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SubTitles^SubTitle^SubTitleID")){
@@ -1622,7 +1606,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 				
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Trailers")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Trailers^Trailer")){
 					DBSTAR_MULTIPLELANGUAGEINFOVA_S *p = (DBSTAR_MULTIPLELANGUAGEINFOVA_S *)ptr;
@@ -1631,7 +1615,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&trailer_s, 0, sizeof(trailer_s));
 					strncpy(trailer_s.ObjectName, OBJ_PUBLICATION, sizeof(trailer_s.ObjectName)-1);
 					strncpy(trailer_s.EntityID, p->PublicationID, sizeof(trailer_s.EntityID)-1);
-					parseNode(doc, cur, new_xmlroute, &trailer_s, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, &trailer_s, NULL, NULL, NULL);
 					trailer_insert(&trailer_s);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Trailers^Trailer^TrailerID")){
@@ -1654,7 +1638,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 				
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Posters")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Posters^Poster")){
 					DBSTAR_MULTIPLELANGUAGEINFOVA_S *p = (DBSTAR_MULTIPLELANGUAGEINFOVA_S *)ptr;
@@ -1663,7 +1647,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&poster_s, 0, sizeof(poster_s));
 					strncpy(poster_s.ObjectName, OBJ_PUBLICATION, sizeof(poster_s.ObjectName)-1);
 					strncpy(poster_s.EntityID, p->PublicationID, sizeof(poster_s.EntityID)-1);
-					parseNode(doc, cur, new_xmlroute, &poster_s, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, &poster_s, NULL, NULL, NULL);
 					poster_insert(&poster_s);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Posters^Poster^PosterID")){
@@ -1686,7 +1670,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 				
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileID")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
@@ -1695,7 +1679,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileNames^FileName")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
@@ -1779,7 +1763,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(preview_s.ServiceID,sizeof(preview_s.ServiceID),"%s",p->ServiceID);
 					snprintf(preview_s.PublicationID,sizeof(preview_s.PublicationID),"%s",p->PublicationID);
 					
-					parseNode(doc, cur, new_xmlroute, &preview_s, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, &preview_s, NULL, NULL, NULL);
 					
 					preview_insert(&preview_s);
 				}
@@ -1790,7 +1774,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewNames")){
-//					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+//					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^Preview^PreviewNames^PreviewName")){
 //					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
@@ -1876,7 +1860,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(ptr, 0, sizeof(DBSTAR_COLUMN_S));
 					snprintf(p_column->ServiceID,sizeof(p_column->ServiceID),"%s",tmp_serviceid);
 					
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 					if(0!=column_insert((DBSTAR_COLUMN_S *)ptr)){
 						DEBUG("insert a column record to db failed\n");
 						process_over = XML_EXIT_ERROR;
@@ -1896,7 +1880,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Columns^Column^DisplayNames"))
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				else if(0==strcmp(new_xmlroute, "Columns^Column^DisplayNames^DisplayName")){
 					DBSTAR_COLUMN_S *p_column = (DBSTAR_COLUMN_S *)ptr;
 					
@@ -1928,7 +1912,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Columns^Column^ColumnIcons"))
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				else if(0==strcmp(new_xmlroute, "Columns^Column^ColumnIcons^ColumnIcon")){
 					DBSTAR_COLUMN_S *p_column = (DBSTAR_COLUMN_S *)ptr;
 					
@@ -1953,7 +1937,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(p_guidelist->productID,0,sizeof(p_guidelist->productID));
 					memset(p_guidelist->PublicationID,0,sizeof(p_guidelist->PublicationID));
 					
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^DateValue")){
 					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
@@ -1970,7 +1954,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(p_guidelist->PublicationID,0,sizeof(p_guidelist->PublicationID));
 					
 					parseProperty(cur, new_xmlroute, ptr);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item")){
 					/*
@@ -1981,7 +1965,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(p_guidelist->GuideListID,0,sizeof(p_guidelist->GuideListID));
 					memset(p_guidelist->PublicationID,0,sizeof(p_guidelist->PublicationID));
 					
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 					guidelist_insert((DBSTAR_GUIDELIST_S *)ptr);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^PublicationID")){
@@ -1993,7 +1977,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(p_guidelist->GuideListID, sizeof(p_guidelist->GuideListID), "%s_%s", p_guidelist->productID, p_guidelist->PublicationID);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^PublicationNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^PublicationNames^PublicationName")){
 					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
@@ -2014,7 +1998,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					resstr_insert(&resstr_s);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^ColumnNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^ColumnNames^ColumnName")){
 					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
@@ -2035,7 +2019,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					resstr_insert(&resstr_s);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^PublicationDescs")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item^PublicationDescs^PublicationDesc")){
 					DBSTAR_GUIDELIST_S *p_guidelist = (DBSTAR_GUIDELIST_S *)ptr;
@@ -2067,17 +2051,17 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 1);
 					parseProperty(cur, new_xmlroute, ptr);
 					snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d",RECEIVETYPE_PUBLICATION);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product")){
 					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 2);
 					parseProperty(cur, new_xmlroute, ptr);
 					DEBUG("productID: %s\n", ((DBSTAR_PRODUCTDESC_S *)ptr)->productID);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication")){
 					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 3);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 					productdesc_insert((DBSTAR_PRODUCTDESC_S *)ptr);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^PublicationID")){
@@ -2089,7 +2073,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^PublicationNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^PublicationNames^PublicationName")){
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
@@ -2138,7 +2122,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^Columns")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^Columns^Column")){
 					parseProperty(cur, new_xmlroute, ptr);
@@ -2153,7 +2137,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 1);
 					parseProperty(cur, new_xmlroute, ptr);
 					snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d",RECEIVETYPE_SPRODUCT);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 					productdesc_insert((DBSTAR_PRODUCTDESC_S *)ptr);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveSProduct^SProductID")){
@@ -2165,7 +2149,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveSProduct^SProductNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveSProduct^SProductNames^SProductName")){
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
@@ -2212,7 +2196,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 1);
 					parseProperty(cur, new_xmlroute, ptr);
 					snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d", RECEIVETYPE_COLUMN);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 					productdesc_insert((DBSTAR_PRODUCTDESC_S *)ptr);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveColumn^ColumnID")){
@@ -2224,7 +2208,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveColumn^ColumnNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveColumn^ColumnNames^ColumnName")){
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
@@ -2273,16 +2257,16 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&navigation_s, 0, sizeof(navigation_s));
 					parseProperty(cur, new_xmlroute, (void *)(&navigation_s));
 					if(0==strcmp(navigation_s.serviceID, serviceID_get()) && NAVIGATIONTYPE_COLUMN==atoi(navigation_s.navigationType))
-						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "PublicationsColumn^Navigation^Publications")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "PublicationsColumn^Navigation^Publications^PublicationColumn")){
 					DBSTAR_COLUMNENTITY_S column_entity_s;
 					memset(&column_entity_s, 0, sizeof(column_entity_s)); 
 					parseProperty(cur, new_xmlroute, (void *)(&column_entity_s));
-					parseNode(doc, cur, new_xmlroute, (void *)(&column_entity_s), NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, (void *)(&column_entity_s), NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "PublicationsColumn^Navigation^Publications^PublicationColumn^Column")){
 					DBSTAR_COLUMNENTITY_S *p = (DBSTAR_COLUMNENTITY_S *)ptr;
@@ -2294,7 +2278,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_COLUMNENTITY_S column_entity_s;
 					memset(&column_entity_s, 0, sizeof(column_entity_s)); 
 					parseProperty(cur, new_xmlroute, (void *)(&column_entity_s));
-					parseNode(doc, cur, new_xmlroute, (void *)(&column_entity_s), NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, (void *)(&column_entity_s), NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "PublicationsColumn^Navigation^Publications^SetColumn^Column")){
 					DBSTAR_COLUMNENTITY_S *p = (DBSTAR_COLUMNENTITY_S *)ptr;
@@ -2307,7 +2291,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_COLUMNENTITY_S column_entity_s;
 					memset(&column_entity_s, 0, sizeof(column_entity_s)); 
 					parseProperty(cur, new_xmlroute, (void *)(&column_entity_s));
-					parseNode(doc, cur, new_xmlroute, (void *)(&column_entity_s), NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, (void *)(&column_entity_s), NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "PublicationsColumn^Navigation^Publications^ProductColumn^Column")){
 					DBSTAR_COLUMNENTITY_S *p = (DBSTAR_COLUMNENTITY_S *)ptr;
@@ -2326,11 +2310,11 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					
 					snprintf(message_s.MessageID, sizeof(message_s.MessageID), "Msg_%s", time_serial());
 					parseProperty(cur, new_xmlroute, (void *)(&message_s));
-					parseNode(doc, cur, new_xmlroute, (void *)(&message_s), NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, (void *)(&message_s), NULL, NULL, NULL);
 					message_insert(&message_s);
 				}
 				else if(0==strcmp(new_xmlroute, "Messages^Message^Content"))
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				else if(0==strcmp(new_xmlroute, "Messages^Message^Content^SubContent")){
 					DBSTAR_MESSAGE_S *p = (DBSTAR_MESSAGE_S *)ptr;
 					
@@ -2382,7 +2366,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Preview^PreviewNames"))
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				else if(0==strcmp(new_xmlroute, "Preview^PreviewNames^PreviewName")){
 					DBSTAR_PREVIEW_S *p = (DBSTAR_PREVIEW_S *)ptr;
 					
@@ -2469,7 +2453,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 // SProduct.xml
 			else if(0==strncmp(new_xmlroute, "SProduct^", strlen("SProduct^"))){
 				if(0==strcmp(new_xmlroute, "SProduct^SProductInfo")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL, NULL);
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "SProduct^SProductInfo^BGPicture")){
 					DBSTAR_SPRODUCT_S sproduct_s;
@@ -2547,7 +2531,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 #endif
 }
 
-static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
+static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *id)
 {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
@@ -2558,14 +2542,14 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 	
 	DEBUG("xml_flag: %d, id: %s\n", xml_flag, id);
 	pthread_mutex_lock(&mtx_parse_xml);
-//	if(NULL==docname){
+//	if(NULL==xml_relative_uri){
 //		DEBUG("CAUTION: name of xml file is NULL\n");
 //		ret = -1;
 //		goto PARSE_XML_END;
 //	}
 	
 	memset(xml_uri, 0, sizeof(xml_uri));
-	if(NULL==docname){
+	if(NULL==xml_relative_uri){
 		char tmp_uri[512];
 		if(-1==xmluri_get(xml_flag, tmp_uri, sizeof(tmp_uri))){
 			DEBUG("can not get valid xml uri to parse\n");
@@ -2576,7 +2560,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 			snprintf(xml_uri, sizeof(xml_uri), "%s/%s", push_dir_get(), tmp_uri);
 	}
 	else
-		snprintf(xml_uri, sizeof(xml_uri), "%s/%s", push_dir_get(), docname);
+		snprintf(xml_uri, sizeof(xml_uri), "%s/%s", push_dir_get(), xml_relative_uri);
 	
 	DEBUG("parse xml file[%d]: %s\n", xml_flag, xml_uri);
 	
@@ -2600,14 +2584,10 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 		char sqlite_cmd[256];
 		char old_xmlver[64];
 		memset(old_xmlver, 0, sizeof(old_xmlver));
-		
-		if(GUIDELIST_XML==xml_flag){
-#if 0	//  不能直接删除所有的记录，应保留用户选择“拒绝接收”的记录。只能删除昨天及以前的记录。
-			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-#else
-			snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM GuideList WHERE DateValue<datetime('now','localtime','start of day');");
-			sqlite_execute(sqlite_cmd);
-#endif
+
+// Initialize.xml不存在Service判断问题	
+		if(INITIALIZE_XML==xml_flag){
+			info_xml_refresh(0,PUSH_XML_FLAG_UNDEFINED);
 		}
 		
 		if(-1==sqlite_transaction_begin()){
@@ -2630,7 +2610,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				else{
 					s_detect_valid_productID = 0;
 					
-					ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", NULL, old_xmlver);
+					ret = parseNode(doc, cur, "Initialize", NULL, &xmlinfo, "Initialize", old_xmlver);
 					
 					ret = PROCESS_OVER_CHECK(ret);
 					if(0==ret){
@@ -2653,10 +2633,9 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 				/*
-				 由于需要反注册，所以需要解析所有serviceID的投递内容做反向注册
-				 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
+				 新push只接收注册的文件，所以不用处理非当前业务的文件夹进行反注册
 				*/
-				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
 					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
 							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
 					ret = -1;
@@ -2669,7 +2648,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					DBSTAR_SERVICE_S service_s;
 					memset(&service_s, 0, sizeof(service_s));
 					snprintf(service_s.ServiceID, sizeof(service_s.ServiceID), "%s", xmlinfo.ServiceID);
-					ret = parseNode(doc, cur, "Service", &service_s, &xmlinfo, "Service", NULL, old_xmlver);
+					ret = parseNode(doc, cur, "Service", &service_s, &xmlinfo, "Service", old_xmlver);
 					service_insert(&service_s);
 					
 					ret = PROCESS_OVER_CHECK(ret);
@@ -2681,11 +2660,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 				
-				/*
-				 Publication已经通过接收单进行了业务级别的过滤，这里不需要比对
-				 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
-				*/
-				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))  || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
 					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
 							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
 					ret = -1;
@@ -2694,7 +2669,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					DBSTAR_PUBLICATION_S publication_s;
 					memset(&publication_s, 0, sizeof(publication_s));
 					snprintf(publication_s.ServiceID,sizeof(publication_s.ServiceID),"%s", xmlinfo.ServiceID);
-					ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", NULL, old_xmlver);
+					ret = parseNode(doc, cur, "Publication", (void *)&publication_s, &xmlinfo, "Publication", old_xmlver);
 					publication_insert(&publication_s);
 					snprintf(xmlinfo.ID,sizeof(xmlinfo.ID),"%s",publication_s.PublicationID);
 					
@@ -2703,6 +2678,10 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 			}
 // Column.xml
 			else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
+				
+				// 栏目和特殊产品均通过文件通道下发，原始PushFlag都是Publication，故此处进行修正
+				snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", COLUMN_XML);
+				
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
@@ -2716,12 +2695,12 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					*/
 					snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='L98' AND ColumnType!='L99' AND ColumnType!='SmartLife';");
 					sqlite_transaction_exec(sqlite_cmd);
-					s_column_SequenceNum = 10;	// 允许一些内置的栏目排在下发栏目之前，故SequenceNum从10计起
+					s_column_SequenceNum = 10;	// 允许一些内置的栏目（如国电业务）排在下发栏目之前，故SequenceNum从10计起
 							
 					DBSTAR_COLUMN_S column_s;
 					memset(&column_s, 0, sizeof(column_s));
 					snprintf(column_s.ServiceID,sizeof(column_s.ServiceID),"%s", xmlinfo.ServiceID);
-					ret = parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", NULL, old_xmlver);
+					ret = parseNode(doc, cur, "Columns", &column_s, &xmlinfo, "Columns", old_xmlver);
 					
 					ret = PROCESS_OVER_CHECK(ret);
 				}
@@ -2736,10 +2715,18 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					ret = -1;
 				}
 				else{
+					
+#if 0	//  不能直接删除所有的记录，应保留用户选择“拒绝接收”的记录。只能删除昨天及以前的记录。
+					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+#else
+					snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM GuideList WHERE DateValue<datetime('now','localtime','-2 days');");
+					sqlite_transaction_exec(sqlite_cmd);
+#endif
+					
 					DBSTAR_GUIDELIST_S guidelist_s;
 					memset(&guidelist_s, 0, sizeof(guidelist_s));
 					snprintf(guidelist_s.ServiceID,sizeof(guidelist_s.ServiceID),"%s", xmlinfo.ServiceID);
-					ret = parseNode(doc, cur, "GuideList", &guidelist_s, &xmlinfo, "GuideList", NULL, old_xmlver);
+					ret = parseNode(doc, cur, "GuideList", &guidelist_s, &xmlinfo, "GuideList", old_xmlver);
 					
 					ret = PROCESS_OVER_CHECK(ret);
 				}
@@ -2749,20 +2736,25 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 				/*
-				 由于需要反注册，所以需要解析所有serviceID的投递内容做反向注册
-				 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
+				 新push只接收注册的文件，所以不用处理非当前业务的节目进行反注册
 				*/
-				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))  || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
 					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
 							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
 					ret = -1;
 				}
 				else{
+					/*
+					 不考虑PushStartTime和PushEndTime的限制，只要有新的播发单就删除旧单，简化逻辑
+					*/
+					snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
+					sqlite_transaction_exec(sqlite_cmd);
+					
 					DEBUG("old ver: %s, new ver: %s\n",old_xmlver, xmlinfo.Version);
 					DBSTAR_PRODUCTDESC_S productdesc_s;
 					memset(&productdesc_s, 0, sizeof(productdesc_s));
 					snprintf(productdesc_s.ServiceID,sizeof(productdesc_s.ServiceID),"%s", xmlinfo.ServiceID);
-					ret = parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", NULL, old_xmlver);
+					ret = parseNode(doc, cur, "ProductDesc", &productdesc_s, &xmlinfo, "ProductDesc", old_xmlver);
 					
 					ret = PROCESS_OVER_CHECK(ret);
 				}
@@ -2777,34 +2769,17 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 					ret = -1;
 				}
 				else{
-					ret = parseNode(doc, cur, "Messages", NULL, &xmlinfo, "Messages", NULL, old_xmlver);
+					ret = parseNode(doc, cur, "Messages", NULL, &xmlinfo, "Messages", old_xmlver);
 					
 					ret = PROCESS_OVER_CHECK(ret);
 				}
 			}
-#if 0	//preview in Publications.xml
-// Preview.xml
-			else if(0==xmlStrcmp(cur->name, BAD_CAST"Preview")){
-				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-					ret = -1;
-				}
-				else{
-					DBSTAR_PREVIEW_S preview_s;
-					memset(&preview_s, 0, sizeof(preview_s));
-					ret = parseNode(doc, cur, "Preview", &preview_s, &xmlinfo, "Preview", NULL, old_xmlver);
-					preview_insert(&preview_s);
-					
-					ret = PROCESS_OVER_CHECK(ret);
-				}
-			}
-#endif
 
 // SProduct.xml
 			else if(0==xmlStrcmp(cur->name, BAD_CAST"SProduct")){
+				// 栏目和特殊产品均通过文件通道下发，原始PushFlag都是Publication，故此处进行修正
+				snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", SPRODUCT_XML);
+				
 				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 				read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
@@ -2815,7 +2790,7 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 				else{
 					char SProduct_ServiceID[64];
 					snprintf(SProduct_ServiceID,sizeof(SProduct_ServiceID),"%s", xmlinfo.ServiceID);
-					ret = parseNode(doc, cur, "SProduct", SProduct_ServiceID, &xmlinfo, "SProduct", NULL, old_xmlver);
+					ret = parseNode(doc, cur, "SProduct", SProduct_ServiceID, &xmlinfo, "SProduct", old_xmlver);
 					
 					ret = PROCESS_OVER_CHECK(ret);
 				}
@@ -2829,21 +2804,11 @@ static int parseDoc(char *docname, PUSH_XML_FLAG_E xml_flag, char *id)
 			if(-1==ret)
 				sqlite_transaction_end(0);
 			else if(0==ret){
-				if(docname)
-					snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", docname);
+				if(xml_relative_uri)
+					snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", xml_relative_uri);
 				xmlinfo_insert(&xmlinfo);
 				
 				sqlite_transaction_end(1);
-				
-				if(INITIALIZE_XML==xml_flag){
-					pid_init(1);
-					channel_ineffective_clear();
-				}
-				else if(PRODUCTDESC_XML==xml_flag || SERVICE_XML==xml_flag){
-					DEBUG("refresh push monitor because of xml %d\n", xml_flag);
-					
-					push_recv_manage_refresh(0,NULL);
-				}
 			}
 		}
 	}
@@ -2856,14 +2821,32 @@ PARSE_XML_END:
 
 // 不要放在事务或线程锁内部发送这些信号	
 	if(0==ret){
-		if(COLUMN_XML==xml_flag)
+		if(PRODUCTION_XML==xml_flag){
+			if(1==s_preview_publication){
+				DEBUG("this Publication is a preview\n");
+				preview_refresh_flag_set(1);
+			}
+			
+			productdesc_parsed_set(xml_relative_uri, xml_flag);
+		}
+		else if(COLUMN_XML==xml_flag){
 			column_refresh_flag_set(1);
-		else if(SPRODUCT_XML==xml_flag)
+			productdesc_parsed_set(xml_relative_uri, xml_flag);
+		}
+		else if(SPRODUCT_XML==xml_flag){
 			interface_refresh_flag_set(1);
-		
-		if(1==s_preview_publication){
-			DEBUG("this Publication is a preview\n");
-			preview_refresh_flag_set(1);
+			productdesc_parsed_set(xml_relative_uri, xml_flag);
+		}
+		else if(PRODUCTDESC_XML==xml_flag){	//  || SERVICE_XML==xml_flag 只接收本service的播发单数据，无需根据Service.xml进行刷新
+			DEBUG("refresh push monitor because of xml %d\n", xml_flag);
+			
+			push_recv_manage_refresh(1,NULL);
+		}
+		else if(INITIALIZE_XML==xml_flag){
+			pid_init(1);
+			channel_ineffective_clear();
+			
+			info_xml_refresh(1,PUSH_XML_FLAG_UNDEFINED);
 		}
 	}
 
@@ -2876,9 +2859,9 @@ PARSE_XML_END:
  此函数需要独占调用，因为如果当前解析的是Initialize.xml的话，解析完毕后还要自动扫描解析那些依赖于serviceID的xml。
  但同时，push系统的回调也有可能刚好得到这些xml而引起解析。
 */
-int parse_xml(char *xml_uri, PUSH_XML_FLAG_E xml_flag, char *id)
+int parse_xml(char *relative, PUSH_XML_FLAG_E xml_flag, char *id)
 {
-	int ret = parseDoc(xml_uri, xml_flag, id);
+	int ret = parseDoc(relative, xml_flag, id);
 	
 	return ret;
 }

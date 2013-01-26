@@ -37,7 +37,7 @@
 
 #define CLEAR_COLUMN_AFTER_PARSED
 
-#define XML_NUM			8
+#define XML_NUM			16
 static PUSH_XML_S		s_push_xml[XML_NUM];
 
 static pthread_mutex_t mtx_xml = PTHREAD_MUTEX_INITIALIZER;
@@ -45,10 +45,6 @@ static pthread_mutex_t mtx_xml = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mtx_push_monitor = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_push_monitor = PTHREAD_COND_INITIALIZER;
 
-
-static pthread_mutex_t mtx_push_rely_condition = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond_push_rely_condition = PTHREAD_COND_INITIALIZER;
-static int s_push_rely_condition = 0;
 static int push_idle = 0;
 static int s_disk_manage_flag = 0;
 static int s_smart_card_insert_action = 0;
@@ -74,12 +70,10 @@ typedef struct tagPRG
 }PROG_S;
 
 static int mid_push_regist(PROG_S *prog);
-static int mid_push_unregist(PROG_S *prog);
 static int push_decoder_buf_uninit();
 static int prog_name_fill();
-static int mid_push_forbid(const char *prog_uri, unsigned int sleep_sec_before_remove);
 
-#define PROGS_NUM 64
+#define PROGS_NUM 256
 static PROG_S s_prgs[PROGS_NUM];
 //static char s_push_data_dir[256];
 /*************接收缓冲区定义***********/
@@ -241,6 +235,7 @@ rewake:
 			* 调用PUSH数据解析接口解析数据，该函数是阻塞的，所以应该使用一个较大
 			* 的缓冲区来暂时存储源源不断的数据。
 			*/
+			//DEBUG("push_parse %d\n", len);
 			push_parse((char *)pBuf, len);
 			s_push_has_data = 3;
 			
@@ -287,32 +282,8 @@ rewake:
 	return NULL;
 }
 
-void push_rely_condition_set(int cmd)
-{
-	pthread_mutex_lock(&mtx_push_rely_condition);
-	int tmp_cond = s_push_rely_condition;
-	if(CMD_NETWORK_DISCONNECT==cmd){
-		s_push_rely_condition = s_push_rely_condition & (~RELY_CONDITION_NET);
-	}
-	else if(CMD_NETWORK_CONNECT==cmd){
-		s_push_rely_condition = s_push_rely_condition | RELY_CONDITION_NET;
-	}
-	else if(CMD_DISK_UNMOUNT==cmd){
-		s_push_rely_condition = s_push_rely_condition & (~RELY_CONDITION_HD);
-	}
-	else if(CMD_DISK_MOUNT==cmd){
-		s_push_rely_condition = s_push_rely_condition | RELY_CONDITION_HD;
-	}
-	else{
-		DEBUG("this cmd 0x%x is ignored\n", cmd);
-		pthread_mutex_unlock(&mtx_push_rely_condition);
-	}
-	DEBUG("push origine %d, cmd 0x%x, so s_push_rely_condition is %d\n", tmp_cond, cmd, s_push_rely_condition);
-	pthread_cond_signal(&cond_push_rely_condition);
-	pthread_mutex_unlock(&mtx_push_rely_condition);
-}
-
-//#define PARSE_XML_VIA_THREAD
+#if 0
+//#define PARSE_XML_VIA_THREAD	// 通过线程调用xml解析容易导致死机
 static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 {
 	if(NULL==DescURI || NULL==DescURI){
@@ -323,7 +294,7 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 	DEBUG("should parse: %s\n", DescURI);
 	if(RECEIVETYPE_PUBLICATION==type){
 #ifdef PARSE_XML_VIA_THREAD
-		send_xml_to_parse(DescURI,PRODUCTION_XML,id);
+		mid_push_cb(DescURI,PRODUCTION_XML,id);
 #else
 /*
 直接调用parse_xml的目的是避开线程，否则出现parse_xml和push_recv_manage_refresh同时使用sqlite库，导致异常
@@ -336,14 +307,14 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 	}
 	else if(RECEIVETYPE_COLUMN==type){
 #ifdef PARSE_XML_VIA_THREAD
-		send_xml_to_parse(DescURI,COLUMN_XML,NULL);
+		mid_push_cb(DescURI,COLUMN_XML,NULL);
 #else
 		parse_xml(DescURI,COLUMN_XML,NULL);
 #endif
 	}
 	else if(RECEIVETYPE_SPRODUCT==type){
 #ifdef PARSE_XML_VIA_THREAD
-		send_xml_to_parse(DescURI,SPRODUCT_XML,NULL);
+		mid_push_cb(DescURI,SPRODUCT_XML,NULL);
 #else
 		parse_xml(DescURI,SPRODUCT_XML,NULL);
 #endif
@@ -353,19 +324,22 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 	
 	return 0;
 }
+#endif
 
-static int productdesc_parsed_set(char *xml_uri, RECEIVETYPE_E prog_type)
+int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag)
 {
 	char sqlite_cmd[512];
-
-#ifdef CLEAR_COLUMN_AFTER_PARSED
-	if(RECEIVETYPE_COLUMN==prog_type)
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1',ReceiveStatus='-2' WHERE DescURI='%s';", xml_uri);
-	else
-#endif
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
+	int ret = sqlite_execute(sqlite_cmd);
 	
-	return sqlite_execute(sqlite_cmd);
+	if(COLUMN_XML==push_flag){
+		char reject_uri[512];
+		snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),xml_uri);
+		remove_force(reject_uri);
+		DEBUG("remove(%s) finished\n", reject_uri);
+	}
+	
+	return ret;
 }
 
 
@@ -404,16 +378,19 @@ void dvbpush_getinfo_stop()
 从目前测试的情况看，只有在监控线程调用prog_monitor时，接收完毕的节目才能直接调用xml解析。
 如果是从JNI的dvbpush_getinfo接口调用过来，则不能解析xml，否则导致Launcher死掉。
 */
-static int prog_monitor(PROG_S *prog, char *time_stamp)
+static int prog_monitor(PROG_S *prog)	//, char *time_stamp
 {
 	if(NULL==prog)
 		return -1;
-	
+
+#if 0
+// 2013-01-23，只要有新播发单就删除旧的，不考虑PushStartTime和PushEndTime的限制
 	if(NULL!=time_stamp && strcmp(time_stamp,prog->deadline)>0){
 		DEBUG("this prog[%s:%s] is overdue, compare with %s\n", prog->id,prog->deadline,time_stamp);
 		mid_push_unregist(prog);
 		return 0;
 	}
+#endif
 	
 	if(s_push_has_data>0 && (prog->cur)<(prog->total)){
 		/*
@@ -457,7 +434,7 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 			if(-1==prog_is_valid(&s_prgs[i]))
 				continue;
 			
-			prog_monitor(&s_prgs[i],NULL);
+			prog_monitor(&s_prgs[i]);
 			
 //			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type)
 //			{
@@ -527,6 +504,7 @@ void disk_manage_flag_set(int flag)
 	DEBUG("s_disk_manage_flag=%d\n\n\n", s_disk_manage_flag);
 }
 
+#if 0
 /*
  除非push有数据，并且监控的节目个数大于0，否则不需要monitor监控。
  return 1——需要监控
@@ -541,6 +519,7 @@ static int need_push_monitor()
 		return 0;
 	}
 }
+#endif
 
 void column_refresh_flag_set(int flag)
 {
@@ -570,11 +549,9 @@ void *push_monitor_thread()
 	struct timeval now;
 	struct timespec outtime;
 	int retcode = 0;
-	char sqlite_cmd[256];
-	char time_stamp[32];
+	//char sqlite_cmd[256];
 	int monitor_interval = 61;
 	unsigned int loop_cnt = 0;
-	int i = 0;
 	
 	while (1==s_monitor_running)
 	{
@@ -586,6 +563,8 @@ void *push_monitor_thread()
 		outtime.tv_nsec = now.tv_usec;
 		retcode = pthread_cond_timedwait(&cond_push_monitor, &mtx_push_monitor, &outtime);
 		
+#if 0
+// 2013-01-24，节目接收完毕后push系统给出回调，无需实时监控进度
 		if(need_push_monitor()>0 && 0==s_dvbpush_getinfo_flag){
 			memset(time_stamp, 0, sizeof(time_stamp));
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
@@ -603,29 +582,15 @@ void *push_monitor_thread()
 			}
 			s_push_has_data--;
 		}
-		
-		for(i=0; i<PROGS_NUM; i++)
-		{
-			if(-1==prog_is_valid(&s_prgs[i]))
-				continue;
-			
-			if(0==s_prgs[i].parsed && (s_prgs[i].cur) >= (s_prgs[i].total)){
-				DEBUG("%s download finished, parse %s\n", s_prgs[i].uri,s_prgs[i].descURI);
-				push_prog_finish(s_prgs[i].id,s_prgs[i].type,s_prgs[i].descURI);
-				productdesc_parsed_set(s_prgs[i].descURI, s_prgs[i].type);
-				s_prgs[i].parsed = 1;
-			}
-		}
+#endif
 		
 		pthread_mutex_unlock(&mtx_push_monitor);
 		
+#if 0
 		if(ETIMEDOUT!=retcode){
 			DEBUG("push monitor thread is awaked by external signal\n");
 		}
-		else{
-//			if(need_push_monitor()>0)
-//				push_recv_manage_refresh(2,time_stamp);
-		}
+#endif
 		
 		// 每隔12个小时，打开tdt pid进行时间同步，这里只是借用了monitor这个低频循环。
 		loop_cnt ++;
@@ -645,20 +610,6 @@ void *push_monitor_thread()
 			if(s_column_refresh>2){
 				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);
 				s_column_refresh = 0;
-				
-#ifdef CLEAR_COLUMN_AFTER_PARSED
-				for(i=0; i<PROGS_NUM; i++)
-				{
-					if(-1==prog_is_valid(&s_prgs[i]))
-						continue;
-					
-					if(RECEIVETYPE_COLUMN==s_prgs[i].type){
-						DEBUG("reject and clear column dir(%s) after processed\n", s_prgs[i].uri);
-						mid_push_forbid(s_prgs[i].uri,2);
-						break;
-					}
-				}
-#endif
 			}
 		}
 		if(s_interface_refresh>0){
@@ -747,21 +698,48 @@ void usage()
 	exit(0);
 }
 
-int send_xml_to_parse(const char *path, int flag, char *id)
+int mid_push_cb(const char *path, int flag, char *id)
 {
 	int ret = 0;
+	char xml_uri[512];
+	int i = 0;
 	
-	if(	PUSH_XML_FLAG_MINLINE<flag && flag<PUSH_XML_FLAG_MAXLINE){
-		if(0==check_tail(path, ".xml", 0))
+	snprintf(xml_uri,sizeof(xml_uri),"%s",path);
+	
+	if(PUBLICATION_DIR==flag){
+		pthread_mutex_lock(&mtx_push_monitor);
+		for(i=0; i<PROGS_NUM; i++)
 		{
-			DEBUG("path: %s\n", path);
+			if(-1==prog_is_valid(&s_prgs[i]))
+				continue;
+			
+			if(0==strcmp(s_prgs[i].uri, path)){
+				snprintf(xml_uri,sizeof(xml_uri),"%s",s_prgs[i].descURI);
+				
+				s_prgs[i].parsed = 1;
+			}
+		}
+		pthread_mutex_unlock(&mtx_push_monitor);
+		
+		if(PROGS_NUM==i){
+			DEBUG("select no desc uri for %s, filled with default uri\n", path);
+			snprintf(xml_uri,sizeof(xml_uri),"%s/info/desc/Publications.xml",path);
+		}
+		
+		DEBUG("desc uri(%s) for prog(%s)\n", xml_uri, path);
+	}
+	
+	if(	PUBLICATION_DIR<=flag && flag<PUSH_XML_FLAG_MAXLINE){
+		if(0==check_tail(xml_uri, ".xml", 0))
+		{
+			DEBUG("xml_uri: %s\n", xml_uri);
 			pthread_mutex_lock(&mtx_xml);
 			
 			int i = 0;
 			for(i=0; i<XML_NUM; i++){
 				if(0==strlen(s_push_xml[i].uri)){
-					DEBUG("add to index %d: [%s]path: %s\n", i,id,path);
-					snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s", path);
+					DEBUG("add to index %d: [%s]xml_uri: %s\n", i,id,xml_uri);
+					snprintf(s_push_xml[i].uri, sizeof(s_push_xml[i].uri),"%s", xml_uri);
 					s_push_xml[i].flag = flag;
 					if(id)
 						snprintf(s_push_xml[i].id, sizeof(s_push_xml[i].id),"%s", id);
@@ -778,28 +756,29 @@ int send_xml_to_parse(const char *path, int flag, char *id)
 			}
 				
 			pthread_mutex_unlock(&mtx_xml);
-			DEBUG("path in queue: %s ok\n", path);
+			DEBUG("xml_uri in queue: %s ok\n", xml_uri);
 		}
 		else{
-			DEBUG("this is not a xml\n");
+			DEBUG("%s is not a xml\n", xml_uri);
 			ret = -1;
 		}
 	}
 	else{
-		DEBUG("this file(%d) is ignore\n", flag);
+		DEBUG("file(%d) is ignore\n", flag);
 		ret = -1;
 	}
 	
 	return ret;
 }
 
+// 如果对已经下载完毕的节目再次注册，还会调用callback
 void callback(const char *path, long long size, int flag)
 {
 	DEBUG("\n\n\n===========================path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
 	
-	/* 由于涉及到解析和数据库操作，这里不直接调用parseDoc，避免耽误push任务的运行效率 */
+	/* 由于涉及到解析和数据库操作，这里不直接调用parse_xml，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
-	send_xml_to_parse(path, flag, NULL);
+	mid_push_cb(path, flag, NULL);
 }
 
 
@@ -862,16 +841,19 @@ int mid_push_init(char *push_conf)
 	else
 		DEBUG("Init push lib success with %s!\n", push_conf);
 	
+//	push_file_register("pushroot/initialize/Initialize.xml");
+	
+	info_xml_refresh(1,PUSH_XML_FLAG_UNDEFINED);
 	
 	/*
-	初始化拒绝接收和接收监控，必须在push解码线程之前。
+	初始化接收监控，必须在push解码线程之前。对于默认不接收的push库，无需初始化拒绝接收
 	*/
 	push_recv_manage_refresh(1,NULL);
 	
 	/*
 	确保开机后至少有一次扫描机会，获得准确的下载进度。
 	*/
-	s_push_has_data = 3;
+	s_push_has_data = 7;
 	
 	push_set_notice_callback(callback);
 	
@@ -894,8 +876,6 @@ int mid_push_init(char *push_conf)
 
 int mid_push_uninit()
 {
-//	push_rely_condition_set(RELY_CONDITION_EXIT);
-	
 	pthread_mutex_lock(&mtx_xml);
 	s_xmlparse_running = 0;
 	//pthread_cond_signal(&cond_xml);
@@ -986,7 +966,7 @@ static int mid_push_regist(PROG_S *prog)
 		DEBUG("arg is invalid\n");
 		return -1;
 	}
-	if(0==prog_is_valid(prog)){
+	if(-1==prog_is_valid(prog)){
 		DEBUG("invalid prog to regist monitor\n");
 		return -1;
 	}
@@ -1064,7 +1044,7 @@ static int mid_push_regist(PROG_S *prog)
 	return ret;
 }
 
-
+#if 0
 /*
  反注册监控节目。
 */
@@ -1095,6 +1075,7 @@ static int mid_push_unregist(PROG_S *prog)
 	
 	return ret;
 }
+#endif
 
 /*
 填充节目的名称
@@ -1135,6 +1116,7 @@ static int prog_name_fill()
 	return 0;
 }
 
+#if 0
 static int mid_push_forbid(const char *prog_uri, unsigned int sleep_sec_before_remove)
 {
 	if(NULL==prog_uri || 0==strlen(prog_uri) || sleep_sec_before_remove>10){
@@ -1353,6 +1335,248 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 	
 	pthread_mutex_unlock(&mtx_push_monitor);
 
+	return ret;
+}
+
+#else
+
+// 反注册上一个播发单中已处于监控状态的节目，预备要注册新播发单中的节目
+static int prog_monitor_reset(void)
+{
+	int i = 0;
+	int ret = 0;
+	int rubbish_prog_cnt = 0;
+	
+	char sqlite_cmd[8192];
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM Publication WHERE");
+	
+	for(i=0; i<PROGS_NUM; i++)
+	{
+		if(1==prog_is_valid(&s_prgs[i])){
+/*
+ 接收完毕的节目push系统会自动反注册，当播发单过期时，对那些接收不完毕的节目进行反注册并删除垃圾
+ 当反注册时文件被关闭，可以进行删除
+*/
+			if(0==s_prgs[i].parsed){
+				DEBUG("[%s] %s is download stop but not complete, regist and clean it\n", s_prgs[i].id,s_prgs[i].uri);
+				ret = push_dir_unregister(s_prgs[i].uri);
+				if(0==ret){
+					DEBUG("push unregist: %s\n", s_prgs[i].uri);
+					ret = push_dir_remove(s_prgs[i].uri);
+					if(0==ret){
+						DEBUG("push remove: %s\n", s_prgs[i].uri);
+						usleep(100000);
+						
+						char reject_uri[512];
+						snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),s_prgs[i].uri);
+						if(0==remove_force(reject_uri)){
+							DEBUG("remove(%s) finished\n", reject_uri);
+							if(0==rubbish_prog_cnt)
+								snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'",s_prgs[i].id);
+							else
+								snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR PublicationID='%s'",s_prgs[i].id);
+							
+							rubbish_prog_cnt++;
+						}
+						else
+							DEBUG("remove(%s) FAILED\n", reject_uri);
+					}
+					else if(-1==ret)
+						DEBUG("push remove failed: %s, no such uri\n", s_prgs[i].uri);
+					else
+						DEBUG("push remove failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+				}
+				else if(-1==ret)
+					DEBUG("push unregist failed: %s, no registed uri\n", s_prgs[i].uri);
+				else
+					DEBUG("push unregist failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+			}
+			
+			DEBUG("unregist from push[%d]:%s %s %s %lld\n",
+					i,
+					s_prgs[i].id,
+					s_prgs[i].uri,
+					s_prgs[i].descURI,
+					s_prgs[i].total);
+			
+			memset(s_prgs[i].id, 0, sizeof(s_prgs[i].id));
+			memset(s_prgs[i].uri, 0, sizeof(s_prgs[i].uri));
+			memset(s_prgs[i].descURI, 0, sizeof(s_prgs[i].descURI));
+			memset(s_prgs[i].deadline, 0, sizeof(s_prgs[i].deadline));
+			s_prgs[i].type = 0;
+			s_prgs[i].cur = 0LL;
+			s_prgs[i].total = 0LL;
+			s_prgs[i].parsed = 0;
+		}
+	}
+	if(rubbish_prog_cnt>0){
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
+		sqlite_execute(sqlite_cmd);
+	}
+	
+	s_push_monitor_active = 0;
+	
+	return 0;
+}
+
+/*
+回调结束时，receiver携带是否有进度注册的标记，1表示有注册，0表示无注册。
+*/
+static int push_recv_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
+	if(row<1){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed
+	int i = 0;
+	int recv_flag = 1;
+	long long totalsize = 0LL;
+	
+	*((int *)receiver) = 0;
+	
+	for(i=1;i<row+1;i++)
+	{
+		/*
+		对于成品，如果用户选择不接收，则一定不接收，不需要更加详细的判断
+		否则，根据业务等条件进行判断
+		*/
+		if(RECEIVETYPE_PUBLICATION==atoi(result[i*column+2]) && 0==guidelist_select_status((const char *)(result[i*column+1]))){
+			recv_flag = 0;
+			DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+3]);
+		}
+		
+		sscanf(result[i*column+5],"%lld", &totalsize);
+		
+		if(0==recv_flag){
+			// 对于用户拒绝接收的节目，不注册即可；无需显式拒绝			
+			//mid_push_reject(result[i*column+3],totalsize);
+		}
+		else{
+			PROG_S cur_prog;
+			memset(&cur_prog,0,sizeof(cur_prog));
+			snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
+			snprintf(cur_prog.uri,sizeof(cur_prog.uri),"%s",result[i*column+3]);
+			snprintf(cur_prog.descURI,sizeof(cur_prog.descURI),"%s",result[i*column+4]);
+			memset(cur_prog.caption,0,sizeof(cur_prog.caption));
+			snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+7]);
+			cur_prog.type = atoi(result[i*column+2]);
+			cur_prog.cur = 0LL;
+			cur_prog.total = totalsize;
+			cur_prog.parsed = atoi(result[i*column+10]);
+
+/*
+ 已经解析过的节目，无需注册到push库中，只需要UI上显式即可。
+*/			
+			if(0==cur_prog.parsed)
+				mid_push_regist(&cur_prog);
+			else{
+				DEBUG("%s is parsed already, no need to regist to push, monitor it only\n", cur_prog.uri);
+				cur_prog.cur = cur_prog.total;
+			}
+			/*
+			回调结束时，receiver携带是否有进度注册的标记，1表示有注册，0表示无注册。
+			*/
+			*((int *)receiver) = 1;
+		}
+	}
+	
+	return 0;
+}
+
+/*
+2013-01-23
+	简化操作，新播发单下发就清除旧的播发单，否则不更新播发单，不考虑PushStartTime和PushEndTime
+*/
+int push_recv_manage_refresh()
+{
+	int ret = -1;
+	char sqlite_cmd[256+128];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = push_recv_manage_cb;
+	
+	pthread_mutex_lock(&mtx_push_monitor);
+	
+	prog_monitor_reset();
+	
+	int flag_carrier = 0;
+	
+/*
+ 由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
+ 所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
+*/
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed FROM ProductDesc;");
+	
+	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
+/*
+回调结束时，flag_carrier携带是否有进度注册的标记，1表示有注册，0表示无注册。
+*/	
+	PRINTF("ret: %d, flag_carrier: %d\n", ret,flag_carrier);
+	if(ret>0 && flag_carrier>0){
+		prog_name_fill();
+	}
+	
+	pthread_mutex_unlock(&mtx_push_monitor);
+
+	return ret;
+}
+
+
+#endif
+
+static int info_xml_refresh_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
+	if(row<1){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed
+	int i = 0;
+	int regist_flag = *((int *)receiver);
+	
+	for(i=1;i<row+1;i++)
+	{
+		if(0==regist_flag){
+			push_file_unregister(result[i*column+1]);
+			//push_dir_unregister(result[i*column+1]);
+			DEBUG("unregist %s\n", result[i*column+1]);
+		}
+		else{
+			push_file_register(result[i*column+1]);
+			//push_dir_register(result[i*column+1], 0, 0);
+			DEBUG("regist[%s] %s\n", result[i*column], result[i*column+1]);
+		}
+	}
+	
+	return 0;
+}
+
+/*
+ 系统初始化和Initialize.xml更新时需要刷新注册，但Initialize.xml本身独立注册。
+ regist_flag
+ 	0 means unregist
+ 	1 means resgist
+*/
+int info_xml_refresh(int regist_flag, int push_flag)
+{
+	int ret = -1;
+	char sqlite_cmd[256+128];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = info_xml_refresh_cb;
+	
+	int resgist_action = regist_flag;
+	
+	if(PUSH_XML_FLAG_UNDEFINED==push_flag)
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE PushFlag!=%d AND PushFlag!=%d AND PushFlag!=%d;", COLUMN_XML,PRODUCTDESC_XML,PRODUCTION_XML);
+	else
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE PushFlag=%d;", push_flag);
+		
+	ret = sqlite_read(sqlite_cmd, (void *)(&resgist_action), sizeof(resgist_action), sqlite_callback);
+/*
+回调结束时，flag_carrier携带是否有进度注册的标记，1表示有注册，0表示无注册。
+*/	
+	PRINTF("ret: %d\n", ret);
+	
 	return ret;
 }
 

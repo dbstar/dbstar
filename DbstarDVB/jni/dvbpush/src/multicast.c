@@ -173,7 +173,7 @@ MULTITASK_START:
 	pthread_cond_wait(&cond_net_rely_condition,&mtx_net_rely_condition); //wait
 #else
 	gettimeofday(&now, NULL);
-	outtime.tv_sec = now.tv_sec + 120;
+	outtime.tv_sec = now.tv_sec + 180;
 	outtime.tv_nsec = now.tv_usec;
 	retcode = pthread_cond_timedwait(&cond_net_rely_condition, &mtx_net_rely_condition, &outtime);
 	if(ETIMEDOUT!=retcode){
@@ -228,7 +228,7 @@ MULTITASK_START:
 			}
 			
 			gettimeofday(&now, NULL);
-			outtime.tv_sec = now.tv_sec + 7;
+			outtime.tv_sec = now.tv_sec + 17;
 			outtime.tv_nsec = now.tv_usec;
 			retcode = pthread_cond_timedwait(&cond_getip, &mtx_getip, &outtime);
 			if(ETIMEDOUT!=retcode){

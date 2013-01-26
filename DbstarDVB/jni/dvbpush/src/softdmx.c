@@ -613,6 +613,7 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
     DEBUG("catch tdt time(%s) and free tdt_dsc_fid(%d)\n",tdt,tdt_dsc_fid);
     
     struct tm tm_tdt;
+    memset(&tm_tdt,0,sizeof(tm_tdt));
 	sscanf(tdt,"%d-%d-%d %d:%d:%d",&(tm_tdt.tm_year),&(tm_tdt.tm_mon),&(tm_tdt.tm_mday),&(tm_tdt.tm_hour),&(tm_tdt.tm_min),&(tm_tdt.tm_sec));
     
 	tm_tdt.tm_year-=1900;	/*年份值减去1900，得到tm结构中保存的年份序数*/
@@ -620,12 +621,14 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
 	tm_tdt.tm_isdst = 0;
     snprintf(s_time_sync_2_ui,sizeof(s_time_sync_2_ui),"%ld",mktime(&tm_tdt));
 	
+#if 0
 // only for test
 	char sqlite_cmd[512];
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"replace into RejectRecv(ID,URI) values('%s','%s');",s_time_sync_2_ui,tdt);
 	sqlite_execute(sqlite_cmd);
+#endif
 	
-    msg_send2_UI(TDT_TIME_SYNC, s_time_sync_2_ui, strlen(s_time_sync_2_ui));
+	msg_send2_UI(TDT_TIME_SYNC, s_time_sync_2_ui, strlen(s_time_sync_2_ui));
     
     DEBUG("distill %4d-%2d-%2d %2d:%2d:%2d, send to UI %s\n",(tm_tdt.tm_year),(tm_tdt.tm_mon),(tm_tdt.tm_mday),(tm_tdt.tm_hour),(tm_tdt.tm_min),(tm_tdt.tm_sec),s_time_sync_2_ui);
 	tdt_dsc_fid = -1;
@@ -1142,17 +1145,16 @@ retry:
                                     goto chandle;
 			}
 #endif
-                        else if (chan->pid == 0x1)
-                        {
-                             if(*chanbuf == 0x1)
-                             {
-                                 ca_section_handle(0, chanbuf, sec_len, NULL);
-                             }
-                        }
+			else if (chan->pid == 0x1)
+			{
+			     if(*chanbuf == 0x1)
+			     {
+			         ca_section_handle(0, chanbuf, sec_len, NULL);
+			     }
+			}
 			else
 			{
-				//PRINTF("===== chan->pid: 0x%x", chan->pid);
-        			int j;
+        		int j;
 				for(j = 0; j < max_filter_num; j++)
 				{
 					unsigned char match = 1;

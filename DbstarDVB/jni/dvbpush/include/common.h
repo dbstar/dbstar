@@ -126,8 +126,8 @@ typedef enum{
 但在运行过程中可能会被更改
 */
 typedef enum{
-	PUSH_XML_FLAG_UNDEFINED = -1,
-	PUSH_XML_FLAG_MINLINE = 0,
+	PUSH_XML_FLAG_UNDEFINED	= -1,
+	PUBLICATION_DIR			= 0,
 	
 	INITIALIZE_XML			= 100,
 	COLUMN_XML				= 101,

@@ -23,13 +23,15 @@ int push_decoder_resume();
 void push_rely_condition_set(int rely_cond);
 
 int push_decoder_buf_init();
-int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed);
+int push_recv_manage_refresh();
 int send_xml_to_parse(const char *path, int flag, char *id);
+int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag);
 
 void disk_manage_flag_set(int flag);
 void column_refresh_flag_set(int flag);
 void interface_refresh_flag_set(int flag);
 void preview_refresh_flag_set(int flag);
+int info_xml_refresh(int regist_flag, int push_flag);
 
 
 #endif
