@@ -9,6 +9,7 @@ import com.dbstar.util.GDNetworkUtil;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 public class GDGeneralInfoActivity extends GDSettingActivity {
@@ -20,9 +21,11 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	private TextView mMacAddressView;
 
 	private TextView mDiskSizeView, mDiskUsedView, mDiskSpaceView;
+	private TextView mUpgradeView;
 
 	private String mDeviceSerialNumber, mHardwareType, mSoftwareVersion,
 			mLoaderVersion, mMacAddress;
+	private String mUpgradeCount;
 	private String mDiskSize, mDiskUsed, mDiskSpace;
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -40,11 +43,12 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	private String[] mKeys;
 	
 	public void querySettings() {
-		mKeys = new String[4];
+		mKeys = new String[5];
 		mKeys[0] = GDSettings.SettingDeviceSerialNumber;
 		mKeys[1] = GDSettings.SettingHardwareType;
 		mKeys[2] = GDSettings.SettingSoftwareVersion;
 		mKeys[3] = GDSettings.SettingLoaderVersion;
+		mKeys[4] = GDSettings.SettingUpgradeCount;
 		
 		mService.getDeviceInfo(this, mKeys);
 
@@ -84,6 +88,12 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		} else if (key.equals(GDSettings.SettingLoaderVersion)) {
 			mLoaderVersion += value;
 			mLoaderVersionView.setText(mLoaderVersion);
+		} else if (key.equals(GDSettings.SettingUpgradeCount)) {
+			if (value != null && !value.isEmpty()) {
+				mUpgradeCount += value;
+				mUpgradeView.setText(mUpgradeCount);
+				mUpgradeView.setVisibility(View.VISIBLE);
+			}
 		}
 	}
 
@@ -95,6 +105,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mSoftwareVersionView = (TextView) findViewById(R.id.device_softwareversion);
 		mLoaderVersionView = (TextView) findViewById(R.id.device_loaderversion);
 		mMacAddressView = (TextView) findViewById(R.id.device_macaddress);
+		mUpgradeView = (TextView) findViewById(R.id.upgrade_count);
 
 		mDiskSizeView = (TextView) findViewById(R.id.disk_totalsize);
 		mDiskUsedView = (TextView) findViewById(R.id.disk_usedsize);
@@ -109,6 +120,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mLoaderVersion = getResources().getString(
 				R.string.deviceinfo_loader_version);
 		mMacAddress = getResources().getString(R.string.deviceinfo_mac_address);
+		mUpgradeCount = getResources().getString(R.string.upgrade_count);
 
 		mDiskSize = getResources().getString(R.string.disk_totalsize);
 		mDiskUsed = getResources().getString(R.string.disk_usedsize);

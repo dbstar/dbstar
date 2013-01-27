@@ -329,8 +329,9 @@ public class GDGridView extends GDAdapterView<Adapter> {
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		super.onLayout(changed, l, t, r, b);
 
-		if (getCount() == 0)
-			return;
+//		if (getCount() == 0) {
+//			return;
+//		}
 
 		mInLayout = true;
 		if (changed) {
@@ -346,7 +347,7 @@ public class GDGridView extends GDAdapterView<Adapter> {
 	}
 
 	protected void layoutChildren() {
-		Log.d(TAG, "layoutChildren");
+//		Log.d(TAG, "layoutChildren");
 
 		final boolean blockLayoutRequests = mBlockLayoutRequests;
 		if (!blockLayoutRequests) {
@@ -377,6 +378,9 @@ public class GDGridView extends GDAdapterView<Adapter> {
 
 			// Handle the empty set by removing all views that are visible
 			// and calling it a day
+			
+//            Log.d(TAG, " mItemCount  " + mItemCount);
+
 			if (mItemCount == 0) {
 				resetList();
 				return;
@@ -424,7 +428,7 @@ public class GDGridView extends GDAdapterView<Adapter> {
 //            setNextSelectedPositionInt(mSelectedPosition);
             
 			if (mItemCount > 0) {
-		    	Log.d(TAG, " mOldSelectedPosition " + mOldSelectedPosition + " mSelectedPosition " + mSelectedPosition);
+//		    	Log.d(TAG, " mOldSelectedPosition " + mOldSelectedPosition + " mSelectedPosition " + mSelectedPosition);
 
                 checkSelectionChanged();
             }
@@ -1592,6 +1596,8 @@ public class GDGridView extends GDAdapterView<Adapter> {
 	}
 
 	void resetList() {
+//		Log.d(TAG, " resetList ");
+
 		removeAllViewsInLayout();
 		mFirstPosition = 0;
 		mDataChanged = false;

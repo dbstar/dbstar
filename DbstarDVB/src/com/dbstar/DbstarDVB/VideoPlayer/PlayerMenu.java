@@ -950,6 +950,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		try {
 			mAmplayer.Seek(0);
+			mPlayButton.setImageResource(R.drawable.play);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

@@ -433,15 +433,15 @@ public class EthernetConfigController {
 			}
 		}
 
-		if (mEthInfo != null) {
-			boolean isDhcp = mEthInfo.getConnectMode().equals(
-					EthernetDevInfo.ETH_CONN_MODE_DHCP);
-			if (isDhcp && mDhcpSwitchIndicator.isChecked()) {
-				// if current configure is Dhcp, and user choose it again,
-				// it doesn't need to save it.
-				return;
-			}
-		}
+//		if (mEthInfo != null) {
+//			boolean isDhcp = mEthInfo.getConnectMode().equals(
+//					EthernetDevInfo.ETH_CONN_MODE_DHCP);
+//			if (isDhcp && mDhcpSwitchIndicator.isChecked()) {
+//				// if current configure is Dhcp, and user choose it again,
+//				// it doesn't need to save it.
+//				return;
+//			}
+//		}
 
 		EthernetDevInfo info = new EthernetDevInfo();
 		info.setIfName(mDev);
