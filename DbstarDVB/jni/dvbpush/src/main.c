@@ -53,7 +53,7 @@ void *main_thread()
 		//return NULL;
 	}
 	
-//	return parse_xml("pushroot/pushfile/618/info/desc/Publications.xml", PUBLICATION_XML, "618");
+//	return parse_xml("pushroot/pushinfo/1/productdesc/ProductDesc.xml", PRODUCTDESC_XML, NULL);
 	
 	if(0==drm_init()){
 		DEBUG("drm init failed\n");

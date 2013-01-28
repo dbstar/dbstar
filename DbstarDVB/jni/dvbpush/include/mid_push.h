@@ -31,7 +31,7 @@ void disk_manage_flag_set(int flag);
 void column_refresh_flag_set(int flag);
 void interface_refresh_flag_set(int flag);
 void preview_refresh_flag_set(int flag);
-int info_xml_refresh(int regist_flag, int push_flag);
+int info_xml_refresh(int regist_flag, int push_flags[], unsigned int push_flags_cnt);
 
 
 #endif

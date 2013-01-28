@@ -1762,8 +1762,7 @@ static int special_productid_init()
 
 int intialize_xml_reset(void)
 {
-	char *ServiceID = serviceID_get();
-	if(0==strlen(ServiceID)){
+	if(0==strlen(s_serviceID)){
 		DEBUG("have no serviceID currently, so remove initialize.xml\n");
 		
 		char sqlite_cmd[256];
@@ -1788,7 +1787,7 @@ int intialize_xml_reset(void)
 		}
 	}
 	else
-		DEBUG("already have ServiceID: %s", ServiceID);
+		DEBUG("already have s_serviceID: %s", s_serviceID);
 	
 	return 0;
 }

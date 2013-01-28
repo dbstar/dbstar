@@ -717,11 +717,15 @@ int mid_push_cb(const char *path, int flag)
 				continue;
 			
 			if(0==strcmp(s_prgs[i].uri, path)){
-				snprintf(xml_uri,sizeof(xml_uri),"%s",s_prgs[i].descURI);
-				
-				s_prgs[i].cur = s_prgs[i].total;
-				s_prgs[i].parsed = 1;
-				break;
+				if(0==s_prgs[i].parsed){
+					snprintf(xml_uri,sizeof(xml_uri),"%s",s_prgs[i].descURI);
+					
+					s_prgs[i].cur = s_prgs[i].total;
+					s_prgs[i].parsed = 1;
+					break;
+				}
+				else
+					DEBUG("fuck, this prog has parsed=%d\n", s_prgs[i].parsed);
 			}
 		}
 		pthread_mutex_unlock(&mtx_push_monitor);
@@ -847,7 +851,19 @@ int mid_push_init(char *push_conf)
 	
 //	push_file_register("pushroot/initialize/Initialize.xml");
 	
-	info_xml_refresh(1,PUSH_XML_FLAG_UNDEFINED);
+	int push_flags[16];
+	unsigned int push_flags_cnt = 0;
+	push_flags[push_flags_cnt] = GUIDELIST_XML;
+	push_flags_cnt++;
+	push_flags[push_flags_cnt] = COMMANDS_XML;
+	push_flags_cnt++;
+	push_flags[push_flags_cnt] = MESSAGE_XML;
+	push_flags_cnt++;
+	push_flags[push_flags_cnt] = PRODUCTDESC_XML;
+	push_flags_cnt++;
+	push_flags[push_flags_cnt] = SERVICE_XML;
+	push_flags_cnt++;
+	info_xml_refresh(1,push_flags,push_flags_cnt);
 	
 	/*
 	初始化接收监控，必须在push解码线程之前。对于默认不接收的push库，无需初始化拒绝接收
@@ -1107,8 +1123,13 @@ static int prog_name_fill()
 	{
 		if(1==prog_is_valid(&s_prgs[i]) && 0==strlen(s_prgs[i].caption)){
 			memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
+#if 0
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ServiceID='%s' AND ObjectName='ProductDesc' AND EntityID='%s' AND StrLang='%s' AND (StrName='ProductDescName' OR StrName='SProductName' OR StrName='ColumnName');", 
 				serviceID_get(),s_prgs[i].id,language_get());
+#else
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID='%s' AND StrLang='%s' AND (StrName='ProductDescName' OR StrName='SProductName' OR StrName='ColumnName');", 
+				s_prgs[i].id,language_get());
+#endif
 			
 			if(0==str_sqlite_read(s_prgs[i].caption,sizeof(s_prgs[i].caption),sqlite_cmd)){
 				if(0==strlen(s_prgs[i].caption)){
@@ -1443,7 +1464,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	}
 //ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed
 	int i = 0;
-	int recv_flag = 1;
+	RECEIVESTATUS_E recv_stat = RECEIVESTATUS_REJECT;
 	long long totalsize = 0LL;
 	
 	*((int *)receiver) = 0;
@@ -1455,13 +1476,15 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 		否则，根据业务等条件进行判断
 		*/
 		if(RECEIVETYPE_PUBLICATION==atoi(result[i*column+2]) && 0==guidelist_select_status((const char *)(result[i*column+1]))){
-			recv_flag = 0;
+			recv_stat = RECEIVESTATUS_REJECT;
 			DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+3]);
 		}
+		else
+			recv_stat = RECEIVESTATUS_WAITING;
 		
 		sscanf(result[i*column+5],"%lld", &totalsize);
 		
-		if(0==recv_flag){
+		if(RECEIVESTATUS_REJECT==recv_stat){
 			// 对于用户拒绝接收的节目，不注册即可；无需显式拒绝			
 			//mid_push_reject(result[i*column+3],totalsize);
 		}
@@ -1546,12 +1569,16 @@ static int info_xml_refresh_cb(char **result, int row, int column, void *receive
 	int i = 0;
 	int regist_flag = *((int *)receiver);
 	int ret = 0;
+	char direct_uri[512];
 	
 	for(i=1;i<row+1;i++)
 	{
 		if(0==regist_flag){
 			ret = push_file_unregister(result[i*column+1]);
 			//ret = push_dir_unregister(result[i*column+1]);
+			
+			snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),result[i*column+1]);
+			remove_force(direct_uri);
 		}
 		else{
 			ret = push_file_register(result[i*column+1]);
@@ -1565,25 +1592,34 @@ static int info_xml_refresh_cb(char **result, int row, int column, void *receive
 }
 
 /*
- 系统初始化和Initialize.xml更新时需要刷新注册，但Initialize.xml本身独立注册。
+ 系统初始化和Initialize.xml更新时需要刷新注册，但Initialize.xml由push系统自己注册。
  regist_flag
  	0 means unregist
  	1 means resgist
 */
-int info_xml_refresh(int regist_flag, int push_flag)
+int info_xml_refresh(int regist_flag, int push_flags[], unsigned int push_flags_cnt)
 {
+	if(0==push_flags_cnt){
+		DEBUG("invalid push_flags_cnt\n");
+		return -1;
+	}
+	
+	unsigned int i = 0;
 	int ret = -1;
-	char sqlite_cmd[256+128];
+	char sqlite_cmd[1024];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = info_xml_refresh_cb;
 	
 	int resgist_action = regist_flag;
 	
-	DEBUG("regist action: %d, push_flag: %d\n", regist_flag, push_flag);
-	if(PUSH_XML_FLAG_UNDEFINED==push_flag)
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE PushFlag!='%d' AND PushFlag!='%d' AND PushFlag!='%d' AND PushFlag!='%d';", COLUMN_XML,SPRODUCT_XML,PUBLICATION_XML,INITIALIZE_XML);
-	else
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE PushFlag='%d';", push_flag);
-		
+	DEBUG("regist action: %d\n", regist_flag);
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE");
+	for(i=0;i<push_flags_cnt;i++){
+		if(i>0)
+			snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PushFlag='%d'", push_flags[i]);
+	}
+	snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
+	
 	ret = sqlite_read(sqlite_cmd, (void *)(&resgist_action), sizeof(resgist_action), sqlite_callback);
 /*
 回调结束时，flag_carrier携带是否有进度注册的标记，1表示有注册，0表示无注册。
