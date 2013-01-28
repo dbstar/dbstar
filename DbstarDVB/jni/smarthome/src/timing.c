@@ -280,6 +280,9 @@ static int timing_task_refresh_callback(char **result, int row, int column, void
 		
 		DEBUG("typeID=%s, frequency=0x%02x, controlTime=%s, aim at %s", result[i*column], frequency_wday, result[i*column+1], asctime(localtime(&timer_sec)));
 		
+		DEBUG("fuck the current pc-terminal app, its frequency from Mon. to Wed. is invalid. So make all time task as 0x00\n");
+		frequency_wday = 0x00;
+		
 		if(0x00==frequency_wday){				// check whether appoint day
 			if(now_tm.tm_mday==timer_tm.tm_mday){			// it is today
 				DEBUG("regist timer for (server time): %s", asctime(&timer_tm));
@@ -390,17 +393,17 @@ int timer_poll(void)
 
 	sem_wait(&s_sem_timer);
 	
-	/*
-	服务器下发时间时，要及时对本地timer时间进行校正
-	*/
-	if(0==g_timers_time_rectify_flag && 0!=smart_power_difftime_get() ){
-		for(i=0;i<TIMER_NUM;i++){
-			if(-1!=g_timers[i].id)
-				g_timers[i].tv_timer.tv_sec += smart_power_difftime_get();
-		}
-		DEBUG("retify the aim time with %d secs in g_timers, because of the difference between server and local\n", smart_power_difftime_get());
-		g_timers_time_rectify_flag = 1;
-	}
+//	/*
+//	服务器下发时间时，要及时对本地timer时间进行校正
+//	*/
+//	if(0==g_timers_time_rectify_flag && 0!=smart_power_difftime_get() ){
+//		for(i=0;i<TIMER_NUM;i++){
+//			if(-1!=g_timers[i].id)
+//				g_timers[i].tv_timer.tv_sec += smart_power_difftime_get();
+//		}
+//		DEBUG("retify the aim time with %d secs in g_timers, because of the difference between server and local\n", smart_power_difftime_get());
+//		g_timers_time_rectify_flag = 1;
+//	}
 	
 	struct timeval tv_now;
 	if(-1==gettimeofday(&tv_now, NULL)){
@@ -429,6 +432,8 @@ int timer_poll(void)
 	time(&now_sec);
 	now_sec += smart_power_difftime_get();
 	localtime_r(&now_sec, &now_tm);
+
+#if 0
 	if(g_power_inquire_min!=now_tm.tm_min && 0==now_tm.tm_min%5 && 0!=now_tm.tm_min%10){
 		DEBUG("timer to insert a instruction to inquire power at %d %02d %02d - %02d:%02d:%02d\n", 
 			(1900+now_tm.tm_year), (1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour + timezone_repair(), now_tm.tm_min, now_tm.tm_sec);
@@ -442,6 +447,8 @@ int timer_poll(void)
 
 		instruction_insert(&insert_inst);
 	}
+#endif
+
 	if(g_power_consumption_inquire_hour!=now_tm.tm_hour && 50==now_tm.tm_min){
 		DEBUG("timer to insert a instruction to inquire power consumption at %d %02d %02d - %02d:%02d:%02d\n", 
 			(1900+now_tm.tm_year), (1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour + timezone_repair(), now_tm.tm_min, now_tm.tm_sec);
@@ -491,6 +498,8 @@ int timer_poll(void)
 		else
 			DEBUG("no record for power consumption to upload\n");
 	}
+
+#if 0
 	if(g_power_upload_tm.tm_hour!=now_tm.tm_hour && now_tm.tm_min==g_power_upload_tm.tm_min){
 		DEBUG("timer to insert a cmd to upload power at %d %02d %02d - %02d:%02d:%02d\n", 
 			(1900+now_tm.tm_year), (1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour + timezone_repair(), now_tm.tm_min, now_tm.tm_sec);
@@ -518,6 +527,7 @@ int timer_poll(void)
 		else
 			DEBUG("no record for power to upload\n");
 	}
+#endif
 	if(g_refresh_timing_task_mday!=now_tm.tm_mday && 0==now_tm.tm_hour){
 		g_refresh_timing_task_mday = now_tm.tm_mday;
 		timing_task_refresh();
@@ -534,7 +544,7 @@ void timing_mainloop(void)
 	
 	while(1){
 		s_time.tv_sec = 0;	// warning: some system will clear the timeout setting after select action
-		s_time.tv_usec = 300000;
+		s_time.tv_usec = 500000;
 		ret = select(0, NULL, NULL, NULL, &s_time);
 		if(ret<0){
 			if(error_notice_count>100000){

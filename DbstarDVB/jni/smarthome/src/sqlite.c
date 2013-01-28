@@ -132,6 +132,7 @@ static int openDatabase()
 				}
 				sqlite3_free(errmsgOpen);
 			}
+			chmod(DATABASE,0666);
 		}
 	}
 	if(0==ret){
@@ -325,6 +326,25 @@ static int createTable(char* name)
 				sqlite3_free(errmsg);
 				///port
 				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmarthomeServerPort','%d');", initial_server_port_get());
+				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
+				{
+					ERROROUT("insert 'global' failed.");
+					ret = -1;
+				}
+				
+				///APP serverIP
+				memset(tmp_str, 0, sizeof(tmp_str));
+				initial_server_ip_get(tmp_str, sizeof(tmp_str)-1);
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmartLifeIP','211.99.30.254');");
+				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
+				{
+					ERROROUT("insert 'global' failed.");
+					ret = -1;
+					goto END;
+				}
+				sqlite3_free(errmsg);
+				///APP port
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmartLifePort','9103');");
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
 					ERROROUT("insert 'global' failed.");
