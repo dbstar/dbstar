@@ -19,6 +19,7 @@ public class GDDiskSpaceMonitor {
 
 	private static final int CheckDiskInterval = 60000;
 	private static final int DefaultGuardSize = 1090519040; // 10G 
+	private static final int DefaultValidDiskSize = 109051904; // 1G
 
 	private Handler mAppHandler;
 	private HandlerThread mBackgroundThread;
@@ -142,7 +143,7 @@ public class GDDiskSpaceMonitor {
 				GDDiskInfo.DiskInfo diskInfo = GDDiskInfo.getDiskInfo(disk,
 						false);
 				if (diskInfo != null) {
-					if (diskInfo.RawDiskSpace < getGuardSize()) {
+					if (diskInfo.RawDiskSize > DefaultValidDiskSize && diskInfo.RawDiskSpace < getGuardSize()) {
 						Message msg = mAppHandler
 								.obtainMessage(GDCommon.MSG_DISK_SPACEWARNING);
 						Bundle data = new Bundle();

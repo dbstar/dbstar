@@ -8,6 +8,7 @@ public class GDSettings {
 	public static final String SettingSoftwareVersion = "SoftwareVersion";
 	public static final String SettingLoaderVersion = "LoaderVersion";
 	public static final String SettingMacAddress = "MacAddress";
+	public static final String SettingUpgradeCount = "RepeatUpgradeCount";
 
 	// for gateway
 	public static final String SettingGatewaySerialNumber = "GatewaySerialNumber";

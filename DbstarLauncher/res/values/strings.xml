@@ -53,6 +53,7 @@
     <string name="deviceinfo_software_version">软件版本:&#160;</string>
     <string name="deviceinfo_loader_version">Loader版本:&#160;</string>
     <string name="deviceinfo_mac_address">Mac地址:&#160;</string>
+	<string name="upgrade_count">升级次数:&#160;</string>
 
     <!--  -->
     <string name="systemsettings_receivestatus">接收状态</string>
@@ -126,18 +127,18 @@
     <string name="import_ca">导入授权</string>
     <string name="export_ca">导出授权</string>
     
-    <string name="smarcard_state_not_in">无智能卡，请插入智能卡</string>
-    <string name="smarcard_state_invalid">智能卡无效</string>
-    <string name="smarcard_state_normal">正常</string>
+    <string name="smarcard_state_not_in">无智能卡，请插入智能卡!</string>
+    <string name="smarcard_state_invalid">智能卡无效!</string>
+    <string name="smarcard_state_normal">正常.</string>
     
     <!-- CA message -->
     <string name="alert_title">提示</string>
-    <string name="ca_message_no_entitle">无记录导出</string>
-    <string name="ca_message_no_device">请插入SD卡</string>
-    <string name="ca_message_no_space">空间不足</string>
-    <string name="ca_message_export_finished">授权导出完成</string>
-    <string name="ca_message_import_failed">授权导入失败，请检查SD卡</string>
-    <string name="ca_message_import_finished">授权导入完成</string>
+    <string name="ca_message_no_entitle">无记录导出!</string>
+    <string name="ca_message_no_device">请插入SD卡!</string>
+    <string name="ca_message_no_space">空间不足!</string>
+    <string name="ca_message_export_finished">授权导出完成.</string>
+    <string name="ca_message_import_failed">授权导入失败，请检查SD卡!</string>
+    <string name="ca_message_import_finished">授权导入完成.</string>
     
     <!-- Mail -->
     <string name="email_id">ID</string>

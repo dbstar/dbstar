@@ -974,6 +974,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	// update previews when has new updates
 	void updatePreview() {
+		mMediaScheduler.stopMediaPlay();
 		mMediaScheduler.updatePreviews();
 	}
 
@@ -1320,7 +1321,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		case GDCommon.MSG_UPDATE_UIRESOURCE:
+			break;
 		case GDCommon.MSG_UPDATE_PREVIEW:
+			updatePreview();
 			break;
 		default:
 			break;

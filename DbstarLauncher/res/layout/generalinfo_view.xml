@@ -111,6 +111,16 @@
                     android:text="@string/deviceinfo_mac_address"
                     android:textColor="#000000"
                     android:textSize="20sp" />
+                
+                <TextView
+                    android:id="@+id/upgrade_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:gravity="left|center_vertical"
+                    android:text="@string/upgrade_count"
+                    android:textColor="#000000"
+                    android:textSize="20sp"
+                    android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
 

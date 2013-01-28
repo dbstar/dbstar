@@ -281,12 +281,13 @@ public class GDTVActivity extends GDBaseActivity {
 				TV[] tvs = mPageDatas.get(pageNumber);
 				TV tv = tvs[index];
 				tv.Episodes = items;
+				tv.EpisodesCount = items.length;
 				formEpisodesPages(tv);
 				if (pageNumber == mPageNumber) {
 					if (tv.EpisodesPageCount > 0) {
-						mEpisodesAdapter.setDataSet(tv.EpisodesPages
-								.get(tv.EpisodesPageNumber));
-						mEpisodesAdapter.notifyDataSetChanged();
+//						mEpisodesAdapter.setDataSet(tv.EpisodesPages
+//								.get(tv.EpisodesPageNumber));
+//						mEpisodesAdapter.notifyDataSetChanged();
 
 						updateEpisodesView(tv);
 					}
@@ -324,7 +325,6 @@ public class GDTVActivity extends GDBaseActivity {
 
 	private void loadPrevPage() {
 		if ((mPageNumber - 1) >= 0) {
-			Log.d(TAG, "loadPrevPage " + (mPageNumber - 1));
 			mPageNumber--;
 			mPageNumberView.setText(formPageText(mPageNumber + 1, mPageCount));
 
@@ -350,6 +350,14 @@ public class GDTVActivity extends GDBaseActivity {
 
 		}
 	}
+	
+	void clearContent() {
+		mTVTitle.setText("");
+		mTVType.setText("");
+		mTVYear.setText("");
+		mTVRegion.setText("");
+		mTVDescription.setText("");
+	}
 
 	void showSelectedTV(int position) {
 
@@ -359,6 +367,8 @@ public class GDTVActivity extends GDBaseActivity {
 		TV tv = tvs[position];
 		mTV = tv;
 		ContentData content = tv.Content;
+
+		clearContent();
 
 		if (content != null) {
 			if (content.Name != null) {
@@ -405,14 +415,19 @@ public class GDTVActivity extends GDBaseActivity {
 		if (tv.EpisodesPages != null && tv.EpisodesPages.size() > 0) {
 			mEpisodesAdapter.setDataSet(tv.EpisodesPages
 					.get(tv.EpisodesPageNumber));
-
-			mEpisodesAdapter.notifyDataSetChanged();
+		} else {
+			mEpisodesAdapter.setDataSet(null);
 		}
+
+		mEpisodesAdapter.notifyDataSetChanged();
+//		mEpisodesView.requestLayout();
+
 		mScrollBar.setRange(tv.EpisodesPageCount);
 		mScrollBar.setPosition(tv.EpisodesPageNumber);
 	}
 
 	void formEpisodesPages(TV tv) {
+
 		if (tv.Episodes == null || tv.Episodes.length == 0)
 			return;
 
@@ -438,12 +453,10 @@ public class GDTVActivity extends GDBaseActivity {
 			tv.EpisodesPages.add(items);
 			tv.EpisodesPageCount += 1;
 		}
+
 	}
 
 	void playTV() {
-
-		Log.d(TAG, "mTV = " + mTV + " EpisodesPages =" + mTV.EpisodesPages
-				+ " size =" + mTV.EpisodesPages.size());
 
 		TV.EpisodeItem[] items = mTV.EpisodesPages.get(mTV.EpisodesPageNumber);
 
@@ -636,9 +649,6 @@ public class GDTVActivity extends GDBaseActivity {
 		@Override
 		public void onItemSelected(GDAdapterView<?> parent, View view,
 				int position, long id) {
-
-			Log.d(TAG, "mSmallThumbnailView item " + position + " seletected!");
-
 			showSelectedTV(position);
 		}
 
@@ -688,10 +698,7 @@ public class GDTVActivity extends GDBaseActivity {
 				case KeyEvent.KEYCODE_DPAD_CENTER:
 				case KeyEvent.KEYCODE_ENTER: {
 					if (mEpisodesAdapter.getCount() > 0) {
-						boolean ret = mEpisodesView.requestFocus();
-						// mEpisodesView.setSelection(0);
-						Log.d(TAG, "mEpisodesAdapter.getCount() "
-								+ mEpisodesAdapter.getCount() + " ret " + ret);
+						mEpisodesView.requestFocus();
 						return true;
 					}
 					break;
@@ -709,11 +716,9 @@ public class GDTVActivity extends GDBaseActivity {
 		public void onFocusChange(View v, boolean hasFocus) {
 			if (hasFocus) {
 				if (mEpisodesAdapter.getCount() > 0) {
-					Log.d(TAG, "mEpisodesView get focus!");
 					mEpisodesView.setSelection(0);
 				}
 			} else {
-				Log.d(TAG, "mEpisodesView lose focus");
 				mEpisodesView.clearSelection();
 			}
 
@@ -725,8 +730,6 @@ public class GDTVActivity extends GDBaseActivity {
 		@Override
 		public void onItemSelected(GDAdapterView<?> parent, View view,
 				int position, long id) {
-			Log.d(TAG, "mEpisodesView item " + position + " seletected!");
-
 			mSelectedEpisodeIndex = position;
 		}
 
