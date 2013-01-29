@@ -40,6 +40,11 @@ public class GDNetworkUtil {
 				Log.d(TAG, macAddress);
 			}
 		}
+		
+		if (macAddress != null && !macAddress.isEmpty()) {
+			macAddress = macAddress.toUpperCase();
+		}
+		
 		return macAddress;
 	}
 

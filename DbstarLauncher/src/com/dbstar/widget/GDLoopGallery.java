@@ -272,7 +272,7 @@ public class GDLoopGallery extends GDAbsSpinner {
     		viewWidth = Math.min(viewWidth, parentWidth);
     	}
     	
-    	Log.d(TAG, "onMeasure widthxheight = " + viewWidth + "x" + height);
+//    	Log.d(TAG, "onMeasure widthxheight = " + viewWidth + "x" + height);
 
     	setMeasuredDimension(viewWidth, height);
     }
@@ -747,7 +747,7 @@ public class GDLoopGallery extends GDAbsSpinner {
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	Log.d(TAG, "onKeyDown keyCode " + keyCode);
+//    	Log.d(TAG, "onKeyDown keyCode " + keyCode);
         switch (keyCode) {
         case KeyEvent.KEYCODE_DPAD_LEFT:
             if (movePrevious()) {
@@ -770,7 +770,7 @@ public class GDLoopGallery extends GDAbsSpinner {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-    	Log.d(TAG, "onKeyUp keyCode " + keyCode);
+//    	Log.d(TAG, "onKeyUp keyCode " + keyCode);
     	
         switch (keyCode) {
 	        case KeyEvent.KEYCODE_DPAD_LEFT:
@@ -784,7 +784,7 @@ public class GDLoopGallery extends GDAbsSpinner {
     }
     
     public boolean onKeyLongPress(int keyCode, KeyEvent event) {
-    	Log.d(TAG, "onKeyLongPress code = " + keyCode);
+//    	Log.d(TAG, "onKeyLongPress code = " + keyCode);
     	
     	return super.onKeyLongPress(keyCode, event);
     }
@@ -1180,7 +1180,7 @@ public class GDLoopGallery extends GDAbsSpinner {
     protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
         
-        Log.d(TAG, " onFocusChanged gainFocus = " + gainFocus + " direction = " + direction);
+//        Log.d(TAG, " onFocusChanged gainFocus = " + gainFocus + " direction = " + direction);
         /*
          * The gallery shows focus by focusing the selected item. So, give
          * focus to our selected item instead. We steal keys from our
@@ -1214,7 +1214,7 @@ public class GDLoopGallery extends GDAbsSpinner {
         info.setClassName(GDLoopGallery.class.getName());
         info.setScrollable(getCount() > 1);
         if (isEnabled()) {
-        	Log.d(TAG, "onInitializeAccessibilityNodeInfo " );
+//        	Log.d(TAG, "onInitializeAccessibilityNodeInfo " );
             if (getCount() > 0 && mSelectedPosition < getCount() - 1) {
 //                info.addAction(ACTION_SCROLL_FORWARD);
             }

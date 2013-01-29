@@ -1,6 +1,6 @@
 package com.dbstar.model;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import android.graphics.Bitmap;
 
@@ -11,12 +11,12 @@ public class TV {
 	public String Region;
 	public String Rate;
 	public String Description;
-	public List<Bitmap> Thumbnails;
+	public ArrayList<Bitmap> Thumbnails;
 	public int EpisodesCount;
 	
 	public EpisodeItem[] Episodes;
 	
-	public List<EpisodeItem[]> EpisodesPages;
+	public ArrayList<EpisodeItem[]> EpisodesPages;
 	public int EpisodesPageCount;
 	public int EpisodesPageNumber;
 	

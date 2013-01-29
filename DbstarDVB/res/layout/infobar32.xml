@@ -25,6 +25,7 @@
             android:id="@+id/subTitle_sm"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
             android:paddingBottom="8dp"
             android:visibility="invisible" >
         </com.subtitleview.SubtitleView>
@@ -41,8 +42,10 @@
             android:id="@+id/subTitle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
             android:paddingBottom="10dp" >
         </com.subtitleview.SubtitleView>
+"
     </LinearLayout>
 
     <LinearLayout

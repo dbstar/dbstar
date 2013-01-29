@@ -1243,16 +1243,18 @@ public class PlayerMenu extends PlayerActivity {
 			showNotification(NOTIFY_SUBTITLE, ID_SHOW_SUBTITLE);
 			return;
 		} else {
+			mCurrentSubtitleIndex++;
+
 			if (mCurrentSubtitleIndex == mSubtitleTotalNumber) {
 				mCurrentSubtitleIndex = -1;
 				mIsSubtitleShown = false;
+				closeSubtitleView();
 				showNotification(NOTIFY_SUBTITLE, ID_NO_SUBTITLE);
 				return;
 			}
 		}
 
-		mCurrentSubtitleIndex++;
-		mCurrentSubtitleIndex = mCurrentSubtitleIndex % mSubtitleTotalNumber;
+		//mCurrentSubtitleIndex = mCurrentSubtitleIndex % mSubtitleTotalNumber;
 		showNotification(NOTIFY_SUBTITLE, mCurrentSubtitleIndex);
 		openSubtitle();
 	}
@@ -1610,8 +1612,7 @@ public class PlayerMenu extends PlayerActivity {
 						.getLayoutParams();
 				if (SettingsVP.panel_width > 720)
 					linearParams.width = 720;
-				linearParams.bottomMargin = SettingsVP.panel_height - 480;// +
-																			// 10;
+				linearParams.bottomMargin = SettingsVP.panel_height - 480 + 10;
 				mSubTitleView.setLayoutParams(linearParams);
 				if (mSubTitleView_sm != null && m3DEnabled) {
 					mSubTitleView_sm.setLayoutParams(linearParams);
@@ -1622,8 +1623,7 @@ public class PlayerMenu extends PlayerActivity {
 						.getLayoutParams();
 				if (SettingsVP.panel_width > 1280)
 					linearParams.width = 1280;
-				linearParams.bottomMargin = SettingsVP.panel_height - 720;// +
-																			// 10;
+				linearParams.bottomMargin = SettingsVP.panel_height - 720 + 10;
 				mSubTitleView.setLayoutParams(linearParams);
 				if (mSubTitleView_sm != null && m3DEnabled) {
 					mSubTitleView_sm.setLayoutParams(linearParams);
@@ -1643,9 +1643,6 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		}
 
-		Log.d(TAG, " +++ +++++ bottomMargin=" + linearParams.bottomMargin);
-		Log.d(TAG, " +++ +++++ subtitle font=" + mSubtitleParameter.font);
-
 		if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
 			if (!FF_FLAG && !FB_FLAG)
 				mPlayButton.setImageResource(R.drawable.play);
@@ -1655,8 +1652,6 @@ public class PlayerMenu extends PlayerActivity {
 		mTotalTimeView.setText(Utils.secToTime(mTotalTime, true));
 		if (mTotalTime != 0)
 			mProgressBar.setProgress(mCurrentTime * 100 / mTotalTime);
-
-		// mProgressBar.setOnSeekBarChangeListener(mProgressChangeListener);
 
 		mAudioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
 		mMaxVolumeLevel = mAudioManager
@@ -1673,24 +1668,6 @@ public class PlayerMenu extends PlayerActivity {
 		mSpeedDrawables[4] = getResources().getDrawable(R.drawable.speed_16);
 		mSpeedDrawables[5] = getResources().getDrawable(R.drawable.speed_32);
 	}
-
-	// SeekBar.OnSeekBarChangeListener mProgressChangeListener = new
-	// SeekBar.OnSeekBarChangeListener() {
-	// public void onStopTrackingTouch(SeekBar seekBar) {
-	// }
-	//
-	// public void onStartTrackingTouch(SeekBar seekBar) {
-	// }
-	//
-	// public void onProgressChanged(SeekBar seekBar, int progress,
-	// boolean fromUser) {
-	// if (fromUser == true) {
-	// ;
-	// } else {
-	// Log.d(TAG, " +++++++++++++++++++ progress ++++ " + progress);
-	// }
-	// }
-	// };
 
 	// ----------------- Subtitle related ---------------------------------
 
@@ -1722,14 +1699,15 @@ public class PlayerMenu extends PlayerActivity {
 
 		mSubtitleParameter.enable = settings.getBoolean("enable", true);
 		mSubtitleParameter.color = settings.getInt("color",
-				android.graphics.Color.WHITE); // android.graphics.Color.WHITE;
+				android.graphics.Color.WHITE);
 		mSubtitleParameter.font = settings.getInt("font", convertSP2Pixel(28));
-		mSubtitleParameter.position_v = settings.getInt("position_v", 0);// 0;
+		mSubtitleParameter.position_v = settings.getInt("position_v", 0);
 
 		mSubtitleParameter.sub_id = null;
 	}
 
 	private void initSubtitleView() {
+		
 		mSubTitleView = (SubtitleView) findViewById(R.id.subTitle);
 		mSubTitleView.clear();
 		mSubTitleView.setGravity(Gravity.CENTER);
@@ -1739,7 +1717,11 @@ public class PlayerMenu extends PlayerActivity {
 		mSubTitleView.setPadding(mSubTitleView.getPaddingLeft(),
 				mSubTitleView.getPaddingTop(), mSubTitleView.getPaddingRight(),
 				getWindowManager().getDefaultDisplay().getRawHeight()
-						* mSubtitleParameter.position_v / 20);// + 10);
+						* mSubtitleParameter.position_v / 20 + 10);
+		
+		Log.d(TAG, " mSubtitleParameter.position_v " + mSubtitleParameter.position_v);
+		Log.d(TAG, "subtile " + mSubTitleView.getWidth() + " " + mSubTitleView.getHeight() + " "
+				+ mSubTitleView.getBottom());
 
 		if (m3DEnabled) {
 			mSubTitleView_sm = (SubtitleView) findViewById(R.id.subTitle_sm);

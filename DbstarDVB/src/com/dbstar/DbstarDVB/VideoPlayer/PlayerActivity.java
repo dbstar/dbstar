@@ -616,7 +616,7 @@ public class PlayerActivity extends Activity {
 
 		// Create and show the dialog.
 		ToastDialogFragment newFragment = ToastDialogFragment.newInstance();
-		newFragment.setDuration(2000);
+		newFragment.setDuration(1000);
 		newFragment.setMessage(type, id);
 		newFragment.setListener(mToastListener);
 
@@ -633,7 +633,9 @@ public class PlayerActivity extends Activity {
 				} else if (id == ID_HAS_DUBBING) {
 					view.setImageDrawable(mHasDubbingIcon);
 				} else {
-					view.setImageDrawable(mAudioTrackIcons[id]);
+					if (id >=0 && id < mAudioTrackIcons.length) {
+						view.setImageDrawable(mAudioTrackIcons[id]);
+					}
 				}
 			} else if (type == NOTIFY_SUBTITLE) {
 				if (id == ID_NO_SUBTITLE) {
@@ -641,7 +643,9 @@ public class PlayerActivity extends Activity {
 				} else if (id == ID_SHOW_SUBTITLE) {
 					view.setImageDrawable(mShowSubtitleIcon);
 				} else {
-					view.setImageDrawable(mAudioTrackIcons[id]);
+					if (id >=0 && id < mSubtitleIcons.length) {
+						view.setImageDrawable(mSubtitleIcons[id]);
+					}
 				}
 			}
 		}
