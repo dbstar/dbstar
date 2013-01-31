@@ -233,6 +233,8 @@ public class PlayerMenu extends PlayerActivity {
 				Log.d(TAG, "subtitle file is : " + mSubtitleFiles.get(0));
 			}
 		}
+		
+		mPlayNext = intent.getBooleanExtra("play_next", false);
 
 		return true;
 	}
@@ -1097,7 +1099,13 @@ public class PlayerMenu extends PlayerActivity {
 		saveBookmark(0);
 
 		// finish();
-		exitPlayer();
+		if (mPlayNext) {
+			Intent in = new Intent();
+			in.setAction(Common.ActionPlayCompleted);
+			sendBroadcast(in);
+		} else {
+			exitPlayer();
+		}
 	}
 
 	public void playbackStopped() {
@@ -1297,6 +1305,8 @@ public class PlayerMenu extends PlayerActivity {
 	void registerCommandReceiver() {
 		IntentFilter intentFilter = new IntentFilter(Common.ActionReplay);
 		intentFilter.addAction(Common.ActionExit);
+		intentFilter.addAction(Common.ActionPlayNext);
+		intentFilter.addAction(Common.ActionNoNext);
 		registerReceiver(mPlayerCommandReceiver, intentFilter);
 	}
 
@@ -1314,6 +1324,12 @@ public class PlayerMenu extends PlayerActivity {
 			if (action.equals(Common.ActionReplay)) {
 				replay();
 			} else if (action.equals(Common.ActionExit)) {
+				exitPlayer();
+			} else if (action.equals(Common.ActionPlayNext)) {
+				if (retriveInputParameters(intent)) {
+					Amplayer_play(mPlayPosition);
+				}
+			} else if (action.equals(Common.ActionNoNext)) {
 				exitPlayer();
 			}
 		}

@@ -12,6 +12,7 @@ import com.dbstar.DbstarDVB.PlayerService.MediaInfo;
 import com.dbstar.DbstarDVB.PlayerService.ScreenMode;
 import com.dbstar.DbstarDVB.PlayerService.SettingsVP;
 import com.dbstar.DbstarDVB.PlayerService.VideoInfo;
+import com.dbstar.DbstarDVB.VideoPlayer.alert.ActionHandler;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.DbVideoInfoDlg;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.GDAlertDialog;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.PlayerErrorInfo;
@@ -79,6 +80,8 @@ public class PlayerActivity extends Activity {
 	protected int mTotalTime = 0;
 	protected int mCurrentTime = 0;
 	protected boolean mHasError = false;
+	
+	protected boolean mPlayNext = false;
 
 	// used for resume. last played position when player exit.
 	protected int mPlayPosition = 0;

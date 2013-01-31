@@ -587,6 +587,16 @@ public class GDDataProviderService extends Service {
 
 				break;
 			}
+			
+			case GDCommon.MSG_PLAY_COMPLETED: {
+				if (mPageOberser != null) {
+					EventData.PlaybackEvent event = new EventData.PlaybackEvent();
+					event.Event = GDCommon.PLAYBACK_COMPLETED;
+					mPageOberser.notifyEvent(EventData.EVENT_PLAYBACK,
+							event);
+				}
+				break;
+			}
 			case GDCommon.MSG_GET_NETWORKINFO: {
 				String[] keys = new String[5];
 				keys[0] = GDSettings.PropertyMulticastIP;
@@ -1698,6 +1708,7 @@ public class GDDataProviderService extends Service {
 		filter.addAction(GDCommon.ActionDelete);
 		filter.addAction(GDCommon.ActionBookmark);
 		filter.addAction(GDCommon.ActionUpgradeCancelled);
+		filter.addAction(GDCommon.ActionPlayCompleted);
 
 		filter.addAction(GDCommon.ActionGetNetworkInfo);
 		filter.addAction(GDCommon.ActionSetNetworkInfo);
@@ -1974,6 +1985,8 @@ public class GDDataProviderService extends Service {
 				msg.setData(data);
 
 				mHandler.sendMessage(msg);
+			} else if (action.equals(GDCommon.ActionPlayCompleted)) {
+				mHandler.sendEmptyMessage(GDCommon.MSG_PLAY_COMPLETED);
 			} else if (action.equals(GDCommon.ActionGetNetworkInfo)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_GET_NETWORKINFO);
 			} else if (action.equals(GDCommon.ActionSetNetworkInfo)) {

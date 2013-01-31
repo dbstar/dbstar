@@ -9,6 +9,8 @@ import com.dbstar.R;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.ContentData;
+import com.dbstar.model.EventData;
+import com.dbstar.model.GDCommon;
 import com.dbstar.model.TV;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.widget.GDAdapterView;
@@ -224,6 +226,17 @@ public class GDTVActivity extends GDBaseActivity {
 				// request pages data from the first page.
 				mRequestPageIndex = 0;
 				requestPageData(mRequestPageIndex);
+			}
+		}
+	}
+	
+	public void notifyEvent(int type, Object event) {
+		super.notifyEvent(type, event);
+		
+		if (type == EventData.EVENT_PLAYBACK) {
+			EventData.PlaybackEvent eventData = (EventData.PlaybackEvent) event;
+			if (eventData.Event == GDCommon.PLAYBACK_COMPLETED) {
+				playNext();
 			}
 		}
 	}
@@ -467,7 +480,40 @@ public class GDTVActivity extends GDBaseActivity {
 		String drmFile = mService.getDRMFile(item.Content);
 
 		GDPlayerUtil.playVideo(this, mTV.Content.Id, item.Content, file,
-				drmFile);
+				drmFile, true);
+	}
+
+	void playNext() {
+		TV.EpisodeItem[] items = mTV.EpisodesPages.get(mTV.EpisodesPageNumber);
+		mSelectedEpisodeIndex++;
+		if (mSelectedEpisodeIndex == items.length) {
+			// get next page
+			if (mTV.EpisodesPageNumber < (mTV.EpisodesPageCount - 1)) {
+				mTV.EpisodesPageNumber++;
+				mSelectedEpisodeIndex = 0;
+				
+				items = mTV.EpisodesPages
+						.get(mTV.EpisodesPageNumber);
+				mEpisodesAdapter.setDataSet(items);
+				mEpisodesView.setSelection(0);
+				mEpisodesAdapter.notifyDataSetChanged();
+				mScrollBar.setPosition(mTV.EpisodesPageNumber);
+			}
+		}
+		
+		if (mSelectedEpisodeIndex < items.length) {
+			TV.EpisodeItem item = items[mSelectedEpisodeIndex];
+			item.Watched = true;
+			
+			String file = mService.getMediaFile(item.Content);
+			String drmFile = mService.getDRMFile(item.Content);
+
+			GDPlayerUtil.playNextVideo(this, mTV.Content.Id, item.Content, file,
+					drmFile, true);
+		} else {
+			Intent intent = new Intent(GDCommon.ActionNoNext);
+			sendBroadcast(intent);
+		}
 	}
 
 	private String formEpisodesText(int num) {

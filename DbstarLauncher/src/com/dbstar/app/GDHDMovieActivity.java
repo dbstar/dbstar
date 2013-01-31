@@ -170,7 +170,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			return;
 		}
 
-		GDPlayerUtil.playVideo(this, null, movie.Content, file, drmFile);
+		GDPlayerUtil.playVideo(this, null, movie.Content, file, drmFile, false);
 	}
 
 	public void updateData(int type, Object key, Object data) {

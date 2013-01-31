@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -20,6 +19,7 @@ import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.guodian.egine.GDConstract;
 import com.dbstar.model.EventData;
+import com.dbstar.widget.text.ScrollingMovementMethod;
 import com.dbstar.guodian.data.Notice;
 
 public class GDNoticeActivity extends GDBaseActivity {
@@ -94,7 +94,7 @@ public class GDNoticeActivity extends GDBaseActivity {
 		mDetailContainer = (ViewGroup) findViewById(R.id.detail);
 		mTitle = (TextView) findViewById(R.id.title);
 		mContent = (TextView) findViewById(R.id.content);
-		mContent.setMovementMethod(new ScrollingMovementMethod());
+		mContent.setMovementMethod(new ScrollingMovementMethod(true));
 
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 

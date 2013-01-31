@@ -11,6 +11,8 @@ public class EventData {
 	public static final int EVENT_LOGIN_SUCCESSED = 0xa0007;
 	public static final int EVENT_GUODIAN_DATA = 0xa0008;
 	
+	public static final int EVENT_PLAYBACK = 0xa0009;
+	
 	public static class DeleteEvent {
 		public String PublicationId;
 		public String PublicationSetId;
@@ -37,5 +39,9 @@ public class EventData {
 	public static class GuodianEvent {
 		public int Type;
 		public Object Data;
+	}
+	
+	public static class PlaybackEvent {
+		public int Event;
 	}
 }

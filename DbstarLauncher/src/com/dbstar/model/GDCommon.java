@@ -15,6 +15,7 @@ public class GDCommon {
 
 	public static final int MSG_ADD_TO_FAVOURITE = 0x10010;
 	public static final int MSG_DELETE = 0x10011;
+	public static final int MSG_PLAY_COMPLETED = 0x10012;
 
 	public static final int MSG_USER_CHANGE_GUIDELIST = 0x10012;
 
@@ -95,6 +96,9 @@ public class GDCommon {
 	public static final String ActionDelete = "com.dbstar.DbstarLauncher.Action.DELETE";
 	public static final String ActionUpgradeCancelled = "com.dbstar.DbstarLauncher.Action.UPGRADE_CANCELLED";
 	public static final String ActionBookmark = "com.dbstar.DbstarLauncher.Action.BOOKMARK";
+	public static final String ActionPlayCompleted = "com.dbstar.DbstarDVB.Action.PLAY_COMPLETED";
+	public static final String ActionPlayNext = "com.dbstar.DbstarDVB.Action.PLAY_NEXT";
+	public static final String ActionNoNext = "com.dbstar.DbstarDVB.Action.NO_NEXT";
 
 	public static final String ActionGetNetworkInfo = "com.dbstar.DbstarLauncher.Action.GET_NETWORKINFO";
 	public static final String ActionUpateNetworkInfo = "com.dbstar.DbstarLauncher.Action.UPDATE_NETWORKINFO";
@@ -119,5 +123,8 @@ public class GDCommon {
 	public static final int SMARTCARD_STATE_REMOVEOK = 0x1005;
 	public static final int SMARTCARD_STATE_REMOVEFAILED = 0x1006;
 	public static final int SMARTCARD_STATE_NONE = 0x1000;
+	
+	// playback event
+	public static final int PLAYBACK_COMPLETED = 0x01;
 	
 }

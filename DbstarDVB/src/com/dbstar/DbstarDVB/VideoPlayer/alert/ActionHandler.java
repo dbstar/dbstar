@@ -10,6 +10,7 @@ public class ActionHandler {
 	public static final int COMMAND_EXIT_PLAYER = 1;
 	public static final int COMMAND_ADDTOFAVOURITE = 2;
 	public static final int COMMAND_DELETE = 3;
+	public static final int COMMAND_PLAY_NEXT = 4;
 
 	MediaData mActionData;
 	Context mContext;

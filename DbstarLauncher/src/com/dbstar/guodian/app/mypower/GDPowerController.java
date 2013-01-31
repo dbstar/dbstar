@@ -65,7 +65,7 @@ public class GDPowerController {
 	private TextView mTimePowerPeriodView, mTimePowerPeriodTimeView;
 	private GDArcView mTimingPowerPeriodPointer;
 
-	private String mPowerUsageStr, mPowerCostStr;
+	private String mMonthUsageStr, mMonthCostStr, mYearUsageStr, mYearCostStr;
 	private String Yuan, Degree;
 
 	private Handler mHandler = null;
@@ -75,10 +75,15 @@ public class GDPowerController {
 
 		Yuan = activity.getResources().getString(R.string.string_yuan);
 		Degree = activity.getResources().getString(R.string.string_degree);
-		mPowerUsageStr = activity.getResources().getString(
-				R.string.mypower_powerusage);
-		mPowerCostStr = activity.getResources().getString(
-				R.string.mypower_powercost);
+		mMonthUsageStr = activity.getResources().getString(
+				R.string.mypower_monthpowerusage);
+		mMonthCostStr = activity.getResources().getString(
+				R.string.mypower_monthpowercost);
+
+		mYearUsageStr = activity.getResources().getString(
+				R.string.mypower_yearpowerusage);
+		mYearCostStr = activity.getResources().getString(
+				R.string.mypower_yearpowercost);
 
 		// Power View
 		mPowerUsedDegreeView = (TextView) activity
@@ -128,8 +133,8 @@ public class GDPowerController {
 		mTimingPowerPeriodPointer = (GDArcView) activity
 				.findViewById(R.id.timingpower_periodpointer);
 
-		mPowerUsedDegreeView.setText(mPowerUsageStr + " 0 " + Degree);
-		mPowerUsedCostView.setText(mPowerCostStr + " 0 " + Yuan);
+		mPowerUsedDegreeView.setText(mMonthUsageStr + " 0 " + Degree);
+		mPowerUsedCostView.setText(mMonthCostStr + " 0 " + Yuan);
 		mStepPowerPointer.setRotation(0);
 		mStepPowerStepView.setText("");
 		mStepPowerPriceView.setText("");
@@ -207,14 +212,10 @@ public class GDPowerController {
 		if (data.MonthPower == null)
 			return;
 
-		String powerNum = data.MonthPower.Count;
-		String powerFee = data.MonthPower.Fee;
-		float powerNumValue = Float.valueOf(powerNum);
-		float powerFeeValue = Float.valueOf(powerFee);
-
-		mPowerUsedDegreeView.setText(mPowerUsageStr + " " + powerNum + " "
-				+ Degree);
-		mPowerUsedCostView.setText(mPowerCostStr + " " + powerFee + " " + Yuan);
+		String powerNum = null;// data.MonthPower.Count;
+		String powerFee = null;// data.MonthPower.Fee;
+		float powerNumValue = 0; // Float.valueOf(powerNum);
+		float powerFeeValue = 0;// Float.valueOf(powerFee);
 
 		UserPriceStatus status = data.PriceStatus;
 
@@ -224,6 +225,31 @@ public class GDPowerController {
 		if (status.PriceType == null) {
 			return;
 		}
+
+		String powerNumStr = "", powerFeeStr = "";
+		if (status.CycleType != null) {
+			if (status.CycleType.equals(ElectricityPrice.CYCLETYPE_MONTH)) {
+				powerNumStr = mMonthUsageStr + powerNum + " " + Degree;
+				powerFeeStr = mMonthCostStr + powerFee + " " + Yuan;
+
+				powerNum = data.MonthPower.Count;
+				powerFee = data.MonthPower.Fee;
+				powerNumValue = Float.valueOf(powerNum);
+				powerFeeValue = Float.valueOf(powerFee);
+
+			} else if (status.CycleType.equals(ElectricityPrice.CYCLETYPE_YEAR)) {
+				powerNumStr = mYearUsageStr + powerNum + " " + Degree;
+				powerFeeStr = mYearCostStr + powerFee + " " + Yuan;
+
+				powerNum = data.YearPower.Count;
+				powerFee = data.YearPower.Fee;
+				powerNumValue = Float.valueOf(powerNum);
+				powerFeeValue = Float.valueOf(powerFee);
+			}
+		}
+
+		mPowerUsedDegreeView.setText(powerNumStr);
+		mPowerUsedCostView.setText(powerFeeStr);
 
 		String priceType = status.PriceType;
 
@@ -235,7 +261,6 @@ public class GDPowerController {
 			mTimingPowerPanel.setVisibility(View.GONE);
 		} else if (priceType.equals(ElectricityPrice.PRICETYPE_STEPPLUSTIMING)) {
 			mPriceType = GDConstract.PriceTypeStepPlusTiming;
-
 			mStepPowerPanel.setVisibility(View.GONE);
 			mTimingPowerPanel.setVisibility(View.VISIBLE);
 		} else {

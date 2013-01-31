@@ -152,8 +152,10 @@
 
 	<!-- Smart home -->
     <string name="context_view_mypower_title">我的用电</string>
-    <string name="mypower_powerusage">本月可控电器电量:&#160;</string>
-    <string name="mypower_powercost">本月可控电器花费:&#160;</string>
+    <string name="mypower_monthpowerusage">本月可控电器电量:&#160;</string>
+    <string name="mypower_monthpowercost">本月可控电器花费:&#160;</string>
+    <string name="mypower_yearpowerusage">本年可控电器电量:&#160;</string>
+    <string name="mypower_yearpowercost">本年可控电器花费:&#160;</string>
     <string name="string_degree">度</string>
     <string name="string_yuan">元</string>
     
@@ -164,6 +166,8 @@
     <!-- My power -->
     <string name="mypower_text_yearpowercost">本年用电花费</string>
     <string name="mypower_text_yearpoweramount">本年用电量</string>
+    <string name="mypower_text_monthpowercost">本月用电花费</string>
+    <string name="mypower_text_monthpoweramount">本月用电量</string>
     <string name="mypower_text_target">已达到你设定目标的</string>
     <string name="mypower_text_smartsocket_data">智能插座数据</string>
     <string name="mypower_text_devicepowercost">所控电器用电费用</string>
