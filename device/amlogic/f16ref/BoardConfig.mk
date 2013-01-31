@@ -101,6 +101,7 @@ TARGET_BUILD_WIPE_USERDATA := false
 
 # Check Logo Size
 BOARD_MATCH_LOGO_SIZE := true
+BOARD_TVMODE_ALL_SCALE := true
 
 #save ubootenv in nand partition
 UBOOTENV_SAVE_IN_NAND := false

@@ -4,10 +4,7 @@ on early-init
     start ueventd
 
     # setup logo file for different resolution
-    symlink /initlogo.480p.rle /initlogo.480i.rle
-    symlink /initlogo.1080p.rle /initlogo.1080i.rle
-    symlink /initlogo.576p.rle /initlogo.576i.rle
-#    symlink /initlogo.rle.bak /initlogo.rle
+    symlink /initlogo.720p.rle /initlogo.rle
 
     write /sys/class/graphics/fb0/blank 0
     write /sys/class/graphics/fb1/blank 1

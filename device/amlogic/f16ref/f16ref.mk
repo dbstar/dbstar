@@ -134,9 +134,6 @@ endif
 PRODUCT_COPY_FILES += \
        $(LOCAL_PATH)/init.factorytest.rc:init.factorytest.rc \
        $(LOCAL_PATH)/initlogo-robot-1280x720.rle:root/initlogo.720p.rle \
-       $(LOCAL_PATH)/initlogo-robot-1920x1080.rle:root/initlogo.1080p.rle \
-       $(LOCAL_PATH)/initlogo-robot-720x480.rle:root/initlogo.480p.rle \
-       $(LOCAL_PATH)/initlogo-robot-720x576.rle:root/initlogo.576p.rle \
        $(LOCAL_PATH)/set_display_mode.sh:system/bin/set_display_mode.sh \
        $(LOCAL_PATH)/reset_display_mode.sh:system/bin/reset_display_mode.sh \
        $(LOCAL_PATH)/media_profiles.xml:system/etc/media_profiles.xml \
