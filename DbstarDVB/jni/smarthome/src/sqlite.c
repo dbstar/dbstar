@@ -175,7 +175,6 @@ static int createTable(char* name)
 	char tmp_str[128];
 	int ret = -1;
 	
-	DEBUG("creating table: %s\n", name);
 	memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "SELECT name FROM sqlite_master WHERE type='table' AND name='%s';", name);
 	if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg))
@@ -189,6 +188,7 @@ static int createTable(char* name)
 			ret = 0;
 		}
 		else{
+			DEBUG("creating table: %s ...\n", name);
 			sqlite3_free(errmsg);
 			ret = 0;
 			if(!strcmp(name,"devlist"))
@@ -201,7 +201,7 @@ static int createTable(char* name)
 				}
 		// 20120604
 		//		sqlite3_free(errmsg);
-		//		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO devlist VALUES(0,0,0,0,0,0,0,0);");
+		//		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO devlist VALUES(0,0,0,0,0,0,0,0);");
 		//		if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 		//		{
 		//			ERROROUT("insert '0' failed.");
@@ -265,7 +265,7 @@ static int createTable(char* name)
 			}
 			else if(!strcmp(name,"global"))
 			{
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"CREATE TABLE global(ID INTEGER PRIMARY KEY AUTOINCREMENT,name NVARCHAR(20),value NVARCHAR(20));");
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"CREATE TABLE global(name NVARCHAR(32) PRIMARY KEY,value NVARCHAR(64));");
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
 					ERROROUT("create 'global' failed.");
@@ -275,28 +275,28 @@ static int createTable(char* name)
 				///version
 				memset(tmp_str, 0, sizeof(tmp_str));
 				initial_software_version_get(tmp_str, sizeof(tmp_str)-1);
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'version','%s');",tmp_str);
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('version','%s');",tmp_str);
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("insert vertion to 'global' failed.");
+					ERROROUT("insert version to 'global' failed.");
 					ret = -1;
 					goto END;
 				}
 				sqlite3_free(errmsg);
 				///username
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'username','test_user');");
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('username','test_user');");
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("insert 'global' failed.");
+					ERROROUT("insert username to 'global' failed.");
 					ret = -1;
 					goto END;
 				}
 				sqlite3_free(errmsg);
 				///passwd
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'passwd','123456');");
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('passwd','123456');");
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("insert 'global' failed.");
+					ERROROUT("insert passwd to 'global' failed.");
 					ret = -1;
 					goto END;
 				}
@@ -305,10 +305,10 @@ static int createTable(char* name)
 				///serialNUM
 				memset(tmp_str, 0, sizeof(tmp_str));
 				initial_serial_num_get(tmp_str, sizeof(tmp_str)-1);
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmarthomeSN','%s');", tmp_str);
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmarthomeSN','%s');", tmp_str);
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("insert 'global' failed.");
+					ERROROUT("insert SmarthomeSN to 'global' failed.");
 					ret = -1;
 					goto END;
 				}
@@ -316,38 +316,38 @@ static int createTable(char* name)
 				///serverIP
 				memset(tmp_str, 0, sizeof(tmp_str));
 				initial_server_ip_get(tmp_str, sizeof(tmp_str)-1);
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmarthomeServerIP','%s');", tmp_str);
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmarthomeServerIP','%s');", tmp_str);
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("insert 'global' failed.");
+					ERROROUT("insert SmarthomeServerIP to 'global' failed.");
 					ret = -1;
 					goto END;
 				}
 				sqlite3_free(errmsg);
 				///port
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmarthomeServerPort','%d');", initial_server_port_get());
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmarthomeServerPort','%d');", initial_server_port_get());
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("insert 'global' failed.");
+					ERROROUT("insert SmarthomeServerPort to 'global' failed.");
 					ret = -1;
 				}
 				
 				///APP serverIP
 				memset(tmp_str, 0, sizeof(tmp_str));
 				initial_server_ip_get(tmp_str, sizeof(tmp_str)-1);
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmartLifeIP','211.99.30.254');");
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifeIP','211.99.30.254');");
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("insert 'global' failed.");
+					ERROROUT("insert SmartLifeIP to 'global' failed.");
 					ret = -1;
 					goto END;
 				}
 				sqlite3_free(errmsg);
 				///APP port
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO global VALUES(NULL,'SmartLifePort','9103');");
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifePort','9103');");
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
-					ERROROUT("insert 'global' failed.");
+					ERROROUT("insert SmartLifePort to 'global' failed.");
 					ret = -1;
 				}
 			}
@@ -369,7 +369,6 @@ static int createTable(char* name)
 					ret = -1;
 				}
 			}
-
 		}
 	}
 

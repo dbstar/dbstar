@@ -55,7 +55,7 @@ int global_init()
 	}
 
 // only for database testing
-	DEBUG("getGlobalPara()=%d\n", getGlobalPara("version"));
+	//DEBUG("getGlobalPara(version)=%d\n", getGlobalPara("version"));
 	
 	//~~~~~~~~~~create  thread~~~~~~~~~~//
 	typedef void*(*format)(void *);													///define function pointer of "void*(name)(void*)"
