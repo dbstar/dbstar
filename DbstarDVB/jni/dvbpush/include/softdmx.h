@@ -38,6 +38,7 @@ struct LoaderInfo {
     unsigned char  download_type;  //8bit
     unsigned char  file_type;      //8bit
 };
+	//char guodian_serialnum[24];
  
 typedef struct Channel Channel_t;
 struct Channel {

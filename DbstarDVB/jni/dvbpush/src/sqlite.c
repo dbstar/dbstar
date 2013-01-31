@@ -300,13 +300,7 @@ static int openDatabase()
 	}
 	else
 	{
-		char database_uri[64];
-		memset(database_uri, 0, sizeof(database_uri));
-		if(-1==database_uri_get(database_uri, sizeof(database_uri))){
-			DEBUG("get database uri failed\n");
-			return -1;
-		}
-		if(SQLITE_OK!=sqlite3_open(database_uri,&g_db)){
+		if(SQLITE_OK!=sqlite3_open(dbstar_database_uri(),&g_db)){
 			ERROROUT("can't open database\n");
 			ret = -1;
 		}
@@ -847,32 +841,22 @@ int sqlite_init()
 	if(0==s_sqlite_init_flag){
 		g_db = NULL;
 		
-		char database_uri[256];
-		memset(database_uri, 0, sizeof(database_uri));
-		if(-1==database_uri_get(database_uri, sizeof(database_uri))){
-			DEBUG("get database uri failed\n");
+		int ret = createDatabase(dbstar_database_uri());
+		if(ret>=0){
+			if(ret>0){
+				DEBUG("create database success(some/all tables are created)\n");
+				chmod(dbstar_database_uri(),0666);
+			}
+			DEBUG("open database success\n");
+			localcolumn_init();
+			global_info_init();
+		}
+		else{						///open database failed
+			DEBUG("create/open database failed\n");
 			return -1;
 		}
-		else{
-			DEBUG("database uri: %s\n", database_uri);
 			
-			int ret = createDatabase(database_uri);
-			if(ret>=0){
-				if(ret>0){
-					DEBUG("create database success(some/all tables are created)\n");
-					chmod(database_uri,0666);
-				}
-				DEBUG("open database success\n");
-				localcolumn_init();
-				global_info_init();
-			}
-			else{						///open database failed
-				DEBUG("create/open database failed\n");
-				return -1;
-			}
-				
-			s_sqlite_init_flag = 1;
-		}
+		s_sqlite_init_flag = 1;
 	}
 
 	return 0;						/// quit
@@ -931,7 +915,7 @@ int sqlite_execute(char *exec_str)
 			ret = -1;
 		}
 		else{
-			DEBUG("%s\n", exec_str);
+			//DEBUG("%s\n", exec_str);
 			if(sqlite3_exec(g_db,exec_str,NULL,NULL,&errmsg)){
 				DEBUG("sqlite3 errmsg: %s\n", errmsg);
 				ret = -1;
@@ -976,7 +960,7 @@ int sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, in
 	}
 	DEBUG("waiting_cnt=%d\n", waiting_cnt);
 	
-	DEBUG("sqlite read: %s\n", sqlite_cmd);
+	//DEBUG("sqlite read: %s\n", sqlite_cmd);
 	
 	if(SQL_STATUS_IDLE!=s_sql_status){
 		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
@@ -1231,7 +1215,7 @@ int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int recei
 		DEBUG("invalid argument\n");
 		return -1;
 	}
-	DEBUG("%s\n", sqlite_cmd);
+	//DEBUG("%s\n", sqlite_cmd);
 	
 	if(SQL_STATUS_TRANS!=s_sql_status){
 		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
@@ -1250,7 +1234,7 @@ int sqlite_transaction_read(char *sqlite_cmd, void *receiver, unsigned int recei
 				DEBUG("no row, l_row=0, l_column=%d\n", l_column);
 			}
 			else{
-				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
+				//DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
 				if(sqlite_callback && receiver)
 					sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
 				else{
@@ -1324,7 +1308,7 @@ int str_sqlite_read(char *buf, unsigned int buf_size, char *sql_cmd)
 		return -1;
 	}
 	else{
-		DEBUG("read %s for %s\n", buf,sql_cmd);
+		//DEBUG("read %s for %s\n", buf,sql_cmd);
 		return 0;
 	}
 }
@@ -1339,7 +1323,7 @@ static int check_record_in_trans(char *table_name, char *column_name, char *colu
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT %s FROM %s WHERE %s='%s';", column_name, table_name, column_name, column_value);
 	memset(read_column_value,0,sizeof(read_column_value));
 	if(0<sqlite_transaction_read(sqlite_cmd,read_column_value,sizeof(read_column_value))){
-		DEBUG("%s has %s=%s already\n", table_name, column_name, column_value);
+		//DEBUG("%s has %s=%s already\n", table_name, column_name, column_value);
 		return 0;
 	}
 	else{

@@ -35,7 +35,8 @@ static unsigned int	s_root_push_file_size = 0;
 static char			s_data_source[256];
 static int			s_prog_data_pid = 0;
 
-static char			s_database_uri[256];
+static char			s_dbstar_database_uri[256];
+static char			s_smarthome_database_uri[256];
 static int			s_debug_level = 0;
 static char			s_xml[256];
 static char			s_initialize_xml[256];
@@ -71,7 +72,8 @@ static void settingDefault_set(void)
 	
 	s_prog_data_pid = PROG_DATA_PID_DF;
 	
-	snprintf(s_database_uri, sizeof(s_database_uri), "%s", DATABASE);
+	snprintf(s_dbstar_database_uri, sizeof(s_dbstar_database_uri), "%s", DBSTAR_DATABASE);
+	snprintf(s_smarthome_database_uri, sizeof(s_smarthome_database_uri), "%s", SMARTHOME_DATABASE);
 	s_debug_level = 0;
 	memset(s_xml, 0, sizeof(s_xml));
 	snprintf(s_initialize_xml, sizeof(s_initialize_xml), "%d", INITIALIZE_XML);
@@ -144,14 +146,14 @@ int setting_init(void)
 	char *p_value;
 
 	settingDefault_set();
-	DEBUG("init settings with file %s\n", SETTING_BASE);
+	DEBUG("init settings with %s\n", SETTING_BASE);
 	fp = fopen(SETTING_BASE,"r");
 	if (NULL == fp)
 	{
-		ERROROUT("open file %s faild! use default setting\n", SETTING_BASE);
+		ERROROUT("fopen %s faild! use default setting\n", SETTING_BASE);
 	}
 	else{
-		DEBUG("open file %s success\n", SETTING_BASE);
+		DEBUG("fopen %s success\n", SETTING_BASE);
 		memset(tmp_buf, 0, sizeof(tmp_buf));
 		
 		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
@@ -171,7 +173,9 @@ int setting_init(void)
 					else if(0==strcmp(tmp_buf, "prog_data_pid"))
 						s_prog_data_pid = atoi(p_value);
 					else if(0==strcmp(tmp_buf, "dbstar_database"))
-						strncpy(s_database_uri, p_value, sizeof(s_database_uri)-1);
+						strncpy(s_dbstar_database_uri, p_value, sizeof(s_dbstar_database_uri)-1);
+					else if(0==strcmp(tmp_buf, "smarthome_database"))
+						strncpy(s_smarthome_database_uri, p_value, sizeof(s_smarthome_database_uri)-1);
 					else if(0==strcmp(tmp_buf, "dbstar_debug_level"))
 						s_debug_level = atoi(p_value);
 					else if(0==strcmp(tmp_buf, "parse_xml"))	/* this xml only for parse testing */
@@ -225,13 +229,14 @@ int prog_data_pid_get(void)
 	return s_prog_data_pid;
 }
 
-int database_uri_get(char *database_uri, unsigned int size)
+char *dbstar_database_uri()
 {
-	if(NULL==database_uri || 0==size)
-		return -1;
-	
-	strncpy(database_uri, s_database_uri, size);
-	return 0;
+	return s_dbstar_database_uri;
+}
+
+char *smartlife_database_uri_get()
+{
+	return s_smarthome_database_uri;
 }
 
 int debug_level_get(void)
@@ -267,7 +272,7 @@ int factory_renew(void)
 {
 	DEBUG("CAUTION: begin to renew factory status\n");
 
-	unlink(DATABASE);
+	unlink(DBSTAR_DATABASE);
 	unlink(SETTING_BASE);
 	sync();
 	sleep(1);
@@ -1290,7 +1295,6 @@ void upgrade_info_init()
 {
 	unsigned char mark = 0;
 	char tmpinfo[128];
-	char msg_2_UI[128];
 	
 	char sqlite_cmd[256];
 	char repeat_upgrade_count[8];
@@ -1324,10 +1328,12 @@ void upgrade_info_init()
 			}
 		}
 		
+#if 0
 		if(255==upgrade_type_check(g_loaderInfo.software_version)){
 			snprintf(msg_2_UI,sizeof(msg_2_UI),"Repeat upgrade count: %s\n", tmpinfo);
 			msg_send2_UI(DIALOG_NOTICE, msg_2_UI, strlen(msg_2_UI));
 		}
+#endif
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
 		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);

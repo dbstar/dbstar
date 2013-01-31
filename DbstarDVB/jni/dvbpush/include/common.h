@@ -64,7 +64,8 @@ typedef enum{
 程序运行过程中产生的数据，包括：下载的片源、对应的数据库
 */
 #define PUSH_DATA_DIR_DF	"/mnt/sda1"		// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
-#define DATABASE			WORKING_DATA_DIR"/Dbstar.db"
+#define DBSTAR_DATABASE			WORKING_DATA_DIR"/Dbstar.db"
+#define SMARTHOME_DATABASE		WORKING_DATA_DIR"/Smarthome.db"
 
 #define	SERVICE_ID			"01"
 #define ROOT_CHANNEL		(400)	// 0x190

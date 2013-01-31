@@ -32,7 +32,7 @@
 #include "multicast.h"
 
 #define MAX_PACK_LEN (1500)
-#define MAX_PACK_BUF (60000)		//定义缓冲区大小，单位：包	1500*200000=280M
+#define MAX_PACK_BUF (60000)		//定义缓冲区大小，单位：包
 //#define MEMSET_PUSHBUF_SAFE			// if MAX_PACK_BUF<200000 define
 
 #define CLEAR_COLUMN_AFTER_PARSED
@@ -220,6 +220,7 @@ void *push_decoder_thread()
 	int rindex = 0;
     short len;
     int push_loop_idle_cnt = 0;
+    int ret = 0;
 	
 	DEBUG("push decoder thread will goto main loop\n");
 	s_decoder_running = 1;
@@ -235,8 +236,8 @@ rewake:
 			* 调用PUSH数据解析接口解析数据，该函数是阻塞的，所以应该使用一个较大
 			* 的缓冲区来暂时存储源源不断的数据。
 			*/
-			//DEBUG("push_parse[%d] %d\n", rindex,len);
-			push_parse((char *)pBuf, len);
+			ret = push_parse((char *)pBuf, len);
+			//DEBUG("push_parse[%d] %d, ret=%d\n", rindex,len,ret);
 			s_push_has_data = 3;
 			
 			g_recvBuffer[rindex].m_len = 0;
@@ -1136,8 +1137,8 @@ static int prog_name_fill()
 					DEBUG("length of caption is 0, filled with prog id: %s\n",s_prgs[i].id);
 					snprintf(s_prgs[i].caption, sizeof(s_prgs[i].caption), "%s", s_prgs[i].id);
 				}
-				else
-					DEBUG("read prog caption success: %s\n", s_prgs[i].caption);
+//				else
+//					DEBUG("read prog caption success: %s\n", s_prgs[i].caption);
 			}
 			else{
 				DEBUG("read prog caption failed, filled with prog id: %s\n",s_prgs[i].id);
@@ -1397,22 +1398,31 @@ static int prog_monitor_reset(void)
 					DEBUG("push unregist: %s\n", s_prgs[i].uri);
 					ret = push_dir_remove(s_prgs[i].uri);
 					if(0==ret){
-						DEBUG("push remove: %s\n", s_prgs[i].uri);
 						usleep(100000);
 						
-						char reject_uri[512];
-						snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),s_prgs[i].uri);
-						if(0==remove_force(reject_uri)){
-							DEBUG("remove(%s) finished\n", reject_uri);
-							if(0==rubbish_prog_cnt)
-								snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'",s_prgs[i].id);
-							else
-								snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR PublicationID='%s'",s_prgs[i].id);
+						// 已经接收95%及以上
+						int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
+						if(wanting_percent<=5)
+						{
+							DEBUG("cur=%lld, total=%lld, wanting %d%%\n", s_prgs[i].cur, s_prgs[i].total, wanting_percent);
 							
-							rubbish_prog_cnt++;
 						}
-						else
-							DEBUG("remove(%s) FAILED\n", reject_uri);
+						else{
+							DEBUG("push remove: %s\n", s_prgs[i].uri);
+							char reject_uri[512];
+							snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),s_prgs[i].uri);
+							if(0==remove_force(reject_uri)){
+								DEBUG("remove(%s) finished\n", reject_uri);
+								if(0==rubbish_prog_cnt)
+									snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'",s_prgs[i].id);
+								else
+									snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR PublicationID='%s'",s_prgs[i].id);
+								
+								rubbish_prog_cnt++;
+							}
+							else
+								DEBUG("remove(%s) FAILED\n", reject_uri);
+						}
 					}
 					else if(-1==ret)
 						DEBUG("push remove failed: %s, no such uri\n", s_prgs[i].uri);
@@ -1575,14 +1585,12 @@ static int info_xml_refresh_cb(char **result, int row, int column, void *receive
 	{
 		if(0==regist_flag){
 			ret = push_file_unregister(result[i*column+1]);
-			//ret = push_dir_unregister(result[i*column+1]);
 			
 			snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),result[i*column+1]);
 			remove_force(direct_uri);
 		}
 		else{
 			ret = push_file_register(result[i*column+1]);
-			//ret = push_dir_register(result[i*column+1], 0, 0);
 		}
 		
 		DEBUG("%s(%s) return with %d\n", 0==regist_flag?"unregist":"regist",result[i*column+1],ret);
