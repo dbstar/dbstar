@@ -239,6 +239,7 @@ MULTITASK_START:
 			pthread_mutex_unlock(&mtx_getip);
 		}
 		DEBUG("get eth0 ip: %s\n", if_ip);
+		sleep(13);
 	
 		bzero((char *)&sin, sizeof(sin));
 		sin.sin_family = AF_INET;

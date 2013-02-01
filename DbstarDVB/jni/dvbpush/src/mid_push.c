@@ -236,8 +236,9 @@ rewake:
 			* 调用PUSH数据解析接口解析数据，该函数是阻塞的，所以应该使用一个较大
 			* 的缓冲区来暂时存储源源不断的数据。
 			*/
+			
 			ret = push_parse((char *)pBuf, len);
-			//DEBUG("push_parse[%d] %d, ret=%d\n", rindex,len,ret);
+			//PRINTF("push_parse[%d] %d, ret=%d\n", rindex,len,ret);
 			s_push_has_data = 3;
 			
 			g_recvBuffer[rindex].m_len = 0;
