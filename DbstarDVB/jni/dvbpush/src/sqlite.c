@@ -811,7 +811,7 @@ PRIMARY KEY (ServiceID,SType));", name);
 */
 int str_read_cb(char **result, int row, int column, void *some_str, unsigned int receiver_size)
 {
-	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p\n", row, column, some_str);
+	//DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p\n", row, column, some_str);
 	if(row<1 || NULL==some_str){
 		DEBUG("no record in table, or no buffer to read, return\n");
 		return 0;
@@ -1120,7 +1120,7 @@ int sqlite_transaction_begin()
 {
 	int ret = -1;
 	
-	DEBUG("sqlite_transaction_begin >>\n");
+	PRINTF("sqlite_transaction_begin >>\n");
 	if(SQL_STATUS_IDLE!=s_sql_status){
 		DEBUG("s_sql_status=%d, transaction begin failed\n", s_sql_status);
 		ret = -1;
@@ -1158,7 +1158,7 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 		DEBUG("invalid argument\n");
 		return -1;
 	}
-	DEBUG("%s\n", sqlite_cmd);
+	PRINTF("%s\n", sqlite_cmd);
 	
 	int ret = -1;
 	
@@ -1258,18 +1258,18 @@ int sqlite_transaction_end(int commit_flag)
 {
 	int ret = -1;
 	
-	DEBUG("sqlite_transaction_end %s\n", 1==commit_flag?"commit <<>>":"<< rollback");
+	PRINTF("sqlite_transaction_end %s\n", 1==commit_flag?"commit <<>>":"<< rollback");
 	if(SQL_STATUS_TRANS!=s_sql_status){
 		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
 		ret = -1;
 	}
 	else{
 		if(1==commit_flag){
-			DEBUG("commit transaction\n");
+			PRINTF("commit transaction\n");
 			ret = sqlite3_exec(g_db, "commit transaction", NULL, NULL, NULL);
 		}
 		else{
-			DEBUG("rollback transaction\n");
+			PRINTF("rollback transaction\n");
 			ret = sqlite3_exec(g_db, "rollback transaction", NULL, NULL, NULL);
 		}
 		

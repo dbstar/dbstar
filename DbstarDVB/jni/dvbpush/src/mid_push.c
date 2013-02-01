@@ -92,6 +92,7 @@ static int s_dvbpush_getinfo_flag = 0;
 static int s_column_refresh = 0;
 static int s_interface_refresh = 0;
 static int s_preview_refresh = 0;
+static int s_service_xml_waiting = 0;
 
 
 /*
@@ -253,7 +254,7 @@ rewake:
 			push_loop_idle_cnt++;
 			if(push_loop_idle_cnt > 1024)
 			{
-				DEBUG("read nothing, read index %d\n", rindex);
+				PRINTF("read nothing, read index %d\n", rindex);
 				push_loop_idle_cnt = 0;
 			}
 		}
@@ -538,6 +539,12 @@ void preview_refresh_flag_set(int flag)
 	s_preview_refresh = flag;
 }
 
+void service_xml_waiting_set(int flag)
+{
+	s_service_xml_waiting = flag;
+	DEBUG("s_service_xml_waiting = %d\n", s_service_xml_waiting);
+}
+
 /*
 为避免无意义的查询硬盘，应完成下面两个工作：
 1、当节目接收完毕后不应再查询，数据库中记录的是100%
@@ -647,6 +654,16 @@ void *push_monitor_thread()
 		else if(1==s_smart_card_insert_action && 0==smart_card_insert_flag_get()){
 			DEBUG("have a smart card remove action\n");
 			s_smart_card_insert_action = 0;
+		}
+		
+		if(s_service_xml_waiting>0){
+			s_service_xml_waiting ++;
+			
+			if(s_service_xml_waiting>2){
+				s_service_xml_waiting = 0;
+				DEBUG("s_service_xml_waiting=%d, it's too long for Service.xml\n", s_service_xml_waiting);
+				info_xml_regist();
+			}
 		}
 	}
 	DEBUG("exit from push monitor thread\n");
@@ -1050,11 +1067,11 @@ static int mid_push_regist(PROG_S *prog)
 				push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
 			}
 			else{
-				DEBUG("prog [%s]%s is download finish, no need to monitor\n", s_prgs[i].id,s_prgs[i].uri);
+				PRINTF("prog [%s]%s is download finish, no need to monitor\n", s_prgs[i].id,s_prgs[i].uri);
 			}
 			s_push_monitor_active++;
 			
-			DEBUG("regist to push[%d]:%s %s %s %lld\n",
+			PRINTF("regist to push[%d]:%s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].uri,
@@ -1401,14 +1418,17 @@ static int prog_monitor_reset(void)
 					if(0==ret){
 						usleep(100000);
 						
-						// 已经接收95%及以上
 						int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
-						if(wanting_percent<=5)
+						
+						// 大于1G的成品已经接收95%及以上
+						if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=5 && s_prgs[i].total>1073741824LL)
 						{
 							DEBUG("cur=%lld, total=%lld, wanting %d%%\n", s_prgs[i].cur, s_prgs[i].total, wanting_percent);
 							
 						}
-						else{
+						
+						//else
+						{
 							DEBUG("push remove: %s\n", s_prgs[i].uri);
 							char reject_uri[512];
 							snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),s_prgs[i].uri);
@@ -1516,7 +1536,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
  已经解析过的节目，无需注册到push库中，只需要UI上显式即可。
 */
 			if(1==cur_prog.parsed){
-				DEBUG("[%s]%s is parsed already, make cur as total directly\n", cur_prog.id,cur_prog.uri);
+				PRINTF("[%s]%s is parsed already, make cur as total directly\n", cur_prog.id,cur_prog.uri);
 				cur_prog.cur = cur_prog.total;
 			}
 			
@@ -1630,11 +1650,25 @@ int info_xml_refresh(int regist_flag, int push_flags[], unsigned int push_flags_
 	snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&resgist_action), sizeof(resgist_action), sqlite_callback);
-/*
-回调结束时，flag_carrier携带是否有进度注册的标记，1表示有注册，0表示无注册。
-*/	
-	PRINTF("ret: %d\n", ret);
-	
+
 	return ret;
+}
+
+int info_xml_regist()
+{
+	int push_flags[16];
+	unsigned int push_flags_cnt = 0;
+	
+	push_flags_cnt = 0;
+	push_flags[push_flags_cnt] = GUIDELIST_XML;
+	push_flags_cnt ++;
+	push_flags[push_flags_cnt] = PRODUCTDESC_XML;
+	push_flags_cnt ++;
+	push_flags[push_flags_cnt] = COMMANDS_XML;
+	push_flags_cnt ++;
+	push_flags[push_flags_cnt] = MESSAGE_XML;
+	push_flags_cnt ++;
+	
+	return info_xml_refresh(1,push_flags,push_flags_cnt);
 }
 

@@ -6,6 +6,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "common.h"
 #include "xmlparser.h"
@@ -809,7 +810,7 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 		szAttr = xmlGetProp(cur, attrPtr->name);
 		if(NULL!=szAttr)
 		{
-			DEBUG("property of %s, %s: %s\n", xmlroute, attrPtr->name, szAttr);
+			PRINTF("property of %s, %s: %s\n", xmlroute, attrPtr->name, szAttr);
 // xml general property
 			if(0==strcmp(xmlroute, XML_ROOT_ELEMENT)){
 				DBSTAR_XMLINFO_S *p = (DBSTAR_XMLINFO_S *)ptr;
@@ -1063,11 +1064,11 @@ static int read_xmlver_in_trans(DBSTAR_XMLINFO_S *xmlinfo,char *old_xmlver,unsig
 	char sqlite_cmd[512];
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Version FROM Initialize WHERE PushFlag='%s' AND ID='%s';",xmlinfo->PushFlag,xmlinfo->ID);
 	if(0<sqlite_transaction_read(sqlite_cmd,old_xmlver,old_xmlver_size)){
-		DEBUG("read xml old version: %s\n", old_xmlver);
+		PRINTF("read xml old version: %s\n", old_xmlver);
 		return 0;
 	}
 	else{
-		DEBUG("read xml old version failed\n");
+		PRINTF("read xml old version failed\n");
 		return -1;
 	}
 }
@@ -1148,7 +1149,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 		
 		if(0==uniform_parse){
 			snprintf(new_xmlroute, sizeof(new_xmlroute), "%s^%s", xmlroute, cur->name);
-			DEBUG("XML route: %s\n", new_xmlroute);
+			PRINTF("XML route: %s\n", new_xmlroute);
 			
 // Initialize.xml
 			if(0==strncmp(new_xmlroute, "Initialize^", strlen("Initialize^"))){
@@ -2481,7 +2482,6 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 	xmlNodePtr cur;
 	int ret = 0;
 	int push_flags[16];
-	unsigned int push_flags_cnt = 0;
 	char xml_uri[512];
 	PUSH_XML_FLAG_E actual_xml_flag = xml_flag;
 	
@@ -2527,6 +2527,8 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 		char old_xmlver[64];
 		memset(old_xmlver, 0, sizeof(old_xmlver));
 
+#if 0
+// 如果新下发了Initialize.xml但是又不需要解析，这里的反注册就傻逼了。
 // Initialize.xml不存在Service判断问题	
 		if(INITIALIZE_XML==actual_xml_flag){
 			push_flags_cnt = 0;
@@ -2543,6 +2545,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 			
 			info_xml_refresh(0,push_flags,push_flags_cnt);
 		}
+#endif
 		
 		if(-1==sqlite_transaction_begin()){
 			ret = -1;
@@ -2593,7 +2596,14 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 				if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) ){
 					DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
 							old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+#if 0
 					ret = -1;
+#else
+					/*
+					 Service.xml起到承上启下的作用，因此即便版本号相同，也返回0，以便ProductDesc.xml、GuideList.xml等得以注册
+					*/
+					ret = 0;
+#endif
 				}
 				else
 				{
@@ -2825,19 +2835,13 @@ PARSE_XML_END:
 			
 			push_flags[0] = SERVICE_XML;
 			info_xml_refresh(1,push_flags,1);
+			
+			service_xml_waiting_set(1);
 		}
 		else if(SERVICE_XML==actual_xml_flag){
-			push_flags_cnt = 0;
-			push_flags[push_flags_cnt] = GUIDELIST_XML;
-			push_flags_cnt ++;
-			push_flags[push_flags_cnt] = PRODUCTDESC_XML;
-			push_flags_cnt ++;
-			push_flags[push_flags_cnt] = COMMANDS_XML;
-			push_flags_cnt ++;
-			push_flags[push_flags_cnt] = MESSAGE_XML;
-			push_flags_cnt ++;
-			
-			info_xml_refresh(1,push_flags,push_flags_cnt);
+			service_xml_waiting_set(0);
+			usleep(200000);
+			info_xml_regist();
 		}
 	}
 
