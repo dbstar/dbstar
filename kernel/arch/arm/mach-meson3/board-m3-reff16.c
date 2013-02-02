@@ -319,12 +319,12 @@ static struct mtd_partition spi_partition_info[] = {
     //*/
     {
         .name = "ubootenv",
-        .offset = 0x80000,
+        .offset = 0x66000,
         .size = 0x2000,
 },
     {
 	.name = "hashtable",
-	.offset = 0x100000,
+	.offset = 0x70000,
 	.size = 0x2000,
     },
     /* Hide recovery partition
