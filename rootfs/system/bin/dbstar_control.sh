@@ -46,6 +46,21 @@ dbstar_init()
 		setprop dbstar.inited 1
 	fi
 
+	if [ -e "/data/dbstar/drm" ]; then
+		echo "drm entitle already inited!"
+	else
+		cp -rf /system/etc/dbstar/drm /data/dbstar/
+		sync
+		chown system /data/dbstar/drm
+		chmod 777 /data
+		chmod 777 /data/dbstar
+		chmod 777 /data/dbstar/drm
+		chmod 777 /data/dbstar/drm/entitle
+		chmod 777 /data/dbstar/drm/entitle/block01
+		setprop dbstar.inited 1
+	fi
+
+
 	if [ -e "/data/misc/dhcp/dhcpcd-eth0.lease" ]; then
 		rm /data/misc/dhcp/dhcpcd-eth0.lease
 	fi
