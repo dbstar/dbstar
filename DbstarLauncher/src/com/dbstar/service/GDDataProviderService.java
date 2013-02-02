@@ -1850,6 +1850,19 @@ public class GDDataProviderService extends Service {
 					}
 					break;
 				}
+				
+				case DbstarServiceApi.DRM_OSD_SHOW: {
+					byte[] bytes = intent.getByteArrayExtra("message");
+
+					if (bytes != null) {
+						String data = StringUtil.getUTF8String(bytes);
+						Message msg = mHandler
+								.obtainMessage(GDCommon.MSG_DISP_NOTIFICATION);
+						msg.obj = data;
+						mHandler.sendMessage(msg);
+					}
+					break;
+				}
 
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_SUCCESS: {
 					mIsDbServiceStarted = true;

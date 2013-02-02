@@ -340,10 +340,10 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 			Log.d(TAG, "onVideoSizeChanged (" + width + "x" + height + ")");
 			mVideoWidth = mp.getVideoWidth();
 			mVideoHeight = mp.getVideoHeight();
-			if (mVideoWidth != 0 && mVideoHeight != 0) {
-				adjustVideoViewSize();
-				getHolder().setFixedSize(mSurfaceViewWidth, mSurfaceViewHeight);
-			}
+//			if (mVideoWidth != 0 && mVideoHeight != 0) {
+//				adjustVideoViewSize();
+//				getHolder().setFixedSize(mSurfaceViewWidth, mSurfaceViewHeight);
+//			}
 		}
 	};
 
@@ -394,11 +394,11 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 			if (mVideoWidth != 0 && mVideoHeight != 0) {
 				Log.d(TAG, "video size: " + mVideoWidth + "/" + mVideoHeight);
 
-				if (mSurfaceViewWidth == 0 || mSurfaceViewHeight == 0) {
-					adjustVideoViewSize();
-				}
-
-				getHolder().setFixedSize(mSurfaceViewWidth, mSurfaceViewHeight);
+//				if (mSurfaceViewWidth == 0 || mSurfaceViewHeight == 0) {
+//					adjustVideoViewSize();
+//				}
+//
+//				getHolder().setFixedSize(mSurfaceViewWidth, mSurfaceViewHeight);
 
 				if (mTargetState == STATE_PLAYING) {
 					start();
@@ -538,19 +538,21 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 			Log.d(TAG, "surfaceChanged (" + w + "x" + h + ")");
 			mSurfaceWidth = w;
 			mSurfaceHeight = h;
-			boolean isValidState = (mTargetState == STATE_PLAYING);
-			boolean hasValidSize = (mSurfaceViewWidth == w && mSurfaceViewHeight == h);
-			if (mMediaPlayer != null && isValidState && hasValidSize) {
-				if (mSeekWhenPrepared != 0) {
-					seekTo(mSeekWhenPrepared);
-				}
-				start();
-			}
+//			boolean isValidState = (mTargetState == STATE_PLAYING);
+//			boolean hasValidSize = (mSurfaceViewWidth == w && mSurfaceViewHeight == h);
+//			if (mMediaPlayer != null && isValidState && hasValidSize) {
+//				if (mSeekWhenPrepared != 0) {
+//					seekTo(mSeekWhenPrepared);
+//				}
+//				start();
+//			}
 		}
 
 		public void surfaceCreated(SurfaceHolder holder) {
 			// Log.d(TAG, "surfaceCreated");
 			mSurfaceHolder = holder;
+//			mSurfaceHolder.setFixedSize(getWidth(), getHeight());
+
 			openVideo();
 		}
 

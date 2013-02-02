@@ -5,6 +5,7 @@ import java.util.TimerTask;
 
 import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
+import com.dbstar.app.alert.NotificationFragment;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.service.ClientObserver;
@@ -13,6 +14,8 @@ import com.dbstar.service.GDDataProviderService.DataProviderBinder;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -87,8 +90,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	GDAlertDialog mAlertDlg = null, mSmartcardDlg = null;
 	int mAlertType = -1;
-
-	private String mNotification = "";
 
 	protected Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -431,12 +432,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			dialog.showSingleButton();
 			break;
 		}
-		case DLG_TYPE_NOTIFICATION: {
-			dialog.setTitle(R.string.alert_title);
-			dialog.setMessage(mNotification);
-			dialog.showSingleButton();
-			break;
-		}
 		}
 
 		if (dialog != null) {
@@ -524,17 +519,28 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	protected void displayNotification(String message) {
-		mNotification = message;
+		Log.d(TAG, " ======= displayNotification ============ " + message);
 
-		mAlertType = DLG_TYPE_NOTIFICATION;
+		if (message != null && !message.isEmpty()) {
 
-		Log.d(TAG, " ==== displayNotification === type = " + mAlertType + " "
-				+ mNotification);
+			FragmentTransaction ft = getFragmentManager().beginTransaction();
+			Fragment prev = getFragmentManager().findFragmentByTag(
+					"osd_notification");
+			if (prev != null) {
+				ft.remove(prev);
+			}
+			ft.addToBackStack(null);
 
-		if (mAlertDlg == null || !mAlertDlg.isShowing()) {
-			showDialog(DLG_ID_ALERT);
-		} else {
-			displayAlertDlg(mAlertDlg, mAlertType);
+			String[] data = message.split("\t");
+			if (data.length > 2) {
+				int type = Integer.valueOf(data[0]);
+				int duration = Integer.valueOf(data[2]);
+				// Create and show the dialog.
+				NotificationFragment newFragment = NotificationFragment
+						.newInstance(type, data[1], duration);
+
+				newFragment.show(ft, "osd_notification");
+			}
 		}
 	}
 
