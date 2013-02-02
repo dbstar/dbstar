@@ -514,13 +514,13 @@ ProductType	NVARCHAR(64) DEFAULT '',\
 Flag	NVARCHAR(64) DEFAULT '',\
 OnlineDate	DATETIME DEFAULT '',\
 OfflineDate	DATETIME DEFAULT '',\
-IsReserved	CHAR(32) DEFAULT '',\
+IsReserved	CHAR(32) DEFAULT '0',\
 Price	NVARCHAR(32) DEFAULT '',\
 CurrencyType	NVARCHAR(32) DEFAULT '',\
 DRMFile	NVARCHAR(256) DEFAULT '',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 Authorization	NVARCHAR(64) DEFAULT '',\
-Visible	CHAR(32) DEFAULT '',\
+Visible	CHAR(32) DEFAULT '1',\
 Deleted	NVARCHAR(32) DEFAULT '',\
 VODNum	NVARCHAR(64) DEFAULT '',\
 VODPlatform	NVARCHAR(256),\
@@ -542,7 +542,7 @@ ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	DATETIME DEFAULT '',\
 PushEndTime	DATETIME DEFAULT '',\
 PublicationType	NVARCHAR(64) DEFAULT '',\
-IsReserved	NVARCHAR(64) DEFAULT '',\
+IsReserved	NVARCHAR(64) DEFAULT '0',\
 Visible	NVARCHAR(64) DEFAULT '1',\
 Favorite	NVARCHAR(64) DEFAULT '0',\
 IsAuthorized	NVARCHAR(64) DEFAULT '',\
@@ -586,7 +586,7 @@ ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 PushStartTime	DATETIME DEFAULT '',\
 PushEndTime	DATETIME DEFAULT '',\
 PublicationType	NVARCHAR(64) DEFAULT '',\
-IsReserved	CHAR(32) DEFAULT '',\
+IsReserved	CHAR(32) DEFAULT '0',\
 Visible	CHAR(32) DEFAULT '1',\
 DRMFile	NVARCHAR(256) DEFAULT '',\
 SetID	NVARCHAR(64) DEFAULT '',\
@@ -729,6 +729,9 @@ PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
 ServiceID	NVARCHAR(64) DEFAULT '0',\
 PreviewID	NVARCHAR(64) DEFAULT '0',\
 ProductID	NVARCHAR(64) DEFAULT '',\
+PublicationID	NVARCHAR(64) DEFAULT '',\
+IsReserved	CHAR(32) DEFAULT '0',\
+Visible	CHAR(32) DEFAULT '1',\
 PreviewType	NVARCHAR(64) DEFAULT '',\
 PreviewSize	NVARCHAR(64) DEFAULT '',\
 ShowTime	DATETIME DEFAULT '',\

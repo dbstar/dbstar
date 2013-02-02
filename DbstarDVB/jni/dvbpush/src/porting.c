@@ -578,7 +578,7 @@ int guidelist_select_refresh()
 
 
 #define REMOTE_FUTURE		"9999-99-99 99:99:99"
-#define TIME_STAMP_MIN		"2013-01-01 00:00:00"
+#define TIME_STAMP_MIN		"2013-02-01 00:00:00"
 #define DELETE_SIZE_ONCE	(107374182400LL)
 //(107374182400)==(100*1024*1024*1024)==100G
 static long long s_delete_total_size = 0LL;
@@ -595,9 +595,17 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 	long long total_size = 0LL;
 	char total_uri[512];
 	char *ids = (char *)receiver;
+	int ret = 0;
 	
+	// PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted,ReceiveStatus
 	for(i=1;i<row+1;i++)
 	{
+		// 如果此节目还没有下载完毕，先反注册
+		if(0==atoi(result[i*column+6])){
+			ret = push_dir_unregister(result[i*column+1]);
+			PRINTF("push_dir_unregister(%s) = %d\n", result[i*column+1], ret);
+		}
+		
 		sscanf(result[i*column+2],"%lld", &total_size);
 		DEBUG("%s\t#%s\t#%s=%lld\t#%s\t#%s\t#%s\n",result[i*column],result[i*column+1],result[i*column+2],total_size,result[i*column+3],result[i*column+4],result[i*column+5]);
 		
@@ -629,33 +637,45 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 	return 0;
 }
 
-
-int disk_manage()
-{	
-// 目前只做一个简单的磁盘整理，不考虑未纳入数据库管理的文件（需要扫描磁盘才能实现）
+/*
+ 目前只做一个简单的磁盘整理，不考虑未纳入数据库管理的文件（需要扫描磁盘才能实现）
+ 1、参数不是必须的，如果两个参数都为空，则按照FIFO原则从数据库中挨个删除；
+ 2、如果PublicationID不为空，则按照指定的ID进行删除；
+ 3、如果PublicationID为空，但ProductID不为空，则按照指定的产品进行删除。
+*/
+int disk_manage(char *PublicationID, char *ProductID)
+{
 	char sqlite_cmd[2048];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = disk_manage_cb;
 	char deleted_publicationids[1024];
 	memset(deleted_publicationids,0,sizeof(deleted_publicationids));
 
-#if 1
+#if 0
+不考虑时间过滤
 	char time_stamp[32];
 	memset(time_stamp,0,sizeof(time_stamp));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
-	if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
-		DEBUG("can not process push regist\n");
-		return -1;
-	}
+	localtime_rf(time_stamp, sizeof(time_stamp));
 	
 	if(strcmp(time_stamp,TIME_STAMP_MIN)<0){
 		DEBUG("such time stamp for now is invalid: %s, replace it as %s\n", time_stamp,REMOTE_FUTURE);
 		snprintf(time_stamp,sizeof(time_stamp),"%s",REMOTE_FUTURE);
 	}
 
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted FROM Publication WHERE PushEndTime<'%s' GROUP BY PublicationID ORDER BY Deleted DESC,ReceiveStatus,TimeStamp LIMIT 16;",time_stamp);
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted FROM Publication WHERE (PushEndTime<'%s' AND ReceiveStatus!='0') GROUP BY PublicationID ORDER BY IsReserved,Deleted DESC,ReceiveStatus,TimeStamp LIMIT 16;",time_stamp);
 #else
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted FROM Publication GROUP BY PublicationID ORDER BY Deleted DESC,ReceiveStatus,TimeStamp LIMIT 16;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted,ReceiveStatus FROM Publication");
+	if(NULL!=PublicationID && strlen(PublicationID)>0){
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE PublicationID='%s';",PublicationID);
+	}
+	else if(NULL!=ProductID && strlen(ProductID)>0){
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE URI='%s' GROUP BY PublicationID;",ProductID);
+	}
+	else{
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ReceiveStatus!='0' GROUP BY PublicationID ORDER BY IsReserved,Deleted DESC,ReceiveStatus,TimeStamp LIMIT 16;");
+	}
+	DEBUG("%s\n", sqlite_cmd);
 #endif
+
 	s_delete_total_size = 0LL;
 	int ret = sqlite_read(sqlite_cmd, deleted_publicationids, sizeof(deleted_publicationids), sqlite_callback);
 	if(ret>0){
@@ -682,10 +702,6 @@ int disk_manage()
 		
 		char sqlite_cmd_Initialize[2048];
 		snprintf(sqlite_cmd_Initialize, sizeof(sqlite_cmd_Initialize), "DELETE FROM Initialize WHERE ");
-
-/*
- 警告，修改后的Preview是Publication的一种，因此将Preview表中的ProductDescID字段用作PublicationID，用以建立Publication和Preview之间的关系
-*/
 
 		char sqlite_cmd_Preview[2048];
 		snprintf(sqlite_cmd_Preview, sizeof(sqlite_cmd_Preview), "DELETE FROM Preview WHERE ");
@@ -715,7 +731,7 @@ int disk_manage()
 				snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
 				snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA)," PublicationID='%s'", p_publicationid);
 				snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize)," (PushFlag='%d' AND ID='%s')", PUBLICATION_XML,p_publicationid);
-				snprintf(sqlite_cmd_Preview+strlen(sqlite_cmd_Preview),sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview)," (ProductDescID='%s')", p_publicationid);
+				snprintf(sqlite_cmd_Preview+strlen(sqlite_cmd_Preview),sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview)," (PublicationID='%s')", p_publicationid);
 				
 				if(1==first_publicaiton_flag)
 					first_publicaiton_flag = 0;

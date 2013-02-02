@@ -487,6 +487,43 @@ typedef struct{
 }DBSTAR_SPRODUCT_S;
 
 
+
+typedef enum{
+	DBSTAR_CMD_OP_UNDEFINED = 0,
+	DBSTAR_CMD_OP_DELETE = 1,
+	DBSTAR_CMD_OP_UPDATE = 2,
+	DBSTAR_CMD_OP_CANCELRESERVATION = 3,
+	DBSTAR_CMD_OP_RESERVE = 4,
+	DBSTAR_CMD_OP_FORCEDISPLAY = 5,
+	DBSTAR_CMD_OP_FORCEHIDE = 6
+}DBSTAR_CMD_OP_TYPE_E;
+
+typedef enum{
+	DBSTAR_CMD_OBJ_UNDEFINED = 0,
+	DBSTAR_CMD_OBJ_PUBLICATION = 1,
+	DBSTAR_CMD_OBJ_PRODUCT = 2,
+	DBSTAR_CMD_OBJ_PREVIEW = 3
+}DBSTAR_CMD_OBJ_TYPE_E;
+
+typedef enum{
+	DBSTAR_CMD_OBJ_FILE_UNDEFINED = 0,
+	DBSTAR_CMD_OBJ_FILE_DESCRIPTION = 1,
+	DBSTAR_CMD_OBJ_FILE_SUBTITLE = 2,
+	DBSTAR_CMD_OBJ_FILE_POSTER = 3
+}DBSTAR_CMD_OBJ_FILE_TYPE_E;
+
+typedef struct{
+	char						ID[64];
+	DBSTAR_CMD_OBJ_FILE_TYPE_E	fileType;
+}DBSTAR_CMD_OBJ_S;
+
+typedef struct{
+	DBSTAR_CMD_OP_TYPE_E	type;
+	DBSTAR_CMD_OBJ_TYPE_E	objectType;
+	DBSTAR_CMD_OBJ_S		object;			
+}DBSTAR_CMD_OPERATION_S;
+
+
 int appoint_str2int(char *str, unsigned int str_len, unsigned int start_position, unsigned int appoint_len, int base);
 unsigned int randint();
 int dir_exist_ensure(char *dir);

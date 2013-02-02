@@ -641,7 +641,7 @@ void *push_monitor_thread()
 		
 		if(1==s_disk_manage_flag){
 			DEBUG("will clean disk\n");
-			disk_manage();
+			disk_manage(NULL,NULL);
 			s_disk_manage_flag = 0;
 		}
 		
@@ -1410,50 +1410,49 @@ static int prog_monitor_reset(void)
  当反注册时文件被关闭，可以进行删除
 */
 			if(0==s_prgs[i].parsed){
-				DEBUG("[%s] %s is download stop but not complete, regist and clean it\n", s_prgs[i].id,s_prgs[i].uri);
+				PRINTF("[%s] %s is download stop but not complete, regist and clean it\n", s_prgs[i].id,s_prgs[i].uri);
 				ret = push_dir_unregister(s_prgs[i].uri);
 				if(0==ret){
-					DEBUG("push unregist: %s\n", s_prgs[i].uri);
 					ret = push_dir_remove(s_prgs[i].uri);
 					if(0==ret){
 						usleep(100000);
-						
-						int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
-						
-						// 大于1G的成品已经接收95%及以上
-						if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=5 && s_prgs[i].total>1073741824LL)
-						{
-							DEBUG("cur=%lld, total=%lld, wanting %d%%\n", s_prgs[i].cur, s_prgs[i].total, wanting_percent);
-							
-						}
-						
-						//else
-						{
-							DEBUG("push remove: %s\n", s_prgs[i].uri);
-							char reject_uri[512];
-							snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),s_prgs[i].uri);
-							if(0==remove_force(reject_uri)){
-								DEBUG("remove(%s) finished\n", reject_uri);
-								if(0==rubbish_prog_cnt)
-									snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'",s_prgs[i].id);
-								else
-									snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR PublicationID='%s'",s_prgs[i].id);
-								
-								rubbish_prog_cnt++;
-							}
-							else
-								DEBUG("remove(%s) FAILED\n", reject_uri);
-						}
 					}
 					else if(-1==ret)
-						DEBUG("push remove failed: %s, no such uri\n", s_prgs[i].uri);
+						PRINTF("push remove failed: %s, no such uri\n", s_prgs[i].uri);
 					else
-						DEBUG("push remove failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+						PRINTF("push remove failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
 				}
 				else if(-1==ret)
-					DEBUG("push unregist failed: %s, no registed uri\n", s_prgs[i].uri);
+					PRINTF("push unregist failed: %s, no registed uri\n", s_prgs[i].uri);
 				else
-					DEBUG("push unregist failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+					PRINTF("push unregist failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+				
+				
+				int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
+				
+				// 大于1G的成品已经接收95%及以上
+				if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=5 && s_prgs[i].total>1073741824LL)
+				{
+					DEBUG("cur=%lld, total=%lld, wanting %d%%\n", s_prgs[i].cur, s_prgs[i].total, wanting_percent);
+					
+				}
+				
+				//else
+				{
+					char reject_uri[512];
+					snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),s_prgs[i].uri);
+					if(0==remove_force(reject_uri)){
+						DEBUG("remove(%s) finished\n", reject_uri);
+						if(0==rubbish_prog_cnt)
+							snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'",s_prgs[i].id);
+						else
+							snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR PublicationID='%s'",s_prgs[i].id);
+						
+						rubbish_prog_cnt++;
+					}
+					else
+						DEBUG("remove(%s) FAILED\n", reject_uri);
+				}
 			}
 			
 			DEBUG("unregist from push[%d]:%s %s %s %lld\n",
