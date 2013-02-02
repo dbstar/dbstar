@@ -262,7 +262,7 @@ public class GDEngine {
 			mState = STATE_CONNECTED;
 		}
 		
-		if (mLoginState != LOGIN_ISLOGIN) {
+		if (mLoginState != LOGIN_ISLOGIN && mLoginState != LOGIN_ISLOGINGIN) {
 			mLoginState = LOGIN_ISLOGINGIN;
 			mClient.login();
 		}

@@ -229,20 +229,22 @@ public class GDPowerController {
 		String powerNumStr = "", powerFeeStr = "";
 		if (status.CycleType != null) {
 			if (status.CycleType.equals(ElectricityPrice.CYCLETYPE_MONTH)) {
+				powerNum = data.MonthPower.Count;
+				powerFee = data.MonthPower.Fee;
+
 				powerNumStr = mMonthUsageStr + powerNum + " " + Degree;
 				powerFeeStr = mMonthCostStr + powerFee + " " + Yuan;
 
-				powerNum = data.MonthPower.Count;
-				powerFee = data.MonthPower.Fee;
 				powerNumValue = Float.valueOf(powerNum);
 				powerFeeValue = Float.valueOf(powerFee);
 
 			} else if (status.CycleType.equals(ElectricityPrice.CYCLETYPE_YEAR)) {
+				powerNum = data.YearPower.Count;
+				powerFee = data.YearPower.Fee;
+
 				powerNumStr = mYearUsageStr + powerNum + " " + Degree;
 				powerFeeStr = mYearCostStr + powerFee + " " + Yuan;
 
-				powerNum = data.YearPower.Count;
-				powerFee = data.YearPower.Fee;
 				powerNumValue = Float.valueOf(powerNum);
 				powerFeeValue = Float.valueOf(powerFee);
 			}

@@ -100,15 +100,26 @@ public class GDBillActivity extends GDBaseActivity {
 
 	private void initializeData(String dateStr) {
 
-		Date date = DateUtil.getDateFromStr(dateStr, DateUtil.DateFormat1);
+//		Date date = DateUtil.getDateFromStr(dateStr, DateUtil.DateFormat1);
+//
+//		Calendar c = Calendar.getInstance();
+//		c.setTime(date);
+//		int year = c.get(Calendar.YEAR);
+//		int month = c.get(Calendar.MONTH);
+		
+		if (dateStr == null || dateStr.isEmpty()) {
+			return;
+		}
 
-		Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		int year = c.get(Calendar.YEAR);
-		int month = c.get(Calendar.MONTH);
+		String[] temp = dateStr.split(" ");
+		String date = temp[0];
+		String[] dateTime = date.split("-");
 
-		mCurrentYear = String.valueOf(year);
-		mCurrentMonth = String.valueOf(month);
+		mCurrentYear = dateTime[0];
+		mCurrentMonth = dateTime[1];
+		
+		int year = Integer.valueOf(mCurrentYear);
+		int month = Integer.valueOf(mCurrentMonth);
 
 		mYearList = new ArrayList<String>();
 		for (int i = year; i > year - 10; i--) {

@@ -17,11 +17,15 @@ public class GDSmartHomeProvider extends GDDBProvider {
 	private static final int GLOBAL = 1001;
 
 	// Create Table Statement
+//	private static final String CREATE_GLOBAL_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS global("
+//			+ Global.ID
+//			+ " integer primary key AutoIncrement, "
+//			+ Global.NAME
+//			+ " NVARCHAR(20), " + Global.VALUE + " NVARCHAR(20));";
+	
 	private static final String CREATE_GLOBAL_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS global("
-			+ Global.ID
-			+ " integer primary key AutoIncrement, "
 			+ Global.NAME
-			+ " NVARCHAR(20), " + Global.VALUE + " NVARCHAR(20));";
+			+ " NVARCHAR(32) PRIMARY KEY, " + Global.VALUE + " NVARCHAR(64));";
 
 	static {
 		sURIMatcher.addURI(GDSmartHomeContract.AUTHORITY, "global", GLOBAL);
@@ -34,11 +38,10 @@ public class GDSmartHomeProvider extends GDDBProvider {
 	public interface GlobalQuery {
 		String TABLE = Tables.GLOBAL;
 
-		String[] COLUMNS = new String[] { Global.ID, Global.NAME, Global.VALUE };
+		String[] COLUMNS = new String[] { Global.NAME, Global.VALUE };
 
-		int ID = 0;
-		int NAME = 1;
-		int VALUE = 2;
+		int NAME = 0;
+		int VALUE = 1;
 	}
 
 	public String getTableName(int uri) {

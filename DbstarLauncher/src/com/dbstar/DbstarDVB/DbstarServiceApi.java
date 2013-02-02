@@ -41,7 +41,8 @@ public class DbstarServiceApi {
 	public static final int DRM_SC_REMOVE_OK				= 0x20102;    // DRM smartcard Remove OK
 	public static final int DRM_SC_REMOVE_FAILED			= 0x20103;    // DRM smartcard Remove failed
 	public static final int DRM_EMAIL_NEW                   = 0x20104;
-	
+	public static final int	DRM_OSD_SHOW                    = 0x20105;
+
 	public static final int TDT_TIME_SYNC                   = 0x30017;    // Time format: 2012-12-22 18:03:14
 
 	public static final int CMD_MAX                         = 0x0FFFF;
@@ -60,7 +61,7 @@ public class DbstarServiceApi {
 	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015; // Preview has new update
 	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016; // UI resource has new update
 	
-	public static final int DIALOG_NOTICE                   = 0x20000;    // Update times info
+	public static final int DIALOG_NOTICE                   = 0x20000; // Update times info
 	public static final int	UPGRADE_NEW_VER                 = 0x20001;
 	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;
 	public static final int	UPGRADE_START                   = 0x20003;

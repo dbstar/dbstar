@@ -83,8 +83,7 @@ public class GDClient {
 	private UncaughtExceptionHandler mExceptionHandler = new UncaughtExceptionHandler() {
 		public void uncaughtException(Thread thread, Throwable ex) {
 
-			Log.d(TAG,
-					" ======== uncaughtException ========== " + ex.getMessage());
+			Log.d(TAG, " ====== uncaughtException ======= " + ex.getMessage());
 		}
 	};
 
@@ -242,7 +241,7 @@ public class GDClient {
 		msg.obj = task;
 		mClientHandler.sendMessage(msg);
 	}
-	
+
 	public void getBusinessArea(String userId, String areaId) {
 		String taskId = GDCmdHelper.generateUID();
 		String cmdStr = GDCmdHelper.constructGetBusinessAreaCmd(taskId, userId,
@@ -291,7 +290,7 @@ public class GDClient {
 	}
 
 	private void handleResponse(String response) {
-//		Log.d(TAG, " ++++++++++++handleResponse++++++++" + response);
+		// Log.d(TAG, " ++++++++++++handleResponse++++++++" + response);
 
 		String[] data = GDCmdHelper.processResponse(response);
 
@@ -309,7 +308,7 @@ public class GDClient {
 				break;
 			}
 		}
-		
+
 		if (task != null) {
 			task.ResponseData = data;
 			processResponse(task);
@@ -323,7 +322,7 @@ public class GDClient {
 
 		String contentType = task.ResponseData[5];
 
-//		Log.d(TAG, "==========response content= " + contentType);
+		// Log.d(TAG, "==========response content= " + contentType);
 
 		if (contentType.equals("error")) {
 			Log.d(TAG, "========== error ==== " + task.ResponseData[7]);
@@ -377,10 +376,9 @@ public class GDClient {
 			task.ParsedData = business;
 			break;
 		}
-		
+
 		case REQUEST_USERAREAINFO: {
-			AreaInfo areaInfo = AreaInfoHandler
-					.parse(task.ResponseData[7]);
+			AreaInfo areaInfo = AreaInfoHandler.parse(task.ResponseData[7]);
 			task.ParsedData = areaInfo;
 			break;
 		}
@@ -399,6 +397,7 @@ public class GDClient {
 
 		try {
 			Log.d(TAG, " ====== doConnectToServer ===");
+
 			if (mSocket != null) {
 				if (mSocket.isConnected()) {
 					// socket has already been connected.
