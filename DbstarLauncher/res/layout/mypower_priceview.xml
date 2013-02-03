@@ -4,63 +4,91 @@
     android:layout_height="match_parent"
     android:background="@drawable/price_dlg_bg" >
 
-    <LinearLayout
-        android:id="@+id/list_header"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp"
         android:layout_marginTop="40dp"
-        android:background="@drawable/list_header_bg"
-        android:orientation="horizontal" >
+        android:background="@drawable/listitem_light_bg" >
 
-        <TextView
-            android:layout_width="260dp"
+        <LinearLayout
+            android:id="@+id/list_header"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="40dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:background="@drawable/listitem_dark_bg"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="260dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="center"
+                android:text="@string/head_step_level"
+                android:textColor="#000000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="320dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="left"
+                android:paddingLeft="10dp"
+                android:text="@string/head_price_interval"
+                android:textColor="#000000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="320dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="left"
+                android:paddingLeft="10dp"
+                android:text="@string/head_price_level"
+                android:textColor="#000000"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/price_list"
+            android:layout_width="942dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/head_step_level"
-            android:textColor="#000000"
-            android:textSize="18sp" />
+            android:layout_below="@+id/list_header"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="40dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:cacheColorHint="@android:color/transparent"
+            android:clipToPadding="false"
+            android:divider="#00000000"
+            android:dividerHeight="4dp"
+            android:drawSelectorOnTop="false"
+            android:listPreferredItemHeight="48dp"
+            android:listSelector="#00000000"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbarStyle="outsideOverlay" />
+    </RelativeLayout>
 
-        <TextView
-            android:layout_width="320dp"
-            android:layout_height="wrap_content"
-            android:gravity="left"
-            android:paddingLeft="10dp"
-            android:text="@string/head_price_interval"
-            android:textColor="#000000"
-            android:textSize="18sp" />
-
-        <TextView
-            android:layout_width="320dp"
-            android:layout_height="wrap_content"
-            android:gravity="left"
-            android:paddingLeft="10dp"
-            android:text="@string/head_price_level"
-            android:textColor="#000000"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <ListView
-        android:id="@+id/price_list"
-        android:layout_width="942dp"
+    <Button
+        android:id="@+id/ok_button"
+        android:layout_width="140dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/list_header"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
-        android:cacheColorHint="@android:color/transparent"
-        android:clipToPadding="false"
-        android:divider="#00000000"
-        android:dividerHeight="4dp"
-        android:drawSelectorOnTop="false"
-        android:listPreferredItemHeight="48dp"
-        android:listSelector="#00000000"
-        android:scrollbarAlwaysDrawVerticalTrack="true"
-        android:scrollbarStyle="outsideOverlay" />
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/gd_btn_bg"
+        android:text="@string/button_text_ok"
+        android:textColor="#ffffff"
+        android:textSize="18sp" />
 
 </RelativeLayout>

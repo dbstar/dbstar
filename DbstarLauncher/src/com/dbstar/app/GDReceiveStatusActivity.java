@@ -461,9 +461,9 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		// super.initializeView();
 
 		mReceiveItemLightBackground = getResources().getDrawable(
-				R.drawable.receive_item_light_bg);
+				R.drawable.listitem_light_bg);
 		mReceiveItemDarkBackground = getResources().getDrawable(
-				R.drawable.receive_item_dark_bg);
+				R.drawable.listitem_dark_bg);
 
 		mStatusWaitting = getResources().getString(
 				R.string.receivestatus_status_waitting);

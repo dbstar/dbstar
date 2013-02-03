@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,6 +29,7 @@ public class GDPriceDlgFragment extends DialogFragment {
 
 	private ListAdapter mAdapter;
 	private ListView mListView;
+	private Button mButton;
 
 	private Activity mActivity;
 
@@ -55,7 +57,20 @@ public class GDPriceDlgFragment extends DialogFragment {
 			Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.mypower_priceview, null, false);
 		mListView = (ListView) v.findViewById(R.id.price_list);
+		mButton = (Button) v.findViewById(R.id.ok_button);
+		mButton.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				hideDlg();
+			}
+		});
+
 		return v;
+	}
+	
+	void hideDlg() {
+		getDialog().dismiss();
 	}
 
 	@Override
@@ -63,9 +78,11 @@ public class GDPriceDlgFragment extends DialogFragment {
 		super.onActivityCreated(savedInstanceState);
 		mActivity = getActivity();
 		initializeView();
-		
-		int width = getResources().getDimensionPixelSize(R.dimen.popup_window_width);
-		int height = getResources().getDimensionPixelSize(R.dimen.popup_window_height);        
+
+		int width = getResources().getDimensionPixelSize(
+				R.dimen.popup_window_width);
+		int height = getResources().getDimensionPixelSize(
+				R.dimen.popup_window_height);
 		getDialog().getWindow().setLayout(width, height);
 	}
 

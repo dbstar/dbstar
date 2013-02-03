@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="1021dp"
     android:layout_height="wrap_content"
-    android:background="@drawable/powerbill_listitem_bg"
+    android:background="@drawable/listitem_selected_bg"
     android:orientation="horizontal" >
 
     <TextView

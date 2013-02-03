@@ -133,9 +133,9 @@ public class MailBoxFragment extends GDSmartcardFragment {
 	void initializeView() {
 
 		mItemLightBackground = getResources().getDrawable(
-				R.drawable.receive_item_light_bg);
+				R.drawable.listitem_light_bg);
 		mItemDarkBackground = getResources().getDrawable(
-				R.drawable.receive_item_dark_bg);
+				R.drawable.listitem_dark_bg);
 		mItemFocusedBackground = getResources().getDrawable(
 				R.drawable.receive_item_focused_bg);
 

@@ -120,9 +120,9 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		mTimelineItemTextFocusedBackground = getResources().getDrawable(
 				R.drawable.timeline_date_focused);
 		mReceiveItemLightBackground = getResources().getDrawable(
-				R.drawable.receive_item_light_bg);
+				R.drawable.listitem_light_bg);
 		mReceiveItemDarkBackground = getResources().getDrawable(
-				R.drawable.receive_item_dark_bg);
+				R.drawable.listitem_dark_bg);
 		mReceiveItemFocusedBackground = getResources().getDrawable(
 				R.drawable.receive_item_focused_bg);
 		mReceiveItemChecked = getResources().getDrawable(
