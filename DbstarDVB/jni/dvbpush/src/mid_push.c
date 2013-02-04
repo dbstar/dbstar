@@ -402,7 +402,7 @@ static int prog_monitor(PROG_S *prog)	//, char *time_stamp
 		*/
 		long long rxb = push_dir_get_single(prog->uri);
 		
-		DEBUG("PROG_S[%s]:%s %s %lld/%lld %-3lld%%\n",
+		PRINTF("PROG_S[%s]:%s %s %lld/%lld %-3lld%%\n",
 			prog->id,
 			prog->uri,
 			prog->descURI,
@@ -413,7 +413,7 @@ static int prog_monitor(PROG_S *prog)	//, char *time_stamp
 		prog->cur = rxb;
 	}
 	else
-		DEBUG("s_push_has_data=%d, prog->cur=%lld, prog->total=%lld, no need to monitor\n", s_push_has_data,prog->cur,prog->total);
+		PRINTF("s_push_has_data=%d, prog->cur=%lld, prog->total=%lld, no need to monitor\n", s_push_has_data,prog->cur,prog->total);
 
 	return 0;
 }
@@ -1613,7 +1613,7 @@ static int info_xml_refresh_cb(char **result, int row, int column, void *receive
 			ret = push_file_register(result[i*column+1]);
 		}
 		
-		DEBUG("%s(%s) return with %d\n", 0==regist_flag?"unregist":"regist",result[i*column+1],ret);
+		PRINTF("%s(%s) return with %d\n", 0==regist_flag?"unregist":"regist",result[i*column+1],ret);
 	}
 	
 	return 0;

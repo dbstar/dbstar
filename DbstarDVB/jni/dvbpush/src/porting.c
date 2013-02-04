@@ -25,6 +25,7 @@
 #include "multicast.h"
 #include "porting.h"
 #include "drmapi.h"
+#include "push.h"
 
 static int 			s_settingInitFlag = 0;
 
