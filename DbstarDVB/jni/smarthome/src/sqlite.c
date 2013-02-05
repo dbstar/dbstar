@@ -18,17 +18,10 @@ static sem_t g_sem_db;
 static int g_db_open_count=0;
 //static char cmdStr[SQLITECMDLEN];									///cmd string to be operate by "sqlite3_exec"\"sqlite3_get_table"
 
-static int createDatabase();
-static int openDatabase();
-static void closeDatabase();
 static int createTable(char* name);
 
 
 static int createDatabase()
-{
-	return openDatabase();
-}
-static int openDatabase()
 {
 	char	*errmsgOpen=NULL;
 	int		ret = -1;
@@ -44,11 +37,11 @@ static int openDatabase()
 		}
 		else{
 			if(SQLITE_OK!=sqlite3_open(DATABASE,&g_db)){
-				ERROROUT("can't open database %s\n", DATABASE);
+				ERROROUT("can't open %s\n", DATABASE);
 				ret = -1;
 			}
 			else{
-				DEBUG("open database(%s) OK\n", DATABASE);
+				DEBUG("open %s OK\n", DATABASE);
 				/// open foreign key support
 				if(sqlite3_exec(g_db,"PRAGMA foreign_keys=ON;",NULL,NULL,&errmsgOpen)
 					|| NULL!=errmsgOpen){
@@ -131,10 +124,35 @@ static int openDatabase()
 					}
 				}
 				sqlite3_free(errmsgOpen);
+				sqlite3_close(g_db);
+				chmod(DATABASE,0666);
+				DEBUG("close %s and chmod 0666\n", DATABASE);
 			}
-			chmod(DATABASE,0666);
 		}
 	}
+	
+	return ret;
+}
+
+
+static int openDatabase()
+{
+	int ret = -1;
+	
+	if(g_db!=NULL){
+		DEBUG("the database has opened\n");
+		ret = 0;
+	}
+	else
+	{
+		if(SQLITE_OK!=sqlite3_open(DATABASE,&g_db)){
+			ERROROUT("can't open %s\n", DATABASE);
+			ret = -1;
+		}
+		else
+			ret = 0;
+	}
+	
 	if(0==ret){
 		sem_wait(&g_sem_db);
 		g_db_open_count++;
@@ -144,6 +162,8 @@ static int openDatabase()
 	
 	return ret;
 }
+
+
 static void closeDatabase()
 {
 	sem_wait(&g_sem_db);
@@ -393,9 +413,7 @@ int sqlite_init()
 	}
 	if(-1==createDatabase())						///open database
 		return -1;
-	///see need update
-//	if (-1==updateDatabase())					/// update database
-//		return -1;
+	
 	return 0;						/// quit
 }
 /***getGlobalPara() brief get some global variables from sqlite, such as 'version'.

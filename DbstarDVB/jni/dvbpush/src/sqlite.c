@@ -283,8 +283,8 @@ CREATE_TABLE_END:
 				DEBUG("shot tables finished, ret=%d\n", ret);
 			}
 			sqlite3_free(errmsgOpen);
+			closeDatabase();
 		}
-		closeDatabase();
 	}
 	
 	return ret;
