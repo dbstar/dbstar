@@ -114,8 +114,11 @@ time_t time_get(time_t *timer)
 {
 	time_t timep;
 	time(&timep);
+	DEBUG("origine time of stb: %ld\n", timep);
 	timep += smart_power_difftime_get();
 	timep += 60*60*timezone_repair();
+	
+	DEBUG("time_get time: %ld(+%d)\n", timep,smart_power_difftime_get());
 	
 	if(NULL!=timer)
 		*timer = timep;

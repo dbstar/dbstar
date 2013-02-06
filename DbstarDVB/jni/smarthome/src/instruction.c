@@ -62,8 +62,9 @@ static int instruction_reset(INSTRUCTION_S* instruction)
 	instruction->alterable_flag = 0;
 	memset(instruction->alterable_entity, 0, sizeof(instruction->alterable_entity));
 	instruction->index_in_cmds = -1;
-
-	g_smart_power_time.difference_time = 0;
+	
+	// 2013-02-06，这个重置会导致服务器设置下来的时间在第二个指令及以后完全失效，故删除
+	//g_smart_power_time.difference_time = 0;
 	return 0;
 }
 
@@ -1890,6 +1891,9 @@ INSTRUCTION_RESULT_E instruction_dispatch(INSTRUCTION_S *instruction)
 					DEBUG("Server GMT time   is: %s", asctime(&gmt_tm));
 
 					time_rectify_flag_reset();
+					
+					timing_task_refresh();
+					
 					return RESULT_OK;
 				}
 				else if(0x02==instruction->arg2 && 0x00==instruction->alterable_flag){

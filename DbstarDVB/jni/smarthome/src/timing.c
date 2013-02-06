@@ -184,7 +184,12 @@ int timing_init(void)
 
 	DEBUG("g_power_consumption_upload_tm.tm_min=%d, g_power_upload_tm.tm_min=%d\n", g_power_consumption_upload_tm.tm_min, g_power_upload_tm.tm_min);
 
+#if 0
+	// 2013-02-06
+	// 放在收到server的时间戳以后执行，避免错误的机顶盒时间引起不合理的定时任务执行	
 	timing_task_refresh();
+#endif
+
 	return 0;
 }
 
@@ -343,7 +348,7 @@ int timing_task_refresh(void)
 	time_get(&now_sec);
 	localtime_r(&now_sec, &now_tm);
 
-	DEBUG("refresh timing task at (repair with server time and timezone) %d %02d %02d  %s  %02d:%02d:%02d\n",(1900+now_tm.tm_year), (1+now_tm.tm_mon), now_tm.tm_mday,
+	DEBUG("refresh timing task at (repair with server time and timezone)[%ld] %d %02d %02d  %s  %02d:%02d:%02d\n", now_sec, (1900+now_tm.tm_year), (1+now_tm.tm_mon), now_tm.tm_mday,
 		wday[now_tm.tm_wday], now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec);
 	
 	char sqlite_cmd[128];
@@ -417,9 +422,8 @@ int timer_poll(void)
 	for(i=0; i<TIMER_NUM; i++){
 		if(	-1!=g_timers[i].id
 			&& 	NULL!=g_timers[i].callback
-			&&	(tv_now.tv_sec > g_timers[i].tv_timer.tv_sec
-				||	(tv_now.tv_sec == g_timers[i].tv_timer.tv_sec
-					&&	tv_now.tv_usec >= g_timers[i].tv_timer.tv_usec)) ){
+			&&	(tv_now.tv_sec > g_timers[i].tv_timer.tv_sec 
+				&& tv_now.tv_sec < (g_timers[i].tv_timer.tv_sec+30)) ){
 			DEBUG("g_timers[%d]=%d is ring at %d, call its callback function. ptr=%p\n", i, (int)(g_timers[i].tv_timer.tv_sec), (int)(tv_now.tv_sec), g_timers[i].callback);
 			callbackfun = g_timers[i].callback;
 			ret_callback = callbackfun(&(g_timers[i].tv_timer), g_timers[i].arg1, g_timers[i].arg2);

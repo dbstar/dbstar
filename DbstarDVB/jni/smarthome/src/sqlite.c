@@ -126,6 +126,7 @@ static int createDatabase()
 				sqlite3_free(errmsgOpen);
 				sqlite3_close(g_db);
 				chmod(DATABASE,0666);
+				g_db = NULL;
 				DEBUG("close %s and chmod 0666\n", DATABASE);
 			}
 		}
@@ -140,7 +141,7 @@ static int openDatabase()
 	int ret = -1;
 	
 	if(g_db!=NULL){
-		DEBUG("the database has opened\n");
+		DEBUG("the database has opened already\n");
 		ret = 0;
 	}
 	else
@@ -167,20 +168,16 @@ static int openDatabase()
 static void closeDatabase()
 {
 	sem_wait(&g_sem_db);
-	if(--g_db_open_count>0)
-		DEBUG("close database, leave %d times\n", g_db_open_count);
-	else
+	if(NULL!=g_db)
 	{
-		if(g_db!=NULL)
-		{
-			DEBUG("g_db_open_count is 0, and do sqlite3_close action\n");
-			sqlite3_close(g_db);
-			g_db_open_count=0;
-			g_db=NULL;
-		}
-		else{
-			DEBUG("g_db is NULL, can not do database close action\n");
-		}
+		sqlite3_close(g_db);
+		g_db_open_count=0;
+		g_db=NULL;
+		
+		DEBUG("close database, leave %d times\n",g_db_open_count);
+	}
+	else{
+		DEBUG("g_db is NULL, can not do database close action\n");
 	}
 	sem_post(&g_sem_db);
 }
