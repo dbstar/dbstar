@@ -1937,7 +1937,7 @@ int instruction_difftime_get(void)
 int instruction_insert(INSTRUCTION_S *inst)
 {
 	int i = 0;
-	char fifo_str[32];
+	char fifo_str[FIFO_STR_SIZE];
 	int ret = -1;
 
 	sem_wait(&s_sem_insert_insts);
@@ -1950,8 +1950,8 @@ int instruction_insert(INSTRUCTION_S *inst)
 	if(INSTRUCTION_INSERT_NUM==i)
 		ret = -1;
 	else{
-		memset(fifo_str, 0, FIFO_STR_SIZE);
-		strncpy(fifo_str, MSGSTR_INSTRUCTION_SELF, FIFO_STR_SIZE-1);
+		snprintf(fifo_str,sizeof(fifo_str),"%s", MSGSTR_INSTRUCTION_SELF);
+		
 		if(-1==write(fifo_fd, fifo_str, strlen(fifo_str))){
 			ERROROUT("write to fifo_2_instruction failed\n");
 			ret = -1;
@@ -2132,7 +2132,8 @@ void instruction_mainloop()
 				}
 				else{
 					DEBUG("read from fifo_fd: %s\n", fifo_str);
-					if(0==strcmp(fifo_str, MSGSTR_2_INSTRUCTION)){
+					if(		0==strcmp(fifo_str, MSGSTR_2_INSTRUCTION)
+						||	0==strcmp(fifo_str, MSGSTR_SYNC_2_INSTRUCTION)){
 						index_p = smart_power_cmds_open(CMD_ARRAY_OP_PROCESS, BOOL_FALSE);
 						if(-1!=index_p){
 							DEBUG("processing index: %d\n", index_p);
@@ -2140,13 +2141,69 @@ void instruction_mainloop()
 							instruction_reset(&instruction);
 							if(0==smart_power_instruction_get(index_p, instruction_str, sizeof(instruction_str))){
 								DEBUG("get instruction: %s\n", instruction_str);
-								inst_result = instruction_parse(instruction_str, sizeof(instruction_str), &instruction);
-								instruction.index_in_cmds = index_p;
-								if(-1==inst_result ){
-									DEBUG("instruction parse failed\n");
+								if(0==strcmp(fifo_str, MSGSTR_2_INSTRUCTION)){
+									inst_result = instruction_parse(instruction_str, sizeof(instruction_str), &instruction);
+									instruction.index_in_cmds = index_p;
+									if(-1==inst_result ){
+										DEBUG("instruction parse failed\n");
+									}
+									else{
+										inst_result = instruction_dispatch(&instruction);
+									}
 								}
-								else{
-									inst_result = instruction_dispatch(&instruction);
+								else{	// 0==strcmp(fifo_str, MSGSTR_SYNC_2_INSTRUCTION)
+									DEBUG("this is a sync instruction\n");
+//#tt#127.0.0.1:47440#68968724209946741111#sync#modl#0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
+// instruction_str: #0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
+// 5个#分割一个指令，如上示例有两个插入模式指令。
+		
+									char *p_mark = strchr(instruction_str, '#');
+									char *p_str = p_mark+1;
+									
+									char generate_cmd[1024];
+									char *p_sync_str = p_str;
+									char *p_sync_mark = p_mark;
+									int sharp_cnt = 0;
+									
+									while(0!=strlen(p_str)){
+
+										while(0!=strlen(p_sync_str) && sharp_cnt<5){
+											p_sync_mark = strchr(p_sync_str, '#');
+											if(p_sync_mark)
+												sharp_cnt++;
+											else{
+												DEBUG("seek not enough # in %s\n", p_sync_str);
+												break;
+											}
+											
+											p_sync_str = p_sync_mark+1;
+										}
+										
+										if(5==sharp_cnt){
+											*p_sync_mark = '\0';
+											snprintf(generate_cmd,sizeof(generate_cmd),"#%s#",p_str);
+											DEBUG("generate_cmd[%s]\n", generate_cmd);
+											
+											memset(instruction_str, 0, sizeof(instruction_str));
+											instruction_reset(&instruction);
+											
+											inst_result = instruction_parse(generate_cmd, sizeof(generate_cmd), &instruction);
+											instruction.index_in_cmds = index_p;
+											if(-1==inst_result ){
+												DEBUG("instruction parse failed\n");
+												break;
+											}
+											else{
+												inst_result = instruction_dispatch(&instruction);
+											}
+										}
+										else{
+											DEBUG("sharp_cnt=%d, not a valid instruction\n", sharp_cnt);
+											inst_result = -1;
+											break;
+										}
+										p_str = p_sync_str;
+									}
 								}
 
 								instruction.alterable_flag = alterable_flag_result(instruction.alterable_flag);
@@ -2164,8 +2221,7 @@ void instruction_mainloop()
 							}
 							smart_power_cmds_close(index_p, 1);
 							
-							memset(fifo_str, 0, FIFO_STR_SIZE);
-							strncpy(fifo_str, MSGSTR_2_SOCKET, FIFO_STR_SIZE-1);
+							snprintf(fifo_str,sizeof(fifo_str),"%s", MSGSTR_2_SOCKET);
 							if(-1==write(fifoout_fd, fifo_str, strlen(fifo_str))){
 								ERROROUT("write to fifo_2_socket failed\n");
 							}

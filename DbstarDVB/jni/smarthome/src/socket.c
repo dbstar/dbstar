@@ -36,7 +36,7 @@ static int					g_fifo_fd = -1;
 static SOCKET_STATUS_E		g_socket_status = SOCKET_STATUS_CLOSED;
 
 static int sendToServer(int l_socket_fd,char *l_send_buf, unsigned int buf_len);
-static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_buf_len);
+static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_buf_size);
 static int connectRetry(int l_socket_fd,struct sockaddr_in server_addr);
 static int smart_power_cmds_init(void);
 static int continue_myself(int g_fifo_fd);
@@ -94,7 +94,7 @@ static int smart_power_cmds_init(void)
 		g_sync_cmds[i].status = CMD_STATUS_NULL;
 		g_sync_cmds[i].id = 0;
 		g_sync_cmds[i].type = CMD_HEADER_UNDEFINED;
-		g_smart_power_cmds[i].send_try = 0;
+		g_sync_cmds[i].send_try = 0;
 		memset(g_sync_cmds[i].serv_str, 0, sizeof(g_sync_cmds[i].serv_str));
 		memset(g_sync_cmds[i].entity, 0, sizeof(g_sync_cmds[i].entity));
 	}
@@ -259,6 +259,7 @@ static int issue_cmd_basic_check(char *cmd_str, unsigned int str_len)
 	else
 		return -1;
 }
+
 static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 {
 	CMD_HEADER_E cmd_header= CMD_HEADER_UNDEFINED;
@@ -299,42 +300,72 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 				// check if has "sync"
 				p_str = p_mark+1;
 				p_mark = strchr(p_str, '#');
-				if(p_mark && 0==strncmp(p_str, "#sync", abs(p_mark-p_str))){
+				DEBUG("p_str=%s, p_mark=%s\n", p_str, p_mark);
+				if(p_mark && 0==strncmp(p_str, "sync", abs(p_mark-p_str))){
 					cmd_header = CMD_HEADER_SYNC;
 					p_str = p_mark+1;
 					p_mark = strchr(p_str, '#');
 					if(p_mark){
 						int sync_i = 0;
-						if(0==strncmp(p_str, "#devs", abs(p_mark-p_str))){
-							DEBUG("has command to \"sync devs\"\n");
-							memset(&g_sync_cmds, 0, sizeof(g_sync_cmds));
-							sync_i = CMD_SYNC_DEVS-CMD_SYNC_DEVS;
-							g_sync_cmds[sync_i].type = CMD_SYNC_DEVS;
-							strcpy(g_sync_cmds[sync_i].entity, p_mark);
-						}
-						else if(0==strncmp(p_str, "#modl", abs(p_mark-p_str))){
-							DEBUG("has command to \"sync modl\"\n");
-							sync_i = CMD_SYNC_MODL-CMD_SYNC_DEVS;
-							g_sync_cmds[sync_i].type = CMD_SYNC_MODL;
-							strcpy(g_sync_cmds[sync_i].entity, p_mark);
-						}
-						else if(0==strncmp(p_str, "#time", abs(p_mark-p_str))){
-							DEBUG("has command to \"sync time\"\n");
-							sync_i = CMD_SYNC_TIME-CMD_SYNC_DEVS;
-							g_sync_cmds[sync_i].type = CMD_SYNC_TIME;
-							strcpy(g_sync_cmds[sync_i].entity, p_mark);
+						if(		0==strncmp(p_str, "devs", abs(p_mark-p_str))
+							||	0==strncmp(p_str, "modl", abs(p_mark-p_str))
+							||	0==strncmp(p_str, "time", abs(p_mark-p_str))){
+#if 0
+// 这部分代码只是验证多个指令的切割
+							p_mark = strchr(p_str, '#');
+							p_str = p_mark+1;
 							
+							while(0!=strlen(p_str)){
+								char generate_cmd[1024];
+								char *p_sync_str = p_str;
+								char *p_sync_mark = p_mark;
+								int sharp_cnt = 0;
+							
+//#tt#127.0.0.1:47440#68968724209946741111#sync#modl#0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
+// 5个#分割一个指令，如上示例有两个插入模式指令。
+
+								while(0!=strlen(p_sync_str) && sharp_cnt<5){
+									p_sync_mark = strchr(p_sync_str, '#');
+									if(p_sync_mark)
+										sharp_cnt++;
+									else{
+										DEBUG("seek not enough # in %s\n", p_sync_str);
+										break;
+									}
+									
+									p_sync_str = p_sync_mark+1;
+								}
+								
+								if(5==sharp_cnt){
+									*p_sync_mark = '\0';
+									snprintf(generate_cmd,sizeof(generate_cmd),"#%s#",p_str);
+									DEBUG("generate_cmd[%s]\n", generate_cmd);
+									
+								}
+								else{
+									DEBUG("sharp_cnt=%d, not a valid instruction\n", sharp_cnt);
+									cmd_header = CMD_HEADER_INVALID;
+									break;
+								}
+								p_str = p_sync_str;
+							}
+#else
+							p_str += 4;
+							cmd_header = CMD_HEADER_SYNC;
 							index_w = smart_power_cmds_open(CMD_ARRAY_OP_W, BOOL_FALSE);
 							if(-1==index_w){
 								DEBUG("the command array are full, this command will be discard\n");
 								return -1;
 							}
 							g_smart_power_cmds[index_w].type = CMD_HEADER_SYNC;
-							strcpy(g_smart_power_cmds[index_w].entity, "ff");
+							strcpy(g_smart_power_cmds[index_w].serv_str, tmp_serv_str);
+							strcpy(g_smart_power_cmds[index_w].entity, p_str);
+		
 							smart_power_cmds_close(index_w, 1);
+#endif
 						}
 						else{
-							DEBUG("sync such (\"%s\") can not be dealed with\n", p_str);
+							DEBUG("sync cmd (%s) can not be dealed with\n", p_str);
 							cmd_header = CMD_HEADER_INVALID;
 						}
 					}
@@ -815,8 +846,10 @@ Accept-Charset: GBK,utf-8;q=0.7,*;q=0.3\r\n\r\n", sizeof(l_send_buf));
 						DEBUG("recv from server: %s\n", l_recv_buf);
 						cmd_header = smart_power_cmd_parse(l_recv_buf, strlen(l_recv_buf));
 						if(CMD_HEADER_UNDEFINED!=cmd_header){
-							memset(fifo_str, 0, FIFO_STR_SIZE);
-							strncpy(fifo_str, MSGSTR_2_INSTRUCTION, FIFO_STR_SIZE-1);
+							if(CMD_HEADER_SYNC==cmd_header)
+								snprintf(fifo_str,sizeof(fifo_str),"%s",MSGSTR_SYNC_2_INSTRUCTION);
+							else
+								snprintf(fifo_str,sizeof(fifo_str),"%s",MSGSTR_2_INSTRUCTION);
 							if(-1==write(fifoout_fd, fifo_str, strlen(fifo_str))){
 								ERROROUT("write to fifoout failed\n");
 							}
@@ -986,7 +1019,7 @@ static int sendToServer(int l_socket_fd,char *l_send_buf, unsigned int buf_len)
  * retval, 0 if successful. -1 failed or 1 reconnect
  * Version 1.0
  ***/
-static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_buf_len)
+static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_buf_size)
 {
 	int ret_select = -1;					//select return
 	int ret = -1;
@@ -994,7 +1027,7 @@ static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_bu
 	fd_set l_rdfds;
 	FD_ZERO(&l_rdfds);
 	
-	if(l_socket_fd<3 || NULL==l_recv_buf || 0==recv_buf_len){
+	if(l_socket_fd<3 || NULL==l_recv_buf || 0==recv_buf_size){
 		DEBUG("can not send to server, socket: %d\n", l_socket_fd);
 		return ret;
 	}
@@ -1020,7 +1053,7 @@ static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_bu
 		{
 			DEBUG("socket(%d) can be readed\n", l_socket_fd);
 			
-			ret_recv=recv(l_socket_fd,l_recv_buf,recv_buf_len,0);
+			ret_recv=recv(l_socket_fd,l_recv_buf,recv_buf_size-1,0);
 			//monitor tcp link,-1 out line . next time select will return 1 and recv return 0
 			if (-1 == ret_recv)
 			{
@@ -1034,7 +1067,8 @@ static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_bu
 				ret = -1;
 			}
 			else{
-				DEBUG("recv successfully: %s\n", l_recv_buf);
+				l_recv_buf[recv_buf_size-1] = '\0';
+				//DEBUG("recv successfully: %s\n", l_recv_buf);
 				ret = 0;
 			}
 		}

@@ -19,7 +19,7 @@ typedef enum{
 }BOOL_E;
 
 #define MAXCMD 5									//max cmd/msg number
-#define MAXLEN 4096									//the size of the transmission
+#define MAXLEN 8192									//the size of the transmission
 #define MAXSLEEP 128									//the max sleep time of reconnect
 
 #define WORKSPACE_SURFIX	"/data/dbstar/smarthome/"
@@ -222,9 +222,10 @@ typedef enum{
 }SMART_SOCKET_RALAY_STATUS_E;
 
 // the length of msg string can not loong than 32
-#define MSGSTR_INSTRUCTION_SELF	"msgstr_instruction_self"
+#define MSGSTR_INSTRUCTION_SELF		"msgstr_instruction_self"
 #define MSGSTR_2_INSTRUCTION		"msgstr_2_instruction"
-#define MSGSTR_2_SOCKET					"msgstr_2_socket"
+#define MSGSTR_SYNC_2_INSTRUCTION	"msgstr_sync_2_instruction"
+#define MSGSTR_2_SOCKET				"msgstr_2_socket"
 #define MSGSTR_SOCKET_SELF			"msgstr_socket_self"
 
 #define INSTRUCTION_INSERT_NUM (64)
