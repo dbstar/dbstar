@@ -22,7 +22,7 @@
 int appoint_str2int(char *str, unsigned int str_len, unsigned int start_position, unsigned int appoint_len, int base)
 {
 	if(NULL==str || str_len<(start_position+appoint_len) || appoint_len>64 || (base<0 && 36<base)){
-		DEBUG("some arguments are invalid\n");
+		DEBUG("some arguments are invalid, str=%s,str_len=%u,start_position=%u,appoint_len=%u,base=%d\n", str,str_len, start_position, appoint_len, base);
 		return -1;
 	}
 

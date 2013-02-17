@@ -35,6 +35,8 @@ static int					g_heartbeat_timer_id = -1;
 static int					g_fifo_fd = -1;
 static SOCKET_STATUS_E		g_socket_status = SOCKET_STATUS_CLOSED;
 
+static int					s_fifoout_fd = -1;
+
 static int sendToServer(int l_socket_fd,char *l_send_buf, unsigned int buf_len);
 static int recvFromServer(int l_socket_fd,char *l_recv_buf, unsigned int recv_buf_size);
 static int connectRetry(int l_socket_fd,struct sockaddr_in server_addr);
@@ -260,6 +262,53 @@ static int issue_cmd_basic_check(char *cmd_str, unsigned int str_len)
 		return -1;
 }
 
+typedef enum{
+	SYNC_DEVS = 1,
+	SYNC_MODL = 2,
+	SYNC_TIME = 4
+}SYNC_CMD_FLAG;
+static int s_sync_cmd_exec_record = 0;
+
+static int sync_cmds_finish(CMD_HEADER_E ok_flag, char * tmp_serv_str)
+{
+#if 1
+	char fifo_str[FIFO_STR_SIZE];
+	
+	int index_w = smart_power_cmds_open(CMD_ARRAY_OP_W, BOOL_FALSE);
+	if(-1!=index_w){
+		g_smart_power_cmds[index_w].type = CMD_HEADER_ISSUE;
+		snprintf(g_smart_power_cmds[index_w].serv_str,sizeof(g_smart_power_cmds[index_w].serv_str),"%s",tmp_serv_str);
+		if(CMD_HEADER_SYNC_OK==ok_flag)
+			snprintf(g_smart_power_cmds[index_w].entity,sizeof(g_smart_power_cmds[index_w].entity),"#sync#ok#");
+		else
+			snprintf(g_smart_power_cmds[index_w].entity,sizeof(g_smart_power_cmds[index_w].entity),"#sync#ff#");
+		
+		smart_power_cmds_close(index_w, 1);
+		
+		snprintf(fifo_str,sizeof(fifo_str),"%s", MSGSTR_SYNC_2_INSTRUCTION);
+		if(-1==write(s_fifoout_fd, fifo_str, strlen(fifo_str))){
+			ERROROUT("write to fifo_2_socket failed\n");
+		}
+		else
+			DEBUG("write to fifo_2_socket: %s\n", fifo_str);
+	}
+	else
+		DEBUG("do smart_power_cmds_open failed\n");
+#else
+	char send_str[128];
+	if(CMD_HEADER_SYNC_OK==ok_flag)
+		snprintf(send_str,sizeof(send_str),"#cc#str#serialnum#sync#ok#");
+	else
+		snprintf(send_str,sizeof(send_str),"#cc#str#serialnum#sync#ff#");
+	if(0==sendToServer(l_socket_fd, l_send_buf, strlen(l_send_buf))){
+		DEBUG("send %s to server for sync cmds OK\n", send_str);
+	}
+	else
+		DEBUG("send response to server for sync cmds failed\n");
+#endif	
+	return 0;
+}
+
 static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 {
 	CMD_HEADER_E cmd_header= CMD_HEADER_UNDEFINED;
@@ -268,6 +317,7 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 	char *p_tmp_entity = NULL;
 	int index_w = 0;
 	char tmp_serv_str[128];
+	int ret = -1;
 	
 	if(NULL==cmd_str || 0==str_len){
 		cmd_header = CMD_HEADER_INVALID;
@@ -302,7 +352,7 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 				p_mark = strchr(p_str, '#');
 				DEBUG("p_str=%s, p_mark=%s\n", p_str, p_mark);
 				if(p_mark && 0==strncmp(p_str, "sync", abs(p_mark-p_str))){
-					cmd_header = CMD_HEADER_SYNC;
+					cmd_header = CMD_HEADER_SYNC_FAILD;
 					p_str = p_mark+1;
 					p_mark = strchr(p_str, '#');
 					if(p_mark){
@@ -310,12 +360,30 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 						if(		0==strncmp(p_str, "devs", abs(p_mark-p_str))
 							||	0==strncmp(p_str, "modl", abs(p_mark-p_str))
 							||	0==strncmp(p_str, "time", abs(p_mark-p_str))){
-#if 0
-// 这部分代码只是验证多个指令的切割
+							if(0==strncmp(p_str, "devs", abs(p_mark-p_str)))
+								s_sync_cmd_exec_record = SYNC_DEVS;
+							else if(0==strncmp(p_str, "modl", abs(p_mark-p_str))){
+								if(-1==s_sync_cmd_exec_record){
+									DEBUG("has failed sync cmd, ignore this and return failed\n");
+									return CMD_HEADER_INVALID;
+								}
+								else
+									s_sync_cmd_exec_record += SYNC_MODL;
+							}
+							else if(0==strncmp(p_str, "time", abs(p_mark-p_str))){
+								if(-1==s_sync_cmd_exec_record){
+									DEBUG("has failed sync cmd, ignore this and return failed\n");
+									return CMD_HEADER_INVALID;
+								}
+								else
+									s_sync_cmd_exec_record += SYNC_TIME;
+							}
+							
+							// skip such as 'devs'/'modl'/'time'
 							p_mark = strchr(p_str, '#');
 							p_str = p_mark+1;
 							
-							while(0!=strlen(p_str)){
+							while('\0'!=(*p_str)){
 								char generate_cmd[1024];
 								char *p_sync_str = p_str;
 								char *p_sync_mark = p_mark;
@@ -324,7 +392,7 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 //#tt#127.0.0.1:47440#68968724209946741111#sync#modl#0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
 // 5个#分割一个指令，如上示例有两个插入模式指令。
 
-								while(0!=strlen(p_sync_str) && sharp_cnt<5){
+								while('\0'!=(*p_sync_str) && sharp_cnt<5){
 									p_sync_mark = strchr(p_sync_str, '#');
 									if(p_sync_mark)
 										sharp_cnt++;
@@ -339,30 +407,36 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 								if(5==sharp_cnt){
 									*p_sync_mark = '\0';
 									snprintf(generate_cmd,sizeof(generate_cmd),"#%s#",p_str);
-									DEBUG("generate_cmd[%s]\n", generate_cmd);
-									
+									DEBUG("generate sync cmd[%s]\n", generate_cmd);
+									ret = instruction_sync_process(generate_cmd);
+									if(-1==ret){
+										DEBUG("instruction exec failed\n");
+										sync_cmds_finish(CMD_HEADER_SYNC_FAILD, tmp_serv_str);
+										break;
+									}
 								}
 								else{
 									DEBUG("sharp_cnt=%d, not a valid instruction\n", sharp_cnt);
-									cmd_header = CMD_HEADER_INVALID;
+									sync_cmds_finish(CMD_HEADER_SYNC_FAILD, tmp_serv_str);
 									break;
 								}
 								p_str = p_sync_str;
 							}
-#else
-							p_str += 4;
-							cmd_header = CMD_HEADER_SYNC;
-							index_w = smart_power_cmds_open(CMD_ARRAY_OP_W, BOOL_FALSE);
-							if(-1==index_w){
-								DEBUG("the command array are full, this command will be discard\n");
-								return -1;
+							
+							if(0==ret){
+								cmd_header = CMD_HEADER_SYNC_OK;
+								if((SYNC_DEVS+SYNC_MODL+SYNC_TIME)==s_sync_cmd_exec_record){
+									DEBUG("do three sync cmds OK\n");
+									sync_cmds_finish(CMD_HEADER_SYNC_OK, tmp_serv_str);
+								}
+								else
+									DEBUG("do sync cmd %d OK\n", s_sync_cmd_exec_record);
 							}
-							g_smart_power_cmds[index_w].type = CMD_HEADER_SYNC;
-							strcpy(g_smart_power_cmds[index_w].serv_str, tmp_serv_str);
-							strcpy(g_smart_power_cmds[index_w].entity, p_str);
-		
-							smart_power_cmds_close(index_w, 1);
-#endif
+							else{
+								DEBUG("do sync cmd %d faild\n", s_sync_cmd_exec_record);
+								sync_cmds_finish(CMD_HEADER_SYNC_FAILD, tmp_serv_str);
+								s_sync_cmd_exec_record = -1;
+							}
 						}
 						else{
 							DEBUG("sync cmd (%s) can not be dealed with\n", p_str);
@@ -433,8 +507,11 @@ static int smart_power_cmd_splice(int index, char *buf, unsigned int buf_len)
 		case CMD_HEADER_ALARM:
 			snprintf(buf, buf_len, "#am#%s#%s%s", g_smart_power_cmds[index].serv_str, serial_num, g_smart_power_cmds[index].entity);	// perhaps need "#arm#" here?
 			break;
-		case CMD_HEADER_SYNC:
-			snprintf(buf, buf_len, "#cc#%s#%s#sync%s", g_smart_power_cmds[index].serv_str, serial_num, g_smart_power_cmds[index].entity);
+		case CMD_HEADER_SYNC_OK:
+			snprintf(buf, buf_len, "#cc#str#serialnumxxxxxxxxx#sync#ok#");
+			break;
+		case CMD_HEADER_SYNC_FAILD:
+			snprintf(buf, buf_len, "#cc#str#serialnumxxxxxxx#sync#ff#");
 			break;
 		default:
 			snprintf(buf, buf_len, "#ff#%s#%s#", g_smart_power_cmds[index].serv_str, serial_num);
@@ -657,13 +734,13 @@ void socket_mainloop()
 	}
 	else
 		DEBUG("open FIFO_2_SOCKET with fd %d\n", g_fifo_fd);
-	int fifoout_fd = open(FIFO_2_INSTRUCTION, O_RDWR|O_NONBLOCK, 0);
-	if(fifoout_fd<0){
+	s_fifoout_fd = open(FIFO_2_INSTRUCTION, O_RDWR|O_NONBLOCK, 0);
+	if(s_fifoout_fd<0){
 		ERROROUT("open fifo_2_instruction failed\n");
 		return;
 	}
 	else
-		DEBUG("open FIFO_2_INSTRUCTION with fd %d\n", fifoout_fd);
+		DEBUG("open FIFO_2_INSTRUCTION with fd %d\n", s_fifoout_fd);
 	
 	struct timeval tv_select = {4, 500000};
 	int ret_select = -1;
@@ -846,15 +923,20 @@ Accept-Charset: GBK,utf-8;q=0.7,*;q=0.3\r\n\r\n", sizeof(l_send_buf));
 						DEBUG("recv from server: %s\n", l_recv_buf);
 						cmd_header = smart_power_cmd_parse(l_recv_buf, strlen(l_recv_buf));
 						if(CMD_HEADER_UNDEFINED!=cmd_header){
-							if(CMD_HEADER_SYNC==cmd_header)
-								snprintf(fifo_str,sizeof(fifo_str),"%s",MSGSTR_SYNC_2_INSTRUCTION);
-							else
+							if(		CMD_HEADER_ISSUE==cmd_header
+								||	CMD_HEADER_INVALID==cmd_header){
+								DEBUG("cmd_header(%d) is CMD_HEADER_ISSUE(%d) or CMD_HEADER_INVALID(%d)\n", cmd_header,CMD_HEADER_ISSUE,CMD_HEADER_INVALID);
 								snprintf(fifo_str,sizeof(fifo_str),"%s",MSGSTR_2_INSTRUCTION);
-							if(-1==write(fifoout_fd, fifo_str, strlen(fifo_str))){
-								ERROROUT("write to fifoout failed\n");
+								
+								if(-1==write(s_fifoout_fd, fifo_str, strlen(fifo_str))){
+									ERROROUT("write to fifoout failed\n");
+								}
+								else
+									DEBUG("send fifo str to instruction module success\n");
 							}
-							else
-								DEBUG("send fifo str to instruction module success\n");
+							else{
+								DEBUG("cmd_header=%d, no need to call instruction\n", cmd_header);
+							}
 						}
 					}
 					else if(-1==l_return){

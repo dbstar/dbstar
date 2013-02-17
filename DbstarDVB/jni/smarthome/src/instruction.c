@@ -59,7 +59,7 @@ static int instruction_reset(INSTRUCTION_S* instruction)
 	instruction->type = INSTRUCTION_UNDEFINED;
 	instruction->arg1 = 0;
 	instruction->arg2 = 0;
-	instruction->alterable_flag = 0;
+	instruction->alterable_flag = -1;
 	memset(instruction->alterable_entity, 0, sizeof(instruction->alterable_entity));
 	instruction->index_in_cmds = -1;
 	
@@ -235,12 +235,26 @@ static INSTRUCTION_RESULT_E instruction_timing_task_add(INSTRUCTION_S *instructi
 //	instant_timing_task_regist(l_typeID, l_frequency, control_time);
 	
 	/*
-	数据库记录的是定时任务的开始时间，（服务器时间，原样入库，不校正时区），
-	本地使用时只需要做时区校正，而不需要做服务器时间校正。
+	数据库记录的是定时任务的开始时间，（服务器时间，原样入库）
 	*/
+	
 	///	insert the value in the command into time
 	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	if(l_frequency>=0 && control_time>=0){
+		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"SELECT typeID FROM time WHERE typeID=%d AND cmdType=%d AND controlVal=%d AND controlTime=%d AND frequency=%d;",l_typeID,l_cmdType,l_controlValue,control_time,l_frequency);
+		DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
+		int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
+		if(ret_sqlexec>RESULT_OK){
+			DEBUG("this time task is exist in table\n");
+			return RESULT_OK;
+		}
+		else if(ret_sqlexec<RESULT_OK){
+			DEBUG("sqlite cmd exec failed\n");
+			return ret_sqlexec;
+		}
+		else	// 0==ret_sqlexec
+			DEBUG("read time task from database none\n");
+		
 		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"INSERT INTO time(typeID,cmdType,controlVal,controlTime,frequency,remark) VALUES(%d,%d,%d,%d,%d,'%s');",\
 				l_typeID,l_cmdType,l_controlValue,control_time,l_frequency,p_entity+12);
 		
@@ -2082,6 +2096,44 @@ void instruction_insert_poll(void)
 	return;
 }
 
+
+//#tt#127.0.0.1:47440#68968724209946741111#sync#modl#0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
+// 5个#分割一个指令，如上示例有两个插入模式指令。
+// instruction_str: #0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#
+// instruction_str: #0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
+int instruction_sync_process(char *instruction_str)
+{
+	if(NULL==instruction_str){
+		DEBUG("NULL instruction_str\n");
+		return -1;
+	}
+	DEBUG("do a sync instruction\n");
+
+	int ret = 0;
+	
+	INSTRUCTION_S						instruction;
+	INSTRUCTION_RESULT_E inst_result 	= RESULT_OK;
+	
+	instruction_reset(&instruction);
+	
+	inst_result = instruction_parse(instruction_str, strlen(instruction_str), &instruction);
+	if(-1==inst_result ){
+		DEBUG("instruction(%s) parse failed\n", instruction_str);
+		ret = -1;
+	}
+	else{
+		inst_result = instruction_dispatch(&instruction);
+		if(inst_result<RESULT_OK){
+			DEBUG("exec %s failed %d\n", instruction_str, inst_result);
+			ret = -1;
+		}
+		else
+			ret = 0;
+	}
+	
+	return ret;
+}
+
 void instruction_mainloop()
 {
 	INSTRUCTION_S				instruction;
@@ -2132,8 +2184,7 @@ void instruction_mainloop()
 				}
 				else{
 					DEBUG("read from fifo_fd: %s\n", fifo_str);
-					if(		0==strcmp(fifo_str, MSGSTR_2_INSTRUCTION)
-						||	0==strcmp(fifo_str, MSGSTR_SYNC_2_INSTRUCTION)){
+					if(0==strcmp(fifo_str, MSGSTR_2_INSTRUCTION)){
 						index_p = smart_power_cmds_open(CMD_ARRAY_OP_PROCESS, BOOL_FALSE);
 						if(-1!=index_p){
 							DEBUG("processing index: %d\n", index_p);
@@ -2141,69 +2192,13 @@ void instruction_mainloop()
 							instruction_reset(&instruction);
 							if(0==smart_power_instruction_get(index_p, instruction_str, sizeof(instruction_str))){
 								DEBUG("get instruction: %s\n", instruction_str);
-								if(0==strcmp(fifo_str, MSGSTR_2_INSTRUCTION)){
-									inst_result = instruction_parse(instruction_str, sizeof(instruction_str), &instruction);
-									instruction.index_in_cmds = index_p;
-									if(-1==inst_result ){
-										DEBUG("instruction parse failed\n");
-									}
-									else{
-										inst_result = instruction_dispatch(&instruction);
-									}
+								inst_result = instruction_parse(instruction_str, sizeof(instruction_str), &instruction);
+								instruction.index_in_cmds = index_p;
+								if(-1==inst_result ){
+									DEBUG("instruction parse failed\n");
 								}
-								else{	// 0==strcmp(fifo_str, MSGSTR_SYNC_2_INSTRUCTION)
-									DEBUG("this is a sync instruction\n");
-//#tt#127.0.0.1:47440#68968724209946741111#sync#modl#0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
-// instruction_str: #0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
-// 5个#分割一个指令，如上示例有两个插入模式指令。
-		
-									char *p_mark = strchr(instruction_str, '#');
-									char *p_str = p_mark+1;
-									
-									char generate_cmd[1024];
-									char *p_sync_str = p_str;
-									char *p_sync_mark = p_mark;
-									int sharp_cnt = 0;
-									
-									while(0!=strlen(p_str)){
-
-										while(0!=strlen(p_sync_str) && sharp_cnt<5){
-											p_sync_mark = strchr(p_sync_str, '#');
-											if(p_sync_mark)
-												sharp_cnt++;
-											else{
-												DEBUG("seek not enough # in %s\n", p_sync_str);
-												break;
-											}
-											
-											p_sync_str = p_sync_mark+1;
-										}
-										
-										if(5==sharp_cnt){
-											*p_sync_mark = '\0';
-											snprintf(generate_cmd,sizeof(generate_cmd),"#%s#",p_str);
-											DEBUG("generate_cmd[%s]\n", generate_cmd);
-											
-											memset(instruction_str, 0, sizeof(instruction_str));
-											instruction_reset(&instruction);
-											
-											inst_result = instruction_parse(generate_cmd, sizeof(generate_cmd), &instruction);
-											instruction.index_in_cmds = index_p;
-											if(-1==inst_result ){
-												DEBUG("instruction parse failed\n");
-												break;
-											}
-											else{
-												inst_result = instruction_dispatch(&instruction);
-											}
-										}
-										else{
-											DEBUG("sharp_cnt=%d, not a valid instruction\n", sharp_cnt);
-											inst_result = -1;
-											break;
-										}
-										p_str = p_sync_str;
-									}
+								else{
+									inst_result = instruction_dispatch(&instruction);
 								}
 
 								instruction.alterable_flag = alterable_flag_result(instruction.alterable_flag);
@@ -2232,8 +2227,23 @@ void instruction_mainloop()
 					else if(0==strcmp(fifo_str, MSGSTR_INSTRUCTION_SELF)){
 						instruction_insert_poll();
 					}
+					else if(0==strcmp(fifo_str, MSGSTR_SYNC_2_INSTRUCTION)){
+						DEBUG("get MSGSTR_SYNC_2_INSTRUCTION\n");
+						index_p = smart_power_cmds_open(CMD_ARRAY_OP_PROCESS, BOOL_FALSE);
+						if(-1!=index_p){
+							DEBUG("processing index: %d\n", index_p);
+							smart_power_cmds_close(index_p, 1);
+							
+							snprintf(fifo_str,sizeof(fifo_str),"%s", MSGSTR_2_SOCKET);
+							if(-1==write(fifoout_fd, fifo_str, strlen(fifo_str))){
+								ERROROUT("write to fifo_2_socket failed\n");
+							}
+							else
+								DEBUG("write to fifo_2_socket: %s\n", fifo_str);
+						}
+					}
 					else
-						DEBUG("it is a wild msg, ignore it\n");
+						DEBUG("%s is a wild msg, ignore it\n",fifo_str);
 				}
 			}
 			else
