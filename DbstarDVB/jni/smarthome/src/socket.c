@@ -23,6 +23,7 @@
 #include "porting.h"
 #include "timing.h"
 #include "sqlite.h"
+#include "instruction.h"
 
 static SMART_POWER_CMD_S 	g_smart_power_cmds[SMART_POWER_CMD_NUM];
 static sem_t				s_sem_smart_power_cmds;
@@ -34,6 +35,7 @@ static SMART_POWER_CMD_S	g_sync_cmds[CMD_SYNC_TIME-CMD_SYNC_DEVS+1];
 static int					g_heartbeat_timer_id = -1;
 static int					g_fifo_fd = -1;
 static SOCKET_STATUS_E		g_socket_status = SOCKET_STATUS_CLOSED;
+static char					s_sn_from_server[128];
 
 static int					s_fifoout_fd = -1;
 
@@ -341,10 +343,16 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 				// store the server str
 				memset(tmp_serv_str, 0, sizeof(tmp_serv_str));
 				strncpy(tmp_serv_str, p_str, abs(p_mark-p_str));
+				tmp_serv_str[sizeof(tmp_serv_str)-1] = '\0';
 
 				// overleap the serial num
 				p_str = p_mark+1;
 				p_mark = strchr(p_str, '#');
+				memset(s_sn_from_server,0,sizeof(s_sn_from_server));
+				strncpy(s_sn_from_server, p_str, abs(p_mark-p_str));
+				s_sn_from_server[sizeof(s_sn_from_server)-1] = '\0';
+				DEBUG("s_sn_from_server: %s\n", s_sn_from_server);
+				
 				p_tmp_entity = p_mark;			// only for normal issue commond
 
 				// check if has "sync"
@@ -356,7 +364,6 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 					p_str = p_mark+1;
 					p_mark = strchr(p_str, '#');
 					if(p_mark){
-						int sync_i = 0;
 						if(		0==strncmp(p_str, "devs", abs(p_mark-p_str))
 							||	0==strncmp(p_str, "modl", abs(p_mark-p_str))
 							||	0==strncmp(p_str, "time", abs(p_mark-p_str))){
@@ -383,14 +390,17 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 							p_mark = strchr(p_str, '#');
 							p_str = p_mark+1;
 							
+							ret = 0;
+							
 							while('\0'!=(*p_str)){
 								char generate_cmd[1024];
 								char *p_sync_str = p_str;
 								char *p_sync_mark = p_mark;
 								int sharp_cnt = 0;
 							
-//#tt#127.0.0.1:47440#68968724209946741111#sync#modl#0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
+// #tt#127.0.0.1:47440#68968724209946741111#sync#modl#0000000000#01#fe01#02#00\u4e00\u952e\u5f00\u5173#0000000000#01#fe02#02#00\u4e00\u952e\u5f00#
 // 5个#分割一个指令，如上示例有两个插入模式指令。
+// 空载时的指令示例：#tt#127.0.0.1:54687#68968724209946741111#sync#modl##
 
 								while('\0'!=(*p_sync_str) && sharp_cnt<5){
 									p_sync_mark = strchr(p_sync_str, '#');
@@ -411,13 +421,11 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 									ret = instruction_sync_process(generate_cmd);
 									if(-1==ret){
 										DEBUG("instruction exec failed\n");
-										sync_cmds_finish(CMD_HEADER_SYNC_FAILD, tmp_serv_str);
 										break;
 									}
 								}
 								else{
 									DEBUG("sharp_cnt=%d, not a valid instruction\n", sharp_cnt);
-									sync_cmds_finish(CMD_HEADER_SYNC_FAILD, tmp_serv_str);
 									break;
 								}
 								p_str = p_sync_str;
@@ -487,7 +495,12 @@ static int smart_power_cmd_splice(int index, char *buf, unsigned int buf_len)
 
 	char serial_num[33];	
 	memset(serial_num, 0, sizeof(serial_num));
-	serialNum_get(serial_num, sizeof(serial_num));
+	
+	// 服务器下发的指令，返回时直接使用下发时的sn，不再读取数据库
+	if(CMD_HEADER_ISSUE==g_smart_power_cmds[index].type)
+		snprintf(serial_num,sizeof(serial_num),"%s",s_sn_from_server);
+	else
+		serialNum_get(serial_num, sizeof(serial_num));
 
 	DEBUG("g_smart_power_cmds[%d] need to upload, cmd type is %d\n", index, g_smart_power_cmds[index].type);
 	switch(g_smart_power_cmds[index].type){	// notice: the entity string has two '#' mark around itself
@@ -508,10 +521,10 @@ static int smart_power_cmd_splice(int index, char *buf, unsigned int buf_len)
 			snprintf(buf, buf_len, "#am#%s#%s%s", g_smart_power_cmds[index].serv_str, serial_num, g_smart_power_cmds[index].entity);	// perhaps need "#arm#" here?
 			break;
 		case CMD_HEADER_SYNC_OK:
-			snprintf(buf, buf_len, "#cc#str#serialnumxxxxxxxxx#sync#ok#");
+			DEBUG("baby, you lose yourself. CMD_HEADER_SYNC_OK no need to be processed here\n");
 			break;
 		case CMD_HEADER_SYNC_FAILD:
-			snprintf(buf, buf_len, "#cc#str#serialnumxxxxxxx#sync#ff#");
+			DEBUG("baby, you lose yourself. CMD_HEADER_SYNC_FAILD no need to be processed here\n");
 			break;
 		default:
 			snprintf(buf, buf_len, "#ff#%s#%s#", g_smart_power_cmds[index].serv_str, serial_num);
@@ -611,7 +624,7 @@ int smart_power_heartbeat_cmd_insert(void)
 // caution: I am not make a integer timer for heartbeat.
 int heartbeat_timer_callback(struct timeval *tv_datum, int arg1, int arg2)
 {
-	DEBUG("tv_sec=%ld, tv_usec=%ld\n", tv_datum->tv_sec, tv_datum->tv_usec);
+	DEBUG("tv_sec=%ld, tv_usec=%ld, arg1=%d, arg2=%d\n", tv_datum->tv_sec,tv_datum->tv_usec,arg1,arg2);
 	tv_datum->tv_sec += 90;
 	tv_datum->tv_usec += 77000;
 
