@@ -8,5 +8,6 @@ int smart_power_difftime_get(void);
 int power_inquire_callback(char **result, int row, int column, void *receiver);
 INSTRUCTION_RESULT_E instruction_dispatch(INSTRUCTION_S *instruction);
 int sockets_status_report(char *typeIDs);
+int instruction_sync_process(char *instruction_str);
 
 #endif
