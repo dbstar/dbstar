@@ -1885,7 +1885,6 @@ int intialize_xml_reset(void)
 			remove_force(total_xmluri);
 			
 			DEBUG("can not read initialize_xml_uri, remove %s instead of\n", total_xmluri);
-			return -1;
 		}
 		else{
 			DEBUG("read initialize_xml_uri: %s\n", initialize_xml_uri);
@@ -1898,6 +1897,8 @@ int intialize_xml_reset(void)
 		
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
 		sqlite_execute(sqlite_cmd);
+		
+		return 0;
 	}
 	else
 		DEBUG("already have s_serviceID: %s\n", s_serviceID);
