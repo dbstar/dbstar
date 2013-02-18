@@ -2669,14 +2669,14 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) ){
 						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
 								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
-	#if 0
+#if 0
 						ret = -1;
-	#else
+#else
 						/*
 						 Service.xml起到承上启下的作用，因此即便版本号相同，也返回0，以便ProductDesc.xml、GuideList.xml等得以注册
 						*/
 						ret = 0;
-	#endif
+#endif
 					}
 					else
 					{
@@ -2701,8 +2701,8 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 	
-	#if 0			
-	// 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
+#if 0			
+// 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 					
 					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))  || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
@@ -2711,7 +2711,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						ret = -1;
 					}
 					else
-	#endif
+#endif
 					{
 						DBSTAR_PUBLICATION_S publication_s;
 						memset(&publication_s, 0, sizeof(publication_s));
@@ -2723,15 +2723,15 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						ret = PROCESS_OVER_CHECK(ret);
 					}
 				}
-	// Column.xml
+// Column.xml
 				else if(0==xmlStrcmp(cur->name, BAD_CAST"Columns")){
 					// 成品、栏目和特殊产品均通过文件通道下发，原始PushFlag都是0，故此处进行修正
 					actual_xml_flag = COLUMN_XML;
 					snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", actual_xml_flag);
 					
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-	#if 0			
-	// 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
+#if 0			
+// 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
 						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
@@ -2739,7 +2739,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						ret = -1;
 					}
 					else
-	#endif
+#endif
 					{
 						/*
 						 不能一股脑的清理掉Column的所有数据，保留本地菜单
@@ -2770,12 +2770,12 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					}
 					else{
 						
-	#if 0	//  不能直接删除所有的记录，应保留用户选择“拒绝接收”的记录。只能删除昨天及以前的记录。
+#if 0	//  不能直接删除所有的记录，应保留用户选择“拒绝接收”的记录。只能删除昨天及以前的记录。
 						parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-	#else
+#else
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM GuideList WHERE DateValue<datetime('now','localtime','-2 days');");
 						sqlite_transaction_exec(sqlite_cmd);
-	#endif
+#endif
 						
 						DBSTAR_GUIDELIST_S guidelist_s;
 						memset(&guidelist_s, 0, sizeof(guidelist_s));
@@ -2841,8 +2841,8 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", actual_xml_flag);
 					
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
-	#if 0			
-	// 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
+#if 0			
+// 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
 						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
@@ -2850,7 +2850,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						ret = -1;
 					}
 					else
-	#endif
+#endif
 					{
 						char SProduct_ServiceID[64];
 						snprintf(SProduct_ServiceID,sizeof(SProduct_ServiceID),"%s", xmlinfo.ServiceID);
@@ -2905,7 +2905,7 @@ PARSE_XML_END:
 		else if(PRODUCTDESC_XML==actual_xml_flag){	//  || SERVICE_XML==actual_xml_flag 只接收本service的播发单数据，无需根据Service.xml进行刷新
 			DEBUG("refresh push monitor because of xml %d\n", actual_xml_flag);
 			
-			push_recv_manage_refresh(1,NULL);
+			push_recv_manage_refresh();
 		}
 		else if(INITIALIZE_XML==actual_xml_flag){
 			pid_init(1);

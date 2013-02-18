@@ -883,7 +883,7 @@ int mid_push_init(char *push_conf)
 	/*
 	初始化接收监控，必须在push解码线程之前。对于默认不接收的push库，无需初始化拒绝接收
 	*/
-	push_recv_manage_refresh(1,NULL);
+	push_recv_manage_refresh();
 	
 	/*
 	确保开机后至少有一次扫描机会，获得准确的下载进度。
@@ -1389,7 +1389,7 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 #else
 
 // 反注册上一个播发单中已处于监控状态的节目，预备要注册新播发单中的节目
-static int prog_monitor_reset(void)
+int prog_monitor_reset(void)
 {
 	int i = 0;
 	int ret = 0;
@@ -1406,7 +1406,7 @@ static int prog_monitor_reset(void)
  当反注册时文件被关闭，可以进行删除
 */
 			if(0==s_prgs[i].parsed){
-				PRINTF("[%s] %s is download stop but not complete, regist and clean it\n", s_prgs[i].id,s_prgs[i].uri);
+				PRINTF("[%s] %s is download stop but not complete, unregist and clean it\n", s_prgs[i].id,s_prgs[i].uri);
 				ret = push_dir_unregister(s_prgs[i].uri);
 				if(0==ret){
 					ret = push_dir_remove(s_prgs[i].uri);

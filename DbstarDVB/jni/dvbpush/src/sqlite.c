@@ -929,7 +929,7 @@ int sqlite_execute(char *exec_str)
 		usleep(100000);
 		waiting_cnt ++;
 	}
-	DEBUG("waiting_cnt=%d\n", waiting_cnt);
+	DEBUG("waiting_cnt=%d, %s\n", waiting_cnt, exec_str);
 	
 	if(SQL_STATUS_IDLE!=s_sql_status){
 		DEBUG("s_sql_status=%d, failed\n", s_sql_status);

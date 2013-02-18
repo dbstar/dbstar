@@ -52,7 +52,7 @@ static char 		*s_guidelist_unselect = NULL;
 //static int 			s_disk_manage_buzy = 0;
 static char			s_jni_cmd_public_space[20480];
 static int			s_smart_card_insert_flag = 0;
-static int			s_smart_card_remove_flag = 1;	/* 当发生过拔卡事件时，此标记置1。为了应对插卡开机，初始化为1 */
+static int			s_smart_card_remove_flag = 1;	// 当发生过拔卡事件时，此标记置1。为了应对插卡开机，初始化为1
 static char			s_TestSpecialProductID[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
@@ -1862,31 +1862,45 @@ int intialize_xml_reset(void)
 {
 	// 如果是插入智能卡，需要和数据表SCEntitleInfo比对其特殊产品是否有变化，以此判断是否是更换了智能卡
 	if(0==strlen(s_serviceID) || 0!=smartcard_entitleinfo_refresh()){
-		DEBUG("have no serviceID currently, so remove initialize.xml\n");
+		DEBUG("do xmls reset\n");
 		
 		char sqlite_cmd[256];
 		char initialize_xml_uri[512];
 		
+// 1、停止现有正在接收的节目
+		prog_monitor_reset();
+		
+// 2、删除播发单ProductDesc表
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
+		sqlite_execute(sqlite_cmd);
+		
+// 3、清理Initialize.xml和Initialize表，使得初始化文件再次下发，重新判断ServiceID
+// 		旧xml已经在push中注册，这里就不反注册并清理了，减少逻辑复杂度。执行到这里的概率很小
+		
 		memset(initialize_xml_uri, 0, sizeof(initialize_xml_uri));
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag='%d';", INITIALIZE_XML);
 		if(-1==str_sqlite_read(initialize_xml_uri,sizeof(initialize_xml_uri),sqlite_cmd)){
-			DEBUG("can not read initialize_xml_uri\n");
+			char total_xmluri[256];
+			snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
+			remove_force(total_xmluri);
+			
+			DEBUG("can not read initialize_xml_uri, remove %s instead of\n", total_xmluri);
 			return -1;
 		}
 		else{
 			DEBUG("read initialize_xml_uri: %s\n", initialize_xml_uri);
-			
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize WHERE PushFlag='%d';", INITIALIZE_XML);
-			sqlite_execute(sqlite_cmd);
 			
 			char total_xmluri[256];
 			snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),initialize_xml_uri);
 			remove_force(total_xmluri);
 			DEBUG("remove %s\n", total_xmluri);
 		}
+		
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
+		sqlite_execute(sqlite_cmd);
 	}
 	else
-		DEBUG("already have s_serviceID: %s", s_serviceID);
+		DEBUG("already have s_serviceID: %s\n", s_serviceID);
 	
 	return 0;
 }

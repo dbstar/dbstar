@@ -23,6 +23,7 @@ int push_decoder_resume();
 void push_rely_condition_set(int rely_cond);
 
 int push_decoder_buf_init();
+int prog_monitor_reset(void);
 int push_recv_manage_refresh();
 int send_xml_to_parse(const char *path, int flag, char *id);
 int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_ext);
