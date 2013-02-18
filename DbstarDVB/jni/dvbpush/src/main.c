@@ -46,7 +46,7 @@ void *main_thread()
 		//return NULL;
 	}
 	
-	setting_init_with_datebase();
+	setting_init_with_database();
 	
 	if(-1==xmlparser_init()){
 		DEBUG("xmlparser init failed\n");

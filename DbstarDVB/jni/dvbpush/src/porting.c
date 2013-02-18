@@ -52,11 +52,13 @@ static char 		*s_guidelist_unselect = NULL;
 //static int 			s_disk_manage_buzy = 0;
 static char			s_jni_cmd_public_space[20480];
 static int			s_smart_card_insert_flag = 0;
-static char			s_special_ProductID[64];
+static int			s_smart_card_remove_flag = 1;	/* 当发生过拔卡事件时，此标记置1。为了应对插卡开机，初始化为1 */
+static char			s_TestSpecialProductID[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
+static int smartcard_entitleinfo_refresh();
 
 /* define some general interface function here */
 
@@ -1765,27 +1767,101 @@ static int push_dir_init()
 	return 0;
 }
 
-
-static int special_productid_init()
+// 联调测试阶段，智能卡数量不够，这里直接指定业务ID。正式运营的盒子不能执行到这里
+static int TestSpecialProductID_init()
 {
 // only for test
 	char sqlite_cmd[256];
-	memset(s_special_ProductID, 0, sizeof(s_special_ProductID));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='SpecialServiceID_Test';");
-	if(-1==str_sqlite_read(s_special_ProductID,sizeof(s_special_ProductID),sqlite_cmd)){
-		DEBUG("can not read s_special_ProductID\n");
+	memset(s_TestSpecialProductID, 0, sizeof(s_TestSpecialProductID));
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='TestSpecialProductID';");
+	if(-1==str_sqlite_read(s_TestSpecialProductID,sizeof(s_TestSpecialProductID),sqlite_cmd)){
+		DEBUG("can not read s_TestSpecialProductID\n");
 		return -1;
 	}
 	else{
-		DEBUG("read s_special_ProductID: %s\n", s_special_ProductID);
+		DEBUG("read s_TestSpecialProductID: %s\n", s_TestSpecialProductID);
 	}
+	
+	return 0;
+}
+/*
+typedef struct {
+    CDCA_U16   m_OperatorID;
+    CDCA_U32   m_ID;
+    CDCA_TIME  m_ProductStartTime;
+    CDCA_TIME  m_ProductEndTime;
+    CDCA_TIME  m_WatchStartTime;
+    CDCA_TIME  m_WatchEndTime;
+    CDCA_U32   m_LimitTotaltValue;
+    CDCA_U32   m_LimitUsedValue;
+}SCDCAPVODEntitleInfo;
+*/
+typedef struct{
+	char SmartCardID[64];
+	SCDCAPVODEntitleInfo EntitleInfo;
+}SCENTITLEINFO;
+
+#define SCENTITLEINFOSIZE	(128)
+static SCENTITLEINFO s_SCEntitleInfo[SCENTITLEINFOSIZE];
+
+static int SCEntitleInfo_init_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
+	if(row<1){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+	
+	int i = 0;
+	
+// SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue
+	for(i=1;i<SCENTITLEINFOSIZE+1;i++)
+	{
+		if(i<(row+1)){
+			snprintf(s_SCEntitleInfo[i-1].SmartCardID,sizeof(s_SCEntitleInfo[i-1].SmartCardID),"%s", result[i*column]);
+			s_SCEntitleInfo[i-1].EntitleInfo.m_OperatorID = strtoul(result[i*column+1],NULL,0);
+			s_SCEntitleInfo[i-1].EntitleInfo.m_ID = strtoul(result[i*column+2],NULL,0);
+			s_SCEntitleInfo[i-1].EntitleInfo.m_ProductStartTime = strtoul(result[i*column+3],NULL,0);
+			s_SCEntitleInfo[i-1].EntitleInfo.m_ProductEndTime = strtoul(result[i*column+4],NULL,0);
+			s_SCEntitleInfo[i-1].EntitleInfo.m_WatchStartTime = strtoul(result[i*column+5],NULL,0);
+			s_SCEntitleInfo[i-1].EntitleInfo.m_WatchEndTime = strtoul(result[i*column+6],NULL,0);
+			s_SCEntitleInfo[i-1].EntitleInfo.m_LimitTotaltValue = strtoul(result[i*column+7],NULL,0);
+			s_SCEntitleInfo[i-1].EntitleInfo.m_LimitUsedValue = strtoul(result[i*column+8],NULL,0);
+			
+			DEBUG("[%d]%s\t%u\t%lu\t%lu\t%lu\t%lu\t%lu\t%lu", i-1,s_SCEntitleInfo[i-1].SmartCardID,s_SCEntitleInfo[i-1].EntitleInfo.m_OperatorID,
+				s_SCEntitleInfo[i-1].EntitleInfo.m_ProductStartTime,s_SCEntitleInfo[i-1].EntitleInfo.m_ProductEndTime,
+				s_SCEntitleInfo[i-1].EntitleInfo.m_WatchStartTime,s_SCEntitleInfo[i-1].EntitleInfo.m_WatchEndTime,
+				s_SCEntitleInfo[i-1].EntitleInfo.m_LimitTotaltValue,s_SCEntitleInfo[i-1].EntitleInfo.m_LimitUsedValue);
+		}
+		else
+			s_SCEntitleInfo[i-1].EntitleInfo.m_ID = 0;
+	}
+	
+	return 0;
+}
+
+static int SCEntitleInfo_init(void)
+{
+	char sqlite_cmd[256];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = SCEntitleInfo_init_cb;
+	
+	int i = 0;
+	for(i=0;i<SCENTITLEINFOSIZE;i++)
+	{
+		s_SCEntitleInfo[i].EntitleInfo.m_ID = 0;
+	}
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue from SCEntitleInfo;");
+	int ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
+	DEBUG("read %d record for SmartCard Entitle Info in database\n", ret);	
 	
 	return 0;
 }
 
 int intialize_xml_reset(void)
 {
-	if(0==strlen(s_serviceID)){
+	// 如果是插入智能卡，需要和数据表SCEntitleInfo比对其特殊产品是否有变化，以此判断是否是更换了智能卡
+	if(0==strlen(s_serviceID) || 0!=smartcard_entitleinfo_refresh()){
 		DEBUG("have no serviceID currently, so remove initialize.xml\n");
 		
 		char sqlite_cmd[256];
@@ -1815,9 +1891,151 @@ int intialize_xml_reset(void)
 	return 0;
 }
 
+static unsigned int SCEntitleInfoNum_get(void)
+{
+	int i = 0;
+	for(i=0;i<SCENTITLEINFOSIZE;i++){
+		if(	s_SCEntitleInfo[i].EntitleInfo.m_ID<=0){
+			//DEBUG("s_SCEntitleInfo[%d] is invalid\n", i);
+			break;
+		}
+//		else
+//			DEBUG("s_SCEntitleInfo[%d]=%lu is valid\n", i,s_SCEntitleInfo[i].EntitleInfo.m_ID);
+	}
+	
+	DEBUG("SCEntitleInfoNum_get() = %u\n", (unsigned int)i);
+	return (unsigned int)i;
+}
+
+static int SCEntitleInfoCheck(SCDCAPVODEntitleInfo *EntitleInfo)
+{
+	if(NULL==EntitleInfo){
+		DEBUG("invalid arg\n");
+		return -1;
+	}
+
+	int i = 0;
+	for(i=0;i<SCENTITLEINFOSIZE;i++){
+#if 0
+		if(		EntitleInfo->m_OperatorID==s_SCEntitleInfo[i].EntitleInfo.m_OperatorID
+			&&	EntitleInfo->m_ID==s_SCEntitleInfo[i].EntitleInfo.m_ID
+			&&	EntitleInfo->m_ProductStartTime==s_SCEntitleInfo[i].EntitleInfo.m_ProductStartTime
+			&&	EntitleInfo->m_ProductEndTime==s_SCEntitleInfo[i].EntitleInfo.m_ProductEndTime
+			&&	EntitleInfo->m_WatchStartTime==s_SCEntitleInfo[i].EntitleInfo.m_WatchStartTime
+			&&	EntitleInfo->m_LimitTotaltValue==s_SCEntitleInfo[i].EntitleInfo.m_LimitTotaltValue
+			&&	EntitleInfo->m_LimitUsedValue==s_SCEntitleInfo[i].EntitleInfo.m_LimitUsedValue){
+			DEBUG("check equal record at: %d\n",i);
+			return 0;
+		}
+#else
+		if(	EntitleInfo->m_ID==s_SCEntitleInfo[i].EntitleInfo.m_ID){
+			DEBUG("check equal record at %d for %lu\n",i,EntitleInfo->m_ID);
+			return 0;
+		}
+#endif
+	}
+	
+	return -1;
+}
+
+/*
+ return: 
+ 	-1:	failed
+ 	0:	success and no need refresh
+ 	1:	success and need refresh
+*/
+static int smartcard_entitleinfo_refresh()
+{
+	int ret = -1;
+	CDCA_U32 dwFrom = 0, dwNum = 128;
+	unsigned int i = 0;
+	char SmartCardSn[128];
+	SCDCAPVODEntitleInfo EntitleInfo[128];
+	int SC_EntitleInfo_fresh = 0;
+	char sqlite_cmd[1024];
+	
+	memset(SmartCardSn,0,sizeof(SmartCardSn));
+	ret = CDCASTB_GetCardSN(SmartCardSn);
+	if(CDCA_RC_OK==ret){
+		DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
+		ret = 0;
+		
+/*
+ 查询授权信息
+*/
+		int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
+		if(CDCA_RC_OK==ret){
+			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
+			if(	dwNum==SCEntitleInfoNum_get()){
+				DEBUG("dwNum is equal, check details continue...\n");
+				SC_EntitleInfo_fresh = 0;
+				for(i=0;i<dwNum;i++){
+					if(-1==SCEntitleInfoCheck(&EntitleInfo[i])){
+						SC_EntitleInfo_fresh = 1;
+						break;
+					}
+				}
+			}
+			else
+				SC_EntitleInfo_fresh = 1;
+			
+			if(1==SC_EntitleInfo_fresh){
+				DEBUG("refresh smart card entitle infos to memery and database\n");
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM SCEntitleInfo;");
+				sqlite_execute(sqlite_cmd);
+				
+				int sqlite_transaction_flag = sqlite_transaction_begin();
+				
+				for(i=0;i<SCENTITLEINFOSIZE;i++){
+					if(i<dwNum)	// this should be a valid Entitle info
+					{
+						snprintf(s_SCEntitleInfo[i].SmartCardID,sizeof(s_SCEntitleInfo[i].SmartCardID),"%s",SmartCardSn);
+						s_SCEntitleInfo[i].EntitleInfo.m_OperatorID = EntitleInfo[i].m_OperatorID;
+						s_SCEntitleInfo[i].EntitleInfo.m_ID = EntitleInfo[i].m_ID;
+						s_SCEntitleInfo[i].EntitleInfo.m_ProductStartTime = EntitleInfo[i].m_ProductStartTime;
+						s_SCEntitleInfo[i].EntitleInfo.m_ProductEndTime = EntitleInfo[i].m_ProductEndTime;
+						s_SCEntitleInfo[i].EntitleInfo.m_WatchStartTime = EntitleInfo[i].m_WatchStartTime;
+						s_SCEntitleInfo[i].EntitleInfo.m_WatchEndTime = EntitleInfo[i].m_WatchEndTime;
+						s_SCEntitleInfo[i].EntitleInfo.m_LimitTotaltValue = EntitleInfo[i].m_LimitTotaltValue;
+						s_SCEntitleInfo[i].EntitleInfo.m_LimitUsedValue = EntitleInfo[i].m_LimitUsedValue;
+						
+						if(0==sqlite_transaction_flag){
+							snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO SCEntitleInfo(SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue) VALUES('%s','%u','%lu','%lu','%lu','%lu','%lu','%lu','%lu');",
+								SmartCardSn,EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,EntitleInfo[i].m_ProductStartTime,EntitleInfo[i].m_ProductEndTime,EntitleInfo[i].m_WatchStartTime,EntitleInfo[i].m_WatchEndTime,EntitleInfo[i].m_LimitTotaltValue,EntitleInfo[i].m_LimitUsedValue);
+							sqlite_transaction_exec(sqlite_cmd);
+						}
+					}
+					else
+						s_SCEntitleInfo[i].EntitleInfo.m_ID = 0;
+				}
+				
+				if(0==sqlite_transaction_flag)
+					sqlite_transaction_end(1);
+				
+				return 1;
+			}
+			else{
+				DEBUG("this is a card with familiar Special Product, no need to refresh entitle infos\n");
+				return 0;
+			}
+		}
+		else{
+			drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
+			return -1;
+		}
+	}
+	else{
+		drm_errors("CDCASTB_GetCardSN", ret);
+		return -1;
+	}
+}
+
 int smart_card_insert_flag_set(int insert_flag)
 {
-	s_smart_card_insert_flag = insert_flag;
+	if(1==insert_flag)
+		s_smart_card_insert_flag = 1;
+	else
+		s_smart_card_remove_flag = 1;
 	
 	return 0;
 }
@@ -1825,6 +2043,17 @@ int smart_card_insert_flag_set(int insert_flag)
 int smart_card_insert_flag_get()
 {
 	return s_smart_card_insert_flag;
+}
+
+int smart_card_remove_flag_set(int remove_flag)
+{
+	s_smart_card_remove_flag = remove_flag;
+	return s_smart_card_remove_flag;
+}
+
+int smart_card_remove_flag_get()
+{
+	return s_smart_card_remove_flag;
 }
 
 
@@ -1886,22 +2115,25 @@ int special_productid_check(char *productid)
 		return 0;
 	}
 	
-	DEBUG("productid=%s, s_special_ProductID=%s\n", productid,s_special_ProductID);
+	DEBUG("productid=%s, s_TestSpecialProductID=%s\n", productid,s_TestSpecialProductID);
 	
-	if(0==strcmp(productid, s_special_ProductID))
+	if(0==strcmp(productid, s_TestSpecialProductID)){
+		DEBUG("check productid ok with s_TestSpecialProductID\n");
 		return 0;
+	}
 	else
 		return -1;
 }
 
-int setting_init_with_datebase()
+int setting_init_with_database()
 {
 	cur_language_init();
 	serviceID_init();
 	push_dir_init();
 	guidelist_select_refresh();
+	SCEntitleInfo_init();
 	
-	special_productid_init();
+	TestSpecialProductID_init();
 	
 	return 0;
 }

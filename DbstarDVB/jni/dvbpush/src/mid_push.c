@@ -47,7 +47,6 @@ static pthread_cond_t cond_push_monitor = PTHREAD_COND_INITIALIZER;
 
 static int push_idle = 0;
 static int s_disk_manage_flag = 0;
-static int s_smart_card_insert_action = 0;
 
 //数据包结构
 typedef struct tagDataBuffer
@@ -645,15 +644,12 @@ void *push_monitor_thread()
 			s_disk_manage_flag = 0;
 		}
 		
-		if(0==s_smart_card_insert_action && 1==smart_card_insert_flag_get()){
-			DEBUG("have a smart card insert action\n");
+		// 发生过拔卡事件，并且现在是插卡状态时，检查是否需要重置Initialize和对应的信息文件
+		if(smart_card_remove_flag_get()>0 && smart_card_insert_flag_get()>0){
+			PRINTF("have a smart card insert action\n");
 			intialize_xml_reset();
 			
-			s_smart_card_insert_action = 1;
-		}
-		else if(1==s_smart_card_insert_action && 0==smart_card_insert_flag_get()){
-			DEBUG("have a smart card remove action\n");
-			s_smart_card_insert_action = 0;
+			smart_card_remove_flag_set(0);
 		}
 		
 		if(s_service_xml_waiting>0){
@@ -1653,6 +1649,9 @@ int info_xml_refresh(int regist_flag, int push_flags[], unsigned int push_flags_
 	return ret;
 }
 
+/*
+ 由于Service.xml中包含ServiceID信息，因此遵循这样的顺序：Initialize.xml --> Service.xml --> 其他的info文件
+*/
 int info_xml_regist()
 {
 	int push_flags[16];

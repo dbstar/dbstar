@@ -279,6 +279,17 @@ static int createDatabase(char *database_uri)
 				else{
 					ret += createtable_ret;
 				}
+				
+				// 智能卡中的授权产品ID
+				createtable_ret = createTable("SCEntitleInfo");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
 CREATE_TABLE_END:
 				DEBUG("shot tables finished, ret=%d\n", ret);
 			}
@@ -779,6 +790,22 @@ TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,SType));", name);
 			}
 			
+			else if(!strcmp(name,"SCEntitleInfo"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+SmartCardID		NVARCHAR(64) DEFAULT '',\
+m_OperatorID	NVARCHAR(64) DEFAULT '',\
+m_ID	NVARCHAR(64) DEFAULT '',\
+m_ProductStartTime	NVARCHAR(64) DEFAULT '',\
+m_ProductEndTime	NVARCHAR(64) DEFAULT '',\
+m_WatchStartTime	NVARCHAR(64) DEFAULT '',\
+m_WatchEndTime	NVARCHAR(64) DEFAULT '',\
+m_LimitTotaltValue	NVARCHAR(64) DEFAULT '',\
+m_LimitUsedValue	NVARCHAR(64) DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (SmartCardID,m_OperatorID,m_ID));", name);
+			}
 			else{
 				DEBUG("baby: table %s is not defined, so can not create it\n", name);
 				memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
@@ -989,15 +1016,11 @@ int sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, in
 			}
 			else{ // inquire table ok
 				if(0==l_row){
-					DEBUG("no row, l_row=0, l_column=%d", l_column);
-					int i = 0;
-					for(i=0;i<l_column;i++)
-						printf("\t\t%s", l_result[i]);
-					printf("\n");
+					DEBUG("no row, l_row=0, l_column=%d\n", l_column);
 				}
 				else{
 					DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
-					if(sqlite_callback && receiver)
+					if(sqlite_callback)	// && receiver
 						sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
 					else{
 						DEBUG("no sqlite callback, l_row=%d, l_column=%d\n", l_row, l_column);

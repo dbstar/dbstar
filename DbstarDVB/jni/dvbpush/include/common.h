@@ -14,7 +14,7 @@ extern int debug_level_get(void);
 #define PRINTF(x...) do{__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, x);} while(0)
 
 #define DEBUG(x...) do { \
-	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__); \
+	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "[%s:%d] ", __FUNCTION__, __LINE__); \
 	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, x); \
 } while(0)
 

@@ -2596,26 +2596,6 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 		char old_xmlver[64];
 		memset(old_xmlver, 0, sizeof(old_xmlver));
 
-#if 0
-// 如果新下发了Initialize.xml但是又不需要解析，这里的反注册就傻逼了。
-// Initialize.xml不存在Service判断问题	
-		if(INITIALIZE_XML==actual_xml_flag){
-			push_flags_cnt = 0;
-			push_flags[push_flags_cnt] = GUIDELIST_XML;
-			push_flags_cnt ++;
-			push_flags[push_flags_cnt] = PRODUCTDESC_XML;
-			push_flags_cnt ++;
-			push_flags[push_flags_cnt] = COMMANDS_XML;
-			push_flags_cnt ++;
-			push_flags[push_flags_cnt] = MESSAGE_XML;
-			push_flags_cnt ++;
-			push_flags[push_flags_cnt] = SERVICE_XML;
-			push_flags_cnt ++;
-			
-			info_xml_refresh(0,push_flags,push_flags_cnt);
-		}
-#endif
-
 // Commands.xml比较特殊，无需入库但需要即时执行一些指令，因此不能放在“事务”中解析。
 // Commands.xml
 		if(COMMANDS_XML==actual_xml_flag && 0==xmlStrcmp(cur->name, BAD_CAST"Commands")){
