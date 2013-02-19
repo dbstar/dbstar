@@ -1866,6 +1866,7 @@ int intialize_xml_reset(void)
 		
 		char sqlite_cmd[256];
 		char initialize_xml_uri[512];
+		char total_xmluri[512];
 		
 // 1、停止现有正在接收的节目
 		prog_monitor_reset();
@@ -1880,20 +1881,15 @@ int intialize_xml_reset(void)
 		memset(initialize_xml_uri, 0, sizeof(initialize_xml_uri));
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag='%d';", INITIALIZE_XML);
 		if(-1==str_sqlite_read(initialize_xml_uri,sizeof(initialize_xml_uri),sqlite_cmd)){
-			char total_xmluri[256];
 			snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-			remove_force(total_xmluri);
-			
 			DEBUG("can not read initialize_xml_uri, remove %s instead of\n", total_xmluri);
 		}
 		else{
 			DEBUG("read initialize_xml_uri: %s\n", initialize_xml_uri);
-			
-			char total_xmluri[256];
 			snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),initialize_xml_uri);
-			remove_force(total_xmluri);
-			DEBUG("remove %s\n", total_xmluri);
 		}
+		remove_force(total_xmluri);
+		DEBUG("remove %s\n", total_xmluri);
 		
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
 		sqlite_execute(sqlite_cmd);
