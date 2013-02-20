@@ -13,6 +13,10 @@
 #include <net/if_arp.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/statfs.h>
+#include <sys/vfs.h>
 
 #include "common.h"
 #include "dvbpush_api.h"
@@ -940,60 +944,128 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	
 }
 
-#define ENTITLE_STORE "/mnt/sdcard/external_sdcard/sc_entitle"
-static int smartcard_EntitleFile_output()
+#define ENTITLE_SIZE_MIN	(3690LL)
+#define ENTITLE_STORE "/mnt/sdcard/external_sdcard"
+static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 {
 	char CardSN[CDCA_MAXLEN_SN+1];
+	char external_entitle_file[512];
+	int ret = -1;
 	
-	memset(CardSN,0,sizeof(CardSN));
-	int ret = CDCASTB_GetCardSN(CardSN);
-	if(CDCA_RC_OK==ret){
-		DEBUG("read smartcard sn OK: %s\n", CardSN);
-		int fd = open(ENTITLE_STORE,O_WRONLY);
-		if(-1!=fd){
-			ret = CDCASTB_DRM_ExportEntitleFile(CardSN,(void *)&fd);
+	struct statfs diskInfo;
+    if(0==statfs(ENTITLE_STORE,&diskInfo)){
+	    unsigned long long totalBlocks = diskInfo.f_bsize;
+	    unsigned long long totalSize = totalBlocks * diskInfo.f_blocks;
+	    DEBUG("TOTAL_SIZE == %llu B\n",totalSize);
+	
+	    unsigned long long freeDisk = diskInfo.f_bfree*totalBlocks;
+	    DEBUG("DISK_FREE  == %llu B\n",freeDisk);
+	    
+	    if(freeDisk>ENTITLE_SIZE_MIN){
+	    	memset(CardSN,0,sizeof(CardSN));
+			ret = CDCASTB_GetCardSN(CardSN);
 			if(CDCA_RC_OK==ret){
-				DEBUG("output entitle file OK\n");
-				ret = 0;
+				if(0==smartcard_entitleinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space)) && strlen(s_jni_cmd_public_space)>4){
+					snprintf(external_entitle_file,sizeof(external_entitle_file),"%s/%s", ENTITLE_STORE,CardSN);
+					DEBUG("smartcard %s, output to %s\n", CardSN, external_entitle_file);
+					int fd = open(external_entitle_file,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+					if(-1!=fd){
+						ret = CDCASTB_DRM_ExportEntitleFile(CardSN,(void *)&fd);
+						if(CDCA_RC_OK==ret){
+							DEBUG("output entitle file OK\n");
+							snprintf(retbuf,retbuf_size,"ENTITLE_OUTPUT_FINISH");
+							ret = 0;
+						}
+						else if(CDCA_RC_POINTER_INVALID==ret){
+							DEBUG("0x%x CDCA_RC_POINTER_INVALID\n",CDCA_RC_POINTER_INVALID);
+							snprintf(retbuf,retbuf_size,"NO_DEVICE");
+							ret = -1;
+						}
+						else if(CDCA_RC_NOENTITLEDATA==ret){
+							DEBUG("0x%x CDCA_RC_NOENTITLEDATA\n",CDCA_RC_NOENTITLEDATA);
+							snprintf(retbuf,retbuf_size,"NO_ENTITLE");
+							ret = -1;
+						}
+						else if(CDCA_RC_SYSTEMERR==ret){
+							DEBUG("0x%x CDCA_RC_SYSTEMERR\n",CDCA_RC_SYSTEMERR);
+							snprintf(retbuf,retbuf_size,"NO_DEVICE");
+							ret = -1;
+						}
+						else{
+							DEBUG("CDCASTB_DRM_ExportEntitleFile faild, %d=0x%x\n", ret,ret);
+							ret = -1;
+						}
+							
+						close(fd);
+						system("sync");
+					}
+					else{
+						ERROROUT("open %s to save entitle failed\n", external_entitle_file);
+						snprintf(retbuf,retbuf_size,"NO_DEVICE");
+						ret = -1;
+					}
+				}
+				else{
+					DEBUG("no entitle info to output\n");
+					snprintf(retbuf,retbuf_size,"NO_ENTITLE");
+					ret = -1;
+				}
 			}
 			else{
-				drm_errors("CDCASTB_DRM_ExportEntitleFile", ret);
+				drm_errors("CDCASTB_GetCardSN", ret);
+				snprintf(retbuf,retbuf_size,"NO_ENTITLE");
 				ret = -1;
 			}
-			close(fd);
-		}
-		else{
-			ERROROUT("open %s to save entitle failed\n", ENTITLE_STORE);
-			ret = -1;
-		}
+	    }
+	    else{
+	    	DEBUG("no enough space for smartmard entitle output\n");
+	    	snprintf(retbuf,retbuf_size,"NOT_ENOUGH_SPACE");
+	    	ret = -1;
+	    }
 	}
 	else{
-		drm_errors("CDCASTB_GetCardSN", ret);
-		ret = -1;
+		ERROROUT("statfs(%s)\n", ENTITLE_STORE);
+		snprintf(retbuf,retbuf_size,"NO_DEVICE");
 	}
 	
 	return ret;
 }
 
-static int smartcard_EntitleFile_input()
+static int smartcard_EntitleFile_input(char *retbuf, unsigned int retbuf_size)
 {
-	int ret = -1;
+	char CardSN[CDCA_MAXLEN_SN+1];
+	char external_entitle_file[512];
 	
-	int fd = open(ENTITLE_STORE,O_RDONLY);
-	if(-1!=fd){
-		ret = CDCASTB_DRM_ImportEntitleFile((void *)&fd);
-		if(CDCA_RC_OK==ret){
-			DEBUG("output entitle file OK\n");
-			ret = 0;
+	memset(CardSN,0,sizeof(CardSN));
+	int ret = CDCASTB_GetCardSN(CardSN);
+	if(CDCA_RC_OK==ret){
+		snprintf(external_entitle_file,sizeof(external_entitle_file),"%s/%s", ENTITLE_STORE,CardSN);
+		DEBUG("smartcard %s, input from %s\n", CardSN, external_entitle_file);
+		int fd = open(external_entitle_file,O_RDONLY);
+		if(-1!=fd){
+			ret = CDCASTB_DRM_ImportEntitleFile((void *)&fd);
+			if(CDCA_RC_OK==ret){
+				DEBUG("input entitle file OK\n");
+				snprintf(retbuf,retbuf_size,"ENTITLE_INPUT_FINISH");
+				ret = 0;
+			}
+			else{
+				DEBUG("input entitle file failed\n");
+				snprintf(retbuf,retbuf_size,"ENTITLE_INPUT_INTERRUPT");
+				ret = -1;
+			}
+			
+			close(fd);
 		}
 		else{
-			drm_errors("CDCASTB_DRM_ImportEntitleFile", ret);
+			ERROROUT("open %s to read entitle failed\n", external_entitle_file);
+			snprintf(retbuf,retbuf_size,"ENTITLE_INPUT_INTERRUPT");
 			ret = -1;
 		}
-		close(fd);
 	}
 	else{
-		DEBUG("open %s to save entitle failed\n", ENTITLE_STORE);
+		drm_errors("CDCASTB_GetCardSN", ret);
+		snprintf(retbuf,retbuf_size,"ENTITLE_INPUT_INTERRUPT");
 		ret = -1;
 	}
 	
@@ -1230,7 +1302,6 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("CMD_DRMLIB_VER_READ\n");
 			drmlib_version_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
-#if 1
 		case CMD_DRM_SC_EIGENVALUE_READ:
 			DEBUG("CMD_DRM_SC_EIGENVALUE_READ\n");
 			smartcard_eigenuvalue_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
@@ -1241,11 +1312,13 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DRM_ENTITLEINFO_OUTPUT:
 			DEBUG("CMD_DRM_ENTITLEINFO_OUTPUT\n");
-			smartcard_EntitleFile_output();
+			smartcard_EntitleFile_output(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			DEBUG("CMD_DRM_ENTITLEINFO_OUTPUT > %s\n", s_jni_cmd_public_space);
 			break;
 		case CMD_DRM_ENTITLEINFO_INPUT:
 			DEBUG("CMD_DRM_ENTITLEINFO_INPUT\n");
-			smartcard_EntitleFile_input();
+			smartcard_EntitleFile_input(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			DEBUG("CMD_DRM_ENTITLEINFO_INPUT > %s\n", s_jni_cmd_public_space);
 			break;
 		case CMD_DRM_EMAILHEADS_READ:
 			DEBUG("CMD_DRM_EMAILHEADS_READ\n");
@@ -1259,8 +1332,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("CMD_DRM_PVODPROGRAMINFO_READ\n");
 			DRM_programinfo_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
-#endif	
 		default:
+			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
 			break;
 	}
 	
