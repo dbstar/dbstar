@@ -1433,6 +1433,7 @@ int prog_monitor_reset(void)
 					
 				}
 				
+#if 0
 				//else
 				{
 					char reject_uri[512];
@@ -1449,6 +1450,7 @@ int prog_monitor_reset(void)
 					else
 						DEBUG("remove(%s) FAILED\n", reject_uri);
 				}
+#endif
 			}
 			
 			DEBUG("unregist from push[%d]:%s %s %s %lld\n",

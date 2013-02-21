@@ -945,7 +945,8 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 }
 
 #define ENTITLE_SIZE_MIN	(3690LL)
-#define ENTITLE_STORE "/mnt/sdcard/external_sdcard"
+#define ENTITLE_STORE "/mnt/sdb1"
+//#define ENTITLE_STORE "/mnt/sdcard/external_sdcard"
 static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 {
 	char CardSN[CDCA_MAXLEN_SN+1];
