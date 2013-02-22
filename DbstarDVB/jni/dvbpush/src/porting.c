@@ -141,6 +141,57 @@ char *setting_item_value(char *buf, unsigned int buf_len, char separator)
 		return NULL;
 }
 
+/*
+ push库会向push.conf配置的log目标目录写入日志，在异常情况下，日志日积月累过多会影响系统的正常运行。
+ 所以在开机时检查此目录的大小，大于一定值时删除
+*/
+// (33554432)==32*1024*1024
+#define LIBPUSH_LOGDIR_SIZE	(33554432)
+int libpush_logdir_check(void)
+{
+	FILE* fp;
+	char tmp_buf[256];
+	char *p_value;
+	char push_log_dir[512];
+	long long dir_size_total = 0LL;
+	
+	fp = fopen(PUSH_CONF,"r");
+	if (NULL == fp)
+	{
+		ERROROUT("fopen %s faild!\n", PUSH_CONF);
+	}
+	else{
+		DEBUG("fopen %s success\n", PUSH_CONF);
+		memset(tmp_buf, 0, sizeof(tmp_buf));
+		
+		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
+			//DEBUG("[%s]\n", tmp_buf);
+			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), '=');
+			if(NULL!=p_value)
+			{
+				DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
+				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
+					if(0==strcmp(tmp_buf, "LOG_DIR")){
+						snprintf(push_log_dir,sizeof(push_log_dir),"%s/libpush",p_value);
+						dir_size_total = dir_size(push_log_dir);
+						DEBUG("size of %s is %lld\n", push_log_dir, dir_size_total);
+						if(dir_size_total>=LIBPUSH_LOGDIR_SIZE){
+							DEBUG("WARNING: log dir %s is too large, remove it\n", push_log_dir);
+							remove_force(push_log_dir);
+						}
+						break;
+					}
+				}
+			}
+			memset(tmp_buf, 0, sizeof(tmp_buf));
+		}
+		fclose(fp);
+	}
+	DEBUG("check libpush logdir finish\n");
+	
+	return 0;
+}
+
 int setting_init(void)
 {
 	if(1==s_settingInitFlag){
@@ -151,7 +202,9 @@ int setting_init(void)
 	FILE* fp;
 	char tmp_buf[256];
 	char *p_value;
-
+	
+	libpush_logdir_check();
+	
 	settingDefault_set();
 	DEBUG("init settings with %s\n", SETTING_BASE);
 	fp = fopen(SETTING_BASE,"r");

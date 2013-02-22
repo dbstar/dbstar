@@ -618,9 +618,63 @@ int fcopy_c(char *from_file, char *to_file)
 }
 
 
+/*
+ 计算指定uri的大小
+ 注意：只有目录才能递归进去，不要递归到软链接里面，有可能导致死循环
+*/
+long long dir_size(const char *uri)
+{
+	DIR * pdir = NULL;
+	struct dirent *ptr = NULL;
+	char newpath[512];
+	struct stat filestat;
+	long long cur_size = 0LL;
+	
+	if(NULL==uri || 0==strlen(uri)){
+		DEBUG("can not rm such uri, it is NULL, or length is 0\n");
+		return -1;
+	}
+	
+	if(stat(uri, &filestat) != 0){
+		ERROROUT("can not stat(%s)\n", uri);
+		return -1;
+	}
+	
+	if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
+		cur_size += filestat.st_size;
+		DEBUG("dir %s self size %lld, total size %lld\n",uri,filestat.st_size,cur_size);
+		pdir = opendir(uri);
+		if(pdir){
+			while((ptr = readdir(pdir))!=NULL)
+			{
+				if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
+					continue;
+				
+				snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
+				long long subdir_size = dir_size((const char *)newpath);
+				if(subdir_size>0LL)
+					cur_size += subdir_size;
+			}
+			closedir(pdir);
+		}
+		else{
+			ERROROUT("opendir(%s) failed\n", uri);
+			return -1;
+		}
+		
+		DEBUG("%s size %lld\n", uri, cur_size);
+	}
+	else{
+		cur_size += filestat.st_size;
+		DEBUG("%s size %lld\n", uri, cur_size);
+	}
+	
+	return cur_size;   
+}
 
 /*
  将uri下的文件夹和文件递归删除，rmdir不能删除非空文件夹
+ 注意：只有目录才能递归进去，不要递归到软链接里面，有可能导致死循环
 */
 int remove_force(const char *uri)
 {
@@ -679,7 +733,6 @@ int remove_force(const char *uri)
 	}
 	else{
 		DEBUG("remove File: %s\n", uri);
-		
 	}
 	
 	ret = remove(uri);
