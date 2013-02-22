@@ -1463,6 +1463,7 @@ int prog_monitor_reset(void)
 			memset(s_prgs[i].id, 0, sizeof(s_prgs[i].id));
 			memset(s_prgs[i].uri, 0, sizeof(s_prgs[i].uri));
 			memset(s_prgs[i].descURI, 0, sizeof(s_prgs[i].descURI));
+			memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
 			memset(s_prgs[i].deadline, 0, sizeof(s_prgs[i].deadline));
 			s_prgs[i].type = 0;
 			s_prgs[i].cur = 0LL;
@@ -1569,7 +1570,7 @@ int push_recv_manage_refresh()
  由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
  所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
 */
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed FROM ProductDesc;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed FROM ProductDesc ORDER BY ProductDescID;");
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*
