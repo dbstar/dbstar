@@ -94,12 +94,7 @@ public class CAManageFragment extends GDSmartcardFragment {
 			if (mAlertDlg == null) {
 				mAlertDlg = new GDAlertDialog(mActivity, DLG_CA_ALERT);
 				mAlertDlg.setOnShowListener(mOnShowListener);
-				mAlertDlg.showSingleButton();
 			}
-
-			
-			mAlertDlg.setTitle(R.string.alert_title);
-			mAlertDlg.setMessage(getMessageByCode(mCAMessage));
 
 			dlg = mAlertDlg;
 		}
@@ -111,6 +106,8 @@ public class CAManageFragment extends GDSmartcardFragment {
 
 		@Override
 		public void onShow(DialogInterface dialog) {
+			mAlertDlg.showSingleButton();
+			mAlertDlg.setTitle(R.string.alert_title);
 			mAlertDlg.setMessage(getMessageByCode(mCAMessage));
 		}
 		

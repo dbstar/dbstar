@@ -509,7 +509,15 @@ public class EthernetConfigController {
 			}
 
 			try {
-				int block = Integer.parseInt(value.substring(start, end));
+				String var = value.substring(start, end);
+				for(int i=0; i<var.length() ; i++) {
+					char c = var.charAt(i);
+					if (c < '0' || c > '9') {
+						return false;
+					}
+				}
+				
+				int block = Integer.parseInt(var);
 				if ((block > 255) || (block < 0)) {
 					return false;
 				}
