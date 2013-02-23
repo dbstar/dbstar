@@ -145,8 +145,8 @@ char *setting_item_value(char *buf, unsigned int buf_len, char separator)
  push库会向push.conf配置的log目标目录写入日志，在异常情况下，日志日积月累过多会影响系统的正常运行。
  所以在开机时检查此目录的大小，大于一定值时删除
 */
-// (33554432)==32*1024*1024
-#define LIBPUSH_LOGDIR_SIZE	(33554432)
+// (33554432)==32*1024*1024	(8388608)==8*1024*1024
+#define LIBPUSH_LOGDIR_SIZE	(8388608)
 int libpush_logdir_check(void)
 {
 	FILE* fp;

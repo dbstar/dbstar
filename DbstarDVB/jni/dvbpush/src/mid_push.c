@@ -1059,7 +1059,7 @@ static int mid_push_regist(PROG_S *prog)
 /*
  已经解析过的节目，无需注册到push库中，只需要UI上显示即可。
 */
-			if((s_prgs[i].cur)<(s_prgs[i].total)){
+			if((s_prgs[i].cur)<(s_prgs[i].total)){				
 				push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
 			}
 			else{
@@ -1536,6 +1536,13 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			if(1==cur_prog.parsed){
 				PRINTF("[%s]%s is parsed already, make cur as total directly\n", cur_prog.id,cur_prog.uri);
 				cur_prog.cur = cur_prog.total;
+			}
+			else{
+				// 未解析过的节目，还需要重新接收，为了确保那些出现IO错误的节目目录也能重新开始，需要检查此目录是否正常。
+				// 不正常的节目目录（IO错误）重命名
+				char prog_total_uri[1024];
+				snprintf(prog_total_uri,sizeof(prog_total_uri),"%s/%s",push_dir_get(),cur_prog.uri);
+				dir_stat_ensure(prog_total_uri);
 			}
 			
 			mid_push_regist(&cur_prog);
