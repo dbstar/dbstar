@@ -383,7 +383,7 @@ int distill_file(char *path, char *file, unsigned int file_size, char *filefmt, 
 {
 	DIR * pdir;
 	struct dirent *ptr;
-	char newpath[512];
+	char newpath[1024];
 	struct stat filestat;
 	int file_count = 0;
 	int file_count_max = 64;
@@ -619,6 +619,94 @@ int fcopy_c(char *from_file, char *to_file)
 
 
 /*
+ 扫描指定的目录，如果其下的文件/文件夹stat失败，则将其重命名。
+ 只需在开机时执行一次，解决在下载节目过程中由于意外掉电导致此目录异常，下次打开文件时出现IO错误。
+ 必须重命名此目录然后才能重新下载，否则一直无法恢复。
+ 注意：只有目录才能递归进去，不要递归到软链接里面，有可能导致死循环
+*/
+#define EIO_RENAME_POSTFIX	"__EIO_RENAME__"
+#define EIO_RETURN_FLAG		(-2)
+static int dir_stat_check(const char *uri)
+{
+	DIR * pdir = NULL;
+	struct dirent *ptr = NULL;
+	char newpath[1024];
+	struct stat filestat;
+	int ret = 0;
+	
+	if(NULL==uri || 0==strlen(uri)){
+		DEBUG("can not rm such uri, it is NULL, or length is 0\n");
+		return -1;
+	}
+	
+	int stat_ret = stat(uri, &filestat);
+	if(0==stat_ret){
+		if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
+			pdir = opendir(uri);
+			if(pdir){
+				while((ptr = readdir(pdir))!=NULL)
+				{
+					if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
+						continue;
+					
+					snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
+					ret = dir_stat_check((const char *)newpath);
+					if(EIO_RETURN_FLAG==ret)
+						break;
+				}
+				closedir(pdir);
+			}
+			else{
+				ERROROUT("opendir(%s) failed\n", uri);
+				ret = -1;
+			}
+		}
+	}
+	else{
+		ERROROUT("can not stat(%s)\n", uri);
+		ret = -1;
+		
+		if(ENOENT==errno)
+			DEBUG("ENOENT\n");
+		else if(ENOTDIR==errno)
+			DEBUG("ENOTDIR\n");
+		else if(ELOOP==errno)
+			DEBUG("ELOOP\n");
+		else if(EFAULT==errno)
+			DEBUG("EFAULT\n");
+		else if(EIO==errno){
+			DEBUG("EIO\n");
+			ret = EIO_RETURN_FLAG;
+		}
+		else if(ENOMEM==errno)
+			DEBUG("ENOMEM\n");
+		else if(ENAMETOOLONG==errno)
+			DEBUG("ENAMETOOLONG\n");
+		else
+			DEBUG("errno: %d\n", errno);
+	}
+	
+	return ret;
+}
+
+int dir_stat_ensure(const char *uri)
+{
+	if(0==strstr(uri,EIO_RENAME_POSTFIX) && EIO_RETURN_FLAG==dir_stat_check(uri)){
+		char new_uri_name[1024];
+		snprintf(new_uri_name,sizeof(new_uri_name),"%s%s",uri,EIO_RENAME_POSTFIX);
+		if(0!=rename(uri,new_uri_name))
+			ERROROUT("rename %s to %s failed\n", uri, new_uri_name);
+		
+		DEBUG("WARNING: rename %s to %s\n", uri, new_uri_name);
+	}
+	else
+		DEBUG("%s is normal\n", uri);
+	
+	return 0;
+}
+
+
+/*
  计算指定uri的大小
  注意：只有目录才能递归进去，不要递归到软链接里面，有可能导致死循环
 */
@@ -626,7 +714,7 @@ long long dir_size(const char *uri)
 {
 	DIR * pdir = NULL;
 	struct dirent *ptr = NULL;
-	char newpath[512];
+	char newpath[1024];
 	struct stat filestat;
 	long long cur_size = 0LL;
 	
@@ -635,38 +723,37 @@ long long dir_size(const char *uri)
 		return -1;
 	}
 	
-	if(stat(uri, &filestat) != 0){
-		ERROROUT("can not stat(%s)\n", uri);
-		return -1;
-	}
-	
-	if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
+	int stat_ret = stat(uri, &filestat);
+	if(0==stat_ret){
 		cur_size += filestat.st_size;
-		DEBUG("dir %s self size %lld, total size %lld\n",uri,filestat.st_size,cur_size);
-		pdir = opendir(uri);
-		if(pdir){
-			while((ptr = readdir(pdir))!=NULL)
-			{
-				if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
-					continue;
-				
-				snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
-				long long subdir_size = dir_size((const char *)newpath);
-				if(subdir_size>0LL)
-					cur_size += subdir_size;
-			}
-			closedir(pdir);
-		}
-		else{
-			ERROROUT("opendir(%s) failed\n", uri);
-			return -1;
-		}
-		
 		DEBUG("%s size %lld\n", uri, cur_size);
+		
+		if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
+			pdir = opendir(uri);
+			if(pdir){
+				while((ptr = readdir(pdir))!=NULL)
+				{
+					if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
+						continue;
+					
+					snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
+					long long subdir_size = dir_size((const char *)newpath);
+					if(subdir_size>0LL)
+						cur_size += subdir_size;
+				}
+				closedir(pdir);
+			}
+			else{
+				ERROROUT("opendir(%s) failed\n", uri);
+				cur_size = -1;
+			}
+			
+			DEBUG("%s size %lld\n", uri, cur_size);
+		}
 	}
 	else{
-		cur_size += filestat.st_size;
-		DEBUG("%s size %lld\n", uri, cur_size);
+		ERROROUT("can not stat(%s)\n", uri);
+		cur_size = -1;
 	}
 	
 	return cur_size;   
@@ -680,7 +767,7 @@ int remove_force(const char *uri)
 {
 	DIR * pdir = NULL;
 	struct dirent *ptr = NULL;
-	char newpath[512];
+	char newpath[1024];
 	struct stat filestat;
 	int ret = -1;
 	
@@ -689,55 +776,36 @@ int remove_force(const char *uri)
 		return -1;
 	}
 	
-	DEBUG("process %s\n", uri);
-	
-	if(stat(uri, &filestat) != 0){
-		ERROROUT("can not stat(%s)\n", uri);
-		return -1;
-	}
-	if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
-		pdir = opendir(uri);
-		if(pdir){
-			while((ptr = readdir(pdir))!=NULL)
-			{
-				if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
-					continue;
-				
-				snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
-#if 0
-				if(stat(newpath, &filestat) != 0){
-					DEBUG("The file or path(%s) can not be get stat!\n", newpath);
-					continue;
-				}
-
-				/* Check if it is dir. */
-				if((filestat.st_mode & S_IFDIR) == S_IFDIR){
+	if(0==stat(uri, &filestat)){
+		if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
+			pdir = opendir(uri);
+			if(pdir){
+				while((ptr = readdir(pdir))!=NULL)
+				{
+					if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
+						continue;
+					
+					snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
 					remove_force((const char *)newpath);
 				}
-				else if((filestat.st_mode & S_IFREG) == S_IFREG){
-					DEBUG("remove File: %s\n", newpath);
-					remove(uri);
-				}
-#else
-				remove_force((const char *)newpath);
-#endif
+				closedir(pdir);
 			}
-			closedir(pdir);
-		}
-		else{
-			ERROROUT("opendir(%s) failed\n", uri);
-			ret = -1;
+			else{
+				ERROROUT("opendir(%s) failed\n", uri);
+				ret = -1;
+			}
 		}
 		
-		DEBUG("remove Dir: %s\n", uri);
+		ret = remove(uri);
+		if(0==ret)
+			DEBUG("remove(%s)\n", uri);
+		else
+			ERROROUT("remove(%s) failed\n", uri);
 	}
 	else{
-		DEBUG("remove File: %s\n", uri);
+		ERROROUT("can not stat(%s)\n", uri);
+		ret = -1;
 	}
-	
-	ret = remove(uri);
-	if(0!=ret)
-		ERROROUT("remove failed\n");
 	
 	return ret;   
 }
