@@ -542,6 +542,7 @@ int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int 
 int fcopy_c(char *from_file, char *to_file);
 int remove_force(const char *uri);
 long long dir_size(const char *uri);
+int dir_stat_ensure(const char *uri);
 
 #endif
 
