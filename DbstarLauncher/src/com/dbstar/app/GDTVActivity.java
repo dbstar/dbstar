@@ -508,11 +508,11 @@ public class GDTVActivity extends GDBaseActivity {
 			String file = mService.getMediaFile(item.Content);
 			String drmFile = mService.getDRMFile(item.Content);
 
-			GDPlayerUtil.playNextVideo(this, mTV.Content.Id, item.Content, file,
+			GDPlayerUtil.playNextVideo(mService, mTV.Content.Id, item.Content, file,
 					drmFile, true);
 		} else {
 			Intent intent = new Intent(GDCommon.ActionNoNext);
-			sendBroadcast(intent);
+			mService.sendBroadcast(intent);
 		}
 	}
 

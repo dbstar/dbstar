@@ -84,6 +84,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	ListView mPopupMenu;
 	PopupMenuAdapter mPopupMenuAdapter;
 	boolean mIsPopupMenuHided = false;
+	boolean mIsInAnimation = false;
 
 	boolean mShowMenuPathIsOn = true;
 	boolean mMarqeeViewIsOn = false;
@@ -207,6 +208,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		Log.d(TAG, "onKeyDown " + keyCode);
+		
+		if (mIsInAnimation) {
+			// disable all key operation during animation!
+			return true;
+		}
 
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_DPAD_RIGHT:
@@ -263,6 +269,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			ret = true;
 			mMenuStack.pop();
 
+			mIsInAnimation = true;
 			mAnimController.setAnimation(mGallerySlideToLeftAnim);
 
 			long time = AnimationUtils.currentAnimationTimeMillis();
@@ -439,6 +446,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		showMenuPath();
+		
+		mIsInAnimation = false;
 	}
 
 	void showUserCenter(String columnId) {
@@ -549,7 +558,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				mService.getColumns(this, newMenu.MenuLevel + 1, i,
 						menuItems[i].ItemData.Id);
 		}
-
+		mIsInAnimation = true;
 		long time = AnimationUtils.currentAnimationTimeMillis();
 		mFocusZoomIn.setStartTime(time);
 		if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
