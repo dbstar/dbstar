@@ -654,6 +654,7 @@ void *push_monitor_thread()
 		
 		if(s_service_xml_waiting>0){
 			s_service_xml_waiting ++;
+			DEBUG("s_service_xml_waiting=%d\n", s_service_xml_waiting);
 			
 			if(s_service_xml_waiting>2){
 				s_service_xml_waiting = 0;

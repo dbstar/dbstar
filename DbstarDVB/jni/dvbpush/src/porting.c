@@ -31,6 +31,8 @@
 #include "drmapi.h"
 #include "push.h"
 
+#define INVALID_PRODUCTID_AT_ENTITLEINFO	(0)
+
 static int 			s_settingInitFlag = 0;
 
 static char			s_service_id[32];
@@ -53,10 +55,12 @@ static char			s_serviceID[64];
 static char			s_push_root_path[512];
 static char 		*s_guidelist_unselect = NULL;
 
-//static int 			s_disk_manage_buzy = 0;
 static char			s_jni_cmd_public_space[20480];
+
+// 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
 static int			s_smart_card_remove_flag = 1;	// 当发生过拔卡事件时，此标记置1。为了应对插卡开机，初始化为1
+
 static char			s_TestSpecialProductID[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
@@ -1342,6 +1346,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DRM_SC_REMOVE:
 			DEBUG("CMD_SMARTCARD_REMOVE\n");
 			smart_card_insert_flag_set(0);
+			smart_card_remove_flag_set(1);
 			if(-1==drm_sc_remove())
 				msg_send2_UI(DRM_SC_REMOVE_FAILED, NULL, 0);
 			else
@@ -1961,7 +1966,7 @@ static int SCEntitleInfo_init_cb(char **result, int row, int column, void *recei
 				s_SCEntitleInfo[i-1].EntitleInfo.m_LimitTotaltValue,s_SCEntitleInfo[i-1].EntitleInfo.m_LimitUsedValue);
 		}
 		else
-			s_SCEntitleInfo[i-1].EntitleInfo.m_ID = 0;
+			s_SCEntitleInfo[i-1].EntitleInfo.m_ID = INVALID_PRODUCTID_AT_ENTITLEINFO;
 	}
 	
 	return 0;
@@ -1975,7 +1980,7 @@ static int SCEntitleInfo_init(void)
 	int i = 0;
 	for(i=0;i<SCENTITLEINFOSIZE;i++)
 	{
-		s_SCEntitleInfo[i].EntitleInfo.m_ID = 0;
+		s_SCEntitleInfo[i].EntitleInfo.m_ID = INVALID_PRODUCTID_AT_ENTITLEINFO;
 	}
 	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue from SCEntitleInfo;");
@@ -1988,8 +1993,8 @@ static int SCEntitleInfo_init(void)
 int intialize_xml_reset(void)
 {
 	// 如果是插入智能卡，需要和数据表SCEntitleInfo比对其特殊产品是否有变化，以此判断是否是更换了智能卡
-	if(0==strlen(s_serviceID) || 0!=smartcard_entitleinfo_refresh()){
-		DEBUG("do xmls reset\n");
+	if(0==strlen(s_serviceID) || 1==smartcard_entitleinfo_refresh()){
+		DEBUG("\n\n\n\n\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\ndo xmls reset\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n\n\n\n\n\n\n\n");
 		
 		char sqlite_cmd[256];
 		char initialize_xml_uri[512];
@@ -2024,7 +2029,7 @@ int intialize_xml_reset(void)
 		return 0;
 	}
 	else
-		DEBUG("already have s_serviceID: %s\n", s_serviceID);
+		DEBUG("already have s_serviceID: %s, or smart card has not refresh\n", s_serviceID);
 	
 	return 0;
 }
@@ -2033,7 +2038,7 @@ static unsigned int SCEntitleInfoNum_get(void)
 {
 	int i = 0;
 	for(i=0;i<SCENTITLEINFOSIZE;i++){
-		if(	s_SCEntitleInfo[i].EntitleInfo.m_ID<=0){
+		if(	s_SCEntitleInfo[i].EntitleInfo.m_ID<=INVALID_PRODUCTID_AT_ENTITLEINFO){
 			//DEBUG("s_SCEntitleInfo[%d] is invalid\n", i);
 			break;
 		}
@@ -2170,12 +2175,10 @@ static int smartcard_entitleinfo_refresh()
 
 int smart_card_insert_flag_set(int insert_flag)
 {
-	if(1==insert_flag)
-		s_smart_card_insert_flag = 1;
-	else
-		s_smart_card_remove_flag = 1;
+	s_smart_card_insert_flag = insert_flag;
+	DEBUG("s_smart_card_insert_flag=%d, s_smart_card_remove_flag=%d\n", s_smart_card_insert_flag,s_smart_card_remove_flag);
 	
-	return 0;
+	return s_smart_card_insert_flag;
 }
 
 int smart_card_insert_flag_get()
@@ -2186,6 +2189,8 @@ int smart_card_insert_flag_get()
 int smart_card_remove_flag_set(int remove_flag)
 {
 	s_smart_card_remove_flag = remove_flag;
+	DEBUG("s_smart_card_insert_flag=%d, s_smart_card_remove_flag=%d\n", s_smart_card_insert_flag,s_smart_card_remove_flag);
+	
 	return s_smart_card_remove_flag;
 }
 
