@@ -43,7 +43,10 @@ static PUSH_XML_S		s_push_xml[XML_NUM];
 static pthread_mutex_t mtx_xml = PTHREAD_MUTEX_INITIALIZER;
 //static pthread_cond_t cond_xml = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mtx_push_monitor = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond_push_monitor = PTHREAD_COND_INITIALIZER;
+//static pthread_cond_t cond_push_monitor = PTHREAD_COND_INITIALIZER;
+
+static pthread_mutex_t mtx_maintenance = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t cond_maintenance = PTHREAD_COND_INITIALIZER;
 
 static int push_idle = 0;
 static int s_disk_manage_flag = 0;
@@ -544,13 +547,20 @@ void service_xml_waiting_set(int flag)
 	DEBUG("s_service_xml_waiting = %d\n", s_service_xml_waiting);
 }
 
+void maintenance_thread_awake()
+{
+	pthread_mutex_lock(&mtx_maintenance);
+	pthread_cond_signal(&cond_maintenance);
+	pthread_mutex_unlock(&mtx_maintenance);
+}
+
 /*
 为避免无意义的查询硬盘，应完成下面两个工作：
 1、当节目接收完毕后不应再查询，数据库中记录的是100%
 2、只有UI上进入查看进度的界面后，通知底层去查询，其他时间查询没有意义。
 3、当push无数据后，再轮询若干遍（等待缓冲数据写入硬盘）后就不再轮询。
 */
-void *push_monitor_thread()
+void *maintenance_thread()
 {
 	s_monitor_running = 1;
 	
@@ -563,40 +573,18 @@ void *push_monitor_thread()
 	
 	while (1==s_monitor_running)
 	{
-		pthread_mutex_lock(&mtx_push_monitor);
-		PRINTF("2 s_push_has_data:%d,s_push_monitor_active:%d\n",s_push_has_data,s_push_monitor_active);
+		pthread_mutex_lock(&mtx_maintenance);
 		
 		gettimeofday(&now, NULL);
 		outtime.tv_sec = now.tv_sec + monitor_interval;
 		outtime.tv_nsec = now.tv_usec;
-		retcode = pthread_cond_timedwait(&cond_push_monitor, &mtx_push_monitor, &outtime);
+		retcode = pthread_cond_timedwait(&cond_maintenance, &mtx_maintenance, &outtime);
 		
-#if 0
-// 2013-01-24，节目接收完毕后push系统给出回调，无需实时监控进度
-		if(need_push_monitor()>0 && 0==s_dvbpush_getinfo_flag){
-			memset(time_stamp, 0, sizeof(time_stamp));
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
-			if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
-				DEBUG("can not generate DATETIME for prog monitor\n");
-				memset(time_stamp, 0, sizeof(time_stamp));
-			}
-			
-			for(i=0; i<PROGS_NUM; i++)
-			{
-				if(-1==prog_is_valid(&s_prgs[i]) || s_prgs[i].cur>=s_prgs[i].total)
-					continue;
-				
-				prog_monitor(&s_prgs[i],time_stamp);
-			}
-			s_push_has_data--;
-		}
-#endif
+		pthread_mutex_unlock(&mtx_maintenance);
 		
-		pthread_mutex_unlock(&mtx_push_monitor);
-		
-#if 0
+#if 1
 		if(ETIMEDOUT!=retcode){
-			DEBUG("push monitor thread is awaked by external signal\n");
+			DEBUG("push monitor thread is awaked by external signal, parhaps from smart card\n");
 		}
 #endif
 		
@@ -638,18 +626,16 @@ void *push_monitor_thread()
 			}
 		}
 		
+		if(smart_card_insert_flag_get()>0){
+			DEBUG("smart card insert\n");
+			pushinfo_reset();
+			smart_card_insert_flag_set(0);
+		}
+		
 		if(1==s_disk_manage_flag){
 			DEBUG("will clean disk\n");
 			disk_manage(NULL,NULL);
 			s_disk_manage_flag = 0;
-		}
-		
-		// 发生过拔卡事件，并且现在是插卡状态时，检查是否需要重置Initialize和对应的信息文件
-		if(smart_card_remove_flag_get()>0 && smart_card_insert_flag_get()>0){
-			PRINTF("have a smart card insert action\n");
-			intialize_xml_reset();
-			
-			smart_card_remove_flag_set(0);
 		}
 		
 		if(s_service_xml_waiting>0){
@@ -898,9 +884,9 @@ int mid_push_init(char *push_conf)
 	//pthread_detach(tidDecodeData);
 	
 	//创建监视线程
-	pthread_t tidMonitor;
-	pthread_create(&tidMonitor, NULL, push_monitor_thread, NULL);
-	pthread_detach(tidMonitor);
+	pthread_t tidMaintenance;
+	pthread_create(&tidMaintenance, NULL, maintenance_thread, NULL);
+	pthread_detach(tidMaintenance);
 	
 	//创建xml解析线程
 	pthread_t tidxmlparse;
@@ -917,10 +903,10 @@ int mid_push_uninit()
 	//pthread_cond_signal(&cond_xml);
 	pthread_mutex_unlock(&mtx_xml);
 	
-	pthread_mutex_lock(&mtx_push_monitor);
+	pthread_mutex_lock(&mtx_maintenance);
 	s_monitor_running = 0;
-	pthread_cond_signal(&cond_push_monitor);
-	pthread_mutex_unlock(&mtx_push_monitor);
+	pthread_cond_signal(&cond_maintenance);
+	pthread_mutex_unlock(&mtx_maintenance);
 	
 	s_push_has_data = 0;
 	

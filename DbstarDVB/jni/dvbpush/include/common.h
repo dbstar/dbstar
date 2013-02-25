@@ -58,7 +58,7 @@ typedef enum{
 #define	MSG_FIFO_ROOT_DIR	WORKING_DATA_DIR"/msg_fifo"
 #define SETTING_BASE		WORKING_DATA_DIR"/dbstar.conf"
 #define PUSH_CONF			"/system/etc/dbstar/push.conf"
-#define PUSH_CONF_DF		"/etc/push.conf"
+#define INITIALIZE_XML_URI	"pushroot/initialize/Initialize.xml"
 
 /*
 程序运行过程中产生的数据，包括：下载的片源、对应的数据库

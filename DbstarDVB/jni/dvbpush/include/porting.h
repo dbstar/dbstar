@@ -35,5 +35,6 @@ int smart_card_remove_flag_set(int remove_flag);
 int smart_card_remove_flag_get();
 int intialize_xml_reset(void);
 int setting_init_with_database();
+int pushinfo_reset(void);
 
 #endif

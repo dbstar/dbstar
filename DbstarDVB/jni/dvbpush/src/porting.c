@@ -33,6 +33,15 @@
 
 #define INVALID_PRODUCTID_AT_ENTITLEINFO	(0)
 
+typedef struct{
+	char SmartCardID[64];
+	SCDCAPVODEntitleInfo EntitleInfo;
+}SCENTITLEINFO;
+
+#define SCENTITLEINFOSIZE	(128)
+
+static SCENTITLEINFO s_SCEntitleInfo[SCENTITLEINFOSIZE];
+
 static int 			s_settingInitFlag = 0;
 
 static char			s_service_id[32];
@@ -45,8 +54,8 @@ static int			s_prog_data_pid = 0;
 static char			s_dbstar_database_uri[256];
 static char			s_smarthome_database_uri[256];
 static int			s_debug_level = 0;
-static char			s_xml[256];
-static char			s_initialize_xml[256];
+static char			s_parse_xml_test[512];
+static char			s_initialize_xml_uri[512];
 static char			s_column_res[256];
 static int			s_software_check = 1;
 
@@ -66,7 +75,6 @@ static char			s_TestSpecialProductID[64];
 static dvbpush_notify_t dvbpush_notify = NULL;
 
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
-static int smartcard_entitleinfo_refresh();
 
 /* define some general interface function here */
 
@@ -86,8 +94,8 @@ static void settingDefault_set(void)
 	snprintf(s_dbstar_database_uri, sizeof(s_dbstar_database_uri), "%s", DBSTAR_DATABASE);
 	snprintf(s_smarthome_database_uri, sizeof(s_smarthome_database_uri), "%s", SMARTHOME_DATABASE);
 	s_debug_level = 0;
-	memset(s_xml, 0, sizeof(s_xml));
-	snprintf(s_initialize_xml, sizeof(s_initialize_xml), "%d", INITIALIZE_XML);
+	memset(s_parse_xml_test, 0, sizeof(s_parse_xml_test));
+	snprintf(s_initialize_xml_uri, sizeof(s_initialize_xml_uri), "%s", INITIALIZE_XML_URI);
 	snprintf(s_column_res, sizeof(s_column_res), "%s", COLUMN_RES);
 	s_software_check = 1;
 	
@@ -151,7 +159,7 @@ char *setting_item_value(char *buf, unsigned int buf_len, char separator)
 */
 // (33554432)==32*1024*1024	(8388608)==8*1024*1024
 #define LIBPUSH_LOGDIR_SIZE	(8388608)
-int libpush_logdir_check(void)
+static int libpush_conf_init(void)
 {
 	FILE* fp;
 	char tmp_buf[256];
@@ -183,7 +191,10 @@ int libpush_logdir_check(void)
 							DEBUG("WARNING: log dir %s is too large, remove it\n", push_log_dir);
 							remove_force(push_log_dir);
 						}
-						break;
+					}
+					else if(0==strcmp(tmp_buf, "INITFILE")){
+						snprintf(s_initialize_xml_uri,sizeof(s_initialize_xml_uri),"%s", p_value);
+						DEBUG("read INITFILE as %s from push.conf\n", s_initialize_xml_uri);
 					}
 				}
 			}
@@ -207,9 +218,10 @@ int setting_init(void)
 	char tmp_buf[256];
 	char *p_value;
 	
-	libpush_logdir_check();
-	
 	settingDefault_set();
+	
+	libpush_conf_init();
+	
 	DEBUG("init settings with %s\n", SETTING_BASE);
 	fp = fopen(SETTING_BASE,"r");
 	if (NULL == fp)
@@ -243,9 +255,7 @@ int setting_init(void)
 					else if(0==strcmp(tmp_buf, "dbstar_debug_level"))
 						s_debug_level = atoi(p_value);
 					else if(0==strcmp(tmp_buf, "parse_xml"))	/* this xml only for parse testing */
-						strncpy(s_xml, p_value, sizeof(s_xml)-1);
-					else if(0==strcmp(tmp_buf, "initialize_xml"))
-						strncpy(s_initialize_xml, p_value, sizeof(s_initialize_xml)-1);
+						strncpy(s_parse_xml_test, p_value, sizeof(s_parse_xml_test)-1);
 					else if(0==strcmp(tmp_buf, "localcolumn_res"))
 						strncpy(s_column_res, p_value, sizeof(s_column_res)-1);
 					else if(0==strcmp(tmp_buf, "software_check"))
@@ -318,13 +328,8 @@ int parse_xml_get(char *xml_uri, unsigned int size)
 	if(NULL==xml_uri || 0==size)
 		return -1;
 	
-	strncpy(xml_uri, s_xml, size);
+	strncpy(xml_uri, s_parse_xml_test, size);
 	return 0;
-}
-
-int initialize_xml_get()
-{
-	return atoi(s_initialize_xml);
 }
 
 char *column_res_get()
@@ -963,42 +968,27 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 		return -1;
 	}
 	
-/*
- 查询授权信息
-*/
-	CDCA_U32 dwFrom = 0, dwNum = 128;
-	unsigned int i = 0;
-	SCDCAPVODEntitleInfo EntitleInfo[128];
 	char		BeginDate[64];
 	char		ExpireDate[64];
-
-	int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
-	if(CDCA_RC_OK==ret){
-		DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
-		for(i=0;i<dwNum;i++){
-			if(0!=EntitleInfo[i].m_ID){
-				memset(BeginDate, 0, sizeof(BeginDate));
-				memset(ExpireDate, 0, sizeof(ExpireDate));
-				if(		0==drm_time_convert(EntitleInfo[i].m_ProductStartTime, BeginDate, sizeof(BeginDate))
-					&& 	0==drm_time_convert(EntitleInfo[i].m_ProductEndTime, ExpireDate, sizeof(ExpireDate))){
-					;
-				}
-				
-				if(0==i)
-					snprintf(buf,size,"%d\t%lu\t%s\t%s\t%lu",EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,BeginDate,ExpireDate,EntitleInfo[i].m_LimitTotaltValue);
-				else
-					snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%lu\t%s\t%s\t%lu",EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,BeginDate,ExpireDate,EntitleInfo[i].m_LimitTotaltValue);
+	int 		i = 0;
+	
+	for(i=0;i<SCENTITLEINFOSIZE;i++){
+		if(s_SCEntitleInfo[i].EntitleInfo.m_ID>INVALID_PRODUCTID_AT_ENTITLEINFO){
+			memset(BeginDate, 0, sizeof(BeginDate));
+			memset(ExpireDate, 0, sizeof(ExpireDate));
+			if(		0==drm_time_convert(s_SCEntitleInfo[i].EntitleInfo.m_ProductStartTime, BeginDate, sizeof(BeginDate))
+				&& 	0==drm_time_convert(s_SCEntitleInfo[i].EntitleInfo.m_ProductEndTime, ExpireDate, sizeof(ExpireDate))){
+				;
 			}
+			
+			if(0==i)
+				snprintf(buf,size,"%d\t%lu\t%s\t%s\t%lu",s_SCEntitleInfo[i].EntitleInfo.m_OperatorID,s_SCEntitleInfo[i].EntitleInfo.m_ID,BeginDate,ExpireDate,s_SCEntitleInfo[i].EntitleInfo.m_LimitTotaltValue);
+			else
+				snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%lu\t%s\t%s\t%lu",s_SCEntitleInfo[i].EntitleInfo.m_OperatorID,s_SCEntitleInfo[i].EntitleInfo.m_ID,BeginDate,ExpireDate,s_SCEntitleInfo[i].EntitleInfo.m_LimitTotaltValue);
 		}
-		DEBUG("%s\n", buf);
-		
-		return 0;
-	}
-	else{
-		drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
-		return -1;
 	}
 	
+	return 0;
 }
 
 #define ENTITLE_SIZE_MIN	(3690LL)
@@ -1346,7 +1336,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DRM_SC_REMOVE:
 			DEBUG("CMD_SMARTCARD_REMOVE\n");
 			smart_card_insert_flag_set(0);
-			smart_card_remove_flag_set(1);
+			
 			if(-1==drm_sc_remove())
 				msg_send2_UI(DRM_SC_REMOVE_FAILED, NULL, 0);
 			else
@@ -1916,25 +1906,6 @@ static int TestSpecialProductID_init()
 	
 	return 0;
 }
-/*
-typedef struct {
-    CDCA_U16   m_OperatorID;
-    CDCA_U32   m_ID;
-    CDCA_TIME  m_ProductStartTime;
-    CDCA_TIME  m_ProductEndTime;
-    CDCA_TIME  m_WatchStartTime;
-    CDCA_TIME  m_WatchEndTime;
-    CDCA_U32   m_LimitTotaltValue;
-    CDCA_U32   m_LimitUsedValue;
-}SCDCAPVODEntitleInfo;
-*/
-typedef struct{
-	char SmartCardID[64];
-	SCDCAPVODEntitleInfo EntitleInfo;
-}SCENTITLEINFO;
-
-#define SCENTITLEINFOSIZE	(128)
-static SCENTITLEINFO s_SCEntitleInfo[SCENTITLEINFOSIZE];
 
 static int SCEntitleInfo_init_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
@@ -1990,55 +1961,11 @@ static int SCEntitleInfo_init(void)
 	return 0;
 }
 
-int intialize_xml_reset(void)
-{
-	// 如果是插入智能卡，需要和数据表SCEntitleInfo比对其特殊产品是否有变化，以此判断是否是更换了智能卡
-	if(0==strlen(s_serviceID) || 1==smartcard_entitleinfo_refresh()){
-		DEBUG("\n\n\n\n\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\ndo xmls reset\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n\n\n\n\n\n\n\n");
-		
-		char sqlite_cmd[256];
-		char initialize_xml_uri[512];
-		char total_xmluri[512];
-		
-// 1、停止现有正在接收的节目
-		prog_monitor_reset();
-		
-// 2、删除播发单ProductDesc表
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
-		sqlite_execute(sqlite_cmd);
-		
-// 3、清理Initialize.xml和Initialize表，使得初始化文件再次下发，重新判断ServiceID
-// 		旧xml已经在push中注册，这里就不反注册并清理了，减少逻辑复杂度。执行到这里的概率很小
-		
-		memset(initialize_xml_uri, 0, sizeof(initialize_xml_uri));
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag='%d';", INITIALIZE_XML);
-		if(-1==str_sqlite_read(initialize_xml_uri,sizeof(initialize_xml_uri),sqlite_cmd)){
-			snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-			DEBUG("can not read initialize_xml_uri, remove %s instead of\n", total_xmluri);
-		}
-		else{
-			DEBUG("read initialize_xml_uri: %s\n", initialize_xml_uri);
-			snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),initialize_xml_uri);
-		}
-		remove_force(total_xmluri);
-		DEBUG("remove %s\n", total_xmluri);
-		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
-		sqlite_execute(sqlite_cmd);
-		
-		return 0;
-	}
-	else
-		DEBUG("already have s_serviceID: %s, or smart card has not refresh\n", s_serviceID);
-	
-	return 0;
-}
-
 static unsigned int SCEntitleInfoNum_get(void)
 {
 	int i = 0;
 	for(i=0;i<SCENTITLEINFOSIZE;i++){
-		if(	s_SCEntitleInfo[i].EntitleInfo.m_ID<=INVALID_PRODUCTID_AT_ENTITLEINFO){
+		if(s_SCEntitleInfo[i].EntitleInfo.m_ID<=INVALID_PRODUCTID_AT_ENTITLEINFO){
 			//DEBUG("s_SCEntitleInfo[%d] is invalid\n", i);
 			break;
 		}
@@ -2099,7 +2026,8 @@ static int smartcard_entitleinfo_refresh()
 	
 	memset(SmartCardSn,0,sizeof(SmartCardSn));
 	ret = CDCASTB_GetCardSN(SmartCardSn);
-	if(CDCA_RC_OK==ret){
+	if(CDCA_RC_OK==ret)
+	{
 		DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
 		ret = 0;
 		
@@ -2149,12 +2077,13 @@ static int smartcard_entitleinfo_refresh()
 						}
 					}
 					else
-						s_SCEntitleInfo[i].EntitleInfo.m_ID = 0;
+						s_SCEntitleInfo[i].EntitleInfo.m_ID = INVALID_PRODUCTID_AT_ENTITLEINFO;
 				}
 				
 				if(0==sqlite_transaction_flag)
 					sqlite_transaction_end(1);
 				
+				DEBUG("this is another smart card, reset pushinfo\n");
 				return 1;
 			}
 			else{
@@ -2173,32 +2102,93 @@ static int smartcard_entitleinfo_refresh()
 	}
 }
 
+static int pushinfo_unregist_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
+	if(row<1){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+	
+	int i = 0;
+	int ret = 0;
+	
+	for(i=1;i<row+1;i++)
+	{
+		if(strlen(result[i*column+1])>0){
+			ret = push_file_unregister(result[i*column+1]);
+			PRINTF("unregist %s return with %d\n", result[i*column+1], ret);
+		}
+	}
+	
+	return 0;
+}
+
+int pushinfo_reset(void)
+{
+	// 如果是插入智能卡，需要和数据表SCEntitleInfo比对其特殊产品是否有变化，以此判断是否是更换了智能卡
+	// 0==strlen(s_serviceID) ||
+	if(1==smartcard_entitleinfo_refresh()){	
+		DEBUG("\n\n\n\n\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\ndo xmls reset\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n\n\n\n\n\n\n\n");
+	
+		char sqlite_cmd[256];
+		char total_xmluri[512];
+		int ret = 0;
+	
+// 1、停止现有正在接收的节目
+		prog_monitor_reset();
+	
+// 2、删除播发单ProductDesc表
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
+		sqlite_execute(sqlite_cmd);
+
+// 3、重置xml注册
+		int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushinfo_unregist_cb;
+		
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag!='%d';", INITIALIZE_XML);
+		ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
+		if(ret>0){
+			DEBUG("unregist %d pushinfo xml\n",ret);
+		}
+		
+		snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
+		ret = push_file_unregister(total_xmluri);
+		PRINTF("unregist %s return with %d\n", total_xmluri, ret);
+		
+		snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
+		remove_force(total_xmluri);
+		snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", push_dir_get());
+		remove_force(total_xmluri);
+		
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
+		sqlite_execute(sqlite_cmd);
+		
+		snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
+		ret = push_file_register(total_xmluri);
+		PRINTF("regist %s return with %d\n", total_xmluri, ret);
+	}
+	
+	return 0;
+}
+
 int smart_card_insert_flag_set(int insert_flag)
 {
 	s_smart_card_insert_flag = insert_flag;
 	DEBUG("s_smart_card_insert_flag=%d, s_smart_card_remove_flag=%d\n", s_smart_card_insert_flag,s_smart_card_remove_flag);
 	
+	if(1==s_smart_card_insert_flag){
+		maintenance_thread_awake();
+		DEBUG("maintenance thread awake\n");
+	}
+	
 	return s_smart_card_insert_flag;
 }
+
 
 int smart_card_insert_flag_get()
 {
 	return s_smart_card_insert_flag;
 }
-
-int smart_card_remove_flag_set(int remove_flag)
-{
-	s_smart_card_remove_flag = remove_flag;
-	DEBUG("s_smart_card_insert_flag=%d, s_smart_card_remove_flag=%d\n", s_smart_card_insert_flag,s_smart_card_remove_flag);
-	
-	return s_smart_card_remove_flag;
-}
-
-int smart_card_remove_flag_get()
-{
-	return s_smart_card_remove_flag;
-}
-
 
 /*
  从智能卡中查询指定的产品信息。
@@ -2210,37 +2200,17 @@ static int check_productid_from_smartcard(char *productid)
 		return -1;
 	}
 	
-	if(0==s_smart_card_insert_flag){
-		DEBUG("no smart card has inserted\n");
-		return -1;
+	int i = 0;
+	long check_productid = strtol(productid,NULL,0);
+	
+	for(i=0;i<SCENTITLEINFOSIZE;i++){
+		if((unsigned long)check_productid==s_SCEntitleInfo[i].EntitleInfo.m_ID){
+			DEBUG("checked productid %s at record %d\n",productid,i);
+			return 0;
+		}
 	}
 	
-/*
- 查询授权信息
-*/
-	CDCA_U32 dwFrom = 0, dwNum = 128;
-	unsigned int i = 0;
-	SCDCAPVODEntitleInfo EntitleInfo[128];
-
-	int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
-	if(CDCA_RC_OK==ret){
-		DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
-		long check_productid = strtol(productid,NULL,0);
-		for(i=0;i<dwNum;i++){
-			if(((unsigned long)check_productid)==EntitleInfo[i].m_ID){
-				DEBUG("check %s ok, mirror with %lu\n", productid, EntitleInfo[i].m_ID);
-				return 0;
-			}
-			else
-				DEBUG("EntitleInfo[%d].m_ID=%lu\n", i, EntitleInfo[i].m_ID);
-		}
-		
-		return -1;
-	}
-	else{
-		drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
-		return -1;
-	}
+	return -1;
 }
 
 
