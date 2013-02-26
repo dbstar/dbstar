@@ -2115,10 +2115,8 @@ static int pushinfo_unregist_cb(char **result, int row, int column, void *receiv
 	
 	for(i=1;i<row+1;i++)
 	{
-		if(strlen(result[i*column+1])>0){
-			ret = push_file_unregister(result[i*column+1]);
-			PRINTF("unregist %s return with %d\n", result[i*column+1], ret);
-		}
+		ret = push_file_unregister(result[i*column]);
+		PRINTF("unregister %s return with %d\n", result[i*column], ret);
 	}
 	
 	return 0;
@@ -2145,15 +2143,11 @@ int pushinfo_reset(void)
 // 3、重置xml注册
 		int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushinfo_unregist_cb;
 		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag!='%d';", INITIALIZE_XML);
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize;");
 		ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
 		if(ret>0){
 			DEBUG("unregist %d pushinfo xml\n",ret);
 		}
-		
-		snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
-		ret = push_file_unregister(total_xmluri);
-		PRINTF("unregist %s return with %d\n", total_xmluri, ret);
 		
 		snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
 		remove_force(total_xmluri);
