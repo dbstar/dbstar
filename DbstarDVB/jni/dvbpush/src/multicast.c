@@ -29,17 +29,14 @@
 #include "softdmx.h"
 #include "dvbpush_api.h"
 
-#define MULTI_BUF_POINTER_MOVE(p,len) (p)=(((p)+(len))%MULTI_BUF_SIZE)
+// 测试显示，提供给recvfrom的buffer最小为1316才是安全的，否则可能丢失188整数倍的包。因此缓冲buffer、用于隔开读写位置的空白区、以及最小接收buffer，大小均为1316的整数倍
+#define IGMP_BUF_GAP		(1316)
+#define RECVFROM_MIN		(1316)
+// 1316+32=1348
+#define TMP_RECV_BUF_SIZE	(1348)
 
-typedef struct{
-	unsigned char buf[MULTI_BUF_SIZE];
-	unsigned int p_read;
-	unsigned int p_write;
-	int full_flag;	// 当p_read等于p_write时，必须用这个flag指明buf目前是空闲还是充满。0表示有空闲（部分空闲或全部空闲）
-}MULTI_BUF;
-
-static int p_read;
-static int p_write;
+static int p_read = 0;
+static int p_write = 0;
 static unsigned char *p_buf = NULL;
 extern int loader_dsc_fid;
 extern int tdt_dsc_fid;
@@ -156,7 +153,6 @@ static void *igmp_thread()
 	int sock, opt;
 	struct sockaddr_in sin;
 	int sizeof_sin = -1;
-    int recv_len, dfree;
     struct ip_mreq ipmreq;
     int multicast_failed_sleep = 7;
     
@@ -166,6 +162,13 @@ static void *igmp_thread()
 	
 	char multi_ip[16];
 	int multi_port = 3000;
+	
+	char tmp_recv_buf[TMP_RECV_BUF_SIZE];
+	int tmp_write = 0;	//p_write还要被其他线程使用，因此写完数据后，将p_write一次性修改完毕，write位置的中间值用tmp_write表示
+	int free_size = 0;	//空闲区域的总大小
+	int recv_size = 0;	//可用的接收大小，<=free_size
+    int recv_len = 0;
+	
 
 MULTITASK_START:
 	pthread_mutex_lock(&mtx_net_rely_condition);
@@ -330,28 +333,72 @@ MULTITASK_START:
 	
 	s_igmp_running = 1;
 	s_igmp_restart = 0;
+	
 	while(1==s_igmp_running){
         if (p_write >= p_read)
         {
-        	dfree = MULTI_BUF_SIZE - p_write;
+        	recv_size = MULTI_BUF_SIZE - p_write;
+        	free_size = recv_size + p_read - IGMP_BUF_GAP;
         }
         else
         {
-        	dfree = p_read - p_write - 1;  //not let p_write = p_read 
+        	recv_size = p_read - p_write - IGMP_BUF_GAP;  //not let p_write = p_read 
+        	free_size = recv_size;
         }
-		recv_len = recvfrom(sock, p_buf+p_write, dfree, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
-		if( recv_len > 0 )
-		{
-			s_data_stream_status = 8;
-			p_write += recv_len;
-			if (p_write >= MULTI_BUF_SIZE)
-				p_write -= MULTI_BUF_SIZE;
-			//DEBUG("recv_len=%d\n", recv_len);
-			//multi_buf_write(buf, recv_len);
+        
+        if(free_size<=RECVFROM_MIN)
+        {
+        	PRINTF("free_size=%d, %d,%d, multi buf is full\n", free_size, p_read, p_write);
+        	usleep(20000);
+        	continue;
+        }
+        
+		if(recv_size>=RECVFROM_MIN){
+			recv_len = recvfrom(sock, p_buf+p_write, recv_size, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
+			if(recv_len > 0)
+			{
+				s_data_stream_status = 8;
+				
+				tmp_write = p_write + recv_len;
+				if(tmp_write >= MULTI_BUF_SIZE){	// actually, p_write is equal with MULTI_BUF_SIZE
+					p_write = 0;
+				}
+				else
+					p_write = tmp_write;
+			}
+			else{
+				if(s_data_stream_status>0)
+					s_data_stream_status --;
+			}
 		}
 		else{
-			if(s_data_stream_status>0)
-				s_data_stream_status --;
+			PRINTF("free_size=%d(%d),\tp_read=%d,\tp_write=%d\n", free_size,recv_size,p_read, p_write);
+			//memset(tmp_recv_buf,0,sizeof(tmp_recv_buf));
+			recv_len = recvfrom(sock, tmp_recv_buf, TMP_RECV_BUF_SIZE, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
+			PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d\n", free_size,recv_size,recv_len);
+			
+			if(recv_len > 0)
+			{
+				s_data_stream_status = 8;
+				
+				if(recv_len>recv_size){
+					memcpy(p_buf+p_write,tmp_recv_buf,recv_size);
+					
+					memcpy(p_buf,tmp_recv_buf+recv_size,recv_len-recv_size);
+					p_write = recv_len-recv_size;
+				}
+				else{
+					memcpy(p_buf+p_write,tmp_recv_buf,recv_len);
+					tmp_write = p_write + recv_len;
+					if(tmp_write >= MULTI_BUF_SIZE)
+						p_write = 0;
+				}
+				PRINTF("free_size=%d(%d),\t\t\t\t\tp_write=%d\n", free_size,recv_size,p_write);
+			}
+			else{
+				if(s_data_stream_status>0)
+					s_data_stream_status --;
+			}
 		}
 		
 		if (recv_len < 16)
@@ -483,9 +530,10 @@ void *softdvb_thread()
 		else
 			left = MULTI_BUF_SIZE - p_read + p_write;
 		
-		//PRINTF("%d,%d,%d\n", p_write, p_read, left);
-		if(left<18800){
-			usleep(100000);
+		
+		if(left<1880){
+			//PRINTF("%d,%d,%d\n", p_write, p_read, left);
+			usleep(10000);
 			continue;
 		}
 		

@@ -404,18 +404,18 @@ static int prog_monitor(PROG_S *prog)	//, char *time_stamp
 		*/
 		long long rxb = push_dir_get_single(prog->uri);
 		
-		PRINTF("PROG_S[%s]:%s %s %lld/%lld %-3lld%%\n",
-			prog->id,
-			prog->uri,
-			prog->descURI,
-			rxb,
-			prog->total,
-			rxb*100/prog->total);
+//		PRINTF("PROG_S[%s]:%s %s %lld/%lld %-3lld%%\n",
+//			prog->id,
+//			prog->uri,
+//			prog->descURI,
+//			rxb,
+//			prog->total,
+//			rxb*100/prog->total);
 		
 		prog->cur = rxb;
 	}
-	else
-		PRINTF("s_push_has_data=%d, prog->cur=%lld, prog->total=%lld, no need to monitor\n", s_push_has_data,prog->cur,prog->total);
+//	else
+//		PRINTF("s_push_has_data=%d, prog->cur=%lld, prog->total=%lld, no need to monitor\n", s_push_has_data,prog->cur,prog->total);
 
 	return 0;
 }
