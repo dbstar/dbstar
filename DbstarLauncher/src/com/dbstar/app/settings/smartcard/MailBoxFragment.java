@@ -223,7 +223,7 @@ public class MailBoxFragment extends GDSmartcardFragment {
 			ViewHolder holder = null;
 			if (null == convertView) {
 				LayoutInflater inflater = mActivity.getLayoutInflater();
-				convertView = inflater.inflate(R.layout.product_item, parent,
+				convertView = inflater.inflate(R.layout.email_item, parent,
 						false);
 
 				holder = new ViewHolder();

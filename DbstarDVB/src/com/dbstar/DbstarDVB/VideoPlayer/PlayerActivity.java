@@ -80,14 +80,14 @@ public class PlayerActivity extends Activity {
 	protected int mTotalTime = 0;
 	protected int mCurrentTime = 0;
 	protected boolean mHasError = false;
-	
+
 	protected boolean mPlayNext = false;
 
 	// used for resume. last played position when player exit.
 	protected int mPlayPosition = 0;
 
-	private static int VOLUME_LEVEL[] = { 0, 2, 4, 6, 8, 10, 11, 12, 13, 14, 15 };
-	private static int VOLUME_ADJUST_STEP[] = { 2, 2, 2, 2, 2, 1, 1, 1, 1, 1 };
+	protected static int VOLUME_LEVEL[] = { 0, 2, 4, 6, 8, 10, 11, 12, 13, 14, 15 };
+	protected static int VOLUME_ADJUST_STEP[] = { 2, 2, 2, 2, 2, 1, 1, 1, 1, 1 };
 	protected static final int DefaultVolumeLevel = 10;
 	protected AudioManager mAudioManager;
 	protected boolean mIsMute = false;
@@ -402,50 +402,6 @@ public class PlayerActivity extends Activity {
 		return i;
 	}
 
-	void increaseVolume() {
-		if (mIsMute) {
-			setMute(false);
-		}
-
-		if (mVolumeLevel == mMaxVolumeLevel)
-			return;
-
-		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
-			mVolumeLevel += 1;
-		}
-		mVolumeLevel += VOLUME_ADJUST_STEP[mVolumeLevelIndex];
-		mVolumeLevelIndex++;
-
-		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
-				0);
-
-		updateSoundVolumeView();
-	}
-
-	void decreaseVolume() {
-		if (mIsMute) {
-			setMute(false);
-		}
-
-		if (mVolumeLevel == 0)
-			return;
-
-		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
-			mVolumeLevel -= 1;
-		}
-
-		mVolumeLevel -= VOLUME_ADJUST_STEP[mVolumeLevelIndex - 1];
-		mVolumeLevelIndex--;
-		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
-				0);
-
-		updateSoundVolumeView();
-	}
-
-	protected void setMute(boolean mute) {
-
-	}
-
 	protected void displayInit() {
 		int mode = SettingsVP.getParaInt(SettingsVP.DISPLAY_MODE);
 		switch (mode) {
@@ -636,7 +592,7 @@ public class PlayerActivity extends Activity {
 				} else if (id == ID_HAS_DUBBING) {
 					view.setImageDrawable(mHasDubbingIcon);
 				} else {
-					if (id >=0 && id < mAudioTrackIcons.length) {
+					if (id >= 0 && id < mAudioTrackIcons.length) {
 						view.setImageDrawable(mAudioTrackIcons[id]);
 					}
 				}
@@ -646,7 +602,7 @@ public class PlayerActivity extends Activity {
 				} else if (id == ID_SHOW_SUBTITLE) {
 					view.setImageDrawable(mShowSubtitleIcon);
 				} else {
-					if (id >=0 && id < mSubtitleIcons.length) {
+					if (id >= 0 && id < mSubtitleIcons.length) {
 						view.setImageDrawable(mSubtitleIcons[id]);
 					}
 				}

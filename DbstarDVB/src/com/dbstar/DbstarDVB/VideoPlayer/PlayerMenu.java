@@ -233,7 +233,7 @@ public class PlayerMenu extends PlayerActivity {
 				Log.d(TAG, "subtitle file is : " + mSubtitleFiles.get(0));
 			}
 		}
-		
+
 		mPlayNext = intent.getBooleanExtra("play_next", false);
 
 		return true;
@@ -298,7 +298,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		startPlayerService();
 		registerHDMIReceiver();
-		
+
 		mSmartcardTacker = new SmartcardStateTracker(this, mHandler);
 	}
 
@@ -310,7 +310,7 @@ public class PlayerMenu extends PlayerActivity {
 			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
 					MSG_DIALOG_TIMEOUT);
 
-		setMute(false);
+//		setMute(false);
 	}
 
 	@Override
@@ -510,15 +510,15 @@ public class PlayerMenu extends PlayerActivity {
 			return true;
 
 		}
-//		case KeyEvent.KEYCODE_MENU:
-//		case KeyEvent.KEYCODE_9: {
-//			if (mInfoBar.getVisibility() == View.VISIBLE) {
-//				hideInfoBar();
-//			} else {
-//				showInfoBar(true);
-//			}
-//			return true;
-//		}
+		// case KeyEvent.KEYCODE_MENU:
+		// case KeyEvent.KEYCODE_9: {
+		// if (mInfoBar.getVisibility() == View.VISIBLE) {
+		// hideInfoBar();
+		// } else {
+		// showInfoBar(true);
+		// }
+		// return true;
+		// }
 
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 		case KeyEvent.KEYCODE_DPAD_CENTER: {
@@ -544,11 +544,9 @@ public class PlayerMenu extends PlayerActivity {
 			return true;
 		}
 
-		case KeyEvent.KEYCODE_MUTE: {
+		case KeyEvent.KEYCODE_ALT_LEFT: {
 			showInfoBar(true);
-
 			setMute(!mIsMute);
-
 			return true;
 		}
 
@@ -567,8 +565,8 @@ public class PlayerMenu extends PlayerActivity {
 		case KeyEvent.KEYCODE_NOTIFICATION: {
 			Log.d(TAG, " osd state ======================= " + mOSDState);
 			setOSDOn(true);
-//			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
-//					MSG_DIALOG_TIMEOUT);
+			// mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
+			// MSG_DIALOG_TIMEOUT);
 			showDialog(DLG_ID_MEDIAINFO);
 			return true;
 		}
@@ -714,10 +712,55 @@ public class PlayerMenu extends PlayerActivity {
 	public void setMute(boolean mute) {
 		if (mIsMute != mute) {
 			mIsMute = mute;
+
 			int resId = mute ? R.drawable.sound_mute : R.drawable.sound_unmute;
 			mSoundStateView.setImageResource(resId);
 			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mute);
 		}
+	}
+	
+	void increaseVolume() {
+
+		if (mIsMute) {
+			setMute(false);
+			return;
+		}
+
+		if (mVolumeLevel == mMaxVolumeLevel)
+			return;
+
+		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
+			mVolumeLevel += 1;
+		}
+		mVolumeLevel += VOLUME_ADJUST_STEP[mVolumeLevelIndex];
+		mVolumeLevelIndex++;
+
+		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
+				0);
+
+		updateSoundVolumeView();
+	}
+
+	void decreaseVolume() {
+
+		if (mIsMute) {
+			setMute(false);
+			return;
+		}
+
+		if (mVolumeLevel == 0)
+			return;
+
+		if (mVolumeLevel > VOLUME_LEVEL[mVolumeLevelIndex]) {
+			mVolumeLevel -= 1;
+		}
+
+		mVolumeLevel -= VOLUME_ADJUST_STEP[mVolumeLevelIndex - 1];
+		mVolumeLevelIndex--;
+		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel,
+				0);
+
+		updateSoundVolumeView();
 	}
 
 	public void updateSoundVolumeView() {
@@ -1264,7 +1307,7 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		}
 
-		//mCurrentSubtitleIndex = mCurrentSubtitleIndex % mSubtitleTotalNumber;
+		// mCurrentSubtitleIndex = mCurrentSubtitleIndex % mSubtitleTotalNumber;
 		showNotification(NOTIFY_SUBTITLE, mCurrentSubtitleIndex);
 		openSubtitle();
 	}
@@ -1310,8 +1353,8 @@ public class PlayerMenu extends PlayerActivity {
 		intentFilter.addAction(Common.ActionNoNext);
 		registerReceiver(mPlayerCommandReceiver, intentFilter);
 	}
-	
-	void registerPlayFileCommandReceiver () {
+
+	void registerPlayFileCommandReceiver() {
 		IntentFilter intentFilter = new IntentFilter(Common.ActionPlayNext);
 		intentFilter.addDataScheme("file");
 		registerReceiver(mPlayFileCommandReceiver, intentFilter);
@@ -1320,7 +1363,7 @@ public class PlayerMenu extends PlayerActivity {
 	void unregisterCommandReceiver() {
 		unregisterReceiver(mPlayerCommandReceiver);
 	}
-	
+
 	void unregsterPlayFileCommandReceiver() {
 		unregisterReceiver(mPlayFileCommandReceiver);
 	}
@@ -1345,7 +1388,7 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		}
 	};
-	
+
 	private BroadcastReceiver mPlayFileCommandReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -1623,7 +1666,7 @@ public class PlayerMenu extends PlayerActivity {
 		mNoSubtitleIcon = getResources().getDrawable(R.drawable.no_subtitle);
 		mShowSubtitleIcon = getResources()
 				.getDrawable(R.drawable.show_subtitle);
-		
+
 		mNoDubbingIcon = getResources().getDrawable(R.drawable.no_dubbing);
 		mHasDubbingIcon = getResources().getDrawable(R.drawable.has_dubbing);
 
@@ -1703,6 +1746,10 @@ public class PlayerMenu extends PlayerActivity {
 		mVolumeLevelIndex = getVolumeLevelIndex(mVolumeLevel);
 		mSoundVolumeView.setImageLevel(mVolumeLevelIndex);
 
+		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
+		int resId = mIsMute ? R.drawable.sound_mute : R.drawable.sound_unmute;
+		mSoundStateView.setImageResource(resId);
+		
 		mSpeedDrawables[0] = null;
 		mSpeedDrawables[1] = getResources().getDrawable(R.drawable.speed_2);
 		mSpeedDrawables[2] = getResources().getDrawable(R.drawable.speed_4);
@@ -1749,7 +1796,7 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	private void initSubtitleView() {
-		
+
 		mSubTitleView = (SubtitleView) findViewById(R.id.subTitle);
 		mSubTitleView.clear();
 		mSubTitleView.setGravity(Gravity.CENTER);
@@ -1760,10 +1807,13 @@ public class PlayerMenu extends PlayerActivity {
 				mSubTitleView.getPaddingTop(), mSubTitleView.getPaddingRight(),
 				getWindowManager().getDefaultDisplay().getRawHeight()
 						* mSubtitleParameter.position_v / 20 + 10);
-		
-		Log.d(TAG, " mSubtitleParameter.position_v " + mSubtitleParameter.position_v);
-		Log.d(TAG, "subtile " + mSubTitleView.getWidth() + " " + mSubTitleView.getHeight() + " "
-				+ mSubTitleView.getBottom());
+
+		Log.d(TAG, " mSubtitleParameter.position_v "
+				+ mSubtitleParameter.position_v);
+		Log.d(TAG,
+				"subtile " + mSubTitleView.getWidth() + " "
+						+ mSubTitleView.getHeight() + " "
+						+ mSubTitleView.getBottom());
 
 		if (m3DEnabled) {
 			mSubTitleView_sm = (SubtitleView) findViewById(R.id.subTitle_sm);
