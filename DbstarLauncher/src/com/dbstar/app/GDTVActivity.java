@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.dbstar.R;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
@@ -18,8 +19,10 @@ import com.dbstar.widget.GDGridView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 import com.dbstar.widget.GDScrollBar;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -88,6 +91,11 @@ public class GDTVActivity extends GDBaseActivity {
 		mPageDatas = new LinkedList<TV[]>();
 
 		initializeView();
+
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(GDCommon.ActionPlayNext);
+		filter.addAction(GDCommon.ActionNoNext);
+		this.registerReceiver(mCmdReceiver, filter);
 	}
 
 	public void onStart() {
@@ -98,10 +106,35 @@ public class GDTVActivity extends GDBaseActivity {
 		}
 
 		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+
+		// reset the pages
+		if (mTV != null) {
+			TV.EpisodeItem[] items = mTV.EpisodesPages
+					.get(mTV.EpisodesPageNumber);
+			mEpisodesAdapter.setDataSet(items);
+			mEpisodesView.setSelection(mSelectedEpisodeIndex);
+			mEpisodesAdapter.notifyDataSetChanged();
+			mScrollBar.setPosition(mTV.EpisodesPageNumber);
+		}
 	}
+
+	private BroadcastReceiver mCmdReceiver = new BroadcastReceiver() {
+
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+
+			Log.d(TAG, "===== onReceive broadcast ===" + action);
+
+			if (action.equals(GDCommon.ActionPlayCompleted)) {
+
+			}
+		}
+	};
 
 	public void onDestroy() {
 		super.onDestroy();
+
+		this.unregisterReceiver(mCmdReceiver);
 
 		for (int i = 0; mPageDatas != null && i < mPageDatas.size(); i++) {
 			TV[] tvs = mPageDatas.get(i);
@@ -229,10 +262,10 @@ public class GDTVActivity extends GDBaseActivity {
 			}
 		}
 	}
-	
+
 	public void notifyEvent(int type, Object event) {
 		super.notifyEvent(type, event);
-		
+
 		if (type == EventData.EVENT_PLAYBACK) {
 			EventData.PlaybackEvent eventData = (EventData.PlaybackEvent) event;
 			if (eventData.Event == GDCommon.PLAYBACK_COMPLETED) {
@@ -298,9 +331,9 @@ public class GDTVActivity extends GDBaseActivity {
 				formEpisodesPages(tv);
 				if (pageNumber == mPageNumber) {
 					if (tv.EpisodesPageCount > 0) {
-//						mEpisodesAdapter.setDataSet(tv.EpisodesPages
-//								.get(tv.EpisodesPageNumber));
-//						mEpisodesAdapter.notifyDataSetChanged();
+						// mEpisodesAdapter.setDataSet(tv.EpisodesPages
+						// .get(tv.EpisodesPageNumber));
+						// mEpisodesAdapter.notifyDataSetChanged();
 
 						updateEpisodesView(tv);
 					}
@@ -363,7 +396,7 @@ public class GDTVActivity extends GDBaseActivity {
 
 		}
 	}
-	
+
 	void clearContent() {
 		mTVTitle.setText("");
 		mTVType.setText("");
@@ -433,7 +466,7 @@ public class GDTVActivity extends GDBaseActivity {
 		}
 
 		mEpisodesAdapter.notifyDataSetChanged();
-//		mEpisodesView.requestLayout();
+		// mEpisodesView.requestLayout();
 
 		mScrollBar.setRange(tv.EpisodesPageCount);
 		mScrollBar.setPosition(tv.EpisodesPageNumber);
@@ -470,7 +503,7 @@ public class GDTVActivity extends GDBaseActivity {
 	}
 
 	void playTV() {
-
+		Log.d(TAG, "mSelectedEpisodeIndex" + mSelectedEpisodeIndex);
 		TV.EpisodeItem[] items = mTV.EpisodesPages.get(mTV.EpisodesPageNumber);
 
 		TV.EpisodeItem item = items[mSelectedEpisodeIndex];
@@ -491,28 +524,28 @@ public class GDTVActivity extends GDBaseActivity {
 			if (mTV.EpisodesPageNumber < (mTV.EpisodesPageCount - 1)) {
 				mTV.EpisodesPageNumber++;
 				mSelectedEpisodeIndex = 0;
-				
-				items = mTV.EpisodesPages
-						.get(mTV.EpisodesPageNumber);
+
+				items = mTV.EpisodesPages.get(mTV.EpisodesPageNumber);
 				mEpisodesAdapter.setDataSet(items);
 				mEpisodesView.setSelection(0);
 				mEpisodesAdapter.notifyDataSetChanged();
 				mScrollBar.setPosition(mTV.EpisodesPageNumber);
 			}
 		}
-		
+
 		if (mSelectedEpisodeIndex < items.length) {
 			TV.EpisodeItem item = items[mSelectedEpisodeIndex];
 			item.Watched = true;
-			
+
 			String file = mService.getMediaFile(item.Content);
 			String drmFile = mService.getDRMFile(item.Content);
 
-			GDPlayerUtil.playNextVideo(mService, mTV.Content.Id, item.Content, file,
-					drmFile, true);
+			GDPlayerUtil.playNextVideo(this, mTV.Content.Id, item.Content,
+					file, drmFile, true);
 		} else {
+			mSelectedEpisodeIndex--;
 			Intent intent = new Intent(GDCommon.ActionNoNext);
-			mService.sendBroadcast(intent);
+			sendBroadcast(intent);
 		}
 	}
 

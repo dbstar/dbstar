@@ -331,6 +331,7 @@ public class PlayerMenu extends PlayerActivity {
 		// install an intent filter to receive SD card related events.
 		registerUSBReceiver();
 		registerCommandReceiver();
+		registerPlayFileCommandReceiver();
 
 		if (mPaused) {
 			mPaused = false;
@@ -367,6 +368,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		unregisterReceiver(mMountReceiver);
 		unregisterCommandReceiver();
+		unregsterPlayFileCommandReceiver();
 
 		Amplayer_stop();
 
@@ -1305,13 +1307,22 @@ public class PlayerMenu extends PlayerActivity {
 	void registerCommandReceiver() {
 		IntentFilter intentFilter = new IntentFilter(Common.ActionReplay);
 		intentFilter.addAction(Common.ActionExit);
-		intentFilter.addAction(Common.ActionPlayNext);
 		intentFilter.addAction(Common.ActionNoNext);
 		registerReceiver(mPlayerCommandReceiver, intentFilter);
+	}
+	
+	void registerPlayFileCommandReceiver () {
+		IntentFilter intentFilter = new IntentFilter(Common.ActionPlayNext);
+		intentFilter.addDataScheme("file");
+		registerReceiver(mPlayFileCommandReceiver, intentFilter);
 	}
 
 	void unregisterCommandReceiver() {
 		unregisterReceiver(mPlayerCommandReceiver);
+	}
+	
+	void unregsterPlayFileCommandReceiver() {
+		unregisterReceiver(mPlayFileCommandReceiver);
 	}
 
 	private BroadcastReceiver mPlayerCommandReceiver = new BroadcastReceiver() {
@@ -1331,6 +1342,21 @@ public class PlayerMenu extends PlayerActivity {
 				}
 			} else if (action.equals(Common.ActionNoNext)) {
 				exitPlayer();
+			}
+		}
+	};
+	
+	private BroadcastReceiver mPlayFileCommandReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+
+			Log.d(TAG, " ==================== action ===== " + action);
+
+			if (action.equals(Common.ActionPlayNext)) {
+				if (retriveInputParameters(intent)) {
+					Amplayer_play(mPlayPosition);
+				}
 			}
 		}
 	};

@@ -57,11 +57,12 @@ public class GDPlayerUtil {
 	
 	public static void playNextVideo(Context context, String publicationSetID,
 			ContentData content, String mainFile, String drmFile, boolean playNext) {
+		Log.d(TAG, "play next video");
 		Log.d(TAG, "file = " + mainFile);
 		Log.d(TAG, "drm file = " + drmFile);
 		
 		if (mainFile != null && !mainFile.equals("")) {
-			Intent intent = new Intent();
+			Intent intent = new Intent(GDCommon.ActionPlayNext);
 
 			final String schema = "file://";
 			String path = schema + mainFile;
@@ -79,8 +80,7 @@ public class GDPlayerUtil {
 			}
 
 			addMetaData(intent, content, playNext);
-
-			intent.setAction(GDCommon.ActionPlayNext);
+			
 			context.sendBroadcast(intent);
 		}
 	}
