@@ -44,6 +44,7 @@ public class GDCommon {
 	public static final String KeyPowerTotalCost = "cost";
 	
 	public static final int MSG_DISP_NOTIFICATION = 0x80001;
+	public static final int MSG_HIDE_NOTIFICATION = 0x80002;
 	
 	// Ethernet phy connected/disconnected
 	public static final int MSG_ETHERNET_PHYCONECTED = 0x90001;

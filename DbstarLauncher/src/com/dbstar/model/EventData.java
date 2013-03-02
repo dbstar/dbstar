@@ -7,11 +7,12 @@ public class EventData {
 	public static final int EVENT_SMARTCARD_STATUS = 0xa0004;
 	public static final int EVENT_NEWMAIL = 0xa0005;
 	public static final int EVENT_NOTIFICATION = 0xa0006;
+	public static final int EVENT_HIDE_NOTIFICATION = 0xa0007;
 	
-	public static final int EVENT_LOGIN_SUCCESSED = 0xa0007;
-	public static final int EVENT_GUODIAN_DATA = 0xa0008;
+	public static final int EVENT_LOGIN_SUCCESSED = 0xb0001;
+	public static final int EVENT_GUODIAN_DATA = 0xb0002;
 	
-	public static final int EVENT_PLAYBACK = 0xa0009;
+	public static final int EVENT_PLAYBACK = 0xc0001;
 	
 	public static class DeleteEvent {
 		public String PublicationId;

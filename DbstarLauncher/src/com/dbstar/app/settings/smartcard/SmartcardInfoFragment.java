@@ -81,7 +81,7 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 			updateSmartcardVersion();
 		} else if (requestType == DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ) {
 			String[] ids = (String[]) data;
-			if (ids.length != mEignevalueIDView.length) {
+			if (ids.length > mEignevalueIDView.length) {
 				Log.e(TAG, "Fata error: smartcard eignevalue is wrong!");
 				return;
 			}

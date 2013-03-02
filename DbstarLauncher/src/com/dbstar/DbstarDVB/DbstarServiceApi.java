@@ -41,7 +41,8 @@ public class DbstarServiceApi {
 	public static final int DRM_SC_REMOVE_OK				= 0x20102;    // DRM smartcard Remove OK
 	public static final int DRM_SC_REMOVE_FAILED			= 0x20103;    // DRM smartcard Remove failed
 	public static final int DRM_EMAIL_NEW                   = 0x20104;
-	public static final int	DRM_OSD_SHOW                    = 0x20105;
+	public static final int	DRM_OSD_SHOW                    = 0x20107;
+	public static final int	DRM_OSD_HIDE                    = 0x20108;
 
 	public static final int TDT_TIME_SYNC                   = 0x30017;    // Time format: 2012-12-22 18:03:14
 

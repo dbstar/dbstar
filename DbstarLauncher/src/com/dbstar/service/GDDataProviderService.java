@@ -727,6 +727,11 @@ public class GDDataProviderService extends Service {
 				diplayNotification((String) msg.obj);
 				break;
 			}
+			
+			case GDCommon.MSG_HIDE_NOTIFICATION: {
+				hideNotification();
+				break;
+			}
 
 			default:
 				break;
@@ -756,6 +761,13 @@ public class GDDataProviderService extends Service {
 
 		if (mPageOberser != null) {
 			mPageOberser.notifyEvent(EventData.EVENT_NOTIFICATION, message);
+		}
+	}
+	
+	private void hideNotification() {
+
+		if (mPageOberser != null) {
+			mPageOberser.notifyEvent(EventData.EVENT_HIDE_NOTIFICATION, null);
 		}
 	}
 
@@ -1861,6 +1873,11 @@ public class GDDataProviderService extends Service {
 						msg.obj = data;
 						mHandler.sendMessage(msg);
 					}
+					break;
+				}
+				
+				case DbstarServiceApi.DRM_OSD_HIDE: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_HIDE_NOTIFICATION);
 					break;
 				}
 

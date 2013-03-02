@@ -103,21 +103,21 @@
 
                 <TextView
                     android:id="@+id/eignevlaue_id1"
-                    android:layout_width="wrap_content"
+                    android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id2"
-                    android:layout_width="wrap_content"
+                    android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id3"
-                    android:layout_width="wrap_content"
+                    android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
@@ -130,21 +130,21 @@
 
                 <TextView
                     android:id="@+id/eignevlaue_id4"
-                    android:layout_width="wrap_content"
+                    android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id5"
-                    android:layout_width="wrap_content"
+                    android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id6"
-                    android:layout_width="wrap_content"
+                    android:layout_width="160dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
@@ -183,14 +183,14 @@
             android:textSize="16sp" />
 
         <TextView
-            android:layout_width="140dp"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:text="@string/start_time"
             android:textColor="#000000"
             android:textSize="16sp" />
 
         <TextView
-            android:layout_width="140dp"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:text="@string/end_time"
             android:textColor="#000000"

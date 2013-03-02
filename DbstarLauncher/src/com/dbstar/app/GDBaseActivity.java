@@ -106,6 +106,10 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 				displayNotification((String) msg.obj);
 				break;
 			}
+			case MSG_HIDE_NOTIFICATION: {
+				hideNotification();
+				break;
+			}
 			}
 		}
 	};
@@ -309,6 +313,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			Message msg = mHandler.obtainMessage(MSG_DISP_NOTIFICATION);
 			msg.obj = event;
 			msg.sendToTarget();
+		} else if (type == EventData.EVENT_HIDE_NOTIFICATION) {
+			mHandler.sendEmptyMessage(MSG_HIDE_NOTIFICATION);
 		}
 	}
 
@@ -455,6 +461,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected static final int MSG_NEW_MAIL = 2;
 	protected static final int MSG_DISP_NOTIFICATION = 3;
+	protected static final int MSG_HIDE_NOTIFICATION = 4;
 
 	Timer mDlgTimer = null;
 	TimerTask mTimeoutTask = null;
@@ -544,6 +551,16 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		}
 	}
 
+	protected void hideNotification() {
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
+		Fragment prev = getFragmentManager().findFragmentByTag(
+				"osd_notification");
+		if (prev != null) {
+			ft.remove(prev);
+		}
+		ft.addToBackStack(null);
+	}
+	
 	void hideDlgDelay() {
 		final Handler handler = new Handler() {
 
