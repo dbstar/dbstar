@@ -174,4 +174,6 @@ persist.sys.timezone=Asia/Shanghai
 ro.ethernet.default_on=true
 #set default language zh
 persist.sys.language=zh
+persist.sys.country=CN
 ro.product.locale.language=zh
+ro.product.locale.region=ZH
