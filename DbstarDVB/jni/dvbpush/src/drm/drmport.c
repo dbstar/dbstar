@@ -596,7 +596,7 @@ void CDSTBCA_ShowOSDMessage(CDCA_U8	byStyle, const char* szMessage)
 	LOGD("\n\n\n\n\n##################### CDSTBCA_ShowOSDMessage byStyle=%d,szMessage=%s\n\n\n\n\n\n",byStyle,szMessage);
 	
 	snprintf(s_DRM_OSD_msg,sizeof(s_DRM_OSD_msg),"%d\t%s",byStyle,szMessage);
-	msg_send2_UI(DRM_EMAIL_NEW, s_DRM_OSD_msg, strlen(s_DRM_OSD_msg));
+	msg_send2_UI(DRM_OSD_SHOW, s_DRM_OSD_msg, strlen(s_DRM_OSD_msg));
 }
 
 /* Òþ²ØOSDÐÅÏ¢*/

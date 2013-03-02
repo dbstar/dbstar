@@ -933,15 +933,26 @@ static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 				memset(ACArray, 0, sizeof(ACArray));
 				ret = CDCASTB_GetACList(wArrTvsID[j], ACArray);
 				if(CDCA_RC_OK==ret){
-					int max_ac_num = CDCA_MAXNUM_ACLIST>6?6:CDCA_MAXNUM_ACLIST;
-					for(index=0;index<max_ac_num;index++){
+					int first_valid_ac = 0;
+					//int max_ac_num = CDCA_MAXNUM_ACLIST>6?6:CDCA_MAXNUM_ACLIST;
+					// ACArray[0]：区域码Area
+					// ACArray[1]：业务群Bouquet
+					// ACArray[2]：
+					// ACArray[3]：
+					// ACArray[4]：特征1
+					// ACArray[5]：特征2
+					// ACArray[6]：特征3
+					// ...
+					for(index=0;index<CDCA_MAXNUM_ACLIST;index++){
 						DEBUG("ACArray[%d]=(%lu)\n",index, ACArray[index]);
-						if(0!=ACArray[index]){
-							DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
-							if(0==index)
-								snprintf(buf, size, "ID%d: %lu",index,ACArray[index]);
+						if(0!=ACArray[index] && index>=4 && index<=9){
+							//DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
+							if(0==first_valid_ac)
+								snprintf(buf, size, "ID%d: %lu",index-3,ACArray[index]);
 							else
-								snprintf(buf+strlen(buf), size-strlen(buf), "\nID%d: %lu",index,ACArray[index]);
+								snprintf(buf+strlen(buf), size-strlen(buf), "\nID%d: %lu",index-3,ACArray[index]);
+							
+							first_valid_ac = 1;
 						}
 					}
 				}
@@ -955,7 +966,7 @@ static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 		return -1;
 	}
 	
-	DEBUG("%s\n", buf);
+	DEBUG("[%s]\n", buf);
 	
 	return 0;
 }
@@ -971,7 +982,8 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	char		BeginDate[64];
 	char		ExpireDate[64];
 	int 		i = 0;
-	
+
+#if 0	
 	for(i=0;i<SCENTITLEINFOSIZE;i++){
 		if(s_SCEntitleInfo[i].EntitleInfo.m_ID>INVALID_PRODUCTID_AT_ENTITLEINFO){
 			memset(BeginDate, 0, sizeof(BeginDate));
@@ -987,6 +999,52 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 				snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%lu\t%s\t%s\t%lu",s_SCEntitleInfo[i].EntitleInfo.m_OperatorID,s_SCEntitleInfo[i].EntitleInfo.m_ID,BeginDate,ExpireDate,s_SCEntitleInfo[i].EntitleInfo.m_LimitTotaltValue);
 		}
 	}
+#else
+	int ret = -1;
+	CDCA_U32 dwFrom = 0, dwNum = 128;
+	char SmartCardSn[128];
+	SCDCAPVODEntitleInfo EntitleInfo[128];
+	int SC_EntitleInfo_fresh = 0;
+	char sqlite_cmd[1024];
+	
+	memset(SmartCardSn,0,sizeof(SmartCardSn));
+	ret = CDCASTB_GetCardSN(SmartCardSn);
+	if(CDCA_RC_OK==ret)
+	{
+		DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
+		ret = 0;
+		
+/*
+ 查询授权信息
+*/
+		int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
+		if(CDCA_RC_OK==ret){
+			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
+			for(i=0;i<dwNum;i++){
+				memset(BeginDate, 0, sizeof(BeginDate));
+				memset(ExpireDate, 0, sizeof(ExpireDate));
+				if(		0==drm_time_convert(EntitleInfo[i].m_ProductStartTime, BeginDate, sizeof(BeginDate))
+					&& 	0==drm_time_convert(EntitleInfo[i].m_ProductEndTime, ExpireDate, sizeof(ExpireDate))){
+					;
+				}
+				
+				if(0==i)
+					snprintf(buf,size,"%d\t%lu\t%s\t%s\t%lu",EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,BeginDate,ExpireDate,EntitleInfo[i].m_LimitTotaltValue);
+				else
+					snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%lu\t%s\t%s\t%lu",EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,BeginDate,ExpireDate,EntitleInfo[i].m_LimitTotaltValue);
+			}
+			return 0;
+		}
+		else{
+			drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
+			return -1;
+		}
+	}
+	else{
+		drm_errors("CDCASTB_GetCardSN", ret);
+		return -1;
+	}
+#endif
 	
 	return 0;
 }
@@ -1120,6 +1178,7 @@ static int smartcard_EntitleFile_input(char *retbuf, unsigned int retbuf_size)
 	return ret;
 }
 
+#define EMAIL_HEADS_NUM	(32)
 static int DRM_emailheads_get(char *buf, unsigned int size)
 {
 	if(NULL==buf || 0==size){
@@ -1127,8 +1186,8 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 		return -1;
 	}
 	
-	SCDCAEmailHead EmailHeads[8];
-	CDCA_U8 byCount = 0;
+	SCDCAEmailHead EmailHeads[EMAIL_HEADS_NUM];
+	CDCA_U8 byCount = EMAIL_HEADS_NUM;
 	CDCA_U8 byFromIndex = 0;
 	int i = 0;
 	char email_createtime[64];
@@ -1140,6 +1199,7 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 /*
 应当根据邮件的日期顺序排序
 */
+			DEBUG("byCount: %d, byFromIndex: %d\n",byCount, byFromIndex);
 			for(i=0;i<byCount;i++)
 			{
 				memset(email_createtime,0,sizeof(email_createtime));
@@ -1150,10 +1210,12 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 					snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,EmailHeads[i].m_bNewEmail,EmailHeads[i].m_szEmailHead);
 			}
 			
-			if(byCount<10){
+			if(byCount<EMAIL_HEADS_NUM){
 				DEBUG("get email head finish\n");
 				break;
 			}
+			else
+				DEBUG("have other email head not get\n");
 		}
 		else{
 			drm_errors("CDCASTB_GetEmailHeads", ret);
@@ -1986,7 +2048,7 @@ static int SCEntitleInfoCheck(SCDCAPVODEntitleInfo *EntitleInfo)
 
 	int i = 0;
 	for(i=0;i<SCENTITLEINFOSIZE;i++){
-#if 0
+#if 1
 		if(		EntitleInfo->m_OperatorID==s_SCEntitleInfo[i].EntitleInfo.m_OperatorID
 			&&	EntitleInfo->m_ID==s_SCEntitleInfo[i].EntitleInfo.m_ID
 			&&	EntitleInfo->m_ProductStartTime==s_SCEntitleInfo[i].EntitleInfo.m_ProductStartTime

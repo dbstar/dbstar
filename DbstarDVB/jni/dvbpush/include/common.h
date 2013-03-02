@@ -72,7 +72,7 @@ typedef enum{
 #define PROG_DATA_PID_DF	(411)	// 0x19b
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
-#define MULTI_BUF_SIZE		(12*1024*1316)	/* larger than 16M */
+#define MULTI_BUF_SIZE		(16171008)	/* (16171008)=(12*1024*1316) */
 
 #define SERVICEID_FILL		"0"
 #define XML_ROOT_ELEMENT	"RootElement"

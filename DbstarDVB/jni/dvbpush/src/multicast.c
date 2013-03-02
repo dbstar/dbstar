@@ -348,10 +348,11 @@ MULTITASK_START:
         
         if(free_size<=RECVFROM_MIN)
         {
-        	PRINTF("free_size=%d, %d,%d, multi buf is full\n", free_size, p_read, p_write);
+        	//PRINTF("free_size=%d, %d,%d, multi buf is full\n", free_size, p_read, p_write);
         	usleep(20000);
         	continue;
         }
+        //PRINTF("free_size=%d",free_size);
         
 		if(recv_size>=RECVFROM_MIN){
 			recv_len = recvfrom(sock, p_buf+p_write, recv_size, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
@@ -372,10 +373,10 @@ MULTITASK_START:
 			}
 		}
 		else{
-			PRINTF("free_size=%d(%d),\tp_read=%d,\tp_write=%d\n", free_size,recv_size,p_read, p_write);
+			//PRINTF("free_size=%d(%d),\tp_read=%d,\tp_write=%d\n", free_size,recv_size,p_read, p_write);
 			//memset(tmp_recv_buf,0,sizeof(tmp_recv_buf));
 			recv_len = recvfrom(sock, tmp_recv_buf, TMP_RECV_BUF_SIZE, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
-			PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d\n", free_size,recv_size,recv_len);
+			//PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d\n", free_size,recv_size,recv_len);
 			
 			if(recv_len > 0)
 			{
@@ -393,7 +394,7 @@ MULTITASK_START:
 					if(tmp_write >= MULTI_BUF_SIZE)
 						p_write = 0;
 				}
-				PRINTF("free_size=%d(%d),\t\t\t\t\tp_write=%d\n", free_size,recv_size,p_write);
+				PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d,p_write=%d\n", free_size,recv_size,recv_len,p_write);
 			}
 			else{
 				if(s_data_stream_status>0)
