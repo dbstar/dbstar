@@ -32,6 +32,7 @@ import com.dbstar.service.GDDataProviderService;
 import com.dbstar.widget.*;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -40,6 +41,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -115,6 +117,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private Handler mUIUpdateHandler = new Handler();
 
+	private AudioManager mAudioManager;
+	private boolean mIsMute = false;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -133,6 +138,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		initializeView();
 		initializeAnimation();
 		initializeEngine();
+		
+		mAudioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
 	}
 
 	public void onServiceStart() {
@@ -159,6 +166,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		turnOnMarqeeView(false);
 		showMarqueeView();
+		
+		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
 	}
 
 	public void onResume() {
@@ -225,6 +234,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER: {
 			onItemSelected();
+			return true;
+		}
+		
+		case KeyEvent.KEYCODE_ALT_LEFT: {
+			mIsMute = !mIsMute;
+			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mIsMute);
 			return true;
 		}
 
