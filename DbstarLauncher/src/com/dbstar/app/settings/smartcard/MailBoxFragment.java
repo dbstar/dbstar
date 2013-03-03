@@ -71,7 +71,8 @@ public class MailBoxFragment extends GDSmartcardFragment {
 				}
 
 				for (int i = 0; i < mails.length; i++) {
-					mMailsList.add(mails[i]);
+//					mMailsList.add(mails[i]);
+					mMailsList.add(0, mails[i]);
 				}
 
 				mMails = mMailsList.toArray(new EMailItem[mMailsList.size()]);
@@ -191,8 +192,9 @@ public class MailBoxFragment extends GDSmartcardFragment {
 		}
 
 		private EMailItem[] mDataSet = null;
-
+		private Context mContext = null;
 		public ListAdapter(Context context) {
+			mContext = context;
 		}
 
 		public void setDataSet(EMailItem[] dataSet) {
@@ -243,7 +245,8 @@ public class MailBoxFragment extends GDSmartcardFragment {
 
 			holder.mailId.setText(mDataSet[position].ID);
 			holder.date.setText(mDataSet[position].Date);
-			holder.flag.setText(String.valueOf(mDataSet[position].Flag));
+			int flagStrId = mDataSet[position].Flag == 1 ? R.string.str_read : R.string.str_notread;
+			holder.flag.setText(mContext.getResources().getString(flagStrId));
 			holder.title.setText(mDataSet[position].Title);
 
 			if (position == mMailListView.getSelectedItemPosition()) {
