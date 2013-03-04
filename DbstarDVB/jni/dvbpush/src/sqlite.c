@@ -500,8 +500,8 @@ ColumnIcon_losefocus	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_getfocus	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_onclick	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_spare	NVARCHAR(256) DEFAULT '',\
-SequenceNum	INTEGER,\
-URI	NVARCHAR(256),\
+SequenceNum	INTEGER DEFAULT 100,\
+URI	NVARCHAR(256) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ColumnID));", name);
 			}
@@ -1521,6 +1521,21 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 			"Column","L9906","eng","DisplayName","DRM","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+	/*
+	 二级菜单“设置－购买信息”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","L9907")){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',7);",
+			"L9907","L99","L99/L9907","L99","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9907",CURLANGUAGE_DFT,"DisplayName","购买信息","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9907","eng","DisplayName","PurchaseInfo","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}

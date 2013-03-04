@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <sys/statfs.h>
 #include <sys/vfs.h>
+#include <pthread.h>
 
 #include "common.h"
 #include "dvbpush_api.h"
@@ -73,8 +74,10 @@ static int			s_smart_card_remove_flag = 1;	// 当发生过拔卡事件时，此�
 static char			s_TestSpecialProductID[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
+static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
+static int smartcard_entitleinfo_refresh();
 
 /* define some general interface function here */
 
@@ -971,7 +974,6 @@ static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 	return 0;
 }
 
-
 static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 {
 	if(NULL==buf || 0==size){
@@ -983,7 +985,9 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	char		ExpireDate[64];
 	int 		i = 0;
 
-#if 0	
+#if 1
+	smartcard_entitleinfo_refresh();
+		
 	for(i=0;i<SCENTITLEINFOSIZE;i++){
 		if(s_SCEntitleInfo[i].EntitleInfo.m_ID>INVALID_PRODUCTID_AT_ENTITLEINFO){
 			memset(BeginDate, 0, sizeof(BeginDate));
@@ -1216,6 +1220,8 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 			}
 			else
 				DEBUG("have other email head not get\n");
+			
+			DEBUG("%s\n", buf);
 		}
 		else{
 			drm_errors("CDCASTB_GetEmailHeads", ret);
@@ -1236,7 +1242,9 @@ static int DRM_emailcontent_get(char *emailID, char *buf, unsigned int size)
 	SCDCAEmailContent EmailContent;
 	memset(&EmailContent,0,sizeof(EmailContent));
 	
-	int ret = CDCASTB_GetEmailContent(strtol(emailID,NULL,0),&EmailContent);
+	CDCA_U32 dwEmailID = strtol(emailID,NULL,0);
+	DEBUG("emailID=%s, dwEmailID=%lu\n", emailID,dwEmailID);
+	int ret = CDCASTB_GetEmailContent(dwEmailID,&EmailContent);
 	if(CDCA_RC_OK==ret){
 		snprintf(buf,size,"%s", EmailContent.m_szEmail);
 		return 0;
@@ -1437,7 +1445,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DRM_EMAILCONTENT_READ:
 			DEBUG("CMD_DRM_EMAILCONTENT_READ\n");
-			DRM_emailcontent_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			//DRM_emailcontent_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
 		case CMD_DRM_PVODPROGRAMINFO_READ:
 			DEBUG("CMD_DRM_PVODPROGRAMINFO_READ\n");
@@ -2086,6 +2094,7 @@ static int smartcard_entitleinfo_refresh()
 	int SC_EntitleInfo_fresh = 0;
 	char sqlite_cmd[1024];
 	
+	pthread_mutex_lock(&mtx_sc_entitleinfo_refresh);
 	memset(SmartCardSn,0,sizeof(SmartCardSn));
 	ret = CDCASTB_GetCardSN(SmartCardSn);
 	if(CDCA_RC_OK==ret)
@@ -2146,22 +2155,25 @@ static int smartcard_entitleinfo_refresh()
 					sqlite_transaction_end(1);
 				
 				DEBUG("this is another smart card, reset pushinfo\n");
-				return 1;
+				ret = 1;
 			}
 			else{
 				DEBUG("this is a card with familiar Special Product, no need to refresh entitle infos\n");
-				return 0;
+				ret = 0;
 			}
 		}
 		else{
 			drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
-			return -1;
+			ret = -1;
 		}
 	}
 	else{
 		drm_errors("CDCASTB_GetCardSN", ret);
-		return -1;
+		ret = -1;
 	}
+	pthread_mutex_unlock(&mtx_sc_entitleinfo_refresh);
+	
+	return ret;
 }
 
 static int pushinfo_unregist_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
@@ -2190,7 +2202,7 @@ int pushinfo_reset(void)
 	// 0==strlen(s_serviceID) ||
 	if(1==smartcard_entitleinfo_refresh()){	
 		DEBUG("\n\n\n\n\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\ndo xmls reset\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n\n\n\n\n\n\n\n");
-	
+		
 		char sqlite_cmd[256];
 		char total_xmluri[512];
 		int ret = 0;
