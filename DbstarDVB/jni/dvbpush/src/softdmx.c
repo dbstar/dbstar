@@ -619,7 +619,14 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
 	tm_tdt.tm_year-=1900;	/*年份值减去1900，得到tm结构中保存的年份序数*/
 	tm_tdt.tm_mon-=1;		/*月份值减去1，得到tm结构中保存的月份序数*/
 	tm_tdt.tm_isdst = 0;
-    snprintf(s_time_sync_2_ui,sizeof(s_time_sync_2_ui),"%ld",mktime(&tm_tdt));
+	
+	time_t local_time_s = mktime(&tm_tdt);
+	
+// 当前的tdt是1.3和2.0共用，采用的是标准时间，故本地需加8小时转为北京时间。
+	local_time_s += (8*60);
+	DEBUG("rectify time for 8 hours\n");
+	
+    snprintf(s_time_sync_2_ui,sizeof(s_time_sync_2_ui),"%ld",local_time_s);
 	
 #if 0
 // only for test
