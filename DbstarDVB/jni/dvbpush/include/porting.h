@@ -26,6 +26,7 @@ int serviceID_set(char *serv_id);
 void upgrade_sign_set();
 char *column_res_get();
 char *push_dir_get();
+char *initialize_uri_get();
 int guidelist_select_status(const char *publication_id);
 int guidelist_select_refresh();
 int disk_manage(char *PublicationID, char *ProductID);
@@ -36,5 +37,6 @@ int smart_card_remove_flag_get();
 int intialize_xml_reset(void);
 int setting_init_with_database();
 int pushinfo_reset(void);
+int smartcard_entitleinfo_refresh();
 
 #endif

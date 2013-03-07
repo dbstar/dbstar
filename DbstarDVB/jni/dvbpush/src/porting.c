@@ -40,7 +40,6 @@ typedef struct{
 }SCENTITLEINFO;
 
 #define SCENTITLEINFOSIZE	(128)
-
 static SCENTITLEINFO s_SCEntitleInfo[SCENTITLEINFOSIZE];
 
 static int 			s_settingInitFlag = 0;
@@ -77,7 +76,7 @@ static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
-static int smartcard_entitleinfo_refresh();
+
 
 /* define some general interface function here */
 
@@ -986,7 +985,7 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	int 		i = 0;
 
 #if 1
-	smartcard_entitleinfo_refresh();
+	int sc_entitleinfo_fresh = smartcard_entitleinfo_refresh();
 		
 	for(i=0;i<SCENTITLEINFOSIZE;i++){
 		if(s_SCEntitleInfo[i].EntitleInfo.m_ID>INVALID_PRODUCTID_AT_ENTITLEINFO){
@@ -1003,6 +1002,9 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 				snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%lu\t%s\t%s\t%lu",s_SCEntitleInfo[i].EntitleInfo.m_OperatorID,s_SCEntitleInfo[i].EntitleInfo.m_ID,BeginDate,ExpireDate,s_SCEntitleInfo[i].EntitleInfo.m_LimitTotaltValue);
 		}
 	}
+	
+	if(1==sc_entitleinfo_fresh)
+		pushinfo_reset();
 #else
 	int ret = -1;
 	CDCA_U32 dwFrom = 0, dwNum = 128;
@@ -1939,6 +1941,11 @@ char *push_dir_get()
 	return s_push_root_path;
 }
 
+char *initialize_uri_get()
+{
+	return s_initialize_xml_uri;
+}
+
 static int push_dir_init()
 {
 	char sqlite_cmd[512];
@@ -2084,7 +2091,7 @@ static int SCEntitleInfoCheck(SCDCAPVODEntitleInfo *EntitleInfo)
  	0:	success and no need refresh
  	1:	success and need refresh
 */
-static int smartcard_entitleinfo_refresh()
+int smartcard_entitleinfo_refresh()
 {
 	int ret = -1;
 	CDCA_U32 dwFrom = 0, dwNum = 128;
@@ -2172,6 +2179,7 @@ static int smartcard_entitleinfo_refresh()
 		ret = -1;
 	}
 	pthread_mutex_unlock(&mtx_sc_entitleinfo_refresh);
+	DEBUG("ret = %d\n",ret);
 	
 	return ret;
 }
@@ -2199,42 +2207,40 @@ static int pushinfo_unregist_cb(char **result, int row, int column, void *receiv
 int pushinfo_reset(void)
 {
 	// 如果是插入智能卡，需要和数据表SCEntitleInfo比对其特殊产品是否有变化，以此判断是否是更换了智能卡
-	// 0==strlen(s_serviceID) ||
-	if(1==smartcard_entitleinfo_refresh()){	
-		DEBUG("\n\n\n\n\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\ndo xmls reset\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n\n\n\n\n\n\n\n");
-		
-		char sqlite_cmd[256];
-		char total_xmluri[512];
-		int ret = 0;
+	// 0==strlen(s_serviceID) ||	
+	DEBUG("\n\n\n\n\n\n\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\ndo xmls reset\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n\n\n\n\n\n\n\n\n");
 	
+	char sqlite_cmd[256];
+	char total_xmluri[512];
+	int ret = 0;
+
 // 1、停止现有正在接收的节目
-		prog_monitor_reset();
-	
+	prog_monitor_reset();
+
 // 2、删除播发单ProductDesc表
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
-		sqlite_execute(sqlite_cmd);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
+	sqlite_execute(sqlite_cmd);
 
 // 3、重置xml注册
-		int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushinfo_unregist_cb;
-		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize;");
-		ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
-		if(ret>0){
-			DEBUG("unregist %d pushinfo xml\n",ret);
-		}
-		
-		snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-		remove_force(total_xmluri);
-		snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", push_dir_get());
-		remove_force(total_xmluri);
-		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
-		sqlite_execute(sqlite_cmd);
-		
-		snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
-		ret = push_file_register(total_xmluri);
-		PRINTF("regist %s return with %d\n", total_xmluri, ret);
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushinfo_unregist_cb;
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize;");
+	ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
+	if(ret>0){
+		DEBUG("unregist %d pushinfo xml\n",ret);
 	}
+	
+	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
+	remove_force(total_xmluri);
+	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", push_dir_get());
+	remove_force(total_xmluri);
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
+	sqlite_execute(sqlite_cmd);
+	
+	snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
+	ret = push_file_register(total_xmluri);
+	PRINTF("regist %s return with %d\n", total_xmluri, ret);
 	
 	return 0;
 }

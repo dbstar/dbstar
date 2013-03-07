@@ -16,8 +16,8 @@
 #include "softdmx.h"
 #include "porting.h"
 #include "dvbpush_api.h"
+#include "motherdisc.h"
 
-static int global_insert(DBSTAR_GLOBAL_S *p);
 static pthread_mutex_t mtx_parse_xml = PTHREAD_MUTEX_INITIALIZER;
 static int s_column_SequenceNum = 0;
 static int s_detect_valid_productID = 0;
@@ -314,7 +314,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	{
 		if(	RECEIVETYPE_SPRODUCT==strtol(ptr->ReceiveType,NULL,10)
 			|| RECEIVETYPE_COLUMN==strtol(ptr->ReceiveType,NULL,10)
-			|| (RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10) && (0==special_productid_check(ptr->productID) || 0==check_productid_from_db_in_trans(ptr->productID))) )
+			|| (RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10) && (0==special_productid_check(ptr->productID))) )	// (0==special_productid_check(ptr->productID) || 0==check_productid_from_db_in_trans(ptr->productID))
 			receive_status = RECEIVESTATUS_WAITING;
 	}
 	
@@ -327,7 +327,17 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	
 	2013-01-28
 	更新新push后，不需要这么复杂的逻辑，不属于自己Product的不入库即可
+	
+	2013-03-05
+	母盘初始化时，由于初始的智能卡中只包括普通产品，因此也要将暂时判断为拒绝接收的节目入库并做解析，
+	预备过一段时间后特殊产品下发下来后可以正确的显示。
+	由于母盘初始化是直接通过代码驱动解析，解析完ProductDesc.xml后接着就解析相应节目的描述文件。在解析节目描述文件时还要判断产品。
 	*/
+	if(1==motherdisc_processing()){
+		DEBUG("in motherdisc processing, make receive_status as RECEIVESTATUS_WAITING\n");
+		receive_status = RECEIVESTATUS_WAITING;
+	}
+	
 	if(RECEIVESTATUS_WAITING==receive_status){
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO ProductDesc(ServiceID,ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag,Parsed) \
 VALUES('%s',\
@@ -571,9 +581,18 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 	}
 	
 	char sqlite_cmd[2048];
+	int receive_status_tmp = RECEIVESTATUS_FINISH;
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Publication SET PublicationType='%s',IsReserved='%s',Visible='%s',DRMFile='%s',FileID='%s',FileSize='%s',FileURI='%s',FileType='%s',Duration='%s',Resolution='%s',BitRate='%s',FileFormat='%s',CodeFormat='%s',ReceiveStatus='1',TimeStamp=datetime('now','localtime') WHERE PublicationID='%s';",
-		p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,p->PublicationID);
+	if(1==motherdisc_processing()){
+#if 0
+// 不搞那么复杂，母盘解析时所有节目都正常展示
+		receive_status_tmp = receive_status_get();
+#endif
+		DEBUG("I am in mother disc processing status, and should monitor the ReceiveStatus\n");
+	}
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Publication SET PublicationType='%s',IsReserved='%s',Visible='%s',DRMFile='%s',FileID='%s',FileSize='%s',FileURI='%s',FileType='%s',Duration='%s',Resolution='%s',BitRate='%s',FileFormat='%s',CodeFormat='%s',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%s';",
+		p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,receive_status_tmp,p->PublicationID);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -1289,6 +1308,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_PRODUCT_SERVICE_S product_service_s;
 					memset(&product_service_s, 0, sizeof(product_service_s));
 					parseProperty(cur, new_xmlroute, (void *)&product_service_s);
+					
 					if(0==special_productid_check(product_service_s.productID)){
 						DEBUG("detect valid productID: %s\n", product_service_s.productID);
 						s_detect_valid_productID = 1;
@@ -2156,8 +2176,10 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					
 					snprintf(resstr_s.ServiceID,sizeof(resstr_s.ServiceID),"%s",p_guidelist->ServiceID);
 					strncpy(resstr_s.ObjectName, OBJ_GUIDELIST, sizeof(resstr_s.ObjectName)-1);
-					if(strlen(p_guidelist->GuideListID)>0)
+					
+					if(strlen(p_guidelist->GuideListID) > 0){
 						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s", p_guidelist->GuideListID);
+					}
 					else
 						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s%s", OBJID_PAUSE, OBJ_GUIDELIST);
 					strncpy(resstr_s.StrName, "PublicationDesc", sizeof(resstr_s.StrName)-1);

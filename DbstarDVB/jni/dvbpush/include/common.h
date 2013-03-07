@@ -59,6 +59,7 @@ typedef enum{
 #define SETTING_BASE		WORKING_DATA_DIR"/dbstar.conf"
 #define PUSH_CONF			"/system/etc/dbstar/push.conf"
 #define INITIALIZE_XML_URI	"pushroot/initialize/Initialize.xml"
+#define MOTHERDISC_XML_URI	"ContentDelivery.xml"
 
 /*
 程序运行过程中产生的数据，包括：下载的片源、对应的数据库
@@ -188,11 +189,12 @@ typedef enum{
 	接收状态
 */
 typedef enum{
-	RECEIVESTATUS_REJECT	= -2,
-	RECEIVESTATUS_FAILED	= -1,
-	RECEIVESTATUS_WAITING	= 0,
-	RECEIVESTATUS_FINISH	= 1,
-	RECEIVESTATUS_HISTORY	= 2,
+	RECEIVESTATUS_REJECT		= -2,
+	RECEIVESTATUS_FAILED		= -1,
+	RECEIVESTATUS_WAITING		= 0,
+	RECEIVESTATUS_FINISH		= 1,
+	RECEIVESTATUS_HISTORY		= 2,
+	RECEIVESTATUS_REJECT_TMP	= 3
 }RECEIVESTATUS_E;
 
 /*

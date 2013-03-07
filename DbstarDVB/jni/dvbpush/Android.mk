@@ -98,7 +98,8 @@ LOCAL_SRC_FILES += \
 	src/softdmx.c \
 	src/dvbpush_jni.c \
 	src/sha_verify.c \
-	src/mtdutils.c 
+	src/mtdutils.c \
+	src/motherdisc.c 
 LOCAL_CFLAGS += -W -Wall
 LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include

@@ -628,7 +628,8 @@ void *maintenance_thread()
 		
 		if(smart_card_insert_flag_get()>0){
 			DEBUG("smart card insert\n");
-			pushinfo_reset();
+			if(1==smartcard_entitleinfo_refresh())
+				pushinfo_reset();
 			smart_card_insert_flag_set(0);
 		}
 		
@@ -710,6 +711,12 @@ int mid_push_cb(const char *path, int flag)
 	int i = 0;
 	
 	snprintf(xml_uri,sizeof(xml_uri),"%s",path);
+	
+	if(PRODUCTDESC_XML==flag){
+		DEBUG("have receive %s, need check smartcard entitleinfo\n", xml_uri);
+		if(1==smartcard_entitleinfo_refresh())
+			pushinfo_reset();
+	}
 	
 	if(PUBLICATION_DIR==flag){
 		pthread_mutex_lock(&mtx_push_monitor);

@@ -62,6 +62,11 @@ typedef enum {
 	STATUS_INTERFACE_REFRESH		= 0x30016,    // 界面产品发生更新
 	TDT_TIME_SYNC					= 0x30017,    // 将TDT表中获取的时间上报给UI，用于时间同步
 	
+	MOTHER_DISC_INITIALIZE_START	= 0x30018,	// 母盘初始化开始
+	MOTHER_DISC_INITIALIZE_PROCESS	= 0x30019,	// 母盘初始化进度百分比
+	MOTHER_DISC_INITIALIZE_FAILED	= 0x30020,	// 母盘初始化错误
+	MOTHER_DISC_INITIALIZE_SUCCESS	= 0x30021,	// 母盘初始化成功
+	
 }DBSTAR_CMD_MSG_E;
 
 typedef int (* dvbpush_notify_t)(int type, char *msg, int len);

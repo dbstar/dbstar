@@ -13,6 +13,7 @@
 #include "timeprint.h"
 #include "dvbpush_api.h"
 #include "drmapi.h"
+#include "motherdisc.h"
 
 #define DVB_TEST_ENABLE 0
 static int s_dvbpush_init_flag = 0;
@@ -30,6 +31,8 @@ void *main_thread()
 	compile_timeprint();
         
 	_wLBM_zyzdmb(13578642);
+   	
+   	motherdisc_init();
    	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
@@ -53,6 +56,11 @@ void *main_thread()
 		//return NULL;
 	}
 	
+	if(1==motherdisc_processing()){
+		DEBUG("\n\n do mother disc process\n\n\n");
+		motherdisc_process();
+		return NULL;
+	}
 //	return parse_xml("pushroot/pushinfo/1/command/Commands.xml", COMMANDS_XML, NULL);
 	
 	if(0==drm_init()){

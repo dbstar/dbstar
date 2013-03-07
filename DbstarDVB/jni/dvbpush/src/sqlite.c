@@ -290,6 +290,16 @@ static int createDatabase(char *database_uri)
 					ret += createtable_ret;
 				}
 				
+				// 记录Initialize.xml中所有的特殊产品ID，用于判断智能卡中的那些ID号是特殊产品
+				createtable_ret = createTable("SpecialProduct");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				
 CREATE_TABLE_END:
 				DEBUG("shot tables finished, ret=%d\n", ret);
 			}
@@ -806,6 +816,26 @@ m_LimitUsedValue	NVARCHAR(64) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (SmartCardID,m_OperatorID,m_ID));", name);
 			}
+			
+			// 目前实际使用的只有m_ID和ServiceID字段
+			else if(!strcmp(name,"SpecialProduct"))
+			{
+				snprintf(sqlite_cmd, sizeof(sqlite_cmd),\
+					"CREATE TABLE %s(\
+SmartCardID		NVARCHAR(64) DEFAULT '',\
+m_OperatorID	NVARCHAR(64) DEFAULT '',\
+m_ID	NVARCHAR(64) DEFAULT '',\
+m_ProductStartTime	NVARCHAR(64) DEFAULT '',\
+m_ProductEndTime	NVARCHAR(64) DEFAULT '',\
+m_WatchStartTime	NVARCHAR(64) DEFAULT '',\
+m_WatchEndTime	NVARCHAR(64) DEFAULT '',\
+m_LimitTotaltValue	NVARCHAR(64) DEFAULT '',\
+m_LimitUsedValue	NVARCHAR(64) DEFAULT '',\
+ServiceID		NVARCHAR(64) DEFAULT '',\
+TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
+PRIMARY KEY (m_ID));", name);
+			}
+			
 			else{
 				DEBUG("baby: table %s is not defined, so can not create it\n", name);
 				memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
