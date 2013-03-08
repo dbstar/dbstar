@@ -63,7 +63,7 @@ void *main_thread()
 	}
 //	return parse_xml("pushroot/pushinfo/1/command/Commands.xml", COMMANDS_XML, NULL);
 	
-	if(0==drm_init()){
+	if(0!=drm_init()){
 		DEBUG("drm init failed\n");
 		//return NULL;
 	}

@@ -2112,7 +2112,7 @@ int smartcard_entitleinfo_refresh()
 /*
  查询授权信息
 */
-		int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
+		ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
 		if(CDCA_RC_OK==ret){
 			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
 			if(	dwNum==SCEntitleInfoNum_get()){
