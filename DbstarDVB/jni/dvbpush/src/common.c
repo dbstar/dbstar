@@ -765,11 +765,14 @@ long long dir_size(const char *uri)
 */
 int remove_force(const char *uri)
 {
+	char newpath[1024];
+	int ret = -1;
+	
+#if 1
 	DIR * pdir = NULL;
 	struct dirent *ptr = NULL;
-	char newpath[1024];
 	struct stat filestat;
-	int ret = -1;
+	
 	
 	if(NULL==uri || 0==strlen(uri)){
 		DEBUG("can not rm such uri, it is NULL, or length is 0\n");
@@ -809,6 +812,15 @@ int remove_force(const char *uri)
 		ret = -1;
 	}
 	
+#else
+	
+	snprintf(newpath,sizeof(newpath),"rm -r %s\n", uri);
+	system(newpath);
+	DEBUG("do system(%s)\n", newpath);
+	ret = 0;
+	
+#endif
+
 	return ret;   
 }
 
