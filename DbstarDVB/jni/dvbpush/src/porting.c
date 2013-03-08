@@ -945,9 +945,9 @@ static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 					// ACArray[5]：特征2
 					// ACArray[6]：特征3
 					// ...
-					for(index=0;index<CDCA_MAXNUM_ACLIST;index++){
+					for(index=0;index<6;index++){	/* CDCA_MAXNUM_ACLIST */
 						DEBUG("ACArray[%d]=(%lu)\n",index, ACArray[index]);
-						if(0!=ACArray[index] && index>=4 && index<=9){
+						if(0!=ACArray[index]){	/* && index>=4 && index<=9 */
 							//DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
 							if(0==first_valid_ac)
 								snprintf(buf, size, "ID%d: %lu",index-3,ACArray[index]);
@@ -991,8 +991,8 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 		if(s_SCEntitleInfo[i].EntitleInfo.m_ID>INVALID_PRODUCTID_AT_ENTITLEINFO){
 			memset(BeginDate, 0, sizeof(BeginDate));
 			memset(ExpireDate, 0, sizeof(ExpireDate));
-			if(		0==drm_time_convert(s_SCEntitleInfo[i].EntitleInfo.m_ProductStartTime, BeginDate, sizeof(BeginDate))
-				&& 	0==drm_time_convert(s_SCEntitleInfo[i].EntitleInfo.m_ProductEndTime, ExpireDate, sizeof(ExpireDate))){
+			if(		0==drm_time_convert(s_SCEntitleInfo[i].EntitleInfo.m_WatchStartTime, BeginDate, sizeof(BeginDate))
+				&& 	0==drm_time_convert(s_SCEntitleInfo[i].EntitleInfo.m_WatchEndTime, ExpireDate, sizeof(ExpireDate))){
 				;
 			}
 			
@@ -1029,8 +1029,8 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 			for(i=0;i<dwNum;i++){
 				memset(BeginDate, 0, sizeof(BeginDate));
 				memset(ExpireDate, 0, sizeof(ExpireDate));
-				if(		0==drm_time_convert(EntitleInfo[i].m_ProductStartTime, BeginDate, sizeof(BeginDate))
-					&& 	0==drm_time_convert(EntitleInfo[i].m_ProductEndTime, ExpireDate, sizeof(ExpireDate))){
+				if(		0==drm_time_convert(EntitleInfo[i].m_WatchStartTime, BeginDate, sizeof(BeginDate))
+					&& 	0==drm_time_convert(EntitleInfo[i].m_WatchEndTime, ExpireDate, sizeof(ExpireDate))){
 					;
 				}
 				

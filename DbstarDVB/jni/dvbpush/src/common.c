@@ -797,8 +797,10 @@ int remove_force(const char *uri)
 		}
 		
 		ret = remove(uri);
-		if(0==ret)
+		if(0==ret){
 			DEBUG("remove(%s)\n", uri);
+			sync();
+		}
 		else
 			ERROROUT("remove(%s) failed\n", uri);
 	}
