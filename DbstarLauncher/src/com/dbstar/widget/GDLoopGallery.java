@@ -747,7 +747,7 @@ public class GDLoopGallery extends GDAbsSpinner {
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-//    	Log.d(TAG, "onKeyDown keyCode " + keyCode);
+    	Log.d(TAG, "=== Gallery onKeyDown keyCode =" + keyCode);
         switch (keyCode) {
         case KeyEvent.KEYCODE_DPAD_LEFT:
             if (movePrevious()) {

@@ -79,14 +79,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	GDMediaScheduler mMediaScheduler;
 
 	// Menu
-	GDMenuGallery mMainMenu;
-	MainMenuAdapter mMainMenuAdapter;
+	GDMenuGallery mMainMenu, mMainMenuBackup, mMainMenu1, mMainMenu2;
+	MainMenuAdapter mMainMenuAdapter2, mMainMenuAdapter1;
 
 	ViewGroup mPopupMenuContainer;
 	ListView mPopupMenu;
 	PopupMenuAdapter mPopupMenuAdapter;
 	boolean mIsPopupMenuHided = false;
-	boolean mIsInAnimation = false;
 
 	boolean mShowMenuPathIsOn = true;
 	boolean mMarqeeViewIsOn = false;
@@ -104,8 +103,18 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mShowPopupMenuAnimation, mHidePopupMenuAnimation, mFocusZoomOut,
 			mFocusZoomIn, mGallerySlideToRightAnim, mGallerySlideToLeftAnim,
 			mGallerySlideToBottomAnim, mGallerySlideFromBottomAnim;
+	
+	
+	private boolean isAnimationRunning() {
+		boolean ret = mGallerySlideToRightAnim.hasStarted() && !mGallerySlideToRightAnim.hasEnded();
+		ret |= mGallerySlideToLeftAnim.hasStarted() && !mGallerySlideToLeftAnim.hasEnded();
+		ret |= mGallerySlideToBottomAnim.hasStarted() && !mGallerySlideToBottomAnim.hasEnded();
+		ret |= mGallerySlideFromBottomAnim.hasStarted() && !mGallerySlideFromBottomAnim.hasEnded();
+		
+		return ret;
+	}
 
-	LayoutAnimationController mAnimController = null;
+	private boolean mEnterStart = false, mLeaveStart = false;
 
 	// true: gallery is during the animation of moving from bottom
 	boolean mIsParentMenuBeingUp = false;
@@ -157,19 +166,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mService.unRegisterAppObserver(this);
 	}
 
-	public void onStart() {
-		super.onStart();
-
-		Log.d(TAG, "++++++onStart");
-
-		mCelanderThread.setUpdate(true);
-
-		turnOnMarqeeView(false);
-		showMarqueeView();
-		
-		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
-	}
-
 	public void onResume() {
 		super.onResume();
 
@@ -193,9 +189,22 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 	}
 
+	public void onStart() {
+		super.onStart();
+	
+		//Log.d(TAG, "++++++onStart");
+	
+		mCelanderThread.setUpdate(true);
+	
+		turnOnMarqeeView(false);
+		showMarqueeView();
+		
+		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
+	}
+
 	public void onStop() {
 		super.onStop();
-		Log.d(TAG, "++++++onStop");
+		//Log.d(TAG, "++++++onStop");
 
 		mCelanderThread.setUpdate(false);
 
@@ -215,11 +224,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMainMenu.requestFocus();
 	}
 
+	private boolean mIsAnimationRunning = false;
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		Log.d(TAG, "onKeyDown " + keyCode);
-		
-		if (mIsInAnimation) {
-			// disable all key operation during animation!
+		//Log.d(TAG, "==== onKeyDown = " + keyCode);
+		mIsAnimationRunning = isAnimationRunning();
+		if (mIsAnimationRunning) {
 			return true;
 		}
 
@@ -253,6 +262,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (mIsAnimationRunning) {
+			return true;
+		}
+
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_DPAD_RIGHT:
 		case KeyEvent.KEYCODE_DPAD_LEFT: {
@@ -270,22 +283,28 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		return super.onKeyUp(keyCode, event);
 	}
-
-	private boolean onBackKeyEvent() {
-		boolean ret = false;
+	
+	private void onBackKeyEvent() {
 
 		// Hide popup menu first!
 		// if (isPopupMenuShown()) {
 		// hidePopupMenu();
 		// return true;
 		// }
+		
+//		Log.d(TAG, " ==== press back key === " + mLeaveStart + " " + mEnterStart);
 
 		if (mMenuStack.size() > 1) {
-			ret = true;
-			mMenuStack.pop();
-
-			mIsInAnimation = true;
-			mAnimController.setAnimation(mGallerySlideToLeftAnim);
+			
+			if(mLeaveStart || mEnterStart) {
+				return;
+			}
+			
+			mLeaveStart = true;
+			
+			mHideSubMenu = true;
+			LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
+			controller.setAnimation(mGallerySlideToLeftAnim);
 
 			long time = AnimationUtils.currentAnimationTimeMillis();
 
@@ -293,10 +312,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				mHidePopupMenuAnimation.setStartTime(time);
 				mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
 			}
+			
 			mMainMenu.startLayoutAnimation();
 		}
-
-		return ret;
 	}
 
 	private boolean onItemSelected() {
@@ -310,7 +328,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		MenuItem[] menuItems = menu.Items;
 		MenuItem menuItem = menuItems[menu.FocusedPosition];
 
-		Log.d(TAG, "onItemSelected HasSubMenu " + menuItem.HasSubMenu);
+		//Log.d(TAG, "onItemSelected HasSubMenu " + menuItem.HasSubMenu);
 		if (menuItem.HasSubMenu == NONE) {
 			// data is not ready;
 			// mPendingAction.Level1Index = index;
@@ -461,8 +479,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 		showMenuPath();
-		
-		mIsInAnimation = false;
 	}
 
 	void showUserCenter(String columnId) {
@@ -564,18 +580,28 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	private void enterSubMenu(Menu newMenu) {
-
-		mMenuStack.add(newMenu);
-
+		
+//		Log.d(TAG, " ==== enter submenu === " + mLeaveStart + " " + mEnterStart);
+		
+		if (mEnterStart || mLeaveStart)
+			return;
+		
+		mEnterStart = true;
+			
+		mMenuStack.add(newMenu);		
 		MenuItem[] menuItems = newMenu.Items;
 		for (int i = 0; i < menuItems.length; i++) {
 			if (menuItems[i].HasSubMenu == NONE)
 				mService.getColumns(this, newMenu.MenuLevel + 1, i,
 						menuItems[i].ItemData.Id);
 		}
-		mIsInAnimation = true;
+		
+		mOldSelectedItemPosition = -1;
+		mSelectedItemPosition = -1;
+		
 		long time = AnimationUtils.currentAnimationTimeMillis();
 		mFocusZoomIn.setStartTime(time);
+		
 		if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
 			mEnterSubmenu = true;
 
@@ -586,11 +612,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mGallerySlideToBottomAnim.setStartTime(time);
 			mMainMenu.startAnimation(mGallerySlideToBottomAnim);
 		}
-
-		mOldSelectedItemPosition = -1;
-		mSelectedItemPosition = -1;
-
-		mSubMenuItems = menuItems;
 	}
 
 	private void displayPopupMenu(boolean show) {
@@ -685,7 +706,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		try {
 			InputStream is = am.open("default/default_0.png");
 			mDefaultPoster = BitmapFactory.decodeStream(is);
-			Log.d(TAG, "mDefaultPoster = " + mDefaultPoster);
+			//Log.d(TAG, "mDefaultPoster = " + mDefaultPoster);
 			is.close();
 
 		} catch (Exception e) {
@@ -719,7 +740,47 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				.loadAnimation(this, R.anim.gallery_slide_from_bottom);
 	}
 
+	
+	private boolean mShowSubMenu = false, 
+			mHideSubMenu = false;	
+	
+	Animation.AnimationListener mMainMenuLayoutAnimListener = new Animation.AnimationListener() {
+		
+		@Override
+		public void onAnimationStart(Animation animation) {
+//			Log.d(TAG, " ========= layout animation start ==== ");
+		}
+		
+		@Override
+		public void onAnimationRepeat(Animation animation) {
+			
+		}
+		
+		@Override
+		public void onAnimationEnd(Animation animation) {
+//			Log.d(TAG, " ========= layout animation end ==== ");
+			
+			if (mShowSubMenu) {
+				mShowSubMenu = false;
+				onChildMenuShown();
+			}
+			
+			if (mHideSubMenu) {
+				mHideSubMenu = false;
+				onChildMenuHided();
+			}
+		}
+	};
+	
 	private void initializeAnimation() {
+
+		mMainMenu1.setLayoutAnimationListener(mMainMenuLayoutAnimListener);
+		mMainMenu2.setLayoutAnimationListener(mMainMenuLayoutAnimListener);
+		
+		mGallerySlideToBottomAnim.setFillAfter(true);
+		mGallerySlideFromBottomAnim.setFillAfter(true);
+		mGallerySlideToLeftAnim.setFillAfter(true);
+		mGallerySlideToRightAnim.setFillAfter(true);
 
 		mGallerySlideToBottomAnim
 				.setAnimationListener(new Animation.AnimationListener() {
@@ -753,59 +814,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 					@Override
 					public void onAnimationStart(Animation animation) {
+						mMenuStack.pop();
 						Menu topMenu = mMenuStack.peek();
 						mOldSelectedItemPosition = -1;
 						mSelectedItemPosition = topMenu.FocusedPosition;
-						mMainMenuAdapter.setDataSet(topMenu.Items);
+
+						MainMenuAdapter adapter = (MainMenuAdapter) mMainMenu.getAdapter();
+						adapter.setDataSet(topMenu.Items);
 						mMainMenu.setSelectionByForce(mSelectedItemPosition);
-						mMainMenuAdapter.notifyDataSetChanged();
-					}
-
-				});
-
-		mGallerySlideToLeftAnim
-				.setAnimationListener(new Animation.AnimationListener() {
-
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						if (mAnimController != null) {
-							if (mAnimController.isDone()) {
-								Log.d(TAG, "==================================");
-								onChildMenuHided();
-							}
-						}
-					}
-
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-					}
-
-					@Override
-					public void onAnimationStart(Animation animation) {
-					}
-
-				});
-
-		mGallerySlideToRightAnim
-				.setAnimationListener(new Animation.AnimationListener() {
-
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						if (mAnimController != null) {
-							if (mAnimController.isDone()) {
-								// TODO: this callback is not called, the
-								// problem ??
-								onChildMenuShown();
-							}
-						}
-					}
-
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-					}
-
-					@Override
-					public void onAnimationStart(Animation animation) {
+						adapter.notifyDataSetChanged();
 					}
 
 				});
@@ -841,7 +858,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 					@Override
 					public void onAnimationStart(Animation animation) {
-						Log.d(TAG, " show pop up start");
 						displayPopupMenu(true);
 					}
 
@@ -861,25 +877,48 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// Gallery slide to bottom end:
 	// . slide to menu to right, and show popup menu
 	void onParentMenuHided() {
-		mMainMenuAdapter.setDataSet(mSubMenuItems);
-		mMainMenuAdapter.notifyDataSetChanged();
-		// TODO: should call this in onChildMenuShown !
-		// but onChildMenuShown is not called.
-		mMainMenu.setSelectionByForce(0);
+		mMainMenu.setVisibility(View.INVISIBLE);
+		mMainMenu.setFocusable(false);
+		GDMenuGallery temp = mMainMenu;
+		mMainMenu = mMainMenuBackup;
+		mMainMenu.setVisibility(View.VISIBLE);
+		mMainMenu.setFocusable(true);
+		mMainMenuBackup = temp;
 
-		mAnimController.setAnimation(mGallerySlideToRightAnim);
+		Menu menu = mMenuStack.peek();
+		MenuItem[] menuItems = menu.Items;	
+		
+		MainMenuAdapter adapter = (MainMenuAdapter) mMainMenu.getAdapter();
+		adapter.setDataSet(menuItems);
+		adapter.notifyDataSetChanged();
+
+		LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
+		controller.setAnimation(mGallerySlideToRightAnim);
+		
+		mShowSubMenu = true;
 		mMainMenu.startLayoutAnimation();
 	}
 
 	// submenu slide to right end
 	void onChildMenuShown() {
-		Log.d(TAG, " +++++++++++++ onChildMenuShown ++++++++++++++");
-		// mMainMenu.setSelectionByForce(0);
+		 mMainMenu.setSelectionByForce(0);
+		 mMainMenu.requestFocus();
+		 mEnterStart = false;
+//		 Log.d(TAG, " ==== onChildMenuShown === " + mLeaveStart + " " + mEnterStart);
 	}
 
 	// submenu slide to left end:
 	// . slide gallery from bottom
 	void onChildMenuHided() {
+		mMainMenu.setVisibility(View.INVISIBLE);
+		mMainMenu.setFocusable(false);
+		
+		GDMenuGallery temp = mMainMenu;
+		mMainMenu = mMainMenuBackup;
+		mMainMenu.setVisibility(View.VISIBLE);
+		mMainMenu.setFocusable(true);
+		mMainMenuBackup = temp;
+
 		long time = AnimationUtils.currentAnimationTimeMillis();
 		mIsParentMenuBeingUp = true;
 		mGallerySlideFromBottomAnim.setStartTime(time);
@@ -889,12 +928,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// gallery slide from bottom end:
 	// . show popup menu
 	void onParentMenuShown() {
-		// mMainMenuAdapter.notifyDataSetChanged();
-		// Menu menu = mMenuStack.peek();
-		// mMainMenu.setSelectionByForce(menu.FocusedPosition);
-
 		mIsParentMenuBeingUp = false;
 		showHighlightMenuItem();
+		mLeaveStart = false;
+//		Log.d(TAG, " ==== onParentMenuShown === " + mLeaveStart + " " + mEnterStart);
 	}
 
 	// hide popup menu end:
@@ -968,7 +1005,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	int mSelectedItemPosition = -1;
 
 	MenuItem[] mMainMenuItems;
-	MenuItem[] mSubMenuItems;
 
 	Stack<Menu> mMenuStack;
 
@@ -976,12 +1012,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	void setRootMenu(MenuItem[] items) {
 		mMainMenuItems = items;
-
-		if (mMainMenuAdapter != null) {
-			mMainMenuAdapter.setDataSet(mMainMenuItems);
-			mMainMenuAdapter.notifyDataSetChanged();
+		MainMenuAdapter adapter = (MainMenuAdapter) mMainMenu.getAdapter();
+//		if (adapter != null) {
+			adapter.setDataSet(mMainMenuItems);
+			adapter.notifyDataSetChanged();
 			mMainMenu.setSelectionByForce(0);
-		}
+//		}
 	}
 
 	void initializeData() {
@@ -1055,6 +1091,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 			// create sub menu
 			Menu menu = mMenuStack.peek();
+			if (menu.MenuLevel != (columnLevel - 1)) {
+				return;
+			}
+			
+			
 			MenuItem[] menuItems = menu.Items;
 			MenuItem menuItem = menuItems[index];
 
@@ -1232,6 +1273,24 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mMenuStack = new Stack<Menu>();
 	}
+	
+	OnItemSelectedListener mMenuItemSelectedListener = new OnItemSelectedListener() {
+		@Override
+		public void onItemSelected(GDAdapterView<?> parent, View view,
+				int position, long id) {
+			Menu topMenu = mMenuStack.peek();
+			topMenu.FocusedPosition = mMainMenu.getSelectedItemPosition();
+
+			mOldSelectedItemPosition = mSelectedItemPosition;
+			mSelectedItemPosition = topMenu.FocusedPosition;
+
+			showHighlightMenuItem();
+		}
+
+		@Override
+		public void onNothingSelected(GDAdapterView<?> parent) {
+		}
+	};
 
 	protected void initializeView() {
 
@@ -1248,32 +1307,20 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mVideoView = (GDVideoView) findViewById(R.id.player_view);
 
-		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
-		mMainMenu.setAnimationDuration(120);
-		mAnimController = mMainMenu.getLayoutAnimation();
+		mMainMenu1 = (GDMenuGallery) findViewById(R.id.menu_level_1_p);
+		mMainMenu2 = (GDMenuGallery) findViewById(R.id.menu_level_1_c);
+		mMainMenu1.setAnimationDuration(120);
+		mMainMenu2.setAnimationDuration(120);
 
-		mMainMenuAdapter = new MainMenuAdapter(this);
-		mMainMenuAdapter.setDataSet(mMainMenuItems);
-		mMainMenu.setAdapter(mMainMenuAdapter);
-		// mMainMenu.requestFocus();
+		mMainMenuAdapter1 = new MainMenuAdapter(this);
+		mMainMenuAdapter1.setDataSet(mMainMenuItems);
+		mMainMenu1.setAdapter(mMainMenuAdapter1);
+		
+		mMainMenuAdapter2 = new MainMenuAdapter(this);
+		mMainMenu2.setAdapter(mMainMenuAdapter2);
 
-		mMainMenu.setOnItemSelectedListener(new OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(GDAdapterView<?> parent, View view,
-					int position, long id) {
-				Menu topMenu = mMenuStack.peek();
-				topMenu.FocusedPosition = mMainMenu.getSelectedItemPosition();
-
-				mOldSelectedItemPosition = mSelectedItemPosition;
-				mSelectedItemPosition = topMenu.FocusedPosition;
-
-				showHighlightMenuItem();
-			}
-
-			@Override
-			public void onNothingSelected(GDAdapterView<?> parent) {
-			}
-		});
+		mMainMenu1.setOnItemSelectedListener(mMenuItemSelectedListener);
+		mMainMenu2.setOnItemSelectedListener(mMenuItemSelectedListener);
 
 		mPopupMenuContainer = (ViewGroup) findViewById(R.id.menulevel2_container);
 		mPopupMenu = (ListView) findViewById(R.id.menu_level_2);
@@ -1282,6 +1329,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mPopupMenu.setDrawSelectorOnTop(false);
 		mPopupMenu.setEnabled(false);
 
+		mMainMenu = mMainMenu1;
+		mMainMenuBackup = mMainMenu2;
+		
 		// mDefaultPoster
 		Drawable d = new BitmapDrawable(getResources(), mDefaultPoster);
 		mVideoView.setBackgroundDrawable(d);
@@ -1522,7 +1572,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		public View getView(int position, View convertView, ViewGroup parent) {
 
-			Log.d(TAG, "get position= " + position);
+			//Log.d(TAG, "get position= " + position);
 
 			ItemHolder holder = null;
 
@@ -1544,8 +1594,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			position = position % mDataSet.length;
 			holder.text.setText(mDataSet[position].MenuText());
 
-			Log.d(TAG, "mSelectedItemPosition=" + mSelectedItemPosition
-					+ " position=" + position);
+//			Log.d(TAG, "mSelectedItemPosition=" + mSelectedItemPosition
+//					+ " position=" + position);
 			// if (mSelectedItemPosition == position) {
 			// holder.icon
 			// .setImageBitmap(mDataSet[position].MenuIconFocused());

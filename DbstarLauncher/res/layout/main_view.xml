@@ -551,7 +551,7 @@
         android:scaleType="fitXY"
         android:src="@drawable/menulevel1_focuseditem_bg" />
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="1072dp"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -560,7 +560,7 @@
         android:layout_marginRight="104dp" >
 
         <com.dbstar.widget.GDMenuGallery
-            android:id="@+id/menu_level_1"
+            android:id="@+id/menu_level_1_p"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|left"
@@ -573,7 +573,22 @@
 
             <requestFocus />
         </com.dbstar.widget.GDMenuGallery>
-    </RelativeLayout>
+        
+        <com.dbstar.widget.GDMenuGallery
+            android:id="@+id/menu_level_1_c"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|left"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="bottom|left"
+            android:background="#00000000"
+            android:layoutAnimation="@anim/gallery_slide_to_right"
+            app:spacing="0dp"
+            android:visibility="invisible" >
+        </com.dbstar.widget.GDMenuGallery>
+        
+    </FrameLayout>
 
     <!-- level 2 menu -->
 
