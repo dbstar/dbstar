@@ -920,7 +920,7 @@ void TC_free_filter(int fid)
 {
 	if ((fid < MAX_CHAN_FILTER)&&(fid>=0))
 	{
-		DEBUG("free fid=%d, pid=%x\n", fid, chanFilter[fid].pid);
+		DEBUG("free fid=%d, pid=0x%x\n", fid, chanFilter[fid].pid);
 		chanFilter[fid].used = 0;
 		if(chanFilter[fid].samepidnum)
 		{

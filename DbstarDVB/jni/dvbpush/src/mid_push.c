@@ -714,8 +714,10 @@ int mid_push_cb(const char *path, int flag)
 	
 	if(PRODUCTDESC_XML==flag){
 		DEBUG("have receive %s, need check smartcard entitleinfo\n", xml_uri);
-		if(1==smartcard_entitleinfo_refresh())
+		if(1==smartcard_entitleinfo_refresh()){
+			DEBUG("check smartcard entitleinfo refresh when receiving ProductDesc.xml\n");
 			pushinfo_reset();
+		}
 	}
 	
 	if(PUBLICATION_DIR==flag){

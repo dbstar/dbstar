@@ -159,8 +159,8 @@ char *setting_item_value(char *buf, unsigned int buf_len, char separator)
  push库会向push.conf配置的log目标目录写入日志，在异常情况下，日志日积月累过多会影响系统的正常运行。
  所以在开机时检查此目录的大小，大于一定值时删除
 */
-// (33554432)==32*1024*1024	(8388608)==8*1024*1024
-#define LIBPUSH_LOGDIR_SIZE	(8388608)
+// (33554432)==32*1024*1024	(8388608)==8*1024*1024 (3145728)==3*1024*1024
+#define LIBPUSH_LOGDIR_SIZE	(3145728)
 static int libpush_conf_init(void)
 {
 	FILE* fp;
@@ -2213,13 +2213,17 @@ int pushinfo_reset(void)
 	char sqlite_cmd[256];
 	char total_xmluri[512];
 	int ret = 0;
+	int i = 0;
 
+#if 0
+// 2013-03-11 对节目单的处理留到收到ProductDesc.xml时进行处理，这里不用着急删除。
 // 1、停止现有正在接收的节目
 	prog_monitor_reset();
 
 // 2、删除播发单ProductDesc表
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
 	sqlite_execute(sqlite_cmd);
+#endif
 
 // 3、重置xml注册
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushinfo_unregist_cb;
@@ -2230,14 +2234,22 @@ int pushinfo_reset(void)
 		DEBUG("unregist %d pushinfo xml\n",ret);
 	}
 	
-	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-	remove_force(total_xmluri);
-	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", push_dir_get());
-	remove_force(total_xmluri);
-	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
 	sqlite_execute(sqlite_cmd);
 	
+	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
+	for(i=0;i<120;i++){
+		if(0==remove_force(total_xmluri)){
+			DEBUG("remove_force(%s) at %d\n", total_xmluri, i);
+			break;
+		}
+		sleep(1);
+	}
+
+	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", push_dir_get());
+	remove_force(total_xmluri);
+	
+
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
 	ret = push_file_register(total_xmluri);
 	PRINTF("regist %s return with %d\n", total_xmluri, ret);
