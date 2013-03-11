@@ -392,6 +392,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		MenuItem[] menuItems = menu.Items;
 		int index = menu.FocusedPosition;
 
+		Log.d(TAG, "======== showHighlightMenuItem = " + menu.MenuLevel + 
+				" " + menuItems.length + " " + menu.FocusedPosition + " " + mOldSelectedItemPosition
+				+ " " + mSelectedItemPosition + " stack size=" + mMenuStack.size());
+
 		MenuItem menuItem = menuItems[index];
 
 		MainMenuAdapter.ItemHolder holder = null;
@@ -438,8 +442,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// return;
 			// }
 			//
-			Log.d(TAG, " mPopupMenuContainer.getVisibility() "
-					+ mPopupMenuContainer.getVisibility());
+//			Log.d(TAG, " mPopupMenuContainer.getVisibility() "
+//					+ mPopupMenuContainer.getVisibility());
 			if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
 				mShowPopupMenuAnimation.setStartTime(time);
 				mFocusItemBackground.startAnimation(mFocusZoomOut);
