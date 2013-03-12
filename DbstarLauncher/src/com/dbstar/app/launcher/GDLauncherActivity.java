@@ -382,8 +382,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void showHighlightMenuItem() {
-		if (mIsParentMenuBeingUp)
-			return;
+//		if (mIsParentMenuBeingUp)
+//			return;
 
 		long time = AnimationUtils.currentAnimationTimeMillis();
 		mFocusZoomOut.setStartTime(time);
@@ -819,14 +819,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					@Override
 					public void onAnimationStart(Animation animation) {
 						mMenuStack.pop();
-						Menu topMenu = mMenuStack.peek();
-						mOldSelectedItemPosition = -1;
-						mSelectedItemPosition = topMenu.FocusedPosition;
+//						Menu topMenu = mMenuStack.peek();
+//						mOldSelectedItemPosition = -1;
+//						mSelectedItemPosition = topMenu.FocusedPosition;
 
-						MainMenuAdapter adapter = (MainMenuAdapter) mMainMenu.getAdapter();
-						adapter.setDataSet(topMenu.Items);
-						mMainMenu.setSelectionByForce(mSelectedItemPosition);
-						adapter.notifyDataSetChanged();
+//						MainMenuAdapter adapter = (MainMenuAdapter) mMainMenu.getAdapter();
+//						adapter.setDataSet(topMenu.Items);
+//						mMainMenu.setSelectionByForce(mSelectedItemPosition);
+//						adapter.notifyDataSetChanged();
 					}
 
 				});
@@ -924,7 +924,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMainMenuBackup = temp;
 
 		long time = AnimationUtils.currentAnimationTimeMillis();
-		mIsParentMenuBeingUp = true;
+//		mIsParentMenuBeingUp = true;
 		mGallerySlideFromBottomAnim.setStartTime(time);
 		mMainMenu.startAnimation(mGallerySlideFromBottomAnim);
 	}
@@ -932,9 +932,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// gallery slide from bottom end:
 	// . show popup menu
 	void onParentMenuShown() {
-		mIsParentMenuBeingUp = false;
-		showHighlightMenuItem();
+//		mIsParentMenuBeingUp = false;
+//		showHighlightMenuItem();
 		mLeaveStart = false;
+		
+		Menu topMenu = mMenuStack.peek();
+		mOldSelectedItemPosition = -1;
+		mSelectedItemPosition = topMenu.FocusedPosition;
+		mMainMenu.setSelectionByForce(mSelectedItemPosition);
+		
 //		Log.d(TAG, " ==== onParentMenuShown === " + mLeaveStart + " " + mEnterStart);
 	}
 
