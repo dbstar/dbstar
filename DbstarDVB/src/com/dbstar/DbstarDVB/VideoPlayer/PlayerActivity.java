@@ -447,14 +447,14 @@ public class PlayerActivity extends Activity {
 		}
 
 		private void initSurface(SurfaceHolder h) {
-//			Canvas c = null;
-//			try {
-//				Log.d(TAG, "initSurface");
-//				c = h.lockCanvas();
-//			} finally {
-//				if (c != null)
-//					h.unlockCanvasAndPost(c);
-//			}
+			Canvas c = null;
+			try {
+				Log.d(TAG, "initSurface");
+				c = h.lockCanvas();
+			} finally {
+				if (c != null)
+					h.unlockCanvasAndPost(c);
+			}
 		}
 	};
 

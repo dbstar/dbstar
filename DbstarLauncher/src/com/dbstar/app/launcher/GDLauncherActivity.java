@@ -593,8 +593,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mEnterStart = true;
 		
 		//disable key press input, when animation started
-		mMainMenu.setFocusable(false);
-		mMenuStack.add(newMenu);
+//		mMenuStack.add(newMenu);
+		mCurrentSubMenu = newMenu;
 		
 		MenuItem[] menuItems = newMenu.Items;
 		for (int i = 0; i < menuItems.length; i++) {
@@ -885,14 +885,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// . slide to menu to right, and show popup menu
 	void onParentMenuHided() {
 		mMainMenu.setVisibility(View.INVISIBLE);
-//		mMainMenu.setFocusable(false);
+		mMainMenu.setFocusable(false);
 		GDMenuGallery temp = mMainMenu;
 		mMainMenu = mMainMenuBackup;
 		mMainMenu.setVisibility(View.VISIBLE);
 		mMainMenu.setFocusable(true);
 		mMainMenuBackup = temp;
 
-		Menu menu = mMenuStack.peek();
+		Menu menu = mCurrentSubMenu;//mMenuStack.peek();
+		mMenuStack.add(menu);
+		mCurrentSubMenu = null;
 		MenuItem[] menuItems = menu.Items;	
 		
 		MainMenuAdapter adapter = (MainMenuAdapter) mMainMenu.getAdapter();
@@ -1020,6 +1022,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	MenuItem[] mMainMenuItems;
 
 	Stack<Menu> mMenuStack;
+	Menu mCurrentSubMenu = null;
 
 	// MenuItem mSettingsMenuItem, mUserCenterMenuItem, mFavouritesMenuItem;
 
