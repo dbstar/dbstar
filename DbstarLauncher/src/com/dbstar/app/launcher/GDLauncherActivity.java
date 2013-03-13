@@ -591,8 +591,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			return;
 		
 		mEnterStart = true;
-			
-		mMenuStack.add(newMenu);		
+		
+		//disable key press input, when animation started
+		mMainMenu.setFocusable(false);
+		mMenuStack.add(newMenu);
+		
 		MenuItem[] menuItems = newMenu.Items;
 		for (int i = 0; i < menuItems.length; i++) {
 			if (menuItems[i].HasSubMenu == NONE)
@@ -602,7 +605,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		
 		mOldSelectedItemPosition = -1;
 		mSelectedItemPosition = -1;
-		
+
 		long time = AnimationUtils.currentAnimationTimeMillis();
 		mFocusZoomIn.setStartTime(time);
 		
@@ -882,7 +885,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// . slide to menu to right, and show popup menu
 	void onParentMenuHided() {
 		mMainMenu.setVisibility(View.INVISIBLE);
-		mMainMenu.setFocusable(false);
+//		mMainMenu.setFocusable(false);
 		GDMenuGallery temp = mMainMenu;
 		mMainMenu = mMainMenuBackup;
 		mMainMenu.setVisibility(View.VISIBLE);
