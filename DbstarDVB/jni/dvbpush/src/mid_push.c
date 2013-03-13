@@ -21,6 +21,11 @@
 #include <net/if_arp.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/statfs.h>
+#include <sys/vfs.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "common.h"
 #include "push.h"
@@ -232,7 +237,7 @@ rewake:
 	while (1==s_decoder_running && NULL!=g_recvBuffer)
 	{
 		len = g_recvBuffer[rindex].m_len;
-		if (len)
+		if(len && 1==pushdir_usable())
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
