@@ -650,7 +650,9 @@ void *maintenance_thread()
 		}
 		
 		if(smart_card_insert_flag_get()>0){
-			DEBUG("smart card insert\n");
+			// 测试发现差不到1s，硬盘此时还未准备完毕
+			DEBUG("smart card insert, wait 3s for disc ready\n");
+			sleep(3);
 			if(1==smartcard_entitleinfo_refresh())
 				pushinfo_reset();
 			smart_card_insert_flag_set(0);
