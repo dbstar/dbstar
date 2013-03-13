@@ -18,6 +18,8 @@
 #include <net/if_arp.h>
 #include <semaphore.h>
 #include <dirent.h>
+#include <sys/statfs.h>
+#include <sys/vfs.h>
 
 #include "common.h"
 
@@ -844,5 +846,43 @@ int localtime_rf(char *time_str, unsigned int time_str_size)
 	DEBUG("seconds(long type): %ld, localtime: %s\n", now_sec,time_str);
 	
 	return 0;
+}
+
+/*
+检查磁盘的可用状态，不仅是statfs执行成功，还要检查其总大小是合法值。
+测试发现，无论硬盘是否存在，开机后UI都能下发一个mount信号和一个umount信号，磁盘存在时，在umount信号后检查磁盘statfs成功，但是总大小为0；如果硬盘存在，则再次下发一个mount信号。
+在最后一个mount信号前，磁盘的statfs大小都是非法值，对其中的文件也不可操作。
+
+注意，由于此调用涉及到磁盘信息的查看，不要在高频率动作中调用此函数。
+
+return:
+	1: success, has usable free size
+	0: success, has no free size
+	-1:failed, disable
+*/
+int disk_usable_check(char *disk_dir)
+{
+	int ret = -1;
+	struct statfs diskInfo;
+	
+	ret = statfs(disk_dir,&diskInfo);
+	if(0==ret){
+		unsigned long long tmp_total_size	= diskInfo.f_bsize * diskInfo.f_blocks;
+		unsigned long long tmp_free_size	= diskInfo.f_bsize * diskInfo.f_bfree;
+	    if(tmp_free_size>0LL)	// 有剩余空间，磁盘是正常的
+	    	ret = 1;
+	    else if(0LL==tmp_total_size)	// 即便statfs正确执行，但如果总大小为0，则磁盘也处在不可用状态
+	    	ret = -1;
+	    else							// statfs正确执行，总大小不为0，但空闲为0，则可进行删除、查询等操作
+	    	ret = 0;
+	    
+	    DEBUG("%s(%d): TOTAL_SIZE(%llu B) FREE_SIZE(%llu B)\n",disk_dir,ret,tmp_total_size,tmp_free_size);
+	}
+	else{
+		ERROROUT("%s is NOK\n", disk_dir);
+		ret = -1;
+	}
+	
+	return ret;
 }
 

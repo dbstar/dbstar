@@ -38,5 +38,6 @@ int intialize_xml_reset(void);
 int setting_init_with_database();
 int pushinfo_reset(void);
 int smartcard_entitleinfo_refresh();
+int pushdir_usable();
 
 #endif

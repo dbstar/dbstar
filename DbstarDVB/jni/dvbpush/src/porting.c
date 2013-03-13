@@ -71,6 +71,7 @@ static int			s_smart_card_insert_flag = 0;
 static int			s_smart_card_remove_flag = 1;	// 当发生过拔卡事件时，此标记置1。为了应对插卡开机，初始化为1
 
 static char			s_TestSpecialProductID[64];
+static int			s_PushDir_usable = 0;	// 0表示不可用，1表示可用
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
@@ -92,6 +93,7 @@ static void settingDefault_set(void)
 	s_root_push_file_size = ROOT_PUSH_FILE_SIZE;
 	
 	s_prog_data_pid = PROG_DATA_PID_DF;
+	snprintf(s_push_root_path, sizeof(s_push_root_path), "%s", PUSH_DATA_DIR_DF);
 	
 	snprintf(s_dbstar_database_uri, sizeof(s_dbstar_database_uri), "%s", DBSTAR_DATABASE);
 	snprintf(s_smarthome_database_uri, sizeof(s_smarthome_database_uri), "%s", SMARTHOME_DATABASE);
@@ -337,6 +339,15 @@ int parse_xml_get(char *xml_uri, unsigned int size)
 char *column_res_get()
 {
 	return s_column_res;
+}
+
+/*
+ 1: usable
+ others: disable
+*/
+int pushdir_usable()
+{
+	return s_PushDir_usable;
 }
 
 int factory_renew(void)
@@ -1064,50 +1075,50 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	return 0;
 }
 
-static void printf_statfs_ret(char *entitle_store_dir,int ret)
+static void printf_statfs_ret(char *statfs_dir,int ret)
 {
 	switch(ret){
 		case 0:
-			DEBUG("statfs %s SUCCESS\n",entitle_store_dir);
+			DEBUG("statfs %s SUCCESS\n",statfs_dir);
 			break;
 		case EACCES:	//(statfs())文件或路径名中包含的目录不可访问 
-			DEBUG("statfs %s EACCES\n", entitle_store_dir);
+			DEBUG("statfs %s EACCES\n", statfs_dir);
 			break;
 		case EBADF:		//(fstatfs()) 文件描述词无效 
-			DEBUG("statfs %s EBADF\n", entitle_store_dir);
+			DEBUG("statfs %s EBADF\n", statfs_dir);
 			break;
 		case EFAULT: 	//内存地址无效 
-			DEBUG("statfs %s EFAULT\n", entitle_store_dir);
+			DEBUG("statfs %s EFAULT\n", statfs_dir);
 			break;
 		case EINTR: 	//操作由信号中断 
-			DEBUG("statfs %s EINTR\n", entitle_store_dir);
+			DEBUG("statfs %s EINTR\n", statfs_dir);
 			break;
 		case EIO:		//读写出错 
-			DEBUG("statfs %s EIO\n", entitle_store_dir);
+			DEBUG("statfs %s EIO\n", statfs_dir);
 			break;
 		case ELOOP:		//(statfs())解释路径名过程中存在太多的符号连接 
-			DEBUG("statfs %s ELOOP\n", entitle_store_dir);
+			DEBUG("statfs %s ELOOP\n", statfs_dir);
 			break;
 		case ENAMETOOLONG:	//(statfs()) 路径名太长 
-			DEBUG("statfs %s ENAMETOOLONG\n", entitle_store_dir);
+			DEBUG("statfs %s ENAMETOOLONG\n", statfs_dir);
 			break;
 		case ENOENT:	//(statfs()) 文件不存在 
-			DEBUG("statfs %s ENOENT\n", entitle_store_dir);
+			DEBUG("statfs %s ENOENT\n", statfs_dir);
 			break;
 		case ENOMEM:	//核心内存不足 
-			DEBUG("statfs %s ENOMEM\n", entitle_store_dir);
+			DEBUG("statfs %s ENOMEM\n", statfs_dir);
 			break;
 		case ENOSYS:	//文件系统不支持调用 
-			DEBUG("statfs %s ENOSYS\n", entitle_store_dir);
+			DEBUG("statfs %s ENOSYS\n", statfs_dir);
 			break;
 		case ENOTDIR: 	//(statfs())路径名中当作目录的组件并非目录 
-			DEBUG("statfs %s ENOTDIR\n", entitle_store_dir);
+			DEBUG("statfs %s ENOTDIR\n", statfs_dir);
 			break;
 		case EOVERFLOW:
-			DEBUG("statfs %s EOVERFLOW\n", entitle_store_dir);
+			DEBUG("statfs %s EOVERFLOW\n", statfs_dir);
 			break;
 		default:
-			DEBUG("statfs %s return with %d\n", entitle_store_dir, ret);
+			DEBUG("statfs %s return with %d\n", statfs_dir, ret);
 			break;
 	}
 	
@@ -1145,22 +1156,9 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 		}	
 	}
 	
-	DEBUG("entitle_store_dir: %s\n", entitle_store_dir);
-	
-	DEBUG("FileType: %u\n", diskInfo.f_type);
-	if(EXT3_SUPER_MAGIC==diskInfo.f_type)
-		DEBUG("EXT3_SUPER_MAGIC\n");
-	else if(NTFS_SB_MAGIC==diskInfo.f_type)
-		DEBUG("NTFS_SB_MAGIC\n");
-	
-    unsigned long long totalBlocks = diskInfo.f_bsize;
-    unsigned long long totalSize = totalBlocks * diskInfo.f_blocks;
-    DEBUG("TOTAL_SIZE == %llu B\n",totalSize);
-
-    unsigned long long freeDisk = diskInfo.f_bfree*totalBlocks;
-    DEBUG("DISK_FREE  == %llu B\n",freeDisk);
+	DEBUG(" %s: TOTAL_SIZE(%llu B) FREE_SIZE(%llu B)\n",entitle_store_dir, (diskInfo.f_bsize * diskInfo.f_blocks),(diskInfo.f_bsize * diskInfo.f_bfree));
     
-    if(freeDisk>ENTITLE_SIZE_MIN){
+    if((diskInfo.f_bsize * diskInfo.f_bfree)>ENTITLE_SIZE_MIN){
     	memset(CardSN,0,sizeof(CardSN));
 		ret = CDCASTB_GetCardSN(CardSN);
 		if(CDCA_RC_OK==ret){
@@ -1480,11 +1478,26 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			dvbpush_getinfo_stop();
 			break;
 		case CMD_NETWORK_CONNECT:
-		case CMD_NETWORK_DISCONNECT:
-		case CMD_DISK_MOUNT:
-		case CMD_DISK_UNMOUNT:
 			net_rely_condition_set(cmd);
 			break;
+		case CMD_NETWORK_DISCONNECT:
+			net_rely_condition_set(cmd);
+			break;
+		case CMD_DISK_MOUNT:
+			if(-1==disk_usable_check(push_dir_get())){
+				s_PushDir_usable = 0;
+				DEBUG("HardDisc disable\n");
+			}
+			else{
+				s_PushDir_usable = 1;
+				DEBUG("HardDisc enable\n");
+			}
+			break;
+		case CMD_DISK_UNMOUNT:
+			s_PushDir_usable = 0;
+			DEBUG("HardDisc umount, disable\n");
+			break;
+			
 		case CMD_DVBPUSH_GETTS_STATUS:
 			data_stream_status_str_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
@@ -2348,7 +2361,7 @@ int pushinfo_reset(void)
 	sqlite_execute(sqlite_cmd);
 	
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-	for(i=0;i<120;i++){
+	for(i=0;i<60;i++){
 		if(0==remove_force(total_xmluri)){
 			DEBUG("remove_force(%s) at %d\n", total_xmluri, i);
 			break;
