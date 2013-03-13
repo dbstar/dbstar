@@ -692,26 +692,26 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 		DEBUG("%s\t#%s\t#%s=%lld\t#%s\t#%s\t#%s\n",result[i*column],result[i*column+1],result[i*column+2],total_size,result[i*column+3],result[i*column+4],result[i*column+5]);
 		
 		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
-		remove_force(total_uri);
-		
-		if(strlen(ids)>0)
-			snprintf(ids+strlen(ids),receiver_size-strlen(ids),"\t");
-		snprintf(ids+strlen(ids),receiver_size-strlen(ids),"%s",result[i*column]);
-		
-		s_delete_total_size += total_size;
-		if(s_delete_total_size>=DELETE_SIZE_ONCE){
-			DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
-			break;
+		if(0==remove_force(total_uri)){
+			if(strlen(ids)>0)
+				snprintf(ids+strlen(ids),receiver_size-strlen(ids),"\t");
+			snprintf(ids+strlen(ids),receiver_size-strlen(ids),"%s",result[i*column]);
+			
+			s_delete_total_size += total_size;
+			if(s_delete_total_size>=DELETE_SIZE_ONCE){
+				DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
+				break;
+			}
+			else
+				DEBUG("delete %lld finished, %s\n", s_delete_total_size, total_uri);
+			
+			if(strlen(ids)>(receiver_size-64)){
+				DEBUG("receiver can load no more than such PublicationID\n");
+				break;
+			}
+			else
+				DEBUG("publication in delete queue: %s", ids);
 		}
-		else
-			DEBUG("delete %lld finished, %s\n", s_delete_total_size, total_uri);
-		
-		if(strlen(ids)>(receiver_size-64)){
-			DEBUG("receiver can load no more than such PublicationID\n");
-			break;
-		}
-		else
-			DEBUG("publication in delete queue: %s", ids);
 	}
 	
 	// 还需要找个机会删除这些Publication对应的ResStr、ResPoster等附属记录
@@ -997,8 +997,15 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	
 //	char		issue_begin[64];
 //	char		issue_end[64];
-
-#if 1
+	
+	// 纯粹的检查，只有当硬盘正常时，才能真正更新到数组和数据表SCEntitleInfo
+	if(1==smartcard_entitleinfo_refresh())
+		pushinfo_reset();
+	
+	// 读取授权信息要直接从智能卡中读取，避免业务逻辑影响其正确性
+	DEBUG("smartcard_entitleinfo_refresh finish. now read entitleinfo directly\n");
+	
+#if 0
 	int sc_entitleinfo_fresh = smartcard_entitleinfo_refresh();
 		
 	for(i=0;i<SCENTITLEINFOSIZE;i++){
@@ -1030,8 +1037,6 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	CDCA_U32 dwFrom = 0, dwNum = 128;
 	char SmartCardSn[128];
 	SCDCAPVODEntitleInfo EntitleInfo[128];
-	int SC_EntitleInfo_fresh = 0;
-	char sqlite_cmd[1024];
 	
 	memset(SmartCardSn,0,sizeof(SmartCardSn));
 	ret = CDCASTB_GetCardSN(SmartCardSn);
@@ -1491,6 +1496,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			else{
 				s_PushDir_usable = 1;
 				DEBUG("HardDisc enable\n");
+				maintenance_thread_awake();
 			}
 			break;
 		case CMD_DISK_UNMOUNT:
@@ -2213,6 +2219,9 @@ static int SCEntitleInfoCheck(SCDCAPVODEntitleInfo *EntitleInfo)
  	-1:	failed
  	0:	success and no need refresh
  	1:	success and need refresh
+ 
+ 只有在磁盘存在时，才将更新后的授权信息存入全局数据和数据表SCEntitleInfo中。这是因为如果发生了授权刷新这件事，就一定会面临着删除旧Initialize.xml和info xmls的问题。
+ 确保在无法删除时，仍留下“授权刷新”的状态。
 */
 int smartcard_entitleinfo_refresh()
 {
@@ -2238,7 +2247,7 @@ int smartcard_entitleinfo_refresh()
 		ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
 		if(CDCA_RC_OK==ret){
 			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
-			if(	dwNum==SCEntitleInfoNum_get()){
+			if(dwNum==SCEntitleInfoNum_get()){
 				DEBUG("dwNum is equal, check details continue...\n");
 				SC_EntitleInfo_fresh = 0;
 				for(i=0;i<dwNum;i++){
@@ -2256,36 +2265,41 @@ int smartcard_entitleinfo_refresh()
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM SCEntitleInfo;");
 				sqlite_execute(sqlite_cmd);
 				
-				int sqlite_transaction_flag = sqlite_transaction_begin();
-				
-				for(i=0;i<SCENTITLEINFOSIZE;i++){
-					if(i<dwNum)	// this should be a valid Entitle info
-					{
-						snprintf(s_SCEntitleInfo[i].SmartCardID,sizeof(s_SCEntitleInfo[i].SmartCardID),"%s",SmartCardSn);
-						s_SCEntitleInfo[i].EntitleInfo.m_OperatorID = EntitleInfo[i].m_OperatorID;
-						s_SCEntitleInfo[i].EntitleInfo.m_ID = EntitleInfo[i].m_ID;
-						s_SCEntitleInfo[i].EntitleInfo.m_ProductStartTime = EntitleInfo[i].m_ProductStartTime;
-						s_SCEntitleInfo[i].EntitleInfo.m_ProductEndTime = EntitleInfo[i].m_ProductEndTime;
-						s_SCEntitleInfo[i].EntitleInfo.m_WatchStartTime = EntitleInfo[i].m_WatchStartTime;
-						s_SCEntitleInfo[i].EntitleInfo.m_WatchEndTime = EntitleInfo[i].m_WatchEndTime;
-						s_SCEntitleInfo[i].EntitleInfo.m_LimitTotaltValue = EntitleInfo[i].m_LimitTotaltValue;
-						s_SCEntitleInfo[i].EntitleInfo.m_LimitUsedValue = EntitleInfo[i].m_LimitUsedValue;
-						
-						if(0==sqlite_transaction_flag){
-							snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO SCEntitleInfo(SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue) VALUES('%s','%u','%lu','%lu','%lu','%lu','%lu','%lu','%lu');",
-								SmartCardSn,EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,EntitleInfo[i].m_ProductStartTime,EntitleInfo[i].m_ProductEndTime,EntitleInfo[i].m_WatchStartTime,EntitleInfo[i].m_WatchEndTime,EntitleInfo[i].m_LimitTotaltValue,EntitleInfo[i].m_LimitUsedValue);
-							sqlite_transaction_exec(sqlite_cmd);
+				if(disk_usable_check(push_dir_get())>0){
+					int sqlite_transaction_flag = sqlite_transaction_begin();
+					for(i=0;i<SCENTITLEINFOSIZE;i++){
+						if(i<dwNum)	// this should be a valid Entitle info
+						{
+							snprintf(s_SCEntitleInfo[i].SmartCardID,sizeof(s_SCEntitleInfo[i].SmartCardID),"%s",SmartCardSn);
+							s_SCEntitleInfo[i].EntitleInfo.m_OperatorID = EntitleInfo[i].m_OperatorID;
+							s_SCEntitleInfo[i].EntitleInfo.m_ID = EntitleInfo[i].m_ID;
+							s_SCEntitleInfo[i].EntitleInfo.m_ProductStartTime = EntitleInfo[i].m_ProductStartTime;
+							s_SCEntitleInfo[i].EntitleInfo.m_ProductEndTime = EntitleInfo[i].m_ProductEndTime;
+							s_SCEntitleInfo[i].EntitleInfo.m_WatchStartTime = EntitleInfo[i].m_WatchStartTime;
+							s_SCEntitleInfo[i].EntitleInfo.m_WatchEndTime = EntitleInfo[i].m_WatchEndTime;
+							s_SCEntitleInfo[i].EntitleInfo.m_LimitTotaltValue = EntitleInfo[i].m_LimitTotaltValue;
+							s_SCEntitleInfo[i].EntitleInfo.m_LimitUsedValue = EntitleInfo[i].m_LimitUsedValue;
+							
+							if(0==sqlite_transaction_flag){
+								snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO SCEntitleInfo(SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue) VALUES('%s','%u','%lu','%lu','%lu','%lu','%lu','%lu','%lu');",
+									SmartCardSn,EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,EntitleInfo[i].m_ProductStartTime,EntitleInfo[i].m_ProductEndTime,EntitleInfo[i].m_WatchStartTime,EntitleInfo[i].m_WatchEndTime,EntitleInfo[i].m_LimitTotaltValue,EntitleInfo[i].m_LimitUsedValue);
+								sqlite_transaction_exec(sqlite_cmd);
+							}
 						}
+						else
+							s_SCEntitleInfo[i].EntitleInfo.m_ID = INVALID_PRODUCTID_AT_ENTITLEINFO;
 					}
-					else
-						s_SCEntitleInfo[i].EntitleInfo.m_ID = INVALID_PRODUCTID_AT_ENTITLEINFO;
+					
+					if(0==sqlite_transaction_flag)
+						sqlite_transaction_end(1);
+					
+					DEBUG("this is another smart card, reset pushinfo\n");
+					ret = 1;
 				}
-				
-				if(0==sqlite_transaction_flag)
-					sqlite_transaction_end(1);
-				
-				DEBUG("this is another smart card, reset pushinfo\n");
-				ret = 1;
+				else{
+					DEBUG("disc is disable, don't refresh entitle array and database\n");
+					ret = 0;
+				}
 			}
 			else{
 				DEBUG("this is a card with familiar Special Product, no need to refresh entitle infos\n");

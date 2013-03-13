@@ -91,7 +91,6 @@ static int g_wIndex = 0;
 
 static pthread_t tidDecodeData;
 static int s_xmlparse_running = 0;
-static int s_monitor_running = 0;
 static int s_decoder_running = 0;
 static int s_push_monitor_active = 0;
 static int s_dvbpush_getinfo_flag = 0;
@@ -100,6 +99,7 @@ static int s_column_refresh = 0;
 static int s_interface_refresh = 0;
 static int s_preview_refresh = 0;
 static int s_service_xml_waiting = 0;
+static int s_push_regist_inited = 0;
 
 
 /*
@@ -552,6 +552,31 @@ void service_xml_waiting_set(int flag)
 	DEBUG("s_service_xml_waiting = %d\n", s_service_xml_waiting);
 }
 
+
+static int push_regist_init()
+{
+//	push_file_register("pushroot/initialize/Initialize.xml");
+	
+	int push_flags[16];
+	unsigned int push_flags_cnt = 0;
+	push_flags[push_flags_cnt] = GUIDELIST_XML;
+	push_flags_cnt++;
+	push_flags[push_flags_cnt] = COMMANDS_XML;
+	push_flags_cnt++;
+	push_flags[push_flags_cnt] = MESSAGE_XML;
+	push_flags_cnt++;
+	push_flags[push_flags_cnt] = PRODUCTDESC_XML;
+	push_flags_cnt++;
+	push_flags[push_flags_cnt] = SERVICE_XML;
+	push_flags_cnt++;
+	info_xml_refresh(1,push_flags,push_flags_cnt);
+	
+	push_recv_manage_refresh();
+	
+	return 0;
+}
+
+
 void maintenance_thread_awake()
 {
 	pthread_mutex_lock(&mtx_maintenance);
@@ -559,16 +584,9 @@ void maintenance_thread_awake()
 	pthread_mutex_unlock(&mtx_maintenance);
 }
 
-/*
-为避免无意义的查询硬盘，应完成下面两个工作：
-1、当节目接收完毕后不应再查询，数据库中记录的是100%
-2、只有UI上进入查看进度的界面后，通知底层去查询，其他时间查询没有意义。
-3、当push无数据后，再轮询若干遍（等待缓冲数据写入硬盘）后就不再轮询。
-*/
+
 void *maintenance_thread()
 {
-	s_monitor_running = 1;
-	
 	struct timeval now;
 	struct timespec outtime;
 	int retcode = 0;
@@ -576,7 +594,7 @@ void *maintenance_thread()
 	int monitor_interval = 61;
 	unsigned int loop_cnt = 0;
 	
-	while (1==s_monitor_running)
+	while (1)
 	{
 		pthread_mutex_lock(&mtx_maintenance);
 		
@@ -589,7 +607,7 @@ void *maintenance_thread()
 		
 #if 1
 		if(ETIMEDOUT!=retcode){
-			DEBUG("push monitor thread is awaked by external signal, parhaps from smart card\n");
+			DEBUG("maintenance thread is awaked by external signal\n");
 		}
 #endif
 		
@@ -653,6 +671,11 @@ void *maintenance_thread()
 				DEBUG("s_service_xml_waiting=%d, it's too long for Service.xml\n", s_service_xml_waiting);
 				info_xml_regist();
 			}
+		}
+		
+		if(0==s_push_regist_inited && 1==pushdir_usable()){
+			s_push_regist_inited = 1;
+			push_regist_init();
 		}
 	}
 	DEBUG("exit from push monitor thread\n");
@@ -841,6 +864,15 @@ static int push_decoder_buf_uninit()
 	return 0;
 }
 
+int maintenance_thread_init()
+{
+	pthread_t tidMaintenance;
+	pthread_create(&tidMaintenance, NULL, maintenance_thread, NULL);
+	pthread_detach(tidMaintenance);
+	
+	return 0;
+}
+
 int mid_push_init(char *push_conf)
 {
 	int i = 0;
@@ -865,27 +897,6 @@ int mid_push_init(char *push_conf)
 	else
 		DEBUG("Init push lib success with %s!\n", push_conf);
 	
-//	push_file_register("pushroot/initialize/Initialize.xml");
-	
-	int push_flags[16];
-	unsigned int push_flags_cnt = 0;
-	push_flags[push_flags_cnt] = GUIDELIST_XML;
-	push_flags_cnt++;
-	push_flags[push_flags_cnt] = COMMANDS_XML;
-	push_flags_cnt++;
-	push_flags[push_flags_cnt] = MESSAGE_XML;
-	push_flags_cnt++;
-	push_flags[push_flags_cnt] = PRODUCTDESC_XML;
-	push_flags_cnt++;
-	push_flags[push_flags_cnt] = SERVICE_XML;
-	push_flags_cnt++;
-	info_xml_refresh(1,push_flags,push_flags_cnt);
-	
-	/*
-	初始化接收监控，必须在push解码线程之前。对于默认不接收的push库，无需初始化拒绝接收
-	*/
-	push_recv_manage_refresh();
-	
 	/*
 	确保开机后至少有一次扫描机会，获得准确的下载进度。
 	*/
@@ -896,11 +907,6 @@ int mid_push_init(char *push_conf)
 	//创建数据解码线程
 	pthread_create(&tidDecodeData, NULL, push_decoder_thread, NULL);
 	//pthread_detach(tidDecodeData);
-	
-	//创建监视线程
-	pthread_t tidMaintenance;
-	pthread_create(&tidMaintenance, NULL, maintenance_thread, NULL);
-	pthread_detach(tidMaintenance);
 	
 	//创建xml解析线程
 	pthread_t tidxmlparse;
@@ -918,7 +924,6 @@ int mid_push_uninit()
 	pthread_mutex_unlock(&mtx_xml);
 	
 	pthread_mutex_lock(&mtx_maintenance);
-	s_monitor_running = 0;
 	pthread_cond_signal(&cond_maintenance);
 	pthread_mutex_unlock(&mtx_maintenance);
 	

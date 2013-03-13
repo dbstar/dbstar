@@ -68,6 +68,43 @@ unsigned int randint()
 	return rand();
 }
 
+/*
+ 输出文件操作相关的错误信息
+*/
+static int printf_fserrno(const char *uri, int fserrno)
+{
+	switch(fserrno){
+		case EROFS:		// 欲写入的文件存在于只读文件系统内。
+			DEBUG("%s EROFS\n",uri);
+			break;
+		case EFAULT:	//参数pathname 指针超出可存取内存空间。
+			DEBUG("%s EFAULT\n",uri);
+			break;
+		case ENAMETOOLONG:	//参数pathname 太长。
+			DEBUG("%s ENAMETOOLONG\n",uri);
+			break;
+		case ENOMEM:	//核心内存不足。
+			DEBUG("%s ENOMEM\n",uri);
+			break;
+		case ELOOP:	//参数pathname 有过多符号连接问题。
+			DEBUG("%s ELOOP\n",uri);
+			break;
+		case EIO:	//I/O 存取错误。
+			DEBUG("%s EIO\n",uri);
+			break;
+		case ENOENT:
+			DEBUG("%s ENOENT\n",uri);
+			break;
+		case ENOTDIR:
+			DEBUG("%s ENOTDIR\n",uri);
+			break;
+		default:
+			DEBUG("%s other errno: %d\n", uri,fserrno);
+			break;
+	}
+	
+	return 0;
+}
 
 /*
 目录初始化，避免直接创建文件失败。
@@ -665,27 +702,9 @@ static int dir_stat_check(const char *uri)
 		}
 	}
 	else{
-		ERROROUT("can not stat(%s)\n", uri);
 		ret = -1;
 		
-		if(ENOENT==errno)
-			DEBUG("ENOENT\n");
-		else if(ENOTDIR==errno)
-			DEBUG("ENOTDIR\n");
-		else if(ELOOP==errno)
-			DEBUG("ELOOP\n");
-		else if(EFAULT==errno)
-			DEBUG("EFAULT\n");
-		else if(EIO==errno){
-			DEBUG("EIO\n");
-			ret = EIO_RETURN_FLAG;
-		}
-		else if(ENOMEM==errno)
-			DEBUG("ENOMEM\n");
-		else if(ENAMETOOLONG==errno)
-			DEBUG("ENAMETOOLONG\n");
-		else
-			DEBUG("errno: %d\n", errno);
+		printf_fserrno(uri,errno);
 	}
 	
 	return ret;
@@ -806,12 +825,22 @@ int remove_force(const char *uri)
 			DEBUG("remove(%s)\n", uri);
 			sync();
 		}
-		else
-			ERROROUT("remove(%s) failed\n", uri);
+		else{
+			if(ENOENT==errno)
+				ret = 0;
+			else
+				ret = -1;
+			
+			printf_fserrno(uri,errno);
+		}
 	}
 	else{
-		ERROROUT("can not stat(%s)\n", uri);
-		ret = -1;
+		if(ENOENT==errno)
+			ret = 0;
+		else
+			ret = -1;
+			
+		printf_fserrno(uri,errno);
 	}
 	
 #else

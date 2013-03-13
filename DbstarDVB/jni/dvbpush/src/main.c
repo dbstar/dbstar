@@ -51,6 +51,8 @@ void *main_thread()
 	
 	setting_init_with_database();
 	
+	maintenance_thread_init();
+	
 	if(-1==xmlparser_init()){
 		DEBUG("xmlparser init failed\n");
 		//return NULL;
