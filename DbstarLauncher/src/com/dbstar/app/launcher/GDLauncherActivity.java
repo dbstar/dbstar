@@ -303,6 +303,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mLeaveStart = true;
 			
 			mHideSubMenu = true;
+			
+			mMainMenu.setOnItemSelectedListener(null);
+			
 			LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
 			controller.setAnimation(mGallerySlideToLeftAnim);
 
@@ -595,6 +598,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		//disable key press input, when animation started
 //		mMenuStack.add(newMenu);
 		mCurrentSubMenu = newMenu;
+		mMainMenu.setOnItemSelectedListener(null);
 		
 		MenuItem[] menuItems = newMenu.Items;
 		for (int i = 0; i < menuItems.length; i++) {
@@ -910,6 +914,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	// submenu slide to right end
 	void onChildMenuShown() {
+		 mMainMenu.setOnItemSelectedListener(mMenuItemSelectedListener);
 		 mMainMenu.setSelectionByForce(0);
 		 mMainMenu.requestFocus();
 		 mEnterStart = false;
@@ -944,6 +949,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Menu topMenu = mMenuStack.peek();
 		mOldSelectedItemPosition = -1;
 		mSelectedItemPosition = topMenu.FocusedPosition;
+		
+		mMainMenu.setOnItemSelectedListener(mMenuItemSelectedListener);
 		mMainMenu.setSelectionByForce(mSelectedItemPosition);
 		
 //		Log.d(TAG, " ==== onParentMenuShown === " + mLeaveStart + " " + mEnterStart);
@@ -1342,8 +1349,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMainMenuAdapter2 = new MainMenuAdapter(this);
 		mMainMenu2.setAdapter(mMainMenuAdapter2);
 
-		mMainMenu1.setOnItemSelectedListener(mMenuItemSelectedListener);
-		mMainMenu2.setOnItemSelectedListener(mMenuItemSelectedListener);
+//		mMainMenu1.setOnItemSelectedListener(mMenuItemSelectedListener);
+//		mMainMenu2.setOnItemSelectedListener(mMenuItemSelectedListener);
 
 		mPopupMenuContainer = (ViewGroup) findViewById(R.id.menulevel2_container);
 		mPopupMenu = (ListView) findViewById(R.id.menu_level_2);
@@ -1354,6 +1361,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mMainMenu = mMainMenu1;
 		mMainMenuBackup = mMainMenu2;
+		mMainMenu.setOnItemSelectedListener(mMenuItemSelectedListener);
 		
 		// mDefaultPoster
 		Drawable d = new BitmapDrawable(getResources(), mDefaultPoster);
