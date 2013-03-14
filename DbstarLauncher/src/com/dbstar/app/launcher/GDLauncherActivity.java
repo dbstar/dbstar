@@ -1106,9 +1106,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			}
 
 			// create sub menu
-			Menu menu = mMenuStack.peek();
-			if (menu.MenuLevel != (columnLevel - 1)) {
-				return;
+			Menu menu = null;
+			if (mCurrentSubMenu != null) {
+				if (mCurrentSubMenu.MenuLevel == (columnLevel - 1)) {
+					menu = mCurrentSubMenu;
+				}
+			} else {
+				menu = mMenuStack.peek();
+				if (menu.MenuLevel != (columnLevel - 1)) {
+					return;
+				}
 			}
 			
 			
