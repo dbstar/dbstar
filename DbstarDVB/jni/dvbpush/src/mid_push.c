@@ -457,6 +457,8 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
 			}
+			else
+				DEBUG("%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur,s_prgs[i].total);
 		}
 		s_push_has_data --;
 		pthread_mutex_unlock(&mtx_push_monitor);

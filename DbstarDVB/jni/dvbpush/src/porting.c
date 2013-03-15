@@ -1576,7 +1576,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DRM_EMAILCONTENT_READ:
 			DEBUG("CMD_DRM_EMAILCONTENT_READ\n");
-			//DRM_emailcontent_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			DRM_emailcontent_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
 		case CMD_DRM_PVODPROGRAMINFO_READ:
 			DEBUG("CMD_DRM_PVODPROGRAMINFO_READ\n");
@@ -1696,9 +1696,11 @@ void upgrade_info_init()
 3、Loader没有独立的版本号，直接使用默认的版本号“1.2.1”，其中前两段“1.2”为固定，最后一段为版本轮次；
 4、设备型号固定使用分配的“01”
 */
-		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, HARDWARE_VERSION);
+		//upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, HARDWARE_VERSION);
+		snprintf(tmpinfo, sizeof(tmpinfo), "%d.%d.%d.%d", g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
+		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
 		
-		snprintf(tmpinfo, sizeof(tmpinfo), "2.0.%d.%d", g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
+		snprintf(tmpinfo, sizeof(tmpinfo), "%d.%d.%d.%d", g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
 		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
 
 		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, LOADER_VERSION);		

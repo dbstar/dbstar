@@ -786,6 +786,15 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 				return;
 //			}
 		}
+		else if(	(datap[0] < g_loaderInfo.software_version[0])
+					||(((datap[0] == g_loaderInfo.software_version[0]))&&(datap[1] < g_loaderInfo.software_version[1]))
+					||(((datap[0] == g_loaderInfo.software_version[0]))&&(datap[1] == g_loaderInfo.software_version[1])&&(datap[2] < g_loaderInfo.software_version[2]))
+					||(((datap[0] == g_loaderInfo.software_version[0]))&&(datap[1] == g_loaderInfo.software_version[1])&&(datap[2] == g_loaderInfo.software_version[2])&&(datap[3] < g_loaderInfo.software_version[3]))
+		)
+		{
+			INTERMITTENT_PRINT("software version of new upgrade package is less than mini, do not upgrade\n");
+			return;
+		}
 		else
 	    {
 			INTERMITTENT_PRINT("software version is not equal, do upgrade\n");

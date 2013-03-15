@@ -234,19 +234,25 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	
 	char from_file[256];
 	char to_file[256];
+	char cmd[4096];
+	
 	snprintf(from_file,sizeof(from_file),"%s/%s", push_dir_get(),ptr->ColumnIcon_losefocus);
 	snprintf(to_file,sizeof(to_file),"%s/%s",column_res_get(),p_slash);
+	
 	if(0==fcopy_c(from_file,to_file)){
-		char cmd[4096];
+		DEBUG("copy %s to %s success\n",from_file,to_file);
 		snprintf(cmd, sizeof(cmd), "REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d);",
 			ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
-		
-		return sqlite_transaction_exec(cmd);
 	}
 	else{
 		DEBUG("copy %s to %s failed\n",from_file,to_file);
-		return -1;
+		//即便拷贝失败，也可以继续插入栏目项。UI展现时，如果没有栏目icon，有一个默认icon可以填充
+		//return -1;
+		snprintf(cmd, sizeof(cmd), "REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,SequenceNum) VALUES('%s','%s','%s','%s','%s',%d);",
+			ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,s_column_SequenceNum);
 	}
+	
+	return sqlite_transaction_exec(cmd);
 }
 
 static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
@@ -2394,6 +2400,10 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					if('/'!=tmp_URI[0])
 						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
 					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
+					
+					// 显式清理本目录。如果前一次Column解析失败，会留下残留文件，引起本次判断接收进度异常
+					DEBUG("clear %s for this receive task\n", p->URI);
+					remove_force(p->URI);
 				}
 			}
 			
