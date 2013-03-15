@@ -330,6 +330,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			// the deleted item is the last one
 			// there is only one item in this page
 			mPageDatas.remove(pageNumber);
+			return;
 		}
 
 		for (int i = start; i < movies.length - 1; i++) {
