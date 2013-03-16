@@ -539,9 +539,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			ft.addToBackStack(null);
 
 			String[] data = message.split("\t");
-			if (data.length > 2) {
+			if (data.length > 1) {
 				int type = Integer.valueOf(data[0]);
-				int duration = Integer.valueOf(data[2]);
+				int duration = GDCommon.OSDDISP_TIMEOUT;
 				// Create and show the dialog.
 				NotificationFragment newFragment = NotificationFragment
 						.newInstance(type, data[1], duration);

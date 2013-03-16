@@ -50,6 +50,8 @@ public class GDCommon {
 	public static final int MSG_ETHERNET_PHYCONECTED = 0x90001;
 	public static final int MSG_ETHERNET_PHYDISCONECTED = 0x90002;
 
+	public static final int OSDDISP_TIMEOUT = 900000;
+	
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "cho";
