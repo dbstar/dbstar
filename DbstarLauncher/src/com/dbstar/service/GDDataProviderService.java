@@ -1825,7 +1825,7 @@ public class GDDataProviderService extends Service {
 				case DbstarServiceApi.UPGRADE_NEW_VER: {
 					byte[] bytes = intent.getByteArrayExtra("message");
 					if (bytes != null) {
-						String packageFile = StringUtil.getUTF8String(bytes);
+						String packageFile = StringUtil.getString(bytes, "utf-8");
 
 						Log.d(TAG, "onReceive packageFile " + packageFile);
 
@@ -1851,7 +1851,7 @@ public class GDDataProviderService extends Service {
 					Log.d(TAG, "=======receive notification " + bytes);
 
 					if (bytes != null) {
-						String info = StringUtil.getUTF8String(bytes);
+						String info = StringUtil.getString(bytes, "utf-8");
 
 						Log.d(TAG, "======= notification " + info);
 
@@ -1867,7 +1867,7 @@ public class GDDataProviderService extends Service {
 					byte[] bytes = intent.getByteArrayExtra("message");
 
 					if (bytes != null) {
-						String data = StringUtil.getUTF8String(bytes);
+						String data = StringUtil.getString(bytes, "gb2312");
 						Message msg = mHandler
 								.obtainMessage(GDCommon.MSG_DISP_NOTIFICATION);
 						msg.obj = data;

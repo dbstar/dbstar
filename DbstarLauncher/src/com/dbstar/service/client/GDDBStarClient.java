@@ -212,8 +212,17 @@ public class GDDBStarClient {
 	private Object parseSmartcardInfo(int type, byte[] bytes) {
 		Object info = null;
 		String data = null;
+		String charset = null;
+		
+		if (type == DbstarServiceApi.CMD_DRM_EMAILHEADS_READ ||
+				type == DbstarServiceApi.CMD_DRM_EMAILCONTENT_READ) {
+			charset = "gb2312";
+		} else {
+			charset = "utf-8";
+		}
+		
 		try {
-			data = new String(bytes, "utf-8");
+			data = new String(bytes, charset);
 			Log.d(TAG, " =========== smartcard info == " + type + " " + data);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();

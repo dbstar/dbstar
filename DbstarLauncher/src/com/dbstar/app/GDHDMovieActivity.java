@@ -323,8 +323,11 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		}
 	}
 
-	private void movePageItems(int pageNumber, int start) {
+	private void movePageItems(int pageNumber, int start) {		
 		Movie[] movies = mPageDatas.get(pageNumber);
+		
+		Log.d(TAG, " == movePageItems == page=" + pageNumber + 
+				" delete = " + start + " size=" + movies.length);
 
 		if (start == movies.length - 1 && start == 0) {
 			// the deleted item is the last one
@@ -349,6 +352,9 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			for (int i = 0; i < newMovies.length; i++) {
 				newMovies[i] = movies[i];
 			}
+
+			Log.d(TAG, " == page size = " + mPageDatas.size()
+					+ " " + newMovies.length);
 
 			mPageDatas.set(pageNumber, newMovies);
 		}

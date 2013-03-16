@@ -89,10 +89,10 @@ public class StringUtil {
 		return valueStr;
 	}
 	
-	public static String getUTF8String(byte[] data) {
+	public static String getString(byte[] data, String charset) {
 		String str = "";
 		try {
-			str = new String(data, "utf-8");
+			str = new String(data, charset);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
