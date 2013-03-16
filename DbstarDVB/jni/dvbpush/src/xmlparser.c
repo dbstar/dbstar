@@ -2402,8 +2402,10 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
 					
 					// 显式清理本目录。如果前一次Column解析失败，会留下残留文件，引起本次判断接收进度异常
-					DEBUG("clear %s for this receive task\n", p->URI);
-					remove_force(p->URI);
+					char absolute_column_uri[512];
+					snprintf(absolute_column_uri,sizeof(absolute_column_uri),"%s/%s", push_dir_get(),p->URI);
+					DEBUG("clear %s for this receive task\n", absolute_column_uri);
+					remove_force(absolute_column_uri);
 				}
 			}
 			
