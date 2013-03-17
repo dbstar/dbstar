@@ -75,16 +75,18 @@ JNIEXPORT jbyteArray JNICALL Java_com_dbstar_DbstarDVB_DbstarService_command
 	int ret = 0;
 	int length = len;
 	char *buffer = NULL;
+	char *tmp_buf = NULL;
 	jbyteArray bytes = NULL;
 
 	LOGD("command(cmd=%d, buf=%p, len=%d)\n", cmd, buf, len);
 	if (NULL != buf)
 		buffer = (*env)->GetStringUTFChars(env, buf, NULL);
 
-	ret = dvbpush_command(cmd, &buffer, &length);
+	tmp_buf = buffer;
+	ret = dvbpush_command(cmd, &tmp_buf, &length);
 	if ((ret == 0) && (length > 0)) {
 		bytes = (*env)->NewByteArray(env, length);
-		(*env)->SetByteArrayRegion(env, bytes, 0, length, (jbyte *)buffer);
+		(*env)->SetByteArrayRegion(env, bytes, 0, length, (jbyte *)tmp_buf);
 	} else {
 		bytes = NULL;
 	}
