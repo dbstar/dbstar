@@ -125,9 +125,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	GDPowerController mPowerController = null;
 
 	private Handler mUIUpdateHandler = new Handler();
-
-	private AudioManager mAudioManager;
-	private boolean mIsMute = false;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -147,8 +144,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		initializeView();
 		initializeAnimation();
 		initializeEngine();
-		
-		mAudioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
 	}
 
 	public void onServiceStart() {
@@ -197,9 +192,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mCelanderThread.setUpdate(true);
 	
 		turnOnMarqeeView(false);
-		showMarqueeView();
-		
-		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
+		showMarqueeView();		
 	}
 
 	public void onStop() {
@@ -246,11 +239,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			return true;
 		}
 		
-		case KeyEvent.KEYCODE_ALT_LEFT: {
-			mIsMute = !mIsMute;
-			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mIsMute);
-			return true;
-		}
+//		case KeyEvent.KEYCODE_ALT_LEFT: {
+//			mIsMute = !mIsMute;
+//			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mIsMute);
+//			return true;
+//		}
 
 		case KeyEvent.KEYCODE_DPAD_DOWN:
 		case KeyEvent.KEYCODE_BACK:

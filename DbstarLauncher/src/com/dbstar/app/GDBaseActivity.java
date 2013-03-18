@@ -17,17 +17,20 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.DialogInterface.OnCancelListener;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -55,6 +58,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	// Menu path container view
 	protected ViewGroup mMenuPathContainer;
 
+	protected AudioManager mAudioManager;
+	protected boolean mIsMute = false;
+	
 	protected boolean mIsStarted = false; // true when this activity is not
 											// visible
 	protected boolean mBlockSmartcardPopup = false; // false to allow activity
@@ -168,13 +174,15 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		
+		mAudioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
 		mResource = new GDResourceAccessor(this);
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
+		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
 
 		mIsStarted = true;
 
@@ -217,6 +225,19 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		if (mDlgTimer != null) {
 			mDlgTimer.cancel();
 		}
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_ALT_LEFT: {
+			mIsMute = !mIsMute;
+			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mIsMute);
+			return true;
+		}
+		}
+		
+		return super.onKeyDown(keyCode, event);
 	}
 
 	@Override
