@@ -167,7 +167,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	private void loadPrevPage() {
 		Log.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
 				+ mPageNumber);
-
+		
 		if ((mPageNumber - 1) >= 0) {
 			Log.d(TAG, "loadPrevPage");
 
@@ -216,20 +216,19 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		Log.d(TAG, "update page size=" + pageEntries.length + " total = "
 				+ allEntries.size());
 
-		ArrayList<ReceiveEntry> toRemoves = new ArrayList<ReceiveEntry>();
 		for (int i = 0; i < pageEntries.length; i++) {
-			for (int j = 0; j < allEntries.size(); j++) {
-				if (pageEntries[i].Id.equals(allEntries.get(j).Id)) {
-					// updateEntryData(pageEntries[i], allEntries.get(j));
-					pageEntries[i] = allEntries.get(j);
-					// remove not used items
-					toRemoves.add(allEntries.get(j));
+			int j = 0;
+			int size = allEntries.size();
+			while (j < size) {
+				ReceiveEntry entry = allEntries.get(j);
+				if (pageEntries[i].Id.equals(entry.Id)) {
+					pageEntries[i] = entry;
+					allEntries.remove(j);
+					break;
+				} else {
+					j++;
 				}
 			}
-		}
-
-		if (toRemoves.size() > 0) {
-			allEntries.removeAll(toRemoves);
 		}
 	}
 
@@ -255,7 +254,11 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	}
 
 	void updatePagesData(ArrayList<ReceiveEntry> entries) {
-		for (int i = 0; i < mPageDatas.size(); i++) {
+		Log.d(TAG, "=== updatePagesData == start");
+		long startTime = System.currentTimeMillis();
+
+		int size = mPageDatas.size();
+		for (int i = 0; i < size; i++) {
 			ReceiveEntry[] oldEntries = mPageDatas.get(i);
 			if (oldEntries.length == PageSize) {
 				updatePageData(oldEntries, entries);
@@ -266,10 +269,10 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		}
 
 		int lastPageNumber = mPageDatas.size() - 1;
-
-		if (mPageDatas.get(lastPageNumber).length < PageSize) {
+		ReceiveEntry[] lastEntries = mPageDatas.get(lastPageNumber);
+		
+		if (lastEntries.length < PageSize) {
 			// the old last page is not full, update it
-			ReceiveEntry[] lastEntries = mPageDatas.get(lastPageNumber);
 			mPageDatas.remove(lastPageNumber);
 			updatePageData(lastEntries, entries);
 
@@ -294,8 +297,14 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 			mPageDatas.add(newEntries);
 		}
+		
+		if (entries.size() > 0) {
+			addNewPageDatas(entries);
+		}
+		
+		long endTime = System.currentTimeMillis();
 
-		addNewPageDatas(entries);
+		Log.d(TAG, "=== updatePagesData == end " + (endTime - startTime));
 	}
 
 	long computeEntriesSize(ReceiveEntry[] entries) {
@@ -331,6 +340,8 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	}
 
+	private long mCurSize = 0;
+	
 	public void updateDownloadStatus(ReceiveEntry[] entries) {
 
 		if (entries != null && entries.length > 0) {
@@ -338,16 +349,19 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			float speed = 0;
 			if (mPageDatas.size() > 0) {
 
-				long preSize = 0;
+				long preSize = mCurSize;
 				long curSize = 0;
 
 				//TODO: this may cause overflow of long
-				preSize = computeAllPagesSize(mPageDatas);
-				curSize = computeEntriesSize(entries);
+//				preSize = computeAllPagesSize(mPageDatas);
+				mCurSize = computeEntriesSize(entries);
+				curSize = mCurSize;
 				Log.d(TAG, "preSize=" + preSize + " curSize=" + curSize);
 
 				speed = (float) ((curSize - preSize) / 128)
 						/ (float) UpdatePeriodInSecs;
+			} else {
+				mCurSize = computeEntriesSize(entries);
 			}
 
 			String strSpeed = StringUtil.formatFloatValue(speed) + "Kb/s";

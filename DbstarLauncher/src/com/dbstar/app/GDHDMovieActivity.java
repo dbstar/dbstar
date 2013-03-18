@@ -298,6 +298,11 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		} else if (type == EventData.EVENT_UPDATE_PROPERTY) {
 			EventData.UpdatePropertyEvent updateEvent = (EventData.UpdatePropertyEvent) event;
 			String publicationId = updateEvent.PublicationId;
+			
+			if (mPageDatas.size() == 0) {
+				return;
+			}
+			
 			Movie[] movies = mPageDatas.get(mPageNumber);
 			int i = 0;
 			boolean found = false;
@@ -366,7 +371,11 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		mScrollBar.setPosition(mPageNumber);
 
 		mAdapter.setDataSet(movies);
-		mSmallThumbnailView.setSelection(0);
+
+		if (movies != null && movies.length > 0) {
+			mSmallThumbnailView.setSelection(0);
+		}
+
 		mAdapter.notifyDataSetChanged();
 	}
 
