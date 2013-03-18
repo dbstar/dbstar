@@ -57,18 +57,7 @@ static int parse_progs_cb(char **result, int row, int column, void *receiver, un
 
 		if(PUSH_XML_FLAG_UNDEFINED!=push_flag){
 			product_id = atoi(result[i*column+2]);
-#if 0
-			if(0==special_productid_check(product_id) || 0==check_productid_from_db_in_trans(product_id)){
-				s_receive_status = RECEIVESTATUS_FINISH;
-				DEBUG("publication is mine\n");
-			}
-			else{
-				s_receive_status = RECEIVESTATUS_REJECT_TMP;
-				DEBUG("publication is NOT mine, but set to database already\n");
-			}
-#else
 			s_receive_status = RECEIVESTATUS_FINISH;
-#endif
 
 			// 确保在解析Publications.xml之前，明确得到s_receive_status，因为在解析入库时需要判断
 			if(0==parse_xml(result[i*column+1], SERVICE_XML, NULL)){

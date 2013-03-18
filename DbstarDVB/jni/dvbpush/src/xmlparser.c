@@ -198,12 +198,14 @@ static int product_insert(DBSTAR_PRODUCT_S *p)
 #if 0
 // 新push只注册了属于自己的service，所以不用再判断serviceID	
 	if(0==strcmp(serviceID_get(),p->ServiceID))
-#endif
+
+// 2013-3-18 16:07 不刷新ProductDesc表了。实际上Service.xml中的产品无用，判断接收依据的是智能卡信息。
 	{
 		DEBUG("product %s in service %s is mine, receive its publications\n", p->ProductID,p->ServiceID);
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE ProductDesc SET ReceiveStatus='%d',FreshFlag=1 where productID='%s' AND ReceiveStatus='%d';",RECEIVESTATUS_WAITING,p->ProductID,RECEIVESTATUS_REJECT);
 		sqlite_transaction_exec(sqlite_cmd);
 	}
+#endif
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Product(ServiceID,ProductID,ProductType,Flag,OnlineDate,OfflineDate,IsReserved,Price,CurrencyType) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s');",
 		p->ServiceID,p->ProductID,p->ProductType,p->Flag,p->OnlineDate,p->OfflineDate,p->IsReserved,p->Price,p->CurrencyType);
@@ -279,7 +281,7 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 	}
 }
 
-
+#if 0
 int check_productid_from_db_in_trans(char *productid)
 {
 	char read_productid[64];
@@ -295,6 +297,7 @@ int check_productid_from_db_in_trans(char *productid)
 		return -1;
 	}
 }
+#endif
 
 /*
  如果先解析ProductDesc后解析Service，则有可能本应接收的Product被拒绝。
@@ -2584,7 +2587,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 	xmlDocPtr doc;
 	xmlNodePtr cur;
 	int ret = 0;
-	int push_flags[16];
+//	int push_flags[16];
 	char xml_uri[512];
 	PUSH_XML_FLAG_E actual_xml_flag = xml_flag;
 	
@@ -2945,15 +2948,9 @@ PARSE_XML_END:
 			pid_init(1);
 			channel_ineffective_clear();
 			
-			push_flags[0] = SERVICE_XML;
-			info_xml_refresh(1,push_flags,1);
-			
-			service_xml_waiting_set(1);
+			info_xml_regist();
 		}
 		else if(SERVICE_XML==actual_xml_flag){
-			service_xml_waiting_set(0);
-			usleep(200000);
-			info_xml_regist();
 		}
 	}
 

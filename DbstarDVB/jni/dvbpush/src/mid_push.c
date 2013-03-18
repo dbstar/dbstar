@@ -98,7 +98,6 @@ static int s_dvbpush_getinfo_flag = 0;
 static int s_column_refresh = 0;
 static int s_interface_refresh = 0;
 static int s_preview_refresh = 0;
-static int s_service_xml_waiting = 0;
 static int s_push_regist_inited = 0;
 
 
@@ -548,12 +547,6 @@ void preview_refresh_flag_set(int flag)
 	s_preview_refresh = flag;
 }
 
-void service_xml_waiting_set(int flag)
-{
-	s_service_xml_waiting = flag;
-	DEBUG("s_service_xml_waiting = %d\n", s_service_xml_waiting);
-}
-
 
 static int push_regist_init()
 {
@@ -664,17 +657,6 @@ void *maintenance_thread()
 			DEBUG("will clean disk\n");
 			disk_manage(NULL,NULL);
 			s_disk_manage_flag = 0;
-		}
-		
-		if(s_service_xml_waiting>0){
-			s_service_xml_waiting ++;
-			DEBUG("s_service_xml_waiting=%d\n", s_service_xml_waiting);
-			
-			if(s_service_xml_waiting>2){
-				s_service_xml_waiting = 0;
-				DEBUG("s_service_xml_waiting=%d, it's too long for Service.xml\n", s_service_xml_waiting);
-				info_xml_regist();
-			}
 		}
 		
 		if(0==s_push_regist_inited && 1==pushdir_usable()){
@@ -1671,6 +1653,7 @@ int info_xml_refresh(int regist_flag, int push_flags[], unsigned int push_flags_
 
 /*
  由于Service.xml中包含ServiceID信息，因此遵循这样的顺序：Initialize.xml --> Service.xml --> 其他的info文件
+ 2013-3-18 15:55 Service.xml无用，所有的产品授权都是从智能卡中查询的
 */
 int info_xml_regist()
 {
@@ -1678,6 +1661,8 @@ int info_xml_regist()
 	unsigned int push_flags_cnt = 0;
 	
 	push_flags_cnt = 0;
+	push_flags[push_flags_cnt] = SERVICE_XML;
+	push_flags_cnt ++;
 	push_flags[push_flags_cnt] = GUIDELIST_XML;
 	push_flags_cnt ++;
 	push_flags[push_flags_cnt] = PRODUCTDESC_XML;
