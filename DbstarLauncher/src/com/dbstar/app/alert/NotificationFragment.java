@@ -32,6 +32,8 @@ public class NotificationFragment extends DialogFragment {
 	private String mMessage;
 	private int mDuration;
 	Timer mTimer = null;
+	TimeoutTask mTimeoutTask = null;
+
 	private GDMarqeeTextView mMarqeeView;
 
 	public static NotificationFragment newInstance(int style, String message,
@@ -60,26 +62,26 @@ public class NotificationFragment extends DialogFragment {
 
 		switch (mStyleType) {
 		case StyleTop: {
-			getDialog().getWindow().setGravity(Gravity.RIGHT | Gravity.TOP);
+			getDialog().getWindow().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
 			WindowManager.LayoutParams p = getDialog().getWindow()
 					.getAttributes();
 			p.width = LayoutParams.MATCH_PARENT;
 			p.height = LayoutParams.WRAP_CONTENT;
-			p.horizontalMargin = 0.0f;
-			p.verticalMargin = 0.0f;
+			p.horizontalMargin = 0.01f;
+			p.verticalMargin = 0.005f;
 			getDialog().getWindow().setAttributes(p);
 			break;
 		}
 
 		case StyleBottom: {
 
-			getDialog().getWindow().setGravity(Gravity.RIGHT | Gravity.BOTTOM);
+			getDialog().getWindow().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
 			WindowManager.LayoutParams p = getDialog().getWindow()
 					.getAttributes();
 			p.width = LayoutParams.MATCH_PARENT;
 			p.height = LayoutParams.WRAP_CONTENT;
-			p.horizontalMargin = 0.0f;
-			p.verticalMargin = 0.0f;
+			p.horizontalMargin = 0.01f;
+			p.verticalMargin = 0.005f;
 			getDialog().getWindow().setAttributes(p);
 
 			break;
@@ -87,13 +89,13 @@ public class NotificationFragment extends DialogFragment {
 
 		case StyleFullScreen: {
 
-			getDialog().getWindow().setGravity(Gravity.RIGHT | Gravity.TOP);
+			getDialog().getWindow().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
 			WindowManager.LayoutParams p = getDialog().getWindow()
 					.getAttributes();
 			p.width = LayoutParams.MATCH_PARENT;
 			p.height = LayoutParams.MATCH_PARENT;
-			p.horizontalMargin = 0.0f;
-			p.verticalMargin = 0.0f;
+			p.horizontalMargin = 0.01f;
+			p.verticalMargin = 0.005f;
 			getDialog().getWindow().setAttributes(p);
 
 			break;
@@ -101,13 +103,13 @@ public class NotificationFragment extends DialogFragment {
 
 		case StyleHalfScreen: {
 
-			getDialog().getWindow().setGravity(Gravity.RIGHT | Gravity.TOP);
+			getDialog().getWindow().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
 			WindowManager.LayoutParams p = getDialog().getWindow()
 					.getAttributes();
 			p.width = LayoutParams.MATCH_PARENT;
 			p.height = convertDIP2Pixel(360);
-			p.horizontalMargin = 0.0f;
-			p.verticalMargin = 0.0f;
+			p.horizontalMargin = 0.01f;
+			p.verticalMargin = 0.005f;
 			getDialog().getWindow().setAttributes(p);
 
 			break;
@@ -128,10 +130,21 @@ public class NotificationFragment extends DialogFragment {
 	public void onStart() {
 		super.onStart();
 
-		mMarqeeView.startMarqee(GDMarqeeTextView.MarqeeForever);
-
+		if (mTimeoutTask != null) {
+			mTimeoutTask.cancel();
+			mTimeoutTask = null;
+		}
+		
+		if (mTimer != null) {
+			mTimer.cancel();
+			mTimer = null;
+		}
+		
 		mTimer = new Timer();
+		mTimeoutTask = new TimeoutTask();
 		mTimer.schedule(mTimeoutTask, mDuration);
+		
+		mMarqeeView.startMarqee(GDMarqeeTextView.MarqeeForever);
 	}
 
 	@Override
@@ -165,6 +178,11 @@ public class NotificationFragment extends DialogFragment {
 	}
 
 	public void stopTimer() {
+		if (mTimeoutTask != null) {
+			mTimeoutTask.cancel();
+			mTimeoutTask = null;
+		}
+		
 		if (mTimer != null) {
 			mTimer.cancel();
 			mTimer = null;
@@ -184,14 +202,13 @@ public class NotificationFragment extends DialogFragment {
 
 	};
 
-	TimerTask mTimeoutTask = new TimerTask() {
-
+	class TimeoutTask extends TimerTask {
 		public void run() {
 			Message message = Message.obtain();
 			message.what = 0xdee;
 			mHandler.sendMessage(message);
 		}
-	};
+	}
 
 	int convertDIP2Pixel(int size) {
 		Resources r = getResources();

@@ -6,28 +6,32 @@
 
     <TextView
         android:id="@+id/operator_id"
-        android:layout_width="100dp"
+        android:layout_width="80dp"
         android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="end"
         android:textColor="#000000"
         android:textSize="16sp" />
 
     <TextView
         android:id="@+id/product_id"
-        android:layout_width="160dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="end"
         android:textColor="#000000"
         android:textSize="16sp" />
 
     <TextView
         android:id="@+id/start_time"
-        android:layout_width="280dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:textColor="#000000"
         android:textSize="16sp" />
 
     <TextView
         android:id="@+id/end_time"
-        android:layout_width="280dp"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:textColor="#000000"
         android:textSize="16sp" />

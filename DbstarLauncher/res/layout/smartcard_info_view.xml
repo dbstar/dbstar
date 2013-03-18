@@ -103,21 +103,21 @@
 
                 <TextView
                     android:id="@+id/eignevlaue_id1"
-                    android:layout_width="160dp"
+                    android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id2"
-                    android:layout_width="160dp"
+                    android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id3"
-                    android:layout_width="160dp"
+                    android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
@@ -130,21 +130,21 @@
 
                 <TextView
                     android:id="@+id/eignevlaue_id4"
-                    android:layout_width="160dp"
+                    android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id5"
-                    android:layout_width="160dp"
+                    android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id6"
-                    android:layout_width="160dp"
+                    android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:textSize="16sp" />
@@ -169,28 +169,28 @@
         android:orientation="horizontal" >
 
         <TextView
-            android:layout_width="100dp"
+            android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:text="@string/operator_id"
             android:textColor="#000000"
             android:textSize="16sp" />
 
         <TextView
-            android:layout_width="160dp"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:text="@string/product_id"
             android:textColor="#000000"
             android:textSize="16sp" />
 
         <TextView
-            android:layout_width="280dp"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:text="@string/start_time"
             android:textColor="#000000"
             android:textSize="16sp" />
 
         <TextView
-            android:layout_width="280dp"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:text="@string/end_time"
             android:textColor="#000000"

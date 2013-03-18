@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import com.dbstar.service.GDDataProviderService;
 
 public class MailBoxFragment extends GDSmartcardFragment {
 
+	private static final String TAG = "MailBoxFragment";
 	TextView mMailContentView;
 	ViewGroup mMailListContainer;
 	ListView mMailListView;
@@ -152,12 +154,15 @@ public class MailBoxFragment extends GDSmartcardFragment {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long id) {
+				Log.d(TAG, " === onItemSelected == old " + mSelectedItemIndex + " new " + position);
 
 				if (mSelectedItemIndex >= 0) {
 					View oldSel = mMailListView.getChildAt(mSelectedItemIndex);
 					Drawable d = position % 2 == 0 ? mItemLightBackground
 							: mItemDarkBackground;
-					oldSel.setBackgroundDrawable(d);
+					if (oldSel != null) {
+						oldSel.setBackgroundDrawable(d);
+					}
 				}
 
 				mSelectedItemIndex = position;
