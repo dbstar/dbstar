@@ -191,7 +191,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		mTimelineView.requestFocus();
 
 		mListView.setFocusable(true);
-		mListView.setOnKeyListener(mReceiveItemsKeyListener);
+//		mListView.setOnKeyListener(mReceiveItemsKeyListener);
 	}
 
 	public void onServiceStart() {
@@ -336,6 +336,15 @@ public class GDOrderPushActivity extends GDBaseActivity {
 				}
 			}
 
+			return true;
+		} else if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+			int index = mListView.getSelectedItemPosition();
+			if (index >= 0 && index < mReceiveItemAdapter.getCount()) {
+				ReceiveItem item = mReceiveItemCurrentPage[index];
+				item.setIsReceive(!item.isReceive());
+
+				mReceiveItemAdapter.notifyDataSetChanged();
+			}
 			return true;
 		}
 
