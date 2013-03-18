@@ -197,7 +197,8 @@ public class GDDBStarClient {
 
 			if (bytes != null) {
 				try {
-					content = new String(bytes, "utf-8");
+					content = new String(bytes, "gb2312");
+					Log.d(TAG, " =========== email content == " + content);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
@@ -214,8 +215,7 @@ public class GDDBStarClient {
 		String data = null;
 		String charset = null;
 		
-		if (type == DbstarServiceApi.CMD_DRM_EMAILHEADS_READ ||
-				type == DbstarServiceApi.CMD_DRM_EMAILCONTENT_READ) {
+		if (type == DbstarServiceApi.CMD_DRM_EMAILHEADS_READ) {
 			charset = "gb2312";
 		} else {
 			charset = "utf-8";
