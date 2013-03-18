@@ -955,8 +955,11 @@ static int smartcard_eigenuvalue_get(char *buf, unsigned int size)
 					// ACArray[4]：特征1
 					// ACArray[5]：特征2
 					// ACArray[6]：特征3
+					// ACArray[7]：特征4
+					// ACArray[8]：特征5
+					// ACArray[9]：特征6
 					// ...
-					for(index=0;index<6;index++){	/* CDCA_MAXNUM_ACLIST */
+					for(index=0;index<10;index++){	/* CDCA_MAXNUM_ACLIST */
 						DEBUG("ACArray[%d]=(%lu)\n",index, ACArray[index]);
 						if(0!=ACArray[index]){	/* && index>=4 && index<=9 */
 							//DEBUG("Operator: %d, ACArray[%d]:%lu\n", wArrTvsID[j],index,ACArray[index]);
@@ -1644,8 +1647,55 @@ void upgrade_info_init()
 	extern LoaderInfo_t g_loaderInfo;
 	
 	memset(&g_loaderInfo, 0, sizeof(g_loaderInfo));
-	if(0==get_loader_message(&mark, &g_loaderInfo))
-	{
+	//if(0==get_loader_message(&mark, &g_loaderInfo))
+		get_loader_message(&mark, &g_loaderInfo);
+	   
+		DEBUG("read loader msg: %d", mark);
+		if ((g_loaderInfo.oui != TC_OUI)||(g_loaderInfo.model_type != TC_MODEL_TYPE)
+			||(g_loaderInfo.hardware_version[0] != TC_HARDWARE_VERSION0)
+			||(g_loaderInfo.hardware_version[1] != TC_HARDWARE_VERSION1)
+			||(g_loaderInfo.hardware_version[2] != TC_HARDWARE_VERSION2)
+			||(g_loaderInfo.hardware_version[3] != TC_HARDWARE_VERSION3))
+		{
+			FILE *fp=NULL;
+			int rdn = 0;
+			
+			if ((fp = fopen(UPGRADE_PARA_STRUCT,"r"))==NULL)
+			{
+				DEBUG("!!!!!open upgrade para file %s failed!\n",UPGRADE_PARA_STRUCT);
+				g_loaderInfo.oui = 0xff;
+				return;
+			}
+			rdn = fread(&g_loaderInfo,1,sizeof(g_loaderInfo),fp);
+			DEBUG("!!!!!open upgrade para file oui=%d,modeltype=%d,hardwarev[2]=%d\n",g_loaderInfo.oui,g_loaderInfo.model_type,g_loaderInfo.hardware_version[2]);
+			
+			if (rdn != sizeof(g_loaderInfo))
+			{
+				DEBUG("!!!!!open upgrade para file %s failed!\n",UPGRADE_PARA_STRUCT);
+				g_loaderInfo.oui = 0xff;
+				return;
+			}
+			fclose(fp);
+			g_loaderInfo.oui = TC_OUI;
+			g_loaderInfo.model_type = TC_MODEL_TYPE;
+			g_loaderInfo.hardware_version[0] = TC_HARDWARE_VERSION0;
+			g_loaderInfo.hardware_version[1] = TC_HARDWARE_VERSION1;
+			g_loaderInfo.hardware_version[2] = TC_HARDWARE_VERSION2;
+			g_loaderInfo.hardware_version[3] = TC_HARDWARE_VERSION3;
+		}
+		
+		if(255==upgrade_type_check(g_loaderInfo.software_version)){
+			memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
+			if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
+				DEBUG("can not read RepeatUpgradeCount\n");
+			}
+			else{
+				DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
+			}
+		}
+			
+
 		DEBUG("read loader msg: %d", mark);
 		
 		if(255==upgrade_type_check(g_loaderInfo.software_version)){
@@ -1706,9 +1756,10 @@ void upgrade_info_init()
 		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, LOADER_VERSION);		
 		upgrade_info_refresh(GLB_NAME_DEVICEMODEL, DEVICEMODEL_DFT);
 #endif
-	}
+/*	}
 	else
 		DEBUG("get loader message failed\n");
+*/
 }
 
 //int drm_info_refresh()

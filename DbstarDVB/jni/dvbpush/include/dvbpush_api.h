@@ -12,7 +12,10 @@ typedef enum {
 	CMD_DISK_MOUNT                  = 0x00021,    // 硬盘插上可用
 	CMD_DISK_UNMOUNT                = 0x00022,    // 硬盘拔掉
 	CMD_DISK_FOREWARNING			= 0x00023,    // 硬盘到达预警空间
-		
+	CMD_DISK_FORMAT					= 0x00024,    // 硬盘格式化
+	CMD_DISK_PULLOUT				= 0x00025,    // 硬盘拔出
+	CMD_DISK_PUSHIN					= 0x00026,    // 硬盘插入
+	
 	CMD_DVBPUSH_GETINFO_START       = 0x00031,    // 开始获取push下载状态
 	CMD_DVBPUSH_GETINFO				= 0x00032,    // 获取push下载状态
 	CMD_DVBPUSH_GETINFO_STOP        = 0x00033,    // 停止获取push下载状态

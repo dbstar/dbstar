@@ -39,6 +39,14 @@ struct LoaderInfo {
     unsigned char  file_type;      //8bit
 };
 	//char guodian_serialnum[24];
+
+#define UPGRADE_PARA_STRUCT "/cache/recovery/last_install"
+#define TC_OUI 3
+#define TC_MODEL_TYPE 1
+#define TC_HARDWARE_VERSION0 0
+#define TC_HARDWARE_VERSION1 0
+#define TC_HARDWARE_VERSION2 3
+#define TC_HARDWARE_VERSION3 1
  
 typedef struct Channel Channel_t;
 struct Channel {
