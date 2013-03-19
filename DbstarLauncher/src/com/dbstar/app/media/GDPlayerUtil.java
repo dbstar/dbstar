@@ -49,8 +49,9 @@ public class GDPlayerUtil {
 					"com.dbstar.DbstarDVB.VideoPlayer.PlayerMenu"));
 			intent.setAction("android.intent.action.View");
 
-			writeSysfs(Fb0Blank, "1"); // hide OSD view
+			writeSysfs(Fb0Blank, "1"); // hide OSD view			
 			GDBaseActivity activity = (GDBaseActivity) context;
+			
 			activity.startActivity(intent);
 		}
 	}

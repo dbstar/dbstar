@@ -186,7 +186,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public void onStart() {
 		super.onStart();
-	
+
 		//Log.d(TAG, "++++++onStart");
 	
 		mCelanderThread.setUpdate(true);
@@ -239,11 +239,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			return true;
 		}
 		
-//		case KeyEvent.KEYCODE_ALT_LEFT: {
-//			mIsMute = !mIsMute;
-//			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mIsMute);
-//			return true;
-//		}
+		case KeyEvent.KEYCODE_ALT_LEFT: {
+			boolean mute = isMute();
+			setMute(!mute);
+			return true;
+		}
 
 		case KeyEvent.KEYCODE_DPAD_DOWN:
 		case KeyEvent.KEYCODE_BACK:

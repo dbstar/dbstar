@@ -64,6 +64,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 
 import com.dbstar.DbstarDVB.R;
+import com.dbstar.service.GDAudioController;
 
 class SubtitleParameter {
 	public int totalnum;
@@ -714,13 +715,14 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void setMute(boolean mute) {
-		if (mIsMute != mute) {
-			mIsMute = mute;
+		mIsMute = mute;
+		
+		Intent intent = new Intent(ActionMute);
+		intent.putExtra("key_mute", mute);
+		sendBroadcast(intent);
 
-			int resId = mute ? R.drawable.sound_mute : R.drawable.sound_unmute;
-			mSoundStateView.setImageResource(resId);
-			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mute);
-		}
+		int resId = mute ? R.drawable.sound_mute : R.drawable.sound_unmute;
+		mSoundStateView.setImageResource(resId);
 	}
 	
 	void increaseVolume() {

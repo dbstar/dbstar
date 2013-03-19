@@ -9,6 +9,7 @@ import com.dbstar.app.alert.NotificationFragment;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.service.ClientObserver;
+import com.dbstar.service.GDAudioController;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.service.GDDataProviderService.DataProviderBinder;
 
@@ -24,6 +25,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,9 +60,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	// Menu path container view
 	protected ViewGroup mMenuPathContainer;
 
-	protected AudioManager mAudioManager;
-	protected boolean mIsMute = false;
-	
 	protected boolean mIsStarted = false; // true when this activity is not
 											// visible
 	protected boolean mBlockSmartcardPopup = false; // false to allow activity
@@ -174,15 +173,13 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		mAudioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
+
 		mResource = new GDResourceAccessor(this);
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
 
 		mIsStarted = true;
 
@@ -226,18 +223,18 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mDlgTimer.cancel();
 		}
 	}
-	
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		switch (keyCode) {
-		case KeyEvent.KEYCODE_ALT_LEFT: {
-			mIsMute = !mIsMute;
-			mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mIsMute);
-			return true;
-		}
-		}
-		
-		return super.onKeyDown(keyCode, event);
+
+	public void setMute(boolean mute) {
+		Intent intent = new Intent(GDAudioController.ActionMute);
+		intent.putExtra("key_mute", mute);
+		sendBroadcast(intent);
+	}
+
+	public boolean isMute() {
+		AudioManager audioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
+
+		boolean mute = audioManager.isStreamMute(AudioManager.STREAM_MUSIC);
+		return mute;
 	}
 
 	@Override
@@ -581,7 +578,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		}
 		ft.addToBackStack(null);
 	}
-	
+
 	void hideDlgDelay() {
 		final Handler handler = new Handler() {
 

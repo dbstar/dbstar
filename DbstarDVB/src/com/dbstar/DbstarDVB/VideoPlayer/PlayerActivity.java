@@ -54,6 +54,8 @@ import android.os.SystemProperties;
 public class PlayerActivity extends Activity {
 
 	private static final String TAG = "PlayerActivity";
+	
+	protected static final String ActionMute = "dbstar.intent.action.MUTE";
 	protected static final int SUBTILE_ICON_COUNT = 5;
 	protected static final int AUTIOTRACK_ICON_COUNT = 5;
 	protected static final int ID_NO_SUBTITLE = -2;

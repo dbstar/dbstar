@@ -69,6 +69,13 @@
         <service
             android:name=".service.GDDataProviderService"
             android:exported="false" />
+        
+        <receiver android:name=".service.GDAudioController" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="dbstar.intent.action.MUTE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
