@@ -382,19 +382,19 @@ static void dump_bytes(int fid, const unsigned char *data, int len, void *user_d
 
 static void loader_section_handle(int fid, const unsigned char *data, int len, void *user_data)
 {
-	static unsigned char startWrite = 0, getMaxSeq = 0;
+	static unsigned char startWrite = 0, getMaxSeq = 0, total_subone = 0, total_cycle = 0;
 	static unsigned char *recv_buf=NULL, *recv_mark=NULL;
 	unsigned char *datap = NULL;
-	static int total_loader=0, lastSeq=0, totalLen=0;
+	static int total_loader=0, lastSeq=-1, totalLen=0;
 	static int maxSeq = -1;
-	 int seq=0;
+	int seq=0;
 	FILE *upgradefile=NULL;
 	
 	static int s_first_package_flag = -1;
 	int tmp_i = 0;
 	
 	//DEBUG("call loader_section_handle\n");
-	if (len < 12)
+	if ((len < 12)||(len > 4096))
 	{
 		DEBUG("loader data too small!!!!!!!!!!\n");
 		return;
@@ -404,6 +404,12 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 	datap = (unsigned char *)data+4;
 	if (getMaxSeq==0)
 	{
+                if (tc_crc32(data,len+12) )
+                {
+                        PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+                        return;
+                }
+
 		if (datap[2]==datap[3])  //last section num = current section num
 		{
 			if(datap[0]==datap[1])//last part num = current part num seq >= 3*0x100+0xad)
@@ -435,11 +441,11 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 		{
 			if(recv_mark[seq]==0)
 			{
-    	    	if (tc_crc32(data,len+12) )
-    	    	{
-    	    		PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
-    	    		return;
-    	    	}
+    	    	                if (tc_crc32(data,len+12) )
+    	    	                {
+    	    		            PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+    	    		            return;
+    	    	                }
 				recv_mark[seq]=1;
 				total_loader++;
 				
@@ -459,10 +465,25 @@ patch0:
 				if (seq == 1)
 				{
 					if (lastSeq == 0)
-					{
-						recv_mark[0] = 2;
+					{        
+                                                if (recv_mark[0] == 1)
+                                                {
+                                                    if (total_subone == 1)
+                                                    {
+                                                        total_loader++;
+                                                        total_subone = 0;
+                                                    }
+						    recv_mark[0] = 2;
+                                                }
 					}
 				}
+                                else if (seq == 0)
+                                {
+                                        if ((lastSeq+1) == maxSeq)
+                                        {
+                                                recv_mark[0] = 2;
+                                        }
+                                }
 				lastSeq = seq;
 				
 				//DEBUG("total_loader: %d, maxSeq: %d\n", total_loader, maxSeq);
@@ -471,7 +492,8 @@ patch0:
 					if (recv_mark[0] < 2)
 					{
 						total_loader -= 1;
-						DEBUG("total_loader=%u\n", total_loader);
+                                                total_subone = 1;
+						DEBUG("---subone and total_loader=%u, maxseq=%u\n", total_loader,maxSeq);
 						return;
 					}
 					
@@ -484,6 +506,10 @@ patch0:
 						PRINTF("open %s failed\n", UPGRADEFILE_IMG);
 						startWrite = 0;
 						getMaxSeq = 0;
+                                                total_subone = 0;
+                                                lastSeq = -1;
+                                                maxSeq = -1;
+                                                total_cycle = 0;
 						if (recv_buf!= TC_loader_get_push_buf_pointer())
 							free(recv_buf);
 						free(recv_mark);
@@ -499,6 +525,10 @@ patch0:
 					free(recv_mark);
 					startWrite = 0;
 					getMaxSeq = 0;
+                                        total_subone = 0;
+                                        lastSeq = -1;
+                                        maxSeq = -1;
+                                        total_cycle = 0;
 					if (loaderthread == 0)
 					{
 						pthread_create(&loaderthread, NULL, loader_thread, NULL);
@@ -516,15 +546,48 @@ patch0:
 						if ((lastSeq+1) == maxSeq)
 						{
 							recv_mark[0] = 2;
-							DEBUG("monitor this package: seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=%d\n", seq, len, maxSeq, total_loader, totalLen);
+                                                        if (total_subone)
+                                                        {
+                                                            total_subone = 0;
+                                                            total_loader++;
+                                                        }
+DEBUG("monitor this package: seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=%d\n", seq, len, maxSeq, total_loader, totalLen);
 						}
 						goto patch0;
 					}
+DEBUG("monit0 this package:seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=%d, recvmark0=%d\n", seq, len, maxSeq, total_loader, totalLen,recv_mark[0]);
 				}
 				else
 				{
 					lastSeq = seq;
 				}
+                                if (seq == 1)
+                                {
+                                        total_cycle++;
+                                        if(total_cycle > 5)
+                                        {
+                                                startWrite = 0;
+                                                getMaxSeq = 0;
+                                                total_subone = 0;
+                                                lastSeq = -1;
+                                                maxSeq = -1;
+                                                if (recv_buf!= TC_loader_get_push_buf_pointer())
+                                                        free(recv_buf);
+                                                free(recv_mark);
+                                                total_cycle = 0;
+                                                TC_free_filter(g_loaderInfo.fid);
+                                                TC_loader_to_push_order(1);
+                                                {
+                                                Filter_param param;
+                                                memset(&param,0,sizeof(param));
+                                                param.filter[0] = 0xf0;
+                                                param.mask[0] = 0xff;
+
+                                                loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 1);
+                                                }
+                                        } 
+                                }
+
 			}
 		}
 		else
@@ -532,7 +595,14 @@ patch0:
 	}
 	else
 	{
-		if ((datap[0]==datap[1])&&(datap[2]==datap[3]))
+// add new
+                if (tc_crc32(data,len+12) )
+                {
+                        PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+                        return;
+                }
+//add end
+		if ((datap[0]==datap[1])&&(datap[2]==datap[3]))  //donot delete, for this section if not the full section,section size is not correct
 			return;
 		if (maxSeq == -1)
 			maxSeq = (datap[1]+1)*0x100+1;
