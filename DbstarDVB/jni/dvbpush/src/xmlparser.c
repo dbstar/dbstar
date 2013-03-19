@@ -407,14 +407,16 @@ VALUES('%s',\
 '%s',\
 '%s',\
 '%s',\
-'%d',\
+(SELECT ReceiveStatus FROM PublicationsSet WHERE ServiceID='%s' AND ColumnID='%s' AND SetID='%s'),\
 '%s');",
 ptr->ServiceID,
 p_column,
 ptr->productID,
 ptr->PushStartTime,
 ptr->PushEndTime,
-receive_status,
+ptr->ServiceID,
+p_column,
+ptr->SetID,
 ptr->SetID);
 		
 					sqlite_transaction_exec(sqlite_cmd);
