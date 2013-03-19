@@ -199,6 +199,8 @@ public class PlayerMenu extends PlayerActivity {
 
 	private String mOriginalAxis = null;
 	private String mVideoAxis = null;
+	
+	private boolean mIsDeleted = false;
 
 	private boolean retriveInputParameters(Intent intent) {
 		mUri = intent.getData();
@@ -298,6 +300,8 @@ public class PlayerMenu extends PlayerActivity {
 
 		startPlayerService();
 		registerHDMIReceiver();
+
+		mIsDeleted = false;
 
 		mSmartcardTacker = new SmartcardStateTracker(this, mHandler);
 	}
@@ -1272,6 +1276,10 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	void saveBookmark(int playPosition) {
+		if (mIsDeleted) {
+			return;
+		}
+		
 		// ResumePlay.saveResumePara(mFilePath, playPosition);
 		Intent intent = new Intent(Common.ActionBookmark);
 		intent.putExtra("publication_id", mPublicationId);
@@ -1351,6 +1359,7 @@ public class PlayerMenu extends PlayerActivity {
 		IntentFilter intentFilter = new IntentFilter(Common.ActionReplay);
 		intentFilter.addAction(Common.ActionExit);
 		intentFilter.addAction(Common.ActionNoNext);
+		intentFilter.addAction(Common.ActionDelete);
 		registerReceiver(mPlayerCommandReceiver, intentFilter);
 	}
 
@@ -1381,10 +1390,13 @@ public class PlayerMenu extends PlayerActivity {
 				exitPlayer();
 			} else if (action.equals(Common.ActionPlayNext)) {
 				if (retriveInputParameters(intent)) {
+					mIsDeleted = false;
 					Amplayer_play(mPlayPosition);
 				}
 			} else if (action.equals(Common.ActionNoNext)) {
 				exitPlayer();
+			} else if (action.equals(Common.ActionDelete)) {
+				mIsDeleted = true;
 			}
 		}
 	};
@@ -1398,6 +1410,7 @@ public class PlayerMenu extends PlayerActivity {
 
 			if (action.equals(Common.ActionPlayNext)) {
 				if (retriveInputParameters(intent)) {
+					mIsDeleted = false;
 					Amplayer_play(mPlayPosition);
 				}
 			}
