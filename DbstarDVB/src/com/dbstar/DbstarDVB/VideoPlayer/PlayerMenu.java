@@ -64,7 +64,6 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 
 import com.dbstar.DbstarDVB.R;
-import com.dbstar.service.GDAudioController;
 
 class SubtitleParameter {
 	public int totalnum;
