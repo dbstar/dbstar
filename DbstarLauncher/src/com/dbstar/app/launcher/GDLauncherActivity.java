@@ -1054,8 +1054,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMediaScheduler.updatePreviews();
 	}
 
+	private boolean mIsUpdatingColumns = false;
+	private int mLevel2RequestCount = 0;
 	// update columns when has new updates
 	void updateColumn() {
+		mIsUpdatingColumns = true;
 		mService.getColumns(this, COLUMN_LEVEL_1, -1, ROOT_COLUMN_PARENTID);
 	}
 
@@ -1085,12 +1088,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				menu.MenuLevel = columnLevel;
 				mMenuStack.add(menu);
 
+				mLevel2RequestCount=0;
 				for (int i = 0; i < count; i++) {
 					MenuItem item = new MenuItem();
 					item.ItemData = columns[i];
 					items[i] = item;
 					if (item.ItemData != null && item.ItemData.Id != null
 							&& !item.ItemData.Id.isEmpty()) {
+						mLevel2RequestCount++;
 						mService.getColumns(this, columnLevel + 1, i,
 								item.ItemData.Id);
 					} else {
@@ -1107,17 +1112,25 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 			// create sub menu
 			Menu menu = null;
-			if (mCurrentSubMenu != null) {
-				if (mCurrentSubMenu.MenuLevel == (columnLevel - 1)) {
-					menu = mCurrentSubMenu;
+			if (mIsUpdatingColumns) {
+				// We're updating level1 menu.
+				menu = mMenuStack.get(0);
+				mLevel2RequestCount--;
+				if (mLevel2RequestCount == 0) {
+					mIsUpdatingColumns = false;
 				}
 			} else {
-				menu = mMenuStack.peek();
-				if (menu.MenuLevel != (columnLevel - 1)) {
-					return;
+				if (mCurrentSubMenu != null) {
+					if (mCurrentSubMenu.MenuLevel == (columnLevel - 1)) {
+						menu = mCurrentSubMenu;
+					}
+				} else {
+					menu = mMenuStack.peek();
+					if (menu.MenuLevel != (columnLevel - 1)) {
+						return;
+					}
 				}
 			}
-			
 			
 			MenuItem[] menuItems = menu.Items;
 			MenuItem menuItem = menuItems[index];

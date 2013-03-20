@@ -66,6 +66,7 @@ public class GDDataModel {
 
 	public ColumnData[] getColumns(String columnId) {
 
+		Log.d(TAG, "get columns: id=" + columnId);
 		Cursor cursor = null;
 		ColumnData[] Columns = null;
 
@@ -77,7 +78,7 @@ public class GDDataModel {
 				ColumnQuery.COLUMNS, selection, selectionArgs, sortOrder);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				Log.d(TAG, "columnId: sub-column number = " + cursor.getCount());
 				Columns = new ColumnData[cursor.getCount()];
 				int i = 0;
 				do {
