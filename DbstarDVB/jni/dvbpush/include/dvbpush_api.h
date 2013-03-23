@@ -8,6 +8,7 @@ typedef enum {
 
 	CMD_NETWORK_DISCONNECT	        = 0x00010,    // 网络断开
 	CMD_NETWORK_CONNECT             = 0x00011,    // 网络恢复连接
+	CMD_NETWORK_GETINFO             = 0x00012,    // 
 	
 	CMD_DISK_MOUNT                  = 0x00021,    // 硬盘插上可用
 	CMD_DISK_UNMOUNT                = 0x00022,    // 硬盘拔掉

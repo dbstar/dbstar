@@ -78,6 +78,7 @@ static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
 
+extern int network_getinfo(char *buf, unsigned int len);
 
 /* define some general interface function here */
 
@@ -1490,6 +1491,9 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_NETWORK_DISCONNECT:
 			net_rely_condition_set(cmd);
+			break;
+		case CMD_NETWORK_GETINFO:
+			network_getinfo(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
 		case CMD_DISK_MOUNT:
 			if(-1==disk_usable_check(push_dir_get())){
