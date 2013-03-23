@@ -996,7 +996,7 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	
 	char		BeginDate[64];
 	char		ExpireDate[64];
-	int 		i = 0;
+	unsigned int 		i = 0;
 	
 //	char		issue_begin[64];
 //	char		issue_end[64];
@@ -2090,6 +2090,16 @@ static int serviceID_init()
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sizeof(s_serviceID), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no serviceID from db\n");
+		int i = 0;
+		char total_xmluri[512];
+		snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
+		for(i=0;i<2;i++){
+			if(0==remove_force(total_xmluri)){
+				DEBUG("remove_force(%s) at %d\n", total_xmluri, i);
+				break;
+			}
+			sleep(1);
+		}
 	}
 	else
 		DEBUG("read serviceID: %s\n", s_serviceID);
@@ -2517,8 +2527,8 @@ int special_productid_check(char *productid)
 int setting_init_with_database()
 {
 	cur_language_init();
-	serviceID_init();
 	push_dir_init();
+	serviceID_init();
 	guidelist_select_refresh();
 	SCEntitleInfo_init();
 	
