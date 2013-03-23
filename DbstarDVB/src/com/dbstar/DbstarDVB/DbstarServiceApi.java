@@ -41,6 +41,11 @@ public class DbstarServiceApi {
 	public static final int DRM_SC_INSERT_FAILED			= 0x20101;    // DRM smartcard Insert failed
 	public static final int DRM_SC_REMOVE_OK				= 0x20102;    // DRM smartcard Remove OK
 	public static final int DRM_SC_REMOVE_FAILED			= 0x20103;    // DRM smartcard Remove failed
+	public static final int DRM_EMAIL_NEW                   = 0x20104;
+	public static final int	DRM_OSD_SHOW                    = 0x20107;
+	public static final int	DRM_OSD_HIDE                    = 0x20108;
+
+	public static final int TDT_TIME_SYNC                   = 0x30017;    // Time format: 2012-12-22 18:03:14
 
 	public static final int CMD_MAX                         = 0x0FFFF;
 
@@ -58,10 +63,27 @@ public class DbstarServiceApi {
 	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015; // Preview has new update
 	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016; // UI resource has new update
 	
+	public static final int DIALOG_NOTICE                   = 0x20000; // Update times info
 	public static final int	UPGRADE_NEW_VER                 = 0x20001;
 	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;
 	public static final int	UPGRADE_START                   = 0x20003;
 	public static final int	UPGRADE_PERCENT                 = 0x20004;
 	public static final int	UPGRADE_SUCCESS                 = 0x21000;
 	public static final int	UPGRADE_FAILED                  = 0x21001;
+	
+	public static final int	CMD_DRM_SC_SN_READ              = 0x00064;
+	public static final int	CMD_DRMLIB_VER_READ             = 0x00065;
+	public static final int	CMD_DRM_SC_EIGENVALUE_READ      = 0x00066;
+	public static final int	CMD_DRM_ENTITLEINFO_READ        = 0x00067;
+	public static final int	CMD_DRM_ENTITLEINFO_OUTPUT      = 0x00068;
+	public static final int	CMD_DRM_ENTITLEINFO_INPUT       = 0x00069;
+	public static final int	CMD_DRM_EMAILHEADS_READ         = 0x0006a;
+	public static final int	CMD_DRM_EMAILCONTENT_READ       = 0x0006b;
+	
+	public static final String CA_NO_ENTITLE = "NO_ENTITLE";
+	public static final String CA_NO_DEVICE = "NO_DEVICE";
+	public static final String CA_NOT_ENOUGH_SPACE = "NOT_ENOUGH_SPACE";
+	public static final String CA_ENTITLE_OUTPUT_FINISH = "ENTITLE_OUTPUT_FINISH";
+	public static final String CA_ENTITLE_INPUT_INTERRUPT = "ENTITLE_INPUT_INTERRUPT";
+	public static final String CA_ENTITLE_INPUT_FINISH = "ENTITLE_INPUT_FINISH";
 }

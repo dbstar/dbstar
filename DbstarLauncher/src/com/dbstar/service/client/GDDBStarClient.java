@@ -15,6 +15,7 @@ import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.IDbstarService;
 import com.dbstar.model.EMailItem;
 import com.dbstar.model.ProductItem;
+import com.dbstar.model.ReceiveData;
 import com.dbstar.model.ReceiveEntry;
 
 public class GDDBStarClient {
@@ -314,13 +315,14 @@ public class GDDBStarClient {
 
 	// data format: "1001|task1|23932|23523094823\n1002|task2|234239|12349320\n"
 
-	public ReceiveEntry[] getTaskInfo() {
+	public ReceiveData getTaskInfo() {
+		ReceiveData receiveData = null;
 		ReceiveEntry[] entries = null;
 
 		Log.d(TAG, "+++++++++++ getTaskInfo +++++++++++");
 
 		if (mDbstarService == null)
-			return entries;
+			return receiveData;
 
 		try {
 			Intent intent = mDbstarService.sendCommand(
@@ -342,11 +344,15 @@ public class GDDBStarClient {
 					items = info.split("\n");
 				}
 
-				if (items != null) {
-					entries = new ReceiveEntry[items.length];
+				if (items != null && items.length > 1) {
+					receiveData = new ReceiveData();
+					String flag = items[0];
+					receiveData.NewData = flag.equals("1") ? true : false;
+					entries = new ReceiveEntry[items.length - 1];
+					receiveData.Entries = entries;
 
-					for (int i = 0; i < items.length; i++) {
-						entries[i] = createEntry(items[i]);
+					for (int i = 1; i < items.length; i++) {
+						entries[i-1] = createEntry(items[i]);
 					}
 
 				}
@@ -356,7 +362,7 @@ public class GDDBStarClient {
 			e.printStackTrace();
 		}
 
-		return entries;
+		return receiveData;
 	}
 
 	ReceiveEntry createEntry(String data) {

@@ -59,6 +59,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
+import android.view.Gravity;
 
 public class GDLauncherActivity extends GDBaseActivity implements
 		GDApplicationObserver {
@@ -79,8 +82,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	GDMediaScheduler mMediaScheduler;
 
 	// Menu
-	GDMenuGallery mMainMenu, mMainMenuBackup, mMainMenu1, mMainMenu2;
-	MainMenuAdapter mMainMenuAdapter2, mMainMenuAdapter1;
+	FrameLayout mMenuContainer;
+	GDMenuGallery mMainMenu;
+	Stack<GDMenuGallery> mParentMenuStack = null, mChildMenuStack = null;
+	MainMenuAdapter mMainMenuAdapter;
 
 	ViewGroup mPopupMenuContainer;
 	ListView mPopupMenu;
@@ -776,10 +781,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 	};
 	
+
+	private boolean mResetMainMenu = false;
+
 	private void initializeAnimation() {
 
-		mMainMenu1.setLayoutAnimationListener(mMainMenuLayoutAnimListener);
-		mMainMenu2.setLayoutAnimationListener(mMainMenuLayoutAnimListener);
+		mMainMenu.setLayoutAnimationListener(mMainMenuLayoutAnimListener);
 		
 		mGallerySlideToBottomAnim.setFillAfter(true);
 		mGallerySlideFromBottomAnim.setFillAfter(true);
@@ -809,6 +816,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 					@Override
 					public void onAnimationEnd(Animation animation) {
+						if (mResetMainMenu) {
+							mResetMainMenu = false;
+							return;
+						}
+
 						onParentMenuShown();
 					}
 
@@ -818,6 +830,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 					@Override
 					public void onAnimationStart(Animation animation) {
+						if (mResetMainMenu)
+							return;
+
 						mMenuStack.pop();
 //						Menu topMenu = mMenuStack.peek();
 //						mOldSelectedItemPosition = -1;
@@ -869,6 +884,48 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	}
 
+	private GDMenuGallery addChildMenu() {
+		GDMenuGallery widget = null;
+		if(mChildMenuStack.size() == 0) {
+			LayoutInflater inflater = getLayoutInflater();
+			widget = (GDMenuGallery) inflater.inflate(
+                        R.layout.menu_widget, mMenuContainer, false);
+
+			MainMenuAdapter adapter = new MainMenuAdapter(this);
+			widget.setAdapter(adapter);	
+			widget.setLayoutAnimationListener(mMainMenuLayoutAnimListener);
+		} else {
+			widget = mChildMenuStack.pop();
+		}
+
+		mMenuContainer.addView(widget, 0);
+
+		return widget;
+	}
+
+	private void resetMenuStack() {
+		if (mParentMenuStack.size() > 0) {
+			mChildMenuStack.add(mMainMenu);
+			mMenuContainer.removeViewAt(0);
+		} else {
+			return;
+		}
+
+		while(mParentMenuStack.size() > 1) {
+			GDMenuGallery widget = mParentMenuStack.pop();
+			mChildMenuStack.add(widget);
+		}
+		
+		mMainMenu = mParentMenuStack.pop();
+		mMainMenu.setVisibility(View.VISIBLE);
+		mMainMenu.setFocusable(true);
+
+		mResetMainMenu = true;
+		long time = AnimationUtils.currentAnimationTimeMillis();
+        mGallerySlideFromBottomAnim.setStartTime(time);
+        mMainMenu.startAnimation(mGallerySlideFromBottomAnim);
+	}
+
 	// Animation callback
 
 	// Animation sequence:
@@ -883,11 +940,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	void onParentMenuHided() {
 		mMainMenu.setVisibility(View.INVISIBLE);
 		mMainMenu.setFocusable(false);
-		GDMenuGallery temp = mMainMenu;
-		mMainMenu = mMainMenuBackup;
+		mParentMenuStack.add(mMainMenu);
+
+		mMainMenu = addChildMenu();
+
 		mMainMenu.setVisibility(View.VISIBLE);
 		mMainMenu.setFocusable(true);
-		mMainMenuBackup = temp;
 
 		Menu menu = mCurrentSubMenu;//mMenuStack.peek();
 		mMenuStack.add(menu);
@@ -919,12 +977,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	void onChildMenuHided() {
 		mMainMenu.setVisibility(View.INVISIBLE);
 		mMainMenu.setFocusable(false);
+		mChildMenuStack.add(mMainMenu);
+		mMenuContainer.removeViewAt(0);
 		
-		GDMenuGallery temp = mMainMenu;
-		mMainMenu = mMainMenuBackup;
+		mMainMenu = mParentMenuStack.pop();
 		mMainMenu.setVisibility(View.VISIBLE);
 		mMainMenu.setFocusable(true);
-		mMainMenuBackup = temp;
 
 		long time = AnimationUtils.currentAnimationTimeMillis();
 //		mIsParentMenuBeingUp = true;
@@ -1076,6 +1134,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				if (columns == null || columns.length == 0) {
 					return;
 				}
+
+				resetMenuStack();
 
 				// root columns, create root menu
 				mMenuStack.clear();
@@ -1343,20 +1403,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mVideoView = (GDVideoView) findViewById(R.id.player_view);
 
-		mMainMenu1 = (GDMenuGallery) findViewById(R.id.menu_level_1_p);
-		mMainMenu2 = (GDMenuGallery) findViewById(R.id.menu_level_1_c);
-		mMainMenu1.setAnimationDuration(120);
-		mMainMenu2.setAnimationDuration(120);
+		mMenuContainer = (FrameLayout) findViewById(R.id.menu_container);
+		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
+		mMainMenu.setAnimationDuration(120);
 
-		mMainMenuAdapter1 = new MainMenuAdapter(this);
-		mMainMenuAdapter1.setDataSet(mMainMenuItems);
-		mMainMenu1.setAdapter(mMainMenuAdapter1);
-		
-		mMainMenuAdapter2 = new MainMenuAdapter(this);
-		mMainMenu2.setAdapter(mMainMenuAdapter2);
+		mMainMenuAdapter = new MainMenuAdapter(this);
+		mMainMenuAdapter.setDataSet(mMainMenuItems);
+		mMainMenu.setAdapter(mMainMenuAdapter);
 
-//		mMainMenu1.setOnItemSelectedListener(mMenuItemSelectedListener);
-//		mMainMenu2.setOnItemSelectedListener(mMenuItemSelectedListener);
+		mParentMenuStack = new Stack<GDMenuGallery>();
+		mChildMenuStack = new Stack<GDMenuGallery>();
 
 		mPopupMenuContainer = (ViewGroup) findViewById(R.id.menulevel2_container);
 		mPopupMenu = (ListView) findViewById(R.id.menu_level_2);
@@ -1365,8 +1421,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mPopupMenu.setDrawSelectorOnTop(false);
 		mPopupMenu.setEnabled(false);
 
-		mMainMenu = mMainMenu1;
-		mMainMenuBackup = mMainMenu2;
 		mMainMenu.setOnItemSelectedListener(mMenuItemSelectedListener);
 		
 		// mDefaultPoster

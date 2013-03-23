@@ -27,7 +27,7 @@ import com.dbstar.model.GDDataModel;
 import com.dbstar.model.GDNetModel;
 import com.dbstar.model.GuideListItem;
 import com.dbstar.model.PreviewData;
-import com.dbstar.model.ReceiveEntry;
+import com.dbstar.model.ReceiveData;
 import com.dbstar.model.TDTTimeController;
 import com.dbstar.service.client.DbServiceObserver;
 import com.dbstar.service.client.GDDBStarClient;
@@ -1131,7 +1131,7 @@ public class GDDataProviderService extends Service {
 				}
 
 				case REQUESTTYPE_GETDOWNLOADSTATUS: {
-					ReceiveEntry[] entries = mDBStarClient.getTaskInfo();
+					ReceiveData entries = mDBStarClient.getTaskInfo();
 					task.Data = entries;
 					taskFinished(task);
 					break;

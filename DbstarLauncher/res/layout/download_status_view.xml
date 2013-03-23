@@ -33,7 +33,7 @@
             android:textSize="16sp" />
     </RelativeLayout>
 
-    <LinearLayout
+    <!--<LinearLayout
         android:id="@+id/download_view_header"
         android:layout_width="1100dp"
         android:layout_height="48dp"
@@ -91,16 +91,15 @@
             android:text="@string/receivestatus_downloadpercent"
             android:textColor="#ffffff"
             android:textSize="18sp" />
-    </LinearLayout>
+    </LinearLayout> -->
 
     <ListView
         android:id="@+id/download_view"
         android:layout_width="1100dp"
         android:layout_height="480dp"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/download_view_header"
         android:layout_marginLeft="90dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="138dp"
         android:cacheColorHint="#00000000"
         android:divider="@android:color/transparent"
         android:dividerHeight="4.0dp"

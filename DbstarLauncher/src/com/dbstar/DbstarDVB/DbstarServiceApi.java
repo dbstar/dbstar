@@ -17,6 +17,7 @@ public class DbstarServiceApi {
 	/* COMMAND */
 	public static final int CMD_NETWORK_DISCONNECT	        = 0x00010;
 	public static final int CMD_NETWORK_CONNECT             = 0x00011;
+	public static final int CMD_NETWORK_GETINFO             = 0x00012;
 	
 	public static final int CMD_DISK_MOUNT                  = 0x00021;
 	public static final int CMD_DISK_UNMOUNT                = 0x00022;

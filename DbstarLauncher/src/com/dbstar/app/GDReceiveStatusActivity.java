@@ -26,6 +26,7 @@ import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDDiskInfo;
+import com.dbstar.model.ReceiveData;
 import com.dbstar.model.ReceiveEntry;
 import com.dbstar.util.StringUtil;
 
@@ -134,6 +135,8 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		mService.startGetTaskInfo();
 
 		startUpdateTask();
+
+		updateDiskStatus();
 	}
 
 	public void onServiceStop() {
@@ -326,7 +329,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	public void updateData(int type, Object key, Object data) {
 		if (type == GDDataProviderService.REQUESTTYPE_GETDOWNLOADSTATUS) {
-			updateDownloadStatus((ReceiveEntry[]) data);
+			updateDownloadStatus((ReceiveData) data);
 		} else if (type == GDDataProviderService.REQUESTTYPE_GETTSSIGNALSTATUS) {
 			if (data == null)
 				return;
@@ -342,7 +345,20 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	private long mCurSize = 0;
 	
-	public void updateDownloadStatus(ReceiveEntry[] entries) {
+	public void updateDownloadStatus(ReceiveData data) {
+		if (data == null)
+			return;
+		boolean newData = data.NewData;
+		ReceiveEntry[] entries = data.Entries;
+		if (newData) {
+			mPageDatas.clear();
+			mPageNumber = 0;
+			mPageCount = 0;
+			mAdapter.setDataSet(null);
+            mAdapter.notifyDataSetChanged();
+
+            updatePageInfoView();
+		}
 
 		if (entries != null && entries.length > 0) {
 
@@ -391,22 +407,25 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			mAdapter.setDataSet(mPageDatas.get(mPageNumber));
 			mAdapter.notifyDataSetChanged();
 
-			GDDiskInfo.DiskInfo diskInfo = null;
-			if (mBound) {
-				String disk = mService.getStorageDisk();
-				if (disk == null || disk.isEmpty())
-					return;
-
-				diskInfo = GDDiskInfo.getDiskInfo(disk, true);
-				if (diskInfo != null) {
-					// String diskSpaceStr = diskInfo.DiskSpace + "/"
-					// + diskInfo.DiskSize;
-					// Log.d(TAG, " disk space = " + diskSpaceStr);
-					mDiskInfoView.setText(diskInfo.DiskSpace);
-				}
-			}
-
+			updateDiskStatus();
 			updatePageInfoView();
+		}
+	}
+
+	private void updateDiskStatus() {
+		GDDiskInfo.DiskInfo diskInfo = null;
+		if (mBound) {
+			String disk = mService.getStorageDisk();
+			if (disk == null || disk.isEmpty())
+				return;
+
+			diskInfo = GDDiskInfo.getDiskInfo(disk, true);
+			if (diskInfo != null) {
+				// String diskSpaceStr = diskInfo.DiskSpace + "/"
+				// + diskInfo.DiskSize;
+				// Log.d(TAG, " disk space = " + diskSpaceStr);
+				mDiskInfoView.setText(diskInfo.DiskSpace);
+			}
 		}
 	}
 

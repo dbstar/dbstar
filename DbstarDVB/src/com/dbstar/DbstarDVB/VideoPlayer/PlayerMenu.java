@@ -1002,9 +1002,17 @@ public class PlayerMenu extends PlayerActivity {
 
 		try {
 			mAmplayer.Seek(0);
-			mPlayButton.setImageResource(R.drawable.play);
+			//mPlayButton.setImageResource(R.drawable.play);
 		} catch (RemoteException e) {
 			e.printStackTrace();
+		}
+
+		if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
+			try {
+				mAmplayer.Resume();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

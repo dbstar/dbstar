@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">DbstarLauncher</string>
-    <string name="hotline">服务热线: 4000&#8211;300&#8211;888</string>
+    <string name="hotline">客服电话: 4000&#8211;300&#8211;888</string>
     <string name="organization">《中国电力报》：国电集团部署2012年基建工作</string>
     <string name="desc"></string>
     <string name="GDVideoView_error_text_invalid_progressive_playback">格式不对</string>
