@@ -94,6 +94,7 @@ static int s_xmlparse_running = 0;
 static int s_decoder_running = 0;
 static int s_push_monitor_active = 0;
 static int s_dvbpush_getinfo_flag = 0;
+static int s_dvbpush_info_refresh_flag = 0;
 
 static int s_column_refresh = 0;
 static int s_interface_refresh = 0;
@@ -432,6 +433,9 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 		return -1;
 	}
 	
+	snprintf(buf,size,"%d",s_dvbpush_info_refresh_flag);
+	s_dvbpush_info_refresh_flag = 0;
+	
 	int i = 0;
 	if(s_push_monitor_active>0){
 		/*
@@ -447,11 +451,12 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 			
 			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type)
 			{
-				if(0==i){
-					snprintf(buf, size,
-						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
-				}
-				else{
+//				if(0==i){
+//					snprintf(buf, size,
+//						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
+//				}
+//				else
+				{
 					snprintf(buf+strlen(buf), size-strlen(buf),
 						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
@@ -1562,6 +1567,7 @@ int push_recv_manage_refresh()
 	pthread_mutex_lock(&mtx_push_monitor);
 	
 	prog_monitor_reset();
+	s_dvbpush_info_refresh_flag = 1;
 	
 	int flag_carrier = 0;
 	
