@@ -97,6 +97,7 @@ LOCAL_SRC_FILES += \
 	src/porting.c \
 	src/softdmx.c \
 	src/dvbpush_jni.c \
+	src/network.c \
 	src/sha_verify.c \
 	src/mtdutils.c \
 	src/motherdisc.c 
