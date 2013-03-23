@@ -104,7 +104,7 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS += -W -Wall
 LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libfileapi libfileapic libpush libxml2 libiconv
+LOCAL_SHARED_LIBRARIES += libc libcutils libdl liblog libsqlite libfileapi libfileapic libpush libxml2 libiconv
 include $(BUILD_SHARED_LIBRARY)
 
 #include $(CLEAR_VARS)

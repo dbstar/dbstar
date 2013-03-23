@@ -3,8 +3,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <android/log.h>
-//#include <jni.h>
-//#include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -32,10 +30,13 @@ int network_getinfo(char *buf, unsigned int len)
 	char ip[32] = {};
 	char mask[32] = {};
 	char gw[32] = {};
+	char dns1[32] = {};
+	char dns2[32] = {};
 	char mac[32] = {};
 	FILE *fp = NULL;
 	char tmpbuf[128];
 	char iface[16];
+	char *default_value = "0.0.0.0";
 	unsigned long dest_addr = INADDR_NONE;
 	unsigned long gate_addr = INADDR_NONE;
 	struct ifreq ifr;
@@ -55,6 +56,12 @@ int network_getinfo(char *buf, unsigned int len)
 		LOGE("open(route) failed!\n");
 		return -1;
 	}
+
+	memcpy(ip, default_value, strlen(default_value));
+	memcpy(mask, default_value, strlen(default_value));
+	memcpy(gw, default_value, strlen(default_value));
+	memcpy(dns1, default_value, strlen(default_value));
+	memcpy(dns2, default_value, strlen(default_value));
 
 	/* get ip address */
 	memset(&ifr, 0, sizeof(ifr));
@@ -91,6 +98,10 @@ int network_getinfo(char *buf, unsigned int len)
 		}
 	}
 
+	/* get dns */
+	property_get("net.dns1", dns1, default_value);
+	property_get("net.dns2", dns2, default_value);
+
 	/* get mac address */
 	memset(&ifr, 0, sizeof(ifr));
 	ifr.ifr_addr.sa_family = AF_INET;
@@ -108,7 +119,7 @@ int network_getinfo(char *buf, unsigned int len)
 		        (unsigned char)ifr.ifr_hwaddr.sa_data[5]);
 	}
 
-	sprintf(buf, "ip=%s, mask=%s, gw=%s, mac=%s", ip, mask, gw, mac);
+	sprintf(buf, "ip=%s,mask=%s,gw=%s,dns1=%s,dns2=%s,mac=%s", ip, mask, gw, dns1, dns2, mac);
 	LOGD("networkinfo[%s], len=%d\n", buf, strlen(buf));
 
 	close(fd);
