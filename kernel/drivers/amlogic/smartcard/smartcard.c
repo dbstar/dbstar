@@ -1021,6 +1021,7 @@ static int smc_probe(struct platform_device *pdev)
 		if ((ret=smc_dev_init(smc, i))<0) {
 			smc = NULL;
 		} else {
+			switch_dev_register(&sdev);
 			s_smc_task_state = 1;
 			s_smc_task = kthread_run(smc_task_handle, (void *)smc, "kthread_smc");
 		}
@@ -1039,6 +1040,7 @@ static int smc_remove(struct platform_device *pdev)
 	
 	s_smc_task_state = 0;
 	kthread_stop(s_smc_task);
+	switch_dev_unregister(&sdev);
 
 	smc_dev_deinit(smc);
 	
@@ -1078,7 +1080,6 @@ static int __init smc_mod_init(void)
 		pr_error("register platform driver error\n");
 		goto error_platform_drv_register;
 	}
-	switch_dev_register(&sdev);
 	
 	return 0;
 error_platform_drv_register:
@@ -1092,7 +1093,6 @@ error_register_chrdev:
 
 static void __exit smc_mod_exit(void)
 {
-	switch_dev_unregister(&sdev);
 
 	platform_driver_unregister(&smc_driver);
 	class_unregister(&smc_class);
