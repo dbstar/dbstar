@@ -1,6 +1,8 @@
 package com.dbstar.settings.network;
 
 import java.io.FileOutputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -31,20 +33,51 @@ public class FinishSettingsPage extends BaseFragment {
 
 	boolean mIsChecked = false;
 	boolean mFirstDisconnectInfo = true;
-	
+
 	private Handler mHandler;
 	ConnectivityManager mConnectManager;
 	private IntentFilter mConnectIntentFilter;
 
+	private Timer mTimer = null;
+	private TimerTask mTask = null;
+
+	class TimeoutTask implements Runnable {
+
+		@Override
+		public void run() {
+			Log.d(TAG, "=== timeout === ");
+			configureTimeout();
+		}
+
+	}
+
+	void configureTimeout() {
+		mStateView.setText(R.string.network_setup_failed);
+		
+		stopTimer();
+	}
+
+	void stopTimer() {
+		if (mTask != null) {
+			mTask.cancel();
+			mTask = null;
+		}
+
+		if (mTimer != null) {
+			mTimer.cancel();
+			mTimer = null;
+		}
+	}
+	
 	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
 
 		public void onReceive(Context context, Intent intent) {
-			
+
 			if (!mIsChecked)
 				return;
 
 			String action = intent.getAction();
-			
+
 			if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
 				return;
 
@@ -54,11 +87,12 @@ public class FinishSettingsPage extends BaseFragment {
 			Log.d(TAG, "noConnectivity = " + noConnectivity);
 			if (noConnectivity) {
 				if (mFirstDisconnectInfo) {
-					// we will first receive a disconnect message, so skip it here.
+					// we will first receive a disconnect message, so skip it
+					// here.
 					mFirstDisconnectInfo = false;
 					return;
 				}
-				
+
 				// There are no connected networks at all
 				handleNetConnected();
 				return;
@@ -76,8 +110,8 @@ public class FinishSettingsPage extends BaseFragment {
 				Log.d(TAG, "getTypeName() = " + networkInfo.getTypeName());
 				Log.d(TAG, "isConnected() = " + networkInfo.isConnected());
 
-				if ((networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET ||
-						networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
+				if ((networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET || networkInfo
+						.getType() == ConnectivityManager.TYPE_WIFI)
 						&& networkInfo.isConnected()) {
 					handleNetConnected();
 				}
@@ -85,15 +119,15 @@ public class FinishSettingsPage extends BaseFragment {
 		}
 
 	};
-	
+
 	public boolean isNetworkConnected() {
 		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
 		return networkInfo != null
-				&& (networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET ||
-				networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
+				&& (networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET || networkInfo
+						.getType() == ConnectivityManager.TYPE_WIFI)
 				&& networkInfo.isConnected();
 	}
-	
+
 	void handleNetConnected() {
 
 		mHandler.post(new Runnable() {
@@ -102,7 +136,7 @@ public class FinishSettingsPage extends BaseFragment {
 			}
 		});
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -117,7 +151,7 @@ public class FinishSettingsPage extends BaseFragment {
 		initializeView();
 
 		mHandler = new Handler();
-		
+
 		mConnectIntentFilter = new IntentFilter(
 				ConnectivityManager.CONNECTIVITY_ACTION);
 
@@ -139,10 +173,11 @@ public class FinishSettingsPage extends BaseFragment {
 
 		}, 2000);
 	}
-	
+
 	public void onStop() {
 		super.onStop();
-		
+
+		stopTimer();
 		unregisterConnectReceiver();
 	}
 
@@ -167,38 +202,53 @@ public class FinishSettingsPage extends BaseFragment {
 	}
 
 	void checkConfigResult() {
-		
-		 mIsChecked = true;
 
-		 NetworkInfo netInfo = mConnectManager.getActiveNetworkInfo();
-		 Log.d(TAG, "============== checkConfigResult " + netInfo);
-		 Log.d(TAG, "============== checkConfigResult " + mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET));
-		 
-		 if (netInfo != null) {
-			 
-			 Log.d(TAG, "============== checkConfigResult " + netInfo.getState() + " " + netInfo.getDetailedState());
-			 
-			 if(netInfo.getState() == NetworkInfo.State.CONNECTED) {
-				 mStateView.setText(R.string.network_setup_success);
-			 } else {
-				 if (netInfo.getState() == NetworkInfo.State.CONNECTING ||
-						 netInfo.getState() == NetworkInfo.State.DISCONNECTING) {
-					 return;
-				 }
-				 
-				 if (netInfo.getState() == NetworkInfo.State.DISCONNECTED || 
-						 netInfo.getState() == NetworkInfo.State.SUSPENDED) {
-					 mStateView.setText(R.string.network_setup_failed);
-					 return;
-				 }
-			 }
-		 }
-		 // else {
-		 // there is no connect now, so just wait the message, and handle it there.
-		 //}
+		mIsChecked = true;
+
+		NetworkInfo netInfo = mConnectManager.getActiveNetworkInfo();
+		Log.d(TAG, "============== checkConfigResult " + netInfo);
+		Log.d(TAG,
+				"============== checkConfigResult "
+						+ mConnectManager
+								.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET));
+
+		if (netInfo != null) {
+
+			Log.d(TAG, "============== checkConfigResult " + netInfo.getState()
+					+ " " + netInfo.getDetailedState());
+
+			if (netInfo.getState() == NetworkInfo.State.CONNECTED) {
+				mStateView.setText(R.string.network_setup_success);
+			} else {
+				if (netInfo.getState() == NetworkInfo.State.CONNECTING
+						|| netInfo.getState() == NetworkInfo.State.DISCONNECTING) {
+					mTimer = new Timer();
+					mTask = new TimerTask() {
+						public void run() {
+							mHandler.post(new TimeoutTask());
+						}
+					};
+
+					mTimer.schedule(mTask, 120000);
+					return;
+				}
+
+				if (netInfo.getState() == NetworkInfo.State.DISCONNECTED
+						|| netInfo.getState() == NetworkInfo.State.SUSPENDED) {
+					mStateView.setText(R.string.network_setup_failed);
+					return;
+				}
+			}
+		}
+		// else {
+		// there is no connect now, so just wait the message, and handle it
+		// there.
+		// }
 	}
-	
+
 	void handleNetworkConnectStatus() {
+		stopTimer();
+
 		boolean connected = isNetworkConnected();
 		if (connected) {
 			mStateView.setText(R.string.network_setup_success);

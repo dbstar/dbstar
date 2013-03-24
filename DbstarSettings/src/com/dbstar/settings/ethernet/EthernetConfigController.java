@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.dbstar.settings.R;
 import com.dbstar.settings.base.PageManager;
+import com.dbstar.settings.network.NetworkCommon;
 import com.dbstar.settings.utils.SettingsCommon;
 import com.dbstar.settings.utils.Utils;
 
@@ -62,7 +63,7 @@ public class EthernetConfigController {
 	private EthernetManager mEthManager;
 	private EthernetDevInfo mEthInfo;
 
-	private IntentFilter mEthIntentFilter, mConnectIntentFilter;
+	private IntentFilter mEthIntentFilter;
 	private Handler mHandler;
 
 	private boolean mEnablePending;
@@ -70,10 +71,8 @@ public class EthernetConfigController {
 	private Context mContext;
 	private Activity mActivity;
 
-	ConnectivityManager mConnectManager;
-
 	String mDev = null;
-	
+
 	boolean mIsEthHWConnected = false;
 
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -92,67 +91,76 @@ public class EthernetConfigController {
 		}
 	};
 
-	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
+	private BroadcastReceiver mEthernetInfoReceiver = new BroadcastReceiver() {
 
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 
-			if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
-				return;
+			Log.d("@@@", "onReceive msg " + action);
 
-			boolean noConnectivity = intent.getBooleanExtra(
-					ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
+			if (action.equals(NetworkCommon.ActionSetEthernetInfo)) {
+				String ethernetInfo = intent
+						.getStringExtra(NetworkCommon.KeyEthernetInfo);
+				
+				Log.d(TAG, " == ethernet info == " + ethernetInfo);
+				
+				// "ip=%s,mask=%s,gw=%s,dns1=%s,dns2=%s,mac=%s",
+				if (ethernetInfo != null && ethernetInfo.length() > 0) {
+					String[] values = ethernetInfo.split(",");
 
-			Log.d(TAG, "noConnectivity = " + noConnectivity);
-			if (noConnectivity) {
-				// There are no connected networks at all
-				handleNetConnected();
-				return;
-			}
+					String[] properties = values[0].split("=");
+					String ip = properties[1];
+					mIpaddr.setText(properties[1]);
 
-			// case 1: attempting to connect to another network, just wait for
-			// another broadcast
-			// case 2: connected
-			// NetworkInfo networkInfo = (NetworkInfo) intent
-			// .getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+					properties = values[1].split("=");
+					mMask.setText(properties[1]);
 
-			NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
+					properties = values[2].split("=");
+					mGw.setText(properties[1]);
 
-			if (networkInfo != null) {
-				Log.d(TAG, "getTypeName() = " + networkInfo.getTypeName());
-				Log.d(TAG, "isConnected() = " + networkInfo.isConnected());
+					properties = values[3].split("=");
+					mDns.setText(properties[1]);
 
-				if (networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET
-						&& networkInfo.isConnected()) {
-					handleNetConnected();
+					properties = values[4].split("=");
+					mBackupDns.setText(properties[1]);
+
+					boolean connected = false;
+					if (ip != null && ip.length() > 0) {
+						if (!ip.equals("127.0.0.1") && !ip.equals("0.0.0.0")) {
+							connected = isIpAddress(ip);
+						}
+					}
+
+					mIsEthHWConnected = connected;
+					if (connected) {
+						if (mDhcpSwitchIndicator.isChecked()) {
+							mDhcpConnectState.setVisibility(View.VISIBLE);
+							mManualConnectState.setVisibility(View.INVISIBLE);
+						} else {
+							mDhcpConnectState.setVisibility(View.INVISIBLE);
+							mManualConnectState.setVisibility(View.VISIBLE);
+						}
+
+					}
+
 				}
 			}
 		}
-
 	};
 
-	private void reqisterConnectReceiver() {
-		mActivity.registerReceiver(mNetworkReceiver, mConnectIntentFilter);
+	private void reqisterSystemReceiver() {
+
+		IntentFilter filter = new IntentFilter(
+				NetworkCommon.ActionSetEthernetInfo);
+		mActivity.registerReceiver(mEthernetInfoReceiver, filter);
 	}
 
-	private void unregisterConnectReceiver() {
-		mActivity.unregisterReceiver(mNetworkReceiver);
+	private void unregisterSystemReceiver() {
+		mActivity.unregisterReceiver(mEthernetInfoReceiver);
 	}
 
 	public boolean isNetworkConnected() {
-		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
-		return networkInfo != null
-				&& networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET
-				&& networkInfo.isConnected();
-	}
-
-	void handleNetConnected() {
-
-		mHandler.post(new Runnable() {
-			public void run() {
-				setConnectionStatus(isNetworkConnected());
-			}
-		});
+		return mIsEthHWConnected;
 	}
 
 	void handleEthStateChanged(boolean ethHWConnected) {
@@ -171,7 +179,7 @@ public class EthernetConfigController {
 		if (connected) {
 			if (mDhcpSwitchIndicator.isChecked()) {
 				mDhcpConnectState.setVisibility(View.VISIBLE);
-				
+
 				updateDhcpInfo();
 			}
 
@@ -182,8 +190,6 @@ public class EthernetConfigController {
 		} else {
 			if (mDhcpSwitchIndicator.isChecked()) {
 				mDhcpConnectState.setVisibility(View.INVISIBLE);
-				
-//				updateDhcpInfo();
 			}
 
 			if (mManualSwitchIndicator.isChecked()) {
@@ -201,12 +207,6 @@ public class EthernetConfigController {
 		mEthIntentFilter = new IntentFilter(
 				EthernetManager.ETH_STATE_CHANGED_ACTION);
 
-		mConnectIntentFilter = new IntentFilter(
-				ConnectivityManager.CONNECTIVITY_ACTION);
-
-		mConnectManager = (ConnectivityManager) mActivity
-				.getSystemService(Context.CONNECTIVITY_SERVICE);
-
 		mHandler = new Handler();
 
 		buildDialogContent(activity);
@@ -216,14 +216,17 @@ public class EthernetConfigController {
 
 	public void resume() {
 		getContext().registerReceiver(mReceiver, mEthIntentFilter);
-		reqisterConnectReceiver();
+		reqisterSystemReceiver();
 
-		setConnectionStatus(isNetworkConnected());
+		if (mEthManager.isEthDeviceAdded()) {
+			Intent intent = new Intent(NetworkCommon.ActionGetEthernetInfo);
+			mContext.sendBroadcast(intent);
+		}
 	}
 
 	public void pause() {
 		getContext().unregisterReceiver(mReceiver);
-		unregisterConnectReceiver();
+		unregisterSystemReceiver();
 	}
 
 	public Context getContext() {
@@ -288,7 +291,7 @@ public class EthernetConfigController {
 		enableDhcp(true);
 
 		String[] Devs = mEthManager.getDeviceNameList();
-		
+
 		if (Devs != null) {
 			Log.d(TAG, "Devices = " + Devs + " count " + Devs.length);
 			if (mEthManager.isEthConfigured()) {
@@ -305,8 +308,6 @@ public class EthernetConfigController {
 
 					enableDhcp(true);
 
-//					updateDhcpInfo();
-
 				} else {
 					enableManual(true);
 				}
@@ -316,7 +317,7 @@ public class EthernetConfigController {
 		}
 		return 0;
 	}
-	
+
 	void updateDhcpInfo() {
 		DhcpInfo dhcpInfo = mEthManager.getDhcpInfo();
 		if (dhcpInfo != null) {
@@ -433,16 +434,6 @@ public class EthernetConfigController {
 			}
 		}
 
-//		if (mEthInfo != null) {
-//			boolean isDhcp = mEthInfo.getConnectMode().equals(
-//					EthernetDevInfo.ETH_CONN_MODE_DHCP);
-//			if (isDhcp && mDhcpSwitchIndicator.isChecked()) {
-//				// if current configure is Dhcp, and user choose it again,
-//				// it doesn't need to save it.
-//				return;
-//			}
-//		}
-
 		EthernetDevInfo info = new EthernetDevInfo();
 		info.setIfName(mDev);
 
@@ -510,13 +501,13 @@ public class EthernetConfigController {
 
 			try {
 				String var = value.substring(start, end);
-				for(int i=0; i<var.length() ; i++) {
+				for (int i = 0; i < var.length(); i++) {
 					char c = var.charAt(i);
 					if (c < '0' || c > '9') {
 						return false;
 					}
 				}
-				
+
 				int block = Integer.parseInt(var);
 				if ((block > 255) || (block < 0)) {
 					return false;

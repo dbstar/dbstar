@@ -19,20 +19,22 @@ public class GDCommon {
 
 	public static final int MSG_USER_CHANGE_GUIDELIST = 0x10012;
 
-	public static final int MSG_GET_NETWORKINFO = 0x10013;
-	public static final int MSG_SET_NETWORKINFO = 0x10014;
+	public static final int MSG_GET_NETWORKINFO = 0x20013;
+	public static final int MSG_SET_NETWORKINFO = 0x20014;
+	public static final int MSG_GET_ETHERNETINFO = 0x20015;
+	public static final int MSG_SET_ETHERNETINFO = 0x20016;
 
-	public static final int MSG_DATA_SIGNAL_STATUS = 0x10015;
+	public static final int MSG_DATA_SIGNAL_STATUS = 0x30015;
 	public static final int STATUS_HASSIGNAL = 0;
 	public static final int STATUS_NOSIGNAL = 1;
 	
-	public static final int SYNC_STATUS_TODBSERVER = 0x10016;
+	public static final int SYNC_STATUS_TODBSERVER = 0x30016;
 
-	public static final int MSG_SAVE_BOOKMARK = 0x10017;
+	public static final int MSG_SAVE_BOOKMARK = 0x30017;
 	
-	public static final int MSG_UPDATE_COLUMN = 0x10018;
-	public static final int MSG_UPDATE_PREVIEW = 0x10019;
-	public static final int MSG_UPDATE_UIRESOURCE = 0x10020;
+	public static final int MSG_UPDATE_COLUMN = 0x30018;
+	public static final int MSG_UPDATE_PREVIEW = 0x30019;
+	public static final int MSG_UPDATE_UIRESOURCE = 0x30020;
 	
 	public static final int MSG_NEW_MAIL = 0x50001;
 
@@ -106,7 +108,10 @@ public class GDCommon {
 	public static final String ActionGetNetworkInfo = "com.dbstar.DbstarLauncher.Action.GET_NETWORKINFO";
 	public static final String ActionUpateNetworkInfo = "com.dbstar.DbstarLauncher.Action.UPDATE_NETWORKINFO";
 	public static final String ActionSetNetworkInfo = "com.dbstar.DbstarLauncher.Action.SET_NETWORKINFO";
-
+	public static final String ActionGetEthernetInfo = "com.dbstar.DbstarLauncher.Action.GET_ETHERNETINFO";
+	public static final String ActionSetEthernetInfo = "com.dbstar.DbstarLauncher.Action.SET_ETHERNETINFO";
+	public static final String KeyEthernetInfo = "ethernet_info";
+	
 	public static final String ActionScreenOn = Intent.ACTION_SCREEN_ON;
 	public static final String ActionScreenOff = Intent.ACTION_SCREEN_OFF;
 	

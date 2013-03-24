@@ -290,6 +290,31 @@ public class GDDBStarClient {
 
 		return info;
 	}
+	
+	
+	public String getEthernetInfo() {
+		String info = null;
+
+		try {
+			Intent intent = mDbstarService.sendCommand(
+					DbstarServiceApi.CMD_NETWORK_GETINFO, null,0);
+
+			byte[] bytes = intent.getByteArrayExtra("result");
+
+			if (bytes != null) {
+				try {
+					info = new String(bytes, "utf-8");
+					Log.d(TAG, " =========== network info == " + info);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+		return info;
+	}
 
 	public String manageCA(int cmd) {
 		String ret = null;

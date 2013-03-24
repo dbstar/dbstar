@@ -732,6 +732,11 @@ public class GDDataProviderService extends Service {
 				hideNotification();
 				break;
 			}
+			
+			case GDCommon.MSG_GET_ETHERNETINFO: {
+				getEthternetInfo();
+				break;
+			}
 
 			default:
 				break;
@@ -740,6 +745,15 @@ public class GDDataProviderService extends Service {
 
 	}
 
+	private void getEthternetInfo() {
+		if (mIsDbServiceStarted) {
+			String info = mDBStarClient.getEthernetInfo();
+			Intent intent = new Intent(GDCommon.ActionSetEthernetInfo);
+			intent.putExtra("ethernet_info", info);
+			sendBroadcast(intent);
+		}
+	}
+	
 	private void notifySmartcardStatusChange(int state) {
 		EventData.SmartcardStatus event = new EventData.SmartcardStatus();
 		event.State = state;
@@ -1724,6 +1738,7 @@ public class GDDataProviderService extends Service {
 
 		filter.addAction(GDCommon.ActionGetNetworkInfo);
 		filter.addAction(GDCommon.ActionSetNetworkInfo);
+		filter.addAction(GDCommon.ActionGetEthernetInfo);
 
 		filter.addAction(GDCommon.ActionScreenOn);
 		filter.addAction(GDCommon.ActionScreenOff);
@@ -2057,6 +2072,8 @@ public class GDDataProviderService extends Service {
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {
 				Log.d(TAG, "######: " + action);
 				mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_OUT);
+			} else if (action.equals(GDCommon.ActionGetEthernetInfo)) {
+				mHandler.sendEmptyMessage(GDCommon.MSG_GET_ETHERNETINFO);
 			}
 		}
 	};
