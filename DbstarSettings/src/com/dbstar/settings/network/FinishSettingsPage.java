@@ -234,7 +234,8 @@ public class FinishSettingsPage extends BaseFragment {
 				}
 
 				if (netInfo.getState() == NetworkInfo.State.DISCONNECTED
-						|| netInfo.getState() == NetworkInfo.State.SUSPENDED) {
+						|| netInfo.getState() == NetworkInfo.State.SUSPENDED
+						|| netInfo.getState() == NetworkInfo.State.UNKNOWN) {
 					mStateView.setText(R.string.network_setup_failed);
 					return;
 				}

@@ -518,6 +518,10 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		Log.d(TAG, " ============== display smartcard state dialog ==== "
 				+ mSmartcardState);
 
+		Intent intent = new Intent(GDCommon.ActionSDStateChange);
+		intent.putExtra(GDCommon.KeySDState, mSmartcardState);
+		sendBroadcast(intent);
+		
 		if (mSmartcardDlg == null || !mSmartcardDlg.isShowing()) {
 			if (mSmartcardDlg == null
 					&& mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {

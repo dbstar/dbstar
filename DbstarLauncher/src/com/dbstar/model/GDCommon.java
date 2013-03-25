@@ -27,33 +27,33 @@ public class GDCommon {
 	public static final int MSG_DATA_SIGNAL_STATUS = 0x30015;
 	public static final int STATUS_HASSIGNAL = 0;
 	public static final int STATUS_NOSIGNAL = 1;
-	
+
 	public static final int SYNC_STATUS_TODBSERVER = 0x30016;
 
 	public static final int MSG_SAVE_BOOKMARK = 0x30017;
-	
+
 	public static final int MSG_UPDATE_COLUMN = 0x30018;
 	public static final int MSG_UPDATE_PREVIEW = 0x30019;
 	public static final int MSG_UPDATE_UIRESOURCE = 0x30020;
-	
+
 	public static final int MSG_NEW_MAIL = 0x50001;
 
 	public static final int MSG_DHCP_PRIVATEIP_READY = 0x60001;
-	
+
 	public static final int MSG_UPDATE_POWERCONSUMPTION = 0x70001;
 	public static final int MSG_UPDATE_POWERTOTALCOST = 0x70002;
 	public static final String KeyPowerConsumption = "number";
 	public static final String KeyPowerTotalCost = "cost";
-	
+
 	public static final int MSG_DISP_NOTIFICATION = 0x80001;
 	public static final int MSG_HIDE_NOTIFICATION = 0x80002;
-	
+
 	// Ethernet phy connected/disconnected
 	public static final int MSG_ETHERNET_PHYCONECTED = 0x90001;
 	public static final int MSG_ETHERNET_PHYDISCONECTED = 0x90002;
 
 	public static final int OSDDISP_TIMEOUT = 900000;
-	
+
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "cho";
@@ -83,13 +83,13 @@ public class GDCommon {
 	public static final String ColumnIDGuodianHomeEfficiency = "G2";
 	public static final String ColumnIDGuodianSmartHome = "G3";
 	public static final String ColumnIDGuodianNews = "G4";
-	
+
 	public static final String ColumnIDGuodianMyPower = "G101";
 	public static final String ColumnIDGuodianPowerBill = "G102";
 	public static final String ColumnIDGuodianFeeRecord = "G103";
 	public static final String ColumnIDGuodianPowerNews = "G104";
 	public static final String ColumnIDGuodianBusinessNet = "G105";
-	
+
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
 
@@ -111,10 +111,13 @@ public class GDCommon {
 	public static final String ActionGetEthernetInfo = "com.dbstar.DbstarLauncher.Action.GET_ETHERNETINFO";
 	public static final String ActionSetEthernetInfo = "com.dbstar.DbstarLauncher.Action.SET_ETHERNETINFO";
 	public static final String KeyEthernetInfo = "ethernet_info";
-	
+
 	public static final String ActionScreenOn = Intent.ACTION_SCREEN_ON;
 	public static final String ActionScreenOff = Intent.ACTION_SCREEN_OFF;
-	
+
+	public static final String ActionSDStateChange = "com.dbstar.DbstarLauncher.SDSTATE_CHANGE";
+	public static final String KeySDState = "state";
+
 	// Message to UI for smart card
 	public static final int MSG_SMARTCARD_IN = 0x40001;
 	public static final int MSG_SMARTCARD_OUT = 0x40002;
@@ -122,7 +125,7 @@ public class GDCommon {
 	public static final int MSG_SMARTCARD_INSERT_FAILED = 0x40004;
 	public static final int MSG_SMARTCARD_REMOVE_OK = 0x40005;
 	public static final int MSG_SMARTCARD_REMOVE_FAILED = 0x40006;
-	
+
 	// smart card state
 	public static final int SMARTCARD_STATE_INERTING = 0x1001;
 	public static final int SMARTCARD_STATE_INERTOK = 0x1002;
@@ -131,8 +134,8 @@ public class GDCommon {
 	public static final int SMARTCARD_STATE_REMOVEOK = 0x1005;
 	public static final int SMARTCARD_STATE_REMOVEFAILED = 0x1006;
 	public static final int SMARTCARD_STATE_NONE = 0x1000;
-	
+
 	// playback event
 	public static final int PLAYBACK_COMPLETED = 0x01;
-	
+
 }
