@@ -538,6 +538,7 @@ public class GDDataModel {
 
 					if (subtitleUri != null && !subtitleUri.isEmpty()) {
 						subtitleUri = mStorageDir + "/" + subtitleUri;
+						Log.d(TAG, "publication id =" + content.Id +" subtitle uri =  " + subtitleUri);
 						File subtitleFile = new File(subtitleUri);
 						if (subtitleFile.exists()) {
 							subTitle.URI = subtitleUri;
