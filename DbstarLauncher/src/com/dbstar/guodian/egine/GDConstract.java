@@ -23,4 +23,9 @@ public class GDConstract {
 	public static final int PriceTypeStep = 1;
 	public static final int PriceTypeStepPlusTiming = 2;
 	public static final int PriceTypeTiming = 3;
+	
+	
+	public static final String ErrorStrRepeatLogin = "ERROR-LONG-RepeatLogin";
+	public static final int ErrorCodeUnKnown = 0xE0000;
+	public static final int ErrorCodeRepeatLogin = 0xE001;
 }

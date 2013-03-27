@@ -9,8 +9,6 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.dbstar.guodian.data.AreaInfo;
 import com.dbstar.guodian.data.BillDetailData;
@@ -42,6 +40,7 @@ public class GDClient {
 	public static final int MSG_REQUEST = 0x1001;
 	public static final int MSG_RESPONSE = 0x1002;
 	public static final int MSG_COMMAND = 0x1003;
+	public static final int MSG_SOCKET_ERROR = 0x1004;
 
 	// Command type
 	public static final int CMD_CONNECT = 0x2001;
@@ -115,6 +114,10 @@ public class GDClient {
 					handleResponse((String) msg.obj);
 					break;
 				}
+				case MSG_SOCKET_ERROR: {
+					handleSocketError();
+					break;
+				}
 				}
 			}
 		};
@@ -130,6 +133,12 @@ public class GDClient {
 		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
 		msg.arg1 = CMD_CONNECT;
 		msg.sendToTarget();
+	}
+	
+	public void connectToServerDelayed(long delayMillis) {
+		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
+		msg.arg1 = CMD_CONNECT;
+		mClientHandler.sendMessageDelayed(msg, delayMillis);
 	}
 
 	public void login() {
@@ -326,6 +335,7 @@ public class GDClient {
 
 		if (contentType.equals("error")) {
 			Log.d(TAG, "========== error ==== " + task.ResponseData[7]);
+			handleRequestError(task.ResponseData[7]);
 			return;
 		}
 
@@ -391,6 +401,32 @@ public class GDClient {
 			msg.sendToTarget();
 		}
 	}
+	
+	private int getErrorCode(String errorStr) {
+		int errorCode = GDConstract.ErrorCodeUnKnown;
+		if (errorStr.equals(GDConstract.ErrorStrRepeatLogin)) {
+			errorCode = GDConstract.ErrorCodeRepeatLogin;
+		}
+		
+		return errorCode;
+	}
+	
+	private void handleRequestError(String errorStr) {
+		int error = getErrorCode(errorStr);
+		
+		if (mAppHander != null) {
+			Message msg = mAppHander
+					.obtainMessage(GDEngine.MSG_REQUEST_ERROR);
+			msg.arg1 = error;
+			msg.sendToTarget();
+		}
+	}
+	
+	private void handleSocketError() {
+		if (mAppHander != null) {
+			mAppHander.sendEmptyMessage(GDEngine.MSG_SOCKET_ERROR);
+		}
+	}
 
 	private void doConnectToServer() {
 		boolean connected = false;
@@ -439,11 +475,13 @@ public class GDClient {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			mAppHander.sendEmptyMessage(GDEngine.MSG_SOCKET_ERROR);
+			return;
 		}
 
-		if (!connected) {
-			mAppHander.sendEmptyMessage(GDEngine.MSG_DISCONNECTED);
-		}
+//		if (!connected) {
+//			mAppHander.sendEmptyMessage(GDEngine.MSG_DISCONNECTED);
+//		}
 	}
 
 	private boolean isConnectionSetup() {

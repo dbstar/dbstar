@@ -2,7 +2,6 @@ package com.dbstar.guodian.egine;
 
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.LoginData;
-import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.egine.GDClient.Task;
 import com.dbstar.model.EventData;
 
@@ -18,6 +17,8 @@ public class GDEngine {
 	public static final int MSG_DISCONNECTED= 0x1002;
 	public static final int MSG_CONNECT_ALREADY = 0x1003;
 	public static final int MSG_REQUEST_FINISHED = 0x1004;
+	public static final int MSG_REQUEST_ERROR = 0x1005;
+	public static final int MSG_SOCKET_ERROR = 0x1006;
 	
 	private static final int STATE_NONE = 0x01 ;
 	private static final int STATE_CONNECTING = 0x02 ;
@@ -38,12 +39,15 @@ public class GDEngine {
 	private int mState = STATE_NONE;
 	private int mLoginState = LOGIN_NOTLOGIN;
 	private GDClientObserver mObserver;
+	private boolean mRestart = false;
 	
 	private LoginData mLoginData;
 	private String mCtrlNoGuid;
 	private String mUserType;
+	private String mUserId;
 	
-	private boolean mIsFirstTimeForDetailBill =  true;
+	private static final int REPEATLOGIN_COUNT = 20;
+	private int mRepeatLoginCount = 0;
 
 	public GDEngine(Context context) {
 		mContext = context;
@@ -52,19 +56,28 @@ public class GDEngine {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case MSG_CONNECTED: {
-					connected();
+					handleConnected();
 					break;
 				}
 				case MSG_DISCONNECTED: {
-					disconnected();
+					handleDisconnected();
 					break;
 				}
 				case MSG_CONNECT_ALREADY: {
-					connectAlready();
+					handleConnectedAlready();
 					break;
 				}
 				case MSG_REQUEST_FINISHED: {
 					handleFinishedRequest((Task) msg.obj);
+					break;
+				}
+				case MSG_REQUEST_ERROR: {
+					handleRequestError(msg.arg1);
+					break;
+				}
+				
+				case MSG_SOCKET_ERROR: {
+					handleSocketError();
 					break;
 				}
 				}
@@ -87,6 +100,13 @@ public class GDEngine {
 			mClient.setHostAddress(ip, port);
 			mClient.connectToServer();
 		}
+	}
+	
+	public void restart() {
+		mState = STATE_NONE;
+		mLoginState = LOGIN_NOTLOGIN;
+		mRestart = true;
+		mClient.stop();
 	}
 
 	public void stop() {
@@ -154,43 +174,43 @@ public class GDEngine {
 	private void getPowerPanelData() {
 		Log.d(TAG, " ======== is connected ==== " + (mState == STATE_CONNECTED));
 		if (mState == STATE_CONNECTED) {
-			mClient.getPowerPanelData(UserId, mCtrlNoGuid, mUserType);
+			mClient.getPowerPanelData(mUserId, mCtrlNoGuid, mUserType);
 		}
 	}
 	
 	private void getBillDetailOfMonth(String date) {
 		if (mState == STATE_CONNECTED) {
-			mClient.getBillDetailOfMonth(UserId, mCtrlNoGuid, date);
+			mClient.getBillDetailOfMonth(mUserId, mCtrlNoGuid, date);
 		}
 	}
 	
 	private void getBillDetailOfRecent(String dateNum) {
 		if (mState == STATE_CONNECTED) {
-			mClient.getBillDetailOfRecent(UserId, mCtrlNoGuid, dateNum);
+			mClient.getBillDetailOfRecent(mUserId, mCtrlNoGuid, dateNum);
 		}
 	}
 	
 	private void getBillMonthList(String yearNum) {
 		if (mState == STATE_CONNECTED) {
-			mClient.getBillMonthList(UserId, mCtrlNoGuid, yearNum);
+			mClient.getBillMonthList(mUserId, mCtrlNoGuid, yearNum);
 		}
 	}
 	
 	private void getNotices() {
 		if (mState == STATE_CONNECTED) {
-			mClient.getNotices(UserId, mCtrlNoGuid);
+			mClient.getNotices(mUserId, mCtrlNoGuid);
 		}
 	}
 	
 	private void getUserAreaInfo(String areaIdPath) {
 		if (mState == STATE_CONNECTED) {
-			mClient.getUserAreaInfo(UserId, areaIdPath);
+			mClient.getUserAreaInfo(mUserId, areaIdPath);
 		}
 	}
 	
 	private void getBusinessAreas(String areaId) {
 		if (mState == STATE_CONNECTED) {
-			mClient.getBusinessArea(UserId, areaId);
+			mClient.getBusinessArea(mUserId, areaId);
 		}
 	}
 
@@ -234,8 +254,24 @@ public class GDEngine {
 		}
 		}
 	}
+	
+	private void handleRequestError(int error) {
+		if (error == GDConstract.ErrorCodeRepeatLogin) {
+			mRepeatLoginCount++;
+			if (mRepeatLoginCount == REPEATLOGIN_COUNT) {
+				mRepeatLoginCount = 0;
+				return;
+			}
+			
+			mClient.login();
+		}
+	}
+	
+	private void handleSocketError() {
+		restart();
+	}
 
-	private void connected() {
+	private void handleConnected() {
 		Log.d(TAG, "======= connectSuccessed=========");
 		mState = STATE_CONNECTED;
 		
@@ -253,11 +289,18 @@ public class GDEngine {
 		}
 	}
 	
-	private void disconnected() {
+	private void handleDisconnected() {
 		mState = STATE_DISCONNECTED;
+		
+		if (mRestart) {
+			mRestart = false;
+			
+			// we try to reconnect after 10 minutes.
+			mClient.connectToServerDelayed(600000);
+		}
 	}
 	
-	private void connectAlready() {
+	private void handleConnectedAlready() {
 		if (mState != STATE_CONNECTED) {
 			mState = STATE_CONNECTED;
 		}
@@ -281,6 +324,7 @@ public class GDEngine {
 			
 			if (data.UserData != null && data.UserData.UserInfo != null) {
 				mUserType = data.UserData.UserInfo.UserType;
+				mUserId = data.UserData.UserInfo.Account;
 			}
 		}
 		
