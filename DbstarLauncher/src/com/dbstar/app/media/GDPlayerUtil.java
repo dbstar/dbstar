@@ -106,6 +106,7 @@ public class GDPlayerUtil {
 			ArrayList<String> subtitleUris = new ArrayList<String>();
 			for (int i = 0; i < content.SubTitles.size(); i++) {
 				ContentData.SubTitle subtitle = content.SubTitles.get(i);
+				Log.d(TAG, "add subtitle=" + subtitle.URI);
 				subtitleUris.add(subtitle.URI);
 			}
 			intent.putStringArrayListExtra("subtitle_uri", subtitleUris);
