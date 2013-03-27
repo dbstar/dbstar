@@ -50,7 +50,7 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 		mSmartcardState = mService.getSmartcardState();
 		updateSmartcardState();
 
-		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
+		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
 			getSmartcardData();
 		}
 	}
@@ -125,10 +125,10 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 		if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {
 			mSmartcardStateView.setText(R.string.smarcard_state_not_in);
 			clearSmartcardData();
-		} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTFAILED) {
+		} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INVALID) {
 			mSmartcardStateView.setText(R.string.smarcard_state_invalid);
 			clearSmartcardData();
-		} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
+		} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
 			mSmartcardStateView.setText(R.string.smarcard_state_normal);
 			getSmartcardData();
 		}

@@ -82,6 +82,17 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		return false;
 	}
 
+	// launcher will call this to check whether smartcard is plugged in.
+	protected void checkSmartcardStatus() {
+		if (mService == null)
+			return;
+
+		boolean isIn = mService.isSmartcardPlugIn();
+		if (!isIn) {
+			notifySmartcardStatusChanged();
+		}
+	}
+
 	protected class MenuPathItem {
 		TextView sTextView;
 		ImageView sDelimiter;
@@ -321,8 +332,16 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			Log.d(TAG, " === mIsStarted == " + mIsStarted
 					+ " mBlockSmartcardPopup =" + mBlockSmartcardPopup);
 
-			if (mIsStarted && !mBlockSmartcardPopup) {
-				notifySmartcardStatusChanged();
+			if (mIsStarted) {
+				if (!mBlockSmartcardPopup) {
+					notifySmartcardStatusChanged();
+				}
+			} else {
+				// settings or guodian app is on top, so send message
+				// and let them to show smard card state info.
+				Intent intent = new Intent(GDCommon.ActionSDStateChange);
+				intent.putExtra(GDCommon.KeySDState, mSmartcardState);
+				sendBroadcast(intent);
 			}
 
 		} else if (type == EventData.EVENT_NEWMAIL) {
@@ -439,14 +458,14 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			dialog.setTitle(R.string.smartcard_status_title);
 			dialog.showSingleButton();
 
-			if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
+			if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED
+					|| mSmartcardState == GDCommon.SMARTCARD_STATE_INERTING) {
 				dialog.setMessage(R.string.smartcard_status_in);
-			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTFAILED) {
-				dialog.setMessage(R.string.smartcard_status_invlid);
-			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {
+			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING
+					|| mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {
 				dialog.setMessage(R.string.smartcard_status_out);
 			} else {
-				dialog = null;
+				dialog.setMessage(R.string.smartcard_status_invlid);
 			}
 			break;
 		}
@@ -460,17 +479,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 		if (dialog != null) {
 			dialog.mOkButton.requestFocus();
-		}
-	}
-
-	protected void checkSmartcardStatus() {
-		if (mService == null)
-			return;
-
-		boolean isIn = mService.isSmartcardPlugIn();
-		if (!isIn) {
-			mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVING;
-			notifySmartcardStatusChanged();
 		}
 	}
 
@@ -515,16 +523,15 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected void alertSmartcardInfo() {
 		mAlertType = DLG_TYPE_SMARTCARD_INFO;
 
-		Log.d(TAG, " ============== display smartcard state dialog ==== "
-				+ mSmartcardState);
+		if (mService != null) {
+			mSmartcardState = mService.getSmartcardState();
+		}
 
-		Intent intent = new Intent(GDCommon.ActionSDStateChange);
-		intent.putExtra(GDCommon.KeySDState, mSmartcardState);
-		sendBroadcast(intent);
-		
+		Log.d(TAG, " ======== display smartcard state ==== " + mSmartcardState);
+
 		if (mSmartcardDlg == null || !mSmartcardDlg.isShowing()) {
 			if (mSmartcardDlg == null
-					&& mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
+					&& mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
 				// not display insert ok dialog.
 				return;
 			}
@@ -534,7 +541,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			displayAlertDlg(mSmartcardDlg, mAlertType);
 		}
 
-		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK) {
+		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
 			hideDlgDelay();
 		} else {
 			if (mTimeoutTask != null) {

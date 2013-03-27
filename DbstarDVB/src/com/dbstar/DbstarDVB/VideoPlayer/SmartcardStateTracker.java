@@ -21,11 +21,10 @@ public class SmartcardStateTracker {
 	// smart card state
 	public static final int SMARTCARD_STATE_NONE = 0x1000;
 	public static final int SMARTCARD_STATE_INERTING = 0x1001;
-	public static final int SMARTCARD_STATE_INERTOK = 0x1002;
-	public static final int SMARTCARD_STATE_INERTFAILED = 0x1003;
+	public static final int SMARTCARD_STATE_INSERTED = 0x1002;
+	public static final int SMARTCARD_STATE_INVALID = 0x1003;
 	public static final int SMARTCARD_STATE_REMOVING = 0x1004;
-	public static final int SMARTCARD_STATE_REMOVEOK = 0x1005;
-	public static final int SMARTCARD_STATE_REMOVEFAILED = 0x1006;
+	public static final int SMARTCARD_STATE_REMOVED = 0x1005;
 
 	private int mSmartcardState = SMARTCARD_STATE_NONE;
 
@@ -72,21 +71,21 @@ public class SmartcardStateTracker {
 				int type = intent.getIntExtra("type", 0);
 				switch (type) {
 				case DbstarServiceApi.DRM_SC_INSERT_OK: {
-					mSmartcardState = SMARTCARD_STATE_INERTOK;
+					mSmartcardState = SMARTCARD_STATE_INSERTED;
 					mHandler.sendEmptyMessage(MSG_SMARTCARD_INSERTED);
 					break;
 				}
 				case DbstarServiceApi.DRM_SC_INSERT_FAILED: {
-					mSmartcardState = SMARTCARD_STATE_INERTFAILED;
+					mSmartcardState = SMARTCARD_STATE_INVALID;
 					mHandler.sendEmptyMessage(MSG_SMARTCARD_INVALID);
 					break;
 				}
 				case DbstarServiceApi.DRM_SC_REMOVE_OK: {
-					mSmartcardState = SMARTCARD_STATE_REMOVEOK;
+					mSmartcardState = SMARTCARD_STATE_REMOVED;
 					break;
 				}
 				case DbstarServiceApi.DRM_SC_REMOVE_FAILED: {
-					mSmartcardState = SMARTCARD_STATE_REMOVEFAILED;
+					mSmartcardState = SMARTCARD_STATE_INVALID;
 					break;
 				}
 				}

@@ -128,11 +128,10 @@ public class GDCommon {
 
 	// smart card state
 	public static final int SMARTCARD_STATE_INERTING = 0x1001;
-	public static final int SMARTCARD_STATE_INERTOK = 0x1002;
-	public static final int SMARTCARD_STATE_INERTFAILED = 0x1003;
+	public static final int SMARTCARD_STATE_INSERTED = 0x1002;
+	public static final int SMARTCARD_STATE_INVALID = 0x1003;
 	public static final int SMARTCARD_STATE_REMOVING = 0x1004;
-	public static final int SMARTCARD_STATE_REMOVEOK = 0x1005;
-	public static final int SMARTCARD_STATE_REMOVEFAILED = 0x1006;
+	public static final int SMARTCARD_STATE_REMOVED = 0x1005;
 	public static final int SMARTCARD_STATE_NONE = 0x1000;
 
 	// playback event

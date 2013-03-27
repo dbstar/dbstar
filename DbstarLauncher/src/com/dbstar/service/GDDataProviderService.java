@@ -229,6 +229,13 @@ public class GDDataProviderService extends Service {
 
 		mPeripheralController = new PeripheralController();
 		mEthernetController = new NetworkController(this, mHandler);
+		
+		// initialize smartcard state
+		if (isSmartcardPlugIn()) {
+			mSmartcardState = GDCommon.SMARTCARD_STATE_INERTING;
+		} else {
+			mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVED;
+		}
 
 		if (mPeripheralController.isHdmiIn()) {
 			Log.d(TAG, "Hdmi: IN");
@@ -691,28 +698,28 @@ public class GDDataProviderService extends Service {
 			}
 
 			case GDCommon.MSG_SMARTCARD_INSERT_OK: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTOK;
-				Log.d(TAG, "===========Smartcard========== rest ok! ");
+				mSmartcardState = GDCommon.SMARTCARD_STATE_INSERTED;
+				Log.d(TAG, "===========Smartcard========== reset ok! ");
 				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 
 			case GDCommon.MSG_SMARTCARD_INSERT_FAILED: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTFAILED;
+				mSmartcardState = GDCommon.SMARTCARD_STATE_INVALID;
 				Log.d(TAG, "===========Smartcard========== invalid!");
 				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 
 			case GDCommon.MSG_SMARTCARD_REMOVE_OK: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVEOK;
+				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVED;
 				Log.d(TAG, "===========Smartcard========== remove ok!");
 				// notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 
 			case GDCommon.MSG_SMARTCARD_REMOVE_FAILED: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVEFAILED;
+				mSmartcardState = GDCommon.SMARTCARD_STATE_INVALID;
 				Log.d(TAG, "===========Smartcard========== remove failed!");
 				// notifySmartcardStatusChange(mSmartcardState);
 				break;
@@ -1568,7 +1575,7 @@ public class GDDataProviderService extends Service {
 	}
 	
 	public boolean isSmartcardReady() {
-		return mSmartcardState == GDCommon.SMARTCARD_STATE_INERTOK;
+		return mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED;
 	}
 
 	public int getSmartcardState() {

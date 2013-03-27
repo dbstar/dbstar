@@ -125,11 +125,10 @@ public class GDBaseActivity extends Activity {
 
 	// smart card state
 	public static final int SMARTCARD_STATE_INERTING = 0x1001;
-	public static final int SMARTCARD_STATE_INERTOK = 0x1002;
-	public static final int SMARTCARD_STATE_INERTFAILED = 0x1003;
+	public static final int SMARTCARD_STATE_INSERTED = 0x1002;
+	public static final int SMARTCARD_STATE_INVALID = 0x1003;
 	public static final int SMARTCARD_STATE_REMOVING = 0x1004;
-	public static final int SMARTCARD_STATE_REMOVEOK = 0x1005;
-	public static final int SMARTCARD_STATE_REMOVEFAILED = 0x1006;
+	public static final int SMARTCARD_STATE_REMOVED = 0x1005;
 	public static final int SMARTCARD_STATE_NONE = 0x1000;
 
 	private static final int DLG_TIMEOUT = 3000;
@@ -148,15 +147,14 @@ public class GDBaseActivity extends Activity {
 				.getString(R.string.smartcard_status_title);
 		String message = null;
 
-		if (state == SMARTCARD_STATE_INERTOK) {
+		if (state == SMARTCARD_STATE_INSERTED ||
+				state == SMARTCARD_STATE_INERTING) {
 			message = getResources().getString(R.string.smartcard_status_in);
-		} else if (state == SMARTCARD_STATE_INERTFAILED) {
-			message = getResources()
-					.getString(R.string.smartcard_status_invlid);
-		} else if (state == SMARTCARD_STATE_REMOVING) {
+		} else if (state == SMARTCARD_STATE_REMOVING ||
+				state == SMARTCARD_STATE_REMOVED) {
 			message = getResources().getString(R.string.smartcard_status_out);
 		} else {
-			message = "";
+			message = getResources().getString(R.string.smartcard_status_invlid);
 		}
 
 		AlertFragment newFragment = AlertFragment.newInstance(
@@ -164,7 +162,7 @@ public class GDBaseActivity extends Activity {
 
 		newFragment.show(ft, "altert_dialog");
 
-		if (state == SMARTCARD_STATE_INERTOK) {
+		if (state == SMARTCARD_STATE_INSERTED) {
 			hideDlgDelay();
 		}
 	}

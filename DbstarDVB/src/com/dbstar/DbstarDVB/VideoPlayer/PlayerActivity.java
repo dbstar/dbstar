@@ -211,7 +211,7 @@ public class PlayerActivity extends Activity {
 			setupSmartcardInfoDlg(state);
 		}
 
-		if (state == SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
+		if (state == SmartcardStateTracker.SMARTCARD_STATE_INSERTED) {
 			hideDlgDelay();
 		}
 	}
@@ -231,13 +231,12 @@ public class PlayerActivity extends Activity {
 		mSmartcardDialog.setTitle(R.string.smartcard_status_title);
 
 		if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTING
-				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
+				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INSERTED) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_in);
 		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVING
-				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVEOK
-				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVEFAILED) {
+				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVED) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_out);
-		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTFAILED) {
+		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INVALID) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_invlid);
 		}
 
@@ -295,7 +294,7 @@ public class PlayerActivity extends Activity {
 				GDAlertDialog alertDlg = (GDAlertDialog) dialog;
 				if (alertDlg.getId() == DLG_ID_SMARTCARDINFO) {
 					int state = mSmartcardTacker.getSmartcardState();
-					if (state != SmartcardStateTracker.SMARTCARD_STATE_INERTOK) {
+					if (state != SmartcardStateTracker.SMARTCARD_STATE_INSERTED) {
 						exitPlayer();
 					}
 				} else if (alertDlg.getId() == DLG_ID_ALERT) {
