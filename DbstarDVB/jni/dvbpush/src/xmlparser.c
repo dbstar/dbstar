@@ -871,28 +871,24 @@ static int cmd_op_refresh(DBSTAR_CMD_OPERATION_S *p)
 	return 0;
 }
 
+
 int command_operate(DBSTAR_CMD_OPERATION_S *p)
 {
 	if(NULL==p){
 		DEBUG("invalid arg\n");
 	}
-typedef struct{
-	DBSTAR_CMD_OP_TYPE_E	type;
-	DBSTAR_CMD_OBJ_TYPE_E	objectType;
-	DBSTAR_CMD_OBJ_S		object;			
-}DBSTAR_CMD_OPERATION_S;
 	
 	switch(p->type){
 		case DBSTAR_CMD_OP_DELETE:
 			switch(p->objectType){
 				case DBSTAR_CMD_OBJ_PUBLICATION:
+				case DBSTAR_CMD_OBJ_PREVIEW:
+					delete_publication_from_monitor(p->object.ID,NULL);
 					disk_manage(p->object.ID, NULL);
 					break;
 				case DBSTAR_CMD_OBJ_PRODUCT:
+					delete_publication_from_monitor(NULL,p->object.ID);
 					disk_manage(NULL, p->object.ID);
-					break;
-				case DBSTAR_CMD_OBJ_PREVIEW:
-					disk_manage(p->object.ID, NULL);
 					break;
 				default:
 					DEBUG("can not process such objectType: %d\n", p->objectType);

@@ -65,15 +65,17 @@ typedef struct tagDataBuffer
 
 typedef struct tagPRG
 {
-	char			id[32];
-	char			uri[256];
-	char			descURI[384];
+	char			id[64];
+	char			uri[512];
+	char			descURI[512];
 	char			caption[256];
 	char			deadline[32];
 	RECEIVETYPE_E	type;
 	long long		cur;
 	long long		total;
 	int				parsed;
+	char			publication_id[64];
+	char			product_id[64];	
 }PROG_S;
 
 static int mid_push_regist(PROG_S *prog);
@@ -1028,10 +1030,14 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].cur = prog->cur;
 			s_prgs[i].total = prog->total;
 			s_prgs[i].parsed = prog->parsed;
+			snprintf(s_prgs[i].publication_id, sizeof(s_prgs[i].publication_id), "%s", prog->publication_id);
+			snprintf(s_prgs[i].product_id, sizeof(s_prgs[i].product_id), "%s", prog->product_id);
 			
-			DEBUG("regist to push[%d]:%s %s %s %s %lld\n",
+			DEBUG("regist to push[%d]:%s(%s) in %s %s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
+					s_prgs[i].publication_id,
+					s_prgs[i].product_id,
 					s_prgs[i].caption,
 					s_prgs[i].uri,
 					s_prgs[i].descURI,
@@ -1052,6 +1058,8 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].cur = prog->cur;
 			s_prgs[i].total = prog->total;
 			s_prgs[i].parsed = prog->parsed;
+			snprintf(s_prgs[i].publication_id, sizeof(s_prgs[i].publication_id), "%s", prog->publication_id);
+			snprintf(s_prgs[i].product_id, sizeof(s_prgs[i].product_id), "%s", prog->product_id);
 			
 /*
  已经解析过的节目，无需注册到push库中，只需要UI上显示即可。
@@ -1064,9 +1072,11 @@ static int mid_push_regist(PROG_S *prog)
 			}
 			s_push_monitor_active++;
 			
-			PRINTF("regist to push[%d]:%s %s %s %lld\n",
+			PRINTF("regist to push[%d]:%s(%s) in %s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
+					s_prgs[i].publication_id,
+					s_prgs[i].product_id,
 					s_prgs[i].uri,
 					s_prgs[i].descURI,
 					s_prgs[i].total);
@@ -1232,7 +1242,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 		DEBUG("no record in table, return\n");
 		return 0;
 	}
-//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed
+//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID
 	int i = 0;
 	int j = 0;
 	int recv_flag = 1;
@@ -1301,6 +1311,9 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 				cur_prog.cur = 0LL;
 				cur_prog.total = totalsize;
 				cur_prog.parsed = atoi(result[i*column+10]);
+				snprintf(cur_prog.publication_id,sizeof(cur_prog.publication_id),"%s",result[i*column+1]);
+				snprintf(cur_prog.product_id,sizeof(cur_prog.product_id),"%s",result[i*column+11]);
+				
 				mid_push_regist(&cur_prog);
 				
 				/*
@@ -1356,7 +1369,7 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
  由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
  所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
 */
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*
@@ -1384,6 +1397,72 @@ int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
 }
 
 #else
+
+
+int delete_publication_from_monitor(char *PublicationID, char *ProductID)
+{
+	int i = 0;
+	int ret = 0;
+	
+	char sqlite_cmd[1024];
+	
+	if(NULL!=PublicationID)
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ProductDesc WHERE ID='%s';",PublicationID);
+	else
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ProductDesc WHERE productID='%s';",ProductID);
+		
+	sqlite_execute(sqlite_cmd);
+	
+	for(i=0; i<PROGS_NUM; i++)
+	{
+		if(1==prog_is_valid(&s_prgs[i])){
+			if(		(NULL!=PublicationID && 0==strcmp(PublicationID,s_prgs[i].publication_id))
+				||	(NULL!=ProductID && 0==strcmp(ProductID,s_prgs[i].product_id))	){
+/*
+ 接收完毕的节目push系统会自动反注册，当播发单过期时，对那些接收不完毕的节目进行反注册并删除垃圾
+ 当反注册时文件被关闭，可以进行删除
+*/
+			
+				PRINTF("[%s]%s %s should be deleted, unregist and clean it\n", s_prgs[i].id,s_prgs[i].publication_id,s_prgs[i].uri);
+				ret = push_dir_unregister(s_prgs[i].uri);
+				if(0==ret){
+					ret = push_dir_remove(s_prgs[i].uri);
+					if(0==ret){
+						usleep(100000);
+					}
+					else if(-1==ret)
+						PRINTF("push remove failed: %s, no such uri\n", s_prgs[i].uri);
+					else
+						PRINTF("push remove failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+				}
+				else if(-1==ret)
+					PRINTF("push unregist failed: %s, no registed uri\n", s_prgs[i].uri);
+				else
+					PRINTF("push unregist failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+				
+				memset(s_prgs[i].id, 0, sizeof(s_prgs[i].id));
+				memset(s_prgs[i].uri, 0, sizeof(s_prgs[i].uri));
+				memset(s_prgs[i].descURI, 0, sizeof(s_prgs[i].descURI));
+				memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
+				memset(s_prgs[i].deadline, 0, sizeof(s_prgs[i].deadline));
+				s_prgs[i].type = 0;
+				s_prgs[i].cur = 0LL;
+				s_prgs[i].total = 0LL;
+				s_prgs[i].parsed = 0;
+				memset(s_prgs[i].publication_id, 0, sizeof(s_prgs[i].publication_id));
+				memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
+				
+				DEBUG("delete Publication %s from monitor and ProductDesc table finish\n", s_prgs[i].publication_id);
+				s_dvbpush_info_refresh_flag = 1;
+			}
+			else
+				DEBUG("%s is not the publication(%s) which you want delete\n", s_prgs[i].publication_id,NULL==PublicationID?ProductID:PublicationID);
+		}
+	}
+	
+	return 0;
+}
+
 
 // 反注册上一个播发单中已处于监控状态的节目，预备要注册新播发单中的节目
 int prog_monitor_reset(void)
@@ -1450,9 +1529,11 @@ int prog_monitor_reset(void)
 #endif
 			}
 			
-			DEBUG("unregist from push[%d]:%s %s %s %lld\n",
+			DEBUG("unregist from push[%d]:%s(%s) in %s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
+					s_prgs[i].publication_id,
+					s_prgs[i].product_id,
 					s_prgs[i].uri,
 					s_prgs[i].descURI,
 					s_prgs[i].total);
@@ -1466,6 +1547,8 @@ int prog_monitor_reset(void)
 			s_prgs[i].cur = 0LL;
 			s_prgs[i].total = 0LL;
 			s_prgs[i].parsed = 0;
+			memset(s_prgs[i].publication_id, 0, sizeof(s_prgs[i].publication_id));
+			memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
 		}
 	}
 	if(rubbish_prog_cnt>0){
@@ -1526,6 +1609,8 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			cur_prog.cur = 0LL;
 			cur_prog.total = totalsize;
 			cur_prog.parsed = atoi(result[i*column+10]);
+			snprintf(cur_prog.publication_id,sizeof(cur_prog.publication_id),"%s",result[i*column+1]);
+			snprintf(cur_prog.product_id,sizeof(cur_prog.product_id),"%s",result[i*column+11]);
 
 /*
  已经解析过的节目，无需注册到push库中，只需要UI上显式即可。
@@ -1575,7 +1660,7 @@ int push_recv_manage_refresh()
  由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
  所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
 */
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed FROM ProductDesc ORDER BY ProductDescID;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc ORDER BY ProductDescID;");
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*

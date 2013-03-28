@@ -36,5 +36,6 @@ void service_xml_waiting_set(int flag);
 int info_xml_refresh(int regist_flag, int push_flags[], unsigned int push_flags_cnt);
 int info_xml_regist();
 void maintenance_thread_awake();
+int delete_publication_from_monitor(char *PublicationID, char *ProductID);
 
 #endif
