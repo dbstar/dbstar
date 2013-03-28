@@ -28,7 +28,7 @@ public class GDPowerController {
 	private static final String TAG = "GDPowerController";
 
 	private static final int MSG_GETPOWER = 0xef1;
-	private static final int SCHEDULE_INTERVAL = 3600000; // 1 minutes
+	private static final int SCHEDULE_INTERVAL = 3600000; // 1 hours
 
 	private static final float StepRulerStep1Angle = 50;
 	private static final float StepRulerStep2Angle = 126;
