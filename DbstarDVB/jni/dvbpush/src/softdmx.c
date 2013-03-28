@@ -664,6 +664,8 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
         return;
     }
     
+    if ((data[0]!= 0x70)&&(data[0]!= 0x73))
+        return;
     mjd = (int)((data[3]<<8)|data[4]);
     year = (int)((mjd -15078.2)/365.25);
     month = (int)((mjd - 14956.1 - (int)(year*365.25))/30.6001);
@@ -693,6 +695,30 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
 	time_t local_time_s = mktime(&tm_tdt);
 	
 // 当前的tdt是1.3和2.0共用，采用的是标准时间，故本地需加8小时转为北京时间。
+
+#if 0  //TOT table parse
+    if (data[0]==0x73)
+    {
+        if(data[10] == 0x58)
+        {
+            unsigned char *dsc_data = data+12;
+            unsigned char add_sub = 0;
+            time_t dif_time=0;
+            //int len = 0, i=0;
+
+            if (data[11] >= 13)
+            {
+                //do
+                {
+                    add_sub = dsc_data[3]&0x1;
+                    dif_time = ((dsc_data[4]>>4)*10 + dsc_data[4]&0xf)*3600 + ((dsc_data[5]>>4)*10+dsc_data[5]&0xf)*60;
+                  //  len += 13;
+                }  // while (len < data[11]);
+            }
+        }
+    }
+
+#endif
 	local_time_s += (8*60*60);
 	DEBUG("rectify time for 8 hours\n");
 	
