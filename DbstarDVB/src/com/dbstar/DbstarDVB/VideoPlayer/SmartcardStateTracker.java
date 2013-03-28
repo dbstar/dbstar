@@ -69,6 +69,8 @@ public class SmartcardStateTracker {
 				mHandler.sendEmptyMessage(MSG_SMARTCARD_REMOVED);
 			} else if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
 				int type = intent.getIntExtra("type", 0);
+				Log.d(TAG, " notifiy type =  " + type);
+
 				switch (type) {
 				case DbstarServiceApi.DRM_SC_INSERT_OK: {
 					mSmartcardState = SMARTCARD_STATE_INSERTED;

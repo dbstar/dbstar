@@ -279,12 +279,16 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 					float powerValue = Float.valueOf(powerNum);
 					float angle = TimingRulerStep1Angle
 							+ (TimingRulerStep2Angle - TimingRulerStep1Angle)
-							* (powerValue / (endValue - startValue));
+							* (powerValue - startValue) / (endValue - startValue);
 					mTimingPowerPointer.setRotation(angle);
 				}
 			} else if (currentStep.Step.equals(ElectricityPrice.STEP_3)) {
-				float angle = TimingRulerStep2Angle + 20;
-				mTimingPowerPointer.setRotation(angle);
+				float startValue = Float.valueOf(currentStep.StepStartValue);
+				float powerValue = Float.valueOf(powerNum);
+				if (powerValue > 0) {
+					float angle = (TimingRulerStep2Angle - 180) * startValue / powerValue  + 180;
+					mTimingPowerPointer.setRotation(angle);
+				}
 			}
 		}
 	}

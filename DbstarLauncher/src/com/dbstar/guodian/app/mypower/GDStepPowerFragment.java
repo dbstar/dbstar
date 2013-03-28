@@ -266,12 +266,16 @@ public class GDStepPowerFragment extends GDBaseFragment {
 					float powerValue = Float.valueOf(powerNum);
 					float angle = StepRulerStep1Angle
 							+ (StepRulerStep2Angle - StepRulerStep1Angle)
-							* (powerValue / (endValue - startValue));
+							* (powerValue - startValue) / (endValue - startValue);
 					mStepPowerPointer.setRotation(angle);
 				}
 			} else if (currentStep.Step.equals(ElectricityPrice.STEP_3)) {
-				float angle = StepRulerStep2Angle + 20;
-				mStepPowerPointer.setRotation(angle);
+				float startValue = Float.valueOf(currentStep.StepStartValue);
+				float powerValue = Float.valueOf(powerNum);
+				if (powerValue > 0) {
+					float angle = (StepRulerStep2Angle - 180) * startValue / powerValue  + 180;
+					mStepPowerPointer.setRotation(angle);
+				}
 			}
 		}
 	}
