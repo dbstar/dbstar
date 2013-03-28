@@ -461,7 +461,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED
 					|| mSmartcardState == GDCommon.SMARTCARD_STATE_INERTING) {
 				dialog.setMessage(R.string.smartcard_status_in);
-			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING
+			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVED
 					|| mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {
 				dialog.setMessage(R.string.smartcard_status_out);
 			} else {
