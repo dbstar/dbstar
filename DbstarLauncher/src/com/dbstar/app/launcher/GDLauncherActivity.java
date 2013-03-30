@@ -584,10 +584,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		return mPowerController.startGuoidanActivity(columnId, menuPath);
 	}
 
-	private Intent startLocalGuodianActivity(String columnId, String menuPath) {
-		return mPowerController.startGuoidanActivity(columnId, menuPath);
-	}
-
 	private void enterSubMenu(Menu newMenu) {
 		
 //		Log.d(TAG, " ==== enter submenu === " + mLeaveStart + " " + mEnterStart);
