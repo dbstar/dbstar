@@ -844,8 +844,18 @@ public class PlayerMenu extends PlayerActivity {
 					}
 				} else {
 					FB_FLAG = false;
+					
 					FF_FLAG = true;
-					FF_LEVEL = 0;
+					FF_LEVEL = 1;
+					mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
+					try {
+						mAmplayer.FastForward(FF_STEP[FF_LEVEL]);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				if (FB_LEVEL == 0) {
 					mPlayButton.setImageResource(R.drawable.play);
 				}
 
@@ -904,8 +914,19 @@ public class PlayerMenu extends PlayerActivity {
 					}
 				} else {
 					FF_FLAG = false;
+					
 					FB_FLAG = true;
-					FB_LEVEL = 0;
+					FB_LEVEL = 1;
+					mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
+
+					try {
+						mAmplayer.BackForward(FB_STEP[1]);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				if (FF_LEVEL == 0) {
 					mPlayButton.setImageResource(R.drawable.play);
 				}
 
