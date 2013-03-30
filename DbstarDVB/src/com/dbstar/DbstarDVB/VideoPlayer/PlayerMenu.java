@@ -823,8 +823,8 @@ public class PlayerMenu extends PlayerActivity {
 			if (FF_FLAG) {
 				if (FF_LEVEL < FF_MAX) {
 					FF_LEVEL = FF_LEVEL + 1;
+					mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
 				} else {
-					// FF_LEVEL = 0;
 					return;
 				}
 
@@ -833,33 +833,25 @@ public class PlayerMenu extends PlayerActivity {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-
-				if (FF_LEVEL == 0) {
-					FF_FLAG = false;
-				} else {
-					mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
-				}
 			}
 
 			if (FB_FLAG) {
 				if (FB_LEVEL > 0) {
 					FB_LEVEL = FB_LEVEL - 1;
+					
+					if (FB_LEVEL > 0) {
+						mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
+					}
 				} else {
-					FB_LEVEL = 0;
+					FB_FLAG = false;
+					FF_FLAG = true;
+					FF_LEVEL = 0;
 				}
 
 				try {
 					mAmplayer.BackForward(FB_STEP[FB_LEVEL]);
 				} catch (RemoteException e) {
 					e.printStackTrace();
-				}
-
-				if (FB_LEVEL == 0) {
-					FB_FLAG = false;
-					FF_FLAG = true;
-					FF_LEVEL = 0;
-				} else {
-					mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
 				}
 			}
 		} else {
@@ -891,8 +883,8 @@ public class PlayerMenu extends PlayerActivity {
 			if (FB_FLAG) {
 				if (FB_LEVEL < FB_MAX) {
 					FB_LEVEL = FB_LEVEL + 1;
+					mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
 				} else {
-					// FB_LEVEL = 0;
 					return;
 				}
 
@@ -901,33 +893,24 @@ public class PlayerMenu extends PlayerActivity {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-
-				if (FB_LEVEL == 0) {
-					FB_FLAG = false;
-				} else {
-					mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
-				}
 			}
 
 			if (FF_FLAG) {
 				if (FF_LEVEL > 0) {
 					FF_LEVEL = FF_LEVEL - 1;
+					if (FF_LEVEL > 0) {
+						mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
+					}
 				} else {
-					FF_LEVEL = 0;
+					FF_FLAG = false;
+					FB_FLAG = true;
+					FB_LEVEL = 0;
 				}
 
 				try {
 					mAmplayer.FastForward(FF_STEP[FF_LEVEL]);
 				} catch (RemoteException e) {
 					e.printStackTrace();
-				}
-
-				if (FF_LEVEL == 0) {
-					FF_FLAG = false;
-					FB_FLAG = true;
-					FB_LEVEL = 0;
-				} else {
-					mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
 				}
 			}
 		} else {
