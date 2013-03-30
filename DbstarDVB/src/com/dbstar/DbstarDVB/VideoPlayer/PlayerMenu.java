@@ -1117,8 +1117,13 @@ public class PlayerMenu extends PlayerActivity {
 	public void playbackStart() {
 		Log.d(TAG, "=== playback start ===");
 		
-		if (!FF_FLAG && !FB_FLAG)
-			mPlayButton.setImageResource(R.drawable.play);
+//		if (!FF_FLAG && !FB_FLAG)
+		FF_FLAG = false;
+		FB_FLAG = false;
+		FF_LEVEL = 0;
+		FB_LEVEL = 0;
+		
+		mPlayButton.setImageResource(R.drawable.play);
 
 		String videoFormat = mMediaInfo.getFullFileName(mUri.getPath());
 		if (videoFormat.endsWith(".mvc")) {
@@ -1131,8 +1136,12 @@ public class PlayerMenu extends PlayerActivity {
 	public void playbackPause() {
 		Log.d(TAG, "=== playback pause ===");
 		
-		if (!FF_FLAG && !FB_FLAG)
-			mPlayButton.setImageResource(R.drawable.pause);
+//		if (!FF_FLAG && !FB_FLAG)
+		FF_FLAG = false;
+		FB_FLAG = false;
+		FF_LEVEL = 0;
+		FB_LEVEL = 0;
+		mPlayButton.setImageResource(R.drawable.pause);
 	}
 
 	public void playbackExit() {
