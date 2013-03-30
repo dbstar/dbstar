@@ -1219,6 +1219,16 @@ public class PlayerMenu extends PlayerActivity {
 		Log.d(TAG, "=== playback searchOk ===");
 //		FF_FLAG = false;
 //		FB_FLAG = false;
+		if (FF_FLAG) {
+			FF_FLAG = false;
+			FF_LEVEL = 0;
+		}
+		
+		if (FB_FLAG) {
+			FB_FLAG = false;
+			FB_LEVEL = 0;
+		}
+		
 	}
 
 	public void playbackInited() {
