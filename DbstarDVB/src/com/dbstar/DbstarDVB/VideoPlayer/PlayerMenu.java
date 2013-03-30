@@ -833,29 +833,29 @@ public class PlayerMenu extends PlayerActivity {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-			}
-
-			if (FB_FLAG) {
+			} else if (FB_FLAG) {
 				if (FB_LEVEL > 0) {
 					FB_LEVEL = FB_LEVEL - 1;
 					
 					if (FB_LEVEL > 0) {
 						mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
 					}
-				} else {
-					FB_FLAG = false;
-					
-					FF_FLAG = true;
-					FF_LEVEL = 1;
-					mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
-					try {
-						mAmplayer.FastForward(FF_STEP[FF_LEVEL]);
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
 				}
+//				else {
+//					FB_FLAG = false;
+//					
+//					FF_FLAG = true;
+//					FF_LEVEL = 1;
+//					mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
+//					try {
+//						mAmplayer.FastForward(FF_STEP[FF_LEVEL]);
+//					} catch (RemoteException e) {
+//						e.printStackTrace();
+//					}
+//				}
 				
 				if (FB_LEVEL == 0) {
+					FB_FLAG = false;
 					mPlayButton.setImageResource(R.drawable.play);
 				}
 
@@ -864,6 +864,17 @@ public class PlayerMenu extends PlayerActivity {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
+			} else {
+				FF_FLAG = true;
+				FF_LEVEL = 1;
+
+				try {
+					mAmplayer.FastForward(FF_STEP[1]);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+
+				mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
 			}
 		} else {
 			FF_FLAG = true;
@@ -904,29 +915,29 @@ public class PlayerMenu extends PlayerActivity {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-			}
-
-			if (FF_FLAG) {
+			} else if (FF_FLAG) {
 				if (FF_LEVEL > 0) {
 					FF_LEVEL = FF_LEVEL - 1;
 					if (FF_LEVEL > 0) {
 						mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
 					}
-				} else {
-					FF_FLAG = false;
-					
-					FB_FLAG = true;
-					FB_LEVEL = 1;
-					mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
-
-					try {
-						mAmplayer.BackForward(FB_STEP[1]);
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
 				}
+//				else {
+//					FF_FLAG = false;
+//					
+//					FB_FLAG = true;
+//					FB_LEVEL = 1;
+//					mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
+//
+//					try {
+//						mAmplayer.BackForward(FB_STEP[1]);
+//					} catch (RemoteException e) {
+//						e.printStackTrace();
+//					}
+//				}
 				
 				if (FF_LEVEL == 0) {
+					FF_FLAG = false;
 					mPlayButton.setImageResource(R.drawable.play);
 				}
 
@@ -935,6 +946,16 @@ public class PlayerMenu extends PlayerActivity {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
+			} else {
+				try {
+					mAmplayer.BackForward(FB_STEP[1]);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				FB_FLAG = true;
+				FB_LEVEL = 1;
+
+				mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
 			}
 		} else {
 			try {
