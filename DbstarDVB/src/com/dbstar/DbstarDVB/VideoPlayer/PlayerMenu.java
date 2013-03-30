@@ -608,6 +608,10 @@ public class PlayerMenu extends PlayerActivity {
 		if (mAmplayer == null || INITOK == false) {
 			return;
 		}
+		
+		if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
+			return;
+		}
 
 		try {
 			int seekTo = mCurrentTime + DefaultSeekStep;
@@ -622,6 +626,10 @@ public class PlayerMenu extends PlayerActivity {
 
 	void seekBackwardOneStep() {
 		if (mAmplayer == null || INITOK == false) {
+			return;
+		}
+		
+		if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
 			return;
 		}
 
@@ -848,18 +856,21 @@ public class PlayerMenu extends PlayerActivity {
 
 				if (FB_LEVEL == 0) {
 					FB_FLAG = false;
+					FF_FLAG = true;
+					FF_LEVEL = 0;
 				} else {
 					mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
 				}
 			}
 		} else {
+			FF_FLAG = true;
+			FF_LEVEL = 1;
+
 			try {
 				mAmplayer.FastForward(FF_STEP[1]);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-			FF_FLAG = true;
-			FF_LEVEL = 1;
 
 			mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
 		}
@@ -913,6 +924,8 @@ public class PlayerMenu extends PlayerActivity {
 
 				if (FF_LEVEL == 0) {
 					FF_FLAG = false;
+					FB_FLAG = true;
+					FB_LEVEL = 0;
 				} else {
 					mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
 				}
@@ -931,6 +944,8 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void exitPlayer() {
+		Log.d(TAG, "=== exit player ===");
+
 		// if (SettingsVP.chkEnableOSD2XScale() == true) {
 		// hideOSDView();
 		// }
@@ -1117,6 +1132,8 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void playbackStart() {
+		Log.d(TAG, "=== playback start ===");
+		
 		if (!FF_FLAG && !FB_FLAG)
 			mPlayButton.setImageResource(R.drawable.play);
 
@@ -1129,11 +1146,15 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void playbackPause() {
+		Log.d(TAG, "=== playback pause ===");
+		
 		if (!FF_FLAG && !FB_FLAG)
 			mPlayButton.setImageResource(R.drawable.pause);
 	}
 
 	public void playbackExit() {
+		Log.d(TAG, "=== playback exit ===");
+		
 		closeSubtitleView();
 
 		mSubtitleParameter.totalnum = 0;
@@ -1152,7 +1173,8 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void playbackComplete() {
-		// deinitializePlayer();
+		Log.d(TAG, "=== playback complete ===");
+		
 		mPlayPosition = 0;
 		saveBookmark(0);
 
@@ -1167,6 +1189,8 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void playbackStopped() {
+		Log.d(TAG, "=== playback stopped ===");
+		
 		saveBookmark(mCurrentTime);
 	}
 
@@ -1186,11 +1210,13 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void searchOk() {
+		Log.d(TAG, "=== playback searchOk ===");
 		// FF_FLAG = false;
 		// FB_FLAG = false;
 	}
 
 	public void playbackInited() {
+		Log.d(TAG, "=== playback inited ===");
 
 		super.playbackInited();
 

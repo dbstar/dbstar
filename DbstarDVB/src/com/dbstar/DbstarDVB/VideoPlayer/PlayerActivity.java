@@ -742,6 +742,7 @@ public class PlayerActivity extends Activity {
 					playbackError(msg.arg2);
 					break;
 				case VideoInfo.PLAYER_SEARCHOK:
+					searchOk();
 					break;
 
 				case VideoInfo.DIVX_AUTHOR_ERR: {
