@@ -924,6 +924,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		long time = AnimationUtils.currentAnimationTimeMillis();
         mGallerySlideFromBottomAnim.setStartTime(time);
         mMainMenu.startAnimation(mGallerySlideFromBottomAnim);
+
+		if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
+			displayPopupMenu(false);
+		}
+		
+		mPopupMenu.clearChoices();
+		mPopupMenuAdapter.setDataSet(null);
+		mPopupMenuAdapter.notifyDataSetChanged();
 	}
 
 	// Animation callback
@@ -1213,8 +1221,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				subMenu.MenuLevel = columnLevel;
 				menuItem.SubMenu = subMenu;
 
-				Menu topMenu = mMenuStack.peek();
-				if (index == topMenu.FocusedPosition) {
+				if (index == menu.FocusedPosition) {
 
 					mPopupMenu.clearChoices();
 					mPopupMenuAdapter.setDataSet(columns);
