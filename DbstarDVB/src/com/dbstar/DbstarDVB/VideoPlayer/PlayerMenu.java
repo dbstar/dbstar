@@ -846,6 +846,7 @@ public class PlayerMenu extends PlayerActivity {
 					FB_FLAG = false;
 					FF_FLAG = true;
 					FF_LEVEL = 0;
+					mPlayButton.setImageResource(R.drawable.play);
 				}
 
 				try {
@@ -905,6 +906,7 @@ public class PlayerMenu extends PlayerActivity {
 					FF_FLAG = false;
 					FB_FLAG = true;
 					FB_LEVEL = 0;
+					mPlayButton.setImageResource(R.drawable.play);
 				}
 
 				try {
@@ -1086,13 +1088,24 @@ public class PlayerMenu extends PlayerActivity {
 				return;
 			}
 
+			cancelResumeDelayed();
+
 			// pause player
 			onPlayButtonPressed();
 		} else {
 			if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
-				onPlayButtonPressed();
+				//onPlayButtonPressed();
+				mHandler.sendEmptyMessageDelayed(MSG_RESUME_DELAYED, 1000);
 			}
 		}
+	}
+	
+	public void resumeDelayed() {
+		onPlayButtonPressed();
+	}
+	
+	public void cancelResumeDelayed() {
+		mHandler.removeMessages(MSG_RESUME_DELAYED);
 	}
 
 	public void updatePlaybackTimeInfo(int currentTime, int totalTime) {
@@ -1224,17 +1237,7 @@ public class PlayerMenu extends PlayerActivity {
 		Log.d(TAG, "=== playback searchOk ===");
 //		FF_FLAG = false;
 //		FB_FLAG = false;
-		// don't add these code.
-//		if (FF_FLAG) {
-//			FF_FLAG = false;
-//			FF_LEVEL = 0;
-//		}
-//		
-//		if (FB_FLAG) {
-//			FB_FLAG = false;
-//			FB_LEVEL = 0;
-//		}
-//		
+		// don't add these code.		
 	}
 
 	public void playbackInited() {

@@ -103,17 +103,30 @@ public class PlayerActivity extends Activity {
 
 	// Application Message
 	protected static final int MSG_DIALOG_POPUP = 0x30001;
+	protected static final int MSG_RESUME_DELAYED = 0x30002;
 
 	protected boolean mIsSmartcardIn = false;
 
 	protected SmartcardStateTracker mSmartcardTacker = null;
 
+	protected void resumeDelayed() {
+		
+	}
+	
+	protected void cancelResumeDelayed() {
+		
+	}
+	
 	protected Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_DIALOG_POPUP:
 				showMediaInfoDlg();
 				break;
+			case MSG_RESUME_DELAYED: {
+				resumeDelayed();
+				break;
+			}
 			case SmartcardStateTracker.MSG_SMARTCARD_INSERTING: {
 				showSmartcardInfo();
 				break;
