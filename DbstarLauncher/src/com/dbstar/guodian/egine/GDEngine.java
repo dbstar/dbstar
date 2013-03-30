@@ -97,12 +97,14 @@ public class GDEngine {
 		
 		if (mState != STATE_CONNECTED && mState != STATE_CONNECTING) {
 			// not connected
+			mState = STATE_CONNECTING;
 			mClient.setHostAddress(ip, port);
 			mClient.connectToServer();
 		}
 	}
 	
 	public void restart() {
+		Log.d(TAG, " == restart == ");
 		mState = STATE_NONE;
 		mLoginState = LOGIN_NOTLOGIN;
 		mRestart = true;
@@ -111,7 +113,7 @@ public class GDEngine {
 
 	public void stop() {
 		Log.d(TAG, " ===== stop guodian engine ======= ");
-
+		mState = STATE_DISCONNECTING;
 		mClient.stop();
 	}
 	
@@ -258,6 +260,9 @@ public class GDEngine {
 	private void handleRequestError(int error) {
 		if (error == GDConstract.ErrorCodeRepeatLogin) {
 			mRepeatLoginCount++;
+			
+			Log.d(TAG, " == handleRequestError == " + error);
+			
 			if (mRepeatLoginCount == REPEATLOGIN_COUNT) {
 				mRepeatLoginCount = 0;
 				return;
@@ -268,6 +273,7 @@ public class GDEngine {
 	}
 	
 	private void handleSocketError() {
+		Log.d(TAG, " == handleSocketError == ");
 		restart();
 	}
 
@@ -290,6 +296,8 @@ public class GDEngine {
 	}
 	
 	private void handleDisconnected() {
+		Log.d(TAG, " == handleDisconnected == ");
+		
 		mState = STATE_DISCONNECTED;
 		
 		if (mRestart) {
@@ -301,6 +309,9 @@ public class GDEngine {
 	}
 	
 	private void handleConnectedAlready() {
+		
+		Log.d(TAG, " == handleConnectedAlready == state =" + mState + " login=" + mLoginState);
+		
 		if (mState != STATE_CONNECTED) {
 			mState = STATE_CONNECTED;
 		}

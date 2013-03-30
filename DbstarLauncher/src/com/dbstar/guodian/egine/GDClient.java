@@ -429,8 +429,6 @@ public class GDClient {
 	}
 
 	private void doConnectToServer() {
-		boolean connected = false;
-
 		try {
 			Log.d(TAG, " ====== doConnectToServer ===");
 
@@ -438,10 +436,12 @@ public class GDClient {
 				if (mSocket.isConnected()) {
 					// socket has already been connected.
 					// TODO: send a callback to caller?
+					Log.d(TAG, " == socket already connected == ");
 					mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECT_ALREADY);
 					return;
 				} else {
 					if (!mSocket.isClosed()) {
+						Log.d(TAG, " == close socket == ");
 						mSocket.close();
 					}
 				}
@@ -457,20 +457,19 @@ public class GDClient {
 			mIn = new BufferedReader(new InputStreamReader(
 					mSocket.getInputStream(), "UTF-8"));
 
-			Log.d(TAG, " ==== mIn " + mSocket.isInputShutdown());
+			Log.d(TAG, " ==== input is shutdwon= " + mSocket.isInputShutdown());
 
 			mOut = new BufferedOutputStream(new DataOutputStream(
 					mSocket.getOutputStream()));
 
-			Log.d(TAG, " ==== mOut " + mSocket.isOutputShutdown());
+			Log.d(TAG, " ==== output is shutdown= " + mSocket.isOutputShutdown());
 
 			mInThread = new ReceiveThread(mSocket, mIn, mClientHandler);
 			mInThread.start();
 
-			Log.d(TAG, " ====== doConnectToServer ===" + mSocket.isConnected());
+			Log.d(TAG, " ====== socket connected =" + mSocket.isConnected());
 
 			if (mSocket.isConnected()) {
-				connected = true;
 				mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECTED);
 			}
 		} catch (IOException e) {

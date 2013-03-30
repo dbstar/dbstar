@@ -70,8 +70,9 @@ public class ReceiveThread extends Thread {
 					e.printStackTrace();
 					mSocket = null;
 					mExit.set(true);
+					Log.d(TAG, "Receive thread Exit!");
+
 					mClientHander.sendEmptyMessage(GDClient.MSG_SOCKET_ERROR);
-					Log.d(TAG, "Exit receive thread!");
 				}
 			}
 		}
