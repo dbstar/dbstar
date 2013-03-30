@@ -308,6 +308,7 @@ public class GDDataProviderService extends Service {
 				|| serverPort.isEmpty())
 			return;
 
+		mGuodianEngine.setReconnectTime(mConfigure.getGuodianReconnectTime());
 		mGuodianEngine
 				.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
 	}

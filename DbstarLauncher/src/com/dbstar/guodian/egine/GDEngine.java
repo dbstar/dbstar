@@ -45,6 +45,7 @@ public class GDEngine {
 	private String mCtrlNoGuid;
 	private String mUserType;
 	private String mUserId;
+	private long mReconnectTime;
 	
 	private static final int REPEATLOGIN_COUNT = 20;
 	private int mRepeatLoginCount = 0;
@@ -101,6 +102,10 @@ public class GDEngine {
 			mClient.setHostAddress(ip, port);
 			mClient.connectToServer();
 		}
+	}
+	
+	public void setReconnectTime (long time) {
+		mReconnectTime = time;
 	}
 	
 	public void restart() {
@@ -303,8 +308,7 @@ public class GDEngine {
 		if (mRestart) {
 			mRestart = false;
 			
-			// we try to reconnect after 10 minutes.
-			mClient.connectToServerDelayed(600000);
+			mClient.connectToServerDelayed(mReconnectTime);
 		}
 	}
 	

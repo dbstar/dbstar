@@ -25,7 +25,7 @@ public class GDSystemConfigure {
 	public static final String DefaultDbstarDBFile = "/data/dbstar/Dbstar.db";
 	public static final String DefaultColumnResDir = "/data/dbstar/ColumnRes";
 	public static final String DefaultDesFile = "/info/desc/Publication.xml";
-
+	public static final long DefaultReconnectTime = 30000;
 	// Property Name
 	private static final String PROPERTY_LOCALIZATION = "language";
 	private static final String PROPERTY_DBSTARDATABSE = "DbstarDatabase";
@@ -33,6 +33,7 @@ public class GDSystemConfigure {
 	private static final String PROPERTY_COLUMNRES_DIR = "ColumnRes";
 	private static final String PROPERTY_GUODIANSERVER = "GuodianServer";
 	private static final String PROPERTY_PUSHEDMESSAGE = "PushedMessage";
+	private static final String PROPERTY_GUODIAN_RECONNECT_TIME = "GuodianReconnectTime";
 
 	private String Property_GuoWangDongTai;
 	private String Property_GuoWangKuaiXun;
@@ -65,6 +66,7 @@ public class GDSystemConfigure {
 	private String mLocalization = GDCommon.LangCN;
 	private String mGuodianServer = null;
 	private String mDbstarDatabase = null;
+	private long mGuodianReconnectTime = DefaultReconnectTime;
 
 	// demo data for push message
 	List<String> mPushedMessage = null;
@@ -148,6 +150,10 @@ public class GDSystemConfigure {
 
 	public String getStorageDir() {
 		return mStorageDir;
+	}
+	
+	public long getGuodianReconnectTime() {
+		return mGuodianReconnectTime;
 	}
 
 	public String getDetailsDataFile(ContentData content) {
@@ -364,7 +370,11 @@ public class GDSystemConfigure {
 						}
 
 						mPushedMessage.add(property[1].trim());
-
+					} else if (property[0].equals(PROPERTY_GUODIAN_RECONNECT_TIME)) {
+						String time = property[1].trim();
+						if (time.length()>0) {
+							mGuodianReconnectTime = Long.parseLong(time);
+						}
 					} else {
 						String category = property[0].trim();
 						for (int i = 0; i < mCategoryContents.length; i++) {
