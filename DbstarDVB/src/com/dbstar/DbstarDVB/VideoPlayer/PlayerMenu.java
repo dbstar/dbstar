@@ -1096,6 +1096,11 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	public void updatePlaybackTimeInfo(int currentTime, int totalTime) {
+		if (currentTime == 0 && FB_FLAG) {
+			FB_FLAG = false;
+			FB_LEVEL = 0;
+			mPlayButton.setImageResource(R.drawable.play);
+		}
 
 		mCurrentTimeView.setText(Utils.secToTime(currentTime, false));
 		mTotalTimeView.setText(Utils.secToTime(totalTime, true));
@@ -1140,13 +1145,8 @@ public class PlayerMenu extends PlayerActivity {
 	public void playbackStart() {
 		Log.d(TAG, "=== playback start ===");
 		
-		//if (!FF_FLAG && !FB_FLAG)
-		FF_FLAG = false;
-		FB_FLAG = false;
-		FF_LEVEL = 0;
-		FB_LEVEL = 0;
-
-		mPlayButton.setImageResource(R.drawable.play);
+		if (!FF_FLAG && !FB_FLAG)
+			mPlayButton.setImageResource(R.drawable.play);
 
 		String videoFormat = mMediaInfo.getFullFileName(mUri.getPath());
 		if (videoFormat.endsWith(".mvc")) {
