@@ -13,7 +13,7 @@ dbstar_init()
 		mv /system/app/Launcher2.apk /system/app/Launcher2.apk.bk
 	fi
 
-	if [ -e "/data/dbstar/Dbstar.db" ]; then
+	if [ -s "/data/dbstar/Dbstar.db" ]; then
 		echo "dbstar already inited!"
 	else
 		cp -rf /system/etc/dbstar/Dbstar.db /data/dbstar/
@@ -23,7 +23,7 @@ dbstar_init()
 		setprop dbstar.inited 1
 	fi
 
-	if [ -e "/data/dbstar/Smarthome.db" ]; then
+	if [ -s "/data/dbstar/Smarthome.db" ]; then
 		echo "Smarthome.db already inited!"
 	else
 		cp -rf /system/etc/dbstar/Smarthome.db /data/dbstar/
