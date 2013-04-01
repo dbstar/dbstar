@@ -46,7 +46,7 @@ on init
     symlink /sys/kernel/debug /d
 
 # create mountpoints
-    mkdir /mnt/sdcard 0000 system system
+    mkdir /mnt/sdcard 0777 system system
 
 # Create cgroup mount point for cpu accounting
     mkdir /acct
@@ -241,8 +241,8 @@ on boot
 
 # create dbstar dir
     mkdir /data/dbstar 0777 system system
-    write /proc/sys/net/core/rmem_max 524288
-    write /proc/sys/net/core/rmem_default 524288
+    write /proc/sys/net/core/rmem_max 16777216
+    write /proc/sys/net/core/rmem_default 16777216
     chown system system /proc/sys/net/core/rmem_max
     chown system system /proc/sys/net/core/rmem_default
     chmod 0777 /sys/class/gpio/cmd
