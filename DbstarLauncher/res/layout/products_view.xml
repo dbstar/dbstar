@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
+    android:layout_width="1280dp"
+    android:layout_height="720dp"
+    android:background="@drawable/view_background" >
+
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="108dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+
+        <!--
+             <ImageView
+            android:layout_width="269dp"
+            android:layout_height="70dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="40dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/logo_dbstar" />
+-->
+
+        <TextView
+            android:id="@+id/pageNumberView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="1186dp"
+            android:layout_marginTop="80dp"
+            android:gravity="top|center_horizontal"
+            android:textColor="#3d3d3d"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/content"
+        android:layout_width="1033dp"
+        android:layout_height="569dp"
+        android:layout_below="@id/view_header"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="0dp"
+        android:background="@drawable/content_bg" >
+
+        <TextView
+            android:id="@+id/operator_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/operator_info"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/card_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/operator_info"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/smartcard_number"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/card_id"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/label_ordered_products"
+            android:textColor="#000000"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="196dp"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="304dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/label_ordered_products_name"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="1033dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/label_ordered_products_time"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/product_list"
+            android:layout_width="match_parent"
+            android:layout_height="360dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="254dp"
+            android:cacheColorHint="@android:color/transparent"
+            android:clipToPadding="false"
+            android:divider="#00000000"
+            android:dividerHeight="0dp"
+            android:drawSelectorOnTop="false"
+            android:listPreferredItemHeight="44dp"
+            android:listSelector="#00000000"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:scrollbarStyle="outsideOverlay" />
+    </RelativeLayout>
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        layout="@layout/footerview" />
+
+</RelativeLayout>

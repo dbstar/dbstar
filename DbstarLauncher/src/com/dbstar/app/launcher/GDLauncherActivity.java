@@ -15,8 +15,10 @@ import com.dbstar.app.GDReceiveStatusActivity;
 import com.dbstar.app.GDTVActivity;
 import com.dbstar.app.alert.GDForceUpgradeActivity;
 import com.dbstar.app.alert.GDUpgradeActivity;
+import com.dbstar.app.help.GDHelpActivity;
 import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGeneralInfoActivity;
+import com.dbstar.app.settings.GDProductsActivity;
 import com.dbstar.app.settings.GDSmartcardActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
 import com.dbstar.guodian.app.mypower.GDPowerController;
@@ -527,6 +529,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if (columnId.equals(GDCommon.ColumnIDSmartcardSettings)) {
 			intent = new Intent();
 			intent.setClass(this, GDSmartcardActivity.class);
+		} else if (columnId.equals(GDCommon.ColumnIDHelp)) {
+			intent = new Intent();
+			intent.setClass(this, GDHelpActivity.class);
+		} else if (columnId.equals(GDCommon.ColumnIDProducts)) {
+			intent = new Intent();
+			intent.setClass(this, GDProductsActivity.class);
 		}
 
 		if (intent != null) {

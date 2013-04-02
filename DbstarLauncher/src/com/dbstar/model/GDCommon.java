@@ -78,7 +78,9 @@ public class GDCommon {
 	public static final String ColumnIDFileBrowser = "L9904";
 	public static final String ColumnIDAdvancedSettings = "L9905";
 	public static final String ColumnIDSmartcardSettings = "L9906";
-
+	public static final String ColumnIDHelp = "L9908";
+	public static final String ColumnIDProducts = "L9907";
+	
 	public static final String ColumnIDGuodianSmartPower = "G1";
 	public static final String ColumnIDGuodianHomeEfficiency = "G2";
 	public static final String ColumnIDGuodianSmartHome = "G3";

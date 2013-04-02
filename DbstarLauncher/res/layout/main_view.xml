@@ -550,7 +550,7 @@
         android:focusable="false"
         android:scaleType="fitXY"
         android:src="@drawable/menulevel1_focuseditem_bg" />
-
+
     <FrameLayout
 		android:id="@+id/menu_container"
         android:layout_width="1072dp"

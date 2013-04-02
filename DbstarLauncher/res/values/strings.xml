@@ -236,4 +236,13 @@
  
     <string name="text_querypower">查询电价</string>
     <string name="text_query">查询</string>
+    
+    <string name="help_title_remote_control">遥控器使用说明</string>
+    <string name="help_title_settings">参数设置信息</string>
+    <string name="help_title_failure">常见故障排除</string>
+    
+    <string name="operator_info">运营商&#160;：&#160;航天数字传媒有限公司</string>
+    <string name="label_ordered_products">订购产品</string>
+    <string name="label_ordered_products_name">产品名称</string>
+    <string name="label_ordered_products_time">有效期</string>
 </resources>
