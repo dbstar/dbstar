@@ -175,6 +175,11 @@ static int service_insert(DBSTAR_SERVICE_S *p)
 		DEBUG("service id %s is not mine(%s)\n", p->ServiceID, serviceID_get());
 		service_status = SERVICE_STATUS_INVALID;
 	}
+#else
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Service;");
+	sqlite_transaction_exec(sqlite_cmd);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='Service' AND ServiceID!='%s';", serviceID_get());
+	sqlite_transaction_exec(sqlite_cmd);
 #endif
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Service(ServiceID,RegionCode,OnlineTime,OfflineTime,Status) VALUES('%s','%s','%s','%s','%d');",
@@ -2699,9 +2704,8 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 					/*
 					 新push只接收注册的文件，所以不用处理非当前业务的文件夹进行反注册
-					 || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
 					*/
-					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) ){
+					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
 						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
 								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
 #if 0
@@ -2715,6 +2719,11 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					}
 					else
 					{
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Product;");
+						sqlite_transaction_exec(sqlite_cmd);
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='Product' AND ServiceID!='%s';", serviceID_get());
+						sqlite_transaction_exec(sqlite_cmd);
+						
 						/*
 						在父节点上定义子节点的结构体，并清空
 						*/
@@ -2781,6 +2790,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						*/
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='L98' AND ColumnType!='L99' AND ColumnType!='SmartLife';");
 						sqlite_transaction_exec(sqlite_cmd);
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='Column' AND ServiceID!='%s' AND ServiceID!='0';", serviceID_get());
+						sqlite_transaction_exec(sqlite_cmd);
+						
 						s_column_SequenceNum = 10;	// 允许一些内置的栏目（如国电业务）排在下发栏目之前，故SequenceNum从10计起
 								
 						DBSTAR_COLUMN_S column_s;
@@ -2809,6 +2821,8 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 #else
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM GuideList WHERE DateValue<datetime('now','localtime','-2 days');");
+						sqlite_transaction_exec(sqlite_cmd);
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='GuideList' AND ServiceID!='%s';", serviceID_get());
 						sqlite_transaction_exec(sqlite_cmd);
 #endif
 						
@@ -2839,6 +2853,8 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						 不考虑PushStartTime和PushEndTime的限制，只要有新的播发单就删除旧单，简化逻辑
 						*/
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
+						sqlite_transaction_exec(sqlite_cmd);
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='ProductDesc' AND ServiceID!='%s';", serviceID_get());
 						sqlite_transaction_exec(sqlite_cmd);
 						
 						DEBUG("old ver: %s, new ver: %s\n",old_xmlver, xmlinfo.Version);

@@ -40,6 +40,7 @@ typedef enum {
 	CMD_DRM_EMAILHEADS_READ			= 0x0006a,    // 读取所有邮件头
 	CMD_DRM_EMAILCONTENT_READ		= 0x0006b,    // 读取指定邮件内容
 	CMD_DRM_PVODPROGRAMINFO_READ	= 0x0006c,    // 读取加密文件信息
+	CMD_DRM_PURCHASEINFO_READ		= 0x0006d,    // 读取购买信息，基于授权信息，将产品ID替换为产品名称
 
 	CMD_MAX                         = 0x0FFFF,
 	
