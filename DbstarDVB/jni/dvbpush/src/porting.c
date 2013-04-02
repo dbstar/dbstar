@@ -1084,6 +1084,93 @@ static int smartcard_entitleinfo_get(char *buf, unsigned int size)
 	return 0;
 }
 
+static int smartcard_purchaseinfo_get(char *buf, unsigned int size)
+{
+	if(NULL==buf || 0==size){
+		DEBUG("invalid args\n");
+		return -1;
+	}
+	
+	char		BeginDate[64];
+	char		ExpireDate[64];
+	unsigned int 		i = 0;
+	
+//	char		issue_begin[64];
+//	char		issue_end[64];
+	
+	// 纯粹的检查，只有当硬盘正常时，才能真正更新到数组和数据表SCEntitleInfo
+	if(1==smartcard_entitleinfo_refresh())
+		pushinfo_reset();
+	
+	// 读取授权信息要直接从智能卡中读取，避免业务逻辑影响其正确性
+	DEBUG("smartcard_entitleinfo_refresh finish. now read entitleinfo(purchaseinfo) directly\n");
+	
+	int ret = -1;
+	CDCA_U32 dwFrom = 0, dwNum = 128;
+	char SmartCardSn[128];
+	char ProductName[256];
+	char sqlite_cmd[512];
+	SCDCAPVODEntitleInfo EntitleInfo[128];
+	
+	memset(SmartCardSn,0,sizeof(SmartCardSn));
+	ret = CDCASTB_GetCardSN(SmartCardSn);
+	if(CDCA_RC_OK==ret)
+	{
+		DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
+		ret = 0;
+		
+/*
+ 查询授权信息
+*/
+		int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
+		if(CDCA_RC_OK==ret){
+			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
+			for(i=0;i<dwNum;i++){
+				memset(BeginDate, 0, sizeof(BeginDate));
+				memset(ExpireDate, 0, sizeof(ExpireDate));
+				if(		0==drm_time_convert(EntitleInfo[i].m_WatchStartTime, BeginDate, sizeof(BeginDate))
+					&& 	0==drm_time_convert(EntitleInfo[i].m_WatchEndTime, ExpireDate, sizeof(ExpireDate))){
+					;
+				}
+				
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='Product' AND EntityID='%lu' AND StrLang='%s';", 
+					EntitleInfo[i].m_ID,language_get());
+				
+				memset(ProductName,0,sizeof(ProductName));
+				if(0==str_sqlite_read(ProductName,sizeof(ProductName),sqlite_cmd)){
+					if(0==strlen(ProductName)){
+						DEBUG("length of ProductName is 0, filled with product id: %lu\n",EntitleInfo[i].m_ID);
+						snprintf(ProductName, sizeof(ProductName), "%lu", EntitleInfo[i].m_ID);
+					}
+					else
+						DEBUG("read ProductName: %s\n", ProductName);
+				}
+				else{
+					DEBUG("read ProductName failed, filled with product id: %lu\n",EntitleInfo[i].m_ID);
+					snprintf(ProductName, sizeof(ProductName), "%lu", EntitleInfo[i].m_ID);
+				}
+				
+				if(0==i)
+					snprintf(buf,size,"%s\t%s 至 %s",ProductName,BeginDate,ExpireDate);
+				else
+					snprintf(buf+strlen(buf),size-strlen(buf),"\n%s\t%s 至 %s",ProductName,BeginDate,ExpireDate);
+			}
+			
+			DEBUG("[%s]\n", buf);
+			return 0;
+		}
+		else{
+			drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
+			return -1;
+		}
+	}
+	else{
+		drm_errors("CDCASTB_GetCardSN", ret);
+		return -1;
+	}
+	return 0;
+}
+
 static void printf_statfs_ret(char *statfs_dir,int ret)
 {
 	switch(ret){
@@ -1567,6 +1654,10 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("CMD_DRM_ENTITLEINFO_READ\n");
 			smartcard_entitleinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
+		case CMD_DRM_PURCHASEINFO_READ:
+			DEBUG("CMD_DRM_PURCHASEINFO_READ\n");
+			smartcard_purchaseinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			break;
 		case CMD_DRM_ENTITLEINFO_OUTPUT:
 			DEBUG("CMD_DRM_ENTITLEINFO_OUTPUT\n");
 			smartcard_EntitleFile_output(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
@@ -1998,14 +2089,14 @@ static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int 
 	unsigned int drm_min	= ((drm_time & 0x000007e0)>>5);
 	unsigned int drm_2secs	= (drm_time & 0x0000001f);
 	
-	DEBUG("drm_time=%u, drm_date=%u, drm_hour=%u, drm_min=%u, drm_2secs=%u\n", drm_time,drm_date,drm_hour,drm_min, drm_2secs);
+//	DEBUG("drm_time=%u, drm_date=%u, drm_hour=%u, drm_min=%u, drm_2secs=%u\n", drm_time,drm_date,drm_hour,drm_min, drm_2secs);
 	
 	sec_appointed += ((drm_date*24*60*60)+(drm_hour*60*60)+(drm_min*60)+(drm_2secs*2));
 	
 	p = localtime(&sec_appointed);
 	snprintf(date_str, date_str_size, "%04d-%02d-%02d %02d:%02d:%02d", 1900+p->tm_year, 1+p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec);
 	
-	DEBUG("origine drm_time=%u, trans as %s\n", drm_time,date_str);
+//	DEBUG("origine drm_time=%u, trans as %s\n", drm_time,date_str);
 	
 	return 0;
 }
