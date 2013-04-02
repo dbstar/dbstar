@@ -262,11 +262,31 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	return sqlite_transaction_exec(cmd);
 }
 
+/*
+在事务内部判断产品是否是小片产品
+return:
+		-1: failed
+		0: sqlite select success, but not preview product
+		>0: it is a preview product
+*/
+static int product_preview_check_in_trans(char *productid)
+{
+	char sqlite_cmd[2048];
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductID FROM Product WHERE ProductID='%s' AND Flag='%d';",productid,PRODUCTFLAG_PREVIEW);
+	return sqlite_transaction_read(sqlite_cmd,NULL,0);
+}
+
 static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 {
 	if(NULL==ptr && strlen(ptr->DateValue)>0 && strlen(ptr->PublicationID)>0){
 		DEBUG("invalid arguments\n");
 		return -1;
+	}
+	
+	if(product_preview_check_in_trans(ptr->productID)>0){
+		DEBUG("Publication(%s) of Product(%s) in GuideList is a Preview, do NOT showing\n", ptr->PublicationID,ptr->productID);
+		return 0;
 	}
 	
 	/*
@@ -522,24 +542,6 @@ static void productdesc_clear(DBSTAR_PRODUCTDESC_S *ptr, int clear_flag)
 		memset(ptr->ReceiveType, 0, sizeof(ptr->ReceiveType));
 		memset(ptr->rootPath, 0, sizeof(ptr->rootPath));
 	}
-	
-//	char	Version[64];
-//	char	StandardVersion[64];
-//	char	ServiceID[64];
-//	char	ReceiveType[64];
-//	char	rootPath[256];
-//	char	productID[64];
-
-//	char	ProductDescID[128];
-//	char	SetID[64];
-//	char	ID[64];
-//	char	TotalSize[64];
-//	char	URI[256];
-//	char	DescURI[384];
-//	char	PushStartTime[64];
-//	char	PushEndTime[64];
-//	char	Columns[512];
-//	char	ReceiveStatus[32];
 	
 	memset(ptr->ProductDescID, 0, sizeof(ptr->ProductDescID));
 	memset(ptr->SetID, 0, sizeof(ptr->SetID));
@@ -2217,7 +2219,14 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product")){
 					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 2);
 					parseProperty(cur, new_xmlroute, ptr);
-					DEBUG("productID: %s\n", ((DBSTAR_PRODUCTDESC_S *)ptr)->productID);
+					
+					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
+					DEBUG("productID: %s\n", p->productID);
+					if(product_preview_check_in_trans(p->productID)>0){
+						DEBUG("Product(%s) in ProductDesc is a Preview, refresh ReceiveType\n", p->productID);
+						snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d", RECEIVETYPE_PREVIEW);
+					}
+					
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication")){

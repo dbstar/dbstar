@@ -182,7 +182,8 @@ typedef enum{
 typedef enum{
 	RECEIVETYPE_PUBLICATION	= 0,
 	RECEIVETYPE_SPRODUCT	= 1,
-	RECEIVETYPE_COLUMN		= 2
+	RECEIVETYPE_COLUMN		= 2,
+	RECEIVETYPE_PREVIEW		= 3
 }RECEIVETYPE_E;
 
 /*
@@ -207,6 +208,29 @@ typedef enum{
 	
 	RELY_CONDITION_EXIT = 128
 }RELY_CONDITION_E;
+
+
+/*
+产品计费运营类型
+*/
+typedef enum{
+	PRODUCTTYPE_INVALID = 0,
+	PRODUCTTYPE_VOD = 1,				// 点播产品
+	PRODUCTTYPE_WHOLESALE_BY_MON = 2,	// 包月产品
+	PRODUCTTYPE_PACKAGE = 3,			// 专题产品
+	PRODUCTTYPE_SPECIAL = 4				// 特殊产品
+}PRODUCTTYPE_E;
+
+
+/*
+产品类型
+*/
+typedef enum{
+	PRODUCTFLAG_INVALID = 0,
+	PRODUCTFLAG_NORMAL = 1,		// 普通产品（成品）
+	PRODUCTFLAG_PREVIEW = 2,	// 小片产品
+	PRODUCTFLAG_SPRODUCT = 3	// 界面产品
+}PRODUCTFLAG_E;
 
 
 /*

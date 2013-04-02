@@ -1558,11 +1558,12 @@ int localcolumn_init()
 		insert_column_cnt ++;
 	}
 	
-#if 0
+	
 	/*
 	 二级菜单“设置－文件浏览”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9904")){
+#if 0
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',4);",
 			"L9904","L99","L99/L9904","L99","LocalColumnIcon/FileBrowser_losefocus.png","LocalColumnIcon/FileBrowser_losefocus.png","4");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1573,11 +1574,18 @@ int localcolumn_init()
 			"Column","L9904","eng","DisplayName","FileBrowser","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
+#endif
+	}
+	else{
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L9904';");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
 	}
 	/*
 	 二级菜单“设置－高级设置”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9905")){
+#if 0
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',5);",
 			"L9905","L99","L99/L9905","L99","LocalColumnIcon/Setting_losefocus.png","LocalColumnIcon/Setting_losefocus.png","5");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1588,11 +1596,18 @@ int localcolumn_init()
 			"Column","L9905","eng","DisplayName","Advance","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
+#endif
+	}
+	else{
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L9905';");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
 	}
 	/*
 	 二级菜单“设置－DRM”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9906")){
+#if 0
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',6);",
 			"L9906","L99","L99/L9906","L99","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","6");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1603,12 +1618,13 @@ int localcolumn_init()
 			"Column","L9906","eng","DisplayName","DRM","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
-	}
-#else
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L9904' OR ColumnID='L9905' OR ColumnID='L9906';");
-	sqlite_transaction_exec(sqlite_cmd);
-	insert_column_cnt ++;
 #endif
+	}
+	else{
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L9906';");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	
 	
 	/*
