@@ -4,7 +4,7 @@
 char *setting_item_value(char *buf, unsigned int buf_len, char separator);
 int setting_init(void);
 int setting_uninit(void);
-int special_productid_check(char *productid);
+int ProductID_check(char *productid);
 int root_channel_get(void);
 int root_push_file_get(char *filename, unsigned int len);
 int root_push_file_size_get(void);

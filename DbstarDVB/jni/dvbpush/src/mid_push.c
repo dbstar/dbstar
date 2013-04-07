@@ -1261,6 +1261,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 		否则，不加处理。
 		*/
 		if(1==tmp_init_flag || (1!=tmp_init_flag && 1==atoi(result[i*column+9]))){
+#if 0
 			/*
 			对于成品，如果用户选择不接收，则一定不接收，不需要更加详细的判断
 			否则，根据业务等条件进行判断
@@ -1270,6 +1271,10 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 				DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+3]);
 			}
 			else
+			
+			// 2013-4-7 11:14
+			// 对用户在预告单中的选择过滤，放在解析ProductDesc时进行
+#endif
 			{
 				receive_status = atoi(result[i*column+8]);
 				if(RECEIVESTATUS_REJECT==receive_status){
@@ -1580,6 +1585,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	
 	for(i=1;i<row+1;i++)
 	{
+#if 0
 		/*
 		对于成品，如果用户选择不接收，则一定不接收，不需要更加详细的判断
 		否则，根据业务等条件进行判断
@@ -1589,6 +1595,11 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+3]);
 		}
 		else
+
+			// 2013-4-7 11:14
+			// 对用户在预告单中的选择过滤，放在解析ProductDesc时进行
+#endif
+
 			recv_stat = RECEIVESTATUS_WAITING;
 		
 		sscanf(result[i*column+5],"%lld", &totalsize);

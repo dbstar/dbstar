@@ -63,7 +63,7 @@ void *main_thread()
 		motherdisc_process();
 		return NULL;
 	}
-//	return parse_xml("pushroot/pushinfo/1/command/Commands.xml", COMMANDS_XML, NULL);
+//	return parse_xml("pushroot/pushinfo/1/ProductDesc.xml", PRODUCTDESC_XML, NULL);
 	
 	if(0!=drm_init()){
 		DEBUG("drm init failed\n");

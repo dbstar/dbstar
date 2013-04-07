@@ -271,9 +271,25 @@ return:
 */
 static int product_preview_check_in_trans(char *productid)
 {
-	char sqlite_cmd[2048];
+	char sqlite_cmd[512];
 	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductID FROM Product WHERE ProductID='%s' AND Flag='%d';",productid,PRODUCTFLAG_PREVIEW);
+	return sqlite_transaction_read(sqlite_cmd,NULL,0);
+}
+
+
+/*
+在事务内部判断成品是否被用户（通过预告单）进行反选
+return:
+		1: unseleced by user (default)
+		0: sqlite select success, but no record
+		other: sqlite select failed
+*/
+static int publication_unselect_check_in_trans(char *publicationid)
+{
+	char sqlite_cmd[512];
+	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM GuideList WHERE PublicationID='%s' AND UserStatus='0';",publicationid);
 	return sqlite_transaction_read(sqlite_cmd,NULL,0);
 }
 
@@ -282,11 +298,6 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 	if(NULL==ptr && strlen(ptr->DateValue)>0 && strlen(ptr->PublicationID)>0){
 		DEBUG("invalid arguments\n");
 		return -1;
-	}
-	
-	if(product_preview_check_in_trans(ptr->productID)>0){
-		DEBUG("Publication(%s) of Product(%s) in GuideList is a Preview, do NOT showing\n", ptr->PublicationID,ptr->productID);
-		return 0;
 	}
 	
 	/*
@@ -340,20 +351,20 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	还需要检查用户在选择接收界面的反选
 	*/
 	
-	RECEIVESTATUS_E receive_status = RECEIVESTATUS_REJECT;	// make sure the default value is -2, it means reject
+	RECEIVESTATUS_E receive_status = RECEIVESTATUS_WAITING;
+
 #if 0
-// 新push只注册了属于自己的service，所以不用再判断serviceID	
-	if(0==strcmp(ptr->ServiceID,serviceID_get()))
-#endif
-	{
-		if(	RECEIVETYPE_SPRODUCT==strtol(ptr->ReceiveType,NULL,10)
-			|| RECEIVETYPE_COLUMN==strtol(ptr->ReceiveType,NULL,10)
-			|| (RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10) && (0==special_productid_check(ptr->productID))) )	// (0==special_productid_check(ptr->productID) || 0==check_productid_from_db_in_trans(ptr->productID))
-			receive_status = RECEIVESTATUS_WAITING;
-	}
+	// 判断是否接收放在解析出ProductID时进行，避免向ResStr等插入垃圾数据
+	DEBUG("ptr->ReceiveType=%s, ptr->productID=%s\n", ptr->ReceiveType,ptr->productID);
+	if(	RECEIVETYPE_SPRODUCT==strtol(ptr->ReceiveType,NULL,10)
+		|| RECEIVETYPE_COLUMN==strtol(ptr->ReceiveType,NULL,10)
+		|| (RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10) && (0==ProductID_check(ptr->productID)))
+		|| (RECEIVETYPE_PREVIEW==strtol(ptr->ReceiveType,NULL,10) && (0==ProductID_check(ptr->productID))) )
+		receive_status = RECEIVESTATUS_WAITING;
 	
 	DEBUG("I will %s this program(%s), serviceID:%s, ProductID:%s\n", 0==receive_status?"receive":"reject",ptr->ID,ptr->ServiceID,ptr->productID);
-	
+#endif
+
 	/*
 	理论上，对于处在不同Service的Publication，如果需要拒绝接收，但其PublicationID已经存在于表中，则不需要再次入库；这意味着只有那些允许接收的Publication以及纯粹拒绝接收的Publication可以入库。
 	但是考虑到ProductDesc.xml和Service.xml到来的顺序不一定，有可能Service.xml到来的比较晚，因此这里忠实的体现所有Service——publicaiton组合。
@@ -407,7 +418,8 @@ receive_status);
 
 		sqlite_transaction_exec(sqlite_cmd);
 	
-		if(RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10)){
+		if(RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10)
+			|| RECEIVETYPE_PREVIEW==strtol(ptr->ReceiveType,NULL,10)){
 			char columns[512];
 			snprintf(columns,sizeof(columns),"%s",ptr->Columns);
 			char *p_column = columns;
@@ -1323,7 +1335,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&product_service_s, 0, sizeof(product_service_s));
 					parseProperty(cur, new_xmlroute, (void *)&product_service_s);
 					
-					if(0==special_productid_check(product_service_s.productID)){
+					if(0==ProductID_check(product_service_s.productID)){
 						DEBUG("detect valid productID: %s\n", product_service_s.productID);
 						s_detect_valid_productID = 1;
 						DBSTAR_GLOBAL_S global_s;
@@ -2115,7 +2127,19 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(p_guidelist->PublicationID,0,sizeof(p_guidelist->PublicationID));
 					
 					parseProperty(cur, new_xmlroute, ptr);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+					
+					if(0==ProductID_check(p_guidelist->productID)){
+						if(product_preview_check_in_trans(p_guidelist->productID)>0){
+							DEBUG("Product(%s) in GuideList is a Preview, do NOT insert into db\n", p_guidelist->productID);
+						}
+						else{
+							DEBUG("Product(%s) in GuideList is a normal product, insert into db and showing\n", p_guidelist->productID);
+							parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+						}
+					}
+					else{
+						DEBUG("Product(%s) in GuideList is NOT a valid product, do NOT insert into db\n", p_guidelist->productID);
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "GuideList^Date^Product^Item")){
 					/*
@@ -2221,18 +2245,35 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					parseProperty(cur, new_xmlroute, ptr);
 					
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
-					DEBUG("productID: %s\n", p->productID);
-					if(product_preview_check_in_trans(p->productID)>0){
-						DEBUG("Product(%s) in ProductDesc is a Preview, refresh ReceiveType\n", p->productID);
-						snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d", RECEIVETYPE_PREVIEW);
-					}
 					
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+					if(0==ProductID_check(p->productID)){
+						DEBUG("I'll receive productID: %s\n", p->productID);
+						if(product_preview_check_in_trans(p->productID)>0){
+							DEBUG("Product(%s) in ProductDesc is a Preview, refresh ReceiveType as %d\n", p->productID,RECEIVETYPE_PREVIEW);
+							snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d", RECEIVETYPE_PREVIEW);
+						}
+						else{
+							DEBUG("this product is not a preview, normal publication\n");
+							snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d",RECEIVETYPE_PUBLICATION);
+						}
+						
+						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+					}
+					else
+						DEBUG("I'll REJECT productID: %s\n", p->productID);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication")){
-					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 3);
+					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
+					
+					productdesc_clear(p, 3);
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
-					productdesc_insert((DBSTAR_PRODUCTDESC_S *)ptr);
+					
+					if(publication_unselect_check_in_trans(p->ID)>0){
+						DEBUG("Publication %s is unselect by user, do not insert into table ProductDesc\n", p->ID);
+					}
+					else{
+						productdesc_insert(p);
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^PublicationID")){
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
@@ -2243,7 +2284,14 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^PublicationNames")){
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
+					
+					if(publication_unselect_check_in_trans(p->ID)>0){
+						DEBUG("Publication %s is unselect by user, do not insert PublicationNames\n", p->ID);
+					}
+					else{
+						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceivePublications^Product^Publication^PublicationNames^PublicationName")){
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
@@ -2357,6 +2405,12 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					if('/'!=tmp_URI[0])
 						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
 					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
+					
+					// 显式清理本目录，避免本次判断接收进度异常
+					char absolute_sproduct_uri[512];
+					snprintf(absolute_sproduct_uri,sizeof(absolute_sproduct_uri),"%s/%s", push_dir_get(),p->URI);
+					DEBUG("clear %s for this receive task\n", absolute_sproduct_uri);
+					remove_force(absolute_sproduct_uri);
 				}
 				
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveColumn")){

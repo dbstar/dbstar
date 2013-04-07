@@ -62,7 +62,7 @@ static int			s_software_check = 1;
 static char			s_Language[64];
 static char			s_serviceID[64];
 static char			s_push_root_path[512];
-static char 		*s_guidelist_unselect = NULL;
+//static char 		*s_guidelist_unselect = NULL;
 
 static char			s_jni_cmd_public_space[20480];
 
@@ -573,6 +573,7 @@ void upgrade_sign_set()
 		DEBUG("get loader message failed\n");
 }
 
+#if 0
 /*
  检查指定的成品id是用户选择接收还是选择不接收
  return 1——用户选择接收（默认）；return 0——用户选择不接收；return -1——检查失败
@@ -658,7 +659,7 @@ int guidelist_select_refresh()
 		return -1;
 	}
 }
-
+#endif
 
 #define REMOTE_FUTURE		"9999-99-99 99:99:99"
 #define TIME_STAMP_MIN		"2013-02-01 00:00:00"
@@ -1608,7 +1609,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_PUSH_SELECT:
 			DEBUG("CMD_PUSH_SELECT: GuideList selected by user\n");
-			guidelist_select_refresh();
+//			guidelist_select_refresh();
 			break;
 		
 		case CMD_DISK_FOREWARNING:
@@ -2584,12 +2585,47 @@ static int check_productid_from_smartcard(char *productid)
 	int i = 0;
 	long check_productid = strtol(productid,NULL,0);
 	
+#if 1
 	for(i=0;i<SCENTITLEINFOSIZE;i++){
 		if((unsigned long)check_productid==s_SCEntitleInfo[i].EntitleInfo.m_ID){
 			DEBUG("checked productid %s at record %d\n",productid,i);
 			return 0;
 		}
 	}
+#else
+	int ret = -1;
+	CDCA_U32 dwFrom = 0, dwNum = 128;
+	char SmartCardSn[128];
+	SCDCAPVODEntitleInfo EntitleInfo[128];
+	
+	memset(SmartCardSn,0,sizeof(SmartCardSn));
+	ret = CDCASTB_GetCardSN(SmartCardSn);
+	if(CDCA_RC_OK==ret)
+	{
+		DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
+		ret = 0;
+		
+/*
+ 查询授权信息
+*/
+		int ret = CDCASTB_DRM_GetEntitleInfo(&dwFrom,EntitleInfo,&dwNum);
+		if(CDCA_RC_OK==ret){
+			DEBUG("dwFrom=%lu, dwNum=%lu\n", dwFrom, dwNum);
+			for(i=0;i<dwNum;i++){
+				if((unsigned long)check_productid==EntitleInfo[i].m_ID){
+					DEBUG("checked productid %s at record %d\n",productid,i);
+					return 0;
+				}
+			}
+		}
+		else{
+			drm_errors("CDCASTB_DRM_GetEntitleInfo", ret);
+		}
+	}
+	else{
+		drm_errors("CDCASTB_GetCardSN", ret);
+	}
+#endif
 	
 	return -1;
 }
@@ -2599,7 +2635,7 @@ static int check_productid_from_smartcard(char *productid)
 /*
  检查指定的产品id是否在特殊产品之列。
 */
-int special_productid_check(char *productid)
+int ProductID_check(char *productid)
 {
 	if(NULL==productid)
 		return -1;
@@ -2624,7 +2660,7 @@ int setting_init_with_database()
 	cur_language_init();
 	push_dir_init();
 	serviceID_init();
-	guidelist_select_refresh();
+//	guidelist_select_refresh();
 	SCEntitleInfo_init();
 	
 	TestSpecialProductID_init();

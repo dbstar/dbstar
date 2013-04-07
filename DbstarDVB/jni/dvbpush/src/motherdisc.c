@@ -41,7 +41,7 @@ static int parse_progs_cb(char **result, int row, int column, void *receiver, un
 		s_receive_status = RECEIVESTATUS_FINISH;
 		recv_type = atoi(result[i*column]);
 		
-		if(RECEIVETYPE_PUBLICATION==recv_type){
+		if(RECEIVETYPE_PUBLICATION==recv_type || RECEIVETYPE_PREVIEW==recv_type){
 			push_flag = PUBLICATION_XML;
 		}
 		else if(RECEIVETYPE_COLUMN==recv_type){
