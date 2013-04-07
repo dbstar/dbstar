@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -21,7 +22,7 @@ import android.widget.ImageView;
 import com.dbstar.DbstarDVB.R;
 
 public class ToastDialogFragment extends DialogFragment {
-
+	private static final String TAG = "ToastDialogFragment";
 	private static final String PARAMETER_MSGTYPE = "msg_type";
 	private static final String PARAMETER_MSGID = "msg_id";
 
@@ -30,6 +31,7 @@ public class ToastDialogFragment extends DialogFragment {
 	private int mMsgType;
 	private int mDuration;
 	Timer mTimer = null;
+	TimerTask mTimeoutTask = null;
 	ToastDialogListener mListener = null;
 
 	public interface ToastDialogListener {
@@ -45,6 +47,7 @@ public class ToastDialogFragment extends DialogFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		Log.d(TAG, " onCreate ");
 		// int style = DialogFragment.STYLE_NORMAL, theme = 0;
 		// setStyle(style, theme);
 
@@ -54,6 +57,7 @@ public class ToastDialogFragment extends DialogFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		Log.d(TAG, " onCreateView ");
 
 		getDialog().getWindow().setGravity(Gravity.RIGHT | Gravity.TOP);
 		WindowManager.LayoutParams p = getDialog().getWindow().getAttributes();
@@ -80,10 +84,22 @@ public class ToastDialogFragment extends DialogFragment {
 	@Override
 	public void onStart() {
 		super.onStart();
+		Log.d(TAG, " onStart ");
 
 		if (mListener != null) {
 			mListener.onShow(mMsgImageView, mMsgType, mMsgId);
 		}
+		
+		stopTimer();
+		
+		mTimeoutTask = new TimerTask() {
+
+			public void run() {
+				Message message = Message.obtain();
+				message.what = 0xdee;
+				mHandler.sendMessage(message);
+			}
+		};
 
 		mTimer = new Timer();
 		mTimer.schedule(mTimeoutTask, mDuration);
@@ -92,21 +108,21 @@ public class ToastDialogFragment extends DialogFragment {
 	@Override
 	public void onStop() {
 		super.onStop();
-
+		Log.d(TAG, " onStop ");
 		stopTimer();
 	}
 
 	@Override
 	public void onDismiss(DialogInterface dialog) {
 		super.onDismiss(dialog);
-
+		Log.d(TAG, " onDismiss ");
 		stopTimer();
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-
+		Log.d(TAG, " onDestroy ");
 		stopTimer();
 	}
 
@@ -124,6 +140,11 @@ public class ToastDialogFragment extends DialogFragment {
 	}
 
 	public void stopTimer() {
+		if (mTimeoutTask != null) {
+			mTimeoutTask.cancel();
+			mTimeoutTask = null;
+		}
+		
 		if (mTimer != null) {
 			mTimer.cancel();
 			mTimer = null;
@@ -143,12 +164,4 @@ public class ToastDialogFragment extends DialogFragment {
 
 	};
 
-	TimerTask mTimeoutTask = new TimerTask() {
-
-		public void run() {
-			Message message = Message.obtain();
-			message.what = 0xdee;
-			mHandler.sendMessage(message);
-		}
-	};
 }
