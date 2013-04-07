@@ -2,11 +2,17 @@ package com.dbstar.DbstarDVB.VideoPlayer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 
 import android.net.Uri;
 import android.util.Log;
@@ -314,5 +320,64 @@ public class Utils {
 		else
 			retStr = Integer.toString(i);
 		return retStr;
+	}
+	
+	private static final String MuteFile = "/data/dbstar/mute";
+	private static final String VolumeFile = "/data/dbstar/volume";
+	
+	public static void saveVolume(int volume) {
+		saveValueToFile(VolumeFile, volume);
+	}
+	
+	public static int getMute() {
+		return readValueFromFile(MuteFile);
+	}
+	
+	public static int getVolume() {
+		return readValueFromFile(VolumeFile);
+	}
+	
+	public static void saveValueToFile(String path, int value) {
+		Log.d(TAG, "save " + value + " to " + path);
+		File file = new File(path);
+
+		try {
+			
+			if (!file.exists()) {
+				if (!file.createNewFile())
+					return;
+			}
+		
+			OutputStream fo = new FileOutputStream(file);
+			DataOutputStream dos = new DataOutputStream(fo);
+			dos.writeInt(value);
+			dos.close();
+			
+			Log.d(TAG, "== success == ");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static int readValueFromFile(String path) {
+		Log.d(TAG, "read " + path);
+
+		int value = -1;
+		File file = new File(path);
+		if (file.exists()) {
+			try {
+				InputStream fi = new FileInputStream(file);
+				DataInputStream di = new DataInputStream(fi);
+				value = di.readInt();
+				di.close();
+
+				Log.d(TAG, "== success == " + value);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return value;
 	}
 }

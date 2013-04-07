@@ -51,6 +51,10 @@ public class GDCommon {
 	// Ethernet phy connected/disconnected
 	public static final int MSG_ETHERNET_PHYCONECTED = 0x90001;
 	public static final int MSG_ETHERNET_PHYDISCONECTED = 0x90002;
+	
+	public static final int MSG_MUTE_AUDIO = 0xA001;
+	public static final int MUTE_TRUE = 1;
+	public static final int MUTE_FALSE = 0;
 
 	public static final int OSDDISP_TIMEOUT = 900000;
 

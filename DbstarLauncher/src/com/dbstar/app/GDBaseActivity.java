@@ -242,10 +242,11 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	public boolean isMute() {
-		AudioManager audioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
+		if (mService != null) {
+			return mService.isMute();
+		}
 
-		boolean mute = audioManager.isStreamMute(AudioManager.STREAM_MUSIC);
-		return mute;
+		return false;
 	}
 
 	@Override

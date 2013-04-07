@@ -439,6 +439,8 @@ public class PlayerMenu extends PlayerActivity {
 
 		unregisterReceiver(mHDMIEventReceiver);
 
+		Utils.saveVolume(mVolumeLevel);
+
 		showOSD(true);
 		super.onDestroy();
 	}
@@ -1856,12 +1858,27 @@ public class PlayerMenu extends PlayerActivity {
 		mAudioManager = (AudioManager) getSystemService(Service.AUDIO_SERVICE);
 		mMaxVolumeLevel = mAudioManager
 				.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-		mVolumeLevel = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+//		mVolumeLevel = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+//		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
+
+		int volume = Utils.getVolume();
+		if (volume >= 0) {
+			mVolumeLevel = volume;
+		} else {
+			mVolumeLevel = DefaultVolumeLevel;
+		}
+		
+		int mute = Utils.getMute();
+		if (mute >= 0) {
+			mIsMute = mute > 0 ? true : false;
+		} else {
+			mIsMute = false;
+		}
 
 		mVolumeLevelIndex = getVolumeLevelIndex(mVolumeLevel);
 		mSoundVolumeView.setImageLevel(mVolumeLevelIndex);
+		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mVolumeLevel, 0);
 
-		mIsMute = mAudioManager.isStreamMute(AudioManager.STREAM_MUSIC);
 		int resId = mIsMute ? R.drawable.sound_mute : R.drawable.sound_unmute;
 		mSoundStateView.setImageResource(resId);
 		

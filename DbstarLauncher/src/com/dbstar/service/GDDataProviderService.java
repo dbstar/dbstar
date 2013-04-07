@@ -35,6 +35,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -120,7 +121,7 @@ public class GDDataProviderService extends Service {
 	private GDApplicationObserver mApplicationObserver = null;
 	private ClientObserver mPageOberser = null;
 	private NetworkController mEthernetController = null;
-
+	private GDAudioController mAudioController = null;
 	private final IBinder mBinder = new DataProviderBinder();
 	private SystemEventHandler mHandler = null;
 
@@ -225,6 +226,7 @@ public class GDDataProviderService extends Service {
 
 		mPeripheralController = new PeripheralController();
 		mEthernetController = new NetworkController(this, mHandler);
+		mAudioController = new GDAudioController(this, mHandler);
 		
 		// initialize smartcard state
 		if (isSmartcardPlugIn()) {
@@ -739,6 +741,11 @@ public class GDDataProviderService extends Service {
 			
 			case GDCommon.MSG_GET_ETHERNETINFO: {
 				getEthternetInfo();
+				break;
+			}
+			
+			case GDCommon.MSG_MUTE_AUDIO: {
+				mAudioController.muteAudio(msg.arg1);
 				break;
 			}
 
@@ -1577,6 +1584,10 @@ public class GDDataProviderService extends Service {
 
 	public int getSmartcardState() {
 		return mSmartcardState;
+	}
+	
+	public boolean isMute() {
+		return mAudioController.isMute();
 	}
 
 	private String getThumbnailFile(ContentData content) {
