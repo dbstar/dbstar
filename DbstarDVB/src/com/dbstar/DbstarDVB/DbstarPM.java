@@ -2,10 +2,13 @@ package com.dbstar.DbstarDVB;
 
 import android.content.Context;
 import android.os.PowerManager;
+import android.os.SystemProperties;
+import android.util.Log;
 
 class DbstarPM {
 
     private static final String TAG = "DbstarPM";
+    private static final String SleepPrepertyName = "dbstar.deepsleep";
     private static PowerManager.WakeLock sWakeLock;
 
     static PowerManager.WakeLock createPartialWakeLock(Context context) {
@@ -21,6 +24,12 @@ class DbstarPM {
     }
 
     static void acquirePartialWakeLock(Context context) {
+        if (SystemProperties.getInt(SleepPrepertyName, 0) == 1) {
+            Log.d(TAG, "-----PartialWakeLock, DeepSleep -----");
+            return;
+        }
+
+        Log.d(TAG, "----- PartialWakeLock -----");
         if (sWakeLock != null) {
             return;
         }
@@ -30,6 +39,12 @@ class DbstarPM {
     }
 
     static void acquireFullWakeLock(Context context) {
+        if (SystemProperties.getInt(SleepPrepertyName, 0) == 1) {
+            Log.d(TAG, "----- FullWakeLock, DeepSleep -----");
+            return;
+        }
+
+        Log.d(TAG, "----- FullWakeLock -----");
         if (sWakeLock != null) {
             return;
         }

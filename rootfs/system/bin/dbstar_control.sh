@@ -5,6 +5,7 @@ system_init()
 	setprop sys.mediascanner.enable false
 	setprop persist.sys.strictmode.visual 0
 	setprop persist.sys.strictmode.disable 1
+	setprop dbstar.deepsleep 0
 }
 
 dbstar_init()
