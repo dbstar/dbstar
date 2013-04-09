@@ -63,7 +63,7 @@ public class GDHelpActivity extends GDBaseActivity {
 		mContentView.setBackgroundColor(Color.TRANSPARENT);
 		mContentView.getSettings().setDefaultTextEncodingName("utf-8");
 
-		ItemHeader[] items = new ItemHeader[3];
+		ItemHeader[] items = new ItemHeader[4];
 		ItemHeader item = new ItemHeader();
 		item.Title = getResources().getString(
 				R.string.help_title_remote_control);
@@ -79,6 +79,11 @@ public class GDHelpActivity extends GDBaseActivity {
 		item.Title = getResources().getString(R.string.help_title_failure);
 		item.PageUrl = "help/failure_helppage.html";
 		items[2] = item;
+		
+		item = new ItemHeader();
+		item.Title = getResources().getString(R.string.help_title_qualifications);
+		item.PageUrl = "help/qualification_helppage.html";
+		items[3] = item;
 
 		mItems = items;
 

@@ -28,6 +28,7 @@ public class GDProductsActivity extends GDBaseActivity {
 	ListView mProductsList;
 	ListAdapter mAdapter;
 	String mSmartcardSN;
+	String mSNLabelStr = null;
 	int mSmartcardState = GDCommon.SMARTCARD_STATE_NONE;
 	ProductItem[] mProducts;
 
@@ -119,7 +120,7 @@ public class GDProductsActivity extends GDBaseActivity {
 	}
 
 	void updateSmartcardSN() {
-		mSmartcardNumberView.setText(mSmartcardSN);
+		mSmartcardNumberView.setText(mSNLabelStr + mSmartcardSN);
 	}
 
 	void updateSmartcardState() {
@@ -134,7 +135,7 @@ public class GDProductsActivity extends GDBaseActivity {
 	}
 
 	void clearSmartcardData() {
-		mSmartcardNumberView.setText("");
+		mSmartcardNumberView.setText(mSNLabelStr);
 		mAdapter.setDataSet(null);
 		mAdapter.notifyDataSetChanged();
 	}
@@ -146,6 +147,9 @@ public class GDProductsActivity extends GDBaseActivity {
 		mProductsList = (ListView) findViewById(R.id.product_list);
 		mAdapter = new ListAdapter(this);
 		mProductsList.setAdapter(mAdapter);
+		
+		mSNLabelStr = getResources().getString(R.string.smartcard_number);
+		mSmartcardNumberView.setText(mSNLabelStr);
 	}
 
 	class ProductItem {
