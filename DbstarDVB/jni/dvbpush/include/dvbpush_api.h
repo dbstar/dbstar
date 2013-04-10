@@ -27,6 +27,9 @@ typedef enum {
 	CMD_UPGRADE_TIMEOUT             = 0x00043,    // 用户操作对话框超时
 	
 	CMD_PUSH_SELECT                 = 0x00051,    // 用户从“选择接收”页面退出，选择完毕。
+	CMD_FACTORY_RESET				= 0x00052,    // 恢复出厂设置时，dvbpush需要完成的动作
+	CMD_DRM_RESET					= 0x00053,    // dvbpush需要清理drm目录/data/dbstar/drm
+	CMD_DISC_FORMAT					= 0x00054,    // dvbpush需要格式化硬盘
 
 	CMD_DRM_SC_INSERT               = 0x00061,    // DRM smartcard Insert
 	CMD_DRM_SC_REMOVE               = 0x00062,    // DRM smartcard Remove
@@ -71,6 +74,8 @@ typedef enum {
 	MOTHER_DISC_INITIALIZE_PROCESS	= 0x30019,	// 母盘初始化进度百分比
 	MOTHER_DISC_INITIALIZE_FAILED	= 0x30020,	// 母盘初始化错误
 	MOTHER_DISC_INITIALIZE_SUCCESS	= 0x30021,	// 母盘初始化成功
+	DISC_FORMAT_SUCCESS				= 0x30022,	// 磁盘格式化成功
+	DISC_FORMAT_FAILED				= 0x30023,	// 磁盘格式化失败
 	
 }DBSTAR_CMD_MSG_E;
 

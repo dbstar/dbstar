@@ -704,7 +704,12 @@ static int dir_stat_check(const char *uri)
 	else{
 		ret = -1;
 		
-		printf_fserrno(uri,errno);
+		int my_errno = errno;
+		printf_fserrno(uri,my_errno);
+		if(EIO==my_errno){
+			DEBUG("stat(%s) return as EIO\n", uri);
+			ret = EIO_RETURN_FLAG;
+		}
 	}
 	
 	return ret;
