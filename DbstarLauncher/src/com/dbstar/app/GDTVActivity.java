@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.dbstar.R;
 import com.dbstar.service.GDDataProviderService;
-import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
@@ -217,7 +216,7 @@ public class GDTVActivity extends GDBaseActivity {
 			ContentData[] contents = (ContentData[]) data;
 
 			if (contents != null && contents.length > 0) {
-
+				Log.d(TAG, " set count = " + contents.length);
 				int index = 0;
 				mTotalCount = contents.length;
 				mPageCount = mTotalCount / PageSize;
@@ -329,7 +328,7 @@ public class GDTVActivity extends GDBaseActivity {
 				tv.Episodes = items;
 				tv.EpisodesCount = items.length;
 				formEpisodesPages(tv);
-				if (pageNumber == mPageNumber) {
+				if (pageNumber == mPageNumber && index == mSeletedItemIndex) {
 					if (tv.EpisodesPageCount > 0) {
 						// mEpisodesAdapter.setDataSet(tv.EpisodesPages
 						// .get(tv.EpisodesPageNumber));

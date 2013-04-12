@@ -438,8 +438,12 @@ public class GDOrderPushActivity extends GDBaseActivity {
 
 	ReceiveTask addTaskOrderByDate(ArrayList<ReceiveTask> tasks, String date) {
 		ReceiveTask task = new ReceiveTask();
-		task.Date = date;
 
+		if (date.length() == "yyyy-mm-dd".length()) {
+			date = date + "00:00:00";
+		}
+
+		task.Date = date;
 		String strDate = task.Date.substring(0, "yyyy-mm-dd".length());
 		String month = strDate.substring(5, 7);
 		String day = strDate.substring(8);
