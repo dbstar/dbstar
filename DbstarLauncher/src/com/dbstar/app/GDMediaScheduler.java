@@ -126,7 +126,8 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		Log.d(TAG, "mStoreState.Type=" + mStoreState.Type);
 
 		mUIReady = true;
-		playMedia();
+//		playMedia();
+		mHandler.postDelayed(mUpdateTimeTask, 2000);
 	}
 
 	public void surfaceChanged(SurfaceHolder surfaceholder, int format,
