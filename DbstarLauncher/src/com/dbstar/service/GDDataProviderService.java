@@ -432,31 +432,41 @@ public class GDDataProviderService extends Service {
 				// Log.d(TAG, "mount storage = " + disk);
 				Log.d(TAG, "++++++++ mount storage ++++++++" + disk);
 
-				if (!mConfigure.configureStorage()) {
-					return;
-				}
-
-				String storage = mConfigure.getStorageDisk();
-
-				if (disk.equals(storage) && mApplicationObserver != null) {
-					mIsStorageReady = true;
-					String dir = mConfigure.getStorageDir();
-					Log.d(TAG, "11111111111111111  dir === " + dir);
-					mDataModel.setPushDir(dir);
-
-					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
-					mDiskMonitor.removeDiskFromMonitor(disk);
-					mDiskMonitor.addDiskToMonitor(disk);
-
-					if (mIsNetworkReady) {
-						startDbStarService();
+				boolean ret = mConfigure.configureStorage();
+				
+				if (ret) {
+					String storage = mConfigure.getStorageDisk();
+	
+					if (disk.equals(storage)) {
+						mIsStorageReady = true;
+						String dir = mConfigure.getStorageDir();
+						Log.d(TAG, "11111111111111111  dir === " + dir);
+						mDataModel.setPushDir(dir);
+	
+						Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
+						mDiskMonitor.removeDiskFromMonitor(disk);
+						mDiskMonitor.addDiskToMonitor(disk);
+	
+						if (mIsNetworkReady) {
+							startDbStarService();
+						}
+	
+//						notifyDbstarServiceStorageStatus(disk);
+	
+						if (mApplicationObserver != null) {
+							// restart application
+							mApplicationObserver.initializeApp();
+						}
+					} else {
+//						notifyDbstarServiceStorageStatus(disk);
 					}
 
-					notifyDbstarServiceStorageStatus();
-
-					// restart application
-					mApplicationObserver.initializeApp();
+				} else {
+//					notifyDbstarServiceStorageStatus(disk);
 				}
+				
+				notifyDbstarServiceStorageStatus(disk);
+
 				break;
 			}
 
@@ -470,9 +480,11 @@ public class GDDataProviderService extends Service {
 				if (disk.equals(storage)) {
 					mIsStorageReady = false;
 
-					notifyDbstarServiceStorageStatus();
+					notifyDbstarServiceStorageStatus(disk);
 
 					mApplicationObserver.deinitializeApp();
+				} else {
+					notifyDbstarServiceStorageStatus(disk);
 				}
 				break;
 			}
@@ -520,7 +532,7 @@ public class GDDataProviderService extends Service {
 				}
 
 				mDBStarClient
-						.notifyDbServer(DbstarServiceApi.CMD_DISK_FOREWARNING);
+						.notifyDbServer(DbstarServiceApi.CMD_DISK_FOREWARNING, null);
 				break;
 			}
 
@@ -536,7 +548,7 @@ public class GDDataProviderService extends Service {
 				mNeedUpgrade = true;
 				mUpgradePackageFile = String.valueOf(msg.obj);
 				mDBStarClient
-						.notifyDbServer(DbstarServiceApi.CMD_UPGRADE_CANCEL);
+						.notifyDbServer(DbstarServiceApi.CMD_UPGRADE_CANCEL, null);
 				break;
 			}
 
@@ -2107,16 +2119,16 @@ public class GDDataProviderService extends Service {
 			return false;
 
 		if (mEthernetController.isEthernetPhyConnected()) {
-			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_NETWORK_CONNECT);
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_NETWORK_CONNECT, null);
 		} else {
 			mDBStarClient
-					.notifyDbServer(DbstarServiceApi.CMD_NETWORK_DISCONNECT);
+					.notifyDbServer(DbstarServiceApi.CMD_NETWORK_DISCONNECT, null);
 		}
 
 		return true;
 	}
 
-	boolean notifyDbstarServiceStorageStatus() {
+	boolean notifyDbstarServiceStorageStatus(String disk) {
 
 		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
 				+ mIsDbServiceStarted);
@@ -2126,9 +2138,9 @@ public class GDDataProviderService extends Service {
 
 		// TODO: At this point, the disk maybe not mount now.
 		if (mIsStorageReady) {
-			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT);
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT, disk);
 		} else {
-			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_UNMOUNT);
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_UNMOUNT, disk);
 		}
 
 		return true;
@@ -2143,9 +2155,9 @@ public class GDDataProviderService extends Service {
 			return false;
 
 		if (mPeripheralController.isSmartCardIn()) {
-			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DRM_SC_INSERT);
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DRM_SC_INSERT, null);
 		} else {
-			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DRM_SC_REMOVE);
+			mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DRM_SC_REMOVE, null);
 		}
 
 		return true;
@@ -2159,7 +2171,9 @@ public class GDDataProviderService extends Service {
 
 		notifyDbstarServiceSDStatus();
 		notifyDbstarServiceNetworkStatus();
-		notifyDbstarServiceStorageStatus();
+		
+		String disk = mConfigure.getStorageDisk();
+		notifyDbstarServiceStorageStatus(disk);
 	}
 
 	private boolean notifyDbstarService(int command) {
@@ -2167,7 +2181,7 @@ public class GDDataProviderService extends Service {
 			return false;
 		}
 
-		mDBStarClient.notifyDbServer(command);
+		mDBStarClient.notifyDbServer(command, null);
 		return true;
 	}
 

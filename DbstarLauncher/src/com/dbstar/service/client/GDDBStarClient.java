@@ -116,11 +116,15 @@ public class GDDBStarClient {
 		return result;
 	}
 
-	public void notifyDbServer(int msg) {
+	public void notifyDbServer(int msg, String args) {
 		if (mDbstarService != null) {
 			try {
 				Log.d(TAG, " ====== notifyDbServer === msg =  " + msg);
-				mDbstarService.sendCommand(msg, null, 0);
+				if (args != null) {
+					mDbstarService.sendCommand(msg, args, args.length());
+				} else {
+					mDbstarService.sendCommand(msg, null, 0);
+				}
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
