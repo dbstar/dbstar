@@ -115,7 +115,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 				mResourcesReady = true;
 				// playMedia();
-				mHandler.postDelayed(mUpdateTimeTask, 200);
+				mHandler.postDelayed(mUpdateTimeTask, 6000);
 			}
 		}
 	}
