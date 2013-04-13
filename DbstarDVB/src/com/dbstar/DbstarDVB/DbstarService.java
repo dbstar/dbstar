@@ -28,7 +28,7 @@ public class DbstarService extends Service {
 	private static final String TAG = "DbstarService";
 	private static String mDownloadName = "";
 	private static Context mContext = null;
-	private DbstarPM mDPM = new DbstarPM();
+	//private DbstarPM mDPM = new DbstarPM();
 
 	private UEventObserver mHDMIObserver = new UEventObserver() {
 		public void onUEvent(UEventObserver.UEvent event) {
@@ -79,7 +79,7 @@ public class DbstarService extends Service {
 
 	public void onCreate() {
 		Log.d(TAG, "----- onCreate ----");
-		mDPM.acquirePartialWakeLock(this);
+		//mDPM.acquirePartialWakeLock(this);
 		startObserving();
 	}
 
@@ -98,7 +98,7 @@ public class DbstarService extends Service {
 
 	public void onDestroy() {
 		Log.d(TAG, "----- onDestroy ----");
-		mDPM.releaseWakeLock();
+		//mDPM.releaseWakeLock();
 		stopObserving();
 	}
 
