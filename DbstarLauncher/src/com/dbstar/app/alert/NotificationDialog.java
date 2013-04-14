@@ -4,34 +4,31 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.dbstar.R;
+import com.dbstar.app.alert.NotificationFragment.TimeoutTask;
 import com.dbstar.widget.GDMarqeeTextView;
 import com.dbstar.widget.text.ScrollingMovementMethod;
 
-import android.app.DialogFragment;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-public class NotificationFragment extends DialogFragment {
-
+public class NotificationDialog extends Dialog implements
+		DialogInterface.OnDismissListener {
 	public static final int StyleTop = 1;
 	public static final int StyleBottom = 2;
 	public static final int StyleFullScreen = 3;
 	public static final int StyleHalfScreen = 4;
-	private static final String TAG = "NotificationFragment";
 
 	private int mStyleType;
 	private String mMessage;
@@ -41,126 +38,80 @@ public class NotificationFragment extends DialogFragment {
 
 	private GDMarqeeTextView mMarqeeView = null;
 	private TextView mInfoView = null;
+	private Context mContext = null;
 
-	public static NotificationFragment newInstance(int style, String message,
+	public NotificationDialog(Context context, int style, String message,
 			int duration) {
-		NotificationFragment f = new NotificationFragment();
-
-		Bundle args = new Bundle();
-		args.putInt("style", style);
-		args.putString("message", message);
-		args.putInt("duration", duration);
-		f.setArguments(args);
-
-		return f;
-	}
-
-	public NotificationFragment() {
-
+		super(context, R.style.GDAlertDialog);
+		mContext = context;
+		mStyleType = style;
+		mMessage = message;
+		mDuration = duration;
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Bundle args = getArguments();
-		mStyleType = args.getInt("style");
-		mMessage = args.getString("message");
-		mDuration = args.getInt("duration");
-		
-		Log.d(TAG, " style = " + mStyleType + " message=" + mMessage);
-
-		setStyle(DialogFragment.STYLE_NO_TITLE, R.style.GDAlertDialog);
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-
 		switch (mStyleType) {
 		case StyleTop: {
-			getDialog().getWindow().setGravity(
-					Gravity.LEFT | Gravity.TOP);
-			WindowManager.LayoutParams p = getDialog().getWindow()
-					.getAttributes();
-			p.type = LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
-			p.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-			p.width = convertDIP2Pixel(1120);
+			getWindow().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+			WindowManager.LayoutParams p = getWindow().getAttributes();
+			p.width = convertDIP2Pixel(1120); //LayoutParams.MATCH_PARENT;
 			p.height = convertDIP2Pixel(80);
-			p.x = convertDIP2Pixel(80);
-			p.y = convertDIP2Pixel(20);
-			Log.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
-			// p.horizontalMargin = 0.01f;
-			// p.verticalMargin = 0.005f;
-			getDialog().getWindow().setAttributes(p);
+			p.horizontalMargin = 0.01f;
+			p.verticalMargin = 0.005f;
+			getWindow().setAttributes(p);
 			break;
 		}
 
 		case StyleBottom: {
-			getDialog().getWindow().setGravity(
-					Gravity.LEFT | Gravity.BOTTOM);
-			WindowManager.LayoutParams p = getDialog().getWindow()
-					.getAttributes();
+			getWindow().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+			WindowManager.LayoutParams p = getWindow().getAttributes();
 			p.width = convertDIP2Pixel(1120);
 			p.height = convertDIP2Pixel(80);
-			p.x = convertDIP2Pixel(80);
-			p.y = convertDIP2Pixel(620);
-			Log.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
-//			p.horizontalMargin = 0.01f;
-//			p.verticalMargin = 0.005f;
-			getDialog().getWindow().setAttributes(p);
+			p.horizontalMargin = 0.01f;
+			p.verticalMargin = 0.005f;
+			getWindow().setAttributes(p);
 			break;
 		}
 
 		case StyleFullScreen: {
-			getDialog().getWindow().setGravity(Gravity.LEFT | Gravity.BOTTOM);
-			WindowManager.LayoutParams p = getDialog().getWindow()
-					.getAttributes();
+			getWindow().setGravity(Gravity.CENTER);
+			WindowManager.LayoutParams p = getWindow().getAttributes();
 			p.width = convertDIP2Pixel(1120);
 			p.height = convertDIP2Pixel(680);
-			p.x = convertDIP2Pixel(80);
-			p.y = convertDIP2Pixel(20);
-			Log.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
-//			p.horizontalMargin = 0.01f;
-//			p.verticalMargin = 0.005f;
-			getDialog().getWindow().setAttributes(p);
+			p.horizontalMargin = 0.01f;
+			p.verticalMargin = 0.005f;
+			getWindow().setAttributes(p);
 			break;
 		}
 
 		case StyleHalfScreen: {
-			getDialog().getWindow().setGravity(Gravity.LEFT | Gravity.BOTTOM);
-			WindowManager.LayoutParams p = getDialog().getWindow()
-					.getAttributes();
+			getWindow().setGravity(Gravity.CENTER);
+			WindowManager.LayoutParams p = getWindow().getAttributes();
 			p.width = convertDIP2Pixel(1120);
 			p.height = convertDIP2Pixel(360);
-			p.x = convertDIP2Pixel(80);
-			p.y = convertDIP2Pixel(180);
-			Log.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
-//			p.horizontalMargin = 0.01f;
-//			p.verticalMargin = 0.005f;
-			getDialog().getWindow().setAttributes(p);
+			p.horizontalMargin = 0.01f;
+			p.verticalMargin = 0.005f;
+			getWindow().setAttributes(p);
 			break;
 		}
 
 		}
 
-		View v = null;
-
 		if (mStyleType == StyleFullScreen || mStyleType == StyleHalfScreen) {
-			v = inflater.inflate(R.layout.osd_popup_view, container, false);
-			mInfoView = (TextView) v.findViewById(R.id.info);
+			setContentView(R.layout.osd_popup_view);
+			mInfoView = (TextView) findViewById(R.id.info);
 
 			mInfoView.setMovementMethod(new ScrollingMovementMethod(true));
 			mInfoView.setText(mMessage);
 		} else {
-			v = inflater.inflate(R.layout.osd_notification_view, container,
-					false);
-			mMarqeeView = (GDMarqeeTextView) v.findViewById(R.id.marqeeView);
+			setContentView(R.layout.osd_notification_view);
+			mMarqeeView = (GDMarqeeTextView) findViewById(R.id.marqeeView);
 
 			mMarqeeView.addText(mMessage);
 		}
-
-		return v;
 	}
 
 	@Override
@@ -200,19 +151,11 @@ public class NotificationFragment extends DialogFragment {
 
 	@Override
 	public void onDismiss(DialogInterface dialog) {
-		super.onDismiss(dialog);
 
 		if (mStyleType == StyleBottom || mStyleType == StyleTop) {
 			if (mMarqeeView.isRunning())
 				mMarqeeView.stopMarqee();
 		}
-
-		stopTimer();
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
 
 		stopTimer();
 	}
@@ -251,7 +194,7 @@ public class NotificationFragment extends DialogFragment {
 	}
 
 	int convertDIP2Pixel(int size) {
-		Resources r = getResources();
+		Resources r = mContext.getResources();
 		float pixelSize = TypedValue.applyDimension(
 				TypedValue.COMPLEX_UNIT_DIP, size, r.getDisplayMetrics());
 

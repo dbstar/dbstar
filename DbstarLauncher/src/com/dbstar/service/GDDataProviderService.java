@@ -432,40 +432,37 @@ public class GDDataProviderService extends Service {
 				// Log.d(TAG, "mount storage = " + disk);
 				Log.d(TAG, "++++++++ mount storage ++++++++" + disk);
 
-				boolean ret = mConfigure.configureStorage();
+				// check whether the disk is mounted.
+				mConfigure.configureStorage();
+				String storage = mConfigure.getStorageDisk();
 				
-				if (ret) {
-					String storage = mConfigure.getStorageDisk();
-	
-					if (disk.equals(storage)) {
-						mIsStorageReady = true;
-						String dir = mConfigure.getStorageDir();
-						Log.d(TAG, "11111111111111111  dir === " + dir);
-						mDataModel.setPushDir(dir);
-	
-						Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
-						mDiskMonitor.removeDiskFromMonitor(disk);
-						mDiskMonitor.addDiskToMonitor(disk);
-	
-						if (mIsNetworkReady) {
-							startDbStarService();
-						}
-	
-//						notifyDbstarServiceStorageStatus(disk);
-	
-						if (mApplicationObserver != null) {
-							// restart application
-							mApplicationObserver.initializeApp();
-						}
-					} else {
-//						notifyDbstarServiceStorageStatus(disk);
+				if (disk.equals(storage)) {
+					// disk is mounted
+					mIsStorageReady = true;
+					String dir = mConfigure.getStorageDir();
+					Log.d(TAG, "11111111111111111  dir === " + dir);
+					mDataModel.setPushDir(dir);
+
+					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
+					mDiskMonitor.removeDiskFromMonitor(disk);
+					mDiskMonitor.addDiskToMonitor(disk);
+
+					if (mIsNetworkReady) {
+						startDbStarService();
 					}
 
+					notifyDbstarServiceStorageStatus(disk);
+
+					if (mApplicationObserver != null) {
+						// restart application
+						mApplicationObserver.initializeApp();
+					}
 				} else {
-//					notifyDbstarServiceStorageStatus(disk);
+					// U disk inserted
+					if (mIsDbServiceStarted) {
+						mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT, disk);
+					}
 				}
-				
-				notifyDbstarServiceStorageStatus(disk);
 
 				break;
 			}
@@ -482,9 +479,14 @@ public class GDDataProviderService extends Service {
 
 					notifyDbstarServiceStorageStatus(disk);
 
-					mApplicationObserver.deinitializeApp();
+					if (mApplicationObserver != null) {
+						mApplicationObserver.deinitializeApp();
+					}
 				} else {
-					notifyDbstarServiceStorageStatus(disk);
+					// U disk removed
+					if (mIsDbServiceStarted) {
+						mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_UNMOUNT, disk);
+					}
 				}
 				break;
 			}

@@ -42,16 +42,17 @@ public class AlertFragment extends DialogFragment {
 
 	public AlertFragment() {
 
-		Bundle args = getArguments();
-
-		mTitle = args.getString(KeyTitle, "");
-		mMessage = args.getString(KeyMessage, "");
-		mIsSingleButton = args.getBoolean(KeySingle, false);
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		Bundle args = getArguments();
+
+		mTitle = args.getString(KeyTitle, "");
+		mMessage = args.getString(KeyMessage, "");
+		mIsSingleButton = args.getBoolean(KeySingle, false);
 
 		setStyle(DialogFragment.STYLE_NO_TITLE, R.style.GDAlertDialog);
 	}

@@ -389,7 +389,13 @@ public class PlayerMenu extends PlayerActivity {
 
 	public void onStop() {
 		super.onStop();
-
+		
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
 		Log.d(TAG, " ============ onStop ================== ");
 	}
 
@@ -443,6 +449,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		showOSD(true);
 		super.onDestroy();
+
 	}
 
 	@Override
@@ -994,7 +1001,7 @@ public class PlayerMenu extends PlayerActivity {
 		FF_LEVEL = 0;
 		FB_LEVEL = 0;
 
-		Log.d(TAG, "Amplayer_play");
+		Log.d(TAG, "Amplayer_play " + startPosition);
 
 		try {
 			mSubTitleView.clear();
@@ -1514,6 +1521,7 @@ public class PlayerMenu extends PlayerActivity {
 
 			if (action.equals(Common.ActionPlayNext)) {
 				if (retriveInputParameters(intent)) {
+					showInfoBar(false);
 					mIsDeleted = false;
 					Amplayer_play(mPlayPosition);
 				}

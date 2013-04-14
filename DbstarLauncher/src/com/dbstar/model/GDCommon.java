@@ -56,7 +56,7 @@ public class GDCommon {
 	public static final int MUTE_TRUE = 1;
 	public static final int MUTE_FALSE = 0;
 
-	public static final int OSDDISP_TIMEOUT = 900000;
+	public static final int OSDDISP_TIMEOUT = 3600000;
 
 	public static final String KeyDisk = "disk";
 

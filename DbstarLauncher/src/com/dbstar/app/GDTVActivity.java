@@ -11,8 +11,10 @@ import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
+import com.dbstar.model.Movie;
 import com.dbstar.model.TV;
 import com.dbstar.model.GDDVBDataContract.Content;
+import com.dbstar.model.TV.EpisodeItem;
 import com.dbstar.widget.GDAdapterView;
 import com.dbstar.widget.GDGridView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
@@ -270,6 +272,94 @@ public class GDTVActivity extends GDBaseActivity {
 			if (eventData.Event == GDCommon.PLAYBACK_COMPLETED) {
 				playNext();
 			}
+		} else if (type == EventData.EVENT_UPDATE_PROPERTY) {
+			EventData.UpdatePropertyEvent updateEvent = (EventData.UpdatePropertyEvent) event;
+			String publicationId = updateEvent.PublicationId;
+			
+			if (mPageDatas.size() == 0) {
+				return;
+			}
+			
+			TV[] tvs = mPageDatas.get(mPageNumber);
+			TV tv = tvs[mSeletedItemIndex];
+			EpisodeItem[] items = tv.Episodes;
+			int i = 0;
+			boolean found = false;
+			for (i = 0; i < items.length; i++) {
+				ContentData content = items[i].Content;
+				if (content.Id.equals(publicationId)) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				ContentData content = items[i].Content;
+				updatePropery(content, updateEvent.PropertyName,
+						updateEvent.PropertyValue);
+			}
+		} else if (type == EventData.EVENT_DELETE) {
+			EventData.DeleteEvent deleteEvent = (EventData.DeleteEvent) event;
+			String publicationId = deleteEvent.PublicationId;
+			TV[] tvs = mPageDatas.get(mPageNumber);
+			TV tv = tvs[mSeletedItemIndex];
+			EpisodeItem[] items = tv.Episodes;
+			
+			int i = 0;
+			boolean found = false;
+			for (i = 0; i < items.length; i++) {
+				ContentData content = items[i].Content;
+				if (content.Id.equals(publicationId)) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				int j=i;
+				for (; j<items.length - 1; j++) {
+					items[j] = items[j + 1];
+				}
+				
+				EpisodeItem[] newItems = null;
+				
+				if (items.length > 1) {
+					newItems = new EpisodeItem[items.length - 1];
+					for (int k = 0; k < newItems.length; k++) {
+						newItems[k] = items[k];
+					}
+					
+					tv.Episodes = newItems;
+					
+					formEpisodesPages(tv);
+					if (tv.EpisodesPageNumber > tv.EpisodesPageCount - 1) {
+						tv.EpisodesPageNumber = tv.EpisodesPageCount - 1;
+					}
+					
+					updateEpisodesView(tv);
+					
+					items = tv.EpisodesPages.get(tv.EpisodesPageNumber);
+					if (mSelectedEpisodeIndex > items.length - 1) {
+						mSelectedEpisodeIndex = items.length - 1;
+					}
+				} else {
+					// delete the whole tv
+					// TODO:
+					tv.Episodes = null;
+					tv.EpisodesPageCount = 0;
+					tv.EpisodesPageNumber = 0;
+					tv.EpisodesPages = null;
+					updateEpisodesView(tv);
+				}
+				
+			}
+
+		} 
+	}
+	
+	private void updatePropery(ContentData content, String propery, Object value) {
+		if (propery.equals(GDCommon.KeyBookmark)) {
+			content.BookMark = (Integer) value;
 		}
 	}
 

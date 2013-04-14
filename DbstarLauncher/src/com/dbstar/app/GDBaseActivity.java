@@ -5,6 +5,7 @@ import java.util.TimerTask;
 
 import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
+import com.dbstar.app.alert.NotificationDialog;
 import com.dbstar.app.alert.NotificationFragment;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
@@ -555,40 +556,58 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		}
 	}
 
+	NotificationDialog mNotificationDialog = null;
+//	int mStyle = 1;
+//	String mMessage = null;
+//	int mDuration = GDCommon.OSDDISP_TIMEOUT;
 	protected void displayNotification(String message) {
 		Log.d(TAG, " ======= displayNotification ============ " + message);
 
 		if (message != null && !message.isEmpty()) {
 
-			FragmentTransaction ft = getFragmentManager().beginTransaction();
-			Fragment prev = getFragmentManager().findFragmentByTag(
-					"osd_notification");
-			if (prev != null) {
-				ft.remove(prev);
-			}
-			ft.addToBackStack(null);
+//			FragmentTransaction ft = getFragmentManager().beginTransaction();
+//			Fragment prev = getFragmentManager().findFragmentByTag(
+//					"osd_notification");
+//			if (prev != null) {
+//				ft.remove(prev);
+//			}
+//			ft.addToBackStack(null);
+
+//			mNotificationDialog = null;
 
 			String[] data = message.split("\t");
 			if (data.length > 1) {
 				int type = Integer.valueOf(data[0]);
 				int duration = GDCommon.OSDDISP_TIMEOUT;
 				// Create and show the dialog.
-				NotificationFragment newFragment = NotificationFragment
-						.newInstance(type, data[1], duration);
-
-				newFragment.show(ft, "osd_notification");
+//				NotificationFragment newFragment = NotificationFragment
+//						.newInstance(type, data[1], duration);
+//
+//				newFragment.show(ft, "osd_notification");
+				
+//				mStyle = type;
+//				mMessage = message;
+//				mDuration = GDCommon.OSDDISP_TIMEOUT;
+				
+				mNotificationDialog = new NotificationDialog(this, type, data[1], duration);
+				mNotificationDialog.show();
 			}
 		}
 	}
 
 	protected void hideNotification() {
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		Fragment prev = getFragmentManager().findFragmentByTag(
-				"osd_notification");
-		if (prev != null) {
-			ft.remove(prev);
+//		FragmentTransaction ft = getFragmentManager().beginTransaction();
+//		Fragment prev = getFragmentManager().findFragmentByTag(
+//				"osd_notification");
+//		if (prev != null) {
+//			ft.remove(prev);
+//		}
+//		ft.addToBackStack(null);
+//		ft.commit();
+		
+		if (mNotificationDialog != null) {
+			mNotificationDialog.dismiss();
 		}
-		ft.addToBackStack(null);
 	}
 
 	void hideDlgDelay() {
