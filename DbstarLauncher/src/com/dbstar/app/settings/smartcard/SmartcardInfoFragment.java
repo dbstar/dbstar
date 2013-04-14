@@ -22,7 +22,7 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 	private static final String TAG = "SmartcardInfoFragment";
 
 	TextView mSmartcardNumberView, mSmartcardStateView, mSmartcardVersionView;
-	TextView[] mEignevalueIDView = new TextView[6];
+	TextView[] mEignevalueIDView = new TextView[10];
 	ListView mAthorizationInfoView;
 	ListAdapter mAdapter;
 	String mSmartcardSN, mSmartcardStateStr, mSmartcardVersion;
