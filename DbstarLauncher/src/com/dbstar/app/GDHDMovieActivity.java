@@ -1,13 +1,16 @@
 package com.dbstar.app;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.dbstar.R;
+import com.dbstar.app.alert.GDAlertDialog;
 import com.dbstar.app.media.GDPlayerUtil;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
+import com.dbstar.model.ProductItem;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.model.Movie;
 import com.dbstar.model.GDDVBDataContract.Content;
@@ -15,7 +18,10 @@ import com.dbstar.widget.GDAdapterView;
 import com.dbstar.widget.GDGridView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 import com.dbstar.widget.GDScrollBar;
+
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -215,6 +221,10 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				mRequestPageIndex = 0;
 				requestPageData(mRequestPageIndex);
 			}
+		} else if (type == GDDataProviderService.REQUESTTYPE_GETPUBLICATIONDRMINFO) {
+			String drmInfo = (String) data;
+			String publicationId = (String) key;
+			updateDrmInfo(publicationId, drmInfo);
 		}
 	}
 
@@ -561,6 +571,12 @@ public class GDHDMovieActivity extends GDBaseActivity {
 					ret = true;
 					break;
 				}
+				
+				// display drm info
+				case KeyEvent.KEYCODE_MENU: {
+					displayDrmInfo();
+					break;
+				}
 
 				default:
 					break;
@@ -570,5 +586,94 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			return ret;
 		}
 	};
+	
+	
+	public Dialog onCreateDialog(int id) {
+		Dialog dialog = null;
+		dialog = super.onCreateDialog(id);
 
+		switch (id) {
+		case DLG_ID_DRMINFO: {
+			mDrmInfoDialog = new GDDrmInfoDialog(this);
+			mDrmInfoDialog.setOnShowListener(mDrmDlgOnShowListener);
+			dialog = mDrmInfoDialog;
+			break;
+		}
+		}
+		
+		return dialog;
+	}
+	
+	DialogInterface.OnShowListener mDrmDlgOnShowListener = new DialogInterface.OnShowListener() {
+
+		@Override
+		public void onShow(DialogInterface dialog) {
+			if (mDrmInfo != null) {
+				mDrmInfoDialog.setData(mDrmInfo);
+			}
+
+		}
+	};
+	
+	// DRM info	
+	GDDrmInfoDialog mDrmInfoDialog = null;
+	ProductItem[] mDrmInfo = null;
+
+	void displayDrmInfo() {
+		Log.d(TAG, "displayDrmInfo");
+
+		Movie movie = getSelectedMovie();
+		String drmFile = mService.getDRMFile(movie.Content);
+
+		if (drmFile != null && !drmFile.isEmpty()) {
+			mDrmInfo = null;
+			mService.getPublicationDrmInfo(this, movie.Content.Id);
+
+			if (mDrmInfoDialog == null) {
+				showDialog(DLG_ID_DRMINFO);
+			} else {
+				mDrmInfoDialog.show();
+			}
+		}
+	}
+	
+	void updateDrmInfo(String publicationId, String drmInfoData) {
+		Movie movie = getSelectedMovie();
+		if (!publicationId.equals(movie.Content.Id)) {
+			Log.d(TAG, "the drminfo is not for publication " + publicationId);
+			return;
+		}
+		
+		mDrmInfo = null;
+		String[] items = drmInfoData.split("\n");
+		if (items.length == 0) {
+			Log.d(TAG, " no product info !");
+		} else {
+			ArrayList<ProductItem> products = new ArrayList<ProductItem>();
+			for (int i = 0; i < items.length; i++) {
+				String[] item = items[i].split("\t");
+
+				if (item.length == 0) {
+					continue;
+				}
+
+				ProductItem product = new ProductItem();
+				product.OperatorID = item[0];
+				product.ProductID = item[1];
+				product.StartTime = item[2];
+				product.EndTime = item[3];
+
+				products.add(product);
+			}
+
+			if (products.size() > 0) {
+				mDrmInfo = products.toArray(new ProductItem[products.size()]);
+			}
+		}
+		
+		if (mDrmInfoDialog != null) {
+			mDrmInfoDialog.setData(mDrmInfo);
+		}
+	}
+	
 }

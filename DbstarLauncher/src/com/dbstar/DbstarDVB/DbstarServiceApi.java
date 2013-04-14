@@ -80,6 +80,7 @@ public class DbstarServiceApi {
 	public static final int	CMD_DRM_EMAILHEADS_READ         = 0x0006a;
 	public static final int	CMD_DRM_EMAILCONTENT_READ       = 0x0006b;
 	public static final int	CMD_DRM_PURCHASEINFO_READ       = 0x0006d;
+	public static final int	CMD_DRM_PVODPROGRAMINFO_READ    = 0x0006c;
 	
 	public static final String CA_NO_ENTITLE = "NO_ENTITLE";
 	public static final String CA_NO_DEVICE = "NO_DEVICE";

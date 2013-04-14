@@ -69,6 +69,7 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_GETSMARTCARDINFO = 0x2005;
 	public static final int REQUESTTYPE_MANAGECA = 0x2006;
 	public static final int REQUESTTYPE_GETMAILCONTENT = 0x2007;
+	public static final int REQUESTTYPE_GETPUBLICATIONDRMINFO = 0x2008;
 
 	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 0x3001;
 	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 0x3002;
@@ -871,6 +872,7 @@ public class GDDataProviderService extends Service {
 		case REQUESTTYPE_GETSMARTCARDINFO:
 		case REQUESTTYPE_MANAGECA:
 		case REQUESTTYPE_GETMAILCONTENT:
+		case REQUESTTYPE_GETPUBLICATIONDRMINFO:
 		case REQUESTTYPE_GETSETTINGS: {
 			if (task.Observer != null) {
 				task.Observer.updateData(task.Type, task.Key, task.Data);
@@ -1190,6 +1192,16 @@ public class GDDataProviderService extends Service {
 					String id = (String) task.Key;
 
 					Object data = mDBStarClient.getEMailContent(id);
+
+					task.Data = data;
+					taskFinished(task);
+					break;
+				}
+				
+				case REQUESTTYPE_GETPUBLICATIONDRMINFO: {
+					String id = (String) task.Key;
+
+					Object data = mDBStarClient.getPublicationDrmInfo(id);
 
 					task.Data = data;
 					taskFinished(task);
@@ -1527,6 +1539,15 @@ public class GDDataProviderService extends Service {
 		RequestTask task = new RequestTask();
 		task.Observer = observer;
 		task.Type = REQUESTTYPE_GETMAILCONTENT;
+		task.Key = id;
+
+		enqueueTask(task);
+	}
+	
+	public void getPublicationDrmInfo(ClientObserver observer, String id) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETPUBLICATIONDRMINFO;
 		task.Key = id;
 
 		enqueueTask(task);

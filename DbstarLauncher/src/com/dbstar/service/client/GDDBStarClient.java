@@ -214,6 +214,31 @@ public class GDDBStarClient {
 
 		return content;
 	}
+	
+	public String getPublicationDrmInfo(String publicationId) {
+		String content = null;
+
+		try {
+			Intent intent = mDbstarService.sendCommand(
+					DbstarServiceApi.CMD_DRM_PVODPROGRAMINFO_READ, publicationId,
+					publicationId.length());
+
+			byte[] bytes = intent.getByteArrayExtra("result");
+
+			if (bytes != null) {
+				try {
+					content = new String(bytes, "gb2312");
+					Log.d(TAG, " =========== drm info == " + content);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+		return content;
+	}
 
 	private Object parseSmartcardInfo(int type, byte[] bytes) {
 		Object info = null;

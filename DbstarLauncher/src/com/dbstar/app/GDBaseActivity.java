@@ -44,6 +44,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected static final int DLG_ID_ALERT = 0;
 	protected static final int DLG_ID_SMARTCARD = 1;
+	protected static final int DLG_ID_DRMINFO = 2;
 
 	protected static final int DLG_TYPE_FILE_NOTEXIST = 0;
 	protected static final int DLG_TYPE_SMARTCARD_INFO = 1;
