@@ -4,7 +4,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.dbstar.R;
-import com.dbstar.app.alert.NotificationFragment.TimeoutTask;
 import com.dbstar.widget.GDMarqeeTextView;
 import com.dbstar.widget.text.ScrollingMovementMethod;
 
@@ -55,62 +54,42 @@ public class NotificationDialog extends Dialog implements
 
 		switch (mStyleType) {
 		case StyleTop: {
-			getWindow().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
-			WindowManager.LayoutParams p = getWindow().getAttributes();
-			p.width = convertDIP2Pixel(1120); //LayoutParams.MATCH_PARENT;
-			p.height = convertDIP2Pixel(80);
-			p.horizontalMargin = 0.01f;
-			p.verticalMargin = 0.005f;
-			getWindow().setAttributes(p);
+			getWindow().setGravity(Gravity.TOP);
+			setContentView(R.layout.osd_popup_type_1);
 			break;
 		}
 
 		case StyleBottom: {
-			getWindow().setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
-			WindowManager.LayoutParams p = getWindow().getAttributes();
-			p.width = convertDIP2Pixel(1120);
-			p.height = convertDIP2Pixel(80);
-			p.horizontalMargin = 0.01f;
-			p.verticalMargin = 0.005f;
-			getWindow().setAttributes(p);
+			getWindow().setGravity(Gravity.BOTTOM);
+			setContentView(R.layout.osd_popup_type_1);
 			break;
 		}
 
 		case StyleFullScreen: {
 			getWindow().setGravity(Gravity.CENTER);
-			WindowManager.LayoutParams p = getWindow().getAttributes();
-			p.width = convertDIP2Pixel(1120);
-			p.height = convertDIP2Pixel(680);
-			p.horizontalMargin = 0.01f;
-			p.verticalMargin = 0.005f;
-			getWindow().setAttributes(p);
+			setContentView(R.layout.osd_popup_type_3);
 			break;
 		}
 
-		case StyleHalfScreen: {
-			getWindow().setGravity(Gravity.CENTER);
+		case StyleHalfScreen:
+		default: {
+			getWindow().setGravity(Gravity.TOP);
 			WindowManager.LayoutParams p = getWindow().getAttributes();
-			p.width = convertDIP2Pixel(1120);
-			p.height = convertDIP2Pixel(360);
-			p.horizontalMargin = 0.01f;
-			p.verticalMargin = 0.005f;
+			p.y = convertDIP2Pixel(180);
 			getWindow().setAttributes(p);
+			setContentView(R.layout.osd_popup_type_4);
 			break;
 		}
 
 		}
 
-		if (mStyleType == StyleFullScreen || mStyleType == StyleHalfScreen) {
-			setContentView(R.layout.osd_popup_view);
+		if (mStyleType == StyleTop || mStyleType == StyleBottom) {
+			mMarqeeView = (GDMarqeeTextView) findViewById(R.id.marqeeView);
+			mMarqeeView.addText(mMessage);
+		} else {
 			mInfoView = (TextView) findViewById(R.id.info);
-
 			mInfoView.setMovementMethod(new ScrollingMovementMethod(true));
 			mInfoView.setText(mMessage);
-		} else {
-			setContentView(R.layout.osd_notification_view);
-			mMarqeeView = (GDMarqeeTextView) findViewById(R.id.marqeeView);
-
-			mMarqeeView.addText(mMessage);
 		}
 	}
 

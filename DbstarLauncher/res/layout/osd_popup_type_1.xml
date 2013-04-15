@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/popup_bg" >
+    android:layout_width="1280dp"
+    android:layout_height="80dp"
+    android:orientation="vertical"
+    android:background="#3a0c0c0c" >
 
     <com.dbstar.widget.GDMarqeeTextView
         android:id="@+id/marqeeView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         app:textColor="#ffffff"
         app:textSize="22sp" />
 
-</RelativeLayout>
+</LinearLayout>
