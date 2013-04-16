@@ -174,7 +174,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 		mVideoWidth = 0;
 		mVideoHeight = 0;
 		getHolder().addCallback(mSHCallback);
-		// getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		setFocusable(true);
 		setFocusableInTouchMode(true);
 		requestFocus();
@@ -231,6 +231,9 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 		// called start() previously
 		release(false);
 		try {
+//			mVideoWidth = 0;
+//			mVideoHeight = 0;
+
 			mMediaPlayer = new MediaPlayer();
 			mMediaPlayer.setOnPreparedListener(mPreparedListener);
 			mMediaPlayer.setOnVideoSizeChangedListener(mSizeChangedListener);

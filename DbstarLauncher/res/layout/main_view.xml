@@ -60,15 +60,32 @@
         android:layout_marginTop="123dp"
         android:background="@drawable/video_view_bg"
         android:focusable="false" >
-
-        <com.dbstar.widget.GDVideoView
-            android:id="@+id/player_view"
+        
+        <FrameLayout
             android:layout_width="621dp"
             android:layout_height="350dp"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            android:layout_marginRight="7dp"
-            android:layout_marginTop="7dp" />
+            android:layout_marginLeft="7dp"
+            android:layout_marginTop="7dp"
+            android:background="#000000" >
+
+            <VideoView
+                android:id="@+id/player_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/poster_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:adjustViewBounds="true"
+                android:visibility="visible" />
+        </FrameLayout>
+
     </RelativeLayout>
 
     <!-- context view -->

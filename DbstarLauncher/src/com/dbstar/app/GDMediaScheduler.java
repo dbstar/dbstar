@@ -1,6 +1,7 @@
 package com.dbstar.app;
 
 import java.io.File;
+import java.io.InputStream;
 
 import com.dbstar.model.PreviewData;
 import com.dbstar.service.ClientObserver;
@@ -8,6 +9,7 @@ import com.dbstar.service.GDDataProviderService;
 import com.dbstar.widget.GDVideoView;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -18,6 +20,9 @@ import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Handler;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.VideoView;
 
 public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		OnErrorListener, OnPreparedListener, SurfaceHolder.Callback {
@@ -43,9 +48,11 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	GDDataProviderService mService = null;
 
-	GDVideoView mVideoView;
+	VideoView mVideoView;
+	ImageView mPosterView;
 	SurfaceHolder mHolder;
 	Bitmap mImage = null;
+	Bitmap mDefaultPoster;
 	int mPlayerSate;
 
 	PlayState mCurrentState = new PlayState();
@@ -62,9 +69,13 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		}
 	};
 
-	public GDMediaScheduler(Context context, GDVideoView videoView) {
+	public GDMediaScheduler(Context context, VideoView videoView, ImageView posterView) {
 		mVideoView = videoView;
+		mPosterView = posterView;
 		mContext = context;
+
+		loadResources(context);
+		mPosterView.setImageBitmap(mDefaultPoster);
 
 		mHolder = mVideoView.getHolder();
 		mHolder.addCallback(this);
@@ -77,6 +88,20 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mResources = null;
 		mResourcesReady = false;
 		mUIReady = false;
+	}
+	
+	private void loadResources(Context context) {
+		AssetManager am = context.getAssets();
+
+		try {
+			InputStream is = am.open("default/default_0.png");
+			mDefaultPoster = BitmapFactory.decodeStream(is);
+			//Log.d(TAG, "mDefaultPoster = " + mDefaultPoster);
+			is.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void start(GDDataProviderService service) {
@@ -232,7 +257,8 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 		Log.d(TAG, " playVideo " + url);
 
-		mVideoView.setBackgroundDrawable(null);
+//		mVideoView.setBackgroundDrawable(null);
+		mPosterView.setVisibility(View.GONE);
 
 		if (!url.equals("")) {
 
@@ -271,8 +297,10 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		}
 
 		mImage = BitmapFactory.decodeFile(imagePath);
-		mVideoView.setBackgroundDrawable(new BitmapDrawable(mContext
-				.getResources(), mImage));
+//		mVideoView.setBackgroundDrawable(new BitmapDrawable(mContext
+//				.getResources(), mImage));
+		mPosterView.setVisibility(View.VISIBLE);
+		mPosterView.setImageBitmap(mImage);
 
 		int remainTime = mCurrentState.Duration;
 		if (mStoreState.Url != null
@@ -347,7 +375,10 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	}
 
 	public void resume() {
-		playMedia();
+//		playMedia();
+		mPosterView.setVisibility(View.VISIBLE);
+		mPosterView.setImageBitmap(mDefaultPoster);
+		mHandler.postDelayed(mUpdateTimeTask, 2000);
 	}
 
 	public void pause() {

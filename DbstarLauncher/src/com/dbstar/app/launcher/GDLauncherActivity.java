@@ -63,6 +63,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.VideoView;
 import android.view.Gravity;
 
 public class GDLauncherActivity extends GDBaseActivity implements
@@ -73,14 +74,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final int COLUMN_LEVEL_1 = 1;
 	private static final String ROOT_COLUMN_PARENTID = "-1";
 
-	// Resources
-	Bitmap mDefaultPoster = null;
-
 	// Engine
 	GDCelanderThread mCelanderThread;
 
 	// Video
-	GDVideoView mVideoView;
+	VideoView mVideoView;
+	ImageView mPosterView;
 	GDMediaScheduler mMediaScheduler;
 
 	// Menu
@@ -144,7 +143,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		setContentView(R.layout.main_view);
 
-		loadResources();
 		loadAnimation();
 
 		initializeMenu();
@@ -714,20 +712,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		if (mMarqeeView.getVisibility() == View.VISIBLE) {
 			mMarqeeView.setVisibility(View.GONE);
-		}
-	}
-
-	private void loadResources() {
-		AssetManager am = getAssets();
-
-		try {
-			InputStream is = am.open("default/default_0.png");
-			mDefaultPoster = BitmapFactory.decodeStream(is);
-			//Log.d(TAG, "mDefaultPoster = " + mDefaultPoster);
-			is.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -1417,8 +1401,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mDateView = (TextView) findViewById(R.id.date_view);
 		mWeekView = (TextView) findViewById(R.id.week_view);
 
-		mVideoView = (GDVideoView) findViewById(R.id.player_view);
-
+		mVideoView = (VideoView) findViewById(R.id.player_view);
+		mPosterView = (ImageView) findViewById(R.id.poster_view);
 		mMenuContainer = (FrameLayout) findViewById(R.id.menu_container);
 		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
 		mMainMenu.setAnimationDuration(120);
@@ -1440,8 +1424,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMainMenu.setOnItemSelectedListener(mMenuItemSelectedListener);
 		
 		// mDefaultPoster
-		Drawable d = new BitmapDrawable(getResources(), mDefaultPoster);
-		mVideoView.setBackgroundDrawable(d);
+//		Drawable d = new BitmapDrawable(getResources(), mDefaultPoster);
+//		mVideoView.setBackgroundDrawable(d);
+//		mPosterView.setImageBitmap(mDefaultPoster);
 
 		// mIsPopupMenuHided = true;
 		mIsPopupMenuHided = false;
@@ -1456,7 +1441,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				mWeekView);
 		mCelanderThread.start();
 
-		mMediaScheduler = new GDMediaScheduler(this, mVideoView);
+		mMediaScheduler = new GDMediaScheduler(this, mVideoView, mPosterView);
 	}
 
 	@Override
