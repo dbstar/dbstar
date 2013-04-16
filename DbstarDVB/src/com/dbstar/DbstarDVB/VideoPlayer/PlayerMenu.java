@@ -231,7 +231,7 @@ public class PlayerMenu extends PlayerActivity {
 			mSubtitleTotalNumber = mSubtitleFiles.size();
 			Log.d(TAG, "subtitle is : " + mSubtitleTotalNumber);
 			if (mSubtitleTotalNumber > 0) {
-				mCurrentSubtitleIndex = -1;
+				mCurrentSubtitleIndex = 0;
 				Log.d(TAG, "subtitle file is : " + mSubtitleFiles.get(0));
 			}
 		}
@@ -1340,7 +1340,7 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		}
 
-		// openSubtitle();
+		openSubtitle();
 
 		if (setCodecMips() != 0) {
 			Log.d(TAG, "setCodecMips Failed");
@@ -1404,27 +1404,30 @@ public class PlayerMenu extends PlayerActivity {
 
 	void switchSubtitle() {
 		if (mSubtitleTotalNumber == 0) {
+			// no subtitle
 			showNotification(NOTIFY_SUBTITLE, ID_NO_SUBTITLE);
 			return;
 		}
 
 		Log.d(TAG, " ==================== switchSubtitle ================ ");
 
-		if (!mIsSubtitleShown) {
-			mIsSubtitleShown = true;
-			showNotification(NOTIFY_SUBTITLE, ID_SHOW_SUBTITLE);
-			return;
-		} else {
+//		if (!mIsSubtitleShown) {
+//			mIsSubtitleShown = true;
+//			showNotification(NOTIFY_SUBTITLE, ID_SHOW_SUBTITLE);
+//			return;
+//		} else {
+			// show next subtitle
 			mCurrentSubtitleIndex++;
 
 			if (mCurrentSubtitleIndex == mSubtitleTotalNumber) {
+				// hide subtitle
 				mCurrentSubtitleIndex = -1;
-				mIsSubtitleShown = false;
+//				mIsSubtitleShown = false;
 				closeSubtitleView();
 				showNotification(NOTIFY_SUBTITLE, ID_NO_SUBTITLE);
 				return;
 			}
-		}
+//		}
 
 		// mCurrentSubtitleIndex = mCurrentSubtitleIndex % mSubtitleTotalNumber;
 		showNotification(NOTIFY_SUBTITLE, mCurrentSubtitleIndex);
