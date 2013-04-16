@@ -951,7 +951,7 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 		szAttr = xmlGetProp(cur, attrPtr->name);
 		if(NULL!=szAttr)
 		{
-			PRINTF("property of %s, %s: %s\n", xmlroute, attrPtr->name, szAttr);
+			//PRINTF("property of %s, %s: %s\n", xmlroute, attrPtr->name, szAttr);
 // xml general property
 			if(0==strcmp(xmlroute, XML_ROOT_ELEMENT)){
 				DBSTAR_XMLINFO_S *p = (DBSTAR_XMLINFO_S *)ptr;
@@ -1323,7 +1323,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 		
 		if(0==uniform_parse){
 			snprintf(new_xmlroute, sizeof(new_xmlroute), "%s^%s", xmlroute, cur->name);
-			PRINTF("XML route: %s\n", new_xmlroute);
+			//PRINTF("XML route: %s\n", new_xmlroute);
 			
 // Initialize.xml
 			if(0==strncmp(new_xmlroute, "Initialize^", strlen("Initialize^"))){
@@ -2632,7 +2632,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 			break;
 		}
 	}
-	DEBUG("return from %s with %s\n", xmlroute, process_over_str(process_over));
+	//DEBUG("return from %s with %s\n", xmlroute, process_over_str(process_over));
 	
 #if 0
 	if(XML_EXIT_NORMALLY==process_over || XML_EXIT_MOVEUP==process_over){

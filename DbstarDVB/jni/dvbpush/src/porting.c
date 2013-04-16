@@ -1495,6 +1495,7 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 	char		BeginDate[64];
 	char		ExpireDate[64];
 	CDCA_U32 i = 0;
+	int j = 0;
 	int ret = 0;
 	
 	char sqlite_cmd[256];
@@ -1514,13 +1515,6 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 			int ret = CDCASTB_DRM_GetProgramInfo((void *)&fd,&dwFrom,ProgramInfo,&dwNum);
 			if(CDCA_RC_OK==ret){
 				for(i=0;i<dwNum;i++){
-					if(0==i)
-						snprintf(buf,size,"%d",ProgramInfo[i].m_OperatorID);
-					else
-						snprintf(buf+strlen(buf),size-strlen(buf),"\n%d",ProgramInfo[i].m_OperatorID);
-					
-					int j = 0;
-					
 					for(j=0;j<ProgramInfo[i].m_PackNum;j++){
 						memset(BeginDate, 0, sizeof(BeginDate));
 						memset(ExpireDate, 0, sizeof(ExpireDate));
@@ -1528,10 +1522,10 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 							&& 	0==drm_time_convert(ProgramInfo[i].m_Packs[j].m_IssueEndTime, ExpireDate, sizeof(ExpireDate))){
 							;
 						}
-						if(0==i)
-							snprintf(buf,size,"%d\t%lu\t%s\t%s",ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
+						if(0==i && 0==j)
+							snprintf(buf,size,"%d\t%d\t%lu\t%s\t%s",ProgramInfo[i].m_ID,ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
 						else
-							snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%lu\t%s\t%s",ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
+							snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%d\t%lu\t%s\t%s",ProgramInfo[i].m_ID,ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
 					}
 				}
 				DEBUG("%s\n", buf);

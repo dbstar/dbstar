@@ -1214,7 +1214,7 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 		DEBUG("invalid argument\n");
 		return -1;
 	}
-	PRINTF("%s\n", sqlite_cmd);
+	//PRINTF("%s\n", sqlite_cmd);
 	
 	int ret = -1;
 	
