@@ -110,11 +110,20 @@ public class GDTVActivity extends GDBaseActivity {
 
 		// reset the pages
 		if (mTV != null) {
-			TV.EpisodeItem[] items = mTV.EpisodesPages
-					.get(mTV.EpisodesPageNumber);
+			TV.EpisodeItem[] items = null;
+			if (mTV.EpisodesPages != null && mTV.EpisodesPages.size() > 0) {
+				items = mTV.EpisodesPages
+						.get(mTV.EpisodesPageNumber);
+			}
+			
 			mEpisodesAdapter.setDataSet(items);
-			mEpisodesView.setSelection(mSelectedEpisodeIndex);
 			mEpisodesAdapter.notifyDataSetChanged();
+			
+			if (items != null) {
+				mEpisodesView.setSelection(mSelectedEpisodeIndex);
+			}
+			
+			mScrollBar.setRange(mTV.EpisodesPageCount);
 			mScrollBar.setPosition(mTV.EpisodesPageNumber);
 		}
 	}
