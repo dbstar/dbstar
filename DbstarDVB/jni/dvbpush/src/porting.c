@@ -72,6 +72,7 @@ static int			s_smart_card_remove_flag = 1;	// 当发生过拔卡事件时，此�
 
 static char			s_TestSpecialProductID[64];
 static int			s_PushDir_usable = 0;	// 0表示不可用，1表示可用
+static char			s_udisk_mount[64];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
@@ -103,6 +104,8 @@ static void settingDefault_set(void)
 	snprintf(s_initialize_xml_uri, sizeof(s_initialize_xml_uri), "%s", INITIALIZE_XML_URI);
 	snprintf(s_column_res, sizeof(s_column_res), "%s", COLUMN_RES);
 	s_software_check = 1;
+	
+	memset(s_udisk_mount,0,sizeof(s_udisk_mount));
 	
 	return;
 }
@@ -1234,6 +1237,7 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 	struct statfs diskInfo;
 	char entitle_store_dir[64];
 	
+#if 0
 	snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_1ST);
 	ret = statfs(entitle_store_dir,&diskInfo);
 	if(0!=ret){
@@ -1252,6 +1256,22 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 			}
 		}	
 	}
+#else
+	snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",s_udisk_mount);
+	ret = statfs(entitle_store_dir,&diskInfo);
+	if(0!=ret){
+		printf_statfs_ret(entitle_store_dir,ret);
+		
+		snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_3RD);
+		ret = statfs(entitle_store_dir,&diskInfo);
+		if(0!=ret){
+			printf_statfs_ret(entitle_store_dir,ret);
+			snprintf(retbuf,retbuf_size,"NO_DEVICE");
+			ret = -1;
+			return ret;
+		}
+	}
+#endif
 	
 	DEBUG(" %s: TOTAL_SIZE(%llu B) FREE_SIZE(%llu B)\n",entitle_store_dir, (diskInfo.f_bsize * diskInfo.f_blocks),(diskInfo.f_bsize * diskInfo.f_bfree));
     
@@ -1291,7 +1311,7 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 					}
 						
 					close(fd);
-					system("sync");
+					sync();
 				}
 				else{
 					ERROROUT("open %s to save entitle failed\n", external_entitle_file);
@@ -1475,18 +1495,21 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 	char		BeginDate[64];
 	char		ExpireDate[64];
 	CDCA_U32 i = 0;
+	int ret = 0;
 	
 	char sqlite_cmd[256];
-	char DRMFile[256];
+	char DRMFile[512];
+	char TotalDRMFile[512];
 	memset(DRMFile, 0, sizeof(DRMFile));
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DRMFile from Publication where PublicationID='%s';",PublicationID);
 	if(-1==str_sqlite_read(DRMFile,sizeof(DRMFile),sqlite_cmd)){
 		DEBUG("can not read DRMFile for PublicationID: %s\n", PublicationID);
-		return -1;
+		ret = -1;
 	}
 	else{
-		DEBUG("should op DRMFile: %s\n", DRMFile);
-		int fd = open(DRMFile,O_RDONLY);
+		snprintf(TotalDRMFile,sizeof(TotalDRMFile),"%s/%s",push_dir_get(),DRMFile);
+		DEBUG("should op TotalDRMFile: %s\n", TotalDRMFile);
+		int fd = open(TotalDRMFile,O_RDONLY);
 		if(-1!=fd){
 			int ret = CDCASTB_DRM_GetProgramInfo((void *)&fd,&dwFrom,ProgramInfo,&dwNum);
 			if(CDCA_RC_OK==ret){
@@ -1512,18 +1535,22 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 					}
 				}
 				DEBUG("%s\n", buf);
-				return 0;
+				ret = 0;
 			}
 			else{
 				drm_errors("CDCASTB_DRM_GetProgramInfo", ret);
-				return -1;
+				ret = -1;
 			}
+			
+			close(fd);
 		}
 		else{
-			ERROROUT("open %s failed\n",DRMFile);
-			return -1;
+			ERROROUT("open %s failed\n",TotalDRMFile);
+			ret = -1;
 		}
 	}
+	
+	return ret;
 }
 #endif
 
@@ -1556,7 +1583,7 @@ int msg_send2_UI(int type, char *msg, int len)
 	}
 }
 
-
+#define UDISK_MOUNT_PREFIX	"/mnt/sdb"
 int dvbpush_command(int cmd, char **buf, int *len)
 {
 	int ret = 0;
@@ -1584,19 +1611,32 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			network_getinfo(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			break;
 		case CMD_DISK_MOUNT:
-			if(-1==disk_usable_check(push_dir_get())){
-				s_PushDir_usable = 0;
-				DEBUG("HardDisc disable\n");
+			DEBUG("CMD_DISK_MOUNT: %s\n", *buf);
+			if(NULL!=*buf && 0==strncasecmp(*buf,UDISK_MOUNT_PREFIX,strlen(UDISK_MOUNT_PREFIX))){
+				DEBUG("udisk is mounted at %s\n", *buf);
+				snprintf(s_udisk_mount,sizeof(s_udisk_mount),"%s",*buf);
 			}
 			else{
-				s_PushDir_usable = 1;
-				DEBUG("HardDisc enable\n");
-				maintenance_thread_awake();
+				if(-1==disk_usable_check(push_dir_get(),NULL,NULL)){
+					s_PushDir_usable = 0;
+					DEBUG("HardDisc disable\n");
+				}
+				else{
+					s_PushDir_usable = 1;
+					DEBUG("HardDisc enable\n");
+					maintenance_thread_awake();
+				}
 			}
 			break;
 		case CMD_DISK_UNMOUNT:
-			s_PushDir_usable = 0;
-			DEBUG("HardDisc umount, disable\n");
+			DEBUG("CMD_DISK_MOUNT: %s\n", *buf);
+			if(NULL!=*buf && 0==strncasecmp(*buf,UDISK_MOUNT_PREFIX,strlen(UDISK_MOUNT_PREFIX))){
+				DEBUG("udisk is unmount from %s\n", *buf);
+			}
+			else{
+				s_PushDir_usable = 0;
+				DEBUG("HardDisc umount, disable\n");
+			}
 			break;
 			
 		case CMD_DVBPUSH_GETTS_STATUS:
@@ -2424,7 +2464,7 @@ int smartcard_entitleinfo_refresh()
 				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM SCEntitleInfo;");
 				sqlite_execute(sqlite_cmd);
 				
-				if(disk_usable_check(push_dir_get())>0){
+				if(disk_usable_check(push_dir_get(),NULL,NULL)>0){
 					int sqlite_transaction_flag = sqlite_transaction_begin();
 					for(i=0;i<SCENTITLEINFOSIZE;i++){
 						if(i<dwNum)	// this should be a valid Entitle info

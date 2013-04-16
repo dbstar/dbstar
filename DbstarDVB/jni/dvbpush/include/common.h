@@ -569,7 +569,7 @@ int fcopy_c(char *from_file, char *to_file);
 int remove_force(const char *uri);
 long long dir_size(const char *uri);
 int dir_stat_ensure(const char *uri);
-int disk_usable_check(char *disk_dir);
+int disk_usable_check(char *disk_dir, unsigned long long *tt_size, unsigned long long *free_size);
 
 #endif
 

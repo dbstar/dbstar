@@ -15,7 +15,7 @@ typedef enum {
 	CMD_DISK_FOREWARNING			= 0x00023,    // 硬盘到达预警空间
 	CMD_DISK_FORMAT					= 0x00024,    // 硬盘格式化
 	CMD_DISK_PULLOUT				= 0x00025,    // 硬盘拔出
-	CMD_DISK_PUSHIN					= 0x00026,    // 硬盘插入
+	CMD_DISK_INSERT					= 0x00026,    // 硬盘插入
 	
 	CMD_DVBPUSH_GETINFO_START       = 0x00031,    // 开始获取push下载状态
 	CMD_DVBPUSH_GETINFO				= 0x00032,    // 获取push下载状态
@@ -55,8 +55,8 @@ typedef enum {
 	DRM_SC_INSERT_FAILED			= 0x20101,    // DRM smartcard Insert failed
 	DRM_SC_REMOVE_OK				= 0x20102,    // DRM smartcard Remove OK
 	DRM_SC_REMOVE_FAILED			= 0x20103,    // DRM smartcard Remove failed
-	DRM_EMAIL_ICONHIDE				= 0x20104,    // DRM 隐藏邮件通知图标
-	DRM_EMAIL_NEW					= 0x20105,    // DRM 新邮件到达
+	DRM_EMAIL_NEW					= 0x20104,    // DRM 隐藏邮件通知图标
+	DRM_EMAIL_ICONHIDE				= 0x20105,    // DRM 新邮件到达
 	DRM_EMAIL_SPACEEXHAUST			= 0x20106,    // DRM 邮箱已满
 	DRM_OSD_SHOW					= 0x20107,    // DRM OSD需要显示
 	DRM_OSD_HIDE					= 0x20108,    // DRM OSD需要隐藏

@@ -894,7 +894,7 @@ return:
 	0: success, has no free size
 	-1:failed, disable
 */
-int disk_usable_check(char *disk_dir)
+int disk_usable_check(char *disk_dir, unsigned long long *tt_size, unsigned long long *free_size)
 {
 	int ret = -1;
 	struct statfs diskInfo;
@@ -909,6 +909,11 @@ int disk_usable_check(char *disk_dir)
 	    	ret = -1;
 	    else							// statfs正确执行，总大小不为0，但空闲为0，则可进行删除、查询等操作
 	    	ret = 0;
+	    
+	    if(tt_size)
+	    	*tt_size = tmp_total_size;
+	    if(free_size)
+	    	*free_size = tmp_free_size;
 	    
 	    DEBUG("%s(%d): TOTAL_SIZE(%llu B) FREE_SIZE(%llu B)\n",disk_dir,ret,tmp_total_size,tmp_free_size);
 	}
