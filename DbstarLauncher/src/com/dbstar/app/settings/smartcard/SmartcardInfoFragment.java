@@ -175,7 +175,8 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 
 		int[] ids = new int[] { R.id.eignevlaue_id1, R.id.eignevlaue_id2,
 				R.id.eignevlaue_id3, R.id.eignevlaue_id4, R.id.eignevlaue_id5,
-				R.id.eignevlaue_id6 };
+				R.id.eignevlaue_id6, R.id.eignevlaue_id7, R.id.eignevlaue_id8,
+				R.id.eignevlaue_id9, R.id.eignevlaue_id10};
 
 		for (int i = 0; i < ids.length; i++) {
 			mEignevalueIDView[i] = (TextView) mActivity.findViewById(ids[i]);
