@@ -65,6 +65,10 @@ static char			s_push_root_path[512];
 //static char 		*s_guidelist_unselect = NULL;
 
 static char			s_jni_cmd_public_space[20480];
+static char			s_jni_cmd_smartcard_sn[256];
+static char			s_jni_cmd_drm_ver[256];
+static char			s_jni_cmd_eigenvalue[1024];
+static char			s_jni_cmd_data_status[64];
 
 // 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
@@ -1225,10 +1229,10 @@ static void printf_statfs_ret(char *statfs_dir,int ret)
 	return;
 }
 
-#define ENTITLE_SIZE_MIN	(3690LL)
+#define ENTITLE_SPACESIZE_MIN		(1024LL)
 #define ENTITLE_STORE_1ST	"/mnt/sdb1"
-#define ENTITLE_STORE_2ND	"/mnt/sdb"
 #define ENTITLE_STORE_3RD	"/mnt/sdcard/external_sdcard"
+#define ENTITLE_FILEDIR		"/data/dbstar/drm/entitle"
 static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 {
 	char CardSN[CDCA_MAXLEN_SN+1];
@@ -1236,27 +1240,121 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 	int ret = -1;
 	struct statfs diskInfo;
 	char entitle_store_dir[64];
+	struct stat local_entitlefile_stat;
+	char local_entitlefile_uri[256];
 	
-#if 0
-	snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_1ST);
-	ret = statfs(entitle_store_dir,&diskInfo);
-	if(0!=ret){
-		printf_statfs_ret(entitle_store_dir,ret);
-		snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_2ND);
-		ret = statfs(entitle_store_dir,&diskInfo);
-		if(0!=ret){
-			printf_statfs_ret(entitle_store_dir,ret);
-			snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_3RD);
+	memset(CardSN,0,sizeof(CardSN));
+	ret = CDCASTB_GetCardSN(CardSN);
+	if(CDCA_RC_OK==ret){
+		snprintf(local_entitlefile_uri,sizeof(local_entitlefile_uri),"%s/%s", ENTITLE_FILEDIR,CardSN);
+		int stat_ret = stat(local_entitlefile_uri, &local_entitlefile_stat);
+		DEBUG("%s file size = %llu, stat_ret=%d\n", local_entitlefile_uri, local_entitlefile_stat.st_size,stat_ret);
+		if(0==stat_ret && local_entitlefile_stat.st_size > 0LL){
+			snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",s_udisk_mount);
 			ret = statfs(entitle_store_dir,&diskInfo);
 			if(0!=ret){
 				printf_statfs_ret(entitle_store_dir,ret);
-				snprintf(retbuf,retbuf_size,"NO_DEVICE");
-				ret = -1;
-				return ret;
+				
+				snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_3RD);
+				ret = statfs(entitle_store_dir,&diskInfo);
+				if(0!=ret){
+					printf_statfs_ret(entitle_store_dir,ret);
+					snprintf(retbuf,retbuf_size,"NO_DEVICE");
+					ret = -1;
+					return ret;
+				}
+				else{
+					unsigned long long tmp_total_size = diskInfo.f_bsize * diskInfo.f_blocks;
+					DEBUG("total size: %llu\n", tmp_total_size);
+					if(0LL==tmp_total_size){
+						printf_statfs_ret(entitle_store_dir,ret);
+						snprintf(retbuf,retbuf_size,"NO_DEVICE");
+						ret = -1;
+						return ret;
+					}
+				}
 			}
-		}	
+			
+			DEBUG(" %s: TOTAL_SIZE(%llu B) FREE_SIZE(%llu B)\n",entitle_store_dir, (diskInfo.f_bsize * diskInfo.f_blocks),(diskInfo.f_bsize * diskInfo.f_bfree));
+			
+			if((diskInfo.f_bsize * diskInfo.f_bfree)>(local_entitlefile_stat.st_size + ENTITLE_SPACESIZE_MIN)){
+				if(0==smartcard_entitleinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space)) && strlen(s_jni_cmd_public_space)>4){
+					snprintf(external_entitle_file,sizeof(external_entitle_file),"%s/%s", entitle_store_dir,CardSN);
+					DEBUG("smartcard %s, output to %s\n", CardSN, external_entitle_file);
+					int fd = open(external_entitle_file,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+					if(-1!=fd){
+						ret = CDCASTB_DRM_ExportEntitleFile(CardSN,(void *)&fd);
+						if(CDCA_RC_OK==ret){
+							DEBUG("output entitle file OK\n");
+							snprintf(retbuf,retbuf_size,"ENTITLE_OUTPUT_FINISH");
+							ret = 0;
+						}
+						else if(CDCA_RC_POINTER_INVALID==ret){
+							DEBUG("0x%x CDCA_RC_POINTER_INVALID\n",CDCA_RC_POINTER_INVALID);
+							snprintf(retbuf,retbuf_size,"NO_DEVICE");
+							ret = -1;
+						}
+						else if(CDCA_RC_NOENTITLEDATA==ret){
+							DEBUG("0x%x CDCA_RC_NOENTITLEDATA\n",CDCA_RC_NOENTITLEDATA);
+							snprintf(retbuf,retbuf_size,"NO_ENTITLE");
+							ret = -1;
+						}
+						else if(CDCA_RC_SYSTEMERR==ret){
+							DEBUG("0x%x CDCA_RC_SYSTEMERR\n",CDCA_RC_SYSTEMERR);
+							snprintf(retbuf,retbuf_size,"NO_DEVICE");
+							ret = -1;
+						}
+						else{
+							DEBUG("CDCASTB_DRM_ExportEntitleFile faild, %d=0x%x\n", ret,ret);
+							ret = -1;
+						}
+							
+						close(fd);
+						sync();
+					}
+					else{
+						ERROROUT("open %s to save entitle failed\n", external_entitle_file);
+						snprintf(retbuf,retbuf_size,"NO_DEVICE");
+						ret = -1;
+					}
+				}
+				else{
+					DEBUG("no entitle info to output\n");
+					snprintf(retbuf,retbuf_size,"NO_ENTITLE");
+					ret = -1;
+				}
+		    }
+		    else{
+		    	DEBUG("no enough space for smartmard entitle output\n");
+		    	snprintf(retbuf,retbuf_size,"NOT_ENOUGH_SPACE");
+		    	ret = -1;
+		    }
+		}
+		else{
+			snprintf(retbuf,retbuf_size,"NO_ENTITLE");
+			ret = -1;
+		}
 	}
-#else
+	else{
+		drm_errors("CDCASTB_GetCardSN", ret);
+		snprintf(retbuf,retbuf_size,"NO_ENTITLE");
+		ret = -1;
+	}
+		
+    
+	    
+	
+	return ret;
+}
+
+static int smartcard_EntitleFile_input(char *retbuf, unsigned int retbuf_size)
+{
+	char CardSN[CDCA_MAXLEN_SN+1];
+	char external_entitle_file[512];
+	int ret = -1;
+	struct statfs diskInfo;
+	char entitle_store_dir[64];
+	
 	snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",s_udisk_mount);
 	ret = statfs(entitle_store_dir,&diskInfo);
 	if(0!=ret){
@@ -1270,101 +1368,16 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 			ret = -1;
 			return ret;
 		}
-	}
-#endif
-	
-	DEBUG(" %s: TOTAL_SIZE(%llu B) FREE_SIZE(%llu B)\n",entitle_store_dir, (diskInfo.f_bsize * diskInfo.f_blocks),(diskInfo.f_bsize * diskInfo.f_bfree));
-    
-    if((diskInfo.f_bsize * diskInfo.f_bfree)>ENTITLE_SIZE_MIN){
-    	memset(CardSN,0,sizeof(CardSN));
-		ret = CDCASTB_GetCardSN(CardSN);
-		if(CDCA_RC_OK==ret){
-			if(0==smartcard_entitleinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space)) && strlen(s_jni_cmd_public_space)>4){
-				snprintf(external_entitle_file,sizeof(external_entitle_file),"%s/%s", entitle_store_dir,CardSN);
-				DEBUG("smartcard %s, output to %s\n", CardSN, external_entitle_file);
-				int fd = open(external_entitle_file,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
-				if(-1!=fd){
-					ret = CDCASTB_DRM_ExportEntitleFile(CardSN,(void *)&fd);
-					if(CDCA_RC_OK==ret){
-						DEBUG("output entitle file OK\n");
-						snprintf(retbuf,retbuf_size,"ENTITLE_OUTPUT_FINISH");
-						ret = 0;
-					}
-					else if(CDCA_RC_POINTER_INVALID==ret){
-						DEBUG("0x%x CDCA_RC_POINTER_INVALID\n",CDCA_RC_POINTER_INVALID);
-						snprintf(retbuf,retbuf_size,"NO_DEVICE");
-						ret = -1;
-					}
-					else if(CDCA_RC_NOENTITLEDATA==ret){
-						DEBUG("0x%x CDCA_RC_NOENTITLEDATA\n",CDCA_RC_NOENTITLEDATA);
-						snprintf(retbuf,retbuf_size,"NO_ENTITLE");
-						ret = -1;
-					}
-					else if(CDCA_RC_SYSTEMERR==ret){
-						DEBUG("0x%x CDCA_RC_SYSTEMERR\n",CDCA_RC_SYSTEMERR);
-						snprintf(retbuf,retbuf_size,"NO_DEVICE");
-						ret = -1;
-					}
-					else{
-						DEBUG("CDCASTB_DRM_ExportEntitleFile faild, %d=0x%x\n", ret,ret);
-						ret = -1;
-					}
-						
-					close(fd);
-					sync();
-				}
-				else{
-					ERROROUT("open %s to save entitle failed\n", external_entitle_file);
-					snprintf(retbuf,retbuf_size,"NO_DEVICE");
-					ret = -1;
-				}
-			}
-			else{
-				DEBUG("no entitle info to output\n");
-				snprintf(retbuf,retbuf_size,"NO_ENTITLE");
-				ret = -1;
-			}
-		}
 		else{
-			drm_errors("CDCASTB_GetCardSN", ret);
-			snprintf(retbuf,retbuf_size,"NO_ENTITLE");
-			ret = -1;
-		}
-    }
-    else{
-    	DEBUG("no enough space for smartmard entitle output\n");
-    	snprintf(retbuf,retbuf_size,"NOT_ENOUGH_SPACE");
-    	ret = -1;
-    }
-	
-	return ret;
-}
-
-static int smartcard_EntitleFile_input(char *retbuf, unsigned int retbuf_size)
-{
-	char CardSN[CDCA_MAXLEN_SN+1];
-	char external_entitle_file[512];
-	int ret = -1;
-	struct statfs diskInfo;
-	char entitle_store_dir[64];
-	
-	snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_1ST);
-	ret = statfs(entitle_store_dir,&diskInfo);
-	if(0!=ret){
-		printf_statfs_ret(entitle_store_dir,ret);
-		snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_2ND);
-		ret = statfs(entitle_store_dir,&diskInfo);
-		if(0!=ret){
-			printf_statfs_ret(entitle_store_dir,ret);
-			snprintf(entitle_store_dir,sizeof(entitle_store_dir),"%s",ENTITLE_STORE_3RD);
-			ret = statfs(entitle_store_dir,&diskInfo);
-			if(0!=ret){
+			unsigned long long tmp_total_size = diskInfo.f_bsize * diskInfo.f_blocks;
+			DEBUG("total size: %llu\n", tmp_total_size);
+			if(0LL==tmp_total_size){
 				printf_statfs_ret(entitle_store_dir,ret);
 				snprintf(retbuf,retbuf_size,"NO_DEVICE");
 				ret = -1;
 				return ret;
 			}
-		}	
+		}
 	}
 	
 	DEBUG("entitle_store_dir: %s\n", entitle_store_dir);
@@ -1523,9 +1536,9 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 							;
 						}
 						if(0==i && 0==j)
-							snprintf(buf,size,"%d\t%d\t%lu\t%s\t%s",ProgramInfo[i].m_ID,ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
+							snprintf(buf,size,"%lu\t%d\t%lu\t%s\t%s",ProgramInfo[i].m_ID,ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
 						else
-							snprintf(buf+strlen(buf),size-strlen(buf),"\n%d\t%d\t%lu\t%s\t%s",ProgramInfo[i].m_ID,ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
+							snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%d\t%lu\t%s\t%s",ProgramInfo[i].m_ID,ProgramInfo[i].m_OperatorID,ProgramInfo[i].m_Packs[j].m_ID,BeginDate,ExpireDate);
 					}
 				}
 				DEBUG("%s\n", buf);
@@ -1591,6 +1604,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DVBPUSH_GETINFO:
 			dvbpush_getinfo(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_DVBPUSH_GETINFO_STOP:
 			dvbpush_getinfo_stop();
@@ -1603,11 +1618,13 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_NETWORK_GETINFO:
 			network_getinfo(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_DISK_MOUNT:
 			DEBUG("CMD_DISK_MOUNT: %s\n", *buf);
 			if(NULL!=*buf && 0==strncasecmp(*buf,UDISK_MOUNT_PREFIX,strlen(UDISK_MOUNT_PREFIX))){
-				DEBUG("udisk is mounted at %s\n", *buf);
+				DEBUG("<<<<<<<<< udisk is mounted at %s\n", *buf);
 				snprintf(s_udisk_mount,sizeof(s_udisk_mount),"%s",*buf);
 			}
 			else{
@@ -1623,9 +1640,10 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 			break;
 		case CMD_DISK_UNMOUNT:
-			DEBUG("CMD_DISK_MOUNT: %s\n", *buf);
+			DEBUG("CMD_DISK_UNMOUNT: %s\n", *buf);
 			if(NULL!=*buf && 0==strncasecmp(*buf,UDISK_MOUNT_PREFIX,strlen(UDISK_MOUNT_PREFIX))){
-				DEBUG("udisk is unmount from %s\n", *buf);
+				DEBUG(">>>>>>>>> udisk is unmount from %s\n", *buf);
+				memset(s_udisk_mount,0,sizeof(s_udisk_mount));
 			}
 			else{
 				s_PushDir_usable = 0;
@@ -1634,9 +1652,11 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 			
 		case CMD_DVBPUSH_GETTS_STATUS:
-			data_stream_status_str_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			memset(s_jni_cmd_data_status,0,sizeof(s_jni_cmd_data_status));
+			data_stream_status_str_get(s_jni_cmd_data_status,sizeof(s_jni_cmd_data_status));
+			*buf = s_jni_cmd_data_status;
+			*len = strlen(s_jni_cmd_data_status);
 			break;
-		
 		case CMD_UPGRADE_CANCEL:
 			DEBUG("CMD_UPGRADE_CANCEL\n");
 			upgrade_sign_set();
@@ -1661,7 +1681,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				msg_send2_UI(DRM_SC_INSERT_OK, NULL, 0);
 #else
 			DEBUG("call drm_sc_insert success, but it not means reset card OK, wait a moment...\n");
-#endif				
+#endif
 			break;
 		case CMD_DRM_SC_REMOVE:
 			DEBUG("CMD_SMARTCARD_REMOVE\n");
@@ -1675,53 +1695,74 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DRM_SC_SN_READ:
 			DEBUG("CMD_DRM_SC_SN_READ\n");
-			smartcard_sn_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			memset(s_jni_cmd_smartcard_sn,0,sizeof(s_jni_cmd_smartcard_sn));
+			smartcard_sn_get(s_jni_cmd_smartcard_sn,sizeof(s_jni_cmd_smartcard_sn));
+			*buf = s_jni_cmd_smartcard_sn;
+			*len = strlen(s_jni_cmd_smartcard_sn);
 			break;
 		case CMD_DRMLIB_VER_READ:
 			DEBUG("CMD_DRMLIB_VER_READ\n");
-			drmlib_version_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			memset(s_jni_cmd_drm_ver,0,sizeof(s_jni_cmd_drm_ver));
+			drmlib_version_get(s_jni_cmd_drm_ver,sizeof(s_jni_cmd_drm_ver));
+			*buf = s_jni_cmd_drm_ver;
+			*len = strlen(s_jni_cmd_drm_ver);
 			break;
 		case CMD_DRM_SC_EIGENVALUE_READ:
 			DEBUG("CMD_DRM_SC_EIGENVALUE_READ\n");
-			smartcard_eigenuvalue_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			memset(s_jni_cmd_eigenvalue,0,sizeof(s_jni_cmd_eigenvalue));
+			smartcard_eigenuvalue_get(s_jni_cmd_eigenvalue,sizeof(s_jni_cmd_eigenvalue));
+			*buf = s_jni_cmd_eigenvalue;
+			*len = strlen(s_jni_cmd_eigenvalue);
 			break;
 		case CMD_DRM_ENTITLEINFO_READ:
 			DEBUG("CMD_DRM_ENTITLEINFO_READ\n");
 			smartcard_entitleinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_DRM_PURCHASEINFO_READ:
 			DEBUG("CMD_DRM_PURCHASEINFO_READ\n");
 			smartcard_purchaseinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_DRM_ENTITLEINFO_OUTPUT:
 			DEBUG("CMD_DRM_ENTITLEINFO_OUTPUT\n");
 			smartcard_EntitleFile_output(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			DEBUG("CMD_DRM_ENTITLEINFO_OUTPUT > %s\n", s_jni_cmd_public_space);
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_DRM_ENTITLEINFO_INPUT:
 			DEBUG("CMD_DRM_ENTITLEINFO_INPUT\n");
 			smartcard_EntitleFile_input(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			DEBUG("CMD_DRM_ENTITLEINFO_INPUT > %s\n", s_jni_cmd_public_space);
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_DRM_EMAILHEADS_READ:
 			DEBUG("CMD_DRM_EMAILHEADS_READ\n");
 			DRM_emailheads_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_DRM_EMAILCONTENT_READ:
 			DEBUG("CMD_DRM_EMAILCONTENT_READ\n");
 			DRM_emailcontent_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_DRM_PVODPROGRAMINFO_READ:
 			DEBUG("CMD_DRM_PVODPROGRAMINFO_READ\n");
 			DRM_programinfo_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
 			break;
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
+			ret = -1;
 			break;
 	}
-	
-	*buf = s_jni_cmd_public_space;
-	*len = strlen(s_jni_cmd_public_space);
 
 	return ret;
 }
