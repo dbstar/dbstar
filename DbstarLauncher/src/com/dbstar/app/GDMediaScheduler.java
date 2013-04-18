@@ -193,7 +193,8 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		Log.d(TAG, "onError what=" + what + "extra=" + extra);
 
 		mCurrentState.PlayerState = PLAYER_STATE_ERROR;
-		return false;
+
+		return true;
 	}
 
 	@Override

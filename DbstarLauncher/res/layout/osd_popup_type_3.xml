@@ -3,17 +3,17 @@
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:orientation="vertical"
-    android:background="#3a0c0c0c" >
+    android:background="#c80c0c0c" >
     
     <TextView
         android:id="@+id/info"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginBottom="80dp"
+        android:layout_marginLeft="80dp"
+        android:layout_marginRight="80dp"
+        android:layout_marginTop="80dp"
         android:textColor="#ffffff"
-        android:textSize="20sp" />
+        android:textSize="22sp" />
 
 </LinearLayout>
