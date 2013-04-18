@@ -1449,9 +1449,9 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 				snprintf(email_createtime,sizeof(email_createtime),"%lu",EmailHeads[i].m_tCreateTime);
 #endif
 				if(0==i)
-					snprintf(buf,size,"%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,EmailHeads[i].m_bNewEmail,EmailHeads[i].m_szEmailHead);
+					snprintf(buf,size,"%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,0==EmailHeads[i].m_bNewEmail?1:0,EmailHeads[i].m_szEmailHead);
 				else
-					snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,EmailHeads[i].m_bNewEmail,EmailHeads[i].m_szEmailHead);
+					snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,0==EmailHeads[i].m_bNewEmail?1:0,EmailHeads[i].m_szEmailHead);
 			}
 			
 			if(byCount<EMAIL_HEADS_NUM){

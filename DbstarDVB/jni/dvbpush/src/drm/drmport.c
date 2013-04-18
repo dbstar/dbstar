@@ -579,6 +579,7 @@ void CDSTBCA_EmailNotifyIcon(CDCA_U8 byShow, CDCA_U32 dwEmailID)
 {
 	LOGD("\n\n\n\n\n##################### CDSTBCA_EmailNotifyIcon byShow=%d, dwEmailID=%lu\n\n\n\n\n\n", byShow,dwEmailID);
 
+#if 0
 	if(CDCA_Email_New==byShow)
 		msg_send2_UI(DRM_EMAIL_NEW, NULL, 0);
 	else if(CDCA_Email_IconHide==byShow)
@@ -587,6 +588,7 @@ void CDSTBCA_EmailNotifyIcon(CDCA_U8 byShow, CDCA_U32 dwEmailID)
 		msg_send2_UI(DRM_EMAIL_SPACEEXHAUST, NULL, 0);
 	else
 		DEBUG("do nothing for email with this byShow=%d\n", byShow);
+#endif
 }
 
 static char s_DRM_OSD_msg[CDCA_MAXLEN_OSD+32];
