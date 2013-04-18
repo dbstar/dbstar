@@ -122,7 +122,8 @@
     <string name="start_time">开始时间</string>
     <string name="end_time">结束时间</string>
     <string name="limit_count">限量</string>
-    
+    <string name="content_id">内容ID</string>
+
     <string name="ca_edition">CA版本:</string>
     <string name="import_ca">导入授权</string>
     <string name="export_ca">导出授权</string>
@@ -134,10 +135,10 @@
     <!-- CA message -->
     <string name="alert_title">提示</string>
     <string name="ca_message_no_entitle">无记录导出!</string>
-    <string name="ca_message_no_device">请插入SD卡!</string>
+    <string name="ca_message_no_device">请插入移动设备!</string>
     <string name="ca_message_no_space">空间不足!</string>
     <string name="ca_message_export_finished">授权导出完成.</string>
-    <string name="ca_message_import_failed">授权导入失败，请检查SD卡!</string>
+    <string name="ca_message_import_failed">授权导入失败，请检查移动设备!</string>
     <string name="ca_message_import_finished">授权导入完成.</string>
     
     <!-- Mail -->
@@ -246,4 +247,22 @@
     <string name="label_ordered_products">订购产品</string>
     <string name="label_ordered_products_name">产品名称</string>
     <string name="label_ordered_products_time">有效期</string>
+    
+    <!-- System Management -->
+    <string name="restore_factory_settings_title">恢复出厂设置</string>
+    <string name="restore_factory_settings_desc">清理所有通过“设置”栏目（或其子栏目）进行的手工配置。恢复出厂设置后，仍可以通过开机设置向导或“设置”栏目（或其子栏目）进行手工配置。</string>
+    <string name="clear_purchase_info_title">清理购买信息</string>
+    <string name="clear_purchase_info_desc">购买信息决定节目下载和播放，在“个人中心”——“购买信息”栏目可以看到。</string>
+    <string name="format_disk_title">格式化磁盘</string>
+    <string name="format_disk_desc">对内置磁盘进行格式化后将丢失所有下载的首页小片、栏目及其节目。新硬盘也可以执行此操作。</string>
+	<string name="alert_info_1">以上操作将对终端运行产生比较严重的影响，如果不确定，请与客服人员联系。</string>
+	<string name="alert_info_2">为避免意外操作，请输入校验码</string>
+	<string name="alert_info_3">后点击“确定”按钮，正确操作后系统将自动重启。</string>
+	<string name="demo_security_code">4000300888</string>
+	<string name="restore_progress_text">正在恢复出厂设置......</string>
+	<string name="clear_progress_text">正在清理购买信息......</string>
+	<string name="format_progress_text">正在格式化磁盘......</string>
+	<string name="format_disk_successed">磁盘格式化完毕</string>
+	<string name="format_disk_failed">磁盘格式化失败，错误码%1$s</string>
+	<string name="reboot_notes">系统自动重启，请稍候......</string>
 </resources>

@@ -70,6 +70,7 @@ public class CAManageFragment extends GDSmartcardFragment {
 	void initializeView() {
 		mImportCAButton = (Button) mActivity.findViewById(R.id.importCAButton);
 		mExportCAButton = (Button) mActivity.findViewById(R.id.exportCAButton);
+		mImportCAButton.requestFocus();
 
 		mImportCAButton.setOnClickListener(new View.OnClickListener() {
 

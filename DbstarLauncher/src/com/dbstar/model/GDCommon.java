@@ -12,7 +12,7 @@ public class GDCommon {
 	public static final int MSG_SYSTEM_UPGRADE = 0x10007;
 	public static final int MSG_SYSTEM_FORCE_UPGRADE = 0x10008;
 	public static final int MSG_USER_UPGRADE_CANCELLED = 0x10009;
-
+	
 	public static final int MSG_ADD_TO_FAVOURITE = 0x10010;
 	public static final int MSG_DELETE = 0x10011;
 	public static final int MSG_PLAY_COMPLETED = 0x10012;
@@ -55,7 +55,12 @@ public class GDCommon {
 	public static final int MSG_MUTE_AUDIO = 0xA001;
 	public static final int MUTE_TRUE = 1;
 	public static final int MUTE_FALSE = 0;
-
+	
+	public static final int MSG_SYSTEM_RECOVERY = 0xB0001;
+	public static final int MSG_DISK_FORMAT_FINISHED = 0xB0002;
+	public static final int VALUE_SUCCESSED = 1;
+	public static final int VAULE_FAILED = 0;
+	
 	public static final int OSDDISP_TIMEOUT = 3600000;
 
 	public static final String KeyDisk = "disk";
@@ -111,6 +116,12 @@ public class GDCommon {
 	public static final String ActionPlayNext = "com.dbstar.DbstarDVB.Action.PLAY_NEXT";
 	public static final String ActionNoNext = "com.dbstar.DbstarDVB.Action.NO_NEXT";
 
+	public static final String ActionSystemRecovery = "com.dbstar.DbstarLauncher.SystemRecovery";
+	public static final String KeyRecoveryType = "recovery_type";
+	public static final int RecoveryTypeClearPush = 0x1001;
+	public static final int RecoveryTypeClearDrmInfo = 0x1002;
+	public static final int RecoveryTypeFormatDisk = 0x1003;
+
 	public static final String ActionGetNetworkInfo = "com.dbstar.DbstarLauncher.Action.GET_NETWORKINFO";
 	public static final String ActionUpateNetworkInfo = "com.dbstar.DbstarLauncher.Action.UPDATE_NETWORKINFO";
 	public static final String ActionSetNetworkInfo = "com.dbstar.DbstarLauncher.Action.SET_NETWORKINFO";
@@ -133,7 +144,7 @@ public class GDCommon {
 	public static final int MSG_SMARTCARD_REMOVE_FAILED = 0x40006;
 
 	// smart card state
-	public static final int SMARTCARD_STATE_INERTING = 0x1001;
+	public static final int SMARTCARD_STATE_INSERTING = 0x1001;
 	public static final int SMARTCARD_STATE_INSERTED = 0x1002;
 	public static final int SMARTCARD_STATE_INVALID = 0x1003;
 	public static final int SMARTCARD_STATE_REMOVING = 0x1004;

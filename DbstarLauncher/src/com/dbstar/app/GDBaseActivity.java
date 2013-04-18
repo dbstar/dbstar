@@ -358,43 +358,22 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		}
 	}
 
-	protected boolean checkLoadingIsFinished() {
-		return true;
-	}
-
-	protected void showLoadingDialog() {
-
-		if (mLoadingText == null) {
-			mLoadingText = getResources().getString(R.string.loading_text);
-		}
+	protected void showLoadingDialog(String loadingText) {
 
 		if (mLoadingDialog == null || !mLoadingDialog.isShowing()) {
 			Log.d(TAG, "show loading dialog");
-			mLoadingDialog = ProgressDialog.show(this, "", mLoadingText, true);
+			mLoadingDialog = ProgressDialog.show(this, "", loadingText, true);
 			mLoadingDialog.setCancelable(true);
 			mLoadingDialog.setCanceledOnTouchOutside(true);
-			mLoadingDialog.setOnCancelListener(new LoadingCancelListener());
 		}
 	}
 
 	protected void hideLoadingDialog() {
-		if (mLoadingDialog != null && mLoadingDialog.isShowing()
-				&& checkLoadingIsFinished()) {
+		if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
 			Log.d(TAG, "hide loading dialog");
 			mLoadingDialog.dismiss();
+			mLoadingDialog = null;
 		}
-	}
-
-	private class LoadingCancelListener implements OnCancelListener {
-		public void onCancel(DialogInterface dialog) {
-			onLoadingCancelled();
-		}
-	}
-
-	protected void onLoadingCancelled() {
-		Log.d(TAG, "onLoadingCancelled");
-
-		cancelRequests(this);
 	}
 
 	protected void cancelRequests(ClientObserver observer) {
@@ -462,7 +441,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			dialog.showSingleButton();
 
 			if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED
-					|| mSmartcardState == GDCommon.SMARTCARD_STATE_INERTING) {
+					|| mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTING) {
 				dialog.setMessage(R.string.smartcard_status_in);
 			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVED
 					|| mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {

@@ -124,7 +124,7 @@ public class GDBaseActivity extends Activity {
 	private static final int MSG_HIDE_DLG = 0x2001;
 
 	// smart card state
-	public static final int SMARTCARD_STATE_INERTING = 0x1001;
+	public static final int SMARTCARD_STATE_INSERTING = 0x1001;
 	public static final int SMARTCARD_STATE_INSERTED = 0x1002;
 	public static final int SMARTCARD_STATE_INVALID = 0x1003;
 	public static final int SMARTCARD_STATE_REMOVING = 0x1004;
@@ -148,7 +148,7 @@ public class GDBaseActivity extends Activity {
 		String message = null;
 
 		if (state == SMARTCARD_STATE_INSERTED ||
-				state == SMARTCARD_STATE_INERTING) {
+				state == SMARTCARD_STATE_INSERTING) {
 			message = getResources().getString(R.string.smartcard_status_in);
 		} else if (state == SMARTCARD_STATE_REMOVING ||
 				state == SMARTCARD_STATE_REMOVED) {

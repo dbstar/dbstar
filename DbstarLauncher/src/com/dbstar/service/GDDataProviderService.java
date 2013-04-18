@@ -231,7 +231,7 @@ public class GDDataProviderService extends Service {
 		
 		// initialize smartcard state
 		if (isSmartcardPlugIn()) {
-			mSmartcardState = GDCommon.SMARTCARD_STATE_INERTING;
+			mSmartcardState = GDCommon.SMARTCARD_STATE_INSERTING;
 		} else {
 			mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVED;
 		}
@@ -698,7 +698,7 @@ public class GDDataProviderService extends Service {
 			}
 
 			case GDCommon.MSG_SMARTCARD_IN: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_INERTING;
+				mSmartcardState = GDCommon.SMARTCARD_STATE_INSERTING;
 
 				notifyDbstarServiceSDStatus();
 				// notifySmartcardStatusChange(mSmartcardState);
@@ -761,6 +761,22 @@ public class GDDataProviderService extends Service {
 			
 			case GDCommon.MSG_MUTE_AUDIO: {
 				mAudioController.muteAudio(msg.arg1);
+				break;
+			}
+			
+			case GDCommon.MSG_SYSTEM_RECOVERY: {
+				handleRecoveryAction(msg.arg1);
+				break;
+			}
+			
+			case GDCommon.MSG_DISK_FORMAT_FINISHED: {
+				boolean successed = msg.arg1 == GDCommon.VALUE_SUCCESSED ? true : false;
+				String info = null;
+				if (!successed) {
+					info = (String) msg.obj;
+				}
+		
+				handleDiskFormatResult(successed, info);
 				break;
 			}
 
@@ -2029,6 +2045,35 @@ public class GDDataProviderService extends Service {
 
 					break;
 				}
+				
+				case DbstarServiceApi.DISK_FORMAT_SUCCESS: {
+					Message msg = mHandler.obtainMessage(GDCommon.MSG_DISK_FORMAT_FINISHED);
+					msg.arg1 = GDCommon.VALUE_SUCCESSED;
+					msg.sendToTarget();
+					break;
+				}
+				
+				case DbstarServiceApi.DISK_FORMAT_FAILED: {
+					String info = "";
+
+					byte[] bytes = intent.getByteArrayExtra("message");
+					if (bytes != null) {
+						try {
+							info = new String(bytes, "utf-8");
+							Log.d(TAG, "==========format disk error ======== "
+									+ info);
+							
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						}
+					}
+					
+					Message msg = mHandler.obtainMessage(GDCommon.MSG_DISK_FORMAT_FINISHED);
+					msg.arg1 = GDCommon.VAULE_FAILED;
+					msg.obj = info;
+					msg.sendToTarget();
+					break;
+				}
 
 				default:
 					break;
@@ -2124,9 +2169,42 @@ public class GDDataProviderService extends Service {
 				mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_OUT);
 			} else if (action.equals(GDCommon.ActionGetEthernetInfo)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_GET_ETHERNETINFO);
+			} else if (action.equals(GDCommon.ActionSystemRecovery)) {
+				int type = intent.getIntExtra(GDCommon.KeyRecoveryType, 0);
+				Message msg = mHandler.obtainMessage(GDCommon.MSG_SYSTEM_RECOVERY);
+				msg.arg1 = type;
+				msg.sendToTarget();
 			}
 		}
 	};
+	
+	void handleRecoveryAction(int type) {
+		switch(type) {
+		case GDCommon.RecoveryTypeClearPush: {
+			notifyDbstarService(DbstarServiceApi.CMD_FACTORY_RESET);
+			break;
+		}
+		case GDCommon.RecoveryTypeClearDrmInfo: {
+			notifyDbstarService(DbstarServiceApi.CMD_DRM_RESET);
+			break;
+		}
+		case GDCommon.RecoveryTypeFormatDisk: {
+			notifyDbstarService(DbstarServiceApi.CMD_DISK_FORMAT);
+			break;
+		}
+
+		}
+	}
+	
+	// if format failed, errorMsg is the message.
+	void handleDiskFormatResult(boolean successed, String errorMsg) {
+		if (mPageOberser != null) {
+			EventData.DiskFormatEvent event = new EventData.DiskFormatEvent();
+			event.Successed = successed;
+			event.ErrorMessage = errorMsg;
+			mPageOberser.notifyEvent(EventData.EVENT_DISK_FORMAT, event);
+		}
+	}
 
 	void upgradeAfterSleep() {
 		if (mNeedUpgrade) {

@@ -658,10 +658,20 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				}
 
 				ProductItem product = new ProductItem();
-				product.OperatorID = item[0];
-				product.ProductID = item[1];
-				product.StartTime = item[2];
-				product.EndTime = item[3];
+				if (item.length > 0)
+					product.ContentID = item[0];
+
+				if (item.length > 1)
+					product.OperatorID = item[1];
+
+				if (item.length > 2)
+					product.ProductID = item[2];
+
+				if (item.length > 3)
+					product.StartTime = item[3];
+
+				if (item.length > 4)
+					product.EndTime = item[4];
 
 				products.add(product);
 			}

@@ -14,6 +14,8 @@ public class EventData {
 	
 	public static final int EVENT_PLAYBACK = 0xc0001;
 	
+	public static final int EVENT_DISK_FORMAT = 0xd0001;
+	
 	public static class DeleteEvent {
 		public String PublicationId;
 		public String PublicationSetId;
@@ -44,5 +46,10 @@ public class EventData {
 	
 	public static class PlaybackEvent {
 		public int Event;
+	}
+	
+	public static class DiskFormatEvent {
+		public boolean Successed;
+		public String ErrorMessage;
 	}
 }

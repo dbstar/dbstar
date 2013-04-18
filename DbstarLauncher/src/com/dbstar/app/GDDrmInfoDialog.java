@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -55,6 +54,7 @@ public class GDDrmInfoDialog extends Dialog {
 	private class ListAdapter extends BaseAdapter {
 
 		public class ViewHolder {
+			TextView contetnId;
 			TextView operatorId;
 			TextView productId;
 			TextView startTime;
@@ -98,6 +98,8 @@ public class GDDrmInfoDialog extends Dialog {
 						false);
 
 				holder = new ViewHolder();
+				holder.contetnId = (TextView) convertView
+						.findViewById(R.id.content_id);
 				holder.operatorId = (TextView) convertView
 						.findViewById(R.id.operator_id);
 				holder.productId = (TextView) convertView
@@ -113,7 +115,8 @@ public class GDDrmInfoDialog extends Dialog {
 			} else {
 				holder = (ViewHolder) convertView.getTag();
 			}
-
+			
+			holder.contetnId.setText(mDataSet[position].ContentID);
 			holder.operatorId.setText(mDataSet[position].OperatorID);
 			holder.productId.setText(mDataSet[position].ProductID);
 			holder.startTime.setText(mDataSet[position].StartTime);

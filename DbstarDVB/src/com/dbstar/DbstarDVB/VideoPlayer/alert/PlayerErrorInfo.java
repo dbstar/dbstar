@@ -4,6 +4,7 @@ import com.dbstar.DbstarDVB.R;
 import android.content.res.Resources;
 
 public class PlayerErrorInfo {
+	public static final int CDCA_RC_CARD_INVALID = 0x03;
 	public static final int CDCA_RC_FILE_ERROR = 0x30;
 	public static final int CDCA_RC_NOENTITLE = 0x32;
 	public static final int CDCA_RC_NOT_ISSUETIME = 0x33;
@@ -31,6 +32,10 @@ public class PlayerErrorInfo {
 		}
 		case CDCA_RC_RIGHT_LIMIT: {
 			errStr = res.getString(R.string.drm_error_rightlimit);
+			break;
+		}
+		case CDCA_RC_CARD_INVALID: {
+			errStr = res.getString(R.string.drm_error_card_invalid);
 			break;
 		}
 		default: {

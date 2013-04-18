@@ -243,7 +243,7 @@ public class PlayerActivity extends Activity {
 	void setupSmartcardInfoDlg(int smartcardState) {
 		mSmartcardDialog.setTitle(R.string.smartcard_status_title);
 
-		if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INERTING
+		if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INSERTING
 				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INSERTED) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_in);
 		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVING
