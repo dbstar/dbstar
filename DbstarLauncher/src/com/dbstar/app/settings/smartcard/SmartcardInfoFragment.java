@@ -22,7 +22,7 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 	private static final String TAG = "SmartcardInfoFragment";
 
 	TextView mSmartcardNumberView, mSmartcardStateView, mSmartcardVersionView;
-	TextView[] mEignevalueIDView = new TextView[10];
+	TextView[] mEignevalueIDView = null;
 	ListView mAthorizationInfoView;
 	ListAdapter mAdapter;
 	String mSmartcardSN, mSmartcardStateStr, mSmartcardVersion;
@@ -136,8 +136,12 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 	}
 
 	void updateSmartcardIds() {
-		if (mIDValues == null || mIDValues.length == 0)
+		if (mIDValues == null || mIDValues.length == 0) {
+			Log.d(TAG, "no ids!");
 			return;
+		}
+
+		Log.d(TAG, "mIDValues:" + mIDValues.length);
 
 		for (int i = 0; i < mIDValues.length; i++) {
 			mEignevalueIDView[i].setText(mIDValues[i]);
@@ -178,8 +182,12 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 				R.id.eignevlaue_id6, R.id.eignevlaue_id7, R.id.eignevlaue_id8,
 				R.id.eignevlaue_id9, R.id.eignevlaue_id10};
 
+		Log.d(TAG, "ids length = " + ids.length);
+
+		mEignevalueIDView = new TextView[ids.length];
 		for (int i = 0; i < ids.length; i++) {
 			mEignevalueIDView[i] = (TextView) mActivity.findViewById(ids[i]);
+			Log.d(TAG, " id view : " + i + " = " + mEignevalueIDView[i]);
 		}
 
 		mAthorizationInfoView = (ListView) mActivity
