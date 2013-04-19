@@ -5,15 +5,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
+import com.dbstar.settings.network.NetworkCommon;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 public class DbstarNetSettingsReceiver extends BroadcastReceiver {
 
 	private static final String ACTION_BOOT_COMPLETED = "android.intent.action.BOOT_COMPLETED";
-
+	private static final String ActionClearSettings = "com.dbstar.Settings.Action.CLEAR_SETTINGS";
+	
 	public static final String flagFile = "flag";
 
 	protected class MyException extends Exception {
@@ -56,6 +60,15 @@ public class DbstarNetSettingsReceiver extends BroadcastReceiver {
 				Log.e("OOBE Start Up Receiver: EXCEPTION ", e2.toString());
 			}
 
+		} else if (ActionClearSettings.equals(intent.getAction())) {
+			context.deleteFile(flagFile);
+			
+			SharedPreferences settings = context.getSharedPreferences(
+					NetworkCommon.PREF_NAME_NETWORK, 0);
+			SharedPreferences.Editor editor = settings.edit();
+			editor.clear();
+			editor.commit();
 		}
+		
 	}
 }

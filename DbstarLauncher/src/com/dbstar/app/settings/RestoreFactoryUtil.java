@@ -15,6 +15,7 @@ import android.net.ethernet.EthernetDevInfo;
 
 public class RestoreFactoryUtil {
 
+	private static final String ActionClearSettings = "com.dbstar.Settings.Action.CLEAR_SETTINGS";
 	public static void clearNetworkInfo() {
 		Context context = GDApplication.getAppContext();
 		WifiManager wifiMgr = (WifiManager) context
@@ -49,7 +50,9 @@ public class RestoreFactoryUtil {
 	
 	public static void clearSystemSettings() {
 		// send broadcast to settings package
-		
+		Context context = GDApplication.getAppContext();
+		Intent intent = new Intent(ActionClearSettings);
+		context.sendBroadcast(intent);
 	}
 	
 	public static void clearPushSettings() {
