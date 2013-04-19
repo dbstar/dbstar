@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
@@ -159,7 +160,7 @@ public class GDBillActivity extends GDBaseActivity {
 	void queryBillData() {
 		int yearIndex = mYearSpinner.getSelectedItemPosition();
 		int monthIndex = mMonthSpinner.getSelectedItemPosition();
-
+		initalListData(null);
 		Log.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex="
 				+ monthIndex);
 
@@ -179,6 +180,7 @@ public class GDBillActivity extends GDBaseActivity {
 		} else {
 			mService.requestPowerData(GDConstract.DATATYPE_BILLDETAILOFRECENT,
 					"12");
+			
 		}
 	}
 
@@ -196,7 +198,7 @@ public class GDBillActivity extends GDBaseActivity {
 			Log.d(TAG, "ERROR: data is null");
 			return;
 		}
-
+		
 		if (type == GDConstract.DATATYPE_BILLDETAILOFMONTH) {
 			BillDetailData detailData = (BillDetailData) data;
 
@@ -217,12 +219,9 @@ public class GDBillActivity extends GDBaseActivity {
 			if (item != null) {
 				BillDataItem[] items = new BillDataItem[1];
 				items[0] = item;
-				mBillAdaper.setDataSet(items);
-				mBillAdaper.notifyDataSetChanged();
-
-				String strGong = getResources().getString(R.string.text_gong);
-				String strTiao = getResources().getString(R.string.text_tiao);
-				mItemsCountView.setText(strGong + "1" + strTiao);
+				initalListData(items);
+			}else{
+			    Toast.makeText(this, R.string.load_data_is_null, Toast.LENGTH_SHORT).show();
 			}
 		} else if (type == GDConstract.DATATYPE_BILLDETAILOFRECENT) {
 			BillDetailListData listData = (BillDetailListData) data;
@@ -230,11 +229,13 @@ public class GDBillActivity extends GDBaseActivity {
 				mServiceDate = listData.ServiceSysDate;
 				initializeData(mServiceDate);
 			}
-
+			
 			ArrayList<BillDetail> detailList = listData.DetailList;
 			if (detailList != null && detailList.size() > 0) {
 				int size = detailList.size();
-				BillDataItem[] items = new BillDataItem[size];
+				int yearIndx = mYearSpinner.getSelectedItemPosition();
+				String currentyear = mYearList.get(yearIndx);
+				ArrayList<BillDataItem> tempArray = new ArrayList<GDBillActivity.BillDataItem>();
 				for (int i = 0; i < size; i++) {
 					BillDetail billDetail = detailList.get(i);
 					String startDate = billDetail.StartDate;
@@ -248,25 +249,34 @@ public class GDBillActivity extends GDBaseActivity {
 							month = dates[1];
 						}
 					}
-
-					items[i] = constructBillData(billDetail, year, month);
+					if(currentyear.equals(year)){
+					    tempArray.add(constructBillData(billDetail, year, month));
+					}
 				}
-				mBillAdaper.setDataSet(items);
-				mBillAdaper.notifyDataSetChanged();
-
-				String strGong = getResources().getString(R.string.text_gong);
-				String strTiao = getResources().getString(R.string.text_tiao);
-				mItemsCountView.setText(strGong + size + strTiao);
+				initalListData(tempArray.toArray(new BillDataItem[tempArray.size()]));
+			}else{
+			    Toast.makeText(this, R.string.load_data_is_null, Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
 
+	private void initalListData(BillDataItem [] itmes){
+	    mBillAdaper.setDataSet(itmes);
+        mBillAdaper.notifyDataSetChanged();
+        String strGong = getResources().getString(R.string.text_gong);
+        String strTiao = getResources().getString(R.string.text_tiao);
+        int size = 0;
+        if(itmes != null)
+            size = itmes.length;
+        mItemsCountView.setText(strGong + size + strTiao);
+	}
 	private BillDataItem constructBillData(BillDetail detail, String year,
 			String month) {
 		BillDataItem item = null;
 
 		if (detail == null || detail.BillList == null
 				|| detail.BillList.size() == 0) {
+		    
 			return item;
 		}
 

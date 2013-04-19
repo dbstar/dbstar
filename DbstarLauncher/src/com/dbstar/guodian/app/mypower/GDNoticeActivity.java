@@ -258,7 +258,9 @@ public class GDNoticeActivity extends GDBaseActivity {
 
 			mTitle.setText(notice.Title);
 			mContent.setText(notice.Content);
-
+			mContent.setFocusableInTouchMode(true);
+			mContent.setFocusable(true);
+			mContent.requestFocus();
 			mListContainer.setVisibility(View.GONE);
 			mDetailContainer.setVisibility(View.VISIBLE);
 			mViewMode = MODE_DETAIL;

@@ -67,7 +67,16 @@ public class AreaInfoHandler {
 
 		return info;
 	}
-
+	public static ArrayList<AreaInfo.Area> parseAreas(String data){
+	    try {
+            JSONArray array = new JSONArray(data);
+            return parseAreas(array);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+	    return null;
+	    
+	}
 	private static ArrayList<AreaInfo.Area> parseAreas(JSONArray array)
 			throws JSONException {
 		ArrayList<AreaInfo.Area> areas = new ArrayList<AreaInfo.Area>();
@@ -79,6 +88,7 @@ public class AreaInfoHandler {
 		return areas;
 	}
 
+	
 	private static AreaInfo.Area parseArea(JSONObject object)
 			throws JSONException {
 		AreaInfo.Area area = new AreaInfo.Area();

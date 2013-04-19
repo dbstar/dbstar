@@ -272,7 +272,26 @@ public class GDCmdHelper {
 
 		return cmdStr;
 	}
-	
+	public static String constructGetAreasCmd(String cmdId,
+            String userId, String pid) {
+            
+        String cmdStr = cmdId + CmdDelimiterTag
+                + "aut"     + CmdDelimiterTag
+                + "m002f001" + CmdDelimiterTag
+                + userId    + CmdDelimiterTag
+                + DeviceVersion + CmdDelimiterTag
+                + DeviceId   + CmdDelimiterTag
+                + pid;
+
+        Log.d(TAG, "cmd data = " + cmdStr);
+        
+        String encryptStr = FormatCMD.encryptCMD(cmdStr);
+        cmdStr = CmdStartTag + encryptStr + CmdEndTag + "\n";
+
+//      Log.d(TAG, " cmd ===== " + cmdStr);
+
+        return cmdStr;
+    }
 	public static String[] processResponse(String response) {
 		String data = response;
 //		Log.d(TAG, "receive data = " + data);

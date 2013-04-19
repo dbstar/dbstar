@@ -1,5 +1,6 @@
 package com.dbstar.guodian.app.mypower;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import android.content.Intent;
@@ -17,14 +18,17 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.Toast;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.guodian.data.AreaInfo;
+import com.dbstar.guodian.data.AreaInfo.Area;
 import com.dbstar.guodian.data.BusinessArea;
 import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.egine.GDConstract;
 import com.dbstar.model.EventData;
+import com.dbstar.model.ContentData.Poster;
 
 public class GDBusinessAreaActvity extends GDBaseActivity {
 	private static final String TAG = "GDBusinessAreaActvity";
@@ -45,7 +49,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 	private String mStrGong, mStrTiao, mStrDi, mStrYe;
 	private TextView mItemCountView, mPageNumberView;
 	private int mItemsCount;
-
+	boolean isFirstLoad = true;
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -104,7 +108,6 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 		mCityAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
 				mCityList);
 		mCitySpinner.setAdapter(mCityAdapter);
-
 		mZoneAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
 				mZoneList);
 		mZoneSpinner.setAdapter(mZoneAdapter);
@@ -124,7 +127,6 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 					}
 
 				});
-
 		mCitySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
 			@Override
@@ -198,6 +200,13 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 	}
 
 	private void quearyBusinessInfo(String areaId) {
+	       mBusinessAdapter.setDataSet(null);
+	       mBusinessAdapter.notifyDataSetChanged();
+	       mPagesData.clear();
+	       mItemsCount = 0;
+	       mPageNumber = 0;
+	       mPageCount = 1;
+	       displayPage(mPageNumber);
 		if (areaId == null) {
 
 			AreaInfo.Area province = null;
@@ -256,16 +265,24 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 
 		if (type == GDConstract.DATATYPE_USERAREAINFO) {
 			mAreaData = (AreaInfo) data;
-
+			isFirstLoad = true;
 			initializeAreaData(mAreaData);
 
 			if (mCurProvinceIndex >= 0) {
 				mProvinceSpinner.setSelection(mCurProvinceIndex);
 			}
-
-			if (mCurCityIndex >= 0) {
-				mCitySpinner.setSelection(mCurCityIndex);
+			if(mAreaData.CityName != null && !mAreaData.CityName.equals("")){
+			    mCityList.add(mAreaData.CityName);
+			    mCityAdapter.notifyDataSetChanged();
 			}
+			if(mAreaData.ZoneName != null && !mAreaData.ZoneName.equals("")){
+			    mZoneList.add(mAreaData.ZoneName);
+			    mZoneAdapter.notifyDataSetChanged();
+			}
+			
+//			if (mCurCityIndex >= 0) {
+//				mCitySpinner.setSelection(mCurCityIndex);
+//			}
 
 			if (mAreaData.BusinessList != null) {
 				constructPages(mAreaData.BusinessList);
@@ -276,10 +293,70 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 			ArrayList<BusinessArea> business = (ArrayList<BusinessArea>) data;
 			constructPages(business);
 			displayPage(mPageNumber);
+		}else if(type == GDConstract.DATATYPE_CITYES){
+            ArrayList<AreaInfo.Area> citys = (ArrayList<AreaInfo.Area>) data;
+            initializeCitysData(citys);
+		}else if(type == GDConstract.DATATYPE_ZONES){
+		     ArrayList<AreaInfo.Area> zones = (ArrayList<AreaInfo.Area>) data;
+		     initializeZonesData(zones);
 		}
 
 	}
 
+	private void initializeCitysData(ArrayList<Area> citys) {
+	    mCurCityIndex = 0;
+        mCityList.clear();
+        AreaInfo.Area province = mAreaData.Provinces.get(mCurProvinceIndex);
+        if(citys != null && !citys.isEmpty()){
+            province.SubArea = citys;
+            for(int i = 0 ; i< citys.size() ; i++){
+                AreaInfo.Area city = citys.get(i);
+                mCityList.add(city.Name);
+                if (isFirstLoad && mUserCityId != null && !mUserCityId.isEmpty()
+                        && mUserCityId.equals(city.Guid)) {
+                    mCurCityIndex = i;
+                    
+                }
+            }
+        }else{
+            isFirstLoad = false;
+        }
+        mCityAdapter.notifyDataSetChanged();
+        mCitySpinner.setSelection(mCurCityIndex);
+    }
+	private void initializeZonesData(ArrayList<Area> zones) {
+	    mZoneList.clear();
+	    mCurZoneIndex = 0;
+        AreaInfo.Area province = mAreaData.Provinces.get(mCurProvinceIndex);
+        if(province.SubArea == null )
+            return;
+        AreaInfo.Area citye = province.SubArea.get(mCurCityIndex);
+        if(zones != null && !zones.isEmpty()){
+            citye.SubArea = zones;
+            for(int i = 0 ; i< zones.size() ; i++){
+                AreaInfo.Area zone = zones.get(i);
+                mZoneList.add(zone.Name);
+                if (isFirstLoad && mUserZoneId != null && !mUserZoneId.isEmpty()
+                        && mUserZoneId.equals(zone.Guid)) {
+                    mCurZoneIndex = i;
+                    isFirstLoad = false;
+                    
+                }
+            }
+        }else{
+            isFirstLoad = false;
+        }
+        mZoneAdapter.notifyDataSetChanged();
+        mZoneSpinner.setSelection(mCurZoneIndex);
+    }
+    private void reqeustCitysByPId(String pid){
+	   mService.requestPowerData(GDConstract.DATATYPE_CITYES, pid);
+	   Log.i("Futao", "request city " + pid);
+	}
+    private void reqeustZonesByCId(String cid){
+        Log.i("Futao", "request zone " + cid);
+        mService.requestPowerData(GDConstract.DATATYPE_ZONES, cid);
+     }
 	private void initializeAreaData(AreaInfo areaInfo) {
 		ArrayList<AreaInfo.Area> provinces = areaInfo.Provinces;
 		if (provinces == null || provinces.size() == 0)
@@ -306,10 +383,11 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 			mCurProvinceIndex = 0;
 			userProvince = provinces.get(mCurProvinceIndex);
 		}
-
 		Log.d(TAG, " mCurProvinceIndex = " + mCurProvinceIndex);
-
+		
+		
 		AreaInfo.Area userCity = null;
+		//AreaInfo.Area defaultCity = null;
 		if (userProvince != null && userProvince.SubArea != null) {
 			ArrayList<AreaInfo.Area> cities = userProvince.SubArea;
 			size = cities.size();
@@ -344,10 +422,10 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 			ArrayList<AreaInfo.Area> zones = userCity.SubArea;
 			size = zones.size();
 
-			mCityList.clear();
+			mZoneList.clear();
 			for (int i = 0; i < size; i++) {
 				AreaInfo.Area z = zones.get(i);
-				mCityList.add(z.Name);
+				mZoneList.add(z.Name);
 				Log.d(TAG, " zone name = " + z.Name);
 
 				if (mUserZoneId != null && !mUserZoneId.isEmpty()
@@ -371,51 +449,54 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 
 	void onProvinceChanged(int index) {
 		Log.d(TAG, " onProvinceChanged " + index);
-
 		mCurProvinceIndex = index;
-		AreaInfo.Area province = mAreaData.Provinces.get(index);
-		ArrayList<AreaInfo.Area> citys = province.SubArea;
-		// mCityAdapter.clear();
-		mCityList.clear();
-
-		if (citys != null) {
-			for (int i = 0; i < citys.size(); i++) {
-				mCityList.add(citys.get(i).Name);
-			}
+		final AreaInfo.Area province = mAreaData.Provinces.get(index);
+		if(!isFirstLoad){
+    		mCityList.clear();
+    		mZoneList.clear();
+    		mCityAdapter.notifyDataSetChanged();
+    		mZoneAdapter.notifyDataSetChanged();
 		}
-
-		mCityAdapter.notifyDataSetChanged();
-		if (mCityList.size() > 0) {
-			mCitySpinner.setSelection(0);
+	    if(province.SubArea == null || province.SubArea.isEmpty()){
+		    reqeustCitysByPId(province.Guid);
+		}else{
+           
+            mCitySpinner.post(new Runnable() {
+                @Override
+                public void run() {
+                    initializeCitysData(province.SubArea);
+                }
+            });
 		}
-
 	}
 
 	void onCityChanged(int index) {
 		Log.d(TAG, " onCityChanged " + index);
-
+		
 		mCurCityIndex = index;
-		AreaInfo.Area city = mAreaData.Provinces.get(mCurProvinceIndex);
-		ArrayList<AreaInfo.Area> zones = city.SubArea;
-		// mCityAdapter.clear();
-		mZoneList.clear();
-
-		if (zones != null) {
-			for (int i = 0; i < zones.size(); i++) {
-				mZoneList.add(zones.get(i).Name);
-			}
+		AreaInfo.Area province = mAreaData.Provinces.get(mCurProvinceIndex);
+		AreaInfo.Area city = null;
+		if(province.SubArea != null && !province.SubArea.isEmpty())
+		   city = province.SubArea.get(mCurCityIndex);
+		if(city == null){
+		    reqeustZonesByCId(mUserCityId);
+		    return;
 		}
-
-		mZoneAdapter.notifyDataSetChanged();
-		if (mZoneList.size() > 0) {
-			mZoneSpinner.setSelection(0);
+		mZoneList.clear();
+		if(city.SubArea == null || city.SubArea.isEmpty()){
+		    reqeustZonesByCId(city.Guid);
+		}else{
+		    initializeZonesData(city.SubArea);
 		}
 	}
 
 	private void displayPage(int pageNumber) {
-		BusinessArea[] page = mPagesData.get(pageNumber);
-		mBusinessAdapter.setDataSet(page);
-		mBusinessAdapter.notifyDataSetChanged();
+	    BusinessArea[] page = null;
+	    if(mPagesData != null && mPagesData.size() > pageNumber){
+    		 page = mPagesData.get(pageNumber);
+	    }
+	    mBusinessAdapter.setDataSet(page);
+	    mBusinessAdapter.notifyDataSetChanged();
 		
 		displayPageNumber(pageNumber);
 	}
@@ -432,6 +513,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 		if (size == 0) {
 			mPageNumber = size;
 			mPageCount = size;
+			Toast.makeText(this, R.string.load_data_is_null, Toast.LENGTH_SHORT).show();
 			return;
 		}
 

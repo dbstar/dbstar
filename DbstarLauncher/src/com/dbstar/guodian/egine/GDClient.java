@@ -55,6 +55,8 @@ public class GDClient {
 	public static final int REQUEST_NOTICE = 0x3006;
 	public static final int REQUEST_USERAREAINFO = 0x3007;
 	public static final int REQUEST_BUSINESSAREA = 0x3008;
+	public static final int REQUEST_CITYS = 0x3009;
+	public static final int REQUEST_ZONES = 0x3010;
 
 	// not include current month, just before;
 
@@ -265,7 +267,30 @@ public class GDClient {
 		msg.obj = task;
 		mClientHandler.sendMessage(msg);
 	}
+	public void getCitysArea(String userId,String pid){
+	    String taskId = GDCmdHelper.generateUID();
+        String cmdStr = GDCmdHelper.constructGetAreasCmd(taskId, userId, pid);
+        Task task = new Task();
+        task.TaskType = REQUEST_CITYS;
+        task.TaskId = taskId;
+        task.Command = cmdStr;
 
+        Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+        msg.obj = task;
+        mClientHandler.sendMessage(msg);
+	}
+	public void getZonesArea(String userId,String pid){
+        String taskId = GDCmdHelper.generateUID();
+        String cmdStr = GDCmdHelper.constructGetAreasCmd(taskId, userId, pid);
+        Task task = new Task();
+        task.TaskType = REQUEST_ZONES;
+        task.TaskId = taskId;
+        task.Command = cmdStr;
+
+        Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+        msg.obj = task;
+        mClientHandler.sendMessage(msg);
+    }
 	public void stop() {
 		Log.d(TAG, " ============ stop GDClient thread ============");
 		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
@@ -392,7 +417,16 @@ public class GDClient {
 			task.ParsedData = areaInfo;
 			break;
 		}
+		case REQUEST_CITYS:
+		    ArrayList<AreaInfo.Area> cityInfos= AreaInfoHandler.parseAreas(task.ResponseData[7]);
+            task.ParsedData = cityInfos;
+		    break;
+		    
+		case REQUEST_ZONES:
+		    ArrayList<AreaInfo.Area> zoneInfo= AreaInfoHandler.parseAreas(task.ResponseData[7]);
+            task.ParsedData = zoneInfo;
 		}
+		
 
 		if (mAppHander != null) {
 			Message msg = mAppHander

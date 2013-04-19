@@ -174,7 +174,8 @@
     <string name="mypower_text_devicepowercost">所控电器用电费用</string>
     <string name="mypower_text_devicepoweramount">所控电器用电量</string>
     <string name="mypower_text_powerprice">度/元</string>
-    
+    <string name="load_data_is_null">没有数据</string>
+
     <string name="mypower_text_zero">0</string>
     
     <string name="step_1">第一阶梯</string>
@@ -265,4 +266,5 @@
 	<string name="format_disk_successed">磁盘格式化完毕</string>
 	<string name="format_disk_failed">磁盘格式化失败，错误码%1$s</string>
 	<string name="reboot_notes">系统自动重启，请稍候......</string>
+
 </resources>

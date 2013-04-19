@@ -167,6 +167,14 @@ public class GDEngine {
 			getBusinessAreas(areaId);
 			break;
 		}
+		case GDConstract.DATATYPE_CITYES:
+		    String pid = (String) args;
+		    getCitys(pid);
+		    break;
+		case GDConstract.DATATYPE_ZONES:
+		    String cid = (String) args;
+            getZones(cid);
+		    break;
 		}
 	}
 
@@ -221,6 +229,16 @@ public class GDEngine {
 		}
 	}
 
+	private void getCitys(String pid){
+	    if (mState == STATE_CONNECTED) {
+            mClient.getCitysArea(mUserId, pid);
+        }
+	}
+	private void getZones(String pid){
+        if (mState == STATE_CONNECTED) {
+            mClient.getZonesArea(mUserId, pid);
+        }
+    }
 	private void handleFinishedRequest(Task task) {
 		int requestType = task.TaskType;
 		switch (requestType) {
@@ -259,6 +277,12 @@ public class GDEngine {
 			requestFinished(GDConstract.DATATYPE_BUSINESSAREA, task.ParsedData);
 			break;
 		}
+		case GDClient.REQUEST_CITYS:
+		    requestFinished(GDConstract.DATATYPE_CITYES, task.ParsedData);
+		    break;
+		case GDClient.REQUEST_ZONES:
+		    requestFinished(GDConstract.DATATYPE_ZONES, task.ParsedData);
+		    break;
 		}
 	}
 	
