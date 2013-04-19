@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.NetworkInfo.State;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -28,7 +29,8 @@ public class FinishSettingsPage extends BaseFragment {
 
 	private static final String TAG = "FinishSettingsPage";
 
-	TextView mStateView;
+	TextView mEthernetStateView;
+	TextView mWifiStateView;
 	Button mOkButton, mPrevButton;
 
 	boolean mIsChecked = false;
@@ -40,6 +42,7 @@ public class FinishSettingsPage extends BaseFragment {
 
 	private Timer mTimer = null;
 	private TimerTask mTask = null;
+	private String mKeyChannel;
 
 	class TimeoutTask implements Runnable {
 
@@ -52,12 +55,16 @@ public class FinishSettingsPage extends BaseFragment {
 	}
 
 	void configureTimeout() {
-		mStateView.setText(R.string.network_setup_failed);
-		
+		mEthernetStateView.setText(getStringFromResource(
+				R.string.network_channel_cable, R.string.network_setup_failed));
+		mWifiStateView.setText(getStringFromResource(
+				R.string.network_channel_wireless,
+				R.string.network_setup_failed));
 		stopTimer();
 	}
 
 	void stopTimer() {
+		Log.d(TAG, "============== stop Timer");
 		if (mTask != null) {
 			mTask.cancel();
 			mTask = null;
@@ -68,57 +75,89 @@ public class FinishSettingsPage extends BaseFragment {
 			mTimer = null;
 		}
 	}
-	
-	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
 
-		public void onReceive(Context context, Intent intent) {
+	Runnable handConnectReceiverTask = new Runnable() {
 
-			if (!mIsChecked)
-				return;
-
-			String action = intent.getAction();
-
-			if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
-				return;
-
-			boolean noConnectivity = intent.getBooleanExtra(
-					ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
-
-			Log.d(TAG, "noConnectivity = " + noConnectivity);
-			if (noConnectivity) {
-				if (mFirstDisconnectInfo) {
-					// we will first receive a disconnect message, so skip it
-					// here.
-					mFirstDisconnectInfo = false;
-					return;
+		@Override
+		public void run() {
+			// only process the Connect and DISCONNECT ,Other state will be
+			// processed by TimeoutTask
+			if (mKeyChannel.equals(NetworkCommon.ChannelEthernet)) {
+				if (getEthernetState() == State.CONNECTED
+						|| getEthernetState() == State.DISCONNECTED) {
+					stopTimer();
+				}
+				if (getEthernetState() == State.CONNECTED) {
+					handleNetworkConnectStatus(mEthernetStateView, true);
+				} else if (getEthernetState() == State.DISCONNECTED) {
+					handleNetworkConnectStatus(mEthernetStateView, false);
+				}
+			} else if (mKeyChannel.equals(NetworkCommon.ChannelBoth)) {
+				if ((getEthernetState() == State.CONNECTED || getEthernetState() == State.DISCONNECTED)
+						&& (getWifiState() == State.CONNECTED || getWifiState() == State.DISCONNECTED)) {
+					stopTimer();
+				}
+				if (getEthernetState() == State.CONNECTED) {
+					handleNetworkConnectStatus(mEthernetStateView, true);
+				} else if (getEthernetState() == State.DISCONNECTED) {
+					handleNetworkConnectStatus(mEthernetStateView, false);
 				}
 
-				// There are no connected networks at all
-				handleNetConnected();
-				return;
-			}
-
-			// case 1: attempting to connect to another network, just wait for
-			// another broadcast
-			// case 2: connected
-			// NetworkInfo networkInfo = (NetworkInfo) intent
-			// .getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-
-			NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
-
-			if (networkInfo != null) {
-				Log.d(TAG, "getTypeName() = " + networkInfo.getTypeName());
-				Log.d(TAG, "isConnected() = " + networkInfo.isConnected());
-
-				if ((networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET || networkInfo
-						.getType() == ConnectivityManager.TYPE_WIFI)
-						&& networkInfo.isConnected()) {
-					handleNetConnected();
+				if (getWifiState() == State.CONNECTED) {
+					handleNetworkConnectStatus(mWifiStateView, true);
+				} else if (getWifiState() == State.DISCONNECTED) {
+					handleNetworkConnectStatus(mWifiStateView, false);
 				}
 			}
 		}
+	};
+
+	void handleNetworkConnectStatus(TextView view, boolean connected) {
+		int stringId = R.string.network_channel_cable;
+		if (view.getId() == R.id.wifi_state_view) {
+			stringId = R.string.network_channel_wireless;
+		}
+		if (connected) {
+			view.setText(getStringFromResource(stringId,
+					R.string.network_setup_success));
+		} else {
+			view.setText(getStringFromResource(stringId,
+					R.string.network_setup_failed));
+		}
+	}
+
+	private String getStringFromResource(int... ids) {
+		StringBuffer sb = new StringBuffer();
+		if (ids != null) {
+			for (int id : ids) {
+				sb.append(getResources().getString(id));
+			}
+		}
+		return sb.toString();
+	}
+
+	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
+
+		public void onReceive(Context context, Intent intent) {
+			Log.i(TAG, "~~~~~~~~~~~~~~~~~~~~~~ onRevceiver ~~~~~~~~~~~~~~~~~~ ");
+			mHandler.removeCallbacks(handConnectReceiverTask);
+			mHandler.postDelayed(handConnectReceiverTask, 5000);
+
+		}
 
 	};
+
+	private State getWifiState() {
+		NetworkInfo wifiInfo = mConnectManager
+				.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		return wifiInfo.getState();
+	}
+
+	private State getEthernetState() {
+		NetworkInfo ethernetInfo = mConnectManager
+				.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
+		return ethernetInfo.getState();
+	}
 
 	public boolean isNetworkConnected() {
 		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
@@ -162,28 +201,45 @@ public class FinishSettingsPage extends BaseFragment {
 	public void onStart() {
 		super.onStart();
 
+		SharedPreferences settings = mActivity.getSharedPreferences(
+				NetworkCommon.PREF_NAME_NETWORK, 0);
+		mKeyChannel = settings.getString(NetworkCommon.KeyChannel,
+				NetworkCommon.ChannelEthernet);
+		if (mKeyChannel.equals(NetworkCommon.ChannelEthernet)) {
+			mWifiStateView.setVisibility(View.INVISIBLE);
+		} else if (mKeyChannel.equals(NetworkCommon.ChannelBoth)) {
+			mWifiStateView.setVisibility(View.VISIBLE);
+		}
 		reqisterConnectReceiver();
-
-		mHandler.postDelayed(new Runnable() {
-
-			@Override
-			public void run() {
-				checkConfigResult();
-			}
-
-		}, 2000);
+		scheduleTimeoutTask();
+		//
+		// mHandler.postDelayed(new Runnable() {
+		//
+		// @Override
+		// public void run() {
+		// checkConfigResult();
+		// }
+		//
+		// }, 2000);
 	}
 
 	public void onStop() {
 		super.onStop();
 
 		stopTimer();
+		if (handConnectReceiverTask != null) {
+			mHandler.removeCallbacks(handConnectReceiverTask);
+			handConnectReceiverTask = null;
+		}
 		unregisterConnectReceiver();
 	}
 
 	void initializeView() {
-		mStateView = (TextView) mActivity.findViewById(R.id.state_view);
-
+		mEthernetStateView = (TextView) mActivity
+				.findViewById(R.id.ethernet_state_view);
+		mWifiStateView = (TextView) mActivity
+				.findViewById(R.id.wifi_state_view);
+		mWifiStateView.setVisibility(View.INVISIBLE);
 		mOkButton = (Button) mActivity.findViewById(R.id.okbutton);
 		mPrevButton = (Button) mActivity.findViewById(R.id.prevbutton);
 
@@ -218,33 +274,39 @@ public class FinishSettingsPage extends BaseFragment {
 					+ " " + netInfo.getDetailedState());
 
 			if (netInfo.getState() == NetworkInfo.State.CONNECTED) {
-				mStateView.setText(R.string.network_setup_success);
+				mEthernetStateView.setText(R.string.network_setup_success);
 			} else {
 				if (netInfo.getState() == NetworkInfo.State.CONNECTING
 						|| netInfo.getState() == NetworkInfo.State.DISCONNECTING) {
-					mTimer = new Timer();
-					mTask = new TimerTask() {
-						public void run() {
-							mHandler.post(new TimeoutTask());
-						}
-					};
-
-					mTimer.schedule(mTask, 120000);
+					scheduleTimeoutTask();
 					return;
 				}
 
 				if (netInfo.getState() == NetworkInfo.State.DISCONNECTED
 						|| netInfo.getState() == NetworkInfo.State.SUSPENDED
 						|| netInfo.getState() == NetworkInfo.State.UNKNOWN) {
-					mStateView.setText(R.string.network_setup_failed);
+					mEthernetStateView.setText(R.string.network_setup_failed);
 					return;
 				}
 			}
+		} else {
+			// there is no connect now, so just wait the message, and handle it
+			// there.
+			scheduleTimeoutTask();
 		}
-		// else {
-		// there is no connect now, so just wait the message, and handle it
-		// there.
-		// }
+	}
+
+	void scheduleTimeoutTask() {
+		stopTimer();
+		mTimer = new Timer();
+		mTask = new TimerTask() {
+			public void run() {
+				mHandler.post(new TimeoutTask());
+			}
+		};
+
+		mTimer.schedule(mTask, 120000);
+		Log.d(TAG, "============== schedule TimeOut ");
 	}
 
 	void handleNetworkConnectStatus() {
@@ -252,9 +314,9 @@ public class FinishSettingsPage extends BaseFragment {
 
 		boolean connected = isNetworkConnected();
 		if (connected) {
-			mStateView.setText(R.string.network_setup_success);
+			mEthernetStateView.setText(R.string.network_setup_success);
 		} else {
-			mStateView.setText(R.string.network_setup_failed);
+			mEthernetStateView.setText(R.string.network_setup_failed);
 		}
 	}
 

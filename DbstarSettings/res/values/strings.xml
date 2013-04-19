@@ -57,8 +57,10 @@
 	<string name="network_status_title">网络状态</string>
 	
 	<string name="network_status_waiting">正在配置网络，请稍候...</string>
+	<string name="ethernet_status_waiting">正在配置有线网络，请稍候...</string>
+	<string name="wifi_status_waiting">正在配置无线网络，请稍候...</string>
 	<string name="network_setup_success">配置成功</string>
-	<string name="network_setup_failed">配置失败，请联系运营商</string>
+	<string name="network_setup_failed">配置失败，请检查网络</string>
     <!-- Ethernet configuration -->
     <string name="eth_setting">以太网</string>
 
