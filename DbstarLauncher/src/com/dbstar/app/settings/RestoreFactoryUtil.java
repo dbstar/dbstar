@@ -35,7 +35,7 @@ public class RestoreFactoryUtil {
 		EthernetDevInfo ethInfo = null;
 		if (ethernetMgr.isEthConfigured()) {
 			ethInfo = ethernetMgr.getSavedEthConfig();
-			if (mEthInfo.getConnectMode().equals(
+			if (ethInfo.getConnectMode().equals(
 					EthernetDevInfo.ETH_CONN_MODE_MANUAL)) {
 				ethInfo.setConnectMode(EthernetDevInfo.ETH_CONN_MODE_DHCP);
 				ethInfo.setIpAddress(null);
