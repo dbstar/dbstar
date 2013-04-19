@@ -126,9 +126,9 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		mReceiveItemFocusedBackground = getResources().getDrawable(
 				R.drawable.receive_item_focused_bg);
 		mReceiveItemChecked = getResources().getDrawable(
-				R.drawable.checker_selected);
+				R.drawable.checkbox_checked);
 		mReceiveItemUnchecked = getResources().getDrawable(
-				R.drawable.checker_unselected);
+				R.drawable.checkbox_unchecked);
 
 		mTimelineView = (GDGridView) findViewById(R.id.timeline);
 		mTimelineAdapter = new TimelineAdapter(this);

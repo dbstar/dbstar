@@ -28,6 +28,6 @@
         android:layout_width="164dp"
         android:layout_height="wrap_content"
         android:layout_gravity="left|center_vertical"
-        android:src="@drawable/checker_unselected" />
+        android:src="@drawable/checkbox_unchecked" />
 
 </LinearLayout>

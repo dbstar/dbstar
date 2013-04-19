@@ -20,6 +20,7 @@ import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.app.settings.GDGeneralInfoActivity;
 import com.dbstar.app.settings.GDProductsActivity;
 import com.dbstar.app.settings.GDSmartcardActivity;
+import com.dbstar.app.settings.GDSystemMgrActivity;
 import com.dbstar.browser.GDWebBrowserActivity;
 import com.dbstar.guodian.app.mypower.GDPowerController;
 import com.dbstar.guodian.data.LoginData;
@@ -498,6 +499,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if (columnId.equals(GDCommon.ColumnIDReceiveChooser)) {
 			intent = new Intent();
 			intent.setClass(this, GDOrderPushActivity.class);
+		} else if (columnId.equals(GDCommon.ColumnIDSystemManagement)) {
+			intent = new Intent();
+			intent.setClass(this, GDSystemMgrActivity.class);
 		}
 
 		if (intent != null) {

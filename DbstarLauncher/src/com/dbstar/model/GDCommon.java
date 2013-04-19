@@ -80,6 +80,7 @@ public class GDCommon {
 
 	public static final String ColumnIDReceiveChooser = "L9801";
 	public static final String ColumnIDDownloadStatus = "L9802";
+	public static final String ColumnIDSystemManagement = "L9809";
 
 	public static final String ColumnIDGeneralInfoSettings = "L9901";
 	public static final String ColumnIDMultimediaSettings = "L9902";
