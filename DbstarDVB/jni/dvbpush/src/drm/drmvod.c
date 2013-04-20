@@ -152,7 +152,6 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	int len = 0;
 	drmvod_t *drmvod = (drmvod_t *)h->priv_data;
 	
-//	LOGD("aaaaaaaa size=%d,drmvod->length=%lld,drmvod->curpos=%lld",size,drmvod->length,drmvod->curpos);
 	len = MIN(size, (drmvod->length - drmvod->curpos));
 	if (len <= 0) {
 		LOGD("drmvod_read() len<=0, return!\n");
@@ -161,11 +160,14 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	pthread_mutex_lock(&s_drmvod_mutex);
 //	LOGD("########## 1. %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
 	if (s_drmvod.inited && s_drmvod.ready) {
-		LOGD("read drm file\n");
+		//LOGD("read drm file\n");
 		ret = drm_read(&drmvod->fd_media, buf, len);
 		if (ret == 0) {
-			LOGD("DRM_READ ERROR!\n");
+			LOGD("DRM_READ AGAIN!\n");
 			ret = -EAGAIN;
+		} else if (ret < 0) {
+			LOGD("DRM_READ ERROR!, ret=%d\n", ret);
+			set_player_errno(-ret);
 		}
 	} else {
 		ret = read(drmvod->fd_media, buf, len);
@@ -195,7 +197,7 @@ static int64_t drmvod_seek(URLContext *h, int64_t pos, int whence)
 
 	switch (whence) {
 	case AVSEEK_SIZE: //65536
-		LOGD("########## %s(pos=%lld,whence=%d), drmvod->length=%lld\n", __FUNCTION__, pos, whence, drmvod->length);
+		//LOGD("########## %s(pos=%lld,whence=%d), drmvod->length=%lld\n", __FUNCTION__, pos, whence, drmvod->length);
 		return drmvod->length;
 	case SEEK_CUR:
 		seekpos = drmvod->curpos + pos;
@@ -223,7 +225,7 @@ static int64_t drmvod_seek(URLContext *h, int64_t pos, int whence)
 		drmvod->curpos = seekpos;
 	}
 
-	LOGD("########## %s(pos=%lld,whence=%d), ret=%lld\n", __FUNCTION__, pos, whence, seekpos);
+	//LOGD("########## %s(pos=%lld,whence=%d), ret=%lld\n", __FUNCTION__, pos, whence, seekpos);
 	return seekpos;
 }
 
