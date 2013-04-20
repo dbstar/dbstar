@@ -263,7 +263,7 @@ public class GDDBProvider {
 	}
 
 	// @Override
-	public Cursor query(Uri uri, String[] projection, String selection,
+	public synchronized Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
 
 		SQLiteDatabase db = getReadableDatabase();
@@ -286,7 +286,7 @@ public class GDDBProvider {
 	}
 
 	// @Override
-	public int delete(Uri uri, String selection, String[] selectionArgs) {
+	public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
 
 		SQLiteDatabase db = getWriteableDatabase();
 		if (db == null || !db.isOpen()) {
@@ -309,7 +309,7 @@ public class GDDBProvider {
 	}
 
 	// @Override
-	public Uri insert(Uri uri, ContentValues values) {
+	public synchronized Uri insert(Uri uri, ContentValues values) {
 
 		SQLiteDatabase db = getWriteableDatabase();
 		if (db == null || !db.isOpen()) {
@@ -338,7 +338,7 @@ public class GDDBProvider {
 	}
 
 	// @Override
-	public int update(Uri uri, ContentValues values, String selection,
+	public synchronized int update(Uri uri, ContentValues values, String selection,
 			String[] selectionArgs) {
 
 		SQLiteDatabase db = getWriteableDatabase();
@@ -360,7 +360,7 @@ public class GDDBProvider {
 		return count;
 	}
 
-	public boolean execBatchSql(String sql, String[][] bindArgs) {
+	public synchronized boolean execBatchSql(String sql, String[][] bindArgs) {
 		boolean isSuccess = true;
 		SQLiteDatabase db = getWriteableDatabase();
 
@@ -381,7 +381,7 @@ public class GDDBProvider {
 		return isSuccess;
 	}
 
-	public Cursor rawQuery(String sql, String[] selectionArgs) {
+	public synchronized Cursor rawQuery(String sql, String[] selectionArgs) {
 		SQLiteDatabase db = getReadableDatabase();
 		if (db == null || !db.isOpen()) {
 			return null;
