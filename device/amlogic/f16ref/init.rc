@@ -418,6 +418,7 @@ on boot
     chmod 0777 /sys/class/display2/mode
     chmod 0777 /sys/module/amvideo2/parameters/clone_frame_scale_width
     chmod 0777 /sys/class/video2/screen_mode
+    chmod 0777 /sys/class/video2/clone
     
 
     # Free scale
@@ -429,6 +430,9 @@ on boot
     chmod 0666 /sys/class/graphics/fb1/scale_width
     chmod 0666 /sys/class/graphics/fb1/scale_height
     chmod 0777 /sys/class/graphics/fb0/request2XScale
+
+    # RTC alarm
+    chmod 0666 /sys/class/aml_rtc/alarm
 
 	#video_hole
 	chmod 0666 /sys/class/graphics/fb0/video_hole
