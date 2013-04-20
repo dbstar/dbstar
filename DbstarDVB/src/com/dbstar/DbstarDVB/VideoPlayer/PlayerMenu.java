@@ -178,6 +178,7 @@ public class PlayerMenu extends PlayerActivity {
 
 	private boolean mHdmiPlugged;
 	private boolean mPaused = false;
+	private boolean mIsStarted = false;
 
 	private static final int GETROTATION_TIMEOUT = 500;
 	private static final int GETROTATION = 0x0001;
@@ -309,12 +310,12 @@ public class PlayerMenu extends PlayerActivity {
 	public void onStart() {
 		super.onStart();
 		Log.d(TAG, " ============ onStart ================== ");
+		mIsStarted = true;
 
 		if (!mHasError) {
-			showMediaInfoDlg();
+			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
+					MSG_DIALOG_TIMEOUT);
 		}
-//			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
-//					MSG_DIALOG_TIMEOUT);
 
 //		setMute(false);
 	}
@@ -322,7 +323,7 @@ public class PlayerMenu extends PlayerActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-
+		mIsStarted = true;
 		Log.d(TAG, " ============ onResume ================== ");
 
 		keepScreenOn();
@@ -391,7 +392,8 @@ public class PlayerMenu extends PlayerActivity {
 
 	public void onStop() {
 		super.onStop();
-		
+		mIsStarted = false;
+
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
@@ -514,6 +516,10 @@ public class PlayerMenu extends PlayerActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		Log.d(TAG, "onKeyDown " + keyCode);
+
+		if (!mIsStarted) {
+			return true;
+		}
 
 		if (keyCode != KeyEvent.KEYCODE_UNKNOWN) {
 			mDuringKeyActions = true;
@@ -1093,6 +1099,10 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	private void Amplayer_stop() {
+	
+		if (mAmplayer == null)
+			return;
+
 		try {
 			mAmplayer.Stop();
 		} catch (RemoteException e) {
@@ -1214,11 +1224,13 @@ public class PlayerMenu extends PlayerActivity {
 		if (!FF_FLAG && !FB_FLAG)
 			mPlayButton.setImageResource(R.drawable.play);
 
-		String videoFormat = mMediaInfo.getFullFileName(mUri.getPath());
-		if (videoFormat.endsWith(".mvc")) {
-			Utils.writeSysfs(FormatMVC, FormatMVC_3dtb);
-		} else {
-			Utils.writeSysfs(FormatMVC, FormatMVC_3doff);
+		if (mMediaInfo != null) {
+			String videoFormat = mMediaInfo.getFullFileName(mUri.getPath());
+			if (videoFormat.endsWith(".mvc")) {
+				Utils.writeSysfs(FormatMVC, FormatMVC_3dtb);
+			} else {
+				Utils.writeSysfs(FormatMVC, FormatMVC_3doff);
+			}
 		}
 	}
 

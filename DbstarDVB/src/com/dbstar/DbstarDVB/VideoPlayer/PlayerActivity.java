@@ -156,7 +156,7 @@ public class PlayerActivity extends Activity {
 
 	private static final int ALERT_TYPE_ERRORINFO = 1;
 
-	protected static final int MSG_DIALOG_TIMEOUT = 0;
+	protected static final int MSG_DIALOG_TIMEOUT = 200;
 
 	private static final int DLG_TIMEOUT = 3000;
 	Timer mDlgTimer = null;

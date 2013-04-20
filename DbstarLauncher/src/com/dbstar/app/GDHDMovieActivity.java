@@ -56,6 +56,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	boolean mReachPageEnd = false;
 	TextView mPageNumberView;
 	ImageView mViewMask = null;
+	boolean mEnterPlayer = false;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -103,6 +104,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 		mViewMask.setVisibility(View.GONE);
 		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		
+		mEnterPlayer = false;
 	}
 
 	public void onDestroy() {
@@ -573,11 +576,14 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				case KeyEvent.KEYCODE_ENTER: {
 					//playMovie();
 					mViewMask.setVisibility(View.VISIBLE);
+					if (!mEnterPlayer) {
+						mEnterPlayer = true;
 					mHandler.postDelayed(new Runnable() {
 						public void run() {
 							playMovie();
 						}
 					}, 800);
+					}
 					ret = true;
 					break;
 				}
