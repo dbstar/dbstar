@@ -55,6 +55,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	View mSelectedView = null;
 	boolean mReachPageEnd = false;
 	TextView mPageNumberView;
+	ImageView mViewMask = null;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -80,6 +81,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 		mSmallThumbnailView = (GDGridView) findViewById(R.id.gridview);
 
+		mViewMask = (ImageView) findViewById(R.id.view_mask);
+		
 		mSmallThumbnailView
 				.setOnItemSelectedListener(mThumbnailSelectedListener);
 
@@ -98,6 +101,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			mSmallThumbnailView.setSelection(mSeletedItemIndex);
 		}
 
+		mViewMask.setVisibility(View.GONE);
 		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 	}
 
@@ -567,7 +571,13 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 				case KeyEvent.KEYCODE_DPAD_CENTER:
 				case KeyEvent.KEYCODE_ENTER: {
-					playMovie();
+					//playMovie();
+					mViewMask.setVisibility(View.VISIBLE);
+					mHandler.postDelayed(new Runnable() {
+						public void run() {
+							playMovie();
+						}
+					}, 800);
 					ret = true;
 					break;
 				}

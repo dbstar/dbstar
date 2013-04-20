@@ -310,9 +310,11 @@ public class PlayerMenu extends PlayerActivity {
 		super.onStart();
 		Log.d(TAG, " ============ onStart ================== ");
 
-		if (!mHasError)
-			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
-					MSG_DIALOG_TIMEOUT);
+		if (!mHasError) {
+			showMediaInfoDlg();
+		}
+//			mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
+//					MSG_DIALOG_TIMEOUT);
 
 //		setMute(false);
 	}
@@ -1727,7 +1729,7 @@ public class PlayerMenu extends PlayerActivity {
 	public void setOSDOn(boolean on) {
 
 		if (!on && !mPaused) {
-			if (isSubtitleOn()) {
+			/*if (isSubtitleOn()) {
 				mOSDState = OSDHidePart;
 
 				int ori = getOSDRotation();
@@ -1744,11 +1746,11 @@ public class PlayerMenu extends PlayerActivity {
 					Utils.writeSysfs(OSD_BLOCK_MODE_PATH, "0x10008");
 				// OSD hor blk3 enable
 
-			} else {
+			} else {*/
 				mOSDState = OSDHideAll;
 				showOSD(false);
 				AmPlayer.setOSDOnFlag(false);
-			}
+			//}
 		} else {
 			mOSDState = OSDShow;
 			showOSD(true);

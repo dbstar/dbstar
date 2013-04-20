@@ -5,6 +5,7 @@
   <drawable name="blue">#0000FF</drawable>
   <drawable name="trans">#00000000</drawable>
 
+  <color name="black">#000000</color>
   <color name="background">#083008</color>
   <color name="transparent_background">#00000000</color>
 </resources>

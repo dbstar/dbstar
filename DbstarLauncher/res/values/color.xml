@@ -25,5 +25,6 @@
     <drawable name="yellow">#FFFF00</drawable>
     <drawable name="blue">#0000FF</drawable>
     <drawable name="purple">#800080</drawable>
+	<drawable name="black">#000000</drawable>
 
 </resources>

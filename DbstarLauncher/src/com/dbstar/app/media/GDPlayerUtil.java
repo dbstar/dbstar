@@ -52,7 +52,7 @@ public class GDPlayerUtil {
 			writeSysfs(Fb0Blank, "1"); // hide OSD view			
 			GDBaseActivity activity = (GDBaseActivity) context;
 			
-			activity.startActivity(intent);
+			activity.startActivity(intent, false);
 		}
 	}
 	
