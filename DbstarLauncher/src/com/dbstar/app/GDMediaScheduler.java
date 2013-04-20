@@ -379,7 +379,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 //		playMedia();
 		mPosterView.setVisibility(View.VISIBLE);
 		mPosterView.setImageBitmap(mDefaultPoster);
-		mHandler.postDelayed(mUpdateTimeTask, 2000);
+//		mHandler.postDelayed(mUpdateTimeTask, 2000);
 	}
 
 	public void pause() {
@@ -400,6 +400,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 		Log.d(TAG, "mStoreState.Type = " + mStoreState.Type);
 		Log.d(TAG, "mStoreState.PlayerState = " + mStoreState.PlayerState);
+		Log.d(TAG, "mStoreState.index = " + mStoreState.index);
 		Log.d(TAG, "mStoreState.url = " + mStoreState.Url);
 		Log.d(TAG, "mStoreState.Duration = " + mStoreState.Duration);
 

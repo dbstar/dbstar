@@ -23,7 +23,7 @@ import com.dbstar.util.upgrade.RebootUtils;
 
 //Tasks
 interface TaskController {
-	public void finish();
+	public void taskFinished();
 
 	public void registerTask(TaskObserver observer);
 }
@@ -136,7 +136,10 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 	void checkSecurityCode() {
 		String code = mInputBox.getText().toString();
 		if (code != null && code.equals(mSecurityCode)) {
-			mOkButton.setEnabled(true);
+			if (mClearChecker.isChecked() || mFormatChecker.isChecked()
+					|| mRestoreChecker.isChecked()) {
+				mOkButton.setEnabled(true);
+			}
 		}
 	}
 
@@ -189,7 +192,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 	}
 
 	@Override
-	public void finish() {
+	public void taskFinished() {
 		scheduleTaskSequently();
 	}
 
@@ -273,7 +276,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 			mHandler.postDelayed(new Runnable() {
 				public void run() {
 					hideLoadingDialog();
-					Controller.finish();
+					Controller.taskFinished();
 				}
 			}, 3000);
 		}
@@ -293,7 +296,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 			mHandler.postDelayed(new Runnable() {
 				public void run() {
 					hideLoadingDialog();
-					Controller.finish();
+					Controller.taskFinished();
 				}
 			}, 3000);
 		}
@@ -332,7 +335,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 				public void run() {
 					hideLoadingDialog();
 
-					Controller.finish();
+					Controller.taskFinished();
 				}
 			}, delayMillis);
 		}

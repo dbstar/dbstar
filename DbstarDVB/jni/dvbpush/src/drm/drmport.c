@@ -161,14 +161,14 @@ void* CDSTBCA_Malloc(CDCA_U32 byBufSize)
 {
 	void *ptr = NULL;
 	ptr = malloc(byBufSize);
-	LOGD("&&& malloc(%lu), ptr=0x%p\n", byBufSize, ptr);
+	//LOGD("&&& malloc(%lu), ptr=0x%p\n", byBufSize, ptr);
 	return ptr;
 }
 
 /* ÊÍ·ÅÄÚ´æ */
 void  CDSTBCA_Free(void* pBuf)
 {
-	LOGD("&&& free(0x%p)\n", pBuf);
+	//LOGD("&&& free(0x%p)\n", pBuf);
 	free(pBuf);
 }
 
@@ -198,20 +198,20 @@ void CDSTBCA_ReadBuffer(CDCA_U8 byBlockID, CDCA_U8*  pbyData, CDCA_U32* pdwLen)
 	int len;
 	int ret = 0;
 
-	LOGD("###############Read the flash 64k buffer [%d]\n", byBlockID);
+	//LOGD("###############Read the flash 64k buffer [%d]\n", byBlockID);
 	if (block01_fd == NULL) {
 		//	CDCA_U8 tmp[128*1024];
 
 		//	memset(tmp,0,128*1024);
 		ret = mkdirp(ENTITLE_FILE_PATH);
 		if (ret != 0) {
-			LOGD("--- create the entitle path error. [%s]\n", strerror(errno));
+			LOGE("--- create the entitle path error. [%s]\n", strerror(errno));
 			return;
 		}
 		block01_fd = fopen(BLOCK01_FILE, "r+");
 
 		if (block01_fd == NULL) {
-			LOGD("open the flash read file error!!!!\n");
+			LOGE("open the flash read file error!!!!\n");
 			return;
 		}
 		//  fwrite(tmp,1,128*1024,block01_fd);
@@ -234,19 +234,19 @@ void CDSTBCA_WriteBuffer(CDCA_U8 byBlockID, const CDCA_U8* pbyData, CDCA_U32 dwL
 {
 	int ret = 0;
 
-	LOGD("###############Write the flash 64k buffer [%d]\n", byBlockID);
+	LOGD("############### Write the flash 64k buffer [%d]\n", byBlockID);
 	if (block01_fd == NULL) {
 		//	CDCA_U8 tmp[128*1024];
 
 		//	memset(tmp,0,128*1024);
 		ret = mkdirp(ENTITLE_FILE_PATH);
 		if (ret != 0) {
-			LOGD("--- create the entitle path error. [%s]\n", strerror(errno));
+			LOGE("--- create the entitle path error. [%s]\n", strerror(errno));
 			return;
 		}
 		block01_fd = fopen(BLOCK01_FILE, "r+");
 		if (block01_fd == NULL) {
-			LOGD("open the flash file error!!!!!\n");
+			LOGE("open the flash file error!!!!!\n");
 			return;
 		}
 		//  fwrite(tmp,1,128*1024,block01_fd);
@@ -815,36 +815,36 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 	long long posk = (long long)dwOffsetKByte;
 	long long posb = (long long)dwOffsetByte;
 	long long offset = 1024 * posk + posb;
-	LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] seekpos=[%lu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, 1024 * dwOffsetKByte + dwOffsetByte);
-	LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] offset=[%llu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, offset);
+	//LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] seekpos=[%lu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, 1024 * dwOffsetKByte + dwOffsetByte);
+	//LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] offset=[%llu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, offset);
 
 	if (*(int *)pFileHandle < 0) {
 		return CDCA_FALSE;
 	}
 	
-	LOGD("%s *(int *)pFileHandle=%d\n", __FUNCTION__,*(int *)pFileHandle);
+	//LOGD("%s *(int *)pFileHandle=%d\n", __FUNCTION__,*(int *)pFileHandle);
 	if (byOrigin == CDCA_SEEK_SET) {
 		if (offset = lseek64(*(int *)pFileHandle, offset, SEEK_SET)<0) {
-			LOGD("!!!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_SET!!fseek error\n");
+			LOGE("!!!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_SET!!fseek error\n");
 			return CDCA_FALSE;
 		}
-		LOGD("++++++ lseek64(%ld)=[%lld]\n", 1024 * dwOffsetKByte + dwOffsetByte, offset);
+		//LOGD("++++++ lseek64(%ld)=[%lld]\n", 1024 * dwOffsetKByte + dwOffsetByte, offset);
 	} else if (byOrigin == CDCA_SEEK_CUR_BACKWARD) {
 		if (lseek64(*(int *)pFileHandle, offset, SEEK_CUR)<0) {
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_CUR_FORWARD) {
 		if (lseek64(*(int *)pFileHandle, -offset, SEEK_CUR)<0) {
-			LOGD("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_CUR_FORWARD!!!!fseek error\n");
+			LOGE("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_CUR_FORWARD!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
 	} else if (byOrigin == CDCA_SEEK_END) {
 		if (lseek64(*(int *)pFileHandle, -offset, SEEK_END)<0) {
-			LOGD("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_END!!!!fseek error\n");
+			LOGE("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_END!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
 	}
-	LOGD("seek the file pos successful\n");
+	//LOGD("seek the file pos successful\n");
 	return CDCA_TRUE;
 }
 
@@ -852,14 +852,14 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen)
 {
 	int ret;
-	LOGD("read file len [%lu]\n", dwLen);
+	//LOGD("read file len [%lu]\n", dwLen);
 	if ((*(int *)pFileHandle) < 0) {
 		return -1;
 	}
 
 	ret = read((*(int *)pFileHandle), pBuf, dwLen);
 	if (ret > 0) {
-		LOGD("read file successful[%d][%lu],[%d]!!!!\n", (*(int *)pFileHandle), dwLen, ret);
+		//LOGD("read file successful[%d][%lu],[%d]!!!!\n", (*(int *)pFileHandle), dwLen, ret);
 	} else {
 		LOGD("read file failed!!!!!! \n");
 	}
