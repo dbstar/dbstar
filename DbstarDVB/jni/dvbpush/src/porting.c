@@ -77,6 +77,7 @@ static int			s_smart_card_remove_flag = 1;	// 当发生过拔卡事件时，此�
 static char			s_TestSpecialProductID[64];
 static int			s_PushDir_usable = 0;	// 0表示不可用，1表示可用
 static char			s_udisk_mount[64];
+static char			s_push_log_dir[512];
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
@@ -176,8 +177,9 @@ static int libpush_conf_init(void)
 	FILE* fp;
 	char tmp_buf[256];
 	char *p_value;
-	char push_log_dir[512];
 	long long dir_size_total = 0LL;
+	
+	memset(s_push_log_dir,0,sizeof(s_push_log_dir));
 	
 	fp = fopen(PUSH_CONF,"r");
 	if (NULL == fp)
@@ -196,13 +198,15 @@ static int libpush_conf_init(void)
 				DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
 				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
 					if(0==strcmp(tmp_buf, "LOG_DIR")){
-						snprintf(push_log_dir,sizeof(push_log_dir),"%s/libpush",p_value);
-						dir_size_total = dir_size(push_log_dir);
-						DEBUG("size of %s is %lld\n", push_log_dir, dir_size_total);
+						snprintf(s_push_log_dir,sizeof(s_push_log_dir),"%s/libpush",p_value);
+						dir_size_total = dir_size(s_push_log_dir);
+						DEBUG("size of %s is %lld\n", s_push_log_dir, dir_size_total);
 						if(dir_size_total>=LIBPUSH_LOGDIR_SIZE){
-							DEBUG("WARNING: log dir %s is too large, remove it\n", push_log_dir);
-							remove_force(push_log_dir);
+							DEBUG("WARNING: log dir %s is too large, remove it\n", s_push_log_dir);
+							remove_force(s_push_log_dir);
 						}
+						else
+							snprintf(s_push_log_dir,sizeof(s_push_log_dir),"/data/dbstar/libpush");
 					}
 					else if(0==strcmp(tmp_buf, "INITFILE")){
 						snprintf(s_initialize_xml_uri,sizeof(s_initialize_xml_uri),"%s", p_value);
@@ -1778,6 +1782,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("CMD_FACTORY_RESET\n");
 			global_info_init();
 			smarthome_reset();
+			remove_force(s_push_log_dir);
 			break;
 		case CMD_DRM_RESET:
 			DEBUG("CMD_DRM_RESET\n");
@@ -1791,6 +1796,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				if(0!=rename(drm_dir,drm_dir_rubbish))
 					ERROROUT("rename %s to %s failed\n", drm_dir, drm_dir_rubbish);
 			}
+			
+			remove_force(s_push_log_dir);
 			break;
 		case CMD_DISC_FORMAT:
 			DEBUG("CMD_DISC_FORMAT\n");
@@ -1808,6 +1815,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			else{
 				DEBUG("remove %s failed\n", DBSTAR_DATABASE);
 			}
+			
+			remove_force(s_push_log_dir);
 
 			break;
 		default:

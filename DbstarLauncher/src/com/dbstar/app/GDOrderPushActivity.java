@@ -440,7 +440,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		ReceiveTask task = new ReceiveTask();
 
 		if (date.length() == "yyyy-mm-dd".length()) {
-			date = date + "00:00:00";
+			date = date + " 00:00:00";
 		}
 
 		task.Date = date;

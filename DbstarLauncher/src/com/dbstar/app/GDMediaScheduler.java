@@ -233,6 +233,13 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			int resourceType = RNONE;
 			resourcePath = mResources[mResourceIndex].FileURI;
 			resourceType = getResourceType(mResources[mResourceIndex].Type);
+			
+			File file = new File(resourcePath);
+			if (!file.exists()) {
+				Log.d(TAG, "Error: preview file not exist!");
+				mHandler.postDelayed(mUpdateTimeTask, 60000);
+				return;
+			}
 
 			if (resourceType == RVideo) {
 				playVideo(resourcePath);
