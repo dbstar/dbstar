@@ -36,7 +36,7 @@
             android:focusable="false"
             android:gravity="top|center_horizontal"
             android:textColor="#ffffff"
-            android:textSize="16sp" />
+            android:textSize="18sp" />
     </RelativeLayout>
     
     <LinearLayout
@@ -44,9 +44,9 @@
         android:layout_height="556dp"
         android:layout_below="@id/view_header"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="8dp"
         android:orientation="vertical"
-        android:background="@drawable/gd_middle_bj_b" >
+        android:background="@drawable/content_bg" >
         
         <LinearLayout
             android:layout_width="wrap_content"
@@ -74,7 +74,7 @@
                 android:focusable="false"
                 android:text="@string/restore_factory_settings_title"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -84,7 +84,7 @@
                 android:focusable="false"
                 android:text="@string/restore_factory_settings_desc"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="18sp" />
         </LinearLayout>
         
         <LinearLayout
@@ -113,7 +113,7 @@
                 android:focusable="false"
                 android:text="@string/clear_purchase_info_title"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -123,7 +123,7 @@
                 android:focusable="false"
                 android:text="@string/clear_purchase_info_desc"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="18sp" />
         </LinearLayout>
         
         <LinearLayout
@@ -152,7 +152,7 @@
                 android:focusable="false"
                 android:text="@string/format_disk_title"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -162,7 +162,7 @@
                 android:focusable="false"
                 android:text="@string/format_disk_desc"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="18sp" />
         </LinearLayout>
  
         <LinearLayout
@@ -182,7 +182,7 @@
                 android:focusable="false"
                 android:text="@string/alert_info_1"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="18sp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -200,7 +200,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/alert_info_2"
                     android:textColor="#000000"
-                    android:textSize="22sp" />
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/security_code"
@@ -224,7 +224,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/alert_info_3"
                     android:textColor="#000000"
-                    android:textSize="22sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
 
             <EditText
@@ -233,7 +233,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="40dp"
-                android:textSize="22sp"
+                android:textSize="18sp"
                 android:background="@drawable/textview_bgselector"
                 android:inputType="number|text"
                 android:scrollHorizontally="true"
@@ -252,7 +252,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_bg"
                     android:text="@string/button_text_ok"
-                    android:textSize="22sp" />
+                    android:textSize="18sp" />
 
                 <Space
                     android:layout_width="20dp"
@@ -264,7 +264,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_bg"
                     android:text="@string/button_text_cancel"
-                    android:textSize="22sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
         </LinearLayout>
     
