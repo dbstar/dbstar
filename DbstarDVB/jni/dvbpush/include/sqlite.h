@@ -16,4 +16,6 @@ int sqlite_transaction_end(int commit_flag);
 
 int str_sqlite_read(char *buf, unsigned int buf_size, char *sql_cmd);
 
+int global_info_init();
+
 #endif

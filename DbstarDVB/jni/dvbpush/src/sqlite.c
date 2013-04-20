@@ -23,7 +23,6 @@ static int s_sqlite_init_flag = 0;
 static int createTable(char* name);
 static void closeDatabase();
 static int localcolumn_init();
-static int global_info_init();
 
 static int createDatabase(char *database_uri)
 {
@@ -1784,7 +1783,7 @@ int localcolumn_init()
 		return sqlite_transaction_end(0);
 }
 
-static int global_info_init()
+int global_info_init()
 {
 	DEBUG("init table 'Global', set default records\n");
 	
@@ -1854,3 +1853,34 @@ static int global_info_init()
 	else
 		return sqlite_transaction_end(0);
 }
+
+
+int smarthome_setting_reset(char *sqlite_cmd)
+{
+	char* errmsg=NULL;
+	int ret = -1;
+	sqlite3* smarthome_db = NULL;
+	
+	if(SQLITE_OK!=sqlite3_open(SMARTHOME_DATABASE,&smarthome_db)){
+		ERROROUT("can't open database\n");
+		ret = -1;
+	}
+	else{
+		ret = 0;
+
+		if(sqlite3_exec(smarthome_db,sqlite_cmd,NULL,NULL,&errmsg)){
+			DEBUG("sqlite3 errmsg: %s\n", errmsg);
+			ret = -1;
+		}
+		else{
+			DEBUG("sqlite3 %s success\n", sqlite_cmd);
+			ret = 0;
+		}
+		
+		sqlite3_free(errmsg);								///	release the memery possessed by error message
+		sqlite3_close(smarthome_db);
+	}
+	
+	return ret;	
+}
+

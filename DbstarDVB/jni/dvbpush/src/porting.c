@@ -1561,6 +1561,22 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 }
 #endif
 
+static int smarthome_reset()
+{
+	char sqlite_cmd[512];
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE global SET value='211.99.30.254' WHERE name='SmarthomeServerIP';");
+	smarthome_setting_reset(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE global SET value='9999' WHERE name='SmarthomeServerPort';");
+	smarthome_setting_reset(sqlite_cmd);
+	
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE global SET value='' WHERE name='SmarthomeSN';");
+	smarthome_setting_reset(sqlite_cmd);
+	
+	return 0;
+}
+
 /*
  通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
  实际调用参见dvbpush_jni.c
@@ -1757,6 +1773,42 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DRM_programinfo_get(*buf,s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			*buf = s_jni_cmd_public_space;
 			*len = strlen(s_jni_cmd_public_space);
+			break;
+		case CMD_FACTORY_RESET:
+			DEBUG("CMD_FACTORY_RESET\n");
+			global_info_init();
+			smarthome_reset();
+			break;
+		case CMD_DRM_RESET:
+			DEBUG("CMD_DRM_RESET\n");
+			char *drm_dir = "/data/dbstar/drm";
+			char *drm_dir_rubbish = "/data/dbstar/drm_rubbish";
+			if(0==remove_force(drm_dir)){
+				DEBUG("remove %s success\n", drm_dir);
+			}
+			else{
+				DEBUG("remove %s failed\n", drm_dir);
+				if(0!=rename(drm_dir,drm_dir_rubbish))
+					ERROROUT("rename %s to %s failed\n", drm_dir, drm_dir_rubbish);
+			}
+			break;
+		case CMD_DISC_FORMAT:
+			DEBUG("CMD_DISC_FORMAT\n");
+			
+			if(0==remove_force(COLUMN_RES)){
+				DEBUG("remove %s success\n", COLUMN_RES);
+			}
+			else{
+				DEBUG("remove %s failed\n", COLUMN_RES);
+			}
+			
+			if(0==remove_force(DBSTAR_DATABASE)){
+				DEBUG("remove %s success\n", DBSTAR_DATABASE);
+			}
+			else{
+				DEBUG("remove %s failed\n", DBSTAR_DATABASE);
+			}
+
 			break;
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
