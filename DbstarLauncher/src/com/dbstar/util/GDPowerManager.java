@@ -2,12 +2,12 @@ package com.dbstar.util;
 
 import android.content.Context;
 import android.os.PowerManager;
-import android.os.SystemProperties;
 import android.util.Log;
 
 public class GDPowerManager {
 	private static final String TAG = "GDPowerManager";
-	private static final String SleepPrepertyName = "dbstar.deepsleep";
+
+	private static final String ALARM_PATH = "/sys/class/aml_rtc/alarm";
 	private PowerManager.WakeLock sWakeLock;
 
 	public PowerManager.WakeLock createPartialWakeLock(Context context) {
@@ -23,11 +23,6 @@ public class GDPowerManager {
 	}
 
 	public void acquirePartialWakeLock(Context context) {
-		if (SystemProperties.getInt(SleepPrepertyName, 0) == 1) {
-			Log.d(TAG, "-----PartialWakeLock, DeepSleep -----");
-			return;
-		}
-
 		Log.d(TAG, "----- PartialWakeLock -----");
 		if (sWakeLock != null) {
 			return;
@@ -38,11 +33,6 @@ public class GDPowerManager {
 	}
 
 	public void acquireFullWakeLock(Context context) {
-		if (SystemProperties.getInt(SleepPrepertyName, 0) == 1) {
-			Log.d(TAG, "----- FullWakeLock, DeepSleep -----");
-			return;
-		}
-
 		Log.d(TAG, "----- FullWakeLock -----");
 		if (sWakeLock != null) {
 			return;
@@ -57,5 +47,13 @@ public class GDPowerManager {
 			sWakeLock.release();
 			sWakeLock = null;
 		}
+	}
+
+	public void setAlarm(int seconds) {
+		FileOperation.write(ALARM_PATH, Integer.toString(seconds));
+	}
+
+	public void clearAlarm() {
+		FileOperation.write(ALARM_PATH, "0");
 	}
 }

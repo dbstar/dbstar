@@ -30,6 +30,7 @@ import com.dbstar.model.TDTTimeController;
 import com.dbstar.service.client.GDDBStarClient;
 
 import android.app.Service;
+import android.app.Instrumentation;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -39,17 +40,24 @@ import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Process;
+import android.os.Looper;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Binder;
 import android.os.Message;
 import android.util.Log;
-import android.os.Process;
+import android.util.EventLog;
+import android.view.KeyEvent;
 
 public class GDDataProviderService extends Service {
 
 	private static final String TAG = "GDDataProviderService";
+
+	public static final int MESSAGE_POWERON = 0x1;
+	public static final int MESSAGE_POWEROFF = 0x2;
 
 	public static final int REQUESTTYPE_GETCOLUMNS = 0x1001;
 	public static final int REQUESTTYPE_GETPUBLICATION = 0x1002;
@@ -141,7 +149,10 @@ public class GDDataProviderService extends Service {
 	private String mDefaultColumnIconFile = null;
 
 	private PeripheralController mPeripheralController;
-	private GDPowerManager mPowerManger;
+	private GDPowerManager mPowerManager;
+    private HandlerThread mPowerThread = null;
+	private Handler mPowerHandler = null;
+    private int mSleepMode = 0;
 
 	private GDEngine mGuodianEngine;
 
@@ -209,8 +220,11 @@ public class GDDataProviderService extends Service {
 		mMainThreadId = Process.myTid();
 		mMainThreadPriority = Process.getThreadPriority(mMainThreadId);
 
-		mPowerManger = new GDPowerManager();
-		mPowerManger.acquirePartialWakeLock(this);
+		// create power manager thread
+		mPowerManager = new GDPowerManager();
+		mPowerThread = new HandlerThread("PowerManager", Process.THREAD_PRIORITY_BACKGROUND);
+		mPowerThread.start();
+		mPowerHandler = new PowerEventHandler(mPowerThread.getLooper());
 
 		mHandler = new SystemEventHandler();
 
@@ -299,6 +313,7 @@ public class GDDataProviderService extends Service {
 		// start Dbstar service
 		mIsDbServiceStarted = false;
 		mDBStarClient.start();
+
 	}
 
 	void startGuodianEngine() {
@@ -347,7 +362,6 @@ public class GDDataProviderService extends Service {
 		super.onDestroy();
 		Log.d(TAG, "onDestroy");
 
-		mPowerManger.releaseWakeLock();
 
 		stopDbStarService();
 		mDBStarClient.stop();
@@ -410,6 +424,26 @@ public class GDDataProviderService extends Service {
 		// editor.commit();
 
 		SystemUtils.stopSmartHomeServer();
+	}
+
+	class PowerEventHandler extends Handler {
+		public PowerEventHandler(Looper looper) {
+			super(looper);
+		}
+		public void handleMessage(Message msg) {
+			int msgId = msg.what;
+			switch (msgId) {
+			case MESSAGE_POWERON:
+				Log.d(TAG, "sendKey(KEYCODE_POWER)");
+				Instrumentation inst = new Instrumentation();
+				inst.sendKeyDownUpSync(KeyEvent.KEYCODE_POWER);
+				break;
+			case MESSAGE_POWEROFF:
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	class SystemEventHandler extends Handler {
@@ -2154,8 +2188,10 @@ public class GDDataProviderService extends Service {
 				msg.setData(data);
 				mHandler.sendMessage(msg);
 			} else if (action.equals(GDCommon.ActionScreenOn)) {
+				setSleepMode(true);
 				upgradeAfterSleep();
 			} else if (action.equals(GDCommon.ActionScreenOff)) {
+				setSleepMode(false);
 				mPeripheralController.setPowerLedOff();
 			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_IN)) {
 				mPeripheralController.setAudioOutputOff();
@@ -2203,6 +2239,42 @@ public class GDDataProviderService extends Service {
 			event.Successed = successed;
 			event.ErrorMessage = errorMsg;
 			mPageOberser.notifyEvent(EventData.EVENT_DISK_FORMAT, event);
+		}
+	}
+
+	int getPushTime() {
+		// TODO
+		int secs = 0;
+		return secs;
+	}
+
+	void setSleepMode(boolean on) {
+		Log.d(TAG, "SLEEPMODE --- screenOn: " + on);
+		if (on) {
+			mPowerManager.clearAlarm();
+			mPowerManager.releaseWakeLock();
+			if (mSleepMode == 1) {
+				Log.d(TAG, "SLEEPMODE(2) --- sleep again");
+				mSleepMode = 2;
+				Message msg = mPowerHandler.obtainMessage(MESSAGE_POWERON);
+				msg.sendToTarget();
+			}
+		} else {
+			int secs = getPushTime();
+			if (secs > 0) {
+				if (mSleepMode == 0) {
+					mPowerManager.setAlarm(secs);
+					Log.d(TAG, "SLEEPMODE(1) --- DeepSleep, alarm=" + secs);
+					mSleepMode = 1;
+				} else if (mSleepMode == 2) {
+					mPowerManager.acquirePartialWakeLock(this);
+					mSleepMode = 0;
+					Log.d(TAG, "SLEEPMODE(0)");
+				} else {
+				}
+			} else {
+				mPowerManager.acquirePartialWakeLock(this);
+			}
 		}
 	}
 
