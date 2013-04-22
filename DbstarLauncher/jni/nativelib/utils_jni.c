@@ -67,11 +67,19 @@ JNIEXPORT jint JNICALL Java_com_dbstar_app_media_GDPlayerUtil_writeFile
 		return -1;
 	}
 
-	count = write(fd, cstr, 100);
+	count = write(fd, cstr, strlen(cstr));
 
 	LOGI("count of written chars is: %d\n", count);
 
 	close(fd);
+
+	if (fileName != NULL) {
+		free(fileName);
+	}
+
+	if (cstr != NULL) {
+		free(cstr);
+	}
 
 	return count;
 }
