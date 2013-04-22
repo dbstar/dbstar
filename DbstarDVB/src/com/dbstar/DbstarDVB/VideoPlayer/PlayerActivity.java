@@ -545,6 +545,8 @@ public class PlayerActivity extends Activity {
 		if (mMediaInfo.getAudioTrackCount() < 2) {
 			showNotification(NOTIFY_AUDIOTRACK, ID_NO_DUBBING);
 			return;
+		} else {
+			mTotalAudioStreamNumber = mMediaInfo.getAudioTrackCount();
 		}
 
 		{
@@ -648,6 +650,9 @@ public class PlayerActivity extends Activity {
 		try {
 			mMediaInfo = mAmplayer.GetMediaInfo();
 
+			if (mMediaInfo != null) {
+				mTotalAudioStreamNumber = mMediaInfo.getAudioTrackCount();
+			}
 			// Init audio track info
 			AudioTrackOperation.setAudioStream(mMediaInfo);
 
