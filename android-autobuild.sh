@@ -257,9 +257,9 @@ bootable_make()
 	LOG_LOGGER=$LOG_ROOTFS.$TIMESTAMP
 	call cd $ANDROID_SRC
 	if [ $REBUILD_FLAG -eq 1 ]; then
-		mmm $ANDROID_SRC/bootable/recovery -B
+		call mmm $ANDROID_SRC/bootable/recovery -B
 	else
-		mmm $ANDROID_SRC/bootable/recovery
+		call mmm $ANDROID_SRC/bootable/recovery
 	fi
 	if [ $? -eq 0 ]; then
 		call cp -f $ROOTFS_OUT/system/bin/recovery $ROOTFS_OUT/recovery/root/sbin/
@@ -313,6 +313,8 @@ dbstar_patch()
 	cp -rf $DBSTAR_SRC/device/* $ANDROID_SRC/device/
 	echo ">>>> patching build ..."
 	cp -rf $DBSTAR_SRC/build/* $ANDROID_SRC/build/
+	echo ">>>> patching packages ..."
+	cp -rf $DBSTAR_SRC/packages/* $ANDROID_SRC/packages/
 	logger "FINISH patch dbstar"
 }
 
