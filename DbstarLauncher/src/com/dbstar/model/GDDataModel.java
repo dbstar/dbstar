@@ -306,18 +306,27 @@ public class GDDataModel {
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				contents = new ContentData[cursor.getCount()];
+//				contents = new ContentData[cursor.getCount()];
+				ArrayList<ContentData> contentList = new ArrayList<ContentData>();
 
-				int i = 0;
 				do {
 					ContentData content = new ContentData();
 					content.Id = cursor.getString(PublicationsSetID);
 					content.XMLFilePath = cursor.getString(PublicationsSetURI);
 
-					getPublicationSetInfo(content);
-					contents[i] = content;
-					i++;
+					int itemsCount = getPublicationSetItemCount(content.Id, null);
+					if (itemsCount > 0) {
+						getPublicationSetInfo(content);
+						
+						contentList.add(content);
+					}
+					
 				} while (cursor.moveToNext());
+				
+				int size = contentList.size();
+				if (size > 0) {
+					contents =  contentList.toArray(new ContentData[size]);
+				}
 			}
 		}
 
@@ -585,9 +594,12 @@ public class GDDataModel {
 					if (date == null || date.isEmpty()) {
 						// invalid item
 						continue;
+					} else if (date.length() == "yyyy-mm-dd".length()) {
+						date = date + " 00:00:00";
 					}
 
 					GuideListItem item = new GuideListItem();
+
 					item.Date = date;
 					item.GuideListID = cursor
 							.getString(QUERYGUIDELIST_GUIDELISTID);
@@ -1212,13 +1224,10 @@ public class GDDataModel {
 	private final static String[] ProjectionQueryBrand = { Brand.ID,
 			Brand.DOWNLOAD, Brand.TOTALSIZE, Brand.CNAME };
 
-	public int getContentsCount(String columnId) {
+	private int queryCount(String selection, String[] selectionArgs) {
 		int count = 0;
-		String selection = Content.COLUMN_ID + "=?  AND " + Content.READY
-				+ "=1";
-		String[] selectionArgs = new String[] { columnId };
-
-		Cursor cursor = mDVBDataProvider.query(Content.CONTENT_URI,
+		
+		Cursor cursor = mDVBDataProvider.query(Publication.CONTENT_URI,
 				ProjectionQueryContentCount, selection, selectionArgs, null);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {

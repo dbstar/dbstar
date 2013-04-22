@@ -10,7 +10,7 @@ LOCAL_STATIC_JAVA_LIBRARIES := achartengine ksoap2 FormatCMD
 
 LOCAL_PACKAGE_NAME := DbstarLauncher
 LOCAL_CERTIFICATE := platform
-
+LOCAL_REQUIRED_MODULES := libnativeutils
 include $(BUILD_PACKAGE)
 
 ########################################################
@@ -22,3 +22,6 @@ LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := achartengine:libs/achartengine-1.0.0.jar
 
 include $(BUILD_MULTI_PREBUILT)
 
+########################################################
+# Build native code
+include $(call all-makefiles-under,$(LOCAL_PATH))

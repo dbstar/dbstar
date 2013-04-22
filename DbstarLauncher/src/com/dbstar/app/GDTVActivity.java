@@ -354,6 +354,8 @@ public class GDTVActivity extends GDBaseActivity {
 				} else {
 					// delete the whole tv
 					// TODO:
+					mService.deletePublicationSet(tv.Content.Id);
+
 					tv.Episodes = null;
 					tv.EpisodesPageCount = 0;
 					tv.EpisodesPageNumber = 0;

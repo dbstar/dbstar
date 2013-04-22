@@ -21,6 +21,12 @@ public class GDPlayerUtil {
 	private static final String TAG = "GDPlayerUtil";
 	private static final String Fb0Blank = "/sys/class/graphics/fb0/blank";
 
+	static {
+		System.loadLibrary("nativeutils");
+	}
+
+	public static native int writeFile(String fileName, String str);
+
 	public static void playVideo(Context context, String publicationSetID,
 			ContentData content, String mainFile, String drmFile, boolean playNext) {
 		Log.d(TAG, "file = " + mainFile);
@@ -49,9 +55,9 @@ public class GDPlayerUtil {
 					"com.dbstar.DbstarDVB.VideoPlayer.PlayerMenu"));
 			intent.setAction("android.intent.action.View");
 
-			writeSysfs(Fb0Blank, "1"); // hide OSD view			
-			GDBaseActivity activity = (GDBaseActivity) context;
+			writeFile(Fb0Blank, "1"); // hide OSD view			
 			
+			GDBaseActivity activity = (GDBaseActivity) context;
 			activity.startActivity(intent, false);
 		}
 	}
@@ -124,6 +130,7 @@ public class GDPlayerUtil {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(path), 64);
 			try {
 				writer.write(val);
+				Log.d(TAG, " write osd black ok!");
 			} finally {
 				writer.close();
 			}

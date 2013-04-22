@@ -574,15 +574,14 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 				case KeyEvent.KEYCODE_DPAD_CENTER:
 				case KeyEvent.KEYCODE_ENTER: {
-					//playMovie();
-					mViewMask.setVisibility(View.VISIBLE);
 					if (!mEnterPlayer) {
 						mEnterPlayer = true;
-					mHandler.postDelayed(new Runnable() {
-						public void run() {
-							playMovie();
-						}
-					}, 800);
+						mViewMask.setVisibility(View.VISIBLE);
+						mHandler.postDelayed(new Runnable() {
+							public void run() {
+								playMovie();
+							}
+						}, 800);
 					}
 					ret = true;
 					break;

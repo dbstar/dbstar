@@ -1658,6 +1658,10 @@ public class GDDataProviderService extends Service {
 
 		enqueueTask(task);
 	}
+	
+	public void deletePublicationSet(String publicationSetId) {
+		mDataModel.deletePublicationSet(publicationSetId);
+	}
 
 	public boolean isSmartcardPlugIn() {
 		return mPeripheralController.isSmartCardIn();
