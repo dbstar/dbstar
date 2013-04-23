@@ -78,6 +78,8 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_MANAGECA = 0x2006;
 	public static final int REQUESTTYPE_GETMAILCONTENT = 0x2007;
 	public static final int REQUESTTYPE_GETPUBLICATIONDRMINFO = 0x2008;
+	public static final int REQUESTTYPE_GETMOVIECOUNT = 0x2009;
+	public static final int REQUESTTYPE_GETTVCOUNT = 0x2010;
 
 	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 0x3001;
 	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 0x3002;
@@ -888,6 +890,14 @@ public class GDDataProviderService extends Service {
 			}
 			break;
 		}
+		
+		case REQUESTTYPE_GETMOVIECOUNT:
+		case REQUESTTYPE_GETTVCOUNT: {
+			if (task.Observer != null) {
+				task.Observer.updateData(task.Type, task.Key, task.Data);
+			}
+			break;
+		}
 
 		case REQUESTTYPE_GETPUBLICATIONS_OFSET:
 		case REQUESTTYPE_GETDETAILSDATA:
@@ -1121,6 +1131,22 @@ public class GDDataProviderService extends Service {
 
 					task.Data = coloumns;
 
+					taskFinished(task);
+					break;
+				}
+				
+				case REQUESTTYPE_GETMOVIECOUNT: {
+					String columnId = (String) task.Key;
+					int count = mDataModel.getPublicationCount(columnId);
+					task.Data = count;
+					taskFinished(task);
+					break;
+				}
+				
+				case REQUESTTYPE_GETTVCOUNT: {
+					String columnId = (String) task.Key;
+					int count = mDataModel.getPublicationSetCount(columnId);
+					task.Data = count;
 					taskFinished(task);
 					break;
 				}
@@ -1402,6 +1428,24 @@ public class GDDataProviderService extends Service {
 		task.Parameters.put(PARAMETER_COLUMN_ID, columnId);
 		task.Index = index;
 		task.ColumnLevel = level;
+		enqueueTask(task);
+	}
+	
+	public void getMovieCount(ClientObserver observer, String columnId) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETMOVIECOUNT;
+		task.Key = columnId;
+
+		enqueueTask(task);
+	}
+	
+	public void getTVCount(ClientObserver observer, String columnId) {
+		RequestTask task = new RequestTask();
+		task.Observer = observer;
+		task.Type = REQUESTTYPE_GETTVCOUNT;
+		task.Key = columnId;
+
 		enqueueTask(task);
 	}
 

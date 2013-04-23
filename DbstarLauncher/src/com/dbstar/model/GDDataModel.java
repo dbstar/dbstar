@@ -128,6 +128,31 @@ public class GDDataModel {
 
 		return columnName;
 	}
+	
+	public int getPublicationCount(String columnId) {
+		String selection = Publication.COLUMNID + "=?  AND ("
+				+ Publication.RECEIVESTATUS + "=? Or "
+				+ Publication.RECEIVESTATUS + "=?) AND " + Publication.VISIBLE
+				+ "=? AND (" + Publication.DELETED + "=? OR "
+				+ Publication.DELETED + " is null OR " + Publication.DELETED
+				+ "=?) ";
+		String[] selectionArgs = new String[] { columnId, "1", "2", "1", "0",
+				"" };
+
+		return queryCount(selection, selectionArgs);
+	}
+	
+	public int getPublicationSetCount(String columnId) {
+		String selection = PublicationsSet.COLUMNID + "=?  AND ("
+				+ PublicationsSet.RECEIVESTATUS + "=? OR "
+				+ PublicationsSet.RECEIVESTATUS + "=?) AND ("
+				+ PublicationsSet.DELETED + "=? OR " + PublicationsSet.DELETED
+				+ " is null OR " + PublicationsSet.DELETED + " =?) ";
+
+		String[] selectionArgs = new String[] { columnId, "1", "2", "0", "" };
+
+		return queryCount(selection, selectionArgs);
+	}
 
 	private final static String[] ProjectionQueryPublications = {
 			Publication.PUBLICATIONID, Publication.DESCURI,
