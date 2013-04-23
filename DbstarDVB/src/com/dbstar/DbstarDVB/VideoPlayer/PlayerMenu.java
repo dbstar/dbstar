@@ -320,6 +320,8 @@ public class PlayerMenu extends PlayerActivity {
 		}
 
 //		setMute(false);
+		
+		showOSD(true);
 	}
 
 	@Override
@@ -373,8 +375,9 @@ public class PlayerMenu extends PlayerActivity {
 			
 			if (canPlay) {
 				Amplayer_play(mCurrentTime);
-				showOSD(true);
 			}
+			
+			showOSD(true);
 		}
 	}
 
