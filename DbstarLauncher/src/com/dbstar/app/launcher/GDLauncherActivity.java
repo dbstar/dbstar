@@ -199,7 +199,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		turnOnMarqeeView(false);
 		showMarqueeView();
 		
-		resetMenuStack();
+//		resetMenuStack();
 	}
 
 	public void onStop() {
