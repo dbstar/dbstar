@@ -5,6 +5,8 @@
 typedef enum {
 	DBSTAR_COMMAND                  = 0x00000,
 	DBSTAR_NOTIFY                   = 0xF0000,
+	
+	CMD_SYSTEM_AWAKE_TIMER			= 0x00009,		// 系统休眠hibernate唤醒时间，以秒为单位偏移
 
 	CMD_NETWORK_DISCONNECT	        = 0x00010,    // 网络断开
 	CMD_NETWORK_CONNECT             = 0x00011,    // 网络恢复连接

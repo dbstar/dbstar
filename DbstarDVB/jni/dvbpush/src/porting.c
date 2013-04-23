@@ -69,6 +69,7 @@ static char			s_jni_cmd_smartcard_sn[256];
 static char			s_jni_cmd_drm_ver[256];
 static char			s_jni_cmd_eigenvalue[1024];
 static char			s_jni_cmd_data_status[64];
+static char			s_jni_cmd_system_awake_timer[64];
 
 // 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
@@ -1818,6 +1819,13 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			
 			remove_force(s_push_log_dir);
 
+			break;
+		case CMD_SYSTEM_AWAKE_TIMER:
+			DEBUG("CMD_SYSTEM_AWAKE_TIMER\n");
+			memset(s_jni_cmd_system_awake_timer,0,sizeof(s_jni_cmd_system_awake_timer));
+			snprintf(s_jni_cmd_system_awake_timer,sizeof(s_jni_cmd_system_awake_timer),"600");
+			*buf = s_jni_cmd_system_awake_timer;
+			*len = strlen(s_jni_cmd_system_awake_timer);
 			break;
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);

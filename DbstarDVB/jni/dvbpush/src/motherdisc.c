@@ -109,7 +109,7 @@ int motherdisc_init()
 	char direct_uri[1024];
 	int ret = 0;
 	
-	snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),MOTHERDISC_XML_URI);
+	snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
 	
 	// check ContentDelivery.xml for mother disc
 	int stat_ret = stat(direct_uri, &filestat);
@@ -206,7 +206,7 @@ int motherdisc_process()
 		ret = -1;
 	}
 	
-	snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),MOTHERDISC_XML_URI);
+	snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
 	snprintf(new_uri_motherdisc_xml,sizeof(new_uri_motherdisc_xml),"__%s_PROCESSED__",direct_uri);
 	
 	if(0!=rename(direct_uri,new_uri_motherdisc_xml)){
