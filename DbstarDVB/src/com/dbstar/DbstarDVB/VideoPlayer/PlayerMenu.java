@@ -416,11 +416,11 @@ public class PlayerMenu extends PlayerActivity {
 		super.onStop();
 		mIsStarted = false;
 
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(2000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		
 		Log.d(TAG, " ============ onStop ================== ");
 	}
