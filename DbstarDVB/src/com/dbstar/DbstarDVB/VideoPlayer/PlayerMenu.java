@@ -1564,7 +1564,7 @@ public class PlayerMenu extends PlayerActivity {
 
 			if (action.equals(Common.ActionPlayNext)) {
 				if (retriveInputParameters(intent)) {
-					showInfoBar(false);
+					showInfoBar(true);
 					mIsDeleted = false;
 					Amplayer_play(mPlayPosition);
 				}
