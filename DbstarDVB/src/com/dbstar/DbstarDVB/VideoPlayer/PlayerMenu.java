@@ -202,6 +202,8 @@ public class PlayerMenu extends PlayerActivity {
 	private String mVideoAxis = null;
 	
 	private boolean mIsDeleted = false;
+	
+	private boolean mPlayDelayed = false;
 
 	private boolean retriveInputParameters(Intent intent) {
 		mUri = intent.getData();
@@ -358,9 +360,26 @@ public class PlayerMenu extends PlayerActivity {
 			}
 
 			Utils.writeSysfs(VideoAxisFile, mVideoAxis);
-			Amplayer_play(mCurrentTime);
-			showOSD(true);
+			
+			boolean canPlay = true;
+			if (mHasKey) {
+				int state = mSmartcardTacker.getSmartcardState();
+				if (state != SmartcardStateTracker.SMARTCARD_STATE_INSERTED) {
+					canPlay = false;
+					mPlayDelayed = true;
+					showSmartcardInfo();
+				}
+			}
+			
+			if (canPlay) {
+				Amplayer_play(mCurrentTime);
+				showOSD(true);
+			}
 		}
+	}
+
+	public void playDelayed() {
+		Amplayer_play(mCurrentTime);
 	}
 
 	@Override
@@ -1156,6 +1175,13 @@ public class PlayerMenu extends PlayerActivity {
 			// pause player
 			onPlayButtonPressed();
 		} else {
+			
+			if (mPlayDelayed) {
+				mPlayDelayed = false;
+				mHandler.sendEmptyMessageDelayed(MSG_PLAY_DELAYED, 1000);
+				return;
+			}
+			
 			if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
 				//onPlayButtonPressed();
 				mHandler.sendEmptyMessageDelayed(MSG_RESUME_DELAYED, 1000);

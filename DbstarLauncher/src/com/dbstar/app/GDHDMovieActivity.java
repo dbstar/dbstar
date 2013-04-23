@@ -102,9 +102,16 @@ public class GDHDMovieActivity extends GDBaseActivity {
 			mSmallThumbnailView.setSelection(mSeletedItemIndex);
 		}
 
-		mViewMask.setVisibility(View.GONE);
 		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 		
+		mViewMask.setVisibility(View.GONE);
+		mEnterPlayer = false;
+	}
+	
+	public void onResume () {
+		super.onResume();
+		
+		mViewMask.setVisibility(View.GONE);
 		mEnterPlayer = false;
 	}
 
@@ -177,12 +184,14 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		if (file == null || file.isEmpty()) {
 			alertFileNotExist();
 			mViewMask.setVisibility(View.GONE);
+			mEnterPlayer = false;
 			return;
 		}
 
 		if (drmFile != null && !drmFile.isEmpty() && !isSmartcardReady()) {
 			alertSmartcardInfo();
 			mViewMask.setVisibility(View.GONE);
+			mEnterPlayer = false;
 			return;
 		}
 
@@ -584,7 +593,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 							public void run() {
 								playMovie();
 							}
-						}, 800);
+						}, 400);
 					}
 					ret = true;
 					break;

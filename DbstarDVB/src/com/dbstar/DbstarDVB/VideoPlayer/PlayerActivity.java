@@ -104,7 +104,8 @@ public class PlayerActivity extends Activity {
 	// Application Message
 	protected static final int MSG_DIALOG_POPUP = 0x30001;
 	protected static final int MSG_RESUME_DELAYED = 0x30002;
-
+	protected static final int MSG_PLAY_DELAYED = 0x30003;
+	
 	protected boolean mIsSmartcardIn = false;
 
 	protected SmartcardStateTracker mSmartcardTacker = null;
@@ -117,6 +118,10 @@ public class PlayerActivity extends Activity {
 		
 	}
 	
+	protected void playDelayed() {
+		
+	}
+	
 	protected Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -125,6 +130,10 @@ public class PlayerActivity extends Activity {
 				break;
 			case MSG_RESUME_DELAYED: {
 				resumeDelayed();
+				break;
+			}
+			case MSG_PLAY_DELAYED: {
+				playDelayed();
 				break;
 			}
 			case SmartcardStateTracker.MSG_SMARTCARD_INSERTING: {
@@ -688,6 +697,10 @@ public class PlayerActivity extends Activity {
 
 	public void exitPlayer() {
 
+	}
+
+	public void exitPlayer() {
+	
 	}
 
 	// when FF/FB (Searching state), and replay, state change as following:
