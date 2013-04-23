@@ -172,14 +172,17 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		String file = mService.getMediaFile(movie.Content);
 		String drmFile = mService.getDRMFile(movie.Content);
 
+		Log.d(TAG, " file = " + file);
+		
 		if (file == null || file.isEmpty()) {
 			alertFileNotExist();
-
+			mViewMask.setVisibility(View.GONE);
 			return;
 		}
 
 		if (drmFile != null && !drmFile.isEmpty() && !isSmartcardReady()) {
 			alertSmartcardInfo();
+			mViewMask.setVisibility(View.GONE);
 			return;
 		}
 

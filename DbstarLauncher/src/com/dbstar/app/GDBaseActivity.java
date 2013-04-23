@@ -109,6 +109,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	GDAlertDialog mAlertDlg = null, mSmartcardDlg = null;
 	int mAlertType = -1;
 
+	ImageView mStatusIndicatorView = null;
+
 	protected Handler mHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -161,6 +163,11 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected void initializeView() {
 		initializeMenuPath();
+		
+		mStatusIndicatorView = (ImageView) findViewById(R.id.status_indicator);
+		if (mStatusIndicatorView != null) {
+			mStatusIndicatorView.setVisibility(View.INVISIBLE);
+		}
 	}
 
 	protected void showMenuPath(String[] menuPath) {
@@ -241,6 +248,22 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		Intent intent = new Intent(GDAudioController.ActionMute);
 		intent.putExtra("key_mute", mute);
 		sendBroadcast(intent);
+		
+		if (mStatusIndicatorView != null) {
+			if (mute) {
+				mStatusIndicatorView.setImageResource(R.drawable.sound_mute);
+			} else {
+				mStatusIndicatorView.setImageResource(R.drawable.sound_unmute);
+			}
+
+			mStatusIndicatorView.setVisibility(View.VISIBLE);
+
+			mHandler.postDelayed(new Runnable() {
+				public void run() {
+					mStatusIndicatorView.setVisibility(View.INVISIBLE);
+				}
+			}, 2000);
+		}
 	}
 
 	public boolean isMute() {

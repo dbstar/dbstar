@@ -150,6 +150,9 @@ public class GDDBStarClient {
 	public String getTSSignalStatus() {
 		String status = null;
 
+		if (mDbstarService == null)
+			return status;
+
 		try {
 			Intent intent = mDbstarService.sendCommand(
 					DbstarServiceApi.CMD_DVBPUSH_GETTS_STATUS, null, 0);
@@ -173,6 +176,9 @@ public class GDDBStarClient {
 	public Object getSmartcardInfo(int type) {
 		Object data = null;
 
+		if (mDbstarService == null)
+			return data;
+
 		try {
 			Intent intent = mDbstarService.sendCommand(type, null, 0);
 
@@ -192,6 +198,9 @@ public class GDDBStarClient {
 
 	public String getEMailContent(String mailId) {
 		String content = null;
+
+		if (mDbstarService == null)
+			return content;
 
 		try {
 			Intent intent = mDbstarService.sendCommand(
@@ -217,7 +226,9 @@ public class GDDBStarClient {
 	
 	public String getPublicationDrmInfo(String publicationId) {
 		String content = null;
-
+		if (mDbstarService == null)
+			return content;
+		
 		try {
 			Intent intent = mDbstarService.sendCommand(
 					DbstarServiceApi.CMD_DRM_PVODPROGRAMINFO_READ, publicationId,
@@ -323,7 +334,9 @@ public class GDDBStarClient {
 	
 	public String getEthernetInfo() {
 		String info = null;
-
+		if (mDbstarService == null)
+			return info;
+		
 		try {
 			Intent intent = mDbstarService.sendCommand(
 					DbstarServiceApi.CMD_NETWORK_GETINFO, null,0);
@@ -348,6 +361,9 @@ public class GDDBStarClient {
 	public String manageCA(int cmd) {
 		String ret = null;
 
+		if (mDbstarService == null)
+			return ret;
+	
 		try {
 			Intent intent = mDbstarService.sendCommand(cmd, null, 0);
 

@@ -35,6 +35,17 @@
             android:scaleType="fitXY"
             android:src="@drawable/logo_guodian" />
         -->
+        
+        <ImageView
+            android:id="@+id/status_indicator"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="800dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/sound_mute" >
+        </ImageView>
 
         <TextView
             android:id="@+id/custom_service_hotline"

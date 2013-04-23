@@ -111,7 +111,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mFocusZoomIn, mGallerySlideToRightAnim, mGallerySlideToLeftAnim,
 			mGallerySlideToBottomAnim, mGallerySlideFromBottomAnim;
 	
-	
 	private boolean isAnimationRunning() {
 		boolean ret = mGallerySlideToRightAnim.hasStarted() && !mGallerySlideToRightAnim.hasEnded();
 		ret |= mGallerySlideToLeftAnim.hasStarted() && !mGallerySlideToLeftAnim.hasEnded();
@@ -198,7 +197,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mCelanderThread.setUpdate(true);
 	
 		turnOnMarqeeView(false);
-		showMarqueeView();		
+		showMarqueeView();
+		
+		resetMenuStack();
 	}
 
 	public void onStop() {
