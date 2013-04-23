@@ -126,6 +126,7 @@ public class PlayerActivity extends Activity {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_DIALOG_POPUP:
+				setOSDOn(true);
 				showMediaInfoDlg();
 				break;
 			case MSG_RESUME_DELAYED: {

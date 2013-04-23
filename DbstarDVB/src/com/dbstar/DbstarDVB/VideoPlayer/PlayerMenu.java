@@ -321,7 +321,7 @@ public class PlayerMenu extends PlayerActivity {
 
 //		setMute(false);
 		
-		showOSD(true);
+//		showOSD(true);
 	}
 
 	@Override
@@ -1795,7 +1795,7 @@ public class PlayerMenu extends PlayerActivity {
 		} else {
 			mOSDState = OSDShow;
 			showOSD(true);
-			Utils.writeSysfs(OSD_BLOCK_MODE_PATH, "0");
+//			Utils.writeSysfs(OSD_BLOCK_MODE_PATH, "0");
 			AmPlayer.setOSDOnFlag(true);
 		}
 	}
