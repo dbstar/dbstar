@@ -15,6 +15,8 @@ public class DbstarServiceApi {
 	public static final int DBSTAR_NOTIFY                   = 0xF0000;
 
 	/* COMMAND */
+	public static final int CMD_SYSTEM_AWAKE_TIMER	        = 0x00009;
+
 	public static final int CMD_NETWORK_DISCONNECT	        = 0x00010;
 	public static final int CMD_NETWORK_CONNECT             = 0x00011;
 	public static final int CMD_NETWORK_GETINFO             = 0x00012;
