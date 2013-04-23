@@ -699,10 +699,6 @@ public class PlayerActivity extends Activity {
 
 	}
 
-	public void exitPlayer() {
-	
-	}
-
 	// when FF/FB (Searching state), and replay, state change as following:
 	// searchOk -> playbackStart.
 	public void searchOk() {
