@@ -263,9 +263,7 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 		// real video on
 		else if (intent.getAction().equalsIgnoreCase(
 				SettingsCommon.ACTION_REALVIDEO_ON)) {
-			Utils.setValue(blankFb0File, "1"); // surfaceflinger will set back
-												// to
-												// 0
+			Utils.setValue(blankFb0File, "1"); //disable OSD.
 			String cur_mode = SystemProperties
 					.get(SettingsCommon.STR_OUTPUT_VAR);
 			Utils.setValue(PpscalerFile, "0");
@@ -290,12 +288,13 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 				// for setting blank to 0
 				Utils.setValue(request2XScaleFile, "16 1280 720");
 			}
+			Utils.setValue(blankFb0File, "0"); //enable OSD again.
 		}
 		// real video off
 		else if (intent.getAction().equalsIgnoreCase(
 				SettingsCommon.ACTION_REALVIDEO_OFF)) {
 			int[] curPosition = { 0, 0, 1280, 720 };
-			// surfaceflinger will set back to 0
+			//disenable OSD display.
 			Utils.setValue(blankFb0File, "1");
 			String cur_mode = SystemProperties
 					.get(SettingsCommon.STR_OUTPUT_VAR);
@@ -314,6 +313,8 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 					+ curPosition[1] + " "
 					+ (curPosition[2] + curPosition[0] - 1) + " "
 					+ (curPosition[3] + curPosition[1] - 1) + " " + 0);
+			//enable OSD display again.
+			Utils.setValue(blankFb0File, "0");
 		}
 		// change video position when disable freescale
 		else if (intent.getAction().equalsIgnoreCase(
