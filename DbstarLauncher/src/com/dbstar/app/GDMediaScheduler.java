@@ -35,6 +35,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	public static final int PLAYMEDIA_INTERVAL = 1000; // 1s
 	public static final int PLAYIMAGE_INTERVAL = 10000; // 10s
+	public static final int PLAYMEDIA_INTERVAL_WITHERROR = 60000;
 
 	public static final int PLAYER_STATE_NONE = -2;
 	public static final int PLAYER_STATE_IDLE = 0;
@@ -118,6 +119,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mResourcesReady = false;
 		mResources = null;
 		mResourceIndex = -1;
+		clearStoreState();
 		mService.getPreviews(this);
 	}
 
@@ -201,8 +203,12 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	public void onCompletion(MediaPlayer mp) {
 		Log.d(TAG, "onCompletion");
 
+		if (mCurrentState.PlayerState == PLAYER_STATE_ERROR) {
+			mHandler.postDelayed(mUpdateTimeTask, PLAYMEDIA_INTERVAL_WITHERROR);
+		} else {
+			mHandler.postDelayed(mUpdateTimeTask, PLAYMEDIA_INTERVAL);
+		}
 		mCurrentState.PlayerState = PLAYER_STATE_COMPLETED;
-		mHandler.postDelayed(mUpdateTimeTask, PLAYMEDIA_INTERVAL);
 	}
 
 	public void playMedia() {
@@ -370,16 +376,18 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mResourceIndex = mResourceIndex % mResources.length;
 
 		Log.d(TAG, "fetch resource mResourceIndex = " + mResourceIndex);
+		
+		return true;
 
-		boolean successed = false;
-		File file = new File(mResources[mResourceIndex].FileURI);
-		if (file.exists()) {
-			successed = true;
-
-			Log.d(TAG, "file url " + file.getAbsolutePath() + " exist!");
-		}
-
-		return successed;
+//		boolean successed = false;
+//		File file = new File(mResources[mResourceIndex].FileURI);
+//		if (file.exists()) {
+//			successed = true;
+//
+//			Log.d(TAG, "file url " + file.getAbsolutePath() + " exist!");
+//		}
+//
+//		return successed;
 	}
 
 	public void resume() {
