@@ -3,7 +3,6 @@
 
 int receive_status_get();
 int motherdisc_processing();
-int motherdisc_init();
-int motherdisc_process();
+int motherdisc_parse();
 
 #endif

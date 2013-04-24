@@ -1313,7 +1313,7 @@ int sqlite_transaction_end(int commit_flag)
 {
 	int ret = -1;
 	
-	PRINTF("sqlite_transaction_end %s\n", 1==commit_flag?"commit <<>>":"<< rollback");
+	PRINTF("sqlite_transaction_end %d %s\n", s_sql_status, 1==commit_flag?"commit <<>>":"<< rollback");
 	if(SQL_STATUS_TRANS!=s_sql_status){
 		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
 		ret = -1;
@@ -1339,6 +1339,8 @@ int sqlite_transaction_end(int commit_flag)
 		
 		s_sql_status = SQL_STATUS_IDLE;
 	}
+	PRINTF("sqlite_transaction_end %d\n", s_sql_status);
+	
 	
 	return ret;
 }

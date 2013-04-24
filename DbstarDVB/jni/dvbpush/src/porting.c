@@ -1656,6 +1656,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				else{
 					s_PushDir_usable = 1;
 					DEBUG("HardDisc enable\n");
+					
 					maintenance_thread_awake();
 				}
 			}

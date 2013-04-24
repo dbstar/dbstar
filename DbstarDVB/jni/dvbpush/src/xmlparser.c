@@ -7,6 +7,11 @@
 #include <libxml/parser.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 #include "common.h"
 #include "xmlparser.h"
@@ -379,8 +384,22 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	由于母盘初始化是直接通过代码驱动解析，解析完ProductDesc.xml后接着就解析相应节目的描述文件。在解析节目描述文件时还要判断产品。
 	*/
 	if(1==motherdisc_processing()){
-		DEBUG("in motherdisc processing, make receive_status as RECEIVESTATUS_WAITING\n");
-		receive_status = RECEIVESTATUS_WAITING;
+		struct stat filestat;
+		char desc_direct_uri[1024];
+		
+		snprintf(desc_direct_uri,sizeof(desc_direct_uri),"%s/%s", push_dir_get(),ptr->DescURI);
+		
+		// check ContentDelivery.xml for mother disc
+		int stat_ret = stat(desc_direct_uri, &filestat);
+		if(0==stat_ret){
+			DEBUG("in motherdisc processing, make receive_status as RECEIVESTATUS_WAITING, %s\n", desc_direct_uri);
+			receive_status = RECEIVESTATUS_WAITING;
+		}
+		else{
+			ERROROUT("can not stat(%s)\n", desc_direct_uri);
+			DEBUG("this Publication(%s) is not exist\n", desc_direct_uri);
+			receive_status = RECEIVESTATUS_REJECT;
+		}
 	}
 	
 	if(RECEIVESTATUS_WAITING==receive_status){
@@ -618,7 +637,21 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 // 不搞那么复杂，母盘解析时所有节目都正常展示
 		receive_status_tmp = receive_status_get();
 #endif
-		DEBUG("I am in mother disc processing status, and should monitor the ReceiveStatus\n");
+		struct stat filestat;
+		char ts_direct_uri[1024];
+		
+		snprintf(ts_direct_uri,sizeof(ts_direct_uri),"%s/%s", push_dir_get(),p->FileURI);
+		
+		// check ContentDelivery.xml for mother disc
+		int stat_ret = stat(ts_direct_uri, &filestat);
+		if(0==stat_ret){
+			DEBUG("in mother disc processing status, %s is exist\n",p->FileURI);
+		}
+		else{
+			ERROROUT("can not stat(%s)\n", ts_direct_uri);
+			DEBUG("in mother disc processing status, %s is NOT exist, return and do nothing\n",p->FileURI);
+			return -1;
+		}
 	}
 	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Publication SET PublicationType='%s',IsReserved='%s',Visible='%s',DRMFile='%s',FileID='%s',FileSize='%s',FileURI='%s',FileType='%s',Duration='%s',Resolution='%s',BitRate='%s',FileFormat='%s',CodeFormat='%s',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%s';",
@@ -1335,7 +1368,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					memset(&product_service_s, 0, sizeof(product_service_s));
 					parseProperty(cur, new_xmlroute, (void *)&product_service_s);
 					
-					if(0==ProductID_check(product_service_s.productID)){
+					if(1==motherdisc_processing() || 0==ProductID_check(product_service_s.productID)){
 						DEBUG("detect valid productID: %s\n", product_service_s.productID);
 						s_detect_valid_productID = 1;
 						DBSTAR_GLOBAL_S global_s;
@@ -2246,7 +2279,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 					
-					if(0==ProductID_check(p->productID)){
+					if(1==motherdisc_processing() || 0==ProductID_check(p->productID)){
 						DEBUG("I'll receive productID: %s\n", p->productID);
 						if(product_preview_check_in_trans(p->productID)>0){
 							DEBUG("Product(%s) in ProductDesc is a Preview, refresh ReceiveType as %d\n", p->productID,RECEIVETYPE_PREVIEW);
@@ -2401,16 +2434,26 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(tmp_URI,sizeof(tmp_URI),"%s",(char *)szKey);
 					xmlFree(szKey);
+					
 					snprintf(p->URI,sizeof(p->URI),"%s",p->rootPath);
 					if('/'!=tmp_URI[0])
 						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
 					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
 					
-					// 显式清理本目录，避免本次判断接收进度异常
-					char absolute_sproduct_uri[512];
-					snprintf(absolute_sproduct_uri,sizeof(absolute_sproduct_uri),"%s/%s", push_dir_get(),p->URI);
-					DEBUG("clear %s for this receive task\n", absolute_sproduct_uri);
-					remove_force(absolute_sproduct_uri);
+					/*
+					比较操蛋，有时tmp_URI长度为0，p->URI指向pushroot/pushinfo目录，导致直接删除了所有信息文件。
+					只有在非母盘状态下才需要删除旧目录
+					*/
+					if(strlen(tmp_URI)>0 && 0==motherdisc_processing()){
+						// 显式清理本目录，避免本次判断接收进度异常
+						char absolute_sproduct_uri[512];
+						snprintf(absolute_sproduct_uri,sizeof(absolute_sproduct_uri),"%s/%s", push_dir_get(),p->URI);
+						DEBUG("3333 clear %s for this receive task\n", absolute_sproduct_uri);
+						remove_force(absolute_sproduct_uri);
+					}
+					else{
+						DEBUG("shit tmp_URI=%s, p->URI=%s, motherdisc_processing()=%d, can not remove\n", tmp_URI, p->URI, motherdisc_processing());
+					}
 				}
 				
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveColumn")){
@@ -2470,11 +2513,16 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"/");
 					snprintf(p->URI+strlen(p->URI),sizeof(p->URI)-strlen(p->URI),"%s",tmp_URI);
 					
-					// 显式清理本目录。如果前一次Column解析失败，会留下残留文件，引起本次判断接收进度异常
-					char absolute_column_uri[512];
-					snprintf(absolute_column_uri,sizeof(absolute_column_uri),"%s/%s", push_dir_get(),p->URI);
-					DEBUG("clear %s for this receive task\n", absolute_column_uri);
-					remove_force(absolute_column_uri);
+					if(strlen(tmp_URI)>0 && 0==motherdisc_processing()){
+						// 显式清理本目录。如果前一次Column解析失败，会留下残留文件，引起本次判断接收进度异常
+						char absolute_column_uri[512];
+						snprintf(absolute_column_uri,sizeof(absolute_column_uri),"%s/%s", push_dir_get(),p->URI);
+						DEBUG("clear %s for this receive task\n", absolute_column_uri);
+						remove_force(absolute_column_uri);
+					}
+					else{
+						DEBUG("shit tmp_URI=%s, p->URI=%s, motherdisc_processing()=%d, can not remove\n", tmp_URI, p->URI, motherdisc_processing());
+					}
 				}
 			}
 			
@@ -3017,15 +3065,24 @@ PARSE_XML_END:
 			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
 		}
 		else if(PRODUCTDESC_XML==actual_xml_flag){	//  || SERVICE_XML==actual_xml_flag 只接收本service的播发单数据，无需根据Service.xml进行刷新
-			DEBUG("refresh push monitor because of xml %d\n", actual_xml_flag);
-			
-			push_recv_manage_refresh();
+			if(1==motherdisc_processing()){
+				DEBUG("in mother disc processing, do nothing after PRODUCTDESC_XML parsed\n");
+			}
+			else{
+				DEBUG("refresh push monitor because of xml %d\n", actual_xml_flag);		
+				push_recv_manage_refresh();
+			}
 		}
 		else if(INITIALIZE_XML==actual_xml_flag){
 			pid_init(1);
 			channel_ineffective_clear();
 			
-			info_xml_regist();
+			if(1==motherdisc_processing()){
+				DEBUG("in mother disc processing, do nothing after INITIALIZE_XML parsed\n");
+			}
+			else{
+				info_xml_regist();
+			}
 		}
 		else if(SERVICE_XML==actual_xml_flag){
 		}

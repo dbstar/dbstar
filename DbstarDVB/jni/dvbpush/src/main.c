@@ -13,7 +13,6 @@
 #include "timeprint.h"
 #include "dvbpush_api.h"
 #include "drmapi.h"
-#include "motherdisc.h"
 
 #define DVB_TEST_ENABLE 0
 static int s_dvbpush_init_flag = 0;
@@ -31,8 +30,6 @@ void *main_thread()
 	compile_timeprint();
         
 	_wLBM_zyzdmb(13578642);
-   	
-   	motherdisc_init();
    	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
@@ -58,11 +55,6 @@ void *main_thread()
 		//return NULL;
 	}
 	
-	if(1==motherdisc_processing()){
-		DEBUG("\n\n do mother disc process\n\n\n");
-		motherdisc_process();
-		return NULL;
-	}
 //	return parse_xml("pushroot/pushinfo/1/ProductDesc.xml", PRODUCTDESC_XML, NULL);
 	
 	if(0!=drm_init()){
@@ -78,10 +70,13 @@ DEBUG("\n\nWarning: you call function CDCASTB_FormatBuffer, it is an unnormal ac
 CDCASTB_FormatBuffer();
 #endif
 
+#if 0
+为避免push系统默认接收Initialize.xml将母盘中的此文件覆盖，只在检查母盘初始化后才初始化push模块
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
 		//return NULL;
 	}
+#endif
 	
 	if(-1==igmp_init()){
 		DEBUG("igmp init failed\n");

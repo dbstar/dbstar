@@ -35,6 +35,7 @@
 #include "sqlite.h"
 #include "dvbpush_api.h"
 #include "multicast.h"
+#include "motherdisc.h"
 
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (60000)		//定义缓冲区大小，单位：包
@@ -102,6 +103,7 @@ static int s_column_refresh = 0;
 static int s_interface_refresh = 0;
 static int s_preview_refresh = 0;
 static int s_push_regist_inited = 0;
+static int s_motherdisc_init_flag = 0;
 
 
 /*
@@ -239,7 +241,7 @@ rewake:
 	while (1==s_decoder_running && NULL!=g_recvBuffer)
 	{
 		len = g_recvBuffer[rindex].m_len;
-		if(len && 1==pushdir_usable())
+		if(len && 1==pushdir_usable())	//  && 0==motherdisc_processing()只在检查完母盘初始化后才启动push模块，所以不用担心在这里引起母盘中Initialize或其他xml被下载的xml覆盖
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
@@ -343,13 +345,16 @@ int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_e
 	char sqlite_cmd[512];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
 	int ret = sqlite_execute(sqlite_cmd);
-	
+
+#if 0
+母盘解析时，arg_ext为空，导致试图删除/mnt/sda1
 	if(COLUMN_XML==push_flag){
 		char reject_uri[512];
 		snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),arg_ext);
 		remove_force(reject_uri);
 		DEBUG("remove(%s) finished\n", reject_uri);
 	}
+#endif
 	
 	return ret;
 }
@@ -666,8 +671,21 @@ void *maintenance_thread()
 			s_disk_manage_flag = 0;
 		}
 		
+		// 硬盘挂载后才能开始检查是否需要母盘初始化
+		if(0==s_motherdisc_init_flag && 1==pushdir_usable()){
+			s_motherdisc_init_flag = 1;
+			
+			DEBUG("need do mother disc process\n");
+			motherdisc_process();
+		}
+		
 		if(0==s_push_regist_inited && 1==pushdir_usable()){
 			s_push_regist_inited = 1;
+			
+			if(-1==mid_push_init(PUSH_CONF)){
+				DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
+				//return NULL;
+			}
 			push_regist_init();
 		}
 	}
