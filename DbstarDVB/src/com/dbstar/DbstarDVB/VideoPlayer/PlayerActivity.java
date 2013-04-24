@@ -126,7 +126,7 @@ public class PlayerActivity extends Activity {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_DIALOG_POPUP:
-				setOSDOn(true);
+//				setOSDOn(true);
 				showMediaInfoDlg();
 				break;
 			case MSG_RESUME_DELAYED: {
@@ -284,6 +284,7 @@ public class PlayerActivity extends Activity {
 		@Override
 		public void onShow(DialogInterface dialog) {
 			if (dialog instanceof DbVideoInfoDlg) {
+				setOSDOn(true);
 				if (mSmartcardDialog != null && mSmartcardDialog.isShowing()) {
 					Log.d(TAG, " ========= hide vido info dlg =====");
 					mVideoInfoDlg.dismiss();
