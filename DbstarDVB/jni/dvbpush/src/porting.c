@@ -1589,11 +1589,13 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 			}
 			else{
 				DEBUG("get difftime failed\n");
+				system_awake_timer = 3600;
 				ret = -1;
 			}
 		}
 		else{
 			DEBUG("get next_push_datetime failed\n");
+			system_awake_timer = 3600;
 			ret = -1;
 		}
 	}
