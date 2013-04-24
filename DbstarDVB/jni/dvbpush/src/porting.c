@@ -1584,6 +1584,7 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 			DEBUG("do sqlite cmd: %s\n", sqlite_cmd);
 			if(0==str_sqlite_read(sql_readstr,sizeof(sql_readstr),sqlite_cmd)){
 				system_awake_timer = atoi(sql_readstr);
+				system_awake_timer -= 600;
 				DEBUG("get difftime %s(%d) secs\n",sql_readstr,system_awake_timer);
 				ret = 0;
 			}
