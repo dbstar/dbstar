@@ -577,8 +577,15 @@ static ssize_t show_alarm(struct class *class, struct class_attribute *attr, cha
     ret = rtc_tm_to_time(&cur_time, &cur_secs);
     printk("[RTC] alarm secs:   %ld\n", s_alarm_secs);
     printk("[RTC] current secs: %ld\n", cur_secs);
+
+    if (s_alarm_secs > cur_secs) {
+        sprintf(buf, "%d", s_alarm_secs - cur_secs);
+    } else {
+        sprintf(buf, "0");
+    }
+    ret = strlen(buf);
     
-    return 0;
+    return ret;
 }
 
 static ssize_t store_alarm(struct class *class, struct class_attribute *attr, const char *buf, size_t count)

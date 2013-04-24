@@ -56,8 +56,11 @@ public class GDDataProviderService extends Service {
 
 	private static final String TAG = "GDDataProviderService";
 
-	public static final int MESSAGE_POWERON = 0x1;
-	public static final int MESSAGE_POWEROFF = 0x2;
+	public static final int POWERMANAGER_MSG_POWERKEY = 0x1;
+	public static final int POWERMANAGER_MODE_RUNNING = 0x101;
+	public static final int POWERMANAGER_MODE_SCREENOFF = 0x102;
+	public static final int POWERMANAGER_MODE_SLEEP = 0x103;
+	public static final int POWERMANAGER_UPDATE_INTERVAL = 600000;
 
 	public static final int REQUESTTYPE_GETCOLUMNS = 0x1001;
 	public static final int REQUESTTYPE_GETPUBLICATION = 0x1002;
@@ -154,6 +157,8 @@ public class GDDataProviderService extends Service {
 	private GDPowerManager mPowerManager;
     private HandlerThread mPowerThread = null;
 	private Handler mPowerHandler = null;
+    private PowerTask mPowerTask = null;
+
     private int mSleepMode = 0;
 
 	private GDEngine mGuodianEngine;
@@ -223,10 +228,12 @@ public class GDDataProviderService extends Service {
 		mMainThreadPriority = Process.getThreadPriority(mMainThreadId);
 
 		// create power manager thread
+		mSleepMode = POWERMANAGER_MODE_RUNNING;
 		mPowerManager = new GDPowerManager();
 		mPowerThread = new HandlerThread("PowerManager", Process.THREAD_PRIORITY_BACKGROUND);
 		mPowerThread.start();
 		mPowerHandler = new PowerEventHandler(mPowerThread.getLooper());
+		mPowerTask = new PowerTask();
 
 		mHandler = new SystemEventHandler();
 
@@ -428,6 +435,18 @@ public class GDDataProviderService extends Service {
 		SystemUtils.stopSmartHomeServer();
 	}
 
+	private void startPowerTask() {
+		if (mPowerHandler != null) {
+			mPowerHandler.postDelayed(mPowerTask, POWERMANAGER_UPDATE_INTERVAL);
+		}
+	}
+
+	private void stopPowerTask() {
+		if (mPowerHandler != null) {
+			mPowerHandler.removeCallbacks(mPowerTask);
+		}
+	}
+
 	class PowerEventHandler extends Handler {
 		public PowerEventHandler(Looper looper) {
 			super(looper);
@@ -435,16 +454,34 @@ public class GDDataProviderService extends Service {
 		public void handleMessage(Message msg) {
 			int msgId = msg.what;
 			switch (msgId) {
-			case MESSAGE_POWERON:
+			case POWERMANAGER_MSG_POWERKEY:
 				Log.d(TAG, "sendKey(KEYCODE_POWER)");
 				Instrumentation inst = new Instrumentation();
 				inst.sendKeyDownUpSync(KeyEvent.KEYCODE_POWER);
 				break;
-			case MESSAGE_POWEROFF:
-				break;
 			default:
 				break;
 			}
+		}
+	}
+
+	class PowerTask implements Runnable {
+		public void run() {
+			Log.d(TAG, "--- PowerTask() ---");
+			if (mPowerHandler == null) {
+				return;
+			}
+
+			if (mSleepMode == POWERMANAGER_MODE_SCREENOFF) {
+				int secs = getWakeupTime();
+				if (secs > 0) {
+					Log.d(TAG, "--- PowerMode: SCREENOFF-->SLEEP, alarm=" + secs);
+					mSleepMode = POWERMANAGER_MODE_SLEEP;
+					mPowerManager.setAlarm(secs);
+					mPowerManager.releaseWakeLock();
+				}
+			}
+			mPowerHandler.postDelayed(mPowerTask, POWERMANAGER_UPDATE_INTERVAL);
 		}
 	}
 
@@ -2290,37 +2327,42 @@ public class GDDataProviderService extends Service {
 		}
 	}
 
-	int getPushTime() {
-		// TODO
+	int getWakeupTime() {
 		int secs = 0;
+        secs = mDBStarClient.getWakeupTime();
+        Log.d(TAG, "-------- getWakeupTime(), secs= " + secs);
 		return secs;
 	}
 
 	void setSleepMode(boolean on) {
 		Log.d(TAG, "SLEEPMODE --- screenOn: " + on);
 		if (on) {
-			mPowerManager.clearAlarm();
-			mPowerManager.releaseWakeLock();
-			if (mSleepMode == 1) {
-				Log.d(TAG, "SLEEPMODE(2) --- sleep again");
-				mSleepMode = 2;
-				Message msg = mPowerHandler.obtainMessage(MESSAGE_POWERON);
-				msg.sendToTarget();
+			if (mSleepMode == POWERMANAGER_MODE_SCREENOFF) {
+				Log.d(TAG, "--- PowerMode: SCREENOFF-->RUNNING");
+				mSleepMode = POWERMANAGER_MODE_RUNNING;
+				mPowerManager.clearAlarm();
+				stopPowerTask();
+			} else if (mSleepMode == POWERMANAGER_MODE_SLEEP) { 
+				if (mPowerManager.getAlarm() > 0) {
+					Log.d(TAG, "--- PowerMode: SLEEP-->RUNNING");
+					mSleepMode = POWERMANAGER_MODE_RUNNING;
+					mPowerManager.clearAlarm();
+					stopPowerTask();
+				} else {
+					Log.d(TAG, "--- PowerMode: SLEEP-->SCREENOFF");
+					Message msg = mPowerHandler.obtainMessage(POWERMANAGER_MSG_POWERKEY);
+					msg.sendToTarget();
+				}
 			}
 		} else {
-			int secs = getPushTime();
-			if (secs > 0) {
-				if (mSleepMode == 0) {
-					mPowerManager.setAlarm(secs);
-					Log.d(TAG, "SLEEPMODE(1) --- DeepSleep, alarm=" + secs);
-					mSleepMode = 1;
-				} else if (mSleepMode == 2) {
-					mPowerManager.acquirePartialWakeLock(this);
-					mSleepMode = 0;
-					Log.d(TAG, "SLEEPMODE(0)");
-				} else {
-				}
-			} else {
+			if (mSleepMode == POWERMANAGER_MODE_RUNNING) {
+				Log.d(TAG, "--- PowerMode: RUNNING-->SCREENOFF");
+				mSleepMode = POWERMANAGER_MODE_SCREENOFF;
+				mPowerManager.acquirePartialWakeLock(this);
+				startPowerTask();
+			} else if (mSleepMode == POWERMANAGER_MODE_SLEEP) {
+				Log.d(TAG, "--- PowerMode: SLEEP-->SCREENOFF");
+				mSleepMode = POWERMANAGER_MODE_SCREENOFF;
 				mPowerManager.acquirePartialWakeLock(this);
 			}
 		}

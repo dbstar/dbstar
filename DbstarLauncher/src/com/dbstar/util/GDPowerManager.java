@@ -49,6 +49,11 @@ public class GDPowerManager {
 		}
 	}
 
+	public int getAlarm() {
+		String str = FileOperation.read(ALARM_PATH);
+		return Integer.parseInt(str);
+	}
+
 	public void setAlarm(int seconds) {
 		FileOperation.write(ALARM_PATH, Integer.toString(seconds));
 	}

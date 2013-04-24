@@ -383,6 +383,31 @@ public class GDDBStarClient {
 		return ret;
 	}
 
+	public int getWakeupTime() {
+		int secs = 0;
+
+		if (mDbstarService == null)
+			return secs;
+	
+		try {
+			Intent intent = mDbstarService.sendCommand(DbstarServiceApi.CMD_SYSTEM_AWAKE_TIMER, null, 0);
+
+			byte[] bytes = intent.getByteArrayExtra("result");
+
+			if (bytes != null) {
+				try {
+                    secs = Integer.parseInt(new String(bytes, "utf-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+		return secs;
+	}
+
 	// data format: "1001|task1|23932|23523094823\n1002|task2|234239|12349320\n"
 
 	public ReceiveData getTaskInfo() {
