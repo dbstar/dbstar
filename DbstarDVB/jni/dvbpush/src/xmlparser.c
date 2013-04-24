@@ -112,7 +112,7 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 		return -1;
 	
 	if(PUBLICATION_XML==atoi(xmlinfo->PushFlag) || COLUMN_XML==atoi(xmlinfo->PushFlag) || SPRODUCT_XML==atoi(xmlinfo->PushFlag)){
-		DEBUG("this xml [%s] is controled by column 'Parsed' in table ProductDesc, don't insert to table Initialize\n",xmlinfo->PushFlag);
+		PRINTF("this xml [%s] is controled by column 'Parsed' in table ProductDesc, don't insert to table Initialize\n",xmlinfo->PushFlag);
 		return 0;
 	}
 	
@@ -645,7 +645,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 		// check ContentDelivery.xml for mother disc
 		int stat_ret = stat(ts_direct_uri, &filestat);
 		if(0==stat_ret){
-			DEBUG("in mother disc processing status, %s is exist\n",p->FileURI);
+			PRINTF("in mother disc processing status, %s is exist\n",p->FileURI);
 		}
 		else{
 			ERROROUT("can not stat(%s)\n", ts_direct_uri);

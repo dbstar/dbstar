@@ -482,6 +482,38 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 	return 0;
 }
 
+/*
+ 检查是否下载完毕
+ return 0 —— 正在下载；1 —— 下载完毕
+*/
+int dvbpush_download_finish()
+{
+	int i = 0;
+	int finish_flag = 1;
+	
+	if(s_push_monitor_active>0){
+		for(i=0; i<PROGS_NUM; i++)
+		{
+			if(-1==prog_is_valid(&s_prgs[i]))
+				continue;
+			
+			// 很多时候特殊产品SProduct就没有下发，但在播发单中存在，因此这里只判断普通成品、栏目和小片
+			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type || RECEIVETYPE_COLUMN==s_prgs[i].type || RECEIVETYPE_PREVIEW==s_prgs[i].type){
+				if(s_prgs[i].cur!=s_prgs[i].total){
+					DEBUG("at least, this prog is downloading: %s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur,s_prgs[i].total);
+					finish_flag = 0;
+					break;
+				}
+			}
+		}
+	}
+	else{
+		DEBUG("no program in monitor, s_push_monitor_active=%d\n", s_push_monitor_active);
+	}
+	
+	return finish_flag;
+}
+
 #if 0
 /*
  返回1表示过期，0表示时间相等，-1表示不过期，-2表示其他错误

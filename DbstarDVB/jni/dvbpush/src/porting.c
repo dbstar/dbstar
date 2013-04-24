@@ -1566,6 +1566,52 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 }
 #endif
 
+static int system_awake_timer_get(char *buf, unsigned int bufsize)
+{
+	char sqlite_cmd[1024];
+	char sql_readstr[64];
+	int system_awake_timer = 0;
+	int ret = 0;
+	
+	if(1==dvbpush_download_finish()){
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DateValue FROM GuideList WHERE DateValue>=datetime('now','localtime','+1 day','start of day') OR DateValue=date('now','localtime','+1 day','start of day') ORDER BY DateValue LIMIT 1;");
+		memset(sql_readstr,0,sizeof(sql_readstr));
+		if(0==str_sqlite_read(sql_readstr,sizeof(sql_readstr),sqlite_cmd)){
+			DEBUG("get next_push_datetime %s\n",sql_readstr);
+			
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT strftime(\'%%s\','%s')-strftime(\'%%s\',datetime('now','localtime'));", sql_readstr);
+			memset(sql_readstr,0,sizeof(sql_readstr));
+			DEBUG("do sqlite cmd: %s\n", sqlite_cmd);
+			if(0==str_sqlite_read(sql_readstr,sizeof(sql_readstr),sqlite_cmd)){
+				system_awake_timer = atoi(sql_readstr);
+				DEBUG("get difftime %s(%d) secs\n",sql_readstr,system_awake_timer);
+				ret = 0;
+			}
+			else{
+				DEBUG("get difftime failed\n");
+				ret = -1;
+			}
+		}
+		else{
+			DEBUG("get next_push_datetime failed\n");
+			ret = -1;
+		}
+	}
+	else{
+		DEBUG("downloading\n");
+		system_awake_timer = 0;
+	}
+	
+	if(system_awake_timer<=600)	// 小于等于10分钟的唤醒时间均为无效值
+		snprintf(buf,bufsize,"0");
+	else if(system_awake_timer>864000)	//大于10天的唤醒时间修正为一天
+		snprintf(buf,bufsize,"86400");
+	else
+		snprintf(buf,bufsize,"%d",system_awake_timer);
+	
+	return ret;
+}
+
 static int smarthome_reset()
 {
 	char sqlite_cmd[512];
@@ -1823,8 +1869,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_SYSTEM_AWAKE_TIMER:
 			DEBUG("CMD_SYSTEM_AWAKE_TIMER\n");
-			memset(s_jni_cmd_system_awake_timer,0,sizeof(s_jni_cmd_system_awake_timer));
-			snprintf(s_jni_cmd_system_awake_timer,sizeof(s_jni_cmd_system_awake_timer),"600");
+			system_awake_timer_get(s_jni_cmd_system_awake_timer,sizeof(s_jni_cmd_system_awake_timer));
+			DEBUG("s_jni_cmd_system_awake_timer=%s,len=%d\n", s_jni_cmd_system_awake_timer,strlen(s_jni_cmd_system_awake_timer));
 			*buf = s_jni_cmd_system_awake_timer;
 			*len = strlen(s_jni_cmd_system_awake_timer);
 			break;
