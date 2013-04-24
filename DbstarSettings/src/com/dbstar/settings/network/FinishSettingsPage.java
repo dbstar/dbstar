@@ -55,11 +55,14 @@ public class FinishSettingsPage extends BaseFragment {
 	}
 
 	void configureTimeout() {
-		mEthernetStateView.setText(getStringFromResource(
-				R.string.network_channel_cable, R.string.network_setup_failed));
-		mWifiStateView.setText(getStringFromResource(
-				R.string.network_channel_wireless,
-				R.string.network_setup_failed));
+		if (getWifiState() != State.CONNECTED)
+			mWifiStateView.setText(getStringFromResource(
+					R.string.network_channel_wireless,
+					R.string.network_setup_failed));
+		if (getEthernetState() != State.CONNECTED)
+			mEthernetStateView.setText(getStringFromResource(
+					R.string.network_channel_cable,
+					R.string.network_setup_failed));
 		stopTimer();
 	}
 
