@@ -1,6 +1,10 @@
 package com.dbstar.guodian.app.mypower;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,6 +23,7 @@ import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.guodian.egine.GDConstract;
 import com.dbstar.model.EventData;
+import com.dbstar.util.DateUtil;
 import com.dbstar.widget.text.ScrollingMovementMethod;
 import com.dbstar.guodian.data.Notice;
 
@@ -198,8 +203,8 @@ public class GDNoticeActivity extends GDBaseActivity {
 
 		if (type == GDConstract.DATATYPE_NOTICES) {
 			ArrayList<Notice> notices = (ArrayList<Notice>) data;
+			sortList(notices);
 			constructPages(notices);
-
 			displayPage(mPageNumber);
 		}
 	}
@@ -259,8 +264,8 @@ public class GDNoticeActivity extends GDBaseActivity {
 			mTitle.setText(notice.Title);
 			mContent.setText(notice.Content);
 			mContent.setFocusableInTouchMode(true);
-			mContent.setFocusable(true);
-			mContent.requestFocus();
+            mContent.setFocusable(true);
+            mContent.requestFocus();
 			mListContainer.setVisibility(View.GONE);
 			mDetailContainer.setVisibility(View.VISIBLE);
 			mViewMode = MODE_DETAIL;
@@ -336,4 +341,18 @@ public class GDNoticeActivity extends GDBaseActivity {
 			return convertView;
 		}
 	}
+	
+	private void sortList(List<Notice> list){
+        Collections.sort(list, new Comparator<Notice>() {
+
+            @Override
+            public int compare(Notice lhs, Notice rhs) {
+            Date ld =  DateUtil.getDateFromStr(lhs.Date, DateUtil.DateFormat1);
+            Date rd = DateUtil.getDateFromStr(rhs.Date, DateUtil.DateFormat1);
+            Long lhsTime = ld.getTime();
+            Long rhsTime = rd.getTime();
+              return rhsTime.compareTo(lhsTime);
+            }
+        });
+    }
 }

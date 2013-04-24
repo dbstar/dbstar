@@ -30,11 +30,12 @@
                 android:orientation="horizontal" >
 
                 <TextView
+                    android:id="@+id/mypower_cost_cycletype"
                     android:layout_width="210dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="left|center_vertical"
                     android:gravity="left|center_vertical"
-                    android:text="@string/mypower_text_yearpowercost"
+                    android:text="@string/mypower_text_monthpowercost"
                     android:textColor="#000000"
                     android:textSize="20sp"
                     android:textStyle="italic" />
@@ -70,12 +71,13 @@
                 android:orientation="horizontal" >
 
                 <TextView
+                    android:id="@+id/mypower_amount_cycletype"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="left|center_vertical"
                     android:gravity="left|center_vertical"
                     android:paddingLeft="16dp"
-                    android:text="@string/mypower_text_yearpoweramount"
+                    android:text="@string/mypower_text_monthpoweramount"
                     android:textColor="#000000"
                     android:textSize="20sp"
                     android:textStyle="italic" />
@@ -207,8 +209,7 @@
                 android:rotation="0"
                 android:src="@drawable/timingpower_panel_shadow"
                 android:transformPivotX="66dp"
-                android:transformPivotY="23dp" />
-        -->
+                android:transformPivotY="23dp" />        -->
 
         <com.dbstar.widget.GDArcView
             android:id="@+id/timingpower_periodpointer"
@@ -219,7 +220,7 @@
             android:layout_marginLeft="44dp"
             app:circleRadius="184"
             app:startAngle="180"
-            app:sweepAngle="90"
+            app:sweepAngle="0"
             app:color="#add05f" />
 
         <!--
@@ -232,8 +233,7 @@
                 android:layout_marginTop="30dp"
                 android:text="@string/demo_str_3"
                 android:textColor="#ba4710"
-                android:textSize="12sp" />
-        -->
+                android:textSize="12sp" />        -->
 
         <com.dbstar.widget.GDCircleTextView
             android:id="@+id/timingppower_step"
@@ -345,10 +345,47 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="100dp"
         android:layout_marginLeft="260dp" >
+        
+        <LinearLayout 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="80dp"
+            >
+             <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:gravity="left|center_vertical"
+                    android:text="@string/mypower_text_alldevicepoweramount"
+                    android:textColor="#ffffff"
+                    android:textSize="18sp" />
 
-        <TextView
+                <TextView
+                    android:id="@+id/mypower_allamount"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/orange"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left"
+                    android:text="@string/str_degree"
+                    android:textColor="#ffffff"
+                    android:textSize="18sp" />
+            
+		        <Button
+		            android:id="@+id/mypower_query_button"
+		            android:layout_width="160dp"
+		            android:layout_height="45dp"
+		            android:layout_marginLeft="80dp"
+		            android:background="@drawable/querypower_btn_bg_selector" />
+        </LinearLayout>
+        
+     <!--    <TextView
             android:id="@+id/mypower_smartsocket_data_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -424,17 +461,8 @@
                     android:textColor="#ffffff"
                     android:textSize="18sp" />
             </TableRow>
-        </TableLayout>
+        </TableLayout> -->
 
-        <Button
-            android:id="@+id/mypower_query_button"
-            android:layout_width="160dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/mypower_smartsocket_data_title"
-            android:layout_marginLeft="80dp"
-            android:layout_marginTop="20dp"
-            android:layout_toRightOf="@id/powerdata_view"
-            android:background="@drawable/querypower_btn_bg" />
     </RelativeLayout>
 
 </RelativeLayout>

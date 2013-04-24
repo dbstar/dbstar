@@ -42,9 +42,9 @@ public class GDMypowerActivity extends GDEngineActivity {
 
 	private void openPage(int priceType, Bundle args) {
 		String fragmentName = null;
-		if (mPriceType == GDConstract.PriceTypeStep) {
+		if (mPriceType == GDConstract.PriceTypeStep ||mPriceType == GDConstract.PriceTypeSingle) {
 			fragmentName = "com.dbstar.guodian.app.mypower.GDStepPowerFragment";
-		} else if (mPriceType == GDConstract.PriceTypeStepPlusTiming) {
+		} else if (mPriceType == GDConstract.PriceTypeStepPlusTiming || mPriceType == GDConstract.PriceTypeTiming) {
 			fragmentName = "com.dbstar.guodian.app.mypower.GDTimingStepPowerFragment";
 		} else {
 			return;

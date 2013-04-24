@@ -39,7 +39,12 @@ public class GDArcView extends View {
 		mSweepAngle = angle;
 		invalidate();
 	}
-
+	
+	public void setSweepAngle(float start,float angle){
+	    mStartAngle = start;
+	    mSweepAngle = angle;
+	    invalidate();
+	}
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);

@@ -173,8 +173,13 @@
     <string name="mypower_text_smartsocket_data">智能插座数据</string>
     <string name="mypower_text_devicepowercost">所控电器用电费用</string>
     <string name="mypower_text_devicepoweramount">所控电器用电量</string>
-    <string name="mypower_text_powerprice">度/元</string>
+    <string name="mypower_text_powerprice">元/度</string>
     <string name="load_data_is_null">没有数据</string>
+    <string name="this_is_the_first_page">已经是第一页</string>
+    <string name="this_is_the_last_page">已经是最后一页</string>
+    <string name="powerprice_type_single">普通电价 </string>
+    <string name="powerprice_type_timing">分时电价</string>
+    <string name="mypower_text_alldevicepoweramount">全部可控电器总用电量</string>
 
     <string name="mypower_text_zero">0</string>
     
