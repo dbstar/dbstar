@@ -122,7 +122,8 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 	}
 
 	void updateSmartcardState() {
-		if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {
+		if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING ||
+				mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVED) {
 			mSmartcardStateView.setText(R.string.smarcard_state_not_in);
 			clearSmartcardData();
 		} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INVALID) {
