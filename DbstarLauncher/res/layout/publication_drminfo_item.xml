@@ -24,7 +24,7 @@
 
     <TextView
         android:id="@+id/product_id"
-        android:layout_width="100dp"
+        android:layout_width="240dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:singleLine="true"
