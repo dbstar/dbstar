@@ -303,6 +303,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		startPlayerService();
 		registerHDMIReceiver();
+		registerSystemEvReceiver();
 
 		mIsDeleted = false;
 
@@ -470,6 +471,7 @@ public class PlayerMenu extends PlayerActivity {
 			AmPlayer.enable_freescale(MID_FREESCALE);
 
 		unregisterReceiver(mHDMIEventReceiver);
+		unregisterSystemEvReceiver();
 
 		Utils.saveVolume(mVolumeLevel);
 
@@ -1571,6 +1573,29 @@ public class PlayerMenu extends PlayerActivity {
 					mIsDeleted = false;
 					Amplayer_play(mPlayPosition);
 				}
+			}
+		}
+	};
+	
+	void registerSystemEvReceiver() {
+		IntentFilter intentFilter = new IntentFilter(
+				Common.ActionScreenOff);
+		registerReceiver(mSystemEventReceiver, intentFilter);
+	}
+	
+	void unregisterSystemEvReceiver() {
+		unregisterReceiver(mSystemEventReceiver);
+	}
+	
+	private BroadcastReceiver mSystemEventReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+
+			Log.d(TAG, " ==================== action ===== " + action);
+
+			if (action.equals(Common.ActionScreenOff)) {
+				mHandler.sendEmptyMessage(MSG_POWEROFF);
 			}
 		}
 	};

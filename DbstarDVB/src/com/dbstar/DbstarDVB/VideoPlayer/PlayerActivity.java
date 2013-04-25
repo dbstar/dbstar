@@ -105,6 +105,7 @@ public class PlayerActivity extends Activity {
 	protected static final int MSG_DIALOG_POPUP = 0x30001;
 	protected static final int MSG_RESUME_DELAYED = 0x30002;
 	protected static final int MSG_PLAY_DELAYED = 0x30003;
+	protected static final int MSG_POWEROFF = 0x30004;
 	
 	protected boolean mIsSmartcardIn = false;
 
@@ -153,6 +154,11 @@ public class PlayerActivity extends Activity {
 			case SmartcardStateTracker.MSG_SMARTCARD_REMOVED: {
 				smartcardPlugin(false);
 				showSmartcardInfo();
+				break;
+			}
+			
+			case MSG_POWEROFF: {
+				exitPlayer();
 				break;
 			}
 
