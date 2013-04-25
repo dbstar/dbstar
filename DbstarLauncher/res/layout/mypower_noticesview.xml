@@ -39,11 +39,11 @@
 
     <FrameLayout
         android:layout_width="1181dp"
-        android:layout_height="556dp"
+        android:layout_height="536dp"
         android:layout_below="@id/view_header"
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="0dp"
-        android:layout_marginTop="0dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/gd_middle_bj_b" >
 
         <LinearLayout
@@ -54,7 +54,7 @@
             android:layout_marginBottom="20dp"
             android:layout_marginLeft="80dp"
             android:layout_marginRight="80dp"
-            android:layout_marginTop="60dp"
+            android:layout_marginTop="40dp"
             android:orientation="vertical"
             android:visibility="visible" >
 

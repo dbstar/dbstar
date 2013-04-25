@@ -200,6 +200,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 	}
 
 	private void quearyBusinessInfo(String areaId) {
+	    if(mPagesData != null){
 	       mBusinessAdapter.setDataSet(null);
 	       mBusinessAdapter.notifyDataSetChanged();
 	       mPagesData.clear();
@@ -207,6 +208,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 	       mPageNumber = 0;
 	       mPageCount = 1;
 	       displayPage(mPageNumber);
+	    }
 		if (areaId == null) {
 
 			AreaInfo.Area province = null;
@@ -223,7 +225,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 			if (mCityList.size() > 0) {
 				int index = mCitySpinner.getSelectedItemPosition();
 				Log.d(TAG, " city index = " + index);
-				if (index >= 0) {
+				if (index >= 0 && province.SubArea != null && province.SubArea.size() > index) {
 					city = province.SubArea.get(index);
 				}
 			}
@@ -233,7 +235,7 @@ public class GDBusinessAreaActvity extends GDBaseActivity {
 			if (mZoneList.size() > 0) {
 				int index = mZoneSpinner.getSelectedItemPosition();
 				Log.d(TAG, " zone index = " + index);
-				if (index >= 0) {
+				if (index >= 0 && city != null && city.SubArea != null && city.SubArea.size() > index) {
 					zone = city.SubArea.get(index);
 				}
 			}

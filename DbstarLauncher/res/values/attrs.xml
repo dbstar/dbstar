@@ -8,7 +8,8 @@
     <attr name="textColor" format="color|reference" />
     <attr name="textSize" format="dimension" />
     <attr name="circleRadius" format="float" />
-
+    <attr name="hOffset" format="dimension"/>
+    <attr name="vOffset" format="dimension"/>
     <declare-styleable name="GDMarqeeTextView">
         <attr name="text"/>
         <attr name="textColor"/>
@@ -116,6 +117,8 @@
         <attr name="text" />
         <attr name="textColor" />
         <attr name="textSize" />
+        <attr name="vOffset" />
+        <attr name="hOffset" />
     </declare-styleable>
 
 </resources>

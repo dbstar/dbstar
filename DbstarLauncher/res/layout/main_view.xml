@@ -321,16 +321,18 @@
             
             <com.dbstar.widget.GDCircleTextView
                  android:id="@+id/timingppower_step"
-                 android:layout_width="100dp"
-                 android:layout_height="80dp"
-                 android:layout_gravity="top|left"
-                 android:layout_marginLeft="142dp"
-                 android:layout_marginTop="26dp"
-                 app:text="@string/demo_str_6"
-                 app:circleRadius="72"
-                 app:startAngle="-130"
-                 app:sweepAngle="80"
+                 android:layout_width="166dp"
+                 android:layout_height="108dp"
+                 android:layout_gravity="top|right"
+                 android:layout_marginRight="30dp"
+                 android:layout_marginTop="20dp"
+                 app:text="@string/step_1"
+                 app:circleRadius="84"
+                 app:startAngle="120"
+                 app:sweepAngle="300"
                  app:textSize="12sp"
+                 app:hOffset="20dp"
+                 app:vOffset="0dp"
                  app:textColor="#ba4710"
                  android:visibility="visible" />
 

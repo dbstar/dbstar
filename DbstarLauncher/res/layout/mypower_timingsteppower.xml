@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1181dp"
-    android:layout_height="556dp"
+    android:layout_height="536dp"
     android:background="@drawable/gd_middle_bj_b" >
 
     <RelativeLayout
@@ -165,7 +165,7 @@
             android:layout_marginTop="28dp"
             android:adjustViewBounds="true"
             android:src="@drawable/timingpower_ruler_bg_color" />
-
+	  
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="123dp"
@@ -234,22 +234,22 @@
                 android:text="@string/demo_str_3"
                 android:textColor="#ba4710"
                 android:textSize="12sp" />        -->
-
-        <com.dbstar.widget.GDCircleTextView
-            android:id="@+id/timingppower_step"
-            android:layout_width="100dp"
-            android:layout_height="80dp"
-            android:layout_gravity="top|left"
-            android:layout_marginLeft="142dp"
-            android:layout_marginTop="26dp"
-            android:visibility="visible"
-            app:circleRadius="72"
-            app:startAngle="-130"
-            app:sweepAngle="80"
-            app:text="@string/demo_str_6"
-            app:textColor="#ba4710"
-            app:textSize="12sp" />
-
+            <com.dbstar.widget.GDCircleTextView
+                android:id="@+id/timingppower_step"
+                android:layout_width="250dp"
+                android:layout_height="161dp"
+                 android:layout_gravity="top|right"
+                android:layout_marginRight="44dp"
+                android:layout_marginTop="28dp"
+                android:visibility="visible"
+                app:circleRadius="125"
+                app:startAngle="120"
+                app:sweepAngle="300"
+                app:hOffset="26dp"
+                app:vOffset="0dp"
+                app:text="@string/step_1"
+                app:textColor="#ba4710"
+                app:textSize="12sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

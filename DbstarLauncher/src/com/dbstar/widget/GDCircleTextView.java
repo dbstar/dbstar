@@ -7,6 +7,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.Path;
 import android.graphics.Path.Direction;
 import android.graphics.RectF;
@@ -26,7 +27,7 @@ public class GDCircleTextView extends View {
 	Paint cPaint;
 
 	float mHOffset;
-
+	float mVOffset;
 	public GDCircleTextView(Context context) {
 		this(context, null);
 	}
@@ -36,13 +37,15 @@ public class GDCircleTextView extends View {
 
 		TypedArray a = context.obtainStyledAttributes(attrs,
 				R.styleable.GDCircleTextView);
-
+		setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 		mRadius = a.getFloat(R.styleable.GDCircleTextView_circleRadius, 0);
 		mStartAngle = a.getFloat(R.styleable.GDCircleTextView_startAngle, 0);
 		mSweepAngle = a.getFloat(R.styleable.GDCircleTextView_sweepAngle, 0);
 		mTextColor = a.getColor(R.styleable.GDCircleTextView_textColor, 0);
 		mTextSize = a.getDimension(R.styleable.GDCircleTextView_textSize, 12);
 		mText = a.getString(R.styleable.GDCircleTextView_text);
+		mHOffset = a.getDimension(R.styleable.GDCircleTextView_hOffset, 0);
+		mVOffset = a.getDimension(R.styleable.GDCircleTextView_vOffset, 0);
 		a.recycle();
 
 		setFocusable(false);
@@ -50,7 +53,7 @@ public class GDCircleTextView extends View {
 		mTPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mTPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 		mTPaint.setColor(mTextColor);
-		mTPaint.setTextAlign(Paint.Align.LEFT);
+		mTPaint.setTextAlign(Paint.Align.CENTER);
 		mTPaint.setTextSize(mTextSize);
 
 		cPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -80,11 +83,12 @@ public class GDCircleTextView extends View {
 
 		if (mCircle == null) {
 			mCircle = new Path();
-			 float y = mRadius;
-			 float x = getWidth() / 2;
-			 mCircle.addCircle(x, y, mRadius, Direction.CW);
-			
-			 mHOffset = (float)(Math.PI*mRadius/180*mStartAngle);
+			 //float y = mRadius;
+			 //float x = getWidth() / 2;
+			 //mCircle.addCircle(x, y, mRadius, Direction.CW);
+			RectF oval = new RectF(0, 0, 2 * mRadius, 2 * mRadius);
+			mCircle.addArc(oval, mStartAngle, mSweepAngle);
+			//mHOffset = (float)(Math.PI*mRadius/180*mStartAngle);
 //			RectF oval = new RectF(0, 0, mRadius, mRadius);
 //			mCircle.addArc(oval, mStartAngle, mSweepAngle);
 		}
@@ -92,7 +96,7 @@ public class GDCircleTextView extends View {
 //		canvas.drawPath(mCircle, cPaint);
 
 		if (mText != null && !mText.isEmpty()) {
-			canvas.drawTextOnPath(mText, mCircle, mHOffset, 20, mTPaint);
+			canvas.drawTextOnPath(mText, mCircle, mVOffset, mHOffset, mTPaint);
 		}
 	}
 }
