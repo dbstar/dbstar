@@ -151,13 +151,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		initializeEngine();
 	}
 
+	// Service is bound, but the disk may be still not ready
+	// so we should start engine on initializeApp() 
 	public void onServiceStart() {
 		super.onServiceStart();
 
 		mService.registerAppObserver(this);
 
 		initializeData();
-		startEngine();
+//		startEngine();
 	}
 
 	public void onServiceStop() {
