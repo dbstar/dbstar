@@ -215,7 +215,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		super.onDestroy();
 
 		mCelanderThread.setExit(true);
-		mMediaScheduler.stopMediaPlay();
+		mMediaScheduler.stop();
 	}
 
 	public void onAttachedToWindow() {
@@ -1153,8 +1153,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	// update previews when has new updates
 	void updatePreview() {
-		mMediaScheduler.stopMediaPlay();
-		mMediaScheduler.updatePreviews();
+		mMediaScheduler.stop();
+		mMediaScheduler.start(mService);
+		mMediaScheduler.resume();
 	}
 
 	private boolean mIsUpdatingColumns = false;

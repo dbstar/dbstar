@@ -1,18 +1,15 @@
 package com.dbstar.app;
 
-import java.io.File;
 import java.io.InputStream;
 
 import com.dbstar.model.PreviewData;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
-import com.dbstar.widget.GDVideoView;
 
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
@@ -43,10 +40,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	public static final int PLAYER_STATE_COMPLETED = 2;
 	public static final int PLAYER_STATE_ERROR = -1;
 
-	boolean mResourcesReady;
-	boolean mUIReady;
 	Context mContext;
-
 	GDDataProviderService mService = null;
 
 	VideoView mVideoView;
@@ -55,6 +49,8 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	Bitmap mImage = null;
 	Bitmap mDefaultPoster;
 	int mPlayerSate;
+	boolean mResourcesReady;
+	boolean mUIReady;
 
 	PlayState mCurrentState = new PlayState();
 	PlayState mStoreState = new PlayState();
@@ -66,7 +62,11 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	private Runnable mUpdateTimeTask = new Runnable() {
 		public void run() {
-			playMedia();
+			if (isReady()) {
+				playMedia();
+			} else {
+				mHandler.postDelayed(mUpdateTimeTask, 2000);
+			}
 		}
 	};
 
@@ -90,22 +90,10 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mResourcesReady = false;
 		mUIReady = false;
 	}
-	
-	private void loadResources(Context context) {
-		AssetManager am = context.getAssets();
-
-		try {
-			InputStream is = am.open("default/default_0.png");
-			mDefaultPoster = BitmapFactory.decodeStream(is);
-			//Log.d(TAG, "mDefaultPoster = " + mDefaultPoster);
-			is.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	public void start(GDDataProviderService service) {
+		Log.d(TAG, "start");
+
 		mService = service;
 
 		mResourcesReady = false;
@@ -115,12 +103,32 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mService.getPreviews(this);
 	}
 
-	public void updatePreviews() {
-		mResourcesReady = false;
-		mResources = null;
-		mResourceIndex = -1;
-		clearStoreState();
-		mService.getPreviews(this);
+	public void resume() {
+		Log.d(TAG, "resume");
+
+		mPosterView.setVisibility(View.VISIBLE);
+		mPosterView.setImageBitmap(mDefaultPoster);
+		
+		mHandler.postDelayed(mUpdateTimeTask, 2000);
+	}
+
+	public void pause() {
+		Log.d(TAG, "pause");
+
+		mHandler.removeCallbacks(mUpdateTimeTask);
+		mVideoView.setVideoURI(null);
+		saveMediaState();
+	}
+	
+	public void stop() {
+		Log.d(TAG, "stopMediaPlay");
+
+		mHandler.removeCallbacks(mUpdateTimeTask);
+
+		if (mVideoView.isPlaying()) {
+			mVideoView.stopPlayback();
+		}
+		
 	}
 
 	@Override
@@ -141,8 +149,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 				Log.d(TAG, "updateData " + mResources + " " + mResources.length);
 
 				mResourcesReady = true;
-				// playMedia();
-				mHandler.postDelayed(mUpdateTimeTask, 6000);
 			}
 		}
 	}
@@ -153,8 +159,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		Log.d(TAG, "mStoreState.Type=" + mStoreState.Type);
 
 		mUIReady = true;
-//		playMedia();
-		mHandler.postDelayed(mUpdateTimeTask, 2000);
 	}
 
 	public void surfaceChanged(SurfaceHolder surfaceholder, int format,
@@ -166,19 +170,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		Log.d(TAG, "surfaceDestroyed");
 
 		mUIReady = false;
-
-		// we must clear this uri of VideoView, or else
-		// when the surface is created again, it will play
-		// this uri again automaticly, see
-		// GDVideoView/surfaceCreated/openVideo()
-		mVideoView.setVideoURI(null);
-
-		// Note: playback will be stopped in saveMediaState(), not here
-		// saveMediaSate is called before surfaceDestroyed! in onPause or onStop
-		// in the parent activity
-
-		Log.d(TAG, "mStoreState.Type=" + mStoreState.Type);
-		mHandler.removeCallbacks(mUpdateTimeTask);
 	}
 
 	@Override
@@ -211,14 +202,14 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mCurrentState.PlayerState = PLAYER_STATE_COMPLETED;
 	}
 
-	public void playMedia() {
-
+	boolean isReady() {
 		Log.d(TAG, "palyMedia mResourcesReady = " + mResourcesReady
 				+ " mUIReady = " + mUIReady);
 
-		if (!mResourcesReady || !mUIReady) {
-			return;
-		}
+		return mResourcesReady && mUIReady;
+	}
+	
+	void playMedia() {
 
 		if (mResources == null || mResources.length == 0) {
 			return;
@@ -239,13 +230,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			int resourceType = RNONE;
 			resourcePath = mResources[mResourceIndex].FileURI;
 			resourceType = getResourceType(mResources[mResourceIndex].Type);
-			
-			File file = new File(resourcePath);
-			if (!file.exists()) {
-				Log.d(TAG, "Error: preview file not exist!");
-				mHandler.postDelayed(mUpdateTimeTask, 60000);
-				return;
-			}
 
 			if (resourceType == RVideo) {
 				playVideo(resourcePath);
@@ -271,7 +255,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 		Log.d(TAG, " playVideo " + url);
 
-//		mVideoView.setBackgroundDrawable(null);
 		mPosterView.setVisibility(View.GONE);
 
 		if (!url.equals("")) {
@@ -279,11 +262,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			mCurrentState.Type = RVideo;
 			mCurrentState.Url = url;
 			mCurrentState.index = mResourceIndex;
-
-			/*
-			 * mCurrentState.Duration = 0; mCurrentState.Position = 0;
-			 * mCurrentState.InterruptedTime = 0; mCurrentState.StartTime = 0;
-			 */
 
 			mCurrentState.PlayerState = PLAYER_STATE_IDLE;
 			mVideoView.setVideoPath(url);
@@ -311,8 +289,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		}
 
 		mImage = BitmapFactory.decodeFile(imagePath);
-//		mVideoView.setBackgroundDrawable(new BitmapDrawable(mContext
-//				.getResources(), mImage));
 		mPosterView.setVisibility(View.VISIBLE);
 		mPosterView.setImageBitmap(mImage);
 
@@ -320,8 +296,8 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		if (mStoreState.Url != null
 				&& mStoreState.Url.equals(mCurrentState.Url)) {
 			remainTime = mCurrentState.Duration - mStoreState.Position;
-			// clearStoreState();
 		}
+		
 		clearStoreState();
 
 		mHandler.postDelayed(mUpdateTimeTask, remainTime);
@@ -352,7 +328,6 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 			if (mStoreState.Type == RVideo) {
 				if (mStoreState.PlayerState == PLAYER_STATE_PREPARED) {
-					// getResourceIndex();
 					mResourceIndex = mStoreState.index;
 				} else if (mStoreState.PlayerState == PLAYER_STATE_IDLE) {
 					mResourceIndex = mStoreState.index;
@@ -378,33 +353,10 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		Log.d(TAG, "fetch resource mResourceIndex = " + mResourceIndex);
 		
 		return true;
-
-//		boolean successed = false;
-//		File file = new File(mResources[mResourceIndex].FileURI);
-//		if (file.exists()) {
-//			successed = true;
-//
-//			Log.d(TAG, "file url " + file.getAbsolutePath() + " exist!");
-//		}
-//
-//		return successed;
-	}
-
-	public void resume() {
-//		playMedia();
-		mPosterView.setVisibility(View.VISIBLE);
-		mPosterView.setImageBitmap(mDefaultPoster);
-//		mHandler.postDelayed(mUpdateTimeTask, 2000);
-	}
-
-	public void pause() {
-		saveMediaState();
 	}
 
 	private void saveMediaState() {
 		Log.d(TAG, "storeMediaState");
-
-		mHandler.removeCallbacks(mUpdateTimeTask);
 
 		mStoreState.Type = mCurrentState.Type;
 		mStoreState.Url = mCurrentState.Url;
@@ -439,22 +391,25 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		}
 	}
 
-	public void stopMediaPlay() {
-		Log.d(TAG, "stopMediaPlay");
-
-		mHandler.removeCallbacks(mUpdateTimeTask);
-
-		if (mVideoView.isPlaying()) {
-			mVideoView.stopPlayback();
-		}
-	}
-
 	private void clearStoreState() {
 		mStoreState.Type = RNONE;
 		mStoreState.Url = "";
 		mStoreState.index = -1;
 		mStoreState.Position = -1;
 		mStoreState.PlayerState = PLAYER_STATE_NONE;
+	}
+	
+	private void loadResources(Context context) {
+		AssetManager am = context.getAssets();
+
+		try {
+			InputStream is = am.open("default/default_0.png");
+			mDefaultPoster = BitmapFactory.decodeStream(is);
+			is.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	static class PlayState {
