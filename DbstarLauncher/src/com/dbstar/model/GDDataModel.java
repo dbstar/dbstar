@@ -619,9 +619,13 @@ public class GDDataModel {
 					if (date == null || date.isEmpty()) {
 						// invalid item
 						continue;
-					} else if (date.length() == "yyyy-mm-dd".length()) {
-						date = date + " 00:00:00";
-					}
+					} else {
+						if (date.length() > "yyyy-mm-dd".length()) {
+							date = date.substring(0, "yyyy-mm-dd".length()) + " 00:00:00";
+						} else if (date.length() == "yyyy-mm-dd".length()) {
+							date = date + " 00:00:00";
+						} 
+					} 
 
 					GuideListItem item = new GuideListItem();
 
