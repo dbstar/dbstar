@@ -68,6 +68,12 @@ public class DbstarServiceApi {
 	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015; // Preview has new update
 	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016; // UI resource has new update
 	
+	// Disk initialization messages
+	public static final int	MOTHER_DISK_INITIALIZE_START    = 0x30018;
+	public static final int	MOTHER_DISK_INITIALIZE_PROCESS  = 0x30019;
+	public static final int	MOTHER_DISK_INITIALIZE_FAILED   = 0x30020;
+	public static final int	MOTHER_DISK_INITIALIZE_SUCCESS  = 0x30021;
+			
 	public static final int DISK_FORMAT_SUCCESS             = 0x30022;
 	public static final int DISK_FORMAT_FAILED              = 0x30023;
 	

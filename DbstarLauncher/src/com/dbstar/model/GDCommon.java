@@ -60,6 +60,7 @@ public class GDCommon {
 	public static final int MSG_DISK_FORMAT_FINISHED = 0xB0002;
 	public static final int VALUE_SUCCESSED = 1;
 	public static final int VAULE_FAILED = 0;
+	public static final int MSG_DISK_INITIALIZE = 0xB0003;
 	
 	public static final int OSDDISP_TIMEOUT = 3600000;
 

@@ -852,6 +852,11 @@ public class GDDataProviderService extends Service {
 				handleDiskFormatResult(successed, info);
 				break;
 			}
+			
+			case GDCommon.MSG_DISK_INITIALIZE: {
+				handleDiskInitMessage(msg.arg1, (String)msg.obj);
+				break;
+			}
 
 			default:
 				break;
@@ -897,6 +902,15 @@ public class GDDataProviderService extends Service {
 
 		if (mPageOberser != null) {
 			mPageOberser.notifyEvent(EventData.EVENT_HIDE_NOTIFICATION, null);
+		}
+	}
+	
+	private void handleDiskInitMessage(int type, String msg) {
+		if (mPageOberser != null) {
+			EventData.DiskInitEvent event = new EventData.DiskInitEvent();
+			event.Type = type;
+			event.Message = msg;
+			mPageOberser.notifyEvent(EventData.EVENT_DISK_INIT, event);
 		}
 	}
 
@@ -2007,6 +2021,21 @@ public class GDDataProviderService extends Service {
 		}
 
 	};
+	
+	static String getStringData (Intent intent, String charset) {
+		String info = null;
+
+		byte[] bytes = intent.getByteArrayExtra("message");
+		if (bytes != null) {
+			try {
+				info = new String(bytes, charset);
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return info;
+	}
 
 	private BroadcastReceiver mSystemMessageReceiver = new BroadcastReceiver() {
 
@@ -2023,12 +2052,10 @@ public class GDDataProviderService extends Service {
 				switch (type) {
 				case DbstarServiceApi.UPGRADE_NEW_VER_FORCE:
 				case DbstarServiceApi.UPGRADE_NEW_VER: {
-					byte[] bytes = intent.getByteArrayExtra("message");
-					if (bytes != null) {
-						String packageFile = StringUtil.getString(bytes, "utf-8");
-
-						Log.d(TAG, "onReceive packageFile " + packageFile);
-
+					String packageFile = getStringData(intent, "utf-8");
+					Log.d(TAG, "onReceive packageFile " + packageFile);
+					
+					if (packageFile != null) {
 						int msgId = 0;
 						if (type == DbstarServiceApi.UPGRADE_NEW_VER) {
 							msgId = GDCommon.MSG_SYSTEM_UPGRADE;
@@ -2173,22 +2200,23 @@ public class GDDataProviderService extends Service {
 				}
 				
 				case DbstarServiceApi.DISK_FORMAT_FAILED: {
-					String info = "";
-
-					byte[] bytes = intent.getByteArrayExtra("message");
-					if (bytes != null) {
-						try {
-							info = new String(bytes, "utf-8");
-							Log.d(TAG, "==========format disk error ======== "
-									+ info);
-							
-						} catch (UnsupportedEncodingException e) {
-							e.printStackTrace();
-						}
-					}
+					String info = getStringData(intent, "utf-8");
+					Log.d(TAG, "==========format disk error ======== " + info);
 					
 					Message msg = mHandler.obtainMessage(GDCommon.MSG_DISK_FORMAT_FINISHED);
 					msg.arg1 = GDCommon.VAULE_FAILED;
+					msg.obj = info;
+					msg.sendToTarget();
+					break;
+				}
+				
+				case DbstarServiceApi.MOTHER_DISK_INITIALIZE_START:
+				case DbstarServiceApi.MOTHER_DISK_INITIALIZE_PROCESS:
+				case DbstarServiceApi.MOTHER_DISK_INITIALIZE_FAILED:
+				case DbstarServiceApi.MOTHER_DISK_INITIALIZE_SUCCESS: {
+					String info = getStringData(intent, "utf-8");
+					Message msg = mHandler.obtainMessage(GDCommon.MSG_DISK_INITIALIZE);
+					msg.arg1 = type;
 					msg.obj = info;
 					msg.sendToTarget();
 					break;

@@ -272,4 +272,9 @@
 	<string name="format_disk_failed">磁盘格式化失败，错误码%1$s</string>
 	<string name="reboot_notes">系统自动重启，请稍候......</string>
 
+	<string name="disk_init_title">母盘初始化</string>
+	<string name="disk_init_start">母盘初始化开始&#8230;</string>
+	<string name="disk_init_progress">完成%1$s%</string>
+	<string name="disk_init_failed">%1$s：母盘初始化错误，可以通过网络接收新内容。5秒钟后自动重启</string>
+	<string name="disk_init_successed">母盘初始化完成，5秒钟后自动重启</string>
 </resources>

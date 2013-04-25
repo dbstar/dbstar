@@ -5,6 +5,7 @@ import java.util.TimerTask;
 
 import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
+import com.dbstar.app.alert.GDDiskInitDialog;
 import com.dbstar.app.alert.NotificationDialog;
 import com.dbstar.app.alert.NotificationFragment;
 import com.dbstar.model.EventData;
@@ -45,6 +46,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected static final int DLG_ID_ALERT = 0;
 	protected static final int DLG_ID_SMARTCARD = 1;
 	protected static final int DLG_ID_DRMINFO = 2;
+	protected static final int DLG_ID_DISK_INIT = 3;
 
 	protected static final int DLG_TYPE_FILE_NOTEXIST = 0;
 	protected static final int DLG_TYPE_SMARTCARD_INFO = 1;
@@ -108,7 +110,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	GDAlertDialog mAlertDlg = null, mSmartcardDlg = null;
 	int mAlertType = -1;
-
+	GDDiskInitDialog mDiskInitDlg = null;
 	ImageView mStatusIndicatorView = null;
 
 	protected Handler mHandler = new Handler() {
@@ -130,10 +132,15 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 				hideNotification();
 				break;
 			}
+			case MSG_DISK_INIT: {
+				displayDiskInitMessage(msg.arg1, (String)msg.obj);
+				break;
+			}
 			}
 		}
 	};
 
+	
 	protected GDResourceAccessor mResource;
 
 	protected void initializeMenuPath() {
@@ -378,6 +385,12 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			msg.sendToTarget();
 		} else if (type == EventData.EVENT_HIDE_NOTIFICATION) {
 			mHandler.sendEmptyMessage(MSG_HIDE_NOTIFICATION);
+		} else if (type == EventData.EVENT_DISK_INIT) {
+			EventData.DiskInitEvent diskInit = (EventData.DiskInitEvent)event;
+			Message msg = mHandler.obtainMessage(MSG_DISK_INIT);
+			msg.arg1 = diskInit.Type;
+			msg.obj = diskInit.Message;
+			msg.sendToTarget();
 		}
 	}
 
@@ -493,6 +506,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected static final int MSG_NEW_MAIL = 2;
 	protected static final int MSG_DISP_NOTIFICATION = 3;
 	protected static final int MSG_HIDE_NOTIFICATION = 4;
+	protected static final int MSG_DISK_INIT = 5;
 
 	Timer mDlgTimer = null;
 	TimerTask mTimeoutTask = null;
@@ -654,4 +668,14 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		mDlgTimer = new Timer();
 		mDlgTimer.schedule(mTimeoutTask, DLG_TIMEOUT);
 	}
+
+	private void displayDiskInitMessage(int type, String message) {
+		if (mDiskInitDlg == null) {
+			mDiskInitDlg = new GDDiskInitDialog(this);
+			mDiskInitDlg.show();
+		}
+
+		mDiskInitDlg.updateState(type, message);
+	}
+	
 }
