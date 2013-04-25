@@ -50,6 +50,7 @@
     <!-- Device info -->
     <string name="deviceinfo_device_serialnumber">终端序列号:&#160;</string>
     <string name="deviceinfo_hardware_type">硬件型号:&#160;</string>
+    <string name="deviceinfo_hardware_version">硬件版本:&#160;</string>
     <string name="deviceinfo_software_version">软件版本:&#160;</string>
     <string name="deviceinfo_loader_version">Loader版本:&#160;</string>
     <string name="deviceinfo_mac_address">Mac地址:&#160;</string>
@@ -110,6 +111,7 @@
 
     <!-- Smartcard settings -->
     <string name="smartcard_info">智能卡信息</string>
+    <string name="version_info">版本信息</string>
     <string name="authorization_manage">授权管理</string>
     <string name="mailbox">邮件</string>
     

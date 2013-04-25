@@ -47,6 +47,11 @@ public class GDSmartcardActivity extends MultiPanelActivity implements
 
 		target.add(scInfoHeader);
 
+		Header verHeader = new Header();
+		verHeader.fragment = "com.dbstar.app.settings.smartcard.GDDrmVersionFragment";
+		verHeader.titleRes = R.string.version_info;
+		target.add(verHeader);
+		
 		Header caHeader = new Header();
 		caHeader.fragment = "com.dbstar.app.settings.smartcard.CAManageFragment";
 		caHeader.titleRes = R.string.authorization_manage;
@@ -124,6 +129,12 @@ public class GDSmartcardActivity extends MultiPanelActivity implements
 	public void getMailContent(FragmentObserver observer, String id) {
 		if (mService != null) {
 			mService.getMailContent(this, id);
+		}
+	}
+	
+	public void queryDeviceInfo(FragmentObserver observer, String[] keys) {
+		if (mService != null) {
+			mService.getDeviceInfo(this, keys);
 		}
 	}
 

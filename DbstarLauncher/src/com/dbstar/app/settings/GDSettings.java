@@ -5,6 +5,7 @@ public class GDSettings {
 	// for device infomation
 	public static final String SettingDeviceSerialNumber = "ProductSN";
 	public static final String SettingHardwareType = "DeviceModel";
+	public static final String SettingHardwareVersion = "HardwareVersion";
 	public static final String SettingSoftwareVersion = "SoftwareVersion";
 	public static final String SettingLoaderVersion = "LoaderVersion";
 	public static final String SettingMacAddress = "MacAddress";
