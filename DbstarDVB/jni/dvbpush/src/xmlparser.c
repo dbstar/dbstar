@@ -311,12 +311,12 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 	char sqlite_cmd[2048];
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM GuideList WHERE PublicationID='%s';",ptr->PublicationID);
 	if(0<sqlite_transaction_read(sqlite_cmd,NULL,0)){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s','%s','%s','%s','%s',(select UserStatus from GuideList where PublicationID='%s'));",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s',datetime('%s'),'%s','%s','%s',(select UserStatus from GuideList where PublicationID='%s'));",
 			ptr->ServiceID,ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID,ptr->PublicationID);
 		return sqlite_transaction_exec(sqlite_cmd);
 	}
 	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s','%s','%s','%s','%s','1');",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%s',datetime('%s'),'%s','%s','%s','1');",
 			ptr->ServiceID,ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID);
 		return sqlite_transaction_exec(sqlite_cmd);
 	}
