@@ -69,6 +69,44 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			}
 		}
 	};
+	
+	// when video start playback, we will start a timeout task, 
+	// which will run after mDurationToPlay.
+	// if a video not end after this time, we will stop it and play next.
+	int mPlayingVideoIndex = -1;
+	// this time is from start to end of a playback.
+	// if a video is played from resume state, this time is: duration - start position.
+	long mDurationToPlay = 0; 
+	String mPlayingVideoUrl = null;
+
+	Runnable mCheckVideoFinishedTask = new Runnable() {
+		public void run() {
+			if (mCurrentState.index == mPlayingVideoIndex
+					&& mCurrentState.Url.equals(mPlayingVideoUrl)) {
+				Log.d(TAG, "stop this video and play next");
+				stop();
+				
+				mPlayingVideoIndex = -1;
+				mPlayingVideoUrl = null;
+				mDurationToPlay = 0;
+				
+				//play next one
+				mHandler.postDelayed(mUpdateTimeTask, 2000);
+			}
+		}
+	};
+	
+	// After timeoutMills, check whether the video is completed.
+	void startCheckVideoCompleteTask(long timeoutMills) {
+		mHandler.postDelayed(mUpdateTimeTask, timeoutMills);
+	}
+	
+	void stopCheckVideoCompleteTask() {
+		mHandler.removeCallbacks(mCheckVideoFinishedTask);
+		mPlayingVideoIndex = -1;
+		mDurationToPlay = 0;
+		mPlayingVideoUrl = null;
+	}
 
 	public GDMediaScheduler(Context context, VideoView videoView, ImageView posterView) {
 		mVideoView = videoView;
@@ -114,6 +152,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	public void pause() {
 		Log.d(TAG, "pause");
+		stopCheckVideoCompleteTask();
 
 		mHandler.removeCallbacks(mUpdateTimeTask);
 		mVideoView.setVideoURI(null);
@@ -122,6 +161,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	
 	public void stop() {
 		Log.d(TAG, "stopMediaPlay");
+		stopCheckVideoCompleteTask();
 
 		mHandler.removeCallbacks(mUpdateTimeTask);
 
@@ -179,6 +219,16 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mCurrentState.PlayerState = PLAYER_STATE_PREPARED;
 		mCurrentState.Duration = mVideoView.getDuration();
 		mVideoView.start();
+		
+		// start task here!
+		mHandler.removeCallbacks(mCheckVideoFinishedTask);
+		mPlayingVideoUrl = mCurrentState.Url;
+		mPlayingVideoIndex = mCurrentState.index;
+		if (mDurationToPlay == 0) {
+			mDurationToPlay = mCurrentState.Duration;
+		}
+		// delay 3 seconds for computation tolerance.
+		startCheckVideoCompleteTask((mDurationToPlay + 3)*1000);
 	}
 
 	@Override
@@ -266,9 +316,12 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			mCurrentState.PlayerState = PLAYER_STATE_IDLE;
 			mVideoView.setVideoPath(url);
 
+			mDurationToPlay = 0;
+	
 			if (mStoreState.Url != null
 					&& mStoreState.Url.equals(mCurrentState.Url)) {
 				mVideoView.seekTo(mStoreState.Position);
+				mDurationToPlay = mStoreState.Duration - mStoreState.Position;
 				clearStoreState();
 			}
 		}
