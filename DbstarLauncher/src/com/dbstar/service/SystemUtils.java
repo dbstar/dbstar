@@ -1,8 +1,10 @@
 package com.dbstar.service;
 
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -67,5 +69,39 @@ public class SystemUtils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static int writeSysfs(String path, String val) {
+		if (!new File(path).exists()) {
+			Log.e(TAG, "File not found: " + path);
+			return 1;
+		}
+
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(path), 64);
+			try {
+				writer.write(val);
+				Log.d(TAG, " write osd black ok!");
+			} finally {
+				writer.close();
+			}
+			return 0;
+
+		} catch (IOException e) {
+			Log.e(TAG, "IO Exception when write: " + path, e);
+			return 1;
+		}
+	}
+	private static final String STR_1080SCALE = "ro.platform.has.1080scale";
+	private static final String VideoAxisFile = "/sys/class/video/axis";
+	private static final String DispFile = "/sys/class/ppmgr/disp";
+	
+	public static void setVideoSettings() {
+		if(SystemProperties.getInt(STR_1080SCALE, 0) == 2){
+            Log.d(TAG, "BOOT_COMPLETED - set video axis");
+            writeSysfs(VideoAxisFile, "0 0 1280 720");
+            writeSysfs(DispFile, "1280 720");
+        }
+
 	}
 }

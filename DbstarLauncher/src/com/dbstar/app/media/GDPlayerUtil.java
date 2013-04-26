@@ -119,26 +119,4 @@ public class GDPlayerUtil {
 		}
 
 	}
-
-	public static int writeSysfs(String path, String val) {
-		if (!new File(path).exists()) {
-			Log.e(TAG, "File not found: " + path);
-			return 1;
-		}
-
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(path), 64);
-			try {
-				writer.write(val);
-				Log.d(TAG, " write osd black ok!");
-			} finally {
-				writer.close();
-			}
-			return 0;
-
-		} catch (IOException e) {
-			Log.e(TAG, "IO Exception when write: " + path, e);
-			return 1;
-		}
-	}
 }

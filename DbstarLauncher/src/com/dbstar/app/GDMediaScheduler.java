@@ -206,7 +206,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		Log.d(TAG, "palyMedia mResourcesReady = " + mResourcesReady
 				+ " mUIReady = " + mUIReady);
 
-		return mResourcesReady && mUIReady;
+		return mResourcesReady && mUIReady && mService.isDisplaySet();
 	}
 	
 	void playMedia() {

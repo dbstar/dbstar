@@ -35,7 +35,7 @@ public class GDCommon {
 	public static final int MSG_UPDATE_COLUMN = 0x30018;
 	public static final int MSG_UPDATE_PREVIEW = 0x30019;
 	public static final int MSG_UPDATE_UIRESOURCE = 0x30020;
-
+	
 	public static final int MSG_NEW_MAIL = 0x50001;
 
 	public static final int MSG_DHCP_PRIVATEIP_READY = 0x60001;
@@ -61,6 +61,7 @@ public class GDCommon {
 	public static final int VALUE_SUCCESSED = 1;
 	public static final int VAULE_FAILED = 0;
 	public static final int MSG_DISK_INITIALIZE = 0xB0003;
+	public static final int MSG_BOOT_COMPLETED = 0xB0004;
 	
 	public static final int OSDDISP_TIMEOUT = 3600000;
 
@@ -110,6 +111,7 @@ public class GDCommon {
 	public static final String KeyPublicationSetID = "publicationset_id";
 	public static final String KeyBookmark = "bookmark";
 
+	public static final String ACTION_BOOT_COMPLETED = "android.intent.action.BOOT_COMPLETED";
 	public static final String ActionAddFavourite = "com.dbstar.DbstarLauncher.Action.ADD_TO_FAVOURITE";
 	public static final String ActionDelete = "com.dbstar.DbstarLauncher.Action.DELETE";
 	public static final String ActionUpgradeCancelled = "com.dbstar.DbstarLauncher.Action.UPGRADE_CANCELLED";

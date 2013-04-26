@@ -837,6 +837,11 @@ public class GDDataProviderService extends Service {
 				break;
 			}
 			
+			case GDCommon.MSG_BOOT_COMPLETED: {
+				bootCompleted();
+				break;
+			}
+			
 			case GDCommon.MSG_SYSTEM_RECOVERY: {
 				handleRecoveryAction(msg.arg1);
 				break;
@@ -872,6 +877,16 @@ public class GDDataProviderService extends Service {
 			intent.putExtra("ethernet_info", info);
 			sendBroadcast(intent);
 		}
+	}
+	
+	boolean mIsDisplaySet = false;
+	public boolean isDisplaySet() {
+		return mIsDisplaySet;
+	}
+
+	private void bootCompleted() {
+		SystemUtils.setVideoSettings();
+		mIsDisplaySet = true;
 	}
 	
 	private void notifySmartcardStatusChange(int state) {
@@ -2323,6 +2338,8 @@ public class GDDataProviderService extends Service {
 				Message msg = mHandler.obtainMessage(GDCommon.MSG_SYSTEM_RECOVERY);
 				msg.arg1 = type;
 				msg.sendToTarget();
+			} else if (action.equals(GDCommon.ACTION_BOOT_COMPLETED)) {
+				mHandler.sendEmptyMessage(GDCommon.MSG_BOOT_COMPLETED);
 			}
 		}
 	};
