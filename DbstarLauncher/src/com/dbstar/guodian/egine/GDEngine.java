@@ -1,5 +1,8 @@
 package com.dbstar.guodian.egine;
 
+import java.util.Map;
+
+import com.dbstar.guodian.data.ElectriDimension;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.egine.GDClient.Task;
@@ -42,6 +45,7 @@ public class GDEngine {
 	private boolean mRestart = false;
 	
 	private LoginData mLoginData;
+	private ElectriDimension mEleDimension;
 	private String mCtrlNoGuid;
 	private String mUserType;
 	private String mUserId;
@@ -175,17 +179,34 @@ public class GDEngine {
 		    String cid = (String) args;
             getZones(cid);
 		    break;
+		case GDConstract.DATATYPE_ELECTRICAL_DIMENSIONALTIY:
+		    Map<String, String> params = (Map<String, String>) args;
+		    getElecDimension(params);
 		}
 	}
 
-	public ElectricityPrice getElecPrice() {
+
+    public ElectricityPrice getElecPrice() {
 		if (mLoginData != null) {
 			return mLoginData.ElecPrice;
 		}
 		
 		return null;
 	}
-	
+    public LoginData getLoginData() {
+        if (mLoginData != null) {
+            return mLoginData;
+        }
+        
+        return null;
+    }
+    public ElectriDimension getElectriDimension() {
+        if (mEleDimension != null) {
+            return mEleDimension;
+        }
+        
+        return null;
+    }
 	private void getPowerPanelData() {
 		Log.d(TAG, " ======== is connected ==== " + (mState == STATE_CONNECTED));
 		if (mState == STATE_CONNECTED) {
@@ -239,6 +260,11 @@ public class GDEngine {
             mClient.getZonesArea(mUserId, pid);
         }
     }
+	private void getElecDimension(Map<String, String> params) {
+	    if (mState == STATE_CONNECTED) {
+            mClient.getElecDimension(mUserId,params);
+        }
+    }
 	private void handleFinishedRequest(Task task) {
 		int requestType = task.TaskType;
 		switch (requestType) {
@@ -282,6 +308,11 @@ public class GDEngine {
 		    break;
 		case GDClient.REQUEST_ZONES:
 		    requestFinished(GDConstract.DATATYPE_ZONES, task.ParsedData);
+		    break;
+		case GDClient.REQUEST_ELECTRICAL_DIMENSIONALITY:
+		    requestFinished(GDConstract.DATATYPE_ELECTRICAL_DIMENSIONALTIY, task.ParsedData);
+		    if(task.ParsedData != null)
+		        mEleDimension = (ElectriDimension) task.ParsedData;
 		    break;
 		}
 	}

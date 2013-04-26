@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.dbstar.R;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.guodian.app.base.GDBaseFragment;
+import com.dbstar.guodian.data.ElectriDimension;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
@@ -218,7 +219,11 @@ public class GDStepPowerFragment extends GDBaseFragment {
 		if (mElecPrice == null) {
 			mElecPrice = mService.getElecPrice();
 		}
-
+		ElectriDimension ed = mService.getEDimension();
+        if(ed != null && ed.totalPower != null){
+            mAllDevicePowerAmountView.setText(ed.totalPower.Count);
+        }
+		
 		ElectricityPrice priceData = mElecPrice;
 
 		if (priceData == null)

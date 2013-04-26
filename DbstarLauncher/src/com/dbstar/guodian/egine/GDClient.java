@@ -9,11 +9,13 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 
 import com.dbstar.guodian.data.AreaInfo;
 import com.dbstar.guodian.data.BillDetailData;
 import com.dbstar.guodian.data.BillDetailListData;
 import com.dbstar.guodian.data.BusinessArea;
+import com.dbstar.guodian.data.ElectriDimension;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.data.PowerPanelData;
@@ -22,6 +24,7 @@ import com.dbstar.guodian.parse.BillDetailDataHandler;
 import com.dbstar.guodian.parse.BillDetailOfRecentDataHandler;
 import com.dbstar.guodian.parse.BillMonthListHandler;
 import com.dbstar.guodian.parse.BusinessAreaHandler;
+import com.dbstar.guodian.parse.ElecDimensionDataHandler;
 import com.dbstar.guodian.parse.LoginDataHandler;
 import com.dbstar.guodian.parse.NoticeDataHandler;
 import com.dbstar.guodian.parse.PanelDataHandler;
@@ -57,7 +60,7 @@ public class GDClient {
 	public static final int REQUEST_BUSINESSAREA = 0x3008;
 	public static final int REQUEST_CITYS = 0x3009;
 	public static final int REQUEST_ZONES = 0x3010;
-
+	public static final int REQUEST_ELECTRICAL_DIMENSIONALITY = 0x3011;
 	// not include current month, just before;
 
 	class Task {
@@ -291,6 +294,21 @@ public class GDClient {
         msg.obj = task;
         mClientHandler.sendMessage(msg);
     }
+	
+	public void getElecDimension(String userId, Map<String, String> params) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetElecDimensionCmd(userId,
+				taskId, params);
+		Task task = new Task();
+		task.TaskType = REQUEST_ELECTRICAL_DIMENSIONALITY;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
+	}
+
 	public void stop() {
 		Log.d(TAG, " ============ stop GDClient thread ============");
 		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
@@ -367,6 +385,7 @@ public class GDClient {
 		switch (task.TaskType) {
 		case REQUEST_LOGIN: {
 			LoginData loginData = LoginDataHandler.parse(task.ResponseData[7]);
+			Log.d("Futao", "~~~~~~~~~~~~~~~~~~login = ~~~~~~~~~~~~~~~~~~~~~~~~~~" + task.ResponseData[7].toString());
 			task.ParsedData = loginData;
 			break;
 		}
@@ -425,8 +444,13 @@ public class GDClient {
 		case REQUEST_ZONES:
 		    ArrayList<AreaInfo.Area> zoneInfo= AreaInfoHandler.parseAreas(task.ResponseData[7]);
             task.ParsedData = zoneInfo;
+            break;
+		case REQUEST_ELECTRICAL_DIMENSIONALITY:
+		    ElectriDimension dimension = ElecDimensionDataHandler.parse(task.ResponseData[7]);
+		    task.ParsedData = dimension;
+		    break;
 		}
-		
+		    
 
 		if (mAppHander != null) {
 			Message msg = mAppHander

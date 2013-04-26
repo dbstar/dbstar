@@ -1,7 +1,11 @@
 package com.dbstar.guodian.app.mypower;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -18,7 +22,10 @@ import android.widget.TextView;
 import com.dbstar.R;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.guodian.app.base.GDBaseFragment;
+import com.dbstar.guodian.data.ElectriDimension;
 import com.dbstar.guodian.data.ElectricityPrice;
+import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.egine.GDConstract;
@@ -240,7 +247,11 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		if (mElecPrice == null) {
 			mElecPrice = mService.getElecPrice();
 		}
-
+		
+		ElectriDimension ed = mService.getEDimension();
+		if(ed != null && ed.totalPower != null){
+		    mAllDevicePowerAmountView.setText(ed.totalPower.Count);
+		}
 		ElectricityPrice priceData = mElecPrice;
 
 		if (priceData == null)
@@ -317,7 +328,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 				}
 			}
 	}
-
+	
 	void showPriceDialog() {
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		Fragment prev = getFragmentManager().findFragmentByTag("price_dialog");

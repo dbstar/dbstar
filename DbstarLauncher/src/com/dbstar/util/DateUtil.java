@@ -8,7 +8,8 @@ import java.util.Date;
 public class DateUtil {
 
 	public static final String DateFormat1 = "yyyy-MM-dd HH:mm:ss";
-
+	public static final String DateFormat2 = "yyyy-MM-01 00:00:00";
+	public static final String DateFormat3 = "yyyy-01-01 00:00:00";
 	public static Date getDateFromStr(String dateStr, String format) {
 		Date date = null;
 		try {
@@ -37,5 +38,15 @@ public class DateUtil {
 		System.out.println("Date Time : " + datetime);
 		
 		return datetime;
+	}
+	
+	public static String getStringFromDate(Date date,String format){
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat(format);
+            return sdf.format(date);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }	 
+        return null;
 	}
 }

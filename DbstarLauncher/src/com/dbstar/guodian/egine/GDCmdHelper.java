@@ -1,5 +1,6 @@
 package com.dbstar.guodian.egine;
 
+import java.util.Map;
 import java.util.Random;
 
 import org.json.JSONException;
@@ -282,6 +283,27 @@ public class GDCmdHelper {
                 + DeviceVersion + CmdDelimiterTag
                 + DeviceId   + CmdDelimiterTag
                 + pid;
+
+        Log.d(TAG, "cmd data = " + cmdStr);
+        
+        String encryptStr = FormatCMD.encryptCMD(cmdStr);
+        cmdStr = CmdStartTag + encryptStr + CmdEndTag + "\n";
+
+//      Log.d(TAG, " cmd ===== " + cmdStr);
+
+        return cmdStr;
+    }
+	public static String constructGetElecDimensionCmd( String userId,String cmdId,
+	        Map<String, String> params) {
+	    String keys [] = params.keySet().toArray(new String[]{});
+	    String values [] = params.values().toArray(new String[]{});
+        String cmdStr = cmdId + CmdDelimiterTag
+                + "elc"     + CmdDelimiterTag
+                + "m008f007" + CmdDelimiterTag
+                + userId    + CmdDelimiterTag
+                + DeviceVersion + CmdDelimiterTag
+                + DeviceId   + CmdDelimiterTag
+                + toJson(keys, values);
 
         Log.d(TAG, "cmd data = " + cmdStr);
         

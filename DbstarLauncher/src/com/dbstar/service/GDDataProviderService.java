@@ -12,7 +12,9 @@ import com.dbstar.util.*;
 import com.dbstar.util.upgrade.RebootUtils;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.settings.GDSettings;
+import com.dbstar.guodian.data.ElectriDimension;
 import com.dbstar.guodian.data.ElectricityPrice;
+import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.egine.GDClientObserver;
 import com.dbstar.guodian.egine.GDEngine;
 import com.dbstar.model.ColumnData;
@@ -2531,5 +2533,12 @@ public class GDDataProviderService extends Service {
 	// query cached data
 	public ElectricityPrice getElecPrice() {
 		return mGuodianEngine.getElecPrice();
+	}
+	
+	public LoginData getLoginData(){
+	    return mGuodianEngine.getLoginData();
+	}
+	public ElectriDimension getEDimension(){
+	    return mGuodianEngine.getElectriDimension();
 	}
 }

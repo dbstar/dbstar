@@ -113,5 +113,14 @@ public class JsonTag {
 	public static final String TAGZoneName = "zone";
 
 	// public static final String TAG = "";
-
+	public static final String TAGDateType = "date_type";
+	public static final String TAGUser_Type = "user_type";
+	public static final String TAGEquGuid = "num_equ_guid";
+	public static final String TAGTotalPowerNumAndFee = "powerNumAndFee";
+	public static final String TAGEquCountAndFeeList = "equCountAndFeeList";
+	public static final String TAGNumOrder = "num_order";
+	public static final String TAGVC2CountPercent = "vc2_count_percent";
+	public static final String TAGVC2Equ_name = "vc2_equ_name";
+	public static final String TAGVC2EquTypeId = "vc2_equ_typeid";
+	public static final String TAGVC2FeePercent = "vc2_fee_percent";
 }

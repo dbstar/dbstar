@@ -1,6 +1,5 @@
 package com.dbstar.app.launcher;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -21,8 +20,8 @@ import com.dbstar.app.settings.GDGeneralInfoActivity;
 import com.dbstar.app.settings.GDProductsActivity;
 import com.dbstar.app.settings.GDSmartcardActivity;
 import com.dbstar.app.settings.GDSystemMgrActivity;
-import com.dbstar.browser.GDWebBrowserActivity;
 import com.dbstar.guodian.app.mypower.GDPowerController;
+import com.dbstar.guodian.data.ElectriDimension;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.egine.GDConstract;
@@ -35,19 +34,12 @@ import com.dbstar.service.GDDataProviderService;
 import com.dbstar.widget.*;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -63,9 +55,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.VideoView;
-import android.view.Gravity;
 
 public class GDLauncherActivity extends GDBaseActivity implements
 		GDApplicationObserver {
@@ -1587,6 +1577,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	void handlePowerData(int type, Object data) {
 		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
 			mPowerController.updatePowerPanel((PowerPanelData) data);
+		} else if(type == GDConstract.DATATYPE_ELECTRICAL_DIMENSIONALTIY){
+		    mPowerController.updateElectriDimension((ElectriDimension)data);
 		}
 	}
 

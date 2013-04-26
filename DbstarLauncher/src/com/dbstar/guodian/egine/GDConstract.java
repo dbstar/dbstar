@@ -12,6 +12,7 @@ public class GDConstract {
 	public static final int DATATYPE_BUSINESSAREA = 0x60008;
 	public static final int DATATYPE_CITYES = 0x60009; 
 	public static final int DATATYPE_ZONES = 0x60010; 
+	public static final int DATATYPE_ELECTRICAL_DIMENSIONALTIY = 0x60011; 
 	public static final String KeyPriceType = "price_type";
 	
 	public static final String KeyUserName = "user_name";
