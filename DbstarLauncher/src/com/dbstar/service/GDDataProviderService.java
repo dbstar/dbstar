@@ -1964,6 +1964,7 @@ public class GDDataProviderService extends Service {
 
 		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_IN);
 		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
+		filter.addAction(GDCommon.ACTION_BOOT_COMPLETED);
 
 		registerReceiver(mSystemMessageReceiver, filter);
 	}

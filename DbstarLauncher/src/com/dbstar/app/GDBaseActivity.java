@@ -7,7 +7,6 @@ import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
 import com.dbstar.app.alert.GDDiskInitDialog;
 import com.dbstar.app.alert.NotificationDialog;
-import com.dbstar.app.alert.NotificationFragment;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.service.ClientObserver;
@@ -17,24 +16,17 @@ import com.dbstar.service.GDDataProviderService.DataProviderBinder;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.SharedPreferences;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -217,16 +209,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-	}
-
-	@Override
 	protected void onStop() {
 		super.onStop();
 
@@ -263,15 +245,17 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 				mStatusIndicatorView.setImageResource(R.drawable.sound_unmute);
 			}
 
+			mHandler.removeCallbacks(mHideMuteIconTask);
 			mStatusIndicatorView.setVisibility(View.VISIBLE);
-
-			mHandler.postDelayed(new Runnable() {
-				public void run() {
-					mStatusIndicatorView.setVisibility(View.INVISIBLE);
-				}
-			}, 2000);
+			mHandler.postDelayed(mHideMuteIconTask, 2000);
 		}
 	}
+	
+	Runnable mHideMuteIconTask = new Runnable() {
+		public void run() {
+			mStatusIndicatorView.setVisibility(View.INVISIBLE);
+		}
+	};
 
 	public boolean isMute() {
 		if (mService != null) {
@@ -574,9 +558,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	NotificationDialog mNotificationDialog = null;
-//	int mStyle = 1;
-//	String mMessage = null;
-//	int mDuration = GDCommon.OSDDISP_TIMEOUT;
+
 	protected void displayNotification(String message) {
 		Log.d(TAG, " ======= displayNotification ============ " + message);
 
@@ -624,6 +606,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		
 		if (mNotificationDialog != null) {
 			mNotificationDialog.dismiss();
+			mNotificationDialog = null;
 		}
 	}
 
