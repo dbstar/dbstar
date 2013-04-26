@@ -127,8 +127,8 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver
 		{
 			if(SystemProperties.getInt(STR_1080SCALE, 0) == 2){
 				Log.d("boot_completed", "BOOT_COMPLETED");
-			//writeFileJNI(VideoAxisFile, "0 0 1280 720");
-			//writeFileJNI(DispFile, "1280 720");
+				writeFileJNI(VideoAxisFile, "0 0 1280 720");
+				writeFileJNI(DispFile, "1280 720");
 			}
 		}
 		// change output mode
