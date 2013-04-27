@@ -85,10 +85,10 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		// boot completed
 		if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)) {
-			if (SystemProperties.getInt(SettingsCommon.STR_1080SCALE, 0) == 2) {
-				Utils.setValue(VideoAxisFile, "0 0 1280 720");
-				Utils.setValue(DispFile, "1280 720");
-			}
+//			if (SystemProperties.getInt(SettingsCommon.STR_1080SCALE, 0) == 2) {
+//				Utils.setValue(VideoAxisFile, "0 0 1280 720");
+//				Utils.setValue(DispFile, "1280 720");
+//			}
 		}
 		// change output mode
 		else if (intent.getAction().equalsIgnoreCase(
