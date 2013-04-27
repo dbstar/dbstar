@@ -1,0 +1,14 @@
+﻿stemNames:甲,乙,丙,丁,戊,己,庚,辛,壬,癸
+branchNames:子,丑,寅,卯,辰,巳,午,未,申,酉,戌,亥
+animalNames:鼠,牛,虎,兔,龙,蛇,马,羊,猴,鸡,狗,猪
+chineseMonthNames:正,二,三,四,五,六,七,八,九,十,冬,腊
+principleTermNames:大寒,雨水,春分,谷雨,小满,夏至,大暑,处暑,秋分,霜降,小雪,冬至
+sectionalTermNames:小寒,立春,惊蛰,清明,立夏,芒种,小暑,立秋,白露,寒露,立冬,大雪
+monthNames:一,二,三,四,五,六,七,八,九,十,十一,十二
+nStr1:日,一,二,三,四,五,六,七,八,九,十
+nStr2:初,十,廿,卅,□
+ChuShi:初十
+ErShi:二十
+SanShi:三十
+Yue:月
+Run:闰
