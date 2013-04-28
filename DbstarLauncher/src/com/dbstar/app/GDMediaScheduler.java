@@ -210,6 +210,12 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		Log.d(TAG, "surfaceDestroyed");
 
 		mUIReady = false;
+		
+		// we must clear this uri of VideoView, or else
+		// when the surface is created again, it will play
+		// this uri again automaticly, see
+		// GDVideoView/surfaceCreated/openVideo()
+		mVideoView.setVideoURI(null);
 	}
 
 	@Override
