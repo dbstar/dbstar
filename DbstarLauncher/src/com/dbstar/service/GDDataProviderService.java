@@ -24,7 +24,6 @@ import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDVBDataContract;
 import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GDDataModel;
-import com.dbstar.model.GDNetModel;
 import com.dbstar.model.GuideListItem;
 import com.dbstar.model.PreviewData;
 import com.dbstar.model.ReceiveData;
@@ -86,9 +85,6 @@ public class GDDataProviderService extends Service {
 	public static final int REQUESTTYPE_GETMOVIECOUNT = 0x2009;
 	public static final int REQUESTTYPE_GETTVCOUNT = 0x2010;
 
-	public static final int REQUESTTYPE_GETPOWERCONSUMPTION = 0x3001;
-	public static final int REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE = 0x3002;
-
 	public static final int REQUESTTYPE_SETSETTINGS = 0x4001;
 	public static final int REQUESTTYPE_GETSETTINGS = 0x4002;
 
@@ -128,7 +124,6 @@ public class GDDataProviderService extends Service {
 	private GDSystemConfigure mConfigure = null;
 
 	private GDDataModel mDataModel = null;
-	private GDNetModel mNetModel = null;
 
 	private ConnectivityManager mConnectManager;
 	private GDDiskSpaceMonitor mDiskMonitor;
@@ -241,7 +236,6 @@ public class GDDataProviderService extends Service {
 
 		mConfigure = new GDSystemConfigure();
 		mDataModel = new GDDataModel();
-		mNetModel = new GDNetModel();
 		mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
 		mDBStarClient = new GDDBStarClient(this);
 
@@ -305,7 +299,6 @@ public class GDDataProviderService extends Service {
 
 		// initialize engine
 		initializeDataEngine();
-		initializeNetEngine();
 
 		queryDiskGuardSize();
 
@@ -361,25 +354,15 @@ public class GDDataProviderService extends Service {
 		mDataModel.deInitialize();
 	}
 
-	void initializeNetEngine() {
-		mNetModel.initialize();
-	}
-
-	void deinitializeNetEngine() {
-		mNetModel.deinitialize();
-	}
-
 	public void onDestroy() {
 		super.onDestroy();
 		Log.d(TAG, "onDestroy");
-
 
 		stopDbStarService();
 		mDBStarClient.stop();
 		mDiskMonitor.stopMonitor();
 
 		deinitializeDataEngine();
-		deinitializeNetEngine();
 
 		unregisterReceiver(mNetworkReceiver);
 		unregisterReceiver(mUSBReceiver);
@@ -989,14 +972,6 @@ public class GDDataProviderService extends Service {
 			break;
 		}
 
-		case REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE:
-		case REQUESTTYPE_GETPOWERCONSUMPTION: {
-			if (task.Observer != null) {
-				task.Observer.updateData(task.Type, 0, 0, task.Data);
-			}
-			break;
-		}
-
 		case REQUESTTYPE_GETSMARTCARDINFO:
 		case REQUESTTYPE_MANAGECA:
 		case REQUESTTYPE_GETMAILCONTENT:
@@ -1369,42 +1344,6 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 
-				case REQUESTTYPE_GETPOWERCONSUMPTION: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_CCID);
-					String cc_id = (String) value;
-					value = task.Parameters.get(PARAMETER_DATESTART);
-					String date_start = (String) value;
-					value = task.Parameters.get(PARAMETER_DATEEND);
-					String date_end = (String) value;
-
-					String powerConsumption = mNetModel.getPowerConsumption(
-							cc_id, date_start, date_end);
-					task.Data = powerConsumption;
-
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_CCID);
-					String cc_id = (String) value;
-					value = task.Parameters.get(PARAMETER_DATESTART);
-					String date_start = (String) value;
-					value = task.Parameters.get(PARAMETER_DATEEND);
-					String date_end = (String) value;
-					value = task.Parameters.get(PARAMETER_CHAREGTYPE);
-					String charge_type = (String) value;
-
-					String totalCost = mNetModel.getTotalCostByChargeType(
-							cc_id, date_start, date_end, charge_type);
-					task.Data = totalCost;
-
-					taskFinished(task);
-					break;
-				}
-
 				case REQUESTTYPE_GETSETTINGS: {
 					task.Data = mDataModel.getSettingValue((String) task.Key);
 					taskFinished(task);
@@ -1578,43 +1517,6 @@ public class GDDataProviderService extends Service {
 		task.Parameters.put(PARAMETER_CONTENTDATA, content);
 		// enqueueTask(task);
 		enqueueTaskHightPrority(task);
-	}
-
-	public void getPowerConsumption(ClientObserver observer, String cc_id,
-			String date_start, String date_end) {
-		if (!mIsNetworkReady)
-			return;
-
-		RequestTask task = new RequestTask();
-		// task.Id = System.currentTimeMillis();
-		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETPOWERCONSUMPTION;
-
-		task.Parameters = new HashMap<String, Object>();
-		task.Parameters.put(PARAMETER_CCID, cc_id);
-		task.Parameters.put(PARAMETER_DATESTART, date_start);
-		task.Parameters.put(PARAMETER_DATEEND, date_end);
-
-		enqueueTask(task);
-	}
-
-	public void getTotalCostByChargeType(ClientObserver observer, String cc_id,
-			String date_start, String date_end, String charge_type) {
-		if (!mIsNetworkReady)
-			return;
-
-		RequestTask task = new RequestTask();
-		// task.Id = System.currentTimeMillis();
-		task.Observer = observer;
-		task.Type = REQUESTTYPE_GETTOTALCOSTBYCHARGETYPE;
-
-		task.Parameters = new HashMap<String, Object>();
-		task.Parameters.put(PARAMETER_CCID, cc_id);
-		task.Parameters.put(PARAMETER_DATESTART, date_start);
-		task.Parameters.put(PARAMETER_DATEEND, date_end);
-		task.Parameters.put(PARAMETER_CHAREGTYPE, charge_type);
-
-		enqueueTask(task);
 	}
 
 	public void getSettingsValue(ClientObserver observer, String key) {
