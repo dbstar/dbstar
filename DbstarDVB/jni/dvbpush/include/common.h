@@ -382,6 +382,7 @@ typedef struct{
 	char	PushEndTime[64];
 	char	Columns[512];	// it's better to use malloc and relloc
 	char	ReceiveStatus[32];
+	char	version[64];
 }DBSTAR_PRODUCTDESC_S;
 
 typedef struct{

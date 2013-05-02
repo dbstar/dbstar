@@ -111,10 +111,11 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 	if(NULL==xmlinfo)
 		return -1;
 	
-	if(PUBLICATION_XML==atoi(xmlinfo->PushFlag) || COLUMN_XML==atoi(xmlinfo->PushFlag) || SPRODUCT_XML==atoi(xmlinfo->PushFlag)){
-		PRINTF("this xml [%s] is controled by column 'Parsed' in table ProductDesc, don't insert to table Initialize\n",xmlinfo->PushFlag);
-		return 0;
-	}
+//	if(PUBLICATION_XML==atoi(xmlinfo->PushFlag) || COLUMN_XML==atoi(xmlinfo->PushFlag) || SPRODUCT_XML==atoi(xmlinfo->PushFlag))
+//	{
+//		PRINTF("this xml [%s] is controled by column 'Parsed' in table ProductDesc, don't insert to table Initialize\n",xmlinfo->PushFlag);
+//		return 0;
+//	}
 	
 	DEBUG("%s,%s,%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->ServiceID, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI, xmlinfo->ID);
 	
@@ -233,25 +234,26 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 		return -1;
 	}
 	
+	char *p_slash = NULL;
+	char from_file[256];
+	char to_file[256];
+	char cmd[4096];
+	
 	if(0==strlen(ptr->ParentID))
 		snprintf(ptr->ParentID, sizeof(ptr->ParentID), "-1");
 	
 	s_column_SequenceNum++;
 	
-	char *p_slash = strrchr(ptr->ColumnIcon_losefocus,'/');
+	p_slash = strrchr(ptr->ColumnIcon_losefocus,'/');
 	if(p_slash)
 		p_slash++;
 	else
 		p_slash = ptr->ColumnIcon_losefocus;
 	
-	char from_file[256];
-	char to_file[256];
-	char cmd[4096];
-	
 	snprintf(from_file,sizeof(from_file),"%s/%s", push_dir_get(),ptr->ColumnIcon_losefocus);
 	snprintf(to_file,sizeof(to_file),"%s/%s",column_res_get(),p_slash);
 	
-	if(0==fcopy_c(from_file,to_file)){
+	if(strlen(ptr->ColumnIcon_losefocus)>0 && 0==fcopy_c(from_file,to_file)){
 		DEBUG("copy %s to %s success\n",from_file,to_file);
 		snprintf(cmd, sizeof(cmd), "REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s',%d);",
 			ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
@@ -584,6 +586,7 @@ static void productdesc_clear(DBSTAR_PRODUCTDESC_S *ptr, int clear_flag)
 //	memset(ptr->PushEndTime, 0, sizeof(ptr->PushEndTime));
 	memset(ptr->Columns, 0, sizeof(ptr->Columns));
 	memset(ptr->ReceiveStatus, 0, sizeof(ptr->ReceiveStatus));
+	memset(ptr->version, 0, sizeof(ptr->version));
 }
 
 /*
@@ -1097,6 +1100,10 @@ static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
 					snprintf(p->rootPath,sizeof(p->rootPath),"%s",(char *)szAttr);
 					signed_char_clear(p->rootPath, strlen(p->rootPath), '/', 3);
 				}
+				else if(0==xmlStrncasecmp(BAD_CAST"version", attrPtr->name, xmlStrlen(attrPtr->name))
+					&& xmlStrlen(BAD_CAST"version")==xmlStrlen(attrPtr->name)){
+					snprintf(p->version,sizeof(p->version),"%s",(char *)szAttr);
+				}
 				else
 					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
 			}
@@ -1269,13 +1276,17 @@ static int read_xmlver_in_trans(DBSTAR_XMLINFO_S *xmlinfo,char *old_xmlver,unsig
 		return -1;
 		
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Version FROM Initialize WHERE PushFlag='%s' AND ID='%s';",xmlinfo->PushFlag,xmlinfo->ID);
+	if(strlen(xmlinfo->ID)>0)
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Version FROM Initialize WHERE PushFlag='%s' AND ID='%s';",xmlinfo->PushFlag,xmlinfo->ID);
+	else
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Version FROM Initialize WHERE PushFlag='%s';",xmlinfo->PushFlag);
+		
 	if(0<sqlite_transaction_read(sqlite_cmd,old_xmlver,old_xmlver_size)){
 		PRINTF("read xml old version: %s\n", old_xmlver);
 		return 0;
 	}
 	else{
-		PRINTF("read xml old version failed\n");
+		PRINTF("read xml old version failed: %s\n", sqlite_cmd);
 		return -1;
 	}
 }
@@ -1310,6 +1321,8 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 	
 	xmlChar *szKey = NULL;
 	char new_xmlroute[256];
+	char old_xmlver_in_recv[64];
+	DBSTAR_XMLINFO_S xmlinfo_in_recv;
 	
 	/*
 	只有公共的Version和StandardVersion字段统一处理
@@ -2386,9 +2399,24 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 1);
 					parseProperty(cur, new_xmlroute, ptr);
-					snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d",RECEIVETYPE_SPRODUCT);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
-					productdesc_insert((DBSTAR_PRODUCTDESC_S *)ptr);
+					
+					memset(&xmlinfo_in_recv, 0, sizeof(xmlinfo_in_recv));
+					snprintf(xmlinfo_in_recv.PushFlag,sizeof(xmlinfo_in_recv.PushFlag),"%d",SPRODUCT_XML);
+					read_xmlver_in_trans(&xmlinfo_in_recv,old_xmlver_in_recv,sizeof(old_xmlver_in_recv));
+					if((strlen(old_xmlver_in_recv)>0 && 0==strcmp(old_xmlver_in_recv, p->version))){
+						DEBUG("old ver: %s, new ver: %s, no need to regist and parse\n",old_xmlver_in_recv, p->version);
+					}
+					else{
+						snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d",RECEIVETYPE_SPRODUCT);
+						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+						
+						snprintf(xmlinfo_in_recv.Version,sizeof(xmlinfo_in_recv.Version),"%s",p->version);
+						snprintf(xmlinfo_in_recv.URI,sizeof(xmlinfo_in_recv.URI),"%s",p->DescURI);
+						
+						productdesc_insert((DBSTAR_PRODUCTDESC_S *)ptr);
+						
+						xmlinfo_insert(&xmlinfo_in_recv);
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveSProduct^SProductID")){
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
@@ -2460,9 +2488,24 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
 					productdesc_clear((DBSTAR_PRODUCTDESC_S *)ptr, 1);
 					parseProperty(cur, new_xmlroute, ptr);
-					snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d", RECEIVETYPE_COLUMN);
-					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
-					productdesc_insert((DBSTAR_PRODUCTDESC_S *)ptr);
+					
+					memset(&xmlinfo_in_recv, 0, sizeof(xmlinfo_in_recv));
+					snprintf(xmlinfo_in_recv.PushFlag,sizeof(xmlinfo_in_recv.PushFlag),"%d",COLUMN_XML);
+					read_xmlver_in_trans(&xmlinfo_in_recv,old_xmlver_in_recv,sizeof(old_xmlver_in_recv));
+					if((strlen(old_xmlver_in_recv)>0 && 0==strcmp(old_xmlver_in_recv, p->version))){
+						DEBUG("old ver: %s, new ver: %s, no need to regist and parse\n",old_xmlver_in_recv, p->version);
+					}
+					else{
+						snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d", RECEIVETYPE_COLUMN);
+						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+						
+						snprintf(xmlinfo_in_recv.Version,sizeof(xmlinfo_in_recv.Version),"%s",p->version);
+						snprintf(xmlinfo_in_recv.URI,sizeof(xmlinfo_in_recv.URI),"%s",p->DescURI);
+						
+						productdesc_insert((DBSTAR_PRODUCTDESC_S *)ptr);
+						
+						xmlinfo_insert(&xmlinfo_in_recv);
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "ProductDesc^ReceiveColumn^ColumnID")){
 					DBSTAR_PRODUCTDESC_S *p = (DBSTAR_PRODUCTDESC_S *)ptr;
@@ -3032,7 +3075,14 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 				else if(0==ret){
 					if(xml_relative_uri)
 						snprintf(xmlinfo.URI, sizeof(xmlinfo.URI), "%s", xml_relative_uri);
-					xmlinfo_insert(&xmlinfo);
+					
+					if(PUBLICATION_XML==atoi(xmlinfo.PushFlag) || COLUMN_XML==atoi(xmlinfo.PushFlag) || SPRODUCT_XML==atoi(xmlinfo.PushFlag))
+					{
+						PRINTF("this xml [%s] is controled by column 'Parsed' in table ProductDesc, don't insert to table Initialize\n",xmlinfo.PushFlag);
+					}
+					else{
+						xmlinfo_insert(&xmlinfo);
+					}
 					
 					sqlite_transaction_end(1);
 				}
