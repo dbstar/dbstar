@@ -18,6 +18,10 @@ public class EthernetSettings2Page extends BaseFragment {
 	EthernetConfigController mController;
 	Button mOkButton, mPrevButton;
 
+	public EthernetSettings2Page() {
+		
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {

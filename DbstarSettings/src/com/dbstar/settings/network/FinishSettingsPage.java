@@ -179,6 +179,10 @@ public class FinishSettingsPage extends BaseFragment {
 		});
 	}
 
+	public FinishSettingsPage() {
+		
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {

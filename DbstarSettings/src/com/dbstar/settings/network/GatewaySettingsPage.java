@@ -33,6 +33,10 @@ public class GatewaySettingsPage extends BaseFragment {
 			mGatewayIP, mGatewayPort;
 	View mNullview;
 	Button mNextButton;
+	
+	public GatewaySettingsPage () {
+		
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,

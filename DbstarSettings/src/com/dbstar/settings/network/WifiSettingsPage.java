@@ -17,6 +17,10 @@ public class WifiSettingsPage extends BaseFragment {
 	WifiSettings mSettings;
 	Button mNextButton, mPrevButton;
 
+	public WifiSettingsPage() {
+		
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {

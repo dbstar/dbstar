@@ -36,6 +36,10 @@ public class ChannelSelectorPage extends BaseFragment {
 	private WifiManager mWifiManager;
 	private EthernetManager mEthManager;
 
+	public ChannelSelectorPage() {
+		
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
