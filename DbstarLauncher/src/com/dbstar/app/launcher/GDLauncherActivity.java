@@ -372,36 +372,20 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Log.d(TAG, "column id=" + menuItem.ColumnId() + " column type="
 				+ menuItem.Type());
 		
-		if (menuItem.Type().equals(GDCommon.ColumnTypeMovie)) {
-			mIsStartingColumnView = true;
-			mService.getMovieCount(this, menuItem.ColumnId());
-			return true;
-		} else if (menuItem.Type().equals(GDCommon.ColumnTypeTV)) {
-			mIsStartingColumnView = true;
-			mService.getTVCount(this, menuItem.ColumnId());
-			return true;
-		}
+//		if (menuItem.Type().equals(GDCommon.ColumnTypeMovie)) {
+//			mIsStartingColumnView = true;
+//			mService.getMovieCount(this, menuItem.ColumnId());
+//			return true;
+//		} else if (menuItem.Type().equals(GDCommon.ColumnTypeTV)) {
+//			mIsStartingColumnView = true;
+//			mService.getTVCount(this, menuItem.ColumnId());
+//			return true;
+//		}
 
 		if (menuItem.Type().equals(GDCommon.ColumnTypeMovie)) {
-
-//			Intent intent = new Intent();
-//			intent.putExtra(Content.COLUMN_ID, menuItem.ColumnId());
-//			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-//			intent.setClass(this, GDHDMovieActivity.class);
-//			startActivity(intent);
 			startMovieView(menuItem.ColumnId());
-
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeTV)) {
-
-			// Has no sub-menu, only level1
-//			Intent intent = new Intent();
-//			intent.putExtra(Content.COLUMN_ID, menuItem.ColumnId());
-//			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-//			Log.d(TAG, "menu path = " + mMenuPath);
-//			intent.setClass(this, GDTVActivity.class);
-//			startActivity(intent);
 			startTVView(menuItem.ColumnId());
-
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSmartLife)) {
 			showGuodianApp(menuItem.ColumnId());
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSettings)) {
