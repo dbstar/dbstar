@@ -3,6 +3,7 @@ package com.dbstar.settings;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.dbstar.settings.R;
@@ -26,6 +27,14 @@ public class GDNetworkSettingsActivity extends GDBaseActivity implements
 		constructPages();
 
 		setContentView(R.layout.network_settings);
+		
+		initializeView();
+		
+		Intent intent = getIntent();
+		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
+		if (mMenuPath != null) {
+			showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		}
 
 		switchToPage(SettingsCommon.PAGE_GATEWAY);
 	}

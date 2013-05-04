@@ -7,6 +7,8 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -67,12 +69,17 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.system_management_view);
-
+		
+		initializeView();
+		
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 		Log.d(TAG, "menu path = " + mMenuPath);
 
-		initializeView();
+		if (mMenuPath != null) {
+			String[] menuArray = mMenuPath.split(MENU_STRING_DELIMITER);
+			showMenuPath(menuArray);
+		}
 	}
 
 	protected void initializeView() {
@@ -93,21 +100,24 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		mOkButton.setOnKeyListener(mOnKeyListener);
 		mCancelButton.setOnKeyListener(mOnKeyListener);
 
-		mInputBox
-				.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+		mInputBox.addTextChangedListener(new TextWatcher() {
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+				
+			}
 
-					@Override
-					public boolean onEditorAction(TextView v, int actionId,
-							KeyEvent event) {
-						if (actionId == EditorInfo.IME_ACTION_DONE) {
-							checkSecurityCode();
-						}
-						return false;
-					}
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+			}
 
-				});
+			public void afterTextChanged(Editable s) {
+				checkSecurityCode();
+			}
+
+		}); 
 
 		mOkButton.setEnabled(false);
+		mOkButton.setFocusable(false);
 		mCancelButton.requestFocus();
 		mSecurityCodeView.setText(mSecurityCode);
 	}
@@ -139,11 +149,15 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 			if (mClearChecker.isChecked() || mFormatChecker.isChecked()
 					|| mRestoreChecker.isChecked()) {
 				mOkButton.setEnabled(true);
+				mOkButton.setFocusable(true);
 			}
 		}
 	}
 
 	void okButtonPressed() {
+		
+		RestoreFactoryUtil.closeNetwork();
+		
 		if (mTasks == null) {
 			mTasks = new ArrayList<TaskEntity>();
 		} else {
@@ -151,7 +165,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		}
 
 		if (mRestoreChecker.isChecked()) {
-			RestorTaskEntity task = new RestorTaskEntity(this);
+			RestoreTaskEntity task = new RestoreTaskEntity(this);
 			mTasks.add(task);
 		}
 
@@ -191,12 +205,10 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		RebootUtils.rebootNormal(this);
 	}
 
-	@Override
 	public void taskFinished() {
 		scheduleTaskSequently();
 	}
 
-	@Override
 	public void registerTask(TaskObserver observer) {
 		mCurrentTask = observer;
 	}
@@ -207,7 +219,6 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 
 	View.OnKeyListener mOnKeyListener = new View.OnKeyListener() {
 
-		@Override
 		public boolean onKey(View v, int keyCode, KeyEvent event) {
 			int action = event.getAction();
 			if (action == KeyEvent.ACTION_DOWN) {
@@ -259,8 +270,8 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		}
 	}
 
-	class RestorTaskEntity extends TaskEntity {
-		public RestorTaskEntity(TaskController controller) {
+	class RestoreTaskEntity extends TaskEntity {
+		public RestoreTaskEntity(TaskController controller) {
 			super(controller, TaskRestore);
 		}
 
@@ -278,7 +289,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 					hideLoadingDialog();
 					Controller.taskFinished();
 				}
-			}, 3000);
+			}, 6000);
 		}
 	}
 
@@ -298,7 +309,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 					hideLoadingDialog();
 					Controller.taskFinished();
 				}
-			}, 3000);
+			}, 6000);
 		}
 	}
 
@@ -324,7 +335,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 			showLoadingDialog(msg);
 
 			if (resultCode == VALUE_TRUE) {
-				rebootDelayed(1000);
+				rebootDelayed(3000);
 			} else {
 				rebootDelayed(5000);
 			}

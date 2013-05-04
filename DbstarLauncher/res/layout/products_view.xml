@@ -41,7 +41,7 @@
     <RelativeLayout
         android:id="@+id/content"
         android:layout_width="1033dp"
-        android:layout_height="569dp"
+        android:layout_height="560dp"
         android:layout_below="@id/view_header"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="0dp"

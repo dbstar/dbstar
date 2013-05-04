@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 import com.dbstar.settings.network.NetworkCommon;
+import com.dbstar.settings.utils.SettingsCommon;
+import com.dbstar.settings.utils.SoundSettings;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,7 +18,7 @@ import android.util.Log;
 public class DbstarNetSettingsReceiver extends BroadcastReceiver {
 
 	private static final String ACTION_BOOT_COMPLETED = "android.intent.action.BOOT_COMPLETED";
-	private static final String ActionClearSettings = "com.dbstar.Settings.Action.CLEAR_SETTINGS";
+	private static final String ActionClearSettings = "com.dbstar.settings.action.CLEAR_SETTINGS";
 	
 	public static final String flagFile = "flag";
 
@@ -68,6 +70,20 @@ public class DbstarNetSettingsReceiver extends BroadcastReceiver {
 			SharedPreferences.Editor editor = settings.edit();
 			editor.clear();
 			editor.commit();
+			
+			// reset audio output mode
+			SoundSettings.setAudioOutputMode("PCM", "0");
+			
+			// reset video output mode			
+			Intent changeIntent = new Intent(
+					SettingsCommon.ACTION_OUTPUTMODE_CHANGE);
+			changeIntent.putExtra(SettingsCommon.OUTPUT_MODE, "720p");
+			context.sendBroadcast(changeIntent);
+			
+			Intent saveIntent = new Intent(
+					SettingsCommon.ACTION_OUTPUTMODE_SAVE);
+			saveIntent.putExtra(SettingsCommon.OUTPUT_MODE, "720p");
+			context.sendBroadcast(saveIntent);
 		}
 		
 	}

@@ -36,13 +36,12 @@ public class GDProductsActivity extends GDBaseActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.products_view);
-
-//		Intent intent = getIntent();
-//		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-//		showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
-
 		initializeView();
-
+		Intent intent = getIntent();
+		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
+		if (mMenuPath != null) {
+			showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		}
 	}
 
 	public void onServiceStart() {

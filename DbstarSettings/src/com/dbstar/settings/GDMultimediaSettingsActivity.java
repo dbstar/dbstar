@@ -86,10 +86,12 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 		initializeView();
 
-		// Intent intent = getIntent();
-		// mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
-
+		Intent intent = getIntent();
+		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
+		if (mMenuPath != null) {
+			showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		}
+		
 		String audioMode = SoundSettings.getAudioOutputMode();
 		if (!audioMode.isEmpty()) {
 

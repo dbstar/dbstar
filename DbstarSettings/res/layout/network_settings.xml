@@ -9,4 +9,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        layout="@layout/footerview" />
+
 </RelativeLayout>

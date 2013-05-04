@@ -21,7 +21,7 @@
             android:layout_centerVertical="true"
             android:layout_marginLeft="40dp"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_dbstar" />
+            android:src="@drawable/logo_dbstar" />
         -->
 
         <TextView
@@ -180,11 +180,11 @@
         </LinearLayout>
     </LinearLayout>
 
-   <!-- <include
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        layout="@layout/footerview" /> -->
+   <include
+       android:layout_width="fill_parent"
+       android:layout_height="50dp"
+       android:layout_alignParentBottom="true"
+       android:layout_alignParentLeft="true"
+       layout="@layout/footerview" />
 
 </RelativeLayout>

@@ -45,6 +45,12 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected static final int DLG_TYPE_NEWMAIL_INFO = 2;
 	protected static final int DLG_TYPE_NOTIFICATION = 3;
 
+	protected static final int MSG_SMARTCARD_STATUSCHANGED = 0x80001;
+	protected static final int MSG_NEW_MAIL = 0x80002;
+	protected static final int MSG_DISP_NOTIFICATION = 0x80003;
+	protected static final int MSG_HIDE_NOTIFICATION = 0x80004;
+	protected static final int MSG_DISK_INIT = 0x80005;
+	
 	protected static final String INTENT_KEY_MENUPATH = "menu_path";
 	protected static final int MENU_LEVEL_1 = 0;
 	protected static final int MENU_LEVEL_2 = 1;
@@ -485,12 +491,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	}
 
 	private static final int DLG_TIMEOUT = 3000;
-	protected static final int MSG_SMARTCARD_STATUSCHANGED = 0x80001;
-
-	protected static final int MSG_NEW_MAIL = 2;
-	protected static final int MSG_DISP_NOTIFICATION = 3;
-	protected static final int MSG_HIDE_NOTIFICATION = 4;
-	protected static final int MSG_DISK_INIT = 5;
 
 	Timer mDlgTimer = null;
 	TimerTask mTimeoutTask = null;

@@ -35,9 +35,11 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 
 		initializeView();
 
-//		Intent intent = getIntent();
-		// mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-		// showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		Intent intent = getIntent();
+		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
+		if (mMenuPath != null) {
+			showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
+		}
 	}
 
 	private String[] mKeys;
@@ -98,7 +100,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	}
 
 	public void initializeView() {
-		// super.initializeView();
+		super.initializeView();
 
 		mDeviceSerialNumberView = (TextView) findViewById(R.id.device_serialnumber);
 		mHardwareTypeView = (TextView) findViewById(R.id.device_hardwaretype);

@@ -4,12 +4,14 @@ import java.io.InputStream;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +29,7 @@ import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
+import com.dbstar.app.settings.GDSystemMgrActivity;
 import com.dbstar.widget.GDAdapterView;
 
 public class GDHelpActivity extends GDBaseActivity {
@@ -43,6 +46,10 @@ public class GDHelpActivity extends GDBaseActivity {
 		setContentView(R.layout.help_view);
 
 		initializeView();
+
+		Intent intent = getIntent();
+		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
+		Log.d(TAG, "menu path = " + mMenuPath);
 
 		if (mMenuPath != null) {
 			String[] menuArray = mMenuPath.split(MENU_STRING_DELIMITER);
@@ -92,7 +99,6 @@ public class GDHelpActivity extends GDBaseActivity {
 		mHeaderView.setAdapter(adapter);
 
 		mHeaderView.setOnItemSelectedListener(new OnItemSelectedListener() {
-			@Override
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long id) {
 				ItemHeader item = mItems[position];
@@ -100,7 +106,6 @@ public class GDHelpActivity extends GDBaseActivity {
 				loadPage(pageUrl);
 			}
 
-			@Override
 			public void onNothingSelected(AdapterView<?> parent) {
 
 			}
@@ -111,6 +116,50 @@ public class GDHelpActivity extends GDBaseActivity {
 		super.onStart();
 
 	}
+
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_MENU: {
+			mIsMenuKeyPressed = true;
+			mHandler.postDelayed(mCheckLongPressTask, 5000);
+			return true;
+		}
+		}
+		
+		return super.onKeyDown(keyCode, event);
+	}
+	
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_MENU: {
+			mIsMenuKeyPressed = false;
+			mHandler.removeCallbacks(mCheckLongPressTask);
+			return true;
+		}
+		}
+		return super.onKeyUp(keyCode, event);
+	}
+	
+	// when long press menu key more than 5 seconds, 
+	// show the system management page.
+	private boolean mIsMenuKeyPressed = false;
+
+	Runnable mCheckLongPressTask = new Runnable() {
+
+		public void run() {
+		
+			if (mIsMenuKeyPressed) {
+				Intent intent = new Intent();
+				intent.setClass(GDHelpActivity.this, GDSystemMgrActivity.class);
+
+				intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+				startActivity(intent);
+			}
+		}
+		
+	};
+	
+	
 
 	void loadPage(String url) {
 		mContentView.loadUrl("file:///android_asset/" + url);

@@ -46,6 +46,8 @@ public class MultiPanelActivity extends GDBaseActivity {
 
 		initializeView();
 
+		Intent intent = getIntent();
+		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 		if (mMenuPath != null) {
 			String[] menuArray = mMenuPath.split(MENU_STRING_DELIMITER);
 			showMenuPath(menuArray);

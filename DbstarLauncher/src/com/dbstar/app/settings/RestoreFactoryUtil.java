@@ -15,9 +15,25 @@ import android.net.ethernet.EthernetDevInfo;
 
 public class RestoreFactoryUtil {
 
-	private static final String ActionClearSettings = "com.dbstar.Settings.Action.CLEAR_SETTINGS";
+	private static final String ActionClearSettings = "com.dbstar.settings.action.CLEAR_SETTINGS";
+	
+	public static void closeNetwork() {
+		Context context = GDApplication.getAppContext();
+
+		// configure wifi
+		WifiManager wifiMgr = (WifiManager) context
+				.getSystemService(Context.WIFI_SERVICE);
+		wifiMgr.disconnect();
+		
+		EthernetManager ethernetMgr = (EthernetManager) context
+				.getSystemService(Context.ETH_SERVICE);
+		ethernetMgr.setEthEnabled(false);
+	}
+	
 	public static void clearNetworkInfo() {
 		Context context = GDApplication.getAppContext();
+
+		// configure wifi
 		WifiManager wifiMgr = (WifiManager) context
 				.getSystemService(Context.WIFI_SERVICE);
 
@@ -27,8 +43,7 @@ public class RestoreFactoryUtil {
 		}
 		
 		wifiMgr.saveConfiguration();
-		
-		
+
 		EthernetManager ethernetMgr = (EthernetManager) context
 		.getSystemService(Context.ETH_SERVICE);
 		
@@ -45,7 +60,7 @@ public class RestoreFactoryUtil {
 				
 				ethernetMgr.updateEthDevInfo(ethInfo);
 			}
-		}
+		}		
 	}
 	
 	public static void clearSystemSettings() {

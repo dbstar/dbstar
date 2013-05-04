@@ -224,9 +224,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			return true;
 		}
 		
-		if (mIsStartingColumnView) {
-			return true;
-		}
+//		if (mIsStartingColumnView) {
+//			return true;
+//		}
 
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_DPAD_RIGHT:
