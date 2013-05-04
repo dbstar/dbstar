@@ -18,6 +18,10 @@ public class BaseFragment extends Fragment implements DialogCreatable {
 	protected boolean mBound = false;
 	protected PageManager mManager = null;
 
+	public BaseFragment() {
+
+	}
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
