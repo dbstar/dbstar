@@ -23,3 +23,7 @@
 	native int setInSubtitleNumberByJni(int,java.lang.String  );
 	native void closeInSub();
 }
+
+# Keep all Fragments in this package, which are used by reflection.
+-keep class com.dbstar.settings.network.*
+-keep class com.dbstar.settings.base.*Fragment
