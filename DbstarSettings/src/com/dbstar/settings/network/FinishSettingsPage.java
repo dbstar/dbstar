@@ -42,8 +42,8 @@ public class FinishSettingsPage extends BaseFragment {
 
 	private Timer mTimer = null;
 	private TimerTask mTask = null;
-	private String mKeyChannel;
-
+	private  String mKeyChannel;
+	boolean mIsReconnect = false;
 	class TimeoutTask implements Runnable {
 
 		@Override
@@ -55,19 +55,13 @@ public class FinishSettingsPage extends BaseFragment {
 	}
 
 	void configureTimeout() {
-		if (getWifiState() != State.CONNECTED)
-			mWifiStateView.setText(getStringFromResource(
-					R.string.network_channel_wireless,
-					R.string.network_setup_failed));
-		if (getEthernetState() != State.CONNECTED)
-			mEthernetStateView.setText(getStringFromResource(
-					R.string.network_channel_cable,
-					R.string.network_setup_failed));
+	   mHandler.post(handleEthernetTask);
+	   mHandler.post(handleWifiTask);
 		stopTimer();
 	}
 
 	void stopTimer() {
-		Log.d(TAG, "============== stop Timer");
+	    Log.d(TAG, "============== stop Timer" );
 		if (mTask != null) {
 			mTask.cancel();
 			mTask = null;
@@ -79,89 +73,144 @@ public class FinishSettingsPage extends BaseFragment {
 		}
 	}
 
-	Runnable handConnectReceiverTask = new Runnable() {
-
-		@Override
-		public void run() {
-			// only process the Connect and DISCONNECT ,Other state will be
-			// processed by TimeoutTask
-			if (mKeyChannel.equals(NetworkCommon.ChannelEthernet)) {
-				if (getEthernetState() == State.CONNECTED
-						|| getEthernetState() == State.DISCONNECTED) {
-					stopTimer();
-				}
-				if (getEthernetState() == State.CONNECTED) {
-					handleNetworkConnectStatus(mEthernetStateView, true);
-				} else if (getEthernetState() == State.DISCONNECTED) {
-					handleNetworkConnectStatus(mEthernetStateView, false);
-				}
-			} else if (mKeyChannel.equals(NetworkCommon.ChannelBoth)) {
-				if ((getEthernetState() == State.CONNECTED || getEthernetState() == State.DISCONNECTED)
-						&& (getWifiState() == State.CONNECTED || getWifiState() == State.DISCONNECTED)) {
-					stopTimer();
-				}
-				if (getEthernetState() == State.CONNECTED) {
-					handleNetworkConnectStatus(mEthernetStateView, true);
-				} else if (getEthernetState() == State.DISCONNECTED) {
-					handleNetworkConnectStatus(mEthernetStateView, false);
-				}
-
-				if (getWifiState() == State.CONNECTED) {
-					handleNetworkConnectStatus(mWifiStateView, true);
-				} else if (getWifiState() == State.DISCONNECTED) {
-					handleNetworkConnectStatus(mWifiStateView, false);
-				}
-			}
-		}
-	};
-
-	void handleNetworkConnectStatus(TextView view, boolean connected) {
-		int stringId = R.string.network_channel_cable;
-		if (view.getId() == R.id.wifi_state_view) {
-			stringId = R.string.network_channel_wireless;
-		}
-		if (connected) {
-			view.setText(getStringFromResource(stringId,
-					R.string.network_setup_success));
-		} else {
-			view.setText(getStringFromResource(stringId,
-					R.string.network_setup_failed));
-		}
-	}
-
-	private String getStringFromResource(int... ids) {
-		StringBuffer sb = new StringBuffer();
-		if (ids != null) {
-			for (int id : ids) {
-				sb.append(getResources().getString(id));
-			}
-		}
-		return sb.toString();
-	}
-
+   
+    void handleNetworkConnectStatus(TextView view,boolean connected){
+        int stringId = R.string.network_channel_cable;
+        if(view.getId() == R.id.wifi_state_view){
+            stringId =R.string.network_channel_wireless;
+        }
+       if(connected){
+           view.setText(getStringFromResource(stringId,R.string.network_setup_success));
+       }else{
+           view.setText(getStringFromResource(stringId,R.string.network_setup_failed));
+       }
+   }
+   private  String getStringFromResource(int ...ids){
+       StringBuffer sb = new StringBuffer();
+        if(ids != null){
+            for(int id :ids){
+                sb.append(getResources().getString(id));
+            }
+        }
+        return sb.toString();
+    }
+   
+   
+   Runnable handleEthernetTask = new Runnable() {
+    
+    @Override
+    public void run() {
+        if(getEthernetState() == State.CONNECTED){
+            handleNetworkConnectStatus(mEthernetStateView, true);
+        }else if(getEthernetState() == State.DISCONNECTED){
+            handleNetworkConnectStatus(mEthernetStateView, false);
+        }
+    }
+   };
+   Runnable handleWifiTask = new Runnable() {
+       
+       @Override
+       public void run() {
+           if(getWifiState() == State.CONNECTED){
+               handleNetworkConnectStatus(mWifiStateView, true);
+           }else if(getWifiState() == State.DISCONNECTED){
+               handleNetworkConnectStatus(mWifiStateView, false);
+           }
+       }
+      };
+    private boolean mFirstEthConnect = false;
 	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
 
 		public void onReceive(Context context, Intent intent) {
-			Log.i(TAG, "~~~~~~~~~~~~~~~~~~~~~~ onRevceiver ~~~~~~~~~~~~~~~~~~ ");
-			mHandler.removeCallbacks(handConnectReceiverTask);
-			mHandler.postDelayed(handConnectReceiverTask, 5000);
-
+		    
+		    
+		    if(mKeyChannel.equals(NetworkCommon.ChannelEthernet)){
+		        
+		        NetworkInfo netInfo = (NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
+		        boolean isNoConnectivity = intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
+		        
+		        if(netInfo.getType() == ConnectivityManager.TYPE_ETHERNET){
+		            mHandler.removeCallbacks(handleEthernetTask);
+    		        if(netInfo.getState() == State.DISCONNECTED ){
+    		            if(!mFirstEthConnect){
+    		                mHandler.postDelayed(handleEthernetTask, 1000 * 60);
+    		                mFirstEthConnect = true;
+    		            }else{
+    		                mHandler.post(handleEthernetTask);
+    		            }
+    		            
+    		        }else if(netInfo.getState() == State.CONNECTED && isNoConnectivity == false){
+    		            if(!mFirstEthConnect){
+    		                mFirstEthConnect = true;
+    		                mHandler.postDelayed(handleEthernetTask,1000 * 60);
+    		            }else{
+    		                stopTimer();
+    		                mHandler.post(handleEthernetTask);
+    		            }
+    		        }
+		        }
+		    }else if(mKeyChannel.equals(NetworkCommon.ChannelBoth)){
+		        NetworkInfo otherNetWorkInfo = intent.getParcelableExtra(ConnectivityManager.EXTRA_OTHER_NETWORK_INFO);
+		        NetworkInfo networkInfo = (NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
+		        boolean isNoConnectivity = intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
+		        if(networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET){
+		             mHandler.removeCallbacks(handleEthernetTask);
+		            if(networkInfo.getState() == State.DISCONNECTED ){
+	                    mHandler.postDelayed(handleEthernetTask, 1000 * 60);
+	                    Timer timer = new Timer();
+	                    timer.schedule(new TimerTask() {
+                            
+                            @Override
+                            public void run() {
+                                if(getEthernetState() == State.CONNECTED){
+                                    mHandler.removeCallbacks(handleEthernetTask);
+                                    mHandler.post(handleEthernetTask);
+                                    this.cancel();
+                                }
+                            }
+                        }, 1000 * 5,1000* 5);
+	                }else if(networkInfo.getState() == State.CONNECTED && isNoConnectivity == false){
+	                    mHandler.post(handleEthernetTask);
+	                    
+	                }
+		            
+		            if(networkInfo.getState() == State.DISCONNECTED && otherNetWorkInfo != null){
+	                    if(otherNetWorkInfo.getType() == ConnectivityManager.TYPE_WIFI){
+	                       mIsReconnect = true;
+	                    }
+	                }
+		        }else if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI){
+		            mHandler.removeCallbacks(handleWifiTask);
+		            if(networkInfo.getState() == State.DISCONNECTED){
+		                if(!mIsReconnect){
+		                    mHandler.postDelayed(handleWifiTask, 1000 * 60);
+		                    mIsReconnect = true;
+		                }else{
+		                    mHandler.post(handleWifiTask);
+		                }
+		            }else if(networkInfo.getState() == State.CONNECTED && isNoConnectivity == false){
+		                if(mIsReconnect){
+		                    mHandler.post(handleWifiTask);
+		                }else{
+                            mHandler.postDelayed(handleWifiTask,  1000 * 60);
+                            mIsReconnect = true;
+		                }
+		            }
+		        }
+		    }
+		    
 		}
 
 	};
-
-	private State getWifiState() {
-		NetworkInfo wifiInfo = mConnectManager
-				.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		return wifiInfo.getState();
+	private State getWifiState(){
+	    NetworkInfo wifiInfo =  mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+	    return wifiInfo.getState();
 	}
-
-	private State getEthernetState() {
-		NetworkInfo ethernetInfo = mConnectManager
-				.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
-		return ethernetInfo.getState();
+	
+	private State getEthernetState(){
+	    NetworkInfo ethernetInfo =  mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
+	    return ethernetInfo.getState();
 	}
-
 	public boolean isNetworkConnected() {
 		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
 		return networkInfo != null
@@ -207,45 +256,41 @@ public class FinishSettingsPage extends BaseFragment {
 
 	public void onStart() {
 		super.onStart();
-
+		
 		SharedPreferences settings = mActivity.getSharedPreferences(
-				NetworkCommon.PREF_NAME_NETWORK, 0);
-		mKeyChannel = settings.getString(NetworkCommon.KeyChannel,
-				NetworkCommon.ChannelEthernet);
-		if (mKeyChannel.equals(NetworkCommon.ChannelEthernet)) {
-			mWifiStateView.setVisibility(View.INVISIBLE);
-		} else if (mKeyChannel.equals(NetworkCommon.ChannelBoth)) {
-			mWifiStateView.setVisibility(View.VISIBLE);
-		}
+                NetworkCommon.PREF_NAME_NETWORK, 0);
+        mKeyChannel = settings.getString(NetworkCommon.KeyChannel,
+                NetworkCommon.ChannelEthernet);
+        if(mKeyChannel.equals(NetworkCommon.ChannelEthernet)){
+            mWifiStateView.setVisibility(View.INVISIBLE);
+        }else if(mKeyChannel.equals(NetworkCommon.ChannelBoth)){
+            mWifiStateView.setVisibility(View.VISIBLE);
+        }
 		reqisterConnectReceiver();
-		scheduleTimeoutTask();
-		//
-		// mHandler.postDelayed(new Runnable() {
-		//
-		// @Override
-		// public void run() {
-		// checkConfigResult();
-		// }
-		//
-		// }, 2000);
+	    scheduleTimeoutTask();
+//
+//		mHandler.postDelayed(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//				checkConfigResult();
+//			}
+//
+//		}, 2000);
 	}
 
 	public void onStop() {
 		super.onStop();
 
 		stopTimer();
-		if (handConnectReceiverTask != null) {
-			mHandler.removeCallbacks(handConnectReceiverTask);
-			handConnectReceiverTask = null;
-		}
+		mHandler.removeCallbacks(handleEthernetTask);
+		mHandler.removeCallbacks(handleWifiTask);
 		unregisterConnectReceiver();
 	}
 
 	void initializeView() {
-		mEthernetStateView = (TextView) mActivity
-				.findViewById(R.id.ethernet_state_view);
-		mWifiStateView = (TextView) mActivity
-				.findViewById(R.id.wifi_state_view);
+		mEthernetStateView = (TextView) mActivity.findViewById(R.id.ethernet_state_view);
+		mWifiStateView = (TextView) mActivity.findViewById(R.id.wifi_state_view);
 		mWifiStateView.setVisibility(View.INVISIBLE);
 		mOkButton = (Button) mActivity.findViewById(R.id.okbutton);
 		mPrevButton = (Button) mActivity.findViewById(R.id.prevbutton);
@@ -285,7 +330,7 @@ public class FinishSettingsPage extends BaseFragment {
 			} else {
 				if (netInfo.getState() == NetworkInfo.State.CONNECTING
 						|| netInfo.getState() == NetworkInfo.State.DISCONNECTING) {
-					scheduleTimeoutTask();
+				    scheduleTimeoutTask();
 					return;
 				}
 

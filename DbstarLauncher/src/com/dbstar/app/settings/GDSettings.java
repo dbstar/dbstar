@@ -27,6 +27,7 @@ public class GDSettings {
 	public static final String PropertyMulticastIP = "DBDataServerIP";
 	public static final String PropertyMulticastPort = "DBDataServerPort";
 	
-	public static final String PropertyGuodianServerIP = "SmartLifeIP";
+	//public static final String PropertyGuodianServerIP = "SmartLifeIP";
+	public static final String PropertyGuodianServerIP = "SmarthomeServerIP";
 	public static final String PropertyGuodianServerPort = "SmartLifePort";
 }
