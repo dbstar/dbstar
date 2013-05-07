@@ -200,6 +200,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		super.onCreate(savedInstanceState);
 
 		mResource = new GDResourceAccessor(this);
+		
+		Intent intent = new Intent(this, GDDataProviderService.class);
+		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -208,9 +211,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 		mIsStarted = true;
 
-		if (!mBound) {
-			Intent intent = new Intent(this, GDDataProviderService.class);
-			bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+		if (mBound) {
+			mService.registerPageObserver(this);
 		}
 	}
 
@@ -227,9 +229,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 		if (mBound) {
 			mService.unRegisterPageObserver(this);
-		}
-
-		if (mBound) {
 			unbindService(mConnection);
 			mBound = false;
 		}
@@ -317,6 +316,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		@Override
 		public void onServiceDisconnected(ComponentName className) {
 			mBound = false;
+			mService = null;
 
 			onServiceStop();
 		}
@@ -330,10 +330,9 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		mSmartcardState = mService.getSmartcardState();
 	}
 
+	// this will not be called, only if when service is killed or crashed.
 	protected void onServiceStop() {
 		Log.d(TAG, "onServiceStop");
-
-		mService.unRegisterPageObserver(this);
 	}
 
 	public void updateData(int type, int param1, int param2, Object data) {

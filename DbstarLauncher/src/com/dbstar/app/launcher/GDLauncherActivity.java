@@ -155,7 +155,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onServiceStop() {
 		super.onServiceStop();
 
-		mService.unRegisterAppObserver(this);
+//		mService.unRegisterAppObserver(this);
 	}
 
 	public void onResume() {
@@ -192,6 +192,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		showMarqueeView();
 		
 //		resetMenuStack();
+
 	}
 
 	public void onStop() {
