@@ -87,7 +87,7 @@ public class SmartcardStateTracker {
 					break;
 				}
 				case DbstarServiceApi.DRM_SC_REMOVE_FAILED: {
-					mSmartcardState = SMARTCARD_STATE_INVALID;
+					//mSmartcardState = SMARTCARD_STATE_INVALID;
 					break;
 				}
 				}
