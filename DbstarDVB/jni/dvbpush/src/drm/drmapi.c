@@ -120,7 +120,7 @@ int drm_read(int *fd, unsigned char *buf, int size)
 	ret = CDCASTB_DRM_ReadFile((const void*)fd, buf, &rdsize);
 	if (ret != 0) {
 		LOGD("@@@@@@@@@@@ DRM_READ ERROR [%d](size=%d)=0x%x, rdsize=%d\n", fd,size, ret, rdsize);
-		if (ret == 0x42) { // CA card plug out
+		if ((ret == 0x42) || (ret == 0x1)) { // CA card plug out
 			rdsize = 0;
 		} else { // CA error
 			LOGD("@@@@@@@@@@@ CA ERROR =0x%x\n", ret);
