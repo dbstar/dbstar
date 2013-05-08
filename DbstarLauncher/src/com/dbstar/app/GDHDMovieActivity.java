@@ -157,9 +157,25 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		loadPage(0, 0);
 	}
 	
+	private void navigateUp() {
+		int currentItem = mSmallThumbnailView.getSelectedItemPosition();
+		mPageNumber--;
+		
+		int selected = currentItem + COLUMN_ITEMS;
+		loadPage(mPageNumber, selected);
+	}
+	
+	private void navigateDown() {
+		int currentItem = mSmallThumbnailView.getSelectedItemPosition();
+		mPageNumber++;
+		int selected = currentItem - COLUMN_ITEMS;
+		loadPage(mPageNumber, selected);
+	}
+
 	private void loadLastPage() {
 		int pageNumber = mPageDatas.size() - 1;
-		loadPage(pageNumber, 0);
+		Movie[] movies = mPageDatas.get(pageNumber);
+		loadPage(pageNumber, movies.length - 1);
 	}
 	
 	private void loadPage(int pageNumber, int focusItem) {
@@ -168,6 +184,13 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		mPageNumberView.setText(formPageText(pageNumber + 1, mPageCount));
 
 		Movie[] movies = mPageDatas.get(pageNumber);
+
+		if (focusItem > movies.length - 1) {
+			focusItem = movies.length - 1;
+		} else if (focusItem < 0) {
+			focusItem = 0;
+		}
+
 		mAdapter.setDataSet(movies);
 		mSmallThumbnailView.setSelection(focusItem);
 		mAdapter.notifyDataSetChanged();
@@ -542,9 +565,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 						if (mPageNumber > 0) {
 							loadPrevPage();
 						} else {
-							mSmallThumbnailView
-									.setSelection(mSmallThumbnailView
-											.getCount() - 1);
+							loadLastPage();
 						}
 						ret = true;
 					} else {
@@ -583,8 +604,10 @@ public class GDHDMovieActivity extends GDBaseActivity {
 					int currentItem = mSmallThumbnailView
 							.getSelectedItemPosition();
 					if (currentItem < COLUMN_ITEMS) {
-						loadPrevPage();
-						ret = true;
+						if (mPageNumber > 0) {
+							navigateUp();
+							ret = true;
+						}
 					}
 					break;
 				}
@@ -592,9 +615,11 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				case KeyEvent.KEYCODE_DPAD_DOWN: {
 					int currentItem = mSmallThumbnailView
 							.getSelectedItemPosition();
-					if (currentItem >= (PAGE_ITEMS - COLUMN_ITEMS)) {
-						loadNextPage();
-						ret = true;
+					if (currentItem >= COLUMN_ITEMS) {
+						if (mPageNumber < mPageCount - 1) {
+							navigateDown();
+							ret = true;
+						}
 					}
 					break;
 				}
