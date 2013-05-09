@@ -11,6 +11,17 @@ public class PlayerErrorInfo {
 	public static final int CDCA_RC_NOT_WATCHTIME = 0x34;
 	public static final int CDCA_RC_RIGHT_LIMIT = 0x35;
 
+	
+	public static boolean isDRMError(int errorCode) {
+		return (errorCode == CDCA_RC_CARD_INVALID || 
+				errorCode == CDCA_RC_FILE_ERROR ||
+				errorCode == CDCA_RC_NOENTITLE ||
+				errorCode == CDCA_RC_NOT_ISSUETIME ||
+				errorCode == CDCA_RC_NOT_WATCHTIME ||
+				errorCode == CDCA_RC_RIGHT_LIMIT);
+	}
+	
+	
 	public static String getErrorString(Resources res, int code) {
 		String errStr = null;
 		switch(code) {

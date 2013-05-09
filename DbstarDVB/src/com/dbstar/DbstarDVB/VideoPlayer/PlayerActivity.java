@@ -246,6 +246,17 @@ public class PlayerActivity extends Activity {
 	}
 
 	void showErrorInfoDlg(int errorCode) {
+		
+		// if smart card is removed and there a drm error,
+		// then do not display this error message
+		if (PlayerErrorInfo.isDRMError(errorCode)) {
+			int state = mSmartcardTacker.getSmartcardState();
+			if (state == SmartcardStateTracker.SMARTCARD_STATE_REMOVING ||
+				state == SmartcardStateTracker.SMARTCARD_STATE_REMOVED) {
+				return;
+			}
+		}
+		
 		mErrorCode = errorCode;
 		mAlertType = ALERT_TYPE_ERRORINFO;
 
