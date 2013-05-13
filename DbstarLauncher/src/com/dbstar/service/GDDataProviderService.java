@@ -847,6 +847,11 @@ public class GDDataProviderService extends Service {
 				handleDiskInitMessage(msg.arg1, (String)msg.obj);
 				break;
 			}
+			
+			case GDCommon.MSG_HOMEKEY_PRESSED: {
+				handleHomeKeyPressed();
+				break;
+			}
 
 			default:
 				break;
@@ -872,6 +877,12 @@ public class GDDataProviderService extends Service {
 	private void bootCompleted() {
 		SystemUtils.setVideoSettings();
 		mIsDisplaySet = true;
+	}
+	
+	private void handleHomeKeyPressed() {
+		if (mApplicationObserver != null) {
+			mApplicationObserver.handleNotifiy(GDCommon.MSG_HOMEKEY_PRESSED, null);
+		}
 	}
 	
 	private void notifySmartcardStatusChange(int state) {
@@ -1867,6 +1878,8 @@ public class GDDataProviderService extends Service {
 		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_IN);
 		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
 		filter.addAction(GDCommon.ACTION_BOOT_COMPLETED);
+		
+		filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
 
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
@@ -2245,6 +2258,8 @@ public class GDDataProviderService extends Service {
 				msg.sendToTarget();
 			} else if (action.equals(GDCommon.ACTION_BOOT_COMPLETED)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_BOOT_COMPLETED);
+			} else if (action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
+				mHandler.sendEmptyMessage(GDCommon.MSG_HOMEKEY_PRESSED);
 			}
 		}
 	};

@@ -62,9 +62,9 @@ public class GDCommon {
 	public static final int VAULE_FAILED = 0;
 	public static final int MSG_DISK_INITIALIZE = 0xB0003;
 	public static final int MSG_BOOT_COMPLETED = 0xB0004;
+	public static final int MSG_HOMEKEY_PRESSED = 0xB0005;
 	
 	public static final int OSDDISP_TIMEOUT = 3600000;
-
 	public static final String KeyDisk = "disk";
 
 	public static final String LangCN = "cho";

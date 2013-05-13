@@ -831,7 +831,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					public void onAnimationEnd(Animation animation) {
 						if (mResetMainMenu) {
 							mResetMainMenu = false;
+							
+							Menu topMenu = mMenuStack.peek();
+							mOldSelectedItemPosition = -1;
+							mSelectedItemPosition = topMenu.FocusedPosition;
+							
 							mMainMenu.setOnItemSelectedListener(mMenuItemSelectedListener);
+							mMainMenu.setSelectionByForce(mSelectedItemPosition);
+							
 							return;
 						}
 
@@ -921,6 +928,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		if (mParentMenuStack.size() > 0) {
 			mChildMenuStack.add(mMainMenu);
 			mMenuContainer.removeViewAt(0);
+			mMenuStack.pop();
 		} else {
 			return;
 		}
@@ -928,10 +936,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		while(mParentMenuStack.size() > 1) {
 			GDMenuGallery widget = mParentMenuStack.pop();
 			mChildMenuStack.add(widget);
+			mMenuStack.pop();
 		}
 		
 		mMainMenu = mParentMenuStack.pop();
-		mMainMenu.setVisibility(View.VISIBLE);
+		mMenuContainer.addView(mMainMenu, 0);
 		mMainMenu.setFocusable(true);
 
 		mResetMainMenu = true;
@@ -960,13 +969,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// Gallery slide to bottom end:
 	// . slide to menu to right, and show popup menu
 	void onParentMenuHided() {
-		mMainMenu.setVisibility(View.INVISIBLE);
-		mMainMenu.setFocusable(false);
+		mMenuContainer.removeViewAt(0);
 		mParentMenuStack.add(mMainMenu);
 
 		mMainMenu = addChildMenu();
 
-		mMainMenu.setVisibility(View.VISIBLE);
 		mMainMenu.setFocusable(true);
 
 		Menu menu = mCurrentSubMenu;//mMenuStack.peek();
@@ -997,17 +1004,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// submenu slide to left end:
 	// . slide gallery from bottom
 	void onChildMenuHided() {
-		mMainMenu.setVisibility(View.INVISIBLE);
 		mMainMenu.setFocusable(false);
 		mChildMenuStack.add(mMainMenu);
 		mMenuContainer.removeViewAt(0);
 		
 		mMainMenu = mParentMenuStack.pop();
-		mMainMenu.setVisibility(View.VISIBLE);
 		mMainMenu.setFocusable(true);
+		mMenuContainer.addView(mMainMenu, 0);
 
 		long time = AnimationUtils.currentAnimationTimeMillis();
-//		mIsParentMenuBeingUp = true;
 		mGallerySlideFromBottomAnim.setStartTime(time);
 		mMainMenu.startAnimation(mGallerySlideFromBottomAnim);
 	}
@@ -1015,8 +1020,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	// gallery slide from bottom end:
 	// . show popup menu
 	void onParentMenuShown() {
-//		mIsParentMenuBeingUp = false;
-//		showHighlightMenuItem();
 		mLeaveStart = false;
 		
 		Menu topMenu = mMenuStack.peek();
@@ -1133,6 +1136,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMediaScheduler.stop();
 		mMediaScheduler.start(mService);
 		mMediaScheduler.resume();
+	}
+	
+	void homeKeyPressed() {
+		resetMenuStack();
 	}
 
 	private boolean mIsUpdatingColumns = false;
@@ -1529,6 +1536,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		case GDCommon.MSG_UPDATE_PREVIEW:
 			updatePreview();
 			break;
+			
+		case GDCommon.MSG_HOMEKEY_PRESSED: {
+			homeKeyPressed();
+			break;
+		}
 		default:
 			break;
 		}

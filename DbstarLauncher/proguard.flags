@@ -1,0 +1,6 @@
+# Keep all Fragments in this package, which are used by reflection.
+-keep class com.dbstar.app.alert.*Fragment
+-keep class com.dbstar.app.base.*Fragment
+-keep class com.dbstar.app.settings.smartcard.*Fragment
+-keep class com.dbstar.guodian.app.base.*Fragment
+-keep class com.dbstar.guodian.app.mypower.*Fragment

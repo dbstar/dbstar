@@ -10,6 +10,8 @@ LOCAL_STATIC_JAVA_LIBRARIES := achartengine FormatCMD
 
 LOCAL_PACKAGE_NAME := DbstarLauncher
 LOCAL_CERTIFICATE := platform
+LOCAL_PROGUARD_FLAG_FILES := proguard.flags
+
 LOCAL_REQUIRED_MODULES := libnativeutils
 include $(BUILD_PACKAGE)
 
