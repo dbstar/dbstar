@@ -570,6 +570,7 @@ int ifconfig_get(char *interface_name, char *ip, char *status, char *mac)
 	return ret;
 }
 
+#define UPGRADE_FLAG	2
 void upgrade_sign_set()
 {
 	unsigned char mark = 0;
@@ -578,8 +579,8 @@ void upgrade_sign_set()
 	memset(&out, 0, sizeof(out));
 	if(0==get_loader_message(&mark, &out))
 	{
-		DEBUG("read loader msg: %d, set to 3\n", mark);
-		set_loader_reboot_mark(3);
+		DEBUG("read loader msg: %d, set to %d\n", mark,UPGRADE_FLAG);
+		set_loader_reboot_mark(UPGRADE_FLAG);
 	}
 	else
 		DEBUG("get loader message failed\n");
