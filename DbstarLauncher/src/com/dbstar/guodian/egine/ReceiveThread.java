@@ -35,7 +35,7 @@ public class ReceiveThread extends Thread {
 	public void run() {
 
 		while (!mExit.get()) {
-			Log.d(TAG, " receive thread run ============== !");
+			Log.d(TAG, "===== receive thread run ===== !");
 
 			if (mSocket != null && mSocket.isConnected() && !mSocket.isClosed()) {
 				try {
@@ -51,14 +51,14 @@ public class ReceiveThread extends Thread {
 							break;
 						}
 
-						Log.d(TAG," ===== read == size=" + temp.length());
+						Log.d(TAG, " ===== read == size=" + temp.length());
 
 						data += temp;
 
 					} while (true);
 
 					Log.d(TAG, " === read end ==== ");
-					
+
 					if (!data.isEmpty()) {
 						Message msg = mClientHander
 								.obtainMessage(GDClient.MSG_RESPONSE);
@@ -68,13 +68,18 @@ public class ReceiveThread extends Thread {
 
 				} catch (IOException e) {
 					e.printStackTrace();
-					mSocket = null;
+					
 					mExit.set(true);
-					Log.d(TAG, "Receive thread Exit!");
-
 					mClientHander.sendEmptyMessage(GDClient.MSG_SOCKET_ERROR);
 				}
 			}
 		}
+
+		mSocket = null;
+		mIn = null;
+		mClientHander = null;
+
+		Log.d(TAG, "Exit receive thread!");
+
 	}
 }

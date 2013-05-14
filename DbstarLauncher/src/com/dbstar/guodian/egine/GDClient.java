@@ -61,6 +61,7 @@ public class GDClient {
 	public static final int REQUEST_CITYS = 0x3009;
 	public static final int REQUEST_ZONES = 0x3010;
 	public static final int REQUEST_ELECTRICAL_DIMENSIONALITY = 0x3011;
+
 	// not include current month, just before;
 
 	class Task {
@@ -97,8 +98,6 @@ public class GDClient {
 
 		mClientThread = new HandlerThread("GDClient",
 				Process.THREAD_PRIORITY_BACKGROUND);
-
-		// mClientThread.setUncaughtExceptionHandler(mExceptionHandler);
 
 		mClientThread.start();
 
@@ -139,7 +138,7 @@ public class GDClient {
 		msg.arg1 = CMD_CONNECT;
 		msg.sendToTarget();
 	}
-	
+
 	public void connectToServerDelayed(long delayMillis) {
 		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
 		msg.arg1 = CMD_CONNECT;
@@ -270,31 +269,33 @@ public class GDClient {
 		msg.obj = task;
 		mClientHandler.sendMessage(msg);
 	}
-	public void getCitysArea(String userId,String pid){
-	    String taskId = GDCmdHelper.generateUID();
-        String cmdStr = GDCmdHelper.constructGetAreasCmd(taskId, userId, pid);
-        Task task = new Task();
-        task.TaskType = REQUEST_CITYS;
-        task.TaskId = taskId;
-        task.Command = cmdStr;
 
-        Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
-        msg.obj = task;
-        mClientHandler.sendMessage(msg);
+	public void getCitysArea(String userId, String pid) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetAreasCmd(taskId, userId, pid);
+		Task task = new Task();
+		task.TaskType = REQUEST_CITYS;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
 	}
-	public void getZonesArea(String userId,String pid){
-        String taskId = GDCmdHelper.generateUID();
-        String cmdStr = GDCmdHelper.constructGetAreasCmd(taskId, userId, pid);
-        Task task = new Task();
-        task.TaskType = REQUEST_ZONES;
-        task.TaskId = taskId;
-        task.Command = cmdStr;
 
-        Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
-        msg.obj = task;
-        mClientHandler.sendMessage(msg);
-    }
-	
+	public void getZonesArea(String userId, String pid) {
+		String taskId = GDCmdHelper.generateUID();
+		String cmdStr = GDCmdHelper.constructGetAreasCmd(taskId, userId, pid);
+		Task task = new Task();
+		task.TaskType = REQUEST_ZONES;
+		task.TaskId = taskId;
+		task.Command = cmdStr;
+
+		Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+		msg.obj = task;
+		mClientHandler.sendMessage(msg);
+	}
+
 	public void getElecDimension(String userId, Map<String, String> params) {
 		String taskId = GDCmdHelper.generateUID();
 		String cmdStr = GDCmdHelper.constructGetElecDimensionCmd(userId,
@@ -385,7 +386,9 @@ public class GDClient {
 		switch (task.TaskType) {
 		case REQUEST_LOGIN: {
 			LoginData loginData = LoginDataHandler.parse(task.ResponseData[7]);
-			Log.d("Futao", "~~~~~~~~~~~~~~~~~~login = ~~~~~~~~~~~~~~~~~~~~~~~~~~" + task.ResponseData[7].toString());
+			Log.d("Futao",
+					"~~~~~~~~~~~~~~~~~~login = ~~~~~~~~~~~~~~~~~~~~~~~~~~"
+							+ task.ResponseData[7].toString());
 			task.ParsedData = loginData;
 			break;
 		}
@@ -437,20 +440,22 @@ public class GDClient {
 			break;
 		}
 		case REQUEST_CITYS:
-		    ArrayList<AreaInfo.Area> cityInfos= AreaInfoHandler.parseAreas(task.ResponseData[7]);
-            task.ParsedData = cityInfos;
-		    break;
-		    
+			ArrayList<AreaInfo.Area> cityInfos = AreaInfoHandler
+					.parseAreas(task.ResponseData[7]);
+			task.ParsedData = cityInfos;
+			break;
+
 		case REQUEST_ZONES:
-		    ArrayList<AreaInfo.Area> zoneInfo= AreaInfoHandler.parseAreas(task.ResponseData[7]);
-            task.ParsedData = zoneInfo;
-            break;
+			ArrayList<AreaInfo.Area> zoneInfo = AreaInfoHandler
+					.parseAreas(task.ResponseData[7]);
+			task.ParsedData = zoneInfo;
+			break;
 		case REQUEST_ELECTRICAL_DIMENSIONALITY:
-		    ElectriDimension dimension = ElecDimensionDataHandler.parse(task.ResponseData[7]);
-		    task.ParsedData = dimension;
-		    break;
+			ElectriDimension dimension = ElecDimensionDataHandler
+					.parse(task.ResponseData[7]);
+			task.ParsedData = dimension;
+			break;
 		}
-		    
 
 		if (mAppHander != null) {
 			Message msg = mAppHander
@@ -459,28 +464,31 @@ public class GDClient {
 			msg.sendToTarget();
 		}
 	}
-	
+
 	private int getErrorCode(String errorStr) {
 		int errorCode = GDConstract.ErrorCodeUnKnown;
 		if (errorStr.equals(GDConstract.ErrorStrRepeatLogin)) {
 			errorCode = GDConstract.ErrorCodeRepeatLogin;
 		}
-		
+
 		return errorCode;
 	}
-	
+
 	private void handleRequestError(String errorStr) {
 		int error = getErrorCode(errorStr);
-		
+
 		if (mAppHander != null) {
-			Message msg = mAppHander
-					.obtainMessage(GDEngine.MSG_REQUEST_ERROR);
+			Message msg = mAppHander.obtainMessage(GDEngine.MSG_REQUEST_ERROR);
 			msg.arg1 = error;
 			msg.sendToTarget();
 		}
 	}
-	
+
 	private void handleSocketError() {
+		Log.d(TAG, " === handleSocketError ===");
+
+		doStop();
+
 		if (mAppHander != null) {
 			mAppHander.sendEmptyMessage(GDEngine.MSG_SOCKET_ERROR);
 		}
@@ -493,7 +501,6 @@ public class GDClient {
 			if (mSocket != null) {
 				if (mSocket.isConnected()) {
 					// socket has already been connected.
-					// TODO: send a callback to caller?
 					Log.d(TAG, " == socket already connected == ");
 					mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECT_ALREADY);
 					return;
@@ -520,7 +527,8 @@ public class GDClient {
 			mOut = new BufferedOutputStream(new DataOutputStream(
 					mSocket.getOutputStream()));
 
-			Log.d(TAG, " ==== output is shutdown= " + mSocket.isOutputShutdown());
+			Log.d(TAG,
+					" ==== output is shutdown= " + mSocket.isOutputShutdown());
 
 			mInThread = new ReceiveThread(mSocket, mIn, mClientHandler);
 			mInThread.start();
@@ -532,17 +540,12 @@ public class GDClient {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			mAppHander.sendEmptyMessage(GDEngine.MSG_SOCKET_ERROR);
+
+			doStop();
+
+			mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECT_FAILED);
 			return;
 		}
-
-//		if (!connected) {
-//			mAppHander.sendEmptyMessage(GDEngine.MSG_DISCONNECTED);
-//		}
-	}
-
-	private boolean isConnectionSetup() {
-		return (mSocket != null && mSocket.isConnected());
 	}
 
 	private boolean isOutputAvailable() {
@@ -551,7 +554,7 @@ public class GDClient {
 
 		Log.d(TAG, "isOutputShutdown " + mSocket.isOutputShutdown());
 
-		return isConnectionSetup() && !mSocket.isClosed();
+		return mSocket.isConnected() && !mSocket.isClosed();
 	}
 
 	private void doRequest(Task task) {
@@ -592,24 +595,37 @@ public class GDClient {
 					&& (mSocket.isConnected() || !mSocket.isClosed())) {
 				if (!mSocket.isInputShutdown()) {
 					mSocket.shutdownInput();
+
+					Log.d(TAG, "Shut down input.");
 				}
 
 				if (!mSocket.isOutputShutdown()) {
 					mSocket.shutdownOutput();
+
+					Log.d(TAG, "Shut down output.");
 				}
 
 				mSocket.close();
+
+				Log.d(TAG, "Close socket.");
 			}
 
 			mSocket = null;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if (mSocket != null && !mSocket.isClosed()) {
+					mSocket.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			mSocket = null;
+			mWaitingQueue.clear();
+
+			Log.d(TAG, " ============ stop 2 ============");
 		}
-
-		mWaitingQueue.clear();
-
-		mAppHander.sendEmptyMessage(GDEngine.MSG_DISCONNECTED);
-
-		Log.d(TAG, " ============ stop 3 ============");
 	}
 }

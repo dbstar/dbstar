@@ -19,9 +19,10 @@ public class GDEngine {
 	public static final int MSG_CONNECTED = 0x1001;
 	public static final int MSG_DISCONNECTED= 0x1002;
 	public static final int MSG_CONNECT_ALREADY = 0x1003;
-	public static final int MSG_REQUEST_FINISHED = 0x1004;
-	public static final int MSG_REQUEST_ERROR = 0x1005;
-	public static final int MSG_SOCKET_ERROR = 0x1006;
+	public static final int MSG_CONNECT_FAILED = 0x1004;
+	public static final int MSG_REQUEST_FINISHED = 0x1005;
+	public static final int MSG_REQUEST_ERROR = 0x1006;
+	public static final int MSG_SOCKET_ERROR = 0x1007;
 	
 	private static final int STATE_NONE = 0x01 ;
 	private static final int STATE_CONNECTING = 0x02 ;
@@ -42,7 +43,6 @@ public class GDEngine {
 	private int mState = STATE_NONE;
 	private int mLoginState = LOGIN_NOTLOGIN;
 	private GDClientObserver mObserver;
-	private boolean mRestart = false;
 	
 	private LoginData mLoginData;
 	private ElectriDimension mEleDimension;
@@ -64,10 +64,6 @@ public class GDEngine {
 					handleConnected();
 					break;
 				}
-				case MSG_DISCONNECTED: {
-					handleDisconnected();
-					break;
-				}
 				case MSG_CONNECT_ALREADY: {
 					handleConnectedAlready();
 					break;
@@ -81,6 +77,10 @@ public class GDEngine {
 					break;
 				}
 				
+				case MSG_CONNECT_FAILED: {
+					handleConnectFailed();
+					break;
+				}
 				case MSG_SOCKET_ERROR: {
 					handleSocketError();
 					break;
@@ -114,15 +114,16 @@ public class GDEngine {
 	
 	public void restart() {
 		Log.d(TAG, " == restart == ");
+
 		mState = STATE_NONE;
 		mLoginState = LOGIN_NOTLOGIN;
-		mRestart = true;
-		mClient.stop();
+		
+		mClient.connectToServerDelayed(mReconnectTime);
 	}
 
 	public void stop() {
 		Log.d(TAG, " ===== stop guodian engine ======= ");
-		mState = STATE_DISCONNECTING;
+		mState = STATE_DISCONNECTED;
 		mClient.stop();
 	}
 	
@@ -331,9 +332,16 @@ public class GDEngine {
 			mClient.login();
 		}
 	}
-	
+
 	private void handleSocketError() {
 		Log.d(TAG, " == handleSocketError == ");
+		
+		restart();
+	}
+
+	private void handleConnectFailed() {
+		Log.d(TAG, " == handleConnectFailed == ");
+		
 		restart();
 	}
 
@@ -352,18 +360,6 @@ public class GDEngine {
 
 				notifyEvent(EventData.EVENT_LOGIN_SUCCESSED, event);
 			}
-		}
-	}
-	
-	private void handleDisconnected() {
-		Log.d(TAG, " == handleDisconnected == ");
-		
-		mState = STATE_DISCONNECTED;
-		
-		if (mRestart) {
-			mRestart = false;
-			
-			mClient.connectToServerDelayed(mReconnectTime);
 		}
 	}
 	
