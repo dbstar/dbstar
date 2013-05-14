@@ -154,6 +154,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	}
 	
 	private void loadFirstPage() {
+		mPageNumber = 0;
 		loadPage(0, 0);
 	}
 	
@@ -174,6 +175,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 	private void loadLastPage() {
 		int pageNumber = mPageDatas.size() - 1;
+		mPageNumber = pageNumber;
 		Movie[] movies = mPageDatas.get(pageNumber);
 		loadPage(pageNumber, movies.length - 1);
 	}
@@ -560,8 +562,6 @@ public class GDHDMovieActivity extends GDBaseActivity {
 						mSmallThumbnailView.setSelection(currentItem - 1);
 						ret = true;
 					} else if (currentItem == 0) {
-						// mSmallThumbnailView
-						// .setSelection(mAdapter.getCount() - 1);
 						if (mPageNumber > 0) {
 							loadPrevPage();
 						} else {
