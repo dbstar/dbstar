@@ -158,19 +158,106 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		loadPage(0, 0);
 	}
 	
-	private void navigateUp() {
+	private boolean navigateUp() {
+		boolean ret = false;
 		int currentItem = mSmallThumbnailView.getSelectedItemPosition();
-		mPageNumber--;
+		int pageNumber = mPageNumber;
+		int selected = 0;
+
+		if (currentItem >= COLUMN_ITEMS) {
+			return ret;
+		}
 		
-		int selected = currentItem + COLUMN_ITEMS;
-		loadPage(mPageNumber, selected);
+		if (pageNumber > 0) {
+			// load previous page
+			ret = true;
+			mPageNumber--;
+			selected = currentItem + COLUMN_ITEMS;
+			loadPage(mPageNumber, selected);
+		}
+//		else {
+//			int pageCount = mPageDatas.size();
+//			
+//			if (pageCount > 1) {
+//				// load the last page
+//				ret = true;
+//				pageNumber = mPageDatas.size() - 1;
+//				mPageNumber = pageNumber;
+//				
+//				Movie[] movies = mPageDatas.get(pageNumber);
+//				int pageSize = movies.length;
+//				
+//				if (pageSize > COLUMN_ITEMS) {
+//					// two lines
+//					selected = Math.min(currentItem + COLUMN_ITEMS, pageSize - 1);
+//				} else {
+//					// one lines
+//					selected = Math.min(currentItem, pageSize - 1);
+//				}
+//
+//				loadPage(pageNumber, selected);
+//			} else {
+//				// one page, loop
+//				Movie[] movies = mPageDatas.get(mPageNumber);
+//				int pageSize = movies.length;
+//				
+//				if (pageSize > COLUMN_ITEMS) {
+//					// two lines
+//					ret = true;
+//
+//					selected = Math.min(currentItem + COLUMN_ITEMS, pageSize - 1);
+//					mSmallThumbnailView.setSelection(selected);
+//				}
+//			}
+//		}
+		
+		return ret;
 	}
-	
-	private void navigateDown() {
+
+	private boolean navigateDown() {
+		boolean ret = false;
 		int currentItem = mSmallThumbnailView.getSelectedItemPosition();
-		mPageNumber++;
-		int selected = currentItem - COLUMN_ITEMS;
-		loadPage(mPageNumber, selected);
+
+		int pageNumber = mPageNumber;
+		int selected = 0;
+		int pageCount = mPageDatas.size();
+		Movie[] movies = mPageDatas.get(pageNumber);
+		int pageSize = movies.length;
+		
+		if (pageSize > COLUMN_ITEMS && currentItem < COLUMN_ITEMS) {
+			return ret;
+		}
+
+		if (pageNumber < pageCount - 1) {
+			// to next page
+			ret = true;
+			mPageNumber++;
+			selected = currentItem - COLUMN_ITEMS;
+			loadPage(mPageNumber, selected);
+		} else {
+			if (pageCount > 1) {
+				// to first page
+				if (currentItem < COLUMN_ITEMS) {
+					selected = currentItem;
+				} else {
+					selected = currentItem - COLUMN_ITEMS;
+				}
+				ret = true;
+				mPageNumber = 0;
+				loadPage(0, selected);
+			} else {
+				// only one page, loop
+			
+				if (currentItem >= COLUMN_ITEMS) {
+					ret = true;
+
+					selected = currentItem - COLUMN_ITEMS;
+					mSmallThumbnailView.setSelection(selected);
+				}
+			}
+		}
+		
+		return ret;
 	}
 
 	private void loadLastPage() {
@@ -601,26 +688,12 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				}
 
 				case KeyEvent.KEYCODE_DPAD_UP: {
-					int currentItem = mSmallThumbnailView
-							.getSelectedItemPosition();
-					if (currentItem < COLUMN_ITEMS) {
-						if (mPageNumber > 0) {
-							navigateUp();
-							ret = true;
-						}
-					}
+					ret = navigateUp();
 					break;
 				}
 
 				case KeyEvent.KEYCODE_DPAD_DOWN: {
-					int currentItem = mSmallThumbnailView
-							.getSelectedItemPosition();
-					if (currentItem >= COLUMN_ITEMS) {
-						if (mPageNumber < mPageCount - 1) {
-							navigateDown();
-							ret = true;
-						}
-					}
+					ret = navigateDown();
 					break;
 				}
 

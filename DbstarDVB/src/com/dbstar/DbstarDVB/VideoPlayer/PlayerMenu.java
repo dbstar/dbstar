@@ -576,7 +576,7 @@ public class PlayerMenu extends PlayerActivity {
 				return false;
 
 			showInfoBar(false);
-			onFFButtonPressed();
+			onFFButtonPressed2();
 			return true;
 		}
 
@@ -585,7 +585,7 @@ public class PlayerMenu extends PlayerActivity {
 				return false;
 
 			showInfoBar(false);
-			onFBButtonPressed();
+			onFBButtonPressed2();
 			return true;
 		}
 
@@ -998,6 +998,109 @@ public class PlayerMenu extends PlayerActivity {
 
 				mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
 			}
+		} else {
+			try {
+				mAmplayer.BackForward(FB_STEP[1]);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+			FB_FLAG = true;
+			FB_LEVEL = 1;
+
+			mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
+		}
+	}
+	
+	
+	void onFFButtonPressed2() {
+		if (!INITOK)
+			return;
+
+		Log.d(TAG, " =========== onFFButtonPressed ================= ");
+
+		Log.d(TAG, " mPlayerStatus " + mPlayerStatus + " FF_FLAG " + FF_FLAG
+				+ " FB_FLAG " + FB_FLAG + " FF_LEVEL " + FF_LEVEL
+				+ " FB_LEVEL " + FB_LEVEL);
+
+		if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
+			if (FF_FLAG) {
+				if (FF_LEVEL < FF_MAX) {
+					FF_LEVEL = FF_LEVEL + 1;
+				} else {
+					FF_LEVEL = 0;
+				}
+			} else if (FB_FLAG) {
+				FB_FLAG = false;
+				FB_LEVEL = 0;
+				
+				FF_FLAG = true;
+				FF_LEVEL = 1;
+			}
+			
+			mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
+
+			try {
+				mAmplayer.FastForward(FF_STEP[FF_LEVEL]);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+
+		} else {
+			FF_FLAG = true;
+			FF_LEVEL = 1;
+
+			try {
+				mAmplayer.FastForward(FF_STEP[1]);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+
+			mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
+		}
+
+	}
+
+	void onFBButtonPressed2() {
+		if (!INITOK)
+			return;
+
+		Log.d(TAG, " =========== onFBButtonPressed ================= ");
+
+		Log.d(TAG, " mPlayerStatus " + mPlayerStatus + " FF_FLAG " + FF_FLAG
+				+ " FB_FLAG " + FB_FLAG + " FF_LEVEL " + FF_LEVEL
+				+ " FB_LEVEL " + FB_LEVEL);
+
+		if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
+			if (FB_FLAG) {
+				if (FB_LEVEL < FB_MAX) {
+					FB_LEVEL = FB_LEVEL + 1;
+				} else {
+					FB_LEVEL = 0;
+				}
+				
+				mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
+
+				try {
+					mAmplayer.BackForward(FB_STEP[FB_LEVEL]);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			} else if (FF_FLAG) {
+				FF_FLAG = false;
+				FF_LEVEL = 0;
+				
+				FB_FLAG = true;
+				FB_LEVEL = 1;
+
+				mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
+
+				try {
+					mAmplayer.BackForward(FB_STEP[FB_LEVEL]);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}	
+			}
+
 		} else {
 			try {
 				mAmplayer.BackForward(FB_STEP[1]);
@@ -1961,7 +2064,7 @@ public class PlayerMenu extends PlayerActivity {
 		int resId = mIsMute ? R.drawable.sound_mute : R.drawable.sound_unmute;
 		mSoundStateView.setImageResource(resId);
 		
-		mSpeedDrawables[0] = null;
+		mSpeedDrawables[0] = getResources().getDrawable(R.drawable.play);
 		mSpeedDrawables[1] = getResources().getDrawable(R.drawable.speed_2);
 		mSpeedDrawables[2] = getResources().getDrawable(R.drawable.speed_4);
 		mSpeedDrawables[3] = getResources().getDrawable(R.drawable.speed_8);

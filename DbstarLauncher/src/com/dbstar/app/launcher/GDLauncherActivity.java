@@ -26,6 +26,7 @@ import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.egine.GDConstract;
 import com.dbstar.model.ColumnData;
+import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
@@ -150,35 +151,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		initializeData();
 //		startEngine();
+		
+		if (DeviceInitController.isBootFirstTime()) {
+			showLoadingDialog(getResources().getString(R.string.device_init_str));
+		}
 	}
 
 	public void onServiceStop() {
 		super.onServiceStop();
 
 //		mService.unRegisterAppObserver(this);
-	}
-
-	public void onResume() {
-		super.onResume();
-
-		mMainMenu.requestFocus();
-
-		mMediaScheduler.resume();
-		
-		if (mPowerController != null) {
-			mPowerController.resume();
-		}
-		
-	}
-
-	public void onPause() {
-		super.onPause();
-
-		mMediaScheduler.pause();
-		
-		if (mPowerController != null) {
-			mPowerController.pause();
-		}
 	}
 
 	public void onStart() {
@@ -193,6 +175,28 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		
 //		resetMenuStack();
 
+	}
+	
+	public void onResume() {
+		super.onResume();
+
+		mMainMenu.requestFocus();
+
+		mMediaScheduler.resume();
+		
+		if (mPowerController != null) {
+			mPowerController.resume();
+		}
+	}
+	
+	public void onPause() {
+		super.onPause();
+
+		mMediaScheduler.pause();
+		
+		if (mPowerController != null) {
+			mPowerController.pause();
+		}
 	}
 
 	public void onStop() {
@@ -1141,6 +1145,18 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	void homeKeyPressed() {
 		resetMenuStack();
 	}
+	
+	void deviceInitFinished() {
+		hideLoadingDialog();
+
+		DeviceInitController.handleBootFirstTime();
+
+		Intent intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
+		if (intent != null) {
+			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+			startActivity(intent);
+		}
+	}
 
 	private boolean mIsUpdatingColumns = false;
 	private int mLevel2RequestCount = 0;
@@ -1541,6 +1557,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			homeKeyPressed();
 			break;
 		}
+		
+		case GDCommon.MSG_DEVICE_INIT_FINISHED: {
+			deviceInitFinished();
+			break;
+		} 
+		
 		default:
 			break;
 		}

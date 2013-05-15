@@ -86,7 +86,6 @@
         
         <receiver android:name=".DbstarNetSettingsReceiver">
 			<intent-filter>
-				<action android:name="android.intent.action.BOOT_COMPLETED" />
 				<action android:name="com.dbstar.settings.action.CLEAR_SETTINGS" />
 			</intent-filter>
 		</receiver>

@@ -852,6 +852,11 @@ public class GDDataProviderService extends Service {
 				handleHomeKeyPressed();
 				break;
 			}
+			
+			case GDCommon.MSG_DEVICE_INIT_FINISHED: {
+				handleDeviceInitFinished();
+				break;
+			}
 
 			default:
 				break;
@@ -882,6 +887,12 @@ public class GDDataProviderService extends Service {
 	private void handleHomeKeyPressed() {
 		if (mApplicationObserver != null) {
 			mApplicationObserver.handleNotifiy(GDCommon.MSG_HOMEKEY_PRESSED, null);
+		}
+	}
+	
+	private void handleDeviceInitFinished() {
+		if (mApplicationObserver != null) {
+			mApplicationObserver.handleNotifiy(GDCommon.MSG_DEVICE_INIT_FINISHED, null);
 		}
 	}
 	
@@ -2155,6 +2166,12 @@ public class GDDataProviderService extends Service {
 					msg.sendToTarget();
 					break;
 				}
+				
+				case DbstarServiceApi.DEVICE_INIT_SUCCESS:
+				case DbstarServiceApi.DEVICE_INIT_FAILED: {
+					mHandler.sendEmptyMessage(GDCommon.MSG_DEVICE_INIT_FINISHED);
+					break;
+				}
 
 				default:
 					break;
@@ -2374,6 +2391,20 @@ public class GDDataProviderService extends Service {
 
 		return true;
 	}
+	
+	boolean notifyDbstarServiceDeviceInit() {
+
+		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
+				+ mIsDbServiceStarted);
+
+		if (!mIsDbServiceStarted)
+			return false;
+
+		mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DEVICE_INIT, null);
+
+		return true;
+	}
+	
 
 	boolean notifyDbstarServiceSDStatus() {
 
@@ -2403,6 +2434,10 @@ public class GDDataProviderService extends Service {
 		
 		String disk = mConfigure.getStorageDisk();
 		notifyDbstarServiceStorageStatus(disk);
+		
+		if (DeviceInitController.isBootFirstTime()) {
+			notifyDbstarServiceDeviceInit();
+		}
 	}
 
 	private boolean notifyDbstarService(int command) {
