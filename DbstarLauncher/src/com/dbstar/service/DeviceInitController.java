@@ -7,11 +7,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 
 import com.dbstar.app.GDApplication;
-import com.dbstar.settings.GDNetworkSettingsActivity;
 
 public class DeviceInitController {
 	public static final String TAG = "DeviceInitController";
