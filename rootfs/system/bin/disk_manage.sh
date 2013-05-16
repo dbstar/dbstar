@@ -155,7 +155,7 @@ stop_disk_manage()
 get_disk_manage_param
 
 if [ $DISK_MANAGER_CMD -eq $DISK_CMD_FORMAT ]; then
-	DISK_MANAGER_DEV=$DISK_MANAGER_DEV"1"
+#	DISK_MANAGER_DEV=$DISK_MANAGER_DEV"1"
 	ntfs_format $DISK_MANAGER_DEV
 if [ $DISK_MANAGER_CMD -eq $DISK_CMD_ADD ]; then
 	partition_add $DISK_MANAGER_DEV

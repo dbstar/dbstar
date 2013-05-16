@@ -47,6 +47,7 @@ public class DiskTest extends Activity implements OnClickListener {
 	private boolean mExternalStorageWriteable = false;
     private String mMountPoint = "/mnt/sdb1";
     private String mDiskManageDev = "/dev/block/sdb";
+    private String mDiskManageDev1 = "/dev/block/sdb1";
 
 	private Toast mToast = null;
 	private View Button01, Button02, Button03;
@@ -299,6 +300,12 @@ public class DiskTest extends Activity implements OnClickListener {
 	private void deleteDiskPartition() {
 		SystemProperties.set(DiskManageCmdPrepertyName, "del");
 		SystemProperties.set(DiskManageDevPrepertyName, mDiskManageDev);
+		SystemProperties.set(DiskManageStatePrepertyName, "running");
+	}
+
+	private void formatDiskPartition() {
+		SystemProperties.set(DiskManageCmdPrepertyName, "format");
+		SystemProperties.set(DiskManageDevPrepertyName, mDiskManageDev1);
 		SystemProperties.set(DiskManageStatePrepertyName, "running");
 	}
 }
