@@ -908,7 +908,7 @@ int sqlite_init()
 			}
 			DEBUG("open database success\n");
 			localcolumn_init();
-			global_info_init();
+			global_info_init(0);
 		}
 		else{						///open database failed
 			DEBUG("create/open database failed\n");
@@ -1785,7 +1785,7 @@ int localcolumn_init()
 		return sqlite_transaction_end(0);
 }
 
-int global_info_init()
+int global_info_init(int force_reset)
 {
 	DEBUG("init table 'Global', set default records\n");
 	
@@ -1797,7 +1797,7 @@ int global_info_init()
 	char sqlite_cmd[1024];
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_PREVIEWPATH);
-	if(-1==check_record_in_trans("Global","Name",key_value)){
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 			GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1805,7 +1805,7 @@ int global_info_init()
 	}
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_CURLANGUAGE);
-	if(-1==check_record_in_trans("Global","Name",key_value)){
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 			GLB_NAME_CURLANGUAGE,CURLANGUAGE_DFT);
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1813,7 +1813,7 @@ int global_info_init()
 	}
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DEVICEMODEL);
-	if(-1==check_record_in_trans("Global","Name",key_value)){
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 			GLB_NAME_DEVICEMODEL,DEVICEMODEL_DFT);
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1821,7 +1821,7 @@ int global_info_init()
 	}
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DBDATASERVERIP);
-	if(-1==check_record_in_trans("Global","Name",key_value)){
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 			GLB_NAME_DBDATASERVERIP,DBDATASERVERIP_DFT);
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1829,7 +1829,7 @@ int global_info_init()
 	}
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DBDATASERVERPORT);
-	if(-1==check_record_in_trans("Global","Name",key_value)){
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 			GLB_NAME_DBDATASERVERPORT,DBDATASERVERPORT_DFT);
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1837,23 +1837,26 @@ int global_info_init()
 	}
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_HDFOREWARNING);
-	if(-1==check_record_in_trans("Global","Name",key_value)){
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
 			GLB_NAME_HDFOREWARNING,HDFOREWARNING_DFT);
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_record_cnt ++;
 	}
 	
-	if(-1==check_record_in_trans("Global","Name","ColumnIconDft")){
+	if(1==force_reset || -1==check_record_in_trans("Global","Name","ColumnIconDft")){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','LocalColumnIcon/DefaultIcon_losefocus.png','');");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_record_cnt ++;
 	}
 	
-	if(insert_record_cnt>0)
+	if(insert_record_cnt>0){
 		return sqlite_transaction_end(1);
-	else
+	}
+	else{
+		DEBUG("no global default setting need save");
 		return sqlite_transaction_end(0);
+	}
 }
 
 

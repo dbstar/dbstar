@@ -37,8 +37,8 @@ struct LoaderInfo {
     unsigned short user_group_id;  //16bit
     unsigned char  download_type;  //8bit
     unsigned char  file_type;      //8bit
+	char guodian_serialnum[24];
 };
-	//char guodian_serialnum[24];
 
 #define UPGRADE_PARA_STRUCT "/cache/recovery/last_install"
 #define TC_OUI 3

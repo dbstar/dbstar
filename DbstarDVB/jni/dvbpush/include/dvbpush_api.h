@@ -32,6 +32,7 @@ typedef enum {
 	CMD_FACTORY_RESET				= 0x00052,    // 恢复出厂设置时，dvbpush需要完成的动作
 	CMD_DRM_RESET					= 0x00053,    // dvbpush需要清理drm目录/data/dbstar/drm
 	CMD_DISC_FORMAT					= 0x00054,    // dvbpush需要格式化硬盘
+	CMD_DEVICE_INIT					= 0x00055,    // 设备初始化，机顶盒首次开机
 
 	CMD_DRM_SC_INSERT               = 0x00061,    // DRM smartcard Insert
 	CMD_DRM_SC_REMOVE               = 0x00062,    // DRM smartcard Remove
@@ -46,7 +47,9 @@ typedef enum {
 	CMD_DRM_EMAILCONTENT_READ		= 0x0006b,    // 读取指定邮件内容
 	CMD_DRM_PVODPROGRAMINFO_READ	= 0x0006c,    // 读取加密文件信息
 	CMD_DRM_PURCHASEINFO_READ		= 0x0006d,    // 读取购买信息，基于授权信息，将产品ID替换为产品名称
-
+	
+	CMD_SMARTHOME_CTRL				= 0x00101,		//	智能家居控制
+	
 	CMD_MAX                         = 0x0FFFF,
 	
 	DIALOG_NOTICE					= 0x20000,		// 通用信息提示对话框
@@ -78,6 +81,8 @@ typedef enum {
 	MOTHER_DISC_INITIALIZE_SUCCESS	= 0x30021,	// 母盘初始化成功
 	DISC_FORMAT_SUCCESS				= 0x30022,	// 磁盘格式化成功
 	DISC_FORMAT_FAILED				= 0x30023,	// 磁盘格式化失败
+	DEVICE_INIT_SUCCESS				= 0x30024,	// 设备初始化成功
+	DEVICE_INIT_FAILED				= 0x30025,	// 设备初始化失败
 	
 }DBSTAR_CMD_MSG_E;
 

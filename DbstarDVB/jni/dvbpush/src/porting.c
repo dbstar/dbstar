@@ -31,6 +31,7 @@
 #include "porting.h"
 #include "drmapi.h"
 #include "push.h"
+#include "smarthome_shadow/smarthome.h"
 
 #define INVALID_PRODUCTID_AT_ENTITLEINFO	(0)
 
@@ -1616,22 +1617,6 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 	return ret;
 }
 
-static int smarthome_reset()
-{
-	char sqlite_cmd[512];
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE global SET value='211.99.30.254' WHERE name='SmarthomeServerIP';");
-	smarthome_setting_reset(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE global SET value='9999' WHERE name='SmarthomeServerPort';");
-	smarthome_setting_reset(sqlite_cmd);
-	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE global SET value='' WHERE name='SmarthomeSN';");
-	smarthome_setting_reset(sqlite_cmd);
-	
-	return 0;
-}
-
 /*
  通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
  实际调用参见dvbpush_jni.c
@@ -1832,8 +1817,9 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_FACTORY_RESET:
 			DEBUG("CMD_FACTORY_RESET\n");
-			global_info_init();
+			global_info_init(1);
 			smarthome_reset();
+			DEBUG("remove push log dir: %s\n", s_push_log_dir);
 			remove_force(s_push_log_dir);
 			break;
 		case CMD_DRM_RESET:
@@ -1849,6 +1835,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 					ERROROUT("rename %s to %s failed\n", drm_dir, drm_dir_rubbish);
 			}
 			
+			DEBUG("remove push log dir: %s\n", s_push_log_dir);
 			remove_force(s_push_log_dir);
 			break;
 		case CMD_DISC_FORMAT:
@@ -1868,6 +1855,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				DEBUG("remove %s failed\n", DBSTAR_DATABASE);
 			}
 			
+			DEBUG("remove push log dir: %s\n", s_push_log_dir);
 			remove_force(s_push_log_dir);
 
 			break;
@@ -1877,6 +1865,19 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("s_jni_cmd_system_awake_timer=%s,len=%d\n", s_jni_cmd_system_awake_timer,strlen(s_jni_cmd_system_awake_timer));
 			*buf = s_jni_cmd_system_awake_timer;
 			*len = strlen(s_jni_cmd_system_awake_timer);
+			break;
+			
+		
+		case CMD_SMARTHOME_CTRL:
+			DEBUG("test_buf=%x,*test_buf=%x\n", buf,*buf);
+			
+			DEBUG("CMD_SMARTHOME_CTRL: %s\n", *buf);
+			smarthome_ctrl(buf,len);
+			break;
+		case CMD_DEVICE_INIT:
+			DEBUG("CMD_DEVICE_INIT\n");
+			smarthome_gw_sn_init();
+			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
 			break;
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
@@ -1941,7 +1942,9 @@ void upgrade_info_init()
 	//if(0==get_loader_message(&mark, &g_loaderInfo))
 		get_loader_message(&mark, &g_loaderInfo);
 	   
-		DEBUG("read loader msg: %d", mark);
+		DEBUG("read loader msg: %d, smarthome_gw_sn: %s\n", mark, g_loaderInfo.guodian_serialnum);
+		smarthome_gw_sn_set(g_loaderInfo.guodian_serialnum);
+		
 		if ((g_loaderInfo.oui != TC_OUI)||(g_loaderInfo.model_type != TC_MODEL_TYPE)
 			||(g_loaderInfo.hardware_version[0] != TC_HARDWARE_VERSION0)
 			||(g_loaderInfo.hardware_version[1] != TC_HARDWARE_VERSION1)
