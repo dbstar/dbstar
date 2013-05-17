@@ -120,12 +120,24 @@ int drm_read(int *fd, unsigned char *buf, int size)
 	ret = CDCASTB_DRM_ReadFile((const void*)fd, buf, &rdsize);
 	if (ret != 0) {
 		LOGD("@@@@@@@@@@@ DRM_READ ERROR [%d](size=%d)=0x%x, rdsize=%lu\n", *fd,size, ret, rdsize);
+#if 0
 		if ((ret == 0x42) || (ret == 0x1)) { // CA card plug out
 			rdsize = 0;
 		} else { // CA error
 			LOGD("@@@@@@@@@@@ CA ERROR =0x%x\n", ret);
 			return -ret;
 		}
+#else
+		// CA error
+		if(		CDCA_RC_CARD_INVALID==ret || CDCA_RC_FILE_ERROR==ret || CDCA_RC_NOENTITLE==ret
+			||	CDCA_RC_NOT_WATCHTIME==ret || CDCA_RC_NOT_ISSUETIME==ret || CDCA_RC_RIGHT_LIMIT==ret){
+			LOGD("CA ERROR 0x%x\n", ret);
+			return -ret;
+		}
+		else{
+			rdsize = 0;
+		}
+#endif
 	}
 	//LOGD("DRM_READ[%d](size=%d)=%d, rdsize=%d\n", fd,size, ret, rdsize);
 
@@ -143,7 +155,9 @@ int64_t drm_seek(int *fd, int64_t pos, int whence)
 	posb = (unsigned int)(pos % 1024);
 	success = CDCASTB_DRM_SeekFilePos((const void*)fd, posk, posb);
 	//LOGD("DRM_SEEK(pos=%lld, posk=%d, posb=%d)\n", pos, posk, posb);
-
+	if(whence>0){
+	}
+	
 	if (success) {
 		ret = pos;
 	} else {
