@@ -468,7 +468,7 @@ static int write_block(MtdWriteContext *ctx, const char *data)
 
             verify = malloc(size);
             if (verify == NULL) {
-                fprintf(stderr, "mtd: failed to malloc size=%u (%s)\n", size, strerror(errno));
+                fprintf(stderr, "mtd: failed to malloc size=%lu (%s)\n", size, strerror(errno));
                 return -1;
             }
             if (lseek(fd, pos, SEEK_SET) != pos ||
@@ -490,7 +490,7 @@ static int write_block(MtdWriteContext *ctx, const char *data)
             if (retry > 0) {
                 fprintf(stderr, "mtd: wrote block after %d retries\n", retry);
             }
-            fprintf(stderr, "mtd: successfully wrote block at %llx\n", pos);
+            fprintf(stderr, "mtd: successfully wrote block at %lu\n", pos);
             if (verify)
                 free(verify);
             return 0;  // Success!
@@ -633,16 +633,17 @@ int file_copy_from_partition(const char *dest_path, const char *partition_type, 
 	        return -1;
 	    }
 
+	    void *buffer = malloc(ctx->partition->erase_size);
+	    
 		f_dest = fopen(dest_path, "wb+");
 	    if (f_dest == NULL) {
-	        fprintf(stderr, "%s: can't open %s: %s\n", dest_path, strerror(errno));
+	        fprintf(stderr, "can't open %s: %s\n", dest_path, strerror(errno));
 	        result = errno;
 	        goto done_MTD;
 	    }
 
 		lseek64(ctx->fd, offset, SEEK_SET);
 
-	    void *buffer = malloc(ctx->partition->erase_size);
 		ssize_t read = 0;
 	    while (read < file_size)
 		{
@@ -652,7 +653,7 @@ int file_copy_from_partition(const char *dest_path, const char *partition_type, 
 
 				if(copy != fwrite(ctx->buffer + ctx->consumed, 1, copy, f_dest))
 				{
-					fprintf(stderr, "%s: can't write %s: %s\n", dest_path, strerror(errno));
+					fprintf(stderr, "can't write %s: %s\n", dest_path, strerror(errno));
 				}
 	            ctx->consumed += copy;
 	            read += copy;
@@ -665,7 +666,7 @@ int file_copy_from_partition(const char *dest_path, const char *partition_type, 
 				if (read_block(ctx->partition, ctx->fd, buffer)) return -1;
 				if(ctx->partition->erase_size != fwrite(buffer, 1, ctx->partition->erase_size, f_dest))
 				{
-					fprintf(stderr, "%s: can't write %s: %s\n", dest_path, strerror(errno));
+					fprintf(stderr, "can't write %s: %s\n", dest_path, strerror(errno));
 				}
 	            read += ctx->partition->erase_size;
 	        }
@@ -684,7 +685,7 @@ int file_copy_from_partition(const char *dest_path, const char *partition_type, 
 	        }
 	    }
 
-	done_MTD:
+done_MTD:
 		mtd_read_close(ctx);
 		if(buffer)
 		{
@@ -703,14 +704,14 @@ int file_copy_from_partition(const char *dest_path, const char *partition_type, 
 		void *buffer = NULL;
 		f_src = fopen(partition, "rb");
 	    if (f_src == NULL) {
-	        fprintf(stderr, "%s: can't open eMMC parition %s: %s\n", dest_path, strerror(errno));
+	        fprintf(stderr, "can't open eMMC parition %s: %s\n", dest_path, strerror(errno));
 	        result = errno;
 	        goto done_eMMC;
 	    }
 		
 		f_dest = fopen(dest_path, "wb+");
 	    if (f_dest == NULL) {
-	        fprintf(stderr, "%s: can't open %s: %s\n", dest_path, strerror(errno));
+	        fprintf(stderr, "can't open %s: %s\n", dest_path, strerror(errno));
 	        result = errno;
 	        goto done_eMMC;
 	    }
@@ -730,13 +731,13 @@ int file_copy_from_partition(const char *dest_path, const char *partition_type, 
 			}
 			if(copy != fread(buffer, 1, copy, f_src))
 			{
-				fprintf(stderr, "%s: can't read %s: %s\n", partition, strerror(errno));
+				fprintf(stderr, "can't read %s: %s\n", partition, strerror(errno));
 				result = errno;
 				goto done_eMMC;
 			}
 			if(copy != fwrite(buffer, 1, copy, f_dest))
 			{
-				fprintf(stderr, "%s: can't read %s: %s\n", dest_path, strerror(errno));
+				fprintf(stderr, "can't read %s: %s\n", dest_path, strerror(errno));
 				result = errno;
 				goto done_eMMC;
 			}
@@ -824,7 +825,7 @@ printf("liukevin find the partition\n");
     char data[size];
     ssize_t r = mtd_read_data(read, data, size);
 
-	printf("liukevin write size = [%d][%d]\n",size, write_size);
+	printf("liukevin write size = [%lu][%d]\n",size, write_size);
 	    if (r != size) printf("Can't read %s\n(%s)\n",LOADER_NAME, strerror(errno));
     mtd_read_close(read);
     if (r != size) return -1;
@@ -875,7 +876,7 @@ printf("liukevin read the partition\n");
     char data[size];
     ssize_t r = mtd_read_data(read, data, size);
 
-printf("liukevin write size = [%d][%d]\n",size, write_size);
+printf("liukevin write size = [%lu][%d]\n",size, write_size);
     if (r != size) 
     {
         printf("Can't read %s\n(%s)\n",LOADER_NAME, strerror(errno));

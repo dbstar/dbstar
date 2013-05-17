@@ -345,7 +345,9 @@ int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_e
 	char sqlite_cmd[512];
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
 	int ret = sqlite_execute(sqlite_cmd);
-
+	
+	if(arg_ext && push_flag>0){
+	}
 #if 0
 母盘解析时，arg_ext为空，导致试图删除/mnt/sda1
 	if(COLUMN_XML==push_flag){

@@ -38,5 +38,6 @@ int info_xml_regist();
 int maintenance_thread_init();
 void maintenance_thread_awake();
 int delete_publication_from_monitor(char *PublicationID, char *ProductID);
+int dvbpush_download_finish();
 
 #endif

@@ -4,5 +4,6 @@
 int receive_status_get();
 int motherdisc_processing();
 int motherdisc_parse();
+int motherdisc_process();
 
 #endif

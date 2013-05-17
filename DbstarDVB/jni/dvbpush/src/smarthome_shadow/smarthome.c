@@ -506,9 +506,7 @@ static int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int
 
 // e.g.: *buf is 201112210636\t6, it means cut off 201112210636
 int smarthome_ctrl(char **buf, int *len)
-{
-	DEBUG("test_buf=%x,*test_buf=%x\n", buf,*buf);
-			
+{	
 	if(*buf==NULL || *len<3){
 		DEBUG("invalid smarthome ctrl command\n");
 		return -1;

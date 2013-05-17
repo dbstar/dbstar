@@ -824,7 +824,7 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 	
 	//LOGD("%s *(int *)pFileHandle=%d\n", __FUNCTION__,*(int *)pFileHandle);
 	if (byOrigin == CDCA_SEEK_SET) {
-		if (offset = lseek64(*(int *)pFileHandle, offset, SEEK_SET)<0) {
+		if ((offset = lseek64(*(int *)pFileHandle, offset, SEEK_SET))<0) {
 			LOGE("!!!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_SET!!fseek error\n");
 			return CDCA_FALSE;
 		}

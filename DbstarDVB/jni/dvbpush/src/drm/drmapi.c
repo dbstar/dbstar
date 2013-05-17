@@ -116,10 +116,10 @@ int drm_open(int *fd1, int *fd2)
 int drm_read(int *fd, unsigned char *buf, int size)
 {
 	int ret = 0;
-	unsigned int rdsize = (unsigned int)size;
+	unsigned long rdsize = (unsigned long)size;
 	ret = CDCASTB_DRM_ReadFile((const void*)fd, buf, &rdsize);
 	if (ret != 0) {
-		LOGD("@@@@@@@@@@@ DRM_READ ERROR [%d](size=%d)=0x%x, rdsize=%d\n", fd,size, ret, rdsize);
+		LOGD("@@@@@@@@@@@ DRM_READ ERROR [%d](size=%d)=0x%x, rdsize=%lu\n", *fd,size, ret, rdsize);
 		if ((ret == 0x42) || (ret == 0x1)) { // CA card plug out
 			rdsize = 0;
 		} else { // CA error
@@ -160,7 +160,6 @@ void drm_close(int *fd)
 
 int drm_set_emmpid()
 {
-	int ret = 0;
 	unsigned char emmpid = 0x64;
 
 	LOGD("CDCASTB_SetEmmPid()\n");

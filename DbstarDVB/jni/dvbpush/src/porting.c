@@ -1249,6 +1249,8 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 	char entitle_store_dir[64];
 	struct stat local_entitlefile_stat;
 	char local_entitlefile_uri[256];
+	unsigned long long tmp_total_size = 0LL;
+	unsigned long long tmp_free_size = 0LL;
 	
 	memset(CardSN,0,sizeof(CardSN));
 	ret = CDCASTB_GetCardSN(CardSN);
@@ -1271,7 +1273,7 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 					return ret;
 				}
 				else{
-					unsigned long long tmp_total_size = diskInfo.f_bsize * diskInfo.f_blocks;
+					tmp_total_size = diskInfo.f_bsize * diskInfo.f_blocks;
 					DEBUG("total size: %llu\n", tmp_total_size);
 					if(0LL==tmp_total_size){
 						printf_statfs_ret(entitle_store_dir,ret);
@@ -1282,9 +1284,10 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 				}
 			}
 			
-			DEBUG(" %s: TOTAL_SIZE(%llu B) FREE_SIZE(%llu B)\n",entitle_store_dir, (diskInfo.f_bsize * diskInfo.f_blocks),(diskInfo.f_bsize * diskInfo.f_bfree));
+			tmp_free_size = diskInfo.f_bsize * diskInfo.f_bfree;
+			DEBUG(" %s: TOTAL_SIZE(%llu B) FREE_SIZE(%llu B)\n",entitle_store_dir, tmp_total_size,tmp_free_size);
 			
-			if((diskInfo.f_bsize * diskInfo.f_bfree)>(local_entitlefile_stat.st_size + ENTITLE_SPACESIZE_MIN)){
+			if((tmp_free_size)>((unsigned long long)(local_entitlefile_stat.st_size + ENTITLE_SPACESIZE_MIN))){
 				if(0==smartcard_entitleinfo_get(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space)) && strlen(s_jni_cmd_public_space)>4){
 					snprintf(external_entitle_file,sizeof(external_entitle_file),"%s/%s", entitle_store_dir,CardSN);
 					DEBUG("smartcard %s, output to %s\n", CardSN, external_entitle_file);
@@ -1869,8 +1872,6 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			
 		
 		case CMD_SMARTHOME_CTRL:
-			DEBUG("test_buf=%x,*test_buf=%x\n", buf,*buf);
-			
 			DEBUG("CMD_SMARTHOME_CTRL: %s\n", *buf);
 			smarthome_ctrl(buf,len);
 			break;
