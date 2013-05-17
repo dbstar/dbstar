@@ -18,24 +18,25 @@ typedef enum{
 	BOOL_TRUE
 }BOOL_E;
 
-#define MAXCMD 5									//max cmd/msg number
-#define MAXLEN 8192									//the size of the transmission
-#define MAXSLEEP 128									//the max sleep time of reconnect
+#define MAXCMD (5)									//max cmd/msg number
+#define MAXLEN (8192)									//the size of the transmission
+#define MAXSLEEP (128)									//the max sleep time of reconnect
 
 #define WORKSPACE_SURFIX	"/data/dbstar/smarthome/"
 #define DATABASE_DIR 		WORKSPACE_SURFIX"database/"
 #define DATABASE			"/data/dbstar/Smarthome.db"	//sqlite3 database
 #define SETTING_BASE		WORKSPACE_SURFIX"settings/base.ini"	//serverconfig path on ppc
-#define SQLITECMDLEN 256							//the max number byte contained in "cmdStr"---command string--sqlite.cpp
-#define WAITRES	600									//wait 600*myDelay(5) ms, if no response, return "#ff ff ff ffff#ff#ff ff#ff#"
-#define SYNCTIME 10									//sync time
-#define CMD_SIZE		4096
-#define ALTERABLE_ENTITY_SIZE	4096
+#define SQLITECMDLEN (256)							//the max number byte contained in "cmdStr"---command string--sqlite.cpp
+#define WAITRES	(600)									//wait 600*myDelay(5) ms, if no response, return "#ff ff ff ffff#ff#ff ff#ff#"
+#define SYNCTIME (10)									//sync time
+#define CMD_SIZE		(4096)
+#define ALTERABLE_ENTITY_SIZE	(4096)
 
 #define SN_DEFAULT_TEST			"72392061919421673185"		//WARNING: only for test, the lenght of sn is 20 currently
 #define SW_VERSION				"1.2.1"
 #define SMARTPOWER_SERVER_IP		"211.160.203.86"		// the ip of baidu.com is "61.135.169.105"
 #define	SMARTPOWER_SERVER_PORT		(9999)
+#define	SMARTLIFE_SERVER_PORT		(9103)		// for smarthome apk
 
 #define PREFIX_REGIST				"#rs#"
 #define PREFIX_EXCEPTION_RESONSE	"#ff#"
@@ -46,9 +47,9 @@ typedef enum{
 #define PREFIX_ALARM				"#am#"		// in document, this is "#arm#"
 
 #define CMD_KEYWORD_SYNC			"sync"
-#define SMART_POWER_CMD_NUM			32
+#define SMART_POWER_CMD_NUM			(32)
 
-#define FIFO_STR_SIZE				32
+#define FIFO_STR_SIZE				(32)
 #define FIFO_DIR					WORKSPACE_SURFIX"fifo/"
 #define FIFO_2_SOCKET				FIFO_DIR"fifo_2_socket"
 #define FIFO_2_INSTRUCTION			FIFO_DIR"fifo_2_instruction"
@@ -59,12 +60,12 @@ typedef enum{
 #define DEV_TTY_2		"/dev/ttyS2"
 #define DEV_TTY_3		"/dev/ttyS3"
 
-#define SERIAL_RESPONSE_LEN_MIN	12
+#define SERIAL_RESPONSE_LEN_MIN	(12)
 
 // 68 a0 a1 a2 a3 a4 a5 68 01 02 43 C3 cs 16
 // 发往串口的命令，长度至少包括：一个开始符68，6个标识socket id，socket id结束符68，校验符cs，指令结束符16
-#define SERIAL_CMD_SEND_LEN_MIN	10
-#define SERIAL_CMD_SEND_LEN_MAX	64
+#define SERIAL_CMD_SEND_LEN_MIN	(10)
+#define SERIAL_CMD_SEND_LEN_MAX	(64)
 
 typedef enum{
 	SOCKET_STATUS_EXCEPTION = -1,

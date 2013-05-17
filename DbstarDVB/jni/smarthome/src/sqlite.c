@@ -352,7 +352,7 @@ static int createTable(char* name)
 				///APP serverIP
 				memset(tmp_str, 0, sizeof(tmp_str));
 				initial_server_ip_get(tmp_str, sizeof(tmp_str)-1);
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifeIP','211.99.30.254');");
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifeIP','%s');", tmp_str);
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
 					ERROROUT("insert SmartLifeIP to 'global' failed.");
@@ -361,7 +361,7 @@ static int createTable(char* name)
 				}
 				sqlite3_free(errmsg);
 				///APP port
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifePort','9103');");
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifePort','%d');",SMARTLIFE_SERVER_PORT);
 				if(sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
 					ERROROUT("insert SmartLifePort to 'global' failed.");
