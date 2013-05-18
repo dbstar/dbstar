@@ -12,7 +12,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -69,9 +68,9 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.system_management_view);
-		
+
 		initializeView();
-		
+
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 		Log.d(TAG, "menu path = " + mMenuPath);
@@ -103,7 +102,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		mInputBox.addTextChangedListener(new TextWatcher() {
 			public void onTextChanged(CharSequence s, int start, int before,
 					int count) {
-				
+
 			}
 
 			public void beforeTextChanged(CharSequence s, int start, int count,
@@ -114,7 +113,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 				checkSecurityCode();
 			}
 
-		}); 
+		});
 
 		mOkButton.setEnabled(false);
 		mOkButton.setFocusable(false);
@@ -144,20 +143,30 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 	}
 
 	void checkSecurityCode() {
+		boolean valid = false;
+
 		String code = mInputBox.getText().toString();
-		if (code != null && code.equals(mSecurityCode)) {
+		if (code != null && code.length() == mSecurityCode.length()
+				&& code.equals(mSecurityCode)) {
 			if (mClearChecker.isChecked() || mFormatChecker.isChecked()
 					|| mRestoreChecker.isChecked()) {
-				mOkButton.setEnabled(true);
-				mOkButton.setFocusable(true);
+				valid = true;
 			}
+		}
+
+		if (valid) {
+			mOkButton.setEnabled(true);
+			mOkButton.setFocusable(true);
+		} else {
+			mOkButton.setEnabled(false);
+			mOkButton.setFocusable(false);
 		}
 	}
 
 	void okButtonPressed() {
-		
-		RestoreFactoryUtil.closeNetwork();
-		
+
+		//RestoreFactoryUtil.closeNetwork();
+
 		if (mTasks == null) {
 			mTasks = new ArrayList<TaskEntity>();
 		} else {
@@ -227,6 +236,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 					if (v instanceof CheckBox) {
 						CheckBox checker = (CheckBox) v;
 						checker.setChecked(!checker.isChecked());
+						checkSecurityCode();
 						return true;
 					} else if (v instanceof Button) {
 						Button button = (Button) v;

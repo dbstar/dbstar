@@ -388,8 +388,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		if (mLoadingDialog == null || !mLoadingDialog.isShowing()) {
 			Log.d(TAG, "show loading dialog");
 			mLoadingDialog = ProgressDialog.show(this, "", loadingText, true);
-			mLoadingDialog.setCancelable(true);
-			mLoadingDialog.setCanceledOnTouchOutside(true);
+			mLoadingDialog.setCancelable(false);
+			mLoadingDialog.setCanceledOnTouchOutside(false);
 		}
 	}
 

@@ -1890,6 +1890,7 @@ public class GDDataProviderService extends Service {
 		filter.addAction(DbstarServiceApi.ACTION_SMARTCARD_OUT);
 		filter.addAction(GDCommon.ACTION_BOOT_COMPLETED);
 		
+		filter.addAction(GDCommon.ActionClearSettings);
 		filter.addAction(GDCommon.ActionSystemRecovery);
 		filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
 
@@ -2136,25 +2137,7 @@ public class GDDataProviderService extends Service {
 
 					break;
 				}
-				
-				case DbstarServiceApi.DISK_FORMAT_SUCCESS: {
-					Message msg = mHandler.obtainMessage(GDCommon.MSG_DISK_FORMAT_FINISHED);
-					msg.arg1 = GDCommon.VALUE_SUCCESSED;
-					msg.sendToTarget();
-					break;
-				}
-				
-				case DbstarServiceApi.DISK_FORMAT_FAILED: {
-					String info = getStringData(intent, "utf-8");
-					Log.d(TAG, "==========format disk error ======== " + info);
-					
-					Message msg = mHandler.obtainMessage(GDCommon.MSG_DISK_FORMAT_FINISHED);
-					msg.arg1 = GDCommon.VAULE_FAILED;
-					msg.obj = info;
-					msg.sendToTarget();
-					break;
-				}
-				
+
 				case DbstarServiceApi.MOTHER_DISK_INITIALIZE_START:
 				case DbstarServiceApi.MOTHER_DISK_INITIALIZE_PROCESS:
 				case DbstarServiceApi.MOTHER_DISK_INITIALIZE_FAILED:
@@ -2274,6 +2257,8 @@ public class GDDataProviderService extends Service {
 				Message msg = mHandler.obtainMessage(GDCommon.MSG_SYSTEM_RECOVERY);
 				msg.arg1 = type;
 				msg.sendToTarget();
+			} else if (action.equals(GDCommon.ActionClearSettings)) {
+				DeviceInitController.clearSettings();
 			} else if (action.equals(GDCommon.ACTION_BOOT_COMPLETED)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_BOOT_COMPLETED);
 			} else if (action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
@@ -2293,11 +2278,20 @@ public class GDDataProviderService extends Service {
 			break;
 		}
 		case GDCommon.RecoveryTypeFormatDisk: {
-			//notifyDbstarService(DbstarServiceApi.CMD_DISK_FORMAT);
+			notifyDbstarService(DbstarServiceApi.CMD_DISK_FORMAT);
+			formatDisk();
 			break;
 		}
 
 		}
+	}
+	
+	private DiskFormatter mFormatter;
+	
+	void formatDisk() {
+		mFormatter = new DiskFormatter();
+//		mFormatter.startFormat(mConfigure.getStorageDisk(), mHandler);
+		mFormatter.startFormatDisk(mConfigure.getStorageDisk(), mHandler);
 	}
 	
 	// if format failed, errorMsg is the message.
@@ -2306,8 +2300,10 @@ public class GDDataProviderService extends Service {
 			EventData.DiskFormatEvent event = new EventData.DiskFormatEvent();
 			event.Successed = successed;
 			event.ErrorMessage = errorMsg;
-			mPageOberser.notifyEvent(EventData.EVENT_DISK_FORMAT, event);
+			mPageOberser.notifyEvent(EventData.EVENT_DISK_FORMAT, event);			
 		}
+		
+		mFormatter.finishFormatDisk();
 	}
 
 	int getWakeupTime() {
