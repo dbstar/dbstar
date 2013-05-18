@@ -78,6 +78,8 @@ public class GDTVActivity extends GDBaseActivity {
 			mEpisodesNormalBackground;
 
 	View mSelectedView = null;
+	
+	boolean mEnterPlayer = false;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -102,7 +104,9 @@ public class GDTVActivity extends GDBaseActivity {
 
 	public void onStart() {
 		super.onStart();
-
+		
+		mEnterPlayer = false;
+		
 		if (mAdapter.getCount() > 0) {
 			mSmallThumbnailView.setSelection(mSeletedItemIndex);
 		}
@@ -127,6 +131,12 @@ public class GDTVActivity extends GDBaseActivity {
 			mScrollBar.setRange(mTV.EpisodesPageCount);
 			mScrollBar.setPosition(mTV.EpisodesPageNumber);
 		}
+	}
+	
+	public void onResume() {
+		super.onResume();
+		
+		mEnterPlayer = false;
 	}
 
 	private BroadcastReceiver mCmdReceiver = new BroadcastReceiver() {
@@ -618,6 +628,20 @@ public class GDTVActivity extends GDBaseActivity {
 		String file = mService.getMediaFile(item.Content);
 		String drmFile = mService.getDRMFile(item.Content);
 
+		Log.d(TAG, " file = " + file);
+		
+		if (file == null || file.isEmpty()) {
+			alertFileNotExist();
+			mEnterPlayer = false;
+			return;
+		}
+
+		if (drmFile != null && !drmFile.isEmpty() && !isSmartcardReady()) {
+			alertSmartcardInfo();
+			mEnterPlayer = false;
+			return;
+		}
+
 		GDPlayerUtil.playVideo(this, mTV.Content.Id, item.Content, file,
 				drmFile, true);
 	}
@@ -987,8 +1011,15 @@ public class GDTVActivity extends GDBaseActivity {
 
 				case KeyEvent.KEYCODE_DPAD_CENTER:
 				case KeyEvent.KEYCODE_ENTER:
+					if (!mEnterPlayer) {
+						mEnterPlayer = true;
+						mHandler.postDelayed(new Runnable() {
+							public void run() {
+								playTV();
+							}
+						}, 1000);
+					}
 					ret = true;
-					playTV();
 					break;
 				}
 			}
