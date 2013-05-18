@@ -92,6 +92,7 @@ static int kp_search_key(struct kp *kp)
 
 static void kp_work(struct kp *kp)
 {
+#define ADC_KEYPAD_COUNT 10
 	int code = kp_search_key(kp);
 
 	if ((!code) && (!kp->cur_keycode)) {
@@ -101,7 +102,7 @@ static void kp_work(struct kp *kp)
 		kp->tmp_code = code;
 		kp->count = 0;
 	}
-	else if(++kp->count == 2) {
+	else if(++kp->count == ADC_KEYPAD_COUNT) {
 		if (kp->cur_keycode != code) {
 			if (code) {
 				printk("key %d down\n", code);
