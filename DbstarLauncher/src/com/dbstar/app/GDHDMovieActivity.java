@@ -778,7 +778,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	
 	void updateDrmInfo(String publicationId, String drmInfoData) {
 		Movie movie = getSelectedMovie();
-		if (!publicationId.equals(movie.Content.Id)) {
+		if (!publicationId.equals(movie.Content.Id) || drmInfoData == null) {
 			Log.d(TAG, "the drminfo is not for publication " + publicationId);
 			return;
 		}
