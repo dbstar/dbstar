@@ -1733,8 +1733,10 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		
 		case CMD_DRM_SC_INSERT:
 			DEBUG("CMD_SMARTCARD_INSERT\n");
-			if(-1==drm_sc_insert())
+			if(-1==drm_sc_insert()){
+				DEBUG("drm_sc_insert return with -1\n");
 				msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+			}
 #if 0
 // drm_sc_insert调用成功并不意味着智能卡复位成功，因此成功的信号不在这里发送。
 			else
@@ -1843,6 +1845,9 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DISC_FORMAT:
 			DEBUG("CMD_DISC_FORMAT\n");
+			
+			s_PushDir_usable = 0;
+			DEBUG("set s_PushDir_usable as %d\n", s_PushDir_usable);
 			
 			if(0==remove_force(COLUMN_RES)){
 				DEBUG("remove %s success\n", COLUMN_RES);

@@ -128,8 +128,8 @@ int drm_read(int *fd, unsigned char *buf, int size)
 			return -ret;
 		}
 #else
-		// CA error
-		if(		CDCA_RC_CARD_INVALID==ret || CDCA_RC_FILE_ERROR==ret || CDCA_RC_NOENTITLE==ret
+		// CA error	// CDCA_RC_CARD_INVALID==ret || 
+		if(		CDCA_RC_FILE_ERROR==ret || CDCA_RC_NOENTITLE==ret
 			||	CDCA_RC_NOT_WATCHTIME==ret || CDCA_RC_NOT_ISSUETIME==ret || CDCA_RC_RIGHT_LIMIT==ret){
 			LOGD("CA ERROR 0x%x\n", ret);
 			return -ret;
