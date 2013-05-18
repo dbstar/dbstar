@@ -861,7 +861,7 @@ CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen
 	if (ret > 0) {
 		//LOGD("read file successful[%d][%lu],[%d]!!!!\n", (*(int *)pFileHandle), dwLen, ret);
 	} else {
-		LOGD("read file failed!!!!!! \n");
+		LOGD("read file failed[%d][%lu],[%d]!!!!\n", (*(int *)pFileHandle), dwLen, ret);
 	}
 	return ret;
 }
