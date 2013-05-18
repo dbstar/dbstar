@@ -121,6 +121,7 @@ public class GDCommon {
 	public static final String ActionPlayNext = "com.dbstar.DbstarDVB.Action.PLAY_NEXT";
 	public static final String ActionNoNext = "com.dbstar.DbstarDVB.Action.NO_NEXT";
 
+	public static final String ActionClearSettings = "com.dbstar.settings.action.CLEAR_SETTINGS";
 	public static final String ActionSystemRecovery = "com.dbstar.DbstarLauncher.SystemRecovery";
 	public static final String KeyRecoveryType = "recovery_type";
 	public static final int RecoveryTypeClearPush = 0x1001;

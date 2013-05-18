@@ -65,5 +65,10 @@ public class DeviceInitController {
 			Log.e(TAG, "Finishing the Application");
 		}
 	}
+	
+	public static void clearSettings() {
+		Context context = GDApplication.getAppContext();
+		context.deleteFile(FlagFile);
+	}
 
 }
