@@ -551,7 +551,7 @@ public class PlayerMenu extends PlayerActivity {
 
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK: {
-			exitPlayer();
+			exitPlayer(10);
 			return true;
 
 		}
@@ -1114,7 +1114,9 @@ public class PlayerMenu extends PlayerActivity {
 		}
 	}
 
-	public void exitPlayer() {
+	public void exitPlayer(int i) {
+		super.exitPlayer(i);
+
 		Log.d(TAG, "=== exit player ===");
 
 		// if (SettingsVP.chkEnableOSD2XScale() == true) {
@@ -1407,7 +1409,7 @@ public class PlayerMenu extends PlayerActivity {
 			in.setAction(Common.ActionPlayCompleted);
 			sendBroadcast(in);
 		} else {
-			exitPlayer();
+			exitPlayer(4);
 		}
 	}
 
@@ -1611,7 +1613,7 @@ public class PlayerMenu extends PlayerActivity {
 				if (mHdmiPlugged != plugged) {
 					mHdmiPlugged = plugged;
 					// finish();
-					exitPlayer();
+					exitPlayer(5);
 				}
 			}
 		}
@@ -1649,14 +1651,14 @@ public class PlayerMenu extends PlayerActivity {
 			if (action.equals(Common.ActionReplay)) {
 				replay();
 			} else if (action.equals(Common.ActionExit)) {
-				exitPlayer();
+				exitPlayer(6);
 			} else if (action.equals(Common.ActionPlayNext)) {
 				if (retriveInputParameters(intent)) {
 					mIsDeleted = false;
 					Amplayer_play(mPlayPosition);
 				}
 			} else if (action.equals(Common.ActionNoNext)) {
-				exitPlayer();
+				exitPlayer(7);
 			} else if (action.equals(Common.ActionDelete)) {
 				mIsDeleted = true;
 			}
@@ -1731,7 +1733,7 @@ public class PlayerMenu extends PlayerActivity {
 						// Amplayer_stop();
 						//
 						// finish();
-						exitPlayer();
+						exitPlayer(8);
 					}
 				}
 			} else if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {
@@ -1764,7 +1766,7 @@ public class PlayerMenu extends PlayerActivity {
 			// onPause(); // for disable 2Xscale
 			// finish(); // will call onDestroy()
 			// onDestroy(); // set freescale when exception
-			exitPlayer();
+			exitPlayer(9);
 			Log.d(TAG, "----------------uncaughtException--------------------");
 
 			// android.os.Process.killProcess(android.os.Process.myPid());

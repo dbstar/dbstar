@@ -158,7 +158,7 @@ public class PlayerActivity extends Activity {
 			}
 			
 			case MSG_POWEROFF: {
-				exitPlayer();
+				exitPlayer(1);
 				break;
 			}
 
@@ -227,12 +227,11 @@ public class PlayerActivity extends Activity {
 	}
 
 	protected void showSmartcardInfo() {
-
 		Log.d(TAG, " ================== showSmartcardInfo =================== ");
 
 		setOSDOn(true);
-
 		int state = mSmartcardTacker.getSmartcardState();
+		Log.d(TAG, " smartcard state = " + state);
 
 		if (mSmartcardDialog == null || !mSmartcardDialog.isShowing()) {
 			showDialog(DLG_ID_SMARTCARDINFO);
@@ -315,8 +314,8 @@ public class PlayerActivity extends Activity {
 
 				if (alertDlg.getId() == DLG_ID_SMARTCARDINFO) {
 					int state = mSmartcardTacker.getSmartcardState();
+					Log.d(TAG, " smartcard dialog is shown: state = " + state);
 					setupSmartcardInfoDlg(state);
-
 				} else if (alertDlg.getId() == DLG_ID_ALERT) {
 					if (mAlertType == ALERT_TYPE_ERRORINFO) {
 						setupErrorInfoDlg();
@@ -335,11 +334,14 @@ public class PlayerActivity extends Activity {
 				GDAlertDialog alertDlg = (GDAlertDialog) dialog;
 				if (alertDlg.getId() == DLG_ID_SMARTCARDINFO) {
 					int state = mSmartcardTacker.getSmartcardState();
+					
+					Log.d(TAG, "onDismiss: smartcard state=" + state);
+					
 					if (state != SmartcardStateTracker.SMARTCARD_STATE_INSERTED) {
-						exitPlayer();
+						exitPlayer(2);
 					}
 				} else if (alertDlg.getId() == DLG_ID_ALERT) {
-					exitPlayer();
+					exitPlayer(3);
 				}
 			}
 
@@ -360,7 +362,13 @@ public class PlayerActivity extends Activity {
 
 					if (mSmartcardDialog != null
 							&& mSmartcardDialog.isShowing()) {
-						mSmartcardDialog.dismiss();
+						int state = mSmartcardTacker.getSmartcardState();
+						
+						Log.d(TAG, " == timeout == dismiss smartcard dialog! state " + state);
+						
+						if (state == SmartcardStateTracker.SMARTCARD_STATE_INSERTED) {
+							mSmartcardDialog.dismiss();
+						}
 					}
 					break;
 				}
@@ -386,6 +394,8 @@ public class PlayerActivity extends Activity {
 			mDlgTimer.cancel();
 		}
 
+		Log.d(TAG, " hide smartcard dialog with delay" + DLG_TIMEOUT);
+		
 		mDlgTimer = new Timer();
 		mDlgTimer.schedule(mTimeoutTask, DLG_TIMEOUT);
 	}
@@ -714,8 +724,8 @@ public class PlayerActivity extends Activity {
 
 	}
 
-	public void exitPlayer() {
-
+	public void exitPlayer(int i) {
+		Log.d(TAG, " --- exitPlayer---" + i);
 	}
 
 	// when FF/FB (Searching state), and replay, state change as following:
@@ -903,7 +913,7 @@ public class PlayerActivity extends Activity {
 
 	DialogInterface.OnClickListener mAlertButtonClickListener = new DialogInterface.OnClickListener() {
 		public void onClick(DialogInterface dialog, int whichButton) {
-			exitPlayer();
+			exitPlayer(0);
 		}
 	};
 }
