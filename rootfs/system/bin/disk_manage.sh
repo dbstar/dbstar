@@ -13,7 +13,7 @@ DISK_CMD_FORMAT=3
 DISK_MANAGER_CMD=0
 
 #DISK_DEVS="/dev/sda /dev/sdb /dev/sdc"
-DISK_DEVS="/dev/block/sda /dev/block/sdb /dev/block/sdc"
+DISK_DEVS="/dev/block/sda /dev/block/sda1 /dev/block/sdb /dev/block/sdc"
 DISK_MANAGER_DEV=""
 DISK_MANAGER_MNT=""
 
@@ -131,9 +131,9 @@ get_disk_manage_param()
 
 	if [ $DMCMD = "add" ]; then
 		DISK_MANAGER_CMD=$DISK_CMD_ADD
-	elif [ $1 = "del" ]; then
+	elif [ $DMCMD = "del" ]; then
 		DISK_MANAGER_CMD=$DISK_CMD_DEL
-	elif [ $1 = "format" ]; then
+	elif [ $DMCMD = "format" ]; then
 		DISK_MANAGER_CMD=$DISK_CMD_FORMAT
 	else
 		echo "*** Wrong disk manage cmd. Exit."
@@ -157,7 +157,7 @@ get_disk_manage_param
 if [ $DISK_MANAGER_CMD -eq $DISK_CMD_FORMAT ]; then
 #	DISK_MANAGER_DEV=$DISK_MANAGER_DEV"1"
 	ntfs_format $DISK_MANAGER_DEV
-if [ $DISK_MANAGER_CMD -eq $DISK_CMD_ADD ]; then
+elif [ $DISK_MANAGER_CMD -eq $DISK_CMD_ADD ]; then
 	partition_add $DISK_MANAGER_DEV
 	DISK_MANAGER_DEV=$DISK_MANAGER_DEV"1"
 	ntfs_format $DISK_MANAGER_DEV
