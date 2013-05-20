@@ -220,7 +220,9 @@ public class PlayerMenu extends PlayerActivity {
 			return false;
 
 		mDRMFile = Utils.getDRMFilePath(mUri);
-		if (mDRMFile != null && !mDRMFile.isEmpty()) {
+		Log.d(TAG, " drm file="+ mDRMFile + ".");
+		
+		if (mDRMFile != null && mDRMFile.trim().length() != 0) {
 			mHasKey = true;
 		}
 
