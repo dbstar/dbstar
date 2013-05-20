@@ -218,7 +218,7 @@ public class PlayerActivity extends Activity {
 		return dialog;
 	}
 
-	void showMediaInfoDlg() {
+	protected void showMediaInfoDlg() {
 		if (mAlertDlg != null && mAlertDlg.isShowing()) {
 			return;
 		}

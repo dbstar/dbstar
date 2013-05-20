@@ -1665,6 +1665,20 @@ public class PlayerMenu extends PlayerActivity {
 			} else if (action.equals(Common.ActionPlayNext)) {
 				if (retriveInputParameters(intent)) {
 					mIsDeleted = false;
+					
+					if (mVideoInfoDlg != null) {
+						boolean reshow = false;
+						if (mVideoInfoDlg.isShowing()) {
+							reshow = true;
+							mVideoInfoDlg.dismiss();
+						}
+
+						mVideoInfoDlg.setMediaInfo(intent);
+						if (reshow) {
+							showMediaInfoDlg();
+						}
+					}
+
 					Amplayer_play(mPlayPosition);
 				}
 			} else if (action.equals(Common.ActionNoNext)) {

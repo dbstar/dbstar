@@ -67,6 +67,11 @@ public class DbVideoInfoDlg extends Dialog implements ViewStateManager {
 			// }
 		}
 	};
+	
+	// Must call this when the movie or tv changed to next.
+	public void setMediaInfo(Intent intent) {
+		mMediaData = getMediaData(intent);
+	}
 
 	public void onStart() {
 		super.onStart();
