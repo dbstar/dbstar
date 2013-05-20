@@ -48,6 +48,8 @@ public class GDDiskInitDialog extends Dialog implements
 		setCancelable(false);
 		setCanceledOnTouchOutside(false);
 		setOnShowListener(this);
+		
+		mHandler = new Handler();
 	}
 
 	@Override
