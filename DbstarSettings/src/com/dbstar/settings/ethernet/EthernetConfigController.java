@@ -23,6 +23,8 @@ import android.net.ethernet.EthernetDevInfo;
 import android.net.ethernet.EthernetStateTracker;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
 import android.view.View;
@@ -287,7 +289,13 @@ public class EthernetConfigController {
 		mDns = (EditText) mActivity.findViewById(R.id.eth_dns);
 		mBackupDns = (EditText) mActivity.findViewById(R.id.eth_backup_dns);
 		mGw = (EditText) mActivity.findViewById(R.id.eth_gateway);
-
+		
+		mIpaddr.setOnFocusChangeListener(mFocusChangeListener);
+		mMask.setOnFocusChangeListener(mFocusChangeListener);
+		mDns.setOnFocusChangeListener(mFocusChangeListener);
+		mBackupDns.setOnFocusChangeListener(mFocusChangeListener);
+		mGw.setOnFocusChangeListener(mFocusChangeListener);
+		
 		enableDhcp(true);
 
 		String[] Devs = mEthManager.getDeviceNameList();
@@ -347,6 +355,9 @@ public class EthernetConfigController {
 					mDhcpSwitchTitle.setTextColor(0xFF000000);
 				} else if (v.getId() == R.id.manual_switch_button) {
 					mManualSwitchTitle.setTextColor(0xFF000000);
+				} else if (v instanceof EditText) {
+					EditText textView = (EditText) v;
+					checkIpAddress(textView.getEditableText());
 				}
 			}
 
@@ -486,6 +497,17 @@ public class EthernetConfigController {
 				mEthManager.setEthEnabled(true);
 			}
 			mEnablePending = false;
+		}
+	}
+	
+	private void checkIpAddress(Editable s) {
+		String ip = s.toString();
+		
+		if (!isIpAddress(ip)) {
+			Toast.makeText(mContext, R.string.eth_settings_error,
+					Toast.LENGTH_LONG).show();
+			
+			s.clear();
 		}
 	}
 

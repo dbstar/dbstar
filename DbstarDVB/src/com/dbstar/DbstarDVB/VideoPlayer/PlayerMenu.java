@@ -1275,6 +1275,14 @@ public class PlayerMenu extends PlayerActivity {
 		}
 
 		if (!plugIn) {
+			
+			if (!INITOK) {
+				// plug out smart card when player is not inited
+				// then just exit.
+				exitPlayer(10);
+				return;
+			}
+			
 			if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
 				// plug out card in paused state
 				return;
