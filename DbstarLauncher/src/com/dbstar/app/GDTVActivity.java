@@ -42,7 +42,6 @@ public class GDTVActivity extends GDBaseActivity {
 	private static final int PAGE_ITEMS = 6;
 	private static final int EPISODES_VIEW_COLUMN = 5;
 	private static final int EPISODES_PAGE_ITEMS = 20;
-	private static final int DESCRIPTION_MAX_LEN = 80; // 5x16
 	
 	private static final int PageSize = PAGE_ITEMS;
 	private static final int EpisodesPageSize = EPISODES_PAGE_ITEMS;
@@ -545,12 +544,7 @@ public class GDTVActivity extends GDBaseActivity {
 			}
 
 			if (content.Description != null) {
-				String desc = content.Description;
-				if (desc != null && desc.length() > DESCRIPTION_MAX_LEN) {
-					desc = desc.substring(0, DESCRIPTION_MAX_LEN - 2) + "......";
-				}
-				
-				mTVDescription.setText(desc);
+				mTVDescription.setText(content.Description);
 			}
 
 			String actors = mResource.HeaderActors;
