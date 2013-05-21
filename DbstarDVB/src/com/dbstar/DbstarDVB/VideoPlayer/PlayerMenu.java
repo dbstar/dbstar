@@ -1018,7 +1018,7 @@ public class PlayerMenu extends PlayerActivity {
 		if (!INITOK)
 			return;
 
-		Log.d(TAG, " =========== onFFButtonPressed ================= ");
+		Log.d(TAG, " =========== onFFButtonPressed 2 ================= ");
 
 		Log.d(TAG, " mPlayerStatus " + mPlayerStatus + " FF_FLAG " + FF_FLAG
 				+ " FB_FLAG " + FB_FLAG + " FF_LEVEL " + FF_LEVEL
@@ -1029,7 +1029,9 @@ public class PlayerMenu extends PlayerActivity {
 				if (FF_LEVEL < FF_MAX) {
 					FF_LEVEL = FF_LEVEL + 1;
 				} else {
+					FF_FLAG = false;
 					FF_LEVEL = 0;
+					showInfoBar(true);
 				}
 			} else if (FB_FLAG) {
 				FB_FLAG = false;
@@ -1066,7 +1068,7 @@ public class PlayerMenu extends PlayerActivity {
 		if (!INITOK)
 			return;
 
-		Log.d(TAG, " =========== onFBButtonPressed ================= ");
+		Log.d(TAG, " =========== onFBButtonPressed 2 ================= ");
 
 		Log.d(TAG, " mPlayerStatus " + mPlayerStatus + " FF_FLAG " + FF_FLAG
 				+ " FB_FLAG " + FB_FLAG + " FF_LEVEL " + FF_LEVEL
@@ -1077,7 +1079,9 @@ public class PlayerMenu extends PlayerActivity {
 				if (FB_LEVEL < FB_MAX) {
 					FB_LEVEL = FB_LEVEL + 1;
 				} else {
+					FB_FLAG = false;
 					FB_LEVEL = 0;
+					showInfoBar(true);
 				}
 				
 				mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
@@ -1662,25 +1666,6 @@ public class PlayerMenu extends PlayerActivity {
 				replay();
 			} else if (action.equals(Common.ActionExit)) {
 				exitPlayer(6);
-			} else if (action.equals(Common.ActionPlayNext)) {
-				if (retriveInputParameters(intent)) {
-					mIsDeleted = false;
-					
-					if (mVideoInfoDlg != null) {
-						boolean reshow = false;
-						if (mVideoInfoDlg.isShowing()) {
-							reshow = true;
-							mVideoInfoDlg.dismiss();
-						}
-
-						mVideoInfoDlg.setMediaInfo(intent);
-						if (reshow) {
-							showMediaInfoDlg();
-						}
-					}
-
-					Amplayer_play(mPlayPosition);
-				}
 			} else if (action.equals(Common.ActionNoNext)) {
 				exitPlayer(7);
 			} else if (action.equals(Common.ActionDelete)) {
@@ -1700,6 +1685,20 @@ public class PlayerMenu extends PlayerActivity {
 				if (retriveInputParameters(intent)) {
 					showInfoBar(true);
 					mIsDeleted = false;
+					
+					if (mVideoInfoDlg != null) {
+						boolean reshow = false;
+						if (mVideoInfoDlg.isShowing()) {
+							reshow = true;
+							mVideoInfoDlg.dismiss();
+						}
+
+						mVideoInfoDlg.setMediaInfo(intent);
+						if (reshow) {
+							showMediaInfoDlg();
+						}
+					}
+					
 					Amplayer_play(mPlayPosition);
 				}
 			}
