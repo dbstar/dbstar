@@ -24,7 +24,7 @@ int smarthome_reset()
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmarthomeServerPort','%d');", SMARTPOWER_SERVER_PORT);
 	smarthome_setting_reset(sqlite_cmd);
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifeIP',,'%s');", SMARTPOWER_SERVER_IP);
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifeIP','%s');", SMARTPOWER_SERVER_IP);
 	smarthome_setting_reset(sqlite_cmd);
 	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifePort','%d');",SMARTLIFE_SERVER_PORT);
