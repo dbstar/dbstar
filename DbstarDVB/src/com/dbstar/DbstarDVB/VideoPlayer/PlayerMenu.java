@@ -22,6 +22,7 @@ import android.content.Context;
 
 import com.dbstar.DbstarDVB.PlayerService.*;
 import com.dbstar.DbstarDVB.VideoPlayer.alert.DbVideoInfoDlg;
+import com.dbstar.DbstarDVB.VideoPlayer.alert.PlayerErrorInfo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -1438,14 +1439,18 @@ public class PlayerMenu extends PlayerActivity {
 				"@@@@@@@@@@@@@  playbackError: " + Integer.toHexString(error));
 
 		mHasError = true;
+
+		// If smart card is plugged out, then do not display drm related error.
+		if (error == PlayerErrorInfo.CDCA_RC_CARD_INVALID) {
+			int smartcardState = mSmartcardTacker.getSmartcardState();
+			if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVING
+				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVED) {
+				return;
+			}
+		}
+		
 		clearScreen();
 		showErrorInfoDlg(error);
-
-		// if (error < 0) {
-		// saveBookmark(0);
-		// mPlayPosition = 0;
-		// exitPlayer();
-		// }
 	}
 
 	public void searchOk() {
