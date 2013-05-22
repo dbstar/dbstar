@@ -50,7 +50,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected static final int MSG_DISP_NOTIFICATION = 0x80003;
 	protected static final int MSG_HIDE_NOTIFICATION = 0x80004;
 	protected static final int MSG_DISK_INIT = 0x80005;
-	
+
 	protected static final String INTENT_KEY_MENUPATH = "menu_path";
 	protected static final int MENU_LEVEL_1 = 0;
 	protected static final int MENU_LEVEL_2 = 1;
@@ -131,14 +131,13 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 				break;
 			}
 			case MSG_DISK_INIT: {
-				displayDiskInitMessage(msg.arg1, (String)msg.obj);
+				displayDiskInitMessage(msg.arg1, (String) msg.obj);
 				break;
 			}
 			}
 		}
 	};
 
-	
 	protected GDResourceAccessor mResource;
 
 	protected void initializeMenuPath() {
@@ -168,7 +167,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected void initializeView() {
 		initializeMenuPath();
-		
+
 		mStatusIndicatorView = (ImageView) findViewById(R.id.status_indicator);
 		if (mStatusIndicatorView != null) {
 			mStatusIndicatorView.setVisibility(View.INVISIBLE);
@@ -200,7 +199,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		super.onCreate(savedInstanceState);
 
 		mResource = new GDResourceAccessor(this);
-		
+
 		Intent intent = new Intent(this, GDDataProviderService.class);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
@@ -242,7 +241,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		Intent intent = new Intent(GDAudioController.ActionMute);
 		intent.putExtra("key_mute", mute);
 		sendBroadcast(intent);
-		
+
 		if (mStatusIndicatorView != null) {
 			if (mute) {
 				mStatusIndicatorView.setImageResource(R.drawable.sound_mute);
@@ -255,7 +254,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mHandler.postDelayed(mHideMuteIconTask, 2000);
 		}
 	}
-	
+
 	Runnable mHideMuteIconTask = new Runnable() {
 		public void run() {
 			mStatusIndicatorView.setVisibility(View.INVISIBLE);
@@ -375,7 +374,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		} else if (type == EventData.EVENT_HIDE_NOTIFICATION) {
 			mHandler.sendEmptyMessage(MSG_HIDE_NOTIFICATION);
 		} else if (type == EventData.EVENT_DISK_INIT) {
-			EventData.DiskInitEvent diskInit = (EventData.DiskInitEvent)event;
+			EventData.DiskInitEvent diskInit = (EventData.DiskInitEvent) event;
 			Message msg = mHandler.obtainMessage(MSG_DISK_INIT);
 			msg.arg1 = diskInit.Type;
 			msg.obj = diskInit.Message;
@@ -431,6 +430,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		case DLG_ID_SMARTCARD: {
 			mSmartcardDlg = new GDAlertDialog(this, id);
 			mSmartcardDlg.setOnShowListener(mOnShowListener);
+			mSmartcardDlg.setOnDismissListener(mOnDismissListener);
 			dialog = mSmartcardDlg;
 			break;
 		}
@@ -441,7 +441,6 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {
 
-		@Override
 		public void onShow(DialogInterface dialog) {
 			if (dialog instanceof GDAlertDialog) {
 				displayAlertDlg((GDAlertDialog) dialog, mAlertType);
@@ -449,6 +448,28 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 		}
 	};
+
+	DialogInterface.OnDismissListener mOnDismissListener = new DialogInterface.OnDismissListener() {
+
+		public void onDismiss(DialogInterface dialog) {
+			if (dialog instanceof GDAlertDialog) {
+				stopTimer();
+			}
+		}
+
+	};
+
+	void stopTimer() {
+		if (mTimeoutTask != null) {
+			mTimeoutTask.cancel();
+			mTimeoutTask = null;
+		}
+
+		if (mDlgTimer != null) {
+			mDlgTimer.cancel();
+			mDlgTimer = null;
+		}
+	}
 
 	void displayAlertDlg(GDAlertDialog dialog, int type) {
 
@@ -532,11 +553,11 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		Log.d(TAG, " ======== display smartcard state ==== " + mSmartcardState);
 
 		if (mSmartcardDlg == null || !mSmartcardDlg.isShowing()) {
-			if (mSmartcardDlg == null
-					&& mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
-				// not display insert ok dialog.
-				return;
-			}
+			// if (mSmartcardDlg == null
+			// && mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
+			// // not display insert ok dialog.
+			// return;
+			// }
 
 			showDialog(DLG_ID_SMARTCARD);
 		} else {
@@ -546,13 +567,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
 			hideDlgDelay();
 		} else {
-			if (mTimeoutTask != null) {
-				mTimeoutTask.cancel();
-			}
-
-			if (mDlgTimer != null) {
-				mDlgTimer.cancel();
-			}
+			stopTimer();
 		}
 	}
 
@@ -562,47 +577,20 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		Log.d(TAG, " ======= displayNotification ============ " + message);
 
 		if (message != null && !message.isEmpty()) {
-
-//			FragmentTransaction ft = getFragmentManager().beginTransaction();
-//			Fragment prev = getFragmentManager().findFragmentByTag(
-//					"osd_notification");
-//			if (prev != null) {
-//				ft.remove(prev);
-//			}
-//			ft.addToBackStack(null);
-
-//			mNotificationDialog = null;
-
 			String[] data = message.split("\t");
 			if (data.length > 1) {
 				int type = Integer.valueOf(data[0]);
 				int duration = GDCommon.OSDDISP_TIMEOUT;
-				// Create and show the dialog.
-//				NotificationFragment newFragment = NotificationFragment
-//						.newInstance(type, data[1], duration);
-//
-//				newFragment.show(ft, "osd_notification");
-				
-//				mStyle = type;
-//				mMessage = message;
-//				mDuration = GDCommon.OSDDISP_TIMEOUT;
-				
-				mNotificationDialog = new NotificationDialog(this, type, data[1], duration);
+
+				mNotificationDialog = new NotificationDialog(this, type,
+						data[1], duration);
 				mNotificationDialog.show();
 			}
 		}
 	}
 
 	protected void hideNotification() {
-//		FragmentTransaction ft = getFragmentManager().beginTransaction();
-//		Fragment prev = getFragmentManager().findFragmentByTag(
-//				"osd_notification");
-//		if (prev != null) {
-//			ft.remove(prev);
-//		}
-//		ft.addToBackStack(null);
-//		ft.commit();
-		
+
 		if (mNotificationDialog != null) {
 			mNotificationDialog.dismiss();
 			mNotificationDialog = null;
@@ -659,5 +647,5 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 		mDiskInitDlg.updateState(type, message);
 	}
-	
+
 }

@@ -3,14 +3,16 @@ package com.dbstar.settings;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.dbstar.settings.alert.AlertFragment;
 import com.dbstar.settings.R;
+import com.dbstar.settings.alert.GDAlertDialog;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -117,13 +119,15 @@ public class GDBaseActivity extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 	}
-	
-	
+
+	public static final int DLG_ID_SMARTCARD = 0;
+	public static final int DLG_TYPE_SMARTCARD_INFO = 1;
+
 	private static final String ActionSDStateChange = "com.dbstar.DbstarLauncher.SDSTATE_CHANGE";
 	private static final String KeySDState = "state";
 	private static final int MSG_SDSTATE_CHANGE = 0x1001;
 	private static final int MSG_HIDE_DLG = 0x2001;
-	
+
 	// smart card state
 	public static final int SMARTCARD_STATE_INSERTING = 0x1001;
 	public static final int SMARTCARD_STATE_INSERTED = 0x1002;
@@ -131,90 +135,13 @@ public class GDBaseActivity extends Activity {
 	public static final int SMARTCARD_STATE_REMOVING = 0x1004;
 	public static final int SMARTCARD_STATE_REMOVED = 0x1005;
 	public static final int SMARTCARD_STATE_NONE = 0x1000;
-	
+
 	private static final int DLG_TIMEOUT = 3000;
 	private Timer mTimer = null;
 	private TimerTask mTimeoutTask = null;
-
-	void handleSDStateChange(int state) {
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		Fragment prev = getFragmentManager().findFragmentByTag(
-				"altert_dialog");
-		if (prev != null) {
-			ft.remove(prev);
-		}
-		ft.addToBackStack(null);
-
-		String title = getResources().getString(R.string.smartcard_status_title);
-		String message = null;
-
-		if (state == SMARTCARD_STATE_INSERTED ||
-				state == SMARTCARD_STATE_INSERTING) {
-			message = getResources().getString(R.string.smartcard_status_in);
-		} else if (state == SMARTCARD_STATE_REMOVING ||
-				state == SMARTCARD_STATE_REMOVED) {
-			message = getResources().getString(R.string.smartcard_status_out);
-		} else {
-			message = getResources().getString(R.string.smartcard_status_invlid);
-		}
-		
-		AlertFragment newFragment = AlertFragment
-				.newInstance(title, message, true);
-
-		newFragment.show(ft, "altert_dialog");
-		
-		if (state == SMARTCARD_STATE_INSERTED) {
-			hideDlgDelay();
-		}
-	}
-	
-	void hideAlerDlg() {
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		Fragment prev = getFragmentManager().findFragmentByTag(
-				"altert_dialog");
-		if (prev != null) {
-			ft.remove(prev);
-		}
-		ft.addToBackStack(null);
-	}
-	
-	void hideDlgDelay() {
-
-		if (mTimeoutTask != null) {
-			mTimeoutTask.cancel();
-		}
-
-		mTimeoutTask = new TimerTask() {
-
-			public void run() {
-				Message message = Message.obtain();
-				message.what = MSG_HIDE_DLG;
-				mHandler.sendMessage(message);
-			}
-		};
-
-		if (mTimer != null) {
-			mTimer.cancel();
-		}
-
-		mTimer = new Timer();
-		mTimer.schedule(mTimeoutTask, DLG_TIMEOUT);
-	}
-
-	Handler mHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			int msgId = msg.what;
-			switch (msgId) {
-			case MSG_SDSTATE_CHANGE: {
-				handleSDStateChange(msg.arg1);
-				break;
-			}
-			case MSG_HIDE_DLG: {
-				hideAlerDlg();
-			}
-			}
-		}
-	};
+	GDAlertDialog mSmartcardDlg = null;
+	int mSmartcardState = 0;
+	int mAlertType = 0;
 
 	private void registerMessageReceiver() {
 		IntentFilter filter = new IntentFilter();
@@ -242,4 +169,143 @@ public class GDBaseActivity extends Activity {
 			}
 		}
 	};
+
+	Handler mHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			int msgId = msg.what;
+			switch (msgId) {
+			case MSG_SDSTATE_CHANGE: {
+				handSmartcardStateChange(msg.arg1);
+				break;
+			}
+			case MSG_HIDE_DLG: {
+				hideAlertDlg();
+				break;
+			}
+			}
+		}
+	};
+
+	DialogInterface.OnShowListener mOnShowListener = new DialogInterface.OnShowListener() {
+
+		public void onShow(DialogInterface dialog) {
+			if (dialog instanceof GDAlertDialog) {
+				displayAlertDlg((GDAlertDialog) dialog, mAlertType);
+			}
+		}
+
+	};
+
+	DialogInterface.OnDismissListener mOnDismissListener = new DialogInterface.OnDismissListener() {
+
+		public void onDismiss(DialogInterface dialog) {
+			if (dialog instanceof GDAlertDialog) {
+				stopTimer();
+			}
+		}
+
+	};
+
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog = null;
+		switch (id) {
+		case DLG_ID_SMARTCARD: {
+			mSmartcardDlg = new GDAlertDialog(this, id);
+			mSmartcardDlg.setOnShowListener(mOnShowListener);
+			mSmartcardDlg.setOnDismissListener(mOnDismissListener);
+			dialog = mSmartcardDlg;
+			break;
+		}
+		}
+
+		return dialog;
+	}
+
+	protected void handSmartcardStateChange(int state) {
+		mSmartcardState = state;
+		mAlertType = DLG_TYPE_SMARTCARD_INFO;
+
+		Log.d(TAG, " ======== display smartcard state ==== " + mSmartcardState);
+
+		if (mSmartcardDlg == null || !mSmartcardDlg.isShowing()) {
+			showDialog(DLG_ID_SMARTCARD);
+		} else {
+			displayAlertDlg(mSmartcardDlg, mAlertType);
+		}
+
+		if (mSmartcardState == SMARTCARD_STATE_INSERTED) {
+			hideDlgDelay();
+		} else {
+			stopTimer();
+		}
+	}
+
+	void stopTimer() {
+		if (mTimeoutTask != null) {
+			mTimeoutTask.cancel();
+			mTimeoutTask = null;
+		}
+
+		if (mTimer != null) {
+			mTimer.cancel();
+			mTimer = null;
+		}
+	}
+
+	void displayAlertDlg(GDAlertDialog dialog, int type) {
+
+		Log.d(TAG, " ====  displayAlertDlg == " + type);
+
+		switch (type) {
+
+		case DLG_TYPE_SMARTCARD_INFO: {
+			dialog.setTitle(R.string.smartcard_status_title);
+			dialog.showSingleButton();
+
+			if (mSmartcardState == SMARTCARD_STATE_INSERTED
+					|| mSmartcardState == SMARTCARD_STATE_INSERTING) {
+				dialog.setMessage(R.string.smartcard_status_in);
+			} else if (mSmartcardState == SMARTCARD_STATE_REMOVED
+					|| mSmartcardState == SMARTCARD_STATE_REMOVING) {
+				dialog.setMessage(R.string.smartcard_status_out);
+			} else {
+				dialog.setMessage(R.string.smartcard_status_invlid);
+			}
+			break;
+		}
+
+		}
+
+		if (dialog != null) {
+			dialog.mOkButton.requestFocus();
+		}
+	}
+
+	void hideAlertDlg() {
+		mSmartcardDlg.dismiss();
+	}
+
+	void hideDlgDelay() {
+
+		if (mTimeoutTask != null) {
+			mTimeoutTask.cancel();
+		}
+
+		mTimeoutTask = new TimerTask() {
+
+			public void run() {
+				Message message = Message.obtain();
+				message.what = MSG_HIDE_DLG;
+				mHandler.sendMessage(message);
+			}
+		};
+
+		if (mTimer != null) {
+			mTimer.cancel();
+		}
+
+		mTimer = new Timer();
+		mTimer.schedule(mTimeoutTask, DLG_TIMEOUT);
+	}
+
 }
