@@ -29,6 +29,7 @@
 //ugly code....
 static play_control_t _plCtrl;
 static int g_player_errno = 0;
+static int g_player_status = 0;
 
 static JavaVM* gJavaVm = NULL;
 static jmethodID gPostMid = NULL;
@@ -195,6 +196,7 @@ int onUpdate_player_info_java(JNIEnv *env, int pid, player_info_t * info)
 			LOGE("player ERRNO: %x\n", g_player_errno);
 			g_player_errno = 0;
 		}
+		g_player_status = info->status;
 		(*env)->CallStaticVoidMethod(env, gMplayerClazz, gPostMid, pid,
 		                             info->status, info->full_time, info->current_ms, info->last_time,
 		                             error_no, info->drm_rental);
@@ -212,6 +214,14 @@ int set_player_errno(int err)
 	g_player_errno = err;
 
 	return 0;
+}
+
+
+int get_player_status(void)
+{
+	LOGD("$$$$$$$$$$$$$$$$$ get_player_status()=%d\n", g_player_status);
+
+	return g_player_status;
 }
 
 int update_player_info(int pid, player_info_t * info)
