@@ -1605,14 +1605,14 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 		}
 	}
 	else{
-		DEBUG("downloading\n");
+		DEBUG("downloading...\n");
 		system_awake_timer = 0;
 	}
 	
 	if(system_awake_timer<=600)	// 小于等于10分钟的唤醒时间均为无效值
 		snprintf(buf,bufsize,"0");
-	else if(system_awake_timer>864000)	//大于10天的唤醒时间修正为一天
-		snprintf(buf,bufsize,"86400");
+	else if(system_awake_timer>86400)	//大于1天的唤醒时间修正为两个小时
+		snprintf(buf,bufsize,"7200");
 	else
 		snprintf(buf,bufsize,"%d",system_awake_timer);
 	
