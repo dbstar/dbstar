@@ -74,7 +74,6 @@ static char			s_jni_cmd_system_awake_timer[64];
 
 // 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
-static int			s_smart_card_remove_flag = 1;	// 当发生过拔卡事件时，此标记置1。为了应对插卡开机，初始化为1
 
 static char			s_TestSpecialProductID[64];
 static int			s_PushDir_usable = 0;	// 0表示不可用，1表示可用
@@ -1733,6 +1732,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		
 		case CMD_DRM_SC_INSERT:
 			DEBUG("CMD_SMARTCARD_INSERT\n");
+			smartcard_action_set(1);
 			if(-1==drm_sc_insert()){
 				DEBUG("drm_sc_insert return with -1\n");
 				msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
@@ -1747,6 +1747,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DRM_SC_REMOVE:
 			DEBUG("CMD_SMARTCARD_REMOVE\n");
+			smartcard_action_set(-1);
 			smart_card_insert_flag_set(0);
 			
 			if(-1==drm_sc_remove())
@@ -2568,7 +2569,7 @@ static int SCEntitleInfoCheck(SCDCAPVODEntitleInfo *EntitleInfo)
 		}
 #else
 		if(	EntitleInfo->m_ID==s_SCEntitleInfo[i].EntitleInfo.m_ID){
-			DEBUG("check equal record at %d for %lu\n",i,EntitleInfo->m_ID);
+			//DEBUG("check equal record at %d for %lu\n",i,EntitleInfo->m_ID);
 			return 0;
 		}
 #endif
@@ -2760,7 +2761,7 @@ int pushinfo_reset(void)
 int smart_card_insert_flag_set(int insert_flag)
 {
 	s_smart_card_insert_flag = insert_flag;
-	DEBUG("s_smart_card_insert_flag=%d, s_smart_card_remove_flag=%d\n", s_smart_card_insert_flag,s_smart_card_remove_flag);
+	DEBUG("s_smart_card_insert_flag=%d\n", s_smart_card_insert_flag);
 	
 	if(1==s_smart_card_insert_flag){
 		maintenance_thread_awake();

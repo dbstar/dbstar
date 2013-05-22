@@ -425,6 +425,31 @@ void CDSTBCA_ScrSetCW(CDCA_U16       wEcmPID,
 	LOGD("####################CDSTBCA_ScrSetCW function not implementted\n");
 }
 
+// -1表示拔卡，1表示插卡，0表示处理完插卡动作。这里表示的纯物理动作，不含软件层面reset的过程。
+static int s_smartcard_action = 0;
+
+int smartcard_action_set(int smartcard_action)
+{
+	s_smartcard_action = smartcard_action;
+	LOGD("s_smartcard_action=%d\n", s_smartcard_action);
+	
+	return s_smartcard_action;
+}
+
+int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, int len)
+{
+	int ret = -1;
+	
+	if(1==can_send_nofity && -1!=s_smartcard_action){
+		ret = msg_send2_UI(sc_notify, msg, len);
+	}
+	else{
+		LOGD("can_send_nofity=%d, s_smartcard_action=%d, no need to send 0x%x\n", can_send_nofity,s_smartcard_action,sc_notify);
+		ret = -1;
+	}
+	
+	return ret;
+}
 
 /*--------- 智能卡管理 ---------*/
 
@@ -434,13 +459,19 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	struct am_smc_atr abuf;
 	int ds, i;
 	AM_SMC_CardStatus_t status;
-
-
+	int can_send_nofity = 0;
+	
+	LOGD("CDSTBCA_SCReset s_smartcard_action=%d, smc_fd=%d\n", s_smartcard_action,smc_fd);
+	if(1==s_smartcard_action)
+		can_send_nofity = 1;
+	
+	s_smartcard_action = 0;
+	
 	if (smc_fd == -1) {
 		smc_fd = open(SMC_DEVICE, O_RDWR);
 		if (smc_fd == -1) {
 			LOGD("cannot open device smc0\n");
-			//msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+			send_sc_notify(can_send_nofity,DRM_SC_INSERT_FAILED, NULL, 0);
 			return CDCA_FALSE;
 		} else {
 			LOGD("open the smc device succeful [%d]\n", smc_fd);
@@ -454,7 +485,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 		//AM_TRY(AM_SMC_GetCardStatus(SMC_DEV_NO, &status));
 		if (ioctl(smc_fd, AMSMC_IOC_GET_STATUS, &ds)) {
 			LOGD("get card status failed\n");
-			//msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+			send_sc_notify(can_send_nofity,DRM_SC_INSERT_FAILED, NULL, 0);
 			return CDCA_FALSE;
 		}
 
@@ -463,7 +494,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 		i++;
 		if (i > 50) {
 			LOGD("########### there is no smard card in \n");
-			//msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+			send_sc_notify(can_send_nofity,DRM_SC_INSERT_FAILED, NULL, 0);
 			return CDCA_FALSE;
 		}
 	} while (status == AM_SMC_CARD_OUT);
@@ -476,7 +507,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	LOGD("reset the card = [%d]\n", smc_fd);
 	if (ioctl(smc_fd, AMSMC_IOC_RESET, &abuf)) {
 		LOGD("&&&&&&&&&&&&&&&&&&&&&&&&&& reset the card failed\n");
-		msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+		send_sc_notify(can_send_nofity,DRM_SC_INSERT_FAILED, NULL, 0);
 		return  CDCA_FALSE;
 	}
 
@@ -486,7 +517,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	for (i = 0; i < *pbyLen; i++) {
 		LOGD("0x%x,", abuf.atr[i]);
 	}
-	msg_send2_UI(DRM_SC_INSERT_OK, NULL, 0);
+	send_sc_notify(can_send_nofity,DRM_SC_INSERT_OK, NULL, 0);
 	smart_card_insert_flag_set(1);
 	
 	return CDCA_TRUE;
@@ -587,7 +618,7 @@ void CDSTBCA_EmailNotifyIcon(CDCA_U8 byShow, CDCA_U32 dwEmailID)
 	else if(CDCA_Email_SpaceExhaust==byShow)
 		msg_send2_UI(DRM_EMAIL_SPACEEXHAUST, NULL, 0);
 	else
-		DEBUG("do nothing for email with this byShow=%d\n", byShow);
+		LOGD("do nothing for email with this byShow=%d\n", byShow);
 #endif
 }
 
@@ -815,7 +846,7 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 	long long posk = (long long)dwOffsetKByte;
 	long long posb = (long long)dwOffsetByte;
 	long long offset = 1024 * posk + posb;
-	//LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] seekpos=[%lu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, 1024 * dwOffsetKByte + dwOffsetByte);
+//	LOGD("++++ seek %d ori=[%d] posk=[%lu] pos=[%lu] seekpos=[%lu] offset=[%llu]\n", *(int *)pFileHandle, byOrigin, dwOffsetKByte, dwOffsetByte, 1024 * dwOffsetKByte + dwOffsetByte, offset);
 	//LOGD("++++ seek the file ori=[%d] posk=[%lu] pos=[%lu] offset=[%llu]\n", byOrigin, dwOffsetKByte, dwOffsetByte, offset);
 
 	if (*(int *)pFileHandle < 0) {
@@ -886,4 +917,9 @@ CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLe
 	}
 	//fflush((FILE *)pFileHandle);
 	return ret;
+}
+
+CDCA_U32 CDSTBCA_ShowCurtainNotify()
+{
+	return 0;
 }
