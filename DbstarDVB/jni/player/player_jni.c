@@ -219,7 +219,7 @@ int set_player_errno(int err)
 
 int get_player_status(void)
 {
-	LOGD("$$$$$$$$$$$$$$$$$ get_player_status()=%d\n", g_player_status);
+	//LOGD("$$$$$$$$$$$$$$$$$ get_player_status()=%d\n", g_player_status);
 
 	return g_player_status;
 }
