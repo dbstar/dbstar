@@ -92,7 +92,7 @@ static int kp_search_key(struct kp *kp)
 
 static void kp_work(struct kp *kp)
 {
-#define ADC_KEYPAD_COUNT 10
+#define ADC_KEYPAD_COUNT 6
 	int code = kp_search_key(kp);
 
 	if ((!code) && (!kp->cur_keycode)) {
