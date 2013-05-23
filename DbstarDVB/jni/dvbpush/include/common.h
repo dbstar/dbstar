@@ -112,11 +112,13 @@ typedef enum{
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
 #define COLUMN_RES			WORKING_DATA_DIR"/ColumnRes"
 
+#define LOCAL_COLUMNICON_ORIGIN_DIR	"/system/etc/dbstar/ColumnRes/LocalColumnIcon"
+
 #define CURLANGUAGE_DFT				"cho"
 #define DEVICEMODEL_DFT				"01"
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
-#define HDFOREWARNING_DFT			"51200"
+#define HDFOREWARNING_DFT			"71680"
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,

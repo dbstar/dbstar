@@ -919,7 +919,3 @@ CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLe
 	return ret;
 }
 
-CDCA_U32 CDSTBCA_ShowCurtainNotify()
-{
-	return 0;
-}
