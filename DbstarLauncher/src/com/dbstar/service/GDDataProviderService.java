@@ -12,11 +12,11 @@ import com.dbstar.util.*;
 import com.dbstar.util.upgrade.RebootUtils;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.settings.GDSettings;
-import com.dbstar.guodian.data.ElectriDimension;
+import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.LoginData;
-import com.dbstar.guodian.egine.GDClientObserver;
-import com.dbstar.guodian.egine.GDEngine;
+import com.dbstar.guodian.engine.GDClientObserver;
+import com.dbstar.guodian.engine.GDEngine;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
@@ -2469,6 +2469,12 @@ public class GDDataProviderService extends Service {
 				}
 				break;
 			}
+			case EventData.EVENT_GUODIAN_DATA_ERROR:
+			    if (mPageOberser != null) {
+                    mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA_ERROR,
+                            event);
+                }
+			    break;
 
 			}
 		}
@@ -2488,7 +2494,7 @@ public class GDDataProviderService extends Service {
 	public LoginData getLoginData(){
 	    return mGuodianEngine.getLoginData();
 	}
-	public ElectriDimension getEDimension(){
+	public EPCConstitute getEDimension(){
 	    return mGuodianEngine.getElectriDimension();
 	}
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:state_pressed="false" android:drawable="@drawable/mypower_payment_record_button_highlight"></item>
+    <item android:state_focused="true" android:state_pressed="true" android:drawable="@drawable/mypower_payment_record_button_normal"></item>
+    <item android:drawable="@drawable/mypower_payment_record_button_normal"></item>
+</selector>

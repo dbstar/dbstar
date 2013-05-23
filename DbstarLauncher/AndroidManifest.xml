@@ -70,7 +70,14 @@
         <activity android:name=".guodian.app.mypower.GDBillActivity" />
         <activity android:name=".guodian.app.mypower.GDBusinessAreaActvity" />
         <activity android:name=".guodian.app.mypower.GDNoticeActivity" />
-
+        <activity android:name=".guodian.app.mypower.GDPlaymentRecordsActivity" />
+        <activity android:name=".guodian.app.familyefficency.GDPowerConstitueActivity" />
+        <activity android:name=".guodian.app.familyefficency.GDPowerConsumptionTrackActivity"/>
+        <activity android:name=".guodian.app.familyefficency.GDPowerConsumptionTrendActivity"/>
+        <activity android:name=".guodian.app.familyefficency.GDPowerTipsActivity"/>
+        <activity android:name=".guodian.app.smarthome.GDSmartHomeMyEleActivity"/>
+        <activity android:name=".guodian.app.smarthome.GDSmartHomeModeActivity"/>
+        <activity android:name=".guodian.app.smarthome.GDSmartHomeTimedTaskActivity"/>
         <service
             android:name=".service.GDDataProviderService"
             android:exported="false" />

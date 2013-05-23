@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/smart_home_room_selecter"
+    android:orientation="vertical" >
+    <ImageView 
+        android:layout_width="102dp"
+        android:layout_height="105dp"
+        android:background="@drawable/room"
+        android:scaleType="fitXY"
+        android:layout_gravity="center_horizontal"
+        />
+    <TextView
+        android:id="@+id/room_title" 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginTop="15dp"
+        />
+</LinearLayout>

@@ -7,6 +7,7 @@ import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
 import com.dbstar.app.alert.GDDiskInitDialog;
 import com.dbstar.app.alert.NotificationDialog;
+import com.dbstar.guodian.data.LoginData;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.service.ClientObserver;
@@ -648,4 +649,13 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		mDiskInitDlg.updateState(type, message);
 	}
 
+    protected String getCCUID() {
+        LoginData loginData = mService.getLoginData();
+        if (loginData == null)
+            return null;
+        if (loginData.CtrlNo == null)
+            return null;
+
+        return loginData.CtrlNo.CtrlNoGuid;
+    }
 }

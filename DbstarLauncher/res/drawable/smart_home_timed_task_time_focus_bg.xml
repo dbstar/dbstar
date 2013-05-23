@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/icon"
+        android:drawable="@drawable/smarthome_timed_task_time_input"/>
+
+    <item
+        android:id="@+id/frame"
+        android:drawable="@drawable/smarthome_timed_task_time_input_focus" >
+    </item>
+
+</layer-list>

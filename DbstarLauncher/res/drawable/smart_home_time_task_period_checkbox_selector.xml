@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:drawable="@drawable/smart_home_timed_task_period_checked_focus_bg" android:state_checked="true" android:state_focused="true"/>
+    <item android:drawable="@drawable/smarthome_timed_task_period_checked" android:state_checked="true" android:state_focused="false"/>
+    
+    
+    <item android:drawable="@drawable/smart_home_timed_task_period_unchecked_focus_bg" android:state_checked="false" android:state_focused="true"/>
+    <item android:drawable="@drawable/smarthome_timed_task_period_unchecked" android:state_checked="false" android:state_focused="false"/>
+</selector>

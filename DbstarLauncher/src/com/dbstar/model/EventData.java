@@ -11,6 +11,7 @@ public class EventData {
 	
 	public static final int EVENT_LOGIN_SUCCESSED = 0xb0001;
 	public static final int EVENT_GUODIAN_DATA = 0xb0002;
+	public static final int EVENT_GUODIAN_DATA_ERROR = 0xb0003;
 	
 	public static final int EVENT_PLAYBACK = 0xc0001;
 	

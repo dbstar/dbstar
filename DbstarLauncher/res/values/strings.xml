@@ -176,13 +176,107 @@
     <string name="mypower_text_devicepowercost">所控电器用电费用</string>
     <string name="mypower_text_devicepoweramount">所控电器用电量</string>
     <string name="mypower_text_powerprice">元/度</string>
+    <string name="mypower_text_brackets_yuan">(元)</string>
+    <string name="mypower_text_brackets_month">(月)</string>
     <string name="load_data_is_null">没有数据</string>
     <string name="this_is_the_first_page">已经是第一页</string>
     <string name="this_is_the_last_page">已经是最后一页</string>
     <string name="powerprice_type_single">普通电价 </string>
     <string name="powerprice_type_timing">分时电价</string>
     <string name="mypower_text_alldevicepoweramount">全部可控电器总用电量</string>
-
+    <string name="test_jiatingnengxiao">家庭能效</string>
+    
+    
+    <string name="test_dqwd_sjcx">用电跟踪</string>
+    <string name="test_power_trend">用电趋势</string>
+    <string name="test_power_tips">节能贴士</string>
+     <string name="test_power_smart_home_my_equ">我的电器</string>
+     <string name="test_power_smart_home_model">一键控制</string>
+      <string name="test_power_smart_timed_task">定时任务</string>
+    <string name="power_constitue_electrical">电器维度</string>
+    <string name="power_constitue_step">阶梯维度</string>
+    <string name="power_constitue_timing">峰谷平维度</string>
+    <string name="str_day">日期</string>
+    <string name="family_text_electrical_change">电器选择:</string>
+    <string name="family_text_all_electrical">全部可控电器 </string>
+    <string name="family_text_all_count">家庭总用电量 </string>
+    <string name="family_text_deleted_electrical">已删电器 </string>
+    <string name="family_text_power_track_title">全部可控电器用电量 </string>
+    <string name="family_text_histogram">柱状图</string>
+    <string name="family_text_polyline_chart">折线图</string>
+    <string name="family_text_used_power_count">用电量:</string>
+    <string name="family_text_power_count">电量:</string>
+    <string name="family_text_time_range">时间范围:</string>
+    <string name="family_text_power_trend_titile">用电趋势-</string>
+    <string name="family_text_tongbi">同比</string>
+    <string name="family_text_huanbi">环比</string>
+    <string name="family_text_huanbitu">环比图</string>
+    <string name="family_text_tongbitu">同比图</string>
+    <string name="family_text_half_year">最近半年</string>
+    <string name="family_text_one_year">最近一年</string>
+    <string name="family_text_two_year">最近两年</string>
+     <string name="family_text_jin">今</string>
+     <string name="family_text_yong">用</string>
+     <string name="family_text_dian">电</string>
+     <string name="family_text_liang">量</string>
+     <string name="family_text_ben">本</string>
+     <string name="family_text_shi_">实</string>
+     <string name="family_text_shi">时</string>
+     <string name="family_text_gong">功</string>
+     <string name="family_text_lv">率</string>
+     <string name="family_text_watt">瓦</string>
+     <string name="family_text_on">开</string>
+     <string name="family_text_off">关</string>
+     <string name="family_text_refresh">刷新</string>
+     <string name="family_text_no_room"><![CDATA[<html><font color=\"#FFFFFF\"> 请在</font><font color=\"#2F92CD\"> 智能生活管家电脑客服端 </font><font color=\"#FFFFFF\"> 创建房间和电器。</font><br />" "<font color=\"#FFFFFF\">下载客服端软件，请登录官方网站 ：</font><font color=\"#2F92CD\"> www.smartlife.com.cn</font></html>]]></string>
+     <string name="family_text_no_electrical"><![CDATA[<html><font color=\"#FFFFFF\"> 请在</font><font color=\"#2F92CD\"> 智能生活管家电脑客服端 </font><font color=\"#FFFFFF\"> 添加电器。</font><br />" "<font color=\"#FFFFFF\">下载客服端软件，请登录官方网站 ：</font><font color=\"#2F92CD\"> www.smartlife.com.cn</font></html>]]></string>
+     <string name="family_text_no_mode"><![CDATA[<html><font color=\"#FFFFFF\"> 请在</font><font color=\"#2F92CD\"> 智能生活管家电脑客服端 </font><font color=\"#FFFFFF\"> 创建模式。</font><br />" "<font color=\"#FFFFFF\">下载客服端软件，请登录官方网站 ：</font><font color=\"#2F92CD\"> www.smartlife.com.cn</font></html>]]></string>
+     <string name="family_text_no_timed_task"><![CDATA[<html><font color=\"#FFFFFF\"> 按</font><font color=\"#2F92CD\"> 确定键 </font><font color=\"#FFFFFF\"> 可添加定时任务。</font></html>]]></string>
+     <string name="family_text_smarthome_execute">执行</string>
+      <string name="family_text_request_timeout">连接服务器超时</string>
+      <string name="family_text_requestting">正在获取数据，请稍等。。。</string>
+     <string name="family_text_turn_on">开启</string>
+     <string name="family_text_turn_off">关闭</string>
+     <string name="family_text_execute_success">执行模式成功</string>
+     <string name="family_text_execute_fail">执行模式失败</string>
+    <string name="family_text_select_ele">选择电器&#160;:&#160;</string>
+    <string name="family_text_select_datatime">选择时间&#160;:&#160;</string>
+    <string name="family_text_select_period">重复周期&#160;:&#160;</string>
+    <string name="family_text_switch_statu">开关状态&#160;:&#160;</string>
+    <string name="family_text_select_datatime_note">温馨提示&#160;:&#160; 时间为24小时制</string>
+    <string name="family_text_period_1">每周一</string>
+    <string name="family_text_period_2">每周二</string>
+    <string name="family_text_period_3">每周三</string>
+    <string name="family_text_period_4">每周四</string>
+    <string name="family_text_period_5">每周五</string>
+    <string name="family_text_period_6">每周六</string>
+    <string name="family_text_period_7">每周日</string>
+    <string name="family_text_open_task">开启任务</string>
+    <string name="family_text_close_task">关闭任务</string>
+    <string name="family_text_add_timed_task">添加任务</string>
+    <string name="family_text_add_timed_success">添加任务成功</string>
+    <string name="family_text_modify_timed_success">修改任务成功</string>
+    <string name="family_text_add_timed_fail">添加任务失败</string>
+    <string name="family_text_modify_timed_fail">修改任务失败</string>
+    <string name="family_text_delete_timed_task">删除任务</string>
+    <string name="family_text_delete_timed_task_success">删除任务成功</string>
+    <string name="family_text_delete_timed_task_fail">删除任务失败</string>
+    <string name="family_text_close_timed_task_fail">关闭任务失败</string>
+    <string name="family_text_open_timed_task_fail">开启任务失败</string>
+    <string name="family_text_delete_timed_task_alert">你确定要删除所选中的任务吗？</string>
+    
+    <string name="family_text_please_select_ele">请选择电器</string>
+    <string name="family_text_loading_electrical">正在获取电器列表，请稍等</string>
+    <string name="family_text_add_task_error1">你还没有添加电器，请添加电器后再创建任务</string>
+    <string name="family_text_load_task_fail">出错啦! 获取任务列失败</string>
+    <string name="family_text_load_ele_list_fail">出错啦! 电器列表列获取失败</string>
+    <string name="family_text_input_time_hour_error">输入时间错误，请输入0~23 之间的数字</string>
+    <string name="family_text_input_time_minute_error">输入时间错误，请输入0~59 之间的数字</string>
+      
+      <string name="family_text_no_input_time">请输入时间</string>
+    <string name="string_recent_payment">近期缴费记录：&#160;</string>
+    <string name="string_year_payment_all">年缴费总金额：&#160;</string>
+    
     <string name="mypower_text_zero">0</string>
     
     <string name="step_1">第一阶梯</string>

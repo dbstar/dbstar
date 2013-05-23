@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_focused="true"
+        android:drawable="@drawable/smart_home_timed_task_time_focus_bg" />
+    
+    <item android:state_focused="false"
+        android:drawable="@drawable/smarthome_timed_task_time_input" />
+
+</selector>

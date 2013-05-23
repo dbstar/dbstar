@@ -104,6 +104,16 @@ public class GDCommon {
 	public static final String ColumnIDGuodianFeeRecord = "G103";
 	public static final String ColumnIDGuodianPowerNews = "G104";
 	public static final String ColumnIDGuodianBusinessNet = "G105";
+	
+	public static final String ColumnIDGuodianMyElectrical = "G301";
+	public static final String ColumnIDGuodianModel = "G302";
+	public static final String ColumnIDGuodianTimedTask = "G303";
+	
+	public static final String ColumnIDGuodianPowerConstitue = "G201";
+	public static final String ColumnIDGuodianPowerConsumptionTrack = "G202";
+	public static final String ColumnIDGuodianPowerConsumptionTrend = "G203";
+	public static final String ColumnIDGuodianPowerTips = "G204";
+	
 
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";

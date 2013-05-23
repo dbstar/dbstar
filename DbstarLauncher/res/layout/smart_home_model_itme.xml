@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/smarthome_myele_room_normal"
+    android:orientation="vertical" >
+   
+    <LinearLayout 
+        android:layout_width="132dp"
+        android:layout_height="114dp"
+        android:gravity="center"
+        android:orientation="vertical"
+                >
+	    <ImageView 
+	        android:layout_width="77dp"
+	        android:layout_height="79dp"
+	        android:background="@drawable/smarthome_model_icon"
+	        android:scaleType="fitXY"
+	        android:layout_gravity="center_horizontal"
+	        />
+		    <TextView
+	        android:id="@+id/model_name" 
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center_horizontal"
+	        android:singleLine="true"
+	        android:textColor="#fff"
+	        android:gravity="center"
+	        />
+    </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="#fff"
+        android:gravity="center"
+        android:text="@string/family_text_smarthome_execute"
+        android:layout_marginTop="10dp"
+        />
+</LinearLayout>

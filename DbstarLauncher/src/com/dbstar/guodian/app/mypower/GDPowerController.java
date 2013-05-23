@@ -8,13 +8,20 @@ import java.util.List;
 import java.util.Map;
 
 import com.dbstar.R;
-import com.dbstar.guodian.data.ElectriDimension;
+import com.dbstar.guodian.app.familyefficency.GDPowerConstitueActivity;
+import com.dbstar.guodian.app.familyefficency.GDPowerConsumptionTrackActivity;
+import com.dbstar.guodian.app.familyefficency.GDPowerConsumptionTrendActivity;
+import com.dbstar.guodian.app.familyefficency.GDPowerTipsActivity;
+import com.dbstar.guodian.app.smarthome.GDSmartHomeModeActivity;
+import com.dbstar.guodian.app.smarthome.GDSmartHomeMyEleActivity;
+import com.dbstar.guodian.app.smarthome.GDSmartHomeTimedTaskActivity;
+import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
-import com.dbstar.guodian.egine.GDConstract;
+import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.guodian.parse.Util;
 import com.dbstar.model.GDCommon;
 import com.dbstar.service.GDDataProviderService;
@@ -195,7 +202,7 @@ public class GDPowerController {
 	public void getPowerData() {
 		if (mService != null) {
 			mService.requestPowerData(GDConstract.DATATYPE_POWERPANELDATA, null);
-			requestElectricalDimensionality();
+			requestEPCConstitute();
 		}
 		mHandler.sendEmptyMessageDelayed(MSG_GETPOWER, SCHEDULE_INTERVAL);
 	}
@@ -210,7 +217,7 @@ public class GDPowerController {
 		getPowerData();
 	}
 	
-	private void requestElectricalDimensionality(){
+	private void requestEPCConstitute(){
         LoginData loginData = mLoginData;
         if(loginData == null)
             return ;
@@ -234,9 +241,9 @@ public class GDPowerController {
         params.put(JsonTag.TAGDateEnd, end);
         params.put(JsonTag.TAGDateType, date_type);
         params.put(JsonTag.TAGUser_Type, userType);
-        mService.requestPowerData(GDConstract.DATATYPE_ELECTRICAL_DIMENSIONALTIY, params);
+        mService.requestPowerData(GDConstract.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE, params);
     }
-	public void updateElectriDimension(ElectriDimension dimension){
+	public void updateElectriDimension(EPCConstitute dimension){
 	        if(dimension == null || dimension.totalPower == null)
 	            return ;
 	        if(dimension.totalPower.Count == null || dimension.totalPower.Fee == null)
@@ -494,7 +501,8 @@ public class GDPowerController {
 			}
 			intent.setClass(mActivity, GDBillActivity.class);
 		} else if (columnId.equals(GDCommon.ColumnIDGuodianFeeRecord)) {
-
+		    intent = new Intent();
+		    intent.setClass(mActivity, GDPlaymentRecordsActivity.class);
 		} else if (columnId.equals(GDCommon.ColumnIDGuodianPowerNews)) {
 			intent = new Intent();
 			intent.setClass(mActivity, GDNoticeActivity.class);
@@ -506,9 +514,31 @@ public class GDPowerController {
 						mLoginData.UserData.UserInfo.AreaIdPath);
 			}
 			intent.setClass(mActivity, GDBusinessAreaActvity.class);
-		} else {
-
-		}
+		} else if(columnId.equals(GDCommon.ColumnIDGuodianMyElectrical)) {
+		    intent = new Intent();
+            intent.setClass(mActivity, GDSmartHomeMyEleActivity.class);
+		}else if(columnId.equals(GDCommon.ColumnIDGuodianModel)){
+		    intent = new Intent();
+            intent.setClass(mActivity, GDSmartHomeModeActivity.class);
+		}else if(columnId.equals(GDCommon.ColumnIDGuodianTimedTask)){
+		    intent = new Intent();
+            intent.setClass(mActivity, GDSmartHomeTimedTaskActivity.class);
+		}else if(columnId.equals(GDCommon.ColumnIDGuodianPowerConstitue)){
+            intent = new Intent();
+            intent.setClass(mActivity, GDPowerConstitueActivity.class);
+        }
+		else if(columnId.equals(GDCommon.ColumnIDGuodianPowerConsumptionTrack)){
+            intent = new Intent();
+            intent.setClass(mActivity, GDPowerConsumptionTrackActivity.class);
+        }
+		else if(columnId.equals(GDCommon.ColumnIDGuodianPowerConsumptionTrend)){
+            intent = new Intent();
+            intent.setClass(mActivity, GDPowerConsumptionTrendActivity.class);
+        }
+		else if(columnId.equals(GDCommon.ColumnIDGuodianPowerTips)){
+            intent = new Intent();
+            intent.setClass(mActivity, GDPowerTipsActivity.class);
+        }
 
 		return intent;
 	}

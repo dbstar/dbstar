@@ -20,7 +20,7 @@
     <color name="transparent">#00000000</color>
     <color name="semitransparent_white">#80ffffff</color>
     <color name="orange">#FF8C00</color>
-    
+    <color name="refresh_button_press">#567E8D</color>
     <drawable name="transparent">#00000000</drawable>
     <drawable name="yellow">#FFFF00</drawable>
     <drawable name="blue">#0000FF</drawable>

@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
+    android:layout_width="1280dp"
+    android:layout_height="720dp"
+    android:background="@drawable/view_background" >
+
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="1181dp"
+        android:layout_height="556dp"
+        android:layout_below="@id/view_header"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="20dp" >
+
+        <LinearLayout
+            android:id="@+id/room_page"
+            android:layout_width="1181dp"
+            android:layout_height="556dp"
+            android:orientation="vertical"
+            android:visibility="visible" >
+
+            <RelativeLayout
+                android:id="@+id/list_view"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_gravity="top|center_horizontal"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="180dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:background="@drawable/gd_middle_bj_b" >
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/smart_home_top_left_jantou"
+                    android:layout_width="wrap_content"
+                    android:layout_height="180dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/smarthome_top_left_jantou_normal" />
+
+                <ImageView
+                    android:id="@+id/smart_home_right_jantou"
+                    android:layout_width="wrap_content"
+                    android:layout_height="180dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:adjustViewBounds="true"
+                    android:background="@drawable/smarthome_top_right_jantou_normal" />
+
+                <GridView
+                    android:id="@+id/smart_home_top_tasks"
+                    android:layout_width="1020dp"
+                    android:layout_height="200dp"
+                    android:columnWidth="162dp"
+                    android:layout_marginLeft="80dp"
+                    android:layout_marginRight="80dp"
+                    android:layout_marginTop="17dp"
+                    android:horizontalSpacing="30dp"
+                    android:listSelector="#00000000"
+                    android:nextFocusDown="@+id/ele_spinner"
+                    android:numColumns="5"
+                    android:stretchMode="spacingWidth" >
+                </GridView>
+            </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="345dp"
+        android:layout_gravity="top|center_horizontal"
+        android:background="@drawable/gd_middle_bj_b"
+        android:visibility="visible" >
+
+        <LinearLayout
+            android:id="@+id/no_timed_task_page"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@drawable/gd_middle_bj_b"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="invisible" >
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="bottom|center_horizontal"
+                android:orientation="horizontal" >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/nocontent_note" />
+
+                <TextView
+                    android:id="@+id/no_timed_task_note"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:gravity="left|bottom" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/timed_task__detail_page"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:visibility="invisible"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="40dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/family_text_select_ele"
+                    android:textColor="#fff" />
+
+                <Spinner
+                    android:id="@+id/ele_spinner"
+                    android:layout_width="182dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    
+                    android:layout_marginLeft="40dp"
+                    android:background="@drawable/spinner_bg"
+                    android:popupBackground="@drawable/spinner_dropdown_bg"
+                    android:spinnerMode="dropdown" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="70dp"
+                    android:text="@string/family_text_switch_statu"
+                    android:textColor="#fff" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:text="@string/family_text_turn_on"
+                    android:textColor="#fff" />
+
+                <Button
+                    android:id="@+id/smart_home_switch"
+                    android:layout_width="114dp"
+                    android:layout_height="37dp"
+                    android:layout_marginLeft="5dp"
+                    android:background="@drawable/smart_home_timed_task_switch_on_selecter"
+                    android:focusable="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:text="@string/family_text_turn_off"
+                    android:textColor="#fff" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="40dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/family_text_select_datatime"
+                    android:textColor="#fff" />
+
+                <EditText
+                    android:id="@+id/et_hour"
+                    android:layout_width="60dp"
+                    android:layout_height="42dp"
+                    android:layout_marginLeft="40dp"
+                    android:background="@drawable/smart_home_timed_task_time_selecter"
+                    android:maxLength="2"
+                    android:numeric="integer"
+                    android:paddingLeft="3dp"
+                    android:textColor="#fff" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="@string/property_semicolon"
+                    android:textColor="#fff" />
+
+                <EditText
+                    android:id="@+id/et_minute"
+                    android:layout_width="60dp"
+                    android:layout_height="42dp"
+                    android:background="@drawable/smart_home_timed_task_time_selecter"
+                    android:maxLength="2"
+                    android:numeric="integer"
+                    android:paddingLeft="3dp"
+                    android:textColor="#fff" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                     android:text="@string/family_text_select_datatime_note"
+                    android:textColor="#fff" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="40dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/family_text_select_period"
+                    android:textColor="#fff" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:orientation="horizontal" >
+
+                    <CheckBox
+                        android:id="@+id/cb_period_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:button="@drawable/smart_home_time_task_period_checkbox_selector" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/family_text_period_1"
+                        android:textColor="#fff" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:orientation="horizontal" >
+
+                    <CheckBox
+                        android:id="@+id/cb_period_2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:button="@drawable/smart_home_time_task_period_checkbox_selector" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/family_text_period_2"
+                        android:textColor="#fff" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:orientation="horizontal" >
+
+                    <CheckBox
+                        android:id="@+id/cb_period_3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:button="@drawable/smart_home_time_task_period_checkbox_selector" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/family_text_period_3"
+                        android:textColor="#fff" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:orientation="horizontal" >
+
+                    <CheckBox
+                        android:id="@+id/cb_period_4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:button="@drawable/smart_home_time_task_period_checkbox_selector" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/family_text_period_4"
+                        android:textColor="#fff" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:orientation="horizontal" >
+
+                    <CheckBox
+                        android:id="@+id/cb_period_5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:button="@drawable/smart_home_time_task_period_checkbox_selector" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/family_text_period_5"
+                        android:textColor="#fff" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:orientation="horizontal" >
+
+                    <CheckBox
+                        android:id="@+id/cb_period_6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:button="@drawable/smart_home_time_task_period_checkbox_selector" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/family_text_period_6"
+                        android:textColor="#fff" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:orientation="horizontal" >
+
+                    <CheckBox
+                        android:id="@+id/cb_period_7"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:button="@drawable/smart_home_time_task_period_checkbox_selector" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/family_text_period_7"
+                        android:textColor="#fff" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="60dp"
+                android:layout_marginTop="40dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/family_text_select_ele"
+                    android:textColor="#fff"
+                    android:visibility="invisible" />
+
+                <Button
+                    android:id="@+id/save"
+                    android:layout_width="112dp"
+                    android:layout_height="42dp"
+                    android:layout_marginLeft="40dp"
+                    android:background="@drawable/smart_home_timed_task_save_selecter" />
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        layout="@layout/footerview" />
+
+</RelativeLayout>

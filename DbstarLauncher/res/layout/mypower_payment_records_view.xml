@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="1280dp"
+    android:layout_height="720dp"
+    android:background="@drawable/view_background" >
+
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="1181dp"
+        android:layout_height="536dp"
+        android:layout_below="@id/view_header"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/gd_middle_bj_b"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/p_r_year_level1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mypower_payment_record_button_selecter"
+                android:gravity="center"
+                android:textColor="@drawable/mypower_payment_record_text_selecter"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/p_r_year_level2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mypower_payment_record_button_selecter"
+                android:gravity="center"
+                android:textColor="@drawable/mypower_payment_record_text_selecter"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/p_r_year_level3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mypower_payment_record_button_selecter"
+                android:gravity="center"
+                android:textColor="@drawable/mypower_payment_record_text_selecter"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="80dp"
+            android:layout_marginRight="80dp"
+            android:layout_marginTop="30dp"
+            android:orientation="vertical"
+            android:visibility="visible" >
+
+            <RelativeLayout
+                android:id="@+id/ll"
+                android:layout_width="926dp"
+                android:layout_height="wrap_content"
+                android:minHeight="80dp"
+                android:layout_gravity="center_horizontal" >
+
+
+                <ImageView
+                    android:id="@+id/iv1"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:scaleType="fitXY"
+                    android:background="@drawable/payment_all_icon" />
+
+                <TextView
+                    android:id="@+id/p_r_current_year_payment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_toRightOf="@+id/iv1"
+                    android:gravity="left"
+                    android:minWidth="250dp"
+                    android:textColor="#ffffff"
+                    android:textSize="18sp" />
+
+                <ImageView
+                    android:id="@+id/iv2"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_marginLeft="40dp"
+                    android:scaleType="fitXY"
+                    android:layout_toRightOf="@+id/p_r_current_year_payment"
+                    android:background="@drawable/payment_recent_icon" />
+
+                <TextView
+                    android:id="@+id/tv1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_toRightOf="@+id/iv2"
+                    android:text="@string/string_recent_payment"
+                    android:textColor="#ffffff"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/p_r_recent_first_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                     android:layout_marginTop="23dp"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="#ffffff"
+                    android:layout_toRightOf="@+id/tv1"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/p_r_recent_first_fee"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="23dp"
+                    android:layout_marginLeft="30dp"
+                    android:layout_toRightOf="@+id/p_r_recent_first_date"
+                    android:textColor="#ffffff"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/p_r_recent_first_date"
+                    android:layout_below="@+id/p_r_recent_first_fee"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal" >
+
+                    <TextView
+                        android:id="@+id/p_r_recent_second_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/p_r_recent_second_fee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="30dp"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:gravity="center" >
+
+                <LinearLayout
+                    android:id="@+id/polylinraView"
+                    android:layout_width="926dp"
+                    android:layout_height="306dp" >
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        layout="@layout/footerview" />
+
+</RelativeLayout>

@@ -109,7 +109,14 @@
         <attr name="sweepAngle" />
         <attr name="color" />
     </declare-styleable>
-
+    
+    <declare-styleable name="GDIndicator">
+        <attr name="indicatorRadius" format="dimension" />
+        <attr name="selectColor" format="color|reference" />
+        <attr name="normalColor" format="color|reference" />
+    </declare-styleable>
+    
+    
     <declare-styleable name="GDCircleTextView">
         <attr name="startAngle" />
         <attr name="sweepAngle" />

@@ -21,7 +21,7 @@ import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
-import com.dbstar.guodian.egine.GDConstract;
+import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 import com.dbstar.widget.text.ScrollingMovementMethod;

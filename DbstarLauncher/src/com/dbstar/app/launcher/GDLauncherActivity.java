@@ -21,10 +21,10 @@ import com.dbstar.app.settings.GDProductsActivity;
 import com.dbstar.app.settings.GDSmartcardActivity;
 import com.dbstar.app.settings.GDSystemMgrActivity;
 import com.dbstar.guodian.app.mypower.GDPowerController;
-import com.dbstar.guodian.data.ElectriDimension;
+import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
-import com.dbstar.guodian.egine.GDConstract;
+import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDApplicationObserver;
@@ -578,6 +578,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				|| columnId.equals(GDCommon.ColumnIDGuodianFeeRecord)
 				|| columnId.equals(GDCommon.ColumnIDGuodianPowerNews)
 				|| columnId.equals(GDCommon.ColumnIDGuodianBusinessNet)) {
+			intent = startLocalGuodianActivity(columnId, mMenuPath);
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianMyElectrical)
+		        ||columnId.equals(GDCommon.ColumnIDGuodianModel)
+		        ||columnId.equals(GDCommon.ColumnIDGuodianTimedTask)) {
+			intent = startLocalGuodianActivity(columnId, mMenuPath);
+		} else if (columnId.equals(GDCommon.ColumnIDGuodianPowerConstitue)
+		        ||columnId.equals(GDCommon.ColumnIDGuodianPowerConsumptionTrack)
+		        ||columnId.equals(GDCommon.ColumnIDGuodianPowerConsumptionTrend)
+		        ||columnId.equals(GDCommon.ColumnIDGuodianPowerTips)) {
+		    
 			intent = startLocalGuodianActivity(columnId, mMenuPath);
 		} else if (columnId.equals(GDCommon.ColumnIDGuodianHomeEfficiency)) {
 			intent = startGuodianActivity("app.GDHomeEfficiencyActivity");
@@ -1596,8 +1606,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	void handlePowerData(int type, Object data) {
 		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
 			mPowerController.updatePowerPanel((PowerPanelData) data);
-		} else if(type == GDConstract.DATATYPE_ELECTRICAL_DIMENSIONALTIY){
-		    mPowerController.updateElectriDimension((ElectriDimension)data);
+		} else if(type == GDConstract.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE){
+		    mPowerController.updateElectriDimension((EPCConstitute)data);
 		}
 	}
 

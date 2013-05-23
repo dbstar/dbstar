@@ -26,7 +26,7 @@ import com.dbstar.guodian.data.AreaInfo;
 import com.dbstar.guodian.data.AreaInfo.Area;
 import com.dbstar.guodian.data.BusinessArea;
 import com.dbstar.guodian.data.Notice;
-import com.dbstar.guodian.egine.GDConstract;
+import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.model.ContentData.Poster;
 

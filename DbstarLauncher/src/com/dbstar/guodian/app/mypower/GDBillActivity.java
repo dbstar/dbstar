@@ -24,7 +24,7 @@ import com.dbstar.guodian.data.BillDetail;
 import com.dbstar.guodian.data.BillDetailData;
 import com.dbstar.guodian.data.BillDetailListData;
 import com.dbstar.guodian.data.BillItem;
-import com.dbstar.guodian.egine.GDConstract;
+import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 

@@ -8,7 +8,7 @@ import android.os.Bundle;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDEngineActivity;
-import com.dbstar.guodian.egine.GDConstract;
+import com.dbstar.guodian.engine.GDConstract;
 
 public class GDMypowerActivity extends GDEngineActivity {
 
