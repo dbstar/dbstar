@@ -52,7 +52,6 @@ public class GDNoticeActivity extends GDBaseActivity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.mypower_noticesview);
-
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 
@@ -336,7 +335,8 @@ public class GDNoticeActivity extends GDBaseActivity {
 			int index = mPageNumber * PageSize + position + 1;
 			holder.index.setText(String.valueOf(index));
 			holder.title.setText(mDataSet[position].Title);
-			holder.date.setText(mDataSet[position].Date);
+			String text = mDataSet[position].Date;
+			holder.date.setText(DateUtil.getStringFromDateString(mDataSet[position].Date, DateUtil.DateFormat1));
 
 			return convertView;
 		}

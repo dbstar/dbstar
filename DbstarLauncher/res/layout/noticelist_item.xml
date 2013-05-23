@@ -27,7 +27,7 @@
 
     <TextView
         android:id="@+id/date"
-        android:layout_width="400dp"
+        android:layout_width="271dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:ellipsize="end"
