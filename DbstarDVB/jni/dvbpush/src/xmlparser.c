@@ -3119,7 +3119,8 @@ PARSE_XML_END:
 				DEBUG("in mother disc processing, do nothing after PRODUCTDESC_XML parsed\n");
 			}
 			else{
-				DEBUG("refresh push monitor because of xml %d\n", actual_xml_flag);		
+				DEBUG("refresh push monitor because of xml %d\n", actual_xml_flag);
+				disk_space_check();	
 				push_recv_manage_refresh();
 			}
 		}

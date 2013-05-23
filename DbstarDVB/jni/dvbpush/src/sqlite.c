@@ -2031,8 +2031,8 @@ int global_info_init(int force_reset)
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_HDFOREWARNING);
 	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
-			GLB_NAME_HDFOREWARNING,HDFOREWARNING_DFT);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%llu','');",
+			GLB_NAME_HDFOREWARNING,HDFOREWARNING_M_DFT);
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_record_cnt ++;
 	}

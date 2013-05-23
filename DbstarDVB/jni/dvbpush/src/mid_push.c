@@ -625,7 +625,6 @@ void maintenance_thread_awake()
 	pthread_mutex_unlock(&mtx_maintenance);
 }
 
-
 void *maintenance_thread()
 {
 	struct timeval now;
@@ -698,12 +697,14 @@ void *maintenance_thread()
 				pushinfo_reset();
 			smart_card_insert_flag_set(0);
 		}
-		
+
+#if 0		
 		if(1==s_disk_manage_flag){
 			DEBUG("will clean disk\n");
 			disk_manage(NULL,NULL);
 			s_disk_manage_flag = 0;
 		}
+#endif
 		
 		// 硬盘挂载后才能开始检查是否需要母盘初始化
 		if(0==s_motherdisc_init_flag && 1==pushdir_usable()){
@@ -1697,6 +1698,29 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			*/
 			*((int *)receiver) = 1;
 		}
+	}
+	
+	return 0;
+}
+
+int disk_space_check()
+{
+	unsigned long long tt_size = 0LL;
+	unsigned long long free_size = 0LL;
+	
+	if(-1==disk_usable_check(push_dir_get(),&tt_size,&free_size)){
+		DEBUG("HardDisc %s disable\n",push_dir_get());
+	}
+	else{
+		DEBUG("HardDisc %s enable, total_size: %llu, free_size: %llu\n",push_dir_get(),tt_size,free_size);
+		unsigned long long free_size_M = (free_size >> 20);
+		
+		if(free_size_M<=HDFOREWARNING_M_DFT){
+			DEBUG("should clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,HDFOREWARNING_M_DFT);
+			disk_manage(NULL,NULL);
+		}
+		else
+			DEBUG("no need to clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,HDFOREWARNING_M_DFT);
 	}
 	
 	return 0;

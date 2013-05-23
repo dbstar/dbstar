@@ -1726,8 +1726,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		
 		case CMD_DISK_FOREWARNING:
-			DEBUG("CMD_DISK_FOREWARNING: Disk alarm for capability\n");
-			disk_manage_flag_set(1);
+//			DEBUG("CMD_DISK_FOREWARNING: Disk alarm for capability\n");
+//			disk_manage_flag_set(1);
 			break;
 		
 		case CMD_DRM_SC_INSERT:
