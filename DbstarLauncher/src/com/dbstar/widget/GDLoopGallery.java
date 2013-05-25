@@ -426,7 +426,7 @@ public class GDLoopGallery extends GDAbsSpinner {
 //            }
         }
         
-        int newPos = mFirstPosition + newSelectedChildIndex;
+        int newPos = (mFirstPosition + newSelectedChildIndex) % getCount();
         
         if (newPos != mSelectedPosition) {
             setSelectedPositionInt(newPos);
