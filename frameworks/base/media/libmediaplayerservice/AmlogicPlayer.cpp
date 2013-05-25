@@ -1360,7 +1360,8 @@ status_t AmlogicPlayer::updateMediaInfo(void)
 				mWidth=mStreamInfo.video_info[i]->width;
 				mHeight=mStreamInfo.video_info[i]->height;	
 				LOGI("################ old info:w:%d,h:%d\n",mWidth,mHeight);
-				mWidth = mWidth*4/3;
+				if (mWidth < 1280)
+					mWidth = mWidth*4/3;
 				video_rotation_degree=mStreamInfo.video_info[i]->video_rotation_degree;
 				LOGI("player current video info:w:%d,h:%d\n",mWidth,mHeight);
 				if(mStrCurrentVideoCodec){
