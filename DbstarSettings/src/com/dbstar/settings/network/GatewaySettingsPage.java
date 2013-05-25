@@ -151,8 +151,10 @@ public class GatewaySettingsPage extends BaseFragment {
 
 		mNextButton.setOnClickListener(mOnClickListener);
 
-		mNullview.setFocusable(true);
-		mNullview.requestFocus();
+//		mNullview.setFocusable(true);
+//		mNullview.requestFocus();
+		
+		mNextButton.requestFocus();
 	}
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -218,6 +220,8 @@ public class GatewaySettingsPage extends BaseFragment {
 		int start = 0;
 		int end = value.indexOf('.');
 		int numBlocks = 0;
+		int zeroCount = 0;
+		int ttfCount = 0;
 
 		while (start < value.length()) {
 			if (end == -1) {
@@ -237,6 +241,15 @@ public class GatewaySettingsPage extends BaseFragment {
 				if ((block > 255) || (block < 0)) {
 					return false;
 				}
+				
+				if (block == 0) {
+					zeroCount++;
+				}
+				
+				if (block == 255) {
+					ttfCount++;
+				}
+				
 			} catch (NumberFormatException e) {
 				return false;
 			}
@@ -246,6 +259,12 @@ public class GatewaySettingsPage extends BaseFragment {
 			start = end + 1;
 			end = value.indexOf('.', start);
 		}
+		
+		if (zeroCount == 4 || ttfCount == 4) {
+			// 0.0.0.0 or 255.255.255.255
+			return false;
+		}
+		
 		return numBlocks == 4;
 	}
 	
