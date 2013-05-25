@@ -129,7 +129,7 @@ public class EthernetConfigController {
 					boolean connected = false;
 					if (ip != null && ip.length() > 0) {
 						if (!ip.equals("127.0.0.1") && !ip.equals("0.0.0.0")) {
-							connected = isIpAddress(ip);
+							connected = isIpAddress(ip, true);
 						}
 					}
 
@@ -357,7 +357,11 @@ public class EthernetConfigController {
 					mManualSwitchTitle.setTextColor(0xFF000000);
 				} else if (v instanceof EditText) {
 					EditText textView = (EditText) v;
-					checkIpAddress(textView.getEditableText());
+					boolean isIP = false;
+					if (textView == mIpaddr) {
+						isIP = true;
+					}
+					checkIpAddress(textView.getEditableText(), isIP);
 				}
 			}
 
@@ -462,25 +466,24 @@ public class EthernetConfigController {
 
 			boolean valid = true;
 
-			if (ip.isEmpty() || !isIpAddress(ip)) {
+			if (ip.isEmpty() || !isIpAddress(ip, true)) {
 				valid = false;
 			}
 
-			if (mask.isEmpty() || !isIpAddress(mask)) {
+			if (mask.isEmpty() || !isIpAddress(mask,false)) {
 				valid = false;
 			}
 
-			if (!gateway.isEmpty() && !isIpAddress(gateway)) {
+			if (!gateway.isEmpty() && !isIpAddress(gateway, false)) {
 				valid = false;
 			}
 
-			if (!dns.isEmpty() && !isIpAddress(dns)) {
+			if (!dns.isEmpty() && !isIpAddress(dns, false)) {
 				valid = false;
 			}
 
 			if (!valid) {
-				Toast.makeText(mContext, R.string.eth_settings_error,
-						Toast.LENGTH_LONG).show();
+				displayErrorIpPopup();
 				return;
 			}
 
@@ -500,21 +503,37 @@ public class EthernetConfigController {
 		}
 	}
 	
-	private void checkIpAddress(Editable s) {
+	private Toast mToast = null;
+
+	private void checkIpAddress(Editable s, boolean isIP) {
 		String ip = s.toString();
 		
-		if (!isIpAddress(ip)) {
-			Toast.makeText(mContext, R.string.eth_settings_error,
-					Toast.LENGTH_LONG).show();
-			
+		if (ip.isEmpty()) {
+			return;
+		}
+		
+		if (!isIpAddress(ip, isIP)) {
+			displayErrorIpPopup();	
 			s.clear();
 		}
 	}
+	
+	private void displayErrorIpPopup() {
+		if (mToast != null) {
+			mToast.cancel();
+		}
 
-	private boolean isIpAddress(String value) {
+		mToast = Toast.makeText(mContext, R.string.eth_settings_error,
+				Toast.LENGTH_SHORT);
+		mToast.show();
+	}
+
+	private boolean isIpAddress(String value, boolean isIP) {
 		int start = 0;
 		int end = value.indexOf('.');
 		int numBlocks = 0;
+		int zeroCount = 0;
+		int ttfCount = 0;
 
 		while (start < value.length()) {
 			if (end == -1) {
@@ -534,6 +553,15 @@ public class EthernetConfigController {
 				if ((block > 255) || (block < 0)) {
 					return false;
 				}
+				
+				if (block == 0) {
+					zeroCount++;
+				}
+				
+				if (block == 255) {
+					ttfCount++;
+				}
+				
 			} catch (NumberFormatException e) {
 				return false;
 			}
@@ -543,6 +571,12 @@ public class EthernetConfigController {
 			start = end + 1;
 			end = value.indexOf('.', start);
 		}
+		
+		if (isIP && (zeroCount == 4 || ttfCount == 4)) {
+			// 0.0.0.0 or 255.255.255.255
+			return false;
+		}
+		
 		return numBlocks == 4;
 	}
 
