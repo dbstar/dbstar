@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="1280dp"
+    android:layout_height="720dp"
+    android:background="@drawable/view_background" >
+
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp" >
+
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="1181dp"
+        android:layout_height="536dp"
+        android:layout_below="@id/view_header"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="40dp"
+         >
+        <RelativeLayout 
+            android:layout_width="494dp"
+            android:layout_height="489dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/power_target_bg"
+            
+            >
+            <TextView 
+                android:layout_width="wrap_content"
+                android:layout_height="51dp"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="40dp"
+                android:textColor="@color/black"
+                android:text="@string/power_target_title"
+                
+                />
+            <LinearLayout 
+                
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="120dp"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal"
+                
+                >
+                <TextView 
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/power_current_target_title"
+                    android:textColor="@color/black"
+                    />
+                <TextView 
+                    android:id="@+id/tv_power_target_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp"
+                    android:textColor="@color/yellow"
+                    
+                    />
+                
+                <TextView 
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/str_degree"
+                    android:textColor="@color/black"
+                    
+                    />
+            </LinearLayout>
+              <LinearLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="210dp"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal"
+                
+                >
+                <TextView 
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/power_modify_target_title"
+                    android:textColor="@color/black"
+                    />
+                <EditText 
+                    android:id="@+id/et_power_target_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:numeric="integer"
+                    android:background="@drawable/power_target_text_bg"
+                    
+                    />
+                
+                <TextView 
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/str_degree"
+                    android:textColor="@color/black"
+                    
+                    />
+            </LinearLayout>
+             <LinearLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="380dp"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal"
+                
+                >
+                <Button
+                    android:id="@+id/btn_ok" 
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/power_target_ok_btn_bg_selector"
+                    android:textColor="@color/black"
+                    />
+                 <Button 
+                     android:id="@+id/btn_cancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="40dp"
+                    android:background="@drawable/power_target_cancel_btn_bg_selector"
+                    android:textColor="@color/black"
+                    />
+            </LinearLayout>
+        </RelativeLayout>
+    </FrameLayout>
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        layout="@layout/footerview" />
+
+</RelativeLayout>

@@ -258,6 +258,16 @@ public class GDEngine {
 		case GDConstract.DATATYPE_EXECUTE_TIMED_TASK:
 		    executeTimeDTask((Map<String, String>)args);
 		    break;
+		    
+		case GDConstract.DATATYPE_DEFAULT_POWER_TARGET:
+		    getDefaultPowerTarget((Map<String, String>)args);
+		    break;
+		case GDConstract.DATATYPE_POWER_TARGET:
+		    getPowerTarget((Map<String, String>)args);
+            break;
+		case GDConstract.DATATYPE_SETTING_POWER_TARGET:
+		    setPowerTarget((Map<String, String>)args);
+		    break;
 		}
 	}
 
@@ -449,6 +459,21 @@ public class GDEngine {
 	        mClient.executeTimeDTask(mUserId,params);
 	    }
 	}
+	private void getDefaultPowerTarget(Map<String, String> params){
+	    if(mState == STATE_CONNECTED){
+	        mClient.getDefaultPowerTarget(mUserId,params);
+	    }
+	}
+	private void getPowerTarget(Map<String, String> params){
+	    if(mState == STATE_CONNECTED){
+	        mClient.getPowerTarget(mUserId,params);
+	    }
+	}
+	private void setPowerTarget(Map<String, String> params){
+	    if(mState == STATE_CONNECTED){
+	        mClient.setPowerTarget(mUserId,params);
+	    }
+	}
 	private void deleteTimeDTask(Map<String, String> params){
 	    if(mState == STATE_CONNECTED){
 	        mClient.deleteTimeDTask(mUserId,params);
@@ -571,6 +596,15 @@ public class GDEngine {
 		case GDClient.REQUEST_EXECUTE_TIMED_TASK:
             requestFinished(GDConstract.DATATYPE_EXECUTE_TIMED_TASK, task.ParsedData);
             break;
+		case GDClient.REQUEST_DEFAULT_POWER_TARGET:
+            requestFinished(GDConstract.DATATYPE_DEFAULT_POWER_TARGET, task.ParsedData);
+            break;
+		case GDClient.REQUEST_POWER_TARGET:
+            requestFinished(GDConstract.DATATYPE_POWER_TARGET, task.ParsedData);
+            break;
+		case GDClient.REQUEST_SET_POWER_TARGET:
+            requestFinished(GDConstract.DATATYPE_SETTING_POWER_TARGET, task.ParsedData);
+            break;
 		}
 	}
 	
@@ -623,6 +657,8 @@ public class GDEngine {
                 case GDClient.REQUEST_EXECUTE_TIMED_TASK:
                     event.Type = GDConstract.DATATYPE_EXECUTE_TIMED_TASK;
                     break;
+                case GDClient.REQUEST_SET_POWER_TARGET:
+                    event.Type = GDConstract.DATATYPE_SETTING_POWER_TARGET;
                 }
 		        event.Data =  ((Task)task).ResponseData[7];
 		        notifyEvent(EventData.EVENT_GUODIAN_DATA_ERROR, event);

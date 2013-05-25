@@ -78,6 +78,7 @@
         <activity android:name=".guodian.app.smarthome.GDSmartHomeMyEleActivity"/>
         <activity android:name=".guodian.app.smarthome.GDSmartHomeModeActivity"/>
         <activity android:name=".guodian.app.smarthome.GDSmartHomeTimedTaskActivity"/>
+        <activity android:name=".guodian.app.mypower.GDPowerTargetSettingActivity"/>
         <service
             android:name=".service.GDDataProviderService"
             android:exported="false" />

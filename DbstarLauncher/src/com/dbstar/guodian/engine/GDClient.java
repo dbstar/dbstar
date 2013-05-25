@@ -25,6 +25,8 @@ import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.data.PPCConstitute;
 import com.dbstar.guodian.data.PaymentRecord;
 import com.dbstar.guodian.data.PowerConsumptionTrend;
+import com.dbstar.guodian.data.PowerData;
+import com.dbstar.guodian.data.PowerTarget;
 import com.dbstar.guodian.data.PowerTips;
 import com.dbstar.guodian.data.ResultData;
 import com.dbstar.guodian.data.RoomData;
@@ -42,7 +44,9 @@ import com.dbstar.guodian.parse.BillDetailDataHandler;
 import com.dbstar.guodian.parse.BillDetailOfRecentDataHandler;
 import com.dbstar.guodian.parse.BillMonthListHandler;
 import com.dbstar.guodian.parse.BusinessAreaHandler;
+import com.dbstar.guodian.parse.DataHandler;
 import com.dbstar.guodian.parse.EPCConstituteDataHandler;
+import com.dbstar.guodian.parse.EqumentDataHandler;
 import com.dbstar.guodian.parse.FamilyPowerEfficencyDataHandler;
 import com.dbstar.guodian.parse.LoginDataHandler;
 import com.dbstar.guodian.parse.NoticeDataHandler;
@@ -52,6 +56,7 @@ import com.dbstar.guodian.parse.PaymentRecordsDataHandler;
 import com.dbstar.guodian.parse.PowerConsumptionTrendDataHandler;
 import com.dbstar.guodian.parse.PowerTipsDataHandler;
 import com.dbstar.guodian.parse.SPCConstituteDataHandler;
+import com.dbstar.guodian.parse.SetPowerTargetDataHandler;
 import com.dbstar.guodian.parse.SmartHomeDataHandler;
 import com.dbstar.guodian.parse.StepPowerConsumptionTrackDataHandler;
 import com.dbstar.util.GDNetworkUtil;
@@ -109,6 +114,10 @@ public class GDClient {
 	public static final int REQUEST_MODIFY_TIMED_TASK= 0x3031;
 	public static final int REQUEST_DELETE_TIMED_TASK= 0x3032;
 	public static final int REQUEST_EXECUTE_TIMED_TASK= 0x3033;
+	
+	public static final int REQUEST_DEFAULT_POWER_TARGET= 0x3034;
+	public static final int REQUEST_POWER_TARGET= 0x3035;
+	public static final int REQUEST_SET_POWER_TARGET= 0x3036;
 	// not include current month, just before;
 
 	class Task {
@@ -608,6 +617,42 @@ public class GDClient {
 	       msg.obj = task;
 	       mClientHandler.sendMessage(msg);
 	   }
+	   public void getDefaultPowerTarget(String userId,Map<String, String> params){
+	       String taskId = GDCmdHelper.generateUID();
+	       String cmdStr = GDCmdHelper.constructDefaultPowerTargetCmd(userId, taskId, params);
+	       Task task = new Task();
+	       task.TaskType = REQUEST_DEFAULT_POWER_TARGET;
+	       task.TaskId = taskId;
+	       task.Command = cmdStr;
+	       
+	       Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+	       msg.obj = task;
+	       mClientHandler.sendMessage(msg);
+	   }
+	   public void getPowerTarget(String userId,Map<String, String> params){
+	       String taskId = GDCmdHelper.generateUID();
+	       String cmdStr = GDCmdHelper.constructPowerTargetCmd(userId, taskId, params);
+	       Task task = new Task();
+	       task.TaskType = REQUEST_POWER_TARGET;
+	       task.TaskId = taskId;
+	       task.Command = cmdStr;
+	       
+	       Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+	       msg.obj = task;
+	       mClientHandler.sendMessage(msg);
+	   }
+	   public void setPowerTarget(String userId,Map<String, String> params){
+	       String taskId = GDCmdHelper.generateUID();
+	       String cmdStr = GDCmdHelper.constructSetPowerTargetCmd(userId, taskId, params);
+	       Task task = new Task();
+	       task.TaskType = REQUEST_SET_POWER_TARGET;
+	       task.TaskId = taskId;
+	       task.Command = cmdStr;
+	       
+	       Message msg = mClientHandler.obtainMessage(MSG_REQUEST);
+	       msg.obj = task;
+	       mClientHandler.sendMessage(msg);
+	   }
 	   public void deleteTimeDTask(String userId,Map<String, String> params){
 	       String taskId = GDCmdHelper.generateUID();
 	       String cmdStr = GDCmdHelper.constructDeleteTimedTaskCmd(userId, taskId, params);
@@ -854,6 +899,18 @@ public class GDClient {
 		case REQUEST_EXECUTE_TIMED_TASK:
             ResultData executeRes = SmartHomeDataHandler.parseExecuteTimedTaskResponse(task.ResponseData[7]);
             task.ParsedData = executeRes;
+            break;
+		case REQUEST_DEFAULT_POWER_TARGET:
+		    PowerData defaultTarget = SetPowerTargetDataHandler.parsePowerDefaultTarget(task.ResponseData[7]);
+            task.ParsedData = defaultTarget;
+            break;
+		case REQUEST_POWER_TARGET:
+		    PowerTarget powerTarget = SetPowerTargetDataHandler.parsetPowerTarget(task.ResponseData[7]);
+            task.ParsedData = powerTarget;
+            break;
+		case REQUEST_SET_POWER_TARGET:
+		    ResultData setTargetResult = SetPowerTargetDataHandler.parseSetPowerTargetResult(task.ResponseData[7]);
+            task.ParsedData = setTargetResult;
             break;
 		}
 

@@ -93,6 +93,7 @@ public class GDCommon {
 	public static final String ColumnIDSmartcardSettings = "L9906";
 	public static final String ColumnIDHelp = "L9908";
 	public static final String ColumnIDProducts = "L9907";
+	public static final String ColumnIDPowerTarget = "L9909";
 	
 	public static final String ColumnIDGuodianSmartPower = "G1";
 	public static final String ColumnIDGuodianHomeEfficiency = "G2";

@@ -36,6 +36,11 @@ public class GDConstract {
 	public static final int DATATYPE_DELETE_TIMED_TASK = 0x60032;
 	public static final int DATATYPE_EXECUTE_TIMED_TASK = 0x60033;
 	
+	public static final int DATATYPE_DEFAULT_POWER_TARGET = 0x60034;
+	public static final int DATATYPE_POWER_TARGET = 0x60035;
+	public static final int DATATYPE_SETTING_POWER_TARGET = 0x60036;
+	
+	
 	public static final String KeyPriceType = "price_type";
 	
 	public static final String KeyUserName = "user_name";

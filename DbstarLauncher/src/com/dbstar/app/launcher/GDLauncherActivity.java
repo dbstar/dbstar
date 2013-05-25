@@ -21,6 +21,7 @@ import com.dbstar.app.settings.GDProductsActivity;
 import com.dbstar.app.settings.GDSmartcardActivity;
 import com.dbstar.app.settings.GDSystemMgrActivity;
 import com.dbstar.guodian.app.mypower.GDPowerController;
+import com.dbstar.guodian.app.mypower.GDPowerTargetSettingActivity;
 import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
@@ -558,6 +559,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if (columnId.equals(GDCommon.ColumnIDProducts)) {
 			intent = new Intent();
 			intent.setClass(this, GDProductsActivity.class);
+		}else if(columnId.equals(GDCommon.ColumnIDPowerTarget)){
+		    intent = new Intent();
+		    intent.setClass(this, GDPowerTargetSettingActivity.class);
 		}
 
 		if (intent != null) {

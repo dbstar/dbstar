@@ -34,30 +34,30 @@
                     android:id="@+id/power_constitute_electrical"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/mypower_payment_record_button_selecter"
+                    android:background="@drawable/mypower_payment_record_button_normal"
                     android:gravity="center"
                     android:text="@string/power_constitue_electrical"
-                    android:textColor="@drawable/mypower_payment_record_text_selecter"
+                    android:textColor="@color/black"
                     android:textSize="18sp" />
 
                 <Button
                     android:id="@+id/power_constitute_step"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/mypower_payment_record_button_selecter"
+                    android:background="@drawable/mypower_payment_record_button_normal"
                     android:gravity="center"
                     android:text="@string/power_constitue_step"
-                    android:textColor="@drawable/mypower_payment_record_text_selecter"
+                    android:textColor="@color/black"
                     android:textSize="18sp" />
 
                 <Button
                     android:id="@+id/power_constitute_timing"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/mypower_payment_record_button_selecter"
+                    android:background="@drawable/mypower_payment_record_button_normal"
                     android:gravity="center"
                     android:text="@string/powerprice_type_timing"
-                    android:textColor="@drawable/mypower_payment_record_text_selecter"
+                    android:textColor="@color/black"
                     android:textSize="18sp" />
             </LinearLayout>
         
@@ -149,9 +149,9 @@
 
                 <Button
                     android:id="@+id/power_constitue_query_button"
-                    android:layout_width="140dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/querypower_btn_bg_selector" />
+                    android:background="@drawable/query_btn_bg_selector" />
             </LinearLayout>
             
             <LinearLayout 
@@ -159,18 +159,83 @@
                 android:layout_height="332dp"
                 android:layout_marginTop="30dp"
                 >
-                <LinearLayout
-                    android:id="@+id/piechart_view" 
-                    android:layout_width="267dp"
-                    android:layout_height="332dp"
-                    ></LinearLayout>
                 <LinearLayout 
-                    android:layout_width="714dp"
-                    android:layout_height="223dp"
-                    android:background="@drawable/power_constitute_list_bg"
+                   android:layout_width="267dp"
+                    android:layout_height="332dp"
+                    android:orientation="vertical"
                     >
                     
+                   <TextView 
+                       android:id="@+id/power_constitue_total_count"
+                       android:layout_width="fill_parent"
+                       android:layout_height="65dp"
+                       android:gravity="center"
+                       android:textColor="#fff"
+                       />
+                <LinearLayout
+                    android:id="@+id/piechart_view" 
+                    android:layout_width="200dp"
+                    android:layout_height="135dp"
+                    ></LinearLayout>
                 </LinearLayout>
+                <FrameLayout 
+                    android:layout_width="714dp"
+                    android:layout_height="332dp"
+                    android:background="@drawable/power_constitute_list_bg_2"
+                    >
+                <LinearLayout 
+                    android:layout_width="714dp"
+                    android:layout_height="332dp"
+                    android:background="@drawable/power_constitute_list_bg"
+                    android:orientation="vertical"
+                    >
+                    <LinearLayout 
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        >
+                        <TextView 
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/power_constitue_color_example"
+                            android:textColor="#09b9b7"
+                            android:gravity="center"
+                            />
+                         <TextView
+                            android:id="@+id/power_constitute_data_type" 
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/power_constitue_power_data_type_step"
+                            android:textColor="#09b9b7"
+                            />
+                          <TextView 
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/power_constitue_count"
+                            android:textColor="#09b9b7"
+                            />
+                           <TextView 
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/power_constitue_count_percent"
+                            android:textColor="#09b9b7"
+                            />
+                    </LinearLayout>
+                      <ListView 
+                        android:id="@+id/power_constitue_list"
+                        android:layout_width="714dp"
+                        android:layout_height="220dp"
+                        android:layout_marginTop="20dp"
+                        android:cacheColorHint="#00000000"
+                        android:listSelector="#00000000"
+                        android:divider="@null"
+                        ></ListView>
+                </LinearLayout>
+               </FrameLayout>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

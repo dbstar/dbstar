@@ -749,6 +749,66 @@ public class GDCmdHelper {
            
            return cmdStr;
        } 
+       public static String constructDefaultPowerTargetCmd( String userId,String cmdId ,Map<String, String> params) {
+           String keys [] = params.keySet().toArray(new String[]{});
+           String values [] = params.values().toArray(new String[]{});
+           String cmdStr = cmdId + CmdDelimiterTag
+                   + "elc"     + CmdDelimiterTag
+                   + "m004f001" + CmdDelimiterTag
+                   + userId    + CmdDelimiterTag
+                   + DeviceVersion + CmdDelimiterTag
+                   + DeviceId   + CmdDelimiterTag
+                   +toJson(keys, values);
+           
+           Log.d(TAG, "cmd data = " + cmdStr);
+           
+           String encryptStr = FormatCMD.encryptCMD(cmdStr);
+           cmdStr = CmdStartTag + encryptStr + CmdEndTag + "\n";
+           
+//       Log.d(TAG, " cmd ===== " + cmdStr);
+           
+           return cmdStr;
+       } 
+       public static String constructPowerTargetCmd( String userId,String cmdId ,Map<String, String> params) {
+           String keys [] = params.keySet().toArray(new String[]{});
+           String values [] = params.values().toArray(new String[]{});
+           String cmdStr = cmdId + CmdDelimiterTag
+                   + "elc"     + CmdDelimiterTag
+                   + "m004f002" + CmdDelimiterTag
+                   + userId    + CmdDelimiterTag
+                   + DeviceVersion + CmdDelimiterTag
+                   + DeviceId   + CmdDelimiterTag
+                   +toJson(keys, values);
+           
+           Log.d(TAG, "cmd data = " + cmdStr);
+           
+           String encryptStr = FormatCMD.encryptCMD(cmdStr);
+           cmdStr = CmdStartTag + encryptStr + CmdEndTag + "\n";
+           
+//       Log.d(TAG, " cmd ===== " + cmdStr);
+           
+           return cmdStr;
+       } 
+       public static String constructSetPowerTargetCmd( String userId,String cmdId ,Map<String, String> params) {
+           String keys [] = params.keySet().toArray(new String[]{});
+           String values [] = params.values().toArray(new String[]{});
+           String cmdStr = cmdId + CmdDelimiterTag
+                   + "elc"     + CmdDelimiterTag
+                   + "m004f003" + CmdDelimiterTag
+                   + userId    + CmdDelimiterTag
+                   + DeviceVersion + CmdDelimiterTag
+                   + DeviceId   + CmdDelimiterTag
+                   +toJson(keys, values);
+           
+           Log.d(TAG, "cmd data = " + cmdStr);
+           
+           String encryptStr = FormatCMD.encryptCMD(cmdStr);
+           cmdStr = CmdStartTag + encryptStr + CmdEndTag + "\n";
+           
+//       Log.d(TAG, " cmd ===== " + cmdStr);
+           
+           return cmdStr;
+       } 
        public static String constructDeleteTimedTaskCmd( String userId,String cmdId ,Map<String, String> params) {
            String keys [] = params.keySet().toArray(new String[]{});
            String values [] = params.values().toArray(new String[]{});
@@ -786,10 +846,12 @@ public class GDCmdHelper {
         try {
             int i1 = decryptedStr.indexOf("[");
             int i2 = decryptedStr.indexOf("{");
+            
             int jsonStartIndex = 0;
-            if (i1 < i2) {
+            
+            if(i1 != -1 && i1 < i2){
                 jsonStartIndex = i1;
-            }else{
+            }else {
                 jsonStartIndex = i2;
             }
                 

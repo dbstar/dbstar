@@ -196,6 +196,12 @@
     <string name="power_constitue_electrical">电器维度</string>
     <string name="power_constitue_step">阶梯维度</string>
     <string name="power_constitue_timing">峰谷平维度</string>
+    <string name="power_constitue_color_example">图例</string>
+    <string name="power_constitue_power_data_type_step">用电阶梯</string>
+    <string name="power_constitue_power_data_type_ele">电器名称</string>
+    <string name="power_constitue_power_data_type_period">用电时段</string>
+    <string name="power_constitue_count">电量（度）</string>
+    <string name="power_constitue_count_percent">电量占比</string>
     <string name="str_day">日期</string>
     <string name="family_text_electrical_change">电器选择:</string>
     <string name="family_text_all_electrical">全部可控电器 </string>
@@ -205,6 +211,7 @@
     <string name="family_text_histogram">柱状图</string>
     <string name="family_text_polyline_chart">折线图</string>
     <string name="family_text_used_power_count">用电量:</string>
+    <string name="family_text_total_used_power_count">总用电量:</string>
     <string name="family_text_power_count">电量:</string>
     <string name="family_text_time_range">时间范围:</string>
     <string name="family_text_power_trend_titile">用电趋势-</string>
@@ -272,8 +279,18 @@
     <string name="family_text_load_ele_list_fail">出错啦! 电器列表列获取失败</string>
     <string name="family_text_input_time_hour_error">输入时间错误，请输入0~23 之间的数字</string>
     <string name="family_text_input_time_minute_error">输入时间错误，请输入0~59 之间的数字</string>
-      
-      <string name="family_text_no_input_time">请输入时间</string>
+    
+    
+    <string name="power_target_title">用电目标设置</string>
+    <string name="power_current_target_title">当前月用电目标</string>
+    <string name="power_modify_target_title">修改月用电目标</string>
+    
+    <string name="error_text_not_input_power_target">输入用电目标数（必须大于0的整数）</string>
+    <string name="error_text_input_power_target_error">请输入正确的数字（必须大于0的整数）</string>
+    <string name="text_set_power_target_success">设置成功</string>
+    <string name="text_set_power_target_fail">设置失败</string>
+    
+    <string name="family_text_no_input_time">请输入时间</string>
     <string name="string_recent_payment">近期缴费记录：&#160;</string>
     <string name="string_year_payment_all">年缴费总金额：&#160;</string>
     
@@ -286,6 +303,10 @@
     <string name="period_1">高峰</string>
     <string name="period_2">平断</string>
     <string name="period_3">低谷 </string>
+    
+    <string name="ch_period_1">峰时段</string>
+    <string name="ch_period_2">平时段</string>
+    <string name="ch_period_3">谷时段 </string>
     
     <string name="demo_str_1">100度</string>
     <string name="demo_str_2">200元</string>
