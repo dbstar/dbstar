@@ -143,9 +143,9 @@ public class GDPowerConstitueActivity extends GDBaseActivity{
         }
         if(mPie == null){
             mPie = new DrawPie(this);
-            mPie.setOriginPoint(0, 0);//位置
+            mPie.setOriginPoint(0, 0);
             mPie.setPicSize(mPieView.getMeasuredWidth(), mPieView.getMeasuredHeight() - 25);//大小
-            mPie.setChartDepth(25);//厚度
+            mPie.setChartDepth(25);
         }
         percents = new ArrayList<Float>();
         if(data != null){
@@ -162,7 +162,7 @@ public class GDPowerConstitueActivity extends GDBaseActivity{
             }
         }
       
-        mPie.setData(percents);//数据
+        mPie.setData(percents);
         mPieView.removeAllViews();
         mPieView.addView(mPie);
     }
