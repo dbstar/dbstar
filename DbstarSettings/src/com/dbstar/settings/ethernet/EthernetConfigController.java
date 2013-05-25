@@ -290,6 +290,12 @@ public class EthernetConfigController {
 		mBackupDns = (EditText) mActivity.findViewById(R.id.eth_backup_dns);
 		mGw = (EditText) mActivity.findViewById(R.id.eth_gateway);
 		
+		mIpaddr.setLongClickable(false);
+		mMask.setLongClickable(false);
+		mDns.setLongClickable(false);
+		mBackupDns.setLongClickable(false);
+		mGw.setLongClickable(false);
+		
 		mIpaddr.setOnFocusChangeListener(mFocusChangeListener);
 		mMask.setOnFocusChangeListener(mFocusChangeListener);
 		mDns.setOnFocusChangeListener(mFocusChangeListener);

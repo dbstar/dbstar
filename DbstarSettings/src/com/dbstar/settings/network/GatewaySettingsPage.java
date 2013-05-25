@@ -149,7 +149,14 @@ public class GatewaySettingsPage extends BaseFragment {
 		mGatewayIP.setOnFocusChangeListener(mFocusChangedListener);
 		mGatewayPort.setOnFocusChangeListener(mFocusChangedListener);
 
+		mGatewaySerialNumber.setLongClickable(false);
+		mMulticastIP.setLongClickable(false);
+		mMulticastPort.setLongClickable(false);
+		mGatewayIP.setLongClickable(false);
+		mGatewayPort.setLongClickable(false);
+
 		mNextButton.setOnClickListener(mOnClickListener);
+		
 
 //		mNullview.setFocusable(true);
 //		mNullview.requestFocus();

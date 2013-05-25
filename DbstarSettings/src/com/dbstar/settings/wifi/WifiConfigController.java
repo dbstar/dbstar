@@ -104,6 +104,8 @@ public class WifiConfigController {
 		mPasswordView = (TextView) view.findViewById(R.id.wifi_password);
 		mConfirmButton = (Button) view.findViewById(R.id.wifi_okbutton);
 		mConfirmButton.setOnClickListener(mClickListener);
+		
+		mPasswordView.setLongClickable(false);
 
 		mAccessPoint = accessPoint;
 		mAccessPointSecurity = accessPoint.security;
