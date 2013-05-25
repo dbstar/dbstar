@@ -82,12 +82,12 @@ public class GDLoopGallery extends GDAbsSpinner {
     /**
      * Left most edge of a child seen so far during layout.
      */
-    private int mLeftMost;
+    //private int mLeftMost;
 
     /**
      * Right most edge of a child seen so far during layout.
      */
-    private int mRightMost;
+    //private int mRightMost;
 
     private int mGravity;
 
@@ -321,7 +321,7 @@ public class GDLoopGallery extends GDAbsSpinner {
         }
         
         // Clear unused views
-        mRecycler.clear();
+        //mRecycler.clear();
 
         invalidate();
     }
@@ -405,7 +405,7 @@ public class GDLoopGallery extends GDAbsSpinner {
         }
         
         // TODO better search
-        int closestEdgeDistance = Integer.MAX_VALUE;
+//        int closestEdgeDistance = Integer.MAX_VALUE;
         int newSelectedChildIndex = 0;
         
         for (int i = 0; i < getChildCount(); i++) {
@@ -418,12 +418,12 @@ public class GDLoopGallery extends GDAbsSpinner {
                 break;
             }
             
-            int childClosestEdgeDistance = Math.min(Math.abs(child.getLeft() - galleryLeft),
-                    Math.abs(child.getRight() - galleryLeft));
-            if (childClosestEdgeDistance < closestEdgeDistance) {
-                closestEdgeDistance = childClosestEdgeDistance;
-                newSelectedChildIndex = i;
-            }
+//            int childClosestEdgeDistance = Math.min(Math.abs(child.getLeft() - galleryLeft),
+//                    Math.abs(child.getRight() - galleryLeft));
+//            if (childClosestEdgeDistance < closestEdgeDistance) {
+//                closestEdgeDistance = childClosestEdgeDistance;
+//                newSelectedChildIndex = i;
+//            }
         }
         
         int newPos = mFirstPosition + newSelectedChildIndex;
@@ -471,6 +471,8 @@ public class GDLoopGallery extends GDAbsSpinner {
         {
         	// if data has changed, not recycle old views
         	recycleAllViews();
+        } else {
+        	mRecycler.clear();
         }
 
         // Clear out old views
@@ -480,8 +482,8 @@ public class GDLoopGallery extends GDAbsSpinner {
          * These will be used to give initial positions to views entering the
          * gallery as we scroll
          */
-        mRightMost = 0;
-        mLeftMost = 0;
+//        mRightMost = 0;
+//        mLeftMost = 0;
 
         // Make selected view and center it
         
@@ -500,9 +502,9 @@ public class GDLoopGallery extends GDAbsSpinner {
         //fillToGalleryLeft();
         
         // Flush any cached views that did not get reused above
-        mRecycler.clear();
+        //mRecycler.clear();
 
-        invalidate();
+        //invalidate();
         checkSelectionChanged();
 
         mDataChanged = false;
@@ -539,7 +541,7 @@ public class GDLoopGallery extends GDAbsSpinner {
             mShouldStopFling = true;
         }
                 
-        while (curRightEdge > galleryLeft) {
+        while (curRightEdge >= galleryLeft) {
         	int index = curPosition % getCount();
         	if (index < 0) index = index + getCount();
         	
@@ -583,7 +585,7 @@ public class GDLoopGallery extends GDAbsSpinner {
         }
                 
         //while (curLeftEdge < galleryRight && getChildCount() < getCount()) {
-        while (curLeftEdge < galleryRight && getChildCount() <= getCount()) {
+        while (curLeftEdge <= galleryRight && getChildCount() <= getCount()) {
         	
         	int index =  curPosition % numItems;
         	
@@ -621,9 +623,9 @@ public class GDLoopGallery extends GDAbsSpinner {
                 int childLeft = child.getLeft();
                 
                 // Remember left and right edges of where views have been placed
-                mRightMost = Math.max(mRightMost, childLeft 
-                        + child.getMeasuredWidth());
-                mLeftMost = Math.min(mLeftMost, childLeft);
+//                mRightMost = Math.max(mRightMost, childLeft 
+//                        + child.getMeasuredWidth());
+//                mLeftMost = Math.min(mLeftMost, childLeft);
 
                 // Position the view
                 setUpChild(child, offset, x, fromLeft);
@@ -823,7 +825,7 @@ public class GDLoopGallery extends GDAbsSpinner {
     boolean moveNext() {
         if (getCount() > 1) {
 //        	Log.d(TAG, "moveNext " + mSelectedPosition + " " + mFirstPosition);
- 
+        	scrollToChild(mSelectedPosition - mFirstPosition + 1);
             return true;
         } else {
             return false;
@@ -932,11 +934,10 @@ public class GDLoopGallery extends GDAbsSpinner {
         }
 
         public void startUsingDistance(int distance) {
-        	
+            if (distance == 0) return;
+
         	if (mStartFling) return;
         	mStartFling = true;
-        	
-            if (distance == 0) return;
             
             mToLeft = distance < 0 ? true : false;
 

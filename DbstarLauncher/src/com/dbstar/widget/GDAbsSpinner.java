@@ -191,7 +191,7 @@ public abstract class GDAbsSpinner extends GDAdapterView<SpinnerAdapter> {
         int selectedPosition = getSelectedItemPosition();
         if (selectedPosition >= 0 && mAdapter != null && selectedPosition < mAdapter.getCount()) {
             // Try looking in the recycler. (Maybe we were measured once already)
-            View view = null;//mRecycler.get(selectedPosition);
+            View view = mRecycler.get(selectedPosition);
             if (view == null) {
                 // Make a new one
                 view = mAdapter.getView(selectedPosition, null, this);
@@ -199,11 +199,11 @@ public abstract class GDAbsSpinner extends GDAdapterView<SpinnerAdapter> {
 //                if (view.getImportantForAccessibility() == IMPORTANT_FOR_ACCESSIBILITY_AUTO) {
 //                    view.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
 //                }
-            }
-
-            if (view != null) {
-                // Put in recycler for re-measuring and/or layout
-                //mRecycler.put(selectedPosition, view);
+                
+                if (view != null) {
+                    // Put in recycler for re-measuring and/or layout
+                    mRecycler.put(selectedPosition, view);
+                }
             }
 
             if (view != null) {

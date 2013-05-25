@@ -96,6 +96,10 @@ public class GDPlaymentRecordsActivity extends GDBaseActivity{
         mButtonYearLevel2.setOnClickListener(mClickListener);
         mButtonYearLevel3.setOnClickListener(mClickListener);
         
+        mButtonYearLevel1.setVisibility(View.INVISIBLE);
+        mButtonYearLevel2.setVisibility(View.INVISIBLE);
+        mButtonYearLevel3.setVisibility(View.INVISIBLE);
+        
         mCurYearFee = (TextView) findViewById(R.id.p_r_current_year_payment);
         mRecentFirstDate = (TextView) findViewById(R.id.p_r_recent_first_date);
         mRecentFirstFee = (TextView) findViewById(R.id.p_r_recent_first_fee);
@@ -145,6 +149,9 @@ public class GDPlaymentRecordsActivity extends GDBaseActivity{
         if(yearPaymentList == null || yearPaymentList.isEmpty())
             return;
         mContent.setVisibility(View.VISIBLE);
+        mButtonYearLevel1.setVisibility(View.VISIBLE);
+        mButtonYearLevel2.setVisibility(View.VISIBLE);
+        mButtonYearLevel3.setVisibility(View.VISIBLE);
         mButtonYearLevel1.setText(yearPaymentList.get(0).date);
         mButtonYearLevel2.setText(yearPaymentList.get(1).date);
         mButtonYearLevel3.setText(yearPaymentList.get(2).date);
@@ -231,6 +238,8 @@ public class GDPlaymentRecordsActivity extends GDBaseActivity{
         
         @Override
         public void onClick(View v) {
+            if(mPaymentRecord == null)
+                return;
             int id = v.getId();
             String strYear = null;
             switch (id) {

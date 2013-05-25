@@ -88,13 +88,15 @@
                     />
                 <EditText 
                     android:id="@+id/et_power_target_count"
-                    android:layout_width="wrap_content"
+                    android:layout_width="171dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="30dp"
                     android:layout_marginRight="30dp"
                     android:textColor="@color/white"
                     android:gravity="center"
                     android:numeric="integer"
+                    android:singleLine="true"
+                    android:longClickable="false"
                     android:background="@drawable/power_target_text_bg"
                     
                     />
