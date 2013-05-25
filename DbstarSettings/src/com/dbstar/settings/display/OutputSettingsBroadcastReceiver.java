@@ -146,6 +146,9 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 				int cvbs_mode = intent.getIntExtra("cvbs_mode", 0);
 				setCvbsMode(cvbs_mode, outputMode);
 			}
+			
+			// save settings! add this, then no cancel action.
+			SystemProperties.set(SettingsCommon.STR_OUTPUT_VAR, outputMode);
 
 		}
 		// cancel output mode change

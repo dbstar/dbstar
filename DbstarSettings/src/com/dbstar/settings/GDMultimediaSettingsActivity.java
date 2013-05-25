@@ -307,26 +307,47 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			setVideoModeSelected(modeIndex, true, true);
 
 			OutputMode mode = mVideoModes.get(modeIndex);
-			Intent intent = new Intent(this, OutputSetConfirm.class);
-			intent.putExtra("set_mode", mode.modeValue);
-			if (mHasCVBSOutput) {
-				intent.putExtra("cvbs_mode", mCVBSIndex);
-			}
-			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
+			changeVideoOutputMode(mode.modeValue, mCVBSIndex);
+
+//			Intent intent = new Intent(this, OutputSetConfirm.class);
+//			intent.putExtra("set_mode", mode.modeValue);
+//			if (mHasCVBSOutput) {
+//				intent.putExtra("cvbs_mode", mCVBSIndex);
+//			}
+//			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
 		} else {
 			// "auto" mode
 			setVideoModeSelected(modeIndex, true, false);
 			
 			OutputMode mode = mVideoModes.get(mVideoModes.size() - 1);
-			Intent intent = new Intent(this, OutputSetConfirm.class);
-			intent.putExtra("set_mode", mode.modeValue);
-			if (mHasCVBSOutput) {
-				intent.putExtra("cvbs_mode", mCVBSIndex);
-			}
-			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
+			changeVideoOutputMode(mode.modeValue, mCVBSIndex);
+//			Intent intent = new Intent(this, OutputSetConfirm.class);
+//			intent.putExtra("set_mode", mode.modeValue);
+//			if (mHasCVBSOutput) {
+//				intent.putExtra("cvbs_mode", mCVBSIndex);
+//			}
+//			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
 		}
 
 		mVideoOutputModeAdapter.notifyDataSetChanged();
+	}
+	
+	private void changeVideoOutputMode(String outputMode, int cvbsMode) {
+		Intent changeIntent = new Intent(
+				SettingsCommon.ACTION_OUTPUTMODE_CHANGE);
+		changeIntent.putExtra(SettingsCommon.OUTPUT_MODE, outputMode);
+		if (mHasCVBSOutput) {
+			changeIntent.putExtra("cvbs_mode", cvbsMode);
+		}
+		sendBroadcast(changeIntent);
+		
+//		Intent saveIntent = new Intent(
+//				SettingsCommon.ACTION_OUTPUTMODE_SAVE);
+//		saveIntent.putExtra(SettingsCommon.OUTPUT_MODE, outputMode);
+//		if (mHasCVBSOutput) {
+//			saveIntent.putExtra("cvbs_mode", cvbsMode);
+//		}
+//		sendBroadcast(saveIntent);
 	}
 
 	@Override
