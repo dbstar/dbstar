@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -60,6 +61,9 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 	int mAudioSelectedItem = -1;
 	View mAudioLastSelectedView = null, mAudioSelectedView = null;
 
+	boolean mIsSettingOutputMode = false;
+	Handler mHandler = null;
+	
 	class OutputMode {
 		public String modeStr;
 		public String modeValue;
@@ -85,6 +89,8 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 		setContentView(R.layout.multimedia_settings);
 
 		initializeView();
+		
+		mHandler = new Handler();
 
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
@@ -293,7 +299,7 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 	};
 
 	private void onModeChanged(int modeIndex) {
-		if (mVideoSelectedMode == modeIndex)
+		if (mVideoSelectedMode == modeIndex || mIsSettingOutputMode)
 			return;
 
 		mVideoLastSelectedMode = mVideoSelectedMode;
@@ -333,12 +339,25 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 	}
 	
 	private void changeVideoOutputMode(String outputMode, int cvbsMode) {
+		
+		mIsSettingOutputMode = true;
+		
+		mHandler.postDelayed(new Runnable() {
+			public void run() {
+				mIsSettingOutputMode = false;
+				Log.d(TAG, "change mode finished");
+			}
+		}, 3000);
+		
 		Intent changeIntent = new Intent(
 				SettingsCommon.ACTION_OUTPUTMODE_CHANGE);
 		changeIntent.putExtra(SettingsCommon.OUTPUT_MODE, outputMode);
 		if (mHasCVBSOutput) {
 			changeIntent.putExtra("cvbs_mode", cvbsMode);
 		}
+		
+		Log.d(TAG, " begin to change mode");
+		
 		sendBroadcast(changeIntent);
 		
 //		Intent saveIntent = new Intent(
