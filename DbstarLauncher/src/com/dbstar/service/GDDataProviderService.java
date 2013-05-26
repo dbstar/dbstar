@@ -126,7 +126,7 @@ public class GDDataProviderService extends Service {
 	private GDDataModel mDataModel = null;
 
 	private ConnectivityManager mConnectManager;
-	private GDDiskSpaceMonitor mDiskMonitor;
+	//private GDDiskSpaceMonitor mDiskMonitor;
 
 	private GDDBStarClient mDBStarClient;
 	private GDApplicationObserver mApplicationObserver = null;
@@ -236,7 +236,7 @@ public class GDDataProviderService extends Service {
 
 		mConfigure = new GDSystemConfigure();
 		mDataModel = new GDDataModel();
-		mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
+		//mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
 		mDBStarClient = new GDDBStarClient(this);
 
 		mGuodianEngine = new GDEngine(this);
@@ -289,7 +289,7 @@ public class GDDataProviderService extends Service {
 				mIsStorageReady = true;
 				Log.d(TAG, "disk is ready " + disk);
 
-				mDiskMonitor.addDiskToMonitor(disk);
+				//mDiskMonitor.addDiskToMonitor(disk);
 			}
 		}
 
@@ -300,7 +300,7 @@ public class GDDataProviderService extends Service {
 		// initialize engine
 		initializeDataEngine();
 
-		queryDiskGuardSize();
+		//queryDiskGuardSize();
 
 		if (mIsStorageReady) {
 			mDataModel.setPushDir(mConfigure.getStorageDir());
@@ -360,7 +360,7 @@ public class GDDataProviderService extends Service {
 
 		stopDbStarService();
 		mDBStarClient.stop();
-		mDiskMonitor.stopMonitor();
+		//mDiskMonitor.stopMonitor();
 
 		deinitializeDataEngine();
 
@@ -503,8 +503,8 @@ public class GDDataProviderService extends Service {
 					mDataModel.setPushDir(dir);
 
 					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
-					mDiskMonitor.removeDiskFromMonitor(disk);
-					mDiskMonitor.addDiskToMonitor(disk);
+					//mDiskMonitor.removeDiskFromMonitor(disk);
+					//mDiskMonitor.addDiskToMonitor(disk);
 
 					if (mIsNetworkReady) {
 						startDbStarService();
@@ -530,7 +530,7 @@ public class GDDataProviderService extends Service {
 				Bundle data = msg.getData();
 				String disk = data.getString("disk");
 
-				mDiskMonitor.removeDiskFromMonitor(disk);
+				//mDiskMonitor.removeDiskFromMonitor(disk);
 
 				String storage = mConfigure.getStorageDisk();
 				if (disk.equals(storage)) {
@@ -1813,7 +1813,7 @@ public class GDDataProviderService extends Service {
 			long guardSize = Integer.valueOf(value).longValue();
 			if (guardSize > 0) {
 				guardSize = guardSize * 1024 * 1024;
-				mDiskMonitor.setGuardSize(guardSize);
+				//mDiskMonitor.setGuardSize(guardSize);
 			}
 		}
 	}
