@@ -911,6 +911,8 @@ public class GDLoopGallery extends GDAbsSpinner {
         int mFrameRate = 10;
         int mFrameInterval;
         long mStartTime = 0;
+        int mDisctance = 0;
+        int mStartX = 0;
 
         public FlingRunnable() {
             mScroller = new Scroller(getContext());
@@ -947,7 +949,8 @@ public class GDLoopGallery extends GDAbsSpinner {
 
             mFrameInterval = mAnimationDuration/mFrameRate;
             mStartTime = AnimationUtils.currentAnimationTimeMillis();
-
+            mStartX = 0;
+            mDisctance = -distance;
             mScroller.startScroll(0, 0, -distance, 0, mAnimationDuration);
             post(this);
         }
@@ -986,6 +989,10 @@ public class GDLoopGallery extends GDAbsSpinner {
             final Scroller scroller = mScroller;
             boolean more = scroller.computeScrollOffset();
             final int x = scroller.getCurrX();
+            
+            if (mDisctance == x) {
+            	mShouldStopFling = true;
+            }
 
             // Flip sign to convert finger direction to list items direction
             // (e.g. finger moving down means list is moving towards the top)
@@ -1005,13 +1012,13 @@ public class GDLoopGallery extends GDAbsSpinner {
 
             if (more && !mShouldStopFling) {
                 mLastFlingX = x;
-                //post(this);
+                post(this);
                
-                long currentTime = AnimationUtils.currentAnimationTimeMillis();
-                int usedTime = (int)(currentTime - mStartTime);
-                int remainTime = mAnimationDuration - usedTime;
-                
-                postDelayed(this, remainTime > mFrameInterval ? mFrameInterval : remainTime);
+//                long currentTime = AnimationUtils.currentAnimationTimeMillis();
+//                int usedTime = (int)(currentTime - mStartTime);
+//                int remainTime = mAnimationDuration - usedTime;
+//                
+//                postDelayed(this, remainTime > mFrameInterval ? mFrameInterval : remainTime);
             } else {
             	mStartFling = false;
             	mToLeft = false;
