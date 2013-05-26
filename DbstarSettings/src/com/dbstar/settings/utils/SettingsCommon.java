@@ -22,12 +22,13 @@ public class SettingsCommon {
 	public static final String STR_CVBS_VAR = "ubootenv.var.cvbsmode";
 	public static final String STR_OUTPUT_MODE = "ubootenv.var.outputmode";
 	public static final String STR_DEFAULT_FREQUENCY_VAR = "ubootenv.var.defaulttvfrequency";
-	
 	public static final String STR_1080SCALE="ro.platform.has.1080scale";
-	
 	public static final String KEY_SELECTED_ITEM = "SelectedItemPosition";
-	
 	public static final String OUTPUT_MODE = "output_mode";
+	
+	public static final String KeySetMode = "set_mode";
+	public static final String KeyFrequency = "frequency";
+	public static final String KeyCVBSMode= "cvbs_mode";
 	
 	public static final int GET_USER_OPERATION = 1;
 	

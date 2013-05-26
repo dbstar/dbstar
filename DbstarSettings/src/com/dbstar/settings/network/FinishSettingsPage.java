@@ -136,10 +136,15 @@ public class FinishSettingsPage extends BaseFragment {
                 }else{
                     mHandler.postDelayed(handleWifiTask, 1000 * 20);
                 }
+		        NetworkInfo eh = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
+                if(eh.getState() == State.CONNECTED){
+                    mHandler.postDelayed(handleEthernetTask, 1000 * 2);
+                }else{
+                   mHandler.postDelayed(handleEthernetTask, 1000 * 5);
+                }
 		        NetworkInfo networkInfo = (NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
 		        if(networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET){
 		             mHandler.removeCallbacks(handleEthernetTask);
-		             NetworkInfo eh = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
 	                    if(eh.getState() == State.CONNECTED){
 	                        mHandler.post(handleEthernetTask);
 	                    }else{

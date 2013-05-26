@@ -127,20 +127,21 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			}
 		}
 
-		// default frequency
+		// get default frequency
 		mHasDefaultFrequency = Utils.platformHasDefaultTVFreq();
 		Log.d(TAG, "has default frequency = " + mHasDefaultFrequency);
 		if (mHasDefaultFrequency) {
 			mDefaultFrequency = DisplaySettings.getDefaultFrequency();
-			if (mDefaultFrequency.isEmpty()) {
-				mDefaultFrequency = mDefaultFrequencyEntries[DefaultFrequecy60Hz]
-						.toString();
-			}
+		}
+		
+		if (mDefaultFrequency == null || mDefaultFrequency.isEmpty()) {
+			mDefaultFrequency = mDefaultFrequencyEntries[DefaultFrequecy60Hz]
+					.toString();
 		}
 
 		Log.d(TAG, "default fq " + mDefaultFrequency);
 
-		// output mode
+		// get default output mode
 		String videoMode = DisplaySettings.getOutpuMode();
 
 		Log.d(TAG, "default mode " + videoMode);
@@ -158,14 +159,8 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 				OutputMode mode = mVideoModes.get(i);
 				boolean selected = false;
 				if (mode.modeValue.equals(videoMode)) {
-					if (mHasDefaultFrequency) {
-						if (mode.frequecy.equalsIgnoreCase(mDefaultFrequency)) {
-							selected = true;
-						}
-					} else {
-						if (mode.frequecy.equalsIgnoreCase("60Hz")) {
-							selected = true;
-						}
+					if (mode.frequecy.equalsIgnoreCase(mDefaultFrequency)) {
+						selected = true;
 					}
 				}
 
@@ -313,60 +308,27 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 			setVideoModeSelected(modeIndex, true, true);
 
 			OutputMode mode = mVideoModes.get(modeIndex);
-			changeVideoOutputMode(mode.modeValue, mCVBSIndex);
 
-//			Intent intent = new Intent(this, OutputSetConfirm.class);
-//			intent.putExtra("set_mode", mode.modeValue);
-//			if (mHasCVBSOutput) {
-//				intent.putExtra("cvbs_mode", mCVBSIndex);
-//			}
-//			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
+			Intent intent = new Intent(this, OutputSetConfirm.class);
+			intent.putExtra(SettingsCommon.KeySetMode, mode.modeValue);
+			if (mHasCVBSOutput) {
+				intent.putExtra(SettingsCommon.KeyCVBSMode, mCVBSIndex);
+			}
+			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
 		} else {
 			// "auto" mode
 			setVideoModeSelected(modeIndex, true, false);
 			
 			OutputMode mode = mVideoModes.get(mVideoModes.size() - 1);
-			changeVideoOutputMode(mode.modeValue, mCVBSIndex);
-//			Intent intent = new Intent(this, OutputSetConfirm.class);
-//			intent.putExtra("set_mode", mode.modeValue);
-//			if (mHasCVBSOutput) {
-//				intent.putExtra("cvbs_mode", mCVBSIndex);
-//			}
-//			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
+			Intent intent = new Intent(this, OutputSetConfirm.class);
+			intent.putExtra(SettingsCommon.KeySetMode, mode.modeValue);
+			if (mHasCVBSOutput) {
+				intent.putExtra(SettingsCommon.KeyCVBSMode, mCVBSIndex);
+			}
+			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
 		}
 
 		mVideoOutputModeAdapter.notifyDataSetChanged();
-	}
-	
-	private void changeVideoOutputMode(String outputMode, int cvbsMode) {
-		
-		mIsSettingOutputMode = true;
-		
-		mHandler.postDelayed(new Runnable() {
-			public void run() {
-				mIsSettingOutputMode = false;
-				Log.d(TAG, "change mode finished");
-			}
-		}, 3000);
-		
-		Intent changeIntent = new Intent(
-				SettingsCommon.ACTION_OUTPUTMODE_CHANGE);
-		changeIntent.putExtra(SettingsCommon.OUTPUT_MODE, outputMode);
-		if (mHasCVBSOutput) {
-			changeIntent.putExtra("cvbs_mode", cvbsMode);
-		}
-		
-		Log.d(TAG, " begin to change mode");
-		
-		sendBroadcast(changeIntent);
-		
-//		Intent saveIntent = new Intent(
-//				SettingsCommon.ACTION_OUTPUTMODE_SAVE);
-//		saveIntent.putExtra(SettingsCommon.OUTPUT_MODE, outputMode);
-//		if (mHasCVBSOutput) {
-//			saveIntent.putExtra("cvbs_mode", cvbsMode);
-//		}
-//		sendBroadcast(saveIntent);
 	}
 
 	@Override
@@ -393,6 +355,16 @@ public class GDMultimediaSettingsActivity extends GDBaseActivity {
 
 				mVideoOutputModeAdapter.notifyDataSetChanged();
 			}
+		
+			// block user operation for 3 seconds.
+			mIsSettingOutputMode = true;
+			mHandler.postDelayed(new Runnable() {
+				public void run() {
+					mIsSettingOutputMode = false;
+					Log.d(TAG, "change mode finished");
+				}
+			}, 2000);
+
 			break;
 		}
 	}
