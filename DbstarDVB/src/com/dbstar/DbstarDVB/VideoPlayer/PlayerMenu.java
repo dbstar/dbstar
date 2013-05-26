@@ -825,6 +825,8 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	void onPlayButtonPressed() {
+		Log.d(TAG, " onPlayButtonPressed player status=" + mPlayerStatus);
+		
 		if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
 			try {
 				mAmplayer.Pause();
@@ -1375,6 +1377,11 @@ public class PlayerMenu extends PlayerActivity {
 		if (!FF_FLAG && !FB_FLAG)
 			mPlayButton.setImageResource(R.drawable.play);
 
+		if (!mHideTimerStarted) {
+			// hide infobar timer does not start, start it here!
+			hideInfoBarDelayed();
+		}
+		
 		if (mMediaInfo != null) {
 			String videoFormat = mMediaInfo.getFullFileName(mUri.getPath());
 			if (videoFormat.endsWith(".mvc")) {
@@ -1854,6 +1861,7 @@ public class PlayerMenu extends PlayerActivity {
 	}
 
 	TimerTask mHideInfoBarTask = null;
+	private boolean mHideTimerStarted = false;
 
 	protected void hideInfoBarDelayed() {
 		final Handler handler = new Handler() {
@@ -1864,6 +1872,7 @@ public class PlayerMenu extends PlayerActivity {
 					Log.d(TAG, "================hide info bar ==============");
 					mHideInfoBarTask.cancel();
 					mHideInfoBarTask = null;
+					mHideTimerStarted = false;
 					if (!mDuringKeyActions) {
 						hideInfoBar();
 					}
@@ -1887,8 +1896,18 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		};
 
+		mHideTimerStarted = true;
 		mInfoBarTimer.schedule(mHideInfoBarTask, 5000);
 	}
+	
+	private void cancelHideTask() {
+		if (mHideInfoBarTask != null) {
+			mHideInfoBarTask.cancel();
+			mHideInfoBarTask = null;
+			mHideTimerStarted = false;
+		}
+	}
+	
 
 	private void hideInfoBar() {
 		if (null != mInfoBar) {
@@ -1913,10 +1932,7 @@ public class PlayerMenu extends PlayerActivity {
 		if (hideDelayed) {
 			hideInfoBarDelayed();
 		} else {
-			if (mHideInfoBarTask != null) {
-				mHideInfoBarTask.cancel();
-				mHideInfoBarTask = null;
-			}
+			cancelHideTask();
 		}
 	}
 
