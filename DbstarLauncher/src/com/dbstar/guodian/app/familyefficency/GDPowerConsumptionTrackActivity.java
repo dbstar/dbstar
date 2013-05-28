@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Random;
 
 import android.content.Intent;
-import android.location.GpsStatus.NmeaListener;
-import android.media.TimedText.Text;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,7 +21,6 @@ import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
-import com.dbstar.guodian.data.EqumentData;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.RoomData;
@@ -360,23 +357,47 @@ public class GDPowerConsumptionTrackActivity extends GDBaseActivity{
         DateStepPower stepPower;
         String xType = getString(R.string.ch_month);
         String yType = getString(R.string.str_degree);
-        for(int i  = 0;i< data.size();i++){
-            stepPower =  data.get(i);
-            data1.add(stepPower.allCount);
-            //data1.add(new Float(random.nextInt(500)));
-            xText .add(String.valueOf(i+1));
-            if(i == 11){
-                xType = getString(R.string.ch_year);
-            }
+        int size =0;
+        if(mCurrentDateTtype.equals(DATEYEAR)){
+            size = 12;
+            xType = getString(R.string.ch_month);
+        }else if(mCurrentDateTtype.equals(DATEMONTH)){
+            size = mDayList.size()-1;
+            xType = getString(R.string.ch_day);
             
-            if(i == 23){
-                xType = getString(R.string.ch_month);
-            }
-            
-            if(i == 27){
-                xType = getString(R.string.ch_day);
-            }
+        }else if(mCurrentDateTtype.equals(DATEDAY)){
+            size = 24;
+            xType = getString(R.string.ch_hour);
+        }else{
+            return;
         }
+        for(int i = 0 , m = data.size();i< size ;i++){
+            if(i < m ){
+                stepPower =  data.get(i);
+                data1.add(stepPower.allCount);
+            }else{
+                data1.add(null);
+            }
+            xText .add(String.valueOf(i+1));
+        }
+//        
+//        for(int i  = 0;i< data.size();i++){
+//            stepPower =  data.get(i);
+//            data1.add(stepPower.allCount);
+//            //data1.add(new Float(random.nextInt(500)));
+//            xText .add(String.valueOf(i+1));
+//            if(i == 11){
+//                xType = getString(R.string.ch_year);
+//            }
+//            
+//            if(i == 23){
+//                xType = getString(R.string.ch_month);
+//            }
+//            
+//            if(i == 27){
+//                xType = getString(R.string.ch_day);
+//            }
+//        }
         mHistogramView.removeAllViews();
         if(mIsPillar){
             mPillar = new DrawPillar(this);

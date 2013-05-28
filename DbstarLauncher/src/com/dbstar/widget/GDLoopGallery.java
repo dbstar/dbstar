@@ -198,6 +198,21 @@ public class GDLoopGallery extends GDAbsSpinner {
         
         return true;
     }
+    
+    @Override
+    public View getSelectedView() {
+        if (mItemCount > 0 && mSelectedPosition >= 0) {
+        	int index = 0;
+        	if (mFirstPosition <= mSelectedPosition) {
+        		index = mSelectedPosition - mFirstPosition;
+        	} else {
+        		index = getCount() - mFirstPosition + mSelectedPosition;
+        	}
+            return getChildAt(index);
+        } else {
+            return null;
+        }
+    }
 
     @Override
     protected int computeHorizontalScrollExtent() {

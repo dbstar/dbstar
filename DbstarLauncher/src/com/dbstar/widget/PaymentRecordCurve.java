@@ -288,7 +288,11 @@ public class PaymentRecordCurve extends DrawBase{
 	
 	private void drawCurve(Canvas canvas){
 	    Path path =new Path();
-        path.moveTo(getFirstVaildPoint().x, getFirstVaildPoint().y);
+	    Point firstPoint = getFirstVaildPoint();
+	    if(firstPoint == null){
+	        return;
+	    }
+        path.moveTo(firstPoint.x, firstPoint.y);
         for(Point point :mPoints){
             if(point != null)
                  path.lineTo(point.x, point.y);
@@ -366,6 +370,9 @@ public class PaymentRecordCurve extends DrawBase{
 	private void drawShaderColor(Canvas canvas){
       Path path = new Path();
       Point firstVaildPoint = getFirstVaildPoint();
+      if(firstVaildPoint == null){
+          return;
+      }
       int firstVaildPointIndex = mPoints.indexOf(firstVaildPoint);
       if(minIndex <maxIndex){
           if(minIndex > firstVaildPointIndex){

@@ -67,13 +67,18 @@ public class DrawPillar extends DrawXY{
 		float width = (textXInterval/5)*3;
 		if(width > 30)
 		    width = 30;
+		float left= 0;
 		for(int i = 0; i < datasize; i++)
-		{
-		    float left = originX + (i* textXInterval);
-		    left =left + (textXInterval  - width ) / 2;
+		{ 
+		    if(data.get(i) == null)
+		        rectF.add(null);
+		    else{
+		        left = originX + (i* textXInterval);
+		        left =left + (textXInterval  - width ) / 2;
+		        rectF.add(new RectF(left ,originY -unit*data.get(i) ,
+		                left + width,originY-5 ));
+		    }
 		    
-			rectF.add(new RectF(left ,originY -unit*data.get(i) ,
-					left + width,originY-5 ));
 		}	
 
 	}
@@ -88,7 +93,9 @@ public class DrawPillar extends DrawXY{
 		paint0.setColor(Color.parseColor("#578ACB"));
 		paint0.setStyle(Paint.Style.FILL);
 		for(int i = 0; i < rectfsize; i ++)
-		{ 
+		{     
+		    if(rectF.get(i) == null)
+		        continue;
 		    float top = originY-8;
 		    float left = rectF.get(i).left;
 		    float right = rectF.get(i).right;
@@ -112,13 +119,13 @@ public class DrawPillar extends DrawXY{
 		}
 	}
 
-	public void setBarPaint()
-	{
-		paint0=new Paint();
-		paint0.setAntiAlias(true);
-		paint0.setStyle(Paint.Style.FILL);
-		paint0.setColor(DrawBase.color[1]);
-	}
+//	public void setBarPaint()
+//	{
+//		paint0=new Paint();
+//		paint0.setAntiAlias(true);
+//		paint0.setStyle(Paint.Style.FILL);
+//		paint0.setColor(DrawBase.color[1]);
+//	}
 
 
 

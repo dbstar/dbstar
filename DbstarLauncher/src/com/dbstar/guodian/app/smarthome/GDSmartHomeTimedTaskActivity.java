@@ -528,7 +528,7 @@ public class GDSmartHomeTimedTaskActivity extends GDBaseActivity {
                 if(resultData != null){
                     if(EXECUTE_SUCCESS.equals(resultData.Result)){
                         if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
-                            mCacheTask.State = TASK_MARK_OPENED;
+                            mCacheTask.State = TASK_STATU_OPENED;
                         }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
                             mCacheTask.State = TASK_STATU_CLOASED;
                         }
@@ -969,7 +969,7 @@ public class GDSmartHomeTimedTaskActivity extends GDBaseActivity {
         calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour.trim()));
         calendar.set(Calendar.MINUTE, Integer.parseInt(minute));
         if(mPeriodList == null || mPeriodList.isEmpty()){
-            frequency = "o1";
+            frequency = "o";
             if(System.currentTimeMillis() >= calendar.getTimeInMillis())
                 calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH) +1);
             
@@ -1037,6 +1037,8 @@ public class GDSmartHomeTimedTaskActivity extends GDBaseActivity {
             params.put(JsonTag.TAGOldOper, task.Oper);
             params.put(JsonTag.TAGOldTime, task.Time);
             params.put(JsonTag.TAGOldCycle,task.Frequency);
+            params.put(JsonTag.TAGTimeTaskGuid,task.TimedTaskGuid);
+            
             dataType = GDConstract.DATATYPE_MODIFY_TIMED_TASK;
             state = task.State;
         }
@@ -1094,7 +1096,7 @@ public class GDSmartHomeTimedTaskActivity extends GDBaseActivity {
         params.put(JsonTag.TAGTypeId, mCacheTask.TypeId);
         params.put(JsonTag.TAGDeviceGuid, mCacheTask.DeviceGuid);
         if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
-            params.put(JsonTag.TAGState, TASK_MARK_OPENED);
+            params.put(JsonTag.TAGState, TASK_STATU_OPENED);
         }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
             params.put(JsonTag.TAGState, TASK_STATU_CLOASED);
         }
