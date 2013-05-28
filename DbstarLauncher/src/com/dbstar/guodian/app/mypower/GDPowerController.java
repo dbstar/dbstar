@@ -186,9 +186,9 @@ public class GDPowerController {
 	}
 
 	public void resume() {
-		if (mIsLogined) {
-			getPowerData();
-		}
+//		if (mIsLogined) {
+//			getPowerData();
+//		}
 	}
 
 	public void pause() {

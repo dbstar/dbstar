@@ -183,6 +183,7 @@ public class GDEngine {
 		case GDConstract.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE:
 		    Map<String, String> params = (Map<String, String>) args;
 		    getElecDimension(params);
+		    break;
 		case GDConstract.DATATYPE_PAYMENT_RECORDS:
 		    getPaymentRecords((Map<String, String>)args);
 		    break;
