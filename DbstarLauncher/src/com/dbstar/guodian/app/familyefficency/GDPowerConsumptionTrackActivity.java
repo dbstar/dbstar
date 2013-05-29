@@ -163,6 +163,10 @@ public class GDPowerConsumptionTrackActivity extends GDBaseActivity{
                     int position, long id) {
                 if(position !=0)
                     updateDaySpiner(mMonthList.get(position));
+                else{
+                    mDayList.clear();
+                    mDayAdapter.notifyDataSetChanged();
+                }
             }
 
             @Override
@@ -175,12 +179,12 @@ public class GDPowerConsumptionTrackActivity extends GDBaseActivity{
     protected void updateDaySpiner(String string) {
         Calendar cal = Calendar.getInstance();
         int selectYear = Integer.parseInt(mYearList.get(mSpinnerYear.getSelectedItemPosition()));
+        cal.clear();
         cal.set(Calendar.YEAR,selectYear);
         cal.set(Calendar.MONTH, Integer.parseInt(string) -1);//
         int dateOfMonth = cal.getActualMaximum(Calendar.DATE);
-        String dayth = mDayList.get(0);
         mDayList.clear();
-        mDayList.add(dayth);
+        mDayList.add(getResources().getString(R.string.str_day));
         for(int i = 1;i <=dateOfMonth ;i++){
             mDayList.add(String.valueOf(i));
         }
