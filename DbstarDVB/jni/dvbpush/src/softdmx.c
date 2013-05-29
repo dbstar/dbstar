@@ -1241,8 +1241,8 @@ retry:
 			sec_len = chan->sec_len;
 			if(*chanbuf == 0x3e)
 			{
-				if(0==tc_crc32(chanbuf,sec_len))
-					send_mpe_sec_to_push_fifo(chanbuf, sec_len);
+//				if(0==tc_crc32(chanbuf,sec_len))
+				send_mpe_sec_to_push_fifo(chanbuf, sec_len);
 				
 				//DEBUG("payload [%d]\n",total);
 			}
