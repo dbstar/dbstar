@@ -37,6 +37,7 @@
     <string name="ch_year">年</string>
     <string name="ch_month">月</string>
     <string name="ch_day">日</string>
+    <string name="ch_hour">小时</string>
 
     <!-- General Info -->
     <string name="product_info">产品信息</string>
