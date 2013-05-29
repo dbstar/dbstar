@@ -90,10 +90,15 @@ public class DrawPie extends DrawBase{
 		}
 		if(total==0){
 		    angle            = 0;
-		    return;
+		    rectFs.clear();
+		   return;
 		}
-		else
-			angle=360/total;
+		else{
+		    angle=360/total;
+		    mColors.remove(mColors.size() -1);
+            mColors.add(Color.GREEN);
+		}
+		
 //		length = length - 1;
 		total=0;
 			for(int i=0;i<length-1;i++)
