@@ -125,6 +125,7 @@ public class GDDataProviderService extends Service {
 
 	private GDDataModel mDataModel = null;
 
+	private boolean mIsWirelessConnected = false, mIsEthernetConnected = false;
 	private ConnectivityManager mConnectManager;
 	//private GDDiskSpaceMonitor mDiskMonitor;
 
@@ -581,9 +582,16 @@ public class GDDataProviderService extends Service {
 			}
 
 			case GDCommon.MSG_ETHERNET_PHYDISCONECTED: {
+				ethernetDisconnected();
 				notifyDbstarServiceNetworkStatus();
 				break;
 			}
+			
+			case GDCommon.MSG_ETHERNET_CONNECTED: {
+				ethernetConnected();
+				break;
+			}
+			
 			case GDCommon.MSG_DISK_SPACEWARNING: {
 				Bundle data = msg.getData();
 				String disk = (String) data.get(GDCommon.KeyDisk);
@@ -1929,10 +1937,29 @@ public class GDDataProviderService extends Service {
 
 	};
 
+	// In dual network device (wifi and ethernet) mode,
+	// when ethernet is connected, this callback is called.
+	private void ethernetConnected() {
+		Log.d(TAG, "ethernetConnected");
+		mIsEthernetConnected = true;
+		if (mIsWirelessConnected) {
+			// remove Ethernet gateway.
+			NativeUtil.shell("ip route del dev eth0");
+		}
+		mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_CONNECT);
+	}
+	
+	void ethernetDisconnected() {
+		Log.d(TAG, "ethernetDisconnected");
+		mIsEthernetConnected = false;
+	}
+
 	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
 
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
+
+			Log.d(TAG, "ConnectivityManager Action: " + action);
 
 			if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
 				return;
@@ -1944,6 +1971,8 @@ public class GDDataProviderService extends Service {
 
 			if (noConnectivity) {
 				// There are no connected networks at all
+				mIsEthernetConnected = false;
+				mIsWirelessConnected = false;
 				mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_DISCONNECT);
 				return;
 			}
@@ -1951,18 +1980,32 @@ public class GDDataProviderService extends Service {
 			// case 1: attempting to connect to another network, just wait for
 			// another broadcast
 			// case 2: connected
-			// NetworkInfo networkInfo = (NetworkInfo) intent
-			// .getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
 
-			NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
-
-			if (networkInfo != null) {
-				Log.d(TAG, "getTypeName() = " + networkInfo.getTypeName());
-				Log.d(TAG, "isConnected() = " + networkInfo.isConnected());
-
-				if (networkInfo.isConnected()) {
-					mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_CONNECT);
-				}
+			NetworkInfo networkInfo = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
+			if (networkInfo != null && networkInfo.isConnected()) {
+				Log.d(TAG, "ethernet connected");
+				mIsEthernetConnected = true;
+			} else {
+				Log.d(TAG, "ethernet disconnected");
+				mIsEthernetConnected = false;
+			}
+			
+			networkInfo = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+			if (networkInfo != null && networkInfo.isConnected()) {
+				Log.d(TAG, "wifi connected");
+				mIsWirelessConnected = true;
+			} else {
+				Log.d(TAG, "wifi disconnected");
+				mIsWirelessConnected = false;
+			}
+			
+			if (mIsWirelessConnected && mIsEthernetConnected) {
+				// remove Ethernet gateway.
+				NativeUtil.shell("ip route del dev eth0");
+			}
+			
+			if (mIsWirelessConnected || mIsEthernetConnected) {
+				mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_CONNECT);
 			}
 		}
 

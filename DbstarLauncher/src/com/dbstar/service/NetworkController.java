@@ -19,11 +19,12 @@ import android.os.SystemProperties;
 import android.util.Log;
 
 public class NetworkController extends BroadcastReceiver {
-	private static final String TAG = "DBSTAR.NetworkController";
+	private static final String TAG = "NetworkController";
 
 	private static final int ETHERNET_PHYNONE = 0x00;
 	private static final int ETHERNET_PHYCONNECTED = 0x01;
 	private static final int ETHERNET_PHYDISCONNECTED = 0x02;
+	private static final int ETHERNET_CONNECTED = 0x03;
 
 	private Context mContext;
 	private EthernetManager mEthManager;
@@ -85,6 +86,7 @@ public class NetworkController extends BroadcastReceiver {
 		case EthernetStateTracker.EVENT_INTERFACE_CONFIGURATION_SUCCEEDED:
 			Log.d(TAG,
 					"============== ethernet EVENT_INTERFACE_CONFIGURATION_SUCCEEDED ===========");
+			mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_CONNECTED);
 			return;
 		case EthernetStateTracker.EVENT_INTERFACE_CONFIGURATION_FAILED:
 			Log.d(TAG,

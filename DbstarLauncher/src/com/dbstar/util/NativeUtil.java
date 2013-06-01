@@ -1,12 +1,5 @@
 package com.dbstar.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-
 import android.util.Log;
 
 public class NativeUtil {
