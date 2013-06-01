@@ -9,12 +9,20 @@ extern "C" {
 #endif
 
 /*
- * Class:     com_dbstar_app_media_GDPlayerUtil
+ * Class:     com_dbstar_util_NativeUtil
  * Method:    writeFile
  * Signature: (Ljava/lang/String;Ljava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_com_dbstar_app_media_GDPlayerUtil_writeFile
+JNIEXPORT jint JNICALL Java_com_dbstar_util_NativeUtil_writeFile
   (JNIEnv *, jobject, jstring, jstring);
+
+/*
+ * Class:     com_dbstar_util_NativeUtil
+ * Method:    writeFile
+ * Signature: (Ljava/lang/String)I
+ */
+JNIEXPORT jint JNICALL Java_com_dbstar_util_NativeUtil_runSystem
+  (JNIEnv *, jobject, jstring);
 
 #ifdef __cplusplus
 }

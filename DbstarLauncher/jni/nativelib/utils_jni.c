@@ -43,11 +43,11 @@ static char* jstring2string(JNIEnv* env, jstring jstr)
 }
 
 /*
- * Class:     com_dbstar_app_media_GDPlayerUtil
+ * Class:     com_dbstar_util_NativeUtil
  * Method:    writeFile
  * Signature: (Ljava/lang/String;Ljava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_com_dbstar_app_media_GDPlayerUtil_writeFile
+JNIEXPORT jint JNICALL Java_com_dbstar_util_NativeUtil_writeFile
 	(JNIEnv *env, jclass clazz, jstring file, jstring str)
 {
 	char* fileName = jstring2string(env, file);
@@ -84,8 +84,26 @@ JNIEXPORT jint JNICALL Java_com_dbstar_app_media_GDPlayerUtil_writeFile
 	return count;
 }
 
+/*
+ * Class:     com_dbstar_util_NativeUtil
+ * Method:    writeFile
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_com_dbstar_util_NativeUtil_runSystem
+	(JNIEnv *env, jclass clazz, jstring command)
+{
+	int ret = 0;
+	char* cmd = jstring2string(env, command);
+
+	LOGD("command: %s\n", cmd);
+	ret = system(cmd);
+
+	return ret;
+}
+
 static JNINativeMethod gMethods[] = {
-	{"writeFile", "(Ljava/lang/String;Ljava/lang/String;)I", (void*)Java_com_dbstar_app_media_GDPlayerUtil_writeFile}
+	{"writeFile", "(Ljava/lang/String;Ljava/lang/String;)I", (void*)Java_com_dbstar_util_NativeUtil_writeFile},
+	{"runSystem", "(Ljava/lang/String;)I", (void*)Java_com_dbstar_util_NativeUtil_runSystem}
 };
 
 int registerNativeMethods(JNIEnv* env,
@@ -108,9 +126,9 @@ int registerNativeMethods(JNIEnv* env,
 	return 0;
 }
 
-int register_com_dbstar_app_media_GDPlayerUtil(JNIEnv *env)
+int register_com_dbstar_util_NativeUtil(JNIEnv *env)
 {
-	const char* const kClassPathName = "com/dbstar/app/media/GDPlayerUtil";
+	const char* const kClassPathName = "com/dbstar/util/NativeUtil";
 
 	return registerNativeMethods(env, kClassPathName , gMethods, sizeof(gMethods) / sizeof(gMethods[0]));
 }
@@ -127,7 +145,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
 	LOGI("GetEnv ok");
 	result = JNI_VERSION_1_4;
-	register_com_dbstar_app_media_GDPlayerUtil(env);
+	register_com_dbstar_util_NativeUtil(env);
 	return result;
 }
 

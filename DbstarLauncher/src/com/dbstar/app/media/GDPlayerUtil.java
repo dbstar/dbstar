@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.GDCommon;
+import com.dbstar.util.FileOperation;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,12 +21,6 @@ public class GDPlayerUtil {
 
 	private static final String TAG = "GDPlayerUtil";
 	private static final String Fb0Blank = "/sys/class/graphics/fb0/blank";
-
-	static {
-		System.loadLibrary("nativeutils");
-	}
-
-	public static native int writeFile(String fileName, String str);
 
 	public static void playVideo(Context context, String publicationSetID,
 			ContentData content, String mainFile, String drmFile, boolean playNext) {
@@ -55,7 +50,7 @@ public class GDPlayerUtil {
 					"com.dbstar.DbstarDVB.VideoPlayer.PlayerMenu"));
 			intent.setAction("android.intent.action.View");
 
-			writeFile(Fb0Blank, "1"); // hide OSD view			
+			FileOperation.write(Fb0Blank, "1");
 			
 			GDBaseActivity activity = (GDBaseActivity) context;
 			activity.startActivity(intent, false);
