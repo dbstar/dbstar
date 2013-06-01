@@ -770,7 +770,7 @@ void socket_mainloop()
 			if(l_socket_fd>max_fd)
 				max_fd = l_socket_fd;
 		}
-		tv_select.tv_sec = 47;
+		tv_select.tv_sec = 147;
 		tv_select.tv_usec = 500000;
 		ret_select = select(max_fd+1, &rdfds, NULL, NULL, &tv_select);
 		if(ret_select<0){
@@ -805,13 +805,15 @@ void socket_mainloop()
 				g_heartbeat_timer_id = -1;
 				if (-1 == (l_socket_fd=socket(AF_INET,SOCK_STREAM,0)))
 				{
-					ERROROUT("create socket failed, exit\n");
-					exit(-1);
+					ERROROUT("create socket failed, sleep 17s and try again\n");
+					sleep(17);
 				}
-				//monitor tcp link
-				setKeepAlive(l_socket_fd);
-				DEBUG("create socket(%d) success\n", l_socket_fd);
-				g_socket_status = SOCKET_STATUS_CREATE;
+				else{
+					//monitor tcp link
+					setKeepAlive(l_socket_fd);
+					DEBUG("create socket(%d) success\n", l_socket_fd);
+					g_socket_status = SOCKET_STATUS_CREATE;
+				}
 				continue_myself(g_fifo_fd);
 				break;
 			case SOCKET_STATUS_CREATE:
@@ -891,9 +893,10 @@ Accept-Charset: GBK,utf-8;q=0.7,*;q=0.3\r\n\r\n", sizeof(l_send_buf));
 							sleep(30);
 						}
 						else{
-							DEBUG("regist faild, will exit\n");
+							DEBUG("regist faild, will sleep 31s and try again\n");
 							g_socket_status = SOCKET_STATUS_UNREGIST;
-							exit(0);
+							continue_myself(g_fifo_fd);
+							sleep(31);
 						}
 					}
 					else if(1==l_return){
