@@ -44,9 +44,11 @@ public class DiskFormatter {
 	private StorageManager mStorageManager = null;
 	private Handler mHandler = null;
 	private String mMountPoint;
+	
+	private boolean mFormatStarted = false;
 
 	public DiskFormatter() {
-
+		mFormatStarted = false;
 	}
 
 	private BroadcastReceiver mExternalStorageReceiver;
@@ -66,9 +68,15 @@ public class DiskFormatter {
 	
 	public void finishFormatDisk() {
 		stopWatchingExternalStorage();
+		mFormatStarted = false;
 	}
 	
 	void updateProgressState(String path, String newState) {
+		if (mMountPoint == null) {
+			formatDisk();
+			return;
+		}
+		
 		if (!mMountPoint.equals(path)) {
 			return;
 		}
@@ -88,44 +96,7 @@ public class DiskFormatter {
 				|| Environment.MEDIA_UNMOUNTED.equals(status)
 				|| Environment.MEDIA_UNMOUNTABLE.equals(status)
 				|| Environment.MEDIA_REMOVED.equals(status)) {
-
-			formatDiskPartition("/dev/block/sda1");
-			
-			new Thread() {
-				@Override
-				public void run() {
-					int formatTime = 0;
-					int err = 0;
-					boolean successed = false;
-					while (true) {
-						try {
-							formatTime += 4;
-							if (formatTime > FormatTimeout) {
-								err = ErrTimeout;
-								break;
-							}
-
-							Thread.sleep(4000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						
-						String propertyValue = SystemProperties.get(DiskManageStatePrepertyName);
-						if (propertyValue.equals("stopped")) {
-							Log.d(TAG, "format finished!");
-							successed = true;
-							break;
-						}
-					}
-					
-					if (successed) {
-						formatSuccessed();
-					} else {
-						formatFailed(String.valueOf(err));
-					}
-				}
-			}.start();
-			
+			formatDisk();
 		} else if (Environment.MEDIA_BAD_REMOVAL.equals(status)) {
 			formatFailed(String.valueOf(ErrBadRemoval));
 		} else if (Environment.MEDIA_CHECKING.equals(status)) {
@@ -137,6 +108,50 @@ public class DiskFormatter {
 		} else {
 			formatFailed(String.valueOf(ErrUnknown));
 		}
+	}
+	
+	private void formatDisk() {
+		if (mFormatStarted)
+			return;
+		
+		mFormatStarted = true;
+		
+		formatDiskPartition("/dev/block/sda");
+		
+		new Thread() {
+			@Override
+			public void run() {
+				int formatTime = 0;
+				int err = 0;
+				boolean successed = false;
+				while (true) {
+					try {
+						formatTime += 4;
+						if (formatTime > FormatTimeout) {
+							err = ErrTimeout;
+							break;
+						}
+
+						Thread.sleep(4000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					
+					String propertyValue = SystemProperties.get(DiskManageStatePrepertyName);
+					if (propertyValue.equals("stopped")) {
+						Log.d(TAG, "format finished!");
+						successed = true;
+						break;
+					}
+				}
+				
+				if (successed) {
+					formatSuccessed();
+				} else {
+					formatFailed(String.valueOf(err));
+				}
+			}
+		}.start();
 	}
 	
 	static final int MSG_DISK_REMOVED = 0xD001;
@@ -231,7 +246,7 @@ public class DiskFormatter {
 	private static final int FormatTimeout = 3600;
 	
 	private void formatDiskPartition(String disk) {
-        SystemProperties.set(DiskManageCmdPrepertyName, "format");
+        SystemProperties.set(DiskManageCmdPrepertyName, "add");
         SystemProperties.set(DiskManageDevPrepertyName, disk);
         SystemProperties.set(DiskManageStatePrepertyName, "running");
     }
