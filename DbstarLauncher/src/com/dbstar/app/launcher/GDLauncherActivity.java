@@ -1157,6 +1157,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 	
 	void homeKeyPressed() {
+		if (mEnterStart || mLeaveStart) {
+			return;
+		}
+
 		resetMenuStack();
 	}
 	

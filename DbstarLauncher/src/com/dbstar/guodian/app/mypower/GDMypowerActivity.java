@@ -5,9 +5,14 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDEngineActivity;
+import com.dbstar.guodian.data.ElectricityPrice;
+import com.dbstar.guodian.data.LoginData;
+import com.dbstar.guodian.data.PowerPanelData;
+import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.engine.GDConstract;
 
 public class GDMypowerActivity extends GDEngineActivity {
@@ -38,6 +43,35 @@ public class GDMypowerActivity extends GDEngineActivity {
 	public void onServiceStart() {
 		super.onServiceStart();
 
+	}
+	
+	public void handleLoginSuccessed() {
+		LoginData loginData = mService.getLoginData();
+		PowerPanelData panelData = loginData.PanelData;
+		UserPriceStatus status = panelData.PriceStatus;
+		
+		if (status == null)
+			return;
+
+		if (status.PriceType == null) {
+			return;
+		}
+		
+		String priceType = status.PriceType;
+		
+		if (ElectricityPrice.PRICETYPE_STEP.equals(priceType)) {
+			mPriceType = GDConstract.PriceTypeStep;
+		} else if (ElectricityPrice.PRICETYPE_STEPPLUSTIMING.equals(priceType)) {
+			mPriceType = GDConstract.PriceTypeStepPlusTiming;
+		} else if(ElectricityPrice.PRICETYPE_SINGLE.equals(priceType)){
+		    mPriceType = GDConstract.PriceTypeSingle;
+		}else if(ElectricityPrice.PRICETYPE_TIMING.equals(priceType)){
+		    mPriceType = GDConstract.PriceTypeTiming;
+		}else{
+			return;
+		}
+		
+		openPage(mPriceType, null);
 	}
 
 	private void openPage(int priceType, Bundle args) {
