@@ -103,7 +103,6 @@ check_dev()
 	done
 	if [ -z $DISK_MANAGER_DEV ]; then
 		echo "*** Wrong disk dev path. Exit."
-		exit 1;
 	fi
 }
 
@@ -122,6 +121,16 @@ check_args()
 	fi
 
 	check_dev $2
+}
+
+get_network_manage_param()
+{
+	DMCMD=$(getprop service.disk_manage.cmd)
+
+	if [ $DMCMD = "route" ]; then
+		echo "Network route delete."
+		ip route del dev eth0
+	fi
 }
 
 get_disk_manage_param()
@@ -151,6 +160,8 @@ stop_disk_manage()
 #else
 #	help
 #fi
+
+get_network_manage_param
 
 get_disk_manage_param
 

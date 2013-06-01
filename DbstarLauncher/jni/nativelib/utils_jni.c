@@ -1,15 +1,31 @@
 #include "jni.h"
 #include "JNIHelp.h"
 
-#include <string.h>
 #include <linux/fb.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
-#include <cutils/log.h>
 #include <cutils/properties.h>
+#include <android/log.h>
 
 #include "utils_jni.h"
+
+#define LOG_TAG "NativeJNI"
+#define MIN(x,y) ((x)<(y)?(x):(y))
+
+#if 1
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#else
+#define  LOGI(...)
+#define  LOGD(...)
+#define  LOGE(...)
+#endif
+
+
 
 
 #ifdef __cplusplus
@@ -95,8 +111,8 @@ JNIEXPORT jint JNICALL Java_com_dbstar_util_NativeUtil_runSystem
 	int ret = 0;
 	char* cmd = jstring2string(env, command);
 
-	LOGD("command: %s\n", cmd);
 	ret = system(cmd);
+	LOGD("command: %s, ret=%d\n", cmd, ret);
 
 	return ret;
 }
