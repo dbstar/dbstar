@@ -30,7 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.RoomData;
@@ -41,7 +41,7 @@ import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.widget.CircleFlowIndicator;
 
-public class GDSmartHomeMyEleActivity extends GDBaseActivity {
+public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     
     public static final String ELE_ON  = "01";
     public static final String ELE_OFF = "00";

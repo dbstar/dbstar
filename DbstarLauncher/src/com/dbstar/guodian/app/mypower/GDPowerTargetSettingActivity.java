@@ -12,7 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.PowerData;
 import com.dbstar.guodian.data.PowerTarget;
@@ -22,7 +22,7 @@ import com.dbstar.model.EventData;
 import com.dbstar.model.GDCalendarGB;
 import com.dbstar.util.ToastUtil;
 
-public class GDPowerTargetSettingActivity extends GDBaseActivity{
+public class GDPowerTargetSettingActivity extends GDSmartActivity{
     
     
     private TextView mTVCurrentTarget;

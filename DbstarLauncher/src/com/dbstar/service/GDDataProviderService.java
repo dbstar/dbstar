@@ -2491,7 +2491,6 @@ public class GDDataProviderService extends Service {
 	// Guodian related code
 	GDClientObserver mGDObserver = new GDClientObserver() {
 
-		@Override
 		public void notifyEvent(int type, Object event) {
 
 			Log.d(TAG, " == notifyEvent == " + type);
@@ -2502,6 +2501,12 @@ public class GDDataProviderService extends Service {
 					mApplicationObserver.handleEvent(
 							EventData.EVENT_LOGIN_SUCCESSED, event);
 				}
+				
+				if (mPageOberser != null) {
+					mPageOberser.notifyEvent(EventData.EVENT_LOGIN_SUCCESSED,
+							event);
+				}
+				
 				break;
 			}
 
@@ -2512,18 +2517,31 @@ public class GDDataProviderService extends Service {
 				}
 				break;
 			}
-			case EventData.EVENT_GUODIAN_DATA_ERROR:
+
+			case EventData.EVENT_GUODIAN_DATA_ERROR: {
 			    if (mPageOberser != null) {
                     mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA_ERROR,
                             event);
                 }
 			    break;
-
+			}
+			
+			// connection related event
+			default: {
+				if (mPageOberser != null) {
+                    mPageOberser.notifyEvent(type, event);
+                }
+				break;
+			}
 			}
 		}
 
 	};
 
+	public void reconnect() {
+		mGuodianEngine.resconnect();
+	}
+	
 	// Guodian Related interface
 	public void requestPowerData(int type, Object args) {
 		mGuodianEngine.requestData(type, args);

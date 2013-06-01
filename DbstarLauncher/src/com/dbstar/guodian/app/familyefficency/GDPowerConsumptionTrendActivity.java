@@ -19,7 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.EqumentData;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.LoginData;
@@ -31,7 +31,7 @@ import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.widget.PowerTrendPolyLineView;
 
-public class GDPowerConsumptionTrendActivity extends GDBaseActivity {
+public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     
     private static final String DATE_PERIOD_HALF_YEAR = "halfayear";
     private static final String DATE_PERIOD_ONE_YEAR = "ayear";

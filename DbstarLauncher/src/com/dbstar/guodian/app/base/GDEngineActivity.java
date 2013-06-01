@@ -3,11 +3,10 @@ package com.dbstar.guodian.app.base;
 import android.app.Service;
 import android.view.KeyEvent;
 
-import com.dbstar.app.GDBaseActivity;
 import com.dbstar.app.base.EngineInterface;
 import com.dbstar.app.base.FragmentObserver;
 
-public class GDEngineActivity extends GDBaseActivity implements EngineInterface {
+public class GDEngineActivity extends GDSmartActivity implements EngineInterface {
 	private FragmentObserver mObserver = null;
 
 	@Override

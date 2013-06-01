@@ -21,7 +21,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Toast;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.AreaInfo;
 import com.dbstar.guodian.data.AreaInfo.Area;
 import com.dbstar.guodian.data.BusinessArea;
@@ -30,7 +30,7 @@ import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.model.ContentData.Poster;
 
-public class GDBusinessAreaActvity extends GDBaseActivity {
+public class GDBusinessAreaActvity extends GDSmartActivity {
 	private static final String TAG = "GDBusinessAreaActvity";
 
 	private String mAreaId = null;

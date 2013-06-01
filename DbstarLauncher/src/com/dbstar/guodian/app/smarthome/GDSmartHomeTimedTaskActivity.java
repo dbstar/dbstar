@@ -42,7 +42,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.AddTimedTaskResponse;
 import com.dbstar.guodian.data.ElectricalOperationMode;
 import com.dbstar.guodian.data.JsonTag;
@@ -55,7 +55,7 @@ import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 import com.dbstar.util.ToastUtil;
 
-public class GDSmartHomeTimedTaskActivity extends GDBaseActivity {
+public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     
     private static final String TASK_MARK_ALL = "1";
     private static final String TASK_MARK_OPENED = "2";

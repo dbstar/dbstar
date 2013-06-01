@@ -25,7 +25,7 @@ public class GDSystemConfigure {
 	public static final String DefaultDbstarDBFile = "/data/dbstar/Dbstar.db";
 	public static final String DefaultColumnResDir = "/data/dbstar/ColumnRes";
 	public static final String DefaultDesFile = "/info/desc/Publication.xml";
-	public static final long DefaultReconnectTime = 6000;
+	public static final long DefaultReconnectTime = 30000;
 	// Property Name
 	private static final String PROPERTY_LOCALIZATION = "language";
 	private static final String PROPERTY_DBSTARDATABSE = "DbstarDatabase";

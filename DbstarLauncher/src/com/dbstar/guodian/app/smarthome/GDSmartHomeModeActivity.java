@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.app.mypower.GDBillActivity;
 import com.dbstar.guodian.data.ElectricalOperationMode;
 import com.dbstar.guodian.data.ElectricalOperationMode.ModeElectrical;
@@ -39,7 +39,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class GDSmartHomeModeActivity extends GDBaseActivity{
+public class GDSmartHomeModeActivity extends GDSmartActivity{
     
     public static final String ELE_ON  = "01";
     public static final String ELE_OFF = "00";

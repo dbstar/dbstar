@@ -21,14 +21,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 import com.dbstar.widget.text.ScrollingMovementMethod;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.PowerTips;
 
-public class GDPowerTipsActivity extends GDBaseActivity {
+public class GDPowerTipsActivity extends GDSmartActivity {
 
 	private static final String TAG = "GDEnergyConservationNoticesActivity";
 

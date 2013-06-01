@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.app.familyefficency.GDPowerConstitueActivity;
 import com.dbstar.guodian.app.familyefficency.GDPowerConsumptionTrackActivity;
 import com.dbstar.guodian.app.familyefficency.GDPowerConsumptionTrendActivity;
@@ -38,7 +38,7 @@ import android.widget.Gallery;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class GDPlaymentRecordsActivity extends GDBaseActivity{
+public class GDPlaymentRecordsActivity extends GDSmartActivity{
     
     private Button mButtonYearLevel1;
     private Button mButtonYearLevel2;

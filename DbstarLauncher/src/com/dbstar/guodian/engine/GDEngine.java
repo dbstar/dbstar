@@ -20,15 +20,17 @@ public class GDEngine {
 	public static final int MSG_DISCONNECTED= 0x1002;
 	public static final int MSG_CONNECT_ALREADY = 0x1003;
 	public static final int MSG_CONNECT_FAILED = 0x1004;
-	public static final int MSG_REQUEST_FINISHED = 0x1005;
-	public static final int MSG_REQUEST_ERROR = 0x1006;
-	public static final int MSG_SOCKET_ERROR = 0x1007;
+	public static final int MSG_RECONNECTING = 0x1005;
 	
-	private static final int STATE_NONE = 0x01 ;
-	private static final int STATE_CONNECTING = 0x02 ;
-	private static final int STATE_CONNECTED = 0x03 ;
-	private static final int STATE_DISCONNECTING = 0x04 ;
-	private static final int STATE_DISCONNECTED = 0x5 ;
+	public static final int MSG_REQUEST_FINISHED = 0x10B0;
+	public static final int MSG_REQUEST_ERROR = 0x10B1;
+	public static final int MSG_SOCKET_ERROR = 0x10B2;
+	
+	public static final int STATE_NONE = 0x01;
+	public static final int STATE_CONNECTING = 0x02;
+	public static final int STATE_CONNECTED = 0x03;
+	public static final int STATE_DISCONNECTING = 0x04;
+	public static final int STATE_DISCONNECTED = 0x5;
 	
 	private static final int LOGIN_ISLOGINGIN = 0x1;
 	private static final int LOGIN_ISLOGIN = 0x2;
@@ -56,6 +58,7 @@ public class GDEngine {
 
 	public GDEngine(Context context) {
 		mContext = context;
+
 		mHander = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
@@ -85,6 +88,10 @@ public class GDEngine {
 					handleSocketError();
 					break;
 				}
+				case MSG_RECONNECTING: {
+					handleReconnect();
+					break;
+				}
 				}
 			}
 		};
@@ -105,6 +112,8 @@ public class GDEngine {
 			mState = STATE_CONNECTING;
 			mClient.setHostAddress(ip, port);
 			mClient.connectToServer();
+			
+			notifyEvent(EventData.EVENT_GUODIAN_CONNECTING, null);
 		}
 	}
 	
@@ -119,12 +128,29 @@ public class GDEngine {
 		mLoginState = LOGIN_NOTLOGIN;
 		
 		mClient.connectToServerDelayed(mReconnectTime);
+		
+		mHander.postDelayed(new Runnable() {
+				public void run() {
+					handleReconnect();
+				}
+		}, mReconnectTime);
+	}
+	
+	public void resconnect() {
+		Log.d(TAG, " == resconnect == ");
+
+		mState = STATE_CONNECTING;
+		mLoginState = LOGIN_NOTLOGIN;
+		
+		mClient.connectToServer();
 	}
 
 	public void stop() {
 		Log.d(TAG, " ===== stop guodian engine ======= ");
 		mState = STATE_DISCONNECTED;
 		mClient.stop();
+		
+		notifyEvent(EventData.EVENT_GUODIAN_DISCONNECTED, null);
 	}
 	
 	public void destroy() {
@@ -133,6 +159,11 @@ public class GDEngine {
 	}
 
 	public void requestData(int type, Object args) {
+		if (mState == STATE_DISCONNECTED || mState == STATE_DISCONNECTING) {
+			notifyEvent(EventData.EVENT_GUODIAN_DISCONNECTED, null);
+			return;
+		}
+
 		switch(type) {
 		case GDConstract.DATATYPE_POWERPANELDATA: {
 			getPowerPanelData();
@@ -666,14 +697,21 @@ public class GDEngine {
 		    }
 		}
 	}
+	
+	private void handleReconnect() {
+		notifyEvent(EventData.EVENT_GUODIAN_RECONNECTTING, null);
+	}
+	
 	private void handleSocketError() {
 		Log.d(TAG, " == handleSocketError == ");
-		
+		notifyEvent(EventData.EVENT_GUODIAN_CONNECT_FAILED, null);
+
 		restart();
 	}
 
 	private void handleConnectFailed() {
 		Log.d(TAG, " == handleConnectFailed == ");
+		notifyEvent(EventData.EVENT_GUODIAN_CONNECT_FAILED, null);
 		
 		restart();
 	}
@@ -681,7 +719,8 @@ public class GDEngine {
 	private void handleConnected() {
 		Log.d(TAG, "======= connectSuccessed=========");
 		mState = STATE_CONNECTED;
-		
+		notifyEvent(EventData.EVENT_GUODIAN_CONNECTED, null);
+
 		if (mLoginState != LOGIN_ISLOGIN) {
 			mLoginState = LOGIN_ISLOGINGIN;
 			mClient.login();
@@ -702,6 +741,7 @@ public class GDEngine {
 		
 		if (mState != STATE_CONNECTED) {
 			mState = STATE_CONNECTED;
+			notifyEvent(EventData.EVENT_GUODIAN_CONNECTED, null);
 		}
 		
 		if (mLoginState != LOGIN_ISLOGIN && mLoginState != LOGIN_ISLOGINGIN) {

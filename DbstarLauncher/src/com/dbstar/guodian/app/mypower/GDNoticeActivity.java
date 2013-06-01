@@ -20,14 +20,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 import com.dbstar.widget.text.ScrollingMovementMethod;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.Notice;
 
-public class GDNoticeActivity extends GDBaseActivity {
+public class GDNoticeActivity extends GDSmartActivity {
 
 	private static final String TAG = "GDNoticeActivity";
 
@@ -192,6 +192,12 @@ public class GDNoticeActivity extends GDBaseActivity {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}
+	}
+	
+	public void handleLoginSuccessed() {
+		Log.d(TAG, "handleLoginSuccessed");
+		
+		mService.requestPowerData(GDConstract.DATATYPE_NOTICES, null);
 	}
 
 	private void handlePowerData(int type, Object data) {

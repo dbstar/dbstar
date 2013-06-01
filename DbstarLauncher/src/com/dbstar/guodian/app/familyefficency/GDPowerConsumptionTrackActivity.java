@@ -20,7 +20,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.RoomData;
@@ -33,7 +33,7 @@ import com.dbstar.util.DateUtil;
 import com.dbstar.widget.DrawPillar;
 import com.dbstar.widget.PowerTrackPolyLineView;
 
-public class GDPowerConsumptionTrackActivity extends GDBaseActivity{
+public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
     
     private static final String DATEMONTH = "month";
     private static final String DATEYEAR = "year";

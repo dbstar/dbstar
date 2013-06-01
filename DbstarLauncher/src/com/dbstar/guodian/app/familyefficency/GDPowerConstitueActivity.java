@@ -27,7 +27,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.EPCConstitute.ElectricalItemDetail;
 import com.dbstar.guodian.data.JsonTag;
@@ -42,7 +42,7 @@ import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 import com.dbstar.widget.DrawPie;
 
-public class GDPowerConstitueActivity extends GDBaseActivity{
+public class GDPowerConstitueActivity extends GDSmartActivity{
     
     private static final String EPCC = "electricalPowerConsuptionConstitute";
     private static final String SPCC = "stepPowerConsuptionConstitute";

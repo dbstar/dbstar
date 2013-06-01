@@ -19,7 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dbstar.R;
-import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.BillDetail;
 import com.dbstar.guodian.data.BillDetailData;
 import com.dbstar.guodian.data.BillDetailListData;
@@ -28,7 +28,7 @@ import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 
-public class GDBillActivity extends GDBaseActivity {
+public class GDBillActivity extends GDSmartActivity {
 	private static final String TAG = "GDBillActivity";
 
 	private String StrYear, StrMonth;
