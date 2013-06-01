@@ -2538,8 +2538,12 @@ public class GDDataProviderService extends Service {
 
 	};
 
+	public void disconnect() {
+		mGuodianEngine.stop();
+	}
+	
 	public void reconnect() {
-		mGuodianEngine.resconnect();
+		mGuodianEngine.reconnect();
 	}
 	
 	// Guodian Related interface

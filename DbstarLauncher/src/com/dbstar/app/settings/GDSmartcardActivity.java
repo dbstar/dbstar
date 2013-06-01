@@ -113,6 +113,10 @@ public class GDSmartcardActivity extends MultiPanelActivity implements
 			mObserver = null;
 		}
 	}
+	
+	public void request(int type, Object args) {
+		
+	}
 
 	public void getSmartcardInfo(FragmentObserver observer, int type) {
 		if (mService != null) {

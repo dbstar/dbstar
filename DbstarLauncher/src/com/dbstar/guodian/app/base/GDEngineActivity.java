@@ -74,5 +74,9 @@ public class GDEngineActivity extends GDSmartActivity implements EngineInterface
 			mObserver = null;
 		}
 	}
+	
+	public void request(int type, Object args) {
+		requestData(type, args);
+	}
 
 }

@@ -136,7 +136,7 @@ public class GDEngine {
 		}, mReconnectTime);
 	}
 	
-	public void resconnect() {
+	public void reconnect() {
 		Log.d(TAG, " == resconnect == ");
 
 		mState = STATE_CONNECTING;

@@ -155,7 +155,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		if (mService == null)
 			return;
 
-		mService.requestPowerData(GDConstract.DATATYPE_POWERPANELDATA, null);
+		mEngine.request(GDConstract.DATATYPE_POWERPANELDATA, null);
 	}
 
 	// handle event at this point
@@ -166,43 +166,19 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
-		} else if (type == EventData.EVENT_GUODIAN_DISCONNECTED) {
-			handleDisconnected();
-		} else if (type == EventData.EVENT_GUODIAN_CONNECT_FAILED) {
-			handleConnectFailed();
-		} else if (type == EventData.EVENT_GUODIAN_CONNECTED) {
-			handleConnected();
 		} else if (type == EventData.EVENT_LOGIN_SUCCESSED) {
 			handleLoginSuccessed();
-		} else if (type == EventData.EVENT_GUODIAN_RECONNECTTING) {
-			handleReconnecting();
 		} else {
 			
 		}
 	}
 
-	public void handleDisconnected() {
-		Log.d(TAG, "handleDisconnected");
-	}
-	
-	public void handleConnectFailed() {
-		Log.d(TAG, "handleConnectFailed");
-	}
-	
-	public void handleConnected() {
-		Log.d(TAG, "handleConnected");
-	}
-	
 	public void handleLoginSuccessed() {
 		Log.d(TAG, "handleLoginSuccessed");
 		
-		mService.requestPowerData(GDConstract.DATATYPE_POWERPANELDATA, null);
+		mEngine.request(GDConstract.DATATYPE_POWERPANELDATA, null);
 	}
 	
-	public void handleReconnecting() {
-		Log.d(TAG, "handleReconnecting");
-	}
-
 	private void handlePowerData(int type, Object data) {
 		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
 			updatePowerPanel((PowerPanelData) data);

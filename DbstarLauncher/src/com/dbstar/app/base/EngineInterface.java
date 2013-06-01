@@ -6,4 +6,5 @@ public interface EngineInterface {
 	Service getService();
 	void registerObserver(FragmentObserver observer);
 	void unregisterObserver(FragmentObserver observer);
+	void request(int type, Object args);
 }
