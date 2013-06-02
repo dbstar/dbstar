@@ -66,6 +66,7 @@
         <activity android:name=".app.settings.GDDiskManagementActivity" />
         <activity android:name=".app.help.GDHelpActivity" />
         <activity android:name=".app.settings.GDProductsActivity" />
+        <activity android:name=".app.settings.GDAdvancedToolsActivity" />
         <activity android:name=".guodian.app.mypower.GDMypowerActivity" />
         <activity android:name=".guodian.app.mypower.GDBillActivity" />
         <activity android:name=".guodian.app.mypower.GDBusinessAreaActvity" />

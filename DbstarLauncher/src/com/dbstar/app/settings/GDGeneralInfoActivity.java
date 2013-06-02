@@ -3,12 +3,14 @@ package com.dbstar.app.settings;
 import java.util.Map;
 
 import com.dbstar.R;
+import com.dbstar.app.help.GDHelpActivity;
 import com.dbstar.model.GDDiskInfo;
 import com.dbstar.model.GDDiskInfo.DiskInfo;
 import com.dbstar.util.GDNetworkUtil;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 
@@ -127,5 +129,45 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mDiskSize = getResources().getString(R.string.disk_totalsize);
 		mDiskUsed = getResources().getString(R.string.disk_usedsize);
 		mDiskSpace = getResources().getString(R.string.disk_spacesize);
+	}
+	
+	// when long press menu key more than 5 seconds,
+	// show the system management page.
+	private boolean mIsMenuKeyPressed = false;
+
+	Runnable mCheckLongPressTask = new Runnable() {
+
+		public void run() {
+
+			if (mIsMenuKeyPressed) {
+				Intent intent = new Intent();
+				intent.setClass(GDGeneralInfoActivity.this, GDAdvancedToolsActivity.class);
+				startActivity(intent);
+			}
+		}
+
+	};
+
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_MENU: {
+			mIsMenuKeyPressed = true;
+			mHandler.postDelayed(mCheckLongPressTask, 8000);
+			return true;
+		}
+		}
+		
+		return super.onKeyDown(keyCode, event);
+	}
+	
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_MENU: {
+			mIsMenuKeyPressed = false;
+			mHandler.removeCallbacks(mCheckLongPressTask);
+			return true;
+		}
+		}
+		return super.onKeyUp(keyCode, event);
 	}
 }

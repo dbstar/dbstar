@@ -397,4 +397,10 @@
 	<string name="disk_init_successed">母盘初始化完成，5秒钟后自动重启</string>
 	
 	<string name="device_init_str">设备初始化，请稍候......</string>
+	
+	<string name="btn_webbrowser">浏览器</string>
+	<string name="text_advanced_settings">高级设置</string>
+	<string name="text_filebrowser">文件浏览器</string>
+	<string name="text_factorytest">厂测程序</string>
+	
 </resources>
