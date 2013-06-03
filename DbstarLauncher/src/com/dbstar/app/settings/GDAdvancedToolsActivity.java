@@ -22,7 +22,7 @@ public class GDAdvancedToolsActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.generalinfo_view);
+		setContentView(R.layout.advanced_tools_view);
 
 		initializeView();
 	}
