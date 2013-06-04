@@ -119,7 +119,7 @@
             android:id="@+id/timed_task__detail_page"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:visibility="invisible"
+            android:visibility="visible"
             android:orientation="vertical" >
 
             <LinearLayout
@@ -176,12 +176,55 @@
                     android:text="@string/family_text_turn_off"
                     android:textColor="#fff" />
             </LinearLayout>
-
+            <LinearLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="40dp"
+                android:layout_marginLeft="60dp"
+                >
+                   <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/family_text_select_datatime"
+                    android:visibility="invisible"
+                    android:textColor="#fff" />
+                
+                <Button
+                    android:id="@+id/increase_hour" 
+                    android:layout_width="60dp"
+                    android:layout_height="fill_parent"
+                    android:layout_marginLeft="40dp"
+                    android:text="@string/ch_increase"
+                    android:textSize="30sp"
+                    android:textColor="#fff"
+                     android:gravity="center"
+                    android:background="#00000000"
+                                        />
+                
+                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="@string/property_semicolon"
+                    android:visibility="invisible"
+                    android:textColor="#fff" />
+                 
+                    
+                <Button
+                    android:id="@+id/increase_minute" 
+                    android:layout_width="60dp"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="@string/ch_increase"
+                    android:textSize="30sp"
+                    android:textColor="#fff"
+                    android:background="#00000000"
+                                        />
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="60dp"
-                android:layout_marginTop="40dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal" >
 
@@ -198,7 +241,8 @@
                     android:layout_marginLeft="40dp"
                     android:background="@drawable/smart_home_timed_task_time_selecter"
                     android:maxLength="2"
-                    android:numeric="integer"
+                    android:inputType="none"
+                    android:gravity="center"
                     android:paddingLeft="3dp"
                     android:textColor="#fff" />
 
@@ -216,7 +260,8 @@
                     android:layout_height="42dp"
                     android:background="@drawable/smart_home_timed_task_time_selecter"
                     android:maxLength="2"
-                    android:numeric="integer"
+                    android:inputType="none"
+                    android:gravity="center"
                     android:paddingLeft="3dp"
                     android:textColor="#fff" />
 
@@ -227,12 +272,54 @@
                      android:text="@string/family_text_select_datatime_note"
                     android:textColor="#fff" />
             </LinearLayout>
-
+             <LinearLayout 
+                android:layout_width="fill_parent"
+                android:layout_height="40dp"
+                android:layout_marginLeft="60dp"
+                >
+                   <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/family_text_select_datatime"
+                    android:visibility="invisible"
+                    android:textColor="#fff" />
+                
+                <Button
+                    android:id="@+id/decrease_hour" 
+                    android:layout_width="60dp"
+                    android:layout_height="fill_parent"
+                    android:layout_marginLeft="40dp"
+                    android:gravity="top|center"
+                    android:text="@string/ch_decrease"
+                    android:textSize="30sp"
+                    android:textColor="#fff"
+                    android:background="#00000000"
+                                        />
+                   <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:text="@string/property_semicolon"
+                    android:visibility="invisible"
+                    android:textColor="#fff" />
+                 
+                    
+                <Button 
+                    android:id="@+id/derease_minute"
+                    android:layout_width="60dp"
+                    android:layout_height="fill_parent"
+                    android:gravity="top|center"
+                    android:text="@string/ch_decrease"
+                    android:textSize="30sp"
+                    android:textColor="#fff"
+                    android:background="#00000000"
+                                        />
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="60dp"
-                android:layout_marginTop="40dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal" >
 

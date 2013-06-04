@@ -1087,4 +1087,11 @@ public class GDClient {
 			Log.d(TAG, " ============ stop 2 ============");
 		}
 	}
+	
+	public boolean isSocketConnected(){
+	    if(mSocket != null && mSocket.isConnected())
+	        return true;
+	    else 
+	        return false;
+	}
 }

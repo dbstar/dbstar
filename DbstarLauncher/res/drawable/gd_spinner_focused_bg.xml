@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/icon"
+        android:drawable="@drawable/gd_spinner_bg_pic"/>
+
+    <item
+        android:id="@+id/frame"
+        android:drawable="@drawable/spinner_frame">
+    </item>
+
+</layer-list>

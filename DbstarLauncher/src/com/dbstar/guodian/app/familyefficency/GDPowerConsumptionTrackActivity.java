@@ -30,7 +30,9 @@ import com.dbstar.guodian.data.StepPowerConsumptionTrack.DateStepPower;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.DrawPillar;
+import com.dbstar.widget.GDSpinner;
 import com.dbstar.widget.PowerTrackPolyLineView;
 
 public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
@@ -42,10 +44,10 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
     private static final String EQUTYPEID_DELETED_EQU = "000000";
     private static final String EQUTYPEID_ALL_COUNT = "ffffff";
             
-    private Spinner mSpinnerYear;
-    private Spinner mSpinnerMonth;
-    private Spinner mSpinnerDay;
-    private Spinner mSpinnerEqu;
+    private GDSpinner mSpinnerYear;
+    private GDSpinner mSpinnerMonth;
+    private GDSpinner mSpinnerDay;
+    private GDSpinner mSpinnerEqu;
     private Button  mButtonRequey;
     private Button  mButtonViewType;
     private TextView mTextViewTitle;
@@ -87,15 +89,15 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
     @Override
     protected void initializeView() {
         super.initializeView();
-        mSpinnerYear = (Spinner) findViewById(R.id.year_spinner);
-        mSpinnerMonth = (Spinner) findViewById(R.id.month_spinner);
-        mSpinnerDay = (Spinner) findViewById(R.id.day_spinner);
+        mSpinnerYear = (GDSpinner) findViewById(R.id.year_spinner);
+        mSpinnerMonth = (GDSpinner) findViewById(R.id.month_spinner);
+        mSpinnerDay = (GDSpinner) findViewById(R.id.day_spinner);
         mHistogramView = (LinearLayout) findViewById(R.id.histogramView);
         mButtonRequey  = (Button) findViewById(R.id.power_track_query_button);
         mTextViewCount = (TextView) findViewById(R.id.power_track_count);
         mTextViewTitle = (TextView) findViewById(R.id.power_track_title);
         mButtonViewType = (Button) findViewById(R.id.power_track_view_type);
-        mSpinnerEqu = (Spinner) findViewById(R.id.electrical_changer_spinner);
+        mSpinnerEqu = (GDSpinner) findViewById(R.id.electrical_changer_spinner);
         mEquList = new ArrayList<RoomData.RoomEletrical>();
         RoomEletrical all =  new RoomEletrical();
         all.EleDeviceCode = EQUTYPEID_ALL_EQU;
@@ -115,7 +117,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         for (RoomEletrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
-        mEquAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, equNames);
+        mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);
         mSpinnerEqu.setAdapter(mEquAdapter);
         
         mButtonViewType.setOnClickListener(new OnClickListener() {
@@ -188,8 +190,9 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         for(int i = 1;i <=dateOfMonth ;i++){
             mDayList.add(String.valueOf(i));
         }
-        mDayAdapter.notifyDataSetChanged();
-        mSpinnerDay.setSelection(0);
+        if(mDayAdapter != null){
+            mDayAdapter.notifyDataSetChanged();
+        }
     }
     private void initDateSpinner(String dateStr) {
 
@@ -226,18 +229,18 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         mDayList.add(emptyDay);
         
         
-        mYearAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+        mYearAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,
                 mYearList);
         mSpinnerYear.setAdapter(mYearAdapter);
         mSpinnerYear.setSelection(0);
 
-        mMonthAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+        mMonthAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,
                 mMonthList);
 
         mSpinnerMonth.setAdapter(mMonthAdapter);
         mSpinnerMonth.setSelection(month);
         
-        mDayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,mDayList);
+        mDayAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,mDayList);
         mSpinnerDay.setAdapter(mDayAdapter);
         mSpinnerDay.setSelection(0);
     }
@@ -248,8 +251,9 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         for (RoomEletrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
-        mEquAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, equNames);
+        mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);
         mSpinnerEqu.setAdapter(mEquAdapter);
+        mEquAdapter.notifyDataSetChanged();
         
     }
     
@@ -257,42 +261,49 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
     protected void onServiceStart() {
         super.onServiceStart();
         requestPowerConsumptionTrack(EQUTYPEID_ALL_EQU, "");
-        requestAllEleList();
     }
     
 
     private void requestPowerConsumptionTrack(String equTypeId,String dateTime){
-        String ccguid = getCCUID();
-        
-        if(ccguid == null)
-            return ;
+        String CCGUID = null;
+        if(getCtrlNo() != null){
+            CCGUID = getCtrlNo().CtrlNoGuid;
+        }
+        if(CCGUID == null){
+            ToastUtil.showToast(this, R.string.no_login);
+            return;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGNumCCGuid, ccguid);
+        params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGDateType, mCurrentDateTtype);
         params.put(JsonTag.TAGDate_Time, dateTime);
         params.put(JsonTag.TAGVC2EquTypeId, equTypeId);
         
-        mService.requestPowerData(GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_TRACK, params);
+        requestData(GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_TRACK, params);
         
     }
     private void requestAllEleList(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
-            return;
+        String ctrlSeridno = null;
+        if(getCtrlNo() != null){
+            ctrlSeridno = getCtrlNo().CtrilSerialNo;
+        }
         
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        if(ctrlSeridno == null){
+            ToastUtil.showToast(this, R.string.no_login);
+            return;
+        }
+            
         Map<String, String> params = new HashMap<String, String>();
         params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        mService.requestPowerData(GDConstract.DATATYPE_EQUMENTLIST, params);
+        requestDataNotShowDialog(GDConstract.DATATYPE_EQUMENTLIST, params);
     }
     @Override
     public void notifyEvent(int type, Object event) {
         super.notifyEvent(type, event);
+        EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if(EventData.EVENT_GUODIAN_DATA == type){
-            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_TRACK == guodianEvent.Type){
+                requestAllEleList();
                 track = (StepPowerConsumptionTrack) guodianEvent.Data;
                 if(mYearList == null || mYearList.isEmpty())
                     initDateSpinner(track.serviceSysDate);
@@ -304,6 +315,14 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
                     mEquList.addAll(list);
                     initEqumentSpinner();
                 }
+            }
+        }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            if(GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_TRACK == guodianEvent.Type){
+                ToastUtil.showToast(this, R.string.loading_error);
+            }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+                ToastUtil.showToast(this, R.string.loading_electrical_list_fail);
+            }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+                ToastUtil.showToast(this, R.string.loading_error);
             }
         }
         
@@ -351,7 +370,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         mTextViewCount.setText(track.totalConsumption.Count + getString(R.string.string_yuan));
     }
 
-    private void showHistogramView(StepPowerConsumptionTrack track) {
+    private void showHistogramView(final StepPowerConsumptionTrack track) {
         if(track == null || track.dateStepPowerList == null)
             return;
             
@@ -367,6 +386,16 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
             xType = getString(R.string.ch_month);
         }else if(mCurrentDateTtype.equals(DATEMONTH)){
             size = mDayList.size()-1;
+            if(size == 0){
+                mHandler.postDelayed(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        showHistogramView(track);
+                    }
+                }, 100);
+                return;
+            }
             xType = getString(R.string.ch_day);
             
         }else if(mCurrentDateTtype.equals(DATEDAY)){

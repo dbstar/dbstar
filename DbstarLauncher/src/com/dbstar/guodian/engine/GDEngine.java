@@ -144,7 +144,9 @@ public class GDEngine {
 		
 		mClient.connectToServer();
 	}
-
+	public boolean  isSocketConnected(){
+	   return mClient.isSocketConnected();
+	}
 	public void stop() {
 		Log.d(TAG, " ===== stop guodian engine ======= ");
 		mState = STATE_DISCONNECTED;
@@ -661,7 +663,6 @@ public class GDEngine {
                 case GDClient.REQUEST_TURN_ON_OFF_ELECTRICAL:
                     event.Type = GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL;
                     break;
-
                 case GDClient.REQUEST_REFRESH_ELECTRICAL:
                     event.Type = GDConstract.DATATYPE_REFRESH_ELECTRICAL;
                     break;
@@ -691,10 +692,27 @@ public class GDEngine {
                     break;
                 case GDClient.REQUEST_SET_POWER_TARGET:
                     event.Type = GDConstract.DATATYPE_SETTING_POWER_TARGET;
+                    break;
+                case GDClient.REQUEST_CITYS:
+                    event.Type = GDConstract.DATATYPE_CITYES;
+                    break;
+                    
+                case GDClient.REQUEST_ZONES:
+                    event.Type = GDConstract.DATATYPE_ZONES;
+                    break;
+                    
+                case GDClient.REQUEST_BUSINESSAREA:
+                    event.Type = GDConstract.DATATYPE_BUSINESSAREA;
+                    break;
+                    
+                case GDClient.REQUEST_STEP_POWER_CONSUMPTION_TRACK:
+                    event.Type = GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_TRACK;
+                    break;
                 }
 		        event.Data =  ((Task)task).ResponseData[7];
 		        notifyEvent(EventData.EVENT_GUODIAN_DATA_ERROR, event);
 		    }
+		    
 		}
 	}
 	

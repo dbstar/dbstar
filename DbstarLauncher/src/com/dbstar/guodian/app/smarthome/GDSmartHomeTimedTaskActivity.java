@@ -14,15 +14,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
-import android.text.Layout;
-import android.text.format.Time;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
-import android.view.ViewGroup;
 import android.view.View.OnKeyListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -31,8 +29,8 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -44,9 +42,7 @@ import android.widget.Toast;
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.AddTimedTaskResponse;
-import com.dbstar.guodian.data.ElectricalOperationMode;
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.ResultData;
 import com.dbstar.guodian.data.RoomData.RoomEletrical;
 import com.dbstar.guodian.data.TimedTask;
@@ -75,6 +71,17 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     public static final String PERIOD_5 = "5";
     public static final String PERIOD_6 = "6";
     public static final String PERIOD_7 = "7";
+    
+    private int mMaxHourCount = 23;
+    private int mMinHourCount = 00;
+    private int mMaxMinuteCount = 59;
+    private int mMinMinuteCount = 00;
+    
+    private int mDefauteHour;
+    private int mDefauteMinute;
+    private int mCurrentHour;
+    private int mCurrentMinute;
+    
     private GridView mListViewTask;
     private ImageView mLeftJianTou;
     private ImageView mRightJianTou;
@@ -90,6 +97,11 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     
     private Spinner mSpinnerEle;
     private Button mButtonSwitch;
+    private Button mButtonIncreaseHour;
+    private Button mButtonIncreaseMinute;
+    private Button mButtonDecreaseHour;
+    private Button mButtonDecreaseMinute;
+    
     private EditText mEditTextHour;
     private EditText mEditTextMinute;
     private CheckBox mCheckBoxPeriod1;
@@ -109,8 +121,8 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     boolean mIsLoadBackAllEle = false;
     boolean mIsLoadAllEleSuccess = false;
     private boolean mIsOpenedSwitch = true;
-    private boolean mIsCanDoAction = true;
     private ArrayAdapter<String> mSpinerAdapter;
+    private String mCtrlSeridNo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -151,6 +163,16 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mCheckBoxPeriod7 = (CheckBox) findViewById(R.id.cb_period_7);
         mButtonSave = (Button) findViewById(R.id.save);
         
+        mButtonIncreaseHour = (Button) findViewById(R.id.increase_hour);
+        mButtonIncreaseMinute = (Button) findViewById(R.id.increase_minute);
+        mButtonDecreaseHour = (Button) findViewById(R.id.decrease_hour);
+        mButtonDecreaseMinute = (Button) findViewById(R.id.derease_minute);
+        
+        mButtonIncreaseHour.setVisibility(View.INVISIBLE);
+        mButtonIncreaseMinute.setVisibility(View.INVISIBLE);
+        mButtonDecreaseHour.setVisibility(View.INVISIBLE);
+        mButtonDecreaseMinute.setVisibility(View.INVISIBLE);
+        
         mCheckBoxPeriod1.setOnCheckedChangeListener(mOnCheckedChangeListener);
         mCheckBoxPeriod2.setOnCheckedChangeListener(mOnCheckedChangeListener);
         mCheckBoxPeriod3.setOnCheckedChangeListener(mOnCheckedChangeListener);
@@ -159,6 +181,115 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mCheckBoxPeriod6.setOnCheckedChangeListener(mOnCheckedChangeListener);
         mCheckBoxPeriod7.setOnCheckedChangeListener(mOnCheckedChangeListener);
         
+        Calendar calendar = Calendar.getInstance();
+        mDefauteHour = calendar.get(Calendar.HOUR_OF_DAY);
+        mDefauteMinute = calendar.get(Calendar.MINUTE);
+        mCurrentHour = mDefauteHour;
+        mCurrentMinute = mDefauteMinute;
+        mEditTextHour.setText(getTimeString(mDefauteHour));
+        mEditTextMinute.setText(getTimeString(mDefauteMinute));
+        
+        mEditTextMinute.setOnKeyListener(new OnKeyListener() {
+            
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                int action = event.getAction();
+                if (action == KeyEvent.ACTION_DOWN) {
+                    if(keyCode == KeyEvent.KEYCODE_DPAD_CENTER){
+                        mEditTextMinute.setInputType(android.text.InputType.TYPE_NULL);
+                        if(mButtonIncreaseMinute.isShown() && mButtonDecreaseMinute.isShown()){
+                            mButtonIncreaseMinute.setVisibility(View.INVISIBLE);
+                            mButtonDecreaseMinute.setVisibility(View.INVISIBLE);
+                            mDefauteMinute = mCurrentMinute;
+                        }else{
+                            mButtonIncreaseMinute.setVisibility(View.VISIBLE);
+                            mButtonDecreaseMinute.setVisibility(View.VISIBLE);
+                            mCurrentMinute = mDefauteMinute;
+                        }
+                    }else if(keyCode == KeyEvent.KEYCODE_DPAD_DOWN){
+                        if(mButtonIncreaseMinute.isShown() && mButtonDecreaseMinute.isShown()){
+                            if(mCurrentMinute == mMinMinuteCount){
+                                mCurrentMinute = mMaxMinuteCount;
+                            }else {
+                                mCurrentMinute --;
+                            }
+                            mEditTextMinute.setText(getTimeString(mCurrentMinute));
+                            return true;
+                        }
+                    }else if(keyCode == KeyEvent.KEYCODE_DPAD_UP){
+                        if(mButtonIncreaseMinute.isShown() && mButtonDecreaseMinute.isShown()){
+                            if(mCurrentMinute == mMaxMinuteCount){
+                                mCurrentMinute = mMinMinuteCount;
+                            }else{
+                                mCurrentMinute ++;
+                            }
+                            mEditTextMinute.setText(getTimeString(mCurrentMinute));
+                            return true;
+                        }
+                    }else if(keyCode == KeyEvent.KEYCODE_BACK){
+                        if(mButtonIncreaseMinute.isShown() && mButtonDecreaseMinute.isShown()){
+                            mEditTextMinute.setText(getTimeString(mDefauteMinute));
+                            mCurrentMinute = mDefauteMinute;
+                            return true;
+                        }
+                  }
+                    
+                    
+                }
+                return false;
+            }
+        });
+        mEditTextHour.setOnKeyListener(new OnKeyListener() {
+        
+        @Override
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            
+            int action = event.getAction();
+            if (action == KeyEvent.ACTION_DOWN) {
+                if(keyCode == KeyEvent.KEYCODE_DPAD_CENTER){
+                    mEditTextHour.setInputType(android.text.InputType.TYPE_NULL);
+                    if(mButtonIncreaseHour.isShown() && mButtonDecreaseHour.isShown()){
+                        mButtonIncreaseHour.setVisibility(View.INVISIBLE);
+                        mButtonDecreaseHour.setVisibility(View.INVISIBLE);
+                        mDefauteHour = mCurrentHour;
+                    }else{
+                        mButtonIncreaseHour.setVisibility(View.VISIBLE);
+                        mButtonDecreaseHour.setVisibility(View.VISIBLE);
+                        mCurrentHour = mDefauteHour;
+                    }
+                }else if(keyCode == KeyEvent.KEYCODE_DPAD_DOWN){
+                    if(mButtonIncreaseHour.isShown()){
+                        if(mCurrentHour == mMinHourCount){
+                            mCurrentHour = mMaxHourCount;
+                        }else {
+                            mCurrentHour --;
+                        }
+                        mEditTextHour.setText(getTimeString(mCurrentHour));
+                        return true;
+                    }
+                }else if(keyCode == KeyEvent.KEYCODE_DPAD_UP){
+                    if(mButtonDecreaseHour.isShown()){
+                        if(mCurrentHour == mMaxHourCount){
+                            mCurrentHour = mMinHourCount;
+                        }else{
+                            mCurrentHour ++;
+                        }
+                        mEditTextHour.setText(getTimeString(mCurrentHour));
+                        return true;
+                    }
+                }else if(keyCode == KeyEvent.KEYCODE_BACK){
+                    if(mButtonDecreaseHour.isShown() && mButtonIncreaseHour.isShown()){
+                        mEditTextHour.setText(getTimeString(mDefauteHour));
+                        mCurrentHour = mDefauteHour;
+                        return true;
+                    }
+              }
+                
+                
+            }
+            return false;
+        }
+    }) ;
        mEditTextHour.setOnFocusChangeListener(mFocusChangeListener);
        mEditTextMinute.setOnFocusChangeListener(mFocusChangeListener);
         
@@ -291,8 +422,10 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                     if(date != null){
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTime(date);
-                        mEditTextHour.setText(String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)));
-                        mEditTextMinute.setText(String.valueOf(calendar.get(Calendar.MINUTE)));
+                        mDefauteHour = calendar.get(Calendar.HOUR_OF_DAY);
+                        mDefauteMinute = calendar.get(Calendar.MINUTE);
+                        mEditTextHour.setText(getTimeString(mDefauteHour));
+                        mEditTextMinute.setText(getTimeString(mDefauteMinute));
                     }
                     
                     mButtonSave.setVisibility(View.INVISIBLE);
@@ -383,8 +516,10 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mTimedTaskDetailPage.setVisibility(View.VISIBLE);
         mSpinnerEle.setSelection(0);
         mButtonSwitch.setBackgroundResource(R.drawable.smart_home_timed_task_switch_on_selecter);
-        mEditTextMinute.setText("");
-        mEditTextHour.setText("");
+        mDefauteHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        mDefauteMinute = Calendar.getInstance().get(Calendar.MINUTE);
+        mEditTextMinute.setText(getTimeString(mDefauteMinute));
+        mEditTextHour.setText(getTimeString(mDefauteHour));
         mCheckBoxPeriod1.setChecked(false);
         mCheckBoxPeriod2.setChecked(false);
         mCheckBoxPeriod3.setChecked(false);
@@ -404,7 +539,8 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     @Override
     protected void onServiceStart() {
         super.onServiceStart();
-        requestAllEleList();
+        if(getCtrlNo() != null)
+            mCtrlSeridNo = getCtrlNo().CtrilSerialNo;
         requestTaskList();
         //requestNoTimedTaskElectricalList();
        
@@ -412,10 +548,10 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     
     @Override
     public void notifyEvent(int type, Object event) {
-        super.notifyEvent(type, event);
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if(EventData.EVENT_GUODIAN_DATA == type){
             if(GDConstract.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
+               requestAllEleList();
                List<TimedTask> list = (List<TimedTask>) guodianEvent.Data;
                if(list != null){
                    mListTimedTask.addAll(list);
@@ -437,9 +573,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
 //                    constructeSpinnerData();
 //                }
             }else if(GDConstract.DATATYPE_ADD_TIMED_TASK == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
                 AddTimedTaskResponse response = (AddTimedTaskResponse) guodianEvent.Data;
-                mIsCanDoAction = true;
                 if(response != null){
                     if(EXECUTE_SUCCESS.equals(response.Result)){
                         ToastUtil.showToast(this, R.string.family_text_add_timed_success);
@@ -461,8 +595,6 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                     mButtonSave.setVisibility(View.VISIBLE);
                 }
             }else if(GDConstract.DATATYPE_MODIFY_TIMED_TASK == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsCanDoAction = true;
                 ResultData resultData = (ResultData) guodianEvent.Data;
                 if(resultData != null){
                     if(EXECUTE_SUCCESS.equals(resultData.Result)){
@@ -486,8 +618,6 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                     mButtonSave.setVisibility(View.VISIBLE);
                 }
             }else if(GDConstract.DATATYPE_DELETE_TIMED_TASK == guodianEvent.Type ){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsCanDoAction = true;
                 ResultData resultData = (ResultData) guodianEvent.Data;
                 if(resultData != null){
                     if(EXECUTE_SUCCESS.equals(resultData.Result)){
@@ -522,13 +652,11 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                     ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail));
                 }
             }else if(GDConstract.DATATYPE_EXECUTE_TIMED_TASK == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsCanDoAction = true;
                 ResultData resultData = (ResultData) guodianEvent.Data;
                 if(resultData != null){
                     if(EXECUTE_SUCCESS.equals(resultData.Result)){
                         if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
-                            mCacheTask.State = TASK_MARK_OPENED;
+                            mCacheTask.State = TASK_STATU_OPENED;
                         }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
                             mCacheTask.State = TASK_STATU_CLOASED;
                         }
@@ -551,29 +679,21 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDConstract.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.family_text_load_task_fail);
+                requestAllEleList();
+                ToastUtil.showToast(this, R.string.loading_error);
             }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 mIsLoadBackAllEle = true;
                 mIsLoadAllEleSuccess = false;
-                ToastUtil.showToast(this, R.string.family_text_load_ele_list_fail);
             }else if(GDConstract.DATATYPE_ADD_TIMED_TASK == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsCanDoAction = true;
                 String erroString = (String) guodianEvent.Data;
-                ToastUtil.showToast(this,getString( R.string.family_text_add_timed_fail) + erroString);
+                ToastUtil.showToast(this,getString( R.string.family_text_add_timed_fail));
             }else if(GDConstract.DATATYPE_MODIFY_TIMED_TASK == guodianEvent.Type){
-                mIsCanDoAction = true;
-                mHandler.removeCallbacks(mTimeOutTask);
                 String erroString = (String) guodianEvent.Data;
-                ToastUtil.showToast(this,getString( R.string.family_text_modify_timed_fail) + erroString);
+                ToastUtil.showToast(this,getString( R.string.family_text_modify_timed_fail));
             }else if(GDConstract.DATATYPE_DELETE_TIMED_TASK == guodianEvent.Type ){
-                mIsCanDoAction = true;
-                mHandler.removeCallbacks(mTimeOutTask);
                 String erroString = (String) guodianEvent.Data;
-                ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail) + erroString);
+                ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail));
             }else if(GDConstract.DATATYPE_EXECUTE_TIMED_TASK == guodianEvent.Type){
-                mIsCanDoAction = true;
-                mHandler.removeCallbacks(mTimeOutTask);
                 if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
                     ToastUtil.showToast(this,  getString( R.string.family_text_open_timed_task_fail));
                 }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
@@ -581,6 +701,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                 }
             }
         }
+        super.notifyEvent(type, event);
     }
     
     private void constructeSpinnerData() {
@@ -780,31 +901,39 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             
            switch (id) {
             case R.id.et_hour:
-                    String hour = mEditTextHour.getText().toString();
-                    if(hour.isEmpty())
-                        return;
-                    int h = Integer.parseInt(hour);
-                    if( h < 0 || h > 23){
-                        ToastUtil.showToast(getApplicationContext(), R.string.family_text_input_time_hour_error);
-                    }else{
-                        if(hour.length() == 1){
-                            mEditTextHour.setText("0" + hour);
-                        }
-                    }
+                      if(mButtonIncreaseHour.isShown()){
+                          mButtonIncreaseHour.setVisibility(View.INVISIBLE);
+                          mButtonDecreaseHour.setVisibility(View.INVISIBLE);
+                      }
+//                    String hour = mEditTextHour.getText().toString();
+//                    if(hour.isEmpty())
+//                        return;
+//                    int h = Integer.parseInt(hour);
+//                    if( h < 0 || h > 23){
+//                        ToastUtil.showToast(getApplicationContext(), R.string.family_text_input_time_hour_error);
+//                    }else{
+//                        if(hour.length() == 1){
+//                            mEditTextHour.setText("0" + hour);
+//                        }
+//                    }
                 break;
     
             case R.id.et_minute:
-                String minute = mEditTextMinute.getText().toString();
-                if(minute.isEmpty())
-                    return;
-                int m = Integer.parseInt(minute);
-                if(m < 0 || m > 59){
-                    ToastUtil.showToast(getApplicationContext(), R.string.family_text_input_time_minute_error);
-                }else{
-                    if(minute.length() == 1){
-                        mEditTextMinute.setText("0" + minute); 
-                    }
+                if(mButtonIncreaseMinute.isShown()){
+                    mButtonIncreaseMinute.setVisibility(View.INVISIBLE);
+                    mButtonDecreaseMinute.setVisibility(View.INVISIBLE);
                 }
+//                String minute = mEditTextMinute.getText().toString();
+//                if(minute.isEmpty())
+//                    return;
+//                int m = Integer.parseInt(minute);
+//                if(m < 0 || m > 59){
+//                    ToastUtil.showToast(getApplicationContext(), R.string.family_text_input_time_minute_error);
+//                }else{
+//                    if(minute.length() == 1){
+//                        mEditTextMinute.setText("0" + minute); 
+//                    }
+//                }
             break;
         }
         }
@@ -851,41 +980,32 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     };
     private TimedTask mCacheTask;
     private void requestTaskList(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGTaskMark, TASK_MARK_ALL);
-        mService.requestPowerData(GDConstract.DATATYPE_TIMED_TASK_LIST, params);
+        requestData(GDConstract.DATATYPE_TIMED_TASK_LIST, params);
     }
     private void requestAllEleList(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        mService.requestPowerData(GDConstract.DATATYPE_EQUMENTLIST, params);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
+        requestDataNotShowDialog(GDConstract.DATATYPE_EQUMENTLIST, params);
     }
     private void requestNoTimedTaskElectricalList(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        mService.requestPowerData(GDConstract.DATATYPE_NO_TASK_ELCTRICAL_LIST, params);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
+        requestData(GDConstract.DATATYPE_NO_TASK_ELCTRICAL_LIST, params);
     }
     
     
@@ -921,14 +1041,10 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
      * 
      */
     private void requestAddTask(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
         int spinnerSelectedPosition = mSpinnerEle.getSelectedItemPosition();
         if(spinnerSelectedPosition < 1){
@@ -942,6 +1058,9 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                     }else{
                         ToastUtil.showToast(this, R.string.family_text_load_ele_list_fail);
                     }
+                    return;
+                }else{
+                    ToastUtil.showToast(this, R.string.family_text_please_select_ele); 
                     return;
                 }
             }
@@ -969,7 +1088,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour.trim()));
         calendar.set(Calendar.MINUTE, Integer.parseInt(minute));
         if(mPeriodList == null || mPeriodList.isEmpty()){
-            frequency = "o1";
+            frequency = "o";
             if(System.currentTimeMillis() >= calendar.getTimeInMillis())
                 calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH) +1);
             
@@ -1020,7 +1139,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         calendar.set(Calendar.MINUTE, Integer.parseInt(minute));
         time =  DateUtil.getStringFromDate(calendar.getTime(), DateUtil.DateFormat6);
         
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGDeviceGuid, deviceGuid);
         params.put(JsonTag.TAGOper, oper);
         params.put(JsonTag.TAGTime, time);
@@ -1037,6 +1156,8 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             params.put(JsonTag.TAGOldOper, task.Oper);
             params.put(JsonTag.TAGOldTime, task.Time);
             params.put(JsonTag.TAGOldCycle,task.Frequency);
+            params.put(JsonTag.TAGTimeTaskGuid,task.TimedTaskGuid);
+            
             dataType = GDConstract.DATATYPE_MODIFY_TIMED_TASK;
             state = task.State;
         }
@@ -1049,44 +1170,34 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mCacheTask.Time = time;
         mCacheTask.TypeId = typeid;
         
-        mService.requestPowerData(dataType, params);
-        mIsCanDoAction = false;
-        mHandler.postDelayed(mTimeOutTask, 1000 * 30);
+        requestData(dataType, params);
     }
     
     private void requestDeleteTimedTask(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         
         TimedTask selectedTimedTask = mTimedTaskAdapter.getData()[mListViewTask.getSelectedItemPosition()];
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGTimeTaskGuid, selectedTimedTask.TimedTaskGuid);
         params.put(JsonTag.TAGOper, selectedTimedTask.Oper);
         params.put(JsonTag.TAGTime, selectedTimedTask.Time);
         params.put(JsonTag.TAGFrequency, selectedTimedTask.Frequency);
         params.put(JsonTag.TAGTypeId, selectedTimedTask.TypeId);
-        mService.requestPowerData(GDConstract.DATATYPE_DELETE_TIMED_TASK, params);
-        mIsCanDoAction = false;
-        mHandler.postDelayed(mTimeOutTask, 1000 * 30);
+        requestData(GDConstract.DATATYPE_DELETE_TIMED_TASK, params);
     }
     
     private void requestOpenOrCloseTimedTask(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
          mCacheTask = mTimedTaskAdapter.getData()[mListViewTask.getSelectedItemPosition()];
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGTimeTaskGuid, mCacheTask.TimedTaskGuid);
         params.put(JsonTag.TAGOper, mCacheTask.Oper);
         params.put(JsonTag.TAGTime, mCacheTask.Time);
@@ -1094,33 +1205,23 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         params.put(JsonTag.TAGTypeId, mCacheTask.TypeId);
         params.put(JsonTag.TAGDeviceGuid, mCacheTask.DeviceGuid);
         if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
-            params.put(JsonTag.TAGState, TASK_MARK_OPENED);
+            params.put(JsonTag.TAGState, TASK_STATU_OPENED);
         }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
             params.put(JsonTag.TAGState, TASK_STATU_CLOASED);
         }
         
-        mService.requestPowerData(GDConstract.DATATYPE_EXECUTE_TIMED_TASK, params);
-        mIsCanDoAction = false;
-        mHandler.postDelayed(mTimeOutTask, 1000 * 30);
+        requestData(GDConstract.DATATYPE_EXECUTE_TIMED_TASK, params);
     }
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-      if(mIsCanDoAction)
-          return super.dispatchKeyEvent(event);
-      else{
-          Toast.makeText(this, getString(R.string.family_text_requestting), Toast.LENGTH_SHORT).show();
-          return true;
-      }
-    }
-    Runnable mTimeOutTask = new Runnable() {
-        
-        @Override
-        public void run() {
-            if(!mIsCanDoAction)
-                Toast.makeText(GDSmartHomeTimedTaskActivity.this, getString(R.string.family_text_request_timeout), Toast.LENGTH_SHORT).show();
-            mIsCanDoAction = true;
+    
+    private String getTimeString(int time){
+        if(time < 0)
+            return "00";
+        String str = String.valueOf(time);
+        if(str.length() == 1){
+            return "0" + str;
         }
-    };
+        return str;
+    }
     protected void dialog() {
         AlertDialog.Builder builder = new Builder(this);
         builder.setMessage(getString(R.string.family_text_delete_timed_task_alert));

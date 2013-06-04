@@ -182,7 +182,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 		super.onServiceStart();
 		Log.d(TAG, "onServiceStart");
 
-		mService.requestPowerData(GDConstract.DATATYPE_NOTICES, null);
+		requestData(GDConstract.DATATYPE_NOTICES, null);
 	}
 
 	public void notifyEvent(int type, Object event) {
@@ -194,11 +194,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 		}
 	}
 	
-	public void handleLoginSuccessed() {
-		Log.d(TAG, "handleLoginSuccessed");
-		
-		mService.requestPowerData(GDConstract.DATATYPE_NOTICES, null);
-	}
+
 
 	private void handlePowerData(int type, Object data) {
 		if (data == null) {

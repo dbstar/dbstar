@@ -27,6 +27,7 @@ import com.dbstar.guodian.data.BillItem;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
+import com.dbstar.util.ToastUtil;
 
 public class GDBillActivity extends GDSmartActivity {
 	private static final String TAG = "GDBillActivity";
@@ -150,11 +151,11 @@ public class GDBillActivity extends GDSmartActivity {
 		super.onServiceStart();
 		Log.d(TAG, "onServiceStart");
 
-		// mService.requestPowerData(GDConstract.DATATYPE_BILLMONTHLIST, "1");
+		// requestData(GDConstract.DATATYPE_BILLMONTHLIST, "1");
 
 		// first: request the latest bill
 		// date is empty.
-		mService.requestPowerData(GDConstract.DATATYPE_BILLDETAILOFMONTH, "");
+		requestData(GDConstract.DATATYPE_BILLDETAILOFMONTH, "");
 	}
 
 	void queryBillData() {
@@ -175,10 +176,10 @@ public class GDBillActivity extends GDSmartActivity {
 
 			Log.d(TAG, " === date ==" + date);
 
-			mService.requestPowerData(GDConstract.DATATYPE_BILLDETAILOFMONTH,
+			requestData(GDConstract.DATATYPE_BILLDETAILOFMONTH,
 					date);
 		} else {
-			mService.requestPowerData(GDConstract.DATATYPE_BILLDETAILOFRECENT,
+			requestData(GDConstract.DATATYPE_BILLDETAILOFRECENT,
 					"12");
 			
 		}
@@ -190,7 +191,9 @@ public class GDBillActivity extends GDSmartActivity {
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
-		}
+		}else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            ToastUtil.showToast(this, R.string.loading_error);
+        }
 	}
 
 	private void handlePowerData(int type, Object data) {

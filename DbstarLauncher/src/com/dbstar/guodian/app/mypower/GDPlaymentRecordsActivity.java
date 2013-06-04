@@ -26,6 +26,7 @@ import com.dbstar.guodian.data.PaymentRecord.Record;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.PaymentRecordCurve;
 
 import android.app.Activity;
@@ -72,7 +73,6 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
             String[] menuArray = mMenuPath.split(MENU_STRING_DELIMITER);
             showMenuPath(menuArray);
         }
-
     }
     
     private String getCurrentYear(long timeMillis) {
@@ -112,9 +112,13 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
     
     protected void onServiceStart() {
         super.onServiceStart();
+        if(getCtrlNo() != null){
+            CCGUID = getCtrlNo().CtrlNoGuid;
+        }
         requstDataFromService();
     };
     
+   
     @Override
     public void notifyEvent(int type, Object event) {
         super.notifyEvent(type, event);
@@ -124,21 +128,25 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
                 mPaymentRecord = (PaymentRecord) guodianEvent.Data;
                 handPaymentRecordData(mPaymentRecord);
             }else if(GDConstract.DATATYPE_YREAR_FEE_DETAIL == guodianEvent.Type){
+                showPolyLineView(mPaymentRecord);
                 Map<String, Record> yearDetail = (Map<String, Record>) guodianEvent.Data;
                 if(yearDetail != null && !yearDetail.isEmpty()){
                    Iterator<Record> iterator = yearDetail.values().iterator();
                    if(iterator.hasNext()){
                        Record  r = iterator.next();
-                       if(r.date.contains(mCurrentYear));{
-                           mPaymentRecord.paymentListYear.put(mCurrentYear, yearDetail);
+                       mPaymentRecord.paymentListYear.put(r.date.substring(0,4), yearDetail);
+                       if(r.date.substring(0,4).equals(mCurrentYear)){
                            showPolyLineView(mPaymentRecord);
                        }
                    }
                    
                 }
             }
+        }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            ToastUtil.showToast(this, R.string.loading_error);
         }
     }
+    
     private void handPaymentRecordData(PaymentRecord paymentRecord){
         if(paymentRecord == null){
             return;
@@ -193,9 +201,6 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
         
         
     }
-    private void clearPolyLineView(){
-        
-    }
     private String getCurrentPayment(){
         List<Record> list = mPaymentRecord.yearPaymentList;
         StringBuilder sb = new StringBuilder();
@@ -211,28 +216,25 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
     }
     private void requstDataFromService(){
         if(CCGUID == null){
-            LoginData loginData = mService.getLoginData();
-            if(loginData != null){
-                if(loginData.CtrlNo != null)
-                    CCGUID = loginData.CtrlNo.CtrlNoGuid;
-            }
-            if(CCGUID == null)
-                return;
+            ToastUtil.showToast(this, R.string.no_login);
+            return;
         }
-        
-        
         Map<String, String>params = new HashMap<String, String>();
         params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGNum, mNum);
         params.put(JsonTag.TAGNum_Years, mNumYear);
-        mService.requestPowerData(GDConstract.DATATYPE_PAYMENT_RECORDS,params);
+        requestData(GDConstract.DATATYPE_PAYMENT_RECORDS,params);
     }
     
     private void requestYearPlayment(String date){
+        if(CCGUID == null){
+            ToastUtil.showToast(this, R.string.no_login);
+            return;
+        }
         Map<String, String>params = new HashMap<String, String>();
         params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGDate, date+"-01-01 00:00:00");
-        mService.requestPowerData(GDConstract.DATATYPE_YREAR_FEE_DETAIL,params);
+        requestData(GDConstract.DATATYPE_YREAR_FEE_DETAIL,params);
     }
     OnClickListener mClickListener = new OnClickListener() {
         

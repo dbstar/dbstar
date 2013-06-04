@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:background="@drawable/view_background" >
@@ -12,7 +13,6 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="0dp"
         android:layout_marginTop="0dp" >
-
     </RelativeLayout>
 
     <LinearLayout
@@ -43,7 +43,22 @@
                 android:gravity="right"
                 android:orientation="horizontal" >
 
-                <Spinner
+                <com.dbstar.widget.GDSpinner
+                    android:id="@+id/year_spinner"
+                    android:layout_width="140dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    app:dropDownListHeight="175dp"
+                    app:dropDownListWidth="120dp" />
+                <!--
+                     <Spinner
                     android:id="@+id/year_spinner"
                     android:layout_width="140dp"
                     android:layout_height="30dp"
@@ -51,6 +66,7 @@
                     android:background="@drawable/spinner_bg"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
                     android:spinnerMode="dropdown" />
+                -->
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -62,10 +78,26 @@
                     android:textSize="18sp" />
 
                 <Space
-                    android:layout_width="10dp"
+                    android:layout_width="40dp"
                     android:layout_height="0dp" />
 
-                <Spinner
+                <com.dbstar.widget.GDSpinner
+                    android:id="@+id/month_spinner"
+                    android:layout_width="140dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    app:dropDownListHeight="175dp"
+                    app:dropDownListWidth="120dp" >
+                </com.dbstar.widget.GDSpinner>
+                <!--
+                     <Spinner
                     android:id="@+id/month_spinner"
                     android:layout_width="140dp"
                     android:layout_height="30dp"
@@ -75,6 +107,7 @@
                     android:nextFocusRight="@+id/day_spinner"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
                     android:spinnerMode="dropdown" />
+                -->
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -86,10 +119,26 @@
                     android:textSize="18sp" />
 
                 <Space
-                    android:layout_width="10dp"
+                    android:layout_width="40dp"
                     android:layout_height="0dp" />
 
-                <Spinner
+                <com.dbstar.widget.GDSpinner
+                    android:id="@+id/day_spinner"
+                    android:layout_width="140dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    app:dropDownListHeight="175dp"
+                    app:dropDownListWidth="120dp" >
+                </com.dbstar.widget.GDSpinner>
+                <!--
+                     <Spinner
                     android:id="@+id/day_spinner"
                     android:layout_width="140dp"
                     android:layout_height="30dp"
@@ -97,6 +146,7 @@
                     android:background="@drawable/spinner_bg"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
                     android:spinnerMode="dropdown" />
+                -->
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -123,15 +173,29 @@
                 <Space
                     android:layout_width="10dp"
                     android:layout_height="0dp" />
-
-                <Spinner
+                <com.dbstar.widget.GDSpinner
+                    android:id="@+id/electrical_changer_spinner"
+                    android:layout_width="180dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    app:dropDownListHeight="175dp"
+                    app:dropDownListWidth="158dp" >
+                </com.dbstar.widget.GDSpinner>
+               <!--  <Spinner
                     android:id="@+id/electrical_changer_spinner"
                     android:layout_width="140dp"
                     android:layout_height="30dp"
                     android:layout_gravity="center"
                     android:background="@drawable/spinner_bg"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
-                    android:spinnerMode="dropdown" />
+                    android:spinnerMode="dropdown" /> -->
 
                 <Space
                     android:layout_width="40dp"
@@ -146,15 +210,15 @@
 
             <LinearLayout
                 android:layout_width="fill_parent"
-                android:layout_height="42dp"
+                android:layout_height="46dp"
                 android:gravity="right" >
 
                 <TextView
                     android:id="@+id/power_track_title"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:textColor="#ffffff"
                     android:textSize="24sp" />
 

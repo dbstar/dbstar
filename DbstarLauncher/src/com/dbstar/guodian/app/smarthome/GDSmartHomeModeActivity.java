@@ -18,6 +18,7 @@ import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.TimedTask;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.CircleFlowIndicator;
 
 import android.content.Context;
@@ -59,7 +60,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     private ElectricalOperationMode mCacheMode;
     private ModeAdapter mAdapterMode;
     private ModeElectricalAdapter mAdapterModeEle;
-    private boolean mIsLoadBack = true;
+    private String mCtrlSeridNo;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -164,10 +165,8 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
                 mAdapterModeEle.setData(null);
                 mAdapterModeEle.notifyDataSetChanged();
                 if(mode.ModelElectricalList == null || mode.ModelElectricalList.isEmpty()){
-                    if(mIsLoadBack){
-                        mCacheMode = mode;
-                        requestModeElectricalList(mode.ModelGuid);
-                    }
+                    mCacheMode = mode;
+                    requestModeElectricalList(mode.ModelGuid);
                 }else{
                     initModeEleListView(mode);
                 }
@@ -186,11 +185,6 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
                 boolean ret = false;
                 int action = event.getAction();
                 if (action == KeyEvent.ACTION_DOWN) {
-                    
-                    if(!mIsLoadBack){
-                        Toast.makeText(GDSmartHomeModeActivity.this, getString(R.string.family_text_requestting), Toast.LENGTH_SHORT).show();
-                        return true;
-                    }
                     switch (keyCode) {
                     
                     case KeyEvent.KEYCODE_DPAD_LEFT: {
@@ -526,29 +520,27 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     @Override
     protected void onServiceStart() {
         super.onServiceStart();
-        requestAllElectrical();
+        if(getCtrlNo() != null)
+            mCtrlSeridNo = getCtrlNo().CtrilSerialNo;
         requestModelList();
     }
     
     @Override
     public void notifyEvent(int type, Object event) {
-        super.notifyEvent(type, event);
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if( EventData.EVENT_GUODIAN_DATA == type){
             if(GDConstract.DATATYPE_MODEL_LIST == guodianEvent.Type){
                 List<ElectricalOperationMode> modeList = (List<ElectricalOperationMode>) guodianEvent.Data;
+                if(modeList != null && !modeList.isEmpty())
+                    requestAllElectrical();
                 initListViewMode(modeList);
                 
             }else if(GDConstract.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
                 List<ModeElectrical> eles = (List<ModeElectrical>) guodianEvent.Data;
                 mCacheMode.ModelElectricalList = eles;
                 initModeEleListView(mCacheMode);
-                mIsLoadBack = true;
                 
             }else if(GDConstract.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsLoadBack = true;
                 ResultData result = (ResultData) guodianEvent.Data;
                 if(result != null){
                    if("true".equals(result.Result)){
@@ -566,92 +558,60 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
             } 
         }else if( EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDConstract.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsLoadBack = true;
-                String error = (String) guodianEvent.Data;
-                Toast.makeText(this,error , Toast.LENGTH_SHORT).show();
+                ToastUtil.showToast(this, R.string.server_error);
             }else if(GDConstract.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsLoadBack = true;
-                String error = (String) guodianEvent.Data;
-                Toast.makeText(this,error , Toast.LENGTH_SHORT).show();
+                ToastUtil.showToast(this, R.string.server_error);
+            }else if(GDConstract.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
+                ToastUtil.showToast(this, R.string.loading_electrical_list_fail);
+            }else{
+                ToastUtil.showToast(this, R.string.loading_error);
             }
         }
+        super.notifyEvent(type, event);
     }
     
     private void requestModelList(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        mService.requestPowerData(GDConstract.DATATYPE_MODEL_LIST, params);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
+        requestData(GDConstract.DATATYPE_MODEL_LIST, params);
     }
     
     private void requestModeElectricalList(String modeGuid){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGModeGuid, modeGuid);
-        mIsLoadBack = false;
-        mHandler.postDelayed(mTimeOutTask, 1000 * 30);
-        mService.requestPowerData(GDConstract.DATATYPE_MODEL_ELECTRICAL_LIST, params);
+        requestData(GDConstract.DATATYPE_MODEL_ELECTRICAL_LIST, params);
     }
     
     private void executeMode(ElectricalOperationMode mode){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGModeGuid, mode.ModelGuid);
         params.put(JsonTag.TAGModeId, mode.ModelId);
-        mIsLoadBack = false;
-        mHandler.postDelayed(mTimeOutTask, 1000 * 30);
-        mService.requestPowerData(GDConstract.DATATYPE_EXECUTE_MODE, params);
+        requestData(GDConstract.DATATYPE_EXECUTE_MODE, params);
     }
     
     private void requestAllElectrical(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
-        Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        mService.requestPowerData(GDConstract.DATATYPE_EQUMENTLIST, params);
-    }
-    Runnable mTimeOutTask = new Runnable() {
-        
-        @Override
-        public void run() {
-            if(!mIsLoadBack)
-                Toast.makeText(GDSmartHomeModeActivity.this, getString(R.string.family_text_request_timeout), Toast.LENGTH_SHORT).show();
-            mIsLoadBack = true;
         }
-    };
-    protected void onStop() {
-        super.onStop();
-        mHandler.removeCallbacks(mTimeOutTask);
-    };
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
+        requestDataNotShowDialog(GDConstract.DATATYPE_EQUMENTLIST, params);
+    }
     public int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.app.backup.IFullBackupRestoreObserver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -40,7 +41,9 @@ import com.dbstar.guodian.data.SPCConstitute.StepItemDetail;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.DrawPie;
+import com.dbstar.widget.GDSpinner;
 
 public class GDPowerConstitueActivity extends GDSmartActivity{
     
@@ -56,9 +59,9 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
     private Button mButtonQuery;
     private TextView mTextViewTotalCount;
     private TextView mTextViewDataType;
-    private Spinner mSpinnerYear;
-    private Spinner mSpinnerMonth;
-    private Spinner mSpinnerDay;
+    private GDSpinner mSpinnerYear;
+    private GDSpinner mSpinnerMonth;
+    private GDSpinner mSpinnerDay;
     private ArrayList<String> mYearList;
     private ArrayList<String> mMonthList;
     private ArrayList<String> mDayList;
@@ -79,6 +82,8 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
     private PowerConstituteAdapter mAdapter;
     private LinearLayout mPieView;
     private String mTotalCount;
+    private String CCGUID;
+    private boolean mIsFirstTime = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,9 +109,9 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
         mButtonStep = (Button) findViewById(R.id.power_constitute_step);
         mButtonTiming = (Button) findViewById(R.id.power_constitute_timing);
         mButtonQuery = (Button) findViewById(R.id.power_constitue_query_button);
-        mSpinnerYear = (Spinner) findViewById(R.id.year_spinner);
-        mSpinnerMonth = (Spinner) findViewById(R.id.month_spinner);
-        mSpinnerDay = (Spinner) findViewById(R.id.day_spinner);
+        mSpinnerYear = (GDSpinner) findViewById(R.id.year_spinner);
+        mSpinnerMonth = (GDSpinner) findViewById(R.id.month_spinner);
+        mSpinnerDay = (GDSpinner) findViewById(R.id.day_spinner);
         
         mTextViewDataType = (TextView) findViewById(R.id.power_constitute_data_type);
         mTextViewTotalCount = (TextView) findViewById(R.id.power_constitue_total_count);
@@ -184,8 +189,9 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
         for(int i = 1;i <=dateOfMonth ;i++){
             mDayList.add(String.valueOf(i));
         }
-        mDayAdapter.notifyDataSetChanged();
-        mSpinnerDay.setSelection(0);
+        if(mDayAdapter != null){
+            mDayAdapter.notifyDataSetChanged();
+        }
     }
 
     private void initializeData(String dateStr) {
@@ -225,18 +231,18 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
         mDayList.add(emptyDay);
         
         
-        mYearAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+        mYearAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,
                 mYearList);
         mSpinnerYear.setAdapter(mYearAdapter);
         mSpinnerYear.setSelection(0);
 
-        mMonthAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+        mMonthAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,
                 mMonthList);
 
         mSpinnerMonth.setAdapter(mMonthAdapter);
         mSpinnerMonth.setSelection(month);
         
-        mDayAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,mDayList);
+        mDayAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,mDayList);
         mSpinnerDay.setAdapter(mDayAdapter);
         mSpinnerDay.setSelection(0);
     }
@@ -257,6 +263,9 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
     @Override
     protected void onServiceStart() {
         super.onServiceStart();
+        if(getCtrlNo()!= null){
+            CCGUID = getCtrlNo().CtrlNoGuid;
+        }
         requestPCConstitute(DATEMONTH, "", "");
     }
     
@@ -286,6 +295,8 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                     }
                 }
                 
+            }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+                ToastUtil.showToast(this, R.string.loading_error);
             }
     }
 
@@ -315,14 +326,19 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
     }
 
     private void requestPCConstitute(String dateType,String startDate,String endDate){
+        if(CCGUID == null){
+            ToastUtil.showToast(this, R.string.no_login);
+            return;
+        }
         LoginData loginData =  mService.getLoginData();
-        if(loginData == null)
+        if(loginData == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return ;
+        }
         String  userType =loginData.UserData.UserType;
-        String ccguid = loginData.CtrlNo.CtrlNoGuid;
         
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGNumCCGuid, ccguid);
+        params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGDateStart, startDate);
         params.put(JsonTag.TAGDateEnd, endDate);
         params.put(JsonTag.TAGDateType, dateType);
@@ -334,7 +350,7 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
         }else if(mCurrentPCC.equals(PPCC)){
             dataType = GDConstract.DATATYPE_PERIOD_POWER_CONSUMPTION_CONSTITUTE;
         }
-        mService.requestPowerData(dataType, params);
+        requestData(dataType, params);
     }
 //    private void requestEPCConstitute(String dataType,String startDate,String endDate){
 //        LoginData loginData =  mService.getLoginData();
@@ -396,6 +412,10 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
             switch (id) {
             case R.id.power_constitute_electrical:
                 mCurrentPCC = EPCC;
+                if(mIsFirstTime){
+                    mIsFirstTime = false;
+                    return;
+                }
                 if (mEPCConstitute == null) {
                     requestPCConstitute(DATEMONTH, "", "");
                     clearData();

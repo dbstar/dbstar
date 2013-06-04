@@ -24,6 +24,7 @@ import com.dbstar.R;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.text.ScrollingMovementMethod;
 import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.PowerTips;
@@ -183,7 +184,7 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 		super.onServiceStart();
 		Log.d(TAG, "onServiceStart");
 
-		mService.requestPowerData(GDConstract.DATATYPE_POWER_TIPS, null);
+		requestData(GDConstract.DATATYPE_POWER_TIPS, null);
 	}
 
 	public void notifyEvent(int type, Object event) {
@@ -192,6 +193,8 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
+		}else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+		    ToastUtil.showToast(this, R.string.loading_error);
 		}
 	}
 

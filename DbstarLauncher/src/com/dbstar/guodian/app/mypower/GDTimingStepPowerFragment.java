@@ -31,6 +31,7 @@ import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.guodian.parse.Util;
 import com.dbstar.model.EventData;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDArcView;
 import com.dbstar.widget.GDCircleTextView;
 
@@ -166,22 +167,23 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
-		} else if (type == EventData.EVENT_LOGIN_SUCCESSED) {
-			handleLoginSuccessed();
-		} else {
-			
-		}
+		} else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            ToastUtil.showToast(getActivity(), R.string.loading_error);
+        }
 	}
 
-	public void handleLoginSuccessed() {
+	/*public void handleLoginSuccessed() {
 		Log.d(TAG, "handleLoginSuccessed");
 		
 		mEngine.request(GDConstract.DATATYPE_POWERPANELDATA, null);
-	}
+	}*/
 	
 	private void handlePowerData(int type, Object data) {
 		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
 			updatePowerPanel((PowerPanelData) data);
+			mPriceButton.setFocusableInTouchMode(true);
+            mPriceButton.setFocusable(true);
+            mPriceButton.requestFocus();
 		}
 	}
 
@@ -340,6 +342,8 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	}
 	
 	void showPriceDialog() {
+	    if(mElecPrice == null)
+            mElecPrice = mService.getElecPrice();
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		Fragment prev = getFragmentManager().findFragmentByTag("price_dialog");
 		if (prev != null) {

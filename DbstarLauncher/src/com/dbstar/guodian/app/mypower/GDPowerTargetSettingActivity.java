@@ -32,6 +32,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     private boolean mIsRightTarget;
     private PowerTarget mPowerTarget;
     private PowerData mDefaultTarget;
+    private String CCGUID;
     
     @Override
     protected void onCreate(android.os.Bundle savedInstanceState) {
@@ -45,7 +46,6 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
             String[] menuArray = mMenuPath.split(MENU_STRING_DELIMITER);
             showMenuPath(menuArray);
         }
-        
     }
     
     /**
@@ -108,33 +108,39 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     @Override
     protected void onServiceStart() {
         super.onServiceStart();
+        if(getCtrlNo() != null){
+            CCGUID = getCtrlNo().CtrlNoGuid;
+        }
         requestPowerTarget();
     }
     
     
     private void requestPowerTarget(){
-        String CCGUID = getCCUID();
-        if(CCGUID == null)
+        if(CCGUID == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
+        }
         
         Map<String, String> parmas = new HashMap<String, String>();
         parmas.put(JsonTag.TAGNumCCGuid, CCGUID);
-        mService.requestPowerData(GDConstract.DATATYPE_POWER_TARGET, parmas);
+        requestData(GDConstract.DATATYPE_POWER_TARGET, parmas);
     }
     private void requestDefaultPowerTarget(){
-        String CCGUID = getCCUID();
-        if(CCGUID == null)
+        if(CCGUID == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
+        }
         
         Map<String, String> parmas = new HashMap<String, String>();
         parmas.put(JsonTag.TAGNumCCGuid, CCGUID);
-        mService.requestPowerData(GDConstract.DATATYPE_DEFAULT_POWER_TARGET, parmas);
+        requestData(GDConstract.DATATYPE_DEFAULT_POWER_TARGET, parmas);
     }
     
     private void requestSetPowerTarget(){
-        String CCGUID = getCCUID();
-        if(CCGUID == null)
+        if(CCGUID == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
+        }
         
 //        if(!mIsRightTarget){
 //            ToastUtil.showToast(this, R.string.error_text_input_power_target_error);
@@ -146,7 +152,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
         parmas.put(JsonTag.TAGPowerNum, powerCount + ".00");
         parmas.put(JsonTag.TAGPowerFee, "0.00");
         parmas.put(JsonTag.TAGNumOrFee, "num");
-        mService.requestPowerData(GDConstract.DATATYPE_SETTING_POWER_TARGET, parmas); 
+        requestData(GDConstract.DATATYPE_SETTING_POWER_TARGET, parmas); 
     }
     @Override
     public void notifyEvent(int type, Object event) {
@@ -176,13 +182,10 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
-            
-            if(GDConstract.DATATYPE_POWER_TARGET == guodianEvent.Type){
-                
-            }else if(GDConstract.DATATYPE_DEFAULT_POWER_TARGET == guodianEvent.Type){
-                
-            }else if(GDConstract.DATATYPE_SETTING_POWER_TARGET == guodianEvent.Type){
+            if(GDConstract.DATATYPE_SETTING_POWER_TARGET == guodianEvent.Type){
                 ToastUtil.showToast(this, R.string.text_set_power_target_fail);
+            }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+                ToastUtil.showToast(this, R.string.loading_error);
             }
         }
     }

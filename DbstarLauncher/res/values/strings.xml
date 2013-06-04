@@ -280,6 +280,16 @@
     <string name="family_text_load_ele_list_fail">出错啦! 电器列表列获取失败</string>
     <string name="family_text_input_time_hour_error">输入时间错误，请输入0~23 之间的数字</string>
     <string name="family_text_input_time_minute_error">输入时间错误，请输入0~59 之间的数字</string>
+    <string name="network_connect_error">网络连接失败..</string>
+    <string name="no_login">用户登录信息为空，没有进行登录或登录断开</string>
+    <string name="loading_error">加载数据失败</string>
+    <string name="server_error">服务器出错</string>
+    <string name="loading_city_area_info_fail">获取城市列表失败</string>
+    <string name="loading_zones_area_info_fail">获取区县列表失败</string>
+    <string name="loading_electrical_list_fail">获取电器列表失败</string>
+    <string name="ch_increase">＋</string>
+    <string name="ch_decrease">－</string>
+    
     
     
     <string name="power_target_title">用电目标设置</string>

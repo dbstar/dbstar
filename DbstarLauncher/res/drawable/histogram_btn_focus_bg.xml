@@ -2,15 +2,12 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/icon"
+        android:id="@+id/icon" android:top="1dp" android:bottom="1dp" android:left="1dp" android:right="1dp"
         android:drawable="@drawable/histogram_button"/>
 
    <item
         android:id="@+id/frame"
         android:drawable="@drawable/query_btn_frame">
-         <size
-            android:height="42dp"
-            android:width="112dp" />
         </item>
 
 </layer-list>

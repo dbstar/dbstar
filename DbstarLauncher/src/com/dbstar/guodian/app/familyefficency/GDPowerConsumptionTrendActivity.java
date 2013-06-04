@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.harmony.security.x509.ExtensionValue;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.renderscript.Element.DataType;
@@ -29,6 +31,7 @@ import com.dbstar.guodian.data.PowerConsumptionTrend.ConsumptionPercent;
 import com.dbstar.guodian.data.RoomData.RoomEletrical;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.PowerTrendPolyLineView;
 
 public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
@@ -142,7 +145,6 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     @Override
     protected void onServiceStart() {
         super.onServiceStart();
-        requestAllEleList();
         requestPowerConsumptionTrend();
     }
     
@@ -150,9 +152,10 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     @Override
     public void notifyEvent(int type, Object event) {
         super.notifyEvent(type, event);
+        EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if(EventData.EVENT_GUODIAN_DATA == type){
-            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDConstract.DATATYPE_POWER_CONSUMPTION_TREND == guodianEvent.Type){
+                requestAllEleList();
                 mTrend = (PowerConsumptionTrend) guodianEvent.Data;
                 showPolyLineView(mTrend);
                 updateTitle();
@@ -165,6 +168,12 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
                 
             }
             
+        }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+                ToastUtil.showToast(this, R.string.loading_electrical_list_fail);
+             }else{
+                 ToastUtil.showToast(this, R.string.loading_error);
+             }
         }
         
     }
@@ -188,27 +197,34 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     }
 
     private void requestPowerConsumptionTrend(){
-        String CCGUID = getCCUID();
-        if(CCGUID == null)
-            return ;
+        String CCGUID = null;
+        if(getCtrlNo() != null){
+            CCGUID = getCtrlNo().CtrlNoGuid;
+        }
+        if(CCGUID == null){
+            ToastUtil.showToast(this, R.string.no_login);
+            return;
+        }
         Map<String, String>params = new HashMap<String, String>();
         params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGVC2EquTypeId, getEquTypeId());
         params.put(JsonTag.TAGDatePeriod, getDatePeriod());
-        mService.requestPowerData(GDConstract.DATATYPE_POWER_CONSUMPTION_TREND,params);
+        requestData(GDConstract.DATATYPE_POWER_CONSUMPTION_TREND,params);
     }
     
     private void requestAllEleList(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
-            return;
+        String ctrlSeridno = null;
+        if(getCtrlNo() != null){
+            ctrlSeridno = getCtrlNo().CtrilSerialNo;
+        }
         
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        if(ctrlSeridno == null){
+            ToastUtil.showToast(this, R.string.no_login);
+            return;
+        }
         Map<String, String> params = new HashMap<String, String>();
         params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        mService.requestPowerData(GDConstract.DATATYPE_EQUMENTLIST, params);
+        requestDataNotShowDialog(GDConstract.DATATYPE_EQUMENTLIST, params);
     }
     private void initEqumentSpinner(){
         ArrayList<String> equNames = new ArrayList<String>();
@@ -217,6 +233,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         }
         mEquAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, equNames);
         mSpinnerEqu.setAdapter(mEquAdapter);
+        mEquAdapter.notifyDataSetChanged();
         
     }
     private String getDatePeriod(){

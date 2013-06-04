@@ -7,6 +7,7 @@ import com.dbstar.R;
 import com.dbstar.app.alert.GDAlertDialog;
 import com.dbstar.app.alert.GDDiskInitDialog;
 import com.dbstar.app.alert.NotificationDialog;
+import com.dbstar.guodian.data.CtrlNo;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
@@ -324,10 +325,11 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected void onServiceStart() {
 		Log.d(TAG, "onServiceStart");
-
+		
 		mService.registerPageObserver(this);
 		// get the init state of smart card.
 		mSmartcardState = mService.getSmartcardState();
+		
 	}
 
 	// this will not be called, only if when service is killed or crashed.
@@ -649,13 +651,16 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 		mDiskInitDlg.updateState(type, message);
 	}
 
-    protected String getCCUID() {
+    protected CtrlNo getCtrlNo() {
+        if(mService == null){
+            return null;
+        }
         LoginData loginData = mService.getLoginData();
         if (loginData == null)
             return null;
         if (loginData.CtrlNo == null)
             return null;
 
-        return loginData.CtrlNo.CtrlNoGuid;
+        return loginData.CtrlNo;
     }
 }

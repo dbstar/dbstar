@@ -14,6 +14,7 @@ import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.util.ToastUtil;
 
 public class GDMypowerActivity extends GDEngineActivity {
 
@@ -81,6 +82,7 @@ public class GDMypowerActivity extends GDEngineActivity {
 		} else if (mPriceType == GDConstract.PriceTypeStepPlusTiming || mPriceType == GDConstract.PriceTypeTiming) {
 			fragmentName = "com.dbstar.guodian.app.mypower.GDTimingStepPowerFragment";
 		} else {
+		    ToastUtil.showToast(this, R.string.no_login);
 			return;
 		}
 

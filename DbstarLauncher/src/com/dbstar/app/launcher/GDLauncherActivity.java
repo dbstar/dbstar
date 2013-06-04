@@ -152,6 +152,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		initializeData();
 //		startEngine();
+		mPowerController.start(mService);
 		
 		if (DeviceInitController.isBootFirstTime()) {
 			showLoadingDialog(getResources().getString(R.string.device_init_str));

@@ -95,6 +95,7 @@
                     android:textColor="@color/white"
                     android:gravity="center"
                     android:numeric="integer"
+                    android:inputType="number|text"
                     android:singleLine="true"
                     android:longClickable="false"
                     android:background="@drawable/power_target_text_bg"

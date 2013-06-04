@@ -8,9 +8,7 @@ import java.util.Map;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Html;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -18,7 +16,6 @@ import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.BaseAdapter;
@@ -32,13 +29,13 @@ import android.widget.Toast;
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.RoomData.ElecRefreshResponse;
 import com.dbstar.guodian.data.RoomData.ElecTurnResponse;
 import com.dbstar.guodian.data.RoomData.RoomEletrical;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.CircleFlowIndicator;
 
 public class GDSmartHomeMyEleActivity extends GDSmartActivity {
@@ -65,7 +62,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     private int mRoomCount,mEleCount;
     private RoomAdapter mRoomAdapter;
     private RoomEleAdapter mRoomEleAdapter;
-    private boolean mIsCanDoAction = true;
+    private String mCtrlSeridNo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -195,14 +192,6 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                 indicator.setPageCount(0);
                 mNoElePage.setVisibility(View.INVISIBLE);
                 if(data.EletricalList == null || data.EletricalList.isEmpty()){
-//                    data.EletricalList = new ArrayList<RoomData.RoomEletrical>();
-//                    Random random = new Random();
-//                    int size = random.nextInt(43);
-//                    for(int i =  0; i< size ; i++ ){
-//                        RoomEletrical eletrical = new RoomEletrical();
-//                        data.EletricalList.add(eletrical);
-//                    }
-//                    initRoomEleListView(data);
                     requestRoomEleList(data.RoomGuid);
                 }else{
                     
@@ -270,35 +259,30 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     @Override
     protected void onServiceStart() {
         super.onServiceStart();
+        if(getCtrlNo() != null)
+            mCtrlSeridNo = getCtrlNo().CtrilSerialNo;
        requestRoomList();
     }
 
     private void requestRoomList(){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        mService.requestPowerData(GDConstract.DATATYPE_ROOM_LIST, params);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
+        requestData(GDConstract.DATATYPE_ROOM_LIST, params);
     }
     
     private void requestRoomEleList(String roomGuid){
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGRoomGuid, roomGuid);
-        mService.requestPowerData(GDConstract.DATATYPE_ROOM_ELECTRICAL_LIST, params);
+        requestData(GDConstract.DATATYPE_ROOM_ELECTRICAL_LIST, params);
     }
     private void initRoomListView() {
         if (mListRoom == null || mListRoom.isEmpty()) {
@@ -334,7 +318,6 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
         
     @Override
     public void notifyEvent(int type, Object event) {
-        super.notifyEvent(type, event);
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if (type == EventData.EVENT_GUODIAN_DATA) {
             if(GDConstract.DATATYPE_ROOM_LIST == guodianEvent.Type){
@@ -354,31 +337,24 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
               }
               initRoomEleListView();
             }else if(GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsCanDoAction = true;
                 ElecTurnResponse elecTurnResponse = (ElecTurnResponse) guodianEvent.Data;
                 updateEleSwitch(elecTurnResponse);
             }else if(GDConstract.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsCanDoAction = true;
                 ElecRefreshResponse elecRefreshResponse = (ElecRefreshResponse) guodianEvent.Data;
                 updateEleInfo(elecRefreshResponse);
             }
         }else if(type == EventData.EVENT_GUODIAN_DATA_ERROR){
             
             if(GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsCanDoAction = true;
-                String error = (String) guodianEvent.Data;
-                Toast.makeText(GDSmartHomeMyEleActivity.this,error , Toast.LENGTH_SHORT).show();
+                ToastUtil.showToast(this, R.string.server_error);
             }else if(GDConstract.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
-                mHandler.removeCallbacks(mTimeOutTask);
-                mIsCanDoAction = true;
-                String error = (String) guodianEvent.Data;
-                Toast.makeText(GDSmartHomeMyEleActivity.this,error , Toast.LENGTH_SHORT).show();
+                ToastUtil.showToast(this, R.string.server_error);
+            }else{
+                ToastUtil.showToast(this, R.string.loading_error);
             }
             
         }
+        super.notifyEvent(type, event);
     }
     
     private void updateEleInfo( ElecRefreshResponse elecRefreshResponse){
@@ -737,13 +713,11 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             }
 
             case KeyEvent.KEYCODE_DPAD_CENTER: {
-                if(mIsCanDoAction){
                     if (v.getId() == R.id.smart_home_on_off) {
                         requestTurnOnOrOff();
                     } else if (v.getId() == R.id.smart_home_refresh) {
                         requestRefreshElectrical();
                     }
-                }
 
                 break;
             }
@@ -757,13 +731,10 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     
     private void requestTurnOnOrOff(){
        RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
-       LoginData loginData = mService.getLoginData();
-       if (loginData == null)
+       if(mCtrlSeridNo == null){
+           ToastUtil.showToast(this, R.string.no_login);
            return;
-       
-       if(loginData.CtrlNo == null)
-           return ;
-       String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+       }
        String adapter_seridno = eletrical.AdapterSeridNo;
        String device_guid = eletrical.DeviceGuid;
        String typeid = eletrical.EleDeviceCode;
@@ -777,37 +748,30 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
        }
        
        Map<String, String> params = new HashMap<String, String>();
-       params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+       params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
        params.put(JsonTag.TAGAdapterSeridNo, adapter_seridno);
        params.put(JsonTag.TAGDeviceGuid, device_guid);
        params.put(JsonTag.TAGTypeId, typeid);
        params.put(JsonTag.TAGOper, oper);
-       mIsCanDoAction = false;
-       mHandler.postDelayed(mTimeOutTask, 1000 * 30);
-       mService.requestPowerData(GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL, params);
+       requestData(GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL, params);
     }
     
     private void requestRefreshElectrical(){
         RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
-        LoginData loginData = mService.getLoginData();
-        if (loginData == null)
+        if(mCtrlSeridNo == null){
+            ToastUtil.showToast(this, R.string.no_login);
             return;
-        
-        if(loginData.CtrlNo == null)
-            return ;
-        String ctrlSeridno = loginData.CtrlNo.CtrilSerialNo;
+        }
         String adapter_seridno = eletrical.AdapterSeridNo;
         String device_guid = eletrical.DeviceGuid;
         String typeid = eletrical.EleDeviceCode;
         
         Map<String, String> params = new HashMap<String, String>();
-        params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
+        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGAdapterSeridNo, adapter_seridno);
         params.put(JsonTag.TAGDeviceGuid, device_guid);
         params.put(JsonTag.TAGTypeId, typeid);
-        mIsCanDoAction = false;
-        mHandler.postDelayed(mTimeOutTask, 1000 * 30);
-        mService.requestPowerData(GDConstract.DATATYPE_REFRESH_ELECTRICAL, params);
+        requestData(GDConstract.DATATYPE_REFRESH_ELECTRICAL, params);
     }
     class RoomAdapter extends BaseAdapter {
 
@@ -864,28 +828,4 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
         return (int) (dpValue * scale + 0.5f);
     }
     
-   @Override
-   public boolean onKeyDown(int keyCode, KeyEvent event) {
-       if(mIsCanDoAction)
-           return super.onKeyDown(keyCode, event);
-       else{
-           Toast.makeText(this, getString(R.string.family_text_requestting), Toast.LENGTH_SHORT).show();
-           return true;
-       }
-}
-   
-   Runnable mTimeOutTask = new Runnable() {
-    
-    @Override
-    public void run() {
-        if(!mIsCanDoAction)
-            Toast.makeText(GDSmartHomeMyEleActivity.this, getString(R.string.family_text_request_timeout), Toast.LENGTH_SHORT).show();
-        mIsCanDoAction = true;
-    }
-};
-    protected void onStop() {
-        super.onStop();
-        mHandler.removeCallbacks(mTimeOutTask);
-        
-    };
 }

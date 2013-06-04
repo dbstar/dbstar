@@ -2,6 +2,8 @@ package com.dbstar.guodian.app.mypower;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,6 +31,8 @@ import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.model.ContentData.Poster;
+import com.dbstar.model.EventData.GuodianEvent;
+import com.dbstar.util.ToastUtil;
 
 public class GDBusinessAreaActvity extends GDSmartActivity {
 	private static final String TAG = "GDBusinessAreaActvity";
@@ -50,6 +54,11 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 	private TextView mItemCountView, mPageNumberView;
 	private int mItemsCount;
 	boolean isFirstLoad = true;
+	
+	public Map<String, String> mCacheRequest;
+	
+	private static final String REQUEST_TYPE = "request_type";
+	private static final String REQUEST_DATA = "request_data";
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -83,7 +92,8 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 
 	public void initializeView() {
 		super.initializeView();
-
+		
+		mCacheRequest = new HashMap<String, String>();
 		mStrGong = getResources().getString(R.string.text_gong);
 		mStrTiao = getResources().getString(R.string.text_tiao);
 		mStrDi = getResources().getString(R.string.text_di);
@@ -195,8 +205,7 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 	protected void onServiceStart() {
 		super.onServiceStart();
 		Log.d(TAG, "onServiceStart");
-
-		mService.requestPowerData(GDConstract.DATATYPE_USERAREAINFO, mAreaId);
+		requestData(GDConstract.DATATYPE_USERAREAINFO, mAreaId);
 	}
 
 	private void quearyBusinessInfo(String areaId) {
@@ -246,16 +255,26 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 		}
 
 		if (areaId != null) {
-			mService.requestPowerData(GDConstract.DATATYPE_BUSINESSAREA, areaId);
+			requestData(GDConstract.DATATYPE_BUSINESSAREA, areaId);
+		
 		}
 	}
 
 	public void notifyEvent(int type, Object event) {
 		super.notifyEvent(type, event);
-
-		if (type == EventData.EVENT_GUODIAN_DATA) {
-			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+		EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+		if (EventData.EVENT_GUODIAN_DATA == type) {
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
+		}if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+		    if (GDConstract.DATATYPE_BUSINESSAREA == guodianEvent.Type) {
+		        ToastUtil.showToast(this, R.string.loading_error);
+	        }else if(GDConstract.DATATYPE_CITYES == guodianEvent.Type){
+	            ToastUtil.showToast(this, R.string.loading_city_area_info_fail);
+	        }else if(GDConstract.DATATYPE_ZONES == guodianEvent.Type){
+	            ToastUtil.showToast(this, R.string.loading_zones_area_info_fail);
+	        }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+	            ToastUtil.showToast(this, R.string.loading_error);
+	        }
 		}
 	}
 
@@ -352,12 +371,10 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
         mZoneSpinner.setSelection(mCurZoneIndex);
     }
     private void reqeustCitysByPId(String pid){
-	   mService.requestPowerData(GDConstract.DATATYPE_CITYES, pid);
-	   Log.i("Futao", "request city " + pid);
+	   requestDataNotShowDialog(GDConstract.DATATYPE_CITYES, pid);
 	}
     private void reqeustZonesByCId(String cid){
-        Log.i("Futao", "request zone " + cid);
-        mService.requestPowerData(GDConstract.DATATYPE_ZONES, cid);
+        requestDataNotShowDialog(GDConstract.DATATYPE_ZONES, cid);
      }
 	private void initializeAreaData(AreaInfo areaInfo) {
 		ArrayList<AreaInfo.Area> provinces = areaInfo.Provinces;

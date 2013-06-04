@@ -7,6 +7,7 @@ import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.ElectricityPrice.PeriodPrice;
 import com.dbstar.guodian.data.ElectricityPrice.StepPrice;
 import com.dbstar.guodian.parse.Util;
+import com.dbstar.util.ToastUtil;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -57,7 +58,11 @@ public class GDPriceDlgFragment extends DialogFragment {
 			Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.mypower_priceview, null, false);
 		mListView = (ListView) v.findViewById(R.id.price_list);
+		mListView.setFocusableInTouchMode(false);
+		mListView.setFocusable(false);
+		mListView.clearFocus();
 		mButton = (Button) v.findViewById(R.id.ok_button);
+		mButton.setVisibility(View.INVISIBLE);
 		mButton.setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -110,6 +115,8 @@ public class GDPriceDlgFragment extends DialogFragment {
 			mAdapter.setDataSet(stepPrice);
 			Log.d(TAG, " === listview = " + mListView);
 			mListView.setAdapter(mAdapter);
+		}else{
+		    ToastUtil.showToast(getActivity(), R.string.load_data_is_null);
 		}
 	}
 
