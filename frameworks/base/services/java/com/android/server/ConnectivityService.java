@@ -1849,9 +1849,9 @@ private NetworkStateTracker makeWimaxStateTracker() {
                             log("Not broadcasting CONNECT_ACTION " +
                                 "to torn down network " + info.getTypeName());
                         }
-                        log("***** Do not tear down network: " + info.getTypeName());
+                        log("#### Do not tear down network: " + info.getTypeName());
                         //teardown(thisNet);
-                        return;
+                        //return;
                     }
                 } else {
                     // tear down the other
