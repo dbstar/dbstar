@@ -483,6 +483,11 @@ public abstract class GDAbsSpinner extends GDAdapterView<SpinnerAdapter> {
             }
             scrapHeap.clear();
         }
+        
+        int size() {
+        	final SparseArray<View> scrapHeap = mScrapHeap;
+        	return scrapHeap.size();
+        }
     }
 
     @Override

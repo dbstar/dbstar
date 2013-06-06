@@ -527,6 +527,8 @@ public class GDLoopGallery extends GDAbsSpinner {
         setNextSelectedPositionInt(mSelectedPosition);
         
         updateSelectedItemMetadata();
+        
+        Log.d(TAG, " cache size " + mRecycler.size());
     }
 
     private void fillToGalleryLeft() {
