@@ -507,10 +507,6 @@ public class GDDataProviderService extends Service {
 					//mDiskMonitor.removeDiskFromMonitor(disk);
 					//mDiskMonitor.addDiskToMonitor(disk);
 
-					if (mIsNetworkReady) {
-						startDbStarService();
-					}
-
 					notifyDbstarServiceStorageStatus(disk);
 
 					if (mApplicationObserver != null) {
@@ -555,9 +551,8 @@ public class GDDataProviderService extends Service {
 				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
 				mIsNetworkReady = true;
 				mPeripheralController.setNetworkLedOn();
-				if (mIsStorageReady) {
-					startDbStarService();
-				}
+
+				startDbStarService();
 
 				// notifyDbstarServiceNetworkStatus();
 
