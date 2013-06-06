@@ -130,6 +130,7 @@ get_network_manage_param()
 	if [ $DMCMD = "route" ]; then
 		echo "Network route delete."
 		ip route del dev eth0
+		exit 0
 	fi
 }
 
