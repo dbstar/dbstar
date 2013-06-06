@@ -676,8 +676,9 @@ int guidelist_select_refresh()
 
 #define REMOTE_FUTURE		"9999-99-99 99:99:99"
 #define TIME_STAMP_MIN		"2013-02-01 00:00:00"
-#define DELETE_SIZE_ONCE	(107374182400LL)
+#define DELETE_SIZE_ONCE	(53687091200LL)
 //(107374182400)==(100*1024*1024*1024)==100G
+//(53687091200)==(50*1024*1024*1024)==50G
 static long long s_delete_total_size = 0LL;
 
 static int disk_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
