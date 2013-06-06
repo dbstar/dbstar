@@ -1027,13 +1027,13 @@ public class GDLoopGallery extends GDAbsSpinner {
 
             if (more && !mShouldStopFling) {
                 mLastFlingX = x;
-                post(this);
+                //post(this);
                
-//                long currentTime = AnimationUtils.currentAnimationTimeMillis();
-//                int usedTime = (int)(currentTime - mStartTime);
-//                int remainTime = mAnimationDuration - usedTime;
-//                
-//                postDelayed(this, remainTime > mFrameInterval ? mFrameInterval : remainTime);
+                long currentTime = AnimationUtils.currentAnimationTimeMillis();
+                int usedTime = (int)(currentTime - mStartTime);
+                int remainTime = mAnimationDuration - usedTime;
+                
+                postDelayed(this, remainTime > mFrameInterval ? mFrameInterval : remainTime);
             } else {
             	mStartFling = false;
             	mToLeft = false;
