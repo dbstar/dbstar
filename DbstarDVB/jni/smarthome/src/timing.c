@@ -285,8 +285,8 @@ static int timing_task_refresh_callback(char **result, int row, int column, void
 		
 		DEBUG("typeID=%s, frequency=0x%02x, controlTime=%s, aim at %s", result[i*column], frequency_wday, result[i*column+1], asctime(localtime(&timer_sec)));
 		
-		DEBUG("fuck the current pc-terminal app, its frequency from Mon. to Wed. is invalid. So make all time task as 0x00\n");
-		frequency_wday = 0x00;
+//		DEBUG("fuck the current pc-terminal app, its frequency from Mon. to Wed. is invalid. So make all time task as 0x00\n");
+//		frequency_wday = 0x00;
 		
 		if(0x00==frequency_wday){				// check whether appoint day
 			if(now_tm.tm_mday==timer_tm.tm_mday){			// it is today
