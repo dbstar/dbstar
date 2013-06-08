@@ -5,6 +5,7 @@ import java.io.InputStream;
 import com.dbstar.model.PreviewData;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.widget.GDVideoView;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -43,7 +44,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	Context mContext;
 	GDDataProviderService mService = null;
 
-	VideoView mVideoView;
+	GDVideoView mVideoView;
 	ImageView mPosterView;
 	SurfaceHolder mHolder;
 	Bitmap mImage = null;
@@ -108,7 +109,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mPlayingVideoUrl = null;
 	}
 
-	public GDMediaScheduler(Context context, VideoView videoView, ImageView posterView) {
+	public GDMediaScheduler(Context context, GDVideoView videoView, ImageView posterView) {
 		mVideoView = videoView;
 		mPosterView = posterView;
 		mContext = context;

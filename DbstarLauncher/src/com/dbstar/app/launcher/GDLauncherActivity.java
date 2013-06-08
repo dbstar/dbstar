@@ -71,7 +71,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	GDCelanderThread mCelanderThread;
 
 	// Video
-	VideoView mVideoView;
+	GDVideoView mVideoView;
 	ImageView mPosterView;
 	GDMediaScheduler mMediaScheduler;
 
@@ -1481,7 +1481,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mDateView = (TextView) findViewById(R.id.date_view);
 		mWeekView = (TextView) findViewById(R.id.week_view);
 
-		mVideoView = (VideoView) findViewById(R.id.player_view);
+		mVideoView = (GDVideoView) findViewById(R.id.player_view);
 		mPosterView = (ImageView) findViewById(R.id.poster_view);
 		mMenuContainer = (FrameLayout) findViewById(R.id.menu_container);
 		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
