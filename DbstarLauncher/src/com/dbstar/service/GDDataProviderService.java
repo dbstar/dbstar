@@ -565,7 +565,7 @@ public class GDDataProviderService extends Service {
 				mIsNetworkReady = false;
 				mPeripheralController.setNetworkLedOff();
 				// notifyDbstarServiceNetworkStatus();
-				stopDbStarService();
+				//stopDbStarService();
 
 				stopGuodianEngine();
 				break;
