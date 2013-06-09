@@ -1485,7 +1485,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mPosterView = (ImageView) findViewById(R.id.poster_view);
 		mMenuContainer = (FrameLayout) findViewById(R.id.menu_container);
 		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
-		mMainMenu.setAnimationDuration(120);
+		//mMainMenu.setAnimationDuration(120);
 
 		mMainMenuAdapter = new MainMenuAdapter(this);
 		mMainMenuAdapter.setDataSet(mMainMenuItems);
