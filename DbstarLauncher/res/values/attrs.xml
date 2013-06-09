@@ -116,8 +116,9 @@
         <attr name="normalColor" format="color|reference" />
     </declare-styleable>
     <declare-styleable name="GDSpinner">
-        <attr name="dropDownListWidth" format="dimension" />
-        <attr name="dropDownListHeight" format="dimension" />
+        <attr name="itemCount" format="integer" min="1"/>
+        <attr name="itemlayout" format="reference" />
+        
     </declare-styleable>
     
     <declare-styleable name="GDCircleTextView">

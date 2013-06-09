@@ -13,30 +13,43 @@ import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
 import android.util.Log;
+import android.view.View;
 
 import com.dbstar.R;
 
 
-public class PowerTrendPolyLineView extends DrawBase{
+public class PowerTrendPolyLineView extends View{
+    
+    
+    
+    float mWidth=0;      
+    float mHeight=0;     
+    float paddingLeft=0;
+    float paddingTop=0;
+    float paddingRight=0;
+    float paddingBottom=0;
+    float contentHeight = 0;
+    float contentWidth = 0;
+    protected Context mContext;
+     
 	private float textXInterval;
 	private float textYInterval;
-	private int textXSize;
+	private int textXCount;
 
 	private ArrayList<String> textX;  
 	private String[] textY; 
 	private String xDateType;
 	private String yDateType;
-	private float maxData;
-	private float minData;
+	private float maxValue;
+	private float minValue;
 	private float f;
 
 	private Paint mLinePaint = null;
 	private Paint mPointPaint = null;
 	private Paint mTexPaint = null;
-	private Paint mPaint = null;
-	private ArrayList<Float> mPointYData;
+	private Paint mAxisPaint = null;
+	private ArrayList<Float> mPointData;
 	private ArrayList<String> mPointTextData;
-	
 	private float origin_Y;
 	private float origin_X;
 	private Paint paint = null;
@@ -44,29 +57,41 @@ public class PowerTrendPolyLineView extends DrawBase{
 	int minIndex = 0;
     int maxIndex = 0;
     private ArrayList<Float> data;
-    private int degreeCount;
+    private int mTextYCount;
     ArrayList<Point> mPoints;
+    private float mDensity;
+    private boolean isMBias;
+    private double maxStrLength;
+    
 	public PowerTrendPolyLineView(Context context) {
 		super(context);
+		mContext = context;
+		mDensity = context.getResources().getDisplayMetrics().density;  
+		this.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 		init();
 	}
 	
-	@Override
-	public void setFrame(int mWidth, int mHeight, int paddingLeft,
-	        int paddingTop, int paddingRight, int paddingBottom) {
-	    // TODO Auto-generated method stub
-	    super.setFrame(mWidth, mHeight, paddingLeft, paddingTop, paddingRight,
-	            paddingBottom);
-	    setOriginPoint(paddingLeft, mHeight-paddingBottom);
+	public void setFrame(float mWidth, float mHeight, float paddingLeft,
+	        float paddingTop, float paddingRight, float paddingBottom) {
+	    this.mWidth = mWidth;
+        this.mHeight = mHeight;     
+        this.paddingLeft = dip2px(paddingLeft);
+        this.paddingTop = dip2px(paddingTop);
+        this.paddingRight = dip2px(paddingRight);
+        this.paddingBottom = dip2px(paddingBottom);
+        this.contentHeight = this.mHeight- this.paddingBottom - this.paddingTop;
+        this.contentWidth = this.mWidth - this.paddingLeft - this.paddingRight;
+        origin_X = this.paddingLeft;
+        origin_Y =  this.paddingTop + this.contentHeight / 2;
 	}
 	private void init(){
-	    degreeCount = 10;
+	    mTextYCount = 10;
 	    mPoints = new ArrayList<Point>();
 	    mLinePaint = new Paint();
 	    mLinePaint.setAntiAlias(true);
 	    mLinePaint.setStyle(Paint.Style.STROKE);
 	    mLinePaint.setStrokeCap(Paint.Cap.BUTT);
-	    mLinePaint.setStrokeWidth(3);
+	    mLinePaint.setStrokeWidth(dip2px(3));
 	    mLinePaint.setColor(Color.parseColor("#c14e51"));
 	    
 	    mPointPaint = new Paint();
@@ -81,164 +106,239 @@ public class PowerTrendPolyLineView extends DrawBase{
 	    mTexPaint.setStrokeCap(Paint.Cap.ROUND);
 	    mTexPaint.setColor(Color.BLACK);
         
-	    mPaint = new Paint();
-	    mPaint.setAntiAlias(true);
-	    mPaint.setStyle(Paint.Style.FILL);
-	    //mPaint.setStrokeCap(Paint.Cap.ROUND);
+	    mAxisPaint = new Paint();
+	    mAxisPaint.setAntiAlias(true);
+	    mAxisPaint.setStyle(Paint.Style.FILL);
 	    
 	    
 	}
 	
-	public void setData(ArrayList<Float> yData,ArrayList<String> xTextdata,String xType,String yType)
+	public void setData(ArrayList<Float> pointData,ArrayList<String> xTextdata,String xType,String yType)
 	{
-		this.mPointYData = yData;
+		this.mPointData = pointData;
 		xDateType =xType;
 		yDateType = yType;
-		textXSize = xTextdata.size();
-		
-
-		textXInterval = (mWidth  - paddingLeft  - paddingRight )/(textXSize+1);
-		  minData = Integer.MAX_VALUE;
-		for(int i = 0; i < yData.size(); i++)
-		{
-		    if(yData.get(i) == null)
-		        continue;
-			if(maxData<=Math.abs(yData.get(i)))
-			{
-				maxData = Math.abs(yData.get(i));
-				maxIndex = i;
-			}
-			if(minData >= Math.abs(yData.get(i)))
-            {
-                minData = Math.abs(yData.get(i));
-                minIndex =  i;
-            }
-		}
-	      if(maxData == 0)
-	        {
-	            f=0;
-	            maxData = 100;
-	        }
-	        else
-	        {
-	            f = (mHeight  - paddingTop  - paddingBottom )/(2*maxData);
-	        }   
-	        textYInterval = (mHeight  - paddingTop  - paddingBottom )/degreeCount;
-	         origin_Y = paddingTop+textYInterval*5;
-	        origin_X = paddingLeft;
-	        textY = new String[degreeCount+1];  
-
-	        for(int i = - degreeCount/2; i <degreeCount/2+1; i++)
-	        {
-
-	            textY[i + degreeCount /2 ] = CommondTools.round(maxData/(degreeCount/2)*i,0);
-
-	        }
-		/*******   yang.xu        2012-11-29  V4.0.6       BUG-0000994   begin ******/
-	        for(int i = 0; i < textY.length; i++)
-	        {
-	            if(maxData/1000000 > 1){
-	                if(i<6){
-	                    textY[i] = "-"+split(String.valueOf(Double.valueOf(textY[i].replace("-", "").replace(",", ""))/1000000))+"M";
-
-	                }else{
-	                    textY[i] = split(String.valueOf(Double.valueOf(textY[i].replace("-", "").replace(",", ""))/1000000))+"M";
-	                }
-	            }else if(maxData < 1000000 && maxData > 1000){
-	                if(i<6){
-	                    textY[i] = "-"+split(String.valueOf(Double.valueOf(textY[i].replace("-", "").replace(",", ""))/1000))+"K";
-	                }else{
-	                    textY[i] = split(String.valueOf(Double.valueOf(textY[i].replace("-", "").replace(",", ""))/1000))+"K";
-	                }
-	            }
-	        }
-		/*******   yang.xu        2012-11-29  V4.0.6       BUG-0000994   end ******/
+		textXCount = xTextdata.size();
 		textX = xTextdata;
+		
+		calculateMinMaxValue();
+		
+		initValue();
+		
+        maxStrLength = 0;
+        double strLenth;
+        for (int i = 0; i < textX.size(); i++) {
+            strLenth = mTexPaint.measureText(textX.get(i));
+            if (maxStrLength < strLenth) {
+                maxStrLength = strLenth;
+            }
+        }
+        if (maxStrLength > (textXInterval * 2 / 3)) {
+            isMBias = true;
+            // 判断倾斜后，画刻度值是否超出边界
+            if (paddingBottom < (maxStrLength + dip2px(15))) {
+                paddingBottom = (int) (maxStrLength + dip2px(15));
+                setFrame(mWidth, mHeight, paddingLeft, paddingTop,
+                        paddingRight, paddingBottom);
+                
+                // 重新计算大小
+                calculateMinMaxValue();
+                initValue();
+            }
+          
+        }else{
+            isMBias = false;
+        }
+		
 	}
+	
+	
+	/**
+	 * 计算最大值和最小值
+	 */
+	private void calculateMinMaxValue(){
+	    maxValue = 0;
+	    minValue = Integer.MAX_VALUE;
+	    if(mPointData == null)
+	        return;
+        for (int i = 0; i < mPointData.size(); i++) {
+            if (mPointData.get(i) == null)
+                continue;
+            if (maxValue <= Math.abs(mPointData.get(i))) {
+                maxValue = Math.abs(mPointData.get(i));
+                maxIndex = i;
+            }
+            if (minValue >= Math.abs(mPointData.get(i))) {
+                minValue = Math.abs(mPointData.get(i));
+                minIndex = i;
+            }
+        }
+	}
+	/**
+	 *初始化数据值 
+	 */
+    private void initValue() {
 
-	private void darwAxis(Canvas canvas){	
-	    mPaint.setColor(Color.GRAY);
-	    mPaint.setStrokeWidth(2);
-		canvas.drawLine(origin_X-3 ,paddingTop+textYInterval*degreeCount, mWidth -paddingRight ,paddingTop +textYInterval*degreeCount, mPaint);
-		canvas.drawLine(origin_X , paddingTop , paddingLeft ,paddingTop+textYInterval*degreeCount+3 , mPaint);
-		 mPaint.setStrokeWidth(1);
-		for (int i = 0; i < degreeCount; i++) {
-			canvas.drawLine(origin_X-3 , paddingTop +textYInterval*i,mWidth -paddingRight, paddingTop +textYInterval*i, mPaint);
+        // x轴每个单位的间隔距离
+        textXInterval = (contentWidth) / (textXCount + 1);
+
+       
+        
+        if (maxValue == 0) {
+            f = 0;
+            maxValue = 100;
+        } else {
+            f = (contentHeight) / (2 * maxValue);
+        }
+        // y轴每个单位的间隔距离
+        textYInterval = (contentHeight) / mTextYCount;
+        
+        
+        textY = new String[mTextYCount + 1];
+
+        for (int i = -mTextYCount / 2; i < mTextYCount / 2 + 1; i++) {
+
+            textY[i + mTextYCount / 2] = CommondTools.round(maxValue
+                    / (mTextYCount / 2) * i, 0);
+
+        }
+        
+        
+        for (int i = 0; i < textY.length; i++) {
+            if (maxValue / 1000000 > 1) {
+                if (i < 6) {
+                    textY[i] = "-"
+                            + split(String
+                                    .valueOf(Double.valueOf(textY[i].replace(
+                                            "-", "").replace(",", "")) / 1000000))
+                            + "M";
+
+                } else {
+                    textY[i] = split(String.valueOf(Double.valueOf(textY[i]
+                            .replace("-", "").replace(",", "")) / 1000000))
+                            + "M";
+                }
+            } else if (maxValue < 1000000 && maxValue > 1000) {
+                if (i < 6) {
+                    textY[i] = "-"
+                            + split(String.valueOf(Double.valueOf(textY[i]
+                                    .replace("-", "").replace(",", "")) / 1000))
+                            + "K";
+                } else {
+                    textY[i] = split(String.valueOf(Double.valueOf(textY[i]
+                            .replace("-", "").replace(",", "")) / 1000)) + "K";
+                }
+            }
+        }
+        
+        
+    }
+    
+    
+    
+	private void drawAxis(Canvas canvas){	
+	    
+	    mAxisPaint.setColor(Color.GRAY);
+	    mAxisPaint.setStrokeWidth(dip2px(2));
+	    
+	    //画最下边的 线
+		canvas.drawLine(origin_X-dip2px(3) ,paddingTop + contentHeight, mWidth -paddingRight ,paddingTop + contentHeight, mAxisPaint);
+		// 换Y轴
+		canvas.drawLine(origin_X , paddingTop , origin_X ,paddingTop + contentHeight + dip2px(3) , mAxisPaint);
+		
+		//画Y轴刻度线
+		for (int i = 0; i < mTextYCount; i++) {
+			canvas.drawLine(origin_X-dip2px(3) , paddingTop +textYInterval*i,mWidth -paddingRight, paddingTop +textYInterval*i, mAxisPaint);
 		}
 		
-		
+		//  画x轴刻度线
 		for(int i= 0;i< textX.size();i++){
 		    float startX = origin_X +(i+1)*textXInterval;
 		    float stopX =  origin_X +(i+1)*textXInterval;
-		    float startY = paddingTop+textYInterval*degreeCount;
-            float stopY = paddingTop+textYInterval*degreeCount + 3;
-		    canvas.drawLine(startX,startY,stopX,stopY, mPaint);
+		    float startY = paddingTop+textYInterval*mTextYCount;
+            float stopY = paddingTop+textYInterval*mTextYCount + dip2px(3);
+		    canvas.drawLine(startX,startY,stopX,stopY, mAxisPaint);
 		}
 		
+		// 画右边的标识信息
 		
 		Path path  = new Path();
-		int x = mWidth - paddingRight + 30;
-		int y = mHeight/2;
+		float x = mWidth - paddingRight + dip2px(30);
+		float y = mHeight/2;
 		path.moveTo(x, y);
-		path.lineTo(x + 40, y);
+		path.lineTo(x + dip2px(40), y);
 		canvas.drawPath(path, mLinePaint);
 		
-		canvas.drawRect(x + 15, y -3, x + 25, y+3 , mLinePaint);
+		canvas.drawRect(x + dip2px(15), y -dip2px(3), x + dip2px(25), y+dip2px(3) , mLinePaint);
 		
-		canvas.drawText(mContext.getString(R.string.family_text_power_count), x + 40, y+5, mTexPaint);
+		canvas.drawText(mContext.getString(R.string.family_text_power_count), x + dip2px(40), y+dip2px(5), mTexPaint);
 	} 
+	
+	/**
+	 * 画XY的刻度值
+	 * @param canvas
+	 */
+    public void drawData(Canvas canvas) {
 
-	public void drawData(Canvas canvas)
-	{
-	    
-	  
-	    mTexPaint.setTextAlign(Paint.Align.CENTER);
-	    int  y = (int) (paddingTop+textYInterval*degreeCount + 15);
-		for(int i = 0; i < textX.size(); i++)
-		{
-			canvas.drawText(textX.get(i), originX+textXInterval*(i+1)- textXInterval/2, y , mTexPaint);
-		}
-		if(xDateType != null)
-		    canvas.drawText(xDateType, mWidth  - paddingRight +5, origin_Y, mTexPaint);
+        Path path = new Path();
+        mTexPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        
+        
+        // 判读x轴的刻度值是否需要倾斜
+        double x = textXInterval ;
+        double y = 0;
+        if(isMBias){
+            // 判断倾斜后，画刻度值是否超出边界
+            x = textXInterval / 2;
+            y = Math.sqrt((maxStrLength * maxStrLength) - (x * x));
 
-		mTexPaint.setTextAlign(Paint.Align.RIGHT);
-		Rect rect = new Rect();
-		String text;
-		for(int i = 0; i < degreeCount +1; i++)
-		{   text = String.valueOf(textY[i]);
-		    mTexPaint.getTextBounds(text, 0, 1, rect);
-		    float h = rect.height() /2;
-			canvas.drawText(String.valueOf(textY[i]) + yDateType, origin_X -5, (mHeight -paddingBottom -i*textYInterval)+h, mTexPaint);
-		}
-//		if(yDateType != null){
-//		    mTexPaint.getTextBounds(yDateType, 0, 3, rect);
-//		    canvas.drawText(yDateType, paddingLeft -5, paddingTop + textYInterval / 2 + (rect.height() /2), mTexPaint);
-//		}
+        }else{
+            mTexPaint.setTextAlign(Paint.Align.CENTER);
+        }
+        
+        // 画x轴刻度值
+        for (int i = 0; i < textX.size(); i++) {
+            path.reset();
+            path.moveTo(origin_X + textXInterval * i, (float) (paddingTop + contentHeight + y));
+            path.lineTo((float) (origin_X + textXInterval * i + x), paddingTop + contentHeight);
+            canvas.drawTextOnPath(textX.get(i), path, 0, dip2px(15), mTexPaint);
+        }
+        
+        
+        if (xDateType != null)
+            canvas.drawText(xDateType, mWidth - paddingRight + 5, origin_Y,
+                    mTexPaint);
 
-	}
+        
+        //  画 y轴刻度
+        mTexPaint.setTextAlign(Paint.Align.RIGHT);
+        Rect rect = new Rect();
+        String text;
+        for (int i = 0; i < mTextYCount + 1; i++) {
+            text = String.valueOf(textY[i]);
+            mTexPaint.getTextBounds(text, 0, 1, rect);
+            float h = rect.height() / 2;
+            canvas.drawText(String.valueOf(textY[i]) + yDateType, origin_X - 5,
+                    (paddingTop + contentHeight - (i * textYInterval)) + h,
+                    mTexPaint);
+        }
+
+        mTexPaint.setStyle(Paint.Style.STROKE);
+    }
 
 	private void initPointXY(Canvas canvas)
 	{
 	
-		 
-		Log.e("drawCurve", "drawCurve");
-//		for(int i = 0; i < textXSize; i++)
-//		{	
-//			Log.e("data.get(i)", ""+data1.get(i));
-//		}
-
-		Log.e("paddingLeft  2 ", paddingLeft +"");
-
 		Point point = null;
-		for(int i = 0; i < this.mPointYData.size(); i++)
+		for(int i = 0; i < this.mPointData.size(); i++)
 		{
-		    if(mPointYData.get(i) == null){
+		    if(mPointData.get(i) == null){
 		        mPoints.add(null);
 		        continue;
 		    } 
 		    point  = new Point();
 		    point.x = (int) (origin_X + (i+1)*textXInterval);
-		    point.y = (int) (origin_Y - f*mPointYData.get(i));
+		    point.y = (int) (origin_Y - f*mPointData.get(i));
 			
 		    mPoints.add(point);
 		}	
@@ -247,9 +347,9 @@ public class PowerTrendPolyLineView extends DrawBase{
 	}
 	
 	private void drawPoint(Canvas canvas){
-	    mPaint.setColor(Color.WHITE);
-	    int w = 5;
-	    int h = 3;
+	    mAxisPaint.setColor(Color.WHITE);
+	    float w = dip2px(5);
+	    float h = dip2px(3);
         for(Point point :mPoints)
         {   if(point == null)
                 continue;
@@ -265,7 +365,7 @@ public class PowerTrendPolyLineView extends DrawBase{
         
 	}
 	
-	private void drawCurve(Canvas canvas){
+	private void drawLine(Canvas canvas){
 	    Path path =new Path();
         path.moveTo(getFirstVaildPoint().x, getFirstVaildPoint().y);
         for(Point point :mPoints){
@@ -285,7 +385,7 @@ public class PowerTrendPolyLineView extends DrawBase{
             float x = point.x + 5;
             float y =  point.y;
             
-            String st =  mPointYData.get(i).toString()+"Ԫ";
+            String st =  mPointData.get(i).toString()+"Ԫ";
             if(mPointTextData != null){
                 st = mPointTextData.get(i) + "Ԫ";
                         }
@@ -304,9 +404,9 @@ public class PowerTrendPolyLineView extends DrawBase{
             path.lineTo(x+5, y-(h*2/3));
             path.lineTo(x+5, y-(h/3));
             path.lineTo(x, y);
-            mPaint.setStyle(Paint.Style.FILL);
-            mPaint.setColor(Color.parseColor("#F0F000"));
-            canvas.drawPath(path,mPaint );
+            mAxisPaint.setStyle(Paint.Style.FILL);
+            mAxisPaint.setColor(Color.parseColor("#F0F000"));
+            canvas.drawPath(path,mAxisPaint );
             canvas.drawText(st, x +5+ w - 5, y + rect.height()/2, mTexPaint);
 
         }
@@ -314,24 +414,24 @@ public class PowerTrendPolyLineView extends DrawBase{
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		// TODO Auto-generated method stub
 		super.onDraw(canvas);
 		canvas.drawColor(Color.WHITE);
 		
-		canvas.drawRect(10, 10, mWidth -10, mHeight -10, mTexPaint);
-		darwAxis(canvas);
+		mTexPaint.setStyle(Paint.Style.STROKE);
+		canvas.drawRect(dip2px(10), dip2px(10), mWidth -dip2px(10), mHeight -dip2px(10), mTexPaint);
+		
+        if (mPointData == null || mPointData.size() == 0) {
+            return;
+        }
+		drawAxis(canvas);
 		drawData(canvas);
-		if(mPointYData==null || mPointYData.size()==0)
-		{
-			return;
-		}	
-		
 		initPointXY(canvas);
-		//drawShaderColor(canvas);
-		//drawPointText(canvas);
-		
-		drawCurve(canvas);
+		drawLine(canvas);
 		drawPoint(canvas);
+		
+		//drawShaderColor(canvas);
+       //drawPointText(canvas);
+        
 
 	}
 
@@ -400,7 +500,7 @@ public class PowerTrendPolyLineView extends DrawBase{
     }
 	
 	public void clearData(){
-	    mPointYData = null;
+	    mPointData = null;
 	    invalidate();
 	}
 	private Point getFirstVaildPoint(){
@@ -420,4 +520,11 @@ public class PowerTrendPolyLineView extends DrawBase{
         }
 	    return null;
 	}
+	
+    private int px2dip(float pxValue) {
+        return (int) (pxValue / mDensity + 0.5f);
+    }
+    private int dip2px(float dpValue) {  
+        return (int) (dpValue * mDensity + 0.5f);  
+    }  
 }

@@ -280,7 +280,12 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                     if(mCurrentPCC.equals(EPCC)){
                         refreshContectView();
                     }
-                    
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mButtonElecical.requestFocus();
+                        }
+                    });
                 }else if(GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_CONSTITUTE == guodianEvent.Type){
                     mSPCConstitute = (SPCConstitute) guodianEvent.Data;
                     initializeData(mSPCConstitute.serviceSysDate);
@@ -296,8 +301,11 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                 }
                 
             }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-                ToastUtil.showToast(this, R.string.loading_error);
+                handleErrorResponse(R.string.loading_error);
+                return;
             }
+        
+       
     }
 
     private void refreshContectView() {
@@ -327,12 +335,12 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
 
     private void requestPCConstitute(String dateType,String startDate,String endDate){
         if(CCGUID == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         LoginData loginData =  mService.getLoginData();
         if(loginData == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return ;
         }
         String  userType =loginData.UserData.UserType;

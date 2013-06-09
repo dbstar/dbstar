@@ -82,7 +82,7 @@ public class GDMypowerActivity extends GDEngineActivity {
 		} else if (mPriceType == GDConstract.PriceTypeStepPlusTiming || mPriceType == GDConstract.PriceTypeTiming) {
 			fragmentName = "com.dbstar.guodian.app.mypower.GDTimingStepPowerFragment";
 		} else {
-		    ToastUtil.showToast(this, R.string.no_login);
+		   handleErrorResponse(R.string.no_login);
 			return;
 		}
 
@@ -92,7 +92,7 @@ public class GDMypowerActivity extends GDEngineActivity {
 		FragmentTransaction transaction = getFragmentManager()
 				.beginTransaction();
 		transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-		transaction.replace(R.id.frame, f);
+		transaction.replace(R.id.page_content, f);
 		transaction.commitAllowingStateLoss();
 	}
 }

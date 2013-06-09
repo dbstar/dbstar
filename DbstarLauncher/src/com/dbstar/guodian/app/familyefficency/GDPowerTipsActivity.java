@@ -188,14 +188,14 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 	}
 
 	public void notifyEvent(int type, Object event) {
-		super.notifyEvent(type, event);
-
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-		    ToastUtil.showToast(this, R.string.loading_error);
+		    handleErrorResponse( R.string.loading_error);
+		    return;
 		}
+		super.notifyEvent(type, event);
 	}
 
 	private void handlePowerData(int type, Object data) {

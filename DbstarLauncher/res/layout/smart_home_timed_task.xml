@@ -16,6 +16,7 @@
     </RelativeLayout>
 
     <FrameLayout
+        android:id="@+id/page_content"
         android:layout_width="1181dp"
         android:layout_height="556dp"
         android:layout_below="@id/view_header"
@@ -135,8 +136,22 @@
                     android:layout_height="wrap_content"
                     android:text="@string/family_text_select_ele"
                     android:textColor="#fff" />
-
-                <Spinner
+                <com.dbstar.widget.GDSpinner
+                    android:id="@+id/ele_spinner"
+                    android:layout_width="182dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="25dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item"  >
+                </com.dbstar.widget.GDSpinner>
+               <!--  <Spinner
                     android:id="@+id/ele_spinner"
                     android:layout_width="182dp"
                     android:layout_height="30dp"
@@ -145,7 +160,7 @@
                     android:layout_marginLeft="40dp"
                     android:background="@drawable/spinner_bg"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
-                    android:spinnerMode="dropdown" />
+                    android:spinnerMode="dropdown" /> -->
 
                 <TextView
                     android:layout_width="wrap_content"

@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.dbstar.R;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.guodian.app.base.GDBaseFragment;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.JsonTag;
@@ -168,7 +169,8 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		} else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            ToastUtil.showToast(getActivity(), R.string.loading_error);
+		    GDSmartActivity activity = (GDSmartActivity) getActivity();
+            activity.handleErrorResponse(R.string.loading_error);
         }
 	}
 

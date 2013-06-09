@@ -261,21 +261,22 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 	}
 
 	public void notifyEvent(int type, Object event) {
-		super.notifyEvent(type, event);
 		EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 		if (EventData.EVENT_GUODIAN_DATA == type) {
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
 		    if (GDConstract.DATATYPE_BUSINESSAREA == guodianEvent.Type) {
-		        ToastUtil.showToast(this, R.string.loading_error);
+		        handleErrorResponse(R.string.loading_error);
 	        }else if(GDConstract.DATATYPE_CITYES == guodianEvent.Type){
-	            ToastUtil.showToast(this, R.string.loading_city_area_info_fail);
+	            handleErrorResponse(R.string.loading_city_area_info_fail);
 	        }else if(GDConstract.DATATYPE_ZONES == guodianEvent.Type){
-	            ToastUtil.showToast(this, R.string.loading_zones_area_info_fail);
-	        }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-	            ToastUtil.showToast(this, R.string.loading_error);
+	            handleErrorResponse(R.string.loading_zones_area_info_fail);
+	        }else {
+	            handleErrorResponse(R.string.loading_error);
 	        }
+		    return;
 		}
+		super.notifyEvent(type, event);
 	}
 
 	private void handlePowerData(int type, Object data) {

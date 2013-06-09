@@ -558,21 +558,24 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
             } 
         }else if( EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDConstract.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.server_error);
+                handleErrorResponse( R.string.loading_model_ele_list_fail);
             }else if(GDConstract.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.server_error);
-            }else if(GDConstract.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.loading_electrical_list_fail);
-            }else{
-                ToastUtil.showToast(this, R.string.loading_error);
+                handleErrorResponse( R.string.server_error);
+            }else if(GDConstract.DATATYPE_MODEL_LIST == guodianEvent.Type){
+                handleErrorResponse( R.string.loading_error);
+            }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+                handleErrorResponse(R.string.loading_ele_pic_list_fail);
+            }else {
+                handleErrorResponse( R.string.loading_error);
             }
+            return;
         }
         super.notifyEvent(type, event);
     }
-    
+      
     private void requestModelList(){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -582,7 +585,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     
     private void requestModeElectricalList(String modeGuid){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -593,7 +596,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     
     private void executeMode(ElectricalOperationMode mode){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -605,7 +608,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     
     private void requestAllElectrical(){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.loading_ele_pic_list_fail);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();

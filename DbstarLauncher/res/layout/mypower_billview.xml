@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:background="@drawable/view_background" >
@@ -37,6 +38,7 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/page_content"
         android:layout_width="1181dp"
         android:layout_height="536dp"
         android:layout_below="@id/view_header"
@@ -121,15 +123,29 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="40dp"
             android:orientation="horizontal" >
-
-            <Spinner
+           <com.dbstar.widget.GDSpinner
+                    android:id="@+id/year_spinner"
+                    android:layout_width="182dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="25dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    app:itemCount="8"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item" />
+            
+            <!-- <Spinner
                 android:id="@+id/year_spinner"
                 android:layout_width="182dp"
                 android:layout_height="30dp"
                 android:layout_gravity="center"
                 android:popupBackground="@drawable/spinner_dropdown_bg"
                 android:background="@drawable/spinner_bg"
-                android:spinnerMode="dropdown" />
+                android:spinnerMode="dropdown" /> -->
 
             <TextView
                 android:layout_width="wrap_content"
@@ -143,8 +159,22 @@
             <Space
                 android:layout_width="80dp"
                 android:layout_height="0dp" />
-
-            <Spinner
+                
+              <com.dbstar.widget.GDSpinner
+                    android:id="@+id/month_spinner"
+                    android:layout_width="182dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="25dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    app:itemCount="8"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item" />
+           <!--  <Spinner
                 android:id="@+id/month_spinner"
                 android:layout_width="182dp"
                 android:layout_height="30dp"
@@ -152,7 +182,7 @@
                 android:popupBackground="@drawable/spinner_dropdown_bg"
                 android:background="@drawable/spinner_bg"
                 android:spinnerMode="dropdown" />
-
+ -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -38,6 +38,7 @@
     </RelativeLayout>
 
     <FrameLayout
+        android:id="@+id/page_content"
         android:layout_width="1181dp"
         android:layout_height="536dp"
         android:layout_below="@id/view_header"

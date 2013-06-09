@@ -121,7 +121,7 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
    
     @Override
     public void notifyEvent(int type, Object event) {
-        super.notifyEvent(type, event);
+        
         if(type == EventData.EVENT_GUODIAN_DATA){
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDConstract.DATATYPE_PAYMENT_RECORDS == guodianEvent.Type){
@@ -143,8 +143,10 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
                 }
             }
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            ToastUtil.showToast(this, R.string.loading_error);
+           handleErrorResponse(R.string.loading_error);
+           return;
         }
+        super.notifyEvent(type, event);
     }
     
     private void handPaymentRecordData(PaymentRecord paymentRecord){
@@ -216,7 +218,7 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
     }
     private void requstDataFromService(){
         if(CCGUID == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String>params = new HashMap<String, String>();
@@ -228,7 +230,7 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
     
     private void requestYearPlayment(String date){
         if(CCGUID == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String>params = new HashMap<String, String>();

@@ -118,7 +118,7 @@ public class DrawPie extends DrawBase{
 
 	public void setChartDepth(int iDepth)
 	{
-		m_iDepth = iDepth;
+		m_iDepth = dip2px(iDepth);
 	}
 
 	public void setPos()

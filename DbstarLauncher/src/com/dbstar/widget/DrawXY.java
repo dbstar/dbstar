@@ -35,7 +35,7 @@ public class DrawXY extends DrawBase{
 		// TODO Auto-generated method stub
 		super.setFrame(mWidth, mHeight, paddingLeft, paddingTop, paddingRight,
 				paddingBottom);
-		setOriginPoint(paddingLeft, mHeight-paddingBottom);
+		setOriginPoint(this.paddingLeft, mHeight-this.paddingBottom);
 
 	}
 

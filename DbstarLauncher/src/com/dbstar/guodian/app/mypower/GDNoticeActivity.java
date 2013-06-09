@@ -182,16 +182,18 @@ public class GDNoticeActivity extends GDSmartActivity {
 		super.onServiceStart();
 		Log.d(TAG, "onServiceStart");
 
-		requestData(GDConstract.DATATYPE_NOTICES, null);
+		requestData(GDConstract.DATATYPE_NOTICES, "");
 	}
 
 	public void notifyEvent(int type, Object event) {
-		super.notifyEvent(type, event);
-
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
+		}else if(type == EventData.EVENT_GUODIAN_DATA_ERROR){
+		    handleErrorResponse(R.string.loading_error);
+		    return;
 		}
+		super.notifyEvent(type, event);
 	}
 	
 

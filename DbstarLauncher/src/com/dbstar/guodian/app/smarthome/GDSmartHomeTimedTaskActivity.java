@@ -50,6 +50,7 @@ import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 import com.dbstar.util.ToastUtil;
+import com.dbstar.widget.GDSpinner;
 
 public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     
@@ -95,7 +96,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     private List<Integer> mPeriodList;
     private ArrayList<String> mEleSpinnerData;
     
-    private Spinner mSpinnerEle;
+    private GDSpinner mSpinnerEle;
     private Button mButtonSwitch;
     private Button mButtonIncreaseHour;
     private Button mButtonIncreaseMinute;
@@ -150,7 +151,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mTimedTaskDetailPage = (LinearLayout) findViewById(R.id.timed_task__detail_page);
         mTimedTaskDetailPage.setVisibility(View.INVISIBLE);
         
-        mSpinnerEle = (Spinner) findViewById(R.id.ele_spinner);
+        mSpinnerEle = (GDSpinner) findViewById(R.id.ele_spinner);
         mButtonSwitch = (Button) findViewById(R.id.smart_home_switch);
         mEditTextHour = (EditText) findViewById(R.id.et_hour);
         mEditTextMinute = (EditText) findViewById(R.id.et_minute);
@@ -310,7 +311,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         });
         mEleSpinnerData = new ArrayList<String>();
         mEleSpinnerData.add(getString(R.string.family_text_please_select_ele));
-        mSpinerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, mEleSpinnerData);
+        mSpinerAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, mEleSpinnerData);
         mSpinnerEle.setAdapter(mSpinerAdapter);
         
         mSpinnerEle.setOnKeyListener(new OnKeyListener() {
@@ -680,26 +681,35 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDConstract.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
                 requestAllEleList();
-                ToastUtil.showToast(this, R.string.loading_error);
+                mPageContent.setVisibility(View.VISIBLE);
+                handleErrorResponse(R.string.loading_error);
+                //ToastUtil.showToast(this, R.string.loading_error);
             }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 mIsLoadBackAllEle = true;
                 mIsLoadAllEleSuccess = false;
+                handleErrorResponse(R.string.loading_electrical_list_fail);
             }else if(GDConstract.DATATYPE_ADD_TIMED_TASK == guodianEvent.Type){
                 String erroString = (String) guodianEvent.Data;
-                ToastUtil.showToast(this,getString( R.string.family_text_add_timed_fail));
+                handleErrorResponse(R.string.family_text_add_timed_fail);
+                //ToastUtil.showToast(this,getString( R.string.family_text_add_timed_fail));
             }else if(GDConstract.DATATYPE_MODIFY_TIMED_TASK == guodianEvent.Type){
                 String erroString = (String) guodianEvent.Data;
-                ToastUtil.showToast(this,getString( R.string.family_text_modify_timed_fail));
+                handleErrorResponse(R.string.family_text_modify_timed_fail);
+                //ToastUtil.showToast(this,getString( R.string.family_text_modify_timed_fail));
             }else if(GDConstract.DATATYPE_DELETE_TIMED_TASK == guodianEvent.Type ){
                 String erroString = (String) guodianEvent.Data;
-                ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail));
+                handleErrorResponse(R.string.family_text_delete_timed_task_fail);
+               // ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail));
             }else if(GDConstract.DATATYPE_EXECUTE_TIMED_TASK == guodianEvent.Type){
                 if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
-                    ToastUtil.showToast(this,  getString( R.string.family_text_open_timed_task_fail));
+                    handleErrorResponse(R.string.family_text_open_timed_task_fail);
+                   // ToastUtil.showToast(this,  getString( R.string.family_text_open_timed_task_fail));
                 }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
-                    ToastUtil.showToast(this,  getString( R.string.family_text_close_timed_task_fail));
+                    handleErrorResponse(R.string.family_text_close_timed_task_fail);
+                    //ToastUtil.showToast(this,  getString( R.string.family_text_close_timed_task_fail));
                 }
             }
+            return;
         }
         super.notifyEvent(type, event);
     }
@@ -710,8 +720,9 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             for(RoomEletrical eletrical: mAllElectricalList){
                 mEleSpinnerData.add(eletrical.DeviceName);
             }
-            mSpinerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, mEleSpinnerData);
+            mSpinerAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, mEleSpinnerData);
             mSpinnerEle.setAdapter(mSpinerAdapter);
+            mSpinerAdapter.notifyDataSetChanged();
         }
     }
 
@@ -981,7 +992,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     private TimedTask mCacheTask;
     private void requestTaskList(){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -991,7 +1002,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     }
     private void requestAllEleList(){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.loading_electrical_list_fail);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -1042,24 +1053,28 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
      */
     private void requestAddTask(){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
         int spinnerSelectedPosition = mSpinnerEle.getSelectedItemPosition();
         if(spinnerSelectedPosition < 1){
             if(!mIsLoadBackAllEle){
+                //handleErrorResponse(R.string.family_text_loading_electrical);
                 ToastUtil.showToast(this, R.string.family_text_loading_electrical);
                 return;
             }else{
                 if(mAllElectricalList == null || mAllElectricalList.isEmpty()){
                     if(mIsLoadAllEleSuccess){
+                        //handleErrorResponse(R.string.family_text_add_task_error1);
                         ToastUtil.showToast(this, R.string.family_text_add_task_error1);
                     }else{
+                       // handleErrorResponse(R.string.family_text_load_ele_list_fail);
                         ToastUtil.showToast(this, R.string.family_text_load_ele_list_fail);
                     }
                     return;
                 }else{
+                    //handleErrorResponse(R.string.family_text_please_select_ele);
                     ToastUtil.showToast(this, R.string.family_text_please_select_ele); 
                     return;
                 }
@@ -1175,7 +1190,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     
     private void requestDeleteTimedTask(){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         
@@ -1192,7 +1207,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     
     private void requestOpenOrCloseTimedTask(){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
          mCacheTask = mTimedTaskAdapter.getData()[mListViewTask.getSelectedItemPosition()];

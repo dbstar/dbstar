@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:background="@drawable/view_background" >
@@ -17,6 +18,7 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/page_content"
         android:layout_width="1181dp"
         android:layout_height="536dp"
         android:layout_below="@id/view_header"
@@ -39,7 +41,7 @@
 
             <LinearLayout
                 android:layout_width="fill_parent"
-                android:layout_height="40dp"
+                android:layout_height="46dp"
                 android:layout_marginBottom="20dp"
                 android:orientation="horizontal" >
 
@@ -55,7 +57,22 @@
                 <Space
                     android:layout_width="10dp"
                     android:layout_height="0dp" />
-                <Spinner
+                
+                 <com.dbstar.widget.GDSpinner
+                    android:id="@+id/date_spinner"
+                    android:layout_width="216dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="25dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                    app:itemCount="3"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item"  />
+                <!-- <Spinner
                     android:id="@+id/date_spinner"
                     android:layout_width="190dp"
                     android:layout_height="30dp"
@@ -63,9 +80,9 @@
                     android:background="@drawable/spinner_bg"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
                     android:spinnerMode="dropdown" />
-
+ -->
                 <Space
-                    android:layout_width="60dp"
+                    android:layout_width="50dp"
                     android:layout_height="0dp" />
 
                 <TextView
@@ -79,7 +96,21 @@
                 <Space
                     android:layout_width="10dp"
                     android:layout_height="0dp" />
-                <Spinner
+                <com.dbstar.widget.GDSpinner
+                    android:id="@+id/electrical_changer_spinner"
+                    android:layout_width="180dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/gd_spinner_bg"
+                    android:drawableRight="@drawable/gd_spinner_right_bg_icon"
+                    android:gravity="left|center_vertical"
+                    android:paddingLeft="25dp"
+                    android:paddingRight="5dp"
+                    android:singleLine="true"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp"
+                     app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item"/>
+               <!--  <Spinner
                     android:id="@+id/electrical_changer_spinner"
                     android:layout_width="140dp"
                     android:layout_height="30dp"
@@ -88,22 +119,22 @@
                     android:nextFocusLeft="@+id/year_spinner"
                     android:nextFocusRight="@+id/day_spinner"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
-                    android:spinnerMode="dropdown" />
+                    android:spinnerMode="dropdown" /> -->
 
                 <Space
-                    android:layout_width="100dp"
+                    android:layout_width="60dp"
                     android:layout_height="0dp" />
 
-                <Button
+                     <Button
                     android:id="@+id/power_trend_query_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="112dp"
+                    android:layout_height="42dp"
                     android:background="@drawable/query_btn_bg_selector" />
                    <Button
                     android:id="@+id/power_trend_type"
                     android:layout_height="42dp"
                     android:layout_width="112dp"
-                    android:layout_marginLeft="65dp"
+                    android:layout_marginLeft="45dp"
                    android:background="@drawable/tongbi_btn_bg_selector" />
             </LinearLayout>
 
@@ -119,7 +150,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:textColor="#ffffff"
-                    android:textSize="24sp" />
+                    android:textSize="22sp" />
             </LinearLayout>
             
             <LinearLayout

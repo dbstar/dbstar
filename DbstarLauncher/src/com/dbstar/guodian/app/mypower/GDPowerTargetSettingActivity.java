@@ -117,7 +117,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     
     private void requestPowerTarget(){
         if(CCGUID == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         
@@ -138,7 +138,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     
     private void requestSetPowerTarget(){
         if(CCGUID == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         
@@ -147,6 +147,10 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
 //            return;
 //        }
         String powerCount = mEdNewTarget.getText().toString().trim();
+        if(powerCount == null || powerCount.isEmpty()){
+            ToastUtil.showToast(this, R.string.error_text_not_input_power_target);
+            return;
+        }
         Map<String, String> parmas = new HashMap<String, String>();
         parmas.put(JsonTag.TAGNumCCGuid, CCGUID);
         parmas.put(JsonTag.TAGPowerNum, powerCount + ".00");
@@ -156,7 +160,6 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     }
     @Override
     public void notifyEvent(int type, Object event) {
-        super.notifyEvent(type, event);
         if (EventData.EVENT_GUODIAN_DATA == type) {
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDConstract.DATATYPE_POWER_TARGET == guodianEvent.Type){
@@ -183,10 +186,13 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDConstract.DATATYPE_SETTING_POWER_TARGET == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.text_set_power_target_fail);
-            }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-                ToastUtil.showToast(this, R.string.loading_error);
+                handleErrorResponse(R.string.text_set_power_target_fail);
+            }else {
+                handleErrorResponse(R.string.loading_error);
             }
+            return;
         }
+        super.notifyEvent(type, event);
     }
+    
 }

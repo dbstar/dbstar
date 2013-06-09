@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-     xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar"
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:background="@drawable/view_background" >
@@ -13,56 +13,55 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="0dp"
         android:layout_marginTop="0dp" >
-
     </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/page_content"
         android:layout_width="1181dp"
         android:layout_height="536dp"
         android:layout_below="@id/view_header"
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="0dp"
         android:layout_marginTop="20dp"
-        android:orientation="vertical"
-        android:background="@drawable/gd_middle_bj_b" >
-        
-          <LinearLayout
+        android:background="@drawable/gd_middle_bj_b"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/power_constitute_electrical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal" >
+                android:background="@drawable/mypower_payment_record_button_normal"
+                android:gravity="center"
+                android:text="@string/power_constitue_electrical"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
 
-                <Button
-                    android:id="@+id/power_constitute_electrical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/mypower_payment_record_button_normal"
-                    android:gravity="center"
-                    android:text="@string/power_constitue_electrical"
-                    android:textColor="@color/black"
-                    android:textSize="18sp" />
+            <Button
+                android:id="@+id/power_constitute_step"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mypower_payment_record_button_normal"
+                android:gravity="center"
+                android:text="@string/power_constitue_step"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
 
-                <Button
-                    android:id="@+id/power_constitute_step"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/mypower_payment_record_button_normal"
-                    android:gravity="center"
-                    android:text="@string/power_constitue_step"
-                    android:textColor="@color/black"
-                    android:textSize="18sp" />
+            <Button
+                android:id="@+id/power_constitute_timing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mypower_payment_record_button_normal"
+                android:gravity="center"
+                android:text="@string/powerprice_type_timing"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+        </LinearLayout>
 
-                <Button
-                    android:id="@+id/power_constitute_timing"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/mypower_payment_record_button_normal"
-                    android:gravity="center"
-                    android:text="@string/powerprice_type_timing"
-                    android:textColor="@color/black"
-                    android:textSize="18sp" />
-            </LinearLayout>
-        
-        
         <LinearLayout
             android:id="@+id/content"
             android:layout_width="match_parent"
@@ -79,23 +78,24 @@
                 android:layout_height="40dp"
                 android:layout_marginBottom="40dp"
                 android:orientation="horizontal" >
-                
-                   <com.dbstar.widget.GDSpinner
+
+                <com.dbstar.widget.GDSpinner
                     android:id="@+id/year_spinner"
                     android:layout_width="182dp"
                     android:layout_height="32dp"
                     android:background="@drawable/gd_spinner_bg"
                     android:drawableRight="@drawable/gd_spinner_right_bg_icon"
                     android:gravity="left|center_vertical"
-                    android:paddingLeft="20dp"
+                    android:paddingLeft="25dp"
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
                     android:textSize="14sp"
-                    app:dropDownListHeight="175dp"
-                    app:dropDownListWidth="120dp" />
-                
-                <!-- <Spinner
+                    app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item" />
+
+                <!--
+                     <Spinner
                     android:id="@+id/year_spinner"
                     android:layout_width="182dp"
                     android:layout_height="30dp"
@@ -103,7 +103,8 @@
                     android:background="@drawable/spinner_bg"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
                     android:spinnerMode="dropdown" />
- -->
+                -->
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -116,21 +117,23 @@
                 <Space
                     android:layout_width="10dp"
                     android:layout_height="0dp" />
-                     <com.dbstar.widget.GDSpinner
+
+                <com.dbstar.widget.GDSpinner
                     android:id="@+id/month_spinner"
                     android:layout_width="182dp"
                     android:layout_height="32dp"
                     android:background="@drawable/gd_spinner_bg"
                     android:drawableRight="@drawable/gd_spinner_right_bg_icon"
                     android:gravity="left|center_vertical"
-                    android:paddingLeft="20dp"
+                    android:paddingLeft="25dp"
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
                     android:textSize="14sp"
-                    app:dropDownListHeight="175dp"
-                    app:dropDownListWidth="120dp" />
-              <!--   <Spinner
+                    app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item" />
+                <!--
+                     <Spinner
                     android:id="@+id/month_spinner"
                     android:layout_width="182dp"
                     android:layout_height="30dp"
@@ -140,7 +143,8 @@
                     android:nextFocusRight="@+id/day_spinner"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
                     android:spinnerMode="dropdown" />
- -->
+                -->
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -153,28 +157,32 @@
                 <Space
                     android:layout_width="10dp"
                     android:layout_height="0dp" />
-                          <com.dbstar.widget.GDSpinner
+
+                <com.dbstar.widget.GDSpinner
                     android:id="@+id/day_spinner"
                     android:layout_width="182dp"
                     android:layout_height="32dp"
                     android:background="@drawable/gd_spinner_bg"
                     android:drawableRight="@drawable/gd_spinner_right_bg_icon"
                     android:gravity="left|center_vertical"
-                    android:paddingLeft="20dp"
+                    android:paddingLeft="25dp"
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
                     android:textSize="14sp"
-                    app:dropDownListHeight="175dp"
-                    app:dropDownListWidth="120dp" />
-               <!--  <Spinner
+                    app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item" />
+
+                <!--
+                     <Spinner
                     android:id="@+id/day_spinner"
                     android:layout_width="182dp"
                     android:layout_height="30dp"
                     android:layout_gravity="center"
                     android:background="@drawable/spinner_bg"
                     android:popupBackground="@drawable/spinner_dropdown_bg"
-                    android:spinnerMode="dropdown" /> -->
+                    android:spinnerMode="dropdown" />
+                -->
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -195,89 +203,89 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/query_btn_bg_selector" />
             </LinearLayout>
-            
-            <LinearLayout 
+
+            <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="332dp"
-                android:layout_marginTop="30dp"
-                >
-                <LinearLayout 
-                   android:layout_width="267dp"
-                    android:layout_height="332dp"
-                    android:orientation="vertical"
-                    >
-                    
-                   <TextView 
-                       android:id="@+id/power_constitue_total_count"
-                       android:layout_width="fill_parent"
-                       android:layout_height="65dp"
-                       android:gravity="center"
-                       android:textColor="#fff"
-                       />
+                android:layout_marginTop="30dp" >
+
                 <LinearLayout
-                    android:id="@+id/piechart_view" 
-                    android:layout_width="200dp"
-                    android:layout_height="135dp"
-                    ></LinearLayout>
-                </LinearLayout>
-                <FrameLayout 
-                    android:layout_width="714dp"
+                    android:layout_width="267dp"
                     android:layout_height="332dp"
-                    android:background="@drawable/power_constitute_list_bg_2"
-                    >
-                <LinearLayout 
-                    android:layout_width="714dp"
-                    android:layout_height="332dp"
-                    android:background="@drawable/power_constitute_list_bg"
-                    android:orientation="vertical"
-                    >
-                    <LinearLayout 
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/power_constitue_total_count"
                         android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        >
-                        <TextView 
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/power_constitue_color_example"
-                            android:textColor="#09b9b7"
-                            android:gravity="center"
-                            />
-                         <TextView
-                            android:id="@+id/power_constitute_data_type" 
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/power_constitue_power_data_type_step"
-                            android:textColor="#09b9b7"
-                            />
-                          <TextView 
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/power_constitue_count"
-                            android:textColor="#09b9b7"
-                            />
-                           <TextView 
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/power_constitue_count_percent"
-                            android:textColor="#09b9b7"
-                            />
+                        android:layout_height="65dp"
+                        android:gravity="center"
+                        android:textColor="#fff" />
+
+                    <LinearLayout
+                        android:id="@+id/piechart_view"
+                        android:layout_width="200dp"
+                        android:layout_height="135dp" >
                     </LinearLayout>
-                      <ListView 
-                        android:id="@+id/power_constitue_list"
-                        android:layout_width="714dp"
-                        android:layout_height="220dp"
-                        android:layout_marginTop="20dp"
-                        android:cacheColorHint="#00000000"
-                        android:listSelector="#00000000"
-                        android:divider="@null"
-                        ></ListView>
                 </LinearLayout>
-               </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="714dp"
+                    android:layout_height="332dp"
+                    android:background="@drawable/power_constitute_list_bg_2" >
+
+                    <LinearLayout
+                        android:layout_width="714dp"
+                        android:layout_height="332dp"
+                        android:background="@drawable/power_constitute_list_bg"
+                        android:orientation="vertical" >
+
+                        <LinearLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp" >
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text="@string/power_constitue_color_example"
+                                android:textColor="#09b9b7" />
+
+                            <TextView
+                                android:id="@+id/power_constitute_data_type"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/power_constitue_power_data_type_step"
+                                android:textColor="#09b9b7" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/power_constitue_count"
+                                android:textColor="#09b9b7" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/power_constitue_count_percent"
+                                android:textColor="#09b9b7" />
+                        </LinearLayout>
+
+                        <ListView
+                            android:id="@+id/power_constitue_list"
+                            android:layout_width="714dp"
+                            android:layout_height="220dp"
+                            android:layout_marginTop="20dp"
+                            android:cacheColorHint="#00000000"
+                            android:divider="@null"
+                            android:listSelector="#00000000" >
+                        </ListView>
+                    </LinearLayout>
+                </FrameLayout>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

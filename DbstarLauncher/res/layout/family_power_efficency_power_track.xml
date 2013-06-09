@@ -16,6 +16,7 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/page_content"
         android:layout_width="1181dp"
         android:layout_height="536dp"
         android:layout_below="@id/view_header"
@@ -50,13 +51,13 @@
                     android:background="@drawable/gd_spinner_bg"
                     android:drawableRight="@drawable/gd_spinner_right_bg_icon"
                     android:gravity="left|center_vertical"
-                    android:paddingLeft="20dp"
+                    android:paddingLeft="25dp"
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
                     android:textSize="14sp"
-                    app:dropDownListHeight="175dp"
-                    app:dropDownListWidth="120dp" />
+                     app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item"/>
                 <!--
                      <Spinner
                     android:id="@+id/year_spinner"
@@ -88,13 +89,13 @@
                     android:background="@drawable/gd_spinner_bg"
                     android:drawableRight="@drawable/gd_spinner_right_bg_icon"
                     android:gravity="left|center_vertical"
-                    android:paddingLeft="20dp"
+                    android:paddingLeft="25dp"
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
                     android:textSize="14sp"
-                    app:dropDownListHeight="175dp"
-                    app:dropDownListWidth="120dp" >
+                    app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item"  >
                 </com.dbstar.widget.GDSpinner>
                 <!--
                      <Spinner
@@ -129,13 +130,13 @@
                     android:background="@drawable/gd_spinner_bg"
                     android:drawableRight="@drawable/gd_spinner_right_bg_icon"
                     android:gravity="left|center_vertical"
-                    android:paddingLeft="20dp"
+                    android:paddingLeft="25dp"
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
                     android:textSize="14sp"
-                    app:dropDownListHeight="175dp"
-                    app:dropDownListWidth="120dp" >
+                     app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item"  >
                 </com.dbstar.widget.GDSpinner>
                 <!--
                      <Spinner
@@ -180,13 +181,13 @@
                     android:background="@drawable/gd_spinner_bg"
                     android:drawableRight="@drawable/gd_spinner_right_bg_icon"
                     android:gravity="left|center_vertical"
-                    android:paddingLeft="20dp"
+                    android:paddingLeft="25dp"
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
                     android:textSize="14sp"
-                    app:dropDownListHeight="175dp"
-                    app:dropDownListWidth="158dp" >
+                    app:itemCount="5"
+                    app:itemlayout="@layout/gd_spinner_drop_list_item"  >
                 </com.dbstar.widget.GDSpinner>
                <!--  <Spinner
                     android:id="@+id/electrical_changer_spinner"

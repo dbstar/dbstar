@@ -28,6 +28,7 @@ import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 import com.dbstar.util.ToastUtil;
+import com.dbstar.widget.GDSpinner;
 
 public class GDBillActivity extends GDSmartActivity {
 	private static final String TAG = "GDBillActivity";
@@ -38,7 +39,7 @@ public class GDBillActivity extends GDSmartActivity {
 	private TextView mItemsCountView;
 	private ListView mBillListView;
 	private ListAdapter mBillAdaper;
-	private Spinner mYearSpinner, mMonthSpinner;
+	private GDSpinner mYearSpinner, mMonthSpinner;
 	private ArrayAdapter<String> mYearAdapter, mMonthAdapter;
 	private ArrayList<String> mYearList, mMonthList;
 
@@ -78,8 +79,8 @@ public class GDBillActivity extends GDSmartActivity {
 		mDeviceNoView = (TextView) findViewById(R.id.device_no);
 		mAddressView = (TextView) findViewById(R.id.user_address);
 		mItemsCountView = (TextView) findViewById(R.id.items_number);
-		mYearSpinner = (Spinner) findViewById(R.id.year_spinner);
-		mMonthSpinner = (Spinner) findViewById(R.id.month_spinner);
+		mYearSpinner = (GDSpinner) findViewById(R.id.year_spinner);
+		mMonthSpinner = (GDSpinner) findViewById(R.id.month_spinner);
 
 		mBillListView = (ListView) findViewById(R.id.bill_list);
 		mBillAdaper = new ListAdapter();
@@ -135,12 +136,12 @@ public class GDBillActivity extends GDSmartActivity {
 			mMonthList.add(String.valueOf(i));
 		}
 
-		mYearAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+		mYearAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,
 				mYearList);
 		mYearSpinner.setAdapter(mYearAdapter);
 		mYearSpinner.setSelection(0);
 
-		mMonthAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+		mMonthAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,
 				mMonthList);
 
 		mMonthSpinner.setAdapter(mMonthAdapter);
@@ -186,14 +187,14 @@ public class GDBillActivity extends GDSmartActivity {
 	}
 
 	public void notifyEvent(int type, Object event) {
-		super.notifyEvent(type, event);
-
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            ToastUtil.showToast(this, R.string.loading_error);
+            handleErrorResponse(R.string.loading_error);
+            return;
         }
+		super.notifyEvent(type, event);
 	}
 
 	private void handlePowerData(int type, Object data) {

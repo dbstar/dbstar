@@ -287,6 +287,9 @@
     <string name="loading_city_area_info_fail">获取城市列表失败</string>
     <string name="loading_zones_area_info_fail">获取区县列表失败</string>
     <string name="loading_electrical_list_fail">获取电器列表失败</string>
+    <string name="loading_ele_pic_list_fail">获取电器图片失败</string>
+    <string name="loading_model_ele_list_fail">获取模式下的电器失败</string>
+    <string name="loading_room_ele_list_fail">获取房间下的电器失败</string>
     <string name="ch_increase">＋</string>
     <string name="ch_decrease">－</string>
     

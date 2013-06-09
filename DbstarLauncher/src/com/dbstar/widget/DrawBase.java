@@ -6,19 +6,6 @@ import android.graphics.Typeface;
 import android.util.Log;
 import android.view.View;
 
-/**********************************************************************************
-Copyright (C), 2011-2012, �������ͨ���缼�����޹�˾. 
-FileName:     com.smartlife.pad.view.SmartPowerDrawBase.java
-Author:��     ����lei.peng
-Version :     v4.0.1
-Date:        2012-08-04
-Description:�������õ续ͼ�����ࣨ���û��ʡ�ͼ�εĴ�С�����λ�ã�
-
- ***********************************************************************************
- History:������update past records 
- <Author>��          <Date>���� <Version>��  <Description> 
-lei.peng       2012-08-04  v4.0.1     build
- ***********************************************************************************/ 
 
 public class DrawBase extends View{
 
@@ -52,11 +39,13 @@ public class DrawBase extends View{
 	};
 
 	Paint[]         mPaints          = new Paint[30];
-	Paint           textPaint        = null;  
+	Paint           textPaint        = null;
+    private float mDensity;  
 	
 	public DrawBase(Context context) {
 		super(context);
 		this.mContext = context;
+		mDensity = context.getResources().getDisplayMetrics().density;  
 		setPaint();
 	}
 
@@ -102,10 +91,10 @@ public class DrawBase extends View{
 	public void setFrame(int mWidth,int mHeight,int paddingLeft,int paddingTop,int paddingRight,int paddingBottom){
 		this.mWidth = mWidth;
 		this.mHeight = mHeight;		
-		this.paddingLeft = paddingLeft;
-		this.paddingTop = paddingTop;
-		this.paddingRight = paddingRight;
-		this.paddingBottom = paddingBottom;
+		this.paddingLeft = dip2px(paddingLeft);
+        this.paddingTop = dip2px(paddingTop);
+        this.paddingRight = dip2px(paddingRight);
+        this.paddingBottom = dip2px(paddingBottom);
 		Log.i(TAG, "mWidth="+mWidth+"---mHeight="+mHeight+"---paddingLeft="+paddingLeft+"---paddingTop="+paddingTop+"---paddingRight="+paddingRight+"---paddingBottom="+paddingBottom);
 	}
 	
@@ -116,5 +105,11 @@ public class DrawBase extends View{
 		Log.i(TAG, "originX="+originX+"---originY="+originY);
 	}
 	
+    public int px2dip(float pxValue) {
+        return (int) (pxValue / mDensity + 0.5f);
+    }
 
+    public int dip2px(float dpValue) {
+        return (int) (dpValue * mDensity + 0.5f);
+    }
 }

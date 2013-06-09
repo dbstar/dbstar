@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/icon"
-        android:drawable="@drawable/power_target_ok_btn"/>
+        android:drawable="@drawable/power_target_ok_btn_normal"/>
 
     <item
         android:id="@+id/frame"

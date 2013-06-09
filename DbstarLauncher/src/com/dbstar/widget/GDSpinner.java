@@ -1,37 +1,28 @@
 package com.dbstar.widget;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import com.dbstar.R;
-
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.View.MeasureSpec;
 import android.widget.AbsListView.LayoutParams;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.SimpleAdapter;
+
+import com.dbstar.R;
 
 public class GDSpinner extends Button{
     
@@ -40,23 +31,35 @@ public class GDSpinner extends Button{
     private ListView mDropDownListView;
     private BaseAdapter mAdapter;
     private int mSelectionPosition = 0;
-    private int mDropDownPopuWidth = 158;
-    private int mDropDownPopuHeight = 175;
+    private int mDropDownPopuWidth = 0;
+    private int mDropDownPopuHeight = 0;
     private OnItemSelectedListener onItemSelectedListener;
-    private boolean mEnable = true;;
-    
-    
+    private int mPaddingLeft;
+    private int mItemHeight;
+    private int mItemCount = 5;
+    private int mItemDefaultCount = 5;
+    private int mItemPaddingLeft;
+    int itemLyoautId = R.layout.gd_spinner_drop_list_item;
+    private float mDensity;
+    private OnKeyListener mOnKeyListener;
     public GDSpinner(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
     public GDSpinner(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mDensity = context.getResources().getDisplayMetrics().density;  
         setOnKeyListener(onKeyListener);
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.GDSpinner);
-        mDropDownPopuWidth = (int) a.getDimension(R.styleable.GDSpinner_dropDownListWidth, mDropDownPopuWidth);
-        mDropDownPopuHeight = (int) a.getDimension(R.styleable.GDSpinner_dropDownListHeight, mDropDownPopuHeight);
+        itemLyoautId = a.getResourceId(R.styleable.GDSpinner_itemlayout, itemLyoautId);
+        mItemCount = a.getInteger(R.styleable.GDSpinner_itemCount, mItemCount);
+        
+        
+        View v = LayoutInflater.from(context).inflate(itemLyoautId, null);
+        measureChild(v);
+        mItemHeight = v.getMeasuredHeight();
+        mItemPaddingLeft = v.getPaddingLeft();
     }
 
     public GDSpinner(Context context) {
@@ -110,7 +113,6 @@ public class GDSpinner extends Button{
                 
             }
         });
-        mWidth = getLayoutParams().width;
         createListView();
         GDSpinner.this.setText(mAdapter.getItem(mSelectionPosition).toString());
         mDropDownListView.setSelection(mSelectionPosition);
@@ -134,6 +136,8 @@ public class GDSpinner extends Button{
     
     @Override
     public void setOnKeyListener(OnKeyListener l) {
+        if(l != onKeyListener)
+            this.mOnKeyListener = l;
         super.setOnKeyListener(onKeyListener);
     }
     public void setOnItemSelectedListener(OnItemSelectedListener l){
@@ -161,11 +165,22 @@ public class GDSpinner extends Button{
         
     }
     private void createListView() {
+        mWidth = getLayoutParams().width;
+        mPaddingLeft = this.getPaddingLeft();
+        mDropDownPopuWidth = mWidth - (mPaddingLeft - mItemPaddingLeft) * 2;
+        if(mAdapter.getCount() < mItemCount){
+            mItemCount = mAdapter.getCount();
+        }else{
+            if(mAdapter.getCount() < mItemDefaultCount)
+               mItemCount = mAdapter.getCount();
+            else
+                mItemCount = mItemDefaultCount;
+        }
+        mDropDownPopuHeight = mItemCount * mItemHeight + dip2px(15);
+        
         mDropDownListView = new ListView(getContext());
         LayoutParams listLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
         mDropDownListView.setCacheColorHint(Color.TRANSPARENT);
-        mDropDownListView.setSelector(new
-                ColorDrawable(Color.parseColor("#a0000000")));
         mDropDownListView.setBackgroundResource(R.drawable.gd_spinner_drop_bg_pic);
         mDropDownListView.setAdapter(mAdapter);
 //        mDropDownListView.setOnItemSelectedListener(new OnItemSelectedListener() {
@@ -204,16 +219,42 @@ public class GDSpinner extends Button{
         
         @Override
         public boolean onKey(View v, int keyCode, KeyEvent event) {
-            int action = event.getAction();
-            if (action == KeyEvent.ACTION_DOWN){
-                if(keyCode == KeyEvent.KEYCODE_DPAD_CENTER){
-                    GDSpinner.this.setInputType(InputType.TYPE_NULL);
-                    showDropList();
-                    return true;
-                }
-            } 
-            return false;
+            boolean result = false;
+            if(mOnKeyListener != null)
+                result = mOnKeyListener.onKey(v, keyCode, event);
+            
+            if(!result){
+                int action = event.getAction();
+                if (action == KeyEvent.ACTION_DOWN){
+                    if(keyCode == KeyEvent.KEYCODE_DPAD_CENTER){
+                        GDSpinner.this.setInputType(InputType.TYPE_NULL);
+                        showDropList();
+                        return true;
+                    }
+                } 
+                return false;
+            }else{
+                return result;
+            }
         }
     };
-    
+    public void measureChild(View v) {
+        ViewGroup.LayoutParams params = v.getLayoutParams();
+        if (params == null)
+            params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        int height = params.height;
+        if (height > 0) {
+            height = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
+        } else {
+            height = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        }
+        v.measure(MeasureSpec.makeMeasureSpec(params.width, MeasureSpec.UNSPECIFIED), height);
+    }
+    private int px2dip(float pxValue) {
+        return (int) (pxValue / mDensity + 0.5f);
+    }
+    private int dip2px(float dpValue) {  
+        return (int) (dpValue * mDensity + 0.5f);  
+    }   
 }

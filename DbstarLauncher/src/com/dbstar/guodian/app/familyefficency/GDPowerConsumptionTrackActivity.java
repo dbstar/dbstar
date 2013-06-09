@@ -270,7 +270,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
             CCGUID = getCtrlNo().CtrlNoGuid;
         }
         if(CCGUID == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -289,7 +289,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         }
         
         if(ctrlSeridno == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.loading_electrical_list_fail);
             return;
         }
             
@@ -299,7 +299,6 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
     }
     @Override
     public void notifyEvent(int type, Object event) {
-        super.notifyEvent(type, event);
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if(EventData.EVENT_GUODIAN_DATA == type){
             if(GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_TRACK == guodianEvent.Type){
@@ -318,14 +317,15 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
             }
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_TRACK == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.loading_error);
+                handleErrorResponse(R.string.loading_error);
             }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.loading_electrical_list_fail);
-            }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-                ToastUtil.showToast(this, R.string.loading_error);
+                handleErrorResponse(R.string.loading_electrical_list_fail);
+            }else{
+                handleErrorResponse(R.string.loading_error);
             }
+            return;
         }
-        
+        super.notifyEvent(type, event);
     }
     
     private void initTextView(StepPowerConsumptionTrack track) {
@@ -407,7 +407,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         for(int i = 0 , m = data.size();i< size ;i++){
             if(i < m ){
                 stepPower =  data.get(i);
-                data1.add(stepPower.allCount);
+                data1.add(new Float(stepPower.allCount));
             }else{
                 data1.add(null);
             }

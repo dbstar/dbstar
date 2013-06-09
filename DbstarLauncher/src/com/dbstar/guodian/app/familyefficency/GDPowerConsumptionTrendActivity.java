@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.harmony.security.x509.ExtensionValue;
 
@@ -32,6 +33,7 @@ import com.dbstar.guodian.data.RoomData.RoomEletrical;
 import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.model.EventData;
 import com.dbstar.util.ToastUtil;
+import com.dbstar.widget.GDSpinner;
 import com.dbstar.widget.PowerTrendPolyLineView;
 
 public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
@@ -45,8 +47,8 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     private static final String EQUTYPEID_ALL_COUNT = "ffffff";
     private static final int TONGBI = 1;
     private static final int HUANBI = 0;
-    private Spinner mSpinnerDate;
-    private Spinner mSpinnerEqu;
+    private GDSpinner mSpinnerDate;
+    private GDSpinner mSpinnerEqu;
     private Button mButtonQuery;
     private Button mButtonType;
     private TextView mTitle;
@@ -78,8 +80,8 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     protected void initializeView() {
         super.initializeView();
         
-        mSpinnerDate = (Spinner) findViewById(R.id.date_spinner);
-        mSpinnerEqu = (Spinner) findViewById(R.id.electrical_changer_spinner);
+        mSpinnerDate = (GDSpinner) findViewById(R.id.date_spinner);
+        mSpinnerEqu = (GDSpinner) findViewById(R.id.electrical_changer_spinner);
         mButtonQuery =  (Button) findViewById(R.id.power_trend_query_button);
         mButtonType = (Button) findViewById(R.id.power_trend_type);
         mTitle = (TextView) findViewById(R.id.power_trend_title);
@@ -89,7 +91,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         mDateList.add(getString(R.string.family_text_one_year));
         mDateList.add(getString(R.string.family_text_two_year));
         
-        mDateAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, mDateList);
+        mDateAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, mDateList);
         mSpinnerDate.setAdapter(mDateAdapter);
         
         mEquList = new ArrayList<RoomData.RoomEletrical>();
@@ -111,7 +113,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         for (RoomEletrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
-        mEquAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, equNames);
+        mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);
         mSpinnerEqu.setAdapter(mEquAdapter);
         
         mButtonQuery.setOnClickListener(new OnClickListener() {
@@ -151,7 +153,6 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     
     @Override
     public void notifyEvent(int type, Object event) {
-        super.notifyEvent(type, event);
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if(EventData.EVENT_GUODIAN_DATA == type){
             if(GDConstract.DATATYPE_POWER_CONSUMPTION_TREND == guodianEvent.Type){
@@ -170,12 +171,13 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.loading_electrical_list_fail);
+                handleErrorResponse(R.string.loading_electrical_list_fail);
              }else{
-                 ToastUtil.showToast(this, R.string.loading_error);
+                 handleErrorResponse(R.string.loading_error);
              }
+            return;
         }
-        
+        super.notifyEvent(type, event);
     }
     
     private void updateTitle() {
@@ -202,7 +204,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             CCGUID = getCtrlNo().CtrlNoGuid;
         }
         if(CCGUID == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         Map<String, String>params = new HashMap<String, String>();
@@ -219,7 +221,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         }
         
         if(ctrlSeridno == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.loading_electrical_list_fail);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -231,7 +233,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         for (RoomEletrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
-        mEquAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, equNames);
+        mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);
         mSpinnerEqu.setAdapter(mEquAdapter);
         mEquAdapter.notifyDataSetChanged();
         
@@ -269,8 +271,8 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             if(percent.CountPercent != null && !percent.CountPercent.isEmpty())
             {
                 
-                data1.add(Float.valueOf(percent.CountPercent.substring(0,percent.CountPercent.length() -1)));
-                
+               data1.add(Float.valueOf(percent.CountPercent.substring(0,percent.CountPercent.length() -1)));
+                //data1.add(new Float(new Random().nextInt(200)));
             }
             else{
                 data1.add(0f);
@@ -283,7 +285,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         }
         mPolyLineView.removeAllViews();
         mPolyLine = new PowerTrendPolyLineView(this);
-        mPolyLine.setFrame(mPolyLineView.getMeasuredWidth(), mPolyLineView.getMeasuredHeight(),  100, 50, 150, 50);
+        mPolyLine.setFrame(mPolyLineView.getMeasuredWidth(), mPolyLineView.getMeasuredHeight(),  100, 20, 150, 40);
         mPolyLine.setData(data1, xTextData, null, "%");
         mPolyLineView.addView(mPolyLine);
         

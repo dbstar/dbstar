@@ -266,7 +266,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
 
     private void requestRoomList(){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse( R.string.no_login);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
@@ -276,13 +276,13 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     
     private void requestRoomEleList(String roomGuid){
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse( R.string.loading_room_ele_list_fail);
             return;
         }
         Map<String, String> params = new HashMap<String, String>();
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGRoomGuid, roomGuid);
-        requestData(GDConstract.DATATYPE_ROOM_ELECTRICAL_LIST, params);
+        requestDataNotShowDialog(GDConstract.DATATYPE_ROOM_ELECTRICAL_LIST, params);
     }
     private void initRoomListView() {
         if (mListRoom == null || mListRoom.isEmpty()) {
@@ -318,6 +318,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
         
     @Override
     public void notifyEvent(int type, Object event) {
+     
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if (type == EventData.EVENT_GUODIAN_DATA) {
             if(GDConstract.DATATYPE_ROOM_LIST == guodianEvent.Type){
@@ -344,15 +345,18 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                 updateEleInfo(elecRefreshResponse);
             }
         }else if(type == EventData.EVENT_GUODIAN_DATA_ERROR){
-            
             if(GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.server_error);
+                handleErrorResponse(R.string.server_error);
             }else if(GDConstract.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
-                ToastUtil.showToast(this, R.string.server_error);
+                handleErrorResponse(R.string.server_error);
+            }else if(GDConstract.DATATYPE_ROOM_LIST == guodianEvent.Type){
+                handleErrorResponse(R.string.loading_error);
+            }else if(GDConstract.DATATYPE_ROOM_ELECTRICAL_LIST == guodianEvent.Type){
+                handleErrorResponse(R.string.loading_room_ele_list_fail);
             }else{
-                ToastUtil.showToast(this, R.string.loading_error);
+                handleErrorResponse(R.string.loading_error);
             }
-            
+            return;
         }
         super.notifyEvent(type, event);
     }
@@ -732,7 +736,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     private void requestTurnOnOrOff(){
        RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
        if(mCtrlSeridNo == null){
-           ToastUtil.showToast(this, R.string.no_login);
+           handleErrorResponse(R.string.no_login);
            return;
        }
        String adapter_seridno = eletrical.AdapterSeridNo;
@@ -759,7 +763,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     private void requestRefreshElectrical(){
         RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
         if(mCtrlSeridNo == null){
-            ToastUtil.showToast(this, R.string.no_login);
+            handleErrorResponse(R.string.no_login);
             return;
         }
         String adapter_seridno = eletrical.AdapterSeridNo;
