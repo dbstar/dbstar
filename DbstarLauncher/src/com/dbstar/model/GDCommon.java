@@ -65,6 +65,7 @@ public class GDCommon {
 	public static final int MSG_BOOT_COMPLETED = 0xB0004;
 	public static final int MSG_HOMEKEY_PRESSED = 0xB0005;
 	public static final int MSG_DEVICE_INIT_FINISHED = 0xB0006;
+	public static final int MSG_SYSTEM_REBOOT = 0xB0007;
 	
 	public static final int OSDDISP_TIMEOUT = 3600000;
 	public static final String KeyDisk = "disk";

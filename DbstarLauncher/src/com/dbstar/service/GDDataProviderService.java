@@ -861,6 +861,11 @@ public class GDDataProviderService extends Service {
 				break;
 			}
 
+			case GDCommon.MSG_SYSTEM_REBOOT: {
+				handleSystemReboot();
+				break;
+			}
+
 			default:
 				break;
 			}
@@ -885,6 +890,13 @@ public class GDDataProviderService extends Service {
 	private void bootCompleted() {
 		SystemUtils.setVideoSettings();
 		mIsDisplaySet = true;
+		/* when system reboot from screen off mode, donot screen on. */
+		if (SystemUtils.getSystemStatus().equals("screenoff")) {
+			Log.d(TAG, "--- BootCompleted: AUTOREBOOT-->SCREENOFF");
+			SystemUtils.setSystemStatus("running");
+			Message msg = mPowerHandler.obtainMessage(POWERMANAGER_MSG_POWERKEY);
+			msg.sendToTarget();
+		}
 	}
 	
 	private void handleHomeKeyPressed() {
@@ -899,6 +911,14 @@ public class GDDataProviderService extends Service {
 		}
 	}
 	
+	private void handleSystemReboot() {
+		if (mSleepMode == POWERMANAGER_MODE_SCREENOFF) {
+			Log.d(TAG, "+++++++++++ set system.status=screenoff");
+			SystemUtils.setSystemStatus("screenoff");
+		}
+		RebootUtils.rebootNormal(this);
+	}
+
 	private void notifySmartcardStatusChange(int state) {
 		EventData.SmartcardStatus event = new EventData.SmartcardStatus();
 		event.State = state;
@@ -2191,6 +2211,11 @@ public class GDDataProviderService extends Service {
 				case DbstarServiceApi.DEVICE_INIT_SUCCESS:
 				case DbstarServiceApi.DEVICE_INIT_FAILED: {
 					mHandler.sendEmptyMessage(GDCommon.MSG_DEVICE_INIT_FINISHED);
+					break;
+				}
+				case DbstarServiceApi.SYSTEM_REBOOT: {
+					Log.d(TAG, " ========== DbstarServer request SYSTEM_REBOOT ===========");
+					mHandler.sendEmptyMessage(GDCommon.MSG_SYSTEM_REBOOT);
 					break;
 				}
 
