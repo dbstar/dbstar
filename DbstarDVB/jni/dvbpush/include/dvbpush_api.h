@@ -50,11 +50,15 @@ typedef enum {
 	
 	CMD_SMARTHOME_CTRL				= 0x00101,		//	智能家居控制
 	
+	CMD_USER_IDLE_STATUS			= 0x00200,		//	用户处于空闲状态通知
+	
 	CMD_MAX                         = 0x0FFFF,
 	
 	DIALOG_NOTICE					= 0x20000,		// 通用信息提示对话框
 	UPGRADE_NEW_VER                 = 0x20001,     // 有新版本到来，用户选择升级
 	UPGRADE_NEW_VER_FORCE           = 0x20002,     // 有新版本到来，强制升级
+	
+	SYSTEM_REBOOT					= 0x20090,		//系统重启
 	
 	DRM_SC_INSERT_OK				= 0x20100,    // DRM smartcard Insert OK
 	DRM_SC_INSERT_FAILED			= 0x20101,    // DRM smartcard Insert failed

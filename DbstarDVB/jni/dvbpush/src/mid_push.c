@@ -634,6 +634,13 @@ void *maintenance_thread()
 	int monitor_interval = 61;
 	unsigned int loop_cnt = 0;
 	
+	time_t s_pin_sec;	// 记录开机时间（秒）
+	time_t now_sec;
+	struct tm now_tm;
+	char sqlite_cmd[256];
+	
+	time(&s_pin_sec);
+	
 	while (1)
 	{
 		pthread_mutex_lock(&mtx_maintenance);
@@ -722,6 +729,37 @@ void *maintenance_thread()
 				//return NULL;
 			}
 			push_regist_init();
+		}
+		
+		if(1==user_idle_status_get()){
+			time(&now_sec);
+			
+//			DEBUG("in user idle status,now_sec: %ld, s_pin_sec=%ld, reboot_timestamp_get()=%d\n", now_sec, s_pin_sec, reboot_timestamp_get());
+			
+			// 1、开机超过12个小时(43200)；2、与上次重启的时间差大于7200（两个小时）才有效
+			if((now_sec-s_pin_sec>43200) && (now_sec-reboot_timestamp_get())>7200){
+				localtime_r(&now_sec, &now_tm);
+				
+				// 国电网关需要在45分和整点之间保持开机状态，预留15分钟重启时间，窗口时间为0分到30分
+				if(4==now_tm.tm_hour && now_tm.tm_min>=0 && now_tm.tm_min<=30){
+					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d\n", 
+						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
+					
+					snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%ld','');",
+						GLB_NAME_REBOOT_TIMESTAMP,now_sec);
+					if(0==sqlite_execute(sqlite_cmd)){
+						s_decoder_running = 0;
+						DEBUG("set s_decoder_running=%d to stop push write\n", s_decoder_running);
+						sleep(3);
+						
+						push_destroy();
+						
+						msg_send2_UI(SYSTEM_REBOOT, NULL, 0);
+					}
+					else
+						DEBUG("replace reboot timestamp failed, don't reboot\n");
+				}
+			}
 		}
 	}
 	DEBUG("exit from push monitor thread\n");

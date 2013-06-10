@@ -63,6 +63,7 @@ static int			s_software_check = 1;
 static char			s_Language[64];
 static char			s_serviceID[64];
 static char			s_push_root_path[512];
+static char			s_reboot_timestamp_str[32];
 //static char 		*s_guidelist_unselect = NULL;
 
 static char			s_jni_cmd_public_space[20480];
@@ -79,6 +80,7 @@ static char			s_TestSpecialProductID[64];
 static int			s_PushDir_usable = 0;	// 0表示不可用，1表示可用
 static char			s_udisk_mount[64];
 static char			s_push_log_dir[512];
+static int			s_user_idle_status = 1;	// 0表示用户处在使用状态、非空闲，1表示用户处在空闲状态
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
@@ -1571,6 +1573,7 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 }
 #endif
 
+#define SYSTEM_AWAKE_TIMER_DFT		(2100)			// 35分钟
 static int system_awake_timer_get(char *buf, unsigned int bufsize)
 {
 	char sqlite_cmd[1024];
@@ -1578,48 +1581,76 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 	int system_awake_timer = 0;
 	int ret = 0;
 	
-	if(1==dvbpush_download_finish()){
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DateValue FROM GuideList WHERE DateValue>=datetime('now','localtime','+1 day','start of day') OR DateValue=date('now','localtime','+1 day','start of day') ORDER BY DateValue LIMIT 1;");
-		memset(sql_readstr,0,sizeof(sql_readstr));
-		if(0==str_sqlite_read(sql_readstr,sizeof(sql_readstr),sqlite_cmd)){
-			DEBUG("get next_push_datetime %s\n",sql_readstr);
+	time_t now_sec;
+	struct tm now_tm;
+	int system_awake_timer_deadline = 0;
+	
+	time(&now_sec);
+	localtime_r(&now_sec, &now_tm);
+	
+/*
+ 休眠开始窗口时间计算：	国电网关需要在45分到整点之间确保不处于真待机状态，而最低休眠5分钟才有意义，加上预留给休眠恢复10分钟，
+ 						因此休眠开始的窗口时间为0分到30分
+ 休眠恢复时间底线：	国电网关需要在45分到整点之间确保不处于真待机状态，减去10分钟休眠恢复时间，
+ 					因此最低需要在35分时唤醒
+*/
+	
+	if(now_tm.tm_min>=0 && now_tm.tm_min<=30){
+		system_awake_timer_deadline = 60*(35-now_tm.tm_min-1) + (60-now_tm.tm_sec);
+		
+		DEBUG("in hibernate window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d, system_awake_timer_deadline=%d\n", 
+			(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec,system_awake_timer_deadline);
+
+		if(1==dvbpush_download_finish()){
+			system_awake_timer = system_awake_timer_deadline;
 			
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT strftime(\'%%s\','%s')-strftime(\'%%s\',datetime('now','localtime'));", sql_readstr);
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DateValue FROM GuideList WHERE DateValue>=datetime('now','localtime','+1 day','start of day') OR DateValue=date('now','localtime','+1 day','start of day') ORDER BY DateValue LIMIT 1;");
 			memset(sql_readstr,0,sizeof(sql_readstr));
-			DEBUG("do sqlite cmd: %s\n", sqlite_cmd);
 			if(0==str_sqlite_read(sql_readstr,sizeof(sql_readstr),sqlite_cmd)){
-				system_awake_timer = atoi(sql_readstr);
-				system_awake_timer -= 600;
-				DEBUG("get difftime %s(%d) secs\n",sql_readstr,system_awake_timer);
-				ret = 0;
+				DEBUG("get next_push_datetime %s\n",sql_readstr);
+				
+				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT strftime(\'%%s\','%s')-strftime(\'%%s\',datetime('now','localtime'));", sql_readstr);
+				memset(sql_readstr,0,sizeof(sql_readstr));
+				DEBUG("do sqlite cmd: %s\n", sqlite_cmd);
+				if(0==str_sqlite_read(sql_readstr,sizeof(sql_readstr),sqlite_cmd)){
+					system_awake_timer = atoi(sql_readstr);
+					system_awake_timer -= (600);	// 预留给休眠恢复10分钟
+					if(system_awake_timer>system_awake_timer_deadline)
+						system_awake_timer = system_awake_timer_deadline;
+					DEBUG("get difftime %s(%d) secs\n",sql_readstr,system_awake_timer);
+					ret = 0;
+				}
+				else{
+					DEBUG("get difftime failed\n");
+				}
 			}
 			else{
-				DEBUG("get difftime failed\n");
-				system_awake_timer = 3600;
-				ret = -1;
+				DEBUG("get next_push_datetime failed\n");
 			}
 		}
 		else{
-			DEBUG("get next_push_datetime failed\n");
-			system_awake_timer = 3600;
-			ret = -1;
+			DEBUG("can NOT hibernate, downloading...\n");
+			system_awake_timer = 0;
 		}
 	}
 	else{
-		DEBUG("downloading...\n");
+		DEBUG("NOT in hibernate window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d\n", 
+			(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
+		
 		system_awake_timer = 0;
 	}
 	
 	/*
-	目前从真待机自动唤醒有异常，10个小时无法自动唤醒。暂且强制1小时
+	目前从真待机自动唤醒有异常，10个小时无法自动唤醒。暂且强制1小时。
+	2013-06-10 考虑到存在国电网关自动上报任务，真待机不超过35分钟。
 	*/
 	
-	if(system_awake_timer<=600)	// 小于等于10分钟的唤醒时间均为无效值
-		snprintf(buf,bufsize,"0");
-	else if(system_awake_timer>3600)	//大于1天的唤醒时间修正为两个小时
-		snprintf(buf,bufsize,"3600");
-	else
-		snprintf(buf,bufsize,"%d",system_awake_timer);
+	if(system_awake_timer<300)	// 小于等于5分钟的唤醒时间均为无效值
+		system_awake_timer = 0;
+	else if(system_awake_timer>SYSTEM_AWAKE_TIMER_DFT)	//确保不大于35分钟
+		system_awake_timer = SYSTEM_AWAKE_TIMER_DFT;
+	
+	snprintf(buf,bufsize,"%d",system_awake_timer);
 	
 	return ret;
 }
@@ -1880,7 +1911,13 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			*buf = s_jni_cmd_system_awake_timer;
 			*len = strlen(s_jni_cmd_system_awake_timer);
 			break;
-			
+		case CMD_USER_IDLE_STATUS:
+			DEBUG("CMD_USER_IDLE_STATUS\n");
+			if(NULL != *buf){
+				s_user_idle_status = atoi(*buf);
+				DEBUG("*buf=%s, s_user_idle_status=%d\n", *buf, s_user_idle_status);
+			}
+			break;
 		
 		case CMD_SMARTHOME_CTRL:
 			DEBUG("CMD_SMARTHOME_CTRL: %s\n", *buf);
@@ -2464,6 +2501,32 @@ static int push_dir_init()
 	return 0;
 }
 
+static int reboot_timestamp_init()
+{
+	char sqlite_cmd[512];
+	
+	memset(s_reboot_timestamp_str,0,sizeof(s_reboot_timestamp_str));
+	
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_REBOOT_TIMESTAMP);
+
+	int ret_sqlexec = sqlite_read(sqlite_cmd, s_reboot_timestamp_str, sizeof(s_reboot_timestamp_str), sqlite_cb);
+	if(ret_sqlexec<=0 || strlen(s_reboot_timestamp_str)<1){
+		DEBUG("read no s_reboot_timestamp_str from db\n");
+		snprintf(s_reboot_timestamp_str, sizeof(s_reboot_timestamp_str), "0");
+	}
+	else
+		DEBUG("read s_reboot_timestamp_str: %s\n", s_reboot_timestamp_str);
+		
+	return 0;
+}
+
+int reboot_timestamp_get()
+{
+	return atoi(s_reboot_timestamp_str);
+}
+
+
 // 联调测试阶段，智能卡数量不够，这里直接指定业务ID。正式运营的盒子不能执行到这里
 static int TestSpecialProductID_init()
 {
@@ -2865,10 +2928,16 @@ int ProductID_check(char *productid)
 		return -1;
 }
 
+int user_idle_status_get()
+{
+	return s_user_idle_status;
+}
+
 int setting_init_with_database()
 {
 	cur_language_init();
 	push_dir_init();
+	reboot_timestamp_init();
 	serviceID_init();
 //	guidelist_select_refresh();
 	SCEntitleInfo_init();

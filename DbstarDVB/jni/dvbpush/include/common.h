@@ -107,6 +107,7 @@ typedef enum{
 #define GLB_NAME_LOADER_VERSION		"LoaderVersion"
 #define GLB_NAME_DBDATASERVERIP		"DBDataServerIP"
 #define GLB_NAME_DBDATASERVERPORT	"DBDataServerPort"
+#define GLB_NAME_REBOOT_TIMESTAMP	"RebootStamp"
 
 #define INITIALIZE_MIDPATH	"pushroot/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"

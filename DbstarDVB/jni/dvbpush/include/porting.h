@@ -39,5 +39,7 @@ int setting_init_with_database();
 int pushinfo_reset(void);
 int smartcard_entitleinfo_refresh();
 int pushdir_usable();
+int user_idle_status_get();
+int reboot_timestamp_get();
 
 #endif
