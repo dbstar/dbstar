@@ -43,6 +43,8 @@ public class DbstarServiceApi {
 	public static final int CMD_DRM_SC_INSERT               = 0x00061;
 	public static final int CMD_DRM_SC_REMOVE               = 0x00062;
 	
+	public static final int SYSTEM_REBOOT                   = 0x20090;    // System reboot
+
 	public static final int DRM_SC_INSERT_OK				= 0x20100;    // DRM smartcard Insert OK
 	public static final int DRM_SC_INSERT_FAILED			= 0x20101;    // DRM smartcard Insert failed
 	public static final int DRM_SC_REMOVE_OK				= 0x20102;    // DRM smartcard Remove OK

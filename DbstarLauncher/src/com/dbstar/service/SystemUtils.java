@@ -13,24 +13,43 @@ import android.util.Log;
 
 public class SystemUtils {
 
-	private static final String SmartHomePrepertyName = "service.smarthome.started";
+	private static final String TAG =  "SystemUtils";
+
+	private static final String SystemStatusProperty = "persist.sys.status";
+	private static final String SmartHomeProperty = "service.smarthome.started";
+	private static final String MuteFile = "/data/dbstar/mute";
+	private static final String VolumeFile = "/data/dbstar/volume";
+	private static final String STR_1080SCALE = "ro.platform.has.1080scale";
+	private static final String VideoAxisFile = "/sys/class/video/axis";
+	private static final String DispFile = "/sys/class/ppmgr/disp";
+
+	public static void setSystemStatus(String status) {
+		if (status == null)
+			return;
+		Log.d(TAG, "+++++++++++ setSystemStatus("+ status + ")");
+		SystemProperties.set(SystemStatusProperty, status);
+		String state = SystemProperties.get(SystemStatusProperty, "");
+		Log.d(TAG, "+++++++++++ getSystemStatus()=" + state);
+
+		return;
+	}
+
+	public static String getSystemStatus() {
+		String state = SystemProperties.get(SystemStatusProperty, "");
+		Log.d(TAG, "+++++++++++ getSystemStatus()=" + state);
+		return state;
+	}
 
 	public static void startSmartHomeServer() {
-		SystemProperties.set(SmartHomePrepertyName, "1");
+		SystemProperties.set(SmartHomeProperty, "1");
 	}
 
 	public static void stopSmartHomeServer() {
-		SystemProperties.set(SmartHomePrepertyName, "0");
+		SystemProperties.set(SmartHomeProperty, "0");
 	}
 
-	private static final String MuteFile = "/data/dbstar/mute";
-	private static final String VolumeFile = "/data/dbstar/volume";
-	private static final String TAG =  "SystemUtils";
-
-	
 	public static void clearAudioInfo() {
 		deleteFile(MuteFile);
-//		deleteFile(VolumeFile);
 	}
 	
 	public static void saveMute(int mute) {
@@ -92,9 +111,6 @@ public class SystemUtils {
 			return 1;
 		}
 	}
-	private static final String STR_1080SCALE = "ro.platform.has.1080scale";
-	private static final String VideoAxisFile = "/sys/class/video/axis";
-	private static final String DispFile = "/sys/class/ppmgr/disp";
 	
 	public static void setVideoSettings() {
 		if(SystemProperties.getInt(STR_1080SCALE, 0) == 2){
@@ -102,6 +118,5 @@ public class SystemUtils {
             writeSysfs(VideoAxisFile, "0 0 1280 720");
             writeSysfs(DispFile, "1280 720");
         }
-
 	}
 }
