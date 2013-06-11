@@ -144,9 +144,7 @@ public class GDEngine {
 		
 		mClient.connectToServer();
 	}
-	public boolean  isSocketConnected(){
-	   return mClient.isSocketConnected();
-	}
+
 	public void stop() {
 		Log.d(TAG, " ===== stop guodian engine ======= ");
 		mState = STATE_DISCONNECTED;

@@ -2579,10 +2579,7 @@ public class GDDataProviderService extends Service {
 	public void reconnect() {
 		mGuodianEngine.reconnect();
 	}
-	
-	public boolean isSocketConected(){
-	    return mGuodianEngine.isSocketConnected();
-	}
+
 	// Guodian Related interface
 	public void requestPowerData(int type, Object args) {
 		mGuodianEngine.requestData(type, args);

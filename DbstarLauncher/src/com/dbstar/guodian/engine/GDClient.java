@@ -190,27 +190,19 @@ public class GDClient {
 	}
 
 	public void connectToServer() {
-	    mClientHandler.removeMessages(MSG_COMMAND);
-	    Log.i(TAG, "connectToServer + mClientHandler.removeMessages(CMD_RECONNECT)");
+	    Log.d(TAG, "connectToServer");
 		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
 		msg.arg1 = CMD_CONNECT;
 		msg.sendToTarget();
 	}
 
-    Runnable ReconnectToServerTask = new Runnable() {
-        public void run() {
-            Log.i(TAG, " mClientHandler.postDelayed(new Runnable() {");
-            Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
-            msg.arg1 = CMD_CONNECT;
-            msg.sendToTarget();
-        }
-    };
 	public void connectToServerDelayed(long delayMillis) {
-	    Log.i(TAG, "connectToServerDelayed" + delayMillis);
-	    mClientHandler.removeMessages(MSG_COMMAND);
-		mClientHandler.postDelayed(ReconnectToServerTask, delayMillis);
+		Log.d(TAG, "connectToServerDelayed" + delayMillis);
+		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
+		msg.arg1 = CMD_CONNECT;
+		mClientHandler.sendMessageDelayed(msg, delayMillis);
 	}
-	
+
 	public void login() {
 		Task task = new Task();
 		String taskId = GDCmdHelper.generateUID();
@@ -1096,12 +1088,5 @@ public class GDClient {
 
 			Log.d(TAG, " ============ stop 2 ============");
 		}
-	}
-	
-	public boolean isSocketConnected(){
-	    if(mSocket != null && mSocket.isConnected())
-	        return true;
-	    else 
-	        return false;
 	}
 }
