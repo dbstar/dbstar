@@ -6,7 +6,11 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
 
+import android.content.Context;
 import android.util.Log;
 
 public class FileOperation {
@@ -65,4 +69,43 @@ public class FileOperation {
             writeString(file, value);
         }
     }
+
+	public static void saveValueToFile(Context context, String path, String value) {
+		Log.d(TAG, "save " + value + " to " + path);
+		try {
+			byte[] setflag = value.getBytes();
+			FileOutputStream fos = context.openFileOutput(path,
+			Context.MODE_PRIVATE);
+			fos.write(setflag);
+			fos.close();
+		} catch (Exception e) {
+			Log.e(TAG,"write file error:" + "path");
+			e.printStackTrace();
+		}
+	}
+
+	public static String readValueFromFile(Context context, String path) {
+		String value = null;
+
+		try {
+            int count = 0;
+            byte[] buf = new byte[100];
+            FileInputStream in = context.openFileInput(path);
+            BufferedInputStream bIn = new BufferedInputStream(in);
+            count = bIn.read(buf, 0, buf.length);
+			if (count>0) {
+				value = new String(buf, 0, count);
+			}
+            bIn.close();
+			Log.d(TAG, " === read value == " + value + " " + path);
+        } catch (FileNotFoundException e1) {
+            ;
+        } catch (IOException e) {
+            e.printStackTrace();
+            context.deleteFile(path);
+        }
+		
+		return value;
+	}
+
 }

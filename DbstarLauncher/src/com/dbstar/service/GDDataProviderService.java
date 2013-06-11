@@ -58,6 +58,7 @@ public class GDDataProviderService extends Service {
 	private static final String TAG = "GDDataProviderService";
 
 	public static final int POWERMANAGER_MSG_POWERKEY = 0x1;
+	public static final int POWERMANAGER_MSG_SIMULATEKEY = 0x2;
 	public static final int POWERMANAGER_MODE_RUNNING = 0x101;
 	public static final int POWERMANAGER_MODE_SCREENOFF = 0x102;
 	public static final int POWERMANAGER_MODE_SLEEP = 0x103;
@@ -440,11 +441,18 @@ public class GDDataProviderService extends Service {
 		public void handleMessage(Message msg) {
 			int msgId = msg.what;
 			switch (msgId) {
-			case POWERMANAGER_MSG_POWERKEY:
+			case POWERMANAGER_MSG_POWERKEY: {
 				Log.d(TAG, "sendKey(KEYCODE_POWER)");
 				Instrumentation inst = new Instrumentation();
 				inst.sendKeyDownUpSync(KeyEvent.KEYCODE_POWER);
 				break;
+			}
+			case POWERMANAGER_MSG_SIMULATEKEY: {
+				Log.d(TAG, "sendKey()" + msg.arg1);
+				Instrumentation inst = new Instrumentation();
+                inst.sendKeyDownUpSync(msg.arg1);
+				break;
+			}
 			default:
 				break;
 			}
@@ -1793,6 +1801,12 @@ public class GDDataProviderService extends Service {
 		}
 
 		return previews;
+	}
+
+	public void sendSimulateKey(int keyCode) {
+		Message msg = mPowerHandler.obtainMessage(POWERMANAGER_MSG_SIMULATEKEY);
+		msg.arg1 = keyCode;
+        msg.sendToTarget();
 	}
 
 	// cancel the requests from this observer

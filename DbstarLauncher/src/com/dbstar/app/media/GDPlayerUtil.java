@@ -51,6 +51,7 @@ public class GDPlayerUtil {
 			intent.setAction("android.intent.action.View");
 
 			FileOperation.write(Fb0Blank, "1");
+			FileOperation.saveValueToFile(context, GDCommon.FlagPlayVideo, "1");
 			
 			GDBaseActivity activity = (GDBaseActivity) context;
 			activity.startActivity(intent, false);

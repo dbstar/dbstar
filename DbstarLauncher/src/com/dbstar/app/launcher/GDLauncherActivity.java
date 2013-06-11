@@ -58,6 +58,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.FrameLayout;
 import android.widget.VideoView;
+import com.dbstar.util.FileOperation;
 
 public class GDLauncherActivity extends GDBaseActivity implements
 		GDApplicationObserver {
@@ -127,6 +128,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.d(TAG, "onCreate");
 
 		getWindow().getDecorView().setSystemUiVisibility(
 				View.SYSTEM_UI_FLAG_LOW_PROFILE);
@@ -168,7 +170,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onStart() {
 		super.onStart();
 
-		//Log.d(TAG, "++++++onStart");
+		Log.d(TAG, "++++++onStart");
 	
 		mCelanderThread.setUpdate(true);
 	
@@ -176,11 +178,23 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		showMarqueeView();
 		
 //		resetMenuStack();
-
+		String flagPlayVideo = FileOperation.readValueFromFile(this, GDCommon.FlagPlayVideo);
+        if (flagPlayVideo != null && flagPlayVideo.equals("1")) {
+            //deleteFile(GDCommon.FlagPlayVideo);
+            mSimulateHomeKey = true;
+            mMediaScheduler.simulateHomeKey();
+			if (!isMute()) {
+				mMediaScheduler.setMuteWithSilence();
+			}
+        }
 	}
 	
+	private boolean mSimulateHomeKey = false;
+
 	public void onResume() {
 		super.onResume();
+		
+		Log.d(TAG, " onResume ");
 
 		mMainMenu.requestFocus();
 
@@ -194,6 +208,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onPause() {
 		super.onPause();
 
+		Log.d(TAG, "onPause");
 		mMediaScheduler.pause();
 		
 		if (mPowerController != null) {
@@ -203,11 +218,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public void onStop() {
 		super.onStop();
-		//Log.d(TAG, "++++++onStop");
+		Log.d(TAG, "++++++onStop");
+		mSimulateHomeKey = false;
+
+		mMediaScheduler.cancelSimulateHomeKey();
 
 		mCelanderThread.setUpdate(false);
 
 		hideMarqeeView();
+
+		mMediaScheduler.unmuteWithSilence();
 	}
 
 	public void onDestroy() {
@@ -309,12 +329,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			
 			mLeaveStart = true;
 			
-			mHideSubMenu = true;
+			//mHideSubMenu = true;
 			
 			mMainMenu.setOnItemSelectedListener(null);
 			
-			LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
-			controller.setAnimation(mGallerySlideToLeftAnim);
+			//LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
+			//controller.setAnimation(mGallerySlideToLeftAnim);
 
 			long time = AnimationUtils.currentAnimationTimeMillis();
 
@@ -323,7 +343,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
 			}
 			
-			mMainMenu.startLayoutAnimation();
+			//mMainMenu.startLayoutAnimation();
+			
+			//TODO: remove animation for performance!
+			//mHideSubMenu = false;
+			onChildMenuHided();
 		}
 	}
 	
@@ -470,13 +494,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 //			Log.d(TAG, " mPopupMenuContainer.getVisibility() "
 //					+ mPopupMenuContainer.getVisibility());
 			if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
-				mShowPopupMenuAnimation.setStartTime(time);
-				mFocusItemBackground.startAnimation(mFocusZoomOut);
-				mPopupMenuContainer.startAnimation(mShowPopupMenuAnimation);
+				//TODO: remove animation for performance!
+				//mShowPopupMenuAnimation.setStartTime(time);
+				//mFocusItemBackground.startAnimation(mFocusZoomOut);
+				//mPopupMenuContainer.startAnimation(mShowPopupMenuAnimation);
+				displayPopupMenu(true);
 			} else {
-				mPopupMenuFocusedAnimation.setStartTime(time);
-				mFocusItemBackground.startAnimation(mFocusZoomOut);
-				mPopupMenuContainer.startAnimation(mPopupMenuFocusedAnimation);
+				//TODO: remove animation for performance!
+				//mPopupMenuFocusedAnimation.setStartTime(time);
+				//mFocusItemBackground.startAnimation(mFocusZoomOut);
+				//mPopupMenuContainer.startAnimation(mPopupMenuFocusedAnimation);
 			}
 		} else {
 			if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
@@ -1004,11 +1031,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		adapter.setDataSet(menuItems);
 		adapter.notifyDataSetChanged();
 
-		LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
-		controller.setAnimation(mGallerySlideToRightAnim);
+		//LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
+		//controller.setAnimation(mGallerySlideToRightAnim);
 		
-		mShowSubMenu = true;
-		mMainMenu.startLayoutAnimation();
+		//mShowSubMenu = true;
+		//mMainMenu.startLayoutAnimation();
+		
+		//TODO: remove animation for performance!
+		//mShowSubMenu = false;
+		onChildMenuShown();
 	}
 
 	// submenu slide to right end
@@ -1159,6 +1190,25 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	
 	void homeKeyPressed() {
 		if (mEnterStart || mLeaveStart) {
+			return;
+		}
+
+		Log.d(TAG, " --- homekey pressed -----");
+		
+		if (mSimulateHomeKey) {
+			// Check whether this home key is sent by simulation,
+			// if not, just wait.
+			boolean isKeySent = mMediaScheduler.isHomeKeySent();
+			if (!isKeySent) {
+				return;
+			}
+
+			mMediaScheduler.resetHomeKeyFlag();
+			mSimulateHomeKey = false;
+
+			deleteFile(GDCommon.FlagPlayVideo);
+			Log.d(TAG, "===== simulate home key press ===");
+			mMediaScheduler.unmuteWithSilence();
 			return;
 		}
 

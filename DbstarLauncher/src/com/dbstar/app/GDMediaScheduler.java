@@ -21,6 +21,9 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.VideoView;
+import android.view.KeyEvent;
+import android.content.Intent;
+import com.dbstar.service.GDAudioController;
 
 public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		OnErrorListener, OnPreparedListener, SurfaceHolder.Callback {
@@ -70,6 +73,61 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			}
 		}
 	};
+
+	private Runnable mSimulateHomeKeyTask = new Runnable() {
+		public void run() {
+			startSimulateHomeKey();			
+		}
+
+	};
+
+	private boolean mSimulateHomeKey = false;
+	private boolean mHomeKeyIsSent = false;
+	public boolean isHomeKeySent() {
+		return mHomeKeyIsSent;
+	}
+	public void resetHomeKeyFlag() {
+		mHomeKeyIsSent = false;
+	}
+
+	public void simulateHomeKey() {
+		// Home key will be sent when player is prepared!
+		// so just set a flag here.
+		mSimulateHomeKey = true;
+	}
+
+	void startSimulateHomeKey() {
+		if (mService != null) {
+			mService.sendSimulateKey(KeyEvent.KEYCODE_HOME);
+			mHomeKeyIsSent = true;
+		}
+	}
+
+	public void cancelSimulateHomeKey() {
+		mSimulateHomeKey = false;
+		mHandler.removeCallbacks(mSimulateHomeKeyTask);
+	}
+
+	private boolean mIsMuteSilently = false;
+	
+	// Mute the audio before sending home key,
+	// Unmute audio after the player is started for the second time.
+	// does not show the mute indicator.
+	public void setMuteWithSilence() {
+		mIsMuteSilently = true;
+		Intent intent = new Intent(GDAudioController.ActionMute);
+        intent.putExtra("key_mute", true);
+        mContext.sendBroadcast(intent);
+	}
+
+	public void unmuteWithSilence() {
+		if(mIsMuteSilently){
+			mIsMuteSilently = false;
+			Intent intent = new Intent(GDAudioController.ActionMute);
+        	intent.putExtra("key_mute", false);
+        	mContext.sendBroadcast(intent);
+		}
+	}
 	
 	// when video start playback, we will start a timeout task, 
 	// which will run after mDurationToPlay.
@@ -236,6 +294,13 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		}
 		// delay 3 seconds for computation tolerance.
 		startCheckVideoCompleteTask((mDurationToPlay + 3)*1000);
+
+		if(mSimulateHomeKey) {
+			mSimulateHomeKey = false;
+			mHandler.postDelayed(mSimulateHomeKeyTask, 1000);
+		} else {
+			mPosterView.setVisibility(View.GONE);
+		}
 	}
 
 	@Override
@@ -312,7 +377,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 		Log.d(TAG, " playVideo " + url);
 
-		mPosterView.setVisibility(View.GONE);
+		//:mPosterView.setVisibility(View.GONE);
 
 		if (!url.equals("")) {
 

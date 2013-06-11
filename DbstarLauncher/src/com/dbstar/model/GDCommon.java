@@ -173,4 +173,5 @@ public class GDCommon {
 	// playback event
 	public static final int PLAYBACK_COMPLETED = 0x01;
 
+	public static final String FlagPlayVideo = "flag_playvideo";
 }
