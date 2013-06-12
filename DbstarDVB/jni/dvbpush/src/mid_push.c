@@ -754,6 +754,8 @@ void *maintenance_thread()
 						
 						push_destroy();
 						
+						sleep(1);
+						
 						msg_send2_UI(SYSTEM_REBOOT, NULL, 0);
 					}
 					else
