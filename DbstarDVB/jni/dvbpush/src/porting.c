@@ -1573,7 +1573,7 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 }
 #endif
 
-#define SYSTEM_AWAKE_TIMER_DFT		(2100)			// 35分钟
+#define SYSTEM_AWAKE_TIMER_DFT		(2100)			// 30分钟
 static int system_awake_timer_get(char *buf, unsigned int bufsize)
 {
 	char sqlite_cmd[1024];
@@ -1590,12 +1590,14 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 	
 /*
  休眠开始窗口时间计算：	国电网关需要在45分到整点之间确保不处于真待机状态，而最低休眠5分钟才有意义，加上预留给休眠恢复10分钟，
- 						因此休眠开始的窗口时间为0分到30分
+ 						同时，为了让系统重置，需要在4点进行自动重启。自动重启一天只有一次机会，因此4点的休眠要推迟5分钟，优先保证自动重启
+ 						因此休眠开始的窗口时间为：1、凌晨4点时为5分到30分；2、其他时间为0分到30分
  休眠恢复时间底线：	国电网关需要在45分到整点之间确保不处于真待机状态，减去10分钟休眠恢复时间，
  					因此最低需要在35分时唤醒
 */
 	
-	if(now_tm.tm_min>=0 && now_tm.tm_min<=30){
+	if((4==now_tm.tm_hour && now_tm.tm_min>=5 && now_tm.tm_min<=30)
+		||(4!=now_tm.tm_hour && now_tm.tm_min>=0 && now_tm.tm_min<=30)){
 		system_awake_timer_deadline = 60*(35-now_tm.tm_min-1) + (60-now_tm.tm_sec);
 		
 		DEBUG("in hibernate window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d, system_awake_timer_deadline=%d\n", 
@@ -1641,13 +1643,13 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 	}
 	
 	/*
-	目前从真待机自动唤醒有异常，10个小时无法自动唤醒。暂且强制1小时。
-	2013-06-10 考虑到存在国电网关自动上报任务，真待机不超过35分钟。
+	目前从真待机自动唤醒有异常，10个小时无法自动唤醒。
+	2013-06-10 考虑到存在国电网关自动上报任务，真待机不超过30分钟。
 	*/
 	
 	if(system_awake_timer<300)	// 小于等于5分钟的唤醒时间均为无效值
 		system_awake_timer = 0;
-	else if(system_awake_timer>SYSTEM_AWAKE_TIMER_DFT)	//确保不大于35分钟
+	else if(system_awake_timer>SYSTEM_AWAKE_TIMER_DFT)	//确保不大于30分钟
 		system_awake_timer = SYSTEM_AWAKE_TIMER_DFT;
 	
 	snprintf(buf,bufsize,"%d",system_awake_timer);
