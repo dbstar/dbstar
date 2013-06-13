@@ -35,13 +35,16 @@
 #define REPORT_ACTPOWER_PREFIX	"#0000000000#02#0201#80#"
 #define REPORT_POWER_PREFIX		"#0000000000#02#0301#84#"
 
+#define POWER_CONSUMPTION_INQUIRE_MIN_BASE	(45)
+#define POWER_CONSUMPTION_UPLOAD_MIN_BASE	(55)
+
 static TIMER_S	g_timers[TIMER_NUM];
 static int		g_timers_time_rectify_flag = 0;	// 由于可能存在先初始化了一批timer，而后服务器才下发时间，导致定时器不准。因此需要在服务器下发时间时，校正timer的响铃时间
 static sem_t	s_sem_timer;
 
 static int	 g_wday_code[] = {0x80, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40};
 static int g_power_inquire_min = -1;
-static int g_power_consumption_inquire_hour = -1;
+static struct tm g_power_consumption_inquire_tm;
 static struct tm g_power_consumption_upload_tm;
 static struct tm g_power_upload_tm;
 static int g_refresh_timing_task_mday = -1;
@@ -174,15 +177,16 @@ int timing_init(void)
 	sem_post(&s_sem_timer);
 
 	g_power_inquire_min = -1;
-	g_power_consumption_inquire_hour = -1;
+	g_power_consumption_inquire_tm.tm_hour = -1;
+	g_power_consumption_inquire_tm.tm_min = POWER_CONSUMPTION_INQUIRE_MIN_BASE+randint(10.0);
 
 	g_power_consumption_upload_tm.tm_hour = -1;
-	g_power_consumption_upload_tm.tm_min = 55+randint(5.0);
+	g_power_consumption_upload_tm.tm_min = POWER_CONSUMPTION_UPLOAD_MIN_BASE+randint(5.0);
 	
 	g_power_upload_tm.tm_hour = -1;
 	g_power_upload_tm.tm_min = randint(5.0);
 
-	DEBUG("g_power_consumption_upload_tm.tm_min=%d, g_power_upload_tm.tm_min=%d\n", g_power_consumption_upload_tm.tm_min, g_power_upload_tm.tm_min);
+	DEBUG("init g_power_consumption_inquire_tm.tm_min=%d, g_power_consumption_upload_tm.tm_min=%d\n", g_power_consumption_inquire_tm.tm_min, g_power_consumption_upload_tm.tm_min);
 
 #if 0
 	// 2013-02-06
@@ -453,10 +457,13 @@ int timer_poll(void)
 	}
 #endif
 
-	if(g_power_consumption_inquire_hour!=now_tm.tm_hour && 50==now_tm.tm_min){
+	if(g_power_consumption_inquire_tm.tm_hour!=now_tm.tm_hour && now_tm.tm_min==g_power_consumption_inquire_tm.tm_min){
 		DEBUG("timer to insert a instruction to inquire power consumption at %d %02d %02d - %02d:%02d:%02d\n", 
 			(1900+now_tm.tm_year), (1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour + timezone_repair(), now_tm.tm_min, now_tm.tm_sec);
-		g_power_consumption_inquire_hour = now_tm.tm_hour;
+		g_power_consumption_inquire_tm.tm_hour = now_tm.tm_hour;
+		g_power_consumption_inquire_tm.tm_min = POWER_CONSUMPTION_INQUIRE_MIN_BASE+randint(10.0);
+		DEBUG("next power consumption inquire at: %d hour %d min\n", g_power_consumption_inquire_tm.tm_hour,g_power_consumption_inquire_tm.tm_min);
+		
 		insert_inst.type_id = 0x000000;
 		insert_inst.type = 0x02;
 		insert_inst.arg1 = 0x03;
@@ -474,9 +481,10 @@ int timer_poll(void)
 	{
 		DEBUG("timer to insert a cmd to upload power consumption at %d %02d %02d - %02d:%02d:%02d\n", 
 			(1900+now_tm.tm_year), (1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour + timezone_repair(), now_tm.tm_min, now_tm.tm_sec);
-		DEBUG("g_power_consumption_upload_tm.tm_hour=%d, g_power_consumption_upload_tm.tm_min=%d\n", g_power_consumption_upload_tm.tm_hour,g_power_consumption_upload_tm.tm_min);
+		//DEBUG("g_power_consumption_upload_tm.tm_hour=%d, g_power_consumption_upload_tm.tm_min=%d\n", g_power_consumption_upload_tm.tm_hour,g_power_consumption_upload_tm.tm_min);
 		g_power_consumption_upload_tm.tm_hour = now_tm.tm_hour;
-		g_power_consumption_upload_tm.tm_min = 55+randint(5.0);
+		g_power_consumption_upload_tm.tm_min = POWER_CONSUMPTION_UPLOAD_MIN_BASE+randint(5.0);
+		DEBUG("next power consumption inquire at: %d hour %d min\n", g_power_consumption_upload_tm.tm_hour,g_power_consumption_upload_tm.tm_min);
 		
 		/*取消正在上报但没有完成的动作，然后将其标记从“1”恢复为“0”，合并到本次上报。这也用于解决标记为“1”后掉电而导致记录飞掉的情况*/
 		/*一般情况下，这个步骤是空动作*/

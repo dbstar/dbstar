@@ -1080,16 +1080,20 @@ int power_inquire_callback(char **result, int row, int column, void *receiver)
 			for(j=i; j<row+1; j++){
 				if(type_id==atoi(result[j*column])){
 					float power_data = atof(result[j*column+2]);
-					DEBUG("result[j*column+2]=%s, data=%f\n", result[j*column+2], power_data);
-					snprintf(tmp_str, sizeof(tmp_str), "%s;%08f;", result[j*column+1], power_data);
-					if(ALTERABLE_ENTITY_SIZE-strlen(entity_str) > strlen(tmp_str)){
-						snprintf(	entity_str+strlen(entity_str), ALTERABLE_ENTITY_SIZE-strlen(entity_str), 
-									"%s", tmp_str);
+					if(power_data>0.0f){
+						DEBUG("result[j*column+2]=%s, data=%f\n", result[j*column+2], power_data);
+						snprintf(tmp_str, sizeof(tmp_str), "%s;%08f;", result[j*column+1], power_data);
+						if(ALTERABLE_ENTITY_SIZE-strlen(entity_str) > strlen(tmp_str)){
+							snprintf(	entity_str+strlen(entity_str), ALTERABLE_ENTITY_SIZE-strlen(entity_str), 
+										"%s", tmp_str);
+						}
+						else{
+							DEBUG("space of alterable entity is too small\n");
+							return 0;
+						}
 					}
-					else{
-						DEBUG("space of alterable entity is too small\n");
-						return 0;
-					}
+					else
+						DEBUG("result[j*column+2]=%s, data=%f, NONEED to upload\n", result[j*column+2], power_data);
 				}
 			}
 			snprintf(	entity_str+strlen(entity_str), ALTERABLE_ENTITY_SIZE-strlen(entity_str), 
@@ -2039,48 +2043,53 @@ void instruction_insert_poll(void)
 							{
 								if(RESULT_OK==smart_socket_serial_cmd_parse(serial_cmd,recv_serial_len,smart_socket_action,socket_id,&power))
 								{
-									if(power<0){
-										DEBUG("perhaps some error, catch power little 0. translate it as 0\n");
-										power = 0;
-									}
-									
-									memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
-									if(SMART_SOCKET_ACTIVE_POWER_READ==smart_socket_action){
-										snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO actpower(typeID,hourTime,data,status) VALUES(%d,%d,%lf,0);",\
-												type_id,(int)time(NULL)+smart_power_difftime_get(),power);
-									}
-									else if(SMART_SOCKET_ACTIVE_POWER_CONSUMPTION_READ==smart_socket_action){
-										
-										/*
-										status==2表明此记录是上次采集电量时的数据，将本次采集的电量power和上次记录的电量之间的差值录入数据库。
-										第一次建立表格时，此typeID没有对应的status==2的记录，上报的电量等于采集的电量。
-										*/
-										double basic_power_data = 0.0;
-										int (*p_sqlite_read_basic_power_callback)(char **,int,int,void *) = sqlite_read_basic_power_callback;
-										
-										snprintf(sqlite_cmd, sizeof(sqlite_cmd), "SELECT data FROM power WHERE typeID=%d AND status=2;", type_id);
-										int ret = sqlite_read(sqlite_cmd, (void *)(&basic_power_data), p_sqlite_read_basic_power_callback);
-										if(ret>RESULT_OK){
-											snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE power SET data=%lf WHERE typeID=%d AND status=2;", power, type_id);
-										}
-										else{
-											DEBUG("no basic power data, have to initial it\n");
-											snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO power(typeID,hourTime,data,status) VALUES(%d,%d,%lf,2);",\
+									if(power>0.0){
+										if(SMART_SOCKET_ACTIVE_POWER_READ==smart_socket_action){
+											snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO actpower(typeID,hourTime,data,status) VALUES(%d,%d,%lf,0);",\
 													type_id,(int)time(NULL)+smart_power_difftime_get(),power);
+											
+											DEBUG("insert power sqlite cmd str: %s\n", sqlite_cmd);
+											sqlite_execute(sqlite_cmd);
 										}
-										sqlite_execute(sqlite_cmd);
-										
-										power -= basic_power_data;
-										if(power<0){
-											DEBUG("shit! calculate power little than 0(%lf-%lf), translate is as 0", power, basic_power_data);
-											power=0;
+										else if(SMART_SOCKET_ACTIVE_POWER_CONSUMPTION_READ==smart_socket_action){
+											/*
+											status==2表明此记录是上次采集电量时的数据，将本次采集的电量power和上次记录的电量之间的差值录入数据库。
+											第一次建立表格时，此typeID没有对应的status==2的记录，上报的电量等于采集的电量。
+											*/
+											double basic_power_data = 0.0;
+											int (*p_sqlite_read_basic_power_callback)(char **,int,int,void *) = sqlite_read_basic_power_callback;
+											
+											snprintf(sqlite_cmd, sizeof(sqlite_cmd), "SELECT data FROM power WHERE typeID=%d AND status=2;", type_id);
+											int ret = sqlite_read(sqlite_cmd, (void *)(&basic_power_data), p_sqlite_read_basic_power_callback);
+											if(ret>RESULT_OK){
+												snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE power SET data=%lf WHERE typeID=%d AND status=2;", power, type_id);
+											}
+											else{
+												DEBUG("no basic power data, have to initial it\n");
+												snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO power(typeID,hourTime,data,status) VALUES(%d,%d,%lf,2);",\
+														type_id,(int)time(NULL)+smart_power_difftime_get(),power);
+											}
+											sqlite_execute(sqlite_cmd);
+											
+											power -= basic_power_data;
+											DEBUG("basic_power_data: %lf, calculate power: %lf\n", basic_power_data, power);
+											if(power>0.0){
+												snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO power(typeID,hourTime,data,status) VALUES(%d,%d,%lf,0);",\
+														type_id,(int)time(NULL)+smart_power_difftime_get(),power);
+												
+												DEBUG("insert power sqlite cmd str: %s\n", sqlite_cmd);
+												sqlite_execute(sqlite_cmd);
+											}
+											else{
+												DEBUG("shit! calculate power little than 0(%lf-%lf), translate is as 0", power, basic_power_data);
+												power=0.0;
+											}
 										}
-										snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO power(typeID,hourTime,data,status) VALUES(%d,%d,%lf,0);",\
-												type_id,(int)time(NULL)+smart_power_difftime_get(),power);
 									}
-	
-									DEBUG("insert power sqlite cmd str: %s\n", sqlite_cmd);
-									sqlite_execute(sqlite_cmd);
+									else{
+										DEBUG("perhaps some error, catch power little than 0.0, translate it as 0.0\n");
+										power = 0.0;
+									}
 								}
 							}
 						}
