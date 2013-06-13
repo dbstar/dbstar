@@ -186,4 +186,5 @@ public class GDCommon {
 	public static final int WirelessMode = 2;
 	public static final String KeyChannel = "channel";
 	public static final String ActionChannelModeChange = "com.dbstar.DbstarSettings.Action.CHANNELMODE_CHANGE";
+	public static final String ChannelFile = "/data/dbstar/channel_file";
 }

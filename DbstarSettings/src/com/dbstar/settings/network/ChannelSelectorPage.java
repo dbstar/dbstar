@@ -135,6 +135,8 @@ public class ChannelSelectorPage extends BaseFragment {
 		editor.putString(NetworkCommon.KeyChannel, channelValues);
 		editor.commit();
 		
+		Utils.setValue(NetworkCommon.ChannelFile, channelValues);
+		
 		Intent intent = new Intent(NetworkCommon.ActionChannelModeChange);
 		intent.putExtra(NetworkCommon.KeyChannel, channelValues);
 		mActivity.sendBroadcast(intent);

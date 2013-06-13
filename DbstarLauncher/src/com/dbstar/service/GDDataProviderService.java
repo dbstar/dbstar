@@ -297,6 +297,13 @@ public class GDDataProviderService extends Service {
 			}
 		}
 
+		String channel = FileOperation.read(GDCommon.ChannelFile);
+		Log.d(TAG, "channel ="+channel);
+
+		if (channel != null && channel.length() > 0) {
+			mChannelMode = channel.equals(GDCommon.ChannelEthernet)? GDCommon.EthernetMode: GDCommon.WirelessMode;
+		}
+
 		// check network
 		mIsNetworkReady = isNetworkConnected();
 		Log.d(TAG, "network is connected " + mIsNetworkReady);
