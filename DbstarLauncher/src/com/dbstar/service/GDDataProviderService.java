@@ -142,6 +142,8 @@ public class GDDataProviderService extends Service {
 	boolean mIsDbServiceStarted = false;
 	boolean mIsStorageReady = false;
 	boolean mIsNetworkReady = false;
+	
+	boolean mIsGuodianEngineStarted = false;
 
 	private int mSmartcardState = GDCommon.SMARTCARD_STATE_NONE;
 
@@ -335,16 +337,20 @@ public class GDDataProviderService extends Service {
 		mGuodianEngine.setReconnectTime(mConfigure.getGuodianReconnectTime());
 		mGuodianEngine
 				.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
+		
+		mIsGuodianEngineStarted = true;
 	}
 
 	void stopGuodianEngine() {
 		Log.d(TAG, "========== stopGuodianEngine ==========");
 		mGuodianEngine.stop();
+		mIsGuodianEngineStarted = false;
 	}
 
 	void destroyGuodianEngine() {
 		Log.d(TAG, "========== destroyGuodianEngine ==========");
 		mGuodianEngine.destroy();
+		mIsGuodianEngineStarted = false;
 	}
 
 	void initializeDataEngine() {
@@ -557,25 +563,91 @@ public class GDDataProviderService extends Service {
 
 			case GDCommon.MSG_NETWORK_CONNECT: {
 				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
-				mIsNetworkReady = true;
-				mPeripheralController.setNetworkLedOn();
+				if (mChannelMode == GDCommon.EthernetMode) {
+					// single card
+					// ethernet connected
+					mIsNetworkReady = true;
+					mPeripheralController.setNetworkLedOn();
+					startDbStarService();
+					startGuodianEngine();
+				} else {
+					// dual card
+					int type = msg.arg1;
+					if (type == GDCommon.TypeEthernet) {
+						//ethernet connected
+						if (mIsEthernetConnected) {
+							Log.d(TAG, "ethernet is connected already!");
+							return;
+						}
+						
+						mIsEthernetConnected = true;
+						if (mIsWirelessConnected) {
+							// remove Ethernet gateway.
+							NativeUtil.shell("ip route del dev eth0");
+						}
+						
+					} else {
+						// wifi connected
+						if (mIsWirelessConnected) {
+							Log.d(TAG, "ethernet is connected already!");
+							return;
+						}
+						
+						mIsWirelessConnected = true;
+						if (mIsEthernetConnected) {
+							// remove Ethernet gateway.
+							NativeUtil.shell("ip route del dev eth0");
+						}
 
-				startDbStarService();
+						mIsNetworkReady = true;
 
-				// notifyDbstarServiceNetworkStatus();
-
-				startGuodianEngine();
+						startDbStarService();
+						startGuodianEngine();
+					}
+					
+					if (mIsWirelessConnected || mIsEthernetConnected) {
+						mPeripheralController.setNetworkLedOn();
+					}
+				}
 
 				break;
 			}
 			case GDCommon.MSG_NETWORK_DISCONNECT: {
 				Log.d(TAG, "++++++++++++ network disconnected +++++++++++");
-				mIsNetworkReady = false;
-				mPeripheralController.setNetworkLedOff();
-				// notifyDbstarServiceNetworkStatus();
-				//stopDbStarService();
+				if (mChannelMode == GDCommon.EthernetMode) {
+					mIsNetworkReady = false;
+					mPeripheralController.setNetworkLedOff();
+					stopGuodianEngine();
+				} else {
+					int type = msg.arg1;
+					if (type == GDCommon.TypeEthernet) {
+						//ethernet connected
+						if (!mIsEthernetConnected) {
+							Log.d(TAG, "ethernet is disconnected already!");
+							return;
+						}
+						
+						mIsEthernetConnected = false;
+					} else {
+						// wifi connected
+						if (!mIsWirelessConnected) {
+							Log.d(TAG, "ethernet is disconnected already!");
+							return;
+						}
+						
+						mIsWirelessConnected = false;
 
-				stopGuodianEngine();
+						mIsNetworkReady = false;
+
+						stopGuodianEngine();
+					}
+					
+					if (!mIsWirelessConnected && !mIsEthernetConnected) {
+						mPeripheralController.setNetworkLedOff();
+					}
+					
+				}
+
 				break;
 			}
 
@@ -1930,6 +2002,7 @@ public class GDDataProviderService extends Service {
 		filter.addAction(GDCommon.ActionClearSettings);
 		filter.addAction(GDCommon.ActionSystemRecovery);
 		filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+		filter.addAction(GDCommon.ActionChannelModeChange);
 
 		registerReceiver(mSystemMessageReceiver, filter);
 	}
@@ -1970,18 +2043,34 @@ public class GDDataProviderService extends Service {
 	// when ethernet is connected, this callback is called.
 	private void ethernetConnected() {
 		Log.d(TAG, "ethernetConnected");
-		mIsEthernetConnected = true;
-		if (mIsWirelessConnected) {
-			// remove Ethernet gateway.
-			NativeUtil.shell("ip route del dev eth0");
+	
+//		if (mIsWirelessConnected) {
+//			// remove Ethernet gateway.
+//			NativeUtil.shell("ip route del dev eth0");
+//		}
+		
+		if (mChannelMode == GDCommon.EthernetMode) {
+			return;
 		}
-		mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_CONNECT);
+
+		Message msg = mHandler.obtainMessage(GDCommon.MSG_NETWORK_CONNECT);
+		msg.arg1 = GDCommon.TypeEthernet;
+		msg.sendToTarget();
 	}
 	
 	void ethernetDisconnected() {
 		Log.d(TAG, "ethernetDisconnected");
-		mIsEthernetConnected = false;
+		
+		if (mChannelMode == GDCommon.EthernetMode) {
+			return;
+		}
+		
+		Message msg = mHandler.obtainMessage(GDCommon.MSG_NETWORK_CONNECT);
+		msg.arg1 = GDCommon.TypeEthernet;
+		msg.sendToTarget();
 	}
+
+	private int mChannelMode = 0;
 
 	private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
 
@@ -1993,49 +2082,67 @@ public class GDDataProviderService extends Service {
 			if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
 				return;
 
-			boolean noConnectivity = intent.getBooleanExtra(
-					ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
-
-			Log.d(TAG, "noConnectivity = " + noConnectivity);
-
-			if (noConnectivity) {
-				// There are no connected networks at all
-				mIsEthernetConnected = false;
-				mIsWirelessConnected = false;
-				mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_DISCONNECT);
-				return;
-			}
-
-			// case 1: attempting to connect to another network, just wait for
-			// another broadcast
-			// case 2: connected
-
-			NetworkInfo networkInfo = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
-			if (networkInfo != null && networkInfo.isConnected()) {
-				Log.d(TAG, "ethernet connected");
-				mIsEthernetConnected = true;
-			} else {
-				Log.d(TAG, "ethernet disconnected");
-				mIsEthernetConnected = false;
-			}
+			int channelMode = mChannelMode;
 			
-			networkInfo = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-			if (networkInfo != null && networkInfo.isConnected()) {
-				Log.d(TAG, "wifi connected");
-				mIsWirelessConnected = true;
-			} else {
-				Log.d(TAG, "wifi disconnected");
-				mIsWirelessConnected = false;
-			}
-			
-			if (mIsWirelessConnected && mIsEthernetConnected) {
+			//if (ethernetConnected && wirelessConnected) {
 				// remove Ethernet gateway.
-				NativeUtil.shell("ip route del dev eth0");
-			}
+			//	NativeUtil.shell("ip route del dev eth0");
+			//}
 			
-			if (mIsWirelessConnected || mIsEthernetConnected) {
-				mHandler.sendEmptyMessage(GDCommon.MSG_NETWORK_CONNECT);
+			if (channelMode == GDCommon.EthernetMode) {
+				// single card
+				boolean noConnectivity = intent.getBooleanExtra(
+						ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
+				Log.d(TAG, "noConnectivity = " + noConnectivity);
+
+				if (noConnectivity) {
+					// There are no connected networks at all
+					int msgId = GDCommon.MSG_NETWORK_DISCONNECT;
+					Message msg = mHandler.obtainMessage(msgId);
+					msg.arg1 = GDCommon.TypeEthernet;
+					msg.sendToTarget();
+					return;
+				}
+
+				// case 1: attempting to connect to another network, just wait for
+				// another broadcast
+				// case 2: connected
+
+				NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();				
+				if (networkInfo != null) {
+					if (networkInfo.getType() == ConnectivityManager.TYPE_ETHERNET
+							&& networkInfo.isConnected()) {
+						int msgId = GDCommon.MSG_NETWORK_CONNECT;
+						Message msg = mHandler.obtainMessage(msgId);
+						msg.arg1 = GDCommon.TypeEthernet;
+						msg.sendToTarget();
+					}
+				}
+				
+			} else {
+				// dual card
+				boolean wirelessConnected = false;
+				NetworkInfo networkInfo = null;
+
+				networkInfo = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+				if (networkInfo != null && networkInfo.isConnected()) {
+					Log.d(TAG, "wifi connected");
+					wirelessConnected = true;
+				} else {
+					Log.d(TAG, "wifi disconnected");
+					wirelessConnected = false;
+				}
+
+				int msgId = GDCommon.MSG_NETWORK_DISCONNECT;
+				if (wirelessConnected) {
+					msgId = GDCommon.MSG_NETWORK_CONNECT;
+				}
+
+				Message msg = mHandler.obtainMessage(msgId);
+				msg.arg1 = GDCommon.TypeWifi;
+				msg.sendToTarget();
 			}
+
 		}
 
 	};
@@ -2340,6 +2447,11 @@ public class GDDataProviderService extends Service {
 				mHandler.sendEmptyMessage(GDCommon.MSG_BOOT_COMPLETED);
 			} else if (action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_HOMEKEY_PRESSED);
+			} else if (action.equals(GDCommon.ActionChannelModeChange)) {
+				String channel = intent.getStringExtra(GDCommon.KeyChannel);
+				if (channel != null && channel.length() > 0) {
+					mChannelMode = channel.equals(GDCommon.ChannelEthernet) ? GDCommon.EthernetMode : GDCommon.WirelessMode;
+				}
 			}
 		}
 	};
@@ -2573,15 +2685,30 @@ public class GDDataProviderService extends Service {
 	};
 
 	public void disconnect() {
+		if (!mIsGuodianEngineStarted) {
+			Log.d(TAG, "engine is not started!");
+			return;
+		}
+
 		mGuodianEngine.stop();
 	}
 	
 	public void reconnect() {
+		if (!mIsGuodianEngineStarted) {
+			Log.d(TAG, "engine is not started!");
+			return;
+		}
+
 		mGuodianEngine.reconnect();
 	}
 
 	// Guodian Related interface
 	public void requestPowerData(int type, Object args) {
+		if (!mIsGuodianEngineStarted) {
+			Log.d(TAG, "engine is not started!");
+			return;
+		}
+		
 		mGuodianEngine.requestData(type, args);
 	}
 

@@ -73,6 +73,10 @@ public class GDCommon {
 	public static final String LangCN = "cho";
 	public static final String LangEN = "eng";
 
+	public static final String KeyNetworkType = "net_type";
+	public static final int TypeEthernet = 1;
+	public static final int TypeWifi = 2;
+	
 	public static final String ColumnTypeMovie = "1";
 	public static final String ColumnTypeTV = "2";
 	public static final String ColumnTypePreview = "3";
@@ -174,4 +178,12 @@ public class GDCommon {
 	public static final int PLAYBACK_COMPLETED = 0x01;
 
 	public static final String FlagPlayVideo = "flag_playvideo";
+	
+	// network settigns
+	public static final String ChannelEthernet = "1";
+	public static final String ChannelBoth = "2";
+	public static final int EthernetMode = 1;
+	public static final int WirelessMode = 2;
+	public static final String KeyChannel = "channel";
+	public static final String ActionChannelModeChange = "com.dbstar.DbstarSettings.Action.CHANNELMODE_CHANGE";
 }
