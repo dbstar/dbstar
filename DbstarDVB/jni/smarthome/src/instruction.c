@@ -75,40 +75,51 @@ static int instruction_reset(INSTRUCTION_S* instruction)
 输出：	err_str		——指令返回串
 返回：	0——成功；-1——失败
 */
-int alterable_entity_result(INSTRUCTION_RESULT_E inst_result, char *err_str, unsigned int len)
+int alterable_entity_result(INSTRUCTION_RESULT_E inst_result, INSTRUCTION_S *p_instrction)	//char *err_str, unsigned int len
 {
-	if(NULL==err_str || len<=0){
+	if(NULL==p_instrction){
 		DEBUG("arguments have some error\n");
 		return -1;
 	}
 	switch(inst_result)		///if operate time-out
 	{
 		case RESULT_OK:
-			strncpy(err_str, "&00", len);
+			strncpy(p_instrction->alterable_entity, "&00", sizeof(p_instrction->alterable_entity));
+			
+			if(INSTRUCTION_CTRL==p_instrction->type){
+				DEBUG("this is a ctrl cmd, arg1=%02d, arg2=%02d\n", p_instrction->arg1,p_instrction->arg2);
+				if(01==p_instrction->arg1){
+					DEBUG("this is a %s action of ctrl cmd\n", 1==p_instrction->arg2?"openup":"shutdown");
+					snprintf(p_instrction->alterable_entity,sizeof(p_instrction->alterable_entity),"&%02d", p_instrction->arg2);
+				}
+			}
+			
+			DEBUG("finally, get alterable_entity: %s\n", p_instrction->alterable_entity);
+			
 			break;
 		case ERR_TIMEOUT:		// caution
-			strncpy(err_str, "#ffffffffff#ff#ffff#ff#", len);
+			strncpy(p_instrction->alterable_entity, "#ffffffffff#ff#ffff#ff#", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_FORMAT:		// caution
-			strncpy(err_str, "&f1", len);
+			strncpy(p_instrction->alterable_entity, "&f1", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_FORMATPRO:
-			strncpy(err_str, "&f1", len);
+			strncpy(p_instrction->alterable_entity, "&f1", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_SOCKET:
-			strncpy(err_str, "&f2", len);
+			strncpy(p_instrction->alterable_entity, "&f2", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_DATABASE:
-			strncpy(err_str, "&f3", len);
+			strncpy(p_instrction->alterable_entity, "&f3", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_MEMORY:
-			strncpy(err_str, "&f4", len);
+			strncpy(p_instrction->alterable_entity, "&f4", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_SERIAL:
-			strncpy(err_str, "&f5", len);
+			strncpy(p_instrction->alterable_entity, "&f5", sizeof(p_instrction->alterable_entity));
 			break;
 		default:	// ERR_OTHER
-			strncpy(err_str, "&ff", len);
+			strncpy(p_instrction->alterable_entity, "&ff", sizeof(p_instrction->alterable_entity));
 			break;
 	}
 	
@@ -2214,7 +2225,7 @@ void instruction_mainloop()
 								if(RESULT_ALTERABLE_ENTITY_FILL_OK!=inst_result){
 									DEBUG("the return alterable entity str will be filled manually, inst_result=%d\n", inst_result);
 									memset(instruction.alterable_entity, 0, sizeof(instruction.alterable_entity));
-									alterable_entity_result(inst_result, instruction.alterable_entity, sizeof(instruction.alterable_entity));
+									alterable_entity_result(inst_result, &instruction);
 								}
 								else
 									DEBUG("the return alterable entity str is filled automaticly\n");
