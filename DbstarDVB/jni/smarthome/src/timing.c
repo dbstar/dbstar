@@ -484,7 +484,7 @@ int timer_poll(void)
 		//DEBUG("g_power_consumption_upload_tm.tm_hour=%d, g_power_consumption_upload_tm.tm_min=%d\n", g_power_consumption_upload_tm.tm_hour,g_power_consumption_upload_tm.tm_min);
 		g_power_consumption_upload_tm.tm_hour = now_tm.tm_hour;
 		g_power_consumption_upload_tm.tm_min = POWER_CONSUMPTION_UPLOAD_MIN_BASE+randint(5.0);
-		DEBUG("next power consumption inquire at: %d hour %d min\n", g_power_consumption_upload_tm.tm_hour,g_power_consumption_upload_tm.tm_min);
+		DEBUG("next power consumption upload at: %d hour %d min\n", g_power_consumption_upload_tm.tm_hour,g_power_consumption_upload_tm.tm_min);
 		
 		/*取消正在上报但没有完成的动作，然后将其标记从“1”恢复为“0”，合并到本次上报。这也用于解决标记为“1”后掉电而导致记录飞掉的情况*/
 		/*一般情况下，这个步骤是空动作*/

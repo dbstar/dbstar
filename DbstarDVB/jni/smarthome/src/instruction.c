@@ -2092,7 +2092,7 @@ void instruction_insert_poll(void)
 												sqlite_execute(sqlite_cmd);
 											}
 											else{
-												DEBUG("shit! calculate power little than 0(%lf-%lf), translate is as 0", power, basic_power_data);
+												DEBUG("shit! calculate power little than 0(%lf-%lf), translate is as 0\n", power, basic_power_data);
 												power=0.0;
 											}
 										}

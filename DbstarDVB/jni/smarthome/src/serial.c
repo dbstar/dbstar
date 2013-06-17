@@ -414,10 +414,13 @@ static int check_valid_serial_response(unsigned char *buf, unsigned int *check_s
 	unsigned int i = 0, j = 0;;
 	int ret = -1;
 	
-	printf("will check --------------------------------------\n");
+	printf("will check %d bytes cmd :::::::::::::::::::::\n",buf_len);
 	for(i=0;i<buf_len;i++)
 		printf(" %02x", buf[i]);
-	printf("\n--------------------------------------\n");
+	printf("\ncompared with =================\n");
+	for(i=0;i<8;i++)
+		printf(" %02x", distinguish_cmd[i]);
+	printf("\n?????????????????????????????\n");
 	
 	for(i=0;i<(buf_len-SERIAL_RESPONSE_CHECK_MIN);i++){
 		if(0x68==buf[i]){
@@ -485,11 +488,14 @@ static int recvfrom_serial(unsigned char *buf, unsigned int *start_pos,unsigned 
 			
 			printf("), and total read %d bytes\n", has_read_len);
 			
-			if(0==has_catched_response && has_read_len>=SERIAL_RESPONSE_CHECK_MIN){
-				if(0==check_valid_serial_response(p_readbuf+check_start_pos,&check_start_pos,has_read_len,distinguish_cmd)){
+			DEBUG("[%d] has_read_len(%d) - check_start_pos(%d) = %d\n", has_catched_response, has_read_len,check_start_pos,has_read_len-check_start_pos);
+			if(0==has_catched_response && (has_read_len-check_start_pos)>=SERIAL_RESPONSE_CHECK_MIN){
+				if(0==check_valid_serial_response(p_readbuf+check_start_pos,&check_start_pos,has_read_len-check_start_pos,distinguish_cmd)){
 					DEBUG("has catched valid serial response\n");
 					has_catched_response = 1;
 				}
+				
+				DEBUG("[%d]check_start_pos: %d\n", has_catched_response,check_start_pos);
 			}
 			
 			serial_read_faild_cnt = 0;
@@ -523,6 +529,7 @@ static int recvfrom_serial(unsigned char *buf, unsigned int *start_pos,unsigned 
 	
 	*start_pos = check_start_pos;
 	
+	DEBUG("has_read_len=%d, check_start_pos=%d\n", has_read_len,check_start_pos);
 	return (has_read_len-check_start_pos);
 }
 
