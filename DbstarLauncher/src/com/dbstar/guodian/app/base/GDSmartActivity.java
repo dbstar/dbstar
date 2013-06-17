@@ -16,8 +16,8 @@ public class GDSmartActivity extends GDBaseActivity {
 
     private static final String TAG = "GDSmartActivity";
     private static final long DefaultTimeout = 8000;
-    private static final long NoNotifyTimeout = 2000;
-    private static final long NoResponseTimeout = 40000;
+    //private static final long NoNotifyTimeout = 2000;
+    private static final long NoResponseTimeout = 30000;
     private static final int MaxReconnectCount = 3;
     private long mTimeout = DefaultTimeout;
     private int mReconnectCount = 0;
@@ -53,12 +53,12 @@ public class GDSmartActivity extends GDBaseActivity {
         }
 
     };
-    private Runnable mNoNotifyTask = new Runnable() {
-        @Override
-        public void run() {
-            handCanNotConnectToServer();
-        }
-    };
+//    private Runnable mNoNotifyTask = new Runnable() {
+//        @Override
+//        public void run() {
+//            handCanNotConnectToServer();
+//        }
+//    };
     
     private Runnable mNoResponseTask =  new Runnable() {
         
@@ -71,10 +71,6 @@ public class GDSmartActivity extends GDBaseActivity {
     public void notifyEvent(int type, Object event) {
         super.notifyEvent(type, event);
         
-        if(type !=  EventData.EVENT_GUODIAN_CONNECTED){
-            mHandler.removeCallbacks(mNoNotifyTask);
-            mHandler.removeCallbacks(mNoResponseTask);
-        }
         if (type == EventData.EVENT_GUODIAN_DATA) {
             handleRequestFinished();
         } else if (type == EventData.EVENT_GUODIAN_DISCONNECTED) {
@@ -183,11 +179,13 @@ public class GDSmartActivity extends GDBaseActivity {
         mStartReconnect = true;
         mReconnectCount = 0;
         mService.disconnect();
-        mHandler.postDelayed(mNoNotifyTask, NoNotifyTimeout);
+        handCanNotConnectToServer();
+        //mHandler.postDelayed(mNoNotifyTask, NoNotifyTimeout);
     }
 
     protected void handleRequestFinished() {
         mHandler.removeCallbacks(mTimeoutTask);
+        mHandler.removeCallbacks(mNoResponseTask);
         hideloadingPage();
         if(mPageContent != null){
             mPageContent.setVisibility(View.VISIBLE);
@@ -262,7 +260,7 @@ public class GDSmartActivity extends GDBaseActivity {
     };
 
     private void handCanNotConnectToServer() {
-        mHandler.removeCallbacks(mNoNotifyTask);
+        //mHandler.removeCallbacks(mNoNotifyTask);
         mHandler.removeCallbacks(mNoResponseTask);
         mLoadDialogView.showNetWorkErrorInfo();
         mLoadDialogView.setCancelable(true);
