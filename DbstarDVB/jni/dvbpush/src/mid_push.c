@@ -736,8 +736,8 @@ void *maintenance_thread()
 			
 //			DEBUG("in user idle status,now_sec: %ld, s_pin_sec=%ld, reboot_timestamp_get()=%d\n", now_sec, s_pin_sec, reboot_timestamp_get());
 			
-			// 1、开机超过12个小时(43200)；2、与上次重启的时间差大于7200（两个小时）才有效
-			if((now_sec-s_pin_sec>43200) && (now_sec-reboot_timestamp_get())>7200){
+			// 1、开机超过6个小时(21600)；2、与上次重启的时间差大于7200（两个小时）才有效
+			if((now_sec-s_pin_sec>21600) && (now_sec-reboot_timestamp_get())>7200){
 				localtime_r(&now_sec, &now_tm);
 				
 				// 国电网关需要在45分和整点之间保持开机状态，预留15分钟重启时间，窗口时间为0分到30分
