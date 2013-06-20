@@ -49,7 +49,7 @@ public class GDMarqeeTextView extends View {
 	private boolean mPendingToStart = false;
 	private int mRepeatLimit = MarqeeForever;
 	
-	private int mCountPerCycle = 3;
+	private int mCountPerCycle = -1;
 	private int mCycleInterval = 10000; //10s
 	private int mShowCounts = 0;
 	private boolean mReachACycle = false;
@@ -313,12 +313,14 @@ public class GDMarqeeTextView extends View {
 			if (index == mTexts.size()) {
 				
 				if (!mReachACycle) {
-					mShowCounts++;
-					if (mShowCounts == mCountPerCycle) {
-						mShowCounts = 0;
-						mReachACycle = true;
-//						Log.d(TAG, "reach count -----1");
-						return;
+					if (mCountPerCycle > 0) {
+						mShowCounts++;
+						if (mShowCounts == mCountPerCycle) {
+							mShowCounts = 0;
+							mReachACycle = true;
+	//						Log.d(TAG, "reach count -----1");
+							return;
+						}
 					}
 				} else {
 //					Log.d(TAG, "reach count -----2");
