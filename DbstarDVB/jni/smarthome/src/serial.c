@@ -293,7 +293,7 @@ static int UART0_Recv(int fd, unsigned char *rcv_buf,int data_len)
 	FD_SET(fd,&fs_read);
 	
 	time.tv_sec = 0;
-	time.tv_usec = 250000;
+	time.tv_usec = 150000;
 	
 	//使用select实现串口的多路通信
 	fs_sel = select(fd+1,&fs_read,NULL,NULL,&time);
@@ -466,7 +466,6 @@ static int recvfrom_serial(unsigned char *buf, unsigned int *start_pos,unsigned 
 	
 	unsigned int has_read_len = 0;
 	unsigned char *p_readbuf = buf;
-	int i = 0;
 	int len = 0;
 	unsigned int check_start_pos = 0;
 	int has_catched_response = 0;
@@ -502,25 +501,25 @@ static int recvfrom_serial(unsigned char *buf, unsigned int *start_pos,unsigned 
 		}
 		else if(0==len)
 		{
-			DEBUG("cannot receive data for %d try\n", i+1);
+			DEBUG("cannot receive data for %d try\n", serial_read_faild_cnt);
 			serial_read_faild_cnt ++;
 			
-			if(serial_read_faild_cnt>5){
-				DEBUG("read nothing nolonger, failed\n");
+			if(serial_read_faild_cnt>4){
+				DEBUG("read nothing nolonger, failed at %d\n",serial_read_faild_cnt);
 				break;
 			}
 		}
 		else{
 			serial_read_faild_cnt ++;
 			
-			if(serial_read_faild_cnt>5){
-				DEBUG("read nothing nolonger, failed\n");
+			if(serial_read_faild_cnt>4){
+				DEBUG("read nothing nolonger, failed at %d\n",serial_read_faild_cnt);
 				break;
 			}
 		}
 		
-		if(has_catched_response>3){
-			DEBUG("finish to do another 4 times trying\n");
+		if(has_catched_response>2){
+			DEBUG("finish to do another %d times trying\n",has_catched_response);
 			break;
 		}
 	}
@@ -559,13 +558,13 @@ static int serial_access_son(unsigned char *buf, unsigned int buf_len, unsigned 
 	int ret = -1;
 	
 	if(NULL==buf || buf_len<SERIAL_CMD_SEND_LEN_MIN || buf_len>SERIAL_CMD_SEND_LEN_MAX){
-		DEBUG("invalid serial cmd, len=%u\n", buf_len);
+		DEBUG("invalid serial cmd, buf_len=%u\n", buf_len);
 		ret = -1;
 	}
 	else{
 		sem_wait(&s_sem_serial);
 	
-		usleep(100000);
+		usleep(20000);
 		
 		// 期望合法指令识别：68 a0 a1 a2 a3 a4 a5 68
 		unsigned char distinguish_cmd[32];
@@ -578,7 +577,7 @@ static int serial_access_son(unsigned char *buf, unsigned int buf_len, unsigned 
 		}
 		else{
 			memset(buf, 0, buf_size);
-			usleep(200000);
+			usleep(250000);
 			
 			unsigned char serial_response_buf[128000];
 			unsigned int start_pos = 0;
