@@ -2165,7 +2165,8 @@ public class PlayerMenu extends PlayerActivity {
 		mSubTitleView.setTextStyle(Typeface.BOLD);
 		mSubTitleView.setPadding(mSubTitleView.getPaddingLeft(),
 				mSubTitleView.getPaddingTop(), mSubTitleView.getPaddingRight(),
-				getWindowManager().getDefaultDisplay().getRawHeight()
+				//getWindowManager().getDefaultDisplay().getRawHeight()
+				getWindowManager().getDefaultDisplay().getHeight()
 						* mSubtitleParameter.position_v / 20 + 10);
 
 		Log.d(TAG, " mSubtitleParameter.position_v "
