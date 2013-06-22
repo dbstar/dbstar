@@ -19,9 +19,9 @@
 -->
 <resources>
     <!-- The width that is used when creating thumbnails of applications. -->
-    <dimen name="thumbnail_width">120dp</dimen>
+    <dimen name="thumbnail_width">164dp</dimen>
     <!-- The height that is used when creating thumbnails of applications. -->
-    <dimen name="thumbnail_height">120dp</dimen>
+    <dimen name="thumbnail_height">145dp</dimen>
     <!-- The standard size (both width and height) of an application icon that
          will be displayed in the app launcher and elsewhere. -->
     <dimen name="app_icon_size">48dip</dimen>
@@ -32,20 +32,24 @@
     <dimen name="toast_y_offset">64dip</dimen>
     <!-- Height of the status bar -->
     <dimen name="status_bar_height">0dip</dimen>
-    <!-- Height of the system bar (combined status + navigation, used on large screens) -->
-    <dimen name="system_bar_height">0dip</dimen>
-    <!-- Height of the horizontal navigation bar on devices that require it -->
+    <!-- Height of the bottom navigation / system bar. -->
     <dimen name="navigation_bar_height">0dp</dimen>
-    <!-- Width of the vertical navigation bar on devices that require it -->
+    <!-- Height of the bottom navigation bar in portrait; often the same as @dimen/navigation_bar_height -->
+    <dimen name="navigation_bar_height_landscape">0dp</dimen>
+    <!-- Width of the navigation bar when it is placed vertically on the screen -->
     <dimen name="navigation_bar_width">42dp</dimen>
     <!-- Height of notification icons in the status bar -->
     <dimen name="status_bar_icon_size">24dip</dimen>
     <!-- Size of the giant number (unread count) in the notifications -->
     <dimen name="status_bar_content_number_size">48sp</dimen>
+    <!-- Height of the system bar (combined status & navigation); used by
+         SystemUI internally, not respected by the window manager. -->
+    <dimen name="system_bar_height">@dimen/navigation_bar_height</dimen>
     <!-- Height of notification icons in the system bar -->
     <dimen name="system_bar_icon_size">32dip</dimen>
     <!-- Margin at the edge of the screen to ignore touch events for in the windowshade. -->
     <dimen name="status_bar_edge_ignore">5dp</dimen>
+
     <!-- Size of the fastscroll hint letter -->
     <dimen name="fastscroll_overlay_size">104dp</dimen>
     <!-- Width of the fastscroll thumb -->
@@ -69,14 +73,17 @@
     <!-- Size of lockscreen outerring on unsecure unlock LockScreen -->
     <dimen name="keyguard_lockscreen_outerring_diameter">270dp</dimen>
 
-    <!-- Default target placement radius for MultiWaveView -->
-    <dimen name="multiwaveview_target_placement_radius">135dip</dimen>
+    <!-- Default target placement radius for GlowPadView. Should be 1/2 of outerring diameter. -->
+    <dimen name="glowpadview_target_placement_radius">135dip</dimen>
 
-    <!-- Default distance beyond which MultiWaveView snaps to the target radius -->
-    <dimen name="multiwaveview_snap_margin">20dip</dimen>
+    <!-- Default glow radius for GlowPadView -->
+    <dimen name="glowpadview_glow_radius">75dip</dimen>
 
-    <!-- Default distance from each snap target that MultiWaveView considers a "hit" -->
-    <dimen name="multiwaveview_hit_radius">60dip</dimen>
+    <!-- Default distance beyond which GlowPadView snaps to the matching target -->
+    <dimen name="glowpadview_snap_margin">40dip</dimen>
+
+    <!-- Default distance from each snap target that GlowPadView considers a "hit" -->
+    <dimen name="glowpadview_inner_radius">15dip</dimen>
 
     <!-- Preference activity side margins -->
     <dimen name="preference_screen_side_margin">0dp</dimen>
@@ -108,6 +115,20 @@
          is along the major axis (that is the screen is landscape).  This may
          be either a fraction or a dimension. -->
     <item type="dimen" name="dialog_min_width_major">65%</item>
+
+    <!-- The platform's desired fixed width for a dialog along the major axis
+         (the screen is in landscape). This may be either a fraction or a dimension.-->
+    <item type="dimen" name="dialog_fixed_width_major">320dp</item>
+    <!-- The platform's desired fixed width for a dialog along the minor axis
+         (the screen is in portrait). This may be either a fraction or a dimension.-->
+    <item type="dimen" name="dialog_fixed_width_minor">320dp</item>
+    <!-- The platform's desired fixed height for a dialog along the major axis
+         (the screen is in portrait). This may be either a fraction or a dimension.-->
+    <item type="dimen" name="dialog_fixed_height_major">80%</item>
+    <!-- The platform's desired fixed height for a dialog along the minor axis
+         (the screen is in landscape). This may be either a fraction or a dimension.-->
+    <item type="dimen" name="dialog_fixed_height_minor">100%</item>
+
     <!-- Preference activity, vertical padding for the header list -->
     <dimen name="preference_screen_header_vertical_padding">0dp</dimen>
 
@@ -172,11 +193,14 @@
     <!-- Padding on left margin of PIN text entry field to center it when del button is showing -->
     <dimen name="keyguard_lockscreen_pin_margin_left">40dip</dimen>
 
+    <!-- Height of FaceUnlock view in keyguard -->
+    <dimen name="face_unlock_height">330dip</dimen>
+
     <!-- Minimum popup width for selecting an activity in ActivityChooserDialog/ActivityChooserView. -->
     <dimen name="activity_chooser_popup_min_width">200dip</dimen>
 
     <!-- The default gap between components in a layout. -->
-    <dimen name="default_gap">16dip</dimen>
+    <dimen name="default_gap">8dip</dimen>
 
     <!-- Text padding for dropdown items -->
     <dimen name="dropdownitem_text_padding_left">8dip</dimen>
@@ -201,4 +225,119 @@
 
     <!-- Minimum width for an action button in the menu area of an action bar -->
     <dimen name="action_button_min_width">56dip</dimen>
+
+    <!-- Maximum height for a stacked tab bar as part of an action bar -->
+    <dimen name="action_bar_stacked_max_height">48dp</dimen>
+
+    <!-- Maximum width for a stacked action bar tab. This prevents
+         action bar tabs from becoming too wide on a wide screen when only
+         a few are present. -->
+    <dimen name="action_bar_stacked_tab_max_width">180dp</dimen>
+
+    <!-- Size of notification text (see TextAppearance.StatusBar.EventContent) -->
+    <dimen name="notification_text_size">14dp</dimen>
+    <!-- Size of notification text titles (see TextAppearance.StatusBar.EventContent.Title) -->
+    <dimen name="notification_title_text_size">18dp</dimen>
+    <!-- Size of smaller notification text (see TextAppearance.StatusBar.EventContent.Line2, Info, Time) -->
+    <dimen name="notification_subtext_size">12dp</dimen>
+
+    <!-- Keyguard dimensions -->
+    <!-- TEMP -->
+    <dimen name="kg_security_panel_height">600dp</dimen>
+
+    <!-- Height of security view in keyguard. -->
+    <dimen name="kg_security_view_height">480dp</dimen>
+
+    <!-- Width of widget view in keyguard. -->
+    <dimen name="kg_widget_view_width">0dp</dimen>
+
+    <!-- Height of widget view in keyguard. -->
+    <dimen name="kg_widget_view_height">0dp</dimen>
+
+    <!-- Size of the clock font in keyguard's status view -->
+    <dimen name="kg_status_clock_font_size">75dp</dimen>
+
+    <!-- Size of the date font in keyguard's status view  -->
+    <dimen name="kg_status_date_font_size">15dp</dimen>
+
+    <!-- Size of the generic status lines keyguard's status view  -->
+    <dimen name="kg_status_line_font_size">13dp</dimen>
+
+    <!-- Size of margin on the right of keyguard's status view -->
+    <dimen name="kg_status_line_font_right_margin">16dp</dimen>
+
+    <!-- Top margin for the clock view -->
+    <dimen name="kg_clock_top_margin">-16dp</dimen>
+
+    <!-- Horizontal gap between keys in PIN and SIM PIN numeric keyboards in keyguard -->
+    <dimen name="kg_key_horizontal_gap">0dp</dimen>
+
+    <!-- Horizontal gap between keys in PIN and SIM PIN numeric keyboards in keyguard -->
+    <dimen name="kg_key_vertical_gap">0dp</dimen>
+
+    <!-- Horizontal gap between keys in PIN and SIM PIN numeric keyboards in keyguard -->
+    <dimen name="kg_pin_key_height">60dp</dimen>
+
+    <!-- Space reserved at the bottom of secure views (pin/pattern/password/SIM pin/SIM puk) -->
+    <dimen name="kg_secure_padding_height">46dp</dimen>
+
+    <!-- The height of the runway lights strip -->
+    <dimen name="kg_runway_lights_height">7dp</dimen>
+
+    <!-- The height of the runway lights strip -->
+    <dimen name="kg_runway_lights_vertical_padding">2dp</dimen>
+
+    <!-- Horizontal padding for the widget pager -->
+    <dimen name="kg_widget_pager_horizontal_padding">16dp</dimen>
+
+    <!-- Top padding for the widget pager -->
+    <dimen name="kg_widget_pager_top_padding">0dp</dimen>
+
+    <!-- Bottom padding for the widget pager -->
+    <dimen name="kg_widget_pager_bottom_padding">64dp</dimen>
+
+    <!-- Top margin for the runway lights. We add a negative margin in large
+        devices to account for the widget pager padding -->
+    <dimen name="kg_runway_lights_top_margin">0dp</dimen>
+
+    <!-- Touch slop for the global toggle accessibility gesture -->
+    <dimen name="accessibility_touch_slop">80dip</dimen>
+
+    <!-- Width of the sliding KeyguardSecurityContainer (includes 2x keyguard_security_view_margin) -->
+    <dimen name="keyguard_security_width">320dp</dimen>
+
+    <!-- Height of the sliding KeyguardSecurityContainer (includes 2x keyguard_security_view_margin) -->
+    <dimen name="keyguard_security_height">400dp</dimen>
+
+    <!-- Margin around the various security views -->
+    <dimen name="keyguard_security_view_margin">8dp</dimen>
+
+    <!-- Margin around the various security views -->
+    <dimen name="keyguard_muliuser_selector_margin">8dp</dimen>
+
+    <!-- Stroke width of the frame for the circular avatars. -->
+    <dimen name="keyguard_avatar_frame_stroke_width">2dp</dimen>
+
+    <!-- Shadow radius under the frame for the circular avatars. -->
+    <dimen name="keyguard_avatar_frame_shadow_radius">1dp</dimen>
+
+    <!-- Size of the avator on hte multiuser lockscreen. -->
+    <dimen name="keyguard_avatar_size">66dp</dimen>
+
+    <!-- Size of the text under the avator on the multiuser lockscreen. -->
+    <dimen name="keyguard_avatar_name_size">10sp</dimen>
+
+    <!-- Size of the region along the edge of the screen that will accept
+         swipes to scroll the widget area. -->
+    <dimen name="kg_edge_swipe_region_size">24dp</dimen>
+
+    <!-- If the height if keyguard drops below this threshold (most likely
+    due to the appearance of the IME), then drop the multiuser selector. -->
+    <dimen name="kg_squashed_layout_threshold">600dp</dimen>
+
+    <!-- The height of widgets which do not support vertical resizing. This is only
+    used on tablets; on phones, this size is determined by the space left by the
+    security mode. -->
+    <dimen name="kg_small_widget_height">160dp</dimen>
+
 </resources>
