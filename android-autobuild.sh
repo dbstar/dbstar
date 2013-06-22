@@ -1,23 +1,23 @@
 #!/bin/bash
 #
 # File:   aundroid-autobuild.sh
-#     Do Android autobuild.
-# Author: peifu.jiang@gmail.com
+#     Android autobuild script.
+# Author: jiangpeifu@126.com
 # 
 
 
 #################################################################################
 # basic configs
 #################################################################################
-BASEDIR="/android"
-ANDROID_SRC=$BASEDIR/ics
-KERNEL_SRC=$ANDROID_SRC/kernel
-WIFI_SRC=$ANDROID_SRC/kernel/drivers/amlogic/wifi/rtl8xxx_EU
+TIMESTAMP=`date +%Y%m%d`
+BASEDIR="/jb"
+ANDROID_SRC=$BASEDIR/jbmr1
 UBOOT_SRC=$ANDROID_SRC/uboot
 DBSTAR_SRC=$ANDROID_SRC/packages/dbstar
-BUILD_OUT=$BASEDIR/f16-autobuild-out
-ROOTFS_OUT=$ANDROID_SRC/out/target/product/f16ref
+BUILD_OUT=$BASEDIR/buildout/$TIMESTAMP
+ROOTFS_OUT=$ANDROID_SRC/out/target/product/g18ref
 LOG_REPO=$BUILD_OUT/repo.log
+LOG_DBSTAR=$BUILD_OUT/dbstar.log
 LOG_UBOOT=$BUILD_OUT/uboot.log
 LOG_KERNEL=$BUILD_OUT/kernel.log
 LOG_ROOTFS=$BUILD_OUT/rootfs.log
@@ -25,23 +25,24 @@ LOG_OTAPACKAGE=$BUILD_OUT/otapackage.log
 LOG_LOGGER=$LOG_REPO
 
 GIT_SREVER="git://git.myamlogic.com/platform/manifest.git"
-GIT_BRANCH="ics-amlogic-0702"
-ANDROID_LUNCH="18"
-UBOOT_CONFIG="m3_mbox_config"
-KERNEL_CONFIG="meson_reff16_defconfig"
-#MAKE_ARGS="-j3"
-TIMESTAMP=`date +%Y%m%d`
+GIT_BRANCH="jb-mr1-amlogic"
+REPO_URL="git://10.8.9.5/tools/repo.git"
+ANDROID_LUNCH="12"
+UBOOT_CONFIG="m6_mbox_config"
+KERNEL_CONFIG="meson6_g18_jbmr1_defconfig"
+#MAKE_ARGS="-j5"
 
 
 #################################################################################
 # building flags
 #################################################################################
-BUILD_FLAG_PATCH=1
-BUILD_FLAG_KERNEL=2
-BUILD_FLAG_RECOVERY=3
-BUILD_FLAG_ROOTFS=4
-BUILD_FLAG_DBSTAR=5
-BUILD_FLAG_OTAPACKAGE=6
+BUILD_FLAG_CHECKOUT=1
+BUILD_FLAG_PATCH=2
+BUILD_FLAG_KERNEL=3
+BUILD_FLAG_RECOVERY=4
+BUILD_FLAG_ROOTFS=5
+BUILD_FLAG_DBSTAR=6
+BUILD_FLAG_OTAPACKAGE=7
 BUILD_FLAG_ALL=998
 BUILD_FLAG_RELEASE=999
 
@@ -61,11 +62,13 @@ VERBOSE_FLAG=0
 #################################################################################
 call()
 {
-    echo ">>> $@" 
+	echo ">>> $@" 
 	if [ $VERBOSE_FLAG -eq 1 ]; then
 		$@
+		return $?
 	else
 		$@ 1>>$LOG_LOGGER 2>&1
+		return $?
 	fi
 }
 
@@ -80,8 +83,7 @@ checkout()
 	LOG_LOGGER=$LOG_REPO.$TIMESTAMP
 	call mkdir -p $ANDROID_SRC
 	call cd $ANDROID_SRC
-#call repo init --repo-url=$REPO_URL -u $GIT_SREVER -b $GIT_BRANCH
-	call repo init -u $GIT_SREVER -b $GIT_BRANCH
+	call repo init --repo-url=$REPO_URL -u $GIT_SREVER -b $GIT_BRANCH
 
 	if [ $? -eq 0 ]; then
 		call repo sync $MAKE_ARGS
@@ -120,7 +122,6 @@ uboot_make()
 	call make $UBOOT_CONFIG
 	call make $MAKE_ARGS
 	if [ $? -eq 0 ]; then
-		call mkdir -p $BUILD_OUT
 		call cp ./build/u-boot-aml-ucl.bin $BUILD_OUT
 		logger "FINISH make uboot"
 	else
@@ -168,68 +169,15 @@ otapackage_make()
 	logger "START make otapackage"
 
 	LOG_LOGGER=$LOG_OTAPACKAGE.$TIMESTAMP
-	cp $BUILD_OUT/uImage $ROOTFS_OUT
-	cp $BUILD_OUT/uImage_recovery $ROOTFS_OUT
 
 	call cd $ANDROID_SRC
 	call make otapackage $MAKE_ARGS
 	if [ $? -eq 0 ]; then
 		logger "FINISH make otapackage"
 		call cp $ROOTFS_OUT/*.zip $BUILD_OUT
+		call cp -rf $ROOTFS_OUT/root $BUILD_OUT
 	else
 		logger "ERROR make otapackage"
-		exit 1
-	fi
-}
-
-wifi_make()
-{
-	cd $WIFI_SRC
-	if [ "$1" = "clean" ]; then
-		make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- KSRC=$KERNEL_SRC clean
-	else
-		make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- KSRC=$KERNEL_SRC all
-	fi
-}
-
-modules_make()
-{
-	logger "START make modules"
-	LOG_LOGGER=$LOG_KERNEL.$TIMESTAMP
-	call cd $KERNEL_SRC
-	if [ $REBUILD_FLAG -eq 1 ]; then
-		call make distclean
-		call wifi_make clean
-	fi
-	call cd $KERNEL_SRC
-	call make $KERNEL_CONFIG
-	call make uImage $MAKE_ARGS
-	call make modules
-	if [ $? -ne 0 ]; then
-		logger "ERROR make modules"
-		exit 1
-	fi
-	call wifi_make
-
-	call cd $KERNEL_SRC
-	if [ $? -eq 0 ]; then
-		call cp drivers/amlogic/mali/mali.ko $BUILD_OUT
-		call cp drivers/amlogic/ump/ump.ko $BUILD_OUT
-		call cp drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $BUILD_OUT
-		call cp drivers/amlogic/wifi/rtl8xxx_EU/8188eu.ko $BUILD_OUT
-		call cp net/wireless/cfg80211.ko $BUILD_OUT
-		call cp drivers/scsi/scsi_wait_scan.ko $BUILD_OUT
-
-		call cp drivers/amlogic/mali/mali.ko $ROOTFS_OUT/root/boot/
-		call cp drivers/amlogic/ump/ump.ko $ROOTFS_OUT/root/boot/
-		call cp drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $ROOTFS_OUT/system/lib/
-		call cp drivers/amlogic/wifi/rtl8xxx_EU/8188eu.ko $ROOTFS_OUT/system/lib/
-		call cp net/wireless/cfg80211.ko $ROOTFS_OUT/system/lib/
-		call cp drivers/scsi/scsi_wait_scan.ko $ROOTFS_OUT/system/lib/
-
-		logger "FINISH make modules"
-	else
-		logger "ERROR make modules"
 		exit 1
 	fi
 }
@@ -238,12 +186,10 @@ kernel_make()
 {
 	logger "START make kernel"
 	LOG_LOGGER=$LOG_KERNEL.$TIMESTAMP
-	modules_make
-	call cd $KERNEL_SRC
-	call make $KERNEL_CONFIG
-	call make uImage $MAKE_ARGS
+	call cd $ANDROID_SRC
+	call make bootimage $MAKE_ARGS
 	if [ $? -eq 0 ]; then
-		call cp ./arch/arm/boot/uImage $BUILD_OUT
+		call cp $ROOTFS_OUT/boot.img $BUILD_OUT
 		logger "FINISH make kernel"
 	else
 		logger "ERROR make kernel"
@@ -274,24 +220,11 @@ recovery_make()
 	bootable_make
 	logger "START make recovery"
 	LOG_LOGGER=$LOG_KERNEL.$TIMESTAMP
-	call cd $KERNEL_SRC
+	call cd $ANDROID_SRC
+	call make recoveryimage $MAKE_ARGS
 
-	if [ $REBUILD_FLAG -eq 1 ]; then
-		call make distclean
-	fi
-	call make $KERNEL_CONFIG
-
-    match=`sed -n "s|^CONFIG_BLK_DEV_INITRD=y$|&|gp" .config`
-    if [ -n "$match" ]; then
-        echo ">>> initramfs selected in kernel config"
-        rootfsconfig1="CONFIG_INITRAMFS_SOURCE=\"$ROOTFS_OUT/recovery/root\""
-        sed -e "s|^.*CONFIG_INITRAMFS_SOURCE=\".*\".*$|$rootfsconfig1|g" .config > tmpconfig
-        call cp tmpconfig .config
-    fi
-
-	call make uImage $MAKE_ARGS
 	if [ $? -eq 0 ]; then
-		call cp ./arch/arm/boot/uImage $BUILD_OUT/uImage_recovery
+		call cp $ROOTFS_OUT/recovery.img $BUILD_OUT
 		logger "FINISH make recovery"
 	else
 		logger "ERROR make recovery"
@@ -304,7 +237,7 @@ dbstar_patch()
 	logger "START patch dbstar"
 	call cd $ANDROID_SRC
 	echo ">>>> patching kernel ..."
-	cp -rf $DBSTAR_SRC/kernel/* $ANDROID_SRC/kernel/
+	cp -rf $DBSTAR_SRC/common/* $ANDROID_SRC/common/
 	echo ">>>> patching bionic ..."
 	cp -rf $DBSTAR_SRC/bionic/* $ANDROID_SRC/bionic/
 	echo ">>>> patching frameworks ..."
@@ -321,9 +254,12 @@ dbstar_patch()
 dbstar_make()
 {
 	logger "START make dbstar"
-	LOG_LOGGER=$LOG_ROOTFS.$TIMESTAMP
+	LOG_LOGGER=$LOG_DBSTAR.$TIMESTAMP
 	call cd $ANDROID_SRC
 	call mmm $DBSTAR_SRC/rootfs
+	if [ $? -ne 0 ]; then
+		logger "ERROR make rootfs"
+	fi
 	if [ $REBUILD_FLAG -eq 1 ]; then
 		call mmm $DBSTAR_SRC/DbstarDVB -B
 		call mmm $DBSTAR_SRC/DbstarLauncher -B
@@ -331,9 +267,21 @@ dbstar_make()
 		call mmm $DBSTAR_SRC/GuodianApp -B
 	else
 		call mmm $DBSTAR_SRC/DbstarDVB
+		if [ $? -ne 0 ]; then
+			logger "ERROR make DbstarDVB"
+		fi
 		call mmm $DBSTAR_SRC/DbstarLauncher
+		if [ $? -ne 0 ]; then
+			logger "ERROR make DbstarLauncher"
+		fi
 		call mmm $DBSTAR_SRC/DbstarSettings
+		if [ $? -ne 0 ]; then
+			logger "ERROR make DbstarSettings"
+		fi
 		call mmm $DBSTAR_SRC/GuodianApp
+		if [ $? -ne 0 ]; then
+			logger "ERROR make GuodianApp"
+		fi
 	fi
 	if [ $? -eq 0 ]; then
 		logger "FINISH make dbstar"
@@ -346,7 +294,12 @@ autobuild()
 {
 	logger "******************** start..."
 	mkdir -p $BUILD_OUT
-	lunch_setup
+
+	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_CHECKOUT ]; then
+		checkout
+	else
+		lunch_setup
+	fi
 
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_PATCH ]; then
 		dbstar_patch
@@ -367,11 +320,9 @@ autobuild()
 		otapackage_make
 	fi
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_ALL ]; then
-		dbstar_patch
+#		dbstar_patch
 		rootfs_make
-		dbstar_make
-		kernel_make
-		recovery_make
+#		dbstar_make
 		otapackage_make
 	fi
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_RELEASE ]; then
@@ -379,8 +330,6 @@ autobuild()
 		dbstar_patch
 		rootfs_make
 		dbstar_make
-		kernel_make
-		recovery_make
 		otapackage_make
 	fi
 
@@ -426,7 +375,7 @@ do_select()
 {
 	echo "Autobuild android system:"
 	echo "Please select:"
-	select var in "patch" "dbstar" "kernel" "recovery" "rootfs" "otapackage" "all" "release"; do
+	select var in "checkout" "patch" "dbstar" "kernel" "recovery" "rootfs" "otapackage" "all" "release"; do
 		break
 	done
 	echo "You have selected $var"
@@ -437,6 +386,8 @@ check_args()
 {
 	if [ $1 = "-h" ]; then
 		help
+	elif [ $1 = "checkout" ]; then
+		AUTOBUILD_FLAG=$BUILD_FLAG_CHECKOUT
 	elif [ $1 = "kernel" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_KERNEL
 	elif [ $1 = "recovery" ]; then
