@@ -84,6 +84,13 @@ public class EthernetService<syncronized> extends IEthernetManager.Stub{
             info.setNetMask(Settings.Secure.getString(cr, Settings.Secure.ETH_MASK));
             info.setRouteAddr(Settings.Secure.getString(cr, Settings.Secure.ETH_ROUTE));
 
+            final String host = Settings.Secure.getString(cr, Settings.Secure.ETH_PROXY_HOST);
+            if (host != null && host.length() != 0) {
+                info.setProxy(host,
+                    Settings.Secure.getInt(cr, Settings.Secure.ETH_PROXY_PORT, 8080),
+                    Settings.Secure.getString(cr, Settings.Secure.ETH_PROXY_EXCLUSION_LIST));
+            }
+
             return info;
         }
         return null;
@@ -108,10 +115,21 @@ public class EthernetService<syncronized> extends IEthernetManager.Stub{
         Settings.Secure.putString(cr, Settings.Secure.ETH_DNS, info.getDnsAddr());
         Settings.Secure.putString(cr, Settings.Secure.ETH_ROUTE, info.getRouteAddr());
         Settings.Secure.putString(cr, Settings.Secure.ETH_MASK,info.getNetMask());
+
+        if (info.hasProxy()) {
+            Settings.Secure.putString(cr, Settings.Secure.ETH_PROXY_HOST, info.getProxyHost());
+            Settings.Secure.putInt(cr, Settings.Secure.ETH_PROXY_PORT, info.getProxyPort());
+            Settings.Secure.putString(cr, Settings.Secure.ETH_PROXY_EXCLUSION_LIST,
+                info.getProxyExclusionList());
+        } else {
+            Settings.Secure.putString(cr, Settings.Secure.ETH_PROXY_HOST, "");
+            Settings.Secure.putInt(cr, Settings.Secure.ETH_PROXY_PORT, 8080);
+            Settings.Secure.putString(cr, Settings.Secure.ETH_PROXY_EXCLUSION_LIST, "");
+        }
         if (mEthState == EthernetManager.ETH_STATE_ENABLED) {
             try {
-                Slog.i(TAG, "UpdateEthDevInfo() call resetInterface()");
                 mTracker.resetInterface();
+                Slog.i(TAG, "$$UpdateEthDevInfo() call resetInterface()");
             } catch (UnknownHostException e) {
                 Slog.e(TAG, "Wrong ethernet configuration");
             }
@@ -206,10 +224,10 @@ public class EthernetService<syncronized> extends IEthernetManager.Stub{
             mEthState = state;
             if (state == EthernetManager.ETH_STATE_DISABLED) {
                 persistEthEnabled(false);
+//              mTracker.stopInterface(false);
                 new Thread("stopInterface") {
                     @Override
                     public void run() {
-                        Slog.i(TAG, "setEthState call stopInterface");
                     
                         mTracker.stopInterface(false);
                     }
