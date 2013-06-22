@@ -1,13 +1,13 @@
 # mount point	fstype		device			device2
-/ubootwhole	mtd		ubootwhole
-/boot		mtd		boot
-/loader		mtd		loader
+/bootloader	mtd		bootloader
+/logo		mtd		logo
 /aml_logo	mtd		aml_logo
-/system		yaffs2		system
-/cache		yaffs2		cache
-/data		yaffs2		userdata
 /recovery	mtd		recovery
-/sdcard     vfat     /dev/block/cardblksd#     /dev/block/mmcblk0p#
-/media     vfat     /dev/block/avnftl6     /dev/block/avnftl6p1   
+/boot		mtd		boot
+/system		ext4		/dev/block/system
+/cache		ext4		/dev/block/cache
+/data		ext4		/dev/block/data
+/sdcard		vfat		/dev/block/cardblksd#	/dev/block/mmcblk0p#
+/media		vfat		/dev/block/media
 #/udisk          vfat            /dev/block/sda#
-/udisk          vfat            /dev/block/sdb#
+/udisk      vfat        /dev/block/sdb#
