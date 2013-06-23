@@ -206,10 +206,3 @@ PRODUCT_COPY_FILES += \
 
 # inherit from the non-open-source side, if present
 $(call inherit-product-if-exists, vendor/amlogic/g18ref/device-vendor.mk)
-
-#dbstar
-PRODUCT_PACKAGES += \
-	DbstarLauncher \
-	DbstarSettings \
-	DbstarDVB \
-	GuodianApp
