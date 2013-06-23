@@ -44,6 +44,8 @@
 #include <asm/gpio.h>
 #include <linux/amsmc.h>
 #include <linux/platform_device.h>
+#include <linux/switch.h>
+#include <linux/kthread.h>
 
 #if MESON_CPU_TYPE >= MESON_CPU_TYPE_MESON6
 #include <mach/mod_gate.h>
