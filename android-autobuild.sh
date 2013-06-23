@@ -10,9 +10,9 @@
 # basic configs
 #################################################################################
 TIMESTAMP=`date +%Y%m%d`
-BASEDIR="/jb"
-ANDROID_SRC=$BASEDIR/jbmr1
-UBOOT_SRC=$ANDROID_SRC/uboot
+BASEDIR="`pwd`/../../.."
+ANDROID_SRC="`pwd`/../.."
+UBOOT_SRC=$BASEDIR/uboot
 DBSTAR_SRC=$ANDROID_SRC/packages/dbstar
 BUILD_OUT=$BASEDIR/buildout/$TIMESTAMP
 ROOTFS_OUT=$ANDROID_SRC/out/target/product/g18ref
@@ -246,8 +246,6 @@ dbstar_patch()
 	cp -rf $DBSTAR_SRC/device/* $ANDROID_SRC/device/
 	echo ">>>> patching build ..."
 	cp -rf $DBSTAR_SRC/build/* $ANDROID_SRC/build/
-	echo ">>>> patching packages ..."
-	cp -rf $DBSTAR_SRC/packages/* $ANDROID_SRC/packages/
 	logger "FINISH patch dbstar"
 }
 
@@ -322,7 +320,7 @@ autobuild()
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_ALL ]; then
 #		dbstar_patch
 		rootfs_make
-#		dbstar_make
+		dbstar_make
 		otapackage_make
 	fi
 	if [ $AUTOBUILD_FLAG -eq $BUILD_FLAG_RELEASE ]; then
