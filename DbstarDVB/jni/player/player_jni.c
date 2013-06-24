@@ -98,7 +98,7 @@ int64_t vp_seek(URLContext *h, int64_t pos, int whence)
 	int64_t ret;
 	int64_t newsetpos;
 
-	LOGV("########## %sret=%lld,pos=%lld,whence=%d,tell=%lld\n",
+	LOGD("########## %sret=%lld,pos=%lld,whence=%d,tell=%lld\n",
 			__FUNCTION__, (int64_t)0, pos, whence, (int64_t)lseek(af->fd, 0, SEEK_CUR));
 	if (whence == AVSEEK_SIZE) {
 		ret = fstat(af->fd, &st);

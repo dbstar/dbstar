@@ -10,6 +10,14 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 
+#ifndef LOGD
+    #define LOGV ALOGV
+    #define LOGD ALOGD
+    #define LOGI ALOGI
+    #define LOGW ALOGW
+    #define LOGE ALOGE
+#endif
+
 static int set_fb0_blank(int blank)
 {
     int fd;
