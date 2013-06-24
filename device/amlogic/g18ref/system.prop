@@ -7,6 +7,7 @@
 keyguard.no_require_sim=1
 #set keyguard.enable=false to disable keyguard
 keyguard.enable=false
+mbx.timeout.enable=false
 ro.statusbar.widget=false
 ro.statusbar.button=false
 ro.statusbar.yearmonthdayweek=false
@@ -18,11 +19,6 @@ ro.statusbar.yearmonthdayweek=false
 #wifi.supplicant_scan_interval = 60
 #alsa.mixer.playback.master=DAC2 Analog
 #alsa.mixer.capture.master=Analog
-alsa.use.usb.audioin=true
-# from frameworks/base/build/tablet-dalvik-heap.mk
-dalvik.vm.heapstartsize=5m
-dalvik.vm.heapgrowthlimit=128m
-dalvik.vm.heapsize=256m
 
 hwui.render_dirty_regions=false
 
@@ -34,10 +30,13 @@ hw.novibrate=true
 hw.nogps=true
 hw.cameras=0
 hw.hasethernet=true
+hw.hasusbcamera=true
 hw.has.accelerometer=false
-hw.nomediapartition=true
-hw.nosoundpartition=true
-ro.hw.ethernet.onboard=true
+
+#used in packages/apps/Settings/.../Utils.java
+hw.has.bluetooth=false
+
+ro.ethernet.default_on=true
 
 ro.screen.has.timeout=false
 ro.screen.has.brightness=false
@@ -47,15 +46,22 @@ ro.platform.has.tts=false
 ro.platform.has.touch=false
 ro.platform.has.mbxuimode=true
 ro.platform.has.1080scale=2
-ro.fontScale=1.3
+#ro.fontScale=1.3
 ro.platform.has.digitaudio=true
-ro.platform.has.defaulttvfreq=true
-ro.platform.has.hdmicec=false
+ro.platform.has.defaulttvfreq=false
+ro.hw.ethernet.onboard=true
+ro.platform.has.cvbsmode=true
+ro.platform.has.cecmode=false
 
 # Use OSD2 mouse patch
 ro.ui.cursor=osd2
 ro.ui.cursor.autohide=true
 ro.ui.cursor.timeout=10000
+
+#set to 0 temporarily so touch works without other changes
+ro.sf.hwrotation=0
+
+ro.hardware=amlogic
 
 # Enable 32-bit OSD
 sys.fb.bits=32
@@ -63,29 +69,37 @@ sys.fb.bits=32
 # Disable GPS
 gps.enable=false
 
-# for sata connect to PC
-vold.gadget_only_sata=1
 
 #Enable player buildin
 media.amsuperplayer.enable=true
-media.amplayer.enable-acodecs=asf,aac,flac,alac,m4a,ape,mp3
+media.amplayer.enable-acodecs=ape,flac,dts
 media.amplayer.enable=true
 media.amplayer.support-exname=divx,h264,avi,ts,m2ts,mkv,mp4,mpg,mpeg,rm,rmvb,wmv,ts,dat,vob,vc1
 media.amplayer.support-exname1=mp2,mp3,ac3
 media.amsuperplayer.m4aplayer=STAGEFRIGHT_PLAYER
 media.amsuperplayer.defplayer=PV_PLAYER
 media.amplayer.thumbnail=true
-media.arm.audio.decoder=ape
+media.amplayer.startmode=true
+#media.amplayer.widevineenable=true
+media.arm.audio.decoder=ape,flac
 mbx.3D_Bright.enable=false
-media.amplayer.stopbuflevel=0.002
+# Nand write need force sync when gadget
+gadget.nand.force_sync=true
 
 # Camera exif
-ro.camera.exif.make=M1
-ro.camera.exif.model=f16ref
-
-#Max alloc size for fat size in fsck_msdoa
-ro.fsck_msdos.max_fat_size_MB=32
-
+ro.camera.exif.make=M6
+ro.camera.exif.model=g18ref
+#hide status bar
+ro.hideStatusBar=true
+# when usbstorage, CPU mode and freq
+ro.usbstorage.cpumode=performance
+ro.usbstorage.maxfreq=600000
+#support media poll uevent,can use sd cardread on usb port
+has.media.poll=true
+#used forward seek for libplayer
+media.libplayer.seek.fwdsearch=1
+#enable address bar cover issue fixing
+ro.flashplayer.surfacehack=1
 ######## UBOOTENV VARIBLES - r/w as system properties ##########
 #
 #  Now we can load ubootenv varibles to system properties. 
@@ -98,10 +112,16 @@ ro.fsck_msdos.max_fat_size_MB=32
 
 ## prefix of ubootenv varibles - should less than 16 chars.
 #UBOOTENV MTD NAME
+#ubootenv.var.bootcmd=
+#ubootenv.var.cpuclock=
+#ubootenv.var.gpuclock=
+#ubootenv.var.memsize=
+#ubootenv.var.ethaddr=
+#ubootenv.var.ipaddr=
+#ubootenv.var.gatewayip=
 ubootenv.var.outputmode=
-ubootenv.var.cvbsmode=
-ubootenv.var.screenratio=
-ubootenv.var.oobeflag=
+#ubootenv.var.screenratio=
+#ubootenv.var.oobeflag=
 ubootenv.var.480poutputx=
 ubootenv.var.480poutputy=
 ubootenv.var.480poutputwidth=
@@ -132,41 +152,32 @@ ubootenv.var.1080ioutputwidth=
 ubootenv.var.1080ioutputheight=
 ubootenv.var.digitaudiooutput=
 ubootenv.var.defaulttvfrequency=
-ubootenv.var.hdmicecswitch=
+ubootenv.var.has.accelerometer=
+ubootenv.var.cecconfig=
+ubootenv.var.cvbsmode=
 
-tv.hideStatusBar.enable=false
-tv.powermanager.nevertimeout=true
 #Configure the dtv standard, can only be DVB,ATSC
-dtv.standard=DVB
+dtv.standard=DVBS
 
 # Disable preload-class
 ro.amlogic.no.preloadclass=1
 
-service.adb.tcp.port=5555
+virtualsd.enable=true
+
+#service.adb.tcp.port=5555
 const.window.w=1280
 const.window.h=720
-
-# Disable LongPress_PowerKey
-ro.amlogic.no.LongPressPowerKey=true
-
-#Open cvbs output mode
-ro.amlogic.has.CvbsOutput=true
-ro.video.deinterlace.enable=false
 sys.defaultStream.ismusic=true
 
 ro.app.optimization=true
 
-#enable address bar cover issue fixing
-ro.flashplayer.surfacehack=1
+#add livhls,libcurl as default hls
+#media.libplayer.curlenable=true
+#media.libplayer.modules=vhls_mod,curl_mod
+media.libplayer.modules=vhls_mod
 
-#dhcp_release
-net.dhcp.release=disabled
-
-#reduce the time of loading online video
-media.libplayer.fastswitch=1
-media.amplayer.delaybuffering=1
-media.libplayer.ipv4only=1
-
+#for full screen
+flash.hideStatusBar.enable=true
 
 #set default timezone
 persist.sys.timezone=Asia/Shanghai

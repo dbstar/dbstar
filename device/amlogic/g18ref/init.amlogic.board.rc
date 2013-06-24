@@ -6,6 +6,7 @@ on init
 on fs
     setprop ro.crypto.umount_sd false
     mount ext4 /dev/block/system /system ro noatime nodiratime noauto_da_alloc
+    e2fsck -y /dev/block/data
     mount ext4 /dev/block/data /data noatime nodiratime norelatime nosuid nodev noauto_da_alloc
     mount ext4 /dev/block/cache /cache noatime nodiratime norelatime nosuid nodev noauto_da_alloc
 
@@ -22,6 +23,10 @@ on boot
     write /sys/devices/system/cpu/cpufreq/conservative/sampling_rate 100000
     write /sys/devices/system/cpu/cpufreq/conservative/up_threshold 80
     write /sys/devices/system/cpu/cpufreq/conservative/down_threshold 50
+
+
+    write /sys/class/vfm/map "rm default" 
+    write /sys/class/vfm/map "add default decoder ppmgr deinterlace amvideo"
 
 # create dbstar dir
     mkdir /data/dbstar 0777 system system
