@@ -72,7 +72,6 @@
 #include <mach/devio_aml.h>
 #include <linux/uart-aml.h>
 #include <linux/i2c-aml.h>
-#include <linux/syscore_ops.h>
 
 #include "board-m6g18.h"
 
@@ -1463,18 +1462,11 @@ static struct hdmi_phy_set_data brd_phy_data[] = {
     {-1,   -1},         //end of phy setting
 };
 
-static struct vendor_info_data vendor_data = {
-    .vendor_name = "Amlogic",               // Max Chars: 8
-    .product_desc = "MX MBox g18ref",         // Max Chars: 16
-    .cec_osd_string = NULL,                 // Max Chars: 14
-};
-
 static struct hdmi_config_platform_data aml_hdmi_pdata = {
     .hdmi_5v_ctrl = m6ref_hdmi_5v_ctrl,
     .hdmi_3v3_ctrl = NULL,
     .hdmi_pll_vdd_ctrl = NULL,
     .phy_data = brd_phy_data,
-    .vend_data = &vendor_data,
 };
 #endif
 /***********************************************************************
@@ -2631,30 +2623,6 @@ static struct platform_device  *platform_devs[] = {
 #endif
 };
 
-static int mmc_lp_suspend(void)
-{
-    // Disable MMC_LP_CTRL.
-    printk("MMC_LP_CTRL1 before=%#x\n", aml_read_reg32(P_MMC_LP_CTRL1));
-    aml_write_reg32(P_MMC_LP_CTRL1, 0x60a80000);
-    printk("MMC_LP_CTRL1 after=%#x\n", aml_read_reg32(P_MMC_LP_CTRL1));
-    return 0;
-}
-static void mmc_lp_resume(void)
-{
-    // Enable MMC_LP_CTRL.
-    printk("MMC_LP_CTRL1 before=%#x\n", aml_read_reg32(P_MMC_LP_CTRL1));
-    aml_write_reg32(P_MMC_LP_CTRL1, 0x78000030);
-    aml_write_reg32(P_MMC_LP_CTRL3, 0x34f00f03); //at bootup its 0x34400f03 ?? and kreboot set it to this
-    printk("MMC_LP_CTRL1 after=%#x\n", aml_read_reg32(P_MMC_LP_CTRL1));
-}
-static struct syscore_ops mmc_lp_syscore_ops = {
-    .suspend    = mmc_lp_suspend,
-    .resume     = mmc_lp_resume,
-};
-static __init void mmc_lp_suspend_init(void)
-{
-    register_syscore_ops(&mmc_lp_syscore_ops);
-}
 static __init void meson_init_machine(void)
 {
 //    meson_cache_init();
@@ -2667,7 +2635,6 @@ static __init void meson_init_machine(void)
     aml_set_reg32_bits(AOBUS_REG_ADDR(0x24), 0, 19, 1);
     aml_set_reg32_bits(AOBUS_REG_ADDR(0x24), 0,  2, 1);
     aml_set_reg32_bits(AOBUS_REG_ADDR(0x24), 1, 18, 1);
-    mmc_lp_suspend_init();
 #ifdef CONFIG_MESON_CS_DCDC_REGULATOR
     vcck_pwm_init();
 #endif
