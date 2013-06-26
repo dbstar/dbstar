@@ -768,10 +768,10 @@ int disk_manage(char *PublicationID, char *ProductID)
 		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE PublicationID='%s';",PublicationID);
 	}
 	else if(NULL!=ProductID && strlen(ProductID)>0){
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE URI='%s' GROUP BY PublicationID;",ProductID);
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ProductID='%s' GROUP BY PublicationID;",ProductID);
 	}
 	else{
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ReceiveStatus!='0' GROUP BY PublicationID ORDER BY IsReserved,Deleted DESC,ReceiveStatus,TimeStamp LIMIT 16;");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;");
 	}
 	DEBUG("%s\n", sqlite_cmd);
 #endif

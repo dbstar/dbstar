@@ -27,6 +27,7 @@ static pthread_mutex_t mtx_parse_xml = PTHREAD_MUTEX_INITIALIZER;
 static int s_column_SequenceNum = 0;
 static int s_detect_valid_productID = 0;
 static int s_preview_publication = 0;
+static unsigned long long s_recv_totalsize_sum = 0LL;
 
 /*
  初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
@@ -342,9 +343,11 @@ int check_productid_from_db_in_trans(char *productid)
 }
 #endif
 
-/*
- 如果先解析ProductDesc后解析Service，则有可能本应接收的Product被拒绝。
-*/
+unsigned long long recv_totalsize_sum_get()
+{
+	return s_recv_totalsize_sum;
+}
+
 static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 {
 	if(NULL==ptr){
@@ -353,6 +356,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	}
 	
 	char sqlite_cmd[4096];
+	unsigned long long this_total_size = 0LL;
 	
 	/*
 	还需要检查用户在选择接收界面的反选
@@ -405,6 +409,11 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	}
 	
 	if(RECEIVESTATUS_WAITING==receive_status){
+		this_total_size = 0LL;
+		sscanf(ptr->TotalSize,"%llu", &this_total_size);
+		s_recv_totalsize_sum += this_total_size;
+		DEBUG("ptr->TotalSize: %s, this_total_size=%llu,s_recv_totalsize_sum=%llu\n", ptr->TotalSize,this_total_size,s_recv_totalsize_sum);
+		
 		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO ProductDesc(ServiceID,ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag,Parsed) \
 VALUES('%s',\
 '%s',\
@@ -2991,6 +3000,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 				
 // ProductDesc.xml 当前投递单
 				else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
+					s_recv_totalsize_sum = 0LL;
+					DEBUG("reset s_recv_totalsize_sum as %lld\n", s_recv_totalsize_sum);
+					
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 					/*
@@ -3120,7 +3132,16 @@ PARSE_XML_END:
 			}
 			else{
 				DEBUG("refresh push monitor because of xml %d\n", actual_xml_flag);
-				disk_space_check();	
+				
+				/*
+				 如果是进行了磁盘清理，需要再重试一次进行硬盘空间检查。因为磁盘清理时，清理空间计算依据的是数据库记录，但是有的节目没有下载完整，导致数据库标识的节目体积有虚高的风险，
+				 也因此导致实际清理掉的空间没有达到期望值。
+				*/
+				while(0==disk_space_check()){
+					DEBUG("do disk_space_check() finish with 0, sleep(3) and check again\n");
+					sleep(3);
+				}
+				
 				push_recv_manage_refresh();
 			}
 		}

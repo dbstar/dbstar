@@ -119,7 +119,11 @@ typedef enum{
 #define DEVICEMODEL_DFT				"01"
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
-#define HDFOREWARNING_M_DFT			(71680LL)
+
+// 除了应该给本次下载留出足够空间外，额外预留20G
+#define HDFOREWARNING_M_DFT			(20480LL)
+// 给本次下载留出足够空间外，至少50G
+#define DOWNLOAD_ONCE_M_MIN			(51200LL)
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,

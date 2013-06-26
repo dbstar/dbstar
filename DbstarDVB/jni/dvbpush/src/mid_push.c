@@ -708,7 +708,7 @@ void *maintenance_thread()
 #if 0		
 		if(1==s_disk_manage_flag){
 			DEBUG("will clean disk\n");
-			disk_manage(NULL,NULL);
+			disk_space_check();
 			s_disk_manage_flag = 0;
 		}
 #endif
@@ -1743,27 +1743,43 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	return 0;
 }
 
+/*
+ return 0: disc cleaning finish
+ 		-1: can not clean, some err
+ 		1: no need to clean
+*/
 int disk_space_check()
 {
 	unsigned long long tt_size = 0LL;
 	unsigned long long free_size = 0LL;
+	int ret = -1;
 	
 	if(-1==disk_usable_check(push_dir_get(),&tt_size,&free_size)){
 		DEBUG("HardDisc %s disable\n",push_dir_get());
+		ret = -1;
 	}
 	else{
 		DEBUG("HardDisc %s enable, total_size: %llu, free_size: %llu\n",push_dir_get(),tt_size,free_size);
 		unsigned long long free_size_M = (free_size >> 20);
+		unsigned long long download_M = (recv_totalsize_sum_get() >> 20);
 		
-		if(free_size_M<=HDFOREWARNING_M_DFT){
-			DEBUG("should clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,HDFOREWARNING_M_DFT);
-			disk_manage(NULL,NULL);
+		if(download_M<DOWNLOAD_ONCE_M_MIN){
+			DEBUG("check download %llu Mbytes is smaller than %llu, reset it as %llu\n",download_M,DOWNLOAD_ONCE_M_MIN,DOWNLOAD_ONCE_M_MIN);
+			download_M = DOWNLOAD_ONCE_M_MIN;
 		}
-		else
-			DEBUG("no need to clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,HDFOREWARNING_M_DFT);
+		
+		if(free_size_M<=(HDFOREWARNING_M_DFT+download_M)){
+			DEBUG("should clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+download_M));
+			disk_manage(NULL,NULL);
+			ret = 0;
+		}
+		else{
+			DEBUG("no need to clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+download_M));
+			ret = 1;
+		}
 	}
 	
-	return 0;
+	return ret;
 }
 
 /*
