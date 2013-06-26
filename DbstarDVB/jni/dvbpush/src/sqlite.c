@@ -1954,8 +1954,7 @@ int localcolumn_init()
 	 一级菜单“国网资讯”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","G5")){
-#ifdef DRM_TEST
-#else
+#if 0
 		snprintf(localcolumn_iconname,sizeof(localcolumn_iconname),"GridInfos_losefocus.png");
 		columnicon_init(localcolumn_iconname);
 		
@@ -1971,10 +1970,16 @@ int localcolumn_init()
 		insert_column_cnt ++;
 #endif
 	}
+	else{
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='G5';");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
 	
 	/*
 	 二级菜单“国网快讯”
 	*/
+#if 0
 	if(-1==check_record_in_trans("Column","ColumnID","G501")){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
 			"G501","G5","G5/G501","SmartLife","LocalColumnIcon/GridInfos_losefocus.png","LocalColumnIcon/GridInfos_losefocus.png","LocalColumnIcon/GridInfos_losefocus.png");
@@ -1987,6 +1992,7 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
+#endif
 	
 	
 	if(insert_column_cnt>0)
