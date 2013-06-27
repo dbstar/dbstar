@@ -16,13 +16,14 @@ UBOOT_SRC=$BASEDIR/uboot
 DBSTAR_SRC=$ANDROID_SRC/packages/dbstar
 BUILD_OUT=$BASEDIR/buildout/$TIMESTAMP
 ROOTFS_OUT=$ANDROID_SRC/out/target/product/g18ref
+LOG_BUILD=$BUILD_OUT/build.log
 LOG_REPO=$BUILD_OUT/repo.log
 LOG_DBSTAR=$BUILD_OUT/dbstar.log
 LOG_UBOOT=$BUILD_OUT/uboot.log
 LOG_KERNEL=$BUILD_OUT/kernel.log
 LOG_ROOTFS=$BUILD_OUT/rootfs.log
 LOG_OTAPACKAGE=$BUILD_OUT/otapackage.log
-LOG_LOGGER=$LOG_REPO
+LOG_LOGGER=$LOG_BUILD
 
 GIT_SREVER="git://git.myamlogic.com/platform/manifest.git"
 GIT_BRANCH="jb-mr1-amlogic"
@@ -30,7 +31,7 @@ REPO_URL="git://10.8.9.5/tools/repo.git"
 ANDROID_LUNCH="12"
 UBOOT_CONFIG="m6_mbox_config"
 KERNEL_CONFIG="meson6_g18_jbmr1_defconfig"
-#MAKE_ARGS="-j5"
+MAKE_ARGS=""
 
 
 #################################################################################
@@ -47,14 +48,16 @@ BUILD_FLAG_ALL=998
 BUILD_FLAG_RELEASE=999
 
 AUTOBUILD_FLAG=0
+AUTOBUILD_TYPE=""
 
 #  0: donot clean
 #  1: clean and make
 REBUILD_FLAG=0
 
-#  0: log into file
+#  0: no log
 #  1: log stdout
-VERBOSE_FLAG=0
+#  2: log into file
+VERBOSE_FLAG=2
 
 
 #################################################################################
@@ -66,8 +69,11 @@ call()
 	if [ $VERBOSE_FLAG -eq 1 ]; then
 		$@
 		return $?
-	else
+	elif [ $VERBOSE_FLAG -eq 2 ]; then
 		$@ 1>>$LOG_LOGGER 2>&1
+		return $?
+	else
+		$@ > /dev/null 2>&1
 		return $?
 	fi
 }
@@ -340,7 +346,9 @@ dumpinfo()
 {
 	echo "=================== Building info ================"
 	echo "    build time:    $TIMESTAMP"
-	echo "    build module:  $1"
+	echo "    build tpye:    $AUTOBUILD_TYPE"
+	echo "    build args:    $MAKE_ARGS"
+	echo "    build flag:    $VERBOSE_FLAG"
 	echo "    source path:   $ANDROID_SRC"
 	echo "    output path:   $BUILD_OUT"
 	echo "    lunch config:  $ANDROID_LUNCH"
@@ -384,38 +392,72 @@ do_select()
 
 check_args()
 {
-	if [ $1 = "-h" ]; then
+	arg1=$1;
+	arg2=$2;
+	arg3=$3;
+	if [ $arg1 = "-h" ]; then
 		help
-	elif [ $1 = "checkout" ]; then
+	elif [ $arg1 = "-s" ]; then
+		VERBOSE_FLAG=0
+	elif [ $arg1 = "-v" ]; then
+		VERBOSE_FLAG=1
+	elif [ "$arg1" = "-B" ]; then
+		REBUILD_FLAG=1
+	elif [ ${arg1:0:2} = "-j" ]; then
+		MAKE_ARGS=$1
+	elif [ $arg1 = "checkout" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_CHECKOUT
-	elif [ $1 = "kernel" ]; then
+		AUTOBUILD_TYPE=$arg1
+	elif [ $arg1 = "kernel" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_KERNEL
-	elif [ $1 = "recovery" ]; then
+		AUTOBUILD_TYPE=$arg1
+	elif [ $arg1 = "recovery" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_RECOVERY
-	elif [ $1 = "rootfs" ]; then
+		AUTOBUILD_TYPE=$arg1
+	elif [ $arg1 = "rootfs" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_ROOTFS
-	elif [ $1 = "patch" ]; then
+		AUTOBUILD_TYPE=$arg1
+	elif [ $arg1 = "patch" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_PATCH
-	elif [ $1 = "dbstar" ]; then
+		AUTOBUILD_TYPE=$arg1
+	elif [ $arg1 = "dbstar" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_DBSTAR
-	elif [ $1 = "otapackage" ]; then
+		AUTOBUILD_TYPE=$arg1
+	elif [ $arg1 = "otapackage" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_OTAPACKAGE
-	elif [ $1 = "all" ]; then
+		AUTOBUILD_TYPE=$arg1
+	elif [ $arg1 = "all" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_ALL
-	elif [ $1 = "release" ]; then
+		AUTOBUILD_TYPE=$arg1
+	elif [ $arg1 = "release" ]; then
 		AUTOBUILD_FLAG=$BUILD_FLAG_RELEASE
+		AUTOBUILD_TYPE=$arg1
 	else
 		help
 	fi
 
-	if [ "$2" = "-B" ]; then
+	if [ "$arg2" = "-B" ]; then
 		REBUILD_FLAG=1
-	elif [ "$2" = "-v" ]; then
+	elif [ "$arg2" = "-s" ]; then
+		VERBOSE_FLAG=0
+	elif [ "$arg2" = "-v" ]; then
 		VERBOSE_FLAG=1
+	elif [ "${arg2:0:2}" = "-j" ]; then
+		MAKE_ARGS=$arg2
 	fi
 
-	if [ "$3" = "-v" ]; then
+	if [ "$arg3" = "-B" ]; then
+		REBUILD_FLAG=1
+	elif [ "$arg3" = "-s" ]; then
+		VERBOSE_FLAG=0
+	elif [ "$arg3" = "-v" ]; then
 		VERBOSE_FLAG=1
+	elif [ "${arg3:0:2}" = "-j" ]; then
+		MAKE_ARGS=$arg3
+	fi
+
+	if [ $AUTOBUILD_FLAG -eq 0 ]; then
+		do_select
 	fi
 }
 
@@ -434,5 +476,5 @@ else
 	help
 fi
 
-dumpinfo $1
+dumpinfo
 autobuild
