@@ -48,7 +48,11 @@ typedef enum {
 	CMD_DRM_PVODPROGRAMINFO_READ	= 0x0006c,    // 读取加密文件信息
 	CMD_DRM_PURCHASEINFO_READ		= 0x0006d,    // 读取购买信息，基于授权信息，将产品ID替换为产品名称
 	
-	CMD_SMARTHOME_CTRL				= 0x00101,		//	智能家居控制
+	CMD_SMARTHOME_CTRL				= 0x00101,		// 智能家电控制，主要用在厂测RF433中
+	CMD_SMARTLIFE_CONNECT			= 0x00110,		// 国电应用，服务器连接。通常情况下不需要主动发送此cmd，只是在明确DISCONNECT后才需要
+	CMD_SMARTLIFE_DISCONNECT			= 0x00111,		// 国电应用，服务器断开连接。通常情况下不需要主动发送此cmd
+	CMD_SMARTLIFE_SEND				= 0x00112,		// 国电应用，发送指令，最常用的cmd
+	CMD_SMARTLIFE_RECV				= 0x00113,		// 国电用用，接收指令，通常情况下用不到
 	
 	CMD_USER_IDLE_STATUS			= 0x00200,		//	用户处于空闲状态通知
 	
@@ -69,6 +73,9 @@ typedef enum {
 	DRM_EMAIL_SPACEEXHAUST			= 0x20106,    // DRM 邮箱已满
 	DRM_OSD_SHOW					= 0x20107,    // DRM OSD需要显示
 	DRM_OSD_HIDE					= 0x20108,    // DRM OSD需要隐藏
+	
+	SMARTLIFE_CONNECT_STATUS		= 0x20200,		// 国电应用，长连接状态
+	SMARTLIFE_RECV					= 0x20201,		// 国电应用，接收到服务器端的数据
 	
 	STATUS_DVBPUSH_INIT_FAILED      = 0x30010,    // dvbpush初始化失败
 	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011,    // dvbpush初始化成功

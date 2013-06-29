@@ -38,7 +38,7 @@ void *main_thread()
 	
 	if(-1==push_decoder_buf_init()){
 		DEBUG("push decoder buf init failed\n");
-		return NULL;
+		//return NULL;
 	}
 	
 	if(-1==sqlite_init()){
@@ -70,17 +70,15 @@ DEBUG("\n\nWarning: you call function CDCASTB_FormatBuffer, it is an unnormal ac
 CDCASTB_FormatBuffer();
 #endif
 
-#if 0
-为避免push系统默认接收Initialize.xml将母盘中的此文件覆盖，只在检查母盘初始化后才初始化push模块
+
 	if(-1==mid_push_init(PUSH_CONF)){
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
 		//return NULL;
 	}
-#endif
 	
 	if(-1==igmp_init()){
 		DEBUG("igmp init failed\n");
-		return NULL;
+		//return NULL;
 	}
 	
 	if(-1==softdvb_init()){

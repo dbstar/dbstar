@@ -241,7 +241,10 @@ rewake:
 	while (1==s_decoder_running && NULL!=g_recvBuffer)
 	{
 		len = g_recvBuffer[rindex].m_len;
-		if(len && 1==pushdir_usable())	//  && 0==motherdisc_processing()只在检查完母盘初始化后才启动push模块，所以不用担心在这里引起母盘中Initialize或其他xml被下载的xml覆盖
+		
+		// 此线程的运行影响到升级，即使没有硬盘也必须让此线程运行。
+		// 但要避免母盘中Initialize或其他xml被下载的xml覆盖
+		if(len && 0==motherdisc_processing())
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
@@ -721,13 +724,18 @@ void *maintenance_thread()
 			motherdisc_process();
 		}
 		
+		// 母盘初始化动作一定是在push初始化之前，确保在母盘初始化操作数据库过程中不混乱
 		if(0==s_push_regist_inited && 1==pushdir_usable()){
 			s_push_regist_inited = 1;
 			
+#if 0
+2013-06-29
+push_decoder_thread必须起来才能顺利执行ota升级过程，因此mid_push_init还要及早初始化，只是push_regist_init要等到硬盘加载完毕
 			if(-1==mid_push_init(PUSH_CONF)){
 				DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
-				//return NULL;
 			}
+#endif
+
 			push_regist_init();
 		}
 		

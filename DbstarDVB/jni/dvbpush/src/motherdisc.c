@@ -18,7 +18,7 @@
 static int s_motherdisc_processing_status = 0;
 static int s_receive_status = 0;
 
-#define MOM_PROG_NUM	512
+#define MOM_PROG_NUM	1024
 typedef struct mom_prog{
 	char ReceiveType[64];
 	char DescURI[256];
@@ -253,9 +253,10 @@ int motherdisc_process()
 				remove(new_uri_motherdisc_xml);
 			}
 		
-			s_motherdisc_processing_status = 0;
 			ret = 0;
 		}
+		
+		s_motherdisc_processing_status = 0;
 	}
 	else{
 		ERROROUT("can not stat(%s)\n", direct_uri);
