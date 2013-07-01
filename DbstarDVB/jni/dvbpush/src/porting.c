@@ -1930,6 +1930,14 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			smarthome_gw_sn_init();
 			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
 			break;
+		case CMD_SMARTLIFE_SEND:
+			DEBUG("CMD_SMARTLIFE_SEND, *len=%d\n", *len);
+			smartlife_send(*buf,*len);
+			break;
+		case CMD_SMARTLIFE_CONNECT:
+			DEBUG("CMD_SMARTLIFE_CONNECT, *buf=%d\n", *buf);
+			smartlife_connect(*buf,*len);
+			break;
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
 			ret = -1;

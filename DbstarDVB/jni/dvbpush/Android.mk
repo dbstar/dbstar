@@ -102,7 +102,8 @@ LOCAL_SRC_FILES += \
 	src/mtdutils.c \
 	src/motherdisc.c \
 	src/smarthome_shadow/smarthome.c \
-	src/smarthome_shadow/serial.c 
+	src/smarthome_shadow/serial.c  \
+	src/smarthome_shadow/socket.c 
 LOCAL_CFLAGS += -W -Wall
 LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include

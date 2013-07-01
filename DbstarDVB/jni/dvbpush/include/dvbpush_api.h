@@ -50,9 +50,8 @@ typedef enum {
 	
 	CMD_SMARTHOME_CTRL				= 0x00101,		// 智能家电控制，主要用在厂测RF433中
 	CMD_SMARTLIFE_CONNECT			= 0x00110,		// 国电应用，服务器连接。通常情况下不需要主动发送此cmd，只是在明确DISCONNECT后才需要
-	CMD_SMARTLIFE_DISCONNECT			= 0x00111,		// 国电应用，服务器断开连接。通常情况下不需要主动发送此cmd
-	CMD_SMARTLIFE_SEND				= 0x00112,		// 国电应用，发送指令，最常用的cmd
-	CMD_SMARTLIFE_RECV				= 0x00113,		// 国电用用，接收指令，通常情况下用不到
+	CMD_SMARTLIFE_SEND				= 0x00111,		// 国电应用，发送指令，最常用的cmd
+	CMD_SMARTLIFE_RECV				= 0x00112,		// 国电用用，接收指令，通常情况下用不到
 	
 	CMD_USER_IDLE_STATUS			= 0x00200,		//	用户处于空闲状态通知
 	
