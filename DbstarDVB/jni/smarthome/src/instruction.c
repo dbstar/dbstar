@@ -499,47 +499,6 @@ static int bcdChange(unsigned char input)
 }
 
 /*
-功能：	解析串口命令串，只针对智能插座
-注意：	目前存在这样的情况，串口返回的命令串重复了多遍，需要能兼容这种情况，形如下面的结果是读取有功功率时一次返回的：
-		68 20 11 12 21 06 36 68 81 05 63 e9 33 33 33 db 16 68 20 11 12 21 06 36 68 c5 03 e9 01 63 85 16 68 20 11 06 00 41 56 68 81 06 43 c3 3c 33 33 33 00 16
-*/
-static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result);
-int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result)
-{
-	unsigned char *serial_cmd_son = serial_cmd;
-	unsigned int cmd_len_son = cmd_len;
-	
-	unsigned int i = 0;
-	int ret = 0;
-	
-	for(i=0;i<(cmd_len-SERIAL_RESPONSE_LEN_MIN);i++){
-		if(0x68==*(serial_cmd_son+i) && 0x68==*(serial_cmd_son+7+i)){
-			DEBUG("catch valid cmd head,i=%d\n",i);
-			ret = smart_socket_serial_cmd_parse_son(serial_cmd_son+i, cmd_len_son-i, socket_action, socket_id, result);
-			if(-1==ret){
-				DEBUG("cmd parse failed thoroughly\n");
-				break;
-			}
-			else if(0==ret){
-				DEBUG("cmd parse successfully\n");
-				break;
-			}
-			else if(-2==ret){
-				DEBUG("this parse failed, but will try again\n");
-			}
-			else
-				DEBUG("look this return value: %d, what a fucking meaning\n", ret);
-		}
-	}
-	DEBUG("parse action finished\n");
-	
-	if(0!=ret)
-		ret = -1;
-		
-	return ret;
-}
-
-/*
  返回值：
  -1：指令解析彻底失败，无法继续解析
  -2：指令解析的结果没有达到最佳预期（比如，期望解析得到电压值，但是解析的结果是通信失败），但应当继续解析
@@ -714,12 +673,105 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 				ret = -2;
 			}
 			break;
+		
+		case CURTAIN_GOAHEAD:		// 窗帘前进
+			// 68 20 11 11 05 01 xx 68 84 02 E3 33 cs 16
+			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
+				DEBUG("check sum failed\n");
+				ret = -2;
+			}
+			else{
+				if(0x33==serial_cmd[11]){
+					DEBUG("curtain goahead success\n");
+					ret = 0;
+				}
+				else{
+					DEBUG("curtain goahead failed\n");
+					ret = 0;
+				}
+			}
+			break;
+		case CURTAIN_GOBACK:		// 窗帘后退
+			// 68 20 11 11 05 01 xx 68 84 02 E3 34 cs 16
+			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
+				DEBUG("check sum failed\n");
+				ret = -2;
+			}
+			else{
+				if(0x34==serial_cmd[11]){
+					DEBUG("curtain goback success\n");
+					ret = 0;
+				}
+				else{
+					DEBUG("curtain goback failed\n");
+					ret = -1;
+				}
+			}
+			break;
+		case CURTAIN_STOP:		// 窗帘停止
+			// 68 20 11 11 05 01 xx 68 84 02 E3 35 cs 16
+			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
+				DEBUG("check sum failed\n");
+				ret = -2;
+			}
+			else{
+				if(0x35==serial_cmd[11]){
+					DEBUG("curtain stop success\n");
+					ret = 0;
+				}
+				else{
+					DEBUG("curtain stop failed\n");
+					ret = -1;
+				}
+			}
+			break;
+		
 		default:
 			DEBUG("can not support this action of smart socket\n");
 			ret = -2;
 			break;
 	}
 	
+	return ret;
+}
+
+/*
+功能：	解析串口命令串，只针对智能插座
+注意：	目前存在这样的情况，串口返回的命令串重复了多遍，需要能兼容这种情况，形如下面的结果是读取有功功率时一次返回的：
+		68 20 11 12 21 06 36 68 81 05 63 e9 33 33 33 db 16 68 20 11 12 21 06 36 68 c5 03 e9 01 63 85 16 68 20 11 06 00 41 56 68 81 06 43 c3 3c 33 33 33 00 16
+*/
+int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result)
+{
+	unsigned char *serial_cmd_son = serial_cmd;
+	unsigned int cmd_len_son = cmd_len;
+	
+	unsigned int i = 0;
+	int ret = 0;
+	
+	for(i=0;i<(cmd_len-SERIAL_RESPONSE_LEN_MIN);i++){
+		if(0x68==*(serial_cmd_son+i) && 0x68==*(serial_cmd_son+7+i)){
+			DEBUG("catch valid cmd head,i=%d\n",i);
+			ret = smart_socket_serial_cmd_parse_son(serial_cmd_son+i, cmd_len_son-i, socket_action, socket_id, result);
+			if(-1==ret){
+				DEBUG("cmd parse failed thoroughly\n");
+				break;
+			}
+			else if(0==ret){
+				DEBUG("cmd parse successfully\n");
+				break;
+			}
+			else if(-2==ret){
+				DEBUG("this parse failed, but will try again\n");
+			}
+			else
+				DEBUG("look this return value: %d, what a fucking meaning\n", ret);
+		}
+	}
+	DEBUG("parse action finished\n");
+	
+	if(0!=ret)
+		ret = -1;
+		
 	return ret;
 }
 
@@ -892,6 +944,47 @@ int smart_socket_serial_cmd_splice(unsigned char *serial_cmd, unsigned int cmd_s
 				serial_cmd[index++] = 0x00;
 			}
 			break;
+		
+		
+		case CURTAIN_GOAHEAD:				// 窗帘前进
+			// 68 20 11 11 05 01 xx 68 04 02 e3 33 cs 16
+			if(cmd_size<12){
+				DEBUG("length of CURTAIN_GOAHEAD cmd buffer is too short: %d\n", cmd_size);
+				ret = -1;
+			}
+			else{
+				serial_cmd[index++] = 0x04;
+				serial_cmd[index++] = 0x02;
+				serial_cmd[index++] = 0xe3;
+				serial_cmd[index++] = 0x33;
+			}
+			break;
+		case CURTAIN_GOBACK:				// 窗帘后退
+			// 68 20 11 11 05 01 xx 68 04 02 e3 34 cs 16
+			if(cmd_size<12){
+				DEBUG("length of CURTAIN_GOBACK cmd buffer is too short: %d\n", cmd_size);
+				ret = -1;
+			}
+			else{
+				serial_cmd[index++] = 0x04;
+				serial_cmd[index++] = 0x02;
+				serial_cmd[index++] = 0xe3;
+				serial_cmd[index++] = 0x34;
+			}
+			break;
+		case CURTAIN_STOP:				// 窗帘停止
+			// 68 20 11 11 05 01 xx 68 04 02 e3 35 cs 16
+			if(cmd_size<12){
+				DEBUG("length of CURTAIN_STOP cmd buffer is too short: %d\n", cmd_size);
+				ret = -1;
+			}
+			else{
+				serial_cmd[index++] = 0x04;
+				serial_cmd[index++] = 0x02;
+				serial_cmd[index++] = 0xe3;
+				serial_cmd[index++] = 0x35;
+			}
+			break;
 		default:
 			DEBUG("can not support this action of smart socket\n");
 			ret = -1;
@@ -957,7 +1050,31 @@ static INSTRUCTION_RESULT_E immediatly_task_run(INSTRUCTION_S *instruction)
 	}
 	else
 	{
-		return ERR_FORMAT;
+		DEBUG("instruction->type_id: [0x%06x]0x%02x\n",instruction->type_id,(0xff&((instruction->type_id)>>8)));
+		if(0x06==(0xff&((instruction->type_id)>>8))){	// 电动窗帘curtain
+			DEBUG("this is a curtaion action\n");
+			if(0x02==instruction->arg1)				///stop
+			{
+				serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),CURTAIN_STOP,myequipment.socket_id);
+			}
+			else if(0x03==instruction->arg1)			///CURTAIN_GOAHEAD
+			{
+				serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),CURTAIN_GOAHEAD,myequipment.socket_id);
+			}
+			else if(0x04==instruction->arg1)			///CURTAIN_GOBACK
+			{
+				serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),CURTAIN_GOBACK,myequipment.socket_id);
+			}
+			else
+			{
+				DEBUG("can not distinguish such instruction for curtaion, instruction->arg1=0x%02x\n",instruction->arg1);
+				return ERR_FORMAT;
+			}
+		}
+		else{
+			DEBUG("can not distinguish such electric device\n");
+			return ERR_FORMAT;
+		}
 	}
 	
 	if(serial_cmd_len<SERIAL_CMD_SEND_LEN_MIN || serial_cmd_len>SERIAL_CMD_SEND_LEN_MAX){
@@ -965,25 +1082,44 @@ static INSTRUCTION_RESULT_E immediatly_task_run(INSTRUCTION_S *instruction)
 		return ERR_FORMAT;
 	}
 	
-#if 0
-	ret = sendto_serial(serial_cmd, serial_cmd_len);
-	if(RESULT_OK!=ret){
-		DEBUG("send to serial failed\n");
-		return ret;
-	}
-	//ms_sleep(500);
-	memset(serial_cmd, 0, sizeof(serial_cmd));
-	int recv_serial_len = recvfrom_serial(serial_cmd, sizeof(serial_cmd));
-#else
 	int recv_serial_len = serial_access(serial_cmd, serial_cmd_len, sizeof(serial_cmd));
-#endif
+
 	double result = 0.0;
 	if(recv_serial_len>0){
-		if(0x01==instruction->arg2)
-			ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, SMART_SOCKET_RELAY_CONNECT, myequipment.socket_id, &result);
-		else if(0x00==instruction->arg2)
-			ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, SMART_SOCKET_RELAY_DISCONNECT, myequipment.socket_id, &result);
-
+		if(0x01==instruction->arg1){
+			if(0x01==instruction->arg2)
+				ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, SMART_SOCKET_RELAY_CONNECT, myequipment.socket_id, &result);
+			else if(0x00==instruction->arg2)
+				ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, SMART_SOCKET_RELAY_DISCONNECT, myequipment.socket_id, &result);
+		}
+		else{
+			DEBUG("instruction->type_id: [0x%06x]0x%02x\n",instruction->type_id,(0xff&((instruction->type_id)>>8)));
+			if(0x06==(0xff&((instruction->type_id)>>8))){	// 电动窗帘curtain
+				DEBUG("this is a curtaion action\n");
+				if(0x02==instruction->arg1)				///stop
+				{
+					ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, CURTAIN_STOP, myequipment.socket_id, &result);
+				}
+				else if(0x03==instruction->arg1)			///CURTAIN_GOAHEAD
+				{
+					ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, CURTAIN_GOAHEAD, myequipment.socket_id, &result);
+				}
+				else if(0x04==instruction->arg1)			///CURTAIN_GOBACK
+				{
+					ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, CURTAIN_GOBACK, myequipment.socket_id, &result);
+				}
+				else
+				{
+					DEBUG("can not distinguish such instruction for curtaion, instruction->arg1=0x%02x\n",instruction->arg1);
+					return ERR_FORMAT;
+				}
+			}
+			else{
+				DEBUG("can not distinguish such electric device\n");
+				return ERR_FORMAT;
+			}
+		}
+		
 		if(RESULT_OK==ret /*&& 1==result*/){
 			DEBUG("do immedatly task OK\n");
 			return RESULT_OK;
@@ -1749,7 +1885,7 @@ INSTRUCTION_RESULT_E instruction_dispatch(INSTRUCTION_S *instruction)
 					}
 					else
 					{
-						DEBUG("this instruction can not support\n");
+						DEBUG("this instruction can not support, vendor_id=0x%02x\n",vendor_id);
 						return ERR_FORMAT;
 					}
 				}
@@ -2030,7 +2166,8 @@ void instruction_insert_poll(void)
 			if(-1!=g_insert_insts[i].alterable_flag){
 				for(j=0;j<EQUIPMENT_NUM;j++)
 				{
-					if(-1!=tmp_equipments[j].type_id)
+					DEBUG( "(0xff&((tmp_equipments[j].type_id)>>8))=0x%02x\n",(0xff&((tmp_equipments[j].type_id)>>8)) );
+					if(-1!=tmp_equipments[j].type_id && 0x06!=(0xff&((tmp_equipments[j].type_id)>>8)))
 					{
 						type_id = tmp_equipments[j].type_id;
 						memset(socket_id, 0, sizeof(socket_id));
