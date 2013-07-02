@@ -161,7 +161,7 @@ void *smartlife_connect_thread()
 	
 	if( mkfifo(FIFO_2_SOCKET, 0777)<0 && EEXIST!=errno ){
 		ERROROUT("create FIFO_2_SOCKET:%s failed\n", FIFO_2_SOCKET);
-		return -1;
+		return NULL;
 	}
 	g_fifo_fd = open(FIFO_2_SOCKET, O_RDWR|O_NONBLOCK, 0);
 	if(g_fifo_fd<0){
@@ -528,7 +528,9 @@ int smartlife_send(char *buf, int buf_len)
 
 int smartlife_connect(char *buf, int buf_len)
 {
-	
+	if(NULL==buf || 0>=buf_len){
+		DEBUG("invalid args\n");
+	}
 	
 	continue_myself();
 	
