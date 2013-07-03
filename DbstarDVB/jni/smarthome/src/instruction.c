@@ -2166,7 +2166,7 @@ void instruction_insert_poll(void)
 			if(-1!=g_insert_insts[i].alterable_flag){
 				for(j=0;j<EQUIPMENT_NUM;j++)
 				{
-					DEBUG( "(0xff&((tmp_equipments[j].type_id)>>8))=0x%02x\n",(0xff&((tmp_equipments[j].type_id)>>8)) );
+//					DEBUG( "(0xff&((tmp_equipments[j].type_id)>>8))=0x%02x\n",(0xff&((tmp_equipments[j].type_id)>>8)) );
 					if(-1!=tmp_equipments[j].type_id && 0x06!=(0xff&((tmp_equipments[j].type_id)>>8)))
 					{
 						type_id = tmp_equipments[j].type_id;
