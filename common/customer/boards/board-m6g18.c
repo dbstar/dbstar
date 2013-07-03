@@ -540,12 +540,22 @@ static pinmux_item_t uart_pins[] = {
         .reg = PINMUX_REG(AO),
         .setmask = 3 << 11
     },
+    {
+        .reg = PINMUX_REG(4),
+        .setmask = 3 << 2,
+        .clrmask = 3 << 16
+    },
     PINMUX_END_ITEM
 };
 
 static pinmux_set_t aml_uart_ao = {
     .chip_select = NULL,
     .pinmux = &uart_pins[0]
+};
+
+static pinmux_set_t aml_uart_c = {
+    .chip_select = NULL,
+    .pinmux = &uart_pins[1]
 };
 
 static struct aml_uart_platform  __initdata aml_uart_plat = {
@@ -558,7 +568,7 @@ static struct aml_uart_platform  __initdata aml_uart_plat = {
     .pinmux_uart[0] = (void*)&aml_uart_ao,
     .pinmux_uart[1] = NULL,
     .pinmux_uart[2] = NULL,
-    .pinmux_uart[3] = NULL,
+    .pinmux_uart[3] = (void*)&aml_uart_c,
     .pinmux_uart[4] = NULL
 };
 
