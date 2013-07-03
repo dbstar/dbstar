@@ -1818,7 +1818,7 @@ static INSTRUCTION_RESULT_E verify_address(INSTRUCTION_S *instruction)
 	unsigned char serial_cmd[SERIAL_CMD_SIZE];
 	memset(serial_cmd, 0, sizeof(serial_cmd));
 	
-	if(0x02==instruction->arg2 && 0x07==instruction->alterable_flag){
+	if( (0x02==instruction->arg2 || 0x03==instruction->arg2 || 0x04==instruction->arg2) && 0x07==instruction->alterable_flag){
 		DEBUG("verify socket address\n");
 		serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),smart_socket_action,instruction->alterable_entity);
 		if(serial_cmd_len>0)
