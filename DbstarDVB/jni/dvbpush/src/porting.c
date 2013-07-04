@@ -693,6 +693,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 	
 	int i = 0;
 	long long total_size = 0LL;
+	long long total_size_actually = 0LL;
 	char total_uri[512];
 	char *ids = (char *)receiver;
 	int ret = 0;
@@ -710,12 +711,16 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 		DEBUG("%s\t#%s\t#%s=%lld\t#%s\t#%s\t#%s\n",result[i*column],result[i*column+1],result[i*column+2],total_size,result[i*column+3],result[i*column+4],result[i*column+5]);
 		
 		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
+		
+		total_size_actually = dir_size(total_uri);
+		DEBUG("total_size=%lld, total_size_actually=%lld\n", total_size,total_size_actually);
+		
 		if(0==remove_force(total_uri)){
 			if(strlen(ids)>0)
 				snprintf(ids+strlen(ids),receiver_size-strlen(ids),"\t");
 			snprintf(ids+strlen(ids),receiver_size-strlen(ids),"%s",result[i*column]);
 			
-			s_delete_total_size += total_size;
+			s_delete_total_size += total_size_actually;
 			if(s_delete_total_size>=DELETE_SIZE_ONCE){
 				DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
 				break;
@@ -1935,7 +1940,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			smartlife_send(*buf,*len);
 			break;
 		case CMD_SMARTLIFE_CONNECT:
-			DEBUG("CMD_SMARTLIFE_CONNECT, *buf=%d\n", *buf);
+			DEBUG("CMD_SMARTLIFE_CONNECT, *buf=%s\n", *buf);
 			smartlife_connect(*buf,*len);
 			break;
 		default:

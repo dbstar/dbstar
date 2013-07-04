@@ -269,11 +269,30 @@ MULTITASK_START:
 					}
 					else{
 						DEBUG("set FIONBIO, setsockopt(SO_REUSEADDR), bind, ok\n");
-					
-						opt = 1024 * 1280;
+						
+						socklen_t opt_len = sizeof(opt);
+						if(getsockopt(sock, SOL_SOCKET, SO_RCVBUF, (void*)&opt, &opt_len) < 0){
+							DEBUG("can not get recvbuf size of socket\n");
+						}
+						else{
+							DEBUG("1 get origine recvbuf size of socket: %d\n", opt);
+						}
+
+#if 0						
+						opt = 32*1024*1024;
 						if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (void*)&opt, sizeof(opt)) < 0){
 							DEBUG("Can't change system network size (wanted size = %d)\n", opt);
 						}
+						
+						opt_len = sizeof(opt);
+						if(getsockopt(sock, SOL_SOCKET, SO_RCVBUF, (void*)&opt, &opt_len) < 0){
+							DEBUG("2 can not get recvbuf size of socket\n");
+						}
+						else{
+							DEBUG("2 get processed recvbuf size of socket: %d\n", opt);
+						}
+#endif
+						
 						/*
 						opt = 1316 * 8;
 						if (osex_setsockopt(sock, SOL_SOCKET, SO_RCVLOWAT, (void*)&opt, sizeof(opt)) < 0){
