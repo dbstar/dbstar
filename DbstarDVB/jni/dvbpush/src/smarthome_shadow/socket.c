@@ -381,6 +381,7 @@ static int sendToServer(int l_socket_fd,char *l_sendbuf, int buf_len)
  * retval, 0 if successful. -1 failed or 1 reconnect
  * Version 1.0
  ***/
+#if 0
 static int recvFromServer(int l_socket_fd,char *l_recvbuf, int *recv_buf_size)
 {
 	int ret = -1;
@@ -416,6 +417,71 @@ static int recvFromServer(int l_socket_fd,char *l_recvbuf, int *recv_buf_size)
 	
 	return ret;
 }
+#else
+static int recvFromServer(int l_socket_fd,char *l_recv_buf, int *recv_buf_size)
+{
+	int ret_select = -1;					//select return
+	int ret = -1;
+	int ret_recv = -1;
+	fd_set l_rdfds;
+	FD_ZERO(&l_rdfds);
+	
+	if(l_socket_fd<3 || NULL==l_recv_buf || 0==*recv_buf_size){
+		DEBUG("can not recv from server, socket: %d\n", l_socket_fd);
+		return ret;
+	}
+	
+	struct timeval s_time={0,500000};			/* perhaps this 500ms is too short */
+	FD_CLR(l_socket_fd,&l_rdfds);
+	FD_ZERO(&l_rdfds);
+	FD_SET(l_socket_fd,&l_rdfds);
+	ret_select=select(l_socket_fd+1,&l_rdfds,NULL,NULL,&s_time);
+	if ( ret_select<0)
+	{
+		DEBUG("select error\n");
+		ret = -1;
+	}
+	else if( 0==ret_select )
+	{
+		DEBUG("select timeout\n");
+		ret = 1;
+	}
+	else
+	{
+		if (FD_ISSET(l_socket_fd,&l_rdfds))
+		{
+			DEBUG("socket(%d) can be readed\n", l_socket_fd);
+			
+			ret_recv=recv(l_socket_fd,( l_recv_buf+(*recv_buf_size) ),*recv_buf_size-1,0);
+			//monitor tcp link,-1 out line . next time select will return 1 and recv return 0
+			if (-1 == ret_recv)
+			{
+				DEBUG("out line!!!\n");
+				ret = -1;
+			}
+			//server is out
+			else if (0 == ret_recv)
+			{
+				DEBUG("server is out line!!!\n");
+				ret = -1;
+			}
+			else{
+				*recv_buf_size += ret_recv;
+				DEBUG("recv [%d]%d successfully\n", *recv_buf_size,ret_recv);
+				ret = 0;
+			}
+		}
+		else
+		{
+			DEBUG("another socket but not %d can be readed\n", l_socket_fd);
+			ret = -1;
+		}
+	}
+	
+	FD_CLR(l_socket_fd,&l_rdfds);
+	return ret;
+}
+#endif
 
 /***getMacAddr() biref get local device's Mac address
  * 2011.11.4, liyang
@@ -514,12 +580,12 @@ static void setKeepAlive(int l_socket_fd)
 
 int smartlife_send(char *buf, int buf_len)
 {
-	int valid_len = buf_len>s_sendbuf_len?s_sendbuf_len:buf_len;
+	int valid_len = buf_len>sizeof(s_sendbuf)?sizeof(s_sendbuf):buf_len;
 	
 	DEBUG("[len=%d -> %d][%s]\n", buf_len,valid_len,buf);
 	
 	memcpy(s_sendbuf,buf,valid_len);
-	s_sendbuf_len = buf_len;
+	s_sendbuf_len = valid_len;
 	
 	continue_myself();
 	

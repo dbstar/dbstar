@@ -88,7 +88,7 @@ CDCASTB_FormatBuffer();
 	
 	upgrade_info_init();
 	
-//	smartlife_connect_init();
+	smartlife_connect_init();
 	
 	DEBUG("OK ================================ OK\n");
 	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
