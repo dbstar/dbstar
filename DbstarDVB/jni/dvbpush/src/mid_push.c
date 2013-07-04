@@ -1769,20 +1769,16 @@ int disk_space_check()
 	else{
 		DEBUG("HardDisc %s enable, total_size: %llu, free_size: %llu\n",push_dir_get(),tt_size,free_size);
 		unsigned long long free_size_M = (free_size >> 20);
-		unsigned long long download_M = (recv_totalsize_sum_get() >> 20);
 		
-		if(download_M<DOWNLOAD_ONCE_M_MIN){
-			DEBUG("check download %llu Mbytes is smaller than %llu, reset it as %llu\n",download_M,DOWNLOAD_ONCE_M_MIN,DOWNLOAD_ONCE_M_MIN);
-			download_M = DOWNLOAD_ONCE_M_MIN;
-		}
+		DEBUG("has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get()));
 		
-		if(free_size_M<=(HDFOREWARNING_M_DFT+download_M)){
-			DEBUG("should clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+download_M));
+		if(free_size_M<=(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get())){
+			DEBUG("should cleaning hd...\n");
 			disk_manage(NULL,NULL);
 			ret = 0;
 		}
 		else{
-			DEBUG("no need to clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+download_M));
+			DEBUG("no need to clean hd\n");
 			ret = 1;
 		}
 	}

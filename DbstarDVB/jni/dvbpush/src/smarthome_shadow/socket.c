@@ -418,11 +418,12 @@ static int recvFromServer(int l_socket_fd,char *l_recvbuf, int *recv_buf_size)
 	return ret;
 }
 #else
-static int recvFromServer(int l_socket_fd,char *l_recv_buf, int *recv_buf_size)
+static int recvFromServer(int l_socket_fd, char *l_recv_buf, int *recv_buf_size)
 {
 	int ret_select = -1;					//select return
 	int ret = -1;
 	int ret_recv = -1;
+	int total_recv_len = 0;
 	fd_set l_rdfds;
 	FD_ZERO(&l_rdfds);
 	
@@ -452,7 +453,7 @@ static int recvFromServer(int l_socket_fd,char *l_recv_buf, int *recv_buf_size)
 		{
 			DEBUG("socket(%d) can be readed\n", l_socket_fd);
 			
-			ret_recv=recv(l_socket_fd,( l_recv_buf+(*recv_buf_size) ),*recv_buf_size-1,0);
+			ret_recv=recv(l_socket_fd,l_recv_buf+total_recv_len,*recv_buf_size-1-total_recv_len,0);
 			//monitor tcp link,-1 out line . next time select will return 1 and recv return 0
 			if (-1 == ret_recv)
 			{
@@ -466,8 +467,9 @@ static int recvFromServer(int l_socket_fd,char *l_recv_buf, int *recv_buf_size)
 				ret = -1;
 			}
 			else{
-				*recv_buf_size += ret_recv;
+				total_recv_len += ret_recv;
 				DEBUG("recv [%d]%d successfully\n", *recv_buf_size,ret_recv);
+				
 				ret = 0;
 			}
 		}
@@ -479,6 +481,9 @@ static int recvFromServer(int l_socket_fd,char *l_recv_buf, int *recv_buf_size)
 	}
 	
 	FD_CLR(l_socket_fd,&l_rdfds);
+	
+	*recv_buf_size = total_recv_len;
+	
 	return ret;
 }
 #endif
@@ -613,6 +618,13 @@ int smartlife_connect_init()
 	pthread_t tidsocket_mainloop;
 	pthread_create(&tidsocket_mainloop, NULL, smartlife_connect_thread, NULL);
 	DEBUG("create smartlife mainthread finish\n");
+	
+	return 0;
+}
+
+int smartlife_connect_status_get(char *buf, int buf_size)
+{
+	snprintf(buf,buf_size,"%d",g_socket_status);
 	
 	return 0;
 }

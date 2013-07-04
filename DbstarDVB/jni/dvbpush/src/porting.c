@@ -72,6 +72,7 @@ static char			s_jni_cmd_drm_ver[256];
 static char			s_jni_cmd_eigenvalue[1024];
 static char			s_jni_cmd_data_status[64];
 static char			s_jni_cmd_system_awake_timer[64];
+static char			s_jni_cmd_smartlife_connect_status[32];
 
 // 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
@@ -720,8 +721,10 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 				snprintf(ids+strlen(ids),receiver_size-strlen(ids),"\t");
 			snprintf(ids+strlen(ids),receiver_size-strlen(ids),"%s",result[i*column]);
 			
-			s_delete_total_size += total_size_actually;
-			if(s_delete_total_size>=DELETE_SIZE_ONCE){
+			if(total_size_actually>0)
+				s_delete_total_size += total_size_actually;
+			
+			if((s_delete_total_size>>20) >= recv_totalsize_sum_M_get()){
 				DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
 				break;
 			}
@@ -1942,6 +1945,13 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_SMARTLIFE_CONNECT:
 			DEBUG("CMD_SMARTLIFE_CONNECT, *buf=%s\n", *buf);
 			smartlife_connect(*buf,*len);
+			break;
+		case CMD_SMARTLIFE_CONNECT_STATUS:
+			DEBUG("CMD_SMARTLIFE_CONNECT_STATUS\n");
+			smartlife_connect_status_get(s_jni_cmd_smartlife_connect_status,sizeof(s_jni_cmd_smartlife_connect_status));
+			DEBUG("CMD_SMARTLIFE_CONNECT_STATUS get %s\n",s_jni_cmd_smartlife_connect_status);
+			*buf = s_jni_cmd_smartlife_connect_status;
+			*len = strlen(s_jni_cmd_smartlife_connect_status);
 			break;
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
