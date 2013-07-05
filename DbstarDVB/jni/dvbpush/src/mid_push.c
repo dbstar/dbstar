@@ -105,6 +105,7 @@ static int s_preview_refresh = 0;
 static int s_push_regist_inited = 0;
 static int s_motherdisc_init_flag = 0;
 
+static unsigned long long s_should_clean_M = 0LL;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
@@ -1751,6 +1752,11 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	return 0;
 }
 
+unsigned long long should_clean_M_get()
+{
+	return s_should_clean_M;
+}
+
 /*
  return 0: disc cleaning finish
  		-1: can not clean, some err
@@ -1773,7 +1779,8 @@ int disk_space_check()
 		DEBUG("has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get()));
 		
 		if(free_size_M<=(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get())){
-			DEBUG("should cleaning hd...\n");
+			s_should_clean_M = HDFOREWARNING_M_DFT + recv_totalsize_sum_M_get() - free_size_M;
+			DEBUG("should cleaning hd %llu MiB...\n",s_should_clean_M);
 			disk_manage(NULL,NULL);
 			ret = 0;
 		}

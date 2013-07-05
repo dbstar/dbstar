@@ -124,8 +124,8 @@ typedef enum{
 
 // 除了应该给本次下载留出足够空间外，额外预留20G
 #define HDFOREWARNING_M_DFT			(20480LL)
-// 给本次下载留出足够空间外，至少50G
-#define DOWNLOAD_ONCE_M_MIN			(51200LL)
+// 给本次下载留出足够空间外，至少32G
+#define DOWNLOAD_ONCE_M_MIN			(32768LL)
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,

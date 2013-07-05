@@ -40,5 +40,6 @@ void maintenance_thread_awake();
 int delete_publication_from_monitor(char *PublicationID, char *ProductID);
 int dvbpush_download_finish();
 int disk_space_check();
+unsigned long long should_clean_M_get();
 
 #endif

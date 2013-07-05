@@ -724,7 +724,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 			if(total_size_actually>0)
 				s_delete_total_size += total_size_actually;
 			
-			if((s_delete_total_size>>20) >= recv_totalsize_sum_M_get()){
+			if((s_delete_total_size>>20) >= should_clean_M_get()){
 				DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
 				break;
 			}
