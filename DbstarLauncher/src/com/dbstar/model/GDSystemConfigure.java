@@ -291,11 +291,14 @@ public class GDSystemConfigure {
 	}
 
 	private boolean parseConfigure() {
-
 		File configureFile = new File(ConfigureFile);
+
 		if (configureFile == null || !configureFile.exists()) {
+			Log.d(TAG, "configure file does not exist!");
 			return false;
 		}
+		
+		Log.d(TAG, "start parsing configure file");
 
 		try {
 			String UTF8 = "utf8";
@@ -324,7 +327,7 @@ public class GDSystemConfigure {
 					property[0] = line.substring(0, start);
 					property[1] = line.substring(start + 1);
 
-					// Log.d(TAG, property[0] + "=" + property[1]);
+					Log.d(TAG, property[0] + "=" + property[1]);
 
 					if (property[0].equals(PROPERTY_DBSTARDATABSE)) {
 						mDbstarDatabase = property[1].trim();
@@ -393,6 +396,8 @@ public class GDSystemConfigure {
 			e.printStackTrace();
 			return false;
 		}
+
+		Log.d(TAG, "parsing configure file finished!");
 
 		return true;
 	}

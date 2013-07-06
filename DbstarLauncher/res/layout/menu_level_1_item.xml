@@ -14,7 +14,6 @@
 
     <TextView
         android:id="@+id/item_text"
-        style="@style/scans_text"
         android:layout_width="wrap_content"
         android:layout_height="34dp"
         android:layout_below="@id/item_icon"
@@ -26,6 +25,6 @@
         android:scrollHorizontally="true"
         android:singleLine="true"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="22sp" />
 
 </RelativeLayout>

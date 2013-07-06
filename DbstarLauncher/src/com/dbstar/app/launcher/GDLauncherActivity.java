@@ -455,7 +455,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				MenuItem oldMenuItem = menuItems[mOldSelectedItemPosition];
 				holder = (MainMenuAdapter.ItemHolder) mSelectedView.getTag();
 				holder.icon.setImageBitmap(oldMenuItem.MenuIcon());
-				holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+				holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
 				mSelectedView.invalidate();
 			}
 		}
@@ -464,7 +464,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		if (mSelectedView != null) {
 			holder = (MainMenuAdapter.ItemHolder) mSelectedView.getTag();
 			// holder.icon.setImageBitmap(menuItem.MenuIconFocused());
-			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 24);
 			mSelectedView.invalidate();
 		}
 
@@ -1841,7 +1841,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// }
 
 			holder.icon.setImageBitmap(mDataSet[position].MenuIcon());
-			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+			holder.text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
 
 			return convertView;
 		}

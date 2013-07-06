@@ -292,6 +292,14 @@ public class GDDataProviderService extends Service {
 				Log.d(TAG, "disk is ready " + disk);
 
 				//mDiskMonitor.addDiskToMonitor(disk);
+
+				Message message = mHandler
+                        .obtainMessage(GDCommon.MSG_MEDIA_MOUNTED);
+                Bundle data = new Bundle();
+                data.putString("disk", disk);
+                message.setData(data);
+
+                mHandler.sendMessageDelayed(message, 8000);
 			}
 		}
 
@@ -312,6 +320,7 @@ public class GDDataProviderService extends Service {
 		mIsSmartHomeServiceStarted = false;
 
 		if (mIsNetworkReady) {
+			mPeripheralController.setNetworkLedOn();
 			startDbStarService();
 			startGuodianEngine();
 		}
