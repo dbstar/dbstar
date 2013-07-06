@@ -36,6 +36,7 @@
 #include "dvbpush_api.h"
 #include "multicast.h"
 #include "motherdisc.h"
+#include "drmport.h"
 
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (60000)		//定义缓冲区大小，单位：包
@@ -635,7 +636,7 @@ void *maintenance_thread()
 	struct timespec outtime;
 	int retcode = 0;
 	//char sqlite_cmd[256];
-	int monitor_interval = 61;
+	int monitor_interval = 1;
 	unsigned int loop_cnt = 0;
 	
 	time_t s_pin_sec;	// 记录开机时间（秒）
@@ -664,7 +665,7 @@ void *maintenance_thread()
 		
 		// 每隔12个小时，打开tdt pid进行时间同步，这里只是借用了monitor这个低频循环。
 		loop_cnt ++;
-		if(loop_cnt>(720)){
+		if(loop_cnt>(43200)){
 			time_t timep;
 			struct tm *p_tm;
 			timep = time(NULL);
@@ -699,6 +700,8 @@ void *maintenance_thread()
 				s_preview_refresh = 0;
 			}
 		}
+		
+		filter_timeout_process();
 		
 		if(smart_card_insert_flag_get()>0){
 			// 测试发现差不到1s，硬盘此时还未准备完毕

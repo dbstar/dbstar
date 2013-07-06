@@ -294,6 +294,33 @@ void filter_timeout_handler(int fid)
 	dmx_filter[fid].timeouttime = 0;
 }
 
+void filter_timeout_process()
+{
+	int now,theni,i;
+	
+	if (checkTimeoutMark>0)
+	{
+		AM_TIME_GetClock(&now);
+		LOGD("checkTimeoutMark: %d, now: %d\n",checkTimeoutMark,now);
+		
+		for(i=0; i<max_filter_num; i++)
+		{
+			theni = dmx_filter[i].timeouttime;
+			if (theni > 0)
+			{
+				if (theni >= now)
+				{
+					if (checkTimeoutMark>0)
+						checkTimeoutMark --;
+					
+					dmx_filter[i].timeouttime = 0;
+					CDSTBCA_ReleasePrivateDataFilter(dmx_filter[i].byReqID, dmx_filter[i].wPID);
+				}
+			}
+		}
+	}
+}
+
 
 static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_data)
 {
@@ -329,29 +356,9 @@ static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_
 		dmx_filter[fid].timeouttime = 0;
 		CDSTBCA_ReleasePrivateDataFilter(byReqID, wPid);
 	}
-    else if (checkTimeoutMark>0)
-    {
-         int now,theni,i;
-
-         AM_TIME_GetClock(&now);
-
-         for(i=0; i<max_filter_num; i++)
-         {
-             theni = dmx_filter[i].timeouttime;
-             if (theni > 0)
-             {
-                 if (theni >= now)
-                 {
-                     if (checkTimeoutMark>0) 
-                     {
-                         checkTimeoutMark --;
-                     }
-                     dmx_filter[i].timeouttime = 0;
-                     CDSTBCA_ReleasePrivateDataFilter(dmx_filter[i].byReqID, dmx_filter[i].wPID);
-                 }
-             }
-         }
-    }
+	else{
+		filter_timeout_process();
+	}
 }
 #endif
 
