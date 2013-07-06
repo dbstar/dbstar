@@ -1987,6 +1987,9 @@ static int dvb_io_setup(void *p)
 		    .pinmux = &fe_ctrl_pins[0]
 		};
 		pinmux_set(&fe_ctrl_pinmux_set);
+
+                gpio_out(PAD_GPIOD_6, 1);  //liukevin add for power on tuner
+                gpio_set_status(PAD_GPIOD_6,gpio_status_out);
 	}
 #endif
 

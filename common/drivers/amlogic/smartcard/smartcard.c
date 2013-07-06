@@ -657,7 +657,8 @@ static int smc_hw_get_status(smc_dev_t *smc, int *sret)
 	
 	reg_val = SMC_READ_REG(REG0);
 	
-	smc->cardin = reg->card_detect;
+	//smc->cardin = reg->card_detect;
+        smc->cardin = (reg->card_detect == 1) ? 0 : 1;
 
 	//pr_dbg("get_status: smc reg0 %08x, card detect: %d\n", reg_val, smc->cardin);
 	*sret = smc->cardin;
