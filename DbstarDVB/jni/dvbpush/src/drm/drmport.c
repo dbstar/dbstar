@@ -32,18 +32,6 @@
 #endif
 
 extern AM_ErrorCode_t AM_TIME_GetClock(int *clock);
-#if 0
-typedef struct {
-	char sn[CDCA_MAXLEN_SN + 1];
-	FILE *fd;
-} SCDCACardEntitleInfo;
-
-typedef struct {
-	CDCA_U8        byReqID;
-	CDCA_U16      wPID;
-	CDCA_U32      timeouttime;
-} SCDCAFilterInfo;
-#endif
 //#define CDCA_MAX_CARD_NUM 2
 #define SMC_DEVICE  "/dev/smc0"
 #define BLOCK01_FILE "/data/dbstar/drm/entitle/block01"
@@ -58,9 +46,7 @@ FILE *block01_fd = NULL;
 
 SCDCACardEntitleInfo card_sn = {"", -1}; //[CDCA_MAX_CARD_NUM];
 SCDCAFilterInfo dmx_filter[MAX_CHAN_FILTER];
-extern Channel_t chanFilter[];
-extern int max_filter_num;
-
+//extern Channel_t chanFilter[];
 
 static int mkdirp(char *path)
 {
@@ -267,9 +253,21 @@ void CDSTBCA_WriteBuffer(CDCA_U8 byBlockID, const CDCA_U8* pbyData, CDCA_U32 dwL
 /*-------- TS流管理 --------*/
 
 #if 1
+void dmx_filter_init(void)
+{
+    int i;
+    
+    for (i=0; i< MAX_CHAN_FILTER; i++)
+    {
+    	dmx_filter[i].byReqID = 0xff;
+	dmx_filter[i].wPID = 0xffff;
+	dmx_filter[i].timeouttime = 0;
+    }	
+}
+
 void filter_timeout_handler(int fid)
 {
-	if (fid >= max_filter_num) {
+	if (fid >= MAX_CHAN_FILTER) {
 		return;
 	}
 	if (checkTimeoutMark) {
@@ -282,7 +280,7 @@ void filter_timeout_handler(int fid)
 }
 
 
-static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_data)
+static void filter_dump_bytes(int dev_no, int fid, const uint8_t *data, int len, void *user_data)
 {
 	CDCA_U8        byReqID;
 	CDCA_U16       wPid;
@@ -322,7 +320,7 @@ static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_
 
              AM_TIME_GetClock(&now);
  
-             for(i=0; i<max_filter_num; i++)
+             for(i=0; i<MAX_CHAN_FILTER; i++)
              {
                  theni = dmx_filter[i].timeouttime;
                  if (theni > 0)
@@ -358,7 +356,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 
 
 	for (fid = 0; fid < MAX_CHAN_FILTER; fid++) {
-		if ((dmx_filter[fid].byReqID == byReqID) && (chanFilter[fid].used)) {
+		if (dmx_filter[fid].byReqID == byReqID) {
 			CDSTBCA_ReleasePrivateDataFilter(byReqID, dmx_filter[fid].wPID);
 			break;
 		}
@@ -373,13 +371,12 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	PRINTF("filter[8]: %x,%x,%x,%x,%x,%x,%x,%x\n",param.filter[0],param.filter[1],param.filter[2],param.filter[3],param.filter[4],param.filter[5],param.filter[6],param.filter[7]);
 	PRINTF("mask  [8]: %x,%x,%x,%x,%x,%x,%x,%x\n\n",param.mask[0],param.mask[1],param.mask[2],param.mask[3],param.mask[4],param.mask[5],param.mask[6],param.mask[7]);
 
-	fid = TC_alloc_filter(wPid, &param, (dataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
-	if (fid >= MAX_CHAN_FILTER) {
+	fid = TC_alloc_filter(wPid, &param, (AM_DMX_DataCb)filter_dump_bytes, NULL, 0);
+	if ((fid >= MAX_CHAN_FILTER) ||(fid < 0)){
 		return  CDCA_FALSE;
 	}
 	dmx_filter[fid].wPID = wPid;
 	dmx_filter[fid].byReqID = byReqID;
-	dmx_filter[fid].fid = fid;
 	if (byWaitSeconds) {
 		int now;
 		checkTimeoutMark ++;
@@ -396,23 +393,21 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 /* 释放私有数据过滤器 */
 void CDSTBCA_ReleasePrivateDataFilter(CDCA_U8  byReqID, CDCA_U16 wPid)
 {
-#if 1
 	int fid;
 
-	for (fid = 0; fid < max_filter_num; fid++) {
-		if ((dmx_filter[fid].byReqID == byReqID) && (dmx_filter[fid].wPID == wPid) && (chanFilter[fid].used)) {
+	for (fid = 0; fid < MAX_CHAN_FILTER; fid++) {
+		if ((dmx_filter[fid].byReqID == byReqID) && (dmx_filter[fid].wPID == wPid)) {
 			break;
 		}
 	}
-	LOGD("@@@@@@@@@@@release [%d] filter\n", fid);
-	if (fid >= max_filter_num) {
-		return;
+    
+    if (fid < MAX_CHAN_FILTER)
+    {
+	    TC_free_filter(fid);
+	    dmx_filter[fid].byReqID = 0xff;
+	    dmx_filter[fid].wPID = 0xffff;
+	    dmx_filter[fid].timeouttime = 0;
 	}
-	TC_free_filter(fid);
-	dmx_filter[fid].byReqID = 0xff;
-	dmx_filter[fid].wPID = 0xffff;
-	dmx_filter[fid].timeouttime = 0;
-#endif
 }
 
 /* 设置CW给解扰器 */

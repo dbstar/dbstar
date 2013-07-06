@@ -19,7 +19,6 @@
 static int g_serialfd;
 static sem_t s_sem_serial;
 
-static time_t s_last_serial_cmd_time = 0;
 static int s_serial_failed_count = 0;
 
 static int UART0_Open(char* port);
@@ -295,7 +294,7 @@ static int UART0_Recv(int fd, unsigned char *rcv_buf,int data_len)
 	FD_SET(fd,&fs_read);
 	
 	time.tv_sec = 0;
-	time.tv_usec = 200000;
+	time.tv_usec = 150000;
 	
 	//使用select实现串口的多路通信
 	fs_sel = select(fd+1,&fs_read,NULL,NULL,&time);
@@ -352,7 +351,7 @@ static int sendto_serial(unsigned char *buf, unsigned int len)
 	}
 	
 	unsigned int i = 0;
-	printf("---------------------------------------- %d chars\n", len);
+	printf("---------------------------------------- send %d chars\n", len);
 	for(i=0;i<len;i++)
 		printf(" %02x", buf[i]);
 	printf("\n----------------------------------------\n");
@@ -372,6 +371,7 @@ static int sendto_serial(unsigned char *buf, unsigned int len)
 目前采用简单的匹配，没有优化。如果要查询的串比较长，则此方法不可取。
 返回值为匹配串son_buf的开头在dad_buf中的index，从0开始。
 */
+/*
 static int ascinasc(unsigned char *dad_buf, unsigned int dad_len, unsigned char *son_buf, unsigned int son_len)
 {
 	if(0==dad_len || 0==son_len)
@@ -395,71 +395,142 @@ static int ascinasc(unsigned char *dad_buf, unsigned int dad_len, unsigned char 
 	
 	return -1;
 }
+*/
 
-static int recvfrom_serial(unsigned char *buf, unsigned int buf_size, unsigned char *distinguish_cmd)
+#define SERIAL_RESPONSE_CHECK_MIN	(10)	// e.g.: 68 a0 a1 a2 a3 a4 a5 68 c5 03
+
+// 检查是否存在合法的串口返回串
+// 返回值:
+//			-1: failed;		0: 获取到合法并有效的指令
+// *check_start_pos: 传出时表示下次可以开始的位置
+static int check_valid_serial_response(unsigned char *buf, unsigned int *check_start_pos, unsigned int buf_len, unsigned char *distinguish_cmd)
+{
+	// 期望合法指令识别：			68 a0 a1 a2 a3 a4 a5 68
+	// 指令合法，但通信失败：		68 a0 a1 a2 a3 a4 a5 68 c5 03
+	// 指令不合法，433模块的广播:	68 99 99 99 99 99 99 68
+	if(NULL==buf || buf_len<SERIAL_RESPONSE_CHECK_MIN || NULL==distinguish_cmd){
+		DEBUG("invalid args, buf_len=%u\n", buf_len);
+	}
+	
+	unsigned int i = 0, j = 0;;
+	int ret = -1;
+	
+	printf("will check %d bytes cmd :::::::::::::::::::::\n",buf_len);
+	for(i=0;i<buf_len;i++)
+		printf(" %02x", buf[i]);
+	printf("\ncompared with =================\n");
+	for(i=0;i<8;i++)
+		printf(" %02x", distinguish_cmd[i]);
+	printf("\n?????????????????????????????\n");
+	
+	for(i=0;i<(buf_len-SERIAL_RESPONSE_CHECK_MIN);i++){
+		if(0x68==buf[i]){
+			if(	distinguish_cmd[0]==buf[i+0] 
+				&& distinguish_cmd[1]==buf[i+1] 
+				&& distinguish_cmd[2]==buf[i+2] 
+				&& distinguish_cmd[3]==buf[i+3] 
+				&& distinguish_cmd[4]==buf[i+4] 
+				&& distinguish_cmd[5]==buf[i+5] 
+				&& distinguish_cmd[6]==buf[i+6] 
+				&& distinguish_cmd[7]==buf[i+7]){
+					
+				if(0xc5==buf[i+8] && 0x03==buf[i+9]){
+					DEBUG("catch valid cmd but communication failed ==xxxx== i=%d\n",i);
+					for(j=i;j<(buf_len);j++)
+						printf(" %02x", buf[j]);
+					printf("\n=======xxxxxxxxxxxxx==============================\n");
+				}
+				else{
+					DEBUG("catch valid and success serial response cmd ==== i=%d\n",i);
+					for(j=i;j<(buf_len);j++)
+						printf(" %02x", buf[j]);
+					printf("\n==================================================\n");
+					
+					ret = 0;
+					break;
+				}
+			}
+		}
+	}
+	
+	*check_start_pos += i;
+	
+	return ret;
+}
+
+static int recvfrom_serial(unsigned char *buf, unsigned int *start_pos,unsigned int buf_size, unsigned char *distinguish_cmd)
 {
 	if(NULL==buf || buf_size<=0){
 		DEBUG("params some error\n");
 		return -1;
 	}
 	
-	int ret = -1;
-	int has_read = 0;
+	unsigned int has_read_len = 0;
 	unsigned char *p_readbuf = buf;
-	int i = 0;
 	int len = 0;
-	int catch_valid_cmd_head_flag = 0;
+	unsigned int check_start_pos = 0;
+	int has_catched_response = 0;
+	unsigned int serial_read_faild_cnt = 0;
 	
-	for(i=0;i<SERIAL_RECV_RETRY;i++){
-		len = UART0_Recv(g_serialfd, p_readbuf+has_read, buf_size-1-has_read);
+	while(1){
+		len = UART0_Recv(g_serialfd, p_readbuf+has_read_len, buf_size-1-has_read_len);
+		
+		if(has_catched_response>0)
+			has_catched_response++;
+		
 		if(len > 0)
 		{
 			DEBUG("read %d bytes for this time,(",len);
 			int j = 0;
 			for(j=0;j<len;j++)
-				printf(" %02x", *(p_readbuf+has_read+j));
-			has_read += len;
+				printf(" %02x", *(p_readbuf+has_read_len+j));
+			has_read_len += len;
 			
-			printf("), and total read %d bytes\n", has_read);
+			printf("), and total read %d bytes\n", has_read_len);
+			
+			DEBUG("[%d] has_read_len(%d) - check_start_pos(%d) = %d\n", has_catched_response, has_read_len,check_start_pos,has_read_len-check_start_pos);
+			if(0==has_catched_response && (has_read_len-check_start_pos)>=SERIAL_RESPONSE_CHECK_MIN){
+				if(0==check_valid_serial_response(p_readbuf+check_start_pos,&check_start_pos,has_read_len-check_start_pos,distinguish_cmd)){
+					DEBUG("has catched valid serial response\n");
+					has_catched_response = 1;
+				}
+				
+				DEBUG("[%d]check_start_pos: %d\n", has_catched_response,check_start_pos);
+			}
+			
+			serial_read_faild_cnt = 0;
 		}
 		else if(0==len)
 		{
-			DEBUG("cannot receive data for %d try\n", i+1);
-		}
-		else{
-			break;
-		}
-		
-//	以下为动态监测，避免无意义的循环。提高串口响应速度。
-		if(0==catch_valid_cmd_head_flag){
-			if(has_read>SERIAL_RESPONSE_LEN_MIN){
-				int p = ascinasc(buf, has_read, distinguish_cmd, 8);
-				if(p>=0){
-					catch_valid_cmd_head_flag = 1;
-				}
+			DEBUG("cannot receive data for %d try\n", serial_read_faild_cnt);
+			serial_read_faild_cnt ++;
+			
+			if(serial_read_faild_cnt>4){
+				DEBUG("read nothing nolonger, failed at %d\n",serial_read_faild_cnt);
+				break;
 			}
 		}
-		else
-		{
-			if(catch_valid_cmd_head_flag>=3)
+		else{
+			serial_read_faild_cnt ++;
+			
+			if(serial_read_faild_cnt>4){
+				DEBUG("read nothing nolonger, failed at %d\n",serial_read_faild_cnt);
 				break;
-				
-			catch_valid_cmd_head_flag ++;
+			}
 		}
 		
-		DEBUG("catch_valid_cmd_head_flag=%d, has_read=%d\n", catch_valid_cmd_head_flag, has_read);
-		if(has_read>96)	// 接收太多的串口没有意义，即便是先接收到一些错误的串口返回命令，长度为96也足以得到4组。
+		if(has_catched_response>2){
+			DEBUG("finish to do another %d times trying\n",has_catched_response);
 			break;
+		}
 	}
-	DEBUG("has read total %d bytes\n", has_read);
-	if(has_read>SERIAL_RESPONSE_LEN_MIN)
-		ret = has_read;
-	else
-		ret = -1;
 		
 	tcflush(g_serialfd, TCIOFLUSH);
 	
-	return ret;
+	*start_pos = check_start_pos;
+	
+	DEBUG("has_read_len=%d, check_start_pos=%d\n", has_read_len,check_start_pos);
+	return (has_read_len-check_start_pos);
 }
 
 /*
@@ -482,77 +553,91 @@ static int recvfrom_serial(unsigned char *buf, unsigned int buf_size, unsigned c
 
 还需要解决一个问题：如果插座连续通信失败怎么办？应该关闭串口，重启smarthome应用。
 */
-int serial_access(unsigned char *buf, unsigned int buf_len, unsigned int buf_size)
+static int serial_access_son(unsigned char *buf, unsigned int buf_len, unsigned int buf_size)
 {
-	int i = 0;
-	int read_len = -1;
+	int has_read_len = -1;
+	int ret = -1;
 	
 	if(NULL==buf || buf_len<SERIAL_CMD_SEND_LEN_MIN || buf_len>SERIAL_CMD_SEND_LEN_MAX){
-		DEBUG("invalid serial cmd, len=%u\n", buf_len);
-		return -1;
-	}
-	
-	sem_wait(&s_sem_serial);
-	/*
-	间隔1s，确保串口操作安全。其实这个1s不太准确，完全有可能不足1s但仍能通过
-	*/
-	if( (time(NULL)-s_last_serial_cmd_time) < 1 ){
-		DEBUG("too pressing cmd, sleep 1s to relex serial\n");
-		sleep(1);
-	}
-	
-	// 指令识别：68 a0 a1 a2 a3 a4 a5 68
-	unsigned char distinguish_cmd[32];
-	memset(distinguish_cmd, 0, sizeof(distinguish_cmd));
-	memcpy(distinguish_cmd, buf, 8);	//识别段: 68 20 11 12 21 06 36 68
-	
-	if(0!=sendto_serial(buf, buf_len)){
-		DEBUG("send to serial failed\n");
-		read_len = -1;
+		DEBUG("invalid serial cmd, buf_len=%u\n", buf_len);
+		ret = -1;
 	}
 	else{
-		memset(buf, 0, buf_size);
-		usleep(200000);
-		read_len = recvfrom_serial(buf, buf_size, distinguish_cmd);
-	}
+		sem_wait(&s_sem_serial);
 	
-	if(read_len>8)	// 合法的返回串至少要包含识别段，长度8B，形如：68 20 11 12 21 06 36 68
-	{
-		int p = ascinasc(buf, read_len, distinguish_cmd, 8);
-		if(p<0)
-		{
-			DEBUG("this recv buf from serial can not be distinguished, p=%d\n", p);
-			read_len = -1;
+		usleep(20000);
+		
+		// 期望合法指令识别：68 a0 a1 a2 a3 a4 a5 68
+		unsigned char distinguish_cmd[32];
+		memset(distinguish_cmd, 0, sizeof(distinguish_cmd));
+		memcpy(distinguish_cmd, buf, 8);	//识别段: 68 20 11 12 21 06 36 68
+		
+		if(0!=sendto_serial(buf, buf_len)){
+			DEBUG("send to serial failed\n");
+			ret = -1;
 		}
-		else if(p>0){
-			read_len -= p;
-			for(i=0; i<read_len; i++){
-				buf[i] = buf[p+i];
+		else{
+			memset(buf, 0, buf_size);
+			usleep(250000);
+			
+			unsigned char serial_response_buf[128000];
+			unsigned int start_pos = 0;
+			
+			memset(serial_response_buf,0,sizeof(serial_response_buf));
+			has_read_len = recvfrom_serial(serial_response_buf, &start_pos, sizeof(serial_response_buf), distinguish_cmd);
+			if(has_read_len>10){
+				memset(buf,0,buf_size);
+				memcpy(buf,serial_response_buf+start_pos,buf_size);
+				ret = has_read_len;
+			}
+			else{
+				DEBUG("has read len: %d, perhaps failed\n", has_read_len);
+				ret = -1;
 			}
 		}
 	
-		printf("=========================================== read_len = %d, p=%d\n", read_len, p);
-		for(i=0;i<read_len;i++)
-			printf(" %02x", buf[i]);
-		printf("\n===========================================\n");
-	}
-	else{
-		DEBUG("recv from serial fialed, read_len=%d\n", read_len);
+		sem_post(&s_sem_serial);
+		
+		if(s_serial_failed_count>2)
+			serial_reset();
 	}
 	
-	if(read_len<=8){
-		read_len = -1;
-		s_serial_failed_count++;
-	}
-	
-	s_last_serial_cmd_time = time(NULL);
+	return ret;
+}
 
-	sem_post(&s_sem_serial);
+int serial_access(unsigned char *buf, unsigned int buf_len, unsigned int buf_size)
+{
+	int i = 0;
+	int ret = 0;
+	unsigned char remem_buf[128];
+	unsigned int remem_buf_len = buf_len;
 	
-	if(s_serial_failed_count>2)
-		serial_reset();
+	memset(remem_buf,0,sizeof(remem_buf));
+	memcpy(remem_buf,buf,buf_len);
 	
-	return read_len;
+	for(i=0;i<3;i++){
+		if(i>0){
+			buf_len = remem_buf_len;
+			memcpy(buf,remem_buf,buf_len);
+		}
+		
+		ret = serial_access_son(buf,buf_len,buf_size);
+		if(-1==ret){
+			DEBUG("serial access son failed at %d times\n", i+1);
+		}
+		else{
+			DEBUG("serial access son success %d times\n", i+1);
+			DEBUG("read %d bytes for this time,(",ret);
+			int j = 0;
+			for(j=0;j<ret;j++)
+				printf(" %02x", *(buf+j));
+			printf(")\n");
+			
+			break;
+		}
+	}
+	
+	return ret;
 }
 
 void serial_fd_close(void)

@@ -1408,6 +1408,8 @@ static int columnicon_init(char *columnicon_name)
 	}
 }
 
+
+//#define DRM_TEST
 /*
  本地栏目的初始化
  注意和下发的Column.xml字段识别保持一致
@@ -1628,7 +1630,7 @@ int localcolumn_init()
 	 二级菜单“设置－DRM”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9906")){
-#if 0
+#ifdef DRM_TEST
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',6);",
 			"L9906","L99","L99/L9906","L99","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1642,9 +1644,12 @@ int localcolumn_init()
 #endif
 	}
 	else{
+#ifdef DRM_TEST
+#else
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L9906';");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
+#endif
 	}
 	/*
 	 二级菜单“设置－用电目标”
@@ -1667,6 +1672,8 @@ int localcolumn_init()
 	 一级菜单“智能用电”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","G1")){
+#ifdef DRM_TEST
+#else
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
 			"G1","-1","G1","SmartLife","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png","LocalColumnIcon/SmartPower_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1677,6 +1684,7 @@ int localcolumn_init()
 			"Column","G1","eng","DisplayName","SmartPower","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
+#endif
 	}
 	/*
 	 二级菜单“我的用电”
@@ -1761,6 +1769,8 @@ int localcolumn_init()
 	 一级菜单“家庭能效”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","G2")){
+#ifdef DRM_TEST
+#else
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',2);",
 			"G2","-1","G2","SmartLife","LocalColumnIcon/PowerEfficiency_losefocus.png","LocalColumnIcon/PowerEfficiency_losefocus.png","LocalColumnIcon/PowerEfficiency_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1771,6 +1781,7 @@ int localcolumn_init()
 			"Column","G2","eng","DisplayName","PowerEfficiency","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
+#endif
 	}
 	
 	/*
@@ -1842,6 +1853,8 @@ int localcolumn_init()
 	 一级菜单“智能家居”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","G3")){
+#ifdef DRM_TEST
+#else
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',3);",
 			"G3","-1","G3","SmartLife","LocalColumnIcon/SmartHousehold_losefocus.png","LocalColumnIcon/SmartHousehold_losefocus.png","LocalColumnIcon/SmartHousehold_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1852,6 +1865,7 @@ int localcolumn_init()
 			"Column","G3","eng","DisplayName","SmartHousehold","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
+#endif
 	}
 	
 	/*
@@ -1940,6 +1954,7 @@ int localcolumn_init()
 	 一级菜单“国网资讯”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","G5")){
+#if 1
 		snprintf(localcolumn_iconname,sizeof(localcolumn_iconname),"GridInfos_losefocus.png");
 		columnicon_init(localcolumn_iconname);
 		
@@ -1953,11 +1968,13 @@ int localcolumn_init()
 			"Column","G5","eng","DisplayName","GridInfos","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
+#endif
 	}
 	
 	/*
 	 二级菜单“国网快讯”
 	*/
+#if 1
 	if(-1==check_record_in_trans("Column","ColumnID","G501")){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
 			"G501","G5","G5/G501","SmartLife","LocalColumnIcon/GridInfos_losefocus.png","LocalColumnIcon/GridInfos_losefocus.png","LocalColumnIcon/GridInfos_losefocus.png");
@@ -1970,6 +1987,7 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
+#endif
 	
 	
 	if(insert_column_cnt>0)

@@ -39,16 +39,16 @@ LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
 OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 include $(BUILD_PREBUILT)
 
-include $(CLEAR_VARS)
-mylib := libfileapic
-LOCAL_MODULE := $(mylib)
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_MODULE_SUFFIX := .so
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
-LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
-OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
-include $(BUILD_PREBUILT)
+#include $(CLEAR_VARS)
+#mylib := libfileapic
+#LOCAL_MODULE := $(mylib)
+#LOCAL_MODULE_TAGS := optional
+#LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+#LOCAL_MODULE_SUFFIX := .so
+#LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+#LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
+#OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+#include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
 mylib := libpush
@@ -61,6 +61,16 @@ LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
 OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 include $(BUILD_PREBUILT)
 
+#include $(CLEAR_VARS)
+#mylib := libam_adp
+#LOCAL_MODULE := $(mylib)
+#LOCAL_MODULE_TAGS := optional
+#LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+#LOCAL_MODULE_SUFFIX := .so
+#LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+#LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
+#OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+#include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
 mylib := libxml2
@@ -100,19 +110,20 @@ LOCAL_SRC_FILES += \
 	src/xmlparser.c \
 	src/sqlite.c \
 	src/porting.c \
-	src/softdmx.c \
+	src/tunerdmx.c \
 	src/dvbpush_jni.c \
 	src/network.c \
 	src/sha_verify.c \
 	src/mtdutils.c \
 	src/motherdisc.c \
 	src/smarthome_shadow/smarthome.c \
-	src/smarthome_shadow/serial.c 
+	src/smarthome_shadow/serial.c \
+        src/smarthome_shadow/socket.c 
 LOCAL_CFLAGS += -W -Wall
 LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_SHARED_LIBRARIES += libc libcutils libdl liblog libsqlite
-LOCAL_SHARED_LIBRARIES += libfileapi libfileapic libpush libxml2 libiconv
+LOCAL_SHARED_LIBRARIES += libfileapi libfileapic libpush libam_adp libxml2 libiconv
 include $(BUILD_SHARED_LIBRARY)
 
 #include $(CLEAR_VARS)

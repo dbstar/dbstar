@@ -232,10 +232,10 @@ typedef struct {
 }SCDCACardEntitleInfo;
 
 typedef struct {
-        CDCA_U8       byReqID;
-        CDCA_U8       fid;
-        CDCA_U16      wPID;
-        CDCA_U32      timeouttime;
+	CDCA_U16      wPID;
+	CDCA_U8       byReqID;
+//  CDCA_U8       fid;
+    CDCA_U32      timeouttime;
 }SCDCAFilterInfo;
 
 

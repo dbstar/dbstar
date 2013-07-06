@@ -48,6 +48,7 @@ static int softdvb_running = 0;
 static pthread_t pth_softdvb_id;
 static pthread_t pth_igmp_id;
 
+extern unsigned short chanFilter[];
 
 static pthread_mutex_t mtx_net_rely_condition = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_net_rely_condition = PTHREAD_COND_INITIALIZER;
@@ -519,7 +520,7 @@ void *softdvb_thread()
 	
 	first_aid_for_igmp(0);
 #endif
-
+#if 0
 	DEBUG("go to softdvb_thread mainloop\n");
 	/*
 	 组播任务的开启、关闭会根据网络情况处理，这里就不再判断igmp_running了，要不然逻辑很复杂。
@@ -541,6 +542,7 @@ void *softdvb_thread()
 //		if(p_buf)
 			parse_ts_packet(p_buf,p_write,&p_read);	// make sure 'p_buf' is not NULL
 	}
+#endif
 	DEBUG("exit from soft dvb thread\n");
 	
 	return NULL;
@@ -596,6 +598,8 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 				filter = alloc_filter(pid, 1);
 			else
 				filter = alloc_filter(pid, 0);
+			if((filter>=0)&&(filter<MAX_CHAN_FILTER))
+				chanFilter[filter]=pid;
 			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
 		}
 //		else{
@@ -633,6 +637,9 @@ int softdvb_init()
 	// xml 根pid
 	unsigned short root_pid = root_channel_get();
 	int filter1 = alloc_filter(root_pid, 0);
+	
+	if((filter1>=0)&&(filter1<MAX_CHAN_FILTER))
+	    chanFilter[filter1]=root_pid;
 	DEBUG("set dvb filter, pid=%d, fid=%d\n", root_pid, filter1);
 	
 	// 升级pid
@@ -649,28 +656,11 @@ int softdvb_init()
 	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
 	DEBUG("set ca filter, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
-#ifdef PUSH_LOCAL_TEST
-	// prog/video
-	unsigned short video_pid = 123;
-	int filter5 = alloc_filter(video_pid, 1);
-	DEBUG("set dvb filter3, pid=%d, fid=%d\n", video_pid, filter5);
-	
-	// prog/file
-	unsigned short file_pid = 654;
-	int filter4 = alloc_filter(file_pid, 1);
-	DEBUG("set dvb filter3, pid=%d, fid=%d\n", file_pid, filter4);
-	
-	// prog/audio
-	unsigned short audio_pid = 8123;
-	int filter3 = alloc_filter(audio_pid, 1);
-	DEBUG("set dvb filter3, pid=%d, fid=%d\n", audio_pid, filter3);
-#else
 	if(-1==pid_init(1)){
 		DEBUG("allpid init faild\n");
 		return -1;
 	}
-#endif
-	
+
 	tdt_time_sync_awake();
 	
 	if(0==pthread_create(&pth_softdvb_id, NULL, softdvb_thread, NULL)){
@@ -698,27 +688,10 @@ int softdvb_uninit()
 	ret = free_filter(root_pid);
 	DEBUG("free pid %d return with %d\n", root_pid, ret);
 	
-#ifdef PUSH_LOCAL_TEST
-	// prog/video
-	unsigned short video_pid = 123;
-	ret = free_filter(video_pid);
-	DEBUG("free pid %d return with %d\n", video_pid, ret);
-	
-	// prog/file
-	unsigned short file_pid = 654;
-	ret = free_filter(file_pid);
-	DEBUG("free pid %d return with %d\n", file_pid, ret);
-	
-	// prog/audio
-	unsigned short audio_pid = 8123;
-	ret = free_filter(audio_pid);
-	DEBUG("free pid %d return with %d\n", audio_pid, ret);
-#else
 	if(-1==pid_init(0)){
 		DEBUG("allpid init faild\n");
 		return -1;
 	}	
-#endif
 
 	return ret;
 }

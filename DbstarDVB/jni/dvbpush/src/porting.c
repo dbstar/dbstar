@@ -768,10 +768,10 @@ int disk_manage(char *PublicationID, char *ProductID)
 		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE PublicationID='%s';",PublicationID);
 	}
 	else if(NULL!=ProductID && strlen(ProductID)>0){
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE URI='%s' GROUP BY PublicationID;",ProductID);
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ProductID='%s' GROUP BY PublicationID;",ProductID);
 	}
 	else{
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ReceiveStatus!='0' GROUP BY PublicationID ORDER BY IsReserved,Deleted DESC,ReceiveStatus,TimeStamp LIMIT 16;");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;");
 	}
 	DEBUG("%s\n", sqlite_cmd);
 #endif
@@ -1929,6 +1929,14 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			DEBUG("CMD_DEVICE_INIT\n");
 			smarthome_gw_sn_init();
 			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
+			break;
+		case CMD_SMARTLIFE_SEND:
+			DEBUG("CMD_SMARTLIFE_SEND, *len=%d\n", *len);
+			smartlife_send(*buf,*len);
+			break;
+		case CMD_SMARTLIFE_CONNECT:
+			DEBUG("CMD_SMARTLIFE_CONNECT, *buf=%d\n", *buf);
+			smartlife_connect(*buf,*len);
 			break;
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);

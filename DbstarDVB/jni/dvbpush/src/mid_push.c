@@ -241,7 +241,10 @@ rewake:
 	while (1==s_decoder_running && NULL!=g_recvBuffer)
 	{
 		len = g_recvBuffer[rindex].m_len;
-		if(len && 1==pushdir_usable())	//  && 0==motherdisc_processing()只在检查完母盘初始化后才启动push模块，所以不用担心在这里引起母盘中Initialize或其他xml被下载的xml覆盖
+		
+		// 此线程的运行影响到升级，即使没有硬盘也必须让此线程运行。
+		// 但要避免母盘中Initialize或其他xml被下载的xml覆盖
+		if(len && 0==motherdisc_processing())
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
@@ -708,7 +711,7 @@ void *maintenance_thread()
 #if 0		
 		if(1==s_disk_manage_flag){
 			DEBUG("will clean disk\n");
-			disk_manage(NULL,NULL);
+			disk_space_check();
 			s_disk_manage_flag = 0;
 		}
 #endif
@@ -721,13 +724,18 @@ void *maintenance_thread()
 			motherdisc_process();
 		}
 		
+		// 母盘初始化动作一定是在push初始化之前，确保在母盘初始化操作数据库过程中不混乱
 		if(0==s_push_regist_inited && 1==pushdir_usable()){
 			s_push_regist_inited = 1;
 			
+#if 0
+2013-06-29
+push_decoder_thread必须起来才能顺利执行ota升级过程，因此mid_push_init还要及早初始化，只是push_regist_init要等到硬盘加载完毕
 			if(-1==mid_push_init(PUSH_CONF)){
 				DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
-				//return NULL;
 			}
+#endif
+
 			push_regist_init();
 		}
 		
@@ -736,8 +744,8 @@ void *maintenance_thread()
 			
 //			DEBUG("in user idle status,now_sec: %ld, s_pin_sec=%ld, reboot_timestamp_get()=%d\n", now_sec, s_pin_sec, reboot_timestamp_get());
 			
-			// 1、开机超过12个小时(43200)；2、与上次重启的时间差大于7200（两个小时）才有效
-			if((now_sec-s_pin_sec>43200) && (now_sec-reboot_timestamp_get())>7200){
+			// 1、开机超过6个小时(21600)；2、与上次重启的时间差大于7200（两个小时）才有效
+			if((now_sec-s_pin_sec>21600) && (now_sec-reboot_timestamp_get())>7200){
 				localtime_r(&now_sec, &now_tm);
 				
 				// 国电网关需要在45分和整点之间保持开机状态，预留15分钟重启时间，窗口时间为0分到30分
@@ -1743,27 +1751,43 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	return 0;
 }
 
+/*
+ return 0: disc cleaning finish
+ 		-1: can not clean, some err
+ 		1: no need to clean
+*/
 int disk_space_check()
 {
 	unsigned long long tt_size = 0LL;
 	unsigned long long free_size = 0LL;
+	int ret = -1;
 	
 	if(-1==disk_usable_check(push_dir_get(),&tt_size,&free_size)){
 		DEBUG("HardDisc %s disable\n",push_dir_get());
+		ret = -1;
 	}
 	else{
 		DEBUG("HardDisc %s enable, total_size: %llu, free_size: %llu\n",push_dir_get(),tt_size,free_size);
 		unsigned long long free_size_M = (free_size >> 20);
+		unsigned long long download_M = (recv_totalsize_sum_get() >> 20);
 		
-		if(free_size_M<=HDFOREWARNING_M_DFT){
-			DEBUG("should clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,HDFOREWARNING_M_DFT);
-			disk_manage(NULL,NULL);
+		if(download_M<DOWNLOAD_ONCE_M_MIN){
+			DEBUG("check download %llu Mbytes is smaller than %llu, reset it as %llu\n",download_M,DOWNLOAD_ONCE_M_MIN,DOWNLOAD_ONCE_M_MIN);
+			download_M = DOWNLOAD_ONCE_M_MIN;
 		}
-		else
-			DEBUG("no need to clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,HDFOREWARNING_M_DFT);
+		
+		if(free_size_M<=(HDFOREWARNING_M_DFT+download_M)){
+			DEBUG("should clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+download_M));
+			disk_manage(NULL,NULL);
+			ret = 0;
+		}
+		else{
+			DEBUG("no need to clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+download_M));
+			ret = 1;
+		}
 	}
 	
-	return 0;
+	return ret;
 }
 
 /*
