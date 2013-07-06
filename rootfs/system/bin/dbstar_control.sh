@@ -11,7 +11,9 @@ system_init()
 dbstar_init()
 {
 	if [ -e "/system/app/Launcher2.apk" ]; then
+		mount -o remount,rw /system
 		mv /system/app/Launcher2.apk /system/app/Launcher2.apk.bk
+		mv /system/app/dongle_launcher.apk /system/app/dongle_launcher.apk.bk
 	fi
 
 	if [ -s "/data/dbstar/Dbstar.db" ]; then
@@ -19,7 +21,7 @@ dbstar_init()
 	else
 		cp -rf /system/etc/dbstar/Dbstar.db /data/dbstar/
 		sync
-		chown system /data/dbstar/Dbstar.db
+		chown system:system /data/dbstar/Dbstar.db
 		chmod 666 /data/dbstar/Dbstar.db
 		setprop dbstar.inited 1
 	fi
@@ -29,7 +31,7 @@ dbstar_init()
 	else
 		cp -rf /system/etc/dbstar/Smarthome.db /data/dbstar/
 		sync
-		chown system /data/dbstar/Smarthome.db
+		chown system:system /data/dbstar/Smarthome.db
 		chmod 666 /data/dbstar/Smarthome.db
 		setprop dbstar.inited 1
 	fi
@@ -39,11 +41,12 @@ dbstar_init()
 	else
 		cp -rf /system/etc/dbstar/ColumnRes /data/dbstar/
 		sync
-		chown system /data/dbstar/ColumnRes
+		chown system:system /data/dbstar/ColumnRes
 		chmod 777 /data
 		chmod 777 /data/dbstar
 		chmod 777 /data/dbstar/ColumnRes
 		chmod 777 /data/dbstar/ColumnRes/LocalColumnIcon
+		chmod 644 /data/dbstar/ColumnRes/LocalColumnIcon/*
 		setprop dbstar.inited 1
 	fi
 
@@ -52,13 +55,31 @@ dbstar_init()
 	else
 		cp -rf /system/etc/dbstar/drm /data/dbstar/
 		sync
-		chown system /data/dbstar/drm
+		chown system:system /data/dbstar/drm
 		chmod 777 /data
 		chmod 777 /data/dbstar
 		chmod 777 /data/dbstar/drm
 		chmod 777 /data/dbstar/drm/entitle
 		chmod 777 /data/dbstar/drm/entitle/block01
 		setprop dbstar.inited 1
+	fi
+
+	if [ -e "/data/dbstar/dbstar.conf" ]; then
+		echo "dbstar.conf already exist!"
+	else
+		cp -rf /system/etc/dbstar/dbstar.conf /data/dbstar/
+		sync
+		chown system:system /data/dbstar/dbstar.conf
+		chmod 644 /data/dbstar/dbstar.conf
+	fi
+
+	if [ -e "/data/dbstar/push.conf" ]; then
+		echo "push.conf already exist!"
+	else
+		cp -rf /system/etc/dbstar/push.conf /data/dbstar/
+		sync
+		chown system:system /data/dbstar/push.conf
+		chmod 644 /data/dbstar/push.conf
 	fi
 
 
