@@ -44,12 +44,6 @@ typedef enum{
 	SOCKET_STATUS_UNREGIST
 }SOCKET_STATUS_E;
 
-typedef enum{
-	SMARTLIFE_TCP_DISCONNECT = -1,
-	SMARTLIFE_TCP_CONNECTING,
-	SMARTLIFE_TCP_CONNECTED
-}SMARTLIFE_CONNECT_STATUS_E;
-
 static SOCKET_STATUS_E		g_socket_status = SOCKET_STATUS_CLOSED;
 static int					g_fifo_fd = -1;
 static char 				s_sendbuf[BUF_SIZE];				//buf of send
@@ -105,6 +99,26 @@ static int smartlife_tcp_close(int socket_fd)
 		DEBUG("can not close such socket %d\n", socket_fd);
 		
 	return 0;
+}
+
+void setnonblocking(int sock)
+{
+	int  opts;
+	
+	opts = fcntl(sock,F_GETFL);
+	
+	if (opts < 0 )
+	{
+		perror( " fcntl(sock,GETFL) " );
+		return;
+	}
+	
+	opts  =  opts | O_NONBLOCK;
+	if (fcntl(sock,F_SETFL,opts) < 0 )
+	{
+		perror( " fcntl(sock,SETFL,opts) " );
+		return;
+	}
 }
 
 void *smartlife_connect_thread()
@@ -213,6 +227,8 @@ void *smartlife_connect_thread()
 					sleep(17);
 				}
 				else{
+					setnonblocking(l_socket_fd);
+					
 					//monitor tcp link
 					setKeepAlive(l_socket_fd);
 					DEBUG("create socket(%d) success\n", l_socket_fd);
@@ -247,7 +263,7 @@ void *smartlife_connect_thread()
 					DEBUG("connect %s:%d success\n", server_ip, server_port);
 					g_socket_status = SOCKET_STATUS_CONNECTED;
 					
-					snprintf(smartlife_connect_status,sizeof(smartlife_connect_status),"%d",SMARTLIFE_TCP_CONNECTED);
+					snprintf(smartlife_connect_status,sizeof(smartlife_connect_status),"%d",SOCKET_STATUS_CONNECTED);
 					msg_send2_UI(SMARTLIFE_CONNECT_STATUS,smartlife_connect_status,strlen(smartlife_connect_status));
 				}
 				continue_myself();
@@ -433,50 +449,63 @@ static int recvFromServer(int l_socket_fd, char *l_recv_buf, int *recv_buf_size)
 	}
 	
 	struct timeval s_time={0,500000};			/* perhaps this 500ms is too short */
-	FD_CLR(l_socket_fd,&l_rdfds);
-	FD_ZERO(&l_rdfds);
-	FD_SET(l_socket_fd,&l_rdfds);
-	ret_select=select(l_socket_fd+1,&l_rdfds,NULL,NULL,&s_time);
-	if ( ret_select<0)
-	{
-		DEBUG("select error\n");
-		ret = -1;
-	}
-	else if( 0==ret_select )
-	{
-		DEBUG("select timeout\n");
-		ret = 1;
-	}
-	else
-	{
-		if (FD_ISSET(l_socket_fd,&l_rdfds))
+	
+	while(1){
+		FD_CLR(l_socket_fd,&l_rdfds);
+		FD_ZERO(&l_rdfds);
+		FD_SET(l_socket_fd,&l_rdfds);
+		s_time.tv_sec = 0;
+		s_time.tv_usec = 500000;
+		ret_select=select(l_socket_fd+1,&l_rdfds,NULL,NULL,&s_time);
+		if ( ret_select<0)
 		{
-			DEBUG("socket(%d) can be readed\n", l_socket_fd);
-			
-			ret_recv=recv(l_socket_fd,l_recv_buf+total_recv_len,*recv_buf_size-1-total_recv_len,0);
-			//monitor tcp link,-1 out line . next time select will return 1 and recv return 0
-			if (-1 == ret_recv)
-			{
-				DEBUG("out line!!!\n");
-				ret = -1;
-			}
-			//server is out
-			else if (0 == ret_recv)
-			{
-				DEBUG("server is out line!!!\n");
-				ret = -1;
-			}
-			else{
-				total_recv_len += ret_recv;
-				DEBUG("recv [%d]%d successfully\n", *recv_buf_size,ret_recv);
-				
-				ret = 0;
-			}
+			DEBUG("select error\n");
+			ret = -1;
+			break;
+		}
+		else if( 0==ret_select )
+		{
+			DEBUG("select timeout\n");
+			ret = 1;
+			break;
 		}
 		else
 		{
-			DEBUG("another socket but not %d can be readed\n", l_socket_fd);
-			ret = -1;
+			if (FD_ISSET(l_socket_fd,&l_rdfds))
+			{
+				DEBUG("socket(%d) can be readed\n", l_socket_fd);
+				
+				ret_recv=recv(l_socket_fd,l_recv_buf+total_recv_len,*recv_buf_size-1-total_recv_len,0);
+				//monitor tcp link,-1 out line . next time select will return 1 and recv return 0
+				if (-1 == ret_recv)
+				{
+					DEBUG("out line!!!\n");
+					ret = -1;
+					
+					if(EAGAIN==errno || EWOULDBLOCK==errno){
+						DEBUG("recv finish\n");
+						ret = 0;
+					}
+					
+					break;
+				}
+				//server is out
+				else if (0 == ret_recv)
+				{
+					DEBUG("server is out line!!!\n");
+					ret = -1;
+					break;
+				}
+				else{
+					total_recv_len += ret_recv;
+					DEBUG("recv %d[%d] -> %d successfully\n", ret_recv,total_recv_len,*recv_buf_size);
+				}
+			}
+			else
+			{
+				DEBUG("another socket but not %d can be readed\n", l_socket_fd);
+				ret = -1;
+			}
 		}
 	}
 	
