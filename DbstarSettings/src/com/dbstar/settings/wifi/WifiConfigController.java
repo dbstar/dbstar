@@ -84,13 +84,13 @@ public class WifiConfigController {
 		if (config == null) {
 			return false;
 		}
-		String values[] = { config.ca_cert.value(), config.client_cert.value(),
+		/*String values[] = { config.ca_cert.value(), config.client_cert.value(),
 				config.private_key.value() };
 		for (String value : values) {
 			if (value != null && value.startsWith(KEYSTORE_SPACE)) {
 				return true;
 			}
-		}
+		}*/
 		return false;
 	}
 

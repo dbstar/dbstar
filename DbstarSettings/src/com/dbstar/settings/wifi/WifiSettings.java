@@ -107,7 +107,7 @@ public class WifiSettings {
 
 		mFilter.addAction(WifiManager.CONFIGURED_NETWORKS_CHANGED_ACTION);
 		mFilter.addAction(WifiManager.LINK_CONFIGURATION_CHANGED_ACTION);
-		mFilter.addAction(WifiManager.ERROR_ACTION);
+		//mFilter.addAction(WifiManager.ERROR_ACTION);
 
 		mReceiver = new BroadcastReceiver() {
 			@Override
@@ -124,7 +124,7 @@ public class WifiSettings {
 		mWifiManager = (WifiManager) mActivity
 				.getSystemService(Context.WIFI_SERVICE);
 
-		mWifiManager.asyncConnect(mActivity, new WifiServiceHandler());
+		//mWifiManager.asyncConnect(mActivity, new WifiServiceHandler());
 
 		mAccessPointListView = (ListView) mActivity
 				.findViewById(R.id.wifi_aplist);
@@ -144,7 +144,8 @@ public class WifiSettings {
 		mActivity.registerReceiver(mReceiver, mFilter);
 		if (mKeyStoreNetworkId != INVALID_NETWORK_ID
 				&& KeyStore.getInstance().state() == KeyStore.State.UNLOCKED) {
-			mWifiManager.connectNetwork(mKeyStoreNetworkId);
+			//mWifiManager.connectNetwork(mKeyStoreNetworkId);
+			mWifiManager.enableNetwork(mKeyStoreNetworkId, true);
 		}
 		mKeyStoreNetworkId = INVALID_NETWORK_ID;
 
@@ -295,7 +296,7 @@ public class WifiSettings {
 			updateConnectionState(info.getDetailedState());
 		} else if (WifiManager.RSSI_CHANGED_ACTION.equals(action)) {
 			updateConnectionState(null);
-		} else if (WifiManager.ERROR_ACTION.equals(action)) {
+		} /*else if (WifiManager.ERROR_ACTION.equals(action)) {
 			int errorCode = intent.getIntExtra(WifiManager.EXTRA_ERROR_CODE, 0);
 			switch (errorCode) {
 			case WifiManager.WPS_OVERLAP_ERROR:
@@ -303,7 +304,7 @@ public class WifiSettings {
 						Toast.LENGTH_SHORT).show();
 				break;
 			}
-		}
+		}*/
 	}
 
 	private void updateConnectionState(DetailedState state) {
@@ -391,7 +392,7 @@ public class WifiSettings {
 		}
 	}
 
-	private class WifiServiceHandler extends Handler {
+	/*private class WifiServiceHandler extends Handler {
 
 		@Override
 		public void handleMessage(Message msg) {
@@ -435,7 +436,7 @@ public class WifiSettings {
 				break;
 			}
 		}
-	}
+	}*/
 
 	View mLastSelectedView = null, mSelectedView = null;
 	OnItemSelectedListener mItemSelectedListener = new OnItemSelectedListener() {
@@ -500,12 +501,14 @@ public class WifiSettings {
 			}
 
 			if (!requireKeyStore(mSelectedAccessPoint.getConfig())) {
-				mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
+				//mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
+				mWifiManager.enableNetwork(mSelectedAccessPoint.networkId, true);
 			}
 		} else if (mSelectedAccessPoint.security == AccessPoint.SECURITY_NONE) {
 			/** Bypass dialog for unsecured, unsaved networks */
 			mSelectedAccessPoint.generateOpenNetworkConfig();
-			mWifiManager.connectNetwork(mSelectedAccessPoint.getConfig());
+			//mWifiManager.connectNetwork(mSelectedAccessPoint.getConfig());
+			mWifiManager.enableNetwork(mSelectedAccessPoint.getConfig().networkId, true);
 		} else {
 			// configure access point
 			showConfigUi(mSelectedAccessPoint);
@@ -543,7 +546,8 @@ public class WifiSettings {
 	}
 
 	/* package */void forget() {
-		mWifiManager.forgetNetwork(mSelectedAccessPoint.networkId);
+		mWifiManager.removeNetwork(mSelectedAccessPoint.networkId);
+		mWifiManager.saveConfiguration();
 
 		if (mWifiManager.isWifiEnabled()) {
 			mScanner.resume();
@@ -558,11 +562,15 @@ public class WifiSettings {
 			if (mSelectedAccessPoint != null
 					&& !requireKeyStore(mSelectedAccessPoint.getConfig())
 					&& mSelectedAccessPoint.networkId != INVALID_NETWORK_ID) {
-				mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
+				//mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
+				mWifiManager.enableNetwork(mSelectedAccessPoint.networkId, true);
 			}
 		} else {
-			mWifiManager.saveNetwork(config);
-			mWifiManager.connectNetwork(config);
+			//mWifiManager.saveNetwork(config);
+			mWifiManager.addNetwork(config);
+			mWifiManager.saveConfiguration();
+			//mWifiManager.connectNetwork(config);
+			mWifiManager.enableNetwork(config.networkId, true);
 		}
 
 		if (mWifiManager.isWifiEnabled()) {
