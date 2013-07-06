@@ -1518,6 +1518,7 @@ end:
 	return 1;
 }
 
+extern void dmx_filter_init(void);
 void chanFilterInit(void)
 {
 	int i=0;
@@ -1531,5 +1532,6 @@ void chanFilterInit(void)
 		chanFilter[i].samepidnum = 0;
 		chanFilter[i].fid = -1;
 	}
+    dmx_filter_init();
 }
 

@@ -267,6 +267,19 @@ void CDSTBCA_WriteBuffer(CDCA_U8 byBlockID, const CDCA_U8* pbyData, CDCA_U32 dwL
 /*-------- TSÁ÷¹ÜÀí --------*/
 
 #if 1
+
+void dmx_filter_init(void)
+{
+    int i;
+    
+    for (i=0; i< MAX_CHAN_FILTER; i++)
+    {
+    	dmx_filter[i].byReqID = 0xff;
+	    dmx_filter[i].wPID = 0xffff;
+	    dmx_filter[i].timeouttime = 0;
+    }	
+}
+
 void filter_timeout_handler(int fid)
 {
 	if (fid >= max_filter_num) {
@@ -316,29 +329,29 @@ static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_
 		dmx_filter[fid].timeouttime = 0;
 		CDSTBCA_ReleasePrivateDataFilter(byReqID, wPid);
 	}
-        else if (checkTimeoutMark>0)
-        {
-             int now,theni,i;
+    else if (checkTimeoutMark>0)
+    {
+         int now,theni,i;
 
-             AM_TIME_GetClock(&now);
- 
-             for(i=0; i<max_filter_num; i++)
+         AM_TIME_GetClock(&now);
+
+         for(i=0; i<max_filter_num; i++)
+         {
+             theni = dmx_filter[i].timeouttime;
+             if (theni > 0)
              {
-                 theni = dmx_filter[i].timeouttime;
-                 if (theni > 0)
+                 if (theni >= now)
                  {
-                     if (theni <= now)
+                     if (checkTimeoutMark>0) 
                      {
-                         if (checkTimeoutMark>0) 
-                         {
-                             checkTimeoutMark --;
-                         }
-                         dmx_filter[i].timeouttime = 0;
-                         CDSTBCA_ReleasePrivateDataFilter(dmx_filter[i].byReqID, dmx_filter[i].wPID);
+                         checkTimeoutMark --;
                      }
+                     dmx_filter[i].timeouttime = 0;
+                     CDSTBCA_ReleasePrivateDataFilter(dmx_filter[i].byReqID, dmx_filter[i].wPID);
                  }
              }
-        }
+         }
+    }
 }
 #endif
 
@@ -374,7 +387,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	PRINTF("mask  [8]: %x,%x,%x,%x,%x,%x,%x,%x\n\n",param.mask[0],param.mask[1],param.mask[2],param.mask[3],param.mask[4],param.mask[5],param.mask[6],param.mask[7]);
 
 	fid = TC_alloc_filter(wPid, &param, (dataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
-	if (fid >= MAX_CHAN_FILTER) {
+	if ((fid >= MAX_CHAN_FILTER)||(fid < 0)) {
 		return  CDCA_FALSE;
 	}
 	dmx_filter[fid].wPID = wPid;
