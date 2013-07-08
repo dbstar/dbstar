@@ -31,7 +31,6 @@
 #define LOGE(...)
 #endif
 
-extern AM_ErrorCode_t AM_TIME_GetClock(int *clock);
 #if 0
 typedef struct {
 	char sn[CDCA_MAXLEN_SN + 1];
@@ -296,19 +295,20 @@ void filter_timeout_handler(int fid)
 
 void filter_timeout_process()
 {
-	int now,theni,i;
+	int i;
+	time_t now_sec,theni;
 	
 	if (checkTimeoutMark>0)
 	{
-		AM_TIME_GetClock(&now);
-		LOGD("checkTimeoutMark: %d, now: %d\n",checkTimeoutMark,now);
+		now_sec = time(NULL);
+		LOGD("checkTimeoutMark: %d, now_sec: %lu\n",checkTimeoutMark,now_sec);
 		
 		for(i=0; i<max_filter_num; i++)
 		{
 			theni = dmx_filter[i].timeouttime;
 			if (theni > 0)
 			{
-				if (theni >= now)
+				if (theni >= now_sec)
 				{
 					if (checkTimeoutMark>0)
 						checkTimeoutMark --;
@@ -401,10 +401,8 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	dmx_filter[fid].byReqID = byReqID;
 	dmx_filter[fid].fid = fid;
 	if (byWaitSeconds) {
-		int now;
 		checkTimeoutMark ++;
-		AM_TIME_GetClock(&now);
-		dmx_filter[fid].timeouttime = now + byWaitSeconds * 1000;
+		dmx_filter[fid].timeouttime = time(NULL) + byWaitSeconds;
 	} else {
 		dmx_filter[fid].timeouttime = 0;
 	}
