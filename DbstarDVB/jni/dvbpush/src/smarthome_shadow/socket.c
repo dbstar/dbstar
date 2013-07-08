@@ -466,7 +466,7 @@ static int recvFromServer(int l_socket_fd, char *l_recv_buf, int *recv_buf_size)
 		else if( 0==ret_select )
 		{
 			DEBUG("select timeout\n");
-			ret = 1;
+			ret = 0;
 			break;
 		}
 		else
