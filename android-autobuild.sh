@@ -263,6 +263,7 @@ dbstar_make()
 	LOG_LOGGER=$LOG_DBSTAR.$TIMESTAMP
 	call cd $ANDROID_SRC
 	call mmm $DBSTAR_SRC/rootfs
+	call mmm $ANDROID_SRC/external/dvb
 	if [ $? -ne 0 ]; then
 		logger "ERROR make rootfs"
 	fi
