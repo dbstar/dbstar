@@ -87,16 +87,16 @@ int fifo_buf_clear(int fifo_fd, fd_set rdfds)
 	}
 }
 
-static int smartlife_tcp_close(int socket_fd)
+static int smartlife_tcp_close(int *socket_fd)
 {
-	if(socket_fd>2){
-		DEBUG("close smartlife tcp socket %d\n",socket_fd);
+	if(*socket_fd>2){
+		DEBUG("close smartlife tcp socket %d\n",*socket_fd);
 		
-		close(socket_fd);
-		socket_fd = -1;
+		close(*socket_fd);
+		*socket_fd = -1;
 	}
 	else
-		DEBUG("can not close such socket %d\n", socket_fd);
+		DEBUG("can not close such socket %d\n", *socket_fd);
 		
 	return 0;
 }
@@ -197,6 +197,8 @@ void *smartlife_connect_thread()
 	{
 		FD_ZERO(&rdfds);
 		FD_SET(g_fifo_fd, &rdfds);
+		max_fd = g_fifo_fd;
+		
 		if(l_socket_fd>2){
 			FD_SET(l_socket_fd, &rdfds);
 			if(l_socket_fd>max_fd)
@@ -206,11 +208,11 @@ void *smartlife_connect_thread()
 		tv_select.tv_usec = 500000;
 		ret_select = select(max_fd+1, &rdfds, NULL, NULL, &tv_select);
 		if(ret_select<0){
-			ERROROUT("select failed\n");
+			ERROROUT("select failed, g_fifo_fd=%d, l_socket_fd=%d, max_fd=%d\n",g_fifo_fd,l_socket_fd,max_fd);
 			return NULL;
 		}
 		else if(0==ret_select){
-			DEBUG("timeout\n");
+			DEBUG("%ld timeout, g_fifo_fd=%d, l_socket_fd=%d, max_fd=%d\n",tv_select.tv_sec,g_fifo_fd,l_socket_fd,max_fd);
 			continue;
 		}
 		else{
@@ -257,7 +259,7 @@ void *smartlife_connect_thread()
 				if(-1==connectRetry(l_socket_fd,server_addr)){
 					DEBUG("connect %s:%d failed, sleep 17s and try again\n", server_ip, server_port);
 					g_socket_status = SOCKET_STATUS_DISCONNECT;
-					sleep(17);
+					sleep(3);
 				}
 				else{
 					DEBUG("connect %s:%d success\n", server_ip, server_port);
@@ -284,8 +286,10 @@ void *smartlife_connect_thread()
 						DEBUG("socket can read, but read return -1. this tcp connect is closed by server\n");
 						
 						fifo_buf_clear(g_fifo_fd, rdfds);
-						smartlife_tcp_close(l_socket_fd);
-						g_socket_status = SOCKET_STATUS_DISCONNECT;
+						smartlife_tcp_close(&l_socket_fd);
+						DEBUG("after socket close, l_socket_fd=%d\n",l_socket_fd);
+						l_socket_fd = -1;
+						g_socket_status = SOCKET_STATUS_CLOSED;
 					}
 				}
 				else if(FD_ISSET(g_fifo_fd, &rdfds)){
@@ -298,7 +302,7 @@ void *smartlife_connect_thread()
 						}
 						else{
 							DEBUG("send to server failed, reset the connect and try again\n");
-							smartlife_tcp_close(l_socket_fd);
+							smartlife_tcp_close(&l_socket_fd);
 							g_socket_status = SOCKET_STATUS_DISCONNECT;
 						}
 						
@@ -311,7 +315,7 @@ void *smartlife_connect_thread()
 			
 			case SOCKET_STATUS_EXCEPTION:
 				DEBUG("SOCKET_STATUS_EXCEPTION\n");
-				smartlife_tcp_close(l_socket_fd);
+				smartlife_tcp_close(&l_socket_fd);
 				g_socket_status = SOCKET_STATUS_DISCONNECT;
 				break;
 			
@@ -482,10 +486,10 @@ static int recvFromServer(int l_socket_fd, char *l_recv_buf, int *recv_buf_size)
 					DEBUG("out line!!!\n");
 					ret = -1;
 					
-					if(EAGAIN==errno || EWOULDBLOCK==errno){
-						DEBUG("recv finish\n");
-						ret = 0;
-					}
+//					if(EAGAIN==errno || EWOULDBLOCK==errno){
+//						DEBUG("recv finish\n");
+//						ret = 0;
+//					}
 					
 					break;
 				}

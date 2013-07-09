@@ -757,16 +757,17 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d\n", 
 						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
 					
+					now_sec += 1;
+					reboot_timestamp_set(now_sec);
+					
 					snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%ld','');",
 						GLB_NAME_REBOOT_TIMESTAMP,now_sec);
 					if(0==sqlite_execute(sqlite_cmd)){
 						s_decoder_running = 0;
 						DEBUG("set s_decoder_running=%d to stop push write\n", s_decoder_running);
-						sleep(3);
+						sleep(1);
 						
 						push_destroy();
-						
-						sleep(1);
 						
 						msg_send2_UI(SYSTEM_REBOOT, NULL, 0);
 					}

@@ -2546,9 +2546,14 @@ static int reboot_timestamp_init()
 	return 0;
 }
 
-int reboot_timestamp_get()
+time_t reboot_timestamp_get()
 {
-	return atoi(s_reboot_timestamp_str);
+	return strtoul(s_reboot_timestamp_str,NULL,10);
+}
+
+int reboot_timestamp_set(time_t time_stamp_s)
+{
+	return snprintf(s_reboot_timestamp_str,sizeof(s_reboot_timestamp_str),"%lu",time_stamp_s);
 }
 
 
