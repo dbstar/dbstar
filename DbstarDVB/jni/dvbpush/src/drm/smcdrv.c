@@ -17,14 +17,14 @@
 
 extern int smc_fd;
 
-AM_ErrorCode_t AM_TIME_GetClock(int *clock)
+AM_ErrorCode_t AM_TIME_GetClock(long long *clock)
 {
 	struct timespec ts;
-	int ms;
+	//int ms;
 
-	clock_gettime(CLOCK_REALTIME, &ts);
-	ms = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
-	*clock = ms;
+	//clock_gettime(CLOCK_REALTIME, &ts); //liukevin changed for overflow int 
+    clock_gettime(CLOCK_MONOTONIC,&ts);
+	*clock = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
 	return AM_SUCCESS;
 }
@@ -80,7 +80,8 @@ static AM_ErrorCode_t smc_read(int fd, uint8_t *buf, int len, int *act_len, int 
 {
 	uint8_t *ptr = buf;
 	int left = len;
-	int now, end = 0, diff, cnt = 0;
+	long long now, end = 0;
+    int diff, cnt = 0;
 	AM_ErrorCode_t ret = AM_SUCCESS;
 
 	if (timeout >= 0) {
@@ -130,7 +131,8 @@ static AM_ErrorCode_t smc_write(int fd, const uint8_t *buf, int len, int *act_le
 {
 	const uint8_t *ptr = buf;
 	int left = len;
-	int now, end = 0, diff, cnt = 0;
+	long long now, end = 0;
+    int diff, cnt = 0;
 	AM_ErrorCode_t ret = AM_SUCCESS;
 
 	if (timeout >= 0) {
@@ -460,3 +462,4 @@ int smc_test(void)
 }
 
 #endif
+
