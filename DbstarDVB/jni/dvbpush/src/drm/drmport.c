@@ -296,9 +296,9 @@ void filter_timeout_process()
 //			LOGD("dmx_filter[%d].timeouttime=%lu\n",i,dmx_filter[i].timeouttime);
 			if (theni > 0)
 			{
-				LOGD("[%d]theni: %lu (%lu)\n", i,theni,now_sec);
 				if (now_sec >= theni)
 				{
+					LOGD("[%d]theni: %lu (%lu)\n", i,theni,now_sec);
 					if (checkTimeoutMark>0)
 						checkTimeoutMark --;
 					
@@ -394,7 +394,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 		checkTimeoutMark ++;
 		now_sec = time(NULL);
 		dmx_filter[fid].timeouttime = now_sec + byWaitSeconds;
-		LOGD("now_sec: %lu, byWaitSeconds: %lu, dmx_filter[%d].timeouttime: %lu\n", now_sec,byWaitSeconds,fid,dmx_filter[fid].timeouttime);
+		LOGD("now_sec: %lu, byWaitSeconds: %u, dmx_filter[%d].timeouttime: %lu\n", now_sec,byWaitSeconds,fid,dmx_filter[fid].timeouttime);
 	} else {
 		dmx_filter[fid].timeouttime = 0;
 	}
