@@ -647,8 +647,6 @@ int softdvb_init()
 	int ret = 0;
 	Filter_param param;
 	
-	chanFilterInit();
-	
 	// xml ¸ùpid
 	unsigned short root_pid = root_channel_get();
 	int filter1 = alloc_filter(root_pid, 0);

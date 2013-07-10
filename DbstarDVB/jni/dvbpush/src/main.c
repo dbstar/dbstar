@@ -41,6 +41,8 @@ void *main_thread()
 		//return NULL;
 	}
 	
+	chanFilterInit();
+	
 	if(-1==sqlite_init()){
 		DEBUG("sqlite init failed\n");
 		//return NULL;

@@ -369,7 +369,7 @@ int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* 
 			chanFilter[i].samepidnum = m;
 			chanFilter[i].used = 1;
 			chanFilter[i].pid = pid;
-			//DEBUG("****************************allcoate a filter id[%d],num[%d],pid[0x%x]\n",i,m,pid);
+			DEBUG("allcoate a filter fid(id)[%d],num[%d],pid[0x%x]\n",i,m,pid);
 			return i;
 		}
 	}
@@ -1023,6 +1023,7 @@ int free_filter(unsigned short pid)
 
 void TC_free_filter(int fid)
 {
+	DEBUG("fid=%d\n",fid);
 	if ((fid < MAX_CHAN_FILTER)&&(fid>=0))
 	{
 		DEBUG("free fid=%d, pid=0x%x\n", fid, chanFilter[fid].pid);

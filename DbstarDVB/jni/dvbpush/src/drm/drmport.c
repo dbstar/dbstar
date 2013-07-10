@@ -279,19 +279,6 @@ void dmx_filter_init(void)
     }	
 }
 
-void filter_timeout_handler(int fid)
-{
-	if (fid >= max_filter_num) {
-		return;
-	}
-	if (checkTimeoutMark) {
-		checkTimeoutMark --;
-	}
-	TC_free_filter(fid);
-	dmx_filter[fid].byReqID = 0xff;
-	dmx_filter[fid].wPID = 0xffff;
-	dmx_filter[fid].timeouttime = 0;
-}
 
 void filter_timeout_process()
 {
@@ -301,14 +288,16 @@ void filter_timeout_process()
 	if (checkTimeoutMark>0)
 	{
 		now_sec = time(NULL);
-		LOGD("checkTimeoutMark: %d, now_sec: %lu\n",checkTimeoutMark,now_sec);
+//		LOGD("checkTimeoutMark: %d, now_sec: %lu\n",checkTimeoutMark,now_sec);
 		
 		for(i=0; i<max_filter_num; i++)
 		{
 			theni = dmx_filter[i].timeouttime;
+//			LOGD("dmx_filter[%d].timeouttime=%lu\n",i,dmx_filter[i].timeouttime);
 			if (theni > 0)
 			{
-				if (theni >= now_sec)
+				LOGD("[%d]theni: %lu (%lu)\n", i,theni,now_sec);
+				if (now_sec >= theni)
 				{
 					if (checkTimeoutMark>0)
 						checkTimeoutMark --;
@@ -354,6 +343,7 @@ static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_
 			checkTimeoutMark --;
 		}
 		dmx_filter[fid].timeouttime = 0;
+		LOGD("(byReqID & 0x80) == 0x80\n");
 		CDSTBCA_ReleasePrivateDataFilter(byReqID, wPid);
 	}
 	else{
@@ -375,7 +365,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	Filter_param param;
 	//Channel_t *filter;
 	int fid, i;
-
+	time_t now_sec = 0;
 
 	for (fid = 0; fid < MAX_CHAN_FILTER; fid++) {
 		if ((dmx_filter[fid].byReqID == byReqID) && (chanFilter[fid].used)) {
@@ -402,7 +392,9 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	dmx_filter[fid].fid = fid;
 	if (byWaitSeconds) {
 		checkTimeoutMark ++;
-		dmx_filter[fid].timeouttime = time(NULL) + byWaitSeconds;
+		now_sec = time(NULL);
+		dmx_filter[fid].timeouttime = now_sec + byWaitSeconds;
+		LOGD("now_sec: %lu, byWaitSeconds: %lu, dmx_filter[%d].timeouttime: %lu\n", now_sec,byWaitSeconds,fid,dmx_filter[fid].timeouttime);
 	} else {
 		dmx_filter[fid].timeouttime = 0;
 	}
@@ -422,7 +414,7 @@ void CDSTBCA_ReleasePrivateDataFilter(CDCA_U8  byReqID, CDCA_U16 wPid)
 			break;
 		}
 	}
-	LOGD("@@@@@@@@@@@release [%d] filter\n", fid);
+	LOGD("release fid[%d] filter\n", fid);
 	if (fid >= max_filter_num) {
 		return;
 	}
