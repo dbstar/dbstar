@@ -265,10 +265,12 @@ void *smartlife_connect_thread()
 					DEBUG("connect %s:%d success\n", server_ip, server_port);
 					g_socket_status = SOCKET_STATUS_CONNECTED;
 					
+					memset(s_sendbuf,0,sizeof(s_sendbuf));
+					s_sendbuf_len = 0;
 					snprintf(smartlife_connect_status,sizeof(smartlife_connect_status),"%d",SOCKET_STATUS_CONNECTED);
 					msg_send2_UI(SMARTLIFE_CONNECT_STATUS,smartlife_connect_status,strlen(smartlife_connect_status));
 				}
-				continue_myself();
+//				continue_myself();
 				break;
 			case SOCKET_STATUS_CONNECTED:
 				DEBUG("SOCKET_STATUS_CONNECTED\n");
