@@ -191,7 +191,7 @@ void *smartlife_connect_thread()
 
 	continue_myself();
 	
-	sleep(9);
+	sleep(7);
 	
 	while(1)
 	{
@@ -257,7 +257,7 @@ void *smartlife_connect_thread()
 				bzero(&(server_addr.sin_zero),8);						//filler, all 0
 
 				if(-1==connectRetry(l_socket_fd,server_addr)){
-					DEBUG("connect %s:%d failed, sleep 17s and try again\n", server_ip, server_port);
+					DEBUG("connect %s:%d failed, sleep 3s and try again\n", server_ip, server_port);
 					g_socket_status = SOCKET_STATUS_DISCONNECT;
 					sleep(3);
 				}
@@ -323,8 +323,8 @@ void *smartlife_connect_thread()
 				DEBUG("default\n");
 				fifo_buf_clear(g_fifo_fd, rdfds);
 				DEBUG("this status(%d) of socket can not be dealed with\n", g_socket_status);
-				continue_myself();
-				sleep(60*3);
+				//continue_myself();
+				sleep(3);
 				break;
 		}
 	}
