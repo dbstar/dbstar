@@ -24,7 +24,7 @@
 #include "porting.h"
 
 #define MAXSLEEP					(128)
-#define BUF_SIZE					(40960)
+#define BUF_SIZE_DFT				(40960)
 #define FIFO_STR_SIZE				(32)
 #define FIFO_DIR					"/data/dbstar/fifo/"
 #define FIFO_2_SOCKET				FIFO_DIR"fifo_2_socket"
@@ -46,13 +46,11 @@ typedef enum{
 
 static SOCKET_STATUS_E		g_socket_status = SOCKET_STATUS_CLOSED;
 static int					g_fifo_fd = -1;
-static char 				s_sendbuf[BUF_SIZE];				//buf of send
+static char 				s_sendbuf[BUF_SIZE_DFT];				//buf to send
+static char *				s_recvbuf = NULL;				//buf for send, malloc or realloc
+static unsigned int			s_recvbuf_size = 0;
 static int					s_sendbuf_len = 0;
 
-static int sendToServer(int l_socket_fd,char *l_sendbuf, int buf_len);
-static int recvFromServer(int l_socket_fd,char *l_recvbuf, int *recvbuf_size);
-static int connectRetry(int l_socket_fd,struct sockaddr_in server_addr);
-static void setKeepAlive(int l_socket_fd);
 
 static int continue_myself()
 {
@@ -121,12 +119,283 @@ void setnonblocking(int sock)
 	}
 }
 
+/***sendToServer() biref send information to server
+ * 2011.11.4, liyang
+ * param l_socket_fd[in], socket descriptor
+ * param l_wrfds[in], write descriptor
+ * param l_sendbuf[in][out], buf of send
+ *
+ * retval, 0 if successful or -1 failed
+ * Version 1.0
+ ***/
+static int sendToServer(int l_socket_fd,char *l_sendbuf, int buf_len)
+{
+	struct timeval s_time={0,0};
+	int ret_select = -1;
+	int ret = -1;
+	fd_set l_wrfds;
+	FD_ZERO(&l_wrfds);
+
+	if(l_socket_fd<3 || NULL==l_sendbuf || 0==buf_len){
+		DEBUG("can not send to server, socket: %d\n", l_socket_fd);
+		return ret;
+	}
+	
+	FD_CLR(l_socket_fd,&l_wrfds);
+	FD_ZERO(&l_wrfds);
+	FD_SET(l_socket_fd,&l_wrfds);
+	ret_select = select(l_socket_fd+1,NULL,&l_wrfds,NULL,&s_time);
+	if ( ret_select<0)
+	{
+		DEBUG("select error\n");
+		ret = -1;
+	}
+	else if( 0==ret_select )
+	{
+		DEBUG("select timeout\n");
+		ret = -1;
+	}
+	else
+	{
+		if (FD_ISSET(l_socket_fd,&l_wrfds))
+		{
+			if ( -1 == (write(l_socket_fd,l_sendbuf,strlen(l_sendbuf))) )
+			{
+				DEBUG("write to socket failed\n");
+				ret = -1;
+			}
+			else
+			{
+				DEBUG("write to socket success\n");
+				ret = 0;
+			}
+		}
+	}
+	
+	FD_CLR(l_socket_fd,&l_wrfds);
+	return ret;
+}
+
+
+static int recvFromServer(int l_socket_fd)
+{
+	int ret_select = -1;					//select return
+	int ret = -1;
+	int ret_recv = -1;
+	int total_recv_len = 0;
+	int recvbuf_free = 0;
+	char *recvbuf_tmp = NULL;
+	int recv_timeout_try = 0;
+	struct timeval s_time={0,500000};			/* perhaps this 500ms is too short */
+	
+	fd_set l_rdfds;
+	FD_ZERO(&l_rdfds);
+	
+	if(l_socket_fd<3){
+		DEBUG("can not recv from server, socket: %d\n", l_socket_fd);
+		return ret;
+	}
+	
+	if(NULL==s_recvbuf){
+		s_recvbuf_size = BUF_SIZE_DFT;
+		s_recvbuf = malloc(s_recvbuf_size);
+		DEBUG("s_recvbuf is free, malloc it at %p\n",s_recvbuf);
+	}
+	
+	if(s_recvbuf){
+		while(1){
+			FD_CLR(l_socket_fd,&l_rdfds);
+			FD_ZERO(&l_rdfds);
+			FD_SET(l_socket_fd,&l_rdfds);
+			s_time.tv_sec = 0;
+			s_time.tv_usec = 500000;
+			ret_select=select(l_socket_fd+1,&l_rdfds,NULL,NULL,&s_time);
+			if ( ret_select<0)
+			{
+				ERROROUT("select error\n");
+				ret = -1;
+				break;
+			}
+			else if( 0==ret_select )
+			{
+				recv_timeout_try ++;
+				
+				ret = total_recv_len;
+				if(recv_timeout_try>=2){
+					DEBUG("recv select timeout finish, total_recv_len=%d\n",total_recv_len);
+					break;
+				}
+				else
+					DEBUG("select timeout for %d times\n",recv_timeout_try);
+			}
+			else
+			{
+				if (FD_ISSET(l_socket_fd,&l_rdfds))
+				{
+//					DEBUG("socket(%d) can be readed\n", l_socket_fd);
+					
+					recvbuf_free = s_recvbuf_size-1-total_recv_len;
+					if(recvbuf_free<1500){
+						DEBUG("s_recvbuf(%p) need realloc: size %d, total_recv_len %d, recvbuf_free %d",s_recvbuf,s_recvbuf_size,total_recv_len,recvbuf_free);
+						
+						s_recvbuf_size += BUF_SIZE_DFT;
+						recvbuf_tmp = realloc(s_recvbuf,s_recvbuf_size);
+						if(recvbuf_tmp){
+							DEBUG("realloc s_recvbuf(%p) to %p, resize as %d\n", s_recvbuf,recvbuf_tmp,s_recvbuf_size);
+							s_recvbuf = recvbuf_tmp;
+						}
+						else{
+							DEBUG("can not realloc s_recvbuf!!!\n");
+							ret = -1;
+							break;
+						}
+					}
+					
+					recvbuf_free = s_recvbuf_size-1-total_recv_len;
+					ret_recv=recv(l_socket_fd,s_recvbuf+total_recv_len,recvbuf_free,0);
+					//monitor tcp link,-1 out line . next time select will return 1 and recv return 0
+					if (-1 == ret_recv)
+					{
+						ERROROUT("out line -1!!!\n");
+						ret = -1;
+						
+	//					if(EAGAIN==errno || EWOULDBLOCK==errno){
+	//						DEBUG("recv finish\n");
+	//						ret = 0;
+	//					}
+						
+						break;
+					}
+					//server is out
+					else if (0 == ret_recv)
+					{
+						DEBUG("server is out line 0!!!\n");
+						ret = -1;
+						break;
+					}
+					else{
+						total_recv_len += ret_recv;
+						DEBUG("recv %d[%d] in %d successfully\n", ret_recv,total_recv_len,s_recvbuf_size);
+					}
+				}
+				else
+				{
+					DEBUG("another socket but not %d can be readed\n", l_socket_fd);
+					ret = -1;
+				}
+			}
+		}
+		
+		FD_CLR(l_socket_fd,&l_rdfds);
+	}
+	else{
+		DEBUG("malloc s_recvbuf failed!!!\n");
+		ret = -1;
+	}
+	
+	return ret;
+}
+
+/***getMacAddr() biref get local device's Mac address
+ * 2011.11.4, liyang
+ * param l_socket_fd[in], socket descriptor
+ * param l_l_mac_addr[in][out], buf of MacAddr
+ *
+ * retval, 0 if successful or -1 failed
+ * Version 1.0
+ ***/
+int getMacAddr(int l_socket_fd,char* l_mac_addr)
+{
+	struct ifreq ifr_mac;
+	memset(&ifr_mac,0,sizeof(ifr_mac));
+	strncpy(ifr_mac.ifr_name, "eth0", sizeof(ifr_mac.ifr_name)-1);
+	if( (ioctl( l_socket_fd, SIOCGIFHWADDR, &ifr_mac)) < 0)
+	{
+		printf("mac ioctl error\n");
+		return -1;
+	}
+	sprintf(l_mac_addr,"%02x%02x%02x%02x%02x%02x",
+			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[0],
+			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[1],
+			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[2],
+			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[3],
+			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[4],
+			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[5]);
+
+	return 0;
+}
+
+/***connectRetry() biref reconnect
+ * 2011.11.5, liyang
+ * param l_socket_fd[in], socket descriptor
+ * param server_addr[in], argumnet of socketaddr_in
+ *
+ * retval void
+ * Version 1.0
+ ***/
+static int connectRetry(int l_socket_fd,struct sockaddr_in server_addr)
+{
+	int l_sec=1;				//sleep time
+
+	if(l_socket_fd<3){
+		DEBUG("this fucking socket %d is invalid\n", l_socket_fd);
+		return -1;
+	}
+
+	DEBUG("connecting to server...\n");
+	while(1)
+	{
+		//connect
+		if ( -1 == connect(l_socket_fd,(struct sockaddr*)&server_addr,sizeof(struct sockaddr)) )
+		{
+			if (l_sec < MAXSLEEP)
+			{
+				DEBUG("connect error,retry after %d sec......\n", l_sec);
+				sleep(l_sec);
+				l_sec<<=1;
+			}
+			else	//if l_sec<MAXSLEEP,set l_sec=1
+			{
+				DEBUG("connect error,retry after %d sec......\n",l_sec);
+				sleep(l_sec);
+			}
+		}
+		else{
+			DEBUG("connect success\n");
+			break;
+		}
+	}
+	return 0;
+}
+
+/***setKeepAlive() biref monitor tcp link
+ * 2011.11.7, liyang
+ * param l_socket_fd[in], socket descriptor
+ *
+ * retval void
+ * Version 1.0
+ ***/
+static void setKeepAlive(int l_socket_fd)
+{
+	if(l_socket_fd<3)
+		return;
+	
+	socklen_t l_keepalive=1;		//set keepalive
+	socklen_t l_keepidle=5;			//the beginning of the first keepalive detection before the TCP air closing time
+	socklen_t l_keepinterval=5;		//two keepalive detection interval
+	socklen_t l_keepcount=3;		//determination of disconnected before the keepalive detection times
+
+	setsockopt( l_socket_fd , SOL_SOCKET , SO_KEEPALIVE , (const char*)&l_keepalive , sizeof(l_keepalive) );
+	setsockopt( l_socket_fd , SOL_TCP , TCP_KEEPIDLE , (const char*)&l_keepidle , sizeof(l_keepidle) );
+	setsockopt( l_socket_fd , SOL_TCP , TCP_KEEPINTVL , (const char*)&l_keepinterval , sizeof(l_keepinterval) );
+	setsockopt( l_socket_fd , SOL_TCP , TCP_KEEPCNT , (const char*)&l_keepcount , sizeof(l_keepcount) );
+}
+
+
 void *smartlife_connect_thread()
 {									//send number
 	int l_return = -1;											//return of function
 	int l_socket_fd = -1;										//socket descriptor
-	char l_recvbuf[BUF_SIZE];									//buf of recv
-	int l_recvbuf_size = 0;
 	char smartlife_connect_status[32];
 	struct sockaddr_in server_addr;
 	
@@ -229,7 +498,7 @@ void *smartlife_connect_thread()
 					sleep(17);
 				}
 				else{
-					setnonblocking(l_socket_fd);
+					//setnonblocking(l_socket_fd);
 					
 					//monitor tcp link
 					setKeepAlive(l_socket_fd);
@@ -275,17 +544,15 @@ void *smartlife_connect_thread()
 			case SOCKET_STATUS_CONNECTED:
 				DEBUG("SOCKET_STATUS_CONNECTED\n");
 				if(FD_ISSET(l_socket_fd, &rdfds)){
-					memset(l_recvbuf, 0, sizeof(l_recvbuf));
-					l_recvbuf_size = sizeof(l_recvbuf);
-					l_return=recvFromServer(l_socket_fd,l_recvbuf,&l_recvbuf_size);
+					l_return=recvFromServer(l_socket_fd);
 
-					if(0==l_return){
-						DEBUG("recv from server[%d]: [%s], notify to UI\n", l_recvbuf_size,l_recvbuf);
-						msg_send2_UI(SMARTLIFE_RECV,l_recvbuf,l_recvbuf_size);
+					if(l_return>0){
+						DEBUG("recv from server[%d]: [%s], notify to UI\n", l_return,s_recvbuf);
+						msg_send2_UI(SMARTLIFE_RECV,s_recvbuf,l_return);
 					}
-					else if(-1==l_return){
+					else{	// if(-1==l_return)
 						// 如果socket提示可读，但是recv的结果为-1，则说明是对方关闭了socket，己方应当close掉socket重新开始
-						DEBUG("socket can read, but read return -1. this tcp connect is closed by server\n");
+						DEBUG("socket can read, but read return %d. this tcp connect is closed by server\n",l_return);
 						
 						fifo_buf_clear(g_fifo_fd, rdfds);
 						smartlife_tcp_close(&l_socket_fd);
@@ -337,286 +604,6 @@ void *smartlife_connect_thread()
 	return NULL;
 }
 
-/***sendToServer() biref send information to server
- * 2011.11.4, liyang
- * param l_socket_fd[in], socket descriptor
- * param l_wrfds[in], write descriptor
- * param l_sendbuf[in][out], buf of send
- *
- * retval, 0 if successful or -1 failed
- * Version 1.0
- ***/
-static int sendToServer(int l_socket_fd,char *l_sendbuf, int buf_len)
-{
-	struct timeval s_time={0,0};
-	int ret_select = -1;
-	int ret = -1;
-	fd_set l_wrfds;
-	FD_ZERO(&l_wrfds);
-
-	if(l_socket_fd<3 || NULL==l_sendbuf || 0==buf_len){
-		DEBUG("can not send to server, socket: %d\n", l_socket_fd);
-		return ret;
-	}
-	
-	FD_CLR(l_socket_fd,&l_wrfds);
-	FD_ZERO(&l_wrfds);
-	FD_SET(l_socket_fd,&l_wrfds);
-	ret_select = select(l_socket_fd+1,NULL,&l_wrfds,NULL,&s_time);
-	if ( ret_select<0)
-	{
-		DEBUG("select error\n");
-		ret = -1;
-	}
-	else if( 0==ret_select )
-	{
-		DEBUG("select timeout\n");
-		ret = -1;
-	}
-	else
-	{
-		if (FD_ISSET(l_socket_fd,&l_wrfds))
-		{
-			if ( -1 == (write(l_socket_fd,l_sendbuf,strlen(l_sendbuf))) )
-			{
-				DEBUG("write to socket failed\n");
-				ret = -1;
-			}
-			else
-			{
-				DEBUG("write to socket success\n");
-				ret = 0;
-			}
-		}
-	}
-	
-	FD_CLR(l_socket_fd,&l_wrfds);
-	return ret;
-}
-
-/***recvFromServer() biref recv information from server
- * 2011.11.4, liyang
- * param l_socket_fd[in], socket descriptor
- * param l_wrfds[in], write descriptor
- * param l_recvbuf[in][out], buf of recv
- *
- * retval, 0 if successful. -1 failed or 1 reconnect
- * Version 1.0
- ***/
-#if 0
-static int recvFromServer(int l_socket_fd,char *l_recvbuf, int *recv_buf_size)
-{
-	int ret = -1;
-	int ret_recv = -1;
-	fd_set l_rdfds;
-	FD_ZERO(&l_rdfds);
-	
-	if(l_socket_fd<3 || NULL==l_recvbuf || 0==*recv_buf_size){
-		DEBUG("can not send to server, socket: %d\n", l_socket_fd);
-		return ret;
-	}
-	
-	DEBUG("socket(%d) can be readed\n", l_socket_fd);
-	
-	ret_recv=recv(l_socket_fd,l_recvbuf,*recv_buf_size,0);
-	//monitor tcp link,-1 out line . next time select will return 1 and recv return 0
-	if (-1 == ret_recv)
-	{
-		DEBUG("out line!!!\n");
-		ret = -1;
-	}
-	//server is out
-	else if (0 == ret_recv)
-	{
-		DEBUG("server is out line!!!\n");
-		ret = -1;
-	}
-	else{
-		DEBUG("recv %d successfully\n", ret_recv);
-		*recv_buf_size = ret_recv;
-		ret = 0;
-	}
-	
-	return ret;
-}
-#else
-static int recvFromServer(int l_socket_fd, char *l_recv_buf, int *recv_buf_size)
-{
-	int ret_select = -1;					//select return
-	int ret = -1;
-	int ret_recv = -1;
-	int total_recv_len = 0;
-	fd_set l_rdfds;
-	FD_ZERO(&l_rdfds);
-	
-	if(l_socket_fd<3 || NULL==l_recv_buf || 0==*recv_buf_size){
-		DEBUG("can not recv from server, socket: %d\n", l_socket_fd);
-		return ret;
-	}
-	
-	struct timeval s_time={0,500000};			/* perhaps this 500ms is too short */
-	
-	while(1){
-		FD_CLR(l_socket_fd,&l_rdfds);
-		FD_ZERO(&l_rdfds);
-		FD_SET(l_socket_fd,&l_rdfds);
-		s_time.tv_sec = 0;
-		s_time.tv_usec = 500000;
-		ret_select=select(l_socket_fd+1,&l_rdfds,NULL,NULL,&s_time);
-		if ( ret_select<0)
-		{
-			DEBUG("select error\n");
-			ret = -1;
-			break;
-		}
-		else if( 0==ret_select )
-		{
-			DEBUG("select timeout\n");
-			ret = 0;
-			break;
-		}
-		else
-		{
-			if (FD_ISSET(l_socket_fd,&l_rdfds))
-			{
-				DEBUG("socket(%d) can be readed\n", l_socket_fd);
-				
-				ret_recv=recv(l_socket_fd,l_recv_buf+total_recv_len,*recv_buf_size-1-total_recv_len,0);
-				//monitor tcp link,-1 out line . next time select will return 1 and recv return 0
-				if (-1 == ret_recv)
-				{
-					DEBUG("out line!!!\n");
-					ret = -1;
-					
-//					if(EAGAIN==errno || EWOULDBLOCK==errno){
-//						DEBUG("recv finish\n");
-//						ret = 0;
-//					}
-					
-					break;
-				}
-				//server is out
-				else if (0 == ret_recv)
-				{
-					DEBUG("server is out line!!!\n");
-					ret = -1;
-					break;
-				}
-				else{
-					total_recv_len += ret_recv;
-					DEBUG("recv %d[%d] -> %d successfully\n", ret_recv,total_recv_len,*recv_buf_size);
-				}
-			}
-			else
-			{
-				DEBUG("another socket but not %d can be readed\n", l_socket_fd);
-				ret = -1;
-			}
-		}
-	}
-	
-	FD_CLR(l_socket_fd,&l_rdfds);
-	
-	*recv_buf_size = total_recv_len;
-	
-	return ret;
-}
-#endif
-
-/***getMacAddr() biref get local device's Mac address
- * 2011.11.4, liyang
- * param l_socket_fd[in], socket descriptor
- * param l_l_mac_addr[in][out], buf of MacAddr
- *
- * retval, 0 if successful or -1 failed
- * Version 1.0
- ***/
-int getMacAddr(int l_socket_fd,char* l_mac_addr)
-{
-	struct ifreq ifr_mac;
-	memset(&ifr_mac,0,sizeof(ifr_mac));
-	strncpy(ifr_mac.ifr_name, "eth0", sizeof(ifr_mac.ifr_name)-1);
-	if( (ioctl( l_socket_fd, SIOCGIFHWADDR, &ifr_mac)) < 0)
-	{
-		printf("mac ioctl error\n");
-		return -1;
-	}
-	sprintf(l_mac_addr,"%02x%02x%02x%02x%02x%02x",
-			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[0],
-			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[1],
-			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[2],
-			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[3],
-			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[4],
-			(unsigned char)ifr_mac.ifr_hwaddr.sa_data[5]);
-
-	return 0;
-}
-
-/***connectRetry() biref reconnect
- * 2011.11.5, liyang
- * param l_socket_fd[in], socket descriptor
- * param server_addr[in], argumnet of socketaddr_in
- *
- * retval void
- * Version 1.0
- ***/
-static int connectRetry(int l_socket_fd,struct sockaddr_in server_addr)
-{
-	int l_sec=1;				//sleep time
-
-	if(l_socket_fd<3){
-		DEBUG("this fucking socket %d is invalid\n", l_socket_fd);
-		return -1;
-	}
-
-	DEBUG("connecting to server...\n");
-	while(1)
-	{
-		//connect
-		if ( -1 == connect(l_socket_fd,(struct sockaddr*)&server_addr,sizeof(struct sockaddr)) )
-		{
-			if (l_sec < MAXSLEEP)
-			{
-				DEBUG("connect error,retry after %d sec......\n", l_sec);
-				sleep(l_sec);
-				l_sec<<=1;
-			}
-			else	//if l_sec<MAXSLEEP,set l_sec=1
-			{
-				DEBUG("connect error,retry after %d sec......\n",l_sec);
-				sleep(l_sec);
-			}
-		}
-		else{
-			DEBUG("connect success\n");
-			break;
-		}
-	}
-	return 0;
-}
-
-/***setKeepAlive() biref monitor tcp link
- * 2011.11.7, liyang
- * param l_socket_fd[in], socket descriptor
- *
- * retval void
- * Version 1.0
- ***/
-static void setKeepAlive(int l_socket_fd)
-{
-	if(l_socket_fd<3)
-		return;
-	
-	socklen_t l_keepalive=1;		//set keepalive
-	socklen_t l_keepidle=5;			//the beginning of the first keepalive detection before the TCP air closing time
-	socklen_t l_keepinterval=5;		//two keepalive detection interval
-	socklen_t l_keepcount=3;		//determination of disconnected before the keepalive detection times
-
-	setsockopt( l_socket_fd , SOL_SOCKET , SO_KEEPALIVE , (const char*)&l_keepalive , sizeof(l_keepalive) );
-	setsockopt( l_socket_fd , SOL_TCP , TCP_KEEPIDLE , (const char*)&l_keepidle , sizeof(l_keepidle) );
-	setsockopt( l_socket_fd , SOL_TCP , TCP_KEEPINTVL , (const char*)&l_keepinterval , sizeof(l_keepinterval) );
-	setsockopt( l_socket_fd , SOL_TCP , TCP_KEEPCNT , (const char*)&l_keepcount , sizeof(l_keepcount) );
-}
 
 int smartlife_send(char *buf, int buf_len)
 {
