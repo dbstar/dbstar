@@ -2072,7 +2072,7 @@ public class GDDataProviderService extends Service {
 			return;
 		}
 		
-		Message msg = mHandler.obtainMessage(GDCommon.MSG_NETWORK_CONNECT);
+		Message msg = mHandler.obtainMessage(GDCommon.MSG_NETWORK_DISCONNECT);
 		msg.arg1 = GDCommon.TypeEthernet;
 		msg.sendToTarget();
 	}
