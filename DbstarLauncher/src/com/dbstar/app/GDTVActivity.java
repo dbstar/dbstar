@@ -1011,7 +1011,7 @@ public class GDTVActivity extends GDBaseActivity {
 							public void run() {
 								playTV();
 							}
-						}, 1000);
+						}, 0);
 					}
 					ret = true;
 					break;

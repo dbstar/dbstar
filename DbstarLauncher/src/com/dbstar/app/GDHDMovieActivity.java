@@ -705,7 +705,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 							public void run() {
 								playMovie();
 							}
-						}, 1000);
+						}, 0);
 					}
 					ret = true;
 					break;

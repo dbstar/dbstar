@@ -178,6 +178,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		showMarqueeView();
 		
 //		resetMenuStack();
+		
+		/*
 		String flagPlayVideo = FileOperation.readValueFromFile(this, GDCommon.FlagPlayVideo);
         if (flagPlayVideo != null && flagPlayVideo.equals("1")) {
             //deleteFile(GDCommon.FlagPlayVideo);
@@ -187,6 +189,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				mMediaScheduler.setMuteWithSilence();
 			}
         }
+        */
 	}
 	
 	private boolean mSimulateHomeKey = false;
@@ -198,7 +201,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mMainMenu.requestFocus();
 
-		mMediaScheduler.resume();
+		//mMediaScheduler.resume();
 		
 		if (mPowerController != null) {
 			mPowerController.resume();
@@ -209,7 +212,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		super.onPause();
 
 		Log.d(TAG, "onPause");
-		mMediaScheduler.pause();
+		//mMediaScheduler.pause();
 		
 		if (mPowerController != null) {
 			mPowerController.pause();
@@ -219,22 +222,20 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onStop() {
 		super.onStop();
 		Log.d(TAG, "++++++onStop");
-		mSimulateHomeKey = false;
-
-		mMediaScheduler.cancelSimulateHomeKey();
+		//mSimulateHomeKey = false;
+		//mMediaScheduler.cancelSimulateHomeKey();
+		//mMediaScheduler.unmuteWithSilence();
 
 		mCelanderThread.setUpdate(false);
 
 		hideMarqeeView();
-
-		mMediaScheduler.unmuteWithSilence();
 	}
 
 	public void onDestroy() {
 		super.onDestroy();
 
 		mCelanderThread.setExit(true);
-		mMediaScheduler.stop();
+		//mMediaScheduler.stop();
 	}
 
 	public void onAttachedToWindow() {
@@ -1183,9 +1184,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	// update previews when has new updates
 	void updatePreview() {
-		mMediaScheduler.stop();
-		mMediaScheduler.start(mService);
-		mMediaScheduler.resume();
+		//mMediaScheduler.stop();
+		//mMediaScheduler.start(mService);
+		//mMediaScheduler.resume();
 	}
 	
 	void homeKeyPressed() {
@@ -1198,7 +1199,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		if (mSimulateHomeKey) {
 			// Check whether this home key is sent by simulation,
 			// if not, just wait.
-			boolean isKeySent = mMediaScheduler.isHomeKeySent();
+			/*boolean isKeySent = mMediaScheduler.isHomeKeySent();
 			if (!isKeySent) {
 				return;
 			}
@@ -1209,7 +1210,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			deleteFile(GDCommon.FlagPlayVideo);
 			Log.d(TAG, "===== simulate home key press ===");
 			mMediaScheduler.unmuteWithSilence();
-			return;
+			return;*/
 		}
 
 		resetMenuStack();
@@ -1701,7 +1702,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	private void startEngine() {
-		mMediaScheduler.start(mService);
+		//mMediaScheduler.start(mService);
 		mPowerController.start(mService);
 
 		checkSmartcardStatus();
