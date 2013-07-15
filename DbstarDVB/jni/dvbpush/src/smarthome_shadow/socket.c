@@ -547,7 +547,7 @@ void *smartlife_connect_thread()
 					l_return=recvFromServer(l_socket_fd);
 
 					if(l_return>0){
-						DEBUG("recv from server[%d]: [%s], notify to UI\n", l_return,s_recvbuf);
+						DEBUG("recv from server[%d], notify to UI\n", l_return);
 						msg_send2_UI(SMARTLIFE_RECV,s_recvbuf,l_return);
 					}
 					else{	// if(-1==l_return)
@@ -565,7 +565,7 @@ void *smartlife_connect_thread()
 					fifo_buf_clear(g_fifo_fd, rdfds);
 					
 					if(s_sendbuf_len>0){
-						DEBUG("sending [%d][%s]\n",s_sendbuf_len,s_sendbuf);
+						DEBUG("sending %d\n",s_sendbuf_len);
 						if ( 0==sendToServer(l_socket_fd,s_sendbuf,s_sendbuf_len)){
 							DEBUG("send to server success\n");
 						}
@@ -609,7 +609,7 @@ int smartlife_send(char *buf, int buf_len)
 {
 	int valid_len = buf_len>sizeof(s_sendbuf)?sizeof(s_sendbuf):buf_len;
 	
-	DEBUG("[len=%d -> %d][%s]\n", buf_len,valid_len,buf);
+	DEBUG("len=%d -> %d\n", buf_len,valid_len);
 	
 	memcpy(s_sendbuf,buf,valid_len);
 	s_sendbuf_len = valid_len;

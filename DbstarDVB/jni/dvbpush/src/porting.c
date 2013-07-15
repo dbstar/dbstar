@@ -1684,7 +1684,7 @@ int dvbpush_register_notify(void *func)
 */
 int msg_send2_UI(int type, char *msg, int len)
 {
-	DEBUG("type: %d=0x%x, msg: %s, len: %d\n", type,type, msg, len);
+	DEBUG("type: %d=0x%x, len: %d\n", type,type, len);
 	if (dvbpush_notify != NULL){
 		return dvbpush_notify(type, msg, len);
 	}
