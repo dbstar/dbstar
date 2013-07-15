@@ -16,6 +16,60 @@
 #include "am/am_smc_internal.h"
 
 extern int smc_fd;
+#define SMC_DEVICE  "/dev/smc0"
+
+int smc_set(struct am_smc_atr *abuf)
+{
+     AM_SMC_Param_t para;
+
+    if(ioctl(smc_fd, AMSMC_IOC_GET_PARAM, &para))
+	{
+		return -1;
+	}
+
+    para.freq = 1500;
+    if(ioctl(smc_fd, AMSMC_IOC_SET_PARAM, &para))
+	{
+		return -1;
+	}
+
+    return 0;
+}
+
+int smc_init(void)
+{
+    struct am_smc_atr abuf;
+    int ds, i;
+    AM_SMC_CardStatus_t status;
+
+    smc_fd = open(SMC_DEVICE, O_RDWR);
+    if (smc_fd == -1) {
+//        LOGD("cannot open device smc0\n");
+        return -1;
+    }
+
+    i = 0;
+    do {
+        if (ioctl(smc_fd, AMSMC_IOC_GET_STATUS, &ds)) {
+            return -1;
+        }
+
+        status = ds ? AM_SMC_CARD_IN : AM_SMC_CARD_OUT;
+        usleep(100000);
+        i++;
+        if (i > 50) {
+            return -1;
+        }
+    } while (status == AM_SMC_CARD_OUT);
+
+    if (ioctl(smc_fd, AMSMC_IOC_RESET, &abuf)) {
+        return  -1;
+    }
+
+    if (smc_set(&abuf) < 0)
+        return -1;
+    return 0;
+}
 
 AM_ErrorCode_t AM_TIME_GetClock(long long *clock)
 {
@@ -112,7 +166,7 @@ static AM_ErrorCode_t smc_read(int fd, uint8_t *buf, int len, int *act_len, int 
 		AM_TIME_GetClock(&now);
 		diff = now - end;
 		if (diff >= 0) {
-			printf("read %d bytes timeout", len);
+	//		printf("read %d bytes timeout", len);
 			ret = AM_SMC_ERR_TIMEOUT;
 			break;
 		}
@@ -163,7 +217,7 @@ static AM_ErrorCode_t smc_write(int fd, const uint8_t *buf, int len, int *act_le
 		AM_TIME_GetClock(&now);
 		diff = now - end;
 		if (diff >= 0) {
-			printf("write %d bytes timeout", len);
+	//		printf("write %d bytes timeout", len);
 			ret = AM_SMC_ERR_TIMEOUT;
 			break;
 		}
@@ -204,7 +258,7 @@ AM_ErrorCode_t AM_SMC_readwrite(const uint8_t *send, int slen, uint8_t *recv, in
 
 	//printf("ssssssssssssssend length [%d] --[%d][%d]\n",slen,send[0],send[1]);
 	dst  = recv;
-	left = 4096;//*rlen;
+	left = 512;//*rlen;
 
 	if (smc_write(fd, send, 5, NULL, 1000) != AM_SUCCESS) {
 		return AM_SMC_ERR_TIMEOUT;
@@ -218,7 +272,7 @@ AM_ErrorCode_t AM_SMC_readwrite(const uint8_t *send, int slen, uint8_t *recv, in
 			continue;
 		} else if (((byte & 0xF0) == 0x60) || ((byte & 0xF0) == 0x90)) {
 			if (left < 2) {
-				printf("1 receive buffer must >= 2\n");
+	//			printf("1 receive buffer must >= 2\n");
 				ret = AM_SMC_ERR_BUF_TOO_SMALL;
 				goto final;
 			}
@@ -247,7 +301,7 @@ AM_ErrorCode_t AM_SMC_readwrite(const uint8_t *send, int slen, uint8_t *recv, in
 					}
 
 					if (left < cnt + 2) {
-						printf("2 receive buffer must >= %d", cnt + 2);
+	//					printf("2 receive buffer must >= %d", cnt + 2);
 						ret = AM_SMC_ERR_BUF_TOO_SMALL;
 						goto final;
 					}
@@ -320,7 +374,8 @@ int smc_test(void)
 	//printf("2222222222222222222\n");
 	if (CDCASTB_SCInsert()) {
 		printf("CARD inserted!!!!!!!!!\n");
-	} else {
+	} :321
+else {
 		printf("CARD out!!!!!!!!!!!!\n");
 	}
 	CDCASTB_SetEmmPid(0x64);

@@ -20,7 +20,6 @@ static pthread_t tid_main;
 static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
 extern int _wLBM_zyzdmb(int miZon);
-
 /*
  考虑到升级是个非常重要但又较少依赖其他模块的功能，因此即使大部分模块初始化失败，也一样要继续运行，只要组播功能正常即可。
 */
@@ -42,6 +41,7 @@ void *main_thread()
 	}
 	
 	chanFilterInit();
+    smc_init();
 	
 	if(-1==sqlite_init()){
 		DEBUG("sqlite init failed\n");

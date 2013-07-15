@@ -51,10 +51,8 @@ typedef struct {
 
 CDCA_U8 checkTimeoutMark = 0;
 int smc_fd = -1;
-
-
 FILE *block01_fd = NULL;
-
+extern int smc_set(struct am_smc_atr *abuf);
 SCDCACardEntitleInfo card_sn = {"", -1}; //[CDCA_MAX_CARD_NUM];
 SCDCAFilterInfo dmx_filter[MAX_CHAN_FILTER];
 extern Channel_t chanFilter[];
@@ -464,6 +462,7 @@ int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, i
 /*--------- 智能卡管理 ---------*/
 
 /* 智能卡复位 */
+int smc_set(struct am_smc_atr *abuf);
 CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 {
 	struct am_smc_atr abuf;
@@ -527,6 +526,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	for (i = 0; i < *pbyLen; i++) {
 		LOGD("0x%x,", abuf.atr[i]);
 	}
+    smc_set(&abuf);
 	send_sc_notify(can_send_nofity,DRM_SC_INSERT_OK, NULL, 0);
 	smart_card_insert_flag_set(1);
 	
@@ -540,9 +540,9 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
                           CDCA_U8*       pbyReply,
                           CDCA_U16*      pwReplyLen)
 {
-	int i;
+	//int i;
 	//LOGD("ooooooooooooori send len [%d][%d]--[%d][%d]\n",wCommandLen,*pwReplyLen,pbyCommand[0],pbyCommand[1]);
-	for (i = 0; i < 3; i++) {
+	//for (i = 0; i < 3; i++) {
 		if (AM_SMC_readwrite(pbyCommand, (int)wCommandLen,  pbyReply, (int *) pwReplyLen) == AM_SUCCESS) {
 			/*{int j;
 			LOGD("smart card command:\n");
@@ -559,7 +559,7 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
 			//LOGD("sssssssssssssssssssssssend read successful\n");
 			return CDCA_TRUE;
 		}
-	}
+	//}
 	LOGD("sssssssssssssssssssssssssssend fail \n");
 	return CDCA_FALSE;
 }
