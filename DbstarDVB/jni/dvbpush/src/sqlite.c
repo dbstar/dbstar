@@ -2061,15 +2061,6 @@ int global_info_init(int force_reset)
 		insert_record_cnt ++;
 	}
 	
-	if(1){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Preview set ReceiveStatus='0';");
-		sqlite_transaction_exec(sqlite_cmd);
-		
-		DEBUG("%s\n",sqlite_cmd);
-		
-		insert_record_cnt ++;
-	}
-	
 	if(insert_record_cnt>0){
 		return sqlite_transaction_end(1);
 	}

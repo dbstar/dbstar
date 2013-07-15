@@ -859,10 +859,10 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 	sqlite_transaction_exec(sqlite_cmd);
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Preview(ServiceID,PreviewID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,PublicationID,ReceiveStatus) \
-VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','0');",
+VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','1');",
 p->ServiceID,p->PreviewID,p->PreviewType,p->PreviewSize,p->ShowTime,p->PreviewURI,p->PreviewFormat,p->Duration,p->Resolution,p->BitRate,p->CodeFormat,p->PublicationID);
 	
-	s_preview_publication = 0;
+	s_preview_publication = 1;
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
