@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/icon"
+        android:drawable="@drawable/smarthome_model_ele_highlight"/>
+
+    <item
+        android:id="@+id/frame"
+        android:drawable="@drawable/smarthome_myele_bottom_equ_highlight_focus" >
+    </item>
+
+</layer-list>

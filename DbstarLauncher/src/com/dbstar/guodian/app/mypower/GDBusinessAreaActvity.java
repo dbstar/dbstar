@@ -1,6 +1,5 @@
 package com.dbstar.guodian.app.mypower;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,13 +12,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Toast;
 
 import com.dbstar.R;
@@ -27,12 +25,11 @@ import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.AreaInfo;
 import com.dbstar.guodian.data.AreaInfo.Area;
 import com.dbstar.guodian.data.BusinessArea;
-import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
-import com.dbstar.model.ContentData.Poster;
-import com.dbstar.model.EventData.GuodianEvent;
-import com.dbstar.util.ToastUtil;
+import com.dbstar.widget.GDSpinner;
 
 public class GDBusinessAreaActvity extends GDSmartActivity {
 	private static final String TAG = "GDBusinessAreaActvity";
@@ -45,7 +42,7 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 	private ListView mListView;
 	private ListAdapter mBusinessAdapter;
 	private Button mQueryButton;
-	private Spinner mProvinceSpinner, mCitySpinner, mZoneSpinner;
+	private GDSpinner mProvinceSpinner, mCitySpinner, mZoneSpinner;
 	private ArrayAdapter<String> mProvinceAdapter, mCityAdapter, mZoneAdapter;
 	private ArrayList<String> mProvinceList, mCityList, mZoneList;
 	private int mCurProvinceIndex = -1, mCurCityIndex = -1, mCurZoneIndex = -1;
@@ -67,6 +64,10 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
 		mAreaId = intent.getStringExtra(GDConstract.KeyUserAreaId);
+		
+		mSystemFlag ="elc";
+		mRequestMethodId = "m007f005";
+		
 		if (mAreaId != null && !mAreaId.isEmpty()) {
 			String[] ids = mAreaId.split("-");
 			if (ids.length > 1) {
@@ -102,23 +103,23 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 		mItemCountView = (TextView) findViewById(R.id.count);
 		mPageNumberView = (TextView) findViewById(R.id.pages);
 
-		mProvinceSpinner = (Spinner) findViewById(R.id.province_spinner);
-		mCitySpinner = (Spinner) findViewById(R.id.city_spinner);
-		mZoneSpinner = (Spinner) findViewById(R.id.district_spinner);
+		mProvinceSpinner = (GDSpinner) findViewById(R.id.province_spinner);
+		mCitySpinner = (GDSpinner) findViewById(R.id.city_spinner);
+		mZoneSpinner = (GDSpinner) findViewById(R.id.district_spinner);
 
 		mProvinceList = new ArrayList<String>();
 		mCityList = new ArrayList<String>();
 		mZoneList = new ArrayList<String>();
 
 		mProvinceAdapter = new ArrayAdapter<String>(this,
-				R.layout.spinner_item, mProvinceList);
+				R.layout.gd_spinner_drop_list_item, mProvinceList);
 
 		mProvinceSpinner.setAdapter(mProvinceAdapter);
 
-		mCityAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+		mCityAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,
 				mCityList);
 		mCitySpinner.setAdapter(mCityAdapter);
-		mZoneAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item,
+		mZoneAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item,
 				mZoneList);
 		mZoneSpinner.setAdapter(mZoneAdapter);
 
@@ -205,9 +206,18 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 	protected void onServiceStart() {
 		super.onServiceStart();
 		Log.d(TAG, "onServiceStart");
-		requestData(GDConstract.DATATYPE_USERAREAINFO, mAreaId);
+		mSystemFlag = "elc";
+		mRequestMethodId = "m007f005";
+		request(GDRequestType.DATATYPE_USERAREAINFO, "areaidPath", mAreaId);
 	}
-
+	
+	private void request(int type,String key, String value){
+	    RequestParams params = new RequestParams(type);
+	    params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+	    params.put(RequestParams.KEY_METHODID, mRequestMethodId);
+	    params.put(key,value);
+	    requestData(params);
+	}
 	private void quearyBusinessInfo(String areaId) {
 	    if(mPagesData != null){
 	       mBusinessAdapter.setDataSet(null);
@@ -255,8 +265,9 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 		}
 
 		if (areaId != null) {
-			requestData(GDConstract.DATATYPE_BUSINESSAREA, areaId);
-		
+		    mSystemFlag = "elc";
+	        mRequestMethodId = "m007f002";
+			request(GDRequestType.DATATYPE_BUSINESSAREA, "num_area_id", areaId);
 		}
 	}
 
@@ -265,11 +276,11 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 		if (EventData.EVENT_GUODIAN_DATA == type) {
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-		    if (GDConstract.DATATYPE_BUSINESSAREA == guodianEvent.Type) {
+		    if (GDRequestType.DATATYPE_BUSINESSAREA == guodianEvent.Type) {
 		        handleErrorResponse(R.string.loading_error);
-	        }else if(GDConstract.DATATYPE_CITYES == guodianEvent.Type){
+	        }else if(GDRequestType.DATATYPE_CITYES == guodianEvent.Type){
 	            handleErrorResponse(R.string.loading_city_area_info_fail);
-	        }else if(GDConstract.DATATYPE_ZONES == guodianEvent.Type){
+	        }else if(GDRequestType.DATATYPE_ZONES == guodianEvent.Type){
 	            handleErrorResponse(R.string.loading_zones_area_info_fail);
 	        }else {
 	            handleErrorResponse(R.string.loading_error);
@@ -285,7 +296,7 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 			return;
 		}
 
-		if (type == GDConstract.DATATYPE_USERAREAINFO) {
+		if (type == GDRequestType.DATATYPE_USERAREAINFO) {
 			mAreaData = (AreaInfo) data;
 			isFirstLoad = true;
 			initializeAreaData(mAreaData);
@@ -311,14 +322,14 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 				displayPage(mPageNumber);
 			}
 
-		} else if (type == GDConstract.DATATYPE_BUSINESSAREA) {
+		} else if (type == GDRequestType.DATATYPE_BUSINESSAREA) {
 			ArrayList<BusinessArea> business = (ArrayList<BusinessArea>) data;
 			constructPages(business);
 			displayPage(mPageNumber);
-		}else if(type == GDConstract.DATATYPE_CITYES){
+		}else if(type == GDRequestType.DATATYPE_CITYES){
             ArrayList<AreaInfo.Area> citys = (ArrayList<AreaInfo.Area>) data;
             initializeCitysData(citys);
-		}else if(type == GDConstract.DATATYPE_ZONES){
+		}else if(type == GDRequestType.DATATYPE_ZONES){
 		     ArrayList<AreaInfo.Area> zones = (ArrayList<AreaInfo.Area>) data;
 		     initializeZonesData(zones);
 		}
@@ -341,7 +352,9 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
                 }
             }
         }else{
+            mCityAdapter.notifyDataSetChanged();
             isFirstLoad = false;
+            return;
         }
         mCityAdapter.notifyDataSetChanged();
         mCitySpinner.setSelection(mCurCityIndex);
@@ -366,16 +379,22 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
                 }
             }
         }else{
+            mZoneAdapter.notifyDataSetChanged();
             isFirstLoad = false;
+            return;
         }
         mZoneAdapter.notifyDataSetChanged();
         mZoneSpinner.setSelection(mCurZoneIndex);
     }
     private void reqeustCitysByPId(String pid){
-	   requestDataNotShowDialog(GDConstract.DATATYPE_CITYES, pid);
+        mSystemFlag = "aut";
+        mRequestMethodId = "m002f001";
+        request(GDRequestType.DATATYPE_CITYES, RequestParams.KEY_TASK_SPECAIL, pid);
 	}
     private void reqeustZonesByCId(String cid){
-        requestDataNotShowDialog(GDConstract.DATATYPE_ZONES, cid);
+        mSystemFlag = "aut";
+        mRequestMethodId = "m002f001";
+        request(GDRequestType.DATATYPE_ZONES, RequestParams.KEY_TASK_SPECAIL, cid);
      }
 	private void initializeAreaData(AreaInfo areaInfo) {
 		ArrayList<AreaInfo.Area> provinces = areaInfo.Provinces;
@@ -499,7 +518,8 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 		if(province.SubArea != null && !province.SubArea.isEmpty())
 		   city = province.SubArea.get(mCurCityIndex);
 		if(city == null){
-		    reqeustZonesByCId(mUserCityId);
+		    mZoneList.clear();
+		    mZoneAdapter.notifyDataSetChanged();
 		    return;
 		}
 		mZoneList.clear();
@@ -604,7 +624,7 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 		}
 
 		public void setDataSet(BusinessArea[] dataSet) {
-			mDataSet = dataSet;
+		    mDataSet = dataSet;
 		}
 
 		@Override

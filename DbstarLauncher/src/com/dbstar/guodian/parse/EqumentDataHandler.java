@@ -6,12 +6,9 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import android.util.Log;
 
-import com.dbstar.guodian.data.AreaInfo;
-import com.dbstar.guodian.data.BusinessArea;
 import com.dbstar.guodian.data.EqumentData;
 import com.dbstar.guodian.data.JsonTag;
 

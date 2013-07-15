@@ -1,7 +1,6 @@
 package com.dbstar.guodian.parse;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 

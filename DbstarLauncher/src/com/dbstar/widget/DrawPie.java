@@ -1,14 +1,12 @@
 package com.dbstar.widget;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.util.Log;
 
 public class DrawPie extends DrawBase{
 
@@ -53,9 +51,7 @@ public class DrawPie extends DrawBase{
         int j = 0;
         while (count >= mColors.size()) {
                 int i = j +1;
-                int color1 = mColors.get(i);
-                int color2 = mColors.get(j);
-
+                
                 int R1 = Color.red(mColors.get(i));
                 int G1 = Color.green(mColors.get(i));
                 int B1 = Color.blue(mColors.get(i));
@@ -78,6 +74,7 @@ public class DrawPie extends DrawBase{
     }
 	public void setData(ArrayList<Float> percent)//
 	{
+	    
 		setPos();
 		float    angle       = 0;
 		float    total       = 0;
@@ -86,7 +83,6 @@ public class DrawPie extends DrawBase{
 		for(int i=0;i<length;i++)
 		{
 			total            += percent.get(i);
-			Log.e("YCW", "total---------------------------"+percent.get(i));
 		}
 		if(total==0){
 		    angle            = 0;
@@ -108,6 +104,7 @@ public class DrawPie extends DrawBase{
 			}
 			sweep[length-1] = 360-total;
 		
+			insertSort(sweep);
 //		length = length+1;
 
 		for(int i=0;i<m_iDepth;i++)
@@ -116,6 +113,18 @@ public class DrawPie extends DrawBase{
 		}	 
 	}
 
+    public void insertSort(float[] args) {
+        for (int i = 1; i < args.length; i++) {
+            for (int j = i; j > 0; j--) {
+                if (args[j] > args[j - 1]) {
+                    float temp = args[j - 1];
+                    args[j - 1] = args[j];
+                    args[j] = temp;
+                } else
+                    break;
+            }
+        }
+    }
 	public void setChartDepth(int iDepth)
 	{
 		m_iDepth = dip2px(iDepth);
@@ -164,9 +173,24 @@ public class DrawPie extends DrawBase{
 		}
 		start=0;
 		for(int s=0;start<=90;s++)
-		{
+		{     
+		    int c = mColors.get(s);
+            int R = Color.red(c);
+            int G = Color.green(c);
+            int B = Color.blue(c);
+            
+            int max = Math.max(R, G);
+            max = Math.max(max, B);
+            if(R == max){
+                R = R/2;
+            }else if(G == max){
+                G = G/2;
+            }else{
+                B = B/2;
+            }
+            mPaint.setColor(Color.rgb(R, G, B));
 			for(int i=0;i<rectFs.size();i++)
-			{mPaint.setColor(mColors.get(s));
+			{
 				canvas.drawArc(rectFs.get(i), start, start2[s], useCenter, mPaint);
 			}
 			start=start+sweep[s];
@@ -186,10 +210,25 @@ public class DrawPie extends DrawBase{
 
 		float end       = 180;
 		for(int m=count-1;end>90;m--)
-		{
+		{   
+		    int c = mColors.get(m);
+            int R = Color.red(c);
+            int G = Color.green(c);
+            int B = Color.blue(c);
+            
+            int max = Math.max(R, G);
+            max = Math.max(max, B);
+            if(R == max){
+                R = R/2;
+            }else if(G == max){
+                G = G/2;
+            }else{
+                B = B/2;
+            }
+            mPaint.setColor(Color.rgb(R, G, B));
 			end       = end-edn2[m];
 			for(int i=0;i<rectFs.size();i++)
-			{mPaint.setColor(mColors.get(m));
+			{
 				canvas.drawArc(rectFs.get(i), end, edn2[m], useCenter, mPaint);
 			}
 		}

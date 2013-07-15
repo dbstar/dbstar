@@ -1,19 +1,15 @@
 package com.dbstar.widget;
 
-import com.dbstar.R;
-import com.dbstar.guodian.app.base.GDSmartActivity;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
-import android.graphics.Rect;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.RelativeLayout.LayoutParams;
+
+import com.dbstar.R;
+import com.dbstar.guodian.app.base.GDSmartActivity;
 
 public class GDLoadingDialogView extends Dialog {
 
@@ -109,7 +105,18 @@ public class GDLoadingDialogView extends Dialog {
         }
         
     }
-    
+    public void showLoadErrorInfo(String info){
+        if(mLoadingView != null)
+            mLoadingView.setVisibility(View.INVISIBLE);
+        if(mNoNetWorKView != null)
+            mNoNetWorKView.setVisibility(View.INVISIBLE);
+        if(mErroPageView != null){
+            mErroPageView.setVisibility(View.VISIBLE);
+            TextView textView = (TextView) mErroPageView.findViewById(R.id.tv_error_info);
+            textView.setText(info);
+        }
+        
+    }
     public void showNetWorkErrorInfo(){
         if(mLoadingView != null)
             mLoadingView.setVisibility(View.INVISIBLE);

@@ -1,8 +1,6 @@
 package com.dbstar.guodian.app.mypower;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,7 +12,6 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,17 +21,17 @@ import com.dbstar.guodian.data.BillDetail;
 import com.dbstar.guodian.data.BillDetailData;
 import com.dbstar.guodian.data.BillDetailListData;
 import com.dbstar.guodian.data.BillItem;
+import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
-import com.dbstar.util.DateUtil;
-import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDSpinner;
 
 public class GDBillActivity extends GDSmartActivity {
 	private static final String TAG = "GDBillActivity";
 
 	private String StrYear, StrMonth;
-
 	private TextView mUserNameView, mDeviceNoView, mAddressView;
 	private TextView mItemsCountView;
 	private ListView mBillListView;
@@ -60,7 +57,8 @@ public class GDBillActivity extends GDSmartActivity {
 		mUserName = intent.getStringExtra(GDConstract.KeyUserName);
 		mDeviceNo = intent.getStringExtra(GDConstract.KeyDeviceNo);
 		mAddress = intent.getStringExtra(GDConstract.KeyUserAddress);
-
+		mSystemFlag = "elc";
+		mRequestMethodId = "m005f005";
 		initializeView();
 
 		if (mMenuPath != null) {
@@ -156,7 +154,7 @@ public class GDBillActivity extends GDSmartActivity {
 
 		// first: request the latest bill
 		// date is empty.
-		requestData(GDConstract.DATATYPE_BILLDETAILOFMONTH, "");
+	    requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,null);
 	}
 
 	void queryBillData() {
@@ -165,7 +163,7 @@ public class GDBillActivity extends GDSmartActivity {
 		initalListData(null);
 		Log.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex="
 				+ monthIndex);
-
+		
 		if (monthIndex > 0) {
 			String year = mYearList.get(yearIndex);
 			String month = mMonthList.get(monthIndex);
@@ -176,16 +174,23 @@ public class GDBillActivity extends GDSmartActivity {
 			String date = year + "-" + month + "-" + "01 00:00:00";
 
 			Log.d(TAG, " === date ==" + date);
-
-			requestData(GDConstract.DATATYPE_BILLDETAILOFMONTH,
-					date);
+			requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,date);
 		} else {
-			requestData(GDConstract.DATATYPE_BILLDETAILOFRECENT,
-					"12");
-			
+			requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,"12");
 		}
 	}
-
+	
+	private void requestBillData(int type ,String date){
+	    RequestParams params = new RequestParams(type);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID,mRequestMethodId);
+        if(getCtrlNo() != null){
+            params.put(JsonTag.TAGNumCCGuid,getCtrlNo().CtrlNoGuid);
+        }
+        if(date != null)
+            params.put(JsonTag.TAGDate,date);
+        requestData(params);
+	}
 	public void notifyEvent(int type, Object event) {
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
@@ -203,7 +208,7 @@ public class GDBillActivity extends GDSmartActivity {
 			return;
 		}
 		
-		if (type == GDConstract.DATATYPE_BILLDETAILOFMONTH) {
+		if (type == GDRequestType.DATATYPE_BILLDETAILOFMONTH) {
 			BillDetailData detailData = (BillDetailData) data;
 
 			if (mServiceDate == null) {
@@ -219,7 +224,7 @@ public class GDBillActivity extends GDSmartActivity {
 
 			BillDataItem item = constructBillData(detailData.Detail, year,
 					month);
-
+			
 			if (item != null) {
 				BillDataItem[] items = new BillDataItem[1];
 				items[0] = item;
@@ -227,7 +232,7 @@ public class GDBillActivity extends GDSmartActivity {
 			}else{
 			    Toast.makeText(this, R.string.load_data_is_null, Toast.LENGTH_SHORT).show();
 			}
-		} else if (type == GDConstract.DATATYPE_BILLDETAILOFRECENT) {
+		} else if (type == GDRequestType.DATATYPE_BILLDETAILOFRECENT) {
 			BillDetailListData listData = (BillDetailListData) data;
 			if (mServiceDate == null) {
 				mServiceDate = listData.ServiceSysDate;

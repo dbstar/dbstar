@@ -16,7 +16,8 @@ import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.engine.GDClientObserver;
-import com.dbstar.guodian.engine.GDEngine;
+import com.dbstar.guodian.engine1.ClientRequestService;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
@@ -162,8 +163,12 @@ public class GDDataProviderService extends Service {
 
     private int mSleepMode = 0;
 
-	private GDEngine mGuodianEngine;
-
+	//private GDEngine mGuodianEngine;
+    
+    private ClientRequestService mRequestService;
+    
+    private boolean mIsConnectNetWork;
+    
 	private class RequestTask {
 		public static final int INVALID = 0;
 		public static final int ACTIVE = 1;
@@ -243,8 +248,12 @@ public class GDDataProviderService extends Service {
 		//mDiskMonitor = new GDDiskSpaceMonitor(mHandler);
 		mDBStarClient = new GDDBStarClient(this);
 
-		mGuodianEngine = new GDEngine(this);
+		//mGuodianEngine = new GDEngine(this);
+		//mGuodianEngine.setDbStarClint(mDBStarClient);
 
+		mRequestService = new ClientRequestService(this);
+		
+		
 		mTaskQueue = new LinkedList<RequestTask>();
 		mFinishedTaskQueue = new LinkedList<RequestTask>();
 
@@ -328,9 +337,14 @@ public class GDDataProviderService extends Service {
 		// start Dbstar service
 		mIsDbServiceStarted = false;
 		mDBStarClient.start();
+		
+		startRequestServer();
 
 	}
-
+	void startRequestServer(){
+	    mRequestService.start(mDBStarClient, mGDObserver);
+	}
+	
 	void startGuodianEngine() {
 		Log.d(TAG, "========== startGuodianEngine ==========");
 		String serverIP = mDataModel
@@ -341,22 +355,22 @@ public class GDDataProviderService extends Service {
 				|| serverPort.isEmpty())
 			return;
 
-		mGuodianEngine.setReconnectTime(mConfigure.getGuodianReconnectTime());
-		mGuodianEngine
-				.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
+		//mGuodianEngine.setReconnectTime(mConfigure.getGuodianReconnectTime());
+		//mGuodianEngine
+				//.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
 		
 		mIsGuodianEngineStarted = true;
 	}
 
 	void stopGuodianEngine() {
 		Log.d(TAG, "========== stopGuodianEngine ==========");
-		mGuodianEngine.stop();
+		//mGuodianEngine.stop();
 		mIsGuodianEngineStarted = false;
 	}
 
 	void destroyGuodianEngine() {
 		Log.d(TAG, "========== destroyGuodianEngine ==========");
-		mGuodianEngine.destroy();
+		//mGuodianEngine.destroy();
 		mIsGuodianEngineStarted = false;
 	}
 
@@ -2697,7 +2711,7 @@ public class GDDataProviderService extends Service {
 			return;
 		}
 
-		mGuodianEngine.stop();
+		//mGuodianEngine.stop();
 	}
 	
 	public void reconnect() {
@@ -2706,28 +2720,35 @@ public class GDDataProviderService extends Service {
 			return;
 		}
 
-		mGuodianEngine.reconnect();
+		//mGuodianEngine.reconnect();
 	}
-
+	public boolean isEngineStarted(){
+	    return mIsGuodianEngineStarted;
+	}
 	// Guodian Related interface
-	public void requestPowerData(int type, Object args) {
-		if (!mIsGuodianEngineStarted) {
-			Log.d(TAG, "engine is not started!");
-			return;
-		}
-		
-		mGuodianEngine.requestData(type, args);
+//	public void requestPowerData(int type, Object args) {
+//		if (!mIsGuodianEngineStarted) {
+//			Log.d(TAG, "engine is not started!");
+//			return;
+//		}
+//		//mGuodianEngine.requestData(type, args);
+//		
+//	}
+	public void requestData(RequestParams params){
+	    mRequestService.RequestData(params);
 	}
-
 	// query cached data
 	public ElectricityPrice getElecPrice() {
-		return mGuodianEngine.getElecPrice();
+		//return mGuodianEngine.getElecPrice();
+		return null;
 	}
 	
 	public LoginData getLoginData(){
-	    return mGuodianEngine.getLoginData();
+	    //return mGuodianEngine.getLoginData();
+	    return mRequestService.getLoginGata();
 	}
 	public EPCConstitute getEDimension(){
-	    return mGuodianEngine.getElectriDimension();
+	    //return mGuodianEngine.getElectriDimension();
+	    return null;
 	}
 }

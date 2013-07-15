@@ -12,13 +12,10 @@ import android.util.Log;
 
 import com.dbstar.guodian.data.CtrlNo;
 import com.dbstar.guodian.data.ElectricityPrice;
-import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.PowerData;
+import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
-import com.dbstar.guodian.data.PowerTarget;
 import com.dbstar.guodian.data.UserData;
-import com.dbstar.guodian.data.UserPriceStatus;
 
 public class LoginDataHandler {
 

@@ -1,11 +1,6 @@
 package com.dbstar.guodian.app.mypower;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -30,9 +25,10 @@ import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.guodian.parse.Util;
 import com.dbstar.model.EventData;
-import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDArcView;
 import com.dbstar.widget.GDCircleTextView;
 
@@ -56,13 +52,14 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	private TextView mAllDevicePowerAmountView;
 	private int mPriceType;
 	private String mStrDegree;
-
+	private GDMypowerActivity mActivity;
 	private ElectricityPrice mElecPrice = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// mNum = getArguments().getInt("num");
+		mActivity = (GDMypowerActivity) getActivity();
 	}
 
 	@Override
@@ -156,8 +153,33 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	public void serviceStart() {
 		if (mService == null)
 			return;
-
-		mEngine.request(GDConstract.DATATYPE_POWERPANELDATA, null);
+		
+		LoginData mLoginData = mService.getLoginData();
+        if(mLoginData == null){
+           mActivity.handleErrorResponse(R.string.no_login);
+           return;
+        }
+        if(mLoginData.CtrlNo == null || mLoginData.CtrlNo.CtrlNoGuid == null){
+            mActivity.handleErrorResponse(R.string.no_login);
+               return; 
+        }
+        
+        String ccguid = mLoginData.CtrlNo.CtrlNoGuid;
+        
+        if(mLoginData.UserData == null 
+                ||mLoginData.UserData.UserInfo == null 
+                || mLoginData.UserData.UserInfo.UserType == null){
+            mActivity.handleErrorResponse(R.string.no_login);
+            return; 
+        }
+        
+        String userType = mLoginData.UserData.UserInfo.UserType;
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_POWERPANELDATA);
+        params.put(RequestParams.KEY_SYSTEM_FLAG,"elc");
+        params.put(RequestParams.KEY_METHODID, "m008f001");
+        params.put(JsonTag.TAGNumCCGuid, ccguid);
+        params.put(JsonTag.TAGUser_Type, userType);
+		mEngine.request(params);
 	}
 
 	// handle event at this point
@@ -181,7 +203,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	}*/
 	
 	private void handlePowerData(int type, Object data) {
-		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
+		if (type == GDRequestType.DATATYPE_POWERPANELDATA) {
 			updatePowerPanel((PowerPanelData) data);
 			mPriceButton.setFocusableInTouchMode(true);
             mPriceButton.setFocusable(true);

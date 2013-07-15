@@ -25,7 +25,7 @@ import com.dbstar.guodian.app.mypower.GDPowerTargetSettingActivity;
 import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
-import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDApplicationObserver;
@@ -370,7 +370,20 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		intent.setClass(this, GDTVActivity.class);
 		startActivity(intent);
 	}
-
+	
+	private void startIPTVView(String columnId){
+	    Intent intent = null;
+	    if(columnId.equals(GDCommon.ColumnIDCNTV)){
+	        intent  = getPackageManager().getLaunchIntentForPackage("tv.icntv.ott");
+	        //intent = getPackageManager().getLaunchIntentForPackage("com.media.android.dbstarplayer");
+	    }
+	    if (intent != null) {
+            intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+            startActivity(intent);
+        }
+	}
+	
+	
 	private boolean onItemSelected() {
 		boolean ret = true;
 
@@ -424,8 +437,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			showSettingView(menuItem.ColumnId());
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeUserCenter)) {
 			showUserCenter(menuItem.ColumnId());
-		} else {
-			;
+		} else if(menuItem.Type().equals(GDCommon.ColumnTypeIPTV)) {
+			startIPTVView(menuItem.ColumnId());
 		}
 
 		return ret;
@@ -622,6 +635,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		        ||columnId.equals(GDCommon.ColumnIDGuodianPowerTips)) {
 		    
 			intent = startLocalGuodianActivity(columnId, mMenuPath);
+		}else if(columnId.equals(GDCommon.ColumnIDGuodianNewsFlash)){
+		    intent = startLocalGuodianActivity(columnId, mMenuPath);
 		} else if (columnId.equals(GDCommon.ColumnIDGuodianHomeEfficiency)) {
 			intent = startGuodianActivity("app.GDHomeEfficiencyActivity");
 		} else if (columnId.equals(GDCommon.ColumnIDGuodianSmartHome)) {
@@ -1654,6 +1669,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
+		}else if(type == EventData.EVENT_LOGIN_SUCCESSED){
+		    mPowerController.reRequestData();
 		}
 	}
 
@@ -1664,9 +1681,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void handlePowerData(int type, Object data) {
-		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
+		if (type == GDRequestType.DATATYPE_POWERPANELDATA) {
 			mPowerController.updatePowerPanel((PowerPanelData) data);
-		} else if(type == GDConstract.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE){
+		} else if(type == GDRequestType.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE){
 		    mPowerController.updateElectriDimension((EPCConstitute)data);
 		}
 	}

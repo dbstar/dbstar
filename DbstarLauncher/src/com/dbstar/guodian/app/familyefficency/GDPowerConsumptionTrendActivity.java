@@ -1,38 +1,27 @@
 package com.dbstar.guodian.app.familyefficency;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import org.apache.harmony.security.x509.ExtensionValue;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.renderscript.Element.DataType;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
-import com.dbstar.guodian.data.EqumentData;
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerConsumptionTrend;
-import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.PowerConsumptionTrend.ConsumptionPercent;
+import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.RoomData.RoomEletrical;
-import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
-import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDSpinner;
 import com.dbstar.widget.PowerTrendPolyLineView;
 
@@ -155,12 +144,12 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     public void notifyEvent(int type, Object event) {
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if(EventData.EVENT_GUODIAN_DATA == type){
-            if(GDConstract.DATATYPE_POWER_CONSUMPTION_TREND == guodianEvent.Type){
+            if(GDRequestType.DATATYPE_POWER_CONSUMPTION_TREND == guodianEvent.Type){
                 requestAllEleList();
                 mTrend = (PowerConsumptionTrend) guodianEvent.Data;
                 showPolyLineView(mTrend);
                 updateTitle();
-            }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 List<RoomEletrical> list = (ArrayList<RoomEletrical>) guodianEvent.Data;
                 if(list != null && !list.isEmpty()){
                     mEquList.addAll(list);
@@ -170,7 +159,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             }
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+            if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 handleErrorResponse(R.string.loading_electrical_list_fail);
              }else{
                  handleErrorResponse(R.string.loading_error);
@@ -207,11 +196,15 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             handleErrorResponse(R.string.no_login);
             return;
         }
-        Map<String, String>params = new HashMap<String, String>();
+        mSystemFlag = "elc";
+        mRequestMethodId = "m008f012";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_POWER_CONSUMPTION_TREND);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGVC2EquTypeId, getEquTypeId());
         params.put(JsonTag.TAGDatePeriod, getDatePeriod());
-        requestData(GDConstract.DATATYPE_POWER_CONSUMPTION_TREND,params);
+        requestData(params);
     }
     
     private void requestAllEleList(){
@@ -224,9 +217,13 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             handleErrorResponse(R.string.loading_electrical_list_fail);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m001f010";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_EQUMENTLIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        requestDataNotShowDialog(GDConstract.DATATYPE_EQUMENTLIST, params);
+        requestDataNotShowDialog(params);
     }
     private void initEqumentSpinner(){
         ArrayList<String> equNames = new ArrayList<String>();

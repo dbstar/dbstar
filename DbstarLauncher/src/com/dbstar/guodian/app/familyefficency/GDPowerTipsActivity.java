@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 
 import android.content.Intent;
-import android.graphics.Shader.TileMode;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -17,17 +16,20 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.guodian.engine.GDConstract;
-import com.dbstar.model.EventData;
-import com.dbstar.util.DateUtil;
-import com.dbstar.util.ToastUtil;
-import com.dbstar.widget.text.ScrollingMovementMethod;
 import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.PowerTips;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
+import com.dbstar.model.EventData;
+import com.dbstar.util.DateUtil;
+import com.dbstar.widget.CircleFlowIndicator;
+import com.dbstar.widget.GDNewsViewGoup;
+import com.dbstar.widget.GDNewsViewGoup.OnUpdatePageListener;
 
 public class GDPowerTipsActivity extends GDSmartActivity {
 
@@ -45,11 +47,16 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 	private ListAdapter mNoticesAdapter;
 	private int mViewMode;
 	private ViewGroup mDetailContainer, mListContainer;
-	private TextView mTitle, mContent;
+	private TextView mTitle;
+    private GDNewsViewGoup mGdNewsViewGoup;
 	private TextView mItemCountView, mPageNumberView;
 
 	private String mStrGong, mStrTiao, mStrDi, mStrYe;
-
+	
+	private CircleFlowIndicator mIndicator;
+    private TextView mContentPageCount,mContentPgeNumber;
+    private LinearLayout mRightLayout;
+    
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -91,17 +98,36 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 
 		mItemCountView = (TextView) findViewById(R.id.notices_count);
 		mPageNumberView = (TextView) findViewById(R.id.notices_pages);
-
+		
+		mContentPageCount = (TextView) findViewById(R.id.content_page_count);
+        mContentPgeNumber = (TextView) findViewById(R.id.content_page_number);
+        mIndicator = (CircleFlowIndicator) findViewById(R.id.indicator);
+		
 		mListContainer = (ViewGroup) findViewById(R.id.list_view);
 		mListView = (ListView) findViewById(R.id.listview);
 		mNoticesAdapter = new ListAdapter();
 		mListView.setAdapter(mNoticesAdapter);
-
+		
+		mRightLayout = (LinearLayout) findViewById(R.id.right_layout);
+        mRightLayout.setVisibility(View.INVISIBLE);
+        
 		mDetailContainer = (ViewGroup) findViewById(R.id.detail);
+		mDetailContainer.setVisibility(View.GONE);
+		
 		mTitle = (TextView) findViewById(R.id.title);
-		mContent = (TextView) findViewById(R.id.content);
-		mContent.setMovementMethod(new ScrollingMovementMethod(true));
-
+		mGdNewsViewGoup = (GDNewsViewGoup) findViewById(R.id.content);
+		//mContent = (TextView) findViewById(R.id.content);
+		//mContent.setMovementMethod(new ScrollingMovementMethod(true));
+		 mGdNewsViewGoup.setOnUpdatePageListener(new OnUpdatePageListener() {
+             
+             @Override
+             public void onUpdate(int totalPage, int currentPage) {
+                 mIndicator.setPageCount(totalPage);
+                 mIndicator.setCurrentPage(currentPage -1);
+                 mContentPageCount.setText(String.valueOf(totalPage));
+                 mContentPgeNumber.setText(String.valueOf(currentPage));
+             }
+         });
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -183,11 +209,16 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 	protected void onServiceStart() {
 		super.onServiceStart();
 		Log.d(TAG, "onServiceStart");
-
-		requestData(GDConstract.DATATYPE_POWER_TIPS, null);
+		mSystemFlag = "sml";
+        mRequestMethodId = "m005f001";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_POWER_TIPS);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
+		requestData(params);
 	}
 
 	public void notifyEvent(int type, Object event) {
+	    super.notifyEvent(type, event);
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
@@ -195,7 +226,6 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 		    handleErrorResponse( R.string.loading_error);
 		    return;
 		}
-		super.notifyEvent(type, event);
 	}
 
 	private void handlePowerData(int type, Object data) {
@@ -204,7 +234,7 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 			return;
 		}
 
-		if (type == GDConstract.DATATYPE_POWER_TIPS) {
+		if (type == GDRequestType.DATATYPE_POWER_TIPS) {
 			ArrayList<PowerTips> notices = (ArrayList<PowerTips>) data;
 			sortList(notices);
 			cutOffDateString(notices);
@@ -252,8 +282,10 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 	    PowerTips[] page = mPagesData.get(pageNumber);
 		mNoticesAdapter.setDataSet(page);
 		mNoticesAdapter.notifyDataSetChanged();
-		
 		displayPageNumber(pageNumber);
+		mListView.setFocusableInTouchMode(true);
+	    mListView.setFocusable(true);
+	    mListView.requestFocus();
 	}
 	
 	private void displayPageNumber(int pageNumber) {
@@ -270,18 +302,23 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 			PowerTips notice = page[index];
 
 			mTitle.setText(notice.TipsTitle);
-			mContent.setText(notice.TipsContent);
-			mContent.setFocusableInTouchMode(true);
-            mContent.setFocusable(true);
-            mContent.requestFocus();
+			mGdNewsViewGoup.setData(null, notice.TipsContent);
+            mListView.setFocusableInTouchMode(false);
+            mListView.setFocusable(false);
+            mListView.clearFocus();
 			mListContainer.setVisibility(View.GONE);
 			mDetailContainer.setVisibility(View.VISIBLE);
+			mRightLayout.setVisibility(View.INVISIBLE);
 			mViewMode = MODE_DETAIL;
 
 			mDetailContainer.requestLayout();
 		} else {
 			mListContainer.setVisibility(View.VISIBLE);
 			mDetailContainer.setVisibility(View.GONE);
+			mRightLayout.setVisibility(View.VISIBLE);
+            mListView.setFocusableInTouchMode(true);
+            mListView.setFocusable(true);
+            mListView.requestFocus();
 			mViewMode = MODE_LIST;
 		}
 	}
@@ -327,7 +364,7 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 			ViewHolder holder = null;
 			if (null == convertView) {
 				LayoutInflater inflater = getLayoutInflater();
-				convertView = inflater.inflate(R.layout.noticelist_item,
+				convertView = inflater.inflate(R.layout.gd_news_flash_item,
 						parent, false);
 
 				holder = new ViewHolder();
@@ -342,7 +379,7 @@ public class GDPowerTipsActivity extends GDSmartActivity {
 			}
 
 			int index = mPageNumber * PageSize + position + 1;
-			holder.index.setText(String.valueOf(index));
+			holder.index.setText(String.valueOf(index)+ "、");
 			holder.title.setText(mDataSet[position].TipsTitle);
 			holder.date.setText(mDataSet[position].TipsLastUpdateTime);
 

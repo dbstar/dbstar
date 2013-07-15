@@ -2,11 +2,8 @@ package com.dbstar.guodian.app.familyefficency;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import android.app.backup.IFullBackupRestoreObserver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -24,7 +21,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dbstar.R;
@@ -38,10 +34,11 @@ import com.dbstar.guodian.data.PPCConstitute.PeriodItemDetail;
 import com.dbstar.guodian.data.PowerData;
 import com.dbstar.guodian.data.SPCConstitute;
 import com.dbstar.guodian.data.SPCConstitute.StepItemDetail;
-import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
-import com.dbstar.util.ToastUtil;
+import com.dbstar.widget.CommondTools;
 import com.dbstar.widget.DrawPie;
 import com.dbstar.widget.GDSpinner;
 
@@ -155,8 +152,8 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
         if(mPie == null){
             mPie = new DrawPie(this);
             mPie.setOriginPoint(0, 0);
-            mPie.setPicSize(mPieView.getMeasuredWidth(), mPieView.getMeasuredHeight() - 25);//��С
-            mPie.setChartDepth(25);
+            mPie.setPicSize(mPieView.getMeasuredWidth(), mPieView.getMeasuredHeight() - 25);//
+            mPie.setChartDepth(20);
         }
         percents = new ArrayList<Float>();
         if(data != null){
@@ -169,7 +166,12 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                 }
                 else
                     info.color = colors.get(i);
-                percents.add(Float.parseFloat(info.powerPercent.substring(0,info.powerPercent.length() -1)));
+                try {
+                    percents.add(Float.parseFloat(info.powerPercent.substring(0,info.powerPercent.length() -1)));
+                } catch (Exception e) {
+                    percents.add(0.00f);
+                    e.printStackTrace();
+                }
             }
         }
       
@@ -274,7 +276,7 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
         super.notifyEvent(type, event);
         if(EventData.EVENT_GUODIAN_DATA == type){
                 EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
-                if(GDConstract.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE == guodianEvent.Type ){
+                if(GDRequestType.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE == guodianEvent.Type ){
                     mEPCConstitute= (EPCConstitute) guodianEvent.Data;
                     initializeData(mEPCConstitute.serviceSysDate);
                     if(mCurrentPCC.equals(EPCC)){
@@ -286,13 +288,13 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                             mButtonElecical.requestFocus();
                         }
                     });
-                }else if(GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_CONSTITUTE == guodianEvent.Type){
+                }else if(GDRequestType.DATATYPE_STEP_POWER_CONSUMPTION_CONSTITUTE == guodianEvent.Type){
                     mSPCConstitute = (SPCConstitute) guodianEvent.Data;
                     initializeData(mSPCConstitute.serviceSysDate);
                     if(mCurrentPCC.equals(SPCC)){
                         refreshContectView();
                     }
-                }else if(GDConstract.DATATYPE_PERIOD_POWER_CONSUMPTION_CONSTITUTE == guodianEvent.Type){
+                }else if(GDRequestType.DATATYPE_PERIOD_POWER_CONSUMPTION_CONSTITUTE == guodianEvent.Type){
                     mPPCConstitute = (PPCConstitute) guodianEvent.Data; 
                     initializeData(mPPCConstitute.serviceSysDate);
                     if(mCurrentPCC.equals(PPCC)){
@@ -345,20 +347,27 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
         }
         String  userType =loginData.UserData.UserType;
         
-        Map<String, String> params = new HashMap<String, String>();
+       
+        
+        int dataType = GDRequestType.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE;
+        mSystemFlag = "elc";
+        mRequestMethodId = "m008f007";
+        if(mCurrentPCC.equals(SPCC)){
+            dataType = GDRequestType.DATATYPE_STEP_POWER_CONSUMPTION_CONSTITUTE;
+            mRequestMethodId = "m008f008";
+        }else if(mCurrentPCC.equals(PPCC)){
+            mRequestMethodId = "m008f009";
+            dataType = GDRequestType.DATATYPE_PERIOD_POWER_CONSUMPTION_CONSTITUTE;
+        }
+        RequestParams params = new RequestParams(dataType);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGDateStart, startDate);
         params.put(JsonTag.TAGDateEnd, endDate);
         params.put(JsonTag.TAGDateType, dateType);
         params.put(JsonTag.TAGUser_Type, userType);
-        
-        int dataType = GDConstract.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE;
-        if(mCurrentPCC.equals(SPCC)){
-            dataType = GDConstract.DATATYPE_STEP_POWER_CONSUMPTION_CONSTITUTE;
-        }else if(mCurrentPCC.equals(PPCC)){
-            dataType = GDConstract.DATATYPE_PERIOD_POWER_CONSUMPTION_CONSTITUTE;
-        }
-        requestData(dataType, params);
+        requestData(params);
     }
 //    private void requestEPCConstitute(String dataType,String startDate,String endDate){
 //        LoginData loginData =  mService.getLoginData();
@@ -625,12 +634,14 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                     ElectricalItemDetail detail;
                     for(int i = 0;i < listData.size();i++){
                         detail = listData.get(i);
-                        info = new ListItemInfo();
-                        info.color =  0 ;
-                        info.dataType = detail.ElecName;
-                        info.powerCount = detail.Count;
-                        info.powerPercent   = detail.CountPercent;
-                        itemInfoList.add(info);
+                        //if(!detail.ElecTypeId.equals("000000")){
+                            info = new ListItemInfo();
+                            info.color =  0 ;
+                            info.dataType = detail.ElecName;
+                            info.powerCount = detail.Count;
+                            info.powerPercent   = detail.CountPercent;
+                            itemInfoList.add(info);
+                        //}
                     }
                     mEPCCListData = itemInfoList;
                 }
@@ -690,6 +701,31 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                     }
                     mPPCCListData = itemInfoList;
                 }
+            }
+        }
+        float total = 0f;
+        ListItemInfo info;
+        float lastPowertPercent;
+        for(int i = 0;i < itemInfoList.size() -1;i ++){
+             info = itemInfoList.get(i);
+            try {
+                total = total + Float.parseFloat(info.powerPercent.substring(0, info.powerPercent.length() -1));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if(itemInfoList.size() > 1){
+            info = itemInfoList.get(itemInfoList.size() -1);
+            try {
+               lastPowertPercent = Float.parseFloat(info.powerPercent.substring(0, info.powerPercent.length() -1));
+               if(lastPowertPercent != 0){
+                   if(total != 0){
+                       lastPowertPercent = 100f - total;
+                       info.powerPercent = CommondTools.round(lastPowertPercent, 2) + "%";
+                   }
+               }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return  itemInfoList;

@@ -11,6 +11,7 @@ import com.dbstar.app.base.EngineInterface;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.app.base.MultiPanelActivity;
 import com.dbstar.app.base.SmartcardInterface;
+import com.dbstar.guodian.engine1.RequestParams;
 
 public class GDSmartcardActivity extends MultiPanelActivity implements
 		EngineInterface, SmartcardInterface {
@@ -141,5 +142,11 @@ public class GDSmartcardActivity extends MultiPanelActivity implements
 			mService.getDeviceInfo(this, keys);
 		}
 	}
+
+    @Override
+    public void request(RequestParams params) {
+        // TODO Auto-generated method stub
+        
+    }
 
 }

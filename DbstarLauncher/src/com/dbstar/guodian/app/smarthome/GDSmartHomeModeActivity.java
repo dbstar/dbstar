@@ -1,25 +1,7 @@
 package com.dbstar.guodian.app.smarthome;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import com.dbstar.R;
-import com.dbstar.guodian.app.base.GDSmartActivity;
-import com.dbstar.guodian.app.mypower.GDBillActivity;
-import com.dbstar.guodian.data.ElectricalOperationMode;
-import com.dbstar.guodian.data.ElectricalOperationMode.ModeElectrical;
-import com.dbstar.guodian.data.ResultData;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
-import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.LoginData;
-import com.dbstar.guodian.data.RoomData;
-import com.dbstar.guodian.data.TimedTask;
-import com.dbstar.guodian.engine.GDConstract;
-import com.dbstar.model.EventData;
-import com.dbstar.util.ToastUtil;
-import com.dbstar.widget.CircleFlowIndicator;
 
 import android.content.Context;
 import android.content.Intent;
@@ -29,8 +11,8 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
-import android.view.ViewGroup;
 import android.view.View.OnKeyListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.BaseAdapter;
@@ -39,6 +21,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.dbstar.R;
+import com.dbstar.guodian.app.base.GDSmartActivity;
+import com.dbstar.guodian.data.ElectricalOperationMode;
+import com.dbstar.guodian.data.ElectricalOperationMode.ModeElectrical;
+import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.guodian.data.ResultData;
+import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
+import com.dbstar.model.EventData;
+import com.dbstar.widget.CircleFlowIndicator;
 
 public class GDSmartHomeModeActivity extends GDSmartActivity{
     
@@ -529,18 +523,18 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     public void notifyEvent(int type, Object event) {
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if( EventData.EVENT_GUODIAN_DATA == type){
-            if(GDConstract.DATATYPE_MODEL_LIST == guodianEvent.Type){
+            if(GDRequestType.DATATYPE_MODEL_LIST == guodianEvent.Type){
                 List<ElectricalOperationMode> modeList = (List<ElectricalOperationMode>) guodianEvent.Data;
                 if(modeList != null && !modeList.isEmpty())
                     requestAllElectrical();
                 initListViewMode(modeList);
                 
-            }else if(GDConstract.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
                 List<ModeElectrical> eles = (List<ModeElectrical>) guodianEvent.Data;
                 mCacheMode.ModelElectricalList = eles;
                 initModeEleListView(mCacheMode);
                 
-            }else if(GDConstract.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
                 ResultData result = (ResultData) guodianEvent.Data;
                 if(result != null){
                    if("true".equals(result.Result)){
@@ -550,20 +544,20 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
                 }
                 Toast.makeText(this,getString(R.string.family_text_execute_fail) , Toast.LENGTH_SHORT).show();
                 
-            }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 mAllElectricals = (List<RoomEletrical>) guodianEvent.Data;
                 if(mAllElectricals != null && !mAllElectricals.isEmpty()){
                     mAdapterModeEle.notifyDataSetChanged();
                 }
             } 
         }else if( EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            if(GDConstract.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
+            if(GDRequestType.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
                 handleErrorResponse( R.string.loading_model_ele_list_fail);
-            }else if(GDConstract.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
                 handleErrorResponse( R.string.server_error);
-            }else if(GDConstract.DATATYPE_MODEL_LIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_MODEL_LIST == guodianEvent.Type){
                 handleErrorResponse( R.string.loading_error);
-            }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 handleErrorResponse(R.string.loading_ele_pic_list_fail);
             }else {
                 handleErrorResponse( R.string.loading_error);
@@ -578,9 +572,13 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
             handleErrorResponse(R.string.no_login);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m003f001";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_MODEL_LIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
-        requestData(GDConstract.DATATYPE_MODEL_LIST, params);
+        requestData(params);
     }
     
     private void requestModeElectricalList(String modeGuid){
@@ -588,10 +586,14 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
             handleErrorResponse(R.string.no_login);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m003f002";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_MODEL_ELECTRICAL_LIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGModeGuid, modeGuid);
-        requestData(GDConstract.DATATYPE_MODEL_ELECTRICAL_LIST, params);
+        requestData(params);
     }
     
     private void executeMode(ElectricalOperationMode mode){
@@ -599,11 +601,15 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
             handleErrorResponse(R.string.no_login);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m003f006";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_EXECUTE_MODE);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGModeGuid, mode.ModelGuid);
         params.put(JsonTag.TAGModeId, mode.ModelId);
-        requestData(GDConstract.DATATYPE_EXECUTE_MODE, params);
+        requestData(params);
     }
     
     private void requestAllElectrical(){
@@ -611,9 +617,13 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
             handleErrorResponse(R.string.loading_ele_pic_list_fail);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m001f010";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_EQUMENTLIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
-        requestDataNotShowDialog(GDConstract.DATATYPE_EQUMENTLIST, params);
+        requestDataNotShowDialog(params);
     }
     public int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;

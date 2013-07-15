@@ -44,10 +44,11 @@ public class GDDBStarClient {
 			mDbstarService = IDbstarService.Stub.asInterface(service);
 
 			mIsBoundToServer = true;
-
+			notifyDbstartServiceStarted("1");
 			startDvbpush();
+			
+			
 		}
-
 		// this is called when server is stopped abnormally.
 		public void onServiceDisconnected(ComponentName className) {
 			Log.d(TAG, "+++++++++GDDBStarClient onServiceDisconnected+++++++");
@@ -55,9 +56,14 @@ public class GDDBStarClient {
 			mDbstarService = null;
 //			mIsServerCorrupted = true;
 			mIsBoundToServer = false;
+			notifyDbstartServiceStarted("-1");
 		}
 	};
-
+	private void notifyDbstartServiceStarted(String type){
+        Intent intent = new Intent(DbstarServiceApi.ACTION_DBSTARTSERCIE);
+        intent.putExtra("message", type);
+        mContext.sendStickyBroadcast(intent);
+    }
 	public GDDBStarClient(Context context) {
 		mContext = context;
 	}
@@ -195,7 +201,18 @@ public class GDDBStarClient {
 
 		return data;
 	}
-
+	
+	public Intent sendRequestServerCommond(int cmd,String cmdStr){
+	    if(cmdStr == null)
+	        cmdStr = "";
+	    try {
+          return  mDbstarService.sendCommand(cmd, cmdStr, cmdStr.length());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+	    return null;
+	    
+	}
 	public String getEMailContent(String mailId) {
 		String content = null;
 

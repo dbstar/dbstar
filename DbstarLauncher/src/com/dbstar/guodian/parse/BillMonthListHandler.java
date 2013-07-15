@@ -8,8 +8,6 @@ import org.json.JSONTokener;
 
 import com.dbstar.guodian.data.JsonTag;
 
-import android.util.Log;
-
 public class BillMonthListHandler {
 	private static final String TAG = "BillDetailDataHandler";
 

@@ -2,13 +2,6 @@ package com.dbstar.guodian.app.mypower;
 
 import java.util.List;
 
-import com.dbstar.R;
-import com.dbstar.guodian.data.ElectricityPrice;
-import com.dbstar.guodian.data.ElectricityPrice.PeriodPrice;
-import com.dbstar.guodian.data.ElectricityPrice.StepPrice;
-import com.dbstar.guodian.parse.Util;
-import com.dbstar.util.ToastUtil;
-
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -21,6 +14,13 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.dbstar.R;
+import com.dbstar.guodian.data.ElectricityPrice;
+import com.dbstar.guodian.data.ElectricityPrice.PeriodPrice;
+import com.dbstar.guodian.data.ElectricityPrice.StepPrice;
+import com.dbstar.guodian.parse.Util;
+import com.dbstar.util.ToastUtil;
 
 public class GDPriceDlgFragment extends DialogFragment {
 

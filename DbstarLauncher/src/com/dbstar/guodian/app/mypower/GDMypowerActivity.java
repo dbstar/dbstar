@@ -5,7 +5,6 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDEngineActivity;
@@ -14,7 +13,6 @@ import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.engine.GDConstract;
-import com.dbstar.util.ToastUtil;
 
 public class GDMypowerActivity extends GDEngineActivity {
 
@@ -74,7 +72,6 @@ public class GDMypowerActivity extends GDEngineActivity {
 		
 		openPage(mPriceType, null);
 	}
-
 	private void openPage(int priceType, Bundle args) {
 		String fragmentName = null;
 		if (mPriceType == GDConstract.PriceTypeStep ||mPriceType == GDConstract.PriceTypeSingle) {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_selected="true" android:drawable="@drawable/smarthome_model_ele_highlight"></item>
+    <item android:state_selected="true" android:drawable="@drawable/smart_home_mode_equ_focus_bg"></item>
     <item android:state_selected="false" android:drawable="@drawable/smarthome_model_ele_nomarl"></item>
   <!--   <item android:state_pressed="true" android:drawable="@drawable/smarthome_model_ele_highlight"></item>
     <item android:state_pressed="false" android:drawable="@drawable/smarthome_model_ele_nomarl"></item>

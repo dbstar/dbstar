@@ -5,6 +5,7 @@ import android.view.KeyEvent;
 
 import com.dbstar.app.base.EngineInterface;
 import com.dbstar.app.base.FragmentObserver;
+import com.dbstar.guodian.engine1.RequestParams;
 
 public class GDEngineActivity extends GDSmartActivity implements EngineInterface {
 	private FragmentObserver mObserver = null;
@@ -75,8 +76,13 @@ public class GDEngineActivity extends GDSmartActivity implements EngineInterface
 		}
 	}
 	
-	public void request(int type, Object args) {
-		requestData(type, args);
-	}
+//	public void request(int type, Object args) {
+//		requestData(type, args);
+//	}
+
+    @Override
+    public void request(RequestParams params) {
+        requestData(params);
+    }
 
 }

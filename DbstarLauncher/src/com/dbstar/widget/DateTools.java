@@ -10,28 +10,12 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**********************************************************************************
-Copyright (C), 2011-2012, �������ͨ���缼�����޹�˾. 
-FileName:     com.lp.tools.DateTools.java
-Author:��     ������ xiaomin.qin
-Version :     V3.0
-Date:         2011-11-10
-Description:��
-
- ***********************************************************************************
- History:������update past records 
- <Author>��                         <Date>����  <Version>��  <Description> 
- ***********************************************************************************/ 
 
 public class DateTools {
 	
 
 
 
-	/**
-	 * �õ����꣬��ʽΪyyyy
-	 * @return ��ȡ����yyyy
-	 */
 	public static String getCurrentYear()
 	{	
 		DateFormat day = new SimpleDateFormat("yyyy");
@@ -39,10 +23,6 @@ public class DateTools {
 		return str_day;
 	}
 
-	/**
-	 * �õ��������ڣ���ʽΪyyyyMM
-	 * @return ��ȡ��������yyyyMM
-	 */
 	public static String getCurrentMonth()
 	{	
 		DateFormat day = new SimpleDateFormat("yyyyMM");
@@ -50,20 +30,12 @@ public class DateTools {
 		return str_day;
 	}
 
-	/**
-	 * �õ���������ڣ���ʽΪyyyyMMdd
-	 * @return ��ȡ��������yyyyMMdd
-	 */
 	public static String getCurrentday()
 	{	
 		DateFormat day = new SimpleDateFormat("yyyyMMdd");
 		String str_day = day.format(new Date());
 		return str_day;
 	}
-	/**
-	 * �õ�����˿��Ǽ��㣬��ʽΪHH
-	 * @return ��ȡ��������HH
-	 */
 	public static String getCurrentHour()
 	{	
 		DateFormat day = new SimpleDateFormat("HH");
@@ -72,9 +44,6 @@ public class DateTools {
 	}
 
 
-	/**
-	 * ��ȡ�����Ǽ���
-	 */
 	public static int getDayOfMonth()
 	{
 		DateFormat day = new SimpleDateFormat("dd");
@@ -82,10 +51,6 @@ public class DateTools {
 		return Integer.valueOf(str_day);
 	}
 
-	/***
-	 * ��ȡ���������ڼ�
-	 * @return
-	 */
 
 	public static int getDayOfWeek()
 	{
@@ -98,10 +63,6 @@ public class DateTools {
 
 
 
-	/**
-	 * �õ�n��ǰ��������ڣ���ʽΪyyyyMMdd
-	 * @return ������һ�������
-	 */
 	public static String getNextDay(int n)
 	{
 		DateFormat day = new SimpleDateFormat("yyyyMMdd");
@@ -116,18 +77,12 @@ public class DateTools {
 			e.printStackTrace();
 		}
 
-		// ��һ�������
 		c.add(Calendar.DAY_OF_MONTH, n);
 		String nextTime=dateFormat.format(c.getTime());
 		return nextTime;
 	}
 
 
-	/**
-	 * �õ�nǰ������µ��·ݣ���ʽΪyyyyMM
-	 * n ǰ��������ٸ����·�
-	 * @return �����ϸ��µ��·�
-	 */
 	public static String getLastMonth(int n)
 	{
 		DateFormat day = new SimpleDateFormat("yyyyMM");
@@ -147,11 +102,6 @@ public class DateTools {
 		String nextTime=dateFormat.format(c.getTime());
 		return nextTime;
 	}
-	/**
-	 * �õ�nǰ������µ��·ݣ���ʽΪMM
-	 * n ǰ��������ٸ����·�
-	 * @return �����ϸ��µ��·�
-	 */
 	public static String getOnlyLastMonth(int n)
 	{
 		DateFormat day = new SimpleDateFormat("MM");
@@ -175,11 +125,6 @@ public class DateTools {
 
 
 
-	/**
-	 * ���ĳһ�µ�������
-	 * @param String���ͣ�ĳһ�£����磺2010103
-	 * @return int���ͣ�����
-	 */
 	public static int getMonthSize(String time) {
 		int     size    = 0;
 		int     year    = Integer.valueOf(time.substring(0, 4));
@@ -209,11 +154,6 @@ public class DateTools {
 	}
 
 
-	/**
-	 * ���������ַ��Ƿ����·������ʽ
-	 * @param �ַ�
-	 * @return int���ͣ������ʽ������ǰ�·ݣ�0�������ʽ����ȷ��1�������ʽ��ȷ��2
-	 */
 	public int checkMonth(String time) {
 		if (time.length() != 7) {
 			return 0;
@@ -242,11 +182,6 @@ public class DateTools {
 
 
 
-
-	/**
-	 * �õ�һ����·ݣ���ʽΪyyyyMM
-	 * @return ��ȡһ����·�
-	 */
 	public static void GetOneYearMonth(ArrayList<String> month)
 	{	
 		DateFormat day = new SimpleDateFormat("yyyy-MM");
@@ -287,12 +222,6 @@ public class DateTools {
 	}
 
 
-	/**
-	 * �������뷽��
-	 * @param v ������ֵ
-	 * @param scale С����λ��
-	 * @return
-	 */
 	public   static   String   round(double v,int scale){     
 		String   temp= "#,##0.";     
 		for   (int   i=0;i <scale   ;i++   )     
@@ -349,7 +278,7 @@ public class DateTools {
 			return to.format(temp);
 		} catch (Exception e) {
 			// TODO: handle exception
-			return "";//����쳣���ؿմ�
+			return "";
 
 		}
 	}
@@ -373,7 +302,7 @@ public class DateTools {
 			return to.format(temp);
 		} catch (Exception e) {
 			// TODO: handle exception
-			return "";//����쳣���ؿմ�
+			return "";
 
 		}
 	}
@@ -473,7 +402,7 @@ public class DateTools {
 			return to.format(temp);
 		} catch (Exception e) {
 			// TODO: handle exception
-			return "";//����쳣���ؿմ�
+			return "";
 
 		}
 	}

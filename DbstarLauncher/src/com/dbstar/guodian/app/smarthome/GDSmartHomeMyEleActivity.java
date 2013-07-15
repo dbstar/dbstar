@@ -1,9 +1,7 @@
 package com.dbstar.guodian.app.smarthome;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.content.Context;
 import android.content.Intent;
@@ -24,26 +22,33 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.guodian.data.ResultData;
 import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.RoomData.ElecRefreshResponse;
 import com.dbstar.guodian.data.RoomData.ElecTurnResponse;
 import com.dbstar.guodian.data.RoomData.RoomEletrical;
-import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
-import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.CircleFlowIndicator;
 
 public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     
-    public static final String ELE_ON  = "01";
-    public static final String ELE_OFF = "00";
-    public static final String ELE_INVALID = "02";
+    public static final String SOCKET_ELE_ON  = "01";
+    public static final String SOCKET_ELE_OFF = "00";
+    public static final String SOCKET_ELE_INVALID = "02";
     
+    public static final String SMART_ELE_ON  = "03";
+    public static final String SMART_ELE_OFF = "04";
+    public static final String SMART_ELE_STOP = "02";
+    
+    public static final String DEVICE_TYPE_CURTAIN = "06";
+    public static final String DEVICE_TYPE_DEFAULT= "defualt";
+    public static final String DEVICE_TYPE_LIGHTING = "03";
     private GridView mRoomsListView;
     private ArrayList<RoomData> mListRoom;
     private ImageView mLeftJianTou;
@@ -269,9 +274,13 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             handleErrorResponse( R.string.no_login);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m007f002";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_ROOM_LIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
-        requestData(GDConstract.DATATYPE_ROOM_LIST, params);
+        requestData( params);
     }
     
     private void requestRoomEleList(String roomGuid){
@@ -279,10 +288,14 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             handleErrorResponse( R.string.loading_room_ele_list_fail);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m007f001";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_ROOM_ELECTRICAL_LIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGRoomGuid, roomGuid);
-        requestDataNotShowDialog(GDConstract.DATATYPE_ROOM_ELECTRICAL_LIST, params);
+        requestDataNotShowDialog(params);
     }
     private void initRoomListView() {
         if (mListRoom == null || mListRoom.isEmpty()) {
@@ -321,10 +334,10 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
      
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if (type == EventData.EVENT_GUODIAN_DATA) {
-            if(GDConstract.DATATYPE_ROOM_LIST == guodianEvent.Type){
+            if(GDRequestType.DATATYPE_ROOM_LIST == guodianEvent.Type){
                 mListRoom = (ArrayList<RoomData>) guodianEvent.Data;
                 initRoomListView();
-            }else if(GDConstract.DATATYPE_ROOM_ELECTRICAL_LIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_ROOM_ELECTRICAL_LIST == guodianEvent.Type){
               List<RoomEletrical> eles = (List<RoomEletrical>) guodianEvent.Data;
               RoomData room = null;
               if(eles != null && !eles.isEmpty()){
@@ -337,22 +350,30 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                 }
               }
               initRoomEleListView();
-            }else if(GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
                 ElecTurnResponse elecTurnResponse = (ElecTurnResponse) guodianEvent.Data;
                 updateEleSwitch(elecTurnResponse);
-            }else if(GDConstract.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL== guodianEvent.Type){
+                ResultData resultData = (ResultData) guodianEvent.Data;
+                    if(!"true".equals(resultData.Result)){
+                        handleErrorResponse(resultData.Reason);
+                        return;
+                    }
+            }else if(GDRequestType.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
                 ElecRefreshResponse elecRefreshResponse = (ElecRefreshResponse) guodianEvent.Data;
                 updateEleInfo(elecRefreshResponse);
             }
         }else if(type == EventData.EVENT_GUODIAN_DATA_ERROR){
-            if(GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
+            if(GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
                 handleErrorResponse(R.string.server_error);
-            }else if(GDConstract.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
                 handleErrorResponse(R.string.server_error);
-            }else if(GDConstract.DATATYPE_ROOM_LIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_ROOM_LIST == guodianEvent.Type){
                 handleErrorResponse(R.string.loading_error);
-            }else if(GDConstract.DATATYPE_ROOM_ELECTRICAL_LIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_ROOM_ELECTRICAL_LIST == guodianEvent.Type){
                 handleErrorResponse(R.string.loading_room_ele_list_fail);
+            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL == guodianEvent.Type){
+                handleErrorResponse(R.string.server_error);
             }else{
                 handleErrorResponse(R.string.loading_error);
             }
@@ -383,14 +404,17 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
         if(elecTurnResponse != null){
             RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
             if("true".equals(elecTurnResponse.Result)){
-                if(eletrical.AdapterFlag.equals(ELE_ON)){
-                    eletrical.AdapterFlag = ELE_OFF;
-                }else if(eletrical.AdapterFlag.equals(ELE_OFF)){
-                    eletrical.AdapterFlag = ELE_ON;
+                if(eletrical.AdapterFlag.equals(SOCKET_ELE_ON)){
+                    eletrical.AdapterFlag = SOCKET_ELE_OFF;
+                }else if(eletrical.AdapterFlag.equals(SOCKET_ELE_OFF)){
+                    eletrical.AdapterFlag = SOCKET_ELE_ON;
+                }
+                if(elecTurnResponse.RealTimePowerValue != null){
+                    eletrical.RealTimePower = elecTurnResponse.RealTimePowerValue;
                 }
                 mRoomEleAdapter.notifyDataSetChanged();
             }else{
-                Toast.makeText(this, elecTurnResponse.Reason, Toast.LENGTH_SHORT).show();
+                handleErrorResponse(elecTurnResponse.Reason);
             }
         }
     }
@@ -586,91 +610,212 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             final View myView;
             final int index = position;
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getApplicationContext())
-                        .inflate(R.layout.smart_home_my_elec_equ_itme, null);
-                myView = convertView;
-                v = new EquViewHolder();
-                v.mEleTitle = (TextView) myView.findViewById(R.id.ele_title);
-                v.mTurn = (Button) myView.findViewById(R.id.smart_home_on_off);
-                v.mRefresh = (Button) myView
-                        .findViewById(R.id.smart_home_refresh);
-                
-                v.mDayAmount = (TextView) convertView.findViewById(R.id.smarthome_ele_day_amount);
-                v.mMonthAmount = (TextView)convertView. findViewById(R.id.smarthome_ele_month_amount);
-                v.mRealTimePower = (TextView)convertView. findViewById(R.id.smarthome_ele_reatime_power);
-                v.mDevicePic = (ImageView) convertView.findViewById(R.id.smarthome_bottom_device_pic);
-                v.mTurn.setOnKeyListener(new OnKeyListener() {
-                    
-                    @Override
-                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        return handOnEleListOnKeyLinstener(v, keyCode, event);
-                    }
-                });
-                v.mRefresh.setOnKeyListener(new OnKeyListener() {
-                    
-                    @Override
-                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        return handOnEleListOnKeyLinstener(v, keyCode, event);
-                    }
-                });
-                    convertView.setTag(v);
-            } else {
-                myView = convertView;
-                v = (EquViewHolder) convertView.getTag();
-            }
             
-            v.mTurn.setOnFocusChangeListener(new OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    mEleListselectedIndex = index;
-                     handOnEleListFocusLinstener(hasFocus, myView);
-                }
-            });
-            v.mRefresh
-                    .setOnFocusChangeListener(new OnFocusChangeListener() {
+            RoomEletrical eletrical = data [position];
+            if(position == 1){
+                eletrical.DevicePic = "06";
+            }
+            if(eletrical.DevicePic.equals(DEVICE_TYPE_CURTAIN)){
+                CurtainHolder vh = null;
+                
+                if(convertView != null && convertView.findViewById(R.id.on) != null){
+                    myView = convertView;
+                    v= (CurtainHolder) convertView.getTag();
+                    
+                }else{
+                    convertView = LayoutInflater
+                            .from(getApplicationContext())
+                            .inflate(R.layout.smart_home_my_elec_equ_curtain_itme, null);
+                    myView = convertView;
+                    v = new CurtainHolder();
+                    vh = (CurtainHolder) v;
+                    vh.mEleTitle = (TextView)  convertView
+                            .findViewById(R.id.ele_title);
+                    
+                    v.mRefresh = (Button) myView
+                            .findViewById(R.id.smart_home_refresh);
 
+                    vh.mDayAmount = (TextView) convertView
+                            .findViewById(R.id.smarthome_ele_day_amount);
+                    vh.mMonthAmount = (TextView) convertView
+                            .findViewById(R.id.smarthome_ele_month_amount);
+                    vh.mDevicePic = (ImageView) convertView
+                            .findViewById(R.id.smarthome_bottom_device_pic);
+                    vh.mOn = (Button) convertView.findViewById(R.id.on);
+                    vh.mStop = (Button) convertView.findViewById(R.id.stop);
+                    vh.mOff = (Button) convertView.findViewById(R.id.off);
+                    
+                    vh.mOn.setOnKeyListener(new OnKeyListener() {
+                        
                         @Override
-                        public void onFocusChange(View v, boolean hasFocus) {
-                            mEleListselectedIndex = index;
-                            handOnEleListFocusLinstener(hasFocus, myView);
+                        public boolean onKey(View v, int keyCode, KeyEvent event) {
+                            
+                            return handOnEleListOnKeyLinstener(v, keyCode,
+                                    event);
                         }
                     });
-            RoomEletrical eletrical = data [position];
-            if(eletrical.AdapterFlag.equals(ELE_ON)){
-                v.mTurn.setBackgroundResource(R.drawable.smart_home_on_off_on_selecter);
-            }else if(eletrical.AdapterFlag.equals(ELE_OFF)){
-                v.mTurn.setBackgroundResource(R.drawable.smart_home_on_off_offselecter);
-            }else if(eletrical.AdapterFlag.equals(ELE_INVALID)){
-                v.mTurn.setBackgroundDrawable( null);
-                v.mTurn.setText("");
-            }
-            v.mEleTitle.setText(eletrical.DeviceName);
-            v.mDayAmount.setText(eletrical.EleAmountOfDay);
-            v.mMonthAmount.setText(eletrical.EleAmountOfMonth);
-            v.mRealTimePower.setText(eletrical.RealTimePower);
-            
-            
-            StringBuilder sb = new StringBuilder();
-            sb.append("common_icon_equ_");
-            
-            String num = "defult";
-            try {
-               num = String.valueOf(Integer.parseInt(eletrical.DevicePic, 16));
-               if(num.length() == 1){
-                   num = "0"+ num;
-               }
-            } catch (Exception e) {
-            }
-            sb.append(num);
+                    vh.mStop.setOnKeyListener(new OnKeyListener() {
+                        
+                        @Override
+                        public boolean onKey(View v, int keyCode, KeyEvent event) {
+                            return handOnEleListOnKeyLinstener(v, keyCode,
+                                    event);
+                        }
+                    });
+                    vh.mOff.setOnKeyListener(new OnKeyListener() {
+                        
+                        @Override
+                        public boolean onKey(View v, int keyCode, KeyEvent event) {
+                            return handOnEleListOnKeyLinstener(v, keyCode,
+                                    event);
+                        }
+                    });
+                    convertView.setTag(vh);
+                }
+                
+                vh = (CurtainHolder) v;
+                
+                vh.mRefresh.setOnFocusChangeListener(new OnFocusChangeListener() {
+                    
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                      myView.findViewById(R.id.on).requestFocus();
+                    }
+                });
+                
+                vh.mOn.setOnFocusChangeListener(new OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        mEleListselectedIndex = index;
+                        handOnEleListFocusLinstener(hasFocus, myView);
+                    }
+                });
            
-            int picId =  getResources().getIdentifier(sb.toString(), "drawable", getPackageName());
-            if(picId == 0){
-                v.mDevicePic.setImageResource(R.drawable.common_icon_equ_defult);
+
+                vh.mOff.setOnFocusChangeListener(new OnFocusChangeListener() {
+    
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        mEleListselectedIndex = index;
+                        handOnEleListFocusLinstener(hasFocus, myView);
+                    }
+                });
+                vh.mStop.setOnFocusChangeListener(new OnFocusChangeListener() {
+                    
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        mEleListselectedIndex = index;
+                        handOnEleListFocusLinstener(hasFocus, myView);
+                    }
+                });
+                
             }else{
-                v.mDevicePic.setImageResource(picId);
+                if(convertView != null  && convertView.findViewById(R.id.on) == null){
+                    myView = convertView;
+                    v = (EquViewHolder) convertView.getTag();
+                }else{
+                    convertView = LayoutInflater
+                            .from(getApplicationContext())
+                            .inflate(R.layout.smart_home_my_elec_equ_itme, null);
+                    myView = convertView;
+                    v = new EquViewHolder();
+                    v.mEleTitle = (TextView) myView
+                            .findViewById(R.id.ele_title);
+                    v.mTurn = (Button) myView
+                            .findViewById(R.id.smart_home_on_off);
+                    v.mRefresh = (Button) myView
+                            .findViewById(R.id.smart_home_refresh);
+
+                    v.mDayAmount = (TextView) convertView
+                            .findViewById(R.id.smarthome_ele_day_amount);
+                    v.mMonthAmount = (TextView) convertView
+                            .findViewById(R.id.smarthome_ele_month_amount);
+                    v.mRealTimePower = (TextView) convertView
+                            .findViewById(R.id.smarthome_ele_reatime_power);
+                    v.mDevicePic = (ImageView) convertView
+                            .findViewById(R.id.smarthome_bottom_device_pic);
+                    v.mTurn.setOnKeyListener(new OnKeyListener() {
+
+                        @Override
+                        public boolean onKey(View v, int keyCode, KeyEvent event) {
+                            return handOnEleListOnKeyLinstener(v, keyCode,
+                                    event);
+                        }
+                    });
+                    v.mRefresh.setOnKeyListener(new OnKeyListener() {
+
+                        @Override
+                        public boolean onKey(View v, int keyCode, KeyEvent event) {
+                            return handOnEleListOnKeyLinstener(v, keyCode,
+                                    event);
+                        }
+                    });
+                    convertView.setTag(v);
+                } 
+                 
+                v.mTurn.setOnFocusChangeListener(new OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        mEleListselectedIndex = index;
+                        handOnEleListFocusLinstener(hasFocus, myView);
+                    }
+                });
+                v.mRefresh
+                        .setOnFocusChangeListener(new OnFocusChangeListener() {
+
+                            @Override
+                            public void onFocusChange(View v, boolean hasFocus) {
+                                mEleListselectedIndex = index;
+                                handOnEleListFocusLinstener(hasFocus, myView);
+                            }
+                        });
+
+                if (eletrical.AdapterFlag.equals(SOCKET_ELE_ON)) {
+                    v.mTurn.setBackgroundResource(R.drawable.smart_home_on_off_on_selecter);
+                } else if (eletrical.AdapterFlag.equals(SOCKET_ELE_OFF)) {
+                    v.mTurn.setBackgroundResource(R.drawable.smart_home_on_off_offselecter);
+                } else if (eletrical.AdapterFlag.equals(SOCKET_ELE_INVALID)) {
+                    v.mTurn.setBackgroundDrawable(null);
+                    v.mTurn.setText("");
+                }
+                
+                if (eletrical.RealTimePower != null
+                        && !eletrical.RealTimePower.isEmpty()) {
+                    v.mRealTimePower
+                            .setText(String.valueOf(Math.round(Float
+                                    .parseFloat(eletrical.RealTimePower.trim()) * 1000)));
+                } else {
+                    v.mRealTimePower.setText("0.0");
+                }
             }
-            //v.mDayAmount.setText((mElePageNumber * ElePageSize) + position +"");
+                v.mEleTitle.setText(eletrical.DeviceName);
+                v.mDayAmount.setText(eletrical.EleAmountOfDay);
+                v.mMonthAmount.setText(eletrical.EleAmountOfMonth);
+              
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("common_icon_equ_");
+
+                String num = "defult";
+                try {
+                    num = String.valueOf(Integer.parseInt(eletrical.DevicePic,
+                            16));
+                    if (num.length() == 1) {
+                        num = "0" + num;
+                    }
+                } catch (Exception e) {
+                }
+                sb.append(num);
+
+                int picId = getResources().getIdentifier(sb.toString(),
+                        "drawable", getPackageName());
+                if (picId == 0) {
+                    v.mDevicePic
+                            .setImageResource(R.drawable.common_icon_equ_defult);
+                } else {
+                    v.mDevicePic.setImageResource(picId);
+                }
+           
             return convertView;
         }
         
@@ -686,13 +831,27 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             TextView mRealTimePower;
             ImageView mDevicePic;
         }
+        
+        class CurtainHolder extends EquViewHolder{
+            Button mOn;
+            Button mStop;
+            Button mOff;
+        }
     }
 
     private void handOnEleListFocusLinstener(boolean hasFocus,View v){
         if (hasFocus) {
-            v.setBackgroundResource(R.drawable.smarthome_myele_bottom_equ_highlight);
+            if(v.findViewById(R.id.on) != null){
+                v.setBackgroundResource(R.drawable.smart_home_mode_equ_focus_bg);
+            }else{
+                v.setBackgroundResource(R.drawable.smart_home_room_ele_focus_bg);
+            }
         } else
-            v.setBackgroundResource(R.drawable.smarthome_myele_bottom_equ_normal);
+            if(v.findViewById(R.id.on) != null){
+                v.setBackgroundResource(R.drawable.smarthome_model_ele_nomarl);
+            }else{
+                v.setBackgroundResource(R.drawable.smarthome_myele_bottom_equ_normal);
+            }
     }
     
     private boolean handOnEleListOnKeyLinstener(View v, int keyCode,
@@ -718,9 +877,15 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
 
             case KeyEvent.KEYCODE_DPAD_CENTER: {
                     if (v.getId() == R.id.smart_home_on_off) {
-                        requestTurnOnOrOff();
+                        requestTurnOnOrOff(DEVICE_TYPE_DEFAULT,"");
                     } else if (v.getId() == R.id.smart_home_refresh) {
                         requestRefreshElectrical();
+                    }else if(v.getId() == R.id.on){
+                        requestTurnOnOrOff(DEVICE_TYPE_CURTAIN,SMART_ELE_ON);
+                    }else if(v.getId() == R.id.stop){
+                        requestTurnOnOrOff(DEVICE_TYPE_CURTAIN,SMART_ELE_STOP);
+                    }else if(v.getId() == R.id.off){
+                        requestTurnOnOrOff(DEVICE_TYPE_CURTAIN,SMART_ELE_OFF);
                     }
 
                 break;
@@ -733,31 +898,44 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
 
     }
     
-    private void requestTurnOnOrOff(){
-       RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
+    private void requestTurnOnOrOff(String deviceType,String oper){
        if(mCtrlSeridNo == null){
            handleErrorResponse(R.string.no_login);
            return;
        }
+       
+       
+       RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
+       
        String adapter_seridno = eletrical.AdapterSeridNo;
        String device_guid = eletrical.DeviceGuid;
        String typeid = eletrical.EleDeviceCode;
-       
-       
-       String oper = ELE_INVALID;
-       if(eletrical.AdapterFlag.equals(ELE_ON)){
-           oper = ELE_OFF;
-       }else if(eletrical.AdapterFlag.equals(ELE_OFF)){
-           oper = ELE_ON;
+       RequestParams params = null;
+       mSystemFlag = "sml";
+       mRequestMethodId = "m001f014";
+       int requestType = GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL;
+       if(DEVICE_TYPE_DEFAULT.equals(deviceType)){
+           params = new RequestParams(requestType);
+           oper = SOCKET_ELE_INVALID;
+           if(eletrical.AdapterFlag.equals(SOCKET_ELE_ON)){
+               oper = SOCKET_ELE_OFF;
+           }else if(eletrical.AdapterFlag.equals(SOCKET_ELE_OFF)){
+               oper = SOCKET_ELE_ON;
+           }
+       }else if(DEVICE_TYPE_CURTAIN.equals(deviceType)){
+           requestType = GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL;
+           mRequestMethodId = "m001f001";
+           params = new RequestParams(requestType);
+           params.put("device_iconid", deviceType);
        }
-       
-       Map<String, String> params = new HashMap<String, String>();
+       params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+       params.put(RequestParams.KEY_METHODID, mRequestMethodId);
        params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
        params.put(JsonTag.TAGAdapterSeridNo, adapter_seridno);
        params.put(JsonTag.TAGDeviceGuid, device_guid);
        params.put(JsonTag.TAGTypeId, typeid);
        params.put(JsonTag.TAGOper, oper);
-       requestData(GDConstract.DATATYPE_TUNN_ON_OFF_ELECTRICAL, params);
+       requestData(params);
     }
     
     private void requestRefreshElectrical(){
@@ -770,12 +948,16 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
         String device_guid = eletrical.DeviceGuid;
         String typeid = eletrical.EleDeviceCode;
         
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m001f011";
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_REFRESH_ELECTRICAL);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGAdapterSeridNo, adapter_seridno);
         params.put(JsonTag.TAGDeviceGuid, device_guid);
         params.put(JsonTag.TAGTypeId, typeid);
-        requestData(GDConstract.DATATYPE_REFRESH_ELECTRICAL, params);
+        requestData(params);
     }
     class RoomAdapter extends BaseAdapter {
 

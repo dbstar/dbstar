@@ -36,8 +36,8 @@ public class GDSpinner extends Button{
     private OnItemSelectedListener onItemSelectedListener;
     private int mPaddingLeft;
     private int mItemHeight;
-    private int mItemCount = 5;
-    private int mItemDefaultCount = 5;
+    private int mItemCount;
+    private int mItemDefaultCount;
     private int mItemPaddingLeft;
     int itemLyoautId = R.layout.gd_spinner_drop_list_item;
     private float mDensity;
@@ -53,8 +53,8 @@ public class GDSpinner extends Button{
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.GDSpinner);
         itemLyoautId = a.getResourceId(R.styleable.GDSpinner_itemlayout, itemLyoautId);
-        mItemCount = a.getInteger(R.styleable.GDSpinner_itemCount, mItemCount);
-        
+        mItemCount = a.getInteger(R.styleable.GDSpinner_itemCount, 5);
+        mItemDefaultCount =  mItemCount;
         
         View v = LayoutInflater.from(context).inflate(itemLyoautId, null);
         measureChild(v);
@@ -86,6 +86,7 @@ public class GDSpinner extends Button{
                 super.onChanged();
                 if(mAdapter != null){
                     if(mAdapter.getCount() == 0){
+                        GDSpinner.this.setText("");
                         setFocusableInTouchMode(false);
                         setFocusable(false);
                         setEnabled(false);
@@ -95,7 +96,8 @@ public class GDSpinner extends Button{
                         setFocusable(true);
                         mSelectionPosition = 0;
                         setEnabled(true);
-                        
+                        GDSpinner.this.setText(mAdapter.getItem(mSelectionPosition).toString());
+                        mDropDownListView.setSelection(mSelectionPosition);
                         if(mDropDownPopu != null && mDropDownPopu.isShowing()){
                             mDropDownPopu.dismiss();
                             mDropDownPopu = null;
@@ -114,14 +116,21 @@ public class GDSpinner extends Button{
             }
         });
         createListView();
-        GDSpinner.this.setText(mAdapter.getItem(mSelectionPosition).toString());
-        mDropDownListView.setSelection(mSelectionPosition);
+        if(mAdapter.getCount() > 0){
+            GDSpinner.this.setText(mAdapter.getItem(mSelectionPosition).toString());
+            mDropDownListView.setSelection(mSelectionPosition);
+        }else{
+            GDSpinner.this.setText("");
+        }
     }
     
     public void setSelection(int selection){
         mSelectionPosition = selection;
         if(mAdapter != null){
+            if(mAdapter.getCount() > 0)
             GDSpinner.this.setText(mAdapter.getItem(mSelectionPosition).toString());
+            else
+            GDSpinner.this.setText("");    
         }
         if(mDropDownListView != null){
             if(onItemSelectedListener != null){
@@ -154,9 +163,25 @@ public class GDSpinner extends Button{
         
         if(mDropDownListView == null)
             createListView();
+        else{
+            if(mAdapter.getCount() < mItemCount){
+                mItemCount = mAdapter.getCount();
+            }else{
+                if(mAdapter.getCount() < mItemDefaultCount)
+                   mItemCount = mAdapter.getCount();
+                else
+                    mItemCount = mItemDefaultCount;
+            }
+            mDropDownPopuHeight = mItemCount * mItemHeight + dip2px(15);
+        }
+            
         
         if(mDropDownPopu == null)
             mDropDownPopu = new PopupWindow(mDropDownListView, mDropDownPopuWidth, mDropDownPopuHeight);
+        else{
+            if(mDropDownPopu.getHeight() != mDropDownPopuHeight)
+                mDropDownPopu.setHeight(mDropDownPopuHeight);
+        }
 
         mDropDownPopu.setFocusable(true);
         mDropDownPopu.setBackgroundDrawable(new

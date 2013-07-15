@@ -7,12 +7,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.util.Log;
-
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.data.PowerTips;
-import com.dbstar.util.DateUtil;
 
 public class PowerTipsDataHandler {
 	private static final String TAG = "PowerTipsDataHandler";

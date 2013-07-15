@@ -120,7 +120,15 @@
         <attr name="itemlayout" format="reference" />
         
     </declare-styleable>
-    
+     <declare-styleable name="GDNewsContent">
+          <attr name="vSpace" format="dimension" />
+          <attr name="hSpace" format="dimension" />
+          <attr name="imageViewWidth" format="dimension" />
+          <attr name="imageViewHeight" format="dimension" />
+          <attr name="mSpaceBetweenPicAndCotent" format="dimension" />
+          <attr name="textSize" />
+          <attr name="textColor" />
+    </declare-styleable>
     <declare-styleable name="GDCircleTextView">
         <attr name="startAngle" />
         <attr name="sweepAngle" />

@@ -8,18 +8,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.util.JsonToken;
-
+import com.dbstar.guodian.data.AddTimedTaskResponse;
 import com.dbstar.guodian.data.ElectricalOperationMode;
 import com.dbstar.guodian.data.ElectricalOperationMode.ModeElectrical;
-import com.dbstar.guodian.data.AddTimedTaskResponse;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.ResultData;
 import com.dbstar.guodian.data.RoomData;
-import com.dbstar.guodian.data.TimedTask;
 import com.dbstar.guodian.data.RoomData.ElecRefreshResponse;
 import com.dbstar.guodian.data.RoomData.ElecTurnResponse;
 import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.TimedTask;
 
 public class SmartHomeDataHandler {
 	private static final String TAG = "SmartHomeDataHandler";

@@ -4,16 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import android.media.JetPlayer;
-import android.util.Log;
 
 import com.dbstar.guodian.data.ElectriDimension;
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.PowerPanelData;
 
 public class ElecDimensionDataHandler {
 

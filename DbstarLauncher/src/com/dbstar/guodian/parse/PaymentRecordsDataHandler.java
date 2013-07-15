@@ -3,25 +3,16 @@ package com.dbstar.guodian.parse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import android.media.JetPlayer;
-import android.util.Log;
-
-import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.Notice;
 import com.dbstar.guodian.data.PaymentRecord;
 import com.dbstar.guodian.data.PaymentRecord.Record;
-import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.util.DateUtil;
 
 public class PaymentRecordsDataHandler {

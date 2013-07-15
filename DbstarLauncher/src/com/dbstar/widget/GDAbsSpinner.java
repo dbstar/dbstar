@@ -17,20 +17,17 @@
 package com.dbstar.widget;
 
 import android.content.Context;
-//import android.content.res.TypedArray;
 import android.database.DataSetObserver;
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseArray;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.AbsSpinner;
 import android.widget.SpinnerAdapter;
 
 /**

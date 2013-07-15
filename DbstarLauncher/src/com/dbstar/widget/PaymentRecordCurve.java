@@ -2,8 +2,6 @@ package com.dbstar.widget;
 
 import java.util.ArrayList;
 
-import com.dbstar.R;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,6 +13,8 @@ import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
 import android.util.Log;
+
+import com.dbstar.R;
 
 /**********************************************************************************
 Copyright (C), 2011-2012, 北京国电通网络技术有限公司. 
