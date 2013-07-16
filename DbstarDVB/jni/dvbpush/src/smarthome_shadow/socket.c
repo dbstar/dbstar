@@ -221,7 +221,7 @@ static int recvFromServer(int l_socket_fd)
 				recv_timeout_try ++;
 				
 				ret = total_recv_len;
-				if(recv_timeout_try>=2){
+				if(recv_timeout_try>=7){
 					DEBUG("recv select timeout finish, total_recv_len=%d\n",total_recv_len);
 					break;
 				}
@@ -274,8 +274,19 @@ static int recvFromServer(int l_socket_fd)
 						break;
 					}
 					else{
+						recvbuf_tmp = s_recvbuf+total_recv_len;
+						*(recvbuf_tmp+ret_recv) = '\0';
+						
 						total_recv_len += ret_recv;
-						DEBUG("recv %d[%d] in %d successfully\n", ret_recv,total_recv_len,s_recvbuf_size);
+						
+						if(strstr(recvbuf_tmp,"!#")){
+							DEBUG("recv %d[%d] in %d successfully, receive finished\n", ret_recv,total_recv_len,s_recvbuf_size);
+							ret = total_recv_len;
+							break;
+						}
+						else{
+							DEBUG("recv %d[%d] in %d successfully\n", ret_recv,total_recv_len,s_recvbuf_size);
+						}
 					}
 				}
 				else
