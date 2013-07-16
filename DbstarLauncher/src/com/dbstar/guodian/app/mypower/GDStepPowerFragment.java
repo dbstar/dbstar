@@ -261,12 +261,11 @@ public class GDStepPowerFragment extends GDBaseFragment {
             return;
         }
 
-		if (mElecPrice == null) {
-			mElecPrice = mService.getElecPrice();
+		if (mElecPrice == null && mService.getLoginData()!= null) {
+			mElecPrice = mService.getLoginData().ElecPrice;
 		}
-		EPCConstitute ed = mService.getEDimension();
-        if(ed != null && ed.totalPower != null){
-            mAllDevicePowerAmountView.setText(ed.totalPower.Count);
+        if(mService.getLoginData() != null){
+            mAllDevicePowerAmountView.setText(mService.getLoginData().ControlledPowerCount);
         }
 		
 		ElectricityPrice priceData = mElecPrice;

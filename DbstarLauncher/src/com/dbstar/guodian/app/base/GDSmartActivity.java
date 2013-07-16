@@ -18,7 +18,7 @@ public class GDSmartActivity extends GDBaseActivity {
     private static final String TAG = "GDSmartActivity";
     private static final long DefaultTimeout = 8000;
     //private static final long NoNotifyTimeout = 2000;
-    private static final long NoResponseTimeout = 30000;
+    private static final long NoResponseTimeout = 12000;
     private static final int MaxReconnectCount = 3;
     private long mTimeout = DefaultTimeout;
     private int mReconnectCount = 0;

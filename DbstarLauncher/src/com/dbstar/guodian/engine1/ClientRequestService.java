@@ -297,7 +297,7 @@ public class ClientRequestService {
         return info;
     }
 
-    public LoginData getLoginGata() {
+    public LoginData getLoginData() {
         return mLoginData;
     }
 }

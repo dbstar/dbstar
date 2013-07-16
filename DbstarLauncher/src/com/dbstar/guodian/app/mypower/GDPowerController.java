@@ -281,6 +281,13 @@ public class GDPowerController {
         mCacheParams = reqParams;
     }
 	public void updateElectriDimension(EPCConstitute dimension){
+	    if(dimension != null){
+	       if(mLoginData != null){
+	           if(dimension.totalPower != null)
+	               mLoginData.ControlledPowerCount = dimension.totalPower.Count;
+	       }
+	    }
+	    
 	    if(mIsAmmeterData)
 	        return;
 	        if(dimension == null || dimension.totalPower == null)

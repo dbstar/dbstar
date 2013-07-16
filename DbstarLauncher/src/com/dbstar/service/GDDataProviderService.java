@@ -2739,16 +2739,12 @@ public class GDDataProviderService extends Service {
 	}
 	// query cached data
 	public ElectricityPrice getElecPrice() {
-		//return mGuodianEngine.getElecPrice();
-		return null;
+	    if(getLoginData() != null)
+	        return getLoginData().ElecPrice;
+	    return null;
 	}
 	
 	public LoginData getLoginData(){
-	    //return mGuodianEngine.getLoginData();
-	    return mRequestService.getLoginGata();
-	}
-	public EPCConstitute getEDimension(){
-	    //return mGuodianEngine.getElectriDimension();
-	    return null;
+	    return mRequestService.getLoginData();
 	}
 }
