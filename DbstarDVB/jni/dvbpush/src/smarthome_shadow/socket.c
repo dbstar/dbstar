@@ -420,7 +420,7 @@ void *smartlife_connect_thread()
 	
 	int (*sqlite_cb)(char **, int, int, void *,unsigned int) = str_read_cb;
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select value from global where name='SmarthomeServerIP';");
-	int ret_sqlexec = sqlite_read(sqlite_cmd, server_ip, sizeof(server_ip), sqlite_cb);
+	int ret_sqlexec = smartlife_sqlite_read(sqlite_cmd, server_ip, sizeof(server_ip), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no server_ip from db for smartlife\n");
 	}
@@ -433,7 +433,7 @@ void *smartlife_connect_thread()
 	}
 	
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select value from global where name='SmartLifePort';");
-	ret_sqlexec = sqlite_read(sqlite_cmd, server_port_str, sizeof(server_port_str), sqlite_cb);
+	ret_sqlexec = smartlife_sqlite_read(sqlite_cmd, server_port_str, sizeof(server_port_str), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no server_port_str from db for smartlife\n");
 	}
