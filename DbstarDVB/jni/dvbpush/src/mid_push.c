@@ -1818,7 +1818,7 @@ int push_recv_manage_refresh()
  由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
  所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
 */
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc ORDER BY ProductDescID;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc;");
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*
