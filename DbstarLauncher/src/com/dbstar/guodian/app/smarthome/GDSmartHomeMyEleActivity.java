@@ -271,7 +271,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
 
     private void requestRoomList(){
         if(mCtrlSeridNo == null){
-            handleErrorResponse( R.string.no_login);
+            showErrorMsg( R.string.no_login);
             return;
         }
         mSystemFlag = "sml";
@@ -285,7 +285,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     
     private void requestRoomEleList(String roomGuid){
         if(mCtrlSeridNo == null){
-            handleErrorResponse( R.string.loading_room_ele_list_fail);
+            showErrorMsg( R.string.loading_room_ele_list_fail);
             return;
         }
         mSystemFlag = "sml";
@@ -356,7 +356,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL== guodianEvent.Type){
                 ResultData resultData = (ResultData) guodianEvent.Data;
                     if(!"true".equals(resultData.Result)){
-                        handleErrorResponse(resultData.Reason);
+                        showErrorMsg(resultData.Reason);
                         return;
                     }
             }else if(GDRequestType.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
@@ -365,17 +365,17 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             }
         }else if(type == EventData.EVENT_GUODIAN_DATA_ERROR){
             if(GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
-                handleErrorResponse(R.string.server_error);
+                showErrorMsg(R.string.server_error);
             }else if(GDRequestType.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
-                handleErrorResponse(R.string.server_error);
+                showErrorMsg(R.string.server_error);
             }else if(GDRequestType.DATATYPE_ROOM_LIST == guodianEvent.Type){
-                handleErrorResponse(R.string.loading_error);
+                showErrorMsg(R.string.loading_error);
             }else if(GDRequestType.DATATYPE_ROOM_ELECTRICAL_LIST == guodianEvent.Type){
-                handleErrorResponse(R.string.loading_room_ele_list_fail);
+                showErrorMsg(R.string.loading_room_ele_list_fail);
             }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL == guodianEvent.Type){
-                handleErrorResponse(R.string.server_error);
+                showErrorMsg(R.string.server_error);
             }else{
-                handleErrorResponse(R.string.loading_error);
+                showErrorMsg(R.string.loading_error);
             }
             return;
         }
@@ -414,7 +414,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                 }
                 mRoomEleAdapter.notifyDataSetChanged();
             }else{
-                handleErrorResponse(elecTurnResponse.Reason);
+                showErrorMsg(elecTurnResponse.Reason);
             }
         }
     }
@@ -612,9 +612,6 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             final int index = position;
             
             RoomEletrical eletrical = data [position];
-            if(position == 1){
-                eletrical.DevicePic = "06";
-            }
             if(eletrical.DevicePic.equals(DEVICE_TYPE_CURTAIN)){
                 CurtainHolder vh = null;
                 
@@ -900,7 +897,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     
     private void requestTurnOnOrOff(String deviceType,String oper){
        if(mCtrlSeridNo == null){
-           handleErrorResponse(R.string.no_login);
+           showErrorMsg(R.string.no_login);
            return;
        }
        
@@ -941,7 +938,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     private void requestRefreshElectrical(){
         RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         String adapter_seridno = eletrical.AdapterSeridNo;

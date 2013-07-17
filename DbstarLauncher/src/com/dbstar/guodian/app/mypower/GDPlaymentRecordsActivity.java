@@ -128,7 +128,7 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
                 }
             }
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-           handleErrorResponse(R.string.loading_error);
+           showErrorMsg(R.string.loading_error);
            return;
         }
         super.notifyEvent(type, event);
@@ -203,7 +203,7 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
     }
     private void requstDataFromService(){
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         mSystemFlag = "elc";
@@ -219,7 +219,7 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
     
     private void requestYearPlayment(String date){
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         mSystemFlag = "elc";

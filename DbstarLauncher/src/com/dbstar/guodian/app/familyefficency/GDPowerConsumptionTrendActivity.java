@@ -160,9 +160,9 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                handleErrorResponse(R.string.loading_electrical_list_fail);
+                showErrorMsg(R.string.loading_electrical_list_fail);
              }else{
-                 handleErrorResponse(R.string.loading_error);
+                 showErrorMsg(R.string.loading_error);
              }
             return;
         }
@@ -193,7 +193,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             CCGUID = getCtrlNo().CtrlNoGuid;
         }
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         mSystemFlag = "elc";
@@ -214,7 +214,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         }
         
         if(ctrlSeridno == null){
-            handleErrorResponse(R.string.loading_electrical_list_fail);
+            showErrorMsg(R.string.loading_electrical_list_fail);
             return;
         }
         mSystemFlag = "sml";

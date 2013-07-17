@@ -18,6 +18,7 @@ public class GDLoadingDialogView extends Dialog {
     private View mErroPageView;
     private View mNoNetWorKView;
     private View mLoadingView;
+    private View mMsgView;
     public GDLoadingDialogView(Context context, int theme) {
         super(context, theme);
        // this.getWindow().setWindowAnimations(R.style.ContentOverlay);
@@ -60,6 +61,7 @@ public class GDLoadingDialogView extends Dialog {
                 dialog.mErroPageView = dialog.contentView.findViewById(R.id.load_error_page);
                 dialog.mLoadingView = dialog.contentView.findViewById(R.id.loading_page);
                 dialog.mNoNetWorKView = dialog.contentView.findViewById(R.id.network_error_page);
+                dialog.mMsgView = dialog.contentView.findViewById(R.id.notify_msg_page);
                 dialog.setContentView(dialog.contentView);
             } else {
                 dialog.setContentView(dialog.contentView);
@@ -94,15 +96,8 @@ public class GDLoadingDialogView extends Dialog {
     }
     
     public void showLoadErrorInfo(int resID){
-        if(mLoadingView != null)
-            mLoadingView.setVisibility(View.INVISIBLE);
-        if(mNoNetWorKView != null)
-            mNoNetWorKView.setVisibility(View.INVISIBLE);
-        if(mErroPageView != null){
-            mErroPageView.setVisibility(View.VISIBLE);
-            TextView textView = (TextView) mErroPageView.findViewById(R.id.tv_error_info);
-            textView.setText(resID);
-        }
+        String error = getContext().getResources().getString(resID);
+        showLoadErrorInfo(error);
         
     }
     public void showLoadErrorInfo(String info){
@@ -110,6 +105,8 @@ public class GDLoadingDialogView extends Dialog {
             mLoadingView.setVisibility(View.INVISIBLE);
         if(mNoNetWorKView != null)
             mNoNetWorKView.setVisibility(View.INVISIBLE);
+        if(mMsgView !=  null)
+            mMsgView.setVisibility(View.INVISIBLE);
         if(mErroPageView != null){
             mErroPageView.setVisibility(View.VISIBLE);
             TextView textView = (TextView) mErroPageView.findViewById(R.id.tv_error_info);
@@ -122,6 +119,8 @@ public class GDLoadingDialogView extends Dialog {
             mLoadingView.setVisibility(View.INVISIBLE);
         if(mNoNetWorKView != null)
             mNoNetWorKView.setVisibility(View.VISIBLE);
+        if(mMsgView !=  null)
+            mMsgView.setVisibility(View.INVISIBLE);
         if(mErroPageView != null){
             mErroPageView.setVisibility(View.INVISIBLE);
         }
@@ -132,8 +131,25 @@ public class GDLoadingDialogView extends Dialog {
             mLoadingView.setVisibility(View.VISIBLE);
         if(mNoNetWorKView != null)
             mNoNetWorKView.setVisibility(View.INVISIBLE);
+        if(mMsgView !=  null)
+            mMsgView.setVisibility(View.INVISIBLE);
         if(mErroPageView != null){
             mErroPageView.setVisibility(View.INVISIBLE);
+        }
+    }
+    
+    public void showNotifyMsg(String msg){
+        if(mLoadingView != null)
+            mLoadingView.setVisibility(View.INVISIBLE);
+        if(mNoNetWorKView != null)
+            mNoNetWorKView.setVisibility(View.INVISIBLE);
+        if(mErroPageView != null){
+            mErroPageView.setVisibility(View.INVISIBLE);
+        }
+        if(mMsgView !=  null){
+            mMsgView.setVisibility(View.VISIBLE);
+            TextView textView = (TextView) mMsgView.findViewById(R.id.tv_msg_info);
+            textView.setText(msg);
         }
     }
 }

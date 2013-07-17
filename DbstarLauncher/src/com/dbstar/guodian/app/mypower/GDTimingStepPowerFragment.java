@@ -156,11 +156,11 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 		
 		LoginData mLoginData = mService.getLoginData();
         if(mLoginData == null){
-           mActivity.handleErrorResponse(R.string.no_login);
+           mActivity.showErrorMsg(R.string.no_login);
            return;
         }
         if(mLoginData.CtrlNo == null || mLoginData.CtrlNo.CtrlNoGuid == null){
-            mActivity.handleErrorResponse(R.string.no_login);
+            mActivity.showErrorMsg(R.string.no_login);
                return; 
         }
         
@@ -169,7 +169,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
         if(mLoginData.UserData == null 
                 ||mLoginData.UserData.UserInfo == null 
                 || mLoginData.UserData.UserInfo.UserType == null){
-            mActivity.handleErrorResponse(R.string.no_login);
+            mActivity.showErrorMsg(R.string.no_login);
             return; 
         }
         
@@ -192,7 +192,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		} else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
 		    GDSmartActivity activity = (GDSmartActivity) getActivity();
-            activity.handleErrorResponse(R.string.loading_error);
+            activity.showErrorMsg(R.string.loading_error);
         }
 	}
 

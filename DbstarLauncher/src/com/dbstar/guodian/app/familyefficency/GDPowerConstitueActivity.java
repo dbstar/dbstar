@@ -303,7 +303,7 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                 }
                 
             }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-                handleErrorResponse(R.string.loading_error);
+                showErrorMsg(R.string.loading_error);
                 return;
             }
         
@@ -337,12 +337,12 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
 
     private void requestPCConstitute(String dateType,String startDate,String endDate){
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         LoginData loginData =  mService.getLoginData();
         if(loginData == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return ;
         }
         String  userType =loginData.UserData.UserType;

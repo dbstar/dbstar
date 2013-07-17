@@ -521,6 +521,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     
     @Override
     public void notifyEvent(int type, Object event) {
+        super.notifyEvent(type, event);
         EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if( EventData.EVENT_GUODIAN_DATA == type){
             if(GDRequestType.DATATYPE_MODEL_LIST == guodianEvent.Type){
@@ -538,11 +539,13 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
                 ResultData result = (ResultData) guodianEvent.Data;
                 if(result != null){
                    if("true".equals(result.Result)){
-                       Toast.makeText(this,getString(R.string.family_text_execute_success) , Toast.LENGTH_SHORT).show();
-                       return ;
+                       showNotifyMessage(R.string.family_text_execute_success);
+                   }else{
+                       showNotifyMessage(R.string.family_text_execute_fail);
                    }
+                }else{
+                    showNotifyMessage(R.string.family_text_execute_fail);
                 }
-                Toast.makeText(this,getString(R.string.family_text_execute_fail) , Toast.LENGTH_SHORT).show();
                 
             }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 mAllElectricals = (List<RoomEletrical>) guodianEvent.Data;
@@ -552,24 +555,23 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
             } 
         }else if( EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDRequestType.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
-                handleErrorResponse( R.string.loading_model_ele_list_fail);
+                showErrorMsg( R.string.loading_model_ele_list_fail);
             }else if(GDRequestType.DATATYPE_EXECUTE_MODE == guodianEvent.Type){
-                handleErrorResponse( R.string.server_error);
+                showErrorMsg( R.string.server_error);
             }else if(GDRequestType.DATATYPE_MODEL_LIST == guodianEvent.Type){
-                handleErrorResponse( R.string.loading_error);
+                showErrorMsg( R.string.loading_error);
             }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                handleErrorResponse(R.string.loading_ele_pic_list_fail);
+                showErrorMsg(R.string.loading_ele_pic_list_fail);
             }else {
-                handleErrorResponse( R.string.loading_error);
+                showErrorMsg( R.string.loading_error);
             }
             return;
         }
-        super.notifyEvent(type, event);
     }
       
     private void requestModelList(){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         mSystemFlag = "sml";
@@ -583,7 +585,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     
     private void requestModeElectricalList(String modeGuid){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         mSystemFlag = "sml";
@@ -598,7 +600,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     
     private void executeMode(ElectricalOperationMode mode){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         mSystemFlag = "sml";
@@ -614,7 +616,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     
     private void requestAllElectrical(){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.loading_ele_pic_list_fail);
+            showErrorMsg(R.string.loading_ele_pic_list_fail);
             return;
         }
         mSystemFlag = "sml";

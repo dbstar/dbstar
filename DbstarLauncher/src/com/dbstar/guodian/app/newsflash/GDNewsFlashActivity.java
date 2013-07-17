@@ -79,7 +79,6 @@ public class GDNewsFlashActivity extends GDSmartActivity {
     
     private LinearLayout mDetailLayout;
     private RelativeLayout mListLayou;
-    private LinearLayout mRightLayout;
     private TextView mItemCountView, mPageNumberView;
     private TextView mContentPageCount,mContentPgeNumber;
     private String mStrGong, mStrTiao, mStrDi, mStrYe;
@@ -115,12 +114,10 @@ public class GDNewsFlashActivity extends GDSmartActivity {
         mStrDi = getResources().getString(R.string.text_di);
         mStrYe = getResources().getString(R.string.text_ye);
         
-        mRightLayout = (LinearLayout) findViewById(R.id.right_layout);
         mListLayou = (RelativeLayout) findViewById(R.id.list_view);
         mDetailLayout = (LinearLayout) findViewById(R.id.detail);
         mGdNewsViewGoup = (GDNewsViewGoup) findViewById(R.id.gdContent);
         mIndicator = (CircleFlowIndicator) findViewById(R.id.indicator);
-        mRightLayout.setVisibility(View.INVISIBLE);
         
         mContentPageCount = (TextView) findViewById(R.id.content_page_count);
         mContentPgeNumber = (TextView) findViewById(R.id.content_page_number);
@@ -252,7 +249,6 @@ public class GDNewsFlashActivity extends GDSmartActivity {
             boolean flag = true;
             @Override
             protected void onPreExecute() {
-                mRightLayout.setVisibility(View.INVISIBLE);
                 showLoadingPage();
             }
             @Override
@@ -487,7 +483,6 @@ public class GDNewsFlashActivity extends GDSmartActivity {
     Handler handler = new Handler() {
         public void handleMessage(android.os.Message msg) {
             if (msg.what == MESSAGE_WHAT_PARSE_TITLE_FINISH) {
-                mRightLayout.setVisibility(View.VISIBLE);
                 handleRequestFinished();
                 if(mCurrentPage < mHtmlDataSource.size()){
                     mListAdapter = new NewsAdapter();
@@ -506,7 +501,6 @@ public class GDNewsFlashActivity extends GDSmartActivity {
                 }
 
             } else if (msg.what == MESSAGE_WHAT_UPDATE_LIST) {
-                    mRightLayout.setVisibility(View.VISIBLE);
                     handleRequestFinished();
                     if(mCurrentPage < mHtmlDataSource.size()){
                     mListAdapter.setData(mHtmlDataSource.get(mCurrentPage));
@@ -519,29 +513,28 @@ public class GDNewsFlashActivity extends GDSmartActivity {
                 }
             } else if(msg.what == MESSAGE_WHAT_PARSE_CONTENT_FINISH){
                     handleRequestFinished();
-                    mRightLayout.setVisibility(View.INVISIBLE);
                     mListView.setFocusableInTouchMode(false);
                     mListView.setFocusable(false);
                     mListView.clearFocus();
                     mDetailLayout.setVisibility(View.VISIBLE);
                     GDNews gdNews = mListAdapter.getData().news.get(msg.arg1);
                    if((mNewsContent == null || mNewsContent.length() == 0) && (gdNews.urls == null || gdNews.urls.isEmpty())){
-                       handleErrorResponse(R.string.loading_null);
+                       showErrorMsg(R.string.loading_null);
                    }else{
                        mGdNewsViewGoup.setData(gdNews.urls, mNewsContent.toString());
                    }
                     mNewsContent = null;
             }else if(msg.what == MESSAGE_WHAT_PARSE_ERROR){
-                    handleErrorResponse(R.string.loading_error);
+                    showErrorMsg(R.string.loading_error);
             }else if(msg.what == MESSAGE_WHAT_PARSE_CONTENT_ERROR){
-                    handleErrorResponse(R.string.loading_error);
+                    showErrorMsg(R.string.loading_error);
                     mDetailLayout.setVisibility(View.GONE);
                     mListLayou.setVisibility(View.VISIBLE);
                     mListView.setFocusableInTouchMode(true);
                     mListView.setFocusable(true);
                     mListView.requestFocus();
             }else if(msg.what == MESSAGE_WHAT_PARSE_NULL){
-                    handleErrorResponse(R.string.loading_null);
+                    showErrorMsg(R.string.loading_null);
             }
             
             mIsParsing = false;

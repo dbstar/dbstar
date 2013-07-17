@@ -114,7 +114,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     
     private void requestPowerTarget(){
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         
@@ -142,7 +142,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     
     private void requestSetPowerTarget(){
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         
@@ -194,9 +194,9 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_SETTING_POWER_TARGET == guodianEvent.Type){
-                handleErrorResponse(R.string.text_set_power_target_fail);
+                showErrorMsg(R.string.text_set_power_target_fail);
             }else {
-                handleErrorResponse(R.string.loading_error);
+                showErrorMsg(R.string.loading_error);
             }
             return;
         }

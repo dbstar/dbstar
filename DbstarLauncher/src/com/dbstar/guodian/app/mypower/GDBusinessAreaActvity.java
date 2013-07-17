@@ -277,13 +277,13 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
 		    if (GDRequestType.DATATYPE_BUSINESSAREA == guodianEvent.Type) {
-		        handleErrorResponse(R.string.loading_error);
+		        showErrorMsg(R.string.loading_error);
 	        }else if(GDRequestType.DATATYPE_CITYES == guodianEvent.Type){
-	            handleErrorResponse(R.string.loading_city_area_info_fail);
+	            showErrorMsg(R.string.loading_city_area_info_fail);
 	        }else if(GDRequestType.DATATYPE_ZONES == guodianEvent.Type){
-	            handleErrorResponse(R.string.loading_zones_area_info_fail);
+	            showErrorMsg(R.string.loading_zones_area_info_fail);
 	        }else {
-	            handleErrorResponse(R.string.loading_error);
+	            showErrorMsg(R.string.loading_error);
 	        }
 		    return;
 		}
@@ -333,7 +333,13 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 		     ArrayList<AreaInfo.Area> zones = (ArrayList<AreaInfo.Area>) data;
 		     initializeZonesData(zones);
 		}
-
+		mHandler.post(new Runnable() {
+            
+            @Override
+            public void run() {
+                mQueryButton.requestFocus();
+            }
+        });
 	}
 
 	private void initializeCitysData(ArrayList<Area> citys) {

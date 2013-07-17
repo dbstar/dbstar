@@ -21,6 +21,7 @@
          android:layout_below="@id/view_header"
          android:background="@drawable/gd_middle_bj_b" 
          android:layout_alignParentRight="true"
+         android:visibility="invisible"
         ></LinearLayout>
     <FrameLayout
         android:id="@+id/page_content"
@@ -49,13 +50,10 @@
                 android:cacheColorHint="@android:color/transparent"
                 android:divider="@null"
                 android:listSelector="#00000000"
-                android:scrollbarFadeDuration="0"
                 android:scrollbarSize="1dp"
-                android:fadeScrollbars="false" 
                 android:scrollbarStyle="outsideOverlay"
                 android:scrollbarTrackVertical="@drawable/listview_scrollbar_bg"
                 android:scrollbarThumbVertical="@drawable/listlview_scrollbarthumb_bg"
-                android:scrollbarAlwaysDrawVerticalTrack="true"
                 android:visibility="visible" />
 
             <LinearLayout

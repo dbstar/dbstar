@@ -266,7 +266,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
             CCGUID = getCtrlNo().CtrlNoGuid;
         }
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         mSystemFlag = "elc";
@@ -288,7 +288,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         }
         
         if(ctrlSeridno == null){
-            handleErrorResponse(R.string.loading_electrical_list_fail);
+            showErrorMsg(R.string.loading_electrical_list_fail);
             return;
         }
             
@@ -320,11 +320,11 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
             }
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
             if(GDRequestType.DATATYPE_STEP_POWER_CONSUMPTION_TRACK == guodianEvent.Type){
-                handleErrorResponse(R.string.loading_error);
+                showErrorMsg(R.string.loading_error);
             }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                handleErrorResponse(R.string.loading_electrical_list_fail);
+                showErrorMsg(R.string.loading_electrical_list_fail);
             }else{
-                handleErrorResponse(R.string.loading_error);
+                showErrorMsg(R.string.loading_error);
             }
             return;
         }

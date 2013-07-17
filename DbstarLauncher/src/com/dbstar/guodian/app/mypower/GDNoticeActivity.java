@@ -56,7 +56,6 @@ public class GDNoticeActivity extends GDSmartActivity {
 	
 	private CircleFlowIndicator mIndicator;
 	private TextView mContentPageCount,mContentPgeNumber;
-	private LinearLayout mRightLayout;
 	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -111,8 +110,6 @@ public class GDNoticeActivity extends GDSmartActivity {
 		mNoticesAdapter = new ListAdapter();
 		mListView.setAdapter(mNoticesAdapter);
 		
-		mRightLayout = (LinearLayout) findViewById(R.id.right_layout);
-		mRightLayout.setVisibility(View.INVISIBLE);
 		
 		mDetailContainer = (ViewGroup) findViewById(R.id.detail);
 		mDetailContainer.setVisibility(View.GONE);
@@ -226,7 +223,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}else if(type == EventData.EVENT_GUODIAN_DATA_ERROR){
-		    handleErrorResponse(R.string.loading_error);
+		    showErrorMsg(R.string.loading_error);
 		    return;
 		}
 	}
@@ -283,7 +280,6 @@ public class GDNoticeActivity extends GDSmartActivity {
 		mNoticesAdapter.setDataSet(page);
 		mNoticesAdapter.notifyDataSetChanged();
 		displayPageNumber(pageNumber);
-		mRightLayout.setVisibility(View.VISIBLE);
         mListView.setFocusableInTouchMode(true);
         mListView.setFocusable(true);
         mListView.requestFocus();
@@ -309,14 +305,12 @@ public class GDNoticeActivity extends GDSmartActivity {
             mListView.clearFocus();
 			mListContainer.setVisibility(View.GONE);
 			mDetailContainer.setVisibility(View.VISIBLE);
-			mRightLayout.setVisibility(View.INVISIBLE);
 			mViewMode = MODE_DETAIL;
 
 			mDetailContainer.requestLayout();
 		} else {
 			mListContainer.setVisibility(View.VISIBLE);
 			mDetailContainer.setVisibility(View.GONE);
-			mRightLayout.setVisibility(View.VISIBLE);
 			mListView.setFocusableInTouchMode(true);
             mListView.setFocusable(true);
             mListView.requestFocus();

@@ -26,6 +26,7 @@ import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDSpinner;
 
 public class GDBillActivity extends GDSmartActivity {
@@ -196,7 +197,7 @@ public class GDBillActivity extends GDSmartActivity {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            handleErrorResponse(R.string.loading_error);
+            showErrorMsg(R.string.loading_error);
             return;
         }
 		super.notifyEvent(type, event);
@@ -230,7 +231,7 @@ public class GDBillActivity extends GDSmartActivity {
 				items[0] = item;
 				initalListData(items);
 			}else{
-			    Toast.makeText(this, R.string.load_data_is_null, Toast.LENGTH_SHORT).show();
+			    ToastUtil.showToast(this, R.string.load_data_is_null);
 			}
 		} else if (type == GDRequestType.DATATYPE_BILLDETAILOFRECENT) {
 			BillDetailListData listData = (BillDetailListData) data;
@@ -264,7 +265,7 @@ public class GDBillActivity extends GDSmartActivity {
 				}
 				initalListData(tempArray.toArray(new BillDataItem[tempArray.size()]));
 			}else{
-			    Toast.makeText(this, R.string.load_data_is_null, Toast.LENGTH_SHORT).show();
+			    ToastUtil.showToast(this, R.string.load_data_is_null);
 			}
 		}
 	}

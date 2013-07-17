@@ -345,6 +345,9 @@ public class GDDataProviderService extends Service {
 	    mRequestService.start(mDBStarClient, mGDObserver);
 	}
 	
+	void stopRequestServer(){
+	    mRequestService.stop();
+	}
 	void startGuodianEngine() {
 		Log.d(TAG, "========== startGuodianEngine ==========");
 		String serverIP = mDataModel
@@ -382,11 +385,12 @@ public class GDDataProviderService extends Service {
 	void deinitializeDataEngine() {
 		mDataModel.deInitialize();
 	}
-
+	
+	
 	public void onDestroy() {
 		super.onDestroy();
 		Log.d(TAG, "onDestroy");
-
+		stopRequestServer();
 		stopDbStarService();
 		mDBStarClient.stop();
 		//mDiskMonitor.stopMonitor();

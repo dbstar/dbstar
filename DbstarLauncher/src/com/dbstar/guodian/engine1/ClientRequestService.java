@@ -95,6 +95,9 @@ public class ClientRequestService {
         }
     }
     
+    public void stop(){
+        unReqisterSystemMessageReceiver();
+    }
     public void notifySocketState(String state){
         mSocketState = state;
         
@@ -254,6 +257,9 @@ public class ClientRequestService {
         mContext.registerReceiver(mCmdMessageReceiver, filter);
     }
     
+    private void unReqisterSystemMessageReceiver(){
+        mContext.unregisterReceiver(mCmdMessageReceiver);
+    }
     BroadcastReceiver mCmdMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

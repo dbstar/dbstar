@@ -49,6 +49,8 @@ public class CircleFlowIndicator extends View{
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if(count <=1)
+            return;
         float width =(3* count -1)* radius;
         leftpadding = (this.getLayoutParams().width - width) /2;
         float circleSeparation = 2*radius+radius;

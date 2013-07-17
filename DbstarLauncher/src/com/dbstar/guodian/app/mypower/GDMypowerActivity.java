@@ -79,7 +79,7 @@ public class GDMypowerActivity extends GDEngineActivity {
 		} else if (mPriceType == GDConstract.PriceTypeStepPlusTiming || mPriceType == GDConstract.PriceTypeTiming) {
 			fragmentName = "com.dbstar.guodian.app.mypower.GDTimingStepPowerFragment";
 		} else {
-		   handleErrorResponse(R.string.no_login);
+		   showErrorMsg(R.string.no_login);
 			return;
 		}
 

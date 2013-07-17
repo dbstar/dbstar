@@ -86,27 +86,12 @@ public class GDSmartActivity extends GDBaseActivity {
         }
     }
 
-    public void handleErrorResponse(final int errorStrId) {
-        mHandler.removeCallbacks(mTimeoutTask);
-        mHandler.removeCallbacks(mNoResponseTask);
-        if(mLoadDialogView == null)
-                showLoadingPage();
-        if(!mLoadDialogView.isShowing())
-            mLoadDialogView.ShowDialog();
-        mLoadDialogView.showLoadErrorInfo(errorStrId);
-        if(mPageContent != null && mPageContent.getVisibility() == View.VISIBLE){
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    hideloadingPage();
-                }
-            }, 1000);
-        }else{
-            mLoadDialogView.setCancelable(true);
-        }
+    public void showErrorMsg(final int errorStrId) {
+        String error = getResources().getString(errorStrId);
+        showErrorMsg(error);
     }
     
-    public void handleErrorResponse(String error) {
+    public void showErrorMsg(String error) {
         mHandler.removeCallbacks(mTimeoutTask);
         mHandler.removeCallbacks(mNoResponseTask);
         if(mLoadDialogView == null)
@@ -125,8 +110,31 @@ public class GDSmartActivity extends GDBaseActivity {
             mLoadDialogView.setCancelable(true);
         } 
     }
-
-
+    
+    public void showNotifyMessage(int rId){
+        String msg = getResources().getString(rId);
+        showNotifyMessage(msg);
+    }
+    
+    public void showNotifyMessage(String msg){
+        mHandler.removeCallbacks(mTimeoutTask);
+        mHandler.removeCallbacks(mNoResponseTask);
+        if(mLoadDialogView == null)
+                showLoadingPage();
+        if(!mLoadDialogView.isShowing())
+            mLoadDialogView.ShowDialog();
+        mLoadDialogView.showNotifyMsg(msg);
+        if(mPageContent != null && mPageContent.getVisibility() == View.VISIBLE){
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    hideloadingPage();
+                }
+            }, 1000);
+        }else{
+            mLoadDialogView.setCancelable(true);
+        } 
+    }
     protected void handleLoginSuccessed() {
         Log.d(TAG, "handleLoginSuccessed");
 
