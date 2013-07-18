@@ -8,7 +8,6 @@ import java.util.List;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,6 +26,7 @@ import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
+import com.dbstar.util.LogUtil;
 import com.dbstar.widget.CircleFlowIndicator;
 import com.dbstar.widget.GDNewsViewGoup;
 import com.dbstar.widget.GDNewsViewGoup.OnUpdatePageListener;
@@ -142,7 +141,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				Log.d(TAG, " ===== onKey === " + keyCode);
+				LogUtil.d(TAG, " ===== onKey === " + keyCode);
 				boolean ret = false;
 				int action = event.getAction();
 				if (action == KeyEvent.ACTION_DOWN) {
@@ -176,10 +175,10 @@ public class GDNoticeActivity extends GDSmartActivity {
 	}
 
 	private void loadPrevPage() {
-		Log.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
+		LogUtil.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
 				+ mPageNumber);
 
-		Log.d(TAG, "loadPrevPage");
+		LogUtil.d(TAG, "loadPrevPage");
 		mPageNumber--;
 
 		Notice[] notices = mPagesData.get(mPageNumber);
@@ -192,7 +191,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 	}
 
 	private void loadNextPage() {
-		Log.d(TAG, "loadNextPage count=" + mPageCount + " number= "
+		LogUtil.d(TAG, "loadNextPage count=" + mPageCount + " number= "
 				+ mPageNumber);
 
 		mPageNumber++;
@@ -208,7 +207,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 
 	protected void onServiceStart() {
 		super.onServiceStart();
-		Log.d(TAG, "onServiceStart");
+		LogUtil.d(TAG, "onServiceStart");
 		RequestParams params = new RequestParams(GDRequestType.DATATYPE_NOTICES);
 		params.put(RequestParams.KEY_SYSTEM_FLAG,mSystemFlag);
 		params.put(RequestParams.KEY_METHODID, mRequestMethodId);
@@ -232,7 +231,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 
 	private void handlePowerData(int type, Object data) {
 		if (data == null) {
-			Log.d(TAG, "ERROR: data is null");
+			LogUtil.d(TAG, "ERROR: data is null");
 			return;
 		}
 

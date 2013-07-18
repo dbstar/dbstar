@@ -16,7 +16,7 @@ import com.dbstar.guodian.data.ResultData;
 import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.RoomData.ElecRefreshResponse;
 import com.dbstar.guodian.data.RoomData.ElecTurnResponse;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.data.TimedTask;
 
 public class SmartHomeDataHandler {
@@ -49,8 +49,8 @@ public class SmartHomeDataHandler {
 	    
 	}
 	
-	public static ArrayList<RoomEletrical> parseRoomElectrical(String data){
-	    ArrayList<RoomEletrical> eletricals = new ArrayList<RoomData.RoomEletrical>();
+	public static ArrayList<RoomElectrical> parseRoomElectrical(String data){
+	    ArrayList<RoomElectrical> eletricals = new ArrayList<RoomData.RoomElectrical>();
 	    
 	    JSONTokener jsonParser = new JSONTokener(data);
         try {
@@ -60,11 +60,11 @@ public class SmartHomeDataHandler {
             JSONArray eleArray = rootObject.getJSONArray(JsonTag.TAGRoomEleList);
             
             JSONObject jb  = null;
-            RoomEletrical ele = null;
+            RoomElectrical ele = null;
             
             for(int i = 0 ,size = eleArray.length();i< size ;i ++){
                 jb = eleArray.getJSONObject(i);
-                ele = new RoomEletrical();
+                ele = new RoomElectrical();
                 ele.AdapterFlag = jb.getString(JsonTag.TAGAdapterFlag);
                 ele.AdapterSeridNo  = jb.getString(JsonTag.TAGAdapterSeridNo);
                 ele.CompanyName = jb.getString(JsonTag.TAGCompanyName);

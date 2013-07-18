@@ -18,7 +18,7 @@ import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.PowerConsumptionTrend;
 import com.dbstar.guodian.data.PowerConsumptionTrend.ConsumptionPercent;
 import com.dbstar.guodian.data.RoomData;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
@@ -46,9 +46,10 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     private ArrayAdapter<String> mDateAdapter;
     private ArrayAdapter<String> mEquAdapter;
     private PowerConsumptionTrend mTrend;
-    private ArrayList<RoomEletrical> mEquList;
+    private ArrayList<RoomElectrical> mEquList;
     private List<String> mDateList;
     private PowerTrendPolyLineView mPolyLine;
+    private boolean isRequestedElectrical;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,23 +84,23 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         mDateAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, mDateList);
         mSpinnerDate.setAdapter(mDateAdapter);
         
-        mEquList = new ArrayList<RoomData.RoomEletrical>();
-        RoomEletrical all =  new RoomEletrical();
+        mEquList = new ArrayList<RoomData.RoomElectrical>();
+        RoomElectrical all =  new RoomElectrical();
         all.EleDeviceCode = EQUTYPEID_ALL_EQU;
         all.DeviceName = getString(R.string.family_text_all_electrical);
         mEquList.add(all);
-        RoomEletrical deleted =  new RoomEletrical();
+        RoomElectrical deleted =  new RoomElectrical();
         deleted.EleDeviceCode = EQUTYPEID_DELETED_EQU;
         deleted .DeviceName = getString(R.string.family_text_deleted_electrical);
         mEquList.add(deleted);
         
-        RoomEletrical allCount =  new RoomEletrical();
+        RoomElectrical allCount =  new RoomElectrical();
         allCount.EleDeviceCode = EQUTYPEID_ALL_COUNT;
         allCount .DeviceName = getString(R.string.family_text_all_count);
         mEquList.add(allCount);
         
         ArrayList<String> equNames = new ArrayList<String>();
-        for (RoomEletrical equ : mEquList) {
+        for (RoomElectrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
         mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);
@@ -146,12 +147,13 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         if(EventData.EVENT_GUODIAN_DATA == type){
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_POWER_CONSUMPTION_TREND == guodianEvent.Type){
-                requestAllEleList();
+                if(!isRequestedElectrical)
+                    requestAllEleList();
                 mTrend = (PowerConsumptionTrend) guodianEvent.Data;
                 showPolyLineView(mTrend);
                 updateTitle();
             }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                List<RoomEletrical> list = (ArrayList<RoomEletrical>) guodianEvent.Data;
+                List<RoomElectrical> list = (ArrayList<RoomElectrical>) guodianEvent.Data;
                 if(list != null && !list.isEmpty()){
                     mEquList.addAll(list);
                     initEqumentSpinner();
@@ -225,10 +227,11 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
         requestDataNotShowDialog(params);
+        isRequestedElectrical = true;
     }
     private void initEqumentSpinner(){
         ArrayList<String> equNames = new ArrayList<String>();
-        for (RoomEletrical equ : mEquList) {
+        for (RoomElectrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
         mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);

@@ -3,7 +3,6 @@ package com.dbstar.app.settings.smartcard;
 import java.util.Map;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import com.dbstar.R;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.app.settings.GDSettings;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.LogUtil;
 
 public class GDDrmVersionFragment extends GDSmartcardFragment {
 	private static final String TAG = "GDDrmVersionFragment";
@@ -36,7 +36,7 @@ public class GDDrmVersionFragment extends GDSmartcardFragment {
 
 	// Request data at this point
 	public void serviceStart() {
-		Log.d(TAG, "=== service is started ===");
+	    LogUtil.d(TAG, "=== service is started ===");
 
 		queryData();
 	}

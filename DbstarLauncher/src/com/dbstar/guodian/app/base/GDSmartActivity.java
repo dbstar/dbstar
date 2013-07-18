@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
+import com.dbstar.util.LogUtil;
 import com.dbstar.widget.GDLoadingDialogView;
 
 public class GDSmartActivity extends GDBaseActivity {
@@ -136,7 +136,7 @@ public class GDSmartActivity extends GDBaseActivity {
         } 
     }
     protected void handleLoginSuccessed() {
-        Log.d(TAG, "handleLoginSuccessed");
+        LogUtil.d(TAG, "handleLoginSuccessed");
 
         if (mStartReconnect) {
             mStartReconnect = false;
@@ -149,7 +149,7 @@ public class GDSmartActivity extends GDBaseActivity {
 
 
     protected void handleRequestTimeout() {
-        Log.d(TAG, "handleRequestTimeout");
+        LogUtil.d(TAG, "handleRequestTimeout");
         if(!mService.isNetworkConnected()){
             handCanNotConnectToServer();
         }
@@ -166,7 +166,7 @@ public class GDSmartActivity extends GDBaseActivity {
     }
 
     public void requestData(RequestParams params) {
-        Log.d(TAG, "requestData");
+        LogUtil.d(TAG, "requestData");
         if(!mService.isNetworkConnected()){
            showNoNetWorkPage();
             return;
@@ -180,7 +180,7 @@ public class GDSmartActivity extends GDBaseActivity {
 
     }
     public void requestDataNotShowDialog(RequestParams params) {
-        Log.d(TAG, "requestDataNotShowDialog");
+        LogUtil.d(TAG, "requestDataNotShowDialog");
         mService.requestData(params);
         mCacheRequest.put(REQUEST_PARAMS, params);
     }

@@ -4,13 +4,14 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.dbstar.util.LogUtil;
+
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.util.Log;
 
 public class GDDBProvider {
 	private static final String TAG = "GDDBProvider";
@@ -112,13 +113,13 @@ public class GDDBProvider {
 
 	protected synchronized void createDatabase(String dbFile) {
 
-		Log.d(TAG, "++++++++++++++++++createDatabase " + dbFile);
+		LogUtil.d(TAG, "++++++++++++++++++createDatabase " + dbFile);
 
 		if (!isFileExist(dbFile)) {
 			SQLiteDatabase db = null;
 			db = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
-			Log.d(TAG, "dbFile=" + dbFile);
-			Log.d(TAG, "db=" + db);
+			LogUtil.d(TAG, "dbFile=" + dbFile);
+			LogUtil.d(TAG, "db=" + db);
 			db.beginTransaction();
 			try {
 				onCreate(db);
@@ -133,7 +134,7 @@ public class GDDBProvider {
 	protected synchronized SQLiteDatabase openDatabase(String dbFile,
 			boolean isReadOnly) {
 
-		Log.d(TAG, "open dbFile = " + dbFile);
+		LogUtil.d(TAG, "open dbFile = " + dbFile);
 
 		if (!isFileExist(dbFile))
 			return null;
@@ -175,12 +176,12 @@ public class GDDBProvider {
 			return null;
 		}
 
-		Log.d(TAG, "getReadableDatabase ");
+		LogUtil.d(TAG, "getReadableDatabase ");
 
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
-			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
+			LogUtil.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
 			if (mDataBase.isOpen()) {
 				db = mDataBase;
 			} else {
@@ -202,15 +203,15 @@ public class GDDBProvider {
 			return null;
 		}
 
-		Log.d(TAG, "getWriteableDatabase ");
+		LogUtil.d(TAG, "getWriteableDatabase ");
 
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
-			Log.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
+			LogUtil.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
 
 			if (mDataBase.isOpen()) {
-				Log.d(TAG,
+				LogUtil.d(TAG,
 						"mDataBase.isReadOnly() " + mDataBase.isReadOnly());
 				if (!mDataBase.isReadOnly()) {
 					db = mDataBase;
@@ -238,7 +239,7 @@ public class GDDBProvider {
 	}
 
 	protected boolean initialize(GDSystemConfigure configure) {
-		Log.d(TAG, "initialize");
+		LogUtil.d(TAG, "initialize");
 
 		mConfigure = configure;
 
@@ -246,7 +247,7 @@ public class GDDBProvider {
 	}
 
 	protected synchronized void deinitialize() {
-		Log.d(TAG, "deinitialize");
+		LogUtil.d(TAG, "deinitialize");
 		mDbFile = "";
 		if (mDataBase != null && mDataBase.isOpen()) {
 			mDataBase.close();
@@ -273,10 +274,10 @@ public class GDDBProvider {
 
 		Cursor curosr = null;
 		String table = getTableName(sURIMatcher.match(uri));
-		Log.d(TAG, "table = " + table);
+		LogUtil.d(TAG, "table = " + table);
 
 		if (table != null && !table.isEmpty()) {
-			Log.d(TAG, " query");
+			LogUtil.d(TAG, " query");
 
 			curosr = db.query(table, projection, selection, selectionArgs,
 					null, null, sortOrder);
@@ -298,7 +299,7 @@ public class GDDBProvider {
 		if (table != null && !table.isEmpty()) {
 			count = db.delete(table, selection, selectionArgs);
 
-			Log.d(TAG, " delete count " + count);
+			LogUtil.d(TAG, " delete count " + count);
 
 			// if (count > 0) {
 			// getContext().getContentResolver().notifyChange(uri, null);
@@ -321,11 +322,11 @@ public class GDDBProvider {
 		long rowId = -1;
 		Uri retUri;
 		if (table != null && !table.isEmpty()) {
-			Log.d(TAG, " insert");
+			LogUtil.d(TAG, " insert");
 
 			rowId = db.insert(table, null, values);
 			if (rowId > 0) {
-				Log.d(TAG, " insert at id=" + rowId);
+				LogUtil.d(TAG, " insert at id=" + rowId);
 				// retUri = ContentUris.withAppendedId(Global.CONTENT_URI,
 				// rowId);
 				retUri = ContentUris.withAppendedId(uri, rowId);
@@ -351,7 +352,7 @@ public class GDDBProvider {
 		int count = 0;
 		if (table != null && !table.isEmpty()) {
 			count = db.update(table, values, selection, selectionArgs);
-			Log.d(TAG, " update count " + count);
+			LogUtil.d(TAG, " update count " + count);
 
 			// if (count > 0) {
 			// getContext().getContentResolver().notifyChange(uri, null);
@@ -368,7 +369,7 @@ public class GDDBProvider {
 			db.beginTransaction();
 			for (String[] args : bindArgs) {
 
-				Log.d(TAG, " execBatchSql " + sql + args);
+				LogUtil.d(TAG, " execBatchSql " + sql + args);
 				db.execSQL(sql, args);
 			}
 			db.setTransactionSuccessful();

@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -37,6 +36,7 @@ import com.dbstar.guodian.parse.Util;
 import com.dbstar.model.GDCommon;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.util.DateUtil;
+import com.dbstar.util.LogUtil;
 import com.dbstar.widget.CommondTools;
 import com.dbstar.widget.GDArcView;
 import com.dbstar.widget.GDCircleTextView;
@@ -306,7 +306,7 @@ public class GDPowerController {
 	    
 	    requestEPCConstitute();
 	    
-		Log.d(TAG, " ===== updatePowerPanel ===== ");
+	    LogUtil.d(TAG, " ===== updatePowerPanel ===== ");
 
 		if (data == null)
 			return;
@@ -366,7 +366,7 @@ public class GDPowerController {
 
 		String priceType = status.PriceType;
 
-		Log.d(TAG, " ===== PriceType ===== " + priceType);
+		LogUtil.d(TAG, " ===== PriceType ===== " + priceType);
 
 		if (ElectricityPrice.PRICETYPE_STEP.equals(priceType)) {
 			mPriceType = GDConstract.PriceTypeStep;
@@ -404,11 +404,11 @@ public class GDPowerController {
 
 			for (ElectricityPrice.StepPrice stepPrice : stepPriceList) {
 
-				Log.d(TAG, "step " + stepPrice.Step);
-				Log.d(TAG, "step start " + stepPrice.StepStartValue);
-				Log.d(TAG, "step end " + stepPrice.StepEndValue);
-				Log.d(TAG, "step price " + stepPrice.StepPrice);
-				Log.d(TAG, "step period " + stepPrice.PeriodPriceList);
+				LogUtil.d(TAG, "step " + stepPrice.Step);
+				LogUtil.d(TAG, "step start " + stepPrice.StepStartValue);
+				LogUtil.d(TAG, "step end " + stepPrice.StepEndValue);
+				LogUtil.d(TAG, "step price " + stepPrice.StepPrice);
+				LogUtil.d(TAG, "step period " + stepPrice.PeriodPriceList);
 
 				if (stepPrice.Step.equals(ElectricityPrice.STEP_1)) {
 					mStepPowerRulerStep0.setText(stepPrice.StepStartValue);
@@ -426,13 +426,13 @@ public class GDPowerController {
 			ElectricityPrice.StepPrice currentStep = Util.getStep(
 					stepPriceList, powerNum);
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep == null) {
 				return;
 			}
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep.Step.equals(ElectricityPrice.STEP_1)) {
 				String stepEnd = currentStep.StepEndValue;

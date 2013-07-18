@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +19,7 @@ import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.ElectricityPrice.PeriodPrice;
 import com.dbstar.guodian.data.ElectricityPrice.StepPrice;
 import com.dbstar.guodian.parse.Util;
+import com.dbstar.util.LogUtil;
 import com.dbstar.util.ToastUtil;
 
 public class GDPriceDlgFragment extends DialogFragment {
@@ -44,7 +44,7 @@ public class GDPriceDlgFragment extends DialogFragment {
 	public GDPriceDlgFragment(ElectricityPrice priceData) {
 		mPriceData = priceData;
 
-		Log.d(TAG, " ==== price data = " + mPriceData);
+		LogUtil.d(TAG, " ==== price data = " + mPriceData);
 	}
 
 	@Override
@@ -110,10 +110,10 @@ public class GDPriceDlgFragment extends DialogFragment {
 				stepPrice[i] = stepPrices.get(i);
 			}
 
-			Log.d(TAG, " ==== step size = " + stepPrice.length);
+			LogUtil.d(TAG, " ==== step size = " + stepPrice.length);
 
 			mAdapter.setDataSet(stepPrice);
-			Log.d(TAG, " === listview = " + mListView);
+			LogUtil.d(TAG, " === listview = " + mListView);
 			mListView.setAdapter(mAdapter);
 		}else{
 		    ToastUtil.showToast(getActivity(), R.string.load_data_is_null);
@@ -216,7 +216,7 @@ public class GDPriceDlgFragment extends DialogFragment {
 			if (mDataSet[position].PeriodPriceList != null) {
 				List<PeriodPrice> periodList = mDataSet[position].PeriodPriceList;
 
-				Log.d(TAG, "===periode size == " + periodList.size());
+				LogUtil.d(TAG, "===periode size == " + periodList.size());
 
 				PeriodPrice periodPrice = null;
 				if (periodList.size() > 0) {

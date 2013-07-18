@@ -33,7 +33,7 @@ import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.TimedTask;
 import com.dbstar.guodian.data.RoomData.ElecRefreshResponse;
 import com.dbstar.guodian.data.RoomData.ElecTurnResponse;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.data.SPCConstitute;
 import com.dbstar.guodian.data.ElectricalOperationMode.ModeElectrical;
 import com.dbstar.guodian.data.PaymentRecord.Record;
@@ -842,7 +842,7 @@ public class GDClient {
             task.ParsedData = track;
 		    break;
 		case REQUEST_EQUMENTLIST:
-		    List<RoomEletrical> elelist = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
+		    List<RoomElectrical> elelist = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
             task.ParsedData = elelist;
 		    break;
 		case REQUEST_POWER_CONSUMPTION_TREND:
@@ -860,7 +860,7 @@ public class GDClient {
 		    task.ParsedData = rooms;
 		    break;
 		case REQUEST_ROOM_ELECTRICAL_LIST:
-            List<RoomEletrical> eles = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
+            List<RoomElectrical> eles = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
             task.ParsedData = eles;
             break;
 		case REQUEST_TURN_ON_OFF_ELECTRICAL:

@@ -20,7 +20,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
@@ -28,7 +27,7 @@ import com.dbstar.guodian.data.ElectricalOperationMode;
 import com.dbstar.guodian.data.ElectricalOperationMode.ModeElectrical;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.ResultData;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
@@ -50,7 +49,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     private int mPageCountModel, mPageNumberModel,mElePageCount,mElePageNumber;
     private int mCountModel,mEleCount;
     private List<ElectricalOperationMode []> mPageModes;
-    private List<RoomEletrical> mAllElectricals;
+    private List<RoomElectrical> mAllElectricals;
     private ElectricalOperationMode mCacheMode;
     private ModeAdapter mAdapterMode;
     private ModeElectricalAdapter mAdapterModeEle;
@@ -487,7 +486,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
         int picId = R.drawable.common_icon_equ_defult;
         if(mAllElectricals == null)
             return picId;
-        for(RoomEletrical eletrical : mAllElectricals){
+        for(RoomElectrical eletrical : mAllElectricals){
             if(eletrical.DeviceGuid.equals(modeEle.DeviceGuid)){
                 StringBuilder sb = new StringBuilder();
                 sb.append("common_icon_equ_");
@@ -548,7 +547,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
                 }
                 
             }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                mAllElectricals = (List<RoomEletrical>) guodianEvent.Data;
+                mAllElectricals = (List<RoomElectrical>) guodianEvent.Data;
                 if(mAllElectricals != null && !mAllElectricals.isEmpty()){
                     mAdapterModeEle.notifyDataSetChanged();
                 }

@@ -1,7 +1,5 @@
 package com.dbstar.widget;
 
-import com.dbstar.R;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
@@ -10,7 +8,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.StateSet;
 import android.view.Gravity;
@@ -21,6 +18,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.GridLayoutAnimationController;
 import android.widget.Adapter;
+
+import com.dbstar.R;
 
 public class GDGridView extends GDAdapterView<Adapter> {
 

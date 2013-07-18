@@ -7,9 +7,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.dbstar.app.GDApplication;
+import com.dbstar.util.LogUtil;
 
 public class DeviceInitController {
 	public static final String TAG = "DeviceInitController";
@@ -59,10 +59,10 @@ public class DeviceInitController {
 
 			fos.close();
 		} catch (Exception e) {
-			Log.e(TAG,
+		    LogUtil.e(TAG,
 					"Exception Occured: Trying to add set setflag : "
 							+ e.toString());
-			Log.e(TAG, "Finishing the Application");
+		    LogUtil.e(TAG, "Finishing the Application");
 		}
 	}
 	

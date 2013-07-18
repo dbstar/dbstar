@@ -16,28 +16,26 @@
 
 package com.dbstar.widget;
 
-import com.dbstar.R;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.View.MeasureSpec;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.AnimationUtils;
-import android.view.animation.GridLayoutAnimationController;
-import android.view.animation.LayoutAnimationController;
 import android.view.animation.Transformation;
+import android.widget.Gallery;
+import android.widget.HorizontalScrollView;
 import android.widget.Scroller;
+
+import com.dbstar.R;
+import com.dbstar.util.LogUtil;
 
 /**
  * A view that shows items in a center-locked, horizontally scrolling list.
@@ -528,7 +526,7 @@ public class GDLoopGallery extends GDAbsSpinner {
         
         updateSelectedItemMetadata();
         
-        Log.d(TAG, " cache size " + mRecycler.size());
+        LogUtil.d(TAG, " cache size " + mRecycler.size());
     }
 
     private void fillToGalleryLeft() {
@@ -766,7 +764,7 @@ public class GDLoopGallery extends GDAbsSpinner {
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	Log.d(TAG, "=== Gallery onKeyDown keyCode =" + keyCode);
+        LogUtil.d(TAG, "=== Gallery onKeyDown keyCode =" + keyCode);
         switch (keyCode) {
         case KeyEvent.KEYCODE_DPAD_LEFT:
             if (movePrevious()) {

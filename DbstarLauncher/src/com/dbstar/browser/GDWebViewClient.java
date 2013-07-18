@@ -1,9 +1,10 @@
 package com.dbstar.browser;
 
+import com.dbstar.util.LogUtil;
+
 import android.graphics.Bitmap;
 import android.net.http.SslError;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
@@ -20,67 +21,67 @@ public class GDWebViewClient extends WebViewClient {
 
 	@Override
 	public boolean shouldOverrideUrlLoading(WebView view, String url) {
-		Log.d(TAG, "shouldOverrideUrlLoading " + url);
+		LogUtil.d(TAG, "shouldOverrideUrlLoading " + url);
 		//view.loadUrl(url);
 		return super.shouldOverrideUrlLoading(view, url);
 	}
 	
 	public void doUpdateVisitedHistory(WebView view, String url,
 			boolean isReload) {
-		Log.d(TAG, "doUpdateVisitedHistory " + url);
+		LogUtil.d(TAG, "doUpdateVisitedHistory " + url);
 
 		super.doUpdateVisitedHistory(view, url, isReload);
 	}
 
 	public void onFormResubmission(WebView view, Message dontResend,
 			Message resend) {
-		Log.d(TAG, "onFormResubmission ");
+		LogUtil.d(TAG, "onFormResubmission ");
 
 		super.onFormResubmission(view, dontResend, resend);
 	}
 
 	public void onReceivedHttpAuthRequest(WebView view,
 			HttpAuthHandler handler, String host, String realm) {
-		Log.d(TAG, "onReceivedHttpAuthRequest ");
+		LogUtil.d(TAG, "onReceivedHttpAuthRequest ");
 
 		super.onReceivedHttpAuthRequest(view, handler, host, realm);
 	}
 
 	public void onReceivedLoginRequest(WebView view, String realm,
 			String account, String args) {
-		Log.d(TAG, "onReceivedLoginRequest ");
+		LogUtil.d(TAG, "onReceivedLoginRequest ");
 		super.onReceivedLoginRequest(view, realm, account, args);
 	}
 
 	public void onReceivedSslError(WebView view, SslErrorHandler handler,
 			SslError error) {
-		Log.d(TAG, "onReceivedSslError ");
+		LogUtil.d(TAG, "onReceivedSslError ");
 
 		super.onReceivedSslError(view, handler, error);
 	}
 
 	public void onScaleChanged(WebView view, float oldScale, float newScale) {
-		Log.d(TAG, "onScaleChanged ");
+		LogUtil.d(TAG, "onScaleChanged ");
 
 		super.onScaleChanged(view, oldScale, newScale);
 	}
 
 	public void onTooManyRedirects(WebView view, Message cancelMsg,
 			Message continueMsg) {
-		Log.d(TAG, "onTooManyRedirects ");
+		LogUtil.d(TAG, "onTooManyRedirects ");
 
 		super.onTooManyRedirects(view, cancelMsg, continueMsg);
 	}
 
 	public void onUnhandledKeyEvent(WebView view, KeyEvent event) {
-		Log.d(TAG, "onUnhandledKeyEvent ");
+		LogUtil.d(TAG, "onUnhandledKeyEvent ");
 		super.onUnhandledKeyEvent(view, event);
 	}
 
 	@Override
 	public void onPageStarted(WebView view, String url, Bitmap favicon) {
 //		mLoadPageStartTime = System.currentTimeMillis();
-		Log.d(TAG, "onPageStarted url=" + url);
+		LogUtil.d(TAG, "onPageStarted url=" + url);
 
 		super.onPageStarted(view, url, favicon);
 	}
@@ -88,7 +89,7 @@ public class GDWebViewClient extends WebViewClient {
 	@Override
 	public void onPageFinished(WebView view, String url) {
 //		mLoadPageFinishedTime = System.currentTimeMillis();
-//		Log.d(TAG, "onPageFinished "
+//		LogUtil.d(TAG, "onPageFinished "
 //				+ (mLoadPageFinishedTime - mLoadPageStartTime));
 
 		super.onPageFinished(view, url);
@@ -96,14 +97,14 @@ public class GDWebViewClient extends WebViewClient {
 
 	@Override
 	public void onLoadResource(WebView view, String url) {
-//		Log.d(TAG, "onLoadResource ");
+//		LogUtil.d(TAG, "onLoadResource ");
 
 		super.onLoadResource(view, url);
 	}
 
 	public void onReceivedError(WebView view, int errorCode,
 			String description, String failingUrl) {
-		Log.d(TAG, "onReceivedError " + errorCode + " " + description + " "
+		LogUtil.d(TAG, "onReceivedError " + errorCode + " " + description + " "
 				+ failingUrl);
 
 		super.onReceivedError(view, errorCode, description, failingUrl);
@@ -111,13 +112,13 @@ public class GDWebViewClient extends WebViewClient {
 
 	/*
 	 * public boolean shouldOverrideKeyEvent(WebView view, KeyEvent event) {
-	 * Log.d(TAG, "shouldOverrideKeyEvent keyCode " + event.getKeyCode());
+	 * LogUtil.d(TAG, "shouldOverrideKeyEvent keyCode " + event.getKeyCode());
 	 * 
 	 * return super.shouldOverrideKeyEvent(view, event); }
 	 */
 
 	public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-		//Log.d(TAG, "shouldInterceptRequest url " + url);
+		//LogUtil.d(TAG, "shouldInterceptRequest url " + url);
 
 		return super.shouldInterceptRequest(view, url);
 	}

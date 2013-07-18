@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -20,6 +19,7 @@ import android.widget.TextView;
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.EventData;
+import com.dbstar.util.LogUtil;
 import com.dbstar.util.upgrade.RebootUtils;
 
 //Tasks
@@ -73,7 +73,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-		Log.d(TAG, "menu path = " + mMenuPath);
+		LogUtil.d(TAG, "menu path = " + mMenuPath);
 
 		if (mMenuPath != null) {
 			String[] menuArray = mMenuPath.split(MENU_STRING_DELIMITER);

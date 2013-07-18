@@ -7,12 +7,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +20,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.service.ClientObserver;
-import com.dbstar.service.GDDataProviderService;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDDiskInfo;
 import com.dbstar.model.ReceiveData;
 import com.dbstar.model.ReceiveEntry;
+import com.dbstar.service.ClientObserver;
+import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.LogUtil;
 import com.dbstar.util.StringUtil;
 
 public class GDReceiveStatusActivity extends GDBaseActivity {
@@ -168,11 +167,11 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	}
 
 	private void loadPrevPage() {
-		Log.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
+		LogUtil.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
 				+ mPageNumber);
 		
 		if ((mPageNumber - 1) >= 0) {
-			Log.d(TAG, "loadPrevPage");
+			LogUtil.d(TAG, "loadPrevPage");
 
 			mPageNumber--;
 			// mPageNumberView.setText(formPageText(mPageNumber));
@@ -187,7 +186,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	}
 
 	private void loadNextPage() {
-		Log.d(TAG, "loadNextPage count=" + mPageCount + " number= "
+		LogUtil.d(TAG, "loadNextPage count=" + mPageCount + " number= "
 				+ mPageNumber);
 
 		if (mPageCount == 0)
@@ -216,7 +215,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 	void updatePageData(ReceiveEntry[] pageEntries,
 			ArrayList<ReceiveEntry> allEntries) {
 
-		Log.d(TAG, "update page size=" + pageEntries.length + " total = "
+		LogUtil.d(TAG, "update page size=" + pageEntries.length + " total = "
 				+ allEntries.size());
 
 		for (int i = 0; i < pageEntries.length; i++) {
@@ -250,14 +249,14 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 					newEntries[j] = entries.get(0);
 					entries.remove(0);
 				}
-				Log.d(TAG, "add page size " + newEntries.length);
+				LogUtil.d(TAG, "add page size " + newEntries.length);
 				mPageDatas.add(newEntries);
 			}
 		}
 	}
 
 	void updatePagesData(ArrayList<ReceiveEntry> entries) {
-		Log.d(TAG, "=== updatePagesData == start");
+		LogUtil.d(TAG, "=== updatePagesData == start");
 		long startTime = System.currentTimeMillis();
 
 		int size = mPageDatas.size();
@@ -307,7 +306,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		
 		long endTime = System.currentTimeMillis();
 
-		Log.d(TAG, "=== updatePagesData == end " + (endTime - startTime));
+		LogUtil.d(TAG, "=== updatePagesData == end " + (endTime - startTime));
 	}
 
 	long computeEntriesSize(ReceiveEntry[] entries) {
@@ -372,7 +371,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 //				preSize = computeAllPagesSize(mPageDatas);
 				mCurSize = computeEntriesSize(entries);
 				curSize = mCurSize;
-				Log.d(TAG, "preSize=" + preSize + " curSize=" + curSize);
+				LogUtil.d(TAG, "preSize=" + preSize + " curSize=" + curSize);
 
 				speed = (float) ((curSize - preSize) / 128)
 						/ (float) UpdatePeriodInSecs;
@@ -388,7 +387,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 				entriesList.add(entries[i]);
 			}
 
-			// Log.d(TAG, "1 page size=" + mPageDatas.size() + " entry size="
+			// LogUtil.d(TAG, "1 page size=" + mPageDatas.size() + " entry size="
 			// + entriesList.size());
 			if (mPageDatas.size() > 0) {
 				updatePagesData(entriesList);
@@ -423,7 +422,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			if (diskInfo != null) {
 				// String diskSpaceStr = diskInfo.DiskSpace + "/"
 				// + diskInfo.DiskSize;
-				// Log.d(TAG, " disk space = " + diskSpaceStr);
+				// LogUtil.d(TAG, " disk space = " + diskSpaceStr);
 				mDiskInfoView.setText(diskInfo.DiskSpace);
 			}
 		}
@@ -578,7 +577,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 				size = mDataSet.length;
 			}
 
-			// Log.d(TAG, " DownloadProgressAdapter count = " + size);
+			// LogUtil.d(TAG, " DownloadProgressAdapter count = " + size);
 			return size;
 		}
 

@@ -4,13 +4,9 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.dbstar.R;
-import com.dbstar.R.styleable;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
@@ -18,6 +14,8 @@ import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+
+import com.dbstar.R;
 
 public class GDMarqeeTextView extends View {
 

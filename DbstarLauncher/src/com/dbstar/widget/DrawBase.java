@@ -3,7 +3,6 @@ package com.dbstar.widget;
 import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.view.View;
 
 
@@ -70,7 +69,6 @@ public class DrawBase extends View{
 		textPaint.setColor(0xFFFFFFFF);
 		textPaint.setAntiAlias(true);
 		textPaint.setTypeface(Typeface.SANS_SERIF);
-		Log.i(TAG, "setPaint");
 	}
 
 	/**
@@ -83,7 +81,6 @@ public class DrawBase extends View{
 	{
 		this.mWidth = mWidth;
 		this.mHeight = mHeight;
-		Log.i(TAG, "mWidth="+mWidth+"---mHeight="+mHeight);
 
 	}
 
@@ -95,14 +92,12 @@ public class DrawBase extends View{
         this.paddingTop = dip2px(paddingTop);
         this.paddingRight = dip2px(paddingRight);
         this.paddingBottom = dip2px(paddingBottom);
-		Log.i(TAG, "mWidth="+mWidth+"---mHeight="+mHeight+"---paddingLeft="+paddingLeft+"---paddingTop="+paddingTop+"---paddingRight="+paddingRight+"---paddingBottom="+paddingBottom);
 	}
 	
 	public void setOriginPoint(int originX, int originY)
 	{
 		this.originX = originX;
 		this.originY = originY; 
-		Log.i(TAG, "originX="+originX+"---originY="+originY);
 	}
 	
     public int px2dip(float pxValue) {

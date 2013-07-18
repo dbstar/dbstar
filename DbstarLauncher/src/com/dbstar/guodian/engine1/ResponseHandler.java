@@ -31,7 +31,7 @@ import com.dbstar.guodian.data.ResultData;
 import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.RoomData.ElecRefreshResponse;
 import com.dbstar.guodian.data.RoomData.ElecTurnResponse;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.data.SPCConstitute;
 import com.dbstar.guodian.data.StepPowerConsumptionTrack;
 import com.dbstar.guodian.data.TimedTask;
@@ -200,7 +200,7 @@ public class ResponseHandler {
             task.ParsedData = track;
             break;
         case GDRequestType.DATATYPE_EQUMENTLIST:
-            List<RoomEletrical> elelist = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
+            List<RoomElectrical> elelist = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
             task.ParsedData = elelist;
             break;
         case GDRequestType.DATATYPE_POWER_CONSUMPTION_TREND:
@@ -218,7 +218,7 @@ public class ResponseHandler {
             task.ParsedData = rooms;
             break;
         case GDRequestType.DATATYPE_ROOM_ELECTRICAL_LIST:
-            List<RoomEletrical> eles = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
+            List<RoomElectrical> eles = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
             task.ParsedData = eles;
             break;
         case GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL:

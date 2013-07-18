@@ -1,21 +1,17 @@
 package com.dbstar.app.media;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-
-import com.dbstar.app.GDBaseActivity;
-import com.dbstar.model.ContentData;
-import com.dbstar.model.GDCommon;
-import com.dbstar.util.FileOperation;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
+
+import com.dbstar.app.GDBaseActivity;
+import com.dbstar.model.ContentData;
+import com.dbstar.model.GDCommon;
+import com.dbstar.util.FileOperation;
+import com.dbstar.util.LogUtil;
 
 public class GDPlayerUtil {
 
@@ -24,8 +20,8 @@ public class GDPlayerUtil {
 
 	public static void playVideo(Context context, String publicationSetID,
 			ContentData content, String mainFile, String drmFile, boolean playNext) {
-		Log.d(TAG, "file = " + mainFile);
-		Log.d(TAG, "drm file = " + drmFile);
+	    LogUtil.d(TAG, "file = " + mainFile);
+	    LogUtil.d(TAG, "drm file = " + drmFile);
 		if (mainFile != null && !mainFile.equals("")) {
 			Intent intent = new Intent();
 
@@ -37,7 +33,7 @@ public class GDPlayerUtil {
 
 			Uri uri = Uri.parse(path);
 
-			Log.d(TAG, "play = " + uri.toString());
+			LogUtil.d(TAG, "play = " + uri.toString());
 
 			intent.setData(uri);
 			if (publicationSetID != null && !publicationSetID.isEmpty()) {
@@ -60,9 +56,9 @@ public class GDPlayerUtil {
 	
 	public static void playNextVideo(Context context, String publicationSetID,
 			ContentData content, String mainFile, String drmFile, boolean playNext) {
-		Log.d(TAG, "play next video");
-		Log.d(TAG, "file = " + mainFile);
-		Log.d(TAG, "drm file = " + drmFile);
+	    LogUtil.d(TAG, "play next video");
+		LogUtil.d(TAG, "file = " + mainFile);
+		LogUtil.d(TAG, "drm file = " + drmFile);
 		
 		if (mainFile != null && !mainFile.equals("")) {
 			Intent intent = new Intent(GDCommon.ActionPlayNext);
@@ -75,7 +71,7 @@ public class GDPlayerUtil {
 
 			Uri uri = Uri.parse(path);
 
-			Log.d(TAG, "play = " + uri.toString());
+			LogUtil.d(TAG, "play = " + uri.toString());
 
 			intent.setData(uri);
 			if (publicationSetID != null && !publicationSetID.isEmpty()) {
@@ -108,7 +104,7 @@ public class GDPlayerUtil {
 			ArrayList<String> subtitleUris = new ArrayList<String>();
 			for (int i = 0; i < content.SubTitles.size(); i++) {
 				ContentData.SubTitle subtitle = content.SubTitles.get(i);
-				Log.d(TAG, "add subtitle=" + subtitle.URI);
+				LogUtil.d(TAG, "add subtitle=" + subtitle.URI);
 				subtitleUris.add(subtitle.URI);
 			}
 			intent.putStringArrayListExtra("subtitle_uri", subtitleUris);

@@ -1,14 +1,11 @@
 package com.dbstar.model;
 
-import com.dbstar.model.GDUserDataContract.FavoritePublication;
-import com.dbstar.model.GDUserDataContract.FavoritePublicationSet;
-
-import android.content.ContentValues;
-import android.content.UriMatcher;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.util.Log;
+
+import com.dbstar.model.GDUserDataContract.FavoritePublication;
+import com.dbstar.model.GDUserDataContract.FavoritePublicationSet;
+import com.dbstar.util.LogUtil;
 
 public class GDUserDataProvider extends GDDBProvider {
 
@@ -125,10 +122,10 @@ public class GDUserDataProvider extends GDDBProvider {
 
 	public void onCreate(SQLiteDatabase db) {
 		// create all tables
-		Log.d(TAG, "onCreate");
+	    LogUtil.d(TAG, "onCreate");
 
-		Log.d(TAG, "CREATE_PUBLICATIONSET_TABLE");
-		Log.d(TAG, "CREATE_PUBLICATION_TABLE");
+	    LogUtil.d(TAG, "CREATE_PUBLICATIONSET_TABLE");
+	    LogUtil.d(TAG, "CREATE_PUBLICATION_TABLE");
 
 		db.execSQL(CREATE_PUBLICATIONSET_TABLE);
 		db.execSQL(CREATE_PUBLICATION_TABLE);

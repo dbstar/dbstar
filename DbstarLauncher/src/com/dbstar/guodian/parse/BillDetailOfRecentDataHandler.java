@@ -7,11 +7,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.util.Log;
 
 import com.dbstar.guodian.data.BillDetail;
 import com.dbstar.guodian.data.BillDetailListData;
 import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.util.LogUtil;
 
 public class BillDetailOfRecentDataHandler {
 	private static final String TAG = "BillDetailDataHandler";
@@ -24,7 +24,7 @@ public class BillDetailOfRecentDataHandler {
 		
 //		jsonData = "{\"billDetailList\":[{\"vc2_user_name\":\"\" , \"date_start\":\"2012-01-01 00:00:00\", \"date_end\":\"2012-01-31 00:00:00\", \"num_sum\":\"\", \"billitems\":[{\"vc2_bill_item\":\"\", \"num_count\":\"10.00\", \"num_fee\":\"20.00\"}]}, {\"vc2_user_name\":\"\" , \"date_start\":\"2012-03-01 00:00:00\", \"date_end\":\"2012-03-30 00:00:00\", \"num_sum\":\"\", \"billitems\":[{\"vc2_bill_item\":\"\", \"num_count\":\"10.00\", \"num_fee\":\"20.00\"}]}, {\"vc2_user_name\":\"\" , \"date_start\":\"2012-06-01 00:00:00\", \"date_end\":\"2012-06-30 00:00:00\", \"num_sum\":\"\", \"billitems\":[{\"vc2_bill_item\":\"\", \"num_count\":\"10.00\", \"num_fee\":\"20.00\"}]}],\"serviceSysDate\":\"2013-01-20 21:22:24\"}";
 
-		Log.d(TAG, " data = " + jsonData);
+		LogUtil.d(TAG, " data = " + jsonData);
 		
 		JSONTokener jsonParser = new JSONTokener(jsonData);
 

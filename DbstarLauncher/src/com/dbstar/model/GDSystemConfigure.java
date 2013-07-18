@@ -8,7 +8,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.util.Log;
+import com.dbstar.util.LogUtil;
+
 
 public class GDSystemConfigure {
 	private static final String TAG = "GDSystemConfigure";
@@ -115,7 +116,7 @@ public class GDSystemConfigure {
 		if (file.exists()) {
 			mStorageDir = disk;
 			mStorageDisk = disk;
-			Log.d(TAG, " disk is ready ===  " + mStorageDisk);
+			LogUtil.d(TAG, " disk is ready ===  " + mStorageDisk);
 			return true;
 		}
 
@@ -232,7 +233,7 @@ public class GDSystemConfigure {
 		}
 
 		file = mStorageDir + "/" + data.URI;
-		Log.d(TAG, "preivew path == " + file);
+		LogUtil.d(TAG, "preivew path == " + file);
 		
 		File f = new File(file);
 		if (!f.exists()) {
@@ -256,7 +257,7 @@ public class GDSystemConfigure {
 			ebookFile = categoryRoot + "/baozhi/20120329/index.html";
 		}
 
-		Log.d(TAG, "category = " + category + " path=" + ebookFile);
+		LogUtil.d(TAG, "category = " + category + " path=" + ebookFile);
 
 		return ebookFile;
 	}
@@ -403,7 +404,7 @@ public class GDSystemConfigure {
 
 		File mnt = new File("/mnt");
 		if (mnt == null || !mnt.exists()) {
-			Log.d(TAG, "No /mnt folder!");
+		    LogUtil.d(TAG, "No /mnt folder!");
 			return null;
 		}
 

@@ -2,17 +2,16 @@ package com.dbstar.app.settings;
 
 import java.util.Map;
 
-import com.dbstar.R;
-import com.dbstar.app.help.GDHelpActivity;
-import com.dbstar.model.GDDiskInfo;
-import com.dbstar.model.GDDiskInfo.DiskInfo;
-import com.dbstar.util.GDNetworkUtil;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
+
+import com.dbstar.R;
+import com.dbstar.model.GDDiskInfo;
+import com.dbstar.model.GDDiskInfo.DiskInfo;
+import com.dbstar.util.GDNetworkUtil;
 
 public class GDGeneralInfoActivity extends GDSettingActivity {
 

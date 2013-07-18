@@ -6,23 +6,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
-
-import com.dbstar.R;
-import com.dbstar.model.GDDiskInfo;
-import com.dbstar.model.GuideListItem;
-import com.dbstar.model.ReceiveEntry;
-import com.dbstar.service.GDDataProviderService;
-import com.dbstar.util.StringUtil;
-import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
-import com.dbstar.widget.GDAdapterView;
-import com.dbstar.widget.GDGridView;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +18,14 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.dbstar.R;
+import com.dbstar.model.GuideListItem;
+import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.LogUtil;
+import com.dbstar.widget.GDAdapterView;
+import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
+import com.dbstar.widget.GDGridView;
 
 public class GDOrderPushActivity extends GDBaseActivity {
 
@@ -358,7 +354,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		GuideListItem[] items = (GuideListItem[]) data;
 		if (items != null && items.length > 0) {
 
-			Log.d(TAG, "items count=" + items.length);
+			LogUtil.d(TAG, "items count=" + items.length);
 
 			mTaskPages = new LinkedList<ReceiveTask[]>();
 
@@ -448,7 +444,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 
 		if (tasks.size() == 0) {
 			tasks.add(task);
-			Log.d(TAG, "add task 0 " + date);
+			LogUtil.d(TAG, "add task 0 " + date);
 			return task;
 		}
 
@@ -463,10 +459,10 @@ public class GDOrderPushActivity extends GDBaseActivity {
 
 		if (i == tasks.size()) {
 			tasks.add(task);
-			Log.d(TAG, "add task " + tasks.size() + " " + (i + 1) + " " + date);
+			LogUtil.d(TAG, "add task " + tasks.size() + " " + (i + 1) + " " + date);
 		} else {
 			tasks.add(i, task);
-			Log.d(TAG, "add task " + tasks.size() + " " + (i) + " " + date);
+			LogUtil.d(TAG, "add task " + tasks.size() + " " + (i) + " " + date);
 		}
 
 		return task;
@@ -476,7 +472,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 	// return value: -1: less 0:equal 1:greater
 	static int isDateGreater(String dateStr1, String dateStr2) {
 
-		Log.d(TAG, "date1 = " + dateStr1 + " date2=" + dateStr2);
+		LogUtil.d(TAG, "date1 = " + dateStr1 + " date2=" + dateStr2);
 
 		final String formats = "yyyy-MM-dd HH:mm:ss";
 
@@ -499,7 +495,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		public boolean onKey(View v, int keyCode, KeyEvent event) {
 			int action = event.getAction();
 			if (action == KeyEvent.ACTION_DOWN) {
-				Log.d(TAG, " ---- key code =  " + keyCode);
+				LogUtil.d(TAG, " ---- key code =  " + keyCode);
 				switch (keyCode) {
 				case KeyEvent.KEYCODE_ENTER:
 				case KeyEvent.KEYCODE_DPAD_CENTER: {

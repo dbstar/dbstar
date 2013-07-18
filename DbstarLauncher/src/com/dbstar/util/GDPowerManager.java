@@ -2,7 +2,6 @@ package com.dbstar.util;
 
 import android.content.Context;
 import android.os.PowerManager;
-import android.util.Log;
 
 public class GDPowerManager {
 	private static final String TAG = "GDPowerManager";
@@ -23,7 +22,7 @@ public class GDPowerManager {
 	}
 
 	public void acquirePartialWakeLock(Context context) {
-		Log.d(TAG, "----- PartialWakeLock -----");
+	    LogUtil.d(TAG, "----- PartialWakeLock -----");
 		if (sWakeLock != null) {
 			return;
 		}
@@ -33,7 +32,7 @@ public class GDPowerManager {
 	}
 
 	public void acquireFullWakeLock(Context context) {
-		Log.d(TAG, "----- FullWakeLock -----");
+	    LogUtil.d(TAG, "----- FullWakeLock -----");
 		if (sWakeLock != null) {
 			return;
 		}

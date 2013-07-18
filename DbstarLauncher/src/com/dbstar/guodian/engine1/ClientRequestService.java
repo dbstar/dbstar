@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.guodian.data.LoginData;
@@ -87,7 +86,7 @@ public class ClientRequestService {
     }
     
     public void start(GDDBStarClient starClient,GDClientObserver observer){
-        Log.i(TAG, "start ------------------------------------------------------------------------------------");
+        LogUtil.i(TAG, "start ------------------------------------------------------------------------------------");
         this.mDBStarClient = starClient;
         this.mObserver = observer;
         if(mLoginStatu == LOGIN_STATU_UNLOGIN && SOCKET_STATE_CONNECTED.equals(mSocketState)&& mDBStarClient.isBoundToServer()){
@@ -178,7 +177,7 @@ public class ClientRequestService {
     }
 
     private void loginFinished(LoginData data) {
-        Log.d(TAG, "======= loginFinished=========");
+        LogUtil.d(TAG, "======= loginFinished=========");
         mLoginStatu = LOGIN_STATU_LOGINED;
         
         mLoginData = data;
@@ -239,7 +238,7 @@ public class ClientRequestService {
     }
 
     private void login(){
-        Log.i("Futao", "login ------------------------------------------------------------------------------------");
+        LogUtil.i("Futao", "login ------------------------------------------------------------------------------------");
         String macAddr = GDNetworkUtil.getMacAddress(mContext, true);
         mUserId = macAddr;
         RequestParams params = new RequestParams( GDRequestType.DATATYPE_LOGIN);
@@ -264,12 +263,12 @@ public class ClientRequestService {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d(TAG, "onReceive type ------------------------- " + action);
+            LogUtil.d(TAG, "onReceive type ------------------------- " + action);
 
             if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
 
                 int type = intent.getIntExtra("type", 0);
-                Log.d(TAG, "onReceive type " + type);
+                LogUtil.d(TAG, "onReceive type " + type);
 
                 switch (type) {
                 case  SMARTLIFE_RECV:

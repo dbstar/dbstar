@@ -4,28 +4,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.dbstar.R;
-import com.dbstar.app.alert.GDAlertDialog;
-import com.dbstar.app.media.GDPlayerUtil;
-import com.dbstar.model.ContentData;
-import com.dbstar.model.EventData;
-import com.dbstar.model.GDCommon;
-import com.dbstar.model.ProductItem;
-import com.dbstar.service.GDDataProviderService;
-import com.dbstar.model.Movie;
-import com.dbstar.model.GDDVBDataContract.Content;
-import com.dbstar.widget.GDAdapterView;
-import com.dbstar.widget.GDGridView;
-import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
-import com.dbstar.widget.GDScrollBar;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +17,21 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.dbstar.R;
+import com.dbstar.app.media.GDPlayerUtil;
+import com.dbstar.model.ContentData;
+import com.dbstar.model.EventData;
+import com.dbstar.model.GDCommon;
+import com.dbstar.model.GDDVBDataContract.Content;
+import com.dbstar.model.Movie;
+import com.dbstar.model.ProductItem;
+import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.LogUtil;
+import com.dbstar.widget.GDAdapterView;
+import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
+import com.dbstar.widget.GDGridView;
+import com.dbstar.widget.GDScrollBar;
 
 public class GDHDMovieActivity extends GDBaseActivity {
 	private static final String TAG = "GDHDMovieActivity";
@@ -66,8 +65,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		Intent intent = getIntent();
 		mColumnId = intent.getStringExtra(Content.COLUMN_ID);
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-		Log.d(TAG, "column id = " + mColumnId);
-		Log.d(TAG, "menu path = " + mMenuPath);
+		LogUtil.d(TAG, "column id = " + mColumnId);
+		LogUtil.d(TAG, "menu path = " + mMenuPath);
 		mPageDatas = new LinkedList<Movie[]>();
 
 		initializeView();
@@ -136,7 +135,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 	private void loadPrevPage() {
 		if (mPageNumber > 0) {
-			Log.d(TAG, "loadPrevPage");
+			LogUtil.d(TAG, "loadPrevPage");
 
 			mPageNumber--;
 			
@@ -145,7 +144,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	}
 
 	private void loadNextPage() {
-		Log.d(TAG, "loadNextPage");
+		LogUtil.d(TAG, "loadNextPage");
 
 		if ((mPageNumber + 1) < mPageDatas.size()) {
 			mPageNumber++;
@@ -268,7 +267,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	}
 	
 	private void loadPage(int pageNumber, int focusItem) {
-		Log.d(TAG, "loadPage " + pageNumber);
+		LogUtil.d(TAG, "loadPage " + pageNumber);
 
 		mPageNumberView.setText(formPageText(pageNumber + 1, mPageCount));
 
@@ -294,13 +293,13 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	}
 
 	private void playMovie() {
-		Log.d(TAG, "playMovie");
+		LogUtil.d(TAG, "playMovie");
 		Movie movie = getSelectedMovie();
 
 		String file = mService.getMediaFile(movie.Content);
 		String drmFile = mService.getDRMFile(movie.Content);
 
-		Log.d(TAG, " file = " + file);
+		LogUtil.d(TAG, " file = " + file);
 		
 		if (file == null || file.isEmpty()) {
 			alertFileNotExist();
@@ -323,9 +322,9 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		if (type == GDDataProviderService.REQUESTTYPE_GETPUBLICATION) {
 
 			ContentData[] contents = (ContentData[]) data;
-			Log.d(TAG, "update ");
+			LogUtil.d(TAG, "update ");
 			if (contents != null && contents.length > 0) {
-				Log.d(TAG, "update " + contents.length);
+				LogUtil.d(TAG, "update " + contents.length);
 
 				mTotalCount = contents.length;
 				mPageCount = mTotalCount / PageSize;
@@ -356,7 +355,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				// update views
 				updateViews(mPageDatas.get(mPageNumber));
 
-				Log.d(TAG, "update mPageCount " + mPageCount);
+				LogUtil.d(TAG, "update mPageCount " + mPageCount);
 
 				mRequestPageIndex = 0;
 				requestPageData(mRequestPageIndex);
@@ -384,7 +383,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		if (type == GDDataProviderService.REQUESTTYPE_GETDETAILSDATA) {
 			int pageNumber = param1;
 			int index = param2;
-			Log.d(TAG, "updateData page number = " + pageNumber + " index = "
+			LogUtil.d(TAG, "updateData page number = " + pageNumber + " index = "
 					+ index);
 
 			mService.getImage(this, pageNumber, index, (ContentData) data);
@@ -400,7 +399,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		} else if (type == GDDataProviderService.REQUESTTYPE_GETIMAGE) {
 			int pageNumber = param1;
 			int index = param2;
-			Log.d(TAG, "updateData page number = " + pageNumber + " index = "
+			LogUtil.d(TAG, "updateData page number = " + pageNumber + " index = "
 					+ index);
 
 			Movie[] movies = mPageDatas.get(pageNumber);
@@ -481,7 +480,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	private void movePageItems(int pageNumber, int start) {		
 		Movie[] movies = mPageDatas.get(pageNumber);
 		
-		Log.d(TAG, " == movePageItems == page=" + pageNumber + 
+		LogUtil.d(TAG, " == movePageItems == page=" + pageNumber + 
 				" delete = " + start + " size=" + movies.length);
 
 		if (start == movies.length - 1 && start == 0) {
@@ -508,7 +507,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				newMovies[i] = movies[i];
 			}
 
-			Log.d(TAG, " == page size = " + mPageDatas.size()
+			LogUtil.d(TAG, " == page size = " + mPageDatas.size()
 					+ " " + newMovies.length);
 
 			mPageDatas.set(pageNumber, newMovies);
@@ -620,7 +619,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		@Override
 		public void onItemSelected(GDAdapterView<?> parent, View view,
 				int position, long id) {
-			Log.d(TAG, "mSmallThumbnailView selected = " + position);
+			LogUtil.d(TAG, "mSmallThumbnailView selected = " + position);
 
 			mSeletedItemIndex = position;
 		}
@@ -636,7 +635,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 		@Override
 		public boolean onKey(View v, int keyCode, KeyEvent event) {
-			Log.d(TAG, "onKey " + keyCode);
+			LogUtil.d(TAG, "onKey " + keyCode);
 			boolean ret = false;
 			int action = event.getAction();
 			if (action == KeyEvent.ACTION_DOWN) {
@@ -759,7 +758,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	ProductItem[] mDrmInfo = null;
 
 	void displayDrmInfo() {
-		Log.d(TAG, "displayDrmInfo");
+		LogUtil.d(TAG, "displayDrmInfo");
 
 		Movie movie = getSelectedMovie();
 		String drmFile = mService.getDRMFile(movie.Content);
@@ -779,14 +778,14 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	void updateDrmInfo(String publicationId, String drmInfoData) {
 		Movie movie = getSelectedMovie();
 		if (!publicationId.equals(movie.Content.Id) || drmInfoData == null) {
-			Log.d(TAG, "the drminfo is not for publication " + publicationId);
+			LogUtil.d(TAG, "the drminfo is not for publication " + publicationId);
 			return;
 		}
 		
 		mDrmInfo = null;
 		String[] items = drmInfoData.split("\n");
 		if (items.length == 0) {
-			Log.d(TAG, " no product info !");
+			LogUtil.d(TAG, " no product info !");
 		} else {
 			ArrayList<ProductItem> products = new ArrayList<ProductItem>();
 			for (int i = 0; i < items.length; i++) {

@@ -27,7 +27,6 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.net.Uri;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -43,6 +42,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import com.dbstar.util.LogUtil;
 
 import android.media.Metadata;
 
@@ -122,20 +123,20 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		// Log.i("@@@@", "onMeasure");
+		// LogUtil.i("@@@@", "onMeasure");
 		int width = getDefaultSize(mVideoWidth, widthMeasureSpec);
 		int height = getDefaultSize(mVideoHeight, heightMeasureSpec);
 		/*
 		 * if (mVideoWidth > 0 && mVideoHeight > 0) { if ( mVideoWidth * height
-		 * > width * mVideoHeight ) { Log.i("@@@",
+		 * > width * mVideoHeight ) { LogUtil.i("@@@",
 		 * "image too tall, correcting"); height = width * mVideoHeight /
 		 * mVideoWidth; } else if ( mVideoWidth * height < width * mVideoHeight
-		 * ) { Log.i("@@@", "image too wide, correcting"); width = height *
-		 * mVideoWidth / mVideoHeight; } else { Log.i("@@@",
+		 * ) { LogUtil.i("@@@", "image too wide, correcting"); width = height *
+		 * mVideoWidth / mVideoHeight; } else { LogUtil.i("@@@",
 		 * "aspect ratio is correct: " + width+"/"+height+"="+
 		 * mVideoWidth+"/"+mVideoHeight); } }
 		 */
-		// Log.i("@@@@@@@@@@", "setting size: " + width + 'x' + height);
+		// LogUtil.i("@@@@@@@@@@", "setting size: " + width + 'x' + height);
 		setMeasuredDimension(width, height);
 	}
 
@@ -194,7 +195,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 	 * @hide
 	 */
 	public void setVideoURI(Uri uri, Map<String, String> headers) {
-		// Log.d("@@@", "setVideoURI");
+		// LogUtil.d("@@@", "setVideoURI");
 		mUri = uri;
 		mHeaders = headers;
 		mSeekWhenPrepared = 0;
@@ -219,7 +220,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 			return;
 		}
 
-		// Log.d("@@@", "openVideo");
+		// LogUtil.d("@@@", "openVideo");
 		// Tell the music playback service to pause
 		// TODO: these constants need to be published somewhere in the
 		// framework.
@@ -252,14 +253,14 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 			mCurrentState = STATE_PREPARING;
 			attachMediaController();
 		} catch (IOException ex) {
-			Log.w(TAG, "Unable to open content: " + mUri, ex);
+			LogUtil.w(TAG, "Unable to open content: " + mUri, ex);
 			mCurrentState = STATE_ERROR;
 			mTargetState = STATE_ERROR;
 			mErrorListener.onError(mMediaPlayer,
 					MediaPlayer.MEDIA_ERROR_UNKNOWN, 0);
 			return;
 		} catch (IllegalArgumentException ex) {
-			Log.w(TAG, "Unable to open content: " + mUri, ex);
+			LogUtil.w(TAG, "Unable to open content: " + mUri, ex);
 			mCurrentState = STATE_ERROR;
 			mTargetState = STATE_ERROR;
 			mErrorListener.onError(mMediaPlayer,
@@ -292,25 +293,25 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 
 		if (mAspectRationNum != 0 && mAspectRationDen != 0) {
 			if (mAspectRationNum * viewHeight > viewWidth * mAspectRationDen) {
-				// Log.i("@@@", "image too tall, correcting");
+				// LogUtil.i("@@@", "image too tall, correcting");
 				viewHeight = viewWidth * mAspectRationDen / mAspectRationNum;
 			} else if (mVideoWidth * viewHeight < viewWidth * mVideoHeight) {
-				// Log.i("@@@", "image too wide, correcting");
+				// LogUtil.i("@@@", "image too wide, correcting");
 				viewWidth = viewHeight * mAspectRationNum / mAspectRationDen;
 			} else {
-				// Log.i("@@@", "aspect ratio is correct: " + viewWidth + "/"
+				// LogUtil.i("@@@", "aspect ratio is correct: " + viewWidth + "/"
 				// + viewHeight + "=" + mVideoWidth + "/" + mVideoHeight);
 			}
 		} else {
 
 			if (mVideoWidth * viewHeight > viewWidth * mVideoHeight) {
-				// Log.i("@@@", "image too tall, correcting");
+				// LogUtil.i("@@@", "image too tall, correcting");
 				viewHeight = viewWidth * mVideoHeight / mVideoWidth;
 			} else if (mVideoWidth * viewHeight < viewWidth * mVideoHeight) {
-				// Log.i("@@@", "image too wide, correcting");
+				// LogUtil.i("@@@", "image too wide, correcting");
 				viewWidth = viewHeight * mVideoWidth / mVideoHeight;
 			} else {
-				// Log.i("@@@", "aspect ratio is correct: " + viewWidth + "/"
+				// LogUtil.i("@@@", "aspect ratio is correct: " + viewWidth + "/"
 				// + viewHeight + "=" + mVideoWidth + "/" + mVideoHeight);
 			}
 		}
@@ -321,7 +322,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 
 	private void parseVideoCodecInfo(String jsonData) {
 		// String jsonData = data.substring(1, data.length() - 1);
-		Log.d(TAG, "jsonData = " + jsonData);
+		LogUtil.d(TAG, "jsonData = " + jsonData);
 		JSONTokener jsonParser = new JSONTokener(jsonData);
 
 		try {
@@ -330,7 +331,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 				JSONObject rootObject = array.getJSONObject(0);
 				mAspectRationNum = rootObject.getInt("aspect_ratio_num");
 				mAspectRationDen = rootObject.getInt("aspect_ratio_den");
-				Log.d(TAG, "aspect ratio = " + mAspectRationNum + ":"
+				LogUtil.d(TAG, "aspect ratio = " + mAspectRationNum + ":"
 						+ mAspectRationDen);
 			}
 		} catch (JSONException e) {
@@ -340,7 +341,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 
 	MediaPlayer.OnVideoSizeChangedListener mSizeChangedListener = new MediaPlayer.OnVideoSizeChangedListener() {
 		public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-			Log.d(TAG, "onVideoSizeChanged (" + width + "x" + height + ")");
+			LogUtil.d(TAG, "onVideoSizeChanged (" + width + "x" + height + ")");
 			mVideoWidth = mp.getVideoWidth();
 			mVideoHeight = mp.getVideoHeight();
 //			if (mVideoWidth != 0 && mVideoHeight != 0) {
@@ -355,7 +356,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 			mCurrentState = STATE_PREPARED;
 			// mTargetState = STATE_PLAYING;
 
-			// Log.d("@@@", "onPrepared");
+			// LogUtil.d("@@@", "onPrepared");
 			// Get the capabilities of the player for this stream
 			Metadata data = mp.getMetadata(MediaPlayer.METADATA_ALL,
 					MediaPlayer.BYPASS_METADATA_FILTER);
@@ -369,7 +370,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 						|| data.getBoolean(Metadata.SEEK_FORWARD_AVAILABLE);
 
 				String videoCodecInfo = data.getString(KVideoCodecAllInfo);
-				Log.d(TAG, " ======= video codec info ====" + videoCodecInfo);
+				LogUtil.d(TAG, " ======= video codec info ====" + videoCodecInfo);
 
 				String videoCodec = data.getString(Metadata.VIDEO_CODEC);
 
@@ -395,7 +396,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 				seekTo(seekToPosition);
 			}
 			if (mVideoWidth != 0 && mVideoHeight != 0) {
-				Log.d(TAG, "video size: " + mVideoWidth + "/" + mVideoHeight);
+				LogUtil.d(TAG, "video size: " + mVideoWidth + "/" + mVideoHeight);
 
 //				if (mSurfaceViewWidth == 0 || mSurfaceViewHeight == 0) {
 //					adjustVideoViewSize();
@@ -441,7 +442,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 
 	private MediaPlayer.OnErrorListener mErrorListener = new MediaPlayer.OnErrorListener() {
 		public boolean onError(MediaPlayer mp, int framework_err, int impl_err) {
-			// Log.d(TAG, "Error: " + framework_err + "," + impl_err);
+			// LogUtil.d(TAG, "Error: " + framework_err + "," + impl_err);
 			mCurrentState = STATE_ERROR;
 			mTargetState = STATE_ERROR;
 			if (mMediaController != null) {
@@ -538,7 +539,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 	SurfaceHolder.Callback mSHCallback = new SurfaceHolder.Callback() {
 		public void surfaceChanged(SurfaceHolder holder, int format, int w,
 				int h) {
-			Log.d(TAG, "surfaceChanged (" + w + "x" + h + ")");
+			LogUtil.d(TAG, "surfaceChanged (" + w + "x" + h + ")");
 			mSurfaceWidth = w;
 			mSurfaceHeight = h;
 //			boolean isValidState = (mTargetState == STATE_PLAYING);
@@ -552,7 +553,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 		}
 
 		public void surfaceCreated(SurfaceHolder holder) {
-			// Log.d(TAG, "surfaceCreated");
+			// LogUtil.d(TAG, "surfaceCreated");
 			mSurfaceHolder = holder;
 //			mSurfaceHolder.setFixedSize(getWidth(), getHeight());
 
@@ -560,7 +561,7 @@ public class GDVideoView extends SurfaceView implements MediaPlayerControl {
 		}
 
 		public void surfaceDestroyed(SurfaceHolder holder) {
-			// Log.d(TAG, "surfaceDestroyed");
+			// LogUtil.d(TAG, "surfaceDestroyed");
 			// after we return from this we can't use the surface any more
 			mSurfaceHolder = null;
 			if (mMediaController != null)

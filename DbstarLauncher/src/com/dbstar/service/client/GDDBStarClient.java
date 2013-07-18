@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.DbstarDVB.IDbstarService;
@@ -17,6 +16,7 @@ import com.dbstar.model.EMailItem;
 import com.dbstar.model.ProductItem;
 import com.dbstar.model.ReceiveData;
 import com.dbstar.model.ReceiveEntry;
+import com.dbstar.util.LogUtil;
 
 public class GDDBStarClient {
 	private static final String TAG = "GDDBStarClient";
@@ -39,7 +39,7 @@ public class GDDBStarClient {
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
 
-			Log.d(TAG, "+++++++++++GDDBStarClient onServiceConnected+++++++++");
+			LogUtil.d(TAG, "+++++++++++GDDBStarClient onServiceConnected+++++++++");
 
 			mDbstarService = IDbstarService.Stub.asInterface(service);
 
@@ -51,7 +51,7 @@ public class GDDBStarClient {
 		}
 		// this is called when server is stopped abnormally.
 		public void onServiceDisconnected(ComponentName className) {
-			Log.d(TAG, "+++++++++GDDBStarClient onServiceDisconnected+++++++");
+			LogUtil.d(TAG, "+++++++++GDDBStarClient onServiceDisconnected+++++++");
 
 			mDbstarService = null;
 //			mIsServerCorrupted = true;
@@ -87,7 +87,7 @@ public class GDDBStarClient {
 		if (mDbstarService != null) {
 			try {
 				mDbstarService.initDvbpush();
-				Log.d(TAG, "+++++++++++startDvbpush+++++++++++");
+				LogUtil.d(TAG, "+++++++++++startDvbpush+++++++++++");
 
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -99,7 +99,7 @@ public class GDDBStarClient {
 		if (mDbstarService != null) {
 			try {
 				mDbstarService.uninitDvbpush();
-				Log.d(TAG, "+++++++++++ stopDvbpush +++++++++++");
+				LogUtil.d(TAG, "+++++++++++ stopDvbpush +++++++++++");
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -113,7 +113,7 @@ public class GDDBStarClient {
 				mDbstarService.sendCommand(
 						DbstarServiceApi.CMD_DVBPUSH_GETINFO_START, null, 0);
 				result = true;
-				Log.d(TAG, "+++++++++++ startTaskInfo +++++++++++");
+				LogUtil.d(TAG, "+++++++++++ startTaskInfo +++++++++++");
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -125,7 +125,7 @@ public class GDDBStarClient {
 	public void notifyDbServer(int msg, String args) {
 		if (mDbstarService != null) {
 			try {
-				Log.d(TAG, " ====== notifyDbServer === msg =  " + msg);
+				LogUtil.d(TAG, " ====== notifyDbServer === msg =  " + msg);
 				if (args != null) {
 					mDbstarService.sendCommand(msg, args, args.length());
 				} else {
@@ -144,7 +144,7 @@ public class GDDBStarClient {
 				mDbstarService.sendCommand(
 						DbstarServiceApi.CMD_DVBPUSH_GETINFO_STOP, null, 0);
 				result = true;
-				Log.d(TAG, "+++++++++++ stopTaskInfo +++++++++++");
+				LogUtil.d(TAG, "+++++++++++ stopTaskInfo +++++++++++");
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -190,7 +190,7 @@ public class GDDBStarClient {
 
 			byte[] bytes = intent.getByteArrayExtra("result");
 
-			Log.d(TAG, "========= get type " + type + " bytes " + bytes);
+			LogUtil.d(TAG, "========= get type " + type + " bytes " + bytes);
 			
 			if (bytes != null) {
 				data = parseSmartcardInfo(type, bytes);
@@ -229,7 +229,7 @@ public class GDDBStarClient {
 			if (bytes != null) {
 				try {
 					content = new String(bytes, "gb2312");
-					Log.d(TAG, " =========== email content == " + content);
+					LogUtil.d(TAG, " =========== email content == " + content);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
@@ -256,7 +256,7 @@ public class GDDBStarClient {
 			if (bytes != null) {
 				try {
 					content = new String(bytes, "gb2312");
-					Log.d(TAG, " =========== drm info == " + content);
+					LogUtil.d(TAG, " =========== drm info == " + content);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
@@ -281,7 +281,7 @@ public class GDDBStarClient {
 		
 		try {
 			data = new String(bytes, charset);
-			Log.d(TAG, " =========== smartcard info == " + type + " " + data);
+			LogUtil.d(TAG, " =========== smartcard info == " + type + " " + data);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -292,7 +292,7 @@ public class GDDBStarClient {
 		} else if (type == DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ) {
 			String[] items = data.split("\n");
 			if (items.length == 0) {
-				Log.d(TAG, " no product info !");
+				LogUtil.d(TAG, " no product info !");
 			} else {
 				ArrayList<ProductItem> products = new ArrayList<ProductItem>();
 				for (int i = 0; i < items.length; i++) {
@@ -319,7 +319,7 @@ public class GDDBStarClient {
 		} else if (type == DbstarServiceApi.CMD_DRM_EMAILHEADS_READ) {
 			String[] items = data.split("\n");
 			if (items.length == 0) {
-				Log.d(TAG, " no mails !");
+				LogUtil.d(TAG, " no mails !");
 			} else {
 				ArrayList<EMailItem> mails = new ArrayList<EMailItem>();
 				for (int i = 0; i < items.length; i++) {
@@ -363,7 +363,7 @@ public class GDDBStarClient {
 			if (bytes != null) {
 				try {
 					info = new String(bytes, "utf-8");
-					Log.d(TAG, " =========== network info == " + info);
+					LogUtil.d(TAG, " =========== network info == " + info);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
@@ -431,7 +431,7 @@ public class GDDBStarClient {
 		ReceiveData receiveData = null;
 		ReceiveEntry[] entries = null;
 
-		Log.d(TAG, "+++++++++++ getTaskInfo +++++++++++");
+		LogUtil.d(TAG, "+++++++++++ getTaskInfo +++++++++++");
 
 		if (mDbstarService == null)
 			return receiveData;
@@ -446,7 +446,7 @@ public class GDDBStarClient {
 				String info = null;
 				try {
 					info = new String(bytes, "utf-8");
-					// Log.d(TAG, "TaskInfo: " + info);
+					// LogUtil.d(TAG, "TaskInfo: " + info);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
@@ -486,7 +486,7 @@ public class GDDBStarClient {
 		String[] items = data.split("\t");
 
 		// for (int i = 0; i < items.length; i++) {
-		// Log.d(TAG, "item " + i + " = " + items[i]);
+		// LogUtil.d(TAG, "item " + i + " = " + items[i]);
 		// }
 
 		entry = new ReceiveEntry();
@@ -494,7 +494,7 @@ public class GDDBStarClient {
 		entry.Name = items[1];
 		entry.RawProgress = Long.valueOf(items[2]);
 		entry.RawTotal = Long.valueOf(items[3]);
-		// Log.d(TAG, "progress = " + entry.RawProgress + " total = " +
+		// LogUtil.d(TAG, "progress = " + entry.RawProgress + " total = " +
 		// entry.RawTotal);
 		entry.ConvertSize();
 

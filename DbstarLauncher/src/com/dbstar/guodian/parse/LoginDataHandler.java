@@ -8,7 +8,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.util.Log;
 
 import com.dbstar.guodian.data.CtrlNo;
 import com.dbstar.guodian.data.ElectricityPrice;
@@ -99,7 +98,6 @@ public class LoginDataHandler {
 
 	static ElectricityPrice parseElecPrice(JSONObject object)
 			throws JSONException {
-		Log.d(TAG, "parseElecPrice");
 
 		ElectricityPrice priceData = new ElectricityPrice();
 
@@ -127,12 +125,9 @@ public class LoginDataHandler {
 
 	static List<ElectricityPrice.StepPrice> parseStepPriceList(JSONArray array,
 			boolean timingStepPower) throws JSONException {
-		Log.d(TAG, "parseStepPriceList");
 
 		List<ElectricityPrice.StepPrice> stepPriceList = new ArrayList<ElectricityPrice.StepPrice>();
 
-		Log.d(TAG, " step size = " + array.length());
-		
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject object = (JSONObject) array.getJSONObject(i);
 
@@ -167,8 +162,6 @@ public class LoginDataHandler {
 	static List<ElectricityPrice.PeriodPrice> parsePeriodPriceList(
 			JSONArray array) throws JSONException {
 
-		Log.d(TAG, "parsePeriodPriceList");
-
 		List<ElectricityPrice.PeriodPrice> priceList = new ArrayList<ElectricityPrice.PeriodPrice>();
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject object = (JSONObject) array.getJSONObject(i);
@@ -187,7 +180,6 @@ public class LoginDataHandler {
 	}
 
 	static CtrlNo parseCtrlNo(JSONObject object) throws JSONException {
-		Log.d(TAG, "parseCtrlNo");
 
 		CtrlNo ctrlNo = new CtrlNo();
 		ctrlNo.CtrlNoGuid = (String) object.getString(JsonTag.TAGCtrlNoGuid);
@@ -198,8 +190,6 @@ public class LoginDataHandler {
 
 	static UserData.UserInfo parseUserInfo(JSONObject object)
 			throws JSONException {
-
-		Log.d(TAG, "parseUserInfo");
 
 		UserData.UserInfo userInfo = new UserData.UserInfo();
 

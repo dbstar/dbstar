@@ -42,7 +42,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -59,6 +58,7 @@ import android.widget.TextView;
 import android.widget.FrameLayout;
 import android.widget.VideoView;
 import com.dbstar.util.FileOperation;
+import com.dbstar.util.LogUtil;
 
 public class GDLauncherActivity extends GDBaseActivity implements
 		GDApplicationObserver {
@@ -128,7 +128,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.d(TAG, "onCreate");
+		LogUtil.d(TAG, "onCreate");
 
 		getWindow().getDecorView().setSystemUiVisibility(
 				View.SYSTEM_UI_FLAG_LOW_PROFILE);
@@ -170,7 +170,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onStart() {
 		super.onStart();
 
-		Log.d(TAG, "++++++onStart");
+		LogUtil.d(TAG, "++++++onStart");
 	
 		mCelanderThread.setUpdate(true);
 	
@@ -197,7 +197,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onResume() {
 		super.onResume();
 		
-		Log.d(TAG, " onResume ");
+		LogUtil.d(TAG, " onResume ");
 
 		mMainMenu.requestFocus();
 
@@ -211,7 +211,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onPause() {
 		super.onPause();
 
-		Log.d(TAG, "onPause");
+		LogUtil.d(TAG, "onPause");
 		//mMediaScheduler.pause();
 		
 		if (mPowerController != null) {
@@ -221,7 +221,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	public void onStop() {
 		super.onStop();
-		Log.d(TAG, "++++++onStop");
+		LogUtil.d(TAG, "++++++onStop");
 		//mSimulateHomeKey = false;
 		//mMediaScheduler.cancelSimulateHomeKey();
 		//mMediaScheduler.unmuteWithSilence();
@@ -246,7 +246,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private boolean mIsAnimationRunning = false;
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		//Log.d(TAG, "==== onKeyDown = " + keyCode);
+		//LogUtil.d(TAG, "==== onKeyDown = " + keyCode);
 		mIsAnimationRunning = isAnimationRunning();
 		if (mIsAnimationRunning) {
 			return true;
@@ -320,7 +320,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		// return true;
 		// }
 		
-//		Log.d(TAG, " ==== press back key === " + mLeaveStart + " " + mEnterStart);
+//		LogUtil.d(TAG, " ==== press back key === " + mLeaveStart + " " + mEnterStart);
 
 		if (mMenuStack.size() > 1) {
 			
@@ -366,7 +366,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		Intent intent = new Intent();
 		intent.putExtra(Content.COLUMN_ID, columnId);
 		intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-		Log.d(TAG, "menu path = " + mMenuPath);
+		LogUtil.d(TAG, "menu path = " + mMenuPath);
 		intent.setClass(this, GDTVActivity.class);
 		startActivity(intent);
 	}
@@ -395,7 +395,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		MenuItem[] menuItems = menu.Items;
 		MenuItem menuItem = menuItems[menu.FocusedPosition];
 
-		//Log.d(TAG, "onItemSelected HasSubMenu " + menuItem.HasSubMenu);
+		//LogUtil.d(TAG, "onItemSelected HasSubMenu " + menuItem.HasSubMenu);
 		if (menuItem.HasSubMenu == NONE) {
 			// data is not ready;
 			// mPendingAction.Level1Index = index;
@@ -414,7 +414,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// no sub items
 		}
 
-		Log.d(TAG, "column id=" + menuItem.ColumnId() + " column type="
+		LogUtil.d(TAG, "column id=" + menuItem.ColumnId() + " column type="
 				+ menuItem.Type());
 		
 //		if (menuItem.Type().equals(GDCommon.ColumnTypeMovie)) {
@@ -455,7 +455,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		MenuItem[] menuItems = menu.Items;
 		int index = menu.FocusedPosition;
 
-		Log.d(TAG, "======== showHighlightMenuItem = " + menu.MenuLevel + 
+		LogUtil.d(TAG, "======== showHighlightMenuItem = " + menu.MenuLevel + 
 				" " + menuItems.length + " " + menu.FocusedPosition + " " + mOldSelectedItemPosition
 				+ " " + mSelectedItemPosition + " stack size=" + mMenuStack.size());
 
@@ -505,7 +505,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// return;
 			// }
 			//
-//			Log.d(TAG, " mPopupMenuContainer.getVisibility() "
+//			LogUtil.d(TAG, " mPopupMenuContainer.getVisibility() "
 //					+ mPopupMenuContainer.getVisibility());
 			if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
 				//TODO: remove animation for performance!
@@ -657,7 +657,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		intent.setComponent(new ComponentName(packageName, componentName));
 		intent.setAction("android.intent.action.VIEW");
 
-		Log.d(TAG, "start " + componentName);
+		LogUtil.d(TAG, "start " + componentName);
 		return intent;
 	}
 
@@ -675,7 +675,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private void enterSubMenu(Menu newMenu) {
 		
-//		Log.d(TAG, " ==== enter submenu === " + mLeaveStart + " " + mEnterStart);
+//		LogUtil.d(TAG, " ==== enter submenu === " + mLeaveStart + " " + mEnterStart);
 		
 		if (mEnterStart || mLeaveStart)
 			return;
@@ -832,7 +832,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		
 		@Override
 		public void onAnimationStart(Animation animation) {
-//			Log.d(TAG, " ========= layout animation start ==== ");
+//			LogUtil.d(TAG, " ========= layout animation start ==== ");
 		}
 		
 		@Override
@@ -842,7 +842,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		
 		@Override
 		public void onAnimationEnd(Animation animation) {
-//			Log.d(TAG, " ========= layout animation end ==== ");
+//			LogUtil.d(TAG, " ========= layout animation end ==== ");
 			
 			if (mShowSubMenu) {
 				mShowSubMenu = false;
@@ -1064,7 +1064,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		 mMainMenu.setSelectionByForce(0);
 		 mMainMenu.requestFocus();
 		 mEnterStart = false;
-//		 Log.d(TAG, " ==== onChildMenuShown === " + mLeaveStart + " " + mEnterStart);
+//		 LogUtil.d(TAG, " ==== onChildMenuShown === " + mLeaveStart + " " + mEnterStart);
 	}
 
 	// submenu slide to left end:
@@ -1095,7 +1095,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMainMenu.setOnItemSelectedListener(mMenuItemSelectedListener);
 		mMainMenu.setSelectionByForce(mSelectedItemPosition);
 		
-//		Log.d(TAG, " ==== onParentMenuShown === " + mLeaveStart + " " + mEnterStart);
+//		LogUtil.d(TAG, " ==== onParentMenuShown === " + mLeaveStart + " " + mEnterStart);
 	}
 
 	// hide popup menu end:
@@ -1209,7 +1209,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			return;
 		}
 
-		Log.d(TAG, " --- homekey pressed -----");
+		LogUtil.d(TAG, " --- homekey pressed -----");
 		
 		if (mSimulateHomeKey) {
 			// Check whether this home key is sent by simulation,
@@ -1223,7 +1223,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mSimulateHomeKey = false;
 
 			deleteFile(GDCommon.FlagPlayVideo);
-			Log.d(TAG, "===== simulate home key press ===");
+			LogUtil.d(TAG, "===== simulate home key press ===");
 			mMediaScheduler.unmuteWithSilence();
 			return;*/
 		}
@@ -1273,7 +1273,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 			ColumnData[] columns = (ColumnData[]) data;
 
-			Log.d(TAG, "updateData columnLevel " + columnLevel + " columns "
+			LogUtil.d(TAG, "updateData columnLevel " + columnLevel + " columns "
 					+ columns);
 
 			if (columnLevel == COLUMN_LEVEL_1) {
@@ -1592,7 +1592,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	@Override
 	public void initializeApp() {
-		Log.d(TAG, "++++++++++==========initializeApp ================");
+		LogUtil.d(TAG, "++++++++++==========initializeApp ================");
 		startEngine();
 
 		// initializeData();
@@ -1600,12 +1600,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	@Override
 	public void deinitializeApp() {
-		Log.d(TAG, "++++++++++==========deinitializeApp ================");
+		LogUtil.d(TAG, "++++++++++==========deinitializeApp ================");
 	}
 
 	public void handleNotifiy(int what, Object data) {
 
-		Log.d(TAG, " ====  handleNotifiy === " + what);
+		LogUtil.d(TAG, " ====  handleNotifiy === " + what);
 
 		switch (what) {
 		case GDCommon.MSG_DISK_SPACEWARNING: {
@@ -1675,7 +1675,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	void loginFinished(LoginData loginData) {
-		Log.d(TAG, " === loginFinished ===");
+		LogUtil.d(TAG, " === loginFinished ===");
 
 		mPowerController.handleLogin(loginData);
 	}
@@ -1825,7 +1825,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		public View getView(int position, View convertView, ViewGroup parent) {
 
-			//Log.d(TAG, "get position= " + position);
+			//LogUtild(TAG, "get position= " + position);
 
 			ItemHolder holder = null;
 
@@ -1847,7 +1847,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			position = position % mDataSet.length;
 			holder.text.setText(mDataSet[position].MenuText());
 
-//			Log.d(TAG, "mSelectedItemPosition=" + mSelectedItemPosition
+//			LogUtil.d(TAG, "mSelectedItemPosition=" + mSelectedItemPosition
 //					+ " position=" + position);
 			// if (mSelectedItemPosition == position) {
 			// holder.icon

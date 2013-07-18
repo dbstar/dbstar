@@ -1,17 +1,15 @@
 package com.dbstar.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.io.IOException;
-import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import android.content.Context;
-import android.util.Log;
 
 public class FileOperation {
 	private static final String TAG = "FileOperation";
@@ -45,7 +43,7 @@ public class FileOperation {
     public static String read(String filename) {
 		String value = "";
         if (filename == null) {
-            Log.e(TAG, "filename null!");
+            LogUtil.e(TAG, "filename null!");
             return value;
         }
 
@@ -53,17 +51,17 @@ public class FileOperation {
         if (file.exists()) {
             value = readString(file);
         }
-        Log.d(TAG, "readFile(" + filename + ")=" + value);
+        LogUtil.d(TAG, "readFile(" + filename + ")=" + value);
 
         return value;
     }
 
     public static void write(String filename, String value) {
         if (filename == null) {
-            Log.e(TAG, "filename null!");
+            LogUtil.e(TAG, "filename null!");
         }
 
-        Log.d(TAG, "writeFile(" + filename + ", " + value + ")");
+        LogUtil.d(TAG, "writeFile(" + filename + ", " + value + ")");
         File file = new File(filename);
         if (file.exists()) {
             writeString(file, value);
@@ -71,7 +69,7 @@ public class FileOperation {
     }
 
 	public static void saveValueToFile(Context context, String path, String value) {
-		Log.d(TAG, "save " + value + " to " + path);
+		LogUtil.d(TAG, "save " + value + " to " + path);
 		try {
 			byte[] setflag = value.getBytes();
 			FileOutputStream fos = context.openFileOutput(path,
@@ -79,7 +77,7 @@ public class FileOperation {
 			fos.write(setflag);
 			fos.close();
 		} catch (Exception e) {
-			Log.e(TAG,"write file error:" + "path");
+			LogUtil.e(TAG,"write file error:" + "path");
 			e.printStackTrace();
 		}
 	}
@@ -97,7 +95,7 @@ public class FileOperation {
 				value = new String(buf, 0, count);
 			}
             bIn.close();
-			Log.d(TAG, " === read value == " + value + " " + path);
+			LogUtil.d(TAG, " === read value == " + value + " " + path);
         } catch (FileNotFoundException e1) {
             ;
         } catch (IOException e) {

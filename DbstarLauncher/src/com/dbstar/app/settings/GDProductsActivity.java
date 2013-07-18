@@ -1,13 +1,10 @@
 package com.dbstar.app.settings;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Timer;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +17,7 @@ import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
+import com.dbstar.util.LogUtil;
 
 public class GDProductsActivity extends GDBaseActivity {
 	private static final String TAG = "GDReceiveStatusActivity";
@@ -91,7 +89,7 @@ public class GDProductsActivity extends GDBaseActivity {
 
 		String[] items = data.split("\n");
 		if (items.length == 0) {
-			Log.d(TAG, " no product info !");
+		    LogUtil.d(TAG, " no product info !");
 			return;
 		}
 

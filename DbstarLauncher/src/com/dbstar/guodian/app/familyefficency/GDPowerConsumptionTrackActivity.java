@@ -20,7 +20,7 @@ import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.RoomData;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.data.StepPowerConsumptionTrack;
 import com.dbstar.guodian.data.StepPowerConsumptionTrack.DateStepPower;
 import com.dbstar.guodian.engine1.GDRequestType;
@@ -53,7 +53,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
     private ArrayList<String> mYearList;
     private ArrayList<String> mMonthList;
     private ArrayList<String> mDayList;
-    private ArrayList<RoomEletrical> mEquList;
+    private ArrayList<RoomElectrical> mEquList;
     private ArrayAdapter<String> mYearAdapter;
     private ArrayAdapter<String> mMonthAdapter;
     private ArrayAdapter<String> mDayAdapter;
@@ -94,23 +94,23 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
         mTextViewTitle = (TextView) findViewById(R.id.power_track_title);
         mButtonViewType = (Button) findViewById(R.id.power_track_view_type);
         mSpinnerEqu = (GDSpinner) findViewById(R.id.electrical_changer_spinner);
-        mEquList = new ArrayList<RoomData.RoomEletrical>();
-        RoomEletrical all =  new RoomEletrical();
+        mEquList = new ArrayList<RoomData.RoomElectrical>();
+        RoomElectrical all =  new RoomElectrical();
         all.EleDeviceCode = EQUTYPEID_ALL_EQU;
         all.DeviceName = getString(R.string.family_text_all_electrical);
         mEquList.add(all);
-        RoomEletrical deleted =  new RoomEletrical();
+        RoomElectrical deleted =  new RoomElectrical();
         deleted.EleDeviceCode = EQUTYPEID_DELETED_EQU;
         deleted .DeviceName = getString(R.string.family_text_deleted_electrical);
         mEquList.add(deleted);
         
-        RoomEletrical allCount =  new RoomEletrical();
+        RoomElectrical allCount =  new RoomElectrical();
         allCount.EleDeviceCode = EQUTYPEID_ALL_COUNT;
         allCount .DeviceName = getString(R.string.family_text_all_count);
         mEquList.add(allCount);
         
         ArrayList<String> equNames = new ArrayList<String>();
-        for (RoomEletrical equ : mEquList) {
+        for (RoomElectrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
         mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);
@@ -244,7 +244,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
     
     private void initEqumentSpinner(){
         ArrayList<String> equNames = new ArrayList<String>();
-        for (RoomEletrical equ : mEquList) {
+        for (RoomElectrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
         mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);
@@ -313,7 +313,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
                 initTextView(track);
                 showHistogramView(track);
             }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                List<RoomEletrical> list = (ArrayList<RoomEletrical>) guodianEvent.Data;
+                List<RoomElectrical> list = (ArrayList<RoomElectrical>) guodianEvent.Data;
                 if(list != null && !list.isEmpty()){
                     mEquList.addAll(list);
                     initEqumentSpinner();

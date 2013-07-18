@@ -1,6 +1,7 @@
 package com.dbstar.app;
 
 import com.dbstar.R;
+import com.dbstar.util.LogUtil;
 import com.dbstar.widget.GDVideoView;
 
 import android.app.Activity;
@@ -10,7 +11,6 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -51,7 +51,7 @@ public class GDVideoPlayer extends Activity implements OnCompletionListener,
 			
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				Log.d(TAG, "onKey " + keyCode);
+			    LogUtil.d(TAG, "onKey " + keyCode);
 				boolean ret = false;
 				int action = event.getAction();
 				if (action == KeyEvent.ACTION_DOWN) {

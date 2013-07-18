@@ -5,7 +5,6 @@ import java.util.List;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +28,7 @@ import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.guodian.parse.Util;
 import com.dbstar.model.EventData;
+import com.dbstar.util.LogUtil;
 
 public class GDStepPowerFragment extends GDBaseFragment {
 	private static final String TAG = "GDStepPowerFragment";
@@ -200,7 +200,7 @@ public class GDStepPowerFragment extends GDBaseFragment {
 	}*/
 
 	private void updatePowerPanel(PowerPanelData data) {
-		Log.d(TAG, " ===== updatePowerPanel ===== ");
+		LogUtil.d(TAG, " ===== updatePowerPanel ===== ");
 
 		if (data == null)
 			return;
@@ -252,7 +252,7 @@ public class GDStepPowerFragment extends GDBaseFragment {
 
 		String priceType = status.PriceType;
 
-		Log.d(TAG, " ===== PriceType ===== " + priceType);
+		LogUtil.d(TAG, " ===== PriceType ===== " + priceType);
 		if (priceType.equals(ElectricityPrice.PRICETYPE_STEP)) {
             mPriceType = GDConstract.PriceTypeStep;
         }else if(priceType.equals(ElectricityPrice.PRICETYPE_SINGLE)){
@@ -283,11 +283,11 @@ public class GDStepPowerFragment extends GDBaseFragment {
 
 			for (ElectricityPrice.StepPrice stepPrice : stepPriceList) {
 
-				Log.d(TAG, "step " + stepPrice.Step);
-				Log.d(TAG, "step start " + stepPrice.StepStartValue);
-				Log.d(TAG, "step end " + stepPrice.StepEndValue);
-				Log.d(TAG, "step price " + stepPrice.StepPrice);
-				Log.d(TAG, "step period " + stepPrice.PeriodPriceList);
+				LogUtil.d(TAG, "step " + stepPrice.Step);
+				LogUtil.d(TAG, "step start " + stepPrice.StepStartValue);
+				LogUtil.d(TAG, "step end " + stepPrice.StepEndValue);
+				LogUtil.d(TAG, "step price " + stepPrice.StepPrice);
+				LogUtil.d(TAG, "step period " + stepPrice.PeriodPriceList);
 
 				if (stepPrice.Step.equals(ElectricityPrice.STEP_1)) {
 					mStepPowerRulerStep0.setText(stepPrice.StepStartValue);
@@ -305,13 +305,13 @@ public class GDStepPowerFragment extends GDBaseFragment {
 			ElectricityPrice.StepPrice currentStep = Util.getStep(
 					stepPriceList, powerNum);
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep == null) {
 				return;
 			}
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep.Step.equals(ElectricityPrice.STEP_1)) {
 				String stepEnd = currentStep.StepEndValue;

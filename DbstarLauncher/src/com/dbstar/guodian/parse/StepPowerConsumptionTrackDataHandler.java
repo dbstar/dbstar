@@ -14,8 +14,6 @@ import com.dbstar.guodian.data.StepPowerConsumptionTrack.StepPower;
 
 public class StepPowerConsumptionTrackDataHandler {
 
-	private static final String TAG = "StepPowerConsumptionTrackDataHandler";
-
 	public static StepPowerConsumptionTrack parse(String data) {
 	    String jsonData = data.substring(1, data.length() - 1);
 	    StepPowerConsumptionTrack track = new StepPowerConsumptionTrack();

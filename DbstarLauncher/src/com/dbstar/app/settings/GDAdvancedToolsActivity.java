@@ -1,13 +1,13 @@
 package com.dbstar.app.settings;
 
 import com.dbstar.R;
+import com.dbstar.util.LogUtil;
 
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -73,7 +73,7 @@ public class GDAdvancedToolsActivity extends Activity {
 		intent.setComponent(new ComponentName(packageName, componentName));
 		intent.setAction("android.intent.action.VIEW");
 
-		Log.d(TAG, "start " + componentName);
+		LogUtil.d(TAG, "start " + componentName);
 		startActivity(intent);
 	}
 	

@@ -8,11 +8,28 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.dbstar.util.*;
-import com.dbstar.util.upgrade.RebootUtils;
+import android.app.Instrumentation;
+import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Binder;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Process;
+import android.view.KeyEvent;
+
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.settings.GDSettings;
-import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.ElectricityPrice;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.engine.GDClientObserver;
@@ -23,36 +40,20 @@ import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDVBDataContract;
-import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GDDataModel;
+import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GuideListItem;
 import com.dbstar.model.PreviewData;
 import com.dbstar.model.ReceiveData;
 import com.dbstar.model.TDTTimeController;
 import com.dbstar.service.client.GDDBStarClient;
-
-import android.app.Service;
-import android.app.Instrumentation;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.media.AudioManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.Process;
-import android.os.Looper;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.IBinder;
-import android.os.Binder;
-import android.os.Message;
-import android.util.Log;
-import android.util.EventLog;
-import android.view.KeyEvent;
+import com.dbstar.util.FileOperation;
+import com.dbstar.util.GDPowerManager;
+import com.dbstar.util.LogUtil;
+import com.dbstar.util.NativeUtil;
+import com.dbstar.util.PeripheralController;
+import com.dbstar.util.StringUtil;
+import com.dbstar.util.upgrade.RebootUtils;
 
 public class GDDataProviderService extends Service {
 
@@ -228,7 +229,7 @@ public class GDDataProviderService extends Service {
 
 	public void onCreate() {
 		super.onCreate();
-		Log.d(TAG, "onCreate");
+		LogUtil.d(TAG, "onCreate");
 
 		mMainThreadId = Process.myTid();
 		mMainThreadPriority = Process.getThreadPriority(mMainThreadId);
@@ -269,10 +270,10 @@ public class GDDataProviderService extends Service {
 		}
 
 		if (mPeripheralController.isHdmiIn()) {
-			Log.d(TAG, "Hdmi: IN");
+			LogUtil.d(TAG, "Hdmi: IN");
 			mPeripheralController.setAudioOutputOff();
 		} else {
-			Log.d(TAG, "Hdmi: OUT");
+			LogUtil.d(TAG, "Hdmi: OUT");
 			mPeripheralController.setAudioOutputOn();
 		}
 		mPeripheralController.setPowerLedOff();
@@ -296,18 +297,18 @@ public class GDDataProviderService extends Service {
 		// so wait for mount event.
 		if (mConfigure.configureStorage()) {
 			String disk = mConfigure.getStorageDisk();
-			Log.d(TAG, "monitor disk " + disk);
+			LogUtil.d(TAG, "monitor disk " + disk);
 
 			if (!disk.isEmpty()) {
 				mIsStorageReady = true;
-				Log.d(TAG, "disk is ready " + disk);
+				LogUtil.d(TAG, "disk is ready " + disk);
 
 				//mDiskMonitor.addDiskToMonitor(disk);
 			}
 		}
 
 		String channel = FileOperation.read(GDCommon.ChannelFile);
-		Log.d(TAG, "channel ="+channel);
+		LogUtil.d(TAG, "channel ="+channel);
 
 		if (channel != null && channel.length() > 0) {
 			mChannelMode = channel.equals(GDCommon.ChannelEthernet)? GDCommon.EthernetMode: GDCommon.WirelessMode;
@@ -315,7 +316,7 @@ public class GDDataProviderService extends Service {
 
 		// check network
 		mIsNetworkReady = isNetworkConnected();
-		Log.d(TAG, "network is connected " + mIsNetworkReady);
+		LogUtil.d(TAG, "network is connected " + mIsNetworkReady);
 
 		// initialize engine
 		initializeDataEngine();
@@ -349,7 +350,7 @@ public class GDDataProviderService extends Service {
 	    mRequestService.stop();
 	}
 	void startGuodianEngine() {
-		Log.d(TAG, "========== startGuodianEngine ==========");
+		LogUtil.d(TAG, "========== startGuodianEngine ==========");
 		String serverIP = mDataModel
 				.getSettingValue(GDSettings.PropertyGuodianServerIP);
 		String serverPort = mDataModel
@@ -366,13 +367,13 @@ public class GDDataProviderService extends Service {
 	}
 
 	void stopGuodianEngine() {
-		Log.d(TAG, "========== stopGuodianEngine ==========");
+		LogUtil.d(TAG, "========== stopGuodianEngine ==========");
 		//mGuodianEngine.stop();
 		mIsGuodianEngineStarted = false;
 	}
 
 	void destroyGuodianEngine() {
-		Log.d(TAG, "========== destroyGuodianEngine ==========");
+		LogUtil.d(TAG, "========== destroyGuodianEngine ==========");
 		//mGuodianEngine.destroy();
 		mIsGuodianEngineStarted = false;
 	}
@@ -389,7 +390,7 @@ public class GDDataProviderService extends Service {
 	
 	public void onDestroy() {
 		super.onDestroy();
-		Log.d(TAG, "onDestroy");
+		LogUtil.d(TAG, "onDestroy");
 		stopRequestServer();
 		stopDbStarService();
 		mDBStarClient.stop();
@@ -416,7 +417,7 @@ public class GDDataProviderService extends Service {
 	}
 
 	private void startDbStarService() {
-		Log.d(TAG, "++++++++++++++++++startDbStarService++++++++++++++++++++");
+		LogUtil.d(TAG, "++++++++++++++++++startDbStarService++++++++++++++++++++");
 
 		if (mIsSmartHomeServiceStarted)
 			return;
@@ -440,7 +441,7 @@ public class GDDataProviderService extends Service {
 
 		mIsSmartHomeServiceStarted = false;
 
-		Log.d(TAG, "stopDbStarService");
+		LogUtil.d(TAG, "stopDbStarService");
 
 		// SharedPreferences settings = null;
 		// SharedPreferences.Editor editor = null;
@@ -473,13 +474,13 @@ public class GDDataProviderService extends Service {
 			int msgId = msg.what;
 			switch (msgId) {
 			case POWERMANAGER_MSG_POWERKEY: {
-				Log.d(TAG, "sendKey(KEYCODE_POWER)");
+				LogUtil.d(TAG, "sendKey(KEYCODE_POWER)");
 				Instrumentation inst = new Instrumentation();
 				inst.sendKeyDownUpSync(KeyEvent.KEYCODE_POWER);
 				break;
 			}
 			case POWERMANAGER_MSG_SIMULATEKEY: {
-				Log.d(TAG, "sendKey()" + msg.arg1);
+				LogUtil.d(TAG, "sendKey()" + msg.arg1);
 				Instrumentation inst = new Instrumentation();
                 inst.sendKeyDownUpSync(msg.arg1);
 				break;
@@ -492,7 +493,7 @@ public class GDDataProviderService extends Service {
 
 	class PowerTask implements Runnable {
 		public void run() {
-			Log.d(TAG, "--- PowerTask() ---");
+			LogUtil.d(TAG, "--- PowerTask() ---");
 			if (mPowerHandler == null) {
 				return;
 			}
@@ -500,7 +501,7 @@ public class GDDataProviderService extends Service {
 			if (mSleepMode == POWERMANAGER_MODE_SCREENOFF) {
 				int secs = getWakeupTime();
 				if (secs > 0) {
-					Log.d(TAG, "--- PowerMode: SCREENOFF-->SLEEP, alarm=" + secs);
+					LogUtil.d(TAG, "--- PowerMode: SCREENOFF-->SLEEP, alarm=" + secs);
 					mSleepMode = POWERMANAGER_MODE_SLEEP;
 					mPowerManager.setAlarm(secs);
 					mPowerManager.releaseWakeLock();
@@ -528,8 +529,8 @@ public class GDDataProviderService extends Service {
 			case GDCommon.MSG_MEDIA_MOUNTED: {
 				Bundle data = msg.getData();
 				String disk = data.getString("disk");
-				// Log.d(TAG, "mount storage = " + disk);
-				Log.d(TAG, "++++++++ mount storage ++++++++" + disk);
+				// LogUtil.d(TAG, "mount storage = " + disk);
+				LogUtil.d(TAG, "++++++++ mount storage ++++++++" + disk);
 
 				// check whether the disk is mounted.
 				mConfigure.configureStorage();
@@ -539,10 +540,10 @@ public class GDDataProviderService extends Service {
 					// disk is mounted
 					mIsStorageReady = true;
 					String dir = mConfigure.getStorageDir();
-					Log.d(TAG, "11111111111111111  dir === " + dir);
+					LogUtil.d(TAG, "11111111111111111  dir === " + dir);
 					mDataModel.setPushDir(dir);
 
-					Log.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
+					LogUtil.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
 					//mDiskMonitor.removeDiskFromMonitor(disk);
 					//mDiskMonitor.addDiskToMonitor(disk);
 
@@ -587,7 +588,7 @@ public class GDDataProviderService extends Service {
 			}
 
 			case GDCommon.MSG_NETWORK_CONNECT: {
-				Log.d(TAG, " +++++++++++++ network connected +++++++++++++");
+				LogUtil.d(TAG, " +++++++++++++ network connected +++++++++++++");
 				if (mChannelMode == GDCommon.EthernetMode) {
 					// single card
 					// ethernet connected
@@ -601,7 +602,7 @@ public class GDDataProviderService extends Service {
 					if (type == GDCommon.TypeEthernet) {
 						//ethernet connected
 						if (mIsEthernetConnected) {
-							Log.d(TAG, "ethernet is connected already!");
+							LogUtil.d(TAG, "ethernet is connected already!");
 							return;
 						}
 						
@@ -614,7 +615,7 @@ public class GDDataProviderService extends Service {
 					} else {
 						// wifi connected
 						if (mIsWirelessConnected) {
-							Log.d(TAG, "ethernet is connected already!");
+							LogUtil.d(TAG, "ethernet is connected already!");
 							return;
 						}
 						
@@ -638,7 +639,7 @@ public class GDDataProviderService extends Service {
 				break;
 			}
 			case GDCommon.MSG_NETWORK_DISCONNECT: {
-				Log.d(TAG, "++++++++++++ network disconnected +++++++++++");
+				LogUtil.d(TAG, "++++++++++++ network disconnected +++++++++++");
 				if (mChannelMode == GDCommon.EthernetMode) {
 					mIsNetworkReady = false;
 					mPeripheralController.setNetworkLedOff();
@@ -648,7 +649,7 @@ public class GDDataProviderService extends Service {
 					if (type == GDCommon.TypeEthernet) {
 						//ethernet connected
 						if (!mIsEthernetConnected) {
-							Log.d(TAG, "ethernet is disconnected already!");
+							LogUtil.d(TAG, "ethernet is disconnected already!");
 							return;
 						}
 						
@@ -656,7 +657,7 @@ public class GDDataProviderService extends Service {
 					} else {
 						// wifi connected
 						if (!mIsWirelessConnected) {
-							Log.d(TAG, "ethernet is disconnected already!");
+							LogUtil.d(TAG, "ethernet is disconnected already!");
 							return;
 						}
 						
@@ -797,14 +798,14 @@ public class GDDataProviderService extends Service {
 
 				for (int i = 0; i < 2; i++) {
 					String value = mDataModel.queryGlobalProperty(keys[i]);
-					Log.d(TAG, "+++++++++++ queryGlobalProperty key=" + keys[i]
+					LogUtil.d(TAG, "+++++++++++ queryGlobalProperty key=" + keys[i]
 							+ " value=" + value);
 					intent.putExtra(keys[i], value);
 				}
 
 				for (int i = 2; i < keys.length; i++) {
 					String value = mDataModel.getSettingValue(keys[i]);
-					Log.d(TAG, "+++++++++++ getSettingValue key=" + keys[i]
+					LogUtil.d(TAG, "+++++++++++ getSettingValue key=" + keys[i]
 							+ " value=" + value);
 					intent.putExtra(keys[i], value);
 				}
@@ -879,28 +880,28 @@ public class GDDataProviderService extends Service {
 
 			case GDCommon.MSG_SMARTCARD_INSERT_OK: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_INSERTED;
-				Log.d(TAG, "===========Smartcard========== reset ok! ");
+				LogUtil.d(TAG, "===========Smartcard========== reset ok! ");
 				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 
 			case GDCommon.MSG_SMARTCARD_INSERT_FAILED: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_INVALID;
-				Log.d(TAG, "===========Smartcard========== invalid!");
+				LogUtil.d(TAG, "===========Smartcard========== invalid!");
 				notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 
 			case GDCommon.MSG_SMARTCARD_REMOVE_OK: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVED;
-				Log.d(TAG, "===========Smartcard========== remove ok!");
+				LogUtil.d(TAG, "===========Smartcard========== remove ok!");
 				// notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
 
 			case GDCommon.MSG_SMARTCARD_REMOVE_FAILED: {
 				mSmartcardState = GDCommon.SMARTCARD_STATE_INVALID;
-				Log.d(TAG, "===========Smartcard========== remove failed!");
+				LogUtil.d(TAG, "===========Smartcard========== remove failed!");
 				// notifySmartcardStatusChange(mSmartcardState);
 				break;
 			}
@@ -997,7 +998,7 @@ public class GDDataProviderService extends Service {
 		mIsDisplaySet = true;
 		/* when system reboot from screen off mode, donot screen on. */
 		if (SystemUtils.getSystemStatus().equals("screenoff")) {
-			Log.d(TAG, "--- BootCompleted: AUTOREBOOT-->SCREENOFF");
+			LogUtil.d(TAG, "--- BootCompleted: AUTOREBOOT-->SCREENOFF");
 			SystemUtils.setSystemStatus("running");
 			Message msg = mPowerHandler.obtainMessage(POWERMANAGER_MSG_POWERKEY);
 			msg.sendToTarget();
@@ -1018,7 +1019,7 @@ public class GDDataProviderService extends Service {
 	
 	private void handleSystemReboot() {
 		if (mSleepMode == POWERMANAGER_MODE_SCREENOFF) {
-			Log.d(TAG, "+++++++++++ set system.status=screenoff");
+			LogUtil.d(TAG, "+++++++++++ set system.status=screenoff");
 			SystemUtils.setSystemStatus("screenoff");
 		}
 		RebootUtils.rebootNormal(this);
@@ -1040,7 +1041,7 @@ public class GDDataProviderService extends Service {
 
 	private void diplayNotification(String message) {
 
-		Log.d(TAG, "======= diplayNotification ==== observer = " + mPageOberser
+		LogUtil.d(TAG, "======= diplayNotification ==== observer = " + mPageOberser
 				+ " message " + message);
 
 		if (mPageOberser != null) {
@@ -1069,7 +1070,7 @@ public class GDDataProviderService extends Service {
 	}
 
 	private void handleTaskFinished(RequestTask task) {
-		Log.d(TAG, "handleTaskFinished type [" + task.Type + "]");
+		LogUtil.d(TAG, "handleTaskFinished type [" + task.Type + "]");
 
 		switch (task.Type) {
 		case REQUESTTYPE_GETCOLUMNS: {
@@ -1183,7 +1184,7 @@ public class GDDataProviderService extends Service {
 			msg.sendToTarget();
 
 		} else {
-			Log.d(TAG, "taskFinished : invalide task, dropped!");
+			LogUtil.d(TAG, "taskFinished : invalide task, dropped!");
 		}
 	}
 
@@ -1235,7 +1236,7 @@ public class GDDataProviderService extends Service {
 		}
 
 		private void taskFinished(RequestTask task) {
-			Log.d(TAG, "Task [" + task.Id + "] Finished - Thread Id ["
+			LogUtil.d(TAG, "Task [" + task.Id + "] Finished - Thread Id ["
 					+ mThreadId + "]");
 
 			enqueueFinishedTask(task);
@@ -1257,16 +1258,16 @@ public class GDDataProviderService extends Service {
 		public void run() {
 			mThreadId = Process.myTid();
 			mThreadPriority = Process.getThreadPriority(mThreadId);
-			Log.d(TAG, "Worker Thread [" + mThreadId + "] Priority ["
+			LogUtil.d(TAG, "Worker Thread [" + mThreadId + "] Priority ["
 					+ mThreadPriority + "]");
 
 			Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE);
 			mThreadPriority = Process.getThreadPriority(mThreadId);
-			Log.d(TAG, "Worker Thread [" + mThreadId + "] Priority ["
+			LogUtil.d(TAG, "Worker Thread [" + mThreadId + "] Priority ["
 					+ mThreadPriority + "]");
 
 			while (true) {
-				Log.d(TAG, "@@@ 1 Thread [" + mThreadId + "]-- Begin Run");
+				LogUtil.d(TAG, "@@@ 1 Thread [" + mThreadId + "]-- Begin Run");
 
 				if (checkExit()) {
 					break;
@@ -1571,7 +1572,7 @@ public class GDDataProviderService extends Service {
 				}
 			}
 
-			Log.d(TAG, "Thread [" + mThreadId + "] exit!");
+			LogUtil.d(TAG, "Thread [" + mThreadId + "] exit!");
 		}
 	};
 
@@ -1878,7 +1879,7 @@ public class GDDataProviderService extends Service {
 			return previews;
 		}
 
-		Log.d(TAG, "path= " + path);
+		LogUtil.d(TAG, "path= " + path);
 		File dir = new File(path);
 		if (dir == null || !dir.exists()) {
 			return previews;
@@ -1953,7 +1954,7 @@ public class GDDataProviderService extends Service {
 	}
 
 	public void cancelAllRequests() {
-		Log.d(TAG, "cancelAllRequests!");
+		LogUtil.d(TAG, "cancelAllRequests!");
 
 		synchronized (mTaskQueueLock) {
 			mTaskQueue.clear();
@@ -1973,7 +1974,7 @@ public class GDDataProviderService extends Service {
 		NetworkInfo networkInfo = mConnectManager.getActiveNetworkInfo();
 
 		if (networkInfo != null) {
-			Log.d(TAG,
+			LogUtil.d(TAG,
 					" === connected netwrok === type = "
 							+ networkInfo.getType());
 		}
@@ -2037,8 +2038,8 @@ public class GDDataProviderService extends Service {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			Uri uri = intent.getData();
-			Log.d(TAG, "---- USB device " + action);
-			Log.d(TAG, "---- URI:" + uri.toString());
+			LogUtil.d(TAG, "---- USB device " + action);
+			LogUtil.d(TAG, "---- URI:" + uri.toString());
 
 			if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {
 				Message message = mHandler
@@ -2067,7 +2068,7 @@ public class GDDataProviderService extends Service {
 	// In dual network device (wifi and ethernet) mode,
 	// when ethernet is connected, this callback is called.
 	private void ethernetConnected() {
-		Log.d(TAG, "ethernetConnected");
+		LogUtil.d(TAG, "ethernetConnected");
 	
 //		if (mIsWirelessConnected) {
 //			// remove Ethernet gateway.
@@ -2084,7 +2085,7 @@ public class GDDataProviderService extends Service {
 	}
 	
 	void ethernetDisconnected() {
-		Log.d(TAG, "ethernetDisconnected");
+		LogUtil.d(TAG, "ethernetDisconnected");
 		
 		if (mChannelMode == GDCommon.EthernetMode) {
 			return;
@@ -2102,7 +2103,7 @@ public class GDDataProviderService extends Service {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 
-			Log.d(TAG, "ConnectivityManager Action: " + action);
+			LogUtil.d(TAG, "ConnectivityManager Action: " + action);
 
 			if (!action.equals(ConnectivityManager.CONNECTIVITY_ACTION))
 				return;
@@ -2118,7 +2119,7 @@ public class GDDataProviderService extends Service {
 				// single card
 				boolean noConnectivity = intent.getBooleanExtra(
 						ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
-				Log.d(TAG, "noConnectivity = " + noConnectivity);
+				LogUtil.d(TAG, "noConnectivity = " + noConnectivity);
 
 				if (noConnectivity) {
 					// There are no connected networks at all
@@ -2151,10 +2152,10 @@ public class GDDataProviderService extends Service {
 
 				networkInfo = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 				if (networkInfo != null && networkInfo.isConnected()) {
-					Log.d(TAG, "wifi connected");
+					LogUtil.d(TAG, "wifi connected");
 					wirelessConnected = true;
 				} else {
-					Log.d(TAG, "wifi disconnected");
+					LogUtil.d(TAG, "wifi disconnected");
 					wirelessConnected = false;
 				}
 
@@ -2192,18 +2193,18 @@ public class GDDataProviderService extends Service {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 
-			Log.d(TAG, "onReceive System msg " + action);
+			LogUtil.d(TAG, "onReceive System msg " + action);
 
 			if (action.equals(DbstarServiceApi.ACTION_NOTIFY)) {
 
 				int type = intent.getIntExtra("type", 0);
-				Log.d(TAG, "onReceive type " + type);
+				LogUtil.d(TAG, "onReceive type " + type);
 
 				switch (type) {
 				case DbstarServiceApi.UPGRADE_NEW_VER_FORCE:
 				case DbstarServiceApi.UPGRADE_NEW_VER: {
 					String packageFile = getStringData(intent, "utf-8");
-					Log.d(TAG, "onReceive packageFile " + packageFile);
+					LogUtil.d(TAG, "onReceive packageFile " + packageFile);
 					
 					if (packageFile != null) {
 						int msgId = 0;
@@ -2225,12 +2226,12 @@ public class GDDataProviderService extends Service {
 				case DbstarServiceApi.DIALOG_NOTICE: {
 					byte[] bytes = intent.getByteArrayExtra("message");
 
-					Log.d(TAG, "=======receive notification " + bytes);
+					LogUtil.d(TAG, "=======receive notification " + bytes);
 
 					if (bytes != null) {
 						String info = StringUtil.getString(bytes, "utf-8");
 
-						Log.d(TAG, "======= notification " + info);
+						LogUtil.d(TAG, "======= notification " + info);
 
 						Message msg = mHandler
 								.obtainMessage(GDCommon.MSG_DISP_NOTIFICATION);
@@ -2261,7 +2262,7 @@ public class GDDataProviderService extends Service {
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_SUCCESS: {
 					mIsDbServiceStarted = true;
 
-					Log.d(TAG,
+					LogUtil.d(TAG,
 							" ========== DbstarServer init success ===========");
 					if (mDBStarClient.isBoundToServer()) {
 						mHandler.sendEmptyMessage(GDCommon.SYNC_STATUS_TODBSERVER);
@@ -2272,7 +2273,7 @@ public class GDDataProviderService extends Service {
 				case DbstarServiceApi.STATUS_DVBPUSH_INIT_FAILED: {
 					mIsDbServiceStarted = false;
 
-					Log.d(TAG,
+					LogUtil.d(TAG,
 							" ========== DbstarServer init failed ===========");
 					break;
 				}
@@ -2330,7 +2331,7 @@ public class GDDataProviderService extends Service {
 					if (bytes != null) {
 						try {
 							String time = new String(bytes, "utf-8");
-							Log.d(TAG, "==========handle TDT time ======== "
+							LogUtil.d(TAG, "==========handle TDT time ======== "
 									+ time);
 							long tdtTime = Long.parseLong(time);
 							TDTTimeController.handleTDTTime(tdtTime * 1000L);
@@ -2360,7 +2361,7 @@ public class GDDataProviderService extends Service {
 					break;
 				}
 				case DbstarServiceApi.SYSTEM_REBOOT: {
-					Log.d(TAG, " ========== DbstarServer request SYSTEM_REBOOT ===========");
+					LogUtil.d(TAG, " ========== DbstarServer request SYSTEM_REBOOT ===========");
 					mHandler.sendEmptyMessage(GDCommon.MSG_SYSTEM_REBOOT);
 					break;
 				}
@@ -2454,10 +2455,10 @@ public class GDDataProviderService extends Service {
 			} else if (action.equals(DbstarServiceApi.ACTION_HDMI_OUT)) {
 				mPeripheralController.setAudioOutputOn();
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_IN)) {
-				Log.d(TAG, "######: " + action);
+				LogUtil.d(TAG, "######: " + action);
 				mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_IN);
 			} else if (action.equals(DbstarServiceApi.ACTION_SMARTCARD_OUT)) {
-				Log.d(TAG, "######: " + action);
+				LogUtil.d(TAG, "######: " + action);
 				mHandler.sendEmptyMessage(GDCommon.MSG_SMARTCARD_OUT);
 			} else if (action.equals(GDCommon.ActionGetEthernetInfo)) {
 				mHandler.sendEmptyMessage(GDCommon.MSG_GET_ETHERNETINFO);
@@ -2523,38 +2524,38 @@ public class GDDataProviderService extends Service {
 	int getWakeupTime() {
 		int secs = 0;
         secs = mDBStarClient.getWakeupTime();
-        Log.d(TAG, "-------- getWakeupTime(), secs= " + secs);
+        LogUtil.d(TAG, "-------- getWakeupTime(), secs= " + secs);
 		return secs;
 	}
 
 	void setSleepMode(boolean on) {
-		Log.d(TAG, "SLEEPMODE --- screenOn: " + on);
+		LogUtil.d(TAG, "SLEEPMODE --- screenOn: " + on);
 		if (on) {
 			if (mSleepMode == POWERMANAGER_MODE_SCREENOFF) {
-				Log.d(TAG, "--- PowerMode: SCREENOFF-->RUNNING");
+				LogUtil.d(TAG, "--- PowerMode: SCREENOFF-->RUNNING");
 				mSleepMode = POWERMANAGER_MODE_RUNNING;
 				mPowerManager.clearAlarm();
 				stopPowerTask();
 			} else if (mSleepMode == POWERMANAGER_MODE_SLEEP) { 
 				if (mPowerManager.getAlarm() > 0) {
-					Log.d(TAG, "--- PowerMode: SLEEP-->RUNNING");
+					LogUtil.d(TAG, "--- PowerMode: SLEEP-->RUNNING");
 					mSleepMode = POWERMANAGER_MODE_RUNNING;
 					mPowerManager.clearAlarm();
 					stopPowerTask();
 				} else {
-					Log.d(TAG, "--- PowerMode: SLEEP-->SCREENOFF");
+					LogUtil.d(TAG, "--- PowerMode: SLEEP-->SCREENOFF");
 					Message msg = mPowerHandler.obtainMessage(POWERMANAGER_MSG_POWERKEY);
 					msg.sendToTarget();
 				}
 			}
 		} else {
 			if (mSleepMode == POWERMANAGER_MODE_RUNNING) {
-				Log.d(TAG, "--- PowerMode: RUNNING-->SCREENOFF");
+				LogUtil.d(TAG, "--- PowerMode: RUNNING-->SCREENOFF");
 				mSleepMode = POWERMANAGER_MODE_SCREENOFF;
 				mPowerManager.acquirePartialWakeLock(this);
 				startPowerTask();
 			} else if (mSleepMode == POWERMANAGER_MODE_SLEEP) {
-				Log.d(TAG, "--- PowerMode: SLEEP-->SCREENOFF");
+				LogUtil.d(TAG, "--- PowerMode: SLEEP-->SCREENOFF");
 				mSleepMode = POWERMANAGER_MODE_SCREENOFF;
 				mPowerManager.acquirePartialWakeLock(this);
 			}
@@ -2568,7 +2569,7 @@ public class GDDataProviderService extends Service {
 	}
 
 	boolean notifyDbstarServiceNetworkStatus() {
-		Log.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
+		LogUtil.d(TAG, "NETWORK --- notifyDbstarServiceNetworkStatus: dvb started "
 				+ mIsDbServiceStarted);
 
 		if (!mIsDbServiceStarted)
@@ -2586,7 +2587,7 @@ public class GDDataProviderService extends Service {
 
 	boolean notifyDbstarServiceStorageStatus(String disk) {
 
-		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
+		LogUtil.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
 				+ mIsDbServiceStarted);
 
 		if (!mIsDbServiceStarted)
@@ -2604,7 +2605,7 @@ public class GDDataProviderService extends Service {
 	
 	boolean notifyDbstarServiceDeviceInit() {
 
-		Log.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
+		LogUtil.d(TAG, "STORAGE -- notifyDbstarServiceStorageStatus: dvb started "
 				+ mIsDbServiceStarted);
 
 		if (!mIsDbServiceStarted)
@@ -2618,7 +2619,7 @@ public class GDDataProviderService extends Service {
 
 	boolean notifyDbstarServiceSDStatus() {
 
-		Log.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
+		LogUtil.d(TAG, "SMARTCARD --- notifyDbstarServiceSDStatus: dvb started "
 				+ mIsDbServiceStarted);
 
 		if (!mIsDbServiceStarted)
@@ -2637,7 +2638,7 @@ public class GDDataProviderService extends Service {
 	// 1. dbstarDVB init ok;
 	// 2. sdcard, network, or storage state changed.
 	private void syncStatusToDbServer() {
-		Log.d(TAG, "syncStatusToDbServer ");
+		LogUtil.d(TAG, "syncStatusToDbServer ");
 
 		notifyDbstarServiceSDStatus();
 		notifyDbstarServiceNetworkStatus();
@@ -2664,7 +2665,7 @@ public class GDDataProviderService extends Service {
 
 		public void notifyEvent(int type, Object event) {
 
-			Log.d(TAG, " == notifyEvent == " + type);
+			LogUtil.d(TAG, " == notifyEvent == " + type);
 
 			switch (type) {
 			case EventData.EVENT_LOGIN_SUCCESSED: {
@@ -2711,7 +2712,7 @@ public class GDDataProviderService extends Service {
 
 	public void disconnect() {
 		if (!mIsGuodianEngineStarted) {
-			Log.d(TAG, "engine is not started!");
+			LogUtil.d(TAG, "engine is not started!");
 			return;
 		}
 
@@ -2720,7 +2721,7 @@ public class GDDataProviderService extends Service {
 	
 	public void reconnect() {
 		if (!mIsGuodianEngineStarted) {
-			Log.d(TAG, "engine is not started!");
+			LogUtil.d(TAG, "engine is not started!");
 			return;
 		}
 
@@ -2732,7 +2733,7 @@ public class GDDataProviderService extends Service {
 	// Guodian Related interface
 //	public void requestPowerData(int type, Object args) {
 //		if (!mIsGuodianEngineStarted) {
-//			Log.d(TAG, "engine is not started!");
+//			LogUtil.d(TAG, "engine is not started!");
 //			return;
 //		}
 //		//mGuodianEngine.requestData(type, args);

@@ -11,7 +11,6 @@ import com.dbstar.guodian.data.SPCConstitute;
 
 public class SPCConstituteDataHandler {
 
-	private static final String TAG = "SPCConstituteDataHandler";
 
 	public static SPCConstitute parse(String data) {
 	    String jsonData = data.substring(1, data.length() - 1);

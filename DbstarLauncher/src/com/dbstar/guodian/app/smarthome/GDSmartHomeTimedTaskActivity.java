@@ -41,7 +41,7 @@ import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.AddTimedTaskResponse;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.ResultData;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.data.TimedTask;
 import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.guodian.engine1.RequestParams;
@@ -89,7 +89,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     private LinearLayout mTimedTaskDetailPage;
     private List<TimedTask []> mPageTimedTasks;
     private List<TimedTask> mListTimedTask;
-    private List<RoomEletrical> mAllElectricalList;
+    private List<RoomElectrical> mAllElectricalList;
     private List<String> mNoTaskElectricalList;
     private List<Integer> mPeriodList;
     private ArrayList<String> mEleSpinnerData;
@@ -573,7 +573,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 mIsLoadBackAllEle = true;
                 mIsLoadAllEleSuccess = true;
-                mAllElectricalList = (List<RoomEletrical>) guodianEvent.Data;
+                mAllElectricalList = (List<RoomElectrical>) guodianEvent.Data;
                 if(mListTimedTask.size() > 1 && mAllElectricalList != null && mAllElectricalList.size() > 0){
                     mTimedTaskAdapter.notifyDataSetChanged();
                 }
@@ -733,8 +733,8 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     
     private void constructeSpinnerData() {
         if(mAllElectricalList !=null){
-            RoomEletrical ele; 
-            for(RoomEletrical eletrical: mAllElectricalList){
+            RoomElectrical ele; 
+            for(RoomElectrical eletrical: mAllElectricalList){
                 mEleSpinnerData.add(eletrical.DeviceName);
             }
             mSpinerAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, mEleSpinnerData);
@@ -1054,7 +1054,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         int picId = R.drawable.common_icon_equ_defult;
         if(mAllElectricalList == null)
             return picId;
-        for(RoomEletrical eletrical : mAllElectricalList){
+        for(RoomElectrical eletrical : mAllElectricalList){
             if(eletrical.DeviceGuid.equals(task.DeviceGuid)){
                 StringBuilder sb = new StringBuilder();
                 sb.append("common_icon_equ_");
@@ -1110,7 +1110,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             }
         }
         
-        RoomEletrical selectedEle = mAllElectricalList.get(spinnerSelectedPosition -1);
+        RoomElectrical selectedEle = mAllElectricalList.get(spinnerSelectedPosition -1);
         String deviceGuid = selectedEle.DeviceGuid;
         String oper = SWITCH_OPER_ON;
         String state = TASK_STATU_OPENED;

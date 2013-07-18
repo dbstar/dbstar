@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,6 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
@@ -26,6 +24,7 @@ import com.dbstar.guodian.engine.GDConstract;
 import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
+import com.dbstar.util.LogUtil;
 import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDSpinner;
 
@@ -149,7 +148,7 @@ public class GDBillActivity extends GDSmartActivity {
 
 	protected void onServiceStart() {
 		super.onServiceStart();
-		Log.d(TAG, "onServiceStart");
+		LogUtil.d(TAG, "onServiceStart");
 		mSystemFlag = "elc";
         mRequestMethodId = "m005f005";
 	    requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,null,null);
@@ -159,7 +158,7 @@ public class GDBillActivity extends GDSmartActivity {
 		int yearIndex = mYearSpinner.getSelectedItemPosition();
 		int monthIndex = mMonthSpinner.getSelectedItemPosition();
 		initalListData(null);
-		Log.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex="
+		LogUtil.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex="
 				+ monthIndex);
 		
 		if (monthIndex > 0) {
@@ -207,7 +206,7 @@ public class GDBillActivity extends GDSmartActivity {
 
 	private void handlePowerData(int type, Object data) {
 		if (data == null) {
-			Log.d(TAG, "ERROR: data is null");
+		    LogUtil.d(TAG, "ERROR: data is null");
 			return;
 		}
 		

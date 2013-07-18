@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +29,7 @@ import com.dbstar.guodian.data.ResultData;
 import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.RoomData.ElecRefreshResponse;
 import com.dbstar.guodian.data.RoomData.ElecTurnResponse;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
@@ -110,56 +109,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
         mRoomEquListView.setFocusable(false);
         mRoomEquListView.setFocusableInTouchMode(false);
         mRoomEquListView.clearFocus();
-//        mRoomEquListView.setOnKeyListener(new OnKeyListener() {
-//            
-//            @Override
-//            public boolean onKey(View v, int keyCode, KeyEvent event) {
-//                boolean ret = false;
-//                int action = event.getAction();
-//                if (action == KeyEvent.ACTION_DOWN) {
-//                    switch (keyCode) {
-//
-//                    case KeyEvent.KEYCODE_DPAD_LEFT: {
-//                        int selectedIndex = mRoomEquListView
-//                                .getSelectedItemPosition();
-//                        if (selectedIndex == 0 && mElePageNumber > 0) {
-//                            loadElePrevPage();
-//                            ret = true;
-//                        }
-//                        break;
-//                    }
-//                    case KeyEvent.KEYCODE_DPAD_RIGHT: {
-//                        int selectedIndex = mRoomEquListView
-//                                .getSelectedItemPosition();
-//                        if (selectedIndex == (ElePageSize - 1)
-//                                && mElePageNumber < mElePageCount - 1) {
-//                            loadEleNextPage();
-//                            ret = true;
-//                        }
-//                        break;
-//                    }
-//                    default:
-//                        break;
-//                    }
-//
-//                }
-//                return ret;
-//            }
-//        });
         
-        mRoomEquListView.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view,
-                    int position, long id) {
-                Log.i("Futao", "onItemSelected = " + position);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                
-            }
-        });
         mRoomsListView.setOnFocusChangeListener(new OnFocusChangeListener() {
             
             @Override
@@ -338,7 +288,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                 mListRoom = (ArrayList<RoomData>) guodianEvent.Data;
                 initRoomListView();
             }else if(GDRequestType.DATATYPE_ROOM_ELECTRICAL_LIST == guodianEvent.Type){
-              List<RoomEletrical> eles = (List<RoomEletrical>) guodianEvent.Data;
+              List<RoomElectrical> eles = (List<RoomElectrical>) guodianEvent.Data;
               RoomData room = null;
               if(eles != null && !eles.isEmpty()){
                 String guid =  eles.get(0).RoomGuid;
@@ -384,7 +334,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     
     private void updateEleInfo( ElecRefreshResponse elecRefreshResponse){
         if(elecRefreshResponse != null){
-            RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
+            RoomElectrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
             if(elecRefreshResponse.EleAmountOfDay != null){
                 eletrical.EleAmountOfDay = elecRefreshResponse.EleAmountOfDay;
             }
@@ -402,7 +352,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     }
     private void updateEleSwitch(ElecTurnResponse elecTurnResponse){
         if(elecTurnResponse != null){
-            RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
+            RoomElectrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
             if("true".equals(elecTurnResponse.Result)){
                 if(eletrical.AdapterFlag.equals(SOCKET_ELE_ON)){
                     eletrical.AdapterFlag = SOCKET_ELE_OFF;
@@ -435,7 +385,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
 
         RoomData[] rooms =  mRoomAdapter.getCurrentRoomPages();
         RoomData room = rooms[mRoomsListView.getSelectedItemPosition()];
-        RoomEletrical [] eles = room.ElePageList.get(mElePageNumber);
+        RoomElectrical [] eles = room.ElePageList.get(mElePageNumber);
         mRoomEleAdapter.setData(eles);
         mRoomEquListView.clearChoices();
         mRoomEquListView.setSelection(rooms.length);
@@ -466,7 +416,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
         mElePageNumber ++;
         RoomData[] rooms =  mRoomAdapter.getCurrentRoomPages();
         RoomData room = rooms[mRoomsListView.getSelectedItemPosition()];
-        RoomEletrical [] eles = room.ElePageList.get(mElePageNumber);
+        RoomElectrical [] eles = room.ElePageList.get(mElePageNumber);
         mRoomEleAdapter.setData(eles);
         mRoomEquListView.clearChoices();
         mRoomEquListView.setSelection(0);
@@ -495,13 +445,13 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             mElePageCount++;
         }
 
-        roomData.ElePageList = new ArrayList<RoomEletrical[]>();
+        roomData.ElePageList = new ArrayList<RoomElectrical[]>();
 
         int index = 0;
         for (int i = 0; i < mElePageCount; i++) {
             int pageSize = Math.min(ElePageSize, size - index);
 
-            RoomEletrical[] page = new RoomEletrical[pageSize];
+            RoomElectrical[] page = new RoomElectrical[pageSize];
             for (int j = 0; j < pageSize; j++) {
                 page[j] = roomData.EletricalList.get(index);
                 index++;
@@ -584,9 +534,9 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     class RoomEleAdapter extends BaseAdapter {
 
         EquViewHolder v;
-        public RoomEletrical data [];
+        public RoomElectrical data [];
         
-        public void setData(RoomEletrical [] data){
+        public void setData(RoomElectrical [] data){
             this.data = data;
         }
         @Override
@@ -611,7 +561,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             final View myView;
             final int index = position;
             
-            RoomEletrical eletrical = data [position];
+            RoomElectrical eletrical = data [position];
             if(eletrical.DevicePic.equals(DEVICE_TYPE_CURTAIN)){
                 CurtainHolder vh = null;
                 
@@ -816,7 +766,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             return convertView;
         }
         
-        public RoomEletrical [] getEletricals(){
+        public RoomElectrical [] getEletricals(){
             return data;
         }
         class EquViewHolder {
@@ -902,7 +852,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
        }
        
        
-       RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
+       RoomElectrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
        
        String adapter_seridno = eletrical.AdapterSeridNo;
        String device_guid = eletrical.DeviceGuid;
@@ -936,7 +886,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
     }
     
     private void requestRefreshElectrical(){
-        RoomEletrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
+        RoomElectrical eletrical = mRoomEleAdapter.getEletricals()[mEleListselectedIndex];
         if(mCtrlSeridNo == null){
             showErrorMsg(R.string.no_login);
             return;

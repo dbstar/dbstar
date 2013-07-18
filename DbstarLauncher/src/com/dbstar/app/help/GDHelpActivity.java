@@ -1,16 +1,9 @@
 package com.dbstar.app.help;
 
-import java.io.InputStream;
-import java.util.List;
-
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,9 +13,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -30,7 +21,7 @@ import android.widget.TextView;
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.app.settings.GDSystemMgrActivity;
-import com.dbstar.widget.GDAdapterView;
+import com.dbstar.util.LogUtil;
 
 public class GDHelpActivity extends GDBaseActivity {
 	private static final String TAG = "GDHelpActivity";
@@ -49,7 +40,7 @@ public class GDHelpActivity extends GDBaseActivity {
 
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-		Log.d(TAG, "menu path = " + mMenuPath);
+		LogUtil.d(TAG, "menu path = " + mMenuPath);
 
 		if (mMenuPath != null) {
 			String[] menuArray = mMenuPath.split(MENU_STRING_DELIMITER);

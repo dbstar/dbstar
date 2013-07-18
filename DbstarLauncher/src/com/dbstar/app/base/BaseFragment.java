@@ -1,5 +1,7 @@
 package com.dbstar.app.base;
 
+import com.dbstar.util.LogUtil;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -8,7 +10,6 @@ import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 
 public class BaseFragment extends Fragment implements DialogCreatable {
 	private static final String TAG = "BaseFragment";
@@ -70,7 +71,7 @@ public class BaseFragment extends Fragment implements DialogCreatable {
 
 	protected void showDialog(int dialogId) {
 		if (mDialogFragment != null) {
-			Log.e(TAG, "Old dialog fragment not null!");
+			LogUtil.e(TAG, "Old dialog fragment not null!");
 		}
 		mDialogFragment = new BaseDialogFragment(this, dialogId);
 		mDialogFragment.show(getActivity().getFragmentManager(),

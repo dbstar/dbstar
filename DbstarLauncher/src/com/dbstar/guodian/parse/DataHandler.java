@@ -3,18 +3,18 @@ package com.dbstar.guodian.parse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
 
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.PowerData;
 import com.dbstar.guodian.data.PowerTarget;
 import com.dbstar.guodian.data.UserPriceStatus;
+import com.dbstar.util.LogUtil;
 
 public class DataHandler {
 	private static final String TAG = "DataHandler";
 
 	public static PowerData parsePower(JSONObject object) throws JSONException {
-		Log.d(TAG, "parsePower");
+	    LogUtil.d(TAG, "parsePower");
 
 		PowerData data = new PowerData();
 		data.Count = (String) object.getString(JsonTag.TAGNumCount);
@@ -24,7 +24,7 @@ public class DataHandler {
 	}
 
 	public static PowerTarget parsePowerTarget(JSONObject object) throws JSONException {
-		Log.d(TAG, "parsePowerTarget");
+	    LogUtil.d(TAG, "parsePowerTarget");
 
 		PowerTarget target = new PowerTarget();
 		target.Guid = (String) object.getString(JsonTag.TAGNumGuid);
@@ -39,7 +39,7 @@ public class DataHandler {
 	public static UserPriceStatus parseUserPriceStatus(JSONObject object)
 			throws JSONException {
 
-		Log.d(TAG, "parseUserPriceStatus");
+	    LogUtil.d(TAG, "parseUserPriceStatus");
 
 		UserPriceStatus status = new UserPriceStatus();
 

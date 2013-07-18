@@ -1,7 +1,6 @@
 package com.dbstar.model;
 
 import android.net.Uri;
-import android.util.Log;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.content.ContentValues;
@@ -18,6 +17,7 @@ import com.dbstar.app.settings.GDSettings;
 import com.dbstar.model.GDDVBDataContract.*;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
 import com.dbstar.model.GDDVBDataProvider.ResStrQuery;
+import com.dbstar.util.LogUtil;
 
 public class GDDataModel {
 	private static final String TAG = "GDDataModel";
@@ -45,7 +45,7 @@ public class GDDataModel {
 		setLocalization(language);
 		configure.setLocalization(language);
 
-		Log.d(TAG, "language = " + language);
+		LogUtil.d(TAG, "language = " + language);
 		
 		mConfigure = configure;
 	}
@@ -66,7 +66,7 @@ public class GDDataModel {
 
 	public ColumnData[] getColumns(String columnId) {
 
-		Log.d(TAG, "get columns: id=" + columnId);
+		LogUtil.d(TAG, "get columns: id=" + columnId);
 		Cursor cursor = null;
 		ColumnData[] Columns = null;
 
@@ -78,7 +78,7 @@ public class GDDataModel {
 				ColumnQuery.COLUMNS, selection, selectionArgs, sortOrder);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				Log.d(TAG, "columnId: sub-column number = " + cursor.getCount());
+				LogUtil.d(TAG, "columnId: sub-column number = " + cursor.getCount());
 				Columns = new ColumnData[cursor.getCount()];
 				int i = 0;
 				do {
@@ -248,7 +248,7 @@ public class GDDataModel {
 					contents[i] = content;
 					i++;
 
-					Log.d(TAG, "content id= " + content.Id);
+					LogUtil.d(TAG, "content id= " + content.Id);
 				} while (cursor.moveToNext());
 			}
 		}
@@ -573,7 +573,7 @@ public class GDDataModel {
 					if (subtitleUri != null && !subtitleUri.isEmpty()) {
 						String storageDir = mConfigure.getStorageDir();
 						subtitleUri = storageDir + "/" + subtitleUri;
-						Log.d(TAG, "publication id =" + content.Id +" subtitle uri =  " + subtitleUri);
+						LogUtil.d(TAG, "publication id =" + content.Id +" subtitle uri =  " + subtitleUri);
 						File subtitleFile = new File(subtitleUri);
 						if (subtitleFile.exists()) {
 							subTitle.URI = subtitleUri;
@@ -602,7 +602,7 @@ public class GDDataModel {
 	private GuideListItem[] getGuideList(String selection,
 			String[] selectionArgs) {
 
-		Log.d(TAG, "getGuideList");
+		LogUtil.d(TAG, "getGuideList");
 
 		ArrayList<GuideListItem> items = null;
 
@@ -611,7 +611,7 @@ public class GDDataModel {
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				LogUtil.d(TAG, "query cursor size = " + cursor.getCount());
 				items = new ArrayList<GuideListItem>();
 				do {
 
@@ -790,7 +790,7 @@ public class GDDataModel {
 				Id = 0;
 				oldValue = cursor
 						.getString(GDDVBDataProvider.GlobalQuery.VALUE);
-				Log.d(TAG, "=========== global table=== "+ property + " old value = " + oldValue);
+				LogUtil.d(TAG, "=========== global table=== "+ property + " old value = " + oldValue);
 			}
 		}
 
@@ -813,7 +813,7 @@ public class GDDataModel {
 				ret = true;
 		} else {
 			
-			Log.d(TAG, "=========== global === " + oldValue + " " + value);
+			LogUtil.d(TAG, "=========== global === " + oldValue + " " + value);
 
 			if (oldValue != null && !oldValue.equals(value)) {
 				// update
@@ -980,7 +980,7 @@ public class GDDataModel {
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				LogUtil.d(TAG, "query cursor size = " + cursor.getCount());
 
 				value = cursor.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
 			}
@@ -1008,7 +1008,7 @@ public class GDDataModel {
 	}
 
 	public Bitmap getImage(String file) {
-		Log.d(TAG, "image =" + file);
+		LogUtil.d(TAG, "image =" + file);
 
 		if (!isFileExist(file))
 			return null;
@@ -1020,7 +1020,7 @@ public class GDDataModel {
 
 	public void getDetailsData(String xmlFile, ContentData content) {
 
-		Log.d(TAG, "getDetailsData xmlFile " + xmlFile);
+		LogUtil.d(TAG, "getDetailsData xmlFile " + xmlFile);
 
 		if (xmlFile == null || xmlFile.isEmpty())
 			return;
@@ -1179,7 +1179,7 @@ public class GDDataModel {
 				ProjectionQueryContent, selection, selectionArgs, null);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				LogUtil.d(TAG, "query cursor size = " + cursor.getCount());
 				Contents = new ContentData[cursor.getCount()];
 				int i = 0;
 				do {
@@ -1187,7 +1187,7 @@ public class GDDataModel {
 					content.Id = cursor.getString(QUERYCONTENT_ID);
 					content.XMLFilePath = cursor.getString(QUERYCONTENT_PATH);
 
-					Log.d(TAG, "coloumn " + columnId + " item " + i + " name="
+					LogUtil.d(TAG, "coloumn " + columnId + " item " + i + " name="
 							+ content.XMLFilePath);
 
 					Contents[i] = content;
@@ -1215,7 +1215,7 @@ public class GDDataModel {
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				Log.d(TAG, "query cursor size = " + cursor.getCount());
+				LogUtil.d(TAG, "query cursor size = " + cursor.getCount());
 				Entries = new ReceiveEntry[cursor.getCount()];
 				int i = 0;
 				do {
@@ -1226,7 +1226,7 @@ public class GDDataModel {
 					entry.RawTotal = cursor.getLong(QUERYBRAND_TOTALSIZE);
 					entry.ConvertSize();
 
-					Log.d(TAG, "Name " + entry.Name + " item " + i
+					LogUtil.d(TAG, "Name " + entry.Name + " item " + i
 							+ " progress=" + entry.RawProgress + " total="
 							+ entry.RawTotal);
 
@@ -1262,7 +1262,7 @@ public class GDDataModel {
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				count = cursor.getInt(0);
-				Log.d(TAG, "count = " + count);
+				LogUtil.d(TAG, "count = " + count);
 			}
 		}
 

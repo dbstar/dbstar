@@ -12,7 +12,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
-import android.util.Log;
 
 import com.dbstar.R;
 
@@ -247,15 +246,6 @@ public class PaymentRecordCurve extends DrawBase{
 	private void initPointXY(Canvas canvas)
 	{
 	
-		 
-		Log.e("drawCurve", "drawCurve");
-//		for(int i = 0; i < textXSize; i++)
-//		{	
-//			Log.e("data.get(i)", ""+data1.get(i));
-//		}
-
-		Log.e("paddingLeft  2 ", paddingLeft +"");
-
 		Point point = null;
 		for(int i = 0; i < this.mPointYData.size(); i++)
 		{
