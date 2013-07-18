@@ -522,8 +522,8 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
     @Override
     public void notifyEvent(int type, Object event) {
         super.notifyEvent(type, event);
-        EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if( EventData.EVENT_GUODIAN_DATA == type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_MODEL_LIST == guodianEvent.Type){
                 List<ElectricalOperationMode> modeList = (List<ElectricalOperationMode>) guodianEvent.Data;
                 if(modeList != null && !modeList.isEmpty())
@@ -554,6 +554,7 @@ public class GDSmartHomeModeActivity extends GDSmartActivity{
                 }
             } 
         }else if( EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_MODEL_ELECTRICAL_LIST == guodianEvent.Type){
                 showErrorMsg( R.string.loading_model_ele_list_fail);
             }else if(GDRequestType.DATATYPE_EXECUTE_MODE == guodianEvent.Type){

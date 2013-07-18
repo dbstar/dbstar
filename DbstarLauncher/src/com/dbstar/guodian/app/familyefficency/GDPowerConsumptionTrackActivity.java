@@ -302,8 +302,9 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
     }
     @Override
     public void notifyEvent(int type, Object event) {
-        EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+        super.notifyEvent(type, event);
         if(EventData.EVENT_GUODIAN_DATA == type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_STEP_POWER_CONSUMPTION_TRACK == guodianEvent.Type){
                 requestAllEleList();
                 track = (StepPowerConsumptionTrack) guodianEvent.Data;
@@ -319,6 +320,7 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
                 }
             }
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_STEP_POWER_CONSUMPTION_TRACK == guodianEvent.Type){
                 showErrorMsg(R.string.loading_error);
             }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
@@ -328,7 +330,6 @@ public class GDPowerConsumptionTrackActivity extends GDSmartActivity{
             }
             return;
         }
-        super.notifyEvent(type, event);
     }
     
     private void initTextView(StepPowerConsumptionTrack track) {

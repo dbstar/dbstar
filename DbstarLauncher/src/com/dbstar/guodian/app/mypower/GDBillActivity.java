@@ -150,12 +150,9 @@ public class GDBillActivity extends GDSmartActivity {
 	protected void onServiceStart() {
 		super.onServiceStart();
 		Log.d(TAG, "onServiceStart");
-
-		// requestData(GDConstract.DATATYPE_BILLMONTHLIST, "1");
-
-		// first: request the latest bill
-		// date is empty.
-	    requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,null);
+		mSystemFlag = "elc";
+        mRequestMethodId = "m005f005";
+	    requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,null,null);
 	}
 
 	void queryBillData() {
@@ -173,26 +170,32 @@ public class GDBillActivity extends GDSmartActivity {
 				month = "0" + month;
 			}
 			String date = year + "-" + month + "-" + "01 00:00:00";
-
-			Log.d(TAG, " === date ==" + date);
-			requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,date);
+			mSystemFlag = "elc";
+	        mRequestMethodId = "m005f005";
+			requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,JsonTag.TAGDate,date);
 		} else {
-			requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,"12");
+		    mSystemFlag = "elc";
+            mRequestMethodId = "m005f008";
+			requestBillData(GDRequestType.DATATYPE_BILLDETAILOFRECENT,"num_month","12");
 		}
 	}
 	
-	private void requestBillData(int type ,String date){
+	private void requestBillData(int type ,String key ,String value){
 	    RequestParams params = new RequestParams(type);
         params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
         params.put(RequestParams.KEY_METHODID,mRequestMethodId);
         if(getCtrlNo() != null){
             params.put(JsonTag.TAGNumCCGuid,getCtrlNo().CtrlNoGuid);
+        }else{
+            showErrorMsg(R.string.no_login);
+            return;
         }
-        if(date != null)
-            params.put(JsonTag.TAGDate,date);
+        if(key != null)
+            params.put(key,value);
         requestData(params);
 	}
 	public void notifyEvent(int type, Object event) {
+	    super.notifyEvent(type, event);
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
@@ -200,7 +203,6 @@ public class GDBillActivity extends GDSmartActivity {
             showErrorMsg(R.string.loading_error);
             return;
         }
-		super.notifyEvent(type, event);
 	}
 
 	private void handlePowerData(int type, Object data) {

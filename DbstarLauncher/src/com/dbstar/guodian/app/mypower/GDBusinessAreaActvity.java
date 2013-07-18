@@ -272,10 +272,12 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 	}
 
 	public void notifyEvent(int type, Object event) {
-		EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+	    super.notifyEvent(type, event);
 		if (EventData.EVENT_GUODIAN_DATA == type) {
+		    EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+		    EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 		    if (GDRequestType.DATATYPE_BUSINESSAREA == guodianEvent.Type) {
 		        showErrorMsg(R.string.loading_error);
 	        }else if(GDRequestType.DATATYPE_CITYES == guodianEvent.Type){
@@ -287,7 +289,6 @@ public class GDBusinessAreaActvity extends GDSmartActivity {
 	        }
 		    return;
 		}
-		super.notifyEvent(type, event);
 	}
 
 	private void handlePowerData(int type, Object data) {

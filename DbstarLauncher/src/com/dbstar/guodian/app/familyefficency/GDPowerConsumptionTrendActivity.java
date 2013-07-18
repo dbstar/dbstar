@@ -142,8 +142,9 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     
     @Override
     public void notifyEvent(int type, Object event) {
-        EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+        super.notifyEvent(type, event);
         if(EventData.EVENT_GUODIAN_DATA == type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_POWER_CONSUMPTION_TREND == guodianEvent.Type){
                 requestAllEleList();
                 mTrend = (PowerConsumptionTrend) guodianEvent.Data;
@@ -159,6 +160,7 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             }
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 showErrorMsg(R.string.loading_electrical_list_fail);
              }else{
@@ -166,7 +168,6 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
              }
             return;
         }
-        super.notifyEvent(type, event);
     }
     
     private void updateTitle() {

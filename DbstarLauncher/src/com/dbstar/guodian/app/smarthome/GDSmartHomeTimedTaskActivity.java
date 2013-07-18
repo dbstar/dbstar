@@ -561,8 +561,8 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     @Override
     public void notifyEvent(int type, Object event) {
         super.notifyEvent(type, event);
-        EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
         if(EventData.EVENT_GUODIAN_DATA == type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
                requestAllEleList();
                List<TimedTask> list = (List<TimedTask>) guodianEvent.Data;
@@ -704,6 +704,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             }
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
                 requestAllEleList();
                 mPageContent.setVisibility(View.VISIBLE);

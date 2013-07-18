@@ -168,6 +168,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     }
     @Override
     public void notifyEvent(int type, Object event) {
+        super.notifyEvent(type, event);
         if (EventData.EVENT_GUODIAN_DATA == type) {
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
             if(GDRequestType.DATATYPE_POWER_TARGET == guodianEvent.Type){
@@ -200,7 +201,6 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
             }
             return;
         }
-        super.notifyEvent(type, event);
     }
     
 }
