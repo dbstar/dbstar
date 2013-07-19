@@ -285,7 +285,7 @@ static int recvFromServer(int l_socket_fd)
 							break;
 						}
 						else{
-							DEBUG("recv %d[%d] in %d successfully\n", ret_recv,total_recv_len,s_recvbuf_size);
+							//DEBUG("recv %d[%d] in %d successfully\n", ret_recv,total_recv_len,s_recvbuf_size);
 						}
 					}
 				}

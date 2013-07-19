@@ -80,7 +80,6 @@ typedef struct tagPRG
 	char			product_id[64];	
 }PROG_S;
 
-static int mid_push_regist(PROG_S *prog);
 static int push_decoder_buf_uninit();
 static int prog_name_fill();
 
@@ -368,7 +367,7 @@ int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_e
 
 
 /*
- 功能判断是否是合法节目
+ 功能判断是否是合法节目，节目名称长度大于0，并且总大小大于0
  返回值：	-1表示非法，1表示合法。
 */
 static int prog_is_valid(PROG_S *prog)
@@ -376,8 +375,7 @@ static int prog_is_valid(PROG_S *prog)
 	if(NULL==prog)
 		return -1;
 		
-	if(strlen(prog->uri)>0 || (prog->total)>0LL){
-		//DEBUG("valid prog\n");
+	if(strlen(prog->uri)>0 && (prog->total)>0LL){
 		return 1;
 	}
 	else
@@ -1107,7 +1105,7 @@ static int mid_push_regist(PROG_S *prog)
 		return -1;
 	}
 	if(-1==prog_is_valid(prog)){
-		DEBUG("invalid prog to regist monitor\n");
+		DEBUG("INVALID PROGRAM to regist monitor, uri: %s, total: %lld\n", prog->uri, prog->total);
 		return -1;
 	}
 	
@@ -1277,239 +1275,6 @@ static int prog_name_fill()
 	return 0;
 }
 
-#if 0
-static int mid_push_forbid(const char *prog_uri, unsigned int sleep_sec_before_remove)
-{
-	if(NULL==prog_uri || 0==strlen(prog_uri) || sleep_sec_before_remove>10){
-		DEBUG("invalid args, sleep_sec_before_remove=%u\n", sleep_sec_before_remove);
-		return -1;
-	}
-	
-	int ret = 0;
-	
-	/*
-	调用push_dir_forbid之前，此节目必须先注册
-	*/
-	ret = push_dir_forbid(prog_uri);
-	if(0==ret){
-		DEBUG("push forbid: %s\n", prog_uri);
-		ret = push_dir_remove(prog_uri);
-		if(0==ret)
-			DEBUG("push remove: %s\n", prog_uri);
-		else if(-1==ret)
-			DEBUG("push remove failed: %s, no such uri\n", prog_uri);
-		else
-			DEBUG("push remove failed: %s, some other err(%d)\n", prog_uri, ret);
-		
-		if(sleep_sec_before_remove>0)
-			sleep(sleep_sec_before_remove);
-		
-		char reject_uri[128];
-		snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),prog_uri);
-		remove_force(reject_uri);
-		DEBUG("remove(%s) finished\n", reject_uri);
-	}
-	else if(-1==ret)
-		DEBUG("push forbid failed: %s, no such uri\n", prog_uri);
-	else
-		DEBUG("push forbid failed: %s, some other err(%d)\n", prog_uri, ret);
-	
-	return ret;
-}
-
-static int mid_push_reject(const char *prog_uri,long long total_size)
-{
-	if(NULL==prog_uri){
-		DEBUG("invalid prog_uri\n");
-		return -1;
-	}
-	
-	int ret = 0;
-	ret = push_dir_register(prog_uri, total_size, 0);
-	if(0==ret){
-		DEBUG("regist %s to push for forbid\n", prog_uri);
-	
-		ret = mid_push_forbid(prog_uri, 0);
-	}
-	else{
-		DEBUG("regist %s to push for forbid failed: %d\n", prog_uri, ret);
-	}
-	
-	return ret;
-}
-
-/*
-回调结束时，receiver携带是否有进度注册的标记，1表示有注册，0表示无注册。
-*/
-static int push_recv_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
-{
-	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
-	if(row<1){
-		DEBUG("no record in table, return\n");
-		return 0;
-	}
-//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID
-	int i = 0;
-	int j = 0;
-	int recv_flag = 1;
-	int tmp_init_flag = *((int *)receiver);
-	RECEIVESTATUS_E receive_status = RECEIVESTATUS_REJECT;
-	long long totalsize = 0LL;
-	
-	DEBUG("*receiver(init flag)=%d\n", tmp_init_flag);
-	
-	*((int *)receiver) = 0;
-	
-	for(i=1;i<row+1;i++)
-	{
-		/*
-		如果是开机时注册；或者不是开机注册、但FreshFlag为1，则注册拒绝接收或进度监控
-		否则，不加处理。
-		*/
-		if(1==tmp_init_flag || (1!=tmp_init_flag && 1==atoi(result[i*column+9]))){
-#if 0
-			/*
-			对于成品，如果用户选择不接收，则一定不接收，不需要更加详细的判断
-			否则，根据业务等条件进行判断
-			*/
-			if(RECEIVETYPE_PUBLICATION==atoi(result[i*column+2]) && 0==guidelist_select_status((const char *)(result[i*column+1]))){
-				recv_flag = 0;
-				DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+3]);
-			}
-			else
-			
-			// 2013-4-7 11:14
-			// 对用户在预告单中的选择过滤，放在解析ProductDesc时进行
-#endif
-			{
-				receive_status = atoi(result[i*column+8]);
-				if(RECEIVESTATUS_REJECT==receive_status){
-					/*
-					拒绝接收时一定要小心，相同的Publication有可能既属于当前service，又属于其他service；尤其是，在其他Service中需要接收。
-					*/
-					recv_flag = 0;
-					for(j=1;j<row+1;j++){
-						if(0==strcmp(result[j*column+3],result[i*column+3]) && (RECEIVESTATUS_WAITING==atoi(result[j*column+8])|| RECEIVESTATUS_FINISH==atoi(result[j*column+8]))){
-							DEBUG("this prog(%s) is need recv in other service, do not reject it\n",result[i*column+3]);
-							recv_flag = 1;
-							break;
-						}
-					}
-				}
-				else if (RECEIVESTATUS_WAITING==receive_status || RECEIVESTATUS_FINISH==receive_status){
-					recv_flag = 1;
-				}
-				else{ // RECEIVESTATUS_FAILED==receive_status || RECEIVESTATUS_HISTORY==receive_status
-					DEBUG("[%d:%s] %s is ignored by push monitor\n", i,result[i*column],result[i*column+3]);
-					recv_flag = 0;
-				}
-			}
-			
-			sscanf(result[i*column+5],"%lld", &totalsize);
-			
-			if(0==recv_flag){
-				mid_push_reject(result[i*column+3],totalsize);
-			}
-			else{
-				PROG_S cur_prog;
-				memset(&cur_prog,0,sizeof(cur_prog));
-				snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
-				snprintf(cur_prog.uri,sizeof(cur_prog.uri),"%s",result[i*column+3]);
-				snprintf(cur_prog.descURI,sizeof(cur_prog.descURI),"%s",result[i*column+4]);
-				memset(cur_prog.caption,0,sizeof(cur_prog.caption));
-				snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+7]);
-				cur_prog.type = atoi(result[i*column+2]);
-				cur_prog.cur = 0LL;
-				cur_prog.total = totalsize;
-				cur_prog.parsed = atoi(result[i*column+10]);
-				snprintf(cur_prog.publication_id,sizeof(cur_prog.publication_id),"%s",result[i*column+1]);
-				snprintf(cur_prog.product_id,sizeof(cur_prog.product_id),"%s",result[i*column+11]);
-				
-				mid_push_regist(&cur_prog);
-				
-				/*
-				回调结束时，receiver携带是否有进度注册的标记，1表示有注册，0表示无注册。
-				*/
-				*((int *)receiver) = 1;
-			}
-		}
-	}
-	
-	return 0;
-}
-
-/*
- 当下发新的ProductDesc.xml或Service.xml时刷新push拒绝接收注册和进度监控注册
- init_flag——1：初始化，表示需要处理ProductDesc所有的节目
- init_flag——0：非初始化，表示是动态处理，接收到新的Service.xml和ProductDesc.xml，只处理FreshFlag为1的节目
- init_flag——2：从monitor中调用的实时监控，目的是清理掉过期的节目不再进行进度监控，避免终端几天不关机后监控累积
-*/
-int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
-{
-	DEBUG("init_flag: %d, time_stamp_pointed: %s\n", init_flag, time_stamp_pointed);
-	
-	int ret = -1;
-	char sqlite_cmd[256+128];
-	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = push_recv_manage_cb;
-	
-	char time_stamp[32];
-	memset(time_stamp, 0, sizeof(time_stamp));
-	if(NULL==time_stamp_pointed || 0==strlen(time_stamp_pointed)){
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
-		if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
-			DEBUG("can not process push regist\n");
-			return -1;
-		}
-	}
-	else
-		snprintf(time_stamp,sizeof(time_stamp),"%s",time_stamp_pointed);
-	
-	pthread_mutex_lock(&mtx_push_monitor);
-	
-	if(1==init_flag){
-/*
- 开机初始化时，先删掉所有过期的节目
-*/
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ProductDesc WHERE PushEndTime<'%s';", time_stamp);
-		sqlite_execute(sqlite_cmd);
-	}
-	
-	int flag_carrier = init_flag;
-	
-/*
- 由于一个Publication可能存在于多个service中，因此需要全部取出，在回调中遍历那些需要拒绝的publication是否恰好也在需要接收之列。
- 所以对FreshFlag的判断移动到回调中进行，避免其条件在FreshFlag之外
-*/
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
-	
-	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
-/*
-回调结束时，flag_carrier携带是否有进度注册的标记，1表示有注册，0表示无注册。
-*/	
-	PRINTF("ret: %d, flag_carrier: %d\n", ret,flag_carrier);
-	if(ret>0 && flag_carrier>0){
-		prog_name_fill();
-		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE ProductDesc SET FreshFlag=0 WHERE PushStartTime<='%s' AND PushEndTime>'%s' AND FreshFlag=1;", time_stamp,time_stamp);
-		sqlite_execute(sqlite_cmd);
-
-#if 0
-		if(0==init_flag){
-			pthread_cond_signal(&cond_push_monitor);
-			DEBUG("refresh monitor arrary immediatly\n");
-		}
-#endif
-
-	}
-	
-	pthread_mutex_unlock(&mtx_push_monitor);
-
-	return ret;
-}
-
-#else
-
-
 int delete_publication_from_monitor(char *PublicationID, char *ProductID)
 {
 	int i = 0;
@@ -1575,16 +1340,20 @@ int delete_publication_from_monitor(char *PublicationID, char *ProductID)
 }
 
 
+//#define DELETE_WHEN_NOTFINISHED
 // 反注册上一个播发单中已处于监控状态的节目，预备要注册新播发单中的节目
 int prog_monitor_reset(void)
 {
 	int i = 0;
 	int ret = 0;
+	
+#ifdef DELETE_WHEN_NOTFINISHED
 	int rubbish_prog_cnt = 0;
-	
 	char sqlite_cmd[8192];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM Publication WHERE");
 	
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM Publication WHERE");
+#endif
+
 	for(i=0; i<PROGS_NUM; i++)
 	{
 		if(1==prog_is_valid(&s_prgs[i])){
@@ -1620,7 +1389,7 @@ int prog_monitor_reset(void)
 					
 				}
 				
-#if 0
+#ifdef DELETE_WHEN_NOTFINISHED
 				//else
 				{
 					char reject_uri[512];
@@ -1662,10 +1431,13 @@ int prog_monitor_reset(void)
 			memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
 		}
 	}
+
+#ifdef DELETE_WHEN_NOTFINISHED
 	if(rubbish_prog_cnt>0){
 		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
 		sqlite_execute(sqlite_cmd);
 	}
+#endif
 	
 	s_push_monitor_active = 0;
 	
@@ -1833,7 +1605,6 @@ int push_recv_manage_refresh()
 
 	return ret;
 }
-#endif
 
 static int info_xml_refresh_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
