@@ -49,7 +49,7 @@ typedef enum{
 #define CMD_KEYWORD_SYNC			"sync"
 #define SMART_POWER_CMD_NUM			(32)
 
-#define FIFO_STR_SIZE				(32)
+#define FIFO_STR_SIZE				(128)
 #define FIFO_DIR					WORKSPACE_SURFIX"fifo/"
 #define FIFO_2_SOCKET				FIFO_DIR"fifo_2_socket"
 #define FIFO_2_INSTRUCTION			FIFO_DIR"fifo_2_instruction"
