@@ -249,6 +249,8 @@ static INSTRUCTION_RESULT_E instruction_timing_task_add(INSTRUCTION_S *instructi
 	数据库记录的是定时任务的开始时间，（服务器时间，原样入库）
 	*/
 	
+	print_localtime_sec2str(control_time);
+	
 	///	insert the value in the command into time
 	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	if(l_frequency>=0 && control_time>=0){
@@ -1765,7 +1767,7 @@ static INSTRUCTION_RESULT_E model_delete(INSTRUCTION_S *instruction)
 static INSTRUCTION_RESULT_E timing_task_delete(INSTRUCTION_S *instruction)
 {
 	char sqlite_cmd_str[SQLITECMDLEN];
-
+	
 	/*
 	在实测时，当在UI上更新一个定时任务时，服务器先发送一个删除旧任务的指令，然后再发送添加新任务的指令。
 	但是删除旧任务的“参数1+参数2+频度+时间戳”是新任务的参数，无法识别。
@@ -1778,6 +1780,8 @@ static INSTRUCTION_RESULT_E timing_task_delete(INSTRUCTION_S *instruction)
 	int frequency = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 2, 16);
 	int control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 6, 10, 10);
 	
+	print_localtime_sec2str(control_time);
+
 	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE (cmdType=1 AND controlVal=%d AND frequency=%d AND controlTime=%d);",
 																control_val, frequency, control_time);
 #else

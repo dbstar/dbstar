@@ -173,3 +173,16 @@ int zero_sec_get(time_t appoint_secs)
 	
 	return day_sec_0;
 }
+
+
+int print_localtime_sec2str(time_t your_sec)
+{
+	time_t tmp_t = your_sec;
+	struct tm local_area;
+	
+	localtime_r(&tmp_t, &local_area);
+	DEBUG("trans %ld as %s", your_sec,asctime(&local_area));
+	
+	return 0;
+}
+

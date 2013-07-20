@@ -260,6 +260,7 @@ int timezone_repair(void);
 int dir_exist_ensure(char *dir);
 int zero_sec_get(time_t appoint_secs);
 time_t time_get(time_t *timer);
+int print_localtime_sec2str(time_t your_sec);
 
 #endif
 
