@@ -1769,8 +1769,11 @@ static INSTRUCTION_RESULT_E timing_task_delete(INSTRUCTION_S *instruction)
 	/*
 	在实测时，当在UI上更新一个定时任务时，服务器先发送一个删除旧任务的指令，然后再发送添加新任务的指令。
 	但是删除旧任务的“参数1+参数2+频度+时间戳”是新任务的参数，无法识别。
+	
+	2013-07-20
+	经测试，通过电视UI更新任务时，先发送的删除任务指令参数是正确的（即，是旧任务的参数）
 	*/
-#if 0
+#if 1
 	int control_val = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 0, 4, 16);
 	int frequency = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 2, 16);
 	int control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 6, 10, 10);
@@ -1781,7 +1784,7 @@ static INSTRUCTION_RESULT_E timing_task_delete(INSTRUCTION_S *instruction)
 	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE (typeID=%d);",
 																instruction->type_id);
 #endif
-	//DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
+//	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
 	return sqlite_execute(sqlite_cmd_str);
 }
 
