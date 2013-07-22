@@ -234,7 +234,7 @@ static int alterable_flag_result(int flag)
 static INSTRUCTION_RESULT_E instruction_timing_task_add(INSTRUCTION_S *instruction)
 {
 	char sqlite_cmd_str[SQLITECMDLEN];
-
+	
 	int l_typeID=instruction->type_id;
 	int l_cmdType=instruction->type;
 	int l_controlValue=instruction->arg1 * 256 + instruction->arg2;
@@ -243,30 +243,28 @@ static INSTRUCTION_RESULT_E instruction_timing_task_add(INSTRUCTION_S *instructi
 	int control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity),2, 10, 10);
 	char *p_entity = instruction->alterable_entity;
 
-//	instant_timing_task_regist(l_typeID, l_frequency, control_time);
-	
 	/*
 	数据库记录的是定时任务的开始时间，（服务器时间，原样入库）
 	*/
 	
 	print_localtime_sec2str(control_time);
 	
+	// 由于单次定时任务存在执行后自动关闭的问题，所以单次任务保存的是从1970年开始的秒数，不是相对于当天0时的秒数
+	if(00!=l_frequency)
+		control_time = sec_from_0_at_day(control_time);
+
+	// 不在这里判断，否则在修改任务时（先删除旧任务后添加新任务）逻辑很复杂
+	// 如果是当次执行的频度任务，则判断非法值
+	
 	///	insert the value in the command into time
 	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	if(l_frequency>=0 && control_time>=0){
-		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"SELECT typeID FROM time WHERE typeID=%d AND cmdType=%d AND controlVal=%d AND controlTime=%d AND frequency=%d;",l_typeID,l_cmdType,l_controlValue,control_time,l_frequency);
-		DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-		int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
-		if(ret_sqlexec>RESULT_OK){
-			DEBUG("this time task is exist in table\n");
-			return RESULT_OK;
-		}
-		else if(ret_sqlexec<RESULT_OK){
-			DEBUG("sqlite cmd exec failed\n");
-			return ret_sqlexec;
-		}
-		else	// 0==ret_sqlexec
-			DEBUG("read time task from database none\n");
+		
+		// 先清理掉相同插座、相同频率、相同时间点的旧任务
+		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE typeID=%d AND frequency=%d AND controlTime=%d;",l_typeID,l_frequency,control_time);
+		ret = sqlite_execute(sqlite_cmd_str);
+		if(ret!=RESULT_OK)
+			DEBUG("delete overdue timer failed\n");
 		
 		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"INSERT INTO time(typeID,cmdType,controlVal,controlTime,frequency,remark) VALUES(%d,%d,%d,%d,%d,'%s');",\
 				l_typeID,l_cmdType,l_controlValue,control_time,l_frequency,p_entity+12);
@@ -1748,9 +1746,6 @@ static INSTRUCTION_RESULT_E model_delete(INSTRUCTION_S *instruction)
 	char sqlite_cmd_str[SQLITECMDLEN];
 	memset(sqlite_cmd_str, 0, sizeof(sqlite_cmd_str));
 
-	///	delete the value in the time according controlValue
-	// sprintf(cmdStr,"DELETE FROM time WHERE controlVal=%d;",l_controlValue);
-	
 	sprintf(sqlite_cmd_str,"DELETE FROM model WHERE modeID=%d;",instruction->arg2);
 	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
 	INSTRUCTION_RESULT_E ret = sqlite_execute(sqlite_cmd_str);
@@ -1766,50 +1761,64 @@ static INSTRUCTION_RESULT_E model_delete(INSTRUCTION_S *instruction)
 
 static INSTRUCTION_RESULT_E timing_task_delete(INSTRUCTION_S *instruction)
 {
+	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	char sqlite_cmd_str[SQLITECMDLEN];
 	
-	/*
-	在实测时，当在UI上更新一个定时任务时，服务器先发送一个删除旧任务的指令，然后再发送添加新任务的指令。
-	但是删除旧任务的“参数1+参数2+频度+时间戳”是新任务的参数，无法识别。
-	
-	2013-07-20
-	经测试，通过电视UI更新任务时，先发送的删除任务指令参数是正确的（即，是旧任务的参数）
-	*/
-#if 1
 	int control_val = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 0, 4, 16);
 	int frequency = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 2, 16);
 	int control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 6, 10, 10);
 	
 	print_localtime_sec2str(control_time);
+	
+	if(00!=frequency)
+		control_time = sec_from_0_at_day(control_time);
 
-	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE (cmdType=1 AND controlVal=%d AND frequency=%d AND controlTime=%d);",
-																control_val, frequency, control_time);
-#else
-	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE (typeID=%d);",
-																instruction->type_id);
-#endif
+	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE (typeID=%d AND controlVal=%d AND frequency=%d AND controlTime=%d);",
+																instruction->type_id, control_val, frequency, control_time);
+
 //	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-	return sqlite_execute(sqlite_cmd_str);
+	ret = sqlite_execute(sqlite_cmd_str);
+	
+	if(RESULT_OK==ret){
+		timing_task_refresh();
+	}
+	
+	return ret;
 }
 
 static INSTRUCTION_RESULT_E timing_task_update(INSTRUCTION_S *instruction)
 {
+	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	char sqlite_cmd_str[SQLITECMDLEN];
 	memset(sqlite_cmd_str, 0, sizeof(sqlite_cmd_str));
 
 	int old_control_val = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 0, 4, 16);
 	int old_frequency = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 2, 16);
 	int old_control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 6, 10, 10);
-
+	
+	if(00!=old_frequency)
+		old_control_time = sec_from_0_at_day(old_control_time);
+	
 	int control_val = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 16, 4, 16);
 	int frequency = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 20, 2, 16);
 	int control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 22, 10, 10);
 	char *p_remark = instruction->alterable_entity + 32;
 	
+	if(00!=frequency)
+		control_time = sec_from_0_at_day(control_time);
+	
+	// 不在这里判断任务时间是否合法，否则在修改任务时（先删除旧任务后添加新任务）逻辑很复杂
+	
 	sprintf(sqlite_cmd_str,"UPDATE time SET controlVal=%d,frequency=%d,controlTime=%d,remark='%s' WHERE (controlVal=%d AND frequency=%d AND controlTime=%d);",
 											control_val, frequency, control_time, p_remark, old_control_val, old_frequency, old_control_time);
 	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-	return sqlite_execute(sqlite_cmd_str);
+	ret = sqlite_execute(sqlite_cmd_str);
+	
+	if(RESULT_OK==ret){
+		timing_task_refresh();
+	}
+	
+	return ret;
 }
 
 static INSTRUCTION_RESULT_E verify_address(INSTRUCTION_S *instruction)

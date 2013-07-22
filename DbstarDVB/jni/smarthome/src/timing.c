@@ -241,13 +241,19 @@ static int timing_task_ring_callback(struct timeval *tv_datum, int type_id, int 
 	return -1;	// -1: invalide the timer after call
 }
 
+//#define USE_TOTALSECS_FOR_FREQUENCY	// 对于存在频度的定时，采用原始的、从1970年开始的秒数。如果不定义，则采用计算后的从0点开始的秒数
 static int timing_task_refresh_callback(char **result, int row, int column, void *receiver)
 {
 	DEBUG("row=%d, column=%d, receiver addr=%p\n", row, column, receiver);
 	
 	int i = 0;
 	time_t now_sec;
-	time_t today_sec_0;	// 今天零时的秒数
+	
+#ifdef USE_TOTALSECS_FOR_FREQUENCY
+	time_t today_sec_0;	// 从1970年到今天零时的秒数
+#else
+	time_t nowsec_from_0_today = 0; // 今天从0时开始到当前的秒数
+#endif
 	time_t timer_sec = 0;
 	int (*timer_callback)(struct timeval *tv_datum, int type_id, int absolute_sec) = timing_task_ring_callback;
 	struct tm now_tm;
@@ -263,7 +269,12 @@ static int timing_task_refresh_callback(char **result, int row, int column, void
 	由于涉及到“天”的判断，因此通过time_get获取到“本地时钟+服务器时间轴校正+时区校正”的时间
 	*/
 	time_get(&now_sec);
+
+#ifdef USE_TOTALSECS_FOR_FREQUENCY
 	today_sec_0 = zero_sec_get(now_sec);
+#else	
+	nowsec_from_0_today = sec_from_0_at_day(now_sec);
+#endif
 	
 	localtime_r(&now_sec, &now_tm);
 	DEBUG("fresh timing task at (server time): %s\n",asctime(&now_tm));
@@ -289,26 +300,29 @@ static int timing_task_refresh_callback(char **result, int row, int column, void
 		
 		DEBUG("typeID=%s, frequency=0x%02x, controlTime=%s, aim at %s", result[i*column], frequency_wday, result[i*column+1], asctime(localtime(&timer_sec)));
 		
-//		DEBUG("fuck the current pc-terminal app, its frequency from Mon. to Wed. is invalid. So make all time task as 0x00\n");
-//		frequency_wday = 0x00;
-		
+		// 单次任务的秒数是1970年以来的
 		if(0x00==frequency_wday){				// check whether appoint day
-			if(now_tm.tm_mday==timer_tm.tm_mday){			// it is today
-				DEBUG("regist timer for (server time): %s", asctime(&timer_tm));
-				tv.tv_sec = timer_sec-now_sec;
-				tv.tv_usec = 0;
-				inner_timer_regist(&tv, TIMER_TYPE_TASK,atoi(result[i*column]), atoi(result[i*column+1]),timer_callback);
+			if(timer_sec>now_sec){
+				if(timer_tm.tm_mday==now_tm.tm_mday && timer_tm.tm_mon==now_tm.tm_mon && timer_tm.tm_year==now_tm.tm_year){
+					tv.tv_sec = timer_sec-now_sec;
+					tv.tv_usec = 0;
+					DEBUG("regist once timer for %ld secs later\n", tv.tv_sec);
+					inner_timer_regist(&tv, TIMER_TYPE_TASK,atoi(result[i*column]), atoi(result[i*column+1]),timer_callback);
+				}
+				else
+					DEBUG("%ld timer %02d:%02d:%02d is not in today %02d:%02d:%02d\n", timer_sec,1900+timer_tm.tm_year,1+timer_tm.tm_mon,timer_tm.tm_mday,1900+now_tm.tm_year,1+now_tm.tm_mon,now_tm.tm_mday);
 			}
 			else
-				DEBUG("no using time task, now_tm.tm_mday=%d, timer_tm.tm_mday=%d\n", now_tm.tm_mday, timer_tm.tm_mday);
+				DEBUG("%ld is a passed time compared with now %ld\n",timer_sec,now_sec);
 		}
 		
 		/*
-		如果不是指定某天的定时任务，则其时间timer_sec指的是任务开始的时间。
+		如果不是指定某天的定时任务，则其时间timer_sec指的是从0点起的秒数
 		*/
 		else if(	(0x01 & frequency_wday)							// every day
 					|| (g_wday_code[now_tm.tm_wday] & frequency_wday) )		// match wday
 		{
+#ifdef USE_TOTALSECS_FOR_FREQUENCY
 			/*
 			以“天”为基准，查看此任务在今天是否需要开启。比对的是今天零时的秒数。
 			*/
@@ -333,6 +347,17 @@ static int timing_task_refresh_callback(char **result, int row, int column, void
 			}
 			else
 				DEBUG("this timing task no need to start today\n");
+#else	// 2013-07-22 频度非00时，定时时间指的是从当天0时算起的秒数
+			if(nowsec_from_0_today<timer_sec){
+				tv.tv_sec = timer_sec - nowsec_from_0_today;	// 计算出timer和当前时间的差值。
+				tv.tv_usec = 0;
+				DEBUG("regist frequency %02x timer for %ld secs later\n", frequency_wday,tv.tv_sec);
+				inner_timer_regist(&tv, TIMER_TYPE_TASK,atoi(result[i*column]), atoi(result[i*column+1]),timer_callback);
+			}
+			else
+				DEBUG("%ld is a passed time compared with now %ld\n",timer_sec,nowsec_from_0_today);
+#endif
+			
 		}
 		else
 			DEBUG("this frequency can not be processed: 0x%02x\n", frequency_wday);
@@ -355,10 +380,10 @@ int timing_task_refresh(void)
 	DEBUG("refresh timing task at (repair with server time and timezone)[%ld] %d %02d %02d  %s  %02d:%02d:%02d\n", now_sec, (1900+now_tm.tm_year), (1+now_tm.tm_mon), now_tm.tm_mday,
 		wday[now_tm.tm_wday], now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec);
 	
-	char sqlite_cmd[128];
+	char sqlite_cmd[512];
 
 	memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
-	sprintf(sqlite_cmd,"DELETE FROM time WHERE frequency=0 AND controlTime<%d;",(int)now_sec);
+	sprintf(sqlite_cmd,"DELETE FROM time WHERE frequency=0 AND controlTime<=%d;",(int)(now_sec));
 	ret = sqlite_execute(sqlite_cmd);
 	if(ret!=RESULT_OK)
 		DEBUG("delete overdue timer failed\n");
@@ -368,8 +393,6 @@ int timing_task_refresh(void)
 	ret = sqlite_read(sqlite_cmd, NULL, sqlite_callback);
 	if(ret>=RESULT_OK)
 	{
-		time_get(&now_sec);
-		localtime_r(&now_sec, &now_tm);
 		g_refresh_timing_task_mday = now_tm.tm_mday;
 	}
 	if(ret>RESULT_OK)

@@ -153,7 +153,7 @@ int dir_exist_ensure(char *dir)
 比如：传入1342524240表示UTC时间Tue Jul 17 11:24:00 2012，那么将返回Tue Jul 17 00:00:00 2012对应的秒数
 采用本地时间
 */
-int zero_sec_get(time_t appoint_secs)
+time_t zero_sec_get(time_t appoint_secs)
 {
 	time_t appoint_sec;
 	time_t day_sec_0;	// 今天零时的秒数
@@ -172,6 +172,27 @@ int zero_sec_get(time_t appoint_secs)
 	day_sec_0 = mktime(&appoint_tm);
 	
 	return day_sec_0;
+}
+
+/*
+获得给定时间表示的那天从零时算起的秒数
+比如：传入1342524240表示UTC时间Tue Jul 17 11:24:00 2012，那么将返回11:24对应的秒数
+采用本地时间
+*/
+time_t sec_from_0_at_day(time_t appoint_secs)
+{
+	time_t sec_from_0;	// 从指定时间表示的那天0时算起的秒数
+	struct tm appoint_tm;
+	
+	time_t tmp_appoint_secs = appoint_secs;
+	
+	localtime_r(&tmp_appoint_secs, &appoint_tm);
+	
+	sec_from_0 = (3600*(appoint_tm.tm_hour)) + (60*(appoint_tm.tm_min)) + appoint_tm.tm_sec;
+	
+	DEBUG("get %ld sec %02d:%02d:%02d from %ld sec %s",sec_from_0,appoint_tm.tm_hour,appoint_tm.tm_min,appoint_tm.tm_sec,appoint_secs,asctime(&appoint_tm));
+	
+	return sec_from_0;
 }
 
 
