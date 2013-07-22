@@ -157,7 +157,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mCheckBoxPeriod2 = (CheckBox) findViewById(R.id.cb_period_2);
         mCheckBoxPeriod3 = (CheckBox) findViewById(R.id.cb_period_3);
         mCheckBoxPeriod4 = (CheckBox) findViewById(R.id.cb_period_4);
-        mCheckBoxPeriod5= (CheckBox) findViewById(R.id.cb_period_5);
+        mCheckBoxPeriod5 = (CheckBox) findViewById(R.id.cb_period_5);
         mCheckBoxPeriod6 = (CheckBox) findViewById(R.id.cb_period_6);
         mCheckBoxPeriod7 = (CheckBox) findViewById(R.id.cb_period_7);
         mButtonSave = (Button) findViewById(R.id.save);
@@ -544,6 +544,8 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mCheckBoxPeriod5.setChecked(false);
         mCheckBoxPeriod6.setChecked(false);
         mCheckBoxPeriod7.setChecked(false);
+        if(mPeriodList != null && !mPeriodList.isEmpty())
+            mPeriodList.clear();
         mHandler.post(new Runnable() {
             
             @Override
