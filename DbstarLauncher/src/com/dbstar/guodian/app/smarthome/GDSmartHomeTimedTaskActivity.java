@@ -417,7 +417,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                         mButtonSwitch.setBackgroundResource(R.drawable.smart_home_timed_task_switch_off_selecter);
                         mIsOpenedSwitch = false;
                     }
-                    Date date =  DateUtil.getDateFromStr(task.Time, DateUtil.DateFormat6);
+                    Date date =  DateUtil.getDateFromStr(task.Time, DateUtil.DateFormat7);
                     if(date != null){
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTime(date);
@@ -480,8 +480,12 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view,
                     int position, long id) {
-                if(position != 0)
-                        dialog();
+                if(position == 0 && mPageNumberModel == 0){
+                    
+                }
+                else{
+                    dialog();
+                }
                 return true;
             }
         });
@@ -528,6 +532,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mTimedTaskDetailPage.setVisibility(View.VISIBLE);
         mSpinnerEle.setSelection(0);
         mButtonSwitch.setBackgroundResource(R.drawable.smart_home_timed_task_switch_on_selecter);
+        mIsOpenedSwitch = true;
         mDefauteHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         mDefauteMinute = Calendar.getInstance().get(Calendar.MINUTE);
         mEditTextMinute.setText(getTimeString(mDefauteMinute));
