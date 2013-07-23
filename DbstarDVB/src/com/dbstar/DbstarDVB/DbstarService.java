@@ -142,9 +142,9 @@ public class DbstarService extends Service {
 		try {
 			if (bytes != null) {
 				String buf = new String(bytes, "utf-8");
-				Log.i(TAG, "postNotifyMessage(" + type + ", [" + buf + "].");
+				//Log.i(TAG, "postNotifyMessage(" + type + ", [" + buf + "].");
 			} else {
-				Log.i(TAG, "postNotifyMessage(" + type + " message==null");
+				//Log.i(TAG, "postNotifyMessage(" + type + " message==null");
 			}
 			Intent it = new Intent();
 			it.setAction(DbstarServiceApi.ACTION_NOTIFY);
