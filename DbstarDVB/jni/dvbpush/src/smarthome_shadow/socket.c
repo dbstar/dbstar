@@ -492,7 +492,7 @@ void *smartlife_connect_thread()
 			return NULL;
 		}
 		else if(0==ret_select){
-			DEBUG("%ld timeout, g_fifo_fd=%d, l_socket_fd=%d, max_fd=%d\n",tv_select.tv_sec,g_fifo_fd,l_socket_fd,max_fd);
+//			DEBUG("%ld timeout, g_fifo_fd=%d, l_socket_fd=%d, max_fd=%d\n",tv_select.tv_sec,g_fifo_fd,l_socket_fd,max_fd);
 			continue;
 		}
 		else{
