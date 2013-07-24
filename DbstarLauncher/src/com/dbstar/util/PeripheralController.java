@@ -30,12 +30,18 @@ public class PeripheralController {
 	private static String SYSFILE_GPIO_CMD = "/sys/class/gpio/cmd";
 	private static String SYSFILE_HDMI_STATE = "/sys/class/switch/hdmi/state";
 	private static String SYSFILE_SMARTCARD_STATE = "/sys/class/switch/smartcard/state";
-	private static String CMD_SET_POWER_LED_ON = "w:o:10:1";
-	private static String CMD_SET_POWER_LED_OFF = "w:o:10:0";
-	private static String CMD_SET_NETWORK_LED_ON = "w:d:1:1";
-	private static String CMD_SET_NETWORK_LED_OFF = "w:d:1:0";
-	private static String CMD_SET_AUDIO_OUTPUT_ON = "w:c:4:1";
-	private static String CMD_SET_AUDIO_OUTPUT_OFF = "w:c:4:0";
+	private static String CMD_SET_POWER_LED_ON = "w C_6 1";
+	private static String CMD_SET_POWER_LED_OFF = "w C_6 0";
+	private static String CMD_SET_NETWORK_LED_ON = "w D_1 1";
+	private static String CMD_SET_NETWORK_LED_OFF = "w D_1 0";
+	private static String CMD_SET_AUDIO_OUTPUT_ON = "w C_4 1";
+	private static String CMD_SET_AUDIO_OUTPUT_OFF = "w C_4 0";
+	private static String CMD_SET_WIFI_ON = "w C_7 1";
+	private static String CMD_SET_WIFI_OFF = "w C_7 0";
+	private static String CMD_SET_SATA_ON = "w C_5 1";
+	private static String CMD_SET_SATA_OFF = "w C_5 0";
+	private static String CMD_SET_CVBS_ON = "w C_3 1";
+	private static String CMD_SET_CVBS_OFF = "w C_3 0";
 
 	public void setPowerLedOn() {
 		Log.d(TAG, "setPowerLedOn");
@@ -70,6 +76,42 @@ public class PeripheralController {
 	public void setAudioOutputOff() {
 		Log.d(TAG, "setAudioOutputOff");
 		setGpio(CMD_SET_AUDIO_OUTPUT_OFF);
+		return;
+	}
+
+	public void setWifiOn() {
+		Log.d(TAG, "setWifiOn");
+		setGpio(CMD_SET_WIFI_ON);
+		return;
+	}
+
+	public void setWifiOff() {
+		Log.d(TAG, "setWifiOff");
+		setGpio(CMD_SET_WIFI_OFF);
+		return;
+	}
+
+	public void setSataOn() {
+		Log.d(TAG, "setSataOn");
+		setGpio(CMD_SET_SATA_ON);
+		return;
+	}
+
+	public void setSataOff() {
+		Log.d(TAG, "setSataOff");
+		setGpio(CMD_SET_SATA_OFF);
+		return;
+	}
+
+	public void setCvbsOn() {
+		Log.d(TAG, "setCvbsOn");
+		setGpio(CMD_SET_CVBS_ON);
+		return;
+	}
+
+	public void setCvbsOff() {
+		Log.d(TAG, "setCvbsOff");
+		setGpio(CMD_SET_CVBS_OFF);
 		return;
 	}
 
@@ -125,7 +167,7 @@ public class PeripheralController {
 			}
 			return; 
 		} catch (IOException e) {
-			Log.e(TAG, "setGpio error"); 
+			Log.e(TAG, "writeSys error"); 
 			return; 
 		}
 	}
