@@ -3028,9 +3028,13 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						/*
 						 不考虑PushStartTime和PushEndTime的限制，只要有新的播发单就删除旧单，简化逻辑
 						*/
+						prog_monitor_reset();
+						
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
 						sqlite_transaction_exec(sqlite_cmd);
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='ProductDesc' AND ServiceID!='%s';", serviceID_get());
+						sqlite_transaction_exec(sqlite_cmd);
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Publication SET ReceiveStatus='%d' WHERE ReceiveStatus='%d';", RECEIVESTATUS_FAILED,RECEIVESTATUS_WAITING);
 						sqlite_transaction_exec(sqlite_cmd);
 						
 						DEBUG("old ver: %s, new ver: %s\n",old_xmlver, xmlinfo.Version);

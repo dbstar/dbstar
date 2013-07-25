@@ -779,7 +779,7 @@ int disk_manage(char *PublicationID, char *ProductID)
 		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ProductID='%s' GROUP BY PublicationID;",ProductID);
 	}
 	else{
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ReceiveStatus!='0' GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;");
 	}
 	DEBUG("%s\n", sqlite_cmd);
 #endif
@@ -861,6 +861,14 @@ int disk_manage(char *PublicationID, char *ProductID)
 				ret = -1;
 			}
 			else{
+				DEBUG("%s\n",sqlite_cmd);
+				DEBUG("%s\n",sqlite_cmd_ResStr);
+				DEBUG("%s\n",sqlite_cmd_ResPoster);
+				DEBUG("%s\n",sqlite_cmd_ResSubTitle);
+				DEBUG("%s\n",sqlite_cmd_MultipleLanguageInfoVA);
+				DEBUG("%s\n",sqlite_cmd_Initialize);
+				DEBUG("%s\n",sqlite_cmd_Preview);
+				
 				sqlite_transaction_exec(sqlite_cmd);
 				sqlite_transaction_exec(sqlite_cmd_ResStr);
 				sqlite_transaction_exec(sqlite_cmd_ResPoster);
@@ -870,6 +878,10 @@ int disk_manage(char *PublicationID, char *ProductID)
 				sqlite_transaction_exec(sqlite_cmd_Preview);
 				
 				sqlite_transaction_end(1);
+				
+				snprintf(sqlite_cmd_ResStr,sizeof(sqlite_cmd_ResStr),"DELETE FROM PublicationsSet WHERE SetID NOT IN (SELECT SetID FROM Publication WHERE SetID!='' GROUP BY SetID);");
+				DEBUG("%s",sqlite_cmd_ResStr);
+				sqlite_execute(sqlite_cmd_ResStr);
 			}
 			DEBUG("disk manage finished\n");
 		}

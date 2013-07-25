@@ -1340,20 +1340,11 @@ int delete_publication_from_monitor(char *PublicationID, char *ProductID)
 }
 
 
-//#define DELETE_WHEN_NOTFINISHED
-// 反注册上一个播发单中已处于监控状态的节目，预备要注册新播发单中的节目
 int prog_monitor_reset(void)
 {
 	int i = 0;
 	int ret = 0;
 	
-#ifdef DELETE_WHEN_NOTFINISHED
-	int rubbish_prog_cnt = 0;
-	char sqlite_cmd[8192];
-	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM Publication WHERE");
-#endif
-
 	for(i=0; i<PROGS_NUM; i++)
 	{
 		if(1==prog_is_valid(&s_prgs[i])){
@@ -1386,27 +1377,7 @@ int prog_monitor_reset(void)
 				if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=5 && s_prgs[i].total>1073741824LL)
 				{
 					DEBUG("cur=%lld, total=%lld, wanting %d%%\n", s_prgs[i].cur, s_prgs[i].total, wanting_percent);
-					
 				}
-				
-#ifdef DELETE_WHEN_NOTFINISHED
-				//else
-				{
-					char reject_uri[512];
-					snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),s_prgs[i].uri);
-					if(0==remove_force(reject_uri)){
-						DEBUG("remove(%s) finished\n", reject_uri);
-						if(0==rubbish_prog_cnt)
-							snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'",s_prgs[i].id);
-						else
-							snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR PublicationID='%s'",s_prgs[i].id);
-						
-						rubbish_prog_cnt++;
-					}
-					else
-						DEBUG("remove(%s) FAILED\n", reject_uri);
-				}
-#endif
 			}
 			
 			DEBUG("unregist from push[%d]:%s(%s) in %s %s %s %lld\n",
@@ -1431,13 +1402,6 @@ int prog_monitor_reset(void)
 			memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
 		}
 	}
-
-#ifdef DELETE_WHEN_NOTFINISHED
-	if(rubbish_prog_cnt>0){
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
-		sqlite_execute(sqlite_cmd);
-	}
-#endif
 	
 	s_push_monitor_active = 0;
 	
@@ -1581,7 +1545,6 @@ int push_recv_manage_refresh()
 	
 	pthread_mutex_lock(&mtx_push_monitor);
 	
-	prog_monitor_reset();
 	s_dvbpush_info_refresh_flag = 1;
 	
 	int flag_carrier = 0;
