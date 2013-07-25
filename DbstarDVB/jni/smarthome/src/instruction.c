@@ -2212,7 +2212,7 @@ void instruction_insert_poll(void)
 											snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO actpower(typeID,hourTime,data,status) VALUES(%d,%d,%lf,0);",\
 													type_id,(int)time(NULL)+smart_power_difftime_get(),power);
 											
-											DEBUG("insert power sqlite cmd str: %s\n", sqlite_cmd);
+											DEBUG("insert actpower sqlite cmd str: %s\n", sqlite_cmd);
 											sqlite_execute(sqlite_cmd);
 										}
 										else if(SMART_SOCKET_ACTIVE_POWER_CONSUMPTION_READ==smart_socket_action){
