@@ -45,6 +45,13 @@ public class GDAdvancedToolsActivity extends Activity {
 		item.component = "com.fb.FileBrower";
 		item.activity = "FileBrower";
 		
+		btn = (Button) findViewById(R.id.btn_factorytest);
+		btn.setOnClickListener(mListener);
+		item = new Item();
+		btn.setTag(item);
+		item.component = "com.guodian.checkdevicetool";
+		item.activity = "MainActivity";
+		
 	}
 	
 	View.OnClickListener mListener = new View.OnClickListener() {
