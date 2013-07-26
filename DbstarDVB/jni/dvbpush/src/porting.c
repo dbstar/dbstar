@@ -32,6 +32,7 @@
 #include "drmapi.h"
 #include "push.h"
 #include "smarthome_shadow/smarthome.h"
+#include "smarthome_shadow/socket.h"
 
 #define INVALID_PRODUCTID_AT_ENTITLEINFO	(0)
 
@@ -89,6 +90,7 @@ static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
 
 extern int network_getinfo(char *buf, unsigned int len);
+extern int smartcard_action_set(int smartcard_action);
 
 /* define some general interface function here */
 
@@ -779,7 +781,7 @@ int disk_manage(char *PublicationID, char *ProductID)
 		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ProductID='%s' GROUP BY PublicationID;",ProductID);
 	}
 	else{
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ReceiveStatus!='0' GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ReceiveStatus!='%d' GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;",RECEIVESTATUS_WAITING);
 	}
 	DEBUG("%s\n", sqlite_cmd);
 #endif
