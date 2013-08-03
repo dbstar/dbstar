@@ -487,6 +487,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 		}
 	}
 
+#if 0
 	//=========================
 	LOGD("please insert a card\n");
 	i = 0;
@@ -509,9 +510,8 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	} while (status == AM_SMC_CARD_OUT);
 
 	LOGD("card in\n");
-
-
 	//=============================
+#endif
 
 	LOGD("reset the card = [%d]\n", smc_fd);
 	if (ioctl(smc_fd, AMSMC_IOC_RESET, &abuf)) {
@@ -541,26 +541,29 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
                           CDCA_U16*      pwReplyLen)
 {
 	//int i;
+	int j;
+	#define TMP_STR_SIZE	4096
+	char tmp_str[TMP_STR_SIZE];
+	
+	memset(tmp_str,0,TMP_STR_SIZE);
+	for(j=0;j<wCommandLen;j++)
+		snprintf(tmp_str+strlen(tmp_str),TMP_STR_SIZE-strlen(tmp_str),"0x%x\t",pbyCommand[j]);
+	LOGD("smart card command[%d]: %s\n",wCommandLen,tmp_str);
+	
 	//LOGD("ooooooooooooori send len [%d][%d]--[%d][%d]\n",wCommandLen,*pwReplyLen,pbyCommand[0],pbyCommand[1]);
 	//for (i = 0; i < 3; i++) {
 		if (AM_SMC_readwrite(pbyCommand, (int)wCommandLen,  pbyReply, (int *) pwReplyLen) == AM_SUCCESS) {
-			/*{int j;
-			LOGD("smart card command:\n");
-			for (j=0;j<wCommandLen;j++)
-			    LOGD("0x%x,",pbyCommand[j]);
-			LOGD("\n");
-			LOGD("smart card reply:\n");
-
-			for (j=0;j<*pwReplyLen;j++)
-			    LOGD("0x%x,",pbyReply[j]);
-			LOGD("\n");
-
-			}*/
-			//LOGD("sssssssssssssssssssssssend read successful\n");
+			{
+				memset(tmp_str,0,TMP_STR_SIZE);
+				for (j=0;j<*pwReplyLen;j++)
+				    snprintf(tmp_str+strlen(tmp_str),TMP_STR_SIZE-strlen(tmp_str),"0x%x\t",pbyReply[j]);
+				LOGD("smart card reply[%d]: %s\n",*pwReplyLen,tmp_str);
+			}
+			LOGD("AM_SMC_readwrite successful yyyyyyyyyyyyyyyyyy\n\n\n");
 			return CDCA_TRUE;
 		}
 	//}
-	LOGD("sssssssssssssssssssssssssssend fail \n");
+	LOGD("AM_SMC_readwrite fail xxxxxxxxxxxxxxx\n\n\n");
 	return CDCA_FALSE;
 }
 
@@ -569,7 +572,7 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
 /* 通知授权变化 */
 void CDSTBCA_EntitleChanged(CDCA_U16 wTvsID)
 {
-	LOGD("###############CDSTBCA_EntitleChanged function not implemented\n");
+	LOGD("###############CDSTBCA_EntitleChanged function not implemented *************\n");
 }
 
 
