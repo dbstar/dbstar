@@ -37,6 +37,14 @@
 	android:gravity="center_horizontal"
 	android:textSize="18sp"
 	/>
+	<Button
+	android:id="@+id/DiskButton04"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/DiskButton04"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
 	<TextView
 	android:id="@+id/Info"
 	android:layout_width="fill_parent"

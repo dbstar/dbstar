@@ -23,6 +23,7 @@
 	<string name="DiskButton01">Get Disk Info</string>
 	<string name="DiskButton02">Create Disk Partition</string>
 	<string name="DiskButton03">Delete Disk Partition</string>
+	<string name="DiskButton04">Test Disk Read/Write</string>
 
 	<string name="sub_font">font:</string>
 	<string name="sub_position_v">position:</string>

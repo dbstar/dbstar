@@ -26,8 +26,21 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.UnsupportedEncodingException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -50,7 +63,7 @@ public class DiskTest extends Activity implements OnClickListener {
     private String mDiskManageDev1 = "/dev/block/sdb1";
 
 	private Toast mToast = null;
-	private View Button01, Button02, Button03;
+	private View Button01, Button02, Button03, Button04;
 	private TextView info = null;
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -63,6 +76,9 @@ public class DiskTest extends Activity implements OnClickListener {
 		Button02.setOnClickListener(this);
 		Button03 = this.findViewById(R.id.DiskButton03);
 		Button03.setOnClickListener(this);
+		Button04 = this.findViewById(R.id.DiskButton04);
+		Button04.setOnClickListener(this);
+
 
 		info = (TextView)findViewById(R.id.Info);
 
@@ -93,6 +109,11 @@ public class DiskTest extends Activity implements OnClickListener {
 			showToast("delete disk partition");
 			deleteDiskPartition();
 			break;
+		case R.id.DiskButton04:
+			showToast("create file in sdcard");
+			createFile();
+			break;
+
 
 		default:
 			break;
@@ -179,9 +200,9 @@ public class DiskTest extends Activity implements OnClickListener {
 		String[] paths = null;
 		ArrayList<String> list = new ArrayList<String>();
 
-		File mnt = new File("/mnt");
+		File mnt = new File("/storage/external_storage");
 		if (mnt == null || !mnt.exists()) {
-			Log.d(TAG, "No /mnt folder!");
+			Log.d(TAG, "No /storage folder!");
 			return null;
 		}
 
@@ -307,5 +328,30 @@ public class DiskTest extends Activity implements OnClickListener {
 		SystemProperties.set(DiskManageCmdPrepertyName, "format");
 		SystemProperties.set(DiskManageDevPrepertyName, mDiskManageDev1);
 		SystemProperties.set(DiskManageStatePrepertyName, "running");
+	}
+
+	private void createFile() {
+		String path = "/storage/external_storage/sdcard1/tttest.txt";
+		String value = "How are U";
+		byte[] bytes = value.getBytes();
+
+		Log.d(TAG, "save " + value + " to " + path);
+		File file = new File(path);
+		try {
+			if (!file.exists()) {
+				if (!file.createNewFile()) {
+				Log.d(TAG, "create " + path + "error.");
+				return;
+				}
+			}
+
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(bytes);
+			fos.close();
+
+			Log.d(TAG, "== success == ");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
