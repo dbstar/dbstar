@@ -28,6 +28,7 @@ static int s_column_SequenceNum = 0;
 static int s_detect_valid_productID = 0;
 static int s_preview_publication = 0;
 static unsigned long long s_recv_totalsize_sum = 0LL;
+static unsigned long long s_recv_totalsize_sum_M = 0LL;
 
 /*
  初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
@@ -343,9 +344,18 @@ int check_productid_from_db_in_trans(char *productid)
 }
 #endif
 
-unsigned long long recv_totalsize_sum_get()
+unsigned long long recv_totalsize_sum_M_get()
 {
-	return s_recv_totalsize_sum;
+	s_recv_totalsize_sum_M = (s_recv_totalsize_sum >> 20);
+	
+	if(s_recv_totalsize_sum_M<DOWNLOAD_ONCE_M_MIN){
+		DEBUG("check recv totalsize sum %llu Mbytes is smaller than %llu, reset it as %llu\n",s_recv_totalsize_sum_M,DOWNLOAD_ONCE_M_MIN,DOWNLOAD_ONCE_M_MIN);
+		s_recv_totalsize_sum_M = DOWNLOAD_ONCE_M_MIN;
+	}
+	else
+		DEBUG("recv totalsize sum %llu Mbytes\n",s_recv_totalsize_sum_M);
+	
+	return s_recv_totalsize_sum_M;
 }
 
 static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
@@ -2951,7 +2961,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						/*
 						 不能一股脑的清理掉Column的所有数据，保留本地菜单
 						*/
-						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='L98' AND ColumnType!='L99' AND ColumnType!='SmartLife';");
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='L98' AND ColumnType!='L99' AND ColumnType!='SmartLife' AND ColumnType!='OTT';");
 						sqlite_transaction_exec(sqlite_cmd);
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='Column' AND ServiceID!='%s' AND ServiceID!='0';", serviceID_get());
 						sqlite_transaction_exec(sqlite_cmd);
@@ -3018,9 +3028,13 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						/*
 						 不考虑PushStartTime和PushEndTime的限制，只要有新的播发单就删除旧单，简化逻辑
 						*/
+						prog_monitor_reset();
+						
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
 						sqlite_transaction_exec(sqlite_cmd);
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='ProductDesc' AND ServiceID!='%s';", serviceID_get());
+						sqlite_transaction_exec(sqlite_cmd);
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Publication SET ReceiveStatus='%d' WHERE ReceiveStatus='%d';", RECEIVESTATUS_FAILED,RECEIVESTATUS_WAITING);
 						sqlite_transaction_exec(sqlite_cmd);
 						
 						DEBUG("old ver: %s, new ver: %s\n",old_xmlver, xmlinfo.Version);

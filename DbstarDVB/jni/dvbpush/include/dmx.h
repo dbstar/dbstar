@@ -109,6 +109,7 @@ struct dmx_sct_filter_params
 #define DMX_KERNEL_CLIENT   0x8000
 };
 
+
 struct dmx_pes_filter_params
 {
 	__u16          pid;

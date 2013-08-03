@@ -2100,3 +2100,64 @@ int smarthome_setting_reset(char *sqlite_cmd)
 	return ret;	
 }
 
+
+/*
+功能：	执行SELECT语句
+输入：	sqlite_cmd				——sql SELECT语句
+		receiver				——用于处理SELECT结果的参数，如果sqlite_read_callback为NULL，则receiver也可以为NULL
+		receiver_size			——receiver的大小，在receiver为数组时应根据此值做安全拷贝
+		sqlite_read_callback	——用于处理SELECT结果的回调，如果只是想知道查询到几条记录，则此回调可以为NULL
+返回：	-1——失败；其他值——查询到的记录数
+*/
+int smartlife_sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, int (*sqlite_read_callback)(char **result, int row, int column, void *receiver, unsigned int receiver_size))
+{
+	char* errmsg=NULL;
+	char** l_result = NULL;
+	int l_row = 0;
+	int l_column = 0;
+	int ret = 0;
+	int (*sqlite_callback)(char **,int,int,void *,unsigned int) = sqlite_read_callback;
+
+	DEBUG("smartlife sqlite read: %s\n", sqlite_cmd);
+	
+	sqlite3* smarthome_db = NULL;
+	
+	if(SQLITE_OK!=sqlite3_open(SMARTHOME_DATABASE,&smarthome_db)){
+		ERROROUT("can't open database\n");
+		ret = -1;
+	}
+	else{
+		ret = 0;
+		
+		// open database ok
+		if(sqlite3_get_table(smarthome_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg)
+			|| NULL!=errmsg)
+		{
+			ERROROUT("sqlite cmd: %s\n", sqlite_cmd);
+			DEBUG("errmsg: %s\n", errmsg);
+			ret = -1;
+		}
+		else{ // inquire table ok
+			if(0==l_row){
+				DEBUG("no row, l_row=0, l_column=%d\n", l_column);
+			}
+			else{
+				DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
+				if(sqlite_callback)	// && receiver
+					sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
+				else{
+					DEBUG("no sqlite callback, l_row=%d, l_column=%d\n", l_row, l_column);
+//					int i = 0;
+//					for(i=0;i<(l_column+1);i++)
+//						printf("\t\t%s\n", l_result[i]);
+				}
+			}
+			ret = l_row;
+		}
+		sqlite3_free_table(l_result);
+		sqlite3_free(errmsg);								///	release the memery possessed by error message
+		sqlite3_close(smarthome_db);
+	}
+	
+	return ret;
+}

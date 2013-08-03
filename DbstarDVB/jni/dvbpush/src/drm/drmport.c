@@ -31,7 +31,18 @@
 #define LOGE(...)
 #endif
 
-extern AM_ErrorCode_t AM_TIME_GetClock(int *clock);
+#if 0
+typedef struct {
+	char sn[CDCA_MAXLEN_SN + 1];
+	FILE *fd;
+} SCDCACardEntitleInfo;
+
+typedef struct {
+	CDCA_U8        byReqID;
+	CDCA_U16      wPID;
+	CDCA_U32      timeouttime;
+} SCDCAFilterInfo;
+#endif
 //#define CDCA_MAX_CARD_NUM 2
 #define SMC_DEVICE  "/dev/smc0"
 #define BLOCK01_FILE "/data/dbstar/drm/entitle/block01"
@@ -40,10 +51,8 @@ extern AM_ErrorCode_t AM_TIME_GetClock(int *clock);
 
 CDCA_U8 checkTimeoutMark = 0;
 int smc_fd = -1;
-
-
 FILE *block01_fd = NULL;
-
+extern int smc_set(struct am_smc_atr *abuf);
 SCDCACardEntitleInfo card_sn = {"", -1}; //[CDCA_MAX_CARD_NUM];
 SCDCAFilterInfo dmx_filter[MAX_CHAN_FILTER];
 //extern Channel_t chanFilter[];
@@ -253,6 +262,7 @@ void CDSTBCA_WriteBuffer(CDCA_U8 byBlockID, const CDCA_U8* pbyData, CDCA_U32 dwL
 /*-------- TS流管理 --------*/
 
 #if 1
+
 void dmx_filter_init(void)
 {
     int i;
@@ -260,23 +270,40 @@ void dmx_filter_init(void)
     for (i=0; i< MAX_CHAN_FILTER; i++)
     {
     	dmx_filter[i].byReqID = 0xff;
-	dmx_filter[i].wPID = 0xffff;
-	dmx_filter[i].timeouttime = 0;
+	    dmx_filter[i].wPID = 0xffff;
+	    dmx_filter[i].timeouttime = 0;
     }	
 }
 
-void filter_timeout_handler(int fid)
+
+void filter_timeout_process()
 {
-	if (fid >= MAX_CHAN_FILTER) {
-		return;
+	int i;
+	time_t now_sec,theni;
+	
+	if (checkTimeoutMark>0)
+	{
+		now_sec = time(NULL);
+//		LOGD("checkTimeoutMark: %d, now_sec: %lu\n",checkTimeoutMark,now_sec);
+		
+		for(i=0; i<MAX_CHAN_FILTER; i++)
+		{
+			theni = dmx_filter[i].timeouttime;
+//			LOGD("dmx_filter[%d].timeouttime=%lu\n",i,dmx_filter[i].timeouttime);
+			if (theni > 0)
+			{
+				if (now_sec >= theni)
+				{
+					LOGD("[%d]theni: %lu (%lu)\n", i,theni,now_sec);
+					if (checkTimeoutMark>0)
+						checkTimeoutMark --;
+					
+					dmx_filter[i].timeouttime = 0;
+					CDSTBCA_ReleasePrivateDataFilter(dmx_filter[i].byReqID, dmx_filter[i].wPID);
+				}
+			}
+		}
 	}
-	if (checkTimeoutMark) {
-		checkTimeoutMark --;
-	}
-	TC_free_filter(fid);
-	dmx_filter[fid].byReqID = 0xff;
-	dmx_filter[fid].wPID = 0xffff;
-	dmx_filter[fid].timeouttime = 0;
 }
 
 
@@ -312,31 +339,12 @@ static void filter_dump_bytes(int dev_no, int fid, const uint8_t *data, int len,
 			checkTimeoutMark --;
 		}
 		dmx_filter[fid].timeouttime = 0;
+		LOGD("(byReqID & 0x80) == 0x80\n");
 		CDSTBCA_ReleasePrivateDataFilter(byReqID, wPid);
 	}
-        else if (checkTimeoutMark>0)
-        {
-             int now,theni,i;
-
-             AM_TIME_GetClock(&now);
- 
-             for(i=0; i<MAX_CHAN_FILTER; i++)
-             {
-                 theni = dmx_filter[i].timeouttime;
-                 if (theni > 0)
-                 {
-                     if (theni <= now)
-                     {
-                         if (checkTimeoutMark>0) 
-                         {
-                             checkTimeoutMark --;
-                         }
-                         dmx_filter[i].timeouttime = 0;
-                         CDSTBCA_ReleasePrivateDataFilter(dmx_filter[i].byReqID, dmx_filter[i].wPID);
-                     }
-                 }
-             }
-        }
+	else{
+		filter_timeout_process();
+	}
 }
 #endif
 
@@ -353,7 +361,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	Filter_param param;
 	//Channel_t *filter;
 	int fid, i;
-
+	time_t now_sec = 0;
 
 	for (fid = 0; fid < MAX_CHAN_FILTER; fid++) {
 		if (dmx_filter[fid].byReqID == byReqID) {
@@ -377,11 +385,12 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	}
 	dmx_filter[fid].wPID = wPid;
 	dmx_filter[fid].byReqID = byReqID;
+
 	if (byWaitSeconds) {
-		int now;
 		checkTimeoutMark ++;
-		AM_TIME_GetClock(&now);
-		dmx_filter[fid].timeouttime = now + byWaitSeconds * 1000;
+		now_sec = time(NULL);
+		dmx_filter[fid].timeouttime = now_sec + byWaitSeconds;
+		LOGD("now_sec: %lu, byWaitSeconds: %u, dmx_filter[%d].timeouttime: %lu\n", now_sec,byWaitSeconds,fid,dmx_filter[fid].timeouttime);
 	} else {
 		dmx_filter[fid].timeouttime = 0;
 	}
@@ -449,6 +458,8 @@ int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, i
 /*--------- 智能卡管理 ---------*/
 
 /* 智能卡复位 */
+//int smc_set(struct am_smc_atr *abuf);
+//extern int smc_set4k();
 CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 {
 	struct am_smc_atr abuf;
@@ -498,7 +509,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 
 
 	//=============================
-
+//smc_set4k();
 	LOGD("reset the card = [%d]\n", smc_fd);
 	if (ioctl(smc_fd, AMSMC_IOC_RESET, &abuf)) {
 		LOGD("&&&&&&&&&&&&&&&&&&&&&&&&&& reset the card failed\n");
@@ -512,6 +523,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	for (i = 0; i < *pbyLen; i++) {
 		LOGD("0x%x,", abuf.atr[i]);
 	}
+    //smc_set(&abuf);
 	send_sc_notify(can_send_nofity,DRM_SC_INSERT_OK, NULL, 0);
 	smart_card_insert_flag_set(1);
 	
@@ -525,9 +537,9 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
                           CDCA_U8*       pbyReply,
                           CDCA_U16*      pwReplyLen)
 {
-	int i;
+	//int i;
 	//LOGD("ooooooooooooori send len [%d][%d]--[%d][%d]\n",wCommandLen,*pwReplyLen,pbyCommand[0],pbyCommand[1]);
-	for (i = 0; i < 3; i++) {
+	//for (i = 0; i < 3; i++) {
 		if (AM_SMC_readwrite(pbyCommand, (int)wCommandLen,  pbyReply, (int *) pwReplyLen) == AM_SUCCESS) {
 			/*{int j;
 			LOGD("smart card command:\n");
@@ -544,7 +556,7 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
 			//LOGD("sssssssssssssssssssssssend read successful\n");
 			return CDCA_TRUE;
 		}
-	}
+	//}
 	LOGD("sssssssssssssssssssssssssssend fail \n");
 	return CDCA_FALSE;
 }

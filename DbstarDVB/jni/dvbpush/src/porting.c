@@ -32,6 +32,7 @@
 #include "drmapi.h"
 #include "push.h"
 #include "smarthome_shadow/smarthome.h"
+#include "smarthome_shadow/socket.h"
 
 #define INVALID_PRODUCTID_AT_ENTITLEINFO	(0)
 
@@ -72,6 +73,7 @@ static char			s_jni_cmd_drm_ver[256];
 static char			s_jni_cmd_eigenvalue[1024];
 static char			s_jni_cmd_data_status[64];
 static char			s_jni_cmd_system_awake_timer[64];
+static char			s_jni_cmd_smartlife_connect_status[32];
 
 // 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
@@ -88,6 +90,7 @@ static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
 
 extern int network_getinfo(char *buf, unsigned int len);
+extern int smartcard_action_set(int smartcard_action);
 
 /* define some general interface function here */
 
@@ -693,6 +696,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 	
 	int i = 0;
 	long long total_size = 0LL;
+	long long total_size_actually = 0LL;
 	char total_uri[512];
 	char *ids = (char *)receiver;
 	int ret = 0;
@@ -710,13 +714,19 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 		DEBUG("%s\t#%s\t#%s=%lld\t#%s\t#%s\t#%s\n",result[i*column],result[i*column+1],result[i*column+2],total_size,result[i*column+3],result[i*column+4],result[i*column+5]);
 		
 		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
+		
+		total_size_actually = dir_size(total_uri);
+		DEBUG("total_size=%lld, total_size_actually=%lld\n", total_size,total_size_actually);
+		
 		if(0==remove_force(total_uri)){
 			if(strlen(ids)>0)
 				snprintf(ids+strlen(ids),receiver_size-strlen(ids),"\t");
 			snprintf(ids+strlen(ids),receiver_size-strlen(ids),"%s",result[i*column]);
 			
-			s_delete_total_size += total_size;
-			if(s_delete_total_size>=DELETE_SIZE_ONCE){
+			if(total_size_actually>0)
+				s_delete_total_size += total_size_actually;
+			
+			if((s_delete_total_size>>20) >= should_clean_M_get()){
 				DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
 				break;
 			}
@@ -771,7 +781,7 @@ int disk_manage(char *PublicationID, char *ProductID)
 		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ProductID='%s' GROUP BY PublicationID;",ProductID);
 	}
 	else{
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ReceiveStatus!='%d' GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;",RECEIVESTATUS_WAITING);
 	}
 	DEBUG("%s\n", sqlite_cmd);
 #endif
@@ -853,6 +863,14 @@ int disk_manage(char *PublicationID, char *ProductID)
 				ret = -1;
 			}
 			else{
+				DEBUG("%s\n",sqlite_cmd);
+				DEBUG("%s\n",sqlite_cmd_ResStr);
+				DEBUG("%s\n",sqlite_cmd_ResPoster);
+				DEBUG("%s\n",sqlite_cmd_ResSubTitle);
+				DEBUG("%s\n",sqlite_cmd_MultipleLanguageInfoVA);
+				DEBUG("%s\n",sqlite_cmd_Initialize);
+				DEBUG("%s\n",sqlite_cmd_Preview);
+				
 				sqlite_transaction_exec(sqlite_cmd);
 				sqlite_transaction_exec(sqlite_cmd_ResStr);
 				sqlite_transaction_exec(sqlite_cmd_ResPoster);
@@ -862,6 +880,10 @@ int disk_manage(char *PublicationID, char *ProductID)
 				sqlite_transaction_exec(sqlite_cmd_Preview);
 				
 				sqlite_transaction_end(1);
+				
+				snprintf(sqlite_cmd_ResStr,sizeof(sqlite_cmd_ResStr),"DELETE FROM PublicationsSet WHERE SetID NOT IN (SELECT SetID FROM Publication WHERE SetID!='' GROUP BY SetID);");
+				DEBUG("%s",sqlite_cmd_ResStr);
+				sqlite_execute(sqlite_cmd_ResStr);
 			}
 			DEBUG("disk manage finished\n");
 		}
@@ -1676,7 +1698,7 @@ int dvbpush_register_notify(void *func)
 */
 int msg_send2_UI(int type, char *msg, int len)
 {
-	DEBUG("type: %d=0x%x, msg: %s, len: %d\n", type,type, msg, len);
+	DEBUG("type: %d=0x%x, len: %d\n", type,type, len);
 	if (dvbpush_notify != NULL){
 		return dvbpush_notify(type, msg, len);
 	}
@@ -1935,8 +1957,15 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			smartlife_send(*buf,*len);
 			break;
 		case CMD_SMARTLIFE_CONNECT:
-			DEBUG("CMD_SMARTLIFE_CONNECT, *buf=%d\n", *buf);
+			DEBUG("CMD_SMARTLIFE_CONNECT, *buf=%s\n", *buf);
 			smartlife_connect(*buf,*len);
+			break;
+		case CMD_SMARTLIFE_CONNECT_STATUS:
+			DEBUG("CMD_SMARTLIFE_CONNECT_STATUS\n");
+			smartlife_connect_status_get(s_jni_cmd_smartlife_connect_status,sizeof(s_jni_cmd_smartlife_connect_status));
+			DEBUG("CMD_SMARTLIFE_CONNECT_STATUS get %s\n",s_jni_cmd_smartlife_connect_status);
+			*buf = s_jni_cmd_smartlife_connect_status;
+			*len = strlen(s_jni_cmd_smartlife_connect_status);
 			break;
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
@@ -2531,9 +2560,14 @@ static int reboot_timestamp_init()
 	return 0;
 }
 
-int reboot_timestamp_get()
+time_t reboot_timestamp_get()
 {
-	return atoi(s_reboot_timestamp_str);
+	return strtoul(s_reboot_timestamp_str,NULL,10);
+}
+
+int reboot_timestamp_set(time_t time_stamp_s)
+{
+	return snprintf(s_reboot_timestamp_str,sizeof(s_reboot_timestamp_str),"%lu",time_stamp_s);
 }
 
 

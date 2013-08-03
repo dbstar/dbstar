@@ -73,7 +73,7 @@ typedef enum{
 #define PROG_DATA_PID_DF	(411)	// 0x19b
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
-#define MULTI_BUF_SIZE		(16171008)	/* (16171008)=(12*1024*1316) */
+//#define MULTI_BUF_SIZE		(16171008)	/* (16171008)=(12*1024*1316) */
 
 #define SERVICEID_FILL		"0"
 #define XML_ROOT_ELEMENT	"RootElement"
@@ -122,8 +122,8 @@ typedef enum{
 
 // 除了应该给本次下载留出足够空间外，额外预留20G
 #define HDFOREWARNING_M_DFT			(20480LL)
-// 给本次下载留出足够空间外，至少50G
-#define DOWNLOAD_ONCE_M_MIN			(51200LL)
+// 给本次下载留出足够空间外，至少32G
+#define DOWNLOAD_ONCE_M_MIN			(32768LL)
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
