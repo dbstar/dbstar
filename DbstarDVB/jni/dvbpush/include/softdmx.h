@@ -9,6 +9,7 @@ extern "C"
 #define FILTER_BUF_SIZE (4096+184)
 #define MAX_CHAN_FILTER 32
 #define DMX_FILTER_SIZE 16
+#define MULTI_BUF_SIZE (512*1024)
 
 typedef struct LoaderInfo LoaderInfo_t;
 struct LoaderInfo {

@@ -36,6 +36,7 @@
 #include "dvbpush_api.h"
 #include "multicast.h"
 #include "motherdisc.h"
+#include "drmport.h"
 
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (60000)		//¶¨Òå»º³åÇø´óĞ¡£¬µ¥Î»£º°ü
@@ -79,7 +80,6 @@ typedef struct tagPRG
 	char			product_id[64];	
 }PROG_S;
 
-static int mid_push_regist(PROG_S *prog);
 static int push_decoder_buf_uninit();
 static int prog_name_fill();
 
@@ -105,6 +105,7 @@ static int s_preview_refresh = 0;
 static int s_push_regist_inited = 0;
 static int s_motherdisc_init_flag = 0;
 
+static unsigned long long s_should_clean_M = 0LL;
 
 /*
 µ±ÏòpushÖĞĞ´Êı¾İÊ±²ÅÓĞ±ØÒª¼àÌı½ø¶È£¬·ñÔòÖ±½ÓÊ¹ÓÃÊı¾İ¿âÖĞ¼ÇÂ¼µÄ½ø¶È¼´¿É¡£
@@ -244,7 +245,7 @@ rewake:
 		
 		// ´ËÏß³ÌµÄÔËĞĞÓ°Ïìµ½Éı¼¶£¬¼´Ê¹Ã»ÓĞÓ²ÅÌÒ²±ØĞëÈÃ´ËÏß³ÌÔËĞĞ¡£
 		// µ«Òª±ÜÃâÄ¸ÅÌÖĞInitialize»òÆäËûxml±»ÏÂÔØµÄxml¸²¸Ç
-		if(len && 0==motherdisc_processing())
+		if(len && 0==motherdisc_processing() && 1==s_push_regist_inited)
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
@@ -366,7 +367,7 @@ int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_e
 
 
 /*
- ¹¦ÄÜÅĞ¶ÏÊÇ·ñÊÇºÏ·¨½ÚÄ¿
+ ¹¦ÄÜÅĞ¶ÏÊÇ·ñÊÇºÏ·¨½ÚÄ¿£¬½ÚÄ¿Ãû³Æ³¤¶È´óÓÚ0£¬²¢ÇÒ×Ü´óĞ¡´óÓÚ0
  ·µ»ØÖµ£º	-1±íÊ¾·Ç·¨£¬1±íÊ¾ºÏ·¨¡£
 */
 static int prog_is_valid(PROG_S *prog)
@@ -374,8 +375,7 @@ static int prog_is_valid(PROG_S *prog)
 	if(NULL==prog)
 		return -1;
 		
-	if(strlen(prog->uri)>0 || (prog->total)>0LL){
-		//DEBUG("valid prog\n");
+	if(strlen(prog->uri)>0 && (prog->total)>0LL){
 		return 1;
 	}
 	else
@@ -634,7 +634,7 @@ void *maintenance_thread()
 	struct timespec outtime;
 	int retcode = 0;
 	//char sqlite_cmd[256];
-	int monitor_interval = 61;
+	int monitor_interval = 1;
 	unsigned int loop_cnt = 0;
 	
 	time_t s_pin_sec;	// ¼ÇÂ¼¿ª»úÊ±¼ä£¨Ãë£©
@@ -663,7 +663,7 @@ void *maintenance_thread()
 		
 		// Ã¿¸ô12¸öĞ¡Ê±£¬´ò¿ªtdt pid½øĞĞÊ±¼äÍ¬²½£¬ÕâÀïÖ»ÊÇ½èÓÃÁËmonitorÕâ¸öµÍÆµÑ­»·¡£
 		loop_cnt ++;
-		if(loop_cnt>(720)){
+		if(loop_cnt>(43200)){
 			time_t timep;
 			struct tm *p_tm;
 			timep = time(NULL);
@@ -699,6 +699,8 @@ void *maintenance_thread()
 			}
 		}
 		
+		filter_timeout_process();
+		
 		if(smart_card_insert_flag_get()>0){
 			// ²âÊÔ·¢ÏÖ²î²»µ½1s£¬Ó²ÅÌ´ËÊ±»¹Î´×¼±¸Íê±Ï
 			DEBUG("smart card insert, wait 2s for disc ready\n");
@@ -728,14 +730,14 @@ void *maintenance_thread()
 		if(0==s_push_regist_inited && 1==pushdir_usable()){
 			s_push_regist_inited = 1;
 			
-#if 0
-2013-06-29
-push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ¼»¯£¬Ö»ÊÇpush_regist_initÒªµÈµ½Ó²ÅÌ¼ÓÔØÍê±Ï
+#if 1
+//2013-06-29
+//push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ¼»¯£¬Ö»ÊÇpush_regist_initÒªµÈµ½Ó²ÅÌ¼ÓÔØÍê±Ï
 			if(-1==mid_push_init(PUSH_CONF)){
 				DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
 			}
 #endif
-
+			
 			push_regist_init();
 		}
 		
@@ -753,16 +755,17 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d\n", 
 						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
 					
+					now_sec += 1;
+					reboot_timestamp_set(now_sec);
+					
 					snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%ld','');",
 						GLB_NAME_REBOOT_TIMESTAMP,now_sec);
 					if(0==sqlite_execute(sqlite_cmd)){
 						s_decoder_running = 0;
 						DEBUG("set s_decoder_running=%d to stop push write\n", s_decoder_running);
-						sleep(3);
+						sleep(1);
 						
 						push_destroy();
-						
-						sleep(1);
 						
 						msg_send2_UI(SYSTEM_REBOOT, NULL, 0);
 					}
@@ -967,6 +970,15 @@ int maintenance_thread_init()
 	return 0;
 }
 
+int push_decoder_thread_init()
+{
+	//´´½¨Êı¾İ½âÂëÏß³Ì
+	pthread_create(&tidDecodeData, NULL, push_decoder_thread, NULL);
+	//pthread_detach(tidDecodeData);
+	
+	return 0;
+}
+
 int mid_push_init(char *push_conf)
 {
 	int i = 0;
@@ -997,10 +1009,6 @@ int mid_push_init(char *push_conf)
 	s_push_has_data = 7;
 	
 	push_set_notice_callback(callback);
-	
-	//´´½¨Êı¾İ½âÂëÏß³Ì
-	pthread_create(&tidDecodeData, NULL, push_decoder_thread, NULL);
-	//pthread_detach(tidDecodeData);
 	
 	//´´½¨xml½âÎöÏß³Ì
 	pthread_t tidxmlparse;
@@ -1102,7 +1110,7 @@ static int mid_push_regist(PROG_S *prog)
 		return -1;
 	}
 	if(-1==prog_is_valid(prog)){
-		DEBUG("invalid prog to regist monitor\n");
+		DEBUG("INVALID PROGRAM to regist monitor, uri: %s, total: %lld\n", prog->uri, prog->total);
 		return -1;
 	}
 	
@@ -1272,239 +1280,6 @@ static int prog_name_fill()
 	return 0;
 }
 
-#if 0
-static int mid_push_forbid(const char *prog_uri, unsigned int sleep_sec_before_remove)
-{
-	if(NULL==prog_uri || 0==strlen(prog_uri) || sleep_sec_before_remove>10){
-		DEBUG("invalid args, sleep_sec_before_remove=%u\n", sleep_sec_before_remove);
-		return -1;
-	}
-	
-	int ret = 0;
-	
-	/*
-	µ÷ÓÃpush_dir_forbidÖ®Ç°£¬´Ë½ÚÄ¿±ØĞëÏÈ×¢²á
-	*/
-	ret = push_dir_forbid(prog_uri);
-	if(0==ret){
-		DEBUG("push forbid: %s\n", prog_uri);
-		ret = push_dir_remove(prog_uri);
-		if(0==ret)
-			DEBUG("push remove: %s\n", prog_uri);
-		else if(-1==ret)
-			DEBUG("push remove failed: %s, no such uri\n", prog_uri);
-		else
-			DEBUG("push remove failed: %s, some other err(%d)\n", prog_uri, ret);
-		
-		if(sleep_sec_before_remove>0)
-			sleep(sleep_sec_before_remove);
-		
-		char reject_uri[128];
-		snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),prog_uri);
-		remove_force(reject_uri);
-		DEBUG("remove(%s) finished\n", reject_uri);
-	}
-	else if(-1==ret)
-		DEBUG("push forbid failed: %s, no such uri\n", prog_uri);
-	else
-		DEBUG("push forbid failed: %s, some other err(%d)\n", prog_uri, ret);
-	
-	return ret;
-}
-
-static int mid_push_reject(const char *prog_uri,long long total_size)
-{
-	if(NULL==prog_uri){
-		DEBUG("invalid prog_uri\n");
-		return -1;
-	}
-	
-	int ret = 0;
-	ret = push_dir_register(prog_uri, total_size, 0);
-	if(0==ret){
-		DEBUG("regist %s to push for forbid\n", prog_uri);
-	
-		ret = mid_push_forbid(prog_uri, 0);
-	}
-	else{
-		DEBUG("regist %s to push for forbid failed: %d\n", prog_uri, ret);
-	}
-	
-	return ret;
-}
-
-/*
-»Øµ÷½áÊøÊ±£¬receiverĞ¯´øÊÇ·ñÓĞ½ø¶È×¢²áµÄ±ê¼Ç£¬1±íÊ¾ÓĞ×¢²á£¬0±íÊ¾ÎŞ×¢²á¡£
-*/
-static int push_recv_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
-{
-	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
-	if(row<1){
-		DEBUG("no record in table, return\n");
-		return 0;
-	}
-//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID
-	int i = 0;
-	int j = 0;
-	int recv_flag = 1;
-	int tmp_init_flag = *((int *)receiver);
-	RECEIVESTATUS_E receive_status = RECEIVESTATUS_REJECT;
-	long long totalsize = 0LL;
-	
-	DEBUG("*receiver(init flag)=%d\n", tmp_init_flag);
-	
-	*((int *)receiver) = 0;
-	
-	for(i=1;i<row+1;i++)
-	{
-		/*
-		Èç¹ûÊÇ¿ª»úÊ±×¢²á£»»òÕß²»ÊÇ¿ª»ú×¢²á¡¢µ«FreshFlagÎª1£¬Ôò×¢²á¾Ü¾ø½ÓÊÕ»ò½ø¶È¼à¿Ø
-		·ñÔò£¬²»¼Ó´¦Àí¡£
-		*/
-		if(1==tmp_init_flag || (1!=tmp_init_flag && 1==atoi(result[i*column+9]))){
-#if 0
-			/*
-			¶ÔÓÚ³ÉÆ·£¬Èç¹ûÓÃ»§Ñ¡Ôñ²»½ÓÊÕ£¬ÔòÒ»¶¨²»½ÓÊÕ£¬²»ĞèÒª¸ü¼ÓÏêÏ¸µÄÅĞ¶Ï
-			·ñÔò£¬¸ù¾İÒµÎñµÈÌõ¼ş½øĞĞÅĞ¶Ï
-			*/
-			if(RECEIVETYPE_PUBLICATION==atoi(result[i*column+2]) && 0==guidelist_select_status((const char *)(result[i*column+1]))){
-				recv_flag = 0;
-				DEBUG("this prog(%s) is reject by user in guidelist\n", result[i*column+3]);
-			}
-			else
-			
-			// 2013-4-7 11:14
-			// ¶ÔÓÃ»§ÔÚÔ¤¸æµ¥ÖĞµÄÑ¡Ôñ¹ıÂË£¬·ÅÔÚ½âÎöProductDescÊ±½øĞĞ
-#endif
-			{
-				receive_status = atoi(result[i*column+8]);
-				if(RECEIVESTATUS_REJECT==receive_status){
-					/*
-					¾Ü¾ø½ÓÊÕÊ±Ò»¶¨ÒªĞ¡ĞÄ£¬ÏàÍ¬µÄPublicationÓĞ¿ÉÄÜ¼ÈÊôÓÚµ±Ç°service£¬ÓÖÊôÓÚÆäËûservice£»ÓÈÆäÊÇ£¬ÔÚÆäËûServiceÖĞĞèÒª½ÓÊÕ¡£
-					*/
-					recv_flag = 0;
-					for(j=1;j<row+1;j++){
-						if(0==strcmp(result[j*column+3],result[i*column+3]) && (RECEIVESTATUS_WAITING==atoi(result[j*column+8])|| RECEIVESTATUS_FINISH==atoi(result[j*column+8]))){
-							DEBUG("this prog(%s) is need recv in other service, do not reject it\n",result[i*column+3]);
-							recv_flag = 1;
-							break;
-						}
-					}
-				}
-				else if (RECEIVESTATUS_WAITING==receive_status || RECEIVESTATUS_FINISH==receive_status){
-					recv_flag = 1;
-				}
-				else{ // RECEIVESTATUS_FAILED==receive_status || RECEIVESTATUS_HISTORY==receive_status
-					DEBUG("[%d:%s] %s is ignored by push monitor\n", i,result[i*column],result[i*column+3]);
-					recv_flag = 0;
-				}
-			}
-			
-			sscanf(result[i*column+5],"%lld", &totalsize);
-			
-			if(0==recv_flag){
-				mid_push_reject(result[i*column+3],totalsize);
-			}
-			else{
-				PROG_S cur_prog;
-				memset(&cur_prog,0,sizeof(cur_prog));
-				snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
-				snprintf(cur_prog.uri,sizeof(cur_prog.uri),"%s",result[i*column+3]);
-				snprintf(cur_prog.descURI,sizeof(cur_prog.descURI),"%s",result[i*column+4]);
-				memset(cur_prog.caption,0,sizeof(cur_prog.caption));
-				snprintf(cur_prog.deadline,sizeof(cur_prog.deadline),"%s",result[i*column+7]);
-				cur_prog.type = atoi(result[i*column+2]);
-				cur_prog.cur = 0LL;
-				cur_prog.total = totalsize;
-				cur_prog.parsed = atoi(result[i*column+10]);
-				snprintf(cur_prog.publication_id,sizeof(cur_prog.publication_id),"%s",result[i*column+1]);
-				snprintf(cur_prog.product_id,sizeof(cur_prog.product_id),"%s",result[i*column+11]);
-				
-				mid_push_regist(&cur_prog);
-				
-				/*
-				»Øµ÷½áÊøÊ±£¬receiverĞ¯´øÊÇ·ñÓĞ½ø¶È×¢²áµÄ±ê¼Ç£¬1±íÊ¾ÓĞ×¢²á£¬0±íÊ¾ÎŞ×¢²á¡£
-				*/
-				*((int *)receiver) = 1;
-			}
-		}
-	}
-	
-	return 0;
-}
-
-/*
- µ±ÏÂ·¢ĞÂµÄProductDesc.xml»òService.xmlÊ±Ë¢ĞÂpush¾Ü¾ø½ÓÊÕ×¢²áºÍ½ø¶È¼à¿Ø×¢²á
- init_flag¡ª¡ª1£º³õÊ¼»¯£¬±íÊ¾ĞèÒª´¦ÀíProductDescËùÓĞµÄ½ÚÄ¿
- init_flag¡ª¡ª0£º·Ç³õÊ¼»¯£¬±íÊ¾ÊÇ¶¯Ì¬´¦Àí£¬½ÓÊÕµ½ĞÂµÄService.xmlºÍProductDesc.xml£¬Ö»´¦ÀíFreshFlagÎª1µÄ½ÚÄ¿
- init_flag¡ª¡ª2£º´ÓmonitorÖĞµ÷ÓÃµÄÊµÊ±¼à¿Ø£¬Ä¿µÄÊÇÇåÀíµô¹ıÆÚµÄ½ÚÄ¿²»ÔÙ½øĞĞ½ø¶È¼à¿Ø£¬±ÜÃâÖÕ¶Ë¼¸Ìì²»¹Ø»úºó¼à¿ØÀÛ»ı
-*/
-int push_recv_manage_refresh(int init_flag, char *time_stamp_pointed)
-{
-	DEBUG("init_flag: %d, time_stamp_pointed: %s\n", init_flag, time_stamp_pointed);
-	
-	int ret = -1;
-	char sqlite_cmd[256+128];
-	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = push_recv_manage_cb;
-	
-	char time_stamp[32];
-	memset(time_stamp, 0, sizeof(time_stamp));
-	if(NULL==time_stamp_pointed || 0==strlen(time_stamp_pointed)){
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select datetime('now','localtime');");
-		if(-1==str_sqlite_read(time_stamp,sizeof(time_stamp),sqlite_cmd)){
-			DEBUG("can not process push regist\n");
-			return -1;
-		}
-	}
-	else
-		snprintf(time_stamp,sizeof(time_stamp),"%s",time_stamp_pointed);
-	
-	pthread_mutex_lock(&mtx_push_monitor);
-	
-	if(1==init_flag){
-/*
- ¿ª»ú³õÊ¼»¯Ê±£¬ÏÈÉ¾µôËùÓĞ¹ıÆÚµÄ½ÚÄ¿
-*/
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ProductDesc WHERE PushEndTime<'%s';", time_stamp);
-		sqlite_execute(sqlite_cmd);
-	}
-	
-	int flag_carrier = init_flag;
-	
-/*
- ÓÉÓÚÒ»¸öPublication¿ÉÄÜ´æÔÚÓÚ¶à¸öserviceÖĞ£¬Òò´ËĞèÒªÈ«²¿È¡³ö£¬ÔÚ»Øµ÷ÖĞ±éÀúÄÇĞ©ĞèÒª¾Ü¾øµÄpublicationÊÇ·ñÇ¡ºÃÒ²ÔÚĞèÒª½ÓÊÕÖ®ÁĞ¡£
- ËùÒÔ¶ÔFreshFlagµÄÅĞ¶ÏÒÆ¶¯µ½»Øµ÷ÖĞ½øĞĞ£¬±ÜÃâÆäÌõ¼şÔÚFreshFlagÖ®Íâ
-*/
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc WHERE PushStartTime<='%s' AND PushEndTime>'%s';", time_stamp,time_stamp);
-	
-	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
-/*
-»Øµ÷½áÊøÊ±£¬flag_carrierĞ¯´øÊÇ·ñÓĞ½ø¶È×¢²áµÄ±ê¼Ç£¬1±íÊ¾ÓĞ×¢²á£¬0±íÊ¾ÎŞ×¢²á¡£
-*/	
-	PRINTF("ret: %d, flag_carrier: %d\n", ret,flag_carrier);
-	if(ret>0 && flag_carrier>0){
-		prog_name_fill();
-		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE ProductDesc SET FreshFlag=0 WHERE PushStartTime<='%s' AND PushEndTime>'%s' AND FreshFlag=1;", time_stamp,time_stamp);
-		sqlite_execute(sqlite_cmd);
-
-#if 0
-		if(0==init_flag){
-			pthread_cond_signal(&cond_push_monitor);
-			DEBUG("refresh monitor arrary immediatly\n");
-		}
-#endif
-
-	}
-	
-	pthread_mutex_unlock(&mtx_push_monitor);
-
-	return ret;
-}
-
-#else
-
-
 int delete_publication_from_monitor(char *PublicationID, char *ProductID)
 {
 	int i = 0;
@@ -1570,15 +1345,10 @@ int delete_publication_from_monitor(char *PublicationID, char *ProductID)
 }
 
 
-// ·´×¢²áÉÏÒ»¸ö²¥·¢µ¥ÖĞÒÑ´¦ÓÚ¼à¿Ø×´Ì¬µÄ½ÚÄ¿£¬Ô¤±¸Òª×¢²áĞÂ²¥·¢µ¥ÖĞµÄ½ÚÄ¿
 int prog_monitor_reset(void)
 {
 	int i = 0;
 	int ret = 0;
-	int rubbish_prog_cnt = 0;
-	
-	char sqlite_cmd[8192];
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM Publication WHERE");
 	
 	for(i=0; i<PROGS_NUM; i++)
 	{
@@ -1612,27 +1382,7 @@ int prog_monitor_reset(void)
 				if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=5 && s_prgs[i].total>1073741824LL)
 				{
 					DEBUG("cur=%lld, total=%lld, wanting %d%%\n", s_prgs[i].cur, s_prgs[i].total, wanting_percent);
-					
 				}
-				
-#if 0
-				//else
-				{
-					char reject_uri[512];
-					snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),s_prgs[i].uri);
-					if(0==remove_force(reject_uri)){
-						DEBUG("remove(%s) finished\n", reject_uri);
-						if(0==rubbish_prog_cnt)
-							snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'",s_prgs[i].id);
-						else
-							snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR PublicationID='%s'",s_prgs[i].id);
-						
-						rubbish_prog_cnt++;
-					}
-					else
-						DEBUG("remove(%s) FAILED\n", reject_uri);
-				}
-#endif
 			}
 			
 			DEBUG("unregist from push[%d]:%s(%s) in %s %s %s %lld\n",
@@ -1656,10 +1406,6 @@ int prog_monitor_reset(void)
 			memset(s_prgs[i].publication_id, 0, sizeof(s_prgs[i].publication_id));
 			memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
 		}
-	}
-	if(rubbish_prog_cnt>0){
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
-		sqlite_execute(sqlite_cmd);
 	}
 	
 	s_push_monitor_active = 0;
@@ -1751,6 +1497,11 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	return 0;
 }
 
+unsigned long long should_clean_M_get()
+{
+	return s_should_clean_M;
+}
+
 /*
  return 0: disc cleaning finish
  		-1: can not clean, some err
@@ -1769,20 +1520,17 @@ int disk_space_check()
 	else{
 		DEBUG("HardDisc %s enable, total_size: %llu, free_size: %llu\n",push_dir_get(),tt_size,free_size);
 		unsigned long long free_size_M = (free_size >> 20);
-		unsigned long long download_M = (recv_totalsize_sum_get() >> 20);
 		
-		if(download_M<DOWNLOAD_ONCE_M_MIN){
-			DEBUG("check download %llu Mbytes is smaller than %llu, reset it as %llu\n",download_M,DOWNLOAD_ONCE_M_MIN,DOWNLOAD_ONCE_M_MIN);
-			download_M = DOWNLOAD_ONCE_M_MIN;
-		}
+		DEBUG("has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get()));
 		
-		if(free_size_M<=(HDFOREWARNING_M_DFT+download_M)){
-			DEBUG("should clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+download_M));
+		if(free_size_M<=(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get())){
+			s_should_clean_M = HDFOREWARNING_M_DFT + recv_totalsize_sum_M_get() - free_size_M;
+			DEBUG("should cleaning hd %llu MiB...\n",s_should_clean_M);
 			disk_manage(NULL,NULL);
 			ret = 0;
 		}
 		else{
-			DEBUG("no need to clean hd, has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+download_M));
+			DEBUG("no need to clean hd\n");
 			ret = 1;
 		}
 	}
@@ -1802,7 +1550,6 @@ int push_recv_manage_refresh()
 	
 	pthread_mutex_lock(&mtx_push_monitor);
 	
-	prog_monitor_reset();
 	s_dvbpush_info_refresh_flag = 1;
 	
 	int flag_carrier = 0;
@@ -1811,7 +1558,7 @@ int push_recv_manage_refresh()
  ÓÉÓÚÒ»¸öPublication¿ÉÄÜ´æÔÚÓÚ¶à¸öserviceÖĞ£¬Òò´ËĞèÒªÈ«²¿È¡³ö£¬ÔÚ»Øµ÷ÖĞ±éÀúÄÇĞ©ĞèÒª¾Ü¾øµÄpublicationÊÇ·ñÇ¡ºÃÒ²ÔÚĞèÒª½ÓÊÕÖ®ÁĞ¡£
  ËùÒÔ¶ÔFreshFlagµÄÅĞ¶ÏÒÆ¶¯µ½»Øµ÷ÖĞ½øĞĞ£¬±ÜÃâÆäÌõ¼şÔÚFreshFlagÖ®Íâ
 */
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc ORDER BY ProductDescID;");
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc;");
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*
@@ -1826,7 +1573,6 @@ int push_recv_manage_refresh()
 
 	return ret;
 }
-#endif
 
 static int info_xml_refresh_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {

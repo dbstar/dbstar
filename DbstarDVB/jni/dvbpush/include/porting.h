@@ -40,6 +40,7 @@ int pushinfo_reset(void);
 int smartcard_entitleinfo_refresh();
 int pushdir_usable();
 int user_idle_status_get();
-int reboot_timestamp_get();
+time_t reboot_timestamp_get();
+int reboot_timestamp_set(time_t time_stamp_s);
 
 #endif

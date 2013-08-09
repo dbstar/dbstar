@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +19,7 @@
 #include "libinclude/am_dmx.h"
 #include "libinclude/am_fend.h"
 #include "libinclude/am_util.h"
+#include "am_dvr.h"
 
 int loader_dsc_fid;
 int tdt_dsc_fid = -1;;
@@ -35,10 +35,11 @@ static unsigned char software_version[4];
 extern int TC_loader_get_push_state(void);
 extern int TC_loader_get_push_buf_size(void);
 extern unsigned char * TC_loader_get_push_buf_pointer(void);
-static void mpe_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data);
+//static void mpe_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data);
 extern int sha_verify(FILE *f,  uint8_t*sha0, size_t signed_len);
 extern int TC_loader_to_push_order(int ord);
 //int TC_loader_filter_handle(int aof);
+extern unsigned int tc_crc32(const unsigned char *buf, int len);
 
 #define UPGRADEFILE_ALL "/tmp/upgrade.zip"
 #define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
@@ -47,10 +48,48 @@ extern int TC_loader_to_push_order(int ord);
 
 #define FEND_DEV_NO 0
 #define DMX_DEV_NO 0
+#define DVR_DEV_NO 0
 
+typedef struct
+{
+	int id;
+	pthread_t thread;
+	int running;
+}DVRFeedData;
+
+static DVRFeedData data_threads;
 // tuner api
 static int tuner_inited = 0;
-unsigned short chanFilter[MAX_CHAN_FILTER];
+static int feedpush_started = 0;
+
+int data_stream_status_str_get(char *buf, unsigned int size)
+{
+    fe_status_t status;
+
+    if(NULL==buf || 0==size){
+        DEBUG("invalid args\n");
+        return -1;
+    }
+
+    status = 0;
+    if (tuner_inited == 0) 
+    {
+        snprintf(buf,size,"%s","0");
+        return 0;
+    }
+    AM_FEND_GetStatus(FEND_DEV_NO, &status);
+DEBUG("GET TUNER STATUS [%x]\n",status);
+    if (/*FE_HAS_LOCK*/0x1f == status)
+    {
+        snprintf(buf,size,"%s","1");
+DEBUG("GET TUNER STATUS locked[%x]\n",status);
+    }
+    else
+        snprintf(buf,size,"%s","0");
+
+    return 0;
+       
+}
 
 static void fend_cb(int dev_no, struct dvb_frontend_event *evt, void *user_data)
 {
@@ -59,28 +98,35 @@ static void fend_cb(int dev_no, struct dvb_frontend_event *evt, void *user_data)
 	struct dvb_frontend_info info;
 
 	AM_FEND_GetInfo(dev_no, &info);
-	printf("cb status: 0x%x\n", evt->status);
+	DEBUG("cb status: 0x%x\n", evt->status);
 	
 	AM_FEND_GetStatus(dev_no, &status);
 	AM_FEND_GetBER(dev_no, &ber);
 	AM_FEND_GetSNR(dev_no, &snr);
 	AM_FEND_GetStrength(dev_no, &strength);
 	
-	printf("cb status: 0x%0x ber:%d snr:%d, strength:%d\n", status, ber, snr, strength);
+	DEBUG("cb status: 0x%0x ber:%d snr:%d, strength:%d\n", status, ber, snr, strength);
 }
 
 int tuner_init(int freq, int symbolrate, int voltage)
 {
 	AM_FEND_OpenPara_t fpara;
 	AM_DMX_OpenPara_t para;
+	AM_DVR_OpenPara_t dpara;
 	struct dvb_frontend_parameters p;
 	fe_status_t status;
-	
+DEBUG("in tuner init frq[%d] sbr[%d] v[%d] tinit[%d]\n",freq,symbolrate, voltage,tuner_inited);	
 	if((freq)&&(tuner_inited==0))
 	{
 		memset(&para, 0, sizeof(para));
 		AM_TRY(AM_DMX_Open(DMX_DEV_NO, &para));
 	    AM_DMX_SetSource(DMX_DEV_NO, AM_DMX_SRC_TS2);
+	    
+	    memset(&dpara, 0, sizeof(dpara));
+		AM_TRY(AM_DVR_Open(DVR_DEV_NO, &dpara));
+		AM_DVR_SetBufferSize(DVR_DEV_NO,0x800000);
+		AM_DVR_SetSource(DVR_DEV_NO, DMX_DEV_NO);
+		data_threads.running = 0;
 		
 		memset(&fpara, 0, sizeof(fpara));
 		fpara.mode = AM_FEND_DEMOD_DVBS;
@@ -94,7 +140,7 @@ int tuner_init(int freq, int symbolrate, int voltage)
 		p.u.qpsk.fec_inner = FEC_AUTO;
 		
 		AM_TRY(AM_FEND_Lock(FEND_DEV_NO, &p, &status));
-		printf("lock status: 0x%x\n", status);
+DEBUG("tuner lock status: 0x%x\n", status);
 		
 		tuner_inited = 1;
 		return status;
@@ -110,6 +156,7 @@ int tuner_uninit()
 {
 	if (tuner_inited)
     {
+    	AM_DVR_Close(DVR_DEV_NO);
 	    AM_DMX_Close(DMX_DEV_NO);
 	    AM_FEND_Close(FEND_DEV_NO);
 	    tuner_inited = 0;
@@ -121,7 +168,7 @@ int TC_free_filter(int fid)
 {
 	AM_TRY(AM_DMX_StopFilter(DMX_DEV_NO, fid));
 	AM_TRY(AM_DMX_FreeFilter(DMX_DEV_NO, fid));
-	DEBUG("free fid: %d\n", fid);
+DEBUG("TC free filter fid=[%d]\n", fid);
         return 0;
 }
 
@@ -141,42 +188,118 @@ int TC_alloc_filter(unsigned short pid, Filter_param* sparam, AM_DMX_DataCb hdle
 	    param.filter.mask[i] = sparam->mask[i];
 	    param.filter.mode[i] = sparam->mode[i];
 	}
-	param.flags = DMX_CHECK_CRC;
+	//param.flags = DMX_CHECK_CRC;
 	AM_TRY(AM_DMX_SetSecFilter(DMX_DEV_NO, fid, &param));
 	AM_TRY(AM_DMX_SetBufferSize(DMX_DEV_NO, fid, 32*1024));
 	AM_TRY(AM_DMX_StartFilter(DMX_DEV_NO, fid));
-        return 0;
+    return fid;
 }
 
-int alloc_filter(unsigned short pid, char pro)
+extern int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read);
+static void* dvr_data_thread(void *arg)
 {
-	Filter_param param;
-	
-	DEBUG("pid=%d|0x%x, pro=%d\n", pid, pid, pro);
-	
-	memset(&param,0,sizeof(param));
-	param.filter[0] = 0x3e;
-	param.mask[0] = 0xff;
-	
-	return TC_alloc_filter(pid, &param, mpe_section_handle, NULL, pro);
-}
+	DVRFeedData *dd = (DVRFeedData*)arg;
+	int cnt,pri,tp,size;
+	uint8_t buf[MULTI_BUF_SIZE];
+    int p_write,p_read,p_free,left;
 
-int free_filter(unsigned short pid)
-{
-	int i;
-	for(i=0; i < MAX_CHAN_FILTER; i++)
+	pri = 0;
+	p_write = 0;
+	p_read = 0;
+    p_free = MULTI_BUF_SIZE; 
+
+	while (dd->running)
 	{
-		if(pid==chanFilter[i])
+reread:		//cnt = AM_DVR_Read(dd->id, buf+p_write, p_free,1000);
+               cnt = AM_DVR_Read(dd->id, buf+p_write,p_free,1000);
+               //printf("READ DATA LEN = [%d]\n",cnt);
+
+pri++;
+if(pri == 100)
+{
+pri = 0;
+printf("dvr read 100 packets len[%d],pw[%d],pr[%d]\n",cnt,p_write,p_read);
+}
+		if (cnt <= 0)
 		{
-			TC_free_filter(i);
-			chanFilter[i] = 0xffff;
-			return 0;
+			DEBUG("No data available from DVR%d cnt=[%d]\n", dd->id,cnt);
+                        //AM_DEBUG(1,"IN No data available from DVR%d\n", dd->id);
+			usleep(20*1000);
+			continue;
 		}
+		
+		p_write += cnt;
+        if (p_write >= MULTI_BUF_SIZE) p_write = 0;
+		if(p_write >= p_read)
+            left = p_write - p_read;
+        else
+            left = MULTI_BUF_SIZE - p_read + p_write;
+
+         while (left>1880)
+         {
+             parse_ts_packet(buf,p_write,&p_read); // make sure 'p_buf' is not NULL
+             if(p_write >= p_read)
+                 left = p_write - p_read;
+             else
+                 left = MULTI_BUF_SIZE - p_read + p_write;
+         }
+
+         if(p_read >= p_write)
+             p_free = p_read - p_write;
+         else
+             p_free = MULTI_BUF_SIZE - p_write;
 	}
+
+	return NULL;
+}
 	
+
+static void start_data_thread()
+{
+	//DVRData *dd = &data_threads[dev_no];
+	
+	if (data_threads.running)
+		return;
+		
+DEBUG("start data thread ....\n");
+	data_threads.running = 1;
+	pthread_create(&data_threads.thread, NULL, dvr_data_thread, &data_threads);
+}
+
+static void stop_data_thread()
+{
+	if (data_threads.running == 0)
+		return;
+	data_threads.running = 0;
+	pthread_join(data_threads.thread, NULL);
+	DEBUG("Data thread for DVR0 has exit\n");
+}
+
+int start_feedpush(AM_DVR_StartRecPara_t *spara)
+{
+	if(feedpush_started)
+		return -1;
+    if (AM_DVR_StartRecord(DVR_DEV_NO, spara) == AM_SUCCESS)
+	{
+DEBUG("begin record ....\n");
+	    start_data_thread();
+	    feedpush_started = 1;
+	    return 0;
+	}
 	return -1;
 }
 
+int stop_feedpush()
+{
+	if (feedpush_started)
+	{
+	    AM_DVR_StopRecord(DVR_DEV_NO);
+	    stop_data_thread();
+        feedpush_started = 0;
+        return 0;
+    }
+    return -1;
+}
 //tuner api end 
 //extern  int test_tc();
 int upgradefile_clear()
@@ -323,13 +446,6 @@ reLoader:
 	return NULL;
 }
 
-
-extern int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len);
-static void mpe_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data)
-{
-    send_mpe_sec_to_push_fifo((uint8_t *)data, len);
-}
-
 static void loader_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data)
 {
 	static unsigned char startWrite = 0, getMaxSeq = 0, total_subone = 0, total_cycle = 0;
@@ -354,7 +470,13 @@ static void loader_section_handle(int dev_no, int fid, const unsigned char *data
 	datap = (unsigned char *)data+4;
 	if (getMaxSeq==0)
 	{
-        if (datap[2]==datap[3])  //last section num = current section num
+                if (tc_crc32(data,len+12) )
+                {
+                        PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+                        return;
+                }
+
+		if (datap[2]==datap[3])  //last section num = current section num
 		{
 			if(datap[0]==datap[1])//last part num = current part num seq >= 3*0x100+0xad)
 			{
@@ -385,7 +507,12 @@ static void loader_section_handle(int dev_no, int fid, const unsigned char *data
 		{
 			if(recv_mark[seq]==0)
 			{
-    	    	recv_mark[seq]=1;
+    	    	                if (tc_crc32(data,len+12) )
+    	    	                {
+    	    		            PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+    	    		            return;
+    	    	                }
+				recv_mark[seq]=1;
 				total_loader++;
 				
 				if(-2==s_first_package_flag){
@@ -533,6 +660,13 @@ DEBUG("monit0 this package:seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=
 	}
 	else
 	{
+// add new
+                if (tc_crc32(data,len+12) )
+                {
+                        PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+                        return;
+                }
+//add end
 		if ((datap[0]==datap[1])&&(datap[2]==datap[3]))  //donot delete, for this section if not the full section,section size is not correct
 			return;
 		if (maxSeq == -1)
@@ -581,6 +715,17 @@ DEBUG("monit0 this package:seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=
 		}
 		DEBUG("maxSeq=%d, lastSeq=%d, seq=%d, startWrite=%d, totalLen=%d, total_loader=%d\n", maxSeq, lastSeq, seq, startWrite, totalLen, total_loader);
 	}
+}
+
+void root_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data)
+{
+  if (tc_crc32(data,len))
+  {
+       DEBUG("Crc error fid[%d] len[%d]!!!!!\n",fid,len);
+  }
+  DEBUG("root_section_handle GOT A GOOD MPE PACKAGE FID[%d] len[%d]\n",fid,len);
+  send_mpe_sec_to_push_fifo((uint8_t *)data, len);
+
 }
 
 static char s_time_sync_2_ui[128];
@@ -690,6 +835,12 @@ void ca_section_handle(int dev_no, int fid, const unsigned char *data, int len, 
 	tmp = data[5]&0x3e;
 	if (version != tmp)
 	{
+		if (tc_crc32(data,len))
+		{
+			PRINTF("CA table  error !!!!!!!!!!!!!!!!!!!!\n");
+			return;
+		}
+
 		version = tmp;
 		pid = ((data[12]&0x1f)<<8)|data[13];
 		if (pid != emmpid)
@@ -857,6 +1008,13 @@ void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, i
 	}
 	else
 		datap += 4;
+
+        if (tc_crc32(data,len))  //verify the desc section data
+        {
+                INTERMITTENT_PRINT("loader des error !!!!!!!!!!!!!!!!!!!!\n");
+                return;
+        }
+
 	
 	INTERMITTENT_PRINT("loader_dsc_fid: %d=%x\n", loader_dsc_fid,loader_dsc_fid);
 	s_print_cnt = 0;
@@ -889,12 +1047,3 @@ void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, i
 	//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",g_loaderInfo.file_type,g_loaderInfo.img_len,g_loaderInfo.download_type);
 }
 
-extern void dmx_filter_init(void);
-void chanFilterInit(void)
-{
-    int i;
-    
-    for (i=0;i<	MAX_CHAN_FILTER;i++)
-        chanFilter[i]=0xffff;
-    dmx_filter_init();
-}

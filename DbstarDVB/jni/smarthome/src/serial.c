@@ -40,7 +40,7 @@ static int serial_reset()
 #if 0
 	g_serialfd = UART0_Open("/dev/ttyUSB0"); //pc虚拟机linux测试，使用usb转串口，不经过开发板，直接发往串口设备
 #else
-	g_serialfd = UART0_Open("/dev/ttyS3"); //打开串口，返回文件描述符
+	g_serialfd = UART0_Open("/dev/ttyS1"); //打开串口，返回文件描述符
 #endif
 
 	if(g_serialfd<0){
