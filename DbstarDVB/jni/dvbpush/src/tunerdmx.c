@@ -47,8 +47,8 @@ extern unsigned int tc_crc32(const unsigned char *buf, int len);
 #define LOADER_PACKAGE_SIZE		(4084)
 
 #define FEND_DEV_NO 0
-#define DMX_DEV_NO 0
-#define DVR_DEV_NO 0
+#define DMX_DEV_NO 2
+#define DVR_DEV_NO 2
 
 typedef struct
 {
@@ -125,8 +125,9 @@ DEBUG("in tuner init frq[%d] sbr[%d] v[%d] tinit[%d]\n",freq,symbolrate, voltage
 	    memset(&dpara, 0, sizeof(dpara));
 		AM_TRY(AM_DVR_Open(DVR_DEV_NO, &dpara));
 		AM_DVR_SetBufferSize(DVR_DEV_NO,0x800000);
-		AM_DVR_SetSource(DVR_DEV_NO, DMX_DEV_NO);
+		AM_DVR_SetSource(DVR_DEV_NO, AM_DVR_SRC_ASYNC_FIFO0);
 		data_threads.running = 0;
+                data_threads.id = DVR_DEV_NO;
 		
 		memset(&fpara, 0, sizeof(fpara));
 		fpara.mode = AM_FEND_DEMOD_DVBS;
@@ -211,14 +212,14 @@ static void* dvr_data_thread(void *arg)
 	while (dd->running)
 	{
 reread:		//cnt = AM_DVR_Read(dd->id, buf+p_write, p_free,1000);
-               cnt = AM_DVR_Read(dd->id, buf+p_write,p_free,1000);
+               cnt = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, buf+p_write,p_free,1000);
                //printf("READ DATA LEN = [%d]\n",cnt);
 
 pri++;
-if(pri == 100)
+if(pri == 1000)
 {
 pri = 0;
-printf("dvr read 100 packets len[%d],pw[%d],pr[%d]\n",cnt,p_write,p_read);
+printf("dvr read 1000 packets len[%d],pw[%d],pr[%d]\n",cnt,p_write,p_read);
 }
 		if (cnt <= 0)
 		{
