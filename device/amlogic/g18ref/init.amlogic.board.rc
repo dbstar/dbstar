@@ -52,7 +52,7 @@ on property:init.svc.bootanim=stopped
 #    write /sys/class/aml_mod/mod_off uart0
     write /sys/class/aml_mod/mod_off uart1
     write /sys/class/aml_mod/mod_off uart2
-    write /sys/class/aml_mod/mod_off uart3
+#    write /sys/class/aml_mod/mod_off uart3
 #    write /sys/class/aml_mod/mod_off venc
 #   write /sys/class/aml_mod/mod_off hdmi
     write /sys/class/aml_mod/mod_off bt656
