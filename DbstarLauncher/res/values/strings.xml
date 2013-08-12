@@ -343,8 +343,8 @@
     <string name="demo_str_11">123456789</string>
     <string name="demo_str_12">北京市丰台区航丰路1号时代财富大厦28层</string>
     
-    <string name="demo_str_r1">100</string>
-    <string name="demo_str_r2">200</string>
+    <string name="demo_str_r1">240</string>
+    <string name="demo_str_r2">360</string>
     
     <string name="head_step_level">分档</string>
     <string name="head_price_interval">用电量水平（度/户）</string>
