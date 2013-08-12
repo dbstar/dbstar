@@ -35,7 +35,7 @@ public class DrawPie extends DrawBase{
         if(mColors.size() > count){
             return mColors;
         }
-        
+        mColors.clear();
         mColors.add(Color.RED);
         mColors.add(Color.BLUE);
         mColors.add(Color.CYAN);
@@ -91,8 +91,6 @@ public class DrawPie extends DrawBase{
 		}
 		else{
 		    angle=360/total;
-		    mColors.remove(mColors.size() -1);
-            mColors.add(Color.GREEN);
 		}
 		
 //		length = length - 1;

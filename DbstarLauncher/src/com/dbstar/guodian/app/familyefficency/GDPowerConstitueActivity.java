@@ -2,6 +2,8 @@ package com.dbstar.guodian.app.familyefficency;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import android.content.Context;
@@ -149,6 +151,8 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
             mPieView.removeAllViews(); 
             return;
         }
+        
+        
         if(mPie == null){
             mPie = new DrawPie(this);
             mPie.setOriginPoint(0, 0);
@@ -728,8 +732,24 @@ public class GDPowerConstitueActivity extends GDSmartActivity{
                 e.printStackTrace();
             }
         }
+        
+        insertSort(itemInfoList);
         return  itemInfoList;
     }
+    
+    private void insertSort(List<ListItemInfo> data){
+        if(data == null)
+            return;
+        Collections.sort(data, new Comparator<ListItemInfo>() {
+            @Override
+            public int compare(ListItemInfo lhs, ListItemInfo rhs) {
+                Float l = Float.parseFloat(lhs.powerPercent.substring(0, lhs.powerPercent.length() -1));
+                Float r = Float.parseFloat(rhs.powerPercent.substring(0, rhs.powerPercent.length() -1));
+                return r.compareTo(l);
+            }
+        });
+        
+        }
     class  ListItemInfo{
         int color;
         String dataType;
