@@ -541,6 +541,7 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
                           CDCA_U16*      pwReplyLen)
 {
 	//int i;
+#if 0
 	int j;
 	#define TMP_STR_SIZE	4096
 	char tmp_str[TMP_STR_SIZE];
@@ -549,10 +550,12 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
 	for(j=0;j<wCommandLen;j++)
 		snprintf(tmp_str+strlen(tmp_str),TMP_STR_SIZE-strlen(tmp_str),"0x%x\t",pbyCommand[j]);
 	LOGD("smart card command[%d]: %s\n",wCommandLen,tmp_str);
-	
+#endif
+
 	//LOGD("ooooooooooooori send len [%d][%d]--[%d][%d]\n",wCommandLen,*pwReplyLen,pbyCommand[0],pbyCommand[1]);
 	//for (i = 0; i < 3; i++) {
 		if (AM_SMC_readwrite(pbyCommand, (int)wCommandLen,  pbyReply, (int *) pwReplyLen) == AM_SUCCESS) {
+#if 0
 			{
 				memset(tmp_str,0,TMP_STR_SIZE);
 				for (j=0;j<*pwReplyLen;j++)
@@ -560,6 +563,7 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
 				LOGD("smart card reply[%d]: %s\n",*pwReplyLen,tmp_str);
 			}
 			LOGD("AM_SMC_readwrite successful yyyyyyyyyyyyyyyyyy\n\n\n");
+#endif
 			return CDCA_TRUE;
 		}
 	//}
