@@ -78,7 +78,8 @@ BOARD_USES_USB_PM := true
 #
 #########################################################################
 
-WIFI_MODULE := rtl8192cu
+#WIFI_MODULE := rtl8192cu
+WIFI_MODULE := rtl8188eu
 include device/amlogic/common/wifi.mk
 
 # Change this to match target country
