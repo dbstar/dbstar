@@ -181,7 +181,7 @@
     <string name="mypower_text_smartsocket_data">智能插座数据</string>
     <string name="mypower_text_devicepowercost">所控电器用电费用</string>
     <string name="mypower_text_devicepoweramount">所控电器用电量</string>
-    <string name="mypower_text_powerprice">元/度</string>
+    <string name="mypower_text_powerprice">度/月</string>
     <string name="mypower_text_brackets_yuan">(元)</string>
     <string name="mypower_text_brackets_month">(月)</string>
     <string name="load_data_is_null">没有数据</string>
