@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	>
+
+	<TextView
+	android:id="@+id/BroadcastTest"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/BroadcastTest"
+	android:gravity="center_horizontal"
+	android:textSize="18sp"
+	/>
+	<TextView
+	android:id="@+id/Info"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:text="@string/BroadcastTest"
+	android:gravity="left" android:paddingLeft="100px"
+	android:textSize="18sp"
+	/>
+</LinearLayout>
