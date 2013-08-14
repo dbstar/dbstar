@@ -4,25 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import android.media.JetPlayer;
-import android.util.Log;
-
-import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.PPCConstitute;
-import com.dbstar.guodian.data.PowerPanelData;
-import com.dbstar.guodian.data.SPCConstitute;
 import com.dbstar.guodian.data.StepPowerConsumptionTrack;
 import com.dbstar.guodian.data.StepPowerConsumptionTrack.DateStepPower;
-import com.dbstar.guodian.data.StepPowerConsumptionTrack.StepPower;;
+import com.dbstar.guodian.data.StepPowerConsumptionTrack.StepPower;
 
 public class StepPowerConsumptionTrackDataHandler {
-
-	private static final String TAG = "StepPowerConsumptionTrackDataHandler";
 
 	public static StepPowerConsumptionTrack parse(String data) {
 	    String jsonData = data.substring(1, data.length() - 1);

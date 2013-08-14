@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -35,7 +33,6 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,9 +41,10 @@ import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.AddTimedTaskResponse;
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.ResultData;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.data.TimedTask;
-import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
 import com.dbstar.util.ToastUtil;
@@ -91,7 +89,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     private LinearLayout mTimedTaskDetailPage;
     private List<TimedTask []> mPageTimedTasks;
     private List<TimedTask> mListTimedTask;
-    private List<RoomEletrical> mAllElectricalList;
+    private List<RoomElectrical> mAllElectricalList;
     private List<String> mNoTaskElectricalList;
     private List<Integer> mPeriodList;
     private ArrayList<String> mEleSpinnerData;
@@ -159,7 +157,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mCheckBoxPeriod2 = (CheckBox) findViewById(R.id.cb_period_2);
         mCheckBoxPeriod3 = (CheckBox) findViewById(R.id.cb_period_3);
         mCheckBoxPeriod4 = (CheckBox) findViewById(R.id.cb_period_4);
-        mCheckBoxPeriod5= (CheckBox) findViewById(R.id.cb_period_5);
+        mCheckBoxPeriod5 = (CheckBox) findViewById(R.id.cb_period_5);
         mCheckBoxPeriod6 = (CheckBox) findViewById(R.id.cb_period_6);
         mCheckBoxPeriod7 = (CheckBox) findViewById(R.id.cb_period_7);
         mButtonSave = (Button) findViewById(R.id.save);
@@ -419,7 +417,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                         mButtonSwitch.setBackgroundResource(R.drawable.smart_home_timed_task_switch_off_selecter);
                         mIsOpenedSwitch = false;
                     }
-                    Date date =  DateUtil.getDateFromStr(task.Time, DateUtil.DateFormat6);
+                    Date date =  DateUtil.getDateFromStr(task.Time, DateUtil.DateFormat7);
                     if(date != null){
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTime(date);
@@ -431,13 +429,26 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                     
                     mButtonSave.setVisibility(View.INVISIBLE);
                     String frequecy = task.Frequency;
-                    String [] fre = frequecy.split("[$]");
-                   int [] list = new int [7];
-                    for(int i = 1 ; i< fre.length;i++){
-                        list[Integer.parseInt(fre[i])-1] = Integer.parseInt(fre[i]);
+                    int [] list = new int [7];
+                    if("o".equals(frequecy)){
+                        for(int i = 0;i<list.length;i ++){
+                            list[i] = 0;
+                        }
+                    }else if("e".equals(frequecy)){
+                        for(int i = 0;i<list.length;i ++){
+                            list[i] = i+1;
+                        }
+                    }else{
+                        String [] fre = frequecy.split("[$]");
+                        for(int i = 1 ; i< fre.length;i++){
+                            if(i < list.length){
+                                if((Integer.parseInt(fre[i])-1) < list.length)
+                                    list[Integer.parseInt(fre[i])-1] = Integer.parseInt(fre[i]);
+                            }
+                        }
                     }
                     
-                  for(int i =  0;i<list.length ; i++){
+                    for(int i =  0;i<list.length ; i++){
                       int period = list[i];
                       boolean checked = period == 0 ? false:true;
                       if(i ==0){
@@ -469,8 +480,12 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view,
                     int position, long id) {
-                if(position != 0)
-                        dialog();
+                if(position == 0 && mPageNumberModel == 0){
+                    
+                }
+                else{
+                    dialog();
+                }
                 return true;
             }
         });
@@ -517,6 +532,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mTimedTaskDetailPage.setVisibility(View.VISIBLE);
         mSpinnerEle.setSelection(0);
         mButtonSwitch.setBackgroundResource(R.drawable.smart_home_timed_task_switch_on_selecter);
+        mIsOpenedSwitch = true;
         mDefauteHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         mDefauteMinute = Calendar.getInstance().get(Calendar.MINUTE);
         mEditTextMinute.setText(getTimeString(mDefauteMinute));
@@ -528,6 +544,8 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mCheckBoxPeriod5.setChecked(false);
         mCheckBoxPeriod6.setChecked(false);
         mCheckBoxPeriod7.setChecked(false);
+        if(mPeriodList != null && !mPeriodList.isEmpty())
+            mPeriodList.clear();
         mHandler.post(new Runnable() {
             
             @Override
@@ -549,35 +567,37 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     
     @Override
     public void notifyEvent(int type, Object event) {
-        EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+        super.notifyEvent(type, event);
         if(EventData.EVENT_GUODIAN_DATA == type){
-            if(GDConstract.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+            if(GDRequestType.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
                requestAllEleList();
                List<TimedTask> list = (List<TimedTask>) guodianEvent.Data;
                if(list != null){
                    mListTimedTask.addAll(list);
                    initTimedTaskList(mListTimedTask);
                }
-            }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 mIsLoadBackAllEle = true;
                 mIsLoadAllEleSuccess = true;
-                mAllElectricalList = (List<RoomEletrical>) guodianEvent.Data;
+                mAllElectricalList = (List<RoomElectrical>) guodianEvent.Data;
                 if(mListTimedTask.size() > 1 && mAllElectricalList != null && mAllElectricalList.size() > 0){
                     mTimedTaskAdapter.notifyDataSetChanged();
                 }
                 if(mEleSpinnerData.size() == 1){
                     constructeSpinnerData();
                 }
-            }else if(GDConstract.DATATYPE_NO_TASK_ELCTRICAL_LIST == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_NO_TASK_ELCTRICAL_LIST == guodianEvent.Type){
 //                mNoTaskElectricalList = (List<String>) guodianEvent.Data;
 //                if(mEleSpinnerData.size() == 1 && mAllElectricalList != null){
 //                    constructeSpinnerData();
 //                }
-            }else if(GDConstract.DATATYPE_ADD_TIMED_TASK == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_ADD_TIMED_TASK == guodianEvent.Type){
                 AddTimedTaskResponse response = (AddTimedTaskResponse) guodianEvent.Data;
                 if(response != null){
                     if(EXECUTE_SUCCESS.equals(response.Result)){
-                        ToastUtil.showToast(this, R.string.family_text_add_timed_success);
+                        showNotifyMessage(R.string.family_text_add_timed_success);
+                        //ToastUtil.showToast(this, R.string.family_text_add_timed_success);
                         mButtonSave.setVisibility(View.INVISIBLE);
                         mCacheTask.TimedTaskGuid = response.TimedTaskGuid;
                         mListTimedTask.add(mCacheTask);
@@ -588,18 +608,21 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                         mTimedTaskAdapter.notifyDataSetChanged();
                         mListViewTask.setSelection(tasks.length -1);
                     }else{
-                        ToastUtil.showToast(this,  getString( R.string.family_text_add_timed_fail) + response.Exception + " ," + response.Reason );
+                        showErrorMsg(R.string.family_text_add_timed_fail);
+                        //ToastUtil.showToast(this,  getString( R.string.family_text_add_timed_fail) + response.Exception + " ," + response.Reason );
                         mButtonSave.setVisibility(View.VISIBLE);
                     }
                 }else{
-                    ToastUtil.showToast(this,  getString( R.string.family_text_add_timed_fail)  );
+                    showErrorMsg(R.string.family_text_add_timed_fail);
+                    //ToastUtil.showToast(this,  getString( R.string.family_text_add_timed_fail)  );
                     mButtonSave.setVisibility(View.VISIBLE);
                 }
-            }else if(GDConstract.DATATYPE_MODIFY_TIMED_TASK == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_MODIFY_TIMED_TASK == guodianEvent.Type){
                 ResultData resultData = (ResultData) guodianEvent.Data;
                 if(resultData != null){
                     if(EXECUTE_SUCCESS.equals(resultData.Result)){
-                        ToastUtil.showToast(this, R.string.family_text_modify_timed_success);
+                        showNotifyMessage(R.string.family_text_modify_timed_success);
+                        //ToastUtil.showToast(this, R.string.family_text_modify_timed_success);
                         mButtonSave.setVisibility(View.INVISIBLE);
                         int index = mListViewTask.getSelectedItemPosition();
                         TimedTask selectedTimedTask =  mTimedTaskAdapter.getData()[index];
@@ -611,18 +634,21 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                         selectedTimedTask.Time = mCacheTask.Time;
                         selectedTimedTask.TypeId = mCacheTask.TypeId;
                     }else{
-                        ToastUtil.showToast(this,  getString( R.string.family_text_modify_timed_fail) + resultData.Exception + " ," + resultData.Reason );
+                        showErrorMsg(R.string.family_text_modify_timed_fail);
+                        //ToastUtil.showToast(this,  getString( R.string.family_text_modify_timed_fail) + resultData.Exception + " ," + resultData.Reason );
                         mButtonSave.setVisibility(View.VISIBLE);
                     }
                 }else{
-                    ToastUtil.showToast(this,  getString( R.string.family_text_modify_timed_fail));
+                    showErrorMsg(R.string.family_text_modify_timed_fail);
+                    //ToastUtil.showToast(this,  getString( R.string.family_text_modify_timed_fail));
                     mButtonSave.setVisibility(View.VISIBLE);
                 }
-            }else if(GDConstract.DATATYPE_DELETE_TIMED_TASK == guodianEvent.Type ){
+            }else if(GDRequestType.DATATYPE_DELETE_TIMED_TASK == guodianEvent.Type ){
                 ResultData resultData = (ResultData) guodianEvent.Data;
                 if(resultData != null){
                     if(EXECUTE_SUCCESS.equals(resultData.Result)){
-                        ToastUtil.showToast(this, R.string.family_text_delete_timed_task_success);
+                        showNotifyMessage(R.string.family_text_delete_timed_task_success);
+                        //ToastUtil.showToast(this, R.string.family_text_delete_timed_task_success);
                         int index = mListViewTask.getSelectedItemPosition();
                         TimedTask task = mTimedTaskAdapter.getData()[index];
                         mListTimedTask.remove(task);
@@ -647,12 +673,14 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                         mTimedTaskAdapter.notifyDataSetChanged();
                         mListViewTask.setSelection(selection);
                     }else{
-                        ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail) + resultData.Exception + " ," + resultData.Reason );
+                        showErrorMsg(R.string.family_text_delete_timed_task_fail);
+                        //ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail) + resultData.Exception + " ," + resultData.Reason );
                     }
                 }else{
-                    ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail));
+                    showErrorMsg(R.string.family_text_delete_timed_task_fail);
+                    //ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail));
                 }
-            }else if(GDConstract.DATATYPE_EXECUTE_TIMED_TASK == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_EXECUTE_TIMED_TASK == guodianEvent.Type){
                 ResultData resultData = (ResultData) guodianEvent.Data;
                 if(resultData != null){
                     if(EXECUTE_SUCCESS.equals(resultData.Result)){
@@ -664,60 +692,56 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
                         mTimedTaskAdapter.notifyDataSetChanged();
                     }else{
                         if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
-                            ToastUtil.showToast(this,  getString( R.string.family_text_open_timed_task_fail));
+                            showErrorMsg(R.string.family_text_open_timed_task_fail);
+                            //ToastUtil.showToast(this,  getString( R.string.family_text_open_timed_task_fail));
                         }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
-                            ToastUtil.showToast(this,  getString( R.string.family_text_close_timed_task_fail));
+                            showErrorMsg(R.string.family_text_open_timed_task_fail);
+                           // ToastUtil.showToast(this,  getString( R.string.family_text_close_timed_task_fail));
                         }
                     }
                 }else{
                     if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
-                        ToastUtil.showToast(this,  getString( R.string.family_text_open_timed_task_fail));
+                        showErrorMsg(R.string.family_text_close_timed_task_fail);
+                        //ToastUtil.showToast(this,  getString( R.string.family_text_open_timed_task_fail));
                     }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
-                        ToastUtil.showToast(this,  getString( R.string.family_text_close_timed_task_fail));
+                        showErrorMsg(R.string.family_text_close_timed_task_fail);
+                        //ToastUtil.showToast(this,  getString( R.string.family_text_close_timed_task_fail));
                     }
                 }
             }
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            if(GDConstract.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+            if(GDRequestType.DATATYPE_TIMED_TASK_LIST == guodianEvent.Type){
                 requestAllEleList();
                 mPageContent.setVisibility(View.VISIBLE);
-                handleErrorResponse(R.string.loading_error);
-                //ToastUtil.showToast(this, R.string.loading_error);
-            }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+                showErrorMsg(R.string.loading_error);
+            }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
                 mIsLoadBackAllEle = true;
                 mIsLoadAllEleSuccess = false;
-                handleErrorResponse(R.string.loading_electrical_list_fail);
-            }else if(GDConstract.DATATYPE_ADD_TIMED_TASK == guodianEvent.Type){
-                String erroString = (String) guodianEvent.Data;
-                handleErrorResponse(R.string.family_text_add_timed_fail);
-                //ToastUtil.showToast(this,getString( R.string.family_text_add_timed_fail));
-            }else if(GDConstract.DATATYPE_MODIFY_TIMED_TASK == guodianEvent.Type){
-                String erroString = (String) guodianEvent.Data;
-                handleErrorResponse(R.string.family_text_modify_timed_fail);
-                //ToastUtil.showToast(this,getString( R.string.family_text_modify_timed_fail));
-            }else if(GDConstract.DATATYPE_DELETE_TIMED_TASK == guodianEvent.Type ){
-                String erroString = (String) guodianEvent.Data;
-                handleErrorResponse(R.string.family_text_delete_timed_task_fail);
-               // ToastUtil.showToast(this,  getString( R.string.family_text_delete_timed_task_fail));
-            }else if(GDConstract.DATATYPE_EXECUTE_TIMED_TASK == guodianEvent.Type){
+                showErrorMsg(R.string.loading_electrical_list_fail);
+            }else if(GDRequestType.DATATYPE_ADD_TIMED_TASK == guodianEvent.Type){
+                showErrorMsg(R.string.family_text_add_timed_fail);
+            }else if(GDRequestType.DATATYPE_MODIFY_TIMED_TASK == guodianEvent.Type){
+                showErrorMsg(R.string.family_text_modify_timed_fail);
+            }else if(GDRequestType.DATATYPE_DELETE_TIMED_TASK == guodianEvent.Type ){
+                showErrorMsg(R.string.family_text_delete_timed_task_fail);
+            }else if(GDRequestType.DATATYPE_EXECUTE_TIMED_TASK == guodianEvent.Type){
                 if(TASK_STATU_CLOASED.equals(mCacheTask.State)){
-                    handleErrorResponse(R.string.family_text_open_timed_task_fail);
-                   // ToastUtil.showToast(this,  getString( R.string.family_text_open_timed_task_fail));
+                    showErrorMsg(R.string.family_text_open_timed_task_fail);
                 }else if(TASK_STATU_OPENED.equals(mCacheTask.State)){
-                    handleErrorResponse(R.string.family_text_close_timed_task_fail);
-                    //ToastUtil.showToast(this,  getString( R.string.family_text_close_timed_task_fail));
+                    showErrorMsg(R.string.family_text_close_timed_task_fail);
                 }
             }
             return;
         }
-        super.notifyEvent(type, event);
+        
     }
     
     private void constructeSpinnerData() {
         if(mAllElectricalList !=null){
-            RoomEletrical ele; 
-            for(RoomEletrical eletrical: mAllElectricalList){
+            RoomElectrical ele; 
+            for(RoomElectrical eletrical: mAllElectricalList){
                 mEleSpinnerData.add(eletrical.DeviceName);
             }
             mSpinerAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, mEleSpinnerData);
@@ -992,31 +1016,43 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
     private TimedTask mCacheTask;
     private void requestTaskList(){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m011f001";
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_TIMED_TASK_LIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGTaskMark, TASK_MARK_ALL);
-        requestData(GDConstract.DATATYPE_TIMED_TASK_LIST, params);
+        requestData(params);
     }
     private void requestAllEleList(){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.loading_electrical_list_fail);
+            showErrorMsg(R.string.loading_electrical_list_fail);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m001f010";
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_EQUMENTLIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
-        requestDataNotShowDialog(GDConstract.DATATYPE_EQUMENTLIST, params);
+        requestDataNotShowDialog(params);
     }
     private void requestNoTimedTaskElectricalList(){
         if(mCtrlSeridNo == null){
             ToastUtil.showToast(this, R.string.no_login);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m011f002";
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_NO_TASK_ELCTRICAL_LIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
-        requestData(GDConstract.DATATYPE_NO_TASK_ELCTRICAL_LIST, params);
+        requestData(params);
     }
     
     
@@ -1025,7 +1061,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         int picId = R.drawable.common_icon_equ_defult;
         if(mAllElectricalList == null)
             return picId;
-        for(RoomEletrical eletrical : mAllElectricalList){
+        for(RoomElectrical eletrical : mAllElectricalList){
             if(eletrical.DeviceGuid.equals(task.DeviceGuid)){
                 StringBuilder sb = new StringBuilder();
                 sb.append("common_icon_equ_");
@@ -1053,10 +1089,10 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
      */
     private void requestAddTask(){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        RequestParams params = new RequestParams();
         int spinnerSelectedPosition = mSpinnerEle.getSelectedItemPosition();
         if(spinnerSelectedPosition < 1){
             if(!mIsLoadBackAllEle){
@@ -1081,7 +1117,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             }
         }
         
-        RoomEletrical selectedEle = mAllElectricalList.get(spinnerSelectedPosition -1);
+        RoomElectrical selectedEle = mAllElectricalList.get(spinnerSelectedPosition -1);
         String deviceGuid = selectedEle.DeviceGuid;
         String oper = SWITCH_OPER_ON;
         String state = TASK_STATU_OPENED;
@@ -1161,8 +1197,11 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         params.put(JsonTag.TAGFrequency, frequency);
         params.put(JsonTag.TAGTypeId, typeid);
         
-        int dataType = GDConstract.DATATYPE_ADD_TIMED_TASK;
+        int dataType = GDRequestType.DATATYPE_ADD_TIMED_TASK;
+        mSystemFlag = "sml";
+        mRequestMethodId = "m011f004";
         mCacheTask = new TimedTask();
+        
         if(mListViewTask.getSelectedItemPosition() == 0 && mPageNumberModel == 0){
             
         }else{
@@ -1173,9 +1212,16 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             params.put(JsonTag.TAGOldCycle,task.Frequency);
             params.put(JsonTag.TAGTimeTaskGuid,task.TimedTaskGuid);
             
-            dataType = GDConstract.DATATYPE_MODIFY_TIMED_TASK;
+            mSystemFlag = "sml";
+            mRequestMethodId = "m011f007";
+            dataType = GDRequestType.DATATYPE_MODIFY_TIMED_TASK;
             state = task.State;
         }
+        
+        params.setRequestType(dataType);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
+        
         params.put(JsonTag.TAGState, state);
         mCacheTask.DeviceGuid = deviceGuid;
         mCacheTask.DeviceName = selectedEle.DeviceName;
@@ -1185,33 +1231,46 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
         mCacheTask.Time = time;
         mCacheTask.TypeId = typeid;
         
-        requestData(dataType, params);
+        requestData( params);
     }
     
     private void requestDeleteTimedTask(){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
         
         TimedTask selectedTimedTask = mTimedTaskAdapter.getData()[mListViewTask.getSelectedItemPosition()];
-        Map<String, String> params = new HashMap<String, String>();
+        
+        mSystemFlag = "sml";
+        mRequestMethodId = "m011f008";
+        
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_DELETE_TIMED_TASK);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGTimeTaskGuid, selectedTimedTask.TimedTaskGuid);
         params.put(JsonTag.TAGOper, selectedTimedTask.Oper);
         params.put(JsonTag.TAGTime, selectedTimedTask.Time);
         params.put(JsonTag.TAGFrequency, selectedTimedTask.Frequency);
         params.put(JsonTag.TAGTypeId, selectedTimedTask.TypeId);
-        requestData(GDConstract.DATATYPE_DELETE_TIMED_TASK, params);
+        requestData(params);
     }
     
     private void requestOpenOrCloseTimedTask(){
         if(mCtrlSeridNo == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
-         mCacheTask = mTimedTaskAdapter.getData()[mListViewTask.getSelectedItemPosition()];
-        Map<String, String> params = new HashMap<String, String>();
+        mCacheTask = mTimedTaskAdapter.getData()[mListViewTask.getSelectedItemPosition()];
+        
+        mSystemFlag = "sml";
+        mRequestMethodId = "m011f009";
+        
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_EXECUTE_TIMED_TASK);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
+        
         params.put(JsonTag.TAGCTRL_SeridNo, mCtrlSeridNo);
         params.put(JsonTag.TAGTimeTaskGuid, mCacheTask.TimedTaskGuid);
         params.put(JsonTag.TAGOper, mCacheTask.Oper);
@@ -1225,7 +1284,7 @@ public class GDSmartHomeTimedTaskActivity extends GDSmartActivity {
             params.put(JsonTag.TAGState, TASK_STATU_CLOASED);
         }
         
-        requestData(GDConstract.DATATYPE_EXECUTE_TIMED_TASK, params);
+        requestData(params);
     }
     
     private String getTimeString(int time){

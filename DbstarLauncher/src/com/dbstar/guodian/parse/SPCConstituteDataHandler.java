@@ -4,21 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import android.media.JetPlayer;
-import android.util.Log;
-
-import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.SPCConstitute;
 
 public class SPCConstituteDataHandler {
 
-	private static final String TAG = "SPCConstituteDataHandler";
 
 	public static SPCConstitute parse(String data) {
 	    String jsonData = data.substring(1, data.length() - 1);

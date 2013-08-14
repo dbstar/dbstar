@@ -7,18 +7,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.util.Log;
 
 import com.dbstar.guodian.data.AreaInfo;
 import com.dbstar.guodian.data.BusinessArea;
 import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.util.LogUtil;
 
 public class AreaInfoHandler {
 	private static final String TAG = "AreaInfoHandler";
 
 	public static AreaInfo parse(String data) {
 
-		Log.d(TAG, "data = " + data);
+	    LogUtil.d(TAG, "data = " + data);
 		AreaInfo info = null;
 
 		JSONTokener jsonParser = new JSONTokener(data);

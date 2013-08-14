@@ -1,38 +1,27 @@
 package com.dbstar.guodian.app.familyefficency;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import org.apache.harmony.security.x509.ExtensionValue;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.renderscript.Element.DataType;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
-import com.dbstar.guodian.data.EqumentData;
 import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerConsumptionTrend;
-import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.PowerConsumptionTrend.ConsumptionPercent;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
-import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.data.RoomData;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
-import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDSpinner;
 import com.dbstar.widget.PowerTrendPolyLineView;
 
@@ -57,9 +46,10 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     private ArrayAdapter<String> mDateAdapter;
     private ArrayAdapter<String> mEquAdapter;
     private PowerConsumptionTrend mTrend;
-    private ArrayList<RoomEletrical> mEquList;
+    private ArrayList<RoomElectrical> mEquList;
     private List<String> mDateList;
     private PowerTrendPolyLineView mPolyLine;
+    private boolean isRequestedElectrical;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,23 +84,23 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         mDateAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, mDateList);
         mSpinnerDate.setAdapter(mDateAdapter);
         
-        mEquList = new ArrayList<RoomData.RoomEletrical>();
-        RoomEletrical all =  new RoomEletrical();
+        mEquList = new ArrayList<RoomData.RoomElectrical>();
+        RoomElectrical all =  new RoomElectrical();
         all.EleDeviceCode = EQUTYPEID_ALL_EQU;
         all.DeviceName = getString(R.string.family_text_all_electrical);
         mEquList.add(all);
-        RoomEletrical deleted =  new RoomEletrical();
+        RoomElectrical deleted =  new RoomElectrical();
         deleted.EleDeviceCode = EQUTYPEID_DELETED_EQU;
         deleted .DeviceName = getString(R.string.family_text_deleted_electrical);
         mEquList.add(deleted);
         
-        RoomEletrical allCount =  new RoomEletrical();
+        RoomElectrical allCount =  new RoomElectrical();
         allCount.EleDeviceCode = EQUTYPEID_ALL_COUNT;
         allCount .DeviceName = getString(R.string.family_text_all_count);
         mEquList.add(allCount);
         
         ArrayList<String> equNames = new ArrayList<String>();
-        for (RoomEletrical equ : mEquList) {
+        for (RoomElectrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
         mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);
@@ -153,15 +143,17 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
     
     @Override
     public void notifyEvent(int type, Object event) {
-        EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+        super.notifyEvent(type, event);
         if(EventData.EVENT_GUODIAN_DATA == type){
-            if(GDConstract.DATATYPE_POWER_CONSUMPTION_TREND == guodianEvent.Type){
-                requestAllEleList();
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+            if(GDRequestType.DATATYPE_POWER_CONSUMPTION_TREND == guodianEvent.Type){
+                if(!isRequestedElectrical)
+                    requestAllEleList();
                 mTrend = (PowerConsumptionTrend) guodianEvent.Data;
                 showPolyLineView(mTrend);
                 updateTitle();
-            }else if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                List<RoomEletrical> list = (ArrayList<RoomEletrical>) guodianEvent.Data;
+            }else if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+                List<RoomElectrical> list = (ArrayList<RoomElectrical>) guodianEvent.Data;
                 if(list != null && !list.isEmpty()){
                     mEquList.addAll(list);
                     initEqumentSpinner();
@@ -170,14 +162,14 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             }
             
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            if(GDConstract.DATATYPE_EQUMENTLIST == guodianEvent.Type){
-                handleErrorResponse(R.string.loading_electrical_list_fail);
+            EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+            if(GDRequestType.DATATYPE_EQUMENTLIST == guodianEvent.Type){
+                showErrorMsg(R.string.loading_electrical_list_fail);
              }else{
-                 handleErrorResponse(R.string.loading_error);
+                 showErrorMsg(R.string.loading_error);
              }
             return;
         }
-        super.notifyEvent(type, event);
     }
     
     private void updateTitle() {
@@ -204,14 +196,18 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
             CCGUID = getCtrlNo().CtrlNoGuid;
         }
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
-        Map<String, String>params = new HashMap<String, String>();
+        mSystemFlag = "elc";
+        mRequestMethodId = "m008f012";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_POWER_CONSUMPTION_TREND);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGVC2EquTypeId, getEquTypeId());
         params.put(JsonTag.TAGDatePeriod, getDatePeriod());
-        requestData(GDConstract.DATATYPE_POWER_CONSUMPTION_TREND,params);
+        requestData(params);
     }
     
     private void requestAllEleList(){
@@ -221,16 +217,21 @@ public class GDPowerConsumptionTrendActivity extends GDSmartActivity {
         }
         
         if(ctrlSeridno == null){
-            handleErrorResponse(R.string.loading_electrical_list_fail);
+            showErrorMsg(R.string.loading_electrical_list_fail);
             return;
         }
-        Map<String, String> params = new HashMap<String, String>();
+        mSystemFlag = "sml";
+        mRequestMethodId = "m001f010";
+        RequestParams params =  new RequestParams(GDRequestType.DATATYPE_EQUMENTLIST);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGCTRL_SeridNo, ctrlSeridno);
-        requestDataNotShowDialog(GDConstract.DATATYPE_EQUMENTLIST, params);
+        requestDataNotShowDialog(params);
+        isRequestedElectrical = true;
     }
     private void initEqumentSpinner(){
         ArrayList<String> equNames = new ArrayList<String>();
-        for (RoomEletrical equ : mEquList) {
+        for (RoomElectrical equ : mEquList) {
             equNames.add(equ.DeviceName);
         }
         mEquAdapter = new ArrayAdapter<String>(this, R.layout.gd_spinner_drop_list_item, equNames);

@@ -80,6 +80,7 @@
         <activity android:name=".guodian.app.smarthome.GDSmartHomeModeActivity"/>
         <activity android:name=".guodian.app.smarthome.GDSmartHomeTimedTaskActivity"/>
         <activity android:name=".guodian.app.mypower.GDPowerTargetSettingActivity"/>
+        <activity android:name=".guodian.app.newsflash.GDNewsFlashActivity"/>
         <service
             android:name=".service.GDDataProviderService"
             android:exported="false" />

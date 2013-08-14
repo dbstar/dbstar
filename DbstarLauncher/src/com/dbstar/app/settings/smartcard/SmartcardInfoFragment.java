@@ -1,22 +1,21 @@
 package com.dbstar.app.settings.smartcard;
 
-import com.dbstar.R;
-import com.dbstar.DbstarDVB.DbstarServiceApi;
-import com.dbstar.app.base.BaseFragment;
-import com.dbstar.app.base.FragmentObserver;
-import com.dbstar.model.EventData;
-import com.dbstar.model.GDCommon;
-import com.dbstar.model.ProductItem;
-
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.dbstar.R;
+import com.dbstar.DbstarDVB.DbstarServiceApi;
+import com.dbstar.app.base.FragmentObserver;
+import com.dbstar.model.EventData;
+import com.dbstar.model.GDCommon;
+import com.dbstar.model.ProductItem;
+import com.dbstar.util.LogUtil;
 
 public class SmartcardInfoFragment extends GDSmartcardFragment {
 	private static final String TAG = "SmartcardInfoFragment";
@@ -45,7 +44,7 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 
 	// Request data at this point
 	public void serviceStart() {
-		Log.d(TAG, "=== service is started ===");
+	    LogUtil.d(TAG, "=== service is started ===");
 		
 		mSmartcardState = mService.getSmartcardState();
 		updateSmartcardState();
@@ -82,7 +81,7 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 		} else if (requestType == DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ) {
 			String[] ids = (String[]) data;
 			if (ids.length > mEignevalueIDView.length) {
-				Log.e(TAG, "Fata error: smartcard eignevalue is wrong!");
+			    LogUtil.e(TAG, "Fata error: smartcard eignevalue is wrong!");
 				return;
 			}
 
@@ -138,11 +137,11 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 
 	void updateSmartcardIds() {
 		if (mIDValues == null || mIDValues.length == 0) {
-			Log.d(TAG, "no ids!");
+		    LogUtil.d(TAG, "no ids!");
 			return;
 		}
 
-		Log.d(TAG, "mIDValues:" + mIDValues.length);
+		LogUtil.d(TAG, "mIDValues:" + mIDValues.length);
 
 		for (int i = 0; i < mIDValues.length; i++) {
 			mEignevalueIDView[i].setText(mIDValues[i]);
@@ -183,12 +182,12 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 				R.id.eignevlaue_id6, R.id.eignevlaue_id7, R.id.eignevlaue_id8,
 				R.id.eignevlaue_id9, R.id.eignevlaue_id10};
 
-		Log.d(TAG, "ids length = " + ids.length);
+		LogUtil.d(TAG, "ids length = " + ids.length);
 
 		mEignevalueIDView = new TextView[ids.length];
 		for (int i = 0; i < ids.length; i++) {
 			mEignevalueIDView[i] = (TextView) mActivity.findViewById(ids[i]);
-			Log.d(TAG, " id view : " + i + " = " + mEignevalueIDView[i]);
+			LogUtil.d(TAG, " id view : " + i + " = " + mEignevalueIDView[i]);
 		}
 
 		mAthorizationInfoView = (ListView) mActivity

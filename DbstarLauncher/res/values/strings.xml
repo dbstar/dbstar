@@ -30,6 +30,7 @@
     <string name="text_ji">集</string>
     <string name="text_tiao">条</string>
     <string name="text_gong">共</string>
+    <string name="text_slash">/</string>
     <string name="warning_text">警告</string>
     <string name="conformation_text">确认</string>
     <string name="tv_view_description_header">剧情简介:</string>
@@ -160,6 +161,10 @@
     <string name="mypower_monthpowercost">本月可控电器花费:&#160;</string>
     <string name="mypower_yearpowerusage">本年可控电器电量:&#160;</string>
     <string name="mypower_yearpowercost">本年可控电器花费:&#160;</string>
+    <string name="mypower_monthpowerusage2">本月用电量:&#160;</string>
+    <string name="mypower_monthpowercost2">本月用电费:&#160;</string>
+    <string name="mypower_yearpowerusage2">本年用电量:&#160;</string>
+    <string name="mypower_yearpowercost2">本年用电费:&#160;</string>
     <string name="string_degree">度</string>
     <string name="string_yuan">元</string>
     
@@ -234,6 +239,7 @@
      <string name="family_text_lv">率</string>
      <string name="family_text_watt">瓦</string>
      <string name="family_text_on">开</string>
+     <string name="family_text_stop">停</string>
      <string name="family_text_off">关</string>
      <string name="family_text_refresh">刷新</string>
      <string name="family_text_no_room"><![CDATA[<html><font color=\"#FFFFFF\"> 请在</font><font color=\"#2F92CD\"> 智能生活管家电脑客服端 </font><font color=\"#FFFFFF\"> 创建房间和电器。</font><br />" "<font color=\"#FFFFFF\">下载客服端软件，请登录官方网站 ：</font><font color=\"#2F92CD\"> www.smartlife.com.cn</font></html>]]></string>
@@ -283,6 +289,7 @@
     <string name="network_connect_error">网络连接失败..</string>
     <string name="no_login">用户登录信息为空，没有进行登录或登录断开</string>
     <string name="loading_error">加载数据失败</string>
+    <string name="loading_null">数据为空</string>
     <string name="server_error">服务器出错</string>
     <string name="loading_city_area_info_fail">获取城市列表失败</string>
     <string name="loading_zones_area_info_fail">获取区县列表失败</string>
@@ -315,7 +322,7 @@
     <string name="step_3">第三阶梯</string>
     
     <string name="period_1">高峰</string>
-    <string name="period_2">平断</string>
+    <string name="period_2">平段</string>
     <string name="period_3">低谷 </string>
     
     <string name="ch_period_1">峰时段</string>

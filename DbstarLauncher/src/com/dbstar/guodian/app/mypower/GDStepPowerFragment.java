@@ -5,7 +5,6 @@ import java.util.List;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,12 +19,16 @@ import com.dbstar.guodian.app.base.GDBaseFragment;
 import com.dbstar.guodian.app.base.GDSmartActivity;
 import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.ElectricityPrice;
+import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.guodian.parse.Util;
 import com.dbstar.model.EventData;
-import com.dbstar.util.ToastUtil;
+import com.dbstar.util.LogUtil;
 
 public class GDStepPowerFragment extends GDBaseFragment {
 	private static final String TAG = "GDStepPowerFragment";
@@ -47,13 +50,14 @@ public class GDStepPowerFragment extends GDBaseFragment {
 	private Button mPriceButton;
 	private String mStrDegree;
 	private int mPriceType;
-
+	private GDMypowerActivity mActivity;
 	private ElectricityPrice mElecPrice = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// mNum = getArguments().getInt("num");
+		mActivity = (GDMypowerActivity) getActivity();
 	}
 
 	@Override
@@ -136,8 +140,34 @@ public class GDStepPowerFragment extends GDBaseFragment {
 	public void serviceStart() {
 		if (mService == null)
 			return;
-
-		mEngine.request(GDConstract.DATATYPE_POWERPANELDATA, null);
+		
+		LoginData mLoginData = mService.getLoginData();
+		if(mLoginData == null){
+		   mActivity.showErrorMsg(R.string.no_login);
+		   return;
+		}
+		if(mLoginData.CtrlNo == null || mLoginData.CtrlNo.CtrlNoGuid == null){
+		    mActivity.showErrorMsg(R.string.no_login);
+	           return; 
+		}
+		
+		String ccguid = mLoginData.CtrlNo.CtrlNoGuid;
+		
+		if(mLoginData.UserData == null 
+		        ||mLoginData.UserData.UserInfo == null 
+		        || mLoginData.UserData.UserInfo.UserType == null){
+		    mActivity.showErrorMsg(R.string.no_login);
+            return; 
+		}
+		
+		String userType = mLoginData.UserData.UserInfo.UserType;
+		
+	    RequestParams params = new RequestParams(GDRequestType.DATATYPE_POWERPANELDATA);
+        params.put(RequestParams.KEY_SYSTEM_FLAG,"elc");
+        params.put(RequestParams.KEY_METHODID, "m008f001");
+        params.put(JsonTag.TAGNumCCGuid, ccguid);
+        params.put(JsonTag.TAGUser_Type, userType);
+		mEngine.request(params);
 	}
 
 	// handle event at this point
@@ -150,12 +180,12 @@ public class GDStepPowerFragment extends GDBaseFragment {
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		} else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
 		    GDSmartActivity activity = (GDSmartActivity) getActivity();
-		    activity.handleErrorResponse(R.string.loading_error);
+		    activity.showErrorMsg(R.string.loading_error);
         }
 	}
 
 	private void handlePowerData(int type, Object data) {
-		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
+		if (type == GDRequestType.DATATYPE_POWERPANELDATA) {
 			updatePowerPanel((PowerPanelData) data);
 			mPriceButton.setFocusableInTouchMode(true);
 			mPriceButton.setFocusable(true);
@@ -170,7 +200,7 @@ public class GDStepPowerFragment extends GDBaseFragment {
 	}*/
 
 	private void updatePowerPanel(PowerPanelData data) {
-		Log.d(TAG, " ===== updatePowerPanel ===== ");
+		LogUtil.d(TAG, " ===== updatePowerPanel ===== ");
 
 		if (data == null)
 			return;
@@ -222,7 +252,7 @@ public class GDStepPowerFragment extends GDBaseFragment {
 
 		String priceType = status.PriceType;
 
-		Log.d(TAG, " ===== PriceType ===== " + priceType);
+		LogUtil.d(TAG, " ===== PriceType ===== " + priceType);
 		if (priceType.equals(ElectricityPrice.PRICETYPE_STEP)) {
             mPriceType = GDConstract.PriceTypeStep;
         }else if(priceType.equals(ElectricityPrice.PRICETYPE_SINGLE)){
@@ -231,12 +261,11 @@ public class GDStepPowerFragment extends GDBaseFragment {
             return;
         }
 
-		if (mElecPrice == null) {
-			mElecPrice = mService.getElecPrice();
+		if (mElecPrice == null && mService.getLoginData()!= null) {
+			mElecPrice = mService.getLoginData().ElecPrice;
 		}
-		EPCConstitute ed = mService.getEDimension();
-        if(ed != null && ed.totalPower != null){
-            mAllDevicePowerAmountView.setText(ed.totalPower.Count);
+        if(mService.getLoginData() != null){
+            mAllDevicePowerAmountView.setText(mService.getLoginData().ControlledPowerCount);
         }
 		
 		ElectricityPrice priceData = mElecPrice;
@@ -254,11 +283,11 @@ public class GDStepPowerFragment extends GDBaseFragment {
 
 			for (ElectricityPrice.StepPrice stepPrice : stepPriceList) {
 
-				Log.d(TAG, "step " + stepPrice.Step);
-				Log.d(TAG, "step start " + stepPrice.StepStartValue);
-				Log.d(TAG, "step end " + stepPrice.StepEndValue);
-				Log.d(TAG, "step price " + stepPrice.StepPrice);
-				Log.d(TAG, "step period " + stepPrice.PeriodPriceList);
+				LogUtil.d(TAG, "step " + stepPrice.Step);
+				LogUtil.d(TAG, "step start " + stepPrice.StepStartValue);
+				LogUtil.d(TAG, "step end " + stepPrice.StepEndValue);
+				LogUtil.d(TAG, "step price " + stepPrice.StepPrice);
+				LogUtil.d(TAG, "step period " + stepPrice.PeriodPriceList);
 
 				if (stepPrice.Step.equals(ElectricityPrice.STEP_1)) {
 					mStepPowerRulerStep0.setText(stepPrice.StepStartValue);
@@ -276,13 +305,13 @@ public class GDStepPowerFragment extends GDBaseFragment {
 			ElectricityPrice.StepPrice currentStep = Util.getStep(
 					stepPriceList, powerNum);
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep == null) {
 				return;
 			}
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep.Step.equals(ElectricityPrice.STEP_1)) {
 				String stepEnd = currentStep.StepEndValue;

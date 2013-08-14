@@ -6,7 +6,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +21,7 @@ import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.model.EMailItem;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.LogUtil;
 
 public class MailBoxFragment extends GDSmartcardFragment {
 
@@ -154,7 +154,7 @@ public class MailBoxFragment extends GDSmartcardFragment {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long id) {
-				Log.d(TAG, " === onItemSelected == old " + mSelectedItemIndex + " new " + position);
+			    LogUtil.d(TAG, " === onItemSelected == old " + mSelectedItemIndex + " new " + position);
 
 				if (mSelectedItemIndex >= 0) {
 					View oldSel = mMailListView.getChildAt(mSelectedItemIndex);

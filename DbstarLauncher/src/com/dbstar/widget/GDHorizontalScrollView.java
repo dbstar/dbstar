@@ -16,6 +16,8 @@
 
 package com.dbstar.widget;
 
+import java.util.List;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -37,10 +39,11 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.AnimationUtils;
 import android.widget.EdgeEffect;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.OverScroller;
 import android.widget.ScrollView;
-
-import java.util.List;
+import android.widget.TextView;
 
 import com.dbstar.R;
 

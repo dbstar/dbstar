@@ -6,9 +6,9 @@ public class RoomData {
 	public String RoomGuid;
 	public String RoomName;
 	
-	public List<RoomEletrical> EletricalList;
-	public List<RoomEletrical []> ElePageList;
-	public static class RoomEletrical{
+	public List<RoomElectrical> EletricalList;
+	public List<RoomElectrical []> ElePageList;
+	public static class RoomElectrical{
 	    public String RoomGuid;
 	    public String DeviceName;
 	    public String AdapterFlag;

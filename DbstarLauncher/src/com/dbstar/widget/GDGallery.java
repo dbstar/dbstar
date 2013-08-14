@@ -16,8 +16,6 @@
 
 package com.dbstar.widget;
 
-import com.dbstar.R;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
@@ -33,7 +31,11 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.Transformation;
+import android.widget.Gallery;
+import android.widget.HorizontalScrollView;
 import android.widget.Scroller;
+
+import com.dbstar.R;
 
 /**
  * A view that shows items in a center-locked, horizontally scrolling list.

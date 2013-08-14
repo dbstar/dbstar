@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.dbstar.R;
 import com.dbstar.util.GDNetworkUtil;
+import com.dbstar.util.LogUtil;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,7 +13,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
@@ -52,12 +52,12 @@ public class GDWebBrowserActivity extends Activity {
 
 		if (settings.getBlockNetworkLoads()) {
 			settings.setBlockNetworkLoads(false);
-			Log.d(TAG, "setBlockNetworkLoads false");
+			LogUtil.d(TAG, "setBlockNetworkLoads false");
 		}
 
 		if (settings.getBlockNetworkImage()) {
 			settings.setBlockNetworkImage(false);
-			Log.d(TAG, "setBlockNetworkImage false");
+			LogUtil.d(TAG, "setBlockNetworkImage false");
 		}
 
 		mWebView.getSettings().setCacheMode(WebSettings.LOAD_NORMAL);
@@ -104,7 +104,7 @@ public class GDWebBrowserActivity extends Activity {
 
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				Log.d(TAG, "onKey " + keyCode);
+				LogUtil.d(TAG, "onKey " + keyCode);
 				boolean ret = false;
 				int action = event.getAction();
 				if (action == KeyEvent.ACTION_DOWN) {
@@ -134,7 +134,7 @@ public class GDWebBrowserActivity extends Activity {
 		Intent intent = getIntent();
 		String url = intent.getStringExtra("url");
 
-		Log.d(TAG, "url = " + url);
+		LogUtil.d(TAG, "url = " + url);
 		mWebView.loadUrl(url);
 		//loadPageDelay(url);
 	}
@@ -164,7 +164,7 @@ public class GDWebBrowserActivity extends Activity {
 			case MSG_LOADPAGE:
 				Bundle data = msg.getData();
 				String url = (String)data.get("url");
-				Log.d(TAG, "load " + url);
+				LogUtil.d(TAG, "load " + url);
 				mWebView.loadUrl(url);
 				break;
 			default:
@@ -182,17 +182,17 @@ public class GDWebBrowserActivity extends Activity {
 		}
 
 		public String get(String key) {
-			Log.d(TAG, "JavaScript get " + key);
+			LogUtil.d(TAG, "JavaScript get " + key);
 			String value = "";
 			if (key.equals("mac")) {
 				value = getMacAddress();
 			} else if (key.equals("back")) {
 				value = "";
-				Log.d(TAG, "JavaScript back");
+				LogUtil.d(TAG, "JavaScript back");
 				mHandler.sendEmptyMessage(MSG_BACKEVENT);
 			}
 
-			Log.d(TAG, "JavaScript value " + value);
+			LogUtil.d(TAG, "JavaScript value " + value);
 
 			return value;
 		}
@@ -201,7 +201,7 @@ public class GDWebBrowserActivity extends Activity {
 	private String mMacAddress = "";
 
 	public String getMacAddress() {
-		Log.d(TAG, "getMacAddress");
+		LogUtil.d(TAG, "getMacAddress");
 		if (mMacAddress.equals("")) {
 			mMacAddress = GDNetworkUtil.getMacAddress(this, true);
 		}

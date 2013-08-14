@@ -1,18 +1,16 @@
 package com.dbstar.widget;
 
-import com.dbstar.R;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Align;
 import android.graphics.Path;
-import android.graphics.Path.Direction;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.dbstar.R;
 
 public class GDCircleTextView extends View {
 	private float mRadius;

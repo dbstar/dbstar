@@ -5,13 +5,13 @@ import java.util.List;
 
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDiskInfo;
+import com.dbstar.util.LogUtil;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Process;
-import android.util.Log;
 
 public class GDDiskSpaceMonitor {
 
@@ -121,7 +121,7 @@ public class GDDiskSpaceMonitor {
 
 		@Override
 		public void run() {
-			Log.d(TAG, "check Disk space!");
+		    LogUtil.d(TAG, "check Disk space!");
 
 			int diskCount = 0;
 			synchronized (mLock) {

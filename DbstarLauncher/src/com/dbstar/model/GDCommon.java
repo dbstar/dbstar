@@ -73,6 +73,10 @@ public class GDCommon {
 	public static final String LangCN = "cho";
 	public static final String LangEN = "eng";
 
+	public static final String KeyNetworkType = "net_type";
+	public static final int TypeEthernet = 1;
+	public static final int TypeWifi = 2;
+	
 	public static final String ColumnTypeMovie = "1";
 	public static final String ColumnTypeTV = "2";
 	public static final String ColumnTypePreview = "3";
@@ -82,6 +86,7 @@ public class GDCommon {
 	public static final String ColumnTypeSettings = "L99";
 	public static final String ColumnTypeUserCenter = "L98";
 	public static final String ColumnTypeSmartLife = "SmartLife";
+	public static final String ColumnTypeIPTV = "OTT";
 
 	public static final String ColumnIDReceiveChooser = "L9801";
 	public static final String ColumnIDDownloadStatus = "L9802";
@@ -100,7 +105,8 @@ public class GDCommon {
 	public static final String ColumnIDGuodianSmartPower = "G1";
 	public static final String ColumnIDGuodianHomeEfficiency = "G2";
 	public static final String ColumnIDGuodianSmartHome = "G3";
-	public static final String ColumnIDGuodianNews = "G4";
+	public static final String ColumnIDGuodianNews = "G5";
+	public static final String ColumnIDCNTV = "CNTV";
 
 	public static final String ColumnIDGuodianMyPower = "G101";
 	public static final String ColumnIDGuodianPowerBill = "G102";
@@ -117,6 +123,7 @@ public class GDCommon {
 	public static final String ColumnIDGuodianPowerConsumptionTrend = "G203";
 	public static final String ColumnIDGuodianPowerTips = "G204";
 	
+	public static final String ColumnIDGuodianNewsFlash = "G501";
 
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
@@ -174,4 +181,13 @@ public class GDCommon {
 	public static final int PLAYBACK_COMPLETED = 0x01;
 
 	public static final String FlagPlayVideo = "flag_playvideo";
+	
+	// network settigns
+	public static final String ChannelEthernet = "1";
+	public static final String ChannelBoth = "2";
+	public static final int EthernetMode = 1;
+	public static final int WirelessMode = 2;
+	public static final String KeyChannel = "channel";
+	public static final String ActionChannelModeChange = "com.dbstar.DbstarSettings.Action.CHANNELMODE_CHANGE";
+	public static final String ChannelFile = "/data/dbstar/channel_file";
 }

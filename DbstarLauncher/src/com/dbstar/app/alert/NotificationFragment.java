@@ -4,6 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import com.dbstar.R;
+import com.dbstar.util.LogUtil;
 import com.dbstar.widget.GDMarqeeTextView;
 import com.dbstar.widget.text.ScrollingMovementMethod;
 
@@ -14,7 +15,6 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -68,7 +68,7 @@ public class NotificationFragment extends DialogFragment {
 		mMessage = args.getString("message");
 		mDuration = args.getInt("duration");
 		
-		Log.d(TAG, " style = " + mStyleType + " message=" + mMessage);
+		LogUtil.d(TAG, " style = " + mStyleType + " message=" + mMessage);
 
 		setStyle(DialogFragment.STYLE_NO_TITLE, R.style.GDAlertDialog);
 	}
@@ -89,7 +89,7 @@ public class NotificationFragment extends DialogFragment {
 			p.height = convertDIP2Pixel(80);
 			p.x = convertDIP2Pixel(80);
 			p.y = convertDIP2Pixel(20);
-			Log.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
+			LogUtil.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
 			// p.horizontalMargin = 0.01f;
 			// p.verticalMargin = 0.005f;
 			getDialog().getWindow().setAttributes(p);
@@ -105,7 +105,7 @@ public class NotificationFragment extends DialogFragment {
 			p.height = convertDIP2Pixel(80);
 			p.x = convertDIP2Pixel(80);
 			p.y = convertDIP2Pixel(620);
-			Log.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
+			LogUtil.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
 //			p.horizontalMargin = 0.01f;
 //			p.verticalMargin = 0.005f;
 			getDialog().getWindow().setAttributes(p);
@@ -120,7 +120,7 @@ public class NotificationFragment extends DialogFragment {
 			p.height = convertDIP2Pixel(680);
 			p.x = convertDIP2Pixel(80);
 			p.y = convertDIP2Pixel(20);
-			Log.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
+			LogUtil.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
 //			p.horizontalMargin = 0.01f;
 //			p.verticalMargin = 0.005f;
 			getDialog().getWindow().setAttributes(p);
@@ -135,7 +135,7 @@ public class NotificationFragment extends DialogFragment {
 			p.height = convertDIP2Pixel(360);
 			p.x = convertDIP2Pixel(80);
 			p.y = convertDIP2Pixel(180);
-			Log.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
+			LogUtil.d(TAG, " w h x y " + p.width + " " + p.height + " " + p.x + " " + p.y);
 //			p.horizontalMargin = 0.01f;
 //			p.verticalMargin = 0.005f;
 			getDialog().getWindow().setAttributes(p);

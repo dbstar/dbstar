@@ -6,18 +6,13 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.util.Log;
 
 public class GDNetworkUtil {
 
 	private static final String TAG = "GDNetworkUtil";
 
 	static public String getMacAddress(Context context, boolean isEthernet) {
-		Log.d(TAG, "getMacAddress");
+		LogUtil.d(TAG, "getMacAddress");
 
 		String macAddress = "";
 		if (isEthernet) {
@@ -25,7 +20,7 @@ public class GDNetworkUtil {
 			File addressFile = new File(addressFileName);
 			if (addressFile.exists()) {
 				macAddress = readString(addressFile);
-				Log.d(TAG, macAddress);
+				LogUtil.d(TAG, macAddress);
 			}
 		} else {
 //			WifiManager wifiManager = (WifiManager) context
@@ -37,7 +32,7 @@ public class GDNetworkUtil {
 			File addressFile = new File(addressFileName);
 			if (addressFile.exists()) {
 				macAddress = readString(addressFile);
-				Log.d(TAG, macAddress);
+				LogUtil.d(TAG, macAddress);
 			}
 		}
 		

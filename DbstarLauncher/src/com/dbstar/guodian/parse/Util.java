@@ -1,13 +1,9 @@
 package com.dbstar.guodian.parse;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.sax.StartElementListener;
 
 import com.dbstar.R;
 import com.dbstar.guodian.data.ElectricityPrice;

@@ -4,13 +4,9 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.dbstar.R;
-import com.dbstar.R.styleable;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
@@ -18,6 +14,8 @@ import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+
+import com.dbstar.R;
 
 public class GDMarqeeTextView extends View {
 
@@ -49,7 +47,7 @@ public class GDMarqeeTextView extends View {
 	private boolean mPendingToStart = false;
 	private int mRepeatLimit = MarqeeForever;
 	
-	private int mCountPerCycle = 3;
+	private int mCountPerCycle = -1;
 	private int mCycleInterval = 10000; //10s
 	private int mShowCounts = 0;
 	private boolean mReachACycle = false;
@@ -313,12 +311,14 @@ public class GDMarqeeTextView extends View {
 			if (index == mTexts.size()) {
 				
 				if (!mReachACycle) {
-					mShowCounts++;
-					if (mShowCounts == mCountPerCycle) {
-						mShowCounts = 0;
-						mReachACycle = true;
-//						Log.d(TAG, "reach count -----1");
-						return;
+					if (mCountPerCycle > 0) {
+						mShowCounts++;
+						if (mShowCounts == mCountPerCycle) {
+							mShowCounts = 0;
+							mReachACycle = true;
+	//						Log.d(TAG, "reach count -----1");
+							return;
+						}
 					}
 				} else {
 //					Log.d(TAG, "reach count -----2");

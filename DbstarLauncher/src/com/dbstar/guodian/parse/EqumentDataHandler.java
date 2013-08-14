@@ -6,21 +6,18 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import android.util.Log;
 
-import com.dbstar.guodian.data.AreaInfo;
-import com.dbstar.guodian.data.BusinessArea;
 import com.dbstar.guodian.data.EqumentData;
 import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.util.LogUtil;
 
 public class EqumentDataHandler {
 	private static final String TAG = "EqumentDataHandler";
 
 	public static List<EqumentData> parse(String data) {
 
-		Log.d(TAG, "data = " + data);
+	    LogUtil.d(TAG, "data = " + data);
 		List<EqumentData> list =new ArrayList<EqumentData>();
 		EqumentData info = null;
 		String jsonData = data.substring(1, data.length() - 1);

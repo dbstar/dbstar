@@ -8,7 +8,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.util.Log;
+import com.dbstar.util.LogUtil;
+
 
 public class GDSystemConfigure {
 	private static final String TAG = "GDSystemConfigure";
@@ -115,7 +116,7 @@ public class GDSystemConfigure {
 		if (file.exists()) {
 			mStorageDir = disk;
 			mStorageDisk = disk;
-			Log.d(TAG, " disk is ready ===  " + mStorageDisk);
+			LogUtil.d(TAG, " disk is ready ===  " + mStorageDisk);
 			return true;
 		}
 
@@ -232,7 +233,7 @@ public class GDSystemConfigure {
 		}
 
 		file = mStorageDir + "/" + data.URI;
-		Log.d(TAG, "preivew path == " + file);
+		LogUtil.d(TAG, "preivew path == " + file);
 		
 		File f = new File(file);
 		if (!f.exists()) {
@@ -256,7 +257,7 @@ public class GDSystemConfigure {
 			ebookFile = categoryRoot + "/baozhi/20120329/index.html";
 		}
 
-		Log.d(TAG, "category = " + category + " path=" + ebookFile);
+		LogUtil.d(TAG, "category = " + category + " path=" + ebookFile);
 
 		return ebookFile;
 	}
@@ -291,14 +292,11 @@ public class GDSystemConfigure {
 	}
 
 	private boolean parseConfigure() {
-		File configureFile = new File(ConfigureFile);
 
+		File configureFile = new File(ConfigureFile);
 		if (configureFile == null || !configureFile.exists()) {
-			Log.d(TAG, "configure file does not exist!");
 			return false;
 		}
-		
-		Log.d(TAG, "start parsing configure file");
 
 		try {
 			String UTF8 = "utf8";
@@ -327,7 +325,7 @@ public class GDSystemConfigure {
 					property[0] = line.substring(0, start);
 					property[1] = line.substring(start + 1);
 
-					Log.d(TAG, property[0] + "=" + property[1]);
+					// Log.d(TAG, property[0] + "=" + property[1]);
 
 					if (property[0].equals(PROPERTY_DBSTARDATABSE)) {
 						mDbstarDatabase = property[1].trim();
@@ -397,8 +395,6 @@ public class GDSystemConfigure {
 			return false;
 		}
 
-		Log.d(TAG, "parsing configure file finished!");
-
 		return true;
 	}
 
@@ -408,7 +404,7 @@ public class GDSystemConfigure {
 
 		File mnt = new File("/mnt");
 		if (mnt == null || !mnt.exists()) {
-			Log.d(TAG, "No /mnt folder!");
+		    LogUtil.d(TAG, "No /mnt folder!");
 			return null;
 		}
 

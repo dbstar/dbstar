@@ -1,14 +1,9 @@
 package com.dbstar.model;
 
-import com.dbstar.model.GDSmartHomeContract.Global;
-
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.UriMatcher;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.util.Log;
+
+import com.dbstar.model.GDSmartHomeContract.Global;
 
 public class GDSmartHomeProvider extends GDDBProvider {
 

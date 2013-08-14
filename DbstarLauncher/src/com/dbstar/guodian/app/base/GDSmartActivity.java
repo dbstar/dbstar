@@ -4,28 +4,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
+import com.dbstar.util.LogUtil;
 import com.dbstar.widget.GDLoadingDialogView;
 
 public class GDSmartActivity extends GDBaseActivity {
 
     private static final String TAG = "GDSmartActivity";
     private static final long DefaultTimeout = 8000;
-    private static final long NoNotifyTimeout = 2000;
-    private static final long NoResponseTimeout = 40000;
+    //private static final long NoNotifyTimeout = 2000;
+    private static final long NoResponseTimeout = 12000;
     private static final int MaxReconnectCount = 3;
     private long mTimeout = DefaultTimeout;
     private int mReconnectCount = 0;
     private boolean mStartReconnect = false;
     private GDLoadingDialogView mLoadDialogView;
     public Map<String, Object> mCacheRequest;
-    private static final String REQUEST_TYPE = "request_type";
-    private static final String REQUEST_DATA = "request_data";
+    protected  String mSystemFlag;
+    protected  String mRequestMethodId;
+//    private static final String REQUEST_TYPE = "request_type";
+//    private static final String REQUEST_DATA = "request_data";
+    private static final String REQUEST_PARAMS = "request_params";
     private boolean isFirstRequest = true;
     private boolean isOnReStart = false;
     protected View mPageContent;
@@ -53,12 +57,12 @@ public class GDSmartActivity extends GDBaseActivity {
         }
 
     };
-    private Runnable mNoNotifyTask = new Runnable() {
-        @Override
-        public void run() {
-            handCanNotConnectToServer();
-        }
-    };
+//    private Runnable mNoNotifyTask = new Runnable() {
+//        @Override
+//        public void run() {
+//            handCanNotConnectToServer();
+//        }
+//    };
     
     private Runnable mNoResponseTask =  new Runnable() {
         
@@ -71,34 +75,30 @@ public class GDSmartActivity extends GDBaseActivity {
     public void notifyEvent(int type, Object event) {
         super.notifyEvent(type, event);
         
-        if(type !=  EventData.EVENT_GUODIAN_CONNECTED){
-            mHandler.removeCallbacks(mNoNotifyTask);
-            mHandler.removeCallbacks(mNoResponseTask);
-        }
         if (type == EventData.EVENT_GUODIAN_DATA) {
             handleRequestFinished();
-        } else if (type == EventData.EVENT_GUODIAN_DISCONNECTED) {
-            handleDisconnected();
-        } else if (type == EventData.EVENT_GUODIAN_CONNECT_FAILED) {
-            handleConnectFailed();
-        } else if (type == EventData.EVENT_GUODIAN_CONNECTED) {
-            handleConnected();
-        } else if (type == EventData.EVENT_LOGIN_SUCCESSED) {
+        }  else if (type == EventData.EVENT_LOGIN_SUCCESSED) {
             handleLoginSuccessed();
-        } else if (type == EventData.EVENT_GUODIAN_RECONNECTTING) {
-            handleReconnecting();
-        } else if (type == EventData.EVENT_GUODIAN_DATA_ERROR) {
+        }else if (type == EventData.EVENT_GUODIAN_DATA_ERROR) {
             hideloadingPage();
+        }else if(type == EventData.EVENT_GUODIAN_CONNECT_FAILED){
+            showNoNetWorkPage();
         }
     }
 
-    public void handleErrorResponse(final int errorStrId) {
+    public void showErrorMsg(final int errorStrId) {
+        String error = getResources().getString(errorStrId);
+        showErrorMsg(error);
+    }
+    
+    public void showErrorMsg(String error) {
         mHandler.removeCallbacks(mTimeoutTask);
+        mHandler.removeCallbacks(mNoResponseTask);
         if(mLoadDialogView == null)
                 showLoadingPage();
         if(!mLoadDialogView.isShowing())
             mLoadDialogView.ShowDialog();
-        mLoadDialogView.showLoadErrorInfo(errorStrId);
+        mLoadDialogView.showLoadErrorInfo(error);
         if(mPageContent != null && mPageContent.getVisibility() == View.VISIBLE){
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -108,86 +108,56 @@ public class GDSmartActivity extends GDBaseActivity {
             }, 1000);
         }else{
             mLoadDialogView.setCancelable(true);
-        }
+        } 
     }
-
-    protected void handleDisconnected() {
-        Log.d(TAG, "handleDisconnected");
-
+    
+    public void showNotifyMessage(int rId){
+        String msg = getResources().getString(rId);
+        showNotifyMessage(msg);
+    }
+    
+    public void showNotifyMessage(String msg){
         mHandler.removeCallbacks(mTimeoutTask);
-
-        if (!mStartReconnect) {
-            mStartReconnect = true;
-            mReconnectCount = 0;
-        }
-
-        mReconnectCount++;
-        if (mReconnectCount > MaxReconnectCount) {
-            Log.d(TAG, "reach max reconnect count");
-
-            mStartReconnect = false;
-            connectFailed();
-            return;
-        }
-
-        mService.reconnect();
+        mHandler.removeCallbacks(mNoResponseTask);
+        if(mLoadDialogView == null)
+                showLoadingPage();
+        if(!mLoadDialogView.isShowing())
+            mLoadDialogView.ShowDialog();
+        mLoadDialogView.showNotifyMsg(msg);
+        if(mPageContent != null && mPageContent.getVisibility() == View.VISIBLE){
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    hideloadingPage();
+                }
+            }, 1000);
+        }else{
+            mLoadDialogView.setCancelable(true);
+        } 
     }
-
-    protected void handleConnectFailed() {
-        Log.d(TAG, "handleConnectFailed");
-
-        mHandler.removeCallbacks(mTimeoutTask);
-
-        if (!mStartReconnect) {
-            mStartReconnect = true;
-            mReconnectCount = 0;
-        }
-
-        mReconnectCount++;
-        if (mReconnectCount > MaxReconnectCount) {
-            Log.d(TAG, "reach max reconnect count");
-
-            mStartReconnect = false;
-            connectFailed();
-            return;
-        }
-
-        mService.reconnect();
-    }
-
-    protected void handleConnected() {
-        Log.d(TAG, "handleConnected");
-    }
-
     protected void handleLoginSuccessed() {
-        Log.d(TAG, "handleLoginSuccessed");
+        LogUtil.d(TAG, "handleLoginSuccessed");
 
         if (mStartReconnect) {
             mStartReconnect = false;
             mReconnectCount = 0;
         }
-        Integer type = (Integer) mCacheRequest.get(REQUEST_TYPE);
-        Object args = mCacheRequest.get(REQUEST_DATA);
-
-        if (type != null && args != null) {
-            requestDataNotShowDialog(type, args);
-        }
+        RequestParams params = (RequestParams) mCacheRequest.get(REQUEST_PARAMS);
+        if(params != null)
+            requestDataNotShowDialog(params);
     }
 
-    protected void handleReconnecting() {
-        Log.d(TAG, "handleReconnecting");
-    }
 
     protected void handleRequestTimeout() {
-        Log.d(TAG, "handleRequestTimeout");
-        mStartReconnect = true;
-        mReconnectCount = 0;
-        mService.disconnect();
-        mHandler.postDelayed(mNoNotifyTask, NoNotifyTimeout);
+        LogUtil.d(TAG, "handleRequestTimeout");
+        if(!mService.isNetworkConnected()){
+            handCanNotConnectToServer();
+        }
     }
 
     protected void handleRequestFinished() {
         mHandler.removeCallbacks(mTimeoutTask);
+        mHandler.removeCallbacks(mNoResponseTask);
         hideloadingPage();
         if(mPageContent != null){
             mPageContent.setVisibility(View.VISIBLE);
@@ -195,34 +165,25 @@ public class GDSmartActivity extends GDBaseActivity {
         
     }
 
-    private void connectFailed() {
-        // mHandler.removeCallbacks(mNoResponseTask);
-        Log.d(TAG, "connectFailed");
-        handCanNotConnectToServer();
-
-    }
-
-    public void requestData(int type, Object args) {
-        Log.d(TAG, "requestData");
+    public void requestData(RequestParams params) {
+        LogUtil.d(TAG, "requestData");
+        if(!mService.isNetworkConnected()){
+           showNoNetWorkPage();
+            return;
+        }
         mHandler.removeCallbacks(mTimeoutTask);
-        mService.requestPowerData(type, args);
+        mService.requestData(params);
         mHandler.postDelayed(mTimeoutTask, mTimeout);
-        mCacheRequest.put(REQUEST_TYPE, type);
-        mCacheRequest.put(REQUEST_DATA, args);
+        mCacheRequest.put(REQUEST_PARAMS, params);
         showLoadingPage();
         mHandler.postDelayed(mNoResponseTask, NoResponseTimeout);
 
     }
-
-    public void requestDataNotShowDialog(int type, Object args) {
-        Log.d(TAG, "requestDataNotShowDialog");
-        mHandler.removeCallbacks(mTimeoutTask);
-        mService.requestPowerData(type, args);
-        mHandler.postDelayed(mTimeoutTask, mTimeout);
-        mCacheRequest.put(REQUEST_TYPE, type);
-        mCacheRequest.put(REQUEST_DATA, args);
+    public void requestDataNotShowDialog(RequestParams params) {
+        LogUtil.d(TAG, "requestDataNotShowDialog");
+        mService.requestData(params);
+        mCacheRequest.put(REQUEST_PARAMS, params);
     }
-
     protected void showLoadingPage() {
         if (mLoadDialogView == null) {
             GDLoadingDialogView.Builder builder = new GDLoadingDialogView.Builder(
@@ -236,13 +197,7 @@ public class GDSmartActivity extends GDBaseActivity {
         mLoadDialogView.showLoadingInfo();
         mLoadDialogView.setCancelable(false);
     }
-/*      protected void showLoadErrorPage(int resId){
-          mHandler.removeCallbacks(mNoNotifyTask);
-          mHandler.removeCallbacks(mNoResponseTask);
-          showLoadingPage();
-          mLoadDialogView.showLoadErrorInfo(resId);
-          mLoadDialogView.setCancelable(true);
-      }*/
+    
     protected void showNoNetWorkPage() {
         showLoadingPage();
         handCanNotConnectToServer();
@@ -262,10 +217,12 @@ public class GDSmartActivity extends GDBaseActivity {
     };
 
     private void handCanNotConnectToServer() {
-        mHandler.removeCallbacks(mNoNotifyTask);
+        mHandler.removeCallbacks(mTimeoutTask);
         mHandler.removeCallbacks(mNoResponseTask);
-        mLoadDialogView.showNetWorkErrorInfo();
-        mLoadDialogView.setCancelable(true);
+        if(mLoadDialogView != null){
+            mLoadDialogView.showNetWorkErrorInfo();
+            mLoadDialogView.setCancelable(true);
+        }
         if(mPageContent != null && mPageContent.getVisibility() == View.VISIBLE){
             mHandler.postDelayed(new Runnable() {
                 

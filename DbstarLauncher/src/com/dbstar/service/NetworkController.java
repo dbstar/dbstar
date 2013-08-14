@@ -1,6 +1,7 @@
 package com.dbstar.service;
 
 import com.dbstar.model.GDCommon;
+import com.dbstar.util.LogUtil;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,7 +17,6 @@ import android.net.ethernet.EthernetManager;
 import android.net.ethernet.EthernetDevInfo;
 import android.net.ethernet.EthernetStateTracker;
 import android.os.SystemProperties;
-import android.util.Log;
 
 public class NetworkController extends BroadcastReceiver {
 	private static final String TAG = "NetworkController";
@@ -50,7 +50,7 @@ public class NetworkController extends BroadcastReceiver {
 			mEthernetPhyState = ETHERNET_PHYDISCONNECTED;
 		}
 
-		Log.d(TAG, "=========== hw  ====== " + mEthernetPhyState);
+		LogUtil.d(TAG, "=========== hw  ====== " + mEthernetPhyState);
 
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(EthernetManager.ETH_STATE_CHANGED_ACTION);
@@ -67,7 +67,7 @@ public class NetworkController extends BroadcastReceiver {
 	}
 
 	public boolean isEthernetPhyConnected() {
-		Log.d(TAG, "========= isEthernetPhyConnected ==========="
+		LogUtil.d(TAG, "========= isEthernetPhyConnected ==========="
 				+ mEthernetPhyState);
 
 		return mEthernetPhyState == ETHERNET_PHYCONNECTED;
@@ -77,27 +77,27 @@ public class NetworkController extends BroadcastReceiver {
 		final int event = intent.getIntExtra(EthernetManager.EXTRA_ETH_STATE,
 				EthernetStateTracker.EVENT_HW_DISCONNECTED);
 
-		Log.d(TAG, "============== ethernet event ===========" + event);
+		LogUtil.d(TAG, "============== ethernet event ===========" + event);
 
 		switch (event) {
 		case EthernetStateTracker.EVENT_HW_CONNECTED:
-			Log.d(TAG, "============== ethernet EVENT_HW_CONNECTED ===========");
+			LogUtil.d(TAG, "============== ethernet EVENT_HW_CONNECTED ===========");
 			return;
 		case EthernetStateTracker.EVENT_INTERFACE_CONFIGURATION_SUCCEEDED:
-			Log.d(TAG,
+			LogUtil.d(TAG,
 					"============== ethernet EVENT_INTERFACE_CONFIGURATION_SUCCEEDED ===========");
 			mHandler.sendEmptyMessage(GDCommon.MSG_ETHERNET_CONNECTED);
 			return;
 		case EthernetStateTracker.EVENT_INTERFACE_CONFIGURATION_FAILED:
-			Log.d(TAG,
+			LogUtil.d(TAG,
 					"============== ethernet EVENT_INTERFACE_CONFIGURATION_FAILED ===========");
 			return;
 
 		case EthernetStateTracker.EVENT_DHCP_START:
-			Log.d(TAG, "============== ethernet EVENT_DHCP_START ===========");
+			LogUtil.d(TAG, "============== ethernet EVENT_DHCP_START ===========");
 			return;
 		case EthernetStateTracker.EVENT_HW_PHYCONNECTED:
-			Log.d(TAG, "============== ethernet connected ==========="
+			LogUtil.d(TAG, "============== ethernet connected ==========="
 					+ mEthernetPhyState);
 			if (mEthernetPhyState != ETHERNET_PHYCONNECTED) {
 				mEthernetPhyState = ETHERNET_PHYCONNECTED;
@@ -107,7 +107,7 @@ public class NetworkController extends BroadcastReceiver {
 			return;
 		case EthernetStateTracker.EVENT_HW_PHYDISCONNECTED:
 		case EthernetStateTracker.EVENT_HW_DISCONNECTED:
-			Log.d(TAG, "========= ethernet EVENT_HW_DISCONNECTED ==========="
+			LogUtil.d(TAG, "========= ethernet EVENT_HW_DISCONNECTED ==========="
 					+ mEthernetPhyState);
 			boolean eth_onboard = SystemProperties.getBoolean(
 					"ro.hw.ethernet.onboard", false);
@@ -115,7 +115,7 @@ public class NetworkController extends BroadcastReceiver {
 				mEthernetPhyConnect = false;
 				mEthernetWaitingDHCP = false;
 
-				Log.d(TAG, "========= ethernet EVENT_HW_DISCONNECTED ======="
+				LogUtil.d(TAG, "========= ethernet EVENT_HW_DISCONNECTED ======="
 						+ mEthernetPhyState);
 				int hwState = mEthManager.isEthDeviceAdded() ? ETHERNET_PHYCONNECTED
 						: ETHERNET_PHYDISCONNECTED;
@@ -126,7 +126,7 @@ public class NetworkController extends BroadcastReceiver {
 			}
 			return;
 		case EthernetStateTracker.EVENT_HW_CHANGED:
-			Log.d(TAG, "============== ethernet EVENT_HW_CHANGED ===========");
+			LogUtil.d(TAG, "============== ethernet EVENT_HW_CHANGED ===========");
 			return;
 
 		default:

@@ -2,42 +2,27 @@ package com.dbstar.guodian.app.mypower;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import com.dbstar.R;
-import com.dbstar.guodian.app.base.GDSmartActivity;
-import com.dbstar.guodian.app.familyefficency.GDPowerConstitueActivity;
-import com.dbstar.guodian.app.familyefficency.GDPowerConsumptionTrackActivity;
-import com.dbstar.guodian.app.familyefficency.GDPowerConsumptionTrendActivity;
-import com.dbstar.guodian.app.familyefficency.GDPowerTipsActivity;
-import com.dbstar.guodian.app.smarthome.GDSmartHomeModeActivity;
-import com.dbstar.guodian.app.smarthome.GDSmartHomeMyEleActivity;
-import com.dbstar.guodian.app.smarthome.GDSmartHomeTimedTaskActivity;
-import com.dbstar.guodian.data.JsonTag;
-import com.dbstar.guodian.data.LoginData;
-import com.dbstar.guodian.data.PaymentRecord;
-import com.dbstar.guodian.data.PaymentRecord.Record;
-import com.dbstar.guodian.engine.GDConstract;
-import com.dbstar.model.EventData;
-import com.dbstar.util.DateUtil;
-import com.dbstar.util.ToastUtil;
-import com.dbstar.widget.PaymentRecordCurve;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Gallery;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.dbstar.R;
+import com.dbstar.guodian.app.base.GDSmartActivity;
+import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.guodian.data.PaymentRecord;
+import com.dbstar.guodian.data.PaymentRecord.Record;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
+import com.dbstar.model.EventData;
+import com.dbstar.widget.PaymentRecordCurve;
 
 public class GDPlaymentRecordsActivity extends GDSmartActivity{
     
@@ -121,13 +106,13 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
    
     @Override
     public void notifyEvent(int type, Object event) {
-        
+        super.notifyEvent(type, event);
         if(type == EventData.EVENT_GUODIAN_DATA){
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
-            if(GDConstract.DATATYPE_PAYMENT_RECORDS == guodianEvent.Type){
+            if(GDRequestType.DATATYPE_PAYMENT_RECORDS == guodianEvent.Type){
                 mPaymentRecord = (PaymentRecord) guodianEvent.Data;
                 handPaymentRecordData(mPaymentRecord);
-            }else if(GDConstract.DATATYPE_YREAR_FEE_DETAIL == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_YREAR_FEE_DETAIL == guodianEvent.Type){
                 showPolyLineView(mPaymentRecord);
                 Map<String, Record> yearDetail = (Map<String, Record>) guodianEvent.Data;
                 if(yearDetail != null && !yearDetail.isEmpty()){
@@ -143,10 +128,9 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
                 }
             }
         }else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-           handleErrorResponse(R.string.loading_error);
+           showErrorMsg(R.string.loading_error);
            return;
         }
-        super.notifyEvent(type, event);
     }
     
     private void handPaymentRecordData(PaymentRecord paymentRecord){
@@ -218,25 +202,33 @@ public class GDPlaymentRecordsActivity extends GDSmartActivity{
     }
     private void requstDataFromService(){
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
-        Map<String, String>params = new HashMap<String, String>();
+        mSystemFlag = "elc";
+        mRequestMethodId = "m008f003";
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_PAYMENT_RECORDS);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGNum, mNum);
         params.put(JsonTag.TAGNum_Years, mNumYear);
-        requestData(GDConstract.DATATYPE_PAYMENT_RECORDS,params);
+        requestData(params);
     }
     
     private void requestYearPlayment(String date){
         if(CCGUID == null){
-            handleErrorResponse(R.string.no_login);
+            showErrorMsg(R.string.no_login);
             return;
         }
-        Map<String, String>params = new HashMap<String, String>();
+        mSystemFlag = "elc";
+        mRequestMethodId = "m005f003";
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_YREAR_FEE_DETAIL);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
         params.put(JsonTag.TAGNumCCGuid, CCGUID);
         params.put(JsonTag.TAGDate, date+"-01-01 00:00:00");
-        requestData(GDConstract.DATATYPE_YREAR_FEE_DETAIL,params);
+        requestData(params);
     }
     OnClickListener mClickListener = new OnClickListener() {
         

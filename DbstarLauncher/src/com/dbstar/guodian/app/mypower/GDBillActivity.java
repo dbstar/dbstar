@@ -1,12 +1,9 @@
 package com.dbstar.guodian.app.mypower;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,9 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dbstar.R;
 import com.dbstar.guodian.app.base.GDSmartActivity;
@@ -24,9 +19,12 @@ import com.dbstar.guodian.data.BillDetail;
 import com.dbstar.guodian.data.BillDetailData;
 import com.dbstar.guodian.data.BillDetailListData;
 import com.dbstar.guodian.data.BillItem;
+import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
-import com.dbstar.util.DateUtil;
+import com.dbstar.util.LogUtil;
 import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDSpinner;
 
@@ -34,7 +32,6 @@ public class GDBillActivity extends GDSmartActivity {
 	private static final String TAG = "GDBillActivity";
 
 	private String StrYear, StrMonth;
-
 	private TextView mUserNameView, mDeviceNoView, mAddressView;
 	private TextView mItemsCountView;
 	private ListView mBillListView;
@@ -60,7 +57,8 @@ public class GDBillActivity extends GDSmartActivity {
 		mUserName = intent.getStringExtra(GDConstract.KeyUserName);
 		mDeviceNo = intent.getStringExtra(GDConstract.KeyDeviceNo);
 		mAddress = intent.getStringExtra(GDConstract.KeyUserAddress);
-
+		mSystemFlag = "elc";
+		mRequestMethodId = "m005f005";
 		initializeView();
 
 		if (mMenuPath != null) {
@@ -150,22 +148,19 @@ public class GDBillActivity extends GDSmartActivity {
 
 	protected void onServiceStart() {
 		super.onServiceStart();
-		Log.d(TAG, "onServiceStart");
-
-		// requestData(GDConstract.DATATYPE_BILLMONTHLIST, "1");
-
-		// first: request the latest bill
-		// date is empty.
-		requestData(GDConstract.DATATYPE_BILLDETAILOFMONTH, "");
+		LogUtil.d(TAG, "onServiceStart");
+		mSystemFlag = "elc";
+        mRequestMethodId = "m005f005";
+	    requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,null,null);
 	}
 
 	void queryBillData() {
 		int yearIndex = mYearSpinner.getSelectedItemPosition();
 		int monthIndex = mMonthSpinner.getSelectedItemPosition();
 		initalListData(null);
-		Log.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex="
+		LogUtil.d(TAG, "queryBillData yearIndex =" + yearIndex + " monthIndex="
 				+ monthIndex);
-
+		
 		if (monthIndex > 0) {
 			String year = mYearList.get(yearIndex);
 			String month = mMonthList.get(monthIndex);
@@ -174,36 +169,48 @@ public class GDBillActivity extends GDSmartActivity {
 				month = "0" + month;
 			}
 			String date = year + "-" + month + "-" + "01 00:00:00";
-
-			Log.d(TAG, " === date ==" + date);
-
-			requestData(GDConstract.DATATYPE_BILLDETAILOFMONTH,
-					date);
+			mSystemFlag = "elc";
+	        mRequestMethodId = "m005f005";
+			requestBillData(GDRequestType.DATATYPE_BILLDETAILOFMONTH,JsonTag.TAGDate,date);
 		} else {
-			requestData(GDConstract.DATATYPE_BILLDETAILOFRECENT,
-					"12");
-			
+		    mSystemFlag = "elc";
+            mRequestMethodId = "m005f008";
+			requestBillData(GDRequestType.DATATYPE_BILLDETAILOFRECENT,"num_month","12");
 		}
 	}
-
+	
+	private void requestBillData(int type ,String key ,String value){
+	    RequestParams params = new RequestParams(type);
+        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
+        params.put(RequestParams.KEY_METHODID,mRequestMethodId);
+        if(getCtrlNo() != null){
+            params.put(JsonTag.TAGNumCCGuid,getCtrlNo().CtrlNoGuid);
+        }else{
+            showErrorMsg(R.string.no_login);
+            return;
+        }
+        if(key != null)
+            params.put(key,value);
+        requestData(params);
+	}
 	public void notifyEvent(int type, Object event) {
+	    super.notifyEvent(type, event);
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
-            handleErrorResponse(R.string.loading_error);
+            showErrorMsg(R.string.loading_error);
             return;
         }
-		super.notifyEvent(type, event);
 	}
 
 	private void handlePowerData(int type, Object data) {
 		if (data == null) {
-			Log.d(TAG, "ERROR: data is null");
+		    LogUtil.d(TAG, "ERROR: data is null");
 			return;
 		}
 		
-		if (type == GDConstract.DATATYPE_BILLDETAILOFMONTH) {
+		if (type == GDRequestType.DATATYPE_BILLDETAILOFMONTH) {
 			BillDetailData detailData = (BillDetailData) data;
 
 			if (mServiceDate == null) {
@@ -219,15 +226,15 @@ public class GDBillActivity extends GDSmartActivity {
 
 			BillDataItem item = constructBillData(detailData.Detail, year,
 					month);
-
+			
 			if (item != null) {
 				BillDataItem[] items = new BillDataItem[1];
 				items[0] = item;
 				initalListData(items);
 			}else{
-			    Toast.makeText(this, R.string.load_data_is_null, Toast.LENGTH_SHORT).show();
+			    ToastUtil.showToast(this, R.string.load_data_is_null);
 			}
-		} else if (type == GDConstract.DATATYPE_BILLDETAILOFRECENT) {
+		} else if (type == GDRequestType.DATATYPE_BILLDETAILOFRECENT) {
 			BillDetailListData listData = (BillDetailListData) data;
 			if (mServiceDate == null) {
 				mServiceDate = listData.ServiceSysDate;
@@ -259,7 +266,7 @@ public class GDBillActivity extends GDSmartActivity {
 				}
 				initalListData(tempArray.toArray(new BillDataItem[tempArray.size()]));
 			}else{
-			    Toast.makeText(this, R.string.load_data_is_null, Toast.LENGTH_SHORT).show();
+			    ToastUtil.showToast(this, R.string.load_data_is_null);
 			}
 		}
 	}

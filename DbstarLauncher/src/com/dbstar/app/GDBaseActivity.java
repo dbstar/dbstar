@@ -15,6 +15,7 @@ import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDAudioController;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.service.GDDataProviderService.DataProviderBinder;
+import com.dbstar.util.LogUtil;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -28,7 +29,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -324,7 +324,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	};
 
 	protected void onServiceStart() {
-		Log.d(TAG, "onServiceStart");
+		LogUtil.d(TAG, "onServiceStart");
 		
 		mService.registerPageObserver(this);
 		// get the init state of smart card.
@@ -334,7 +334,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	// this will not be called, only if when service is killed or crashed.
 	protected void onServiceStop() {
-		Log.d(TAG, "onServiceStop");
+		LogUtil.d(TAG, "onServiceStop");
 	}
 
 	public void updateData(int type, int param1, int param2, Object data) {
@@ -347,13 +347,13 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	public void notifyEvent(int type, Object event) {
 
-		Log.d(TAG, "======= notifyEvent ==== type " + type + " event " + event);
+		LogUtil.d(TAG, "======= notifyEvent ==== type " + type + " event " + event);
 
 		if (type == EventData.EVENT_SMARTCARD_STATUS) {
 			EventData.SmartcardStatus status = (EventData.SmartcardStatus) event;
 			mSmartcardState = status.State;
 
-			Log.d(TAG, " === mIsStarted == " + mIsStarted
+			LogUtil.d(TAG, " === mIsStarted == " + mIsStarted
 					+ " mBlockSmartcardPopup =" + mBlockSmartcardPopup);
 
 			if (mIsStarted) {
@@ -388,7 +388,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	protected void showLoadingDialog(String loadingText) {
 
 		if (mLoadingDialog == null || !mLoadingDialog.isShowing()) {
-			Log.d(TAG, "show loading dialog");
+			LogUtil.d(TAG, "show loading dialog");
 			mLoadingDialog = ProgressDialog.show(this, "", loadingText, true);
 			mLoadingDialog.setCancelable(false);
 			mLoadingDialog.setCanceledOnTouchOutside(false);
@@ -397,14 +397,14 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	protected void hideLoadingDialog() {
 		if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
-			Log.d(TAG, "hide loading dialog");
+			LogUtil.d(TAG, "hide loading dialog");
 			mLoadingDialog.dismiss();
 			mLoadingDialog = null;
 		}
 	}
 
 	protected void cancelRequests(ClientObserver observer) {
-		Log.d(TAG, "cancelRequests");
+		LogUtil.d(TAG, "cancelRequests");
 
 		mService.cancelRequests(observer);
 	}
@@ -476,7 +476,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 	void displayAlertDlg(GDAlertDialog dialog, int type) {
 
-		Log.d(TAG, " ====  displayAlertDlg == " + type);
+		LogUtil.d(TAG, " ====  displayAlertDlg == " + type);
 
 		switch (type) {
 		case DLG_TYPE_FILE_NOTEXIST: {
@@ -553,7 +553,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			mSmartcardState = mService.getSmartcardState();
 		}
 
-		Log.d(TAG, " ======== display smartcard state ==== " + mSmartcardState);
+		LogUtil.d(TAG, " ======== display smartcard state ==== " + mSmartcardState);
 
 		if (mSmartcardDlg == null || !mSmartcardDlg.isShowing()) {
 			// if (mSmartcardDlg == null
@@ -577,7 +577,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 	NotificationDialog mNotificationDialog = null;
 
 	protected void displayNotification(String message) {
-		Log.d(TAG, " ======= displayNotification ============ " + message);
+		LogUtil.d(TAG, " ======= displayNotification ============ " + message);
 
 		if (message != null && !message.isEmpty()) {
 			String[] data = message.split("\t");

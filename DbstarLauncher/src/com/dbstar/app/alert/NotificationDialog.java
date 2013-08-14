@@ -3,10 +3,6 @@ package com.dbstar.app.alert;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.dbstar.R;
-import com.dbstar.widget.GDMarqeeTextView;
-import com.dbstar.widget.text.ScrollingMovementMethod;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,11 +12,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.WindowManager;
-import android.view.WindowManager.LayoutParams;
 import android.widget.TextView;
+
+import com.dbstar.R;
+import com.dbstar.widget.GDMarqeeTextView;
+import com.dbstar.widget.text.ScrollingMovementMethod;
 
 public class NotificationDialog extends Dialog implements
 		DialogInterface.OnDismissListener {

@@ -5,9 +5,9 @@ import java.util.Locale;
 
 import com.dbstar.R;
 import com.dbstar.model.GDCalendarGB;
+import com.dbstar.util.LogUtil;
 
 import android.app.Activity;
-import android.util.Log;
 import android.widget.TextView;
 
 public class GDCelanderThread extends Thread {
@@ -71,7 +71,7 @@ public class GDCelanderThread extends Thread {
 
 	public void run() {
 		
-//		Log.d(TAG, "Begin Run!");
+//		LogUtil.d(TAG, "Begin Run!");
 		
 		while (!checkExit()) {
 			try {
@@ -83,7 +83,7 @@ public class GDCelanderThread extends Thread {
 						mUpdateLock.wait();
 					}
 
-					Log.d(TAG, "CelanderThread wait");
+					LogUtil.d(TAG, "CelanderThread wait");
 				}
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -92,12 +92,12 @@ public class GDCelanderThread extends Thread {
 			}
 		}
 		
-//		Log.d(TAG, "Exit!");
+//		LogUtil.d(TAG, "Exit!");
 	}
 
 	public void doWork() {
 
-//		Log.d(TAG, "doWork get focus = " + mParentActivity.hasWindowFocus());
+//		LogUtil.d(TAG, "doWork get focus = " + mParentActivity.hasWindowFocus());
 
 		mParentActivity.runOnUiThread(new Runnable() {
 			public void run() {

@@ -8,8 +8,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import com.dbstar.util.LogUtil;
+
 import android.os.SystemProperties;
-import android.util.Log;
 
 public class SystemUtils {
 
@@ -26,17 +27,17 @@ public class SystemUtils {
 	public static void setSystemStatus(String status) {
 		if (status == null)
 			return;
-		Log.d(TAG, "+++++++++++ setSystemStatus("+ status + ")");
+		LogUtil.d(TAG, "+++++++++++ setSystemStatus("+ status + ")");
 		SystemProperties.set(SystemStatusProperty, status);
 		String state = SystemProperties.get(SystemStatusProperty, "");
-		Log.d(TAG, "+++++++++++ getSystemStatus()=" + state);
+		LogUtil.d(TAG, "+++++++++++ getSystemStatus()=" + state);
 
 		return;
 	}
 
 	public static String getSystemStatus() {
 		String state = SystemProperties.get(SystemStatusProperty, "");
-		Log.d(TAG, "+++++++++++ getSystemStatus()=" + state);
+		LogUtil.d(TAG, "+++++++++++ getSystemStatus()=" + state);
 		return state;
 	}
 
@@ -70,7 +71,7 @@ public class SystemUtils {
 	public static void saveValueToFile(String path, int value) {
 		File file = new File(path);
 		
-		Log.d(TAG, " save value " + value + " to file: " + path);
+		LogUtil.d(TAG, " save value " + value + " to file: " + path);
 
 		try {
 			if (!file.exists()) {
@@ -83,7 +84,7 @@ public class SystemUtils {
 			dos.writeInt(value);
 			dos.close();
 			
-			Log.d(TAG, " write success !");
+			LogUtil.d(TAG, " write success !");
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -92,7 +93,7 @@ public class SystemUtils {
 	
 	public static int writeSysfs(String path, String val) {
 		if (!new File(path).exists()) {
-			Log.e(TAG, "File not found: " + path);
+			LogUtil.e(TAG, "File not found: " + path);
 			return 1;
 		}
 
@@ -100,21 +101,21 @@ public class SystemUtils {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(path), 64);
 			try {
 				writer.write(val);
-				Log.d(TAG, " write osd black ok!");
+				LogUtil.d(TAG, " write osd black ok!");
 			} finally {
 				writer.close();
 			}
 			return 0;
 
 		} catch (IOException e) {
-			Log.e(TAG, "IO Exception when write: " + path, e);
+			LogUtil.e(TAG, "IO Exception when write: " + path, e);
 			return 1;
 		}
 	}
 	
 	public static void setVideoSettings() {
 		if(SystemProperties.getInt(STR_1080SCALE, 0) == 2){
-            Log.d(TAG, "BOOT_COMPLETED - set video axis");
+            LogUtil.d(TAG, "BOOT_COMPLETED - set video axis");
             writeSysfs(VideoAxisFile, "0 0 1280 720");
             writeSysfs(DispFile, "1280 720");
         }

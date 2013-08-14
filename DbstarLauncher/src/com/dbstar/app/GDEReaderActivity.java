@@ -5,11 +5,11 @@ import java.io.File;
 import com.dbstar.R;
 import com.dbstar.browser.GDWebChromeClient;
 import com.dbstar.browser.GDWebViewClient;
+import com.dbstar.util.LogUtil;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebChromeClient;
@@ -48,7 +48,7 @@ public class GDEReaderActivity extends GDBaseActivity {
 			
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				Log.d(TAG, "onKey " + keyCode);
+			    LogUtil.d(TAG, "onKey " + keyCode);
 				boolean ret = false;
 				int action = event.getAction();
 				if (action == KeyEvent.ACTION_DOWN) {

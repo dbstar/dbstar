@@ -4,9 +4,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
-
-import android.content.Loader;
 
 public class DateUtil {
 
@@ -15,7 +12,8 @@ public class DateUtil {
 	public static final String DateFormat3 = "yyyy-01-01 00:00:00";
 	public static final String DateFormat4 = "yyyy-MM-dd";
 	public static final String DateFormat5 = "yyyy-MM-dd  00:00:00";
-	public static final String DateFormat6 = "yyyyMMddHHmmss";
+	public static final String DateFormat6 = "yyyyMMddHHmm00";
+	public static final String DateFormat7 = "yyyyMMddHHmmss";
 	public static Date getDateFromStr(String dateStr, String format) {
 		Date date = null;
 		try {

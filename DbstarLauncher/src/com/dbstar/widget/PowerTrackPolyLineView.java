@@ -12,7 +12,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
-import android.util.Log;
 
 
 public class PowerTrackPolyLineView extends DrawBase{
@@ -103,6 +102,7 @@ public class PowerTrackPolyLineView extends DrawBase{
                 minIndex =  i;
             }
 		}
+		  int scale = 1;
 		if(maxData == 0)
 		{
 			f=0;
@@ -110,7 +110,18 @@ public class PowerTrackPolyLineView extends DrawBase{
 		}
 		else
 		{
-			f = (mHeight  - paddingTop  - paddingBottom )/(maxData);//��λY�����ʵ�����
+		    maxData = maxData + (maxData / (degreeCount -1));
+		    if(maxData >=1){
+              scale = 1;
+            }else if(maxData >=0.1  && maxData < 1 ){
+                scale = 2;
+            }else if(maxData >= 0.01  && maxData < 0.1){
+                scale =3;
+            }else if(maxData > 0 && maxData < 0.01){
+                scale = 4;
+            }
+		    
+			f = (mHeight  - paddingTop  - paddingBottom )/(maxData);//
 		}	
 		textYInterval = (mHeight  - paddingTop  - paddingBottom )/degreeCount;
 		origin_Y = paddingTop+textYInterval*degreeCount;
@@ -120,18 +131,18 @@ public class PowerTrackPolyLineView extends DrawBase{
 		for(int i = 0; i <degreeCount+1; i++)
 		{
 
-			textY[i] = CommondTools.round(maxData/degreeCount*i,0);
+			textY[i] = CommondTools.round(maxData/degreeCount*i,scale);
 
 		}
 		/*******   yang.xu        2012-11-29  V4.0.6       BUG-0000994   begin ******/
-		for(int i = 0; i < textY.length; i++)
-		{
-			if(maxData/1000000 > 1){
-				textY[i] = split(String.valueOf(Double.valueOf(textY[i].replace("-", "").replace(",", ""))/1000000))+"M";
-			}else if(maxData < 1000000 && maxData > 1000){
-				textY[i] = split(String.valueOf(Double.valueOf(textY[i].replace("-", "").replace(",", ""))/1000))+"K";
-			}
-		}
+//		for(int i = 0; i < textY.length; i++)
+//		{
+//			if(maxData/1000000 > 1){
+//				textY[i] = split(String.valueOf(Double.valueOf(textY[i].replace("-", "").replace(",", ""))/1000000))+"M";
+//			}else if(maxData < 1000000 && maxData > 1000){
+//				textY[i] = split(String.valueOf(Double.valueOf(textY[i].replace("-", "").replace(",", ""))/1000))+"K";
+//			}
+//		}
 		/*******   yang.xu        2012-11-29  V4.0.6       BUG-0000994   end ******/
 		textX = xTextdata;
 	}
@@ -189,15 +200,6 @@ public class PowerTrackPolyLineView extends DrawBase{
 	private void initPointXY(Canvas canvas)
 	{
 	
-		 
-		Log.e("drawCurve", "drawCurve");
-//		for(int i = 0; i < textXSize; i++)
-//		{	
-//			Log.e("data.get(i)", ""+data1.get(i));
-//		}
-
-		Log.e("paddingLeft  2 ", paddingLeft +"");
-
 		Point point = null;
 		for(int i = 0; i < this.mPointYData.size(); i++)
 		{

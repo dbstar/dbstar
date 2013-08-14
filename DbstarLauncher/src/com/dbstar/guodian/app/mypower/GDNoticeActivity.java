@@ -8,7 +8,6 @@ import java.util.List;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,12 +19,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.dbstar.R;
-import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.app.base.GDSmartActivity;
+import com.dbstar.guodian.data.JsonTag;
+import com.dbstar.guodian.data.Notice;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.model.EventData;
 import com.dbstar.util.DateUtil;
-import com.dbstar.widget.text.ScrollingMovementMethod;
-import com.dbstar.guodian.app.base.GDSmartActivity;
-import com.dbstar.guodian.data.Notice;
+import com.dbstar.util.LogUtil;
+import com.dbstar.widget.CircleFlowIndicator;
+import com.dbstar.widget.GDNewsViewGoup;
+import com.dbstar.widget.GDNewsViewGoup.OnUpdatePageListener;
 
 public class GDNoticeActivity extends GDSmartActivity {
 
@@ -43,18 +47,23 @@ public class GDNoticeActivity extends GDSmartActivity {
 	private ListAdapter mNoticesAdapter;
 	private int mViewMode;
 	private ViewGroup mDetailContainer, mListContainer;
-	private TextView mTitle, mContent;
+	private TextView mTitle;
+	private GDNewsViewGoup mGdNewsViewGoup;
 	private TextView mItemCountView, mPageNumberView;
 
 	private String mStrGong, mStrTiao, mStrDi, mStrYe;
-
+	
+	private CircleFlowIndicator mIndicator;
+	private TextView mContentPageCount,mContentPgeNumber;
+	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.mypower_noticesview);
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
-
+		mSystemFlag = "elc";
+		mRequestMethodId = "m007f001";
 		initializeView();
 
 		if (mMenuPath != null) {
@@ -89,17 +98,35 @@ public class GDNoticeActivity extends GDSmartActivity {
 
 		mItemCountView = (TextView) findViewById(R.id.notices_count);
 		mPageNumberView = (TextView) findViewById(R.id.notices_pages);
-
+		
+		mContentPageCount = (TextView) findViewById(R.id.content_page_count);
+        mContentPgeNumber = (TextView) findViewById(R.id.content_page_number);
+        mIndicator = (CircleFlowIndicator) findViewById(R.id.indicator);
+        
+        
 		mListContainer = (ViewGroup) findViewById(R.id.list_view);
 		mListView = (ListView) findViewById(R.id.listview);
 		mNoticesAdapter = new ListAdapter();
 		mListView.setAdapter(mNoticesAdapter);
-
+		
+		
 		mDetailContainer = (ViewGroup) findViewById(R.id.detail);
+		mDetailContainer.setVisibility(View.GONE);
+		
 		mTitle = (TextView) findViewById(R.id.title);
-		mContent = (TextView) findViewById(R.id.content);
-		mContent.setMovementMethod(new ScrollingMovementMethod(true));
-
+		mGdNewsViewGoup = (GDNewsViewGoup) findViewById(R.id.content);
+		//mContent.setMovementMethod(new ScrollingMovementMethod(true));
+		 mGdNewsViewGoup.setOnUpdatePageListener(new OnUpdatePageListener() {
+	            
+	            @Override
+	            public void onUpdate(int totalPage, int currentPage) {
+	                mIndicator.setPageCount(totalPage);
+	                mIndicator.setCurrentPage(currentPage -1);
+	                mContentPageCount.setText(String.valueOf(totalPage));
+	                mContentPgeNumber.setText(String.valueOf(currentPage));
+	            }
+	        });
+	        
 		mListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -114,7 +141,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				Log.d(TAG, " ===== onKey === " + keyCode);
+				LogUtil.d(TAG, " ===== onKey === " + keyCode);
 				boolean ret = false;
 				int action = event.getAction();
 				if (action == KeyEvent.ACTION_DOWN) {
@@ -148,10 +175,10 @@ public class GDNoticeActivity extends GDSmartActivity {
 	}
 
 	private void loadPrevPage() {
-		Log.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
+		LogUtil.d(TAG, "loadPrevPage count=" + mPageCount + " number= "
 				+ mPageNumber);
 
-		Log.d(TAG, "loadPrevPage");
+		LogUtil.d(TAG, "loadPrevPage");
 		mPageNumber--;
 
 		Notice[] notices = mPagesData.get(mPageNumber);
@@ -164,7 +191,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 	}
 
 	private void loadNextPage() {
-		Log.d(TAG, "loadNextPage count=" + mPageCount + " number= "
+		LogUtil.d(TAG, "loadNextPage count=" + mPageCount + " number= "
 				+ mPageNumber);
 
 		mPageNumber++;
@@ -180,31 +207,35 @@ public class GDNoticeActivity extends GDSmartActivity {
 
 	protected void onServiceStart() {
 		super.onServiceStart();
-		Log.d(TAG, "onServiceStart");
-
-		requestData(GDConstract.DATATYPE_NOTICES, "");
+		LogUtil.d(TAG, "onServiceStart");
+		RequestParams params = new RequestParams(GDRequestType.DATATYPE_NOTICES);
+		params.put(RequestParams.KEY_SYSTEM_FLAG,mSystemFlag);
+		params.put(RequestParams.KEY_METHODID, mRequestMethodId);
+		if(getCtrlNo() != null)
+		    params.put(JsonTag.TAGNumCCGuid, getCtrlNo().CtrlNoGuid);
+		requestData(params);
 	}
 
 	public void notifyEvent(int type, Object event) {
+	    super.notifyEvent(type, event);
 		if (type == EventData.EVENT_GUODIAN_DATA) {
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}else if(type == EventData.EVENT_GUODIAN_DATA_ERROR){
-		    handleErrorResponse(R.string.loading_error);
+		    showErrorMsg(R.string.loading_error);
 		    return;
 		}
-		super.notifyEvent(type, event);
 	}
 	
 
 
 	private void handlePowerData(int type, Object data) {
 		if (data == null) {
-			Log.d(TAG, "ERROR: data is null");
+			LogUtil.d(TAG, "ERROR: data is null");
 			return;
 		}
 
-		if (type == GDConstract.DATATYPE_NOTICES) {
+		if (type == GDRequestType.DATATYPE_NOTICES) {
 			ArrayList<Notice> notices = (ArrayList<Notice>) data;
 			sortList(notices);
 			constructPages(notices);
@@ -247,8 +278,10 @@ public class GDNoticeActivity extends GDSmartActivity {
 		Notice[] page = mPagesData.get(pageNumber);
 		mNoticesAdapter.setDataSet(page);
 		mNoticesAdapter.notifyDataSetChanged();
-		
 		displayPageNumber(pageNumber);
+        mListView.setFocusableInTouchMode(true);
+        mListView.setFocusable(true);
+        mListView.requestFocus();
 	}
 	
 	private void displayPageNumber(int pageNumber) {
@@ -265,10 +298,10 @@ public class GDNoticeActivity extends GDSmartActivity {
 			Notice notice = page[index];
 
 			mTitle.setText(notice.Title);
-			mContent.setText(notice.Content);
-			mContent.setFocusableInTouchMode(true);
-            mContent.setFocusable(true);
-            mContent.requestFocus();
+			mGdNewsViewGoup.setData(null, notice.Content);
+			mListView.setFocusableInTouchMode(false);
+            mListView.setFocusable(false);
+            mListView.clearFocus();
 			mListContainer.setVisibility(View.GONE);
 			mDetailContainer.setVisibility(View.VISIBLE);
 			mViewMode = MODE_DETAIL;
@@ -277,6 +310,9 @@ public class GDNoticeActivity extends GDSmartActivity {
 		} else {
 			mListContainer.setVisibility(View.VISIBLE);
 			mDetailContainer.setVisibility(View.GONE);
+			mListView.setFocusableInTouchMode(true);
+            mListView.setFocusable(true);
+            mListView.requestFocus();
 			mViewMode = MODE_LIST;
 		}
 	}
@@ -322,7 +358,7 @@ public class GDNoticeActivity extends GDSmartActivity {
 			ViewHolder holder = null;
 			if (null == convertView) {
 				LayoutInflater inflater = getLayoutInflater();
-				convertView = inflater.inflate(R.layout.noticelist_item,
+				convertView = inflater.inflate(R.layout.gd_news_flash_item,
 						parent, false);
 
 				holder = new ViewHolder();
@@ -337,10 +373,10 @@ public class GDNoticeActivity extends GDSmartActivity {
 			}
 
 			int index = mPageNumber * PageSize + position + 1;
-			holder.index.setText(String.valueOf(index));
+			holder.index.setText(String.valueOf(index) + "、");
 			holder.title.setText(mDataSet[position].Title);
 			String text = mDataSet[position].Date;
-			holder.date.setText(DateUtil.getStringFromDateString(mDataSet[position].Date, DateUtil.DateFormat1));
+			holder.date.setText(DateUtil.getStringFromDateString(mDataSet[position].Date, DateUtil.DateFormat4));
 
 			return convertView;
 		}

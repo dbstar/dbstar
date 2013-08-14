@@ -1,6 +1,7 @@
 package com.dbstar.service;
 
 import com.dbstar.model.GDCommon;
+import com.dbstar.util.LogUtil;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -10,7 +11,6 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 public class GDAudioController extends BroadcastReceiver {
 	private static final String TAG = "GDAudioController";
@@ -49,7 +49,7 @@ public class GDAudioController extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
-		Log.d(TAG, "=== receive === " + action);
+		LogUtil.d(TAG, "=== receive === " + action);
 
 		if (action.equals(ActionMute)) {
 			boolean mute = intent.getBooleanExtra("key_mute", false);

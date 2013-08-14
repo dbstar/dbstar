@@ -4,7 +4,6 @@ import java.util.Map;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -13,6 +12,7 @@ import android.widget.TextView;
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.LogUtil;
 
 public class GDSettingActivity extends GDBaseActivity {
 
@@ -81,7 +81,7 @@ public class GDSettingActivity extends GDBaseActivity {
 						TextView textView = (TextView) mCurrentEditView;
 						textView.setText(mInputTextView.getEditableText()
 								.toString());
-						Log.d(TAG, "text=" + textView.getText() + " "
+						LogUtil.d(TAG, "text=" + textView.getText() + " "
 								+ mInputTextView.getEditableText().toString());
 					}
 				});

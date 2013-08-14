@@ -1,30 +1,24 @@
 package com.dbstar.service;
 
-import java.io.File;
-
-import com.dbstar.app.GDApplication;
-import com.dbstar.model.GDCommon;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.SystemProperties;
 import android.os.storage.IMountService;
-import android.os.storage.StorageEventListener;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
-import android.os.storage.IMountService;
-import android.os.SystemProperties;
-import android.util.Log;
+
+import com.dbstar.app.GDApplication;
+import com.dbstar.model.GDCommon;
+import com.dbstar.util.LogUtil;
 
 public class DiskFormatter {
 	static final String TAG = "DiskFormatter";
@@ -81,7 +75,7 @@ public class DiskFormatter {
 			return;
 		}
 		
-		Log.d(TAG, " volume : " + path + " status:" + newState);
+		LogUtil.d(TAG, " volume : " + path + " status:" + newState);
 
 		String status = newState;
 
@@ -139,7 +133,7 @@ public class DiskFormatter {
 					
 					String propertyValue = SystemProperties.get(DiskManageStatePrepertyName);
 					if (propertyValue.equals("stopped")) {
-						Log.d(TAG, "format finished!");
+						LogUtil.d(TAG, "format finished!");
 						successed = true;
 						break;
 					}
@@ -175,13 +169,13 @@ public class DiskFormatter {
 		mExternalStorageReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				Log.i(TAG, "Storage: " + intent.getData());
+				LogUtil.i(TAG, "Storage: " + intent.getData());
 				
 				String action = intent.getAction();
 				Uri uri = intent.getData();
 				
-				Log.d(TAG, "---- action " + action);
-				Log.d(TAG, "---- disk:" + uri.toString());
+				LogUtil.d(TAG, "---- action " + action);
+				LogUtil.d(TAG, "---- disk:" + uri.toString());
 
 				if (action.equals(Intent.ACTION_MEDIA_REMOVED)
 						|| action.equals(Intent.ACTION_MEDIA_BAD_REMOVAL)
@@ -218,10 +212,10 @@ public class DiskFormatter {
 				mountService.unmountVolume(disk, true, false);
 				ret = true;
             } else {
-                Log.e(TAG, "Mount service is null, can't mount");
+                LogUtil.e(TAG, "Mount service is null, can't mount");
             }
         } catch (RemoteException e) {
-			Log.e(TAG, "unmount failed!");
+			LogUtil.e(TAG, "unmount failed!");
 		}
         
         return ret;
@@ -233,10 +227,10 @@ public class DiskFormatter {
             if (mountService != null) {
                 mountService.mountVolume(disk);
             } else {
-                Log.e(TAG, "Mount service is null, can't mount");
+                LogUtil.e(TAG, "Mount service is null, can't mount");
             }
         } catch (RemoteException ex) {
-			Log.e(TAG, "mount failed!");
+			LogUtil.e(TAG, "mount failed!");
         }
     }
 
@@ -257,7 +251,7 @@ public class DiskFormatter {
 			if (service != null) {
 				mMountService = IMountService.Stub.asInterface(service);
 			} else {
-				Log.e(TAG, "Can't get mount service");
+				LogUtil.e(TAG, "Can't get mount service");
 			}
 		}
 		return mMountService;
@@ -282,7 +276,7 @@ public class DiskFormatter {
 //		@Override
 //		public void onStorageStateChanged(String path, String oldState,
 //				String newState) {
-//			Log.i(TAG, "Storage state changed :" + path + ":" + oldState
+//			LogUtil.i(TAG, "Storage state changed :" + path + ":" + oldState
 //					+ " to " + newState);
 //			updateProgressState(path, newState);
 //		}
@@ -291,7 +285,7 @@ public class DiskFormatter {
 	
 	// this is not tested, maybe not work.
 //	public void startFormat(String disk, Handler handler) {
-//		Log.d(TAG, "format disk:" + disk);
+//		LogUtil.d(TAG, "format disk:" + disk);
 //		
 //		mHandler = handler;
 //		
@@ -312,7 +306,7 @@ public class DiskFormatter {
 //		for (StorageVolume volume : storageVolumes) {
 //			String path = volume.getPath();
 //			
-//			Log.d(TAG, " volume list: volume=" + path);
+//			LogUtil.d(TAG, " volume list: volume=" + path);
 //			
 //			if (path != null && path.equals(disk)
 //					&& path.length() == disk.length()) {
@@ -342,7 +336,7 @@ public class DiskFormatter {
 //		String status = mStorageManager
 //				.getVolumeState(mStorageVolume.getPath());
 //		
-//		Log.d(TAG, " volume : " + mStorageVolume.getPath() + " status:" + status);	
+//		LogUtil.d(TAG, " volume : " + mStorageVolume.getPath() + " status:" + status);	
 //
 //		if (Environment.MEDIA_MOUNTED.equals(status)
 //				|| Environment.MEDIA_MOUNTED_READ_ONLY.equals(status)) {
@@ -352,7 +346,7 @@ public class DiskFormatter {
 //			try {
 //				mountService.unmountVolume(extStoragePath, true, false);
 //			} catch (RemoteException e) {
-//				Log.w(TAG, "Failed talking with mount service", e);
+//				LogUtil.w(TAG, "Failed talking with mount service", e);
 //				
 //				formatFailed(String.valueOf(ErrUnMountError));
 //			}
@@ -382,7 +376,7 @@ public class DiskFormatter {
 //							try {
 //								mountService.mountVolume(extStoragePath);
 //							} catch (RemoteException e) {
-//								Log.w(TAG, "Failed talking with mount service",
+//								LogUtil.w(TAG, "Failed talking with mount service",
 //										e);
 //								
 //								formatFailed(String.valueOf(ErrMountError));
@@ -399,7 +393,7 @@ public class DiskFormatter {
 //					}
 //				}.start();
 //			} else {
-//				Log.w(TAG, "Unable to locate IMountService");
+//				LogUtil.w(TAG, "Unable to locate IMountService");
 //			}
 //		} else if (Environment.MEDIA_BAD_REMOVAL.equals(status)) {
 //			formatFailed(String.valueOf(ErrBadRemoval));

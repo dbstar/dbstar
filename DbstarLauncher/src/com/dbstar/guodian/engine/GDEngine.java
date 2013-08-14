@@ -21,6 +21,7 @@ public class GDEngine {
 	public static final int MSG_CONNECT_ALREADY = 0x1003;
 	public static final int MSG_CONNECT_FAILED = 0x1004;
 	public static final int MSG_RECONNECTING = 0x1005;
+	public static final int MSG_CONNECTING = 0x1006;
 	
 	public static final int MSG_REQUEST_FINISHED = 0x10B0;
 	public static final int MSG_REQUEST_ERROR = 0x10B1;
@@ -63,6 +64,10 @@ public class GDEngine {
 			@Override
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
+				case MSG_CONNECTING: {
+					handleConnecting();
+					break;
+				}
 				case MSG_CONNECTED: {
 					handleConnected();
 					break;
@@ -71,6 +76,7 @@ public class GDEngine {
 					handleConnectedAlready();
 					break;
 				}
+				
 				case MSG_REQUEST_FINISHED: {
 					handleFinishedRequest((Task) msg.obj);
 					break;
@@ -80,6 +86,10 @@ public class GDEngine {
 					break;
 				}
 				
+				case MSG_DISCONNECTED: {
+					handleDisconnected();
+					break;
+				}
 				case MSG_CONNECT_FAILED: {
 					handleConnectFailed();
 					break;
@@ -121,6 +131,7 @@ public class GDEngine {
 		mReconnectTime = time;
 	}
 	
+	// engine will call this to restart connection by 30s later.
 	public void restart() {
 		Log.d(TAG, " == restart == ");
 
@@ -128,29 +139,29 @@ public class GDEngine {
 		mLoginState = LOGIN_NOTLOGIN;
 		
 		mClient.connectToServerDelayed(mReconnectTime);
-		
-		mHander.postDelayed(new Runnable() {
-				public void run() {
-					handleReconnect();
-				}
-		}, mReconnectTime);
 	}
 	
+	// user will call this to connect to server,
+	// so clear all pending request first!
 	public void reconnect() {
 		Log.d(TAG, " == resconnect == ");
-
-		mState = STATE_CONNECTING;
-		mLoginState = LOGIN_NOTLOGIN;
 		
+		if (mState == STATE_CONNECTING) {
+			Log.d(TAG, "engine is connecting to the server!");
+			return;
+		}
+
+		mState = STATE_NONE;
+		mLoginState = LOGIN_NOTLOGIN;
+
+		mClient.purge();
 		mClient.connectToServer();
 	}
 
 	public void stop() {
 		Log.d(TAG, " ===== stop guodian engine ======= ");
-		mState = STATE_DISCONNECTED;
+		mClient.purge();
 		mClient.stop();
-		
-		notifyEvent(EventData.EVENT_GUODIAN_DISCONNECTED, null);
 	}
 	
 	public void destroy() {
@@ -714,7 +725,14 @@ public class GDEngine {
 		}
 	}
 	
+	private void handleConnecting() {
+		Log.d(TAG, " == handleConnecting == ");
+		mState = STATE_CONNECTING;
+	}
+	
 	private void handleReconnect() {
+		Log.d(TAG, " == handleReconnect == ");
+		mState = STATE_CONNECTING;
 		notifyEvent(EventData.EVENT_GUODIAN_RECONNECTTING, null);
 	}
 	
@@ -725,6 +743,12 @@ public class GDEngine {
 		restart();
 	}
 
+	private void handleDisconnected() {
+		Log.d(TAG, " == handleDisconnected == ");
+		mState = STATE_DISCONNECTED;
+		notifyEvent(EventData.EVENT_GUODIAN_DISCONNECTED, null);
+	}
+	
 	private void handleConnectFailed() {
 		Log.d(TAG, " == handleConnectFailed == ");
 		notifyEvent(EventData.EVENT_GUODIAN_CONNECT_FAILED, null);

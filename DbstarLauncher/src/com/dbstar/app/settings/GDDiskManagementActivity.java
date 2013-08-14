@@ -10,12 +10,12 @@ import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDiskInfo;
+import com.dbstar.util.LogUtil;
 import com.dbstar.util.StringUtil;
 
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -47,7 +47,7 @@ public class GDDiskManagementActivity extends GDBaseActivity {
 
 		Intent intent = getIntent();
 		mDisk = intent.getStringExtra(GDCommon.KeyDisk);
-		Log.d(TAG, "disk = " + mDisk);
+		LogUtil.d(TAG, "disk = " + mDisk);
 		
 		setContentView(R.layout.diskmanagement_view);
 		

@@ -12,7 +12,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
-import android.util.Log;
 import android.view.View;
 
 import com.dbstar.R;

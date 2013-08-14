@@ -33,7 +33,7 @@ import com.dbstar.guodian.data.RoomData;
 import com.dbstar.guodian.data.TimedTask;
 import com.dbstar.guodian.data.RoomData.ElecRefreshResponse;
 import com.dbstar.guodian.data.RoomData.ElecTurnResponse;
-import com.dbstar.guodian.data.RoomData.RoomEletrical;
+import com.dbstar.guodian.data.RoomData.RoomElectrical;
 import com.dbstar.guodian.data.SPCConstitute;
 import com.dbstar.guodian.data.ElectricalOperationMode.ModeElectrical;
 import com.dbstar.guodian.data.PaymentRecord.Record;
@@ -189,10 +189,18 @@ public class GDClient {
 		mHostPort = port;
 	}
 
+	public void purge() {
+		mClientHandler.removeMessages(MSG_COMMAND);
+		mClientHandler.removeMessages(MSG_REQUEST);
+		mClientHandler.removeMessages(MSG_RESPONSE);
+		mClientHandler.removeMessages(MSG_SOCKET_ERROR);
+	}
+	
 	public void connectToServer() {
 	    Log.d(TAG, "connectToServer");
 		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
 		msg.arg1 = CMD_CONNECT;
+		msg.obj = new Boolean(false);
 		msg.sendToTarget();
 	}
 
@@ -200,6 +208,7 @@ public class GDClient {
 		Log.d(TAG, "connectToServerDelayed" + delayMillis);
 		Message msg = mClientHandler.obtainMessage(MSG_COMMAND);
 		msg.arg1 = CMD_CONNECT;
+		msg.obj = new Boolean(true);
 		mClientHandler.sendMessageDelayed(msg, delayMillis);
 	}
 
@@ -678,18 +687,19 @@ public class GDClient {
 		Log.d(TAG, " ============ destroy GDClient thread ============");
 		mClientThread.quit();
 
-		doStop();
+		doStop(false);
 	}
 
 	// run in client thread
 	private void performCommand(int cmdType, Object cmdData) {
 		switch (cmdType) {
 		case CMD_CONNECT: {
-			doConnectToServer();
+			boolean reconnect = (Boolean)cmdData;
+			doConnectToServer(reconnect);
 			break;
 		}
 		case CMD_STOP: {
-			doStop();
+			doStop(true);
 			break;
 		}
 		}
@@ -832,7 +842,7 @@ public class GDClient {
             task.ParsedData = track;
 		    break;
 		case REQUEST_EQUMENTLIST:
-		    List<RoomEletrical> elelist = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
+		    List<RoomElectrical> elelist = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
             task.ParsedData = elelist;
 		    break;
 		case REQUEST_POWER_CONSUMPTION_TREND:
@@ -850,7 +860,7 @@ public class GDClient {
 		    task.ParsedData = rooms;
 		    break;
 		case REQUEST_ROOM_ELECTRICAL_LIST:
-            List<RoomEletrical> eles = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
+            List<RoomElectrical> eles = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
             task.ParsedData = eles;
             break;
 		case REQUEST_TURN_ON_OFF_ELECTRICAL:
@@ -948,14 +958,14 @@ public class GDClient {
 	private void handleSocketError() {
 		Log.d(TAG, " === handleSocketError ===");
 
-		doStop();
+		doStop(false);
 
 		if (mAppHander != null) {
 			mAppHander.sendEmptyMessage(GDEngine.MSG_SOCKET_ERROR);
 		}
 	}
 
-	private void doConnectToServer() {
+	private void doConnectToServer(boolean reconnect) {
 		try {
 			Log.d(TAG, " ====== doConnectToServer ===");
 
@@ -976,7 +986,12 @@ public class GDClient {
 			}
 
 			Log.d(TAG, " server ip = " + mHostAddr + " port=" + mHostPort);
-
+			if (reconnect) {
+				mAppHander.sendEmptyMessage(GDEngine.MSG_RECONNECTING);
+			} else {
+				mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECTING);
+			}
+			
 			mSocket = new Socket(mHostAddr, mHostPort);
 			mSocket.setKeepAlive(true);
 
@@ -1002,7 +1017,7 @@ public class GDClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 
-			doStop();
+			doStop(false);
 
 			mAppHander.sendEmptyMessage(GDEngine.MSG_CONNECT_FAILED);
 			return;
@@ -1041,9 +1056,9 @@ public class GDClient {
 
 	// stop receive thread,
 	// close socket.
-	private void doStop() {
+	private void doStop(boolean feedback) {
 		Log.d(TAG, " ============ doStop ============");
-
+		
 		if (mInThread != null) {
 			mInThread.setExit();
 			mInThread = null;
@@ -1085,6 +1100,10 @@ public class GDClient {
 
 			mSocket = null;
 			mWaitingQueue.clear();
+			
+			if (feedback) {
+				mAppHander.sendEmptyMessage(GDEngine.MSG_DISCONNECTED);
+			}
 
 			Log.d(TAG, " ============ stop 2 ============");
 		}

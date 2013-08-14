@@ -5,11 +5,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 import com.dbstar.R;
 import com.dbstar.guodian.app.familyefficency.GDPowerConstitueActivity;
 import com.dbstar.guodian.app.familyefficency.GDPowerConsumptionTrackActivity;
 import com.dbstar.guodian.app.familyefficency.GDPowerConsumptionTrendActivity;
 import com.dbstar.guodian.app.familyefficency.GDPowerTipsActivity;
+import com.dbstar.guodian.app.newsflash.GDNewsFlashActivity;
 import com.dbstar.guodian.app.smarthome.GDSmartHomeModeActivity;
 import com.dbstar.guodian.app.smarthome.GDSmartHomeMyEleActivity;
 import com.dbstar.guodian.app.smarthome.GDSmartHomeTimedTaskActivity;
@@ -20,22 +30,16 @@ import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.guodian.parse.Util;
 import com.dbstar.model.GDCommon;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.util.DateUtil;
+import com.dbstar.util.LogUtil;
+import com.dbstar.widget.CommondTools;
 import com.dbstar.widget.GDArcView;
 import com.dbstar.widget.GDCircleTextView;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 public class GDPowerController {
 	private static final String TAG = "GDPowerController";
@@ -78,25 +82,27 @@ public class GDPowerController {
 	private TextView mTimePowerPeriodView, mTimePowerPeriodTimeView;
 	private GDArcView mTimingPowerPeriodPointer;
 
-	private String mMonthUsageStr, mMonthCostStr, mYearUsageStr, mYearCostStr;
+	private String mUsageStr, mCostStr;
 	private String Yuan, Degree;
 	private String mCycleType;
 	private Handler mHandler = null;
-
+	private boolean mIsAmmeterData;
+	private RequestParams mCacheParams;
+	
 	public GDPowerController(Activity activity) {
 		mActivity = activity;
 
 		Yuan = activity.getResources().getString(R.string.string_yuan);
 		Degree = activity.getResources().getString(R.string.string_degree);
-		mMonthUsageStr = activity.getResources().getString(
+		mUsageStr = activity.getResources().getString(
 				R.string.mypower_monthpowerusage);
-		mMonthCostStr = activity.getResources().getString(
+		mCostStr = activity.getResources().getString(
 				R.string.mypower_monthpowercost);
 
-		mYearUsageStr = activity.getResources().getString(
-				R.string.mypower_yearpowerusage);
-		mYearCostStr = activity.getResources().getString(
-				R.string.mypower_yearpowercost);
+//		mUsageStr = activity.getResources().getString(
+//				R.string.mypower_yearpowerusage);
+//		mCostStr = activity.getResources().getString(
+//				R.string.mypower_yearpowercost);
 
 		// Power View
 		mPowerUsedDegreeView = (TextView) activity
@@ -146,8 +152,8 @@ public class GDPowerController {
 		mTimingPowerPeriodPointer = (GDArcView) activity
 				.findViewById(R.id.timingpower_periodpointer);
 
-		mPowerUsedDegreeView.setText(mMonthUsageStr + " 0 " + Degree);
-		mPowerUsedCostView.setText(mMonthCostStr + " 0 " + Yuan);
+		mPowerUsedDegreeView.setText(mUsageStr + " 0 " + Degree);
+		mPowerUsedCostView.setText(mCostStr + " 0 " + Yuan);
 		mStepPowerPointer.setRotation(0);
 		mStepPowerStepView.setText("");
 		mStepPowerPriceView.setText("");
@@ -199,10 +205,38 @@ public class GDPowerController {
 
 	public void getPowerData() {
 		if (mService != null) {
-			mService.requestPowerData(GDConstract.DATATYPE_POWERPANELDATA, null);
-			requestEPCConstitute();
+		    RequestParams params = new RequestParams(GDRequestType.DATATYPE_POWERPANELDATA);
+		    
+            if (mLoginData == null) {
+                return;
+            }
+            if (mLoginData.CtrlNo == null
+                    || mLoginData.CtrlNo.CtrlNoGuid == null) {
+                return;
+            }
+
+            String ccguid = mLoginData.CtrlNo.CtrlNoGuid;
+
+            if (mLoginData.UserData == null
+                    || mLoginData.UserData.UserInfo == null
+                    || mLoginData.UserData.UserInfo.UserType == null) {
+                return;
+            }
+
+		   String userType = mLoginData.UserData.UserInfo.UserType;
+		    params.put(RequestParams.KEY_SYSTEM_FLAG, "elc");
+		    params.put(RequestParams.KEY_METHODID,"m008f001");
+		    params.put(JsonTag.TAGNumCCGuid, ccguid);
+	        params.put(JsonTag.TAGUser_Type, userType);
+			mService.requestData(params);
+			mCacheParams = params;
 		}
 		mHandler.sendEmptyMessageDelayed(MSG_GETPOWER, SCHEDULE_INTERVAL);
+	}
+	
+	public void reRequestData(){
+	    if(mCacheParams != null)
+	        mService.requestData(mCacheParams);
 	}
 
 	public void handleLogin(LoginData data) {
@@ -239,27 +273,40 @@ public class GDPowerController {
         params.put(JsonTag.TAGDateEnd, end);
         params.put(JsonTag.TAGDateType, date_type);
         params.put(JsonTag.TAGUser_Type, userType);
-        mService.requestPowerData(GDConstract.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE, params);
+        RequestParams reqParams = new RequestParams(GDRequestType.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE);
+        reqParams.put(RequestParams.KEY_SYSTEM_FLAG,"elc");
+        reqParams.put(RequestParams.KEY_METHODID, "m008f007");
+        reqParams.setParams(params);
+        mService.requestData(reqParams);
+        mCacheParams = reqParams;
     }
 	public void updateElectriDimension(EPCConstitute dimension){
+	    if(dimension != null){
+	       if(mLoginData != null){
+	           if(dimension.totalPower != null)
+	               mLoginData.ControlledPowerCount = dimension.totalPower.Count;
+	       }
+	    }
+	    
+	    if(mIsAmmeterData)
+	        return;
 	        if(dimension == null || dimension.totalPower == null)
 	            return ;
-	        if(dimension.totalPower.Count == null || dimension.totalPower.Fee == null)
-	            return;
-	        String powerNumStr = "", powerFeeStr = "";
 	        if(ElectricityPrice.CYCLETYPE_YEAR.equals(mCycleType)){
-	            powerNumStr = mYearUsageStr + dimension.totalPower.Count + " " + Degree;
-                powerFeeStr = mYearCostStr + dimension.totalPower.Fee + " " + Yuan;
+	            mUsageStr = mActivity.getResources().getString(R.string.mypower_yearpowerusage);
+                mCostStr = mActivity.getResources().getString(R.string.mypower_yearpowercost);
 	        }else{
-	            powerNumStr = mMonthUsageStr + dimension.totalPower.Count + " " + Degree;
-                powerFeeStr = mMonthCostStr + dimension.totalPower.Fee + " " + Yuan;
+	            mUsageStr = mActivity.getResources().getString(R.string.mypower_monthpowerusage);
+                mCostStr = mActivity.getResources().getString(R.string.mypower_monthpowercost);
 	        }
-	        mPowerUsedDegreeView.setText(powerNumStr);
-	        mPowerUsedCostView.setText(powerFeeStr);
+	        mPowerUsedDegreeView.setText(mUsageStr + CommondTools.round(Util.getFloatFromString(dimension.totalPower.Count), 2) + Degree);
+	        mPowerUsedCostView.setText(mCostStr + CommondTools.round(Util.getFloatFromString(dimension.totalPower.Fee), 2)+ Yuan);
 	}
 	public void updatePowerPanel(PowerPanelData data) {
-
-		Log.d(TAG, " ===== updatePowerPanel ===== ");
+	    
+	    requestEPCConstitute();
+	    
+	    LogUtil.d(TAG, " ===== updatePowerPanel ===== ");
 
 		if (data == null)
 			return;
@@ -281,7 +328,6 @@ public class GDPowerController {
 			return;
 		}
 
-		//String powerNumStr = "", powerFeeStr = "";
 		if (status.CycleType != null) {
 		 if (status.CycleType.equals(ElectricityPrice.CYCLETYPE_YEAR)) {
 		         mCycleType = ElectricityPrice.CYCLETYPE_YEAR;
@@ -289,11 +335,11 @@ public class GDPowerController {
     				powerNum = data.YearPower.Count;
     				powerFee = data.YearPower.Fee;
     				if(powerNum != null && powerFee != null){
-//        				powerNumStr = mYearUsageStr + powerNum + " " + Degree;
-//        				powerFeeStr = mYearCostStr + powerFee + " " + Yuan;
-        
+    				    mUsageStr = mActivity.getResources().getString(R.string.mypower_yearpowerusage2);
+    				    mCostStr = mActivity.getResources().getString(R.string.mypower_yearpowercost2);
         				powerNumValue = Util.getFloatFromString(powerNum);
                         powerFeeValue = Util.getFloatFromString(powerFee);
+                        
     				}
 			}
 		}else{
@@ -302,21 +348,25 @@ public class GDPowerController {
                 powerNum = data.MonthPower.Count;
                 powerFee = data.MonthPower.Fee;
                 if(powerNum != null && powerFee != null){
-//                    powerNumStr = mMonthUsageStr + powerNum + " " + Degree;
-//                    powerFeeStr = mMonthCostStr + powerFee + " " + Yuan;
-    
+                    mUsageStr = mActivity.getResources().getString(R.string.mypower_monthpowerusage2);
+                    mCostStr = mActivity.getResources().getString(R.string.mypower_monthpowercost2);
                     powerNumValue = Util.getFloatFromString(powerNum);
                     powerFeeValue = Util.getFloatFromString(powerFee);
                 }
             }
 		}
 		
-//		mPowerUsedDegreeView.setText(powerNumStr);
-//		mPowerUsedCostView.setText(powerFeeStr);
+		 if(powerNumValue > 0 && powerFeeValue > 0){
+		     mPowerUsedDegreeView.setText(mUsageStr +powerNumValue +  Degree);
+		     mPowerUsedCostView.setText(mCostStr + powerFeeValue + Yuan);
+		     mIsAmmeterData = true;
+		 }else{
+		     mIsAmmeterData = false;
+		 }
 
 		String priceType = status.PriceType;
 
-		Log.d(TAG, " ===== PriceType ===== " + priceType);
+		LogUtil.d(TAG, " ===== PriceType ===== " + priceType);
 
 		if (ElectricityPrice.PRICETYPE_STEP.equals(priceType)) {
 			mPriceType = GDConstract.PriceTypeStep;
@@ -354,11 +404,11 @@ public class GDPowerController {
 
 			for (ElectricityPrice.StepPrice stepPrice : stepPriceList) {
 
-				Log.d(TAG, "step " + stepPrice.Step);
-				Log.d(TAG, "step start " + stepPrice.StepStartValue);
-				Log.d(TAG, "step end " + stepPrice.StepEndValue);
-				Log.d(TAG, "step price " + stepPrice.StepPrice);
-				Log.d(TAG, "step period " + stepPrice.PeriodPriceList);
+				LogUtil.d(TAG, "step " + stepPrice.Step);
+				LogUtil.d(TAG, "step start " + stepPrice.StepStartValue);
+				LogUtil.d(TAG, "step end " + stepPrice.StepEndValue);
+				LogUtil.d(TAG, "step price " + stepPrice.StepPrice);
+				LogUtil.d(TAG, "step period " + stepPrice.PeriodPriceList);
 
 				if (stepPrice.Step.equals(ElectricityPrice.STEP_1)) {
 					mStepPowerRulerStep0.setText(stepPrice.StepStartValue);
@@ -376,13 +426,13 @@ public class GDPowerController {
 			ElectricityPrice.StepPrice currentStep = Util.getStep(
 					stepPriceList, powerNum);
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep == null) {
 				return;
 			}
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep.Step.equals(ElectricityPrice.STEP_1)) {
 				String stepEnd = currentStep.StepEndValue;
@@ -536,6 +586,9 @@ public class GDPowerController {
 		else if(columnId.equals(GDCommon.ColumnIDGuodianPowerTips)){
             intent = new Intent();
             intent.setClass(mActivity, GDPowerTipsActivity.class);
+        }else if(columnId.equals(GDCommon.ColumnIDGuodianNewsFlash)){
+            intent = new Intent();
+            intent.setClass(mActivity, GDNewsFlashActivity.class);
         }
 
 		return intent;

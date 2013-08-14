@@ -2,12 +2,8 @@ package com.dbstar.app;
 
 import java.io.InputStream;
 
-import com.dbstar.model.PreviewData;
-import com.dbstar.service.ClientObserver;
-import com.dbstar.service.GDDataProviderService;
-import com.dbstar.widget.GDVideoView;
-
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,14 +12,17 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Handler;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.VideoView;
-import android.view.KeyEvent;
-import android.content.Intent;
+
+import com.dbstar.model.PreviewData;
+import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDAudioController;
+import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.LogUtil;
+import com.dbstar.widget.GDVideoView;
 
 public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		OnErrorListener, OnPreparedListener, SurfaceHolder.Callback {
@@ -142,7 +141,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		public void run() {
 			if (mCurrentState.index == mPlayingVideoIndex
 					&& mCurrentState.Url.equals(mPlayingVideoUrl)) {
-				Log.d(TAG, "stop this video and play next");
+				LogUtil.d(TAG, "stop this video and play next");
 				stop();
 				
 				mPlayingVideoIndex = -1;
@@ -189,7 +188,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	}
 
 	public void start(GDDataProviderService service) {
-		Log.d(TAG, "start");
+		LogUtil.d(TAG, "start");
 
 		mService = service;
 
@@ -201,7 +200,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	}
 
 	public void resume() {
-		Log.d(TAG, "resume");
+		LogUtil.d(TAG, "resume");
 
 		mPosterView.setVisibility(View.VISIBLE);
 		mPosterView.setImageBitmap(mDefaultPoster);
@@ -210,7 +209,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	}
 
 	public void pause() {
-		Log.d(TAG, "pause");
+		LogUtil.d(TAG, "pause");
 		stopCheckVideoCompleteTask();
 
 		mHandler.removeCallbacks(mUpdateTimeTask);
@@ -219,7 +218,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	}
 	
 	public void stop() {
-		Log.d(TAG, "stopMediaPlay");
+		LogUtil.d(TAG, "stopMediaPlay");
 		stopCheckVideoCompleteTask();
 
 		mHandler.removeCallbacks(mUpdateTimeTask);
@@ -245,7 +244,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			if (data != null) {
 				mResources = (PreviewData[]) data;
 
-				Log.d(TAG, "updateData " + mResources + " " + mResources.length);
+				LogUtil.d(TAG, "updateData " + mResources + " " + mResources.length);
 
 				mResourcesReady = true;
 			}
@@ -254,19 +253,19 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	// Surface.Callback
 	public void surfaceCreated(SurfaceHolder holder) {
-		Log.d(TAG, "surfaceCreated");
-		Log.d(TAG, "mStoreState.Type=" + mStoreState.Type);
+		LogUtil.d(TAG, "surfaceCreated");
+		LogUtil.d(TAG, "mStoreState.Type=" + mStoreState.Type);
 
 		mUIReady = true;
 	}
 
 	public void surfaceChanged(SurfaceHolder surfaceholder, int format,
 			int width, int height) {
-		Log.d(TAG, "surfaceChanged" + "(" + width + "," + height + ")");
+		LogUtil.d(TAG, "surfaceChanged" + "(" + width + "," + height + ")");
 	}
 
 	public void surfaceDestroyed(SurfaceHolder surfaceholder) {
-		Log.d(TAG, "surfaceDestroyed");
+		LogUtil.d(TAG, "surfaceDestroyed");
 
 		mUIReady = false;
 		
@@ -279,7 +278,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	@Override
 	public void onPrepared(MediaPlayer mp) {
-		Log.d(TAG, "onPrepared");
+		LogUtil.d(TAG, "onPrepared");
 
 		mCurrentState.PlayerState = PLAYER_STATE_PREPARED;
 		mCurrentState.Duration = mVideoView.getDuration();
@@ -305,7 +304,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		Log.d(TAG, "onError what=" + what + "extra=" + extra);
+		LogUtil.d(TAG, "onError what=" + what + "extra=" + extra);
 
 		mCurrentState.PlayerState = PLAYER_STATE_ERROR;
 
@@ -314,7 +313,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		Log.d(TAG, "onCompletion");
+		LogUtil.d(TAG, "onCompletion");
 
 		if (mCurrentState.PlayerState == PLAYER_STATE_ERROR) {
 			mHandler.postDelayed(mUpdateTimeTask, PLAYMEDIA_INTERVAL_WITHERROR);
@@ -325,7 +324,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	}
 
 	boolean isReady() {
-		Log.d(TAG, "palyMedia mResourcesReady = " + mResourcesReady
+		LogUtil.d(TAG, "palyMedia mResourcesReady = " + mResourcesReady
 				+ " mUIReady = " + mUIReady);
 
 		return mResourcesReady && mUIReady && mService.isDisplaySet();
@@ -375,7 +374,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	private void playVideo(String url) {
 
-		Log.d(TAG, " playVideo " + url);
+		LogUtil.d(TAG, " playVideo " + url);
 
 		//:mPosterView.setVisibility(View.GONE);
 
@@ -401,7 +400,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	private void drawImage(String imagePath) {
 
-		Log.d(TAG, " drawImage " + imagePath);
+		LogUtil.d(TAG, " drawImage " + imagePath);
 
 		mCurrentState.Type = RImage;
 		mCurrentState.Url = imagePath;
@@ -442,14 +441,14 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 	private boolean fetchMediaResource() {
 
-		Log.d(TAG, "fetchMediaResource @@@@@@ mStoreState.Type = "
+		LogUtil.d(TAG, "fetchMediaResource @@@@@@ mStoreState.Type = "
 				+ mStoreState.Type);
 
 		if (mStoreState.Type != RNONE) {
 
-			Log.d(TAG, "@@@@@@ mStoreState.PlayerState = "
+			LogUtil.d(TAG, "@@@@@@ mStoreState.PlayerState = "
 					+ mStoreState.PlayerState);
-			Log.d(TAG, "@@@@@@ mStoreState.Index = " + mStoreState.index);
+			LogUtil.d(TAG, "@@@@@@ mStoreState.Index = " + mStoreState.index);
 
 			if (mStoreState.Type == RVideo) {
 				if (mStoreState.PlayerState == PLAYER_STATE_PREPARED) {
@@ -475,13 +474,13 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 		mResourceIndex = mResourceIndex % mResources.length;
 
-		Log.d(TAG, "fetch resource mResourceIndex = " + mResourceIndex);
+		LogUtil.d(TAG, "fetch resource mResourceIndex = " + mResourceIndex);
 		
 		return true;
 	}
 
 	private void saveMediaState() {
-		Log.d(TAG, "storeMediaState");
+		LogUtil.d(TAG, "storeMediaState");
 
 		mStoreState.Type = mCurrentState.Type;
 		mStoreState.Url = mCurrentState.Url;
@@ -490,29 +489,29 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mStoreState.InterruptedTime = System.currentTimeMillis();
 		mStoreState.PlayerState = mCurrentState.PlayerState;
 
-		Log.d(TAG, "mStoreState.Type = " + mStoreState.Type);
-		Log.d(TAG, "mStoreState.PlayerState = " + mStoreState.PlayerState);
-		Log.d(TAG, "mStoreState.index = " + mStoreState.index);
-		Log.d(TAG, "mStoreState.url = " + mStoreState.Url);
-		Log.d(TAG, "mStoreState.Duration = " + mStoreState.Duration);
+		LogUtil.d(TAG, "mStoreState.Type = " + mStoreState.Type);
+		LogUtil.d(TAG, "mStoreState.PlayerState = " + mStoreState.PlayerState);
+		LogUtil.d(TAG, "mStoreState.index = " + mStoreState.index);
+		LogUtil.d(TAG, "mStoreState.url = " + mStoreState.Url);
+		LogUtil.d(TAG, "mStoreState.Duration = " + mStoreState.Duration);
 
 		if (mCurrentState.Type == RVideo) {
 			if (mVideoView.isPlaying()) {
-				Log.d(TAG, "get position");
+				LogUtil.d(TAG, "get position");
 				mStoreState.Position = mVideoView.getCurrentPosition();
-				Log.d(TAG, "mStoreState.Position = " + mStoreState.Position);
+				LogUtil.d(TAG, "mStoreState.Position = " + mStoreState.Position);
 
 				mVideoView.stopPlayback();
 
 				mVideoView.setVideoURI(null);
 			} else {
 				// the play has stopped.
-				Log.d(TAG, "play stopped");
+				LogUtil.d(TAG, "play stopped");
 			}
 		} else {
 			// Image
 			mStoreState.Position = (int) (mStoreState.InterruptedTime - mCurrentState.StartTime);
-			Log.d(TAG, "mStoreState.Position = " + mStoreState.Position);
+			LogUtil.d(TAG, "mStoreState.Position = " + mStoreState.Position);
 		}
 	}
 

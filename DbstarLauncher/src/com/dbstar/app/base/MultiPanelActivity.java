@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
+import com.dbstar.util.LogUtil;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -16,7 +17,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.app.FragmentTransaction;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,7 +62,7 @@ public class MultiPanelActivity extends GDBaseActivity {
 
 		if (mHeaders.size() > 0) {
 
-			Log.d(TAG, "header size = " + mHeaders.size());
+		    LogUtil.d(TAG, "header size = " + mHeaders.size());
 
 			mHeaderView.setOnItemClickListener(mOnClickListener);
 			setListAdapter(new HeaderAdapter(this, mHeaders));

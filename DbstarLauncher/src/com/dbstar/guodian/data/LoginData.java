@@ -11,4 +11,5 @@ public class LoginData {
 	public UserData UserData;
 	public PowerPanelData PanelData;
 	public ElectricityPrice ElecPrice;
+	public String ControlledPowerCount;
 }

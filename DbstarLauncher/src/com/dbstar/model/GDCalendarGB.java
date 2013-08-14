@@ -1,14 +1,13 @@
 package com.dbstar.model;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import com.dbstar.util.LogUtil;
+
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.content.res.Resources;
-import android.util.Log;
 
 public class GDCalendarGB {
 
@@ -254,7 +253,7 @@ public class GDCalendarGB {
 			nextMonth = nextChineseMonth(chineseYear, chineseMonth);
 		}
 
-		Log.d(TAG, "month = " + chineseMonth);
+		LogUtil.d(TAG, "month = " + chineseMonth);
 		return 0;
 	}
 

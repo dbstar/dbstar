@@ -6,9 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
-import android.util.Log;
-
 import com.dbstar.guodian.data.JsonTag;
 import com.dbstar.guodian.data.Notice;
 
@@ -31,7 +28,6 @@ public class NoticeDataHandler {
 					.getJSONArray(JsonTag.TAGNoticeList);
 			if (noticesArray != null) {
 				int length = noticesArray.length();
-				Log.d(TAG, "== length == " + length);
 				notices = new ArrayList<Notice>();
 				for (int i = 0; i < length; i++) {
 					JSONObject object = noticesArray.getJSONObject(i);
@@ -49,13 +45,9 @@ public class NoticeDataHandler {
 	public static Notice parseNotice(JSONObject object) throws JSONException {
 		Notice notice = new Notice();
 		notice.Guid = (String) object.getString(JsonTag.TAGNumNoticeGuid);
-		Log.d(TAG, "== 1 == " + notice.Guid);
 		notice.Title = (String) object.getString(JsonTag.TAGVC2Title);
-		Log.d(TAG, "== 1 == " + notice.Title);
 		notice.Content = (String) object.getString(JsonTag.TAGVC2Content);
-		Log.d(TAG, "== 1 == " + notice.Content);
 		notice.Date = (String) object.getString(JsonTag.TAGDateTime);
-		Log.d(TAG, "== 1 == " + notice.Date);
 
 		return notice;
 	}

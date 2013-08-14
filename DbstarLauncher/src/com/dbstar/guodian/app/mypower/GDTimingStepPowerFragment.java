@@ -1,16 +1,10 @@
 package com.dbstar.guodian.app.mypower;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,9 +24,11 @@ import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.data.UserPriceStatus;
 import com.dbstar.guodian.engine.GDConstract;
+import com.dbstar.guodian.engine1.GDRequestType;
+import com.dbstar.guodian.engine1.RequestParams;
 import com.dbstar.guodian.parse.Util;
 import com.dbstar.model.EventData;
-import com.dbstar.util.ToastUtil;
+import com.dbstar.util.LogUtil;
 import com.dbstar.widget.GDArcView;
 import com.dbstar.widget.GDCircleTextView;
 
@@ -56,13 +52,14 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	private TextView mAllDevicePowerAmountView;
 	private int mPriceType;
 	private String mStrDegree;
-
+	private GDMypowerActivity mActivity;
 	private ElectricityPrice mElecPrice = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// mNum = getArguments().getInt("num");
+		mActivity = (GDMypowerActivity) getActivity();
 	}
 
 	@Override
@@ -156,8 +153,33 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	public void serviceStart() {
 		if (mService == null)
 			return;
-
-		mEngine.request(GDConstract.DATATYPE_POWERPANELDATA, null);
+		
+		LoginData mLoginData = mService.getLoginData();
+        if(mLoginData == null){
+           mActivity.showErrorMsg(R.string.no_login);
+           return;
+        }
+        if(mLoginData.CtrlNo == null || mLoginData.CtrlNo.CtrlNoGuid == null){
+            mActivity.showErrorMsg(R.string.no_login);
+               return; 
+        }
+        
+        String ccguid = mLoginData.CtrlNo.CtrlNoGuid;
+        
+        if(mLoginData.UserData == null 
+                ||mLoginData.UserData.UserInfo == null 
+                || mLoginData.UserData.UserInfo.UserType == null){
+            mActivity.showErrorMsg(R.string.no_login);
+            return; 
+        }
+        
+        String userType = mLoginData.UserData.UserInfo.UserType;
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_POWERPANELDATA);
+        params.put(RequestParams.KEY_SYSTEM_FLAG,"elc");
+        params.put(RequestParams.KEY_METHODID, "m008f001");
+        params.put(JsonTag.TAGNumCCGuid, ccguid);
+        params.put(JsonTag.TAGUser_Type, userType);
+		mEngine.request(params);
 	}
 
 	// handle event at this point
@@ -170,7 +192,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		} else if(EventData.EVENT_GUODIAN_DATA_ERROR == type){
 		    GDSmartActivity activity = (GDSmartActivity) getActivity();
-            activity.handleErrorResponse(R.string.loading_error);
+            activity.showErrorMsg(R.string.loading_error);
         }
 	}
 
@@ -181,7 +203,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	}*/
 	
 	private void handlePowerData(int type, Object data) {
-		if (type == GDConstract.DATATYPE_POWERPANELDATA) {
+		if (type == GDRequestType.DATATYPE_POWERPANELDATA) {
 			updatePowerPanel((PowerPanelData) data);
 			mPriceButton.setFocusableInTouchMode(true);
             mPriceButton.setFocusable(true);
@@ -190,7 +212,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 	}
 
 	private void updatePowerPanel(PowerPanelData data) {
-		Log.d(TAG, " ===== updatePowerPanel ===== ");
+		LogUtil.d(TAG, " ===== updatePowerPanel ===== ");
 		if (data == null)
 			return;
 
@@ -245,7 +267,7 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 
 		String priceType = status.PriceType;
 
-		Log.d(TAG, " ===== PriceType ===== " + priceType);
+		LogUtil.d(TAG, " ===== PriceType ===== " + priceType);
 
 		if (ElectricityPrice.PRICETYPE_TIMING.equals(priceType)) {
 			mPriceType = GDConstract.PriceTypeTiming;
@@ -258,14 +280,13 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			return;
 		}
 
-		if (mElecPrice == null) {
-			mElecPrice = mService.getElecPrice();
+		if (mElecPrice == null && mService.getLoginData() != null) {
+			mElecPrice = mService.getLoginData().ElecPrice;
 		}
 		
-		EPCConstitute ed = mService.getEDimension();
-		if(ed != null && ed.totalPower != null){
-		    mAllDevicePowerAmountView.setText(ed.totalPower.Count);
-		}
+	    if(mService.getLoginData() != null){
+            mAllDevicePowerAmountView.setText(mService.getLoginData().ControlledPowerCount);
+        }
 		ElectricityPrice priceData = mElecPrice;
 
 		if (priceData == null)
@@ -287,11 +308,11 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			
 			for (ElectricityPrice.StepPrice stepPrice : stepPriceList) {
 
-				Log.d(TAG, "step " + stepPrice.Step);
-				Log.d(TAG, "step start " + stepPrice.StepStartValue);
-				Log.d(TAG, "step end " + stepPrice.StepEndValue);
-				Log.d(TAG, "step price " + stepPrice.StepPrice);
-				Log.d(TAG, "step period " + stepPrice.PeriodPriceList);
+				LogUtil.d(TAG, "step " + stepPrice.Step);
+				LogUtil.d(TAG, "step start " + stepPrice.StepStartValue);
+				LogUtil.d(TAG, "step end " + stepPrice.StepEndValue);
+				LogUtil.d(TAG, "step price " + stepPrice.StepPrice);
+				LogUtil.d(TAG, "step period " + stepPrice.PeriodPriceList);
 
 				if (stepPrice.Step.equals(ElectricityPrice.STEP_1)) {
 					mTimingPowerRulerStep0.setText(stepPrice.StepStartValue);
@@ -309,13 +330,13 @@ public class GDTimingStepPowerFragment extends GDBaseFragment {
 			ElectricityPrice.StepPrice currentStep = Util.getStep(
 					stepPriceList, powerNum);
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep == null) {
 				return;
 			}
 
-			Log.d(TAG, "current step " + currentStep);
+			LogUtil.d(TAG, "current step " + currentStep);
 
 			if (currentStep.Step.equals(ElectricityPrice.STEP_1)) {
 				String stepEnd = currentStep.StepEndValue;

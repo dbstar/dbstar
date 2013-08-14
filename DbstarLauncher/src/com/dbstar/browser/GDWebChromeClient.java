@@ -1,12 +1,12 @@
 package com.dbstar.browser;
 
 import com.dbstar.R;
+import com.dbstar.util.LogUtil;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
-import android.util.Log;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -31,7 +31,7 @@ public class GDWebChromeClient extends WebChromeClient {
 	public boolean onJsAlert(WebView view, String url, String message,
 			final JsResult result) {
 		
-		Log.d(TAG, "onJsAlert");
+	    LogUtil.d(TAG, "onJsAlert");
 		
 		Builder builder = new Builder(mParentActivity);
 		builder.setTitle(WarningText);
@@ -53,7 +53,7 @@ public class GDWebChromeClient extends WebChromeClient {
 	@Override
 	public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {
 		
-		Log.d(TAG, "onJsConfirm");
+	    LogUtil.d(TAG, "onJsConfirm");
 		
 		Builder builder = new Builder(mParentActivity);
 		builder.setTitle(ConformationText);
@@ -84,7 +84,7 @@ public class GDWebChromeClient extends WebChromeClient {
 	public boolean onJsPrompt(WebView view, String url, String message,
 			String defaultValue, JsPromptResult result) {
 		
-		Log.d(TAG, "onJsPrompt");
+	    LogUtil.d(TAG, "onJsPrompt");
 		
 		return super.onJsPrompt(view, url, message, defaultValue, result);
 	}
