@@ -647,6 +647,7 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 			}
 			else{
 				*result = 1;
+				ret = 0;
 			}
 			break;
 		case SMART_SOCKET_INSTRUCTION_INVALID:		// 指令错误
@@ -721,6 +722,24 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 				}
 				else{
 					DEBUG("curtain stop failed\n");
+					ret = -1;
+				}
+			}
+			break;
+		case CURTAIN_CONFIRM:		// 窗帘地址验证
+			// 68 20 11 11 05 01 xx 68 84 02 E3 36 cs 16
+			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
+				DEBUG("check sum failed\n");
+				ret = -2;
+			}
+			else{
+				if(0x36==serial_cmd[11]){
+					DEBUG("curtain verify success\n");
+					ret = 0;
+					*result = 1;
+				}
+				else{
+					DEBUG("curtain verify failed\n");
 					ret = -1;
 				}
 			}
@@ -983,6 +1002,19 @@ int smart_socket_serial_cmd_splice(unsigned char *serial_cmd, unsigned int cmd_s
 				serial_cmd[index++] = 0x02;
 				serial_cmd[index++] = 0xe3;
 				serial_cmd[index++] = 0x35;
+			}
+			break;
+		case CURTAIN_CONFIRM:				// 窗帘地址验证
+			// 68 20 11 11 05 01 xx 68 04 02 e3 36 cs 16
+			if(cmd_size<12){
+				DEBUG("length of CURTAIN_CONFIRM cmd buffer is too short: %d\n", cmd_size);
+				ret = -1;
+			}
+			else{
+				serial_cmd[index++] = 0x04;
+				serial_cmd[index++] = 0x02;
+				serial_cmd[index++] = 0xe3;
+				serial_cmd[index++] = 0x36;
 			}
 			break;
 		default:
@@ -1835,7 +1867,13 @@ static INSTRUCTION_RESULT_E verify_address(INSTRUCTION_S *instruction)
 	memset(serial_cmd, 0, sizeof(serial_cmd));
 	
 	if( (0x02==instruction->arg2 || 0x03==instruction->arg2 || 0x04==instruction->arg2) && 0x07==instruction->alterable_flag){
-		DEBUG("verify socket address\n");
+		if(0x04==instruction->arg2){
+			smart_socket_action = CURTAIN_CONFIRM;
+			DEBUG("verify curtain address\n");
+		}
+		else{
+			DEBUG("verify socket address\n");
+		}
 		serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),smart_socket_action,instruction->alterable_entity);
 		if(serial_cmd_len>0)
 		{
