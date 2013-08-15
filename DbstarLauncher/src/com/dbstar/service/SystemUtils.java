@@ -42,10 +42,12 @@ public class SystemUtils {
 	}
 
 	public static void startSmartHomeServer() {
+		LogUtil.i(TAG, "+++++++++++ startSmartHomeServer");
 		SystemProperties.set(SmartHomeProperty, "1");
 	}
 
 	public static void stopSmartHomeServer() {
+		LogUtil.i(TAG, "+++++++++++ stopSmartHomeServer");
 		SystemProperties.set(SmartHomeProperty, "0");
 	}
 
