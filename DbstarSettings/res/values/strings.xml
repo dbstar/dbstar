@@ -67,6 +67,8 @@
     <!-- Wifi configuration -->
     <string name="password">密码</string>
     <string name="button_text_confirm">确定</string>
+    <string name="button_text_wifi_not_save">不保存</string>
+    <string name="button_text_wifi_connect">连接</string>
     <string name="button_text_next">下一步</string>
     <string name="button_text_previous">上一步</string>
     <string name="button_text_finish">完成</string>
