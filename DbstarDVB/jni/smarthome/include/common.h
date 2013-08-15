@@ -219,7 +219,8 @@ typedef enum{
 	
 	CURTAIN_GOAHEAD = 20,						// ´°Á±Ç°½ø
 	CURTAIN_GOBACK,								// ´°Á±ºóÍË
-	CURTAIN_STOP								// ´°Á±Í£Ö¹
+	CURTAIN_STOP,								// ´°Á±Í£Ö¹
+	CURTAIN_CONFIRM								// ´°Á±µØÖ·ÑéÖ¤
 }SMART_SOCKET_ACTION_E;
 
 typedef enum{
