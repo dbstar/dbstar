@@ -1990,6 +1990,14 @@ static int dvb_io_setup(void *p)
 
                 gpio_out(PAD_GPIOD_6, 1);  //liukevin add for power on tuner
                 gpio_set_status(PAD_GPIOD_6,gpio_status_out);
+
+                gpio_out(PAD_GPIOD_9, 0);  //liukevin add for power on wifi
+                gpio_set_status(PAD_GPIOD_9,gpio_status_out);
+
+                gpio_out(PAD_GPIOZ_9, 0);  //liukevin add for power on wifi
+                gpio_set_status(PAD_GPIOZ_9,gpio_status_out);
+
+
 	}
 #endif
 
