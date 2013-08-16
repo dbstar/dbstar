@@ -589,12 +589,13 @@ public class GDDataProviderService extends Service {
 
 			case GDCommon.MSG_NETWORK_CONNECT: {
 				LogUtil.d(TAG, " +++++++++++++ network connected +++++++++++++");
+				startDbStarService();
 				if (mChannelMode == GDCommon.EthernetMode) {
 					// single card
 					// ethernet connected
 					mIsNetworkReady = true;
 					mPeripheralController.setNetworkLedOn();
-					startDbStarService();
+					//startDbStarService();
 					startGuodianEngine();
 				} else {
 					// dual card
@@ -627,7 +628,7 @@ public class GDDataProviderService extends Service {
 
 						mIsNetworkReady = true;
 
-						startDbStarService();
+						//startDbStarService();
 						startGuodianEngine();
 					}
 					
