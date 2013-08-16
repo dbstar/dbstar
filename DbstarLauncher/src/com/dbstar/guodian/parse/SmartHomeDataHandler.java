@@ -115,7 +115,7 @@ public class SmartHomeDataHandler {
         try {
             JSONObject jb = new JSONObject(data);
             response.EleAmountOfDay = jb.getString(JsonTag.TAGEleAmountOfDay);
-            response.EleAmountOfDay = jb.getString(JsonTag.TAGEleAmountOfMonth);
+            response.EleAmountOfMonth = jb.getString(JsonTag.TAGEleAmountOfMonth);
             response.RealTimePowerValue = jb.getString(JsonTag.TAGRealTimePowerValue);
         }catch (Exception e) {
             e.printStackTrace();

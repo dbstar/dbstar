@@ -118,7 +118,6 @@ public class GDPowerController {
 				.findViewById(R.id.steppower_pointer);
 		mStepPowerStepView = (TextView) activity
 				.findViewById(R.id.steppower_step);
-		mStepPowerStepView.setVisibility(View.INVISIBLE);
 		mStepPowerPriceView = (TextView) activity
 				.findViewById(R.id.steppower_powerprice);
 
@@ -319,7 +318,7 @@ public class GDPowerController {
             
             float startAngle = (float)(180f - (135f -angle));
             float sweepAngle = 270f;
-            mStepPowerRuler.setValue(startAngle, sweepAngle, String.valueOf((int)powerNumValue));
+            mStepPowerRuler.setValue(startAngle, sweepAngle, dimension.totalPower.Count);
 	}
 	public void updatePowerPanel(PowerPanelData data) {
 	    

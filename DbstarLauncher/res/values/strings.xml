@@ -332,6 +332,7 @@
     <string name="demo_str_1">100度</string>
     <string name="demo_str_2">200元</string>
     <string name="demo_str_3">第二阶梯</string>
+    <string name="demo_str_power_target">用电目标</string>
     <string name="demo_str_4">0.123490090909009090</string>
     <string name="demo_str_5">高峰时段</string>
     <string name="demo_str_6">8:00-12:00</string>

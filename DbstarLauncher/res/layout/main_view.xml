@@ -519,10 +519,9 @@
                 android:layout_gravity="top|left"
                 android:layout_marginLeft="110dp"
                 android:layout_marginTop="120dp"
-                android:text="@string/demo_str_3"
+                android:text="@string/demo_str_power_target"
                 android:textColor="#224c62"
-                android:visibility="gone"
-                android:textSize="9sp" />
+                android:textSize="12sp" />
          <!--     
             <TextView
                 android:layout_width="wrap_content"
