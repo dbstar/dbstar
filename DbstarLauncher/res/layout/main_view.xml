@@ -489,7 +489,7 @@
                 android:layout_gravity="bottom|right"
                 android:gravity="left"
                 android:layout_marginRight="3dp"
-                android:text="@string/mypower_text_powerprice"
+                android:text="@string/mypower_text_target_unit"
                 android:textColor="#38709f"
                 android:textSize="13sp" />
 	        
