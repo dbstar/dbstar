@@ -78,6 +78,7 @@ int data_stream_status_str_get(char *buf, unsigned int size)
         return 0;
     }
     AM_FEND_GetStatus(FEND_DEV_NO, &status);
+
 DEBUG("GET TUNER STATUS [%x]\n",status);
     if (/*FE_HAS_LOCK*/0x1f == status)
     {
