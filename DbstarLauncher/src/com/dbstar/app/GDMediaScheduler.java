@@ -527,7 +527,7 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		AssetManager am = context.getAssets();
 
 		try {
-			InputStream is = am.open("default/default_0.jpg");
+			InputStream is = am.open("default/default_0.png");
 			mDefaultPoster = BitmapFactory.decodeStream(is);
 			is.close();
 
