@@ -2156,7 +2156,8 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                     return;
                 } else {
                     if (DBG) log("Tear down low priority net " + info.getTypeName());
-                    teardown(thisNet);
+                    log("****** Do not tear down network: " + info.getTypeName());
+                    //teardown(thisNet);
                     return;
                 }
             }
