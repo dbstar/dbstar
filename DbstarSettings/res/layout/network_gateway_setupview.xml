@@ -21,7 +21,7 @@
             android:gravity="left|center_vertical"
             android:text="@string/network_gateway_setup_title"
             android:textColor="#000000"
-            android:textSize="22sp" />
+            android:textSize="@dimen/gl_text_size_24sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -42,7 +42,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/gateway_serialnumber"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/gateway_serialnumber"
@@ -72,7 +72,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/gateway_ip"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/gateway_ip"
@@ -96,7 +96,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/port"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/gateway_port"
@@ -124,7 +124,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/mulitcast_ip"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/multicast_ip"
@@ -148,7 +148,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/port"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/multicast_port"
@@ -172,6 +172,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="40dp"
+            android:textSize="@dimen/gl_text_size_20sp"
             android:background="@drawable/eth_button_bg"
             android:nextFocusDown="@+id/gateway_serialnumber"
             android:text="@string/button_text_next" />

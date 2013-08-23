@@ -71,8 +71,8 @@ public class WifiConfigController {
 
 	// e.g. AccessPoint.SECURITY_NONE
 	private int mAccessPointSecurity;
-	private TextView mPasswordView;
-	Button mConfirmButton;
+	private TextView mPasswordView,mPassWordTitle;
+	Button mConfirmButton,mForget,mConnect;
 	View.OnClickListener mClickListener;
 
 	private IpAssignment mIpAssignment = IpAssignment.UNASSIGNED;
@@ -103,12 +103,52 @@ public class WifiConfigController {
 
 		mPasswordView = (TextView) view.findViewById(R.id.wifi_password);
 		mConfirmButton = (Button) view.findViewById(R.id.wifi_okbutton);
-		mConfirmButton.setOnClickListener(mClickListener);
+		mPassWordTitle = (TextView) view.findViewById(R.id.wifi_password_name);
+		mConnect = (Button) view.findViewById(R.id.wifi_connect);
 		
+		mForget = (Button) view.findViewById(R.id.wifi_forget);
+		mConfirmButton.setOnClickListener(mClickListener);
+		mForget.setOnClickListener(mClickListener);
+		mConnect.setOnClickListener(mClickListener);
 		mPasswordView.setLongClickable(false);
 
 		mAccessPoint = accessPoint;
 		mAccessPointSecurity = accessPoint.security;
+		
+		
+		DetailedState detailedState =  mAccessPoint.getState();
+		WifiConfiguration configuration = mAccessPoint.getConfig();
+		
+		if(detailedState == null){
+		    if(configuration !=null){
+		        mPasswordView.setVisibility(View.GONE);
+		        mPassWordTitle.setVisibility(View.GONE);
+		        mConfirmButton.setVisibility(View.GONE);
+		        mForget.setVisibility(View.VISIBLE);
+		        mConnect.setVisibility(View.VISIBLE);
+		    }else{
+		        mPasswordView.setVisibility(View.VISIBLE);
+		        mConfirmButton.setVisibility(View.VISIBLE);
+		        mPassWordTitle.setVisibility(View.VISIBLE);
+		        mForget.setVisibility(View.GONE);
+		        mConnect.setVisibility(View.GONE);
+		    }
+		}else{
+		    if(configuration != null){
+		        mPasswordView.setVisibility(View.GONE);
+		        mPassWordTitle.setVisibility(View.GONE);
+		        mConfirmButton.setVisibility(View.GONE);
+		        mForget.setVisibility(View.VISIBLE);
+		        mConnect.setVisibility(View.VISIBLE);
+		    }else{
+		        mPasswordView.setVisibility(View.VISIBLE);
+		        mPassWordTitle.setVisibility(View.VISIBLE);
+                mConfirmButton.setVisibility(View.VISIBLE);
+                mForget.setVisibility(View.GONE);
+                mConnect.setVisibility(View.GONE);
+		    }
+		}
+		
 	}
 
 	WifiConfiguration getConfig() {

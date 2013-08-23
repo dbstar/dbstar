@@ -21,7 +21,7 @@
             android:gravity="left|center_vertical"
             android:text="@string/network_ethernet_setup_title"
             android:textColor="#000000"
-            android:textSize="22sp" />
+            android:textSize="@dimen/gl_text_size_24sp" />
         
         <LinearLayout
             android:id="@+id/dhcp_switch_button"
@@ -51,7 +51,7 @@
                 android:gravity="center_vertical"
                 android:text="@string/eth_con_type_dhcp"
                 android:textColor="#000000"
-                android:textSize="20sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
 
             <TextView
                 android:id="@+id/dhcp_conncetion_state"
@@ -60,7 +60,7 @@
                 android:gravity="center_vertical"
                 android:text="@string/network_connected"
                 android:textColor="#000000"
-                android:textSize="20sp"
+                android:textSize="@dimen/gl_text_size_22sp"
                 android:visibility="gone" />
         </LinearLayout>
 
@@ -90,7 +90,7 @@
                 android:gravity="center_vertical"
                 android:text="@string/eth_con_type_manual"
                 android:textColor="#000000"
-                android:textSize="20sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
 
             <TextView
                 android:id="@+id/manual_conncetion_state"
@@ -99,7 +99,7 @@
                 android:gravity="center_vertical"
                 android:text="@string/network_connected"
                 android:textColor="#000000"
-                android:textSize="20sp"
+                android:textSize="@dimen/gl_text_size_22sp"
                 android:visibility="gone" />
         </LinearLayout>
 
@@ -119,7 +119,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/eth_ipaddr"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/eth_ip"
@@ -143,7 +143,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/eth_mask"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/eth_mask"
@@ -167,7 +167,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/eth_gw"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/eth_gateway"
@@ -191,7 +191,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/eth_dns"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/eth_dns"
@@ -215,7 +215,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/eth_backup_dns"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <EditText
                     android:id="@+id/eth_backup_dns"
@@ -246,6 +246,7 @@
                 android:layout_marginBottom="40dp"
                 android:background="@drawable/eth_button_bg"
                 android:nextFocusDown="@+id/dhcp_switch_button"
+                android:textSize="@dimen/gl_text_size_20sp"
                 android:text="@string/button_text_previous" />
 
             <Space
@@ -258,6 +259,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="40dp"
                 android:background="@drawable/eth_button_bg"
+                android:textSize="@dimen/gl_text_size_20sp"
                 android:nextFocusDown="@+id/dhcp_switch_button"
                 android:text="@string/button_text_confirm" />
         </LinearLayout>

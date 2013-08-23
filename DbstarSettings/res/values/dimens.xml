@@ -21,5 +21,13 @@
     <dimen name="settings_fragment_padding_top">8dip</dimen>
     <dimen name="settings_fragment_padding_bottom">8dip</dimen>
     <dimen name="crypt_clock_size">100sp</dimen>
-
+    <dimen name="gl_text_size_24sp">24sp</dimen>
+    <dimen name="gl_text_size_22sp">22sp</dimen>
+    <dimen name="gl_text_size_20sp">20sp</dimen>
+    <dimen name="gl_text_size_18sp">18sp</dimen>
+    <dimen name="gl_text_size_16sp">16sp</dimen>
+    <dimen name="gl_text_size_14sp">14sp</dimen>
+    <dimen name="gl_text_size_12sp">12sp</dimen>
+    <dimen name="gl_text_size_10sp">10sp</dimen>
+    <dimen name="gl_text_size_8sp">8sp</dimen>
 </resources>

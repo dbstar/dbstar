@@ -32,7 +32,7 @@
             android:fadingEdge="horizontal"
             android:singleLine="true"
             android:textColor="#000000"
-            android:textSize="20sp"
+            android:textSize="@dimen/gl_text_size_22sp"
             android:visibility="visible" />
 
         <TextView
@@ -45,7 +45,7 @@
             android:maxLines="2"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#000000"
-            android:textSize="16sp"
+            android:textSize="@dimen/gl_text_size_22sp"
             android:visibility="visible" />
 
         <TextView
@@ -63,7 +63,7 @@
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#FFCC00"
-            android:textSize="20sp"
+            android:textSize="@dimen/gl_text_size_22sp"
             android:visibility="gone" />
 
         <TextView
@@ -80,7 +80,7 @@
             android:shadowRadius="0.2"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#FFCC00"
-            android:textSize="16sp"
+            android:textSize="@dimen/gl_text_size_18sp"
             android:visibility="gone" />
     </RelativeLayout>
 

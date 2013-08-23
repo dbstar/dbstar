@@ -502,7 +502,7 @@ public class WifiSettings {
 
 			if (!requireKeyStore(mSelectedAccessPoint.getConfig())) {
 				//mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
-				mWifiManager.enableNetwork(mSelectedAccessPoint.networkId, true);
+			    showConfigUi(mSelectedAccessPoint);
 			}
 		} else if (mSelectedAccessPoint.security == AccessPoint.SECURITY_NONE) {
 			/** Bypass dialog for unsecured, unsaved networks */
@@ -529,9 +529,19 @@ public class WifiSettings {
 
 		@Override
 		public void onClick(View v) {
-			submit(mDialog.getController());
-			mDialog.dismiss();
-			mDialog = null;
+		    if( v.getId() == R.id.wifi_okbutton){
+    			submit(mDialog.getController());
+    			
+		    }else if(v.getId() == R.id.wifi_connect){
+		        if (!requireKeyStore(mSelectedAccessPoint.getConfig())) {
+		            mWifiManager.enableNetwork(mSelectedAccessPoint.getConfig().networkId, true);
+	            }
+		    }else{
+		        forget();
+		        updateAccessPoints();
+		    }
+		    mDialog.dismiss();
+            mDialog = null;
 		}
 	};
 
