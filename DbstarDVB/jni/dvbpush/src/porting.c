@@ -1728,6 +1728,17 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DVBPUSH_GETINFO_STOP:
 			dvbpush_getinfo_stop();
 			break;
+		case CMD_DVBPUSH_GETTS_STATUS:
+#if 0
+			DEBUG("baby, this command %d is discarded already\n",CMD_DVBPUSH_GETTS_STATUS);
+#else
+			memset(s_jni_cmd_data_status,0,sizeof(s_jni_cmd_data_status));
+			data_stream_status_str_get(s_jni_cmd_data_status,sizeof(s_jni_cmd_data_status));
+			*buf = s_jni_cmd_data_status;
+			*len = strlen(s_jni_cmd_data_status);
+			break;
+#endif
+
 		case CMD_NETWORK_CONNECT:
 			net_rely_condition_set(cmd);
 			break;
@@ -1770,12 +1781,6 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 			break;
 			
-		case CMD_DVBPUSH_GETTS_STATUS:
-			memset(s_jni_cmd_data_status,0,sizeof(s_jni_cmd_data_status));
-			data_stream_status_str_get(s_jni_cmd_data_status,sizeof(s_jni_cmd_data_status));
-			*buf = s_jni_cmd_data_status;
-			*len = strlen(s_jni_cmd_data_status);
-			break;
 		case CMD_UPGRADE_CANCEL:
 			DEBUG("CMD_UPGRADE_CANCEL\n");
 			upgrade_sign_set();

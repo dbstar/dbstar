@@ -445,7 +445,9 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 		return -1;
 	}
 	
-	snprintf(buf,size,"%d",s_dvbpush_info_refresh_flag);
+	data_stream_status_str_get(buf,size);
+
+	snprintf(buf+strlen(buf),size-strlen(buf),"\n%d",s_dvbpush_info_refresh_flag);
 	s_dvbpush_info_refresh_flag = 0;
 	
 	int i = 0;
@@ -464,13 +466,13 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type)
 			{
 //				if(0==i){
-//					snprintf(buf, size,
+//					snprintf(buf+strlen(buf), size-strlen(buf),
 //						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 //				}
 //				else
 				{
 					snprintf(buf+strlen(buf), size-strlen(buf),
-						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
+						"\n%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
 			}
 			else
