@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+    <HorizontalScrollView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+	android:scrollbars="horizontal"
+	android:fadeScrollbars="false"
+    android:background="@drawable/btn_bar_bg"   
+    >
+	<LinearLayout
+	    android:orientation="horizontal"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"  
+    	android:gravity="center_vertical"   	 	
+		>		
+		<Button style="@style/btn_style"
+			android:id="@+id/btn_home"	   			
+	        android:background="@drawable/btn_home"
+			/>
+		<ToggleButton  style="@style/btn_style"
+			android:id="@+id/btn_mode"     		
+        	android:background="@drawable/btn_mode"
+        	android:textOn=""
+        	android:textOff=""
+			/>			
+		<Button style="@style/btn_style"
+			android:id="@+id/btn_edit"  		    		  		  		  		
+        	android:background="@drawable/btn_edit"
+			/>		
+		<Button style="@style/btn_style"
+			android:id="@+id/btn_sort"  	    		 			
+        	android:background="@drawable/btn_sort"
+			/>		
+		<Button style="@style/btn_style"
+			android:id="@+id/btn_parent"    			  		
+        	android:background="@drawable/btn_parent"
+			/>		
+		<Button style="@style/btn_style"
+			android:id="@+id/btn_listswitch"    			  		
+        	android:background="@drawable/btn_listswitch"
+		/>					
+		<Button style="@style/btn_style"
+			android:id="@+id/btn_help"    			  		
+        	android:background="@drawable/btn_help"
+		/>	
+
+		</LinearLayout>		
+	</HorizontalScrollView>
+	<TextView
+		android:id="@+id/path"
+    	android:layout_width="fill_parent"
+    	android:layout_height="wrap_content"    	
+    	android:textColor="@color/path_bar_text_color"  
+    	android:textStyle="italic|bold"  	
+    	android:background="@drawable/btn_bar_bg" 
+		/>  
+	<ListView
+		android:id="@+id/listview"
+    	android:layout_width="fill_parent"
+    	android:layout_height="fill_parent"		
+		/>    
+</LinearLayout>
