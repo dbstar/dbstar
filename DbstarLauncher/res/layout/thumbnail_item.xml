@@ -30,7 +30,7 @@
             android:maxLines="1"
             android:singleLine="true"
             android:textColor="#000000"
-            android:textSize="22sp" />
+            android:textSize="@dimen/gl_text_size_22sp" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -60,7 +60,7 @@
             android:maxLines="1"
             android:singleLine="true"
             android:textColor="#ffffffff"
-            android:textSize="22sp" />
+            android:textSize="@dimen/gl_text_size_22sp" />
     </RelativeLayout>
 
 </ViewSwitcher>

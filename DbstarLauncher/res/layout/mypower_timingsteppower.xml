@@ -49,7 +49,7 @@
                     android:paddingLeft="30dp"
                     android:text="@string/demo_str_1"
                     android:textColor="#ffffff"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     android:textStyle="italic" />
 
                 <TextView
@@ -60,7 +60,7 @@
                     android:paddingLeft="20dp"
                     android:text="@string/str_yuan"
                     android:textColor="#000000"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     android:textStyle="italic" />
             </LinearLayout>
 
@@ -79,7 +79,7 @@
                     android:paddingLeft="16dp"
                     android:text="@string/mypower_text_monthpoweramount"
                     android:textColor="#000000"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     android:textStyle="italic" />
 
                 <TextView
@@ -91,7 +91,7 @@
                     android:paddingLeft="20dp"
                     android:text="@string/demo_str_2"
                     android:textColor="#ffffff"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     android:textStyle="italic" />
 
                 <TextView
@@ -102,7 +102,7 @@
                     android:paddingLeft="10dp"
                     android:text="@string/str_degree"
                     android:textColor="#000000"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     android:textStyle="italic" />
             </LinearLayout>
         </LinearLayout>
@@ -137,7 +137,7 @@
                 android:gravity="left|center_vertical"
                 android:layout_marginLeft="20dp"
                 android:textColor="#000000"
-                android:textSize="18sp" />
+                android:textSize="@dimen/gl_text_size_20sp" />
         </LinearLayout>
     </RelativeLayout>
 
@@ -249,7 +249,7 @@
                 app:vOffset="0dp"
                 app:text="@string/step_1"
                 app:textColor="#ba4710"
-                app:textSize="12sp" />
+                app:textSize="@dimen/gl_text_size_14sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -259,7 +259,7 @@
             android:gravity="left"
             android:text="@string/mypower_text_powerprice"
             android:textColor="#224c62"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:id="@+id/timingpower_powerprice"
@@ -272,7 +272,7 @@
             android:singleLine="true"
             android:text="@string/demo_str_4"
             android:textColor="#224c62"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:id="@+id/timingpower_period"
@@ -283,7 +283,7 @@
             android:layout_marginLeft="48dp"
             android:text="@string/demo_str_5"
             android:textColor="#224c62"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:id="@+id/timingpower_time"
@@ -296,7 +296,7 @@
             android:singleLine="true"
             android:text="@string/demo_str_6"
             android:textColor="#224c62"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <!-- ruler -->
 
@@ -309,7 +309,7 @@
             android:layout_marginLeft="216dp"
             android:text="@string/mypower_text_zero"
             android:textColor="@color/black"
-            android:textSize="14sp" />
+            android:textSize="@dimen/gl_text_size_16sp" />
 
         <TextView
             android:id="@+id/timingpower_ruler_step1"
@@ -321,7 +321,7 @@
             android:rotation="-54"
             android:text="@string/demo_str_r1"
             android:textColor="@color/black"
-            android:textSize="14sp"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:transformPivotX="0dp"
             android:transformPivotY="0dp" />
 
@@ -335,7 +335,7 @@
             android:rotation="54"
             android:text="@string/demo_str_r2"
             android:textColor="@color/black"
-            android:textSize="14sp"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:transformPivotX="0dp"
             android:transformPivotY="0dp" />
     </FrameLayout>
@@ -359,7 +359,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/mypower_text_alldevicepoweramount"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
 
                 <TextView
                     android:id="@+id/mypower_allamount"
@@ -367,7 +367,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:textColor="@color/orange"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -375,7 +375,7 @@
                     android:gravity="left"
                     android:text="@string/str_degree"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
             
 		        <Button
 		            android:id="@+id/mypower_query_button"

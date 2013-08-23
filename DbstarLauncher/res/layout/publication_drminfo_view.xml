@@ -20,7 +20,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="#ffffff"
-            android:textSize="16sp"
+            android:textSize="@dimen/gl_text_size_18sp"
             android:text="@string/content_id" />
 
         <TextView
@@ -30,7 +30,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="#ffffff"
-            android:textSize="16sp"
+            android:textSize="@dimen/gl_text_size_18sp"
             android:text="@string/operator_id" />
 
         <TextView
@@ -40,7 +40,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="#ffffff"
-            android:textSize="16sp"
+            android:textSize="@dimen/gl_text_size_18sp"
             android:text="@string/product_id" />
 
         <TextView
@@ -48,7 +48,7 @@
             android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:textColor="#ffffff"
-            android:textSize="16sp"
+            android:textSize="@dimen/gl_text_size_18sp"
             android:text="@string/start_time" />
 
         <TextView
@@ -56,7 +56,7 @@
             android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:textColor="#ffffff"
-            android:textSize="16sp"
+            android:textSize="@dimen/gl_text_size_18sp"
             android:text="@string/end_time" />
     </LinearLayout>
 

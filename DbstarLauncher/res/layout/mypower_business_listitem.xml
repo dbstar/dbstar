@@ -12,7 +12,7 @@
         android:gravity="center"
         android:text="@string/str_index"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
     <TextView
         android:id="@+id/name"
@@ -22,7 +22,7 @@
         android:gravity="center"
         android:text="@string/str_business_name"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
     <TextView
         android:id="@+id/phone"
@@ -32,7 +32,7 @@
         android:gravity="center"
         android:text="@string/str_phone"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
     <TextView
         android:id="@+id/address"
@@ -43,7 +43,7 @@
         android:gravity="center"
         android:text="@string/str_business_address"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
     <TextView
         android:id="@+id/time"
@@ -54,6 +54,6 @@
         android:gravity="center"
         android:text="@string/str_worktime"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
 </LinearLayout>

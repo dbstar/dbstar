@@ -16,8 +16,7 @@
 
 package com.dbstar.util;
 
-import android.util.Log;
-
+import com.dbstar.util.LogUtil;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -43,73 +42,73 @@ public class PeripheralController {
 	private static String CMD_SET_CVBS_OFF = "w C_3 0";
 
 	public void setPowerLedOn() {
-		Log.d(TAG, "setPowerLedOn");
+		LogUtil.d(TAG, "setPowerLedOn");
 		setGpio(CMD_SET_POWER_LED_OFF);
 		return;
 	}
 
 	public void setPowerLedOff() {
-		Log.d(TAG, "setPowerLedOff");
+		LogUtil.d(TAG, "setPowerLedOff");
 		setGpio(CMD_SET_POWER_LED_OFF);
 		return;
 	}
 
 	public void setNetworkLedOn() {
-		Log.d(TAG, "setNetworkLedOn");
+		LogUtil.d(TAG, "setNetworkLedOn");
 		setGpio(CMD_SET_NETWORK_LED_ON);
 		return;
 	}
 
 	public void setNetworkLedOff() {
-		Log.d(TAG, "setNetworkLedOff");
+		LogUtil.d(TAG, "setNetworkLedOff");
 		setGpio(CMD_SET_NETWORK_LED_OFF);
 		return;
 	}
 
 	public void setAudioOutputOn() {
-		Log.d(TAG, "setAudioOutputOn");
+		LogUtil.d(TAG, "setAudioOutputOn");
 		setGpio(CMD_SET_AUDIO_OUTPUT_ON);
 		return;
 	}
 
 	public void setAudioOutputOff() {
-		Log.d(TAG, "setAudioOutputOff");
+		LogUtil.d(TAG, "setAudioOutputOff");
 		setGpio(CMD_SET_AUDIO_OUTPUT_OFF);
 		return;
 	}
 
 	public void setWifiOn() {
-		Log.d(TAG, "setWifiOn");
+		LogUtil.d(TAG, "setWifiOn");
 		setGpio(CMD_SET_WIFI_ON);
 		return;
 	}
 
 	public void setWifiOff() {
-		Log.d(TAG, "setWifiOff");
+		LogUtil.d(TAG, "setWifiOff");
 		setGpio(CMD_SET_WIFI_OFF);
 		return;
 	}
 
 	public void setSataOn() {
-		Log.d(TAG, "setSataOn");
+		LogUtil.d(TAG, "setSataOn");
 		setGpio(CMD_SET_SATA_ON);
 		return;
 	}
 
 	public void setSataOff() {
-		Log.d(TAG, "setSataOff");
+		LogUtil.d(TAG, "setSataOff");
 		setGpio(CMD_SET_SATA_OFF);
 		return;
 	}
 
 	public void setCvbsOn() {
-		Log.d(TAG, "setCvbsOn");
+		LogUtil.d(TAG, "setCvbsOn");
 		setGpio(CMD_SET_CVBS_ON);
 		return;
 	}
 
 	public void setCvbsOff() {
-		Log.d(TAG, "setCvbsOff");
+		LogUtil.d(TAG, "setCvbsOff");
 		setGpio(CMD_SET_CVBS_OFF);
 		return;
 	}
@@ -137,7 +136,7 @@ public class PeripheralController {
 	private String readSysFile(String file) {
 		String buf = null;
 		if (file == null) {
-			Log.d(TAG, "writeSysFile ERROR!, file=null");
+			LogUtil.d(TAG, "writeSysFile ERROR!, file=null");
 			return null;
 		} else try {
 			BufferedReader br = new BufferedReader(new FileReader(file), 64);
@@ -148,14 +147,14 @@ public class PeripheralController {
 			}
 			return buf; 
 		} catch (IOException e) {
-			Log.e(TAG, "readSysFile error"); 
+			LogUtil.e(TAG, "readSysFile error"); 
 			return null; 
 		}
 	}
 
 	private void writeSysFile(String file, String buf) {
 		if (file == null || buf == null) {
-			Log.d(TAG, "writeSysFile ERROR!, file=" + file + "buf=" + buf);
+			LogUtil.d(TAG, "writeSysFile ERROR!, file=" + file + "buf=" + buf);
 			return;
 		} else try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(file), 64);
@@ -166,7 +165,7 @@ public class PeripheralController {
 			}
 			return; 
 		} catch (IOException e) {
-			Log.e(TAG, "writeSys error"); 
+			LogUtil.e(TAG, "writeSys error"); 
 			return; 
 		}
 	}

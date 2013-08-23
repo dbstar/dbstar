@@ -9,4 +9,14 @@
     
     <dimen name="popup_window_width">1000dp</dimen>
     <dimen name="popup_window_height">450dp</dimen>
+    
+    <dimen name="gl_text_size_24sp">24sp</dimen>
+    <dimen name="gl_text_size_22sp">22sp</dimen>
+    <dimen name="gl_text_size_20sp">20sp</dimen>
+    <dimen name="gl_text_size_18sp">18sp</dimen>
+    <dimen name="gl_text_size_16sp">16sp</dimen>
+    <dimen name="gl_text_size_14sp">14sp</dimen>
+    <dimen name="gl_text_size_12sp">12sp</dimen>
+    <dimen name="gl_text_size_10sp">10sp</dimen>
+    <dimen name="gl_text_size_8sp">8sp</dimen>
 </resources>

@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
+        android:textSize="@dimen/gl_text_size_20sp"
         android:background="@drawable/button_bg"
         android:text="@string/import_ca" />
 
@@ -19,6 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:textSize="@dimen/gl_text_size_20sp"
         android:background="@drawable/button_bg"
         android:text="@string/export_ca" />
 

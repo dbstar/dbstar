@@ -10,5 +10,5 @@
     android:background="@drawable/gd_spinner_item_bg"
     android:singleLine="true"
     android:textColor="#ffffff"
-    android:textSize="14sp" >
+    android:textSize="@dimen/gl_text_size_16sp" >
 </TextView>

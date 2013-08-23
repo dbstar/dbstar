@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:text="@string/smartcard_number"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:id="@+id/smartcard_number"
@@ -27,7 +27,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:text="@string/ca_edition"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:id="@+id/smartcard_version"
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:text="@string/smartcard_state"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:id="@+id/smartcard_state"
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -88,7 +88,7 @@
             android:layout_height="wrap_content"
             android:text="@string/smartcard_eigenvalue"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -106,21 +106,21 @@
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id2"
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id3"
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -133,21 +133,21 @@
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id5"
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id6"
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
             </LinearLayout>
             
             <LinearLayout
@@ -160,21 +160,21 @@
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id8"
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
 
                 <TextView
                     android:id="@+id/eignevlaue_id9"
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
             </LinearLayout>
             
             <LinearLayout
@@ -187,7 +187,7 @@
                     android:layout_width="190dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
-                    android:textSize="16sp" />
+                    android:textSize="@dimen/gl_text_size_18sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -199,7 +199,7 @@
         android:layout_marginTop="8dp"
         android:text="@string/smartcard_authorization"
         android:textColor="#000000"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -213,35 +213,35 @@
             android:layout_height="wrap_content"
             android:text="@string/operator_id"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:text="@string/product_id"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:text="@string/start_time"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:text="@string/end_time"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
 
         <TextView
             android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:text="@string/limit_count"
             android:textColor="#000000"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </LinearLayout>
 
     <ListView

@@ -15,6 +15,7 @@
             android:layout_width="189dp"
             android:layout_height="31dp"
             android:textColor="#fff"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:layout_gravity="center"
             android:gravity="center" />
 
@@ -35,6 +36,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="5dp"
             android:background="#00000000"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:textColor="#fff" />
     </RelativeLayout>
 

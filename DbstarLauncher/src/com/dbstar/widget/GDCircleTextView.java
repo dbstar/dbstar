@@ -80,21 +80,29 @@ public class GDCircleTextView extends View {
 		// super.onDraw(canvas);
 
 		if (mCircle == null) {
-			mCircle = new Path();
+		    mCircle = new Path();
 			 //float y = mRadius;
 			 //float x = getWidth() / 2;
 			 //mCircle.addCircle(x, y, mRadius, Direction.CW);
-			RectF oval = new RectF(0, 0, 2 * mRadius, 2 * mRadius);
+			RectF oval = new RectF(0, 0, getWidth(), getHeight());
 			mCircle.addArc(oval, mStartAngle, mSweepAngle);
 			//mHOffset = (float)(Math.PI*mRadius/180*mStartAngle);
 //			RectF oval = new RectF(0, 0, mRadius, mRadius);
 //			mCircle.addArc(oval, mStartAngle, mSweepAngle);
 		}
 
-//		canvas.drawPath(mCircle, cPaint);
+		//canvas.drawPath(mCircle, cPaint);
 
 		if (mText != null && !mText.isEmpty()) {
 			canvas.drawTextOnPath(mText, mCircle, mVOffset, mHOffset, mTPaint);
 		}
+	}
+	
+	public void setValue(float startAngle,float sweepAngle,String textValue){
+	    mStartAngle = startAngle;
+	    mSweepAngle = sweepAngle;
+	    mText = textValue;
+	    mCircle = null;
+	    invalidate();
 	}
 }

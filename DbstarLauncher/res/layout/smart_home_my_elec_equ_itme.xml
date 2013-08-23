@@ -15,6 +15,7 @@
         android:layout_width="189dp"
         android:layout_height="31dp"
         android:layout_gravity="center"
+        android:textSize="@dimen/gl_text_size_16sp"
         android:gravity="center"
         />
 
@@ -37,6 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/family_text_on"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:textColor="#fff" />
 
         <Button
@@ -53,6 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:text="@string/family_text_off"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:textColor="#fff" />
     </LinearLayout>
 
@@ -73,6 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_jin"
                 android:textColor="#fff" />
 
@@ -80,6 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/ch_day"
                 android:textColor="#fff" />
 
@@ -87,6 +92,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_yong"
                 android:textColor="#fff" />
 
@@ -94,6 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_dian"
                 android:textColor="#fff" />
 
@@ -101,6 +108,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/family_text_liang"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:textColor="#fff" />
         </LinearLayout>
 
@@ -111,12 +119,14 @@
             android:layout_marginLeft="5dp"
             android:layout_weight="1"
             android:gravity="left"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:textColor="#fff" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:text="@string/string_degree"
             android:textColor="#fff" />
     </LinearLayout>
@@ -138,6 +148,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_ben"
                 android:textColor="#fff" />
 
@@ -145,6 +156,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/ch_month"
                 android:textColor="#fff" />
 
@@ -152,6 +164,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_yong"
                 android:textColor="#fff" />
 
@@ -159,6 +172,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_dian"
                 android:textColor="#fff" />
 
@@ -166,6 +180,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/family_text_liang"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:textColor="#fff" />
         </LinearLayout>
 
@@ -175,6 +190,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_weight="1"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:gravity="left"
             android:textColor="#fff" />
 
@@ -182,6 +198,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:text="@string/string_degree"
             android:textColor="#fff" />
     </LinearLayout>
@@ -203,6 +220,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_shi_"
                 android:textColor="#fff" />
 
@@ -210,6 +228,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_shi"
                 android:textColor="#fff" />
 
@@ -217,6 +236,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:text="@string/family_text_gong"
                 android:textColor="#fff" />
 
@@ -224,6 +244,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/family_text_lv"
+                android:textSize="@dimen/gl_text_size_16sp"
                 android:textColor="#fff" />
         </LinearLayout>
 
@@ -232,6 +253,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:gravity="left"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:textColor="#fff" />
@@ -240,6 +262,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
+            android:textSize="@dimen/gl_text_size_16sp"
             android:text="@string/family_text_watt"
             android:textColor="#fff" />
     </LinearLayout>
@@ -255,7 +278,7 @@
 	     android:layout_height="28dp"
 	     android:background="@drawable/smart_home_equ_refresh_selecter"
 	     android:text="@string/family_text_refresh"
-	     android:textSize="12sp"
+	     android:textSize="@dimen/gl_text_size_14sp"
 	     android:layout_marginLeft="64dp"
 	     android:layout_marginBottom="5dp"
      />

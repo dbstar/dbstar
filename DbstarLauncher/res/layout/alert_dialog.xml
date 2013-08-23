@@ -24,7 +24,7 @@
             android:gravity="center"
             android:singleLine="true"
             android:textColor="#ffffff"
-            android:textSize="20sp" />
+            android:textSize="@dimen/gl_text_size_22sp" />
 
         <ImageView
             android:id="@+id/titleDivider"
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="left"
             android:text="@string/button_text_ok"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
 
         <LinearLayout
             android:id="@+id/centerSpacer"
@@ -95,7 +95,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="@string/button_text_cancel"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
 
         <LinearLayout
             android:id="@+id/rightSpacer"

@@ -446,7 +446,7 @@ public class GDDBStarClient {
 				String info = null;
 				try {
 					info = new String(bytes, "utf-8");
-					// LogUtil.d(TAG, "TaskInfo: " + info);
+					 LogUtil.d(TAG, "TaskInfo: " + info);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
@@ -456,15 +456,20 @@ public class GDDBStarClient {
 					items = info.split("\n");
 				}
 
-				if (items != null && items.length > 1) {
+				if (items != null && items.length >= 2) {
 					receiveData = new ReceiveData();
-					String flag = items[0];
-					receiveData.NewData = flag.equals("1") ? true : false;
-					entries = new ReceiveEntry[items.length - 1];
+					receiveData.SingleStatu = items[0].trim();
+					String flag = items[1];
+					if(flag.equals("1")){
+					    receiveData.NewData = true;
+					}else{
+					    receiveData.NewData = false;
+					}
+					entries = new ReceiveEntry[items.length - 2];
 					receiveData.Entries = entries;
 
-					for (int i = 1; i < items.length; i++) {
-						entries[i-1] = createEntry(items[i]);
+					for (int i = 2; i < items.length; i++) {
+						entries[i-2] = createEntry(items[i]);
 					}
 
 				}

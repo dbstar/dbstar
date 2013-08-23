@@ -1,6 +1,8 @@
 package com.dbstar.guodian.app.mypower;
 
+import android.app.PendingIntent.OnFinished;
 import android.content.Intent;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -30,6 +32,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
     private PowerTarget mPowerTarget;
     private PowerData mDefaultTarget;
     private String CCGUID;
+    private boolean mIsUpdateTarget;
     
     @Override
     protected void onCreate(android.os.Bundle savedInstanceState) {
@@ -97,7 +100,12 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
             
             @Override
             public void onClick(View v) {
-                finish();
+                if(mIsUpdateTarget){
+                    Intent intent = getIntent();
+                    intent.putExtra("isUpdate", mIsUpdateTarget);
+                    GDPowerTargetSettingActivity.this.setResult(0, intent);
+                }
+                GDPowerTargetSettingActivity.this.finish();
             }
         });
     }
@@ -155,7 +163,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
             ToastUtil.showToast(this, R.string.error_text_not_input_power_target);
             return;
         }
-        RequestParams params = new RequestParams(GDRequestType.DATATYPE_DEFAULT_POWER_TARGET);
+        RequestParams params = new RequestParams(GDRequestType.DATATYPE_SETTING_POWER_TARGET);
         mSystemFlag = "elc";
         mRequestMethodId = "m004f003";
         params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
@@ -184,6 +192,7 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
                     if("true".equals(result.Result)){
                         ToastUtil.showToast(this, R.string.text_set_power_target_success);
                         mTVCurrentTarget.setText(mEdNewTarget.getText().toString());
+                        mIsUpdateTarget = true;
                     }else{
                         ToastUtil.showToast(this, R.string.text_set_power_target_fail);
                     }
@@ -203,4 +212,17 @@ public class GDPowerTargetSettingActivity extends GDSmartActivity{
         }
     }
     
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            if(mIsUpdateTarget){
+                Intent intent = getIntent();
+                intent.putExtra("isUpdate", mIsUpdateTarget);
+                this.setResult(0, intent);
+                this.finish();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 }

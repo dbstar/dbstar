@@ -73,7 +73,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			case MSG_UPDATEPROGRESS: {
 				if (mBound) {
 					mService.getDownloadStatus(mObserver);
-					mService.getTSSignalStatus(mObserver);
+					//mService.getTSSignalStatus(mObserver);
 				}
 				break;
 			}
@@ -328,16 +328,28 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	public void updateData(int type, Object key, Object data) {
 		if (type == GDDataProviderService.REQUESTTYPE_GETDOWNLOADSTATUS) {
-			updateDownloadStatus((ReceiveData) data);
+		    ReceiveData receiveData = (ReceiveData) data;
+			updateDownloadStatus(receiveData);
+			
+			if(receiveData != null){
+			    String status = receiveData.SingleStatu;
+				if(status == null)
+					return;
+	            mSignalState = status.equalsIgnoreCase("1") ? SignalStateOn
+	                    : SignalStateOff;
+
+	            setSignalState(mSignalState);
+			}
+			
 		} else if (type == GDDataProviderService.REQUESTTYPE_GETTSSIGNALSTATUS) {
-			if (data == null)
-				return;
-
-			String status = (String) data;
-			mSignalState = status.equalsIgnoreCase("1") ? SignalStateOn
-					: SignalStateOff;
-
-			setSignalState(mSignalState);
+//			if (data == null)
+//				return;
+//
+//			String status = (String) data;
+//			mSignalState = status.equalsIgnoreCase("1") ? SignalStateOn
+//					: SignalStateOff;
+//
+//			setSignalState(mSignalState);
 		}
 
 	}
@@ -348,6 +360,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		if (data == null)
 			return;
 		boolean newData = data.NewData;
+		LogUtil.i(TAG, "newData = " + newData);
 		ReceiveEntry[] entries = data.Entries;
 		if (newData) {
 			mPageDatas.clear();

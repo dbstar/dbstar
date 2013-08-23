@@ -38,7 +38,7 @@
                 android:layout_marginLeft="40dp"
                 android:textColor="@color/black"
                 android:text="@string/power_target_title"
-                android:textSize="22sp"
+                android:textSize="@dimen/gl_text_size_24sp"
                 />
             <LinearLayout 
                 
@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/power_current_target_title"
                     android:textColor="@color/black"
-                     android:textSize="20sp"
+                     android:textSize="@dimen/gl_text_size_22sp"
                     />
                 <TextView 
                     android:id="@+id/tv_power_target_count"
@@ -63,7 +63,7 @@
                     android:layout_marginLeft="30dp"
                     android:layout_marginRight="30dp"
                     android:textColor="@color/yellow"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     
                     />
                 
@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/str_degree"
                     android:textColor="@color/black"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     
                     />
             </LinearLayout>
@@ -89,7 +89,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/power_modify_target_title"
                     android:textColor="@color/black"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     />
                 <EditText 
                     android:id="@+id/et_power_target_count"
@@ -103,7 +103,7 @@
                     android:inputType="number|text"
                     android:singleLine="true"
                     android:longClickable="false"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     android:background="@drawable/power_target_text_bg"
                     
                     />
@@ -113,7 +113,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/str_degree"
                     android:textColor="@color/black"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     
                     />
             </LinearLayout>

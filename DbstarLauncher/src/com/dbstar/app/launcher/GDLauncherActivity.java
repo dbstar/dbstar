@@ -67,7 +67,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private static final int COLUMN_LEVEL_1 = 1;
 	private static final String ROOT_COLUMN_PARENTID = "-1";
-
+	private static final int REQUEST_POWER_TARGET_ACTIVITY_RESULT = 1;
 	// Engine
 	GDCelanderThread mCelanderThread;
 
@@ -566,6 +566,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if (columnId.equals(GDCommon.ColumnIDSystemManagement)) {
 			intent = new Intent();
 			intent.setClass(this, GDSystemMgrActivity.class);
+		}else if(columnId.equals(GDCommon.ColumnIDAPPLIST)){
+		    intent  = getPackageManager().getLaunchIntentForPackage("com.dbstar.myapplication");
 		}
 
 		if (intent != null) {
@@ -604,6 +606,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}else if(columnId.equals(GDCommon.ColumnIDPowerTarget)){
 		    intent = new Intent();
 		    intent.setClass(this, GDPowerTargetSettingActivity.class);
+		    intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+            startActivityForResult(intent, REQUEST_POWER_TARGET_ACTIVITY_RESULT);
+            return;
 		}
 
 		if (intent != null) {
@@ -612,6 +617,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    if(requestCode == REQUEST_POWER_TARGET_ACTIVITY_RESULT && data != null){
+	        boolean  isUpdate = data.getBooleanExtra("isUpdate", true);
+	        if(mPowerController != null && isUpdate)
+	            mPowerController.getPowerData();
+	    }
+	}
 	private void showGuodianApp(String columnId) {
 		if (columnId == null || columnId.isEmpty()) {
 			return;

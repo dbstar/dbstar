@@ -182,6 +182,7 @@
     <string name="mypower_text_devicepowercost">所控电器用电费用</string>
     <string name="mypower_text_devicepoweramount">所控电器用电量</string>
     <string name="mypower_text_powerprice">元/度</string>
+    <string name="mypower_text_target_unit">度/月</string>
     <string name="mypower_text_brackets_yuan">(元)</string>
     <string name="mypower_text_brackets_month">(月)</string>
     <string name="load_data_is_null">没有数据</string>
@@ -332,6 +333,7 @@
     <string name="demo_str_1">100度</string>
     <string name="demo_str_2">200元</string>
     <string name="demo_str_3">第二阶梯</string>
+    <string name="demo_str_power_target">用电目标</string>
     <string name="demo_str_4">0.123490090909009090</string>
     <string name="demo_str_5">高峰时段</string>
     <string name="demo_str_6">8:00-12:00</string>
@@ -343,8 +345,8 @@
     <string name="demo_str_11">123456789</string>
     <string name="demo_str_12">北京市丰台区航丰路1号时代财富大厦28层</string>
     
-    <string name="demo_str_r1">100</string>
-    <string name="demo_str_r2">200</string>
+    <string name="demo_str_r1">240</string>
+    <string name="demo_str_r2">360</string>
     
     <string name="head_step_level">分档</string>
     <string name="head_price_interval">用电量水平（度/户）</string>
@@ -422,5 +424,7 @@
 	<string name="text_advanced_settings">高级设置</string>
 	<string name="text_filebrowser">文件浏览器</string>
 	<string name="text_factorytest">厂测程序</string>
+	<string name="applist_title">应用名称</string>
+	<string name="external_storage_mount_alert">已插入外部储存！ 是否打开文件管理器</string>
 	
 </resources>

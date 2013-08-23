@@ -31,7 +31,7 @@
                 android:layout_marginLeft="10dp"
                 android:text="@string/loading_text"
                 android:textColor="#fff"
-                android:textSize="20sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -59,7 +59,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/network_connect_error"
                     android:textColor="#fff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -86,7 +86,7 @@
                 android:layout_marginLeft="10dp"
                 android:gravity="left|center_vertical"
                 android:textColor="#fff"
-                android:textSize="20sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
         </LinearLayout>
         
         <LinearLayout
@@ -107,7 +107,7 @@
                 android:layout_marginRight="20dp"
                 android:gravity="left|center_vertical"
                 android:textColor="#fff"
-                android:textSize="20sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
         </LinearLayout>
     </RelativeLayout>
 

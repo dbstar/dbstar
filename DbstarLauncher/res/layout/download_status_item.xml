@@ -14,7 +14,7 @@
         android:gravity="left|center_vertical"
         android:maxLines="1"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -38,7 +38,7 @@
         android:layout_marginLeft="20dp"
         android:gravity="left|center_vertical"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
     <TextView
         android:id="@+id/text_progress"
@@ -50,7 +50,7 @@
         android:gravity="left|center_vertical"
         android:maxLines="1"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
     <TextView
         android:id="@+id/text_percent"
@@ -60,6 +60,6 @@
         android:layout_marginLeft="20dp"
         android:gravity="left|center_vertical"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
 </LinearLayout>

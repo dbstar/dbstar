@@ -55,7 +55,7 @@
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                      app:itemCount="5"
                     app:itemlayout="@layout/gd_spinner_drop_list_item"/>
                 <!--
@@ -76,7 +76,7 @@
                     android:gravity="left"
                     android:text="@string/ch_year"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
 
                 <Space
                     android:layout_width="40dp"
@@ -93,7 +93,7 @@
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     app:itemCount="5"
                     app:itemlayout="@layout/gd_spinner_drop_list_item"  >
                 </com.dbstar.widget.GDSpinner>
@@ -117,7 +117,7 @@
                     android:gravity="left"
                     android:text="@string/ch_month"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
 
                 <Space
                     android:layout_width="40dp"
@@ -134,7 +134,7 @@
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                      app:itemCount="5"
                     app:itemlayout="@layout/gd_spinner_drop_list_item"  >
                 </com.dbstar.widget.GDSpinner>
@@ -156,7 +156,7 @@
                     android:gravity="left"
                     android:text="@string/ch_day"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
 
                 <Space
                     android:layout_width="40dp"
@@ -169,7 +169,7 @@
                     android:gravity="left"
                     android:text="@string/family_text_electrical_change"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
 
                 <Space
                     android:layout_width="10dp"
@@ -185,7 +185,7 @@
                     android:paddingRight="5dp"
                     android:singleLine="true"
                     android:textColor="#ffffff"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     app:itemCount="5"
                     app:itemlayout="@layout/gd_spinner_drop_list_item"  >
                 </com.dbstar.widget.GDSpinner>
@@ -221,7 +221,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:textColor="#ffffff"
-                    android:textSize="24sp" />
+                    android:textSize="@dimen/gl_text_size_24sp" />
 
                 <Button
                     android:id="@+id/power_track_view_type"
@@ -240,14 +240,14 @@
                     android:layout_height="wrap_content"
                     android:text="@string/family_text_used_power_count"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
 
                 <TextView
                     android:id="@+id/power_track_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
             </LinearLayout>
 
             <LinearLayout

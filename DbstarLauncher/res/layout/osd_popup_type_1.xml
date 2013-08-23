@@ -13,6 +13,6 @@
         android:layout_marginLeft="80dp"
         android:layout_marginRight="80dp"
         app:textColor="#ffffff"
-        app:textSize="22sp" />
+        app:textSize="@dimen/gl_text_size_22sp" />
 
 </LinearLayout>

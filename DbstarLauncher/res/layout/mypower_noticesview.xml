@@ -116,7 +116,7 @@
                     android:layout_gravity="left|center_vertical"
                     android:gravity="left|center_vertical"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
 
                 <TextView
                     android:id="@+id/notices_pages"
@@ -126,7 +126,7 @@
                     android:layout_marginLeft="20dp"
                     android:gravity="left|center_vertical"
                     android:textColor="#ffffff"
-                    android:textSize="18sp" />
+                    android:textSize="@dimen/gl_text_size_20sp" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -150,7 +150,7 @@
                 android:layout_marginTop="40dp"
                 android:gravity="center"
                 android:textColor="#ffffff"
-                android:textSize="22sp" />
+                android:textSize="@dimen/gl_text_size_24sp" />
 
             <com.dbstar.widget.GDNewsViewGoup
                 android:id="@+id/content"
@@ -162,7 +162,7 @@
                 app:imageViewWidth="445dp"
                 app:mSpaceBetweenPicAndCotent="15dp"
                 app:textColor="#fff"
-                app:textSize="18sp"
+                app:textSize="@dimen/gl_text_size_22sp"
                 app:vSpace="15dp" >
             </com.dbstar.widget.GDNewsViewGoup>
 
@@ -190,42 +190,49 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/text_di"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
 
                     <TextView
                         android:id="@+id/content_page_number"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/text_ye"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/text_slash"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/text_gong"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
 
                     <TextView
                         android:id="@+id/content_page_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/text_ye"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
                 </LinearLayout>
             </RelativeLayout>

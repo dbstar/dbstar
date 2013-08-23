@@ -121,10 +121,10 @@ public class GDScrollBar extends View {
 			mRecomputeTrackerTop = false;
 			int delta = mCurrentPosition - mOldPosition;
 			if (delta > 0) {
-				trackerTop = mTrackerTop + mTackerHeight;
+				trackerTop = mTrackerTop + (delta * mTackerHeight);
 			}
 			else if (delta < 0) {
-				trackerTop = mTrackerTop - mTackerHeight;
+				trackerTop = mTrackerTop + (delta * mTackerHeight);
 			} else {
 				trackerTop = mTrackerTop;
 			}

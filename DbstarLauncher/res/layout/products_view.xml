@@ -35,7 +35,7 @@
             android:layout_marginTop="80dp"
             android:gravity="top|center_horizontal"
             android:textColor="#3d3d3d"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -57,7 +57,7 @@
             android:layout_marginTop="20dp"
             android:text="@string/operator_info"
             android:textColor="#000000"
-            android:textSize="20sp" />
+            android:textSize="@dimen/gl_text_size_22sp" />
 
         <TextView
             android:id="@+id/card_id"
@@ -69,7 +69,7 @@
             android:layout_marginTop="20dp"
             android:text="@string/smartcard_number"
             android:textColor="#000000"
-            android:textSize="20sp" />
+            android:textSize="@dimen/gl_text_size_22sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -80,7 +80,7 @@
             android:layout_marginTop="20dp"
             android:text="@string/label_ordered_products"
             android:textColor="#000000"
-            android:textSize="20sp" />
+            android:textSize="@dimen/gl_text_size_22sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -96,7 +96,7 @@
                 android:gravity="center"
                 android:text="@string/label_ordered_products_name"
                 android:textColor="#000000"
-                android:textSize="20sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
 
             <TextView
                 android:layout_width="728dp"
@@ -105,7 +105,7 @@
                 android:gravity="center"
                 android:text="@string/label_ordered_products_time"
                 android:textColor="#000000"
-                android:textSize="20sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
         </LinearLayout>
 
         <ListView

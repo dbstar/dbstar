@@ -8,12 +8,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import android.app.AlertDialog;
 import android.app.Instrumentation;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.DialogInterface.OnClickListener;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -27,7 +30,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.view.KeyEvent;
+import android.view.WindowManager;
 
+import com.dbstar.R;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.settings.GDSettings;
 import com.dbstar.guodian.data.ElectricityPrice;
@@ -527,6 +532,8 @@ public class GDDataProviderService extends Service {
 			}
 
 			case GDCommon.MSG_MEDIA_MOUNTED: {
+			    
+			    showDialog();
 				Bundle data = msg.getData();
 				String disk = data.getString("disk");
 				// LogUtil.d(TAG, "mount storage = " + disk);
@@ -535,7 +542,6 @@ public class GDDataProviderService extends Service {
 				// check whether the disk is mounted.
 				mConfigure.configureStorage();
 				String storage = mConfigure.getStorageDisk();
-				
 				if (disk.equals(storage)) {
 					// disk is mounted
 					mIsStorageReady = true;
@@ -564,6 +570,12 @@ public class GDDataProviderService extends Service {
 			}
 
 			case GDCommon.MSG_MEDIA_REMOVED: {
+			    
+			    if(mDialog != null && mDialog.isShowing()){
+			        mDialog.dismiss();
+			        mDialog = null;
+			    }
+			    
 				Bundle data = msg.getData();
 				String disk = data.getString("disk");
 
@@ -2753,4 +2765,34 @@ public class GDDataProviderService extends Service {
 	public LoginData getLoginData(){
 	    return mRequestService.getLoginData();
 	}
+	
+	
+	private AlertDialog mDialog;
+    private void showDialog(){
+        AlertDialog.Builder dialog=new AlertDialog.Builder(getApplicationContext());  
+        dialog.setTitle(getString(R.string.alert_title));  
+        dialog.setIcon(android.R.drawable.ic_dialog_info);  
+        dialog.setMessage(R.string.external_storage_mount_alert);  
+        dialog.setPositiveButton(R.string.button_text_ok, new OnClickListener() {
+            
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                Intent intent = getPackageManager().getLaunchIntentForPackage("com.fb.FileBrower");
+                startActivity(intent);
+                
+            }
+        });
+        dialog.setNegativeButton(R.string.button_text_cancel, new OnClickListener() {
+            
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        mDialog = dialog.create();  
+        mDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);  
+        mDialog.show();  
+        
+    }
 }
