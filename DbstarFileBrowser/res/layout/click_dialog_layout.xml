@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/layout_root_click"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"	
+	>
+	<LinearLayout
+		android:orientation="horizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"	
+		android:gravity="left"		
+		>
+    <TextView 
+		android:text="@string/openMode"
+		android:id="@+id/open_mode" 
+		android:layout_marginLeft="5dp" 
+		android:textSize="16sp"			    		
+	    android:textStyle="bold"   
+	    android:textColor="@color/item_text_color"  	
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content"
+		></TextView>
+    </LinearLayout>		
+
+	<ListView
+		android:id="@+id/click_listview"
+    	android:layout_width="fill_parent"
+    	android:layout_height="fill_parent"		
+		/>  
+</LinearLayout>

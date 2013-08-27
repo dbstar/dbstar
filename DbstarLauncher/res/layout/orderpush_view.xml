@@ -33,7 +33,7 @@
             android:layout_marginTop="80dp"
             android:gravity="top|center_horizontal"
             android:textColor="#ffffff"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </RelativeLayout>
     
     <ImageView
@@ -129,7 +129,7 @@
                 android:singleLine="true"
                 android:text="@string/checher_receive"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="@dimen/gl_text_size_18sp" />
 
             <Space
                 android:layout_width="120dp"
@@ -149,7 +149,7 @@
                 android:singleLine="true"
                 android:text="@string/checher_not_receive"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="@dimen/gl_text_size_18sp" />
 
             <Space
                 android:layout_width="120dp"
@@ -162,7 +162,7 @@
                 android:singleLine="true"
                 android:text="@string/ok_key"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="@dimen/gl_text_size_18sp" />
             
             <Space
                 android:layout_width="8dp"
@@ -175,7 +175,7 @@
                 android:singleLine="true"
                 android:text="@string/checher_switch_receive_status"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="@dimen/gl_text_size_18sp" />
 
             <Space
                 android:layout_width="120dp"
@@ -195,7 +195,7 @@
                 android:singleLine="true"
                 android:text="@string/back_to_home_and_save"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="@dimen/gl_text_size_18sp" />
 
             <Space
                 android:layout_width="120dp"
@@ -215,7 +215,7 @@
                 android:singleLine="true"
                 android:text="@string/back_to_home"
                 android:textColor="#ffffff"
-                android:textSize="16sp" />
+                android:textSize="@dimen/gl_text_size_18sp" />
         </LinearLayout>
     </RelativeLayout>
 

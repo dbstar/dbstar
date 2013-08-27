@@ -57,7 +57,7 @@
             android:gravity="center_vertical"
             android:text="@string/hotline"
             android:textColor="#3d3d3d"
-            android:textSize="20sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
     </RelativeLayout>
 
     <!-- video view -->
@@ -154,7 +154,7 @@
                     android:scrollHorizontally="true"
                     android:singleLine="true"
                     android:textColor="#ffffffff"
-                    android:textSize="22sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/week_view"
@@ -165,7 +165,7 @@
                     android:scrollHorizontally="true"
                     android:singleLine="true"
                     android:textColor="#ffffffff"
-                    android:textSize="22sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -206,7 +206,7 @@
                 android:singleLine="true"
                 android:text="@string/demo_str_1"
                 android:textColor="#e1f544"
-                android:textSize="22sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
 
             <TextView
                 android:id="@+id/mypower_cost"
@@ -223,7 +223,7 @@
                 android:singleLine="true"
                 android:text="@string/demo_str_2"
                 android:textColor="#e1f544"
-                android:textSize="22sp" />
+                android:textSize="@dimen/gl_text_size_22sp" />
         </LinearLayout>
 
         <FrameLayout
@@ -322,7 +322,7 @@
             <com.dbstar.widget.GDCircleTextView
                  android:id="@+id/timingppower_step"
                  android:layout_width="166dp"
-                 android:layout_height="108dp"
+                 android:layout_height="216dp"
                  android:layout_gravity="top|right"
                  android:layout_marginRight="30dp"
                  android:layout_marginTop="20dp"
@@ -345,7 +345,7 @@
                 android:gravity="left"
                 android:text="@string/mypower_text_powerprice"
                 android:textColor="#224c62"
-                android:textSize="12sp" />
+                android:textSize="@dimen/gl_text_size_12sp" />
 
             <TextView
                 android:id="@+id/timingpower_powerprice"
@@ -358,7 +358,7 @@
                 android:singleLine="true"
                 android:text="@string/demo_str_4"
                 android:textColor="#224c62"
-                android:textSize="12sp" />
+                android:textSize="@dimen/gl_text_size_12sp" />
 
             <TextView
                 android:id="@+id/timingpower_period"
@@ -369,7 +369,7 @@
                 android:layout_marginLeft="40dp"
                 android:text="@string/demo_str_5"
                 android:textColor="#224c62"
-                android:textSize="14sp" />
+                android:textSize="@dimen/gl_text_size_14sp" />
 
             <TextView
                 android:id="@+id/timingpower_time"
@@ -382,7 +382,7 @@
                 android:singleLine="true"
                 android:text="@string/demo_str_6"
                 android:textColor="#224c62"
-                android:textSize="14sp" />
+                android:textSize="@dimen/gl_text_size_14sp" />
             
             <!-- ruler -->
             <TextView
@@ -394,7 +394,7 @@
                 android:layout_marginBottom="74dp"
                 android:text="@string/mypower_text_zero"
                 android:textColor="@color/black"
-                android:textSize="9sp" />
+                android:textSize="@dimen/gl_text_size_10sp" />
             
             <TextView
                 android:id="@+id/timingpower_ruler_step1"
@@ -408,7 +408,7 @@
                 android:transformPivotY="0dp"
                 android:text="@string/demo_str_r1"
                 android:textColor="@color/black"
-                android:textSize="9sp" />
+                android:textSize="@dimen/gl_text_size_10sp" />
             
             <TextView
                 android:id="@+id/timingpower_ruler_step2"
@@ -422,7 +422,7 @@
                 android:transformPivotY="0dp"
                 android:text="@string/demo_str_r2"
                 android:textColor="@color/black"
-                android:textSize="9sp" />
+                android:textSize="@dimen/gl_text_size_10sp" />
         </FrameLayout>
 
         <FrameLayout
@@ -462,7 +462,56 @@
                 android:src="@drawable/power_pointer"
                 android:transformPivotX="68dp"
                 android:transformPivotY="13dp" />
-
+	    <LinearLayout 
+	            android:layout_width="100dp"
+	            android:layout_height="wrap_content"
+	            android:orientation="horizontal"
+	            android:layout_marginLeft="92dp"
+                android:layout_marginTop="165dp"
+	        >
+	           <com.dbstar.widget.AlwaysMarqueeTextView
+                android:id="@+id/steppower_powerprice"
+                android:layout_width="1dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:gravity="center_horizontal"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:singleLine="true"
+                android:text="@string/demo_str_4"
+                android:textColor="#38709f"
+                android:textSize="@dimen/gl_text_size_18sp" />
+	           
+	           <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:gravity="left"
+                android:layout_marginRight="3dp"
+                android:text="@string/mypower_text_target_unit"
+                android:textColor="#38709f"
+                android:textSize="@dimen/gl_text_size_16sp" />
+	        
+	    </LinearLayout>
+	    
+	    
+            <com.dbstar.widget.GDCircleTextView
+                 android:id="@+id/steppower_ruler"
+                 android:layout_width="130dp"
+                 android:layout_height="130dp"
+                 android:layout_gravity="top|right"
+                 android:layout_marginRight="50dp"
+                 android:layout_marginTop="40dp"
+                 app:text="@string/mypower_text_zero"
+                 app:circleRadius="65"
+                 app:startAngle="45"
+                 app:sweepAngle="270"
+                 app:textSize="@dimen/gl_text_size_12sp"
+                 app:hOffset="20dp"
+                 app:vOffset="0dp"
+                 app:textColor="#000"
+                 android:visibility="visible" />
             <TextView
                 android:id="@+id/steppower_step"
                 android:layout_width="wrap_content"
@@ -470,10 +519,10 @@
                 android:layout_gravity="top|left"
                 android:layout_marginLeft="110dp"
                 android:layout_marginTop="120dp"
-                android:text="@string/demo_str_3"
+                android:text="@string/demo_str_power_target"
                 android:textColor="#224c62"
-                android:textSize="14sp" />
-
+                android:textSize="@dimen/gl_text_size_14sp" />
+         <!--     
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -483,20 +532,9 @@
                 android:gravity="left"
                 android:text="@string/mypower_text_powerprice"
                 android:textColor="#38709f"
-                android:textSize="8sp" />
+                android:textSize="10sp" /> -->
 
-            <TextView
-                android:id="@+id/steppower_powerprice"
-                android:layout_width="88dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|left"
-                android:layout_marginLeft="96dp"
-                android:layout_marginTop="160dp"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:text="@string/demo_str_4"
-                android:textColor="#38709f"
-                android:textSize="13sp" />
+         
             
             <!-- ruler -->
             <TextView
@@ -508,35 +546,40 @@
                 android:layout_marginTop="98dp"
                 android:text="@string/mypower_text_zero"
                 android:textColor="@color/black"
-                android:textSize="9sp" />
-            
-            <TextView
-                android:id="@+id/steppower_ruler_step1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|left"
-                android:layout_marginLeft="94dp"
-                android:layout_marginTop="64dp"
-                android:rotation="-40"
-                android:transformPivotX="0dp"
-                android:transformPivotY="0dp"
-                android:text="@string/demo_str_r1"
-                android:textColor="@color/black"
-                android:textSize="9sp" />
+                android:visibility="gone"
+                android:textSize="@dimen/gl_text_size_10sp"
+                 />
             
             <TextView
                 android:id="@+id/steppower_ruler_step2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"
-                android:layout_marginLeft="170dp"
-                android:layout_marginTop="54dp"
+                android:layout_marginLeft="150dp"
+                android:layout_marginTop="44dp"
                 android:rotation="45"
                 android:transformPivotX="0dp"
                 android:transformPivotY="0dp"
-                android:text="@string/demo_str_r2"
+                android:text="@string/demo_str_r1"
                 android:textColor="@color/black"
-                android:textSize="9sp" />
+                android:visibility="gone"
+                android:textSize="@dimen/gl_text_size_10sp" />
+            
+             
+            <TextView
+                android:id="@+id/steppower_ruler_step1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:layout_marginLeft="188dp"
+                android:layout_marginTop="80dp"
+                android:rotation="60"
+                android:transformPivotX="0dp"
+                android:transformPivotY="0dp"
+                android:text="@string/demo_str_r2"
+                android:visibility="gone"
+                android:textColor="@color/black"
+                android:textSize="@dimen/gl_text_size_10sp" />
             
         </FrameLayout>
     </RelativeLayout>
@@ -688,7 +731,7 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:textColor="#ffffffff"
-                android:textSize="20sp"
+                android:textSize="@dimen/gl_text_size_22sp"
                 android:visibility="invisible" />
 
             <ImageView
@@ -706,7 +749,7 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:textColor="#ffffffff"
-                android:textSize="20sp"
+                android:textSize="@dimen/gl_text_size_22sp"
                 android:visibility="invisible" />
 
             <ImageView
@@ -724,7 +767,7 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:textColor="#ffffffff"
-                android:textSize="20sp"
+                android:textSize="@dimen/gl_text_size_22sp"
                 android:visibility="invisible" />
         </LinearLayout>
 
@@ -737,7 +780,7 @@
             android:layout_marginLeft="105dp"
             android:visibility="gone"
             app:textColor="#ffffffff"
-            app:textSize="16sp" />
+            app:textSize="@dimen/gl_text_size_16sp" />
     </RelativeLayout>
 
 </RelativeLayout>

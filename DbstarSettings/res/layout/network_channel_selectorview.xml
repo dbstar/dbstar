@@ -3,14 +3,255 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/view_background" >
+    
+     <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal" >
+        
+           <LinearLayout
+            android:layout_width="494dp"
+            android:layout_height="550dp"
+            android:layout_marginTop="120dp"
+            android:background="@drawable/network_left_bg"
+            android:orientation="vertical"
+            android:paddingLeft="40dp"
+            android:paddingRight="40dp" >
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="54dp"
+                android:gravity="left|center_vertical"
+                android:text="@string/network_satellite_setup_title"
+                android:textColor="#000000"
+                android:textSize="@dimen/gl_text_size_24sp" />
+
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" >
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingTop="3dp" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_search_rate"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_search_rate_value"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingTop="3dp" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_symbol_rate"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_symbol_rate_value"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingTop="3dp" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_local_frequency"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_local_frequency_value"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingTop="3dp" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_polarization_mode"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_polarization_mode_value"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="3dp"
+                    android:paddingTop="3dp" >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_modulation_mode"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_modulation_mode_value"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+                </TableRow>
+            </TableLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:orientation="horizontal" >
+
+                <Button
+                    android:id="@+id/btn_statellite_search"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/satellite_button_bg"
+                    android:text="@string/network_satellite_search"
+                    android:textColor="#fff"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+
+                <Button
+                    android:id="@+id/btn_satellite_restore_default"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="@drawable/satellite_button_bg"
+                    android:text="@string/network_satellite_restore_default"
+                    android:textColor="#fff"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+
+                <Button
+                    android:id="@+id/btn_satellite_star_patten"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:background="@drawable/satellite_button_bg"
+                    android:text="@string/network_satellite_star_patten"
+                    android:textColor="#fff"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/network_satellite_status"
+                android:textColor="#000000"
+                android:textSize="@dimen/gl_text_size_22sp" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                 android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/network_satellite_signal_quality"
+                   
+                    android:textColor="#000000"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+                
+                <ProgressBar 
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="132dp"
+                    android:layout_height="7dp"
+                    android:progress="80"
+                     android:layout_marginLeft="10dp"
+                    android:progressDrawable="@drawable/satellite_signal_progressbar"
+                    />
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/network_satellite_signal_quality_unit"
+                    android:textColor="#000000"
+                    android:layout_marginLeft="10dp"
+                    android:textSize="@dimen/gl_text_size_20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/network_satellite_signal_intensity"
+                    android:textColor="#000000"
+                    android:textSize="@dimen/gl_text_size_20sp" />
+                
+                  <ProgressBar 
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="132dp"
+                    android:layout_height="7dp"
+                    android:progress="30"
+                     android:layout_marginLeft="10dp"
+                    android:progressDrawable="@drawable/satellite_signal_progressbar"
+                    />
+                  <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/network_satellite_signal_intensity_unit"
+                    android:textColor="#000000"
+                     android:layout_marginLeft="10dp"
+                    android:textSize="@dimen/gl_text_size_20sp" />
+            </LinearLayout>
+        </LinearLayout>
     <LinearLayout
         android:layout_width="494dp"
-        android:layout_height="364dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="200dp"
-        android:background="@drawable/bg_white"
+        android:layout_height="550dp"
+        android:layout_marginTop="120dp"
+        android:layout_marginLeft="40dp"
+        android:background="@drawable/network_left_bg"
         android:orientation="vertical"
         android:paddingLeft="40dp"
         android:paddingRight="40dp" >
@@ -21,7 +262,7 @@
             android:gravity="left|center_vertical"
             android:text="@string/network_channelselector_title"
             android:textColor="#000000"
-            android:textSize="22sp" />
+            android:textSize="@dimen/gl_text_size_24sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -35,12 +276,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:focusable="true"
+                android:nextFocusDown="@+id/nextbutton"
                 android:orientation="horizontal" >
 
                 <CheckBox
                     android:id="@+id/cable_check_indicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="30dp"
+                    android:layout_height="25dp"
                     android:button="@drawable/checkbox_selector"
                     android:clickable="false"
                     android:focusable="false"
@@ -54,7 +296,8 @@
                     android:gravity="center_vertical"
                     android:text="@string/network_channel_cable"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:layout_marginLeft="10dp"
+                    android:textSize="@dimen/gl_text_size_22sp" />
             </LinearLayout>
 
             <Space
@@ -66,12 +309,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:focusable="true"
+                android:nextFocusDown="@+id/nextbutton"
                 android:orientation="horizontal" >
 
                 <CheckBox
                     android:id="@+id/wireless_check_indicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="30dp"
+                    android:layout_height="25dp"
                     android:button="@drawable/checkbox_selector"
                     android:clickable="false"
                     android:focusable="false"
@@ -85,7 +329,8 @@
                     android:gravity="center_vertical"
                     android:text="@string/network_channel_wireless"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:layout_marginLeft="10dp"
+                    android:textSize="@dimen/gl_text_size_22sp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -106,6 +351,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/eth_button_bg"
+                android:textSize="@dimen/gl_text_size_20sp"
                 android:text="@string/button_text_previous" />
 
             <Space
@@ -116,9 +362,10 @@
                 android:id="@+id/nextbutton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="@dimen/gl_text_size_20sp"
                 android:background="@drawable/eth_button_bg"
                 android:text="@string/button_text_next" />
         </LinearLayout>
     </LinearLayout>
-
+</LinearLayout>
 </RelativeLayout>

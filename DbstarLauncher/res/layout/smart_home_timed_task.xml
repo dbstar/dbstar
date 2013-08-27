@@ -112,6 +112,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:gravity="left|bottom" />
             </LinearLayout>
         </LinearLayout>
@@ -135,6 +136,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/family_text_select_ele"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:textColor="#fff" />
                 <com.dbstar.widget.GDSpinner
                     android:id="@+id/ele_spinner"
@@ -166,6 +168,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="70dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:text="@string/family_text_switch_statu"
                     android:textColor="#fff" />
 
@@ -173,6 +176,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="40dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:text="@string/family_text_turn_on"
                     android:textColor="#fff" />
 
@@ -188,6 +192,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:text="@string/family_text_turn_off"
                     android:textColor="#fff" />
             </LinearLayout>
@@ -201,6 +206,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/family_text_select_datatime"
                     android:visibility="invisible"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:textColor="#fff" />
                 
                 <Button
@@ -220,6 +226,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:text="@string/property_semicolon"
                     android:visibility="invisible"
                     android:textColor="#fff" />
@@ -246,6 +253,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:text="@string/family_text_select_datatime"
                     android:textColor="#fff" />
 
@@ -266,6 +274,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:text="@string/property_semicolon"
                     android:textColor="#fff" />
 
@@ -284,6 +293,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="30dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                      android:text="@string/family_text_select_datatime_note"
                     android:textColor="#fff" />
             </LinearLayout>
@@ -297,6 +307,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/family_text_select_datatime"
                     android:visibility="invisible"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:textColor="#fff" />
                 
                 <Button
@@ -315,6 +326,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:text="@string/property_semicolon"
                     android:visibility="invisible"
                     android:textColor="#fff" />
@@ -341,6 +353,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:text="@string/family_text_select_period"
                     android:textColor="#fff" />
 
@@ -359,6 +372,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:text="@string/family_text_period_1"
                         android:textColor="#fff" />
                 </LinearLayout>
@@ -379,6 +393,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/family_text_period_2"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
                 </LinearLayout>
 
@@ -398,6 +413,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/family_text_period_3"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
                 </LinearLayout>
 
@@ -417,6 +433,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/family_text_period_4"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
                 </LinearLayout>
 
@@ -436,6 +453,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/family_text_period_5"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
                 </LinearLayout>
 
@@ -455,6 +473,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/family_text_period_6"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
                 </LinearLayout>
 
@@ -474,6 +493,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/family_text_period_7"
+                        android:textSize="@dimen/gl_text_size_16sp"
                         android:textColor="#fff" />
                 </LinearLayout>
             </LinearLayout>
@@ -491,6 +511,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/family_text_select_ele"
                     android:textColor="#fff"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:visibility="invisible" />
 
                 <Button

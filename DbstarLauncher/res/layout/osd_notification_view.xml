@@ -14,6 +14,6 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         app:textColor="#ffffff"
-        app:textSize="22sp" />
+        app:textSize="@dimen/gl_text_size_22sp" />
 
 </RelativeLayout>

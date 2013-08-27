@@ -21,7 +21,7 @@
             android:gravity="left|center_vertical"
             android:text="@string/network_status_title"
             android:textColor="#000000"
-            android:textSize="22sp" />
+            android:textSize="@dimen/gl_text_size_24sp" />
 
         <TextView
             android:id="@+id/ethernet_state_view"
@@ -31,7 +31,7 @@
             android:gravity="left|center_vertical"
             android:text="@string/ethernet_status_waiting"
             android:textColor="#000000"
-            android:textSize="22sp" />
+            android:textSize="@dimen/gl_text_size_24sp" />
          <TextView
             android:id="@+id/wifi_state_view"
             android:layout_width="wrap_content"
@@ -40,7 +40,7 @@
             android:gravity="left|center_vertical"
             android:text="@string/wifi_status_waiting"
             android:textColor="#000000"
-            android:textSize="22sp" 
+            android:textSize="@dimen/gl_text_size_24sp" 
             />
         <Space
             android:layout_width="0dp"
@@ -60,6 +60,7 @@
                 android:layout_marginBottom="40dp"
                 android:background="@drawable/eth_button_bg"
                 android:nextFocusDown="@+id/cable_check_button"
+                android:textSize="@dimen/gl_text_size_20sp"
                 android:text="@string/button_text_previous" />
 
             <Space
@@ -71,6 +72,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="40dp"
+                android:textSize="@dimen/gl_text_size_20sp"
                 android:background="@drawable/eth_button_bg"
                 android:nextFocusDown="@+id/cable_check_button"
                 android:text="@string/button_text_finish" />

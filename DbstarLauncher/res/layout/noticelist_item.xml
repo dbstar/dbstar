@@ -12,7 +12,7 @@
         android:layout_marginLeft="10dp"
         android:gravity="center"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_22sp" />
 
     <TextView
         android:id="@+id/title"
@@ -23,7 +23,7 @@
         android:gravity="left"
         android:singleLine="true"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_22sp" />
 
     <TextView
         android:id="@+id/date"
@@ -34,6 +34,6 @@
         android:gravity="center"
         android:singleLine="true"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_22sp" />
 
 </LinearLayout>

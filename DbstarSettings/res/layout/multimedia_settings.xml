@@ -22,7 +22,9 @@
             android:layout_centerVertical="true"
             android:layout_marginLeft="40dp"
             android:scaleType="fitXY"
-            android:src="@drawable/logo_dbstar" />
+            android:src="@drawable/logo_dbstar" />
+
+
         -->
 
         <TextView
@@ -36,7 +38,7 @@
             android:focusable="false"
             android:gravity="top|center_horizontal"
             android:textColor="#ffffff"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </RelativeLayout>
 
     <LinearLayout
@@ -62,7 +64,7 @@
                 android:gravity="left|center_vertical"
                 android:text="@string/display_resolution"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="@dimen/gl_text_size_24sp" />
 
             <ListView
                 android:id="@+id/video_outputmode_list"
@@ -102,7 +104,7 @@
                 android:gravity="left|center_vertical"
                 android:text="@string/settings_audio"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="@dimen/gl_text_size_24sp" />
 
             <ListView
                 android:id="@+id/audio_outputmode_list"

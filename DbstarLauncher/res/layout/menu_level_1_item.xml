@@ -26,6 +26,6 @@
         android:scrollHorizontally="true"
         android:singleLine="true"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_22sp" />
 
 </RelativeLayout>

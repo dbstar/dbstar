@@ -30,7 +30,7 @@
             android:layout_centerVertical="true"
             android:layout_marginRight="40dp"
             android:textColor="#ffffff"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </RelativeLayout>
 
     <!--<LinearLayout
@@ -124,7 +124,7 @@
             android:gravity="left|center_vertical"
             android:text="@string/receivestatus_diskspace"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
 
         <TextView
             android:id="@+id/disk_info"
@@ -133,7 +133,7 @@
             android:layout_marginRight="20dp"
             android:gravity="left|center_vertical"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
 
         <TextView
             android:layout_width="100dp"
@@ -142,7 +142,7 @@
             android:gravity="left|center_vertical"
             android:text="@string/receivestatus_downloadspeed"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
 
         <TextView
             android:id="@+id/download_speed"
@@ -152,7 +152,7 @@
             android:layout_marginRight="20dp"
             android:gravity="left|center_vertical"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
 
         <TextView
             android:id="@+id/signal_status"
@@ -162,7 +162,7 @@
             android:layout_marginRight="0dp"
             android:gravity="left|center_vertical"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
         
         <Space
             android:layout_width="20dp"
@@ -176,7 +176,7 @@
             android:layout_marginRight="20dp"
             android:gravity="left|center_vertical"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
 
         <TextView
             android:id="@+id/download_pages"
@@ -186,7 +186,7 @@
             android:layout_marginRight="20dp"
             android:gravity="left|center_vertical"
             android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:textSize="@dimen/gl_text_size_20sp" />
     </LinearLayout>
 
     <!--

@@ -32,7 +32,7 @@
             android:layout_marginTop="80dp"
             android:gravity="top|center_horizontal"
             android:textColor="#ffffff"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </RelativeLayout>
 
     <LinearLayout
@@ -61,7 +61,7 @@
                     android:paddingRight="40dp"
                     android:text="@string/diskmanagement_disksize"
                     android:textColor="#ffffff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/text_disksize"
@@ -71,7 +71,7 @@
                     android:padding="2dp"
                     android:paddingLeft="10dp"
                     android:textColor="#ffffff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
             </TableRow>
 
             <TableRow>
@@ -81,7 +81,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/diskmanagement_usedspace"
                     android:textColor="#ffffff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/text_diskused"
@@ -91,7 +91,7 @@
                     android:padding="2dp"
                     android:paddingLeft="10dp"
                     android:textColor="#ffffff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
             </TableRow>
 
             <TableRow>
@@ -101,7 +101,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/diskmanagement_emptyspace"
                     android:textColor="#ffffff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/text_diskempty"
@@ -111,7 +111,7 @@
                     android:padding="2dp"
                     android:paddingLeft="10dp"
                     android:textColor="#ffffff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
             </TableRow>
 
             <TableRow>
@@ -121,7 +121,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/diskmanagement_gaurdspace"
                     android:textColor="#ffffff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/text_diskguard"
@@ -131,7 +131,7 @@
                     android:padding="2dp"
                     android:paddingLeft="10dp"
                     android:textColor="#ffffff"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
             </TableRow>
         </TableLayout>
 

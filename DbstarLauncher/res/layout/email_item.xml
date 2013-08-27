@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:textColor="#000000"
-        android:textSize="16sp" />
+        android:textSize="@dimen/gl_text_size_18sp" />
 
     <TextView
         android:id="@+id/email_date"
@@ -20,7 +20,7 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="#000000"
-        android:textSize="16sp" />
+        android:textSize="@dimen/gl_text_size_18sp" />
 
     <TextView
         android:id="@+id/email_flag"
@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:textColor="#000000"
-        android:textSize="16sp" />
+        android:textSize="@dimen/gl_text_size_18sp" />
 
     <TextView
         android:id="@+id/email_title"
@@ -38,6 +38,6 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="#000000"
-        android:textSize="16sp" />
+        android:textSize="@dimen/gl_text_size_18sp" />
 
 </LinearLayout>

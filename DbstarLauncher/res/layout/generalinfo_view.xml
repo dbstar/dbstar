@@ -34,7 +34,7 @@
             android:layout_marginTop="80dp"
             android:gravity="top|center_horizontal"
             android:textColor="#ffffff"
-            android:textSize="16sp" />
+            android:textSize="@dimen/gl_text_size_18sp" />
     </RelativeLayout>
 
     <LinearLayout
@@ -59,7 +59,7 @@
                 android:gravity="left|center_vertical"
                 android:text="@string/product_info"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="@dimen/gl_text_size_24sp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -74,7 +74,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/deviceinfo_device_serialnumber"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/device_hardwaretype"
@@ -83,7 +83,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/deviceinfo_hardware_type"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/device_softwareversion"
@@ -92,7 +92,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/deviceinfo_software_version"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/device_loaderversion"
@@ -101,7 +101,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/deviceinfo_loader_version"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/device_macaddress"
@@ -110,7 +110,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/deviceinfo_mac_address"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
                 
                 <TextView
                     android:id="@+id/upgrade_count"
@@ -119,7 +119,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/upgrade_count"
                     android:textColor="#000000"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/gl_text_size_22sp"
                     android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
@@ -142,7 +142,7 @@
                 android:gravity="left|center_vertical"
                 android:text="@string/disk_info"
                 android:textColor="#000000"
-                android:textSize="22sp" />
+                android:textSize="@dimen/gl_text_size_24sp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -157,7 +157,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/disk_totalsize"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/disk_usedsize"
@@ -166,7 +166,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/disk_usedsize"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
 
                 <TextView
                     android:id="@+id/disk_spacesize"
@@ -175,7 +175,7 @@
                     android:gravity="left|center_vertical"
                     android:text="@string/disk_spacesize"
                     android:textColor="#000000"
-                    android:textSize="20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

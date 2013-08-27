@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>	
+	<color name="btn_text_color">#FFFFFFFF</color>	
+	<color name="path_bar_text_color">#FFFFFFFF</color>	
+	<color name="path_bar_bg_color">#FF8C8A8C</color>	
+	<color name="btn_bar_bg_color">#FF3A6EA5</color>
+	<color name="item_text_color">#FFFFFFFF</color>	
+	<color name="dialog_text_color">#FFFFFFFF</color>	
+	
+</resources>

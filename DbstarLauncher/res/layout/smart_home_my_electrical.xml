@@ -111,6 +111,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="10dp"
+                            android:textSize="@dimen/gl_text_size_16sp"
                             android:gravity="left|bottom" />
                     </LinearLayout>
                 </LinearLayout>
@@ -170,6 +171,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
+                    android:textSize="@dimen/gl_text_size_16sp"
                     android:gravity="left|bottom" />
             </LinearLayout>
         </LinearLayout>

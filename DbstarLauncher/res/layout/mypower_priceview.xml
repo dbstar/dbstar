@@ -35,7 +35,7 @@
                 android:gravity="center"
                 android:text="@string/head_step_level"
                 android:textColor="#000000"
-                android:textSize="18sp" />
+                android:textSize="@dimen/gl_text_size_20sp" />
 
             <TextView
                 android:layout_width="320dp"
@@ -45,7 +45,7 @@
                 android:paddingLeft="10dp"
                 android:text="@string/head_price_interval"
                 android:textColor="#000000"
-                android:textSize="18sp" />
+                android:textSize="@dimen/gl_text_size_20sp" />
 
             <TextView
                 android:layout_width="320dp"
@@ -55,7 +55,7 @@
                 android:paddingLeft="10dp"
                 android:text="@string/head_price_level"
                 android:textColor="#000000"
-                android:textSize="18sp" />
+                android:textSize="@dimen/gl_text_size_20sp" />
         </LinearLayout>
 
         <ListView
@@ -89,6 +89,6 @@
         android:background="@drawable/gd_btn_bg"
         android:text="@string/button_text_ok"
         android:textColor="#ffffff"
-        android:textSize="18sp" />
+        android:textSize="@dimen/gl_text_size_20sp" />
 
 </RelativeLayout>
