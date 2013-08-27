@@ -2104,7 +2104,7 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                         }
                         log("****** Do not tear down network: " + info.getTypeName());
                         //teardown(thisNet);
-                        return;
+                        //return;
                     }
                 }
             }
