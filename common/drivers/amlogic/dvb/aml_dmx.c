@@ -1676,6 +1676,7 @@ void dmx_reset_hw_ex(struct aml_dvb *dvb, int reset_irq)
 {
 	int id, times;
 
+	printk("***** %s()\n", __func__);
 	for (id=0; id<DMX_DEV_COUNT; id++) {
 		if(!dvb->dmx[id].init)
 			continue;
@@ -2323,7 +2324,8 @@ int aml_dmx_hw_set_source(struct dmx_demux* demux, dmx_source_t src)
 	}
 
 	if(ret>0) {
-		dmx_reset_hw(dvb);
+		printk("***** %s(), donot reset dmx.\n", __func__);
+		//dmx_reset_hw(dvb);
 	}
 
 	spin_unlock_irqrestore(&dmx->slock, flags);
