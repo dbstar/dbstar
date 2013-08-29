@@ -2380,8 +2380,10 @@ int aml_stb_hw_set_source(struct aml_dvb *dvb, dmx_source_t src)
 		break;
 	}
 
-	if(ret==0)
-		dmx_reset_hw(dvb);
+	if(ret==0) {
+		printk("***** %s(), donot reset dmx.\n", __func__);
+		//dmx_reset_hw(dvb);
+    }
 
 	spin_unlock_irqrestore(&dvb->slock, flags);
 
@@ -2425,8 +2427,10 @@ int aml_dsc_hw_set_source(struct aml_dvb *dvb, dmx_source_t src)
 		break;
 	}
 
-	if(ret==0)
-		dmx_reset_hw(dvb);
+	if(ret==0) {
+		printk("***** %s(), donot reset dmx.\n", __func__);
+		//dmx_reset_hw(dvb);
+    }
 
 	spin_unlock_irqrestore(&dvb->slock, flags);
 
@@ -2493,6 +2497,7 @@ int aml_dmx_set_skipbyte(struct aml_dvb *dvb, int skipbyte)
 	if (demux_skipbyte != skipbyte) {
 		printk("%s: %d\n", __func__, skipbyte);
 		demux_skipbyte = skipbyte;
+		printk("***** %s()\n", __func__);
 		dmx_reset_hw(dvb);
 	}
 
