@@ -330,12 +330,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			
 			mLeaveStart = true;
 			
-			//mHideSubMenu = true;
+			mHideSubMenu = true;
 			
 			mMainMenu.setOnItemSelectedListener(null);
 			
-			//LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
-			//controller.setAnimation(mGallerySlideToLeftAnim);
+			LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
+			controller.setAnimation(mGallerySlideToLeftAnim);
 
 			long time = AnimationUtils.currentAnimationTimeMillis();
 
@@ -344,11 +344,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
 			}
 			
-			//mMainMenu.startLayoutAnimation();
-			
-			//TODO: remove animation for performance!
-			//mHideSubMenu = false;
-			onChildMenuHided();
+			mMainMenu.startLayoutAnimation();
 		}
 	}
 	
@@ -1060,15 +1056,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		adapter.setDataSet(menuItems);
 		adapter.notifyDataSetChanged();
 
-		//LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
-		//controller.setAnimation(mGallerySlideToRightAnim);
+		LayoutAnimationController controller = mMainMenu.getLayoutAnimation();
+		controller.setAnimation(mGallerySlideToRightAnim);
 		
-		//mShowSubMenu = true;
-		//mMainMenu.startLayoutAnimation();
-		
-		//TODO: remove animation for performance!
-		//mShowSubMenu = false;
-		onChildMenuShown();
+		mShowSubMenu = true;
+		mMainMenu.startLayoutAnimation();
 	}
 
 	// submenu slide to right end
