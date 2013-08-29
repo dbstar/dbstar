@@ -305,10 +305,17 @@ public class GDDataProviderService extends Service {
 			LogUtil.d(TAG, "monitor disk " + disk);
 
 			if (!disk.isEmpty()) {
-				mIsStorageReady = true;
+				//mIsStorageReady = true;
 				LogUtil.d(TAG, "disk is ready " + disk);
 
 				//mDiskMonitor.addDiskToMonitor(disk);
+				
+				Message diskMessage = mHandler.obtainMessage(GDCommon.MSG_MEDIA_MOUNTED);
+				Bundle data = new Bundle();
+				data.putString("disk", disk);
+				diskMessage.setData(data);
+
+				mHandler.sendMessageDelayed(diskMessage, 5000);
 			}
 		}
 
@@ -328,9 +335,9 @@ public class GDDataProviderService extends Service {
 
 		//queryDiskGuardSize();
 
-		if (mIsStorageReady) {
-			mDataModel.setPushDir(mConfigure.getStorageDir());
-		}
+		//if (mIsStorageReady) {
+		//	mDataModel.setPushDir(mConfigure.getStorageDir());
+		//}
 
 		// start smart home service
 		mIsSmartHomeServiceStarted = false;
