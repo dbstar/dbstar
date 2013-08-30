@@ -2104,7 +2104,7 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                         }
                         log("****** Do not tear down network: " + info.getTypeName());
                         //teardown(thisNet);
-                        return;
+                        //return;
                     }
                 }
             }
@@ -2158,7 +2158,7 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                     if (DBG) log("Tear down low priority net " + info.getTypeName());
                     log("****** Do not tear down network: " + info.getTypeName());
                     //teardown(thisNet);
-                    return;
+                    //return;
                 }
             }
         }
