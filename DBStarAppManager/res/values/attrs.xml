@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="GDIndicator">
+        <attr name="indicatorRadius" format="dimension" />
+        <attr name="selectColor" format="color|reference" />
+        <attr name="normalColor" format="color|reference" />
+    </declare-styleable>
+
+</resources>

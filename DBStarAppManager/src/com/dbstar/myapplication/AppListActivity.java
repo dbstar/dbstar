@@ -15,7 +15,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
-import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,7 +30,6 @@ import android.view.WindowManager.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
-import android.view.animation.ScaleAnimation;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -39,7 +37,6 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +52,10 @@ public class AppListActivity extends Activity {
     private WindowManager mWindowManager;
     private AppAnimViewGroup mlayout;
     private ArrayList<AppInfo[]> pages;
+    private CircleFlowIndicator mIndicator;
+    private int mCurrentPage;
+    private View mLastSelectedVew;
+    private ImageView mReflected;
     Animation push_left_in, push_left_out, push_right_in, push_right_out;
 
     @Override
@@ -72,10 +73,9 @@ public class AppListActivity extends Activity {
                     View view = mFlipper.getChildAt(0);
                     GridView gridView = (GridView) view.findViewById(R.id.all_apps);
                     if (gridView != null && gridView.getChildCount() > 0) {
-                        startScaleAnimation(gridView.getChildAt(0));
+                        prepareScaleAnimation(gridView.getChildAt(0));
                     }
                 }
-
             }
         });
         registerAppModifyBroadCast();
@@ -99,14 +99,17 @@ public class AppListActivity extends Activity {
     }
 
     private void initView() {
-
+        
+        mIndicator = (CircleFlowIndicator) findViewById(R.id.indicator);
+        mReflected = (ImageView) findViewById(R.id.reflected);
+        
         push_left_in = AnimationUtils.loadAnimation(this, R.anim.sns_push_left_in);
         push_left_out = AnimationUtils.loadAnimation(this, R.anim.sns_push_left_out);
         push_right_in = AnimationUtils.loadAnimation(this, R.anim.sns_push_right_in);
         push_right_out = AnimationUtils.loadAnimation(this, R.anim.sns_push_right_out);
 
+        mFlipper = (ViewFlipper) findViewById(R.id.app_viewFilpper);
         for (int i = 0; i < pages.size(); i++) {
-            mFlipper = (ViewFlipper) findViewById(R.id.app_viewFilpper);
             View child = LayoutInflater.from(this).inflate(R.layout.app_gridview, null);
             GridView grid = (GridView) child.findViewById(R.id.all_apps);
             mAppAdapter = new AppInfoAdapter(this, pages.get(i));
@@ -114,12 +117,14 @@ public class AppListActivity extends Activity {
             mFlipper.addView(child, i);
             initListener(grid);
         }
-
+        mFlipper.setDisplayedChild(mCurrentPage);
+        mIndicator.setPageCount(pages.size());
+        mIndicator.setCurrentPage(0);
         push_left_in.setAnimationListener(new AnimationListener() {
 
             @Override
             public void onAnimationStart(Animation animation) {
-                stopScaleAnimation();
+               stopScaleAnimation();
             }
 
             @Override
@@ -132,7 +137,8 @@ public class AppListActivity extends Activity {
                 View view = mFlipper.getCurrentView();
                 GridView gridView = (GridView) view.findViewById(R.id.all_apps);
                 gridView.setSelection(0);
-                startScaleAnimation(gridView.getChildAt(0));
+                prepareScaleAnimation(gridView.getChildAt(0));
+                mIndicator.setCurrentPage(mFlipper.getDisplayedChild());
             }
         });
         push_right_in.setAnimationListener(new AnimationListener() {
@@ -152,7 +158,8 @@ public class AppListActivity extends Activity {
                 View view = mFlipper.getCurrentView();
                 GridView gridView = (GridView) view.findViewById(R.id.all_apps);
                 gridView.setSelection(0);
-                startScaleAnimation(gridView.getChildAt(0));
+                prepareScaleAnimation(gridView.getChildAt(0));
+                mIndicator.setCurrentPage(mFlipper.getDisplayedChild());
             }
         });
 
@@ -173,7 +180,7 @@ public class AppListActivity extends Activity {
                             mGrid.setSelection(currentItem - 1);
 
                         } else if (currentItem == 0) {
-                            if (mFlipper.getDisplayedChild() > 0) {
+                            if (true) {
                                 mFlipper.setInAnimation(push_right_in);
                                 mFlipper.setOutAnimation(push_right_out);
                                 mFlipper.showPrevious();
@@ -183,8 +190,8 @@ public class AppListActivity extends Activity {
                     }
                     case KeyEvent.KEYCODE_DPAD_RIGHT: {
                         int currentItem = mGrid.getSelectedItemPosition();
-                        if (currentItem == PAGE_MAX_COUNT - 1) {
-                            if (mFlipper.getDisplayedChild() < mFlipper.getChildCount() - 1) {
+                        if (currentItem == PAGE_MAX_COUNT - 1 || currentItem == (mGrid.getChildCount() -1)) {
+                            if (true) {
                                 mFlipper.setInAnimation(push_left_in);
                                 mFlipper.setOutAnimation(push_left_out);
                                 mFlipper.showNext();
@@ -208,7 +215,11 @@ public class AppListActivity extends Activity {
                 if (view == null) {
                     return;
                 }
-                startScaleAnimation(view);
+                if(mLastSelectedVew != null)
+                    mLastSelectedVew.setVisibility(View.VISIBLE);
+                view.setVisibility(View.INVISIBLE);
+                prepareScaleAnimation(view);
+                mLastSelectedVew = view;
             }
 
             @Override
@@ -220,10 +231,11 @@ public class AppListActivity extends Activity {
 
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                view.setVisibility(View.VISIBLE);
                 mWindowManager.removeView(mlayout);
                 mlayout = null;
                 mGrid = (GridView) mFlipper.getCurrentView().findViewById(R.id.all_apps);
-               AppInfoAdapter adapter = (AppInfoAdapter) mGrid.getAdapter();
+                AppInfoAdapter adapter = (AppInfoAdapter) mGrid.getAdapter();
                 unInstallApp(adapter.getAppInof(position));
                 return true;
             }
@@ -233,6 +245,7 @@ public class AppListActivity extends Activity {
 
             @Override
             public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+                view.setVisibility(View.VISIBLE);
                 mWindowManager.removeView(mlayout);
                 mlayout = null;
                 mGrid = (GridView) mFlipper.getCurrentView().findViewById(R.id.all_apps);
@@ -253,87 +266,64 @@ public class AppListActivity extends Activity {
     protected void onResume() {
         super.onResume();
         mGrid = (GridView) mFlipper.getCurrentView().findViewById(R.id.all_apps);
-        startScaleAnimation(mGrid.getChildAt(mGrid.getSelectedItemPosition()));
+        prepareScaleAnimation(mGrid.getChildAt(mGrid.getSelectedItemPosition()));
         
     }
-    private void startScaleAnimation(View view) {
+    private void prepareScaleAnimation(View view){
         if(view == null)
             return;
-        int x = mFlipper.getLeft() + view.getLeft();
-        int y = mFlipper.getTop() + view.getTop();
-        view.setDrawingCacheEnabled(true);
-        view.buildDrawingCache(true);
-        Bitmap bitmap = view.getDrawingCache();
-        int loaction[] = new int[2];
-        view.getLocationOnScreen(loaction);
-        addView(bitmap, x, y);
+        int x =  mFlipper.getLeft() +view.getLeft();
+        int y =  mFlipper.getTop() +  view.getTop();
+        
+        
+        if(mlayout == null){
+            mlayout = new AppAnimViewGroup(this);
+            mlayout.setLayout(x - 40-20, y - 40-20, x + 252 - 40 + 30, y + 252 - 40 + 30);
+            View v = mlayout.clone(view);
+            mlayout.addView();
+            
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+
+            params.type = LayoutParams.TYPE_TOAST; // 设置window type
+
+            params.format = PixelFormat.RGBA_8888; // 设置图片格式，效果为背景透明
+
+            // 设置Window flag
+
+            params.flags = LayoutParams.FLAG_NOT_TOUCH_MODAL
+
+            | LayoutParams.FLAG_NOT_FOCUSABLE;
+
+            params.gravity = Gravity.LEFT | Gravity.TOP; // 调整悬浮窗口至左上角，便于调整坐标
+
+            // 以屏幕左上角为原点，设置x、y初始值
+
+            params.x = 0;
+
+            params.y = 0;
+
+            // 设置悬浮窗口长宽数据
+
+            params.width = 1280;
+
+            params.height = 720;
+            
+            mWindowManager.addView(mlayout, params); 
+            //mlayout.startAnim();
+        }else{
+            mlayout.setLayout(x - 40-25, y - 40-25, x + 252 - 40 + 25, y + 252 - 40 + 25);
+            View v = mlayout.clone(view);
+            mlayout.startAnim();
+        }
+        
     }
 
     private void stopScaleAnimation() {
         if (mlayout != null) {
-            mlayout.removeAllViews();
+            mlayout.stopAnim();
         }
     }
 
-    private void addView(Bitmap bitmap, int x, int y) {
-        if (mlayout != null) {
-            mlayout.removeAllViews();
-            final ImageView imageView = new ImageView(this);
-            imageView.setBackgroundResource(R.drawable.shadow_child_shortcut);
-            imageView.setImageBitmap(bitmap);
-            imageView.setScaleType(ScaleType.CENTER_INSIDE);
-            mlayout.setLayout(x - 40, y - 40, x + 252 - 40, y + 252 - 40);
-            mlayout.addView(imageView);
-            startAnimation(imageView);
-            return;
-        }
-
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-
-        params.type = LayoutParams.TYPE_TOAST; // 设置window type
-
-        params.format = PixelFormat.RGBA_8888; // 设置图片格式，效果为背景透明
-
-        // 设置Window flag
-
-        params.flags = LayoutParams.FLAG_NOT_TOUCH_MODAL
-
-        | LayoutParams.FLAG_NOT_FOCUSABLE;
-
-        params.gravity = Gravity.LEFT | Gravity.TOP; // 调整悬浮窗口至左上角，便于调整坐标
-
-        // 以屏幕左上角为原点，设置x、y初始值
-
-        params.x = 0;
-
-        params.y = 0;
-
-        // 设置悬浮窗口长宽数据
-
-        params.width = 1280;
-
-        params.height = 720;
-        mlayout = new AppAnimViewGroup(this);
-        final ImageView imageView = new ImageView(this);
-        imageView.setBackgroundResource(R.drawable.shadow_child_shortcut);
-        imageView.setImageBitmap(bitmap);
-        imageView.setScaleType(ScaleType.CENTER_INSIDE);
-        mlayout.setLayout(x - 40, y - 40, x + 252 - 40, y + 252 - 40);
-        mlayout.addView(imageView);
-        mlayout.requestLayout();
-        mWindowManager.addView(mlayout, params);
-        startAnimation(imageView);
-
-    }
-
-    public void startAnimation(final View view) {
-        ScaleAnimation animation = new ScaleAnimation(1.0f, 1.2f, 1.0f, 1.2f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        animation.setDuration(200);
-        animation.setFillEnabled(true);
-        animation.setFillAfter(true);
-        view.startAnimation(animation);
-
-    }
 
     private void unInstallApp(AppInfo info) {
         if (info == null || info.componentName == null || !isInstalled(info)) {
@@ -449,17 +439,33 @@ public class AppListActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             loadApplications();
             constructPages();
+            if(pages.size() > mFlipper.getChildCount()){
+                mCurrentPage = pages.size() -1; 
+                mFlipper.removeAllViews();
+                initView();
+                return;
+            }
+           
+            mCurrentPage = mFlipper.getDisplayedChild();
+            
             if(pages.size() < mFlipper.getChildCount()){
                 int count = mFlipper.getChildCount() - pages.size();
                 for(int i = 0;i<count; i++){
                     mFlipper.removeViewAt(mFlipper.getChildCount()-1);
                 }
             }
+            
             for(int i = 0;i< mFlipper.getChildCount();i++){
                 View v = mFlipper.getChildAt(i);
                 GridView gridView = (GridView) v.findViewById(R.id.all_apps);
                 AppInfoAdapter adapter = new AppInfoAdapter(AppListActivity.this, pages.get(i));
                 gridView.setAdapter(adapter);
+            }
+            mIndicator.setPageCount(pages.size());
+            if(mCurrentPage > (pages.size() -1)){
+                mIndicator.setCurrentPage(pages.size() -1);
+            }else{
+                mIndicator.setCurrentPage(mCurrentPage);
             }
         }
     };
@@ -498,15 +504,25 @@ public class AppListActivity extends Activity {
             ImageView mIconView = (ImageView) convertView.findViewById(R.id.icon);
             TextView mTitleView = (TextView) convertView.findViewById(R.id.title);
             LinearLayout layout = (LinearLayout) convertView.findViewById(R.id.child);
-            mIconView.setImageDrawable(info.icon);
-
+            mIconView.setBackgroundDrawable(info.icon);
             mTitleView.setText(info.title);
             String picStr = "item_child_";
             picStr = picStr + ((position + 1) % 8);
-            Log.i("Futao", picStr);
             int picId = activty.getResources().getIdentifier(picStr, "drawable", activty.getPackageName());
             layout.setBackgroundDrawable(activty.getResources().getDrawable(picId));
             return convertView;
         }
     }
+    
+    public AppInfo getCurrentSelectedAppInof(){
+        mGrid = (GridView) (mFlipper.getCurrentView() == null ? null : mFlipper.getCurrentView().findViewById(R.id.all_apps));
+        if(mGrid == null )
+            return null;
+        AppInfoAdapter adapter = (AppInfoAdapter) mGrid.getAdapter();
+        if(adapter == null)
+            return null;
+        int position = mGrid.getSelectedItemPosition();
+        return adapter.getAppInof(position);
+    }
+    
 }
