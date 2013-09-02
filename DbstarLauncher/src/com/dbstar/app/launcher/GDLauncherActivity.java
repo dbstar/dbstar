@@ -504,16 +504,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 //			LogUtil.d(TAG, " mPopupMenuContainer.getVisibility() "
 //					+ mPopupMenuContainer.getVisibility());
 			if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
-				//TODO: remove animation for performance!
-				//mShowPopupMenuAnimation.setStartTime(time);
-				//mFocusItemBackground.startAnimation(mFocusZoomOut);
-				//mPopupMenuContainer.startAnimation(mShowPopupMenuAnimation);
-				displayPopupMenu(true);
+				mShowPopupMenuAnimation.setStartTime(time);
+				mFocusItemBackground.startAnimation(mFocusZoomOut);
+				mPopupMenuContainer.startAnimation(mShowPopupMenuAnimation);
 			} else {
-				//TODO: remove animation for performance!
-				//mPopupMenuFocusedAnimation.setStartTime(time);
-				//mFocusItemBackground.startAnimation(mFocusZoomOut);
-				//mPopupMenuContainer.startAnimation(mPopupMenuFocusedAnimation);
+				mPopupMenuFocusedAnimation.setStartTime(time);
+				mFocusItemBackground.startAnimation(mFocusZoomOut);
+				mPopupMenuContainer.startAnimation(mPopupMenuFocusedAnimation);
 			}
 		} else {
 			if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
