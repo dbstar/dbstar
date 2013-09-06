@@ -396,7 +396,8 @@ static int ascinasc(unsigned char *dad_buf, unsigned int dad_len, unsigned char 
 }
 */
 
-#define SERIAL_RESPONSE_CHECK_MIN	(10)	// e.g.: 68 a0 a1 a2 a3 a4 a5 68 c5 03
+/* 最小的指令串，除了前八个代表插座地址外，至少有个校验位和一个结束位16 */
+#define SERIAL_RESPONSE_CHECK_MIN	(10)	// e.g.: 68 a0 a1 a2 a3 a4 a5 68 xx 16
 
 // 检查是否存在合法的串口返回串
 // 返回值:
@@ -411,13 +412,14 @@ static int check_valid_serial_response(unsigned char *buf, unsigned int *check_s
 		DEBUG("invalid args, buf_len=%u\n", buf_len);
 	}
 	
-	unsigned int i = 0, j = 0;;
+	unsigned int i = 0, j = 0, m = 0;
+	unsigned int subvalid_cmd_pos = 0;
 	int ret = -1;
 	
-	printf("will check %d bytes cmd :::::::::::::::::::::\n",buf_len);
+	printf("will check %d bytes cmd :\n",buf_len);
 	for(i=0;i<buf_len;i++)
 		printf(" %02x", buf[i]);
-	printf("\ncompared with =================\n");
+	printf("\n-----------------------------\n");
 	for(i=0;i<8;i++)
 		printf(" %02x", distinguish_cmd[i]);
 	printf("\n?????????????????????????????\n");
@@ -432,27 +434,52 @@ static int check_valid_serial_response(unsigned char *buf, unsigned int *check_s
 				&& distinguish_cmd[5]==buf[i+5] 
 				&& distinguish_cmd[6]==buf[i+6] 
 				&& distinguish_cmd[7]==buf[i+7]){
-					
+				
+				// 记录68 a0 a1 a2 a3 a4 a5 68的起始位置，有可能是合法的返回头
+				subvalid_cmd_pos = i;
+				
 				if(0xc5==buf[i+8] && 0x03==buf[i+9]){
 					DEBUG("catch valid cmd but communication failed ==xxxx== i=%d\n",i);
-					for(j=i;j<(buf_len);j++)
-						printf(" %02x", buf[j]);
-					printf("\n=======xxxxxxxxxxxxx==============================\n");
+					for(m=i;m<(buf_len);m++)
+						printf(" %02x", buf[m]);
+					printf("\n=======xxxxxxxxxxxxx========\n");
 				}
-				else{
-					DEBUG("catch valid and success serial response cmd ==== i=%d\n",i);
-					for(j=i;j<(buf_len);j++)
-						printf(" %02x", buf[j]);
-					printf("\n==================================================\n");
+				else
+				{
+					// 合法指令头部至少八位：68 a0 a1 a2 a3 a4 a5 68，至少再有一个校验位，因此检查结束位16至少从buf[i+9]开始
+					for(j=(i+SERIAL_RESPONSE_CHECK_MIN-1);j<buf_len;j++){
+						// 如果是停止位16，则检查此前位的校验和
+						// j位为停止位16，则j-1位为校验和位，[i,j-2]闭合区间（一共j-1-i位）为待计算校验位
+						if(0x16==buf[j] && serialcmd_checksum(buf+i, j-1-i)==buf[j-1]){
+							DEBUG("check valid response cmd directly #### from %d to %d\n",i,j);
+							for(m=i;m<(buf_len);m++){
+								printf(" %02x", buf[m]);
+								
+								if(m==j)
+									printf(" END");
+							}
+							printf("\n######################################\n");
+							
+							ret = 0;
+							break;
+						}
+					}
 					
-					ret = 0;
-					break;
+					if(0==ret){
+						break;
+					}
+					else{
+						DEBUG("get valid response cmd header, but not complete:\n");
+						for(m=i;m<buf_len;m++)
+							printf(" %02x",buf[m]);
+						printf("	waiting...\n");
+					}
 				}
 			}
 		}
 	}
 	
-	*check_start_pos += i;
+	*check_start_pos += subvalid_cmd_pos;
 	
 	return ret;
 }
@@ -488,10 +515,13 @@ static int recvfrom_serial(unsigned char *buf, unsigned int *start_pos,unsigned 
 			printf("), and total read %d bytes\n", has_read_len);
 			
 			DEBUG("[%d] has_read_len(%d) - check_start_pos(%d) = %d\n", has_catched_response, has_read_len,check_start_pos,has_read_len-check_start_pos);
-			if(0==has_catched_response && (has_read_len-check_start_pos)>=SERIAL_RESPONSE_CHECK_MIN){
+			
+			/*0==has_catched_response && */
+			if((has_read_len-check_start_pos)>=SERIAL_RESPONSE_CHECK_MIN){
 				if(0==check_valid_serial_response(p_readbuf+check_start_pos,&check_start_pos,has_read_len-check_start_pos,distinguish_cmd)){
 					DEBUG("has catched valid serial response\n");
-					has_catched_response = 1;
+//					has_catched_response = 1;
+					break;
 				}
 				
 				DEBUG("[%d]check_start_pos: %d\n", has_catched_response,check_start_pos);
@@ -501,27 +531,28 @@ static int recvfrom_serial(unsigned char *buf, unsigned int *start_pos,unsigned 
 		}
 		else if(0==len)
 		{
-			DEBUG("cannot receive data for %d try\n", serial_read_faild_cnt);
 			serial_read_faild_cnt ++;
 			
 			if(serial_read_faild_cnt>4){
-				DEBUG("read nothing nolonger, failed at %d\n",serial_read_faild_cnt);
-				break;
+				DEBUG("read nothing nolonger, failed at %d times\n",serial_read_faild_cnt);
+				
+				return 0;
 			}
 		}
 		else{
 			serial_read_faild_cnt ++;
 			
 			if(serial_read_faild_cnt>4){
-				DEBUG("read nothing nolonger, failed at %d\n",serial_read_faild_cnt);
-				break;
+				DEBUG("read failed %d, failed at %d times\n",len,serial_read_faild_cnt);
+				
+				return 0;
 			}
 		}
 		
-		if(has_catched_response>2){
-			DEBUG("finish to do another %d times trying\n",has_catched_response);
-			break;
-		}
+//		if(has_catched_response>2){
+//			DEBUG("finish to do another %d times trying\n",has_catched_response);
+//			break;
+//		}
 	}
 		
 	tcflush(g_serialfd, TCIOFLUSH);
@@ -566,7 +597,7 @@ static int serial_access_son(unsigned char *buf, unsigned int buf_len, unsigned 
 	
 		usleep(20000);
 		
-		// 期望合法指令识别：68 a0 a1 a2 a3 a4 a5 68
+		// 期望合法指令识别头：68 a0 a1 a2 a3 a4 a5 68
 		unsigned char distinguish_cmd[32];
 		memset(distinguish_cmd, 0, sizeof(distinguish_cmd));
 		memcpy(distinguish_cmd, buf, 8);	//识别段: 68 20 11 12 21 06 36 68
@@ -584,21 +615,25 @@ static int serial_access_son(unsigned char *buf, unsigned int buf_len, unsigned 
 			
 			memset(serial_response_buf,0,sizeof(serial_response_buf));
 			has_read_len = recvfrom_serial(serial_response_buf, &start_pos, sizeof(serial_response_buf), distinguish_cmd);
-			if(has_read_len>10){
+			if(has_read_len>SERIAL_RESPONSE_CHECK_MIN){
 				memset(buf,0,buf_size);
 				memcpy(buf,serial_response_buf+start_pos,buf_size);
 				ret = has_read_len;
 			}
 			else{
-				DEBUG("has read len: %d, perhaps failed\n", has_read_len);
+				DEBUG("has read len: %d, failed\n", has_read_len);
+				
+//				s_serial_failed_count ++;
+//				if(s_serial_failed_count>3){
+//					DEBUG("s_serial_failed_count : %d, do serial_reset()\n", s_serial_failed_count);
+//					serial_reset();
+//				}
+				
 				ret = -1;
 			}
 		}
 	
 		sem_post(&s_sem_serial);
-		
-		if(s_serial_failed_count>2)
-			serial_reset();
 	}
 	
 	return ret;
@@ -622,7 +657,7 @@ int serial_access(unsigned char *buf, unsigned int buf_len, unsigned int buf_siz
 		
 		ret = serial_access_son(buf,buf_len,buf_size);
 		if(-1==ret){
-			DEBUG("serial access son failed at %d times\n", i+1);
+			DEBUG("serial access son failed at %d times\n\n", i+1);
 		}
 		else{
 			DEBUG("serial access son success %d times\n", i+1);

@@ -35,7 +35,7 @@
 #define REPORT_ACTPOWER_PREFIX	"#0000000000#02#0201#80#"
 #define REPORT_POWER_PREFIX		"#0000000000#02#0301#84#"
 
-#define POWER_CONSUMPTION_INQUIRE_MIN_BASE	(45)
+#define POWER_CONSUMPTION_INQUIRE_MIN_BASE	(50)
 #define POWER_CONSUMPTION_UPLOAD_MIN_BASE	(55)
 
 static TIMER_S	g_timers[TIMER_NUM];
@@ -178,7 +178,7 @@ int timing_init(void)
 
 	g_power_inquire_min = -1;
 	g_power_consumption_inquire_tm.tm_hour = -1;
-	g_power_consumption_inquire_tm.tm_min = POWER_CONSUMPTION_INQUIRE_MIN_BASE+randint(10.0);
+	g_power_consumption_inquire_tm.tm_min = POWER_CONSUMPTION_INQUIRE_MIN_BASE+randint(5.0);
 
 	g_power_consumption_upload_tm.tm_hour = -1;
 	g_power_consumption_upload_tm.tm_min = POWER_CONSUMPTION_UPLOAD_MIN_BASE+randint(5.0);
@@ -484,7 +484,7 @@ int timer_poll(void)
 		DEBUG("timer to insert a instruction to inquire power consumption at %d %02d %02d - %02d:%02d:%02d\n", 
 			(1900+now_tm.tm_year), (1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour + timezone_repair(), now_tm.tm_min, now_tm.tm_sec);
 		g_power_consumption_inquire_tm.tm_hour = now_tm.tm_hour;
-		g_power_consumption_inquire_tm.tm_min = POWER_CONSUMPTION_INQUIRE_MIN_BASE+randint(10.0);
+		g_power_consumption_inquire_tm.tm_min = POWER_CONSUMPTION_INQUIRE_MIN_BASE+randint(5.0);
 		DEBUG("next power consumption inquire at: %d hour %d min\n", g_power_consumption_inquire_tm.tm_hour,g_power_consumption_inquire_tm.tm_min);
 		
 		insert_inst.type_id = 0x000000;

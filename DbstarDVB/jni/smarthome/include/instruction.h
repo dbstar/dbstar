@@ -9,5 +9,6 @@ int power_inquire_callback(char **result, int row, int column, void *receiver);
 INSTRUCTION_RESULT_E instruction_dispatch(INSTRUCTION_S *instruction);
 int sockets_status_report(char *typeIDs);
 int instruction_sync_process(char *instruction_str);
+int serialcmd_checksum(unsigned char *serialcmd, int num);
 
 #endif

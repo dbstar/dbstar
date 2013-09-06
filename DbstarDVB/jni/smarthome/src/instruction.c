@@ -458,7 +458,7 @@ static INSTRUCTION_RESULT_E exec_model_with_id(int model_id, char *typeIDs, unsi
 		num			——待计算命令串长度
 返回：	0——失败；others——计算的校验位
 */
-unsigned int serialcmd_checksum(unsigned char *serialcmd, int num)
+int serialcmd_checksum(unsigned char *serialcmd, int num)
 {
 	if(num <= 0){
 		DEBUG("can not do checksum for %d element\n", num);
@@ -2273,6 +2273,7 @@ void instruction_insert_poll(void)
 											}
 											sqlite_execute(sqlite_cmd);
 											
+											float tmp_power = power;
 											power -= basic_power_data;
 											DEBUG("basic_power_data: %lf, calculate power: %lf\n", basic_power_data, power);
 											if(power>0.0){
@@ -2283,7 +2284,7 @@ void instruction_insert_poll(void)
 												sqlite_execute(sqlite_cmd);
 											}
 											else{
-												DEBUG("shit! calculate power little than 0(%lf-%lf), translate is as 0\n", power, basic_power_data);
+												DEBUG("shit! calculate power little than 0(%lf-%lf), translate is as 0\n", tmp_power, basic_power_data);
 												power=0.0;
 											}
 										}
