@@ -260,19 +260,16 @@ static INSTRUCTION_RESULT_E instruction_timing_task_add(INSTRUCTION_S *instructi
 	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	if(l_frequency>=0 && control_time>=0){
 		
-		// 先清理掉相同插座、相同频率、相同时间点的旧任务
-		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE typeID=%d AND frequency=%d AND controlTime=%d;",l_typeID,l_frequency,control_time);
-		ret = sqlite_execute(sqlite_cmd_str);
-		if(ret!=RESULT_OK)
-			DEBUG("delete overdue timer failed\n");
+//		// 先清理掉相同插座、相同频率、相同时间点的旧任务
+//		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE typeID=%d AND frequency=%d AND controlTime=%d;",l_typeID,l_frequency,control_time);
+//		ret = sqlite_execute(sqlite_cmd_str);
+//		if(ret!=RESULT_OK)
+//			DEBUG("delete overdue timer failed\n");
 		
-		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"INSERT INTO time(typeID,cmdType,controlVal,controlTime,frequency,remark) VALUES(%d,%d,%d,%d,%d,'%s');",\
+		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"REPLACE INTO time(typeID,cmdType,controlVal,controlTime,frequency,remark) VALUES(%d,%d,%d,%d,%d,'%s');",\
 				l_typeID,l_cmdType,l_controlValue,control_time,l_frequency,p_entity+12);
 		
 		ret = sqlite_execute(sqlite_cmd_str);											///	quit
-		if(RESULT_OK==ret){
-			timing_task_refresh();
-		}
 	}
 	else{
 		DEBUG("invalid arguments: frequency=%d, control_time=%d\n", l_frequency, control_time);
@@ -313,19 +310,18 @@ static INSTRUCTION_RESULT_E instruction_model_task_add(INSTRUCTION_S *instructio
 //		return ERR_FORMAT;
 	}
 
-	memset(sqlite_cmd_str, 0, sizeof(sqlite_cmd_str));
-	sprintf(sqlite_cmd_str,"SELECT modeID FROM model WHERE modeID=%d;",instruction->arg2);
-	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-
-	int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
-	if(ret_sqlexec>RESULT_OK){
-		DEBUG("modeID(%d) is exist in table\n", instruction->arg2);
-		return RESULT_OK;
-	}
-	else if(ret_sqlexec<RESULT_OK){
-		DEBUG("sqlite cmd exec failed\n");
-		return ret_sqlexec;
-	}
+//	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"SELECT modeID FROM model WHERE modeID=%d;",instruction->arg2);
+//	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
+//
+//	int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
+//	if(ret_sqlexec>RESULT_OK){
+//		DEBUG("modeID(%d) is exist in table\n", instruction->arg2);
+//		return RESULT_OK;
+//	}
+//	else if(ret_sqlexec<RESULT_OK){
+//		DEBUG("sqlite cmd exec failed\n");
+//		return ret_sqlexec;
+//	}
 
 	DEBUG("will insert %d model tasks\n", l_num);
 	p_entity += 2;
@@ -336,9 +332,8 @@ static INSTRUCTION_RESULT_E instruction_model_task_add(INSTRUCTION_S *instructio
 	if('#'==tmp_str[strlen(tmp_str)])
 		tmp_str[strlen(tmp_str)] = '\0';
 	///	insert modelID,modelName into tabel model
-	sprintf(sqlite_cmd_str,"INSERT INTO model(modeID,name) VALUES(%d,'%s');",instruction->arg2,tmp_str);
-	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-
+	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"REPLACE INTO model(modeID,name) VALUES(%d,'%s');",instruction->arg2,tmp_str);
+	
 	INSTRUCTION_RESULT_E ret = sqlite_execute(sqlite_cmd_str);
 	if(RESULT_OK!=ret)
 		return ret;
@@ -350,10 +345,9 @@ static INSTRUCTION_RESULT_E instruction_model_task_add(INSTRUCTION_S *instructio
 		l_controlValue=appoint_str2int(p_entity+i*24, strlen(p_entity+i*24), 8, 4, 16);
 		l_frequency=appoint_str2int(p_entity+i*24, strlen(p_entity+i*24), 12, 2, 16);
 		l_controlTime=appoint_str2int(p_entity+i*24, strlen(p_entity+i*24), 14, 10, 10);
-		sprintf(sqlite_cmd_str,"INSERT INTO modtime(typeID,cmdType,controlVal,controlTime,frequency,remark,modeID) VALUES(%d,%d,%d,%d,%d,'0',%d);",\
+		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"REPLACE INTO modtime(typeID,cmdType,controlVal,controlTime,frequency,remark,modeID) VALUES(%d,%d,%d,%d,%d,'0',%d);",\
 				l_typeID,l_cmdType,l_controlValue,l_controlTime,l_frequency,instruction->arg2);
 
-		DEBUG("insert model sqlite cmd str: %s\n", sqlite_cmd_str);
 		ret = sqlite_execute(sqlite_cmd_str);
 		if(RESULT_OK!=ret)
 			return ret;
@@ -1604,14 +1598,14 @@ static INSTRUCTION_RESULT_E electric_equipment_insert(INSTRUCTION_S *instruction
 		strncpy(socket_id, p_tmp, 12);
 		p_tmp += (12+4);	/* jump socketID and the filling '0000' */
 		
-		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND socketID='%s';",instruction->type_id, socket_id);
+//		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND socketID='%s';",instruction->type_id, socket_id);
 	}
 	else if(0x02==instruction->arg2){
 		// operID, len=4;
 		oper_id = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 4, 16);
 		p_tmp += (4);
 		
-		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND operID=%d;",instruction->type_id, oper_id);
+//		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND operID=%d;",instruction->type_id, oper_id);
 	}
 	else if(0x03==instruction->arg2){
 		// operID, len=4
@@ -1619,7 +1613,7 @@ static INSTRUCTION_RESULT_E electric_equipment_insert(INSTRUCTION_S *instruction
 		strncpy(socket_id, p_tmp+4, 12);
 		p_tmp += (4+12+4);	/* jump operID, socketID and the filling '0000' */
 		
-		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND socketID='%s' AND operID=%d;",instruction->type_id, socket_id, oper_id);
+//		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND socketID='%s' AND operID=%d;",instruction->type_id, socket_id, oper_id);
 	}
 	else{
 		DEBUG("this arg2(0x%02x) is not supported\n", instruction->arg2);
@@ -1637,30 +1631,26 @@ static INSTRUCTION_RESULT_E electric_equipment_insert(INSTRUCTION_S *instruction
 		strncpy(dev_name, p_star, MIN_LOCAL(strlen(p_star), (sizeof(dev_name)-1)));
 	}
 
-	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-//	int (*sqlite_callback)(char **,int,int,void *) = equipment_check_callback;
-	int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
-	if(ret_sqlexec>RESULT_OK){
-		DEBUG("this equipment is exist in table\n");
-		return RESULT_OK;
-	}
-	else if(ret_sqlexec<RESULT_OK){
-		DEBUG("sqlite cmd exec failed\n");
-		return ret_sqlexec;
-	}
-	else	// 0==ret_sqlexec
-		DEBUG("read equipment from database none\n");
+//	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
+////	int (*sqlite_callback)(char **,int,int,void *) = equipment_check_callback;
+//	int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
+//	if(ret_sqlexec>RESULT_OK){
+//		DEBUG("this equipment is exist in table\n");
+//		return RESULT_OK;
+//	}
+//	else if(ret_sqlexec<RESULT_OK){
+//		DEBUG("sqlite cmd exec failed\n");
+//		return ret_sqlexec;
+//	}
+//	else	// 0==ret_sqlexec
+//		DEBUG("read equipment from database none\n");
 		
-	sprintf(sqlite_cmd_str,"INSERT INTO devlist(typeID,locationID,iconID,operID,socketID,roomName,devName) VALUES(%d,%d,%d,%d,'%s','%s','%s');",\
+	sprintf(sqlite_cmd_str,"REPLACE INTO devlist(typeID,locationID,iconID,operID,socketID,roomName,devName) VALUES(%d,%d,%d,%d,'%s','%s','%s');",\
 			instruction->type_id,location_id,icon_id,oper_id,socket_id,room_name,dev_name);
 
-	DEBUG("insert model sqlite cmd str: %s\n", sqlite_cmd_str);
 	INSTRUCTION_RESULT_E ret = sqlite_execute(sqlite_cmd_str);
-	DEBUG("sqlite_execute ret = %d\n", ret);
-	if(RESULT_OK==ret)
-		return equipment_refresh();
-	else
-		return ret;
+	
+	return ret;
 }
 
 /*

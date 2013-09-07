@@ -324,6 +324,7 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 	char *p_tmp_entity = NULL;
 	int index_w = 0;
 	char tmp_serv_str[128];
+	char sqlite_cmd[SQLITECMDLEN];
 	int ret = -1;
 	
 	if(NULL==cmd_str || 0==str_len){
@@ -372,26 +373,39 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 						if(		0==strncmp(p_str, "devs", abs(p_mark-p_str))
 							||	0==strncmp(p_str, "modl", abs(p_mark-p_str))
 							||	0==strncmp(p_str, "time", abs(p_mark-p_str))){
-							if(0==strncmp(p_str, "devs", abs(p_mark-p_str)))
+							if(0==strncmp(p_str, "devs", abs(p_mark-p_str))){
 								s_sync_cmd_exec_record = SYNC_DEVS;
+								
+								snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM devlist;");
+							}
 							else if(0==strncmp(p_str, "modl", abs(p_mark-p_str))){
 								if(-1==s_sync_cmd_exec_record){
 									DEBUG("has failed sync cmd, ignore this and return failed\n");
 									return CMD_HEADER_INVALID;
 								}
-								else
+								else{
 									s_sync_cmd_exec_record += SYNC_MODL;
+									
+									snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM model;");
+									sqlite_execute(sqlite_cmd);
+									snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM modtime;");
+								}
 							}
 							else if(0==strncmp(p_str, "time", abs(p_mark-p_str))){
 								if(-1==s_sync_cmd_exec_record){
 									DEBUG("has failed sync cmd, ignore this and return failed\n");
 									return CMD_HEADER_INVALID;
 								}
-								else
+								else{
 									s_sync_cmd_exec_record += SYNC_TIME;
+									
+									snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM time;");
+								}
 							}
 							
-							// skip such as 'devs'/'modl'/'time'
+							INSTRUCTION_RESULT_E ret = sqlite_execute(sqlite_cmd);
+							
+							// skip such string as 'devs'/'modl'/'time'
 							p_mark = strchr(p_str, '#');
 							p_str = p_mark+1;
 							
@@ -436,8 +450,15 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 								p_str = p_sync_str;
 							}
 							
+							if(SYNC_DEVS==s_sync_cmd_exec_record)
+								equipment_refresh();
+							
+							if(SYNC_TIME==s_sync_cmd_exec_record)
+								timing_task_refresh();
+							
 							if(0==ret){
 								cmd_header = CMD_HEADER_SYNC_OK;
+								
 								if((SYNC_DEVS+SYNC_MODL+SYNC_TIME)==s_sync_cmd_exec_record){
 									DEBUG("do three sync cmds OK\n");
 									sync_cmds_finish(CMD_HEADER_SYNC_OK, tmp_serv_str);

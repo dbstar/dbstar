@@ -26,11 +26,11 @@ typedef enum{
 #define DATABASE_DIR 		WORKSPACE_SURFIX"database/"
 #define DATABASE			"/data/dbstar/Smarthome.db"	//sqlite3 database
 #define SETTING_BASE		WORKSPACE_SURFIX"settings/base.ini"	//serverconfig path on ppc
-#define SQLITECMDLEN (256)							//the max number byte contained in "cmdStr"---command string--sqlite.cpp
+#define SQLITECMDLEN (512)							//the max number byte contained in "cmdStr"---command string--sqlite.cpp
 #define WAITRES	(600)									//wait 600*myDelay(5) ms, if no response, return "#ff ff ff ffff#ff#ff ff#ff#"
 #define SYNCTIME (10)									//sync time
-#define CMD_SIZE		(4096)
-#define ALTERABLE_ENTITY_SIZE	(4096)
+#define CMD_SIZE		(8192)
+#define ALTERABLE_ENTITY_SIZE	(8192)
 
 #define SN_DEFAULT_TEST			"72392061919421673185"		//WARNING: only for test, the lenght of sn is 20 currently
 #define SW_VERSION				"1.2.1"
