@@ -24,6 +24,7 @@
 #include "timing.h"
 #include "sqlite.h"
 #include "instruction.h"
+#include "equipment.h"
 
 static SMART_POWER_CMD_S 	g_smart_power_cmds[SMART_POWER_CMD_NUM];
 static sem_t				s_sem_smart_power_cmds;
@@ -325,7 +326,6 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 	int index_w = 0;
 	char tmp_serv_str[128];
 	char sqlite_cmd[SQLITECMDLEN];
-	int ret = -1;
 	
 	if(NULL==cmd_str || 0==str_len){
 		cmd_header = CMD_HEADER_INVALID;
