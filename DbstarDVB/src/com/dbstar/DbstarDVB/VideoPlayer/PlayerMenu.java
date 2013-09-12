@@ -437,7 +437,16 @@ public class PlayerMenu extends PlayerActivity {
 		mSmartcardTacker.destroy();
 
 		mLongPressTimer.cancel();
-
+		if(mFFRewTimer != null){
+		    mFFRewTimer.cancel();
+		    mFFRewTimer = null;
+		}
+		
+		if(mInfoBarTimer != null){
+		    mInfoBarTimer.cancel();
+		    mInfoBarTimer = null;
+		}
+		    
 		closeSubtitleView();
 
 		if (m1080scale == 2
@@ -497,45 +506,45 @@ public class PlayerMenu extends PlayerActivity {
 
 		Log.d(TAG, " =========== onKeyUp ========= " + keyCode);
 
-		if ((keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
-			Log.d(TAG, "  +++++++++++++++++++++++++++++++++++++++++ ");
-			Log.d(TAG, " event.isTracking() " + event.isTracking());
-			Log.d(TAG, " event.isLongPress() " + event.isLongPress());
-
-			try {
-				if (mLongPressTask != null) {
-					mLongPressTask.cancel();
-					mLongPressTask = null;
-
-					mIsFFKeyLongPressed = false;
-					mIsFBKeyLongPressed = false;
-
-					if (FF_FLAG)
-						mAmplayer.FastForward(0);
-					else if (FB_FLAG)
-						mAmplayer.BackForward(0);
-
-					FF_FLAG = false;
-					FB_FLAG = false;
-					FF_LEVEL = 0;
-					FB_LEVEL = 0;
-
-					mPlayButton.setImageResource(R.drawable.play);
-				} else {
-					if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-						seekBackwardOneStep();
-					} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-						seekForwardOneStep();
-					}
-				}
-
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-
-			hideInfoBarDelayed();
-			return true;
-		}
+//		if ((keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+//			Log.d(TAG, "  +++++++++++++++++++++++++++++++++++++++++ ");
+//			Log.d(TAG, " event.isTracking() " + event.isTracking());
+//			Log.d(TAG, " event.isLongPress() " + event.isLongPress());
+//
+//			try {
+//				if (mLongPressTask != null) {
+//					mLongPressTask.cancel();
+//					mLongPressTask = null;
+//
+//					mIsFFKeyLongPressed = false;
+//					mIsFBKeyLongPressed = false;
+//
+//					if (FF_FLAG)
+//						mAmplayer.FastForward(0);
+//					else if (FB_FLAG)
+//						mAmplayer.BackForward(0);
+//
+//					FF_FLAG = false;
+//					FB_FLAG = false;
+//					FF_LEVEL = 0;
+//					FB_LEVEL = 0;
+//
+//					mPlayButton.setImageResource(R.drawable.play);
+//				} else {
+//					if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+//						seekBackwardOneStep();
+//					} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+//						seekForwardOneStep();
+//					}
+//				}
+//
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
+//
+//			hideInfoBarDelayed();
+//			return true;
+//		}
 
 		return super.onKeyUp(keyCode, event);
 	}
@@ -574,6 +583,7 @@ public class PlayerMenu extends PlayerActivity {
 			onPlayButtonPressed();
 			return true;
 		}
+		case KeyEvent.KEYCODE_DPAD_RIGHT:
 		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD: {
 			if (!INITOK)
 				return false;
@@ -582,7 +592,7 @@ public class PlayerMenu extends PlayerActivity {
 			onFFButtonPressed2();
 			return true;
 		}
-
+		case KeyEvent.KEYCODE_DPAD_LEFT:
 		case KeyEvent.KEYCODE_MEDIA_REWIND: {
 			if (!INITOK)
 				return false;
@@ -619,18 +629,18 @@ public class PlayerMenu extends PlayerActivity {
 			return true;
 		}
 
-		case KeyEvent.KEYCODE_DPAD_LEFT: {
-			showInfoBar(true);
-			// seekBackwardOneStep();
-			event.startTracking();
-			return true;
-		}
-		case KeyEvent.KEYCODE_DPAD_RIGHT: {
-			showInfoBar(true);
-			// seekForwardOneStep();
-			event.startTracking();
-			return true;
-		}
+//		case KeyEvent.KEYCODE_DPAD_LEFT: {
+//			showInfoBar(true);
+//			// seekBackwardOneStep();
+//			event.startTracking();
+//			return true;
+//		}
+//		case KeyEvent.KEYCODE_DPAD_RIGHT: {
+//			showInfoBar(true);
+//			// seekForwardOneStep();
+//			event.startTracking();
+//			return true;
+//		}
 
 		case KeyEvent.KEYCODE_TV_SUBTITLE: {
 			setOSDOn(true);
@@ -688,38 +698,38 @@ public class PlayerMenu extends PlayerActivity {
 		}
 	}
 
-	@Override
-	public boolean onKeyLongPress(int keyCode, KeyEvent event) {
-
-		Log.d(TAG, " =========== onKeyLongPress ================= " + keyCode);
-
-		switch (keyCode) {
-		case KeyEvent.KEYCODE_DPAD_RIGHT: {
-			if (!INITOK)
-				return false;
-
-			mIsFFKeyLongPressed = true;
-			showInfoBar(false);
-			onFFButtonPressed();
-			handleLongPressDelayed();
-			return true;
-		}
-
-		case KeyEvent.KEYCODE_DPAD_LEFT: {
-			if (!INITOK)
-				return false;
-
-			mIsFBKeyLongPressed = true;
-			showInfoBar(false);
-			onFBButtonPressed();
-
-			handleLongPressDelayed();
-			return true;
-		}
-		}
-
-		return super.onKeyLongPress(keyCode, event);
-	}
+//	@Override
+//	public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+//
+//		Log.d(TAG, " =========== onKeyLongPress ================= " + keyCode);
+//
+//		switch (keyCode) {
+//		case KeyEvent.KEYCODE_DPAD_RIGHT: {
+//			if (!INITOK)
+//				return false;
+//
+//			mIsFFKeyLongPressed = true;
+//			showInfoBar(false);
+//			onFFButtonPressed();
+//			handleLongPressDelayed();
+//			return true;
+//		}
+//
+//		case KeyEvent.KEYCODE_DPAD_LEFT: {
+//			if (!INITOK)
+//				return false;
+//
+//			mIsFBKeyLongPressed = true;
+//			showInfoBar(false);
+//			onFBButtonPressed();
+//
+//			handleLongPressDelayed();
+//			return true;
+//		}
+//		}
+//
+//		return super.onKeyLongPress(keyCode, event);
+//	}
 
 	Timer mLongPressTimer = new Timer();
 
@@ -835,7 +845,40 @@ public class PlayerMenu extends PlayerActivity {
 			}
 		} else if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
 			try {
-				mAmplayer.Resume();
+				if(isStartSearching){
+                    isStartSearching = false;
+                    if(mFFRewTask != null){
+                        mFFRewTask.cancel();
+                        mFFRewTask = null;
+                    }
+                    
+                    Log.e(TAG, " ------- " + mFFRewTime);
+                    final int temp = mFFRewTime;
+                    mFFRewTime =0;
+                    FF_FLAG = false;
+                    FB_FLAG = false;
+                    FF_LEVEL = 0;
+                    FB_LEVEL = 0;
+                    //mAmplayer.Stop();
+                   //saveBookmark(mCurrentTime + temp);
+                    //Utils.setVideoOff();
+                   mAmplayer.Seek(mCurrentTime + temp);
+                   mHandler.postDelayed(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        try {
+                            //Utils.setVideoOn();
+                            //Amplayer_play(mCurrentTime + temp);
+                           // mAmplayer.Play();
+                            mAmplayer.Resume();
+                        } catch (Exception e) {
+                        }
+                    }
+                }, 1000);
+                }else{
+                    mAmplayer.Resume();
+                }
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -858,7 +901,8 @@ public class PlayerMenu extends PlayerActivity {
 	void onFFButtonPressed() {
 		if (!INITOK)
 			return;
-
+		
+		
 		Log.d(TAG, " =========== onFFButtonPressed ================= ");
 
 		Log.d(TAG, " mPlayerStatus " + mPlayerStatus + " FF_FLAG " + FF_FLAG
@@ -1016,18 +1060,49 @@ public class PlayerMenu extends PlayerActivity {
 		}
 	}
 	
-	
+	private Timer mFFRewTimer;
+	private TimerTask mFFRewTask = new TimerTask() {
+        
+        @Override
+        public void run() {
+            if(FF_FLAG)
+                mFFRewTime = mFFRewTime + (FF_SPEED[FF_LEVEL] * 1);
+            else if(FB_FLAG)
+                mFFRewTime = mFFRewTime -(FB_SPEED[FB_LEVEL] * 1);
+            
+            Log.i(TAG, "mFFRewTime = " + mFFRewTime + "FF_FLAG = " + FF_FLAG + "FB_FLAG = " + FB_FLAG + "FF_LEVEL = " + FF_LEVEL + "FB_LEVEL = " + FB_LEVEL );
+                    
+        }
+    };
+    
+    int mFFRewTime = 0;
+    private boolean isStartSearching;
 	void onFFButtonPressed2() {
 		if (!INITOK)
 			return;
-
+	    if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
+            try {
+                mAmplayer.Pause();
+                Log.i(TAG, "currentTime = " + mCurrentTime + "totalTime = " + mTotalTime  + " FF_LEVEL " + FF_LEVEL
+                        + " FB_LEVEL " + FB_LEVEL);
+                
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }else if(mPlayerStatus == VideoInfo.PLAYER_PAUSE){
+            FF_FLAG = true;
+            FB_FLAG = false;
+            FB_LEVEL = 0;
+        }
+	   
+	    //TODO
 		Log.d(TAG, " =========== onFFButtonPressed 2 ================= ");
 
 		Log.d(TAG, " mPlayerStatus " + mPlayerStatus + " FF_FLAG " + FF_FLAG
 				+ " FB_FLAG " + FB_FLAG + " FF_LEVEL " + FF_LEVEL
 				+ " FB_LEVEL " + FB_LEVEL);
 
-		if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
+		if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
 			if (FF_FLAG) {
 				if (FF_LEVEL < FF_MAX) {
 					FF_LEVEL = FF_LEVEL + 1;
@@ -1045,28 +1120,89 @@ public class PlayerMenu extends PlayerActivity {
 			}
 			
 			mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
-
-			try {
-				mAmplayer.FastForward(FF_STEP[FF_LEVEL]);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+//			
+//			try {
+//				//mAmplayer.FastForward(FF_STEP[FF_LEVEL]);
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
 
 		} else {
 			FF_FLAG = true;
 			FF_LEVEL = 1;
-
-			try {
-				mAmplayer.FastForward(FF_STEP[1]);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+//
+//			try {
+//				//mAmplayer.FastForward(FF_STEP[1]);
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
 
 			mPlayButton.setImageDrawable(mSpeedDrawables[FF_LEVEL]);
 		}
-
+		   
+        startFFRew();
 	}
-
+	
+	protected void stopFFRew(){
+	    Log.e(TAG, " -------  stopFFRew" );
+	    if(isStartSearching){
+            isStartSearching = false;
+            if(mFFRewTask != null){
+                mFFRewTask.cancel();
+                mFFRewTask = null;
+            }
+            
+            
+            int temp = mFFRewTime;
+            mFFRewTime =0;
+            FF_FLAG = false;
+            FB_FLAG = false;
+            FF_LEVEL = 0;
+            FB_LEVEL = 0;
+            try {
+                if(mCurrentTime + temp > mTotalTime){
+                    mAmplayer.Seek(mTotalTime);
+                    exitPlayer(4);
+                    Log.e(TAG, "  mAmplayer.Seek(mTotalTime)");
+                }else if(mCurrentTime + temp  <= 0){
+                    Log.e(TAG, "  mAmplayer.Seek(0);");
+                    mAmplayer.Seek(0);
+                    mAmplayer.Resume();
+                }else{
+                    mAmplayer.Seek(mCurrentTime + temp);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+          
+        }
+	    
+	}
+	private void startFFRew(){
+	    if(mFFRewTimer == null){
+            mFFRewTimer = new Timer();
+        }
+        if(!isStartSearching){
+            mFFRewTask = new TimerTask() {
+                
+                @Override
+                public void run() {
+                    if(FF_FLAG){
+                        mFFRewTime = mFFRewTime + (FF_SPEED[FF_LEVEL] * 1);
+                        mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_INFO_BAR, mFFRewTime, 0));
+                    }
+                    else if(FB_FLAG){
+                        mFFRewTime = mFFRewTime -(FB_SPEED[FB_LEVEL] * 1);
+                        mHandler.sendMessage(mHandler.obtainMessage(MSG_UPDATE_INFO_BAR, mFFRewTime, 0));
+                    }
+                    
+                    Log.i(TAG, "mFFRewTime = " + mFFRewTime + "FF_FLAG = " + FF_FLAG + "FB_FLAG = " + FB_FLAG + "FF_LEVEL = " + FF_LEVEL + "FB_LEVEL = " + FB_LEVEL );
+                }
+            };
+            mFFRewTimer.schedule(mFFRewTask, 1000, 1000);
+            isStartSearching = true;
+        } 
+	}
 	void onFBButtonPressed2() {
 		if (!INITOK)
 			return;
@@ -1076,8 +1212,21 @@ public class PlayerMenu extends PlayerActivity {
 		Log.d(TAG, " mPlayerStatus " + mPlayerStatus + " FF_FLAG " + FF_FLAG
 				+ " FB_FLAG " + FB_FLAG + " FF_LEVEL " + FF_LEVEL
 				+ " FB_LEVEL " + FB_LEVEL);
-
-		if (mPlayerStatus == VideoInfo.PLAYER_SEARCHING) {
+		  if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
+	            try {
+	                mAmplayer.Pause();
+	                Log.i(TAG, "currentTime = " + mCurrentTime + "totalTime = " + mTotalTime  + " FF_LEVEL " + FF_LEVEL
+	                        + " FB_LEVEL " + FB_LEVEL);
+	                
+	            } catch (RemoteException e) {
+	                e.printStackTrace();
+	            }
+	        }else if(mPlayerStatus == VideoInfo.PLAYER_PAUSE){
+	            FB_FLAG = true;
+	            FF_FLAG = false;
+                FF_LEVEL = 0;
+	        }
+		if (mPlayerStatus == VideoInfo.PLAYER_PAUSE) {
 			if (FB_FLAG) {
 				if (FB_LEVEL < FB_MAX) {
 					FB_LEVEL = FB_LEVEL + 1;
@@ -1089,11 +1238,11 @@ public class PlayerMenu extends PlayerActivity {
 				
 				mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
 
-				try {
-					mAmplayer.BackForward(FB_STEP[FB_LEVEL]);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+//				try {
+//					mAmplayer.BackForward(FB_STEP[FB_LEVEL]);
+//				} catch (RemoteException e) {
+//					e.printStackTrace();
+//				}
 			} else if (FF_FLAG) {
 				FF_FLAG = false;
 				FF_LEVEL = 0;
@@ -1102,25 +1251,35 @@ public class PlayerMenu extends PlayerActivity {
 				FB_LEVEL = 1;
 
 				mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
-
-				try {
-					mAmplayer.BackForward(FB_STEP[FB_LEVEL]);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}	
+//
+//				try {
+//					mAmplayer.BackForward(FB_STEP[FB_LEVEL]);
+//				} catch (RemoteException e) {
+//					e.printStackTrace();
+//				}	
 			}
 
 		} else {
-			try {
-				mAmplayer.BackForward(FB_STEP[1]);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				mAmplayer.BackForward(FB_STEP[1]);
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
 			FB_FLAG = true;
 			FB_LEVEL = 1;
 
 			mPlayButton.setImageDrawable(mSpeedDrawables[FB_LEVEL]);
 		}
+		
+//		   
+//        if(mFFRewTimer == null){
+//            mFFRewTimer = new Timer();
+//        }
+//        if(!isStartSearching){
+//            mFFRewTimer.schedule(mFFRewTask, 1000, 1000);
+//            isStartSearching = true;
+//        }
+		startFFRew();
 	}
 
 	public void exitPlayer(int i) {
@@ -1330,9 +1489,9 @@ public class PlayerMenu extends PlayerActivity {
 			FB_LEVEL = 0;
 			mPlayButton.setImageResource(R.drawable.play);
 		}
-
-		mCurrentTimeView.setText(Utils.secToTime(currentTime, false));
-		mTotalTimeView.setText(Utils.secToTime(totalTime, true));
+		
+	    mCurrentTimeView.setText(Utils.secToTime(currentTime, false));
+	    mTotalTimeView.setText(Utils.secToTime(totalTime, true));
 
 		boolean mVfdDisplay = SystemProperties.getBoolean("hw.vfd", false);
 		if (mVfdDisplay) {

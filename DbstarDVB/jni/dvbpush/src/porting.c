@@ -952,7 +952,7 @@ static int drmlib_version_get(char *buf, unsigned int size)
 /*
  查询CA_LIB版本号，要求机顶盒以16进制显示
 */
-	snprintf(buf,size,"3.0(0x%lx)", CDCASTB_GetVer());
+	snprintf(buf,size,"3.0(0X%lX)", CDCASTB_GetVer());
 	DEBUG("CA_LIB Ver: %s\n", buf);
 	
 	return 0;

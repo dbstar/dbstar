@@ -125,9 +125,9 @@
     
     <string name="error_unknown">未知错误</string>
     <string name="drm_error_fileerror">文件错误</string>
-    <string name="drm_error_noentitle">此节目无授权</string>
-    <string name="drm_error_notwatchtime">此节目不满足观看时间</string>
-    <string name="drm_error_notissuetime">此节目不满足发行时间</string>
+   <string name="drm_error_noentitle">没有授权</string>
+    <!-- <string name="drm_error_notwatchtime">此节目不满足观看时间</string>
+    <string name="drm_error_notissuetime">此节目不满足发行时间</string> -->
     <string name="drm_error_rightlimit">此节目有版权限制</string>
     <string name="drm_error_card_invalid">智能卡无效</string>
 </resources>

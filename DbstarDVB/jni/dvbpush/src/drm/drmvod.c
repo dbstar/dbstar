@@ -129,6 +129,7 @@ static int drmvod_open(URLContext *h, const char *filename, int flags)
 			LOGE("########## open drm (%s) ERROR!\n", s_drmvod.filename_drm);
 			s_drmvod.ready = 0;
 		} else {
+			LOGE("########## open drm(%s) success, %d\n", s_drmvod.filename_drm,s_drmvod.fd_drm);
 			ret = drm_open(&s_drmvod.fd_media, &s_drmvod.fd_drm);
 			if (ret != 0) {
 				LOGE("########## drm_open() ERROR!, ret=%d ####\n", ret);
@@ -169,12 +170,15 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 		} else {
 			ret = drm_read(&drmvod->fd_media, buf, len);
 		}
+		
 		if (ret == 0) {
 			//LOGD("DRM_READ AGAIN!\n");
 			ret = -EAGAIN;
-		} else if (ret < 0) {
-			LOGD("DRM_READ ERROR!, ret=%d\n", ret);
+		}
+		else if (ret < 0) {
+			LOGD("DRM_READ ERROR!, ret=%d, errno=0x%x\n", ret,-ret);
 			set_player_errno(-ret);
+            if (ret == -0x37) ret = -111;
 		}
 	} else {
 		ret = read(drmvod->fd_media, buf, len);

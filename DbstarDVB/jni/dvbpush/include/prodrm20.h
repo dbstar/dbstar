@@ -24,7 +24,6 @@ typedef CDCA_U8 CDCA_BOOL;
 
 /*--------- 智能卡相关限制 --------*/
 #define CDCA_MAXLEN_SN            16U   /* 智能卡序列号的长度 */
-#define CDCA_MAXLEN_SN_PATH	  CDCA_MAXLEN_SN + 128
 #define CDCA_MAXLEN_PINCODE       6U    /* PIN码的长度 */
 #define CDCA_MAXLEN_TVSPRIINFO    32U   /* 运营商私有信息的长度 */
 #define CDCA_MAXNUM_OPERATOR      4U    /* 最多的运营商个数 */
@@ -46,35 +45,35 @@ typedef CDCA_U8 CDCA_BOOL;
 #define CDCA_MAXNUM_DETITLE       5U    /* 每个运营商下可保存的反授权码个数 */
 
 /*---------- CAS提示信息 ---------*/
-#define CDCA_MESSAGE_CANCEL_TYPE      0x00  /* 取消当前的显示 */
-#define CDCA_MESSAGE_BADCARD_TYPE     0x01  /* 无法识别卡 */
-#define CDCA_MESSAGE_EXPICARD_TYPE    0x02  /* 智能卡过期，请更换新卡 */
-#define CDCA_MESSAGE_INSERTCARD_TYPE  0x03  /* 加扰节目，请插入智能卡 */
-#define CDCA_MESSAGE_NOOPER_TYPE      0x04  /* 卡中不存在节目运营商 */
-#define CDCA_MESSAGE_BLACKOUT_TYPE    0x05  /* 条件禁播 */
-#define CDCA_MESSAGE_OUTWORKTIME_TYPE 0x06  /* 当前时段被设定为不能观看 */
-#define CDCA_MESSAGE_WATCHLEVEL_TYPE  0x07  /* 节目级别高于设定的观看级别 */
-#define CDCA_MESSAGE_PAIRING_TYPE     0x08  /* 智能卡与本机顶盒不对应 */
-#define CDCA_MESSAGE_NOENTITLE_TYPE   0x09  /* 没有授权 */
-#define CDCA_MESSAGE_DECRYPTFAIL_TYPE 0x0A  /* 节目解密失败 */
-#define CDCA_MESSAGE_NOMONEY_TYPE     0x0B  /* 卡内金额不足 */
-#define CDCA_MESSAGE_ERRREGION_TYPE   0x0C  /* 区域不正确 */
-#define CDCA_MESSAGE_NEEDFEED_TYPE    0x0D  /* 子卡需要和母卡对应，请插入母卡 */
-#define CDCA_MESSAGE_ERRCARD_TYPE     0x0E  /* 智能卡校验失败，请联系运营商 */
-#define CDCA_MESSAGE_UPDATE_TYPE      0x0F  /* 智能卡升级中，请不要拔卡或者关机 */
-#define CDCA_MESSAGE_LOWCARDVER_TYPE  0x10  /* 请升级智能卡 */
-#define CDCA_MESSAGE_VIEWLOCK_TYPE    0x11  /* 请勿频繁切换频道 */
-#define CDCA_MESSAGE_MAXRESTART_TYPE  0x12  /* 智能卡暂时休眠，请5分钟后重新开机 */
-#define CDCA_MESSAGE_FREEZE_TYPE      0x13  /* 智能卡已冻结，请联系运营商 */
-#define CDCA_MESSAGE_CALLBACK_TYPE    0x14  /* 智能卡已暂停，请回传收视记录给运营商 */
-#define CDCA_MESSAGE_CURTAIN_TYPE	  0x15 /*窗帘节目，不可预览阶段*/
-#define CDCA_MESSAGE_CARDTESTSTART_TYPE 0x16 /*升级测试卡测试中...*/
-#define CDCA_MESSAGE_CARDTESTFAILD_TYPE 0x17 /*升级测试卡测试失败，请检查机卡通讯模块*/
-#define CDCA_MESSAGE_CARDTESTSUCC_TYPE  0x18 /*升级测试卡测试成功*/
-#define CDCA_MESSAGE_NOCALIBOPER_TYPE    0x19/*卡中不存在移植库定制运营商*/
+#define CDCA_MESSAGE_CANCEL_TYPE        0x00  /* 取消当前的显示 */
+#define CDCA_MESSAGE_BADCARD_TYPE       0x01  /* 无法识别卡 */
+#define CDCA_MESSAGE_EXPICARD_TYPE      0x02  /* 智能卡过期，请更换新卡 */
+#define CDCA_MESSAGE_INSERTCARD_TYPE    0x03  /* 加扰节目，请插入智能卡 */
+#define CDCA_MESSAGE_NOOPER_TYPE        0x04  /* 卡中不存在节目运营商 */
+#define CDCA_MESSAGE_BLACKOUT_TYPE      0x05  /* 条件禁播 */
+#define CDCA_MESSAGE_OUTWORKTIME_TYPE   0x06  /* 当前时段被设定为不能观看 */
+#define CDCA_MESSAGE_WATCHLEVEL_TYPE    0x07  /* 节目级别高于设定的观看级别 */
+#define CDCA_MESSAGE_PAIRING_TYPE       0x08  /* 智能卡与本机顶盒不对应 */
+#define CDCA_MESSAGE_NOENTITLE_TYPE     0x09  /* 没有授权 */
+#define CDCA_MESSAGE_DECRYPTFAIL_TYPE   0x0A  /* 节目解密失败 */
+#define CDCA_MESSAGE_NOMONEY_TYPE       0x0B  /* 卡内金额不足 */
+#define CDCA_MESSAGE_ERRREGION_TYPE     0x0C  /* 区域不正确 */
+#define CDCA_MESSAGE_NEEDFEED_TYPE      0x0D  /* 子卡需要和母卡对应，请插入母卡 */
+#define CDCA_MESSAGE_ERRCARD_TYPE       0x0E  /* 智能卡校验失败，请联系运营商 */
+#define CDCA_MESSAGE_UPDATE_TYPE        0x0F  /* 智能卡升级中，请不要拔卡或者关机 */
+#define CDCA_MESSAGE_LOWCARDVER_TYPE    0x10  /* 请升级智能卡 */
+#define CDCA_MESSAGE_VIEWLOCK_TYPE      0x11  /* 请勿频繁切换频道 */
+#define CDCA_MESSAGE_MAXRESTART_TYPE    0x12  /* 智能卡暂时休眠，请5分钟后重新开机 */
+#define CDCA_MESSAGE_FREEZE_TYPE        0x13  /* 智能卡已冻结，请联系运营商 */
+#define CDCA_MESSAGE_CALLBACK_TYPE      0x14  /* 智能卡已暂停，请回传收视记录给运营商 */
+#define CDCA_MESSAGE_CURTAIN_TYPE	    0x15  /* 窗帘节目，不可预览阶段 */
+#define CDCA_MESSAGE_CARDTESTSTART_TYPE 0x16  /* 升级测试卡测试中... */
+#define CDCA_MESSAGE_CARDTESTFAILD_TYPE 0x17  /* 升级测试卡测试失败，请检查机卡通讯模块 */
+#define CDCA_MESSAGE_CARDTESTSUCC_TYPE  0x18  /* 升级测试卡测试成功 */
+#define CDCA_MESSAGE_NOCALIBOPER_TYPE   0x19  /* 卡中不存在移植库定制运营商 */
 
-#define CDCA_MESSAGE_STBLOCKED_TYPE   0x20  /* 请重启机顶盒 */
-#define CDCA_MESSAGE_STBFREEZE_TYPE   0x21  /* 机顶盒被冻结 */
+#define CDCA_MESSAGE_STBLOCKED_TYPE     0x20  /* 请重启机顶盒 */
+#define CDCA_MESSAGE_STBFREEZE_TYPE     0x21  /* 机顶盒被冻结 */
 
 
 
@@ -98,23 +97,47 @@ typedef CDCA_U8 CDCA_BOOL;
 #define CDCA_RC_FEEDTIME_NOT_ARRIVE   0x11  /* 喂养时间未到，子卡不能被喂养 */
 #define CDCA_RC_CARD_TYPEERROR        0x12  /* 子母卡喂养失败，插入智能卡类型错误 */
 
-#define CDCA_RC_CAS_FAILED                  0x20 //发卡cas指令执行失败
-#define CDCA_RC_OPER_FAILED                0x21 //发卡运营商指令执行失败
+#define CDCA_RC_CAS_FAILED            0x20  /* 发卡cas指令执行失败 */
+#define CDCA_RC_OPER_FAILED           0x21  /* 发卡运营商指令执行失败 */
+
+
+/*---------- PVODDRM功能调用返回值定义 ----------*/
+#define CDCA_RC_FILE_ERROR            0x30  /* 文件错误 */
+#define CDCA_RC_FILE_EOF              0x31  /* 文件结束 */
+#define CDCA_RC_NOENTITLE             0x32  /* 没有授权 */
+#define CDCA_RC_NOT_ISSUETIME         0x33  /* 没有授权(不满足发行时间) */
+#define CDCA_RC_NOT_WATCHTIME         0x34  /* 没有授权(不满足观看时间) */
+#define CDCA_RC_RIGHT_LIMIT           0x35  /* 没有授权(超出版权限量值) */
+#define CDCA_RC_NOTENOUGHMONEY        0x36  /* 没有授权(卡内金额不足) */
+#define CDCA_RC_PREVIEWOVER           0x37  /* 没有授权(超出预览范围) */
+#define CDCA_RC_CLEARDATA             0x38  /* 没有授权节目，但片头可以预览 */
+#define CDCA_RC_NEEDSELECT_ENTITLE    0x39  /* 本节目目前都是限制流量授权，需用户选择授权打开文件 */
+#define CDCA_RC_SAVEDATA_ERROR        0x3A  /* 保存授权数据错误 */
+#define CDCA_RC_NOENTITLEDATA         0x3B  /* 没有找到授权文件 */
+#define CDCA_RC_SYSTEMERR             0x3C  /* 终端系统错误 */
+#define CDCA_RC_BUFFEROVERFLOW        0x3D  /* 缓冲区长度太小 */
+#define CDCA_RC_CRC_ERROR             0x3E  /* CRC校验错误 */ 
+#define CDCA_RC_IN_SYNC               0x3F  /* 同步授权中 */
+#define CDCA_RC_NOCALIBOPER_TYPE      0x42  /* 卡中不存在移植库定制运营商-add by rw  20120524 */
+
+#define CDCA_RC_NONEEDPATCH           0x50  /* 智能卡已经是目标版本，无需升级 */
+#define CDCA_RC_NOPATCHKEY            0x51  /* 卡中不存在Patch Key */
+
 
 
 /*-- 读卡器中的智能卡状态 --*/
-#define CDCA_SC_OUT         0x00    /* 读卡器中没有卡          */
-#define CDCA_SC_REMOVING    0x01    /* 正在拔卡，重置状态      */
-#define CDCA_SC_INSERTING   0x02    /* 正在插卡，初始化        */
-#define CDCA_SC_IN          0x03    /* 读卡器中是可用的卡      */
-#define CDCA_SC_ERROR       0x04    /* 读卡器的卡不能识别      */
+#define CDCA_SC_OUT         0x00    /* 读卡器中没有卡 */
+#define CDCA_SC_REMOVING    0x01    /* 正在拔卡，重置状态 */
+#define CDCA_SC_INSERTING   0x02    /* 正在插卡，初始化 */
+#define CDCA_SC_IN          0x03    /* 读卡器中是可用的卡 */
+#define CDCA_SC_ERROR       0x04    /* 读卡器的卡不能识别 */
 #define CDCA_SC_UPDATE      0x05    /* 读卡器的卡可升级 */
-#define CDCA_SC_UPDATE_ERR  0x06    /* 读卡器的卡升级失败      */
+#define CDCA_SC_UPDATE_ERR  0x06    /* 读卡器的卡升级失败 */
 
 /*---------- ECM_PID设置的操作类型 ---------*/
-#define CDCA_LIST_OK          0x00
-#define CDCA_LIST_FIRST       0x01
-#define CDCA_LIST_ADD         0x02
+#define CDCA_LIST_OK        0x00
+#define CDCA_LIST_FIRST     0x01
+#define CDCA_LIST_ADD       0x02
 
 
 /*------------ 邮件大小及数量限制 ------------*/
@@ -170,46 +193,25 @@ typedef CDCA_U8 CDCA_BOOL;
 
 
 
-/*---------- PVODDRM功能调用返回值定义 ----------*/
-#define CDCA_RC_FILE_ERROR				0x30  /* 文件错误 */
-#define CDCA_RC_FILE_EOF				0x31  /* 文件结束 */
-#define CDCA_RC_NOENTITLE				0x32  /* 没有授权 */
-#define CDCA_RC_NOT_ISSUETIME			0x33  /* 不满足发行时间 */
-#define CDCA_RC_NOT_WATCHTIME		0x34  /* 不满足观看时间 */
-#define CDCA_RC_RIGHT_LIMIT			0x35  /* 版权限制 */
-#define CDCA_RC_NOTENOUGHMONEY		0x36  /* 卡内金额不足 */
-
-#define CDCA_RC_CLEARDATA				0x38  /* 没有授权节目，但节目头存在清流数据  */
-#define CDCA_RC_NEEDSELECT_ENTITLE	0x39  /* 本节目目前都是限制流量授权，需用户选择授权打开文件  */
-#define CDCA_RC_SAVEDATA_ERROR		0x3A  /* 保存授权数据错误 */
-#define CDCA_RC_NOENTITLEDATA			0x3B  /* 没有找到授权文件 */
-#define CDCA_RC_SYSTEMERR				0x3C  /* 系统错误，与STB函数相关 */
-#define CDCA_RC_BUFFEROVERFLOW		0x3D  /* 缓冲区长度太小 */
-#define CDCA_RC_CRC_ERROR				0x3E  /* CRC校验错误 */ 
-#define CDCA_RC_IN_SYNC				0x3F  /* 同步授权中  */
-
-
-#define CDCA_RC_NOCALIBOPER_TYPE		0x42  /*卡中不存在移植库定制运营商-add by rw  20120524 */ 
-
 /*--------- 文件操作参数 --------*/
-#define CDCA_SEEK_SET                          0x00  /* 从文件头开始向后 */
-#define CDCA_SEEK_CUR_BACKWARD      0x01  /* 从文件当前位置向后 */
-#define CDCA_SEEK_CUR_FORWARD        0x02  /* 从文件当前位置向前 */
-#define CDCA_SEEK_END                          0x03  /* 从文件结尾向前 */
+#define CDCA_SEEK_SET               0x00  /* 从文件头开始向前(前移) */
+#define CDCA_SEEK_CUR_BACKWARD      0x01  /* 从文件当前位置向后(回退) */
+#define CDCA_SEEK_CUR_FORWARD       0x02  /* 从文件当前位置向前(前移) */
+#define CDCA_SEEK_END               0x03  /* 从文件结尾向后(回退) */
 
 
 /*--------- 加扰算法 --------*/
-#define DEC_AGM_SALSA8_K16B		0x00  /* SALSA8     */
-#define DEC_AGM_NONE			0xFF  /* 清流       */
+#define DEC_AGM_SALSA8_K16B         0x00  /* SALSA8 */
+#define DEC_AGM_NONE                0xFF  /* 清流 */
 
 
 /*--------- 授权文件类型 --------*/
-#define ENT_TAG_DRM		0x01	/* 单密钥授权文件*/
-#define ENT_TAG_PKI			0x02	/* 双密钥授权文件*/
+#define ENT_TAG_DRM                 0x01  /* 单密钥授权文件 */
+#define ENT_TAG_PKI                 0x02  /* 双密钥授权文件 */
 
 /*------------ PVOD DRM应用限制 ------------*/
-#define CDCA_MAXNUM_PVOD_ITEM        10U /* 一次操作的数据条目的最大个数  */ 
-#define CDCA_MAXNUM_PVOD_ITPPENTITLE   4U /* 一个ITPP产品含有的授权最大个数 */
+#define CDCA_MAXNUM_PVOD_ITEM           10U  /* 一次操作的数据条目的最大个数  */ 
+#define CDCA_MAXNUM_PVOD_ITPPENTITLE     4U  /* 一个ITPP产品含有的授权最大个数 */
 
 
 
@@ -225,19 +227,6 @@ typedef CDCA_U16  CDCA_DATE;
 
 /*-- 信号量定义（不同的操作系统可能不一样）--*/
 typedef CDCA_U32  CDCA_Semaphore;
-
-typedef struct {
-    char sn[CDCA_MAXLEN_SN_PATH];
-    int  fd;
-}SCDCACardEntitleInfo;
-
-typedef struct {
-        CDCA_U8       byReqID;
-        CDCA_U8       fid;
-        CDCA_U16      wPID;
-        CDCA_U32      timeouttime;
-}SCDCAFilterInfo;
-
 
 /*-- 运营商信息 --*/
 typedef struct {
@@ -683,7 +672,11 @@ extern CDCA_BOOL CDCASTB_DRM_SeekFilePos(const void*  pDataFileHnd,
                                   CDCA_U32     dwDataPosK,
                                   CDCA_U32     dwDataPos);
 
-
+/* 片头预览
+extern CDCA_U16 CDCASTB_DRM_PreviewFile(const void *pDataFileHnd,
+                                 CDCA_U32 *pdwFrom,
+                                 CDCA_U8 *pbyBuffer,
+                                 CDCA_U32 *pdwBufferLen); */
 
 /* 导入授权数据 */
 extern CDCA_U16 CDCASTB_DRM_ImportEntitleFile(const void*  pFileHandle);
@@ -698,8 +691,10 @@ extern CDCA_U16 CDCASTB_DRM_SyncEntitleToCard(void);
 
 
 
+/* 升级智能卡 */
+extern CDCA_U16 CDCASTB_PatchSmartCard(const void* pFileHandle);
 
-    
+
 
 /*------------------------以上接口是CA_LIB提供给STB---------------------------*/
 
@@ -930,6 +925,10 @@ extern CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U3
 extern CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen);
 
 
+/* 读一行字符 */
+extern CDCA_U8* CDSTBCA_ReadLine(const void* pFileHandle, CDCA_U8* pbyBuf, CDCA_U32 dwLen);
+
+
 
 
 /*---------------------------以上接口是STB提供给CA_LIB------------------------*/
@@ -939,4 +938,5 @@ extern CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U
 #endif
 #endif
 /*EOF*/
+
 

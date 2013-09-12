@@ -108,7 +108,11 @@ int drm_open(int *fd1, int *fd2)
 	int ret = 0;
 
 	ret = CDCASTB_DRM_OpenFile((const void*)fd1, (const void*)fd2);
-	LOGD("DRM_OPEN()=%d\n", ret);
+	LOGD("CDCASTB_DRM_OpenFile return 0x%x\n",ret);
+	if(CDCA_RC_CLEARDATA==ret){
+		LOGD("this is a preview prog, reset as 0\n");
+		ret = 0x0;
+	}
 
 	return ret;
 }
@@ -119,17 +123,18 @@ int drm_read(int *fd, unsigned char *buf, int size)
 	unsigned long rdsize = (unsigned long)size;
 	ret = CDCASTB_DRM_ReadFile((const void*)fd, buf, &rdsize);
 	if (ret != 0) {
-		LOGD("@@@@@@@@@@@ DRM_READ ERROR [%d](size=%d)=0x%x, rdsize=%lu\n", *fd,size, ret, rdsize);
+		LOGD("@@@@@@@@@@@ CDCASTB_DRM_ReadFile[%d] ERROR(0x%x) (size=%d)\n", *((int *)fd), ret, size);
 		
 		if ((ret == 0x42) || (ret == 0x1)
-			|| CDCA_RC_CARD_INVALID==ret) { // CA card plug out
+			|| (CDCA_RC_CARD_INVALID==ret)) { // CA card plug out
 			rdsize = 0;
-		} else { // CA error
+		}
+		else{ // CA error
 			LOGD("@@@@@@@@@@@ CA ERROR =0x%x\n", ret);
 			return -ret;
 		}
 	}
-	//LOGD("DRM_READ[%d](size=%d)=%d, rdsize=%d\n", fd,size, ret, rdsize);
+//	LOGD("CDCASTB_DRM_ReadFile[%d](size=%d), rdsize=%lu\n", *((int *)fd),size, rdsize);
 
 	return (int)rdsize;
 }

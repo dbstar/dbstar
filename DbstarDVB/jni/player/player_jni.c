@@ -210,7 +210,7 @@ int onUpdate_player_info_java(JNIEnv *env, int pid, player_info_t * info)
 
 int set_player_errno(int err)
 {
-	LOGD("$$$$$$$$$$$$$$$$$ set_player_errno(%x)\n", err);
+	LOGD("$$$$$$$$$$$$$$$$$ set_player_errno(0x%x)\n", err);
 	g_player_errno = err;
 
 	return 0;
