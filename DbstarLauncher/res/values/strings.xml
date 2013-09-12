@@ -129,6 +129,7 @@
     <string name="content_id">内容ID</string>
 
     <string name="ca_edition">CA版本:</string>
+    <string name="drm_edition">DRM版本:</string>
     <string name="import_ca">导入授权</string>
     <string name="export_ca">导出授权</string>
     
