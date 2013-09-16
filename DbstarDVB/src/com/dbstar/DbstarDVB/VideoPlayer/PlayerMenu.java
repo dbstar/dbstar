@@ -26,6 +26,7 @@ import com.dbstar.DbstarDVB.VideoPlayer.alert.PlayerErrorInfo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -33,6 +34,7 @@ import android.content.ComponentName;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -641,7 +643,10 @@ public class PlayerMenu extends PlayerActivity {
 //			event.startTracking();
 //			return true;
 //		}
-
+		case KeyEvent.KEYCODE_MENU:{
+		    createSingleSelectorDialog();
+		}
+		
 		case KeyEvent.KEYCODE_TV_SUBTITLE: {
 			setOSDOn(true);
 			switchSubtitle();
@@ -657,7 +662,29 @@ public class PlayerMenu extends PlayerActivity {
 
 		return super.onKeyDown(keyCode, event);
 	}
-
+	
+	private void createSingleSelectorDialog(){
+	    Dialog dialog =  null;
+	    Builder builder = new Builder(this);
+	    builder.setTitle(R.string.player_play_mode);
+	    builder.setSingleChoiceItems(new CharSequence[]{getString(R.string.player_play_mode_single),getString(R.string.player_play_mode_loop)}, 0, new OnClickListener() {
+            
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try{
+                    mAmplayer.SetRepeat(which);
+               }catch (Exception e) {
+                   e.printStackTrace();
+               }
+                
+                    dialog.dismiss();
+            }
+        });
+	    
+	    dialog = builder.create();
+	    dialog.show();
+	    
+	}
 	void seekForwardOneStep() {
 		if (mAmplayer == null || INITOK == false) {
 			return;

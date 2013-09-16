@@ -545,6 +545,24 @@ _data.recycle();
 }
 return _result;
 }
+public int SetRepeat(int repeat) throws android.os.RemoteException
+{
+android.os.Parcel _data = android.os.Parcel.obtain();
+android.os.Parcel _reply = android.os.Parcel.obtain();
+int _result;
+try {
+_data.writeInterfaceToken(DESCRIPTOR);
+_data.writeInt(repeat);
+mRemote.transact(Stub.TRANSACTION_SetRepeat, _data, _reply, 0);
+_reply.readException();
+_result = _reply.readInt();
+}
+finally {
+_reply.recycle();
+_data.recycle();
+}
+return _result;
+}
 public int Set3Dmode(int mode) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
@@ -718,6 +736,7 @@ static final int TRANSACTION_Set3Daspectfull = (android.os.IBinder.FIRST_CALL_TR
 static final int TRANSACTION_Set3Dswitch = (android.os.IBinder.FIRST_CALL_TRANSACTION + 21);
 static final int TRANSACTION_Set3Dgrating = (android.os.IBinder.FIRST_CALL_TRANSACTION + 21);
 static final int TRANSACTION_OpenFd = (android.os.IBinder.FIRST_CALL_TRANSACTION + 23);
+static final int TRANSACTION_SetRepeat = (android.os.IBinder.FIRST_CALL_TRANSACTION + 24);
 }
 public int Init() throws android.os.RemoteException;
 public int Open(java.lang.String filepath, int position) throws android.os.RemoteException;
@@ -735,6 +754,7 @@ public int SetColorKey(int color) throws android.os.RemoteException;
 public void DisableColorKey() throws android.os.RemoteException;
 public int GetOsdBpp() throws android.os.RemoteException;
 public int Seek(int time) throws android.os.RemoteException;
+public int SetRepeat(int repeat) throws android.os.RemoteException;
 public int Set3Dmode(int mode) throws android.os.RemoteException;
 public int Set3Dviewmode(int mode) throws android.os.RemoteException;
 public int Set3Daspectfull(int aspect) throws android.os.RemoteException;

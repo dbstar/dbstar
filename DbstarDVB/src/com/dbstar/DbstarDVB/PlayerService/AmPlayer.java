@@ -254,6 +254,10 @@ public class AmPlayer extends Service {
 			set3Dgrating(isOn);
 			return 0;
 		}
+		public int SetRepeat(int isRepeat){
+		    setRepeat(isRepeat);
+		    return 0;
+		}
 		public int RegisterClientMessager(IBinder hbinder)
 				throws RemoteException {
 			mClient = new Messenger(hbinder);

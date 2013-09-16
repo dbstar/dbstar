@@ -879,6 +879,8 @@ public class PlayerActivity extends Activity {
 				break;
 			case VideoInfo.HAS_ERROR_MSG:
 				String errStr = Errorno.getErrorInfo(msg.arg2);
+				if(errStr.equals(Errorno.ERR0R_UNKOWN))
+				    return;
 				Toast tp = Toast.makeText(PlayerActivity.this, errStr,
 						Toast.LENGTH_SHORT);
 				tp.show();
