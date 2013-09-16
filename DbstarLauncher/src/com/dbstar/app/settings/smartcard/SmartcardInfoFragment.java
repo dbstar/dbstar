@@ -56,47 +56,61 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 
 	void getSmartcardData() {
 		mSmartcardEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRM_SC_SN_READ);
+		
+	/*	
 		mSmartcardEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRMLIB_VER_READ);
 		mSmartcardEngine.getSmartcardInfo(this,
 				DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ);
 		mSmartcardEngine.getSmartcardInfo(this,
-				DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ);
+				DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ);*/
 	}
 
 	// Receive data at this point
 	public void updateData(FragmentObserver observer, int type, Object key,
 			Object data) {
-
-		if (observer != this || data == null)
-			return;
-
-		int requestType = (Integer) key;
-		if (requestType == DbstarServiceApi.CMD_DRM_SC_SN_READ) {
-			mSmartcardSN = (String) data;
-
-			updateSmartcardSN();
-		} else if (requestType == DbstarServiceApi.CMD_DRMLIB_VER_READ) {
-			mSmartcardVersion = (String) data;
-			updateSmartcardVersion();
-		} else if (requestType == DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ) {
-			String[] ids = (String[]) data;
-			if (ids.length > mEignevalueIDView.length) {
-			    LogUtil.e(TAG, "Fata error: smartcard eignevalue is wrong!");
-				return;
-			}
-
-			mIDValues = new String[ids.length];
-			for (int i = 0; i < ids.length; i++) {
-				mIDValues[i] = ids[i];
-			}
-
-			updateSmartcardIds();
-		} else if (requestType == DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ) {
-			mProductItems = (ProductItem[]) data;
-
-			updateProducts();
-		}
-
+	    
+	    if(observer == this){
+	        if(data != null){
+        		int requestType = (Integer) key;
+        		if (requestType == DbstarServiceApi.CMD_DRM_SC_SN_READ) {
+        			mSmartcardSN = (String) data;
+        
+        			updateSmartcardSN();
+        			mSmartcardEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRMLIB_VER_READ);
+        		} else if (requestType == DbstarServiceApi.CMD_DRMLIB_VER_READ) {
+        			mSmartcardVersion = (String) data;
+        			updateSmartcardVersion();
+        			 mSmartcardEngine.getSmartcardInfo(this,DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ);
+        		} else if (requestType == DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ) {
+        		    mSmartcardEngine.getSmartcardInfo(this,DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ);
+        			String[] ids = (String[]) data;
+        			if (ids.length > mEignevalueIDView.length) {
+        			    LogUtil.e(TAG, "Fata error: smartcard eignevalue is wrong!");
+        				return;
+        			}
+        
+        			mIDValues = new String[ids.length];
+        			for (int i = 0; i < ids.length; i++) {
+        				mIDValues[i] = ids[i];
+        			}
+        
+        			updateSmartcardIds();
+        		} else if (requestType == DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ) {
+        			mProductItems = (ProductItem[]) data;
+        
+        			updateProducts();
+        		}
+	         }else{
+	             int requestType = (Integer) key;
+	             if (requestType == DbstarServiceApi.CMD_DRM_SC_SN_READ) {
+	                    mSmartcardEngine.getSmartcardInfo(this, DbstarServiceApi.CMD_DRMLIB_VER_READ);
+	                } else if (requestType == DbstarServiceApi.CMD_DRMLIB_VER_READ) {
+	                     mSmartcardEngine.getSmartcardInfo(this,DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ);
+	                } else if (requestType == DbstarServiceApi.CMD_DRM_SC_EIGENVALUE_READ) {
+	                    mSmartcardEngine.getSmartcardInfo(this,DbstarServiceApi.CMD_DRM_ENTITLEINFO_READ);
+	                }
+	         }
+	    }
 	}
 
 	// handle event at this point
@@ -130,7 +144,12 @@ public class SmartcardInfoFragment extends GDSmartcardFragment {
 			clearSmartcardData();
 		} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
 			mSmartcardStateView.setText(R.string.smarcard_state_normal);
-			getSmartcardData();
+			mSmartcardStateView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getSmartcardData();
+                }
+            }, 1000);
 		}
 
 	}
