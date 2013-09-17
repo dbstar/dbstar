@@ -1463,10 +1463,11 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 	SCDCAEmailHead EmailHeads[EMAIL_HEADS_NUM];
 	CDCA_U8 byCount = EMAIL_HEADS_NUM;
 	CDCA_U8 byFromIndex = 0;
-	int i = 0, firstread_flag = 1;
+	int i = 0, j = 0, firstread_flag = 1, markIndex = -1;
 	char email_createtime[64];
 	time_t t;
 	struct tm area;
+	CDCA_U32 mailCreateTimeMin = 0;
 	int ret = -1;
 	
 	while(1){
@@ -1476,28 +1477,46 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 应当根据邮件的日期顺序排序
 */
 			DEBUG("byCount: %d, byFromIndex: %d\n",byCount, byFromIndex);
-			for(i=0;i<byCount;i++)
-			{
-#if 0
-				memset(email_createtime,0,sizeof(email_createtime));
-				drm_time_convert(EmailHeads[i].m_tCreateTime, email_createtime, sizeof(email_createtime));
-#else
-				//snprintf(email_createtime,sizeof(email_createtime),"%lu",EmailHeads[i].m_tCreateTime);
+			for(i=0;i<byCount;i++){
+				mailCreateTimeMin = 0;
+				markIndex = -1;
+				for(j=0;j<byCount;j++)
+				{
+					if(EmailHeads[j].m_tCreateTime>0){
+						if(0==mailCreateTimeMin){
+							mailCreateTimeMin = EmailHeads[j].m_tCreateTime;
+							markIndex = j;
+						}
+						else{
+							if(mailCreateTimeMin > EmailHeads[j].m_tCreateTime){
+								mailCreateTimeMin = EmailHeads[j].m_tCreateTime;
+								markIndex = j;
+							}
+						}
+					}
+				}
 				
-				t = EmailHeads[i].m_tCreateTime;
-				localtime_r(&t, &area);
-
-				snprintf(email_createtime,sizeof(email_createtime),
-					"%d%02d%02d% 02d%02d%02d", 
-					(1900+area.tm_year), (1+area.tm_mon), area.tm_mday,
-					area.tm_hour, area.tm_min, area.tm_sec);
-				DEBUG("convert %lu as %s", EmailHeads[i].m_tCreateTime,email_createtime);
+				DEBUG("[%d] EmailHeads[%d].m_tCreateTime=%lu\n",i,markIndex,EmailHeads[markIndex].m_tCreateTime);
 				
-#endif
-				if(0==i && 1==firstread_flag)
-					snprintf(buf,size,"%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,0==EmailHeads[i].m_bNewEmail?1:0,EmailHeads[i].m_szEmailHead);
-				else
-					snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,0==EmailHeads[i].m_bNewEmail?1:0,EmailHeads[i].m_szEmailHead);
+				if(-1<markIndex && markIndex<byCount){
+					t = EmailHeads[markIndex].m_tCreateTime;
+					localtime_r(&t, &area);
+	
+					snprintf(email_createtime,sizeof(email_createtime),
+						"%d%02d%02d% 02d%02d%02d", 
+						(1900+area.tm_year), (1+area.tm_mon), area.tm_mday,
+						area.tm_hour, area.tm_min, area.tm_sec);
+					DEBUG("convert %lu as %s", EmailHeads[markIndex].m_tCreateTime,email_createtime);
+					
+					if(1==firstread_flag){
+						snprintf(buf,size,"%lu\t%s\t%d\t%s",EmailHeads[markIndex].m_dwActionID,email_createtime,0==EmailHeads[markIndex].m_bNewEmail?1:0,EmailHeads[markIndex].m_szEmailHead);
+						firstread_flag = 0;
+					}
+					else
+						snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%s\t%d\t%s",EmailHeads[markIndex].m_dwActionID,email_createtime,0==EmailHeads[markIndex].m_bNewEmail?1:0,EmailHeads[markIndex].m_szEmailHead);
+					
+					EmailHeads[markIndex].m_tCreateTime = 0;
+				}
 			}
 			
 			if(byCount<EMAIL_HEADS_NUM){
@@ -1514,8 +1533,6 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 			drm_errors("CDCASTB_GetEmailHeads", ret);
 			break;
 		}
-		
-		firstread_flag = 0;
 	}
 //	DEBUG("%s\n", buf);
 	
