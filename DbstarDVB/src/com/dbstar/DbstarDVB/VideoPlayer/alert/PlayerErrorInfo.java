@@ -57,7 +57,7 @@ public class PlayerErrorInfo {
 		default: {
 		    String strCode = "";
 		    try {
-		        strCode =  Integer.toHexString(code);
+		        strCode = " ( 0x" +  Integer.toHexString(code) + " )";
             } catch (Exception e) {
                 e.printStackTrace();
             }
