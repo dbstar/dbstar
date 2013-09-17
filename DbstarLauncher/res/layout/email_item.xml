@@ -14,7 +14,7 @@
 
     <TextView
         android:id="@+id/email_date"
-        android:layout_width="140dp"
+        android:layout_width="190dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:ellipsize="end"
@@ -24,7 +24,7 @@
 
     <TextView
         android:id="@+id/email_flag"
-        android:layout_width="100dp"
+        android:layout_width="80dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:textColor="#000000"
