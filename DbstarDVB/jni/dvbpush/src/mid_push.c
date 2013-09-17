@@ -660,7 +660,9 @@ void *maintenance_thread()
 			DEBUG("maintenance thread is awaked by external signal\n");
 		}
 #endif
-		
+
+#ifdef DRM_TEST
+#else		
 		// Ã¿¸ô12¸öĞ¡Ê±£¬´ò¿ªtdt pid½øĞĞÊ±¼äÍ¬²½£¬ÕâÀïÖ»ÊÇ½èÓÃÁËmonitorÕâ¸öµÍÆµÑ­»·¡£
 		loop_cnt ++;
 		if(loop_cnt>(43200)){
@@ -672,6 +674,7 @@ void *maintenance_thread()
 			tdt_time_sync_awake();
 			loop_cnt = 0;
 		}
+#endif
 		
 		// µ±À¸Ä¿ºÍ½çÃæ²úÆ··¢Éú¸Ä±äÊ±£¬²»ÄÜÖ±½ÓÔÚparse_xml()º¯ÊıÖĞÍ¨¹ıJNIÏòUI·¢ËÍnotify£¬·ñÔòºÜÈİÒ×µ¼ÖÂLauncherËÀµô¡£
 		if(s_column_refresh>0){
@@ -733,6 +736,8 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 			push_regist_init();
 		}
 		
+#ifdef DRM_TEST
+#else
 		if(1==user_idle_status_get()){
 			time(&now_sec);
 			
@@ -766,6 +771,8 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 				}
 			}
 		}
+#endif
+
 	}
 	DEBUG("exit from push monitor thread\n");
 	

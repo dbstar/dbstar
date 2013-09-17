@@ -1409,9 +1409,6 @@ static int columnicon_init(char *columnicon_name)
 }
 
 
-#define PROJECT_CUSTOMIZE
-#define DRM_TEST
-
 /*
  本地栏目的初始化
  注意和下发的Column.xml字段识别保持一致
