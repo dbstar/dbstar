@@ -1503,7 +1503,7 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 					localtime_r(&t, &area);
 	
 					snprintf(email_createtime,sizeof(email_createtime),
-						"%d%02d%02d% 02d%02d%02d", 
+						"%d%02d%02d %02d%02d%02d", 
 						(1900+area.tm_year), (1+area.tm_mon), area.tm_mday,
 						area.tm_hour, area.tm_min, area.tm_sec);
 					DEBUG("convert %lu as %s", EmailHeads[markIndex].m_tCreateTime,email_createtime);
