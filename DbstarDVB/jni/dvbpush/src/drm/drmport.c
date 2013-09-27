@@ -530,7 +530,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 		LOGD("0x%x,", abuf.atr[i]);
 	}
     smc_set(&abuf);
-	send_sc_notify(can_send_nofity,DRM_SC_INSERT_OK, NULL, 0);
+//	send_sc_notify(can_send_nofity,DRM_SC_INSERT_OK, NULL, 0);
 	smart_card_insert_flag_set(1);
 	
 	return CDCA_TRUE;

@@ -37,6 +37,7 @@
 #include "multicast.h"
 #include "motherdisc.h"
 #include "drmport.h"
+#include "prodrm20.h"
 
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (60000)		//定义缓冲区大小，单位：包
@@ -641,6 +642,8 @@ void *maintenance_thread()
 	time_t now_sec;
 	struct tm now_tm;
 	char sqlite_cmd[256];
+	int ret = 0;
+	char SmartCardSn[128];
 	
 	time(&s_pin_sec);
 	
@@ -707,10 +710,24 @@ void *maintenance_thread()
 		if(smart_card_insert_flag_get()>0){
 			// 测试发现差不到1s，硬盘此时还未准备完毕
 			DEBUG("smart card insert, wait 2s for disc ready\n");
-			sleep(2);
-			if(1==smartcard_entitleinfo_refresh())
-				pushinfo_reset();
-			smart_card_insert_flag_set(0);
+			sleep(1);
+			
+			memset(SmartCardSn,0,sizeof(SmartCardSn));
+			ret = CDCASTB_GetCardSN(SmartCardSn);
+			if(CDCA_RC_OK==ret)
+			{
+				DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
+				
+				if(1==smartcard_entitleinfo_refresh())
+					pushinfo_reset();
+				smart_card_insert_flag_set(0);
+				
+				send_sc_notify(1,DRM_SC_INSERT_OK, NULL, 0);
+			}
+			else{
+				DEBUG("read card sn failed, retry again\n");
+				drm_sc_insert();
+			}
 		}
 		
 		// 硬盘挂载后才能开始检查是否需要母盘初始化
@@ -917,11 +934,11 @@ int mid_push_cb(const char *path, int flag)
 // 如果对已经下载完毕的节目再次注册，还会调用callback
 void callback(const char *path, long long size, int flag)
 {
-	DEBUG("\n\n\n===========================path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
+	DEBUG("\n\n\n====== do not parse because of drm test =====path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
 	
 	/* 由于涉及到解析和数据库操作，这里不直接调用parse_xml，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
-	mid_push_cb(path, flag);
+	//mid_push_cb(path, flag);
 }
 
 
