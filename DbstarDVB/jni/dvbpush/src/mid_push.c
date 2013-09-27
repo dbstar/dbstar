@@ -934,11 +934,15 @@ int mid_push_cb(const char *path, int flag)
 // 如果对已经下载完毕的节目再次注册，还会调用callback
 void callback(const char *path, long long size, int flag)
 {
-	DEBUG("\n\n\n====== do not parse because of drm test =====path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
+#ifdef DRM_TEST
+	DEBUG("\n\n\n===== not parse xml because of drm test  ======path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
+#else
+	DEBUG("\n\n\n===========path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
 	
 	/* 由于涉及到解析和数据库操作，这里不直接调用parse_xml，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
-	//mid_push_cb(path, flag);
+	mid_push_cb(path, flag);
+#endif
 }
 
 
@@ -1508,6 +1512,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	return 0;
 }
 
+#if 0
 /*
  扫描硬盘，删除没有纳入数据库管理的野节目
  节目所在目录，一般是/mnt/sda1/pushroot/pushfile
@@ -1564,6 +1569,7 @@ static int clear_wild_prog()
 	
 	return ret;   
 }
+#endif
 
 unsigned long long should_clean_M_get()
 {

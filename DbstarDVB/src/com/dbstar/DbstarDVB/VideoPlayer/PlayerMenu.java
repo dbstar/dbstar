@@ -643,9 +643,9 @@ public class PlayerMenu extends PlayerActivity {
 //			event.startTracking();
 //			return true;
 //		}
-		case KeyEvent.KEYCODE_MENU:{
-		    createSingleSelectorDialog();
-		}
+//		case KeyEvent.KEYCODE_MENU:{
+//		    createSingleSelectorDialog();
+//		}
 		
 		case KeyEvent.KEYCODE_TV_SUBTITLE: {
 			setOSDOn(true);
