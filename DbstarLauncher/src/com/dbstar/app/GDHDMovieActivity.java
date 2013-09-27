@@ -711,10 +711,10 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				}
 				
 				// display drm info
-				case KeyEvent.KEYCODE_MENU: {
-					displayDrmInfo();
-					break;
-				}
+//				case KeyEvent.KEYCODE_MENU: {
+//					displayDrmInfo();
+//					break;
+//				}
 
 				default:
 					break;
