@@ -139,12 +139,12 @@
     
     <!-- CA message -->
     <string name="alert_title">提示</string>
-    <string name="ca_message_no_entitle">无记录导出!</string>
-    <string name="ca_message_no_device">请插入移动设备!</string>
-    <string name="ca_message_no_space">空间不足!</string>
-    <string name="ca_message_export_finished">授权导出完成.</string>
-    <string name="ca_message_import_failed">授权导入失败，请检查移动设备!</string>
-    <string name="ca_message_import_finished">授权导入完成.</string>
+    <string name="ca_message_no_entitle">没有授权文件</string>
+    <string name="ca_message_no_device">系统错误</string>
+    <string name="ca_message_no_space">系统错误：空间不足</string>
+    <string name="ca_message_export_finished">导出成功</string>
+    <string name="ca_message_import_failed">系统错误</string>
+    <string name="ca_message_import_finished">导入成功</string>
     
     <!-- Mail -->
     <string name="email_id">ID</string>
