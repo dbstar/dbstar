@@ -323,6 +323,8 @@ public class PlayerActivity extends Activity {
 					mVideoInfoDlg.dismiss();
 				}
 			} else if (dialog instanceof GDAlertDialog) {
+				setOSDOn(true);
+				
 				if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
 					mVideoInfoDlg.dismiss();
 				}
