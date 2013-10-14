@@ -246,7 +246,7 @@ rewake:
 		
 		// 此线程的运行影响到升级，即使没有硬盘也必须让此线程运行。
 		// 但要避免母盘中Initialize或其他xml被下载的xml覆盖
-		if(len && 0==motherdisc_processing())
+		if(len && 1==s_motherdisc_init_flag && 1==pushdir_usable())
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
@@ -597,6 +597,26 @@ void preview_refresh_flag_set(int flag)
 	s_preview_refresh = flag;
 }
 
+int network_init_status()
+{
+	char network_init_flagfile[128];
+	struct stat filestat;
+	int ret = 0;
+	
+	snprintf(network_init_flagfile,sizeof(network_init_flagfile),"%s",NETWORK_INIT_FLAG);
+	int stat_ret = stat(network_init_flagfile, &filestat);
+	if(0==stat_ret){
+		DEBUG("%s is exist, network init finished\n",NETWORK_INIT_FLAG);
+		ret = 1;
+	}
+	else{
+		DEBUG("%s is NOT exist, network init has NOT finished\n",NETWORK_INIT_FLAG);
+		ret = 0;
+	}
+	
+	return ret;
+}
+
 
 static int push_regist_init()
 {
@@ -731,11 +751,11 @@ void *maintenance_thread()
 		}
 		
 		// 硬盘挂载后才能开始检查是否需要母盘初始化
-		if(0==s_motherdisc_init_flag && 1==pushdir_usable()){
-			s_motherdisc_init_flag = 1;
-			
-			DEBUG("need do mother disc process\n");
+		if(0==s_motherdisc_init_flag && 1==network_init_status() && 1==pushdir_usable()){
+			DEBUG("do mother disc process\n");
 			motherdisc_process();
+			
+			s_motherdisc_init_flag = 1;
 		}
 		
 		// 母盘初始化动作一定是在push初始化之前，确保在母盘初始化操作数据库过程中不混乱

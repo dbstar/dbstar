@@ -73,6 +73,9 @@ typedef enum{
 #define DBSTAR_DATABASE			WORKING_DATA_DIR"/Dbstar.db"
 #define SMARTHOME_DATABASE		WORKING_DATA_DIR"/Smarthome.db"
 
+// 首次开机Launcher需要进行网络初始化，初始化完毕后Launcher写入此标记文件，目前内容仅一个字符“1”
+#define NETWORK_INIT_FLAG	"/data/data/com.dbstar/files/flag"
+
 #define	SERVICE_ID			"01"
 #define ROOT_CHANNEL		(400)	// 0x190
 #define PROG_DATA_PID_DF	(411)	// 0x19b
