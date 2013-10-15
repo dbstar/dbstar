@@ -207,7 +207,8 @@ public class PlayerMenu extends PlayerActivity {
 	private boolean mIsDeleted = false;
 	
 	private boolean mPlayDelayed = false;
-
+	private boolean isRegisterExitReceiver = false;
+	private int isLoop = -1;
 	private boolean retriveInputParameters(Intent intent) {
 		mUri = intent.getData();
 		if (mUri == null) {
@@ -251,7 +252,12 @@ public class PlayerMenu extends PlayerActivity {
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		boolean loop  = getIntent().getBooleanExtra("isLoop", false);
+		if(loop){
+		    isLoop = 1;
+		}else{
+		    isLoop = -1;
+		}
 		Log.d(TAG, " ============ onCreate ================== ");
 		Thread.currentThread().setUncaughtExceptionHandler(mExceptionHandler);
 
@@ -313,6 +319,8 @@ public class PlayerMenu extends PlayerActivity {
 		mIsDeleted = false;
 
 		mSmartcardTacker = new SmartcardStateTracker(this, mHandler);
+		
+		registerExitBroadCastReceiver();
 	}
 
 	public void onStart() {
@@ -490,6 +498,11 @@ public class PlayerMenu extends PlayerActivity {
 		Utils.saveVolume(mVolumeLevel);
 
 		showOSD(true);
+		
+		if(isRegisterExitReceiver){
+		    unregisterReceiver(mExitBroadReceiver);
+		    isRegisterExitReceiver = false;
+		}
 		super.onDestroy();
 
 	}
@@ -1539,6 +1552,17 @@ public class PlayerMenu extends PlayerActivity {
 			int progress = currentTime * 100 / totalTime;
 			mProgressBar.setProgress(progress);
 		}
+		
+        try{
+            if(isLoop == 1){
+                mAmplayer.SetRepeat(1);
+                isLoop = -1;
+            }else if(isLoop == 0){
+                mAmplayer.SetRepeat(0);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 
 	public void updatePlaybackSubtitle(int currentTime) {
@@ -2437,4 +2461,20 @@ public class PlayerMenu extends PlayerActivity {
 		}
 	}
 
+	private void registerExitBroadCastReceiver(){
+	    IntentFilter filter = new IntentFilter("com.guodian.checkdevice.tool.exit.player");
+	    registerReceiver(mExitBroadReceiver, filter);
+	    isRegisterExitReceiver = true;
+	}
+	BroadcastReceiver mExitBroadReceiver = new BroadcastReceiver() {
+        
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals("com.guodian.checkdevice.tool.exit.player")){
+                exitPlayer(0);
+            }
+        }
+    };
+    
 }
+
