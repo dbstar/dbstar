@@ -1981,8 +1981,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			smarthome_ctrl(buf,len);
 			break;
 		case CMD_DEVICE_INIT:
-			DEBUG("CMD_DEVICE_INIT\n");
-			smarthome_gw_sn_save();
+			DEBUG("CMD_DEVICE_INIT but do nothing\n");
+//			smarthome_gw_sn_save();
 			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
 			break;
 		case CMD_SMARTLIFE_SEND:
@@ -2040,11 +2040,11 @@ static int upgrade_type_check( unsigned char *software_version)
 	DEBUG("%03d.%03d.%03d.%03d\n",software_version[1],software_version[2],software_version[2],software_version[3]);
 	if(255==software_version[0] && 255==software_version[1]
 		&& 255==software_version[2] && 255==software_version[3]){
-		DEBUG("It has finish a repeat upgrade\n");
+		DEBUG("this is a repeat version\n");
 		return 255;
 	}
 	else{
-		DEBUG("It has finish a normal upgrade\n");
+		DEBUG("this is a normal version\n");
 		return 0;
 	}
 }
