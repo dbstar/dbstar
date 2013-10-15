@@ -597,27 +597,6 @@ void preview_refresh_flag_set(int flag)
 	s_preview_refresh = flag;
 }
 
-int network_init_status()
-{
-	char network_init_flagfile[128];
-	struct stat filestat;
-	int ret = 0;
-	
-	snprintf(network_init_flagfile,sizeof(network_init_flagfile),"%s",NETWORK_INIT_FLAG);
-	int stat_ret = stat(network_init_flagfile, &filestat);
-	if(0==stat_ret){
-		DEBUG("%s is exist, network init finished\n",NETWORK_INIT_FLAG);
-		ret = 1;
-	}
-	else{
-		DEBUG("%s is NOT exist, network init has NOT finished\n",NETWORK_INIT_FLAG);
-		ret = 0;
-	}
-	
-	return ret;
-}
-
-
 static int push_regist_init()
 {
 //	push_file_register("pushroot/initialize/Initialize.xml");

@@ -20,6 +20,7 @@ static pthread_t tid_main;
 static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
 extern int _wLBM_zyzdmb(int miZon);
+
 /*
  考虑到升级是个非常重要但又较少依赖其他模块的功能，因此即使大部分模块初始化失败，也一样要继续运行，只要组播功能正常即可。
 */
@@ -29,6 +30,8 @@ void *main_thread()
 	compile_timeprint();
         
 	_wLBM_zyzdmb(13578642);
+   	
+   	smarthome_gw_sn_init();
    	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
@@ -64,6 +67,12 @@ void *main_thread()
 		//return NULL;
 	}
 	
+	upgrade_info_init();
+	
+// 根据首次开机标记"/data/data/com.dbstar/files/flag"决定是否要重置国电网关序列号
+	smarthome_sn_init_when_network_init();
+	
+	
 #if 0
 /*
  慎用：只有在需要清理已有授权、重新接收授权时使用，正式版本不能调用。
@@ -87,8 +96,6 @@ CDCASTB_FormatBuffer();
 		DEBUG("dvb init with failed\n");
 		//return NULL;
 	}
-	
-	upgrade_info_init();
 	
 	smartlife_connect_init();
 	

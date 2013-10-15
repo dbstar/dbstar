@@ -1982,7 +1982,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DEVICE_INIT:
 			DEBUG("CMD_DEVICE_INIT\n");
-			smarthome_gw_sn_init();
+			smarthome_gw_sn_save();
 			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
 			break;
 		case CMD_SMARTLIFE_SEND:
@@ -2099,18 +2099,6 @@ void upgrade_info_init()
 			g_loaderInfo.hardware_version[3] = TC_HARDWARE_VERSION3;
 		}
 		
-		if(255==upgrade_type_check(g_loaderInfo.software_version)){
-			memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
-			if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
-				DEBUG("can not read RepeatUpgradeCount\n");
-			}
-			else{
-				DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
-			}
-		}
-			
-
 		DEBUG("read loader msg: %d", mark);
 		
 		if(255==upgrade_type_check(g_loaderInfo.software_version)){
@@ -2134,13 +2122,6 @@ void upgrade_info_init()
 				upgrade_info_refresh("RepeatUpgradeCount", tmpinfo);
 			}
 		}
-		
-#if 0
-		if(255==upgrade_type_check(g_loaderInfo.software_version)){
-			snprintf(msg_2_UI,sizeof(msg_2_UI),"Repeat upgrade count: %s\n", tmpinfo);
-			msg_send2_UI(DIALOG_NOTICE, msg_2_UI, strlen(msg_2_UI));
-		}
-#endif
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
 		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
@@ -3022,5 +3003,26 @@ int setting_init_with_database()
 	TestSpecialProductID_init();
 	
 	return 0;
+}
+
+
+int network_init_status()
+{
+	char network_init_flagfile[128];
+	struct stat filestat;
+	int ret = 0;
+	
+	snprintf(network_init_flagfile,sizeof(network_init_flagfile),"%s",NETWORK_INIT_FLAG);
+	int stat_ret = stat(network_init_flagfile, &filestat);
+	if(0==stat_ret){
+		DEBUG("%s is exist, network init finished\n",NETWORK_INIT_FLAG);
+		ret = 1;
+	}
+	else{
+		DEBUG("%s is NOT exist, network init has NOT finished\n",NETWORK_INIT_FLAG);
+		ret = 0;
+	}
+	
+	return ret;
 }
 

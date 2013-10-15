@@ -245,15 +245,17 @@ int motherdisc_process()
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
 			sqlite_execute(sqlite_cmd);
 			
-			snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
-			snprintf(new_uri_motherdisc_xml,sizeof(new_uri_motherdisc_xml),"%s_PROCESSED__",direct_uri);
 			
-			if(0!=rename(direct_uri,new_uri_motherdisc_xml)){
-				ERROROUT("rename %s to %s failed\n", direct_uri, new_uri_motherdisc_xml);
-				remove(new_uri_motherdisc_xml);
-			}
 		
 			ret = 0;
+		}
+		
+		snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
+		snprintf(new_uri_motherdisc_xml,sizeof(new_uri_motherdisc_xml),"%s_PROCESSED__",direct_uri);
+		
+		if(0!=rename(direct_uri,new_uri_motherdisc_xml)){
+			ERROROUT("rename %s to %s failed\n", direct_uri, new_uri_motherdisc_xml);
+			remove(direct_uri);
 		}
 		
 		s_motherdisc_processing_status = 0;

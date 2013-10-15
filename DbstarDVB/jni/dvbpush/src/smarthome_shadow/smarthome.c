@@ -12,7 +12,7 @@
 #include "smarthome_shadow/serial.h"
 
 static char s_smarthome_ctrl_result[64];
-static char s_smarthome_gw_sn[32];
+static char s_smarthome_gw_sn[32] = {0};
 
 int smarthome_reset()
 {
@@ -30,7 +30,7 @@ int smarthome_reset()
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifePort','%d');",SMARTLIFE_SERVER_PORT);
 	smarthome_setting_reset(sqlite_cmd);
 	
-	smarthome_gw_sn_init();
+	smarthome_gw_sn_save();
 	
 	return 0;
 }
@@ -593,7 +593,7 @@ int smarthome_gw_sn_set(char *sm_gw_sn)
 	}
 }
 
-int smarthome_gw_sn_init()
+int smarthome_gw_sn_save()
 {
 	char sqlite_cmd[512];
 	
@@ -603,3 +603,19 @@ int smarthome_gw_sn_init()
 	}
 	return 0;
 }
+
+void smarthome_gw_sn_init()
+{
+	memset(s_smarthome_gw_sn,0,sizeof(s_smarthome_gw_sn));
+	
+	return;
+}
+
+void smarthome_sn_init_when_network_init()
+{
+	if(0==network_init_status()){
+		DEBUG("when network init for first time, reset smarthome sn\n");
+		smarthome_gw_sn_save();
+	}
+}
+
