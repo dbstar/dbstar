@@ -730,7 +730,7 @@ void *maintenance_thread()
 		}
 		
 		// 硬盘挂载后才能开始检查是否需要母盘初始化
-		if(0==s_motherdisc_init_flag && 1==network_init_status() && 1==pushdir_usable()){
+		if(0==s_motherdisc_init_flag && 1==pushdir_usable() && 1==network_init_status()){
 			DEBUG("do mother disc process\n");
 			motherdisc_process();
 			
