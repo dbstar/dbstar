@@ -613,9 +613,14 @@ void smarthome_gw_sn_init()
 
 void smarthome_sn_init_when_network_init()
 {
-	if(0==network_init_status()){
-		DEBUG("when network init for first time, reset smarthome sn\n");
+	// 如果是首次开机，/data/data/com.dbstar/files/flag文件还不存在，此时覆盖国电网关序列号
+	// 如果生产完毕的终端，由于特别的原因需要修改设备中recovery记录的国电网关序列号，此时覆盖国电网关序列号
+	if(0==network_init_status() || 1==device_num_changed()){
+		DEBUG("reset smarthome sn from recovery to db\n");
 		smarthome_gw_sn_save();
+		
+		remove_force(DEVICE_NUM_CHANGED_FLAG);
+		DEBUG("clear %s\n",DEVICE_NUM_CHANGED_FLAG);
 	}
 }
 

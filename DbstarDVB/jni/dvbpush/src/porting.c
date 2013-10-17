@@ -3008,12 +3008,10 @@ int setting_init_with_database()
 
 int network_init_status()
 {
-	char network_init_flagfile[128];
 	struct stat filestat;
 	int ret = 0;
 	
-	snprintf(network_init_flagfile,sizeof(network_init_flagfile),"%s",NETWORK_INIT_FLAG);
-	int stat_ret = stat(network_init_flagfile, &filestat);
+	int stat_ret = stat(NETWORK_INIT_FLAG, &filestat);
 	if(0==stat_ret){
 		DEBUG("%s is exist, network init finished\n",NETWORK_INIT_FLAG);
 		ret = 1;
@@ -3021,6 +3019,23 @@ int network_init_status()
 	else{
 		DEBUG("%s is NOT exist, network init has NOT finished\n",NETWORK_INIT_FLAG);
 		ret = 0;
+	}
+	
+	return ret;
+}
+
+int device_num_changed()
+{
+	struct stat filestat;
+	int ret = 0;
+	
+	int stat_ret = stat(DEVICE_NUM_CHANGED_FLAG, &filestat);
+	if(0==stat_ret){
+		DEBUG("%s is exist, %ldB\n",DEVICE_NUM_CHANGED_FLAG,filestat.st_size);
+		if(filestat.st_size<1024LL){
+			DEBUG("device num is changed\n");
+			ret = 1;
+		}
 	}
 	
 	return ret;

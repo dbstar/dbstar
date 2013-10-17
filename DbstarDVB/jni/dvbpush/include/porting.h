@@ -43,5 +43,6 @@ int user_idle_status_get();
 time_t reboot_timestamp_get();
 int reboot_timestamp_set(time_t time_stamp_s);
 int network_init_status();
+int device_num_changed();
 
 #endif
