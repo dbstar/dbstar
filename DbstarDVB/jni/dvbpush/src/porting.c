@@ -1983,7 +1983,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DEVICE_INIT:
 			DEBUG("CMD_DEVICE_INIT but do nothing\n");
 //			smarthome_gw_sn_save();
-			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
+//			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
 			break;
 		case CMD_SMARTLIFE_SEND:
 			DEBUG("CMD_SMARTLIFE_SEND, *len=%d\n", *len);

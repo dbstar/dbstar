@@ -70,7 +70,6 @@
 
         <receiver android:name=".display.OutputSettingsBroadcastReceiver" >
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="dbstar.intent.action.OUTPUTMODE_CHANGE" />
                 <action android:name="dbstar.intent.action.OUTPUTMODE_CANCEL" />
                 <action android:name="dbstar.intent.action.OUTPUTMODE_SAVE" />

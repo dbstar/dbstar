@@ -68,6 +68,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final int COLUMN_LEVEL_1 = 1;
 	private static final String ROOT_COLUMN_PARENTID = "-1";
 	private static final int REQUEST_POWER_TARGET_ACTIVITY_RESULT = 1;
+	private static final int START_NETWORKSETTING_ACTIVITY_RESULT = 2;
 	// Engine
 	GDCelanderThread mCelanderThread;
 
@@ -156,9 +157,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 //		startEngine();
 		mPowerController.start(mService);
 		
-		if (DeviceInitController.isBootFirstTime()) {
+		/*if (DeviceInitController.isBootFirstTime()) {
 			showLoadingDialog(getResources().getString(R.string.device_init_str));
-		}
+		}*/
 	}
 
 	public void onServiceStop() {
@@ -621,6 +622,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	        boolean  isUpdate = data.getBooleanExtra("isUpdate", true);
 	        if(mPowerController != null && isUpdate)
 	            mPowerController.getPowerData();
+	    }else if(requestCode == START_NETWORKSETTING_ACTIVITY_RESULT && data != null){
+	            boolean isFinishSet = data.getBooleanExtra("isFinish", false);
+	            if(isFinishSet){
+	                DeviceInitController.handleBootFirstTime();
+	            }
 	    }
 	}
 	private void showGuodianApp(String columnId) {
@@ -1243,14 +1249,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 	
 	void deviceInitFinished() {
-		hideLoadingDialog();
+		//hideLoadingDialog();
 
-		DeviceInitController.handleBootFirstTime();
 
 		Intent intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
 		if (intent != null) {
 			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-			startActivity(intent);
+			startActivityForResult(intent, START_NETWORKSETTING_ACTIVITY_RESULT);
 		}
 	}
 

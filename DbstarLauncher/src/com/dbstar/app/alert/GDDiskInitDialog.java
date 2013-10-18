@@ -90,7 +90,7 @@ public class GDDiskInitDialog extends Dialog implements
 			updateViews(state, data);
 		}
 		
-		if (mState == StateFailed || mState == StateSuccessed) {
+		if (mState == StateSuccessed) {
 			mHandler.postDelayed(new Runnable() {
 				public void run() {
 					rebootSystem();

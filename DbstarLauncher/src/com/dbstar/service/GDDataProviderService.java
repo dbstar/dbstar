@@ -2267,6 +2267,8 @@ public class GDDataProviderService extends Service {
 					if (mDBStarClient.isBoundToServer()) {
 						mHandler.sendEmptyMessage(GDCommon.SYNC_STATUS_TODBSERVER);
 					}
+					
+					
 					break;
 				}
 
@@ -2357,7 +2359,7 @@ public class GDDataProviderService extends Service {
 				
 				case DbstarServiceApi.DEVICE_INIT_SUCCESS:
 				case DbstarServiceApi.DEVICE_INIT_FAILED: {
-					mHandler.sendEmptyMessage(GDCommon.MSG_DEVICE_INIT_FINISHED);
+					//mHandler.sendEmptyMessage(GDCommon.MSG_DEVICE_INIT_FINISHED);
 					break;
 				}
 				case DbstarServiceApi.SYSTEM_REBOOT: {
@@ -2645,9 +2647,9 @@ public class GDDataProviderService extends Service {
 		
 		String disk = mConfigure.getStorageDisk();
 		notifyDbstarServiceStorageStatus(disk);
-		
-		if (DeviceInitController.isBootFirstTime()) {
-			notifyDbstarServiceDeviceInit();
+		if (DeviceInitController.isBootFirstTime() && DeviceInitController.isQualifiedDevice()) {
+			//notifyDbstarServiceDeviceInit();
+		    handleDeviceInitFinished();
 		}
 	}
 

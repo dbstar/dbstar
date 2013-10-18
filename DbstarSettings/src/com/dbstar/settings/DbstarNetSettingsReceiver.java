@@ -31,7 +31,7 @@ public class DbstarNetSettingsReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 
-		if (ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+		/*if (ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
 			try {
 				int count = 0;
 				byte[] buf = new byte[100];
@@ -62,7 +62,7 @@ public class DbstarNetSettingsReceiver extends BroadcastReceiver {
 				Log.e("OOBE Start Up Receiver: EXCEPTION ", e2.toString());
 			}
 
-		} else if (ActionClearSettings.equals(intent.getAction())) {
+		} else*/ if (ActionClearSettings.equals(intent.getAction())) {
 			context.deleteFile(flagFile);
 			
 			SharedPreferences settings = context.getSharedPreferences(
