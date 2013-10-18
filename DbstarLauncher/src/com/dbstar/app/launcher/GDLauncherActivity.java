@@ -589,6 +589,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent = startDbstarSettingActivity("GDMultimediaSettingsActivity");
 		} else if (columnId.equals(GDCommon.ColumnIDNetworkSettings)) {
 			intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
+			if (intent != null) {
+	            intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+	            startActivityForResult(intent, START_NETWORKSETTING_ACTIVITY_RESULT);
+	        }
+			return;
 		} else if (columnId.equals(GDCommon.ColumnIDFileBrowser)) {
 			intent = startComponent("com.fb.FileBrower", "FileBrower");
 		} else if (columnId.equals(GDCommon.ColumnIDAdvancedSettings)) {

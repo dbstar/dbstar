@@ -3016,10 +3016,6 @@ int network_init_status()
 		DEBUG("%s is exist, network init finished\n",NETWORK_INIT_FLAG);
 		ret = 1;
 	}
-	else{
-		DEBUG("%s is NOT exist, network init has NOT finished\n",NETWORK_INIT_FLAG);
-		ret = 0;
-	}
 	
 	return ret;
 }

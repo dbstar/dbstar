@@ -121,6 +121,8 @@ public class GDDiskInitDialog extends Dialog implements
 			String str = context.getResources().getString(R.string.disk_init_failed);
 			String info = String.format(str, data);
 			mMessageView.setText(info);
+			setCancelable(true);
+		    setCanceledOnTouchOutside(true);
 			break;
 		}
 		case StateSuccessed: {

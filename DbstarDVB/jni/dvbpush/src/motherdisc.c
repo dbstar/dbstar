@@ -140,6 +140,7 @@ static int motherdisc_parse()
 {
 	char xml_uri[512];
 	char sqlite_cmd[1024];
+	char error_num[32];
 	int ret = 0;
 
 	DEBUG("%s, process motherdisc...\n", MOTHERDISC_XML_URI);
@@ -159,6 +160,7 @@ static int motherdisc_parse()
 			DEBUG("read URI or parse for %d failed\n",SERVICE_XML);
 			// Service.xml是无关紧要的文件，即便失败也继续。
 			//msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+			
 			//ret = -1;
 		}
 		
@@ -171,7 +173,9 @@ static int motherdisc_parse()
 		}
 		else{
 			DEBUG("read URI or parse for %d failed\n",GUIDELIST_XML);
-			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+			snprintf(error_num,sizeof(error_num),"%d",GUIDELIST_XML);
+			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, error_num, strlen(error_num));
+			
 			ret = -1;
 		}
 #endif
@@ -195,7 +199,9 @@ static int motherdisc_parse()
 		}
 		else{
 			DEBUG("read URI or parse for %d failed\n",PRODUCTDESC_XML);
-			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+			snprintf(error_num,sizeof(error_num),"%d",PRODUCTDESC_XML);
+			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, error_num, strlen(error_num));
+			
 			ret = -1;
 		}
 		
@@ -204,7 +210,9 @@ static int motherdisc_parse()
 	}
 	else{
 		DEBUG("parse %d for motherdisc init failed\n", INITIALIZE_XML);
-		msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+		snprintf(error_num,sizeof(error_num),"%d",INITIALIZE_XML);
+		msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, error_num, strlen(error_num));
+		
 		ret = -1;
 	}
 	

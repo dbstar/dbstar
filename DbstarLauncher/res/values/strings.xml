@@ -416,7 +416,7 @@
 	<string name="disk_init_title">母盘初始化</string>
 	<string name="disk_init_start">母盘初始化开始&#8230;</string>
 	<string name="disk_init_progress">完成%1$s%</string>
-	<string name="disk_init_failed">%1$s：母盘初始化错误，可以通过网络接收新内容。5秒钟后自动重启</string>
+	<string name="disk_init_failed">%1$s：母盘初始化错误，可以通过网络接收新内容。请按遥控器【返回】键关闭本提示。</string>
 	<string name="disk_init_successed">母盘初始化完成，5秒钟后自动重启</string>
 	
 	<string name="device_init_str">设备初始化，请稍候......</string>
