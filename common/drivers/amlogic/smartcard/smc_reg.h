@@ -29,7 +29,7 @@
 
 #define F_DEFAULT 372
 #define D_DEFAULT 1
-#define FREQ_DEFAULT 3000 //liukevin 4000 //KHz
+#define FREQ_DEFAULT 1500 //3000 //liukevin 4000 //KHz
 #define FIFO_THRESHOLD_DEFAULT 1
 #define ETU_DIVIDER_CLOCK_HZ    24000 // KHz
 #define ATR_HOLDOFF_EN 1
