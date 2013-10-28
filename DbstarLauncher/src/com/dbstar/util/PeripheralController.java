@@ -28,14 +28,14 @@ public class PeripheralController {
 	private static String SYSFILE_GPIO_CMD = "/sys/class/gpio/cmd";
 	private static String SYSFILE_HDMI_STATE = "/sys/class/switch/hdmi/state";
 	private static String SYSFILE_SMARTCARD_STATE = "/sys/class/switch/smartcard/state";
-	private static String CMD_SET_POWER_LED_ON = "w C_6 1";
-	private static String CMD_SET_POWER_LED_OFF = "w C_6 0";
+	private static String CMD_SET_POWER_LED_ON = "w AO_10 1";
+	private static String CMD_SET_POWER_LED_OFF = "w AO_10 0";
 	private static String CMD_SET_NETWORK_LED_ON = "w D_1 1";
 	private static String CMD_SET_NETWORK_LED_OFF = "w D_1 0";
 	private static String CMD_SET_AUDIO_OUTPUT_ON = "w C_4 1";
 	private static String CMD_SET_AUDIO_OUTPUT_OFF = "w C_4 0";
-	private static String CMD_SET_WIFI_ON = "w C_7 1";
-	private static String CMD_SET_WIFI_OFF = "w C_7 0";
+	private static String CMD_SET_WIFI_ON = "w D_9 1";
+	private static String CMD_SET_WIFI_OFF = "w D_9 0";
 	private static String CMD_SET_SATA_ON = "w C_5 1";
 	private static String CMD_SET_SATA_OFF = "w C_5 0";
 	private static String CMD_SET_CVBS_ON = "w C_3 1";
@@ -43,7 +43,7 @@ public class PeripheralController {
 
 	public void setPowerLedOn() {
 		LogUtil.d(TAG, "setPowerLedOn");
-		setGpio(CMD_SET_POWER_LED_OFF);
+		setGpio(CMD_SET_POWER_LED_ON);
 		return;
 	}
 
@@ -67,13 +67,13 @@ public class PeripheralController {
 
 	public void setAudioOutputOn() {
 		LogUtil.d(TAG, "setAudioOutputOn");
-		setGpio(CMD_SET_AUDIO_OUTPUT_ON);
+		//setGpio(CMD_SET_AUDIO_OUTPUT_ON);
 		return;
 	}
 
 	public void setAudioOutputOff() {
 		LogUtil.d(TAG, "setAudioOutputOff");
-		setGpio(CMD_SET_AUDIO_OUTPUT_OFF);
+		//setGpio(CMD_SET_AUDIO_OUTPUT_OFF);
 		return;
 	}
 
