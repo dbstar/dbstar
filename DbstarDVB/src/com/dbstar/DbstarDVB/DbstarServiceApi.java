@@ -102,10 +102,10 @@ public class DbstarServiceApi {
 	
 	public static final int TDT_TIME_SYNC                   = 0x30017;    // Time format: 2012-12-22 18:03:14
 
-	public static final int MOTHER_DISC_INITIALIZE_START    = 0x30018;
-	public static final int MOTHER_DISC_INITIALIZE_PROCESS  = 0x30019;
-	public static final int MOTHER_DISC_INITIALIZE_FAILED   = 0x30020;
-	public static final int MOTHER_DISC_INITIALIZE_SUCCESS  = 0x30021;
+	public static final int MOTHER_DISK_INITIALIZE_START    = 0x30018;
+	public static final int MOTHER_DISK_INITIALIZE_PROCESS  = 0x30019;
+	public static final int MOTHER_DISK_INITIALIZE_FAILED   = 0x30020;
+	public static final int MOTHER_DISK_INITIALIZE_SUCCESS  = 0x30021;
 
 	public static final int DISK_FORMAT_SUCCESS             = 0x30022;
 	public static final int DISK_FORMAT_FAILED              = 0x30023;

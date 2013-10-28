@@ -158,7 +158,7 @@ static int motherdisc_parse()
 		else{
 			DEBUG("read URI or parse for %d failed\n",SERVICE_XML);
 			// Service.xml是无关紧要的文件，即便失败也继续。
-			//msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+			//msg_send2_UI(MOTHER_DISK_INITIALIZE_FAILED, NULL, 0);
 			//ret = -1;
 		}
 		
@@ -171,7 +171,7 @@ static int motherdisc_parse()
 		}
 		else{
 			DEBUG("read URI or parse for %d failed\n",GUIDELIST_XML);
-			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+			msg_send2_UI(MOTHER_DISK_INITIALIZE_FAILED, NULL, 0);
 			ret = -1;
 		}
 #endif
@@ -188,14 +188,14 @@ static int motherdisc_parse()
 			DEBUG("parse xmls for mother disc initialize finish, waiting for programs parsing...\n");
 			
 			parse_progs();
-			msg_send2_UI(MOTHER_DISC_INITIALIZE_SUCCESS, NULL, 0);
+			msg_send2_UI(MOTHER_DISK_INITIALIZE_SUCCESS, NULL, 0);
 			DEBUG("parse publications for mother disc initialize finished\n");
 			
 			ret = 0;
 		}
 		else{
 			DEBUG("read URI or parse for %d failed\n",PRODUCTDESC_XML);
-			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+			msg_send2_UI(MOTHER_DISK_INITIALIZE_FAILED, NULL, 0);
 			ret = -1;
 		}
 		
@@ -204,7 +204,7 @@ static int motherdisc_parse()
 	}
 	else{
 		DEBUG("parse %d for motherdisc init failed\n", INITIALIZE_XML);
-		msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+		msg_send2_UI(MOTHER_DISK_INITIALIZE_FAILED, NULL, 0);
 		ret = -1;
 	}
 	
@@ -234,7 +234,7 @@ int motherdisc_process()
 		s_motherdisc_processing_status = 1;
 		
 		DEBUG("%s is exist, initialize disc starting...\n", MOTHERDISC_XML_URI);
-		msg_send2_UI(MOTHER_DISC_INITIALIZE_START, NULL, 0);
+		msg_send2_UI(MOTHER_DISK_INITIALIZE_START, NULL, 0);
 		
 		if(0==motherdisc_parse()){
 			DEBUG("parse mother disc finish\n");
