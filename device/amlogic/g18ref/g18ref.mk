@@ -137,6 +137,7 @@ BUILD_WITH_WIDEVINE_DRM := true
 BUILD_WITH_FLASH_PLAYER := true
 BUILD_WITH_EREADER := true 
 BUILD_WITH_MIRACAST := true
+BUILD_WITH_THIRD_PART_APK := true
 # facelock enable, board should has front camera
 BUILD_WITH_FACE_UNLOCK := true
 
@@ -163,10 +164,7 @@ PRODUCT_PACKAGES += \
 	smbd\
 	libsmbbase \
 	libsmbmnt \
-	dongle_launcher \
-	Update \
 	RemoteIME \
-	OOBE \
 	remotecfg \
 	PPPoE \
         libpppoejni \
@@ -174,28 +172,34 @@ PRODUCT_PACKAGES += \
         pppoe \
         amlogic.pppoe \
         amlogic.pppoe.xml \
-	PicturePlayer \
-	MusicPlayer \
 	DLNA \
 	OTAUpgrade \
-	RC_Server
+	RC_Server \
+	MediaBoxLauncher\
+	MboxSetting
 	
 
 # Device specific system feature description
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
-	frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml
-
-
+	$(LOCAL_PATH)/Third_party_apk_camera.xml:system/etc/Third_party_apk_camera.xml \
+	frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \
+	frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:system/etc/permissions/android.hardware.sensor.gyroscope.xml \
+	frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml
 
 
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/alarm_blacklist.txt:/system/etc/alarm_blacklist.txt \
 	$(LOCAL_PATH)/initlogo-robot-1280x720.rle:root/initlogo.720p.rle \
-	$(LOCAL_PATH)/remote.conf:system/etc/remote.conf
-	
-#	$(LOCAL_PATH)/bootanimation.zip:system/media/bootanimation.zip \
+	$(LOCAL_PATH)/remote.conf:system/etc/remote.conf \
+	$(LOCAL_PATH)/default_shortcut.cfg:system/etc/default_shortcut.cfg \
+	$(LOCAL_PATH)/bootanimation.zip:system/media/bootanimation.zip 
 
+
+PRODUCT_COPY_FILES += \
+	$(LOCAL_PATH)/dlna.jpg:system/media/screensaver/images/dlna.jpg \
+	$(LOCAL_PATH)/miracast.jpg:system/media/screensaver/images/miracast.jpg \
+	$(LOCAL_PATH)/phone_remote.jpg:system/media/screensaver/images/phone_remote.jpg
 
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/u-boot.bin:u-boot.bin
@@ -204,6 +208,15 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/liboptimization.so:system/lib/liboptimization.so \
 	$(LOCAL_PATH)/config:system/etc/config
+	
+# xiaocong game center
+PRODUCT_COPY_FILES += \
+	$(LOCAL_PATH)/xiaocong/libEventJNI4.so:system/lib/libEventJNI4.so \
+	$(LOCAL_PATH)/xiaocong/XCgamecenter.apk:system/app/XCgamecenter.apk \
+	$(LOCAL_PATH)/xiaocong/xcmid-amlogic:system/bin/xcmid-amlogic \
+	$(LOCAL_PATH)/xiaocong/xcuts.idc:/system/usr/idc/xcuts.idc \
+	$(LOCAL_PATH)/xiaocong/sensors.amlogic.so:/system/lib/hw/sensors.amlogic.so
+
 
 # inherit from the non-open-source side, if present
 $(call inherit-product-if-exists, vendor/amlogic/g18ref/device-vendor.mk)

@@ -668,7 +668,7 @@ ssize_t tsdemux_write(struct file *file,
 	            r = stbuf_wait_space(vbuf, wait_size);
 
 	            if (r < 0) {
-			//liukevin printk("write no space--- no space,%d--%d,r-%d\n",stbuf_space(vbuf),stbuf_space(abuf),r);
+			//printk("write no space--- no space,%d--%d,r-%d\n",stbuf_space(vbuf),stbuf_space(abuf),r);
 	                return r;
 	            }
 	        }

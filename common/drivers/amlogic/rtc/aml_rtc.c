@@ -47,8 +47,14 @@ int c_dbg_lvl = 0;
 #define RESET_RETRY_TIMES           3
 
 #if MESON_CPU_TYPE >= MESON_CPU_TYPE_MESON6
+#ifdef CONFIG_MESON_TRUSTZONE
+#include <mach/meson-secure.h>
+#define WR_RTC(addr, data)         meson_smc3((P_##addr-IO_AHB_BASE+IO_AHB_PHY_BASE), data)
+#define RD_RTC(addr)               meson_smc2(P_##addr-IO_AHB_BASE+IO_AHB_PHY_BASE)
+#else
 #define WR_RTC(addr, data)         aml_write_reg32(P_##addr, data)
-#define RD_RTC(addr)                   aml_read_reg32(P_##addr)	
+#define RD_RTC(addr)               aml_read_reg32(P_##addr)
+#endif
 #else
 #define WR_RTC(addr, data)         WRITE_AOBUS_REG(addr, data)
 #define RD_RTC(addr)                   READ_AOBUS_REG(addr)
@@ -779,6 +785,12 @@ unsigned int aml_get_rtc_counter(void)
     unsigned int val;
     val = ser_access_read(RTC_COUNTER_ADDR);
     return val;
+}
+
+void aml_enable_rtc_irq(void)
+{
+    WR_RTC(AO_RTC_ADDR0, (RD_RTC(AO_RTC_ADDR0) | (0x0000c000)));
+    return;
 }
 
 static void reset_gpo_work(struct work_struct *work)

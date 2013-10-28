@@ -1,13 +1,11 @@
-# system.prop for M1 reference board
-# This overrides settings in the products/generic/system.prop file
-#
 #rild.libpath=/system/lib/libreference-ril.so
 #rild.libargs=-d /dev/ttyS0
 #ro.sf.lcd_density=240
 keyguard.no_require_sim=1
 #set keyguard.enable=false to disable keyguard
-keyguard.enable=false
+#keyguard.enable=false
 mbx.timeout.enable=false
+sys.screensaver.enable=true
 ro.statusbar.widget=false
 ro.statusbar.button=false
 ro.statusbar.yearmonthdayweek=false
@@ -32,6 +30,7 @@ hw.cameras=0
 hw.hasethernet=true
 hw.hasusbcamera=true
 hw.has.accelerometer=false
+dongleLauncher.enable.Animation=false
 
 #used in packages/apps/Settings/.../Utils.java
 hw.has.bluetooth=false
@@ -51,7 +50,9 @@ ro.platform.has.digitaudio=true
 ro.platform.has.defaulttvfreq=false
 ro.hw.ethernet.onboard=true
 ro.platform.has.cvbsmode=true
+ro.platform.hdmionly=false
 ro.platform.has.cecmode=false
+ro.platform.filter.modes=480p,576p,1080i,1080i50hz
 
 # Use OSD2 mouse patch
 ro.ui.cursor=osd2
@@ -69,6 +70,8 @@ sys.fb.bits=32
 # Disable GPS
 gps.enable=false
 
+#keep landscape in launcher
+sys.keeplauncher.landcape=true
 
 #Enable player buildin
 media.amsuperplayer.enable=true
@@ -80,6 +83,7 @@ media.amsuperplayer.m4aplayer=STAGEFRIGHT_PLAYER
 media.amsuperplayer.defplayer=PV_PLAYER
 media.amplayer.thumbnail=true
 media.amplayer.startmode=true
+media.p2pplay.enable=true
 #media.amplayer.widevineenable=true
 media.arm.audio.decoder=ape,flac
 mbx.3D_Bright.enable=false
@@ -90,7 +94,7 @@ gadget.nand.force_sync=true
 ro.camera.exif.make=M6
 ro.camera.exif.model=g18ref
 #hide status bar
-ro.hideStatusBar=true
+persist.sys.hideStatusBar=true
 # when usbstorage, CPU mode and freq
 ro.usbstorage.cpumode=performance
 ro.usbstorage.maxfreq=600000
@@ -155,6 +159,7 @@ ubootenv.var.defaulttvfrequency=
 ubootenv.var.has.accelerometer=
 ubootenv.var.cecconfig=
 ubootenv.var.cvbsmode=
+ubootenv.var.hdmimode=
 
 #Configure the dtv standard, can only be DVB,ATSC
 dtv.standard=DVBS
@@ -168,7 +173,6 @@ virtualsd.enable=true
 const.window.w=1280
 const.window.h=720
 sys.defaultStream.ismusic=true
-
 ro.app.optimization=true
 
 #add livhls,libcurl as default hls

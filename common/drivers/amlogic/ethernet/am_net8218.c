@@ -613,13 +613,15 @@ static void netdev_timer(unsigned long data)
 		       dev->name,
 		       ioread32(ioaddr + ETH_DMA_5_Status));
 	if (!phy_linked(np)) {	//unlink .....
+		mdio_write(dev, np->phys[0], 17, 1 << 13);
 		error_num++;
-		if (error_num > 30) {
+		if (error_num > 1) {
 			error_num = 0;
 			spin_lock_irq(&np->lock);
 			if(np->phy_Identifier == PHY_SMSC_8720){
 				val = (1 << 14) | (7 << 5) | np->phys[0];
 				mdio_write(dev, np->phys[0], 18, val);
+				mdio_write(dev, np->phys[0], 17, 0);
 			}
 			// Auto negotiation restart
 			val = mdio_read(dev, np->phys[0], MII_BMCR);
@@ -632,7 +634,7 @@ static void netdev_timer(unsigned long data)
 			mdio_write(dev, np->phys[0], MII_BMCR, val);
 			spin_unlock_irq(&np->lock);
 		}
-		np->timer.expires = jiffies + 1 * HZ;
+		np->timer.expires = jiffies + 2 * HZ;
 		netif_stop_queue(dev);
 		netif_carrier_off(dev);
 		np->phy_set[0] = 0;
@@ -645,7 +647,7 @@ static void netdev_timer(unsigned long data)
 		error_num = 0;
 		netif_carrier_on(dev);
 		netif_start_queue(dev);
-		np->timer.expires = jiffies + 1 * HZ;
+		np->timer.expires = jiffies + 2 * HZ;
 	}
 	add_timer(&np->timer);
 }
@@ -1118,9 +1120,11 @@ static int mac_pmt_enable(unsigned int enable)
  * @return 
  */
 /* --------------------------------------------------------------------------*/
+#if defined(CONFIG_AML_EMMC_KEY) || defined(CONFIG_AML_NAND_KEY)
 extern int get_aml_key_kernel(const char* key_name, unsigned char* data, int ascii_flag);
 extern int extenal_api_key_set_version(char *devvesion);
 static char print_buff[1025];
+#endif
 
 static int phy_reset(struct net_device *ndev)
 {
@@ -1132,6 +1136,8 @@ static int phy_reset(struct net_device *ndev)
 	/* make sure PHY power-on */
 	set_phy_mode();
 #endif
+	if(np->phy_Identifier == PHY_SMSC_8720)
+		mdio_write(ndev, np->phys[0], 17, 0);
 	//mac reset ...
 	IO_WRITE32(1, np->base_addr + ETH_DMA_0_Bus_Mode);
 	//waiting mac reset...
@@ -1929,6 +1935,7 @@ static int probe_init(struct net_device *ndev)
 	}
 	if(priv->mii == PHY_SMSC_8720){
 		mdio_write(ndev, priv->phys[0], 18, priv->phys[0] | (1 << 14 | 7 << 5));
+		mdio_write(ndev, priv->phys[0], 17, 1 << 13);
 	}
 
 	val = mdio_read(ndev, priv->phys[0], 2); //phy_rw(0, phyad, 2, &val);
