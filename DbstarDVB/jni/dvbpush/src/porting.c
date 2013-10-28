@@ -91,6 +91,9 @@ static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int 
 
 extern int network_getinfo(char *buf, unsigned int len);
 extern int smartcard_action_set(int smartcard_action);
+extern int tuner_get_signalinfo(char *freq, char *buf, unsigned int len);
+extern int tuner_scan(char *buf, unsigned int len);
+
 
 /* define some general interface function here */
 
@@ -1972,6 +1975,21 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			*buf = s_jni_cmd_smartlife_connect_status;
 			*len = strlen(s_jni_cmd_smartlife_connect_status);
 			break;
+		case CMD_TUNER_GET_SIGNALINFO:
+			DEBUG("CMD_TUNER_GET_SIGNALINFO, *buf=%s\n", *buf);
+			tuner_get_signalinfo(*buf, s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			DEBUG("CMD_TUNER_GET_SIGNALINFO > [%s]\n", s_jni_cmd_public_space);
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
+			break;
+		case CMD_TUNER_SCAN:
+			DEBUG("CMD_TUNER_SCAN\n");
+			tuner_scan(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			DEBUG("CMD_TUNER_SCAN > [%s]\n", s_jni_cmd_public_space);
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
+			break;
+	
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
 			ret = -1;

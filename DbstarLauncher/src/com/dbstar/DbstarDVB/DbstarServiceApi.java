@@ -43,55 +43,7 @@ public class DbstarServiceApi {
 
 	public static final int CMD_DRM_SC_INSERT               = 0x00061;
 	public static final int CMD_DRM_SC_REMOVE               = 0x00062;
-	
-	public static final int SYSTEM_REBOOT                   = 0x20090;    // System reboot
-
-	public static final int DRM_SC_INSERT_OK				= 0x20100;    // DRM smartcard Insert OK
-	public static final int DRM_SC_INSERT_FAILED			= 0x20101;    // DRM smartcard Insert failed
-	public static final int DRM_SC_REMOVE_OK				= 0x20102;    // DRM smartcard Remove OK
-	public static final int DRM_SC_REMOVE_FAILED			= 0x20103;    // DRM smartcard Remove failed
-	public static final int DRM_EMAIL_NEW                   = 0x20104;
-	public static final int	DRM_OSD_SHOW                    = 0x20107;
-	public static final int	DRM_OSD_HIDE                    = 0x20108;
-
-	public static final int TDT_TIME_SYNC                   = 0x30017;    // Time format: 2012-12-22 18:03:14
-
-	public static final int CMD_MAX                         = 0x0FFFF;
-
-	/* NOTIFY STATUS or ERROR */
-	public static final int	MSG_MARQUEE                     = 0x10000;
-	public static final int	MSG_UPGRADE                     = 0x20000;
-	public static final int	MSG_STATUS						= 0x30000;
-	public static final int	MSG_ERROR                       = 0x40000;
-
-	public static final int	STATUS_DVBPUSH_INIT_FAILED      = 0x30010;
-	public static final int	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011;
-	public static final int	STATUS_DATA_SIGNAL_ON           = 0x30012;
-	public static final int	STATUS_DATA_SIGNAL_OFF          = 0x30013;
-	public static final int	STATUS_COLUMN_REFRESH           = 0x30014; // Column has new update
-	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015; // Preview has new update
-	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016; // UI resource has new update
-	
-	// Disk initialization messages
-	public static final int	MOTHER_DISK_INITIALIZE_START    = 0x30018;
-	public static final int	MOTHER_DISK_INITIALIZE_PROCESS  = 0x30019;
-	public static final int	MOTHER_DISK_INITIALIZE_FAILED   = 0x30020;
-	public static final int	MOTHER_DISK_INITIALIZE_SUCCESS  = 0x30021;
-			
-	public static final int DISK_FORMAT_SUCCESS             = 0x30022;
-	public static final int DISK_FORMAT_FAILED              = 0x30023;
-	
-	public static final int DEVICE_INIT_SUCCESS             = 0x30024;
-	public static final int DEVICE_INIT_FAILED              = 0x30025;
-	
-	public static final int DIALOG_NOTICE                   = 0x20000; // Update times info
-	public static final int	UPGRADE_NEW_VER                 = 0x20001;
-	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;
-	public static final int	UPGRADE_START                   = 0x20003;
-	public static final int	UPGRADE_PERCENT                 = 0x20004;
-	public static final int	UPGRADE_SUCCESS                 = 0x21000;
-	public static final int	UPGRADE_FAILED                  = 0x21001;
-	
+	public static final int CMD_DRM_SC_USELESS              = 0x00063;
 	public static final int	CMD_DRM_SC_SN_READ              = 0x00064;
 	public static final int	CMD_DRMLIB_VER_READ             = 0x00065;
 	public static final int	CMD_DRM_SC_EIGENVALUE_READ      = 0x00066;
@@ -100,9 +52,68 @@ public class DbstarServiceApi {
 	public static final int	CMD_DRM_ENTITLEINFO_INPUT       = 0x00069;
 	public static final int	CMD_DRM_EMAILHEADS_READ         = 0x0006a;
 	public static final int	CMD_DRM_EMAILCONTENT_READ       = 0x0006b;
-	public static final int	CMD_DRM_PURCHASEINFO_READ       = 0x0006d;
 	public static final int	CMD_DRM_PVODPROGRAMINFO_READ    = 0x0006c;
+	public static final int	CMD_DRM_PURCHASEINFO_READ       = 0x0006d;
 	
+
+	public static final int	CMD_SMARTHOME_CTRL              = 0x00101;
+	public static final int	CMD_SMARTLIFE_CONNECT           = 0x00110;
+	public static final int	CMD_SMARTLIFE_SEND              = 0x00111;
+	public static final int	CMD_SMARTLIFE_RECV              = 0x00112;
+	public static final int	CMD_SMARTLIFE_CONNECT_STATUS    = 0x00113;
+
+	public static final int	CMD_USER_IDLE_STATUS            = 0x00200;
+
+	public static final int	CMD_TUNER_GET_SIGNALINFO        = 0x00301;
+	public static final int	CMD_TUNER_SCAN                  = 0x00302;
+
+	public static final int CMD_MAX                         = 0x0FFFF;
+
+
+
+	/* NOTIFY STATUS or ERROR */
+	public static final int	MSG_MARQUEE                     = 0x10000;
+	public static final int	MSG_UPGRADE                     = 0x20000;
+	public static final int	MSG_STATUS						= 0x30000;
+	public static final int	MSG_ERROR                       = 0x40000;
+
+
+	public static final int DIALOG_NOTICE                   = 0x20000;    // Update times info
+	public static final int	UPGRADE_NEW_VER                 = 0x20001;
+	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;
+
+	public static final int SYSTEM_REBOOT                   = 0x20090;    // System reboot
+
+	public static final int DRM_SC_INSERT_OK                = 0x20100;    // DRM smartcard Insert OK
+	public static final int DRM_SC_INSERT_FAILED            = 0x20101;    // DRM smartcard Insert failed
+	public static final int DRM_SC_REMOVE_OK                = 0x20102;    // DRM smartcard Remove OK
+	public static final int DRM_SC_REMOVE_FAILED            = 0x20103;    // DRM smartcard Remove failed
+	public static final int DRM_EMAIL_NEW                   = 0x20104;
+	public static final int	DRM_OSD_SHOW                    = 0x20107;
+	public static final int	DRM_OSD_HIDE                    = 0x20108;
+
+	public static final int	STATUS_DVBPUSH_INIT_FAILED      = 0x30010;
+	public static final int	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011;
+	public static final int	STATUS_DATA_SIGNAL_ON           = 0x30012;
+	public static final int	STATUS_DATA_SIGNAL_OFF          = 0x30013;
+	public static final int	STATUS_COLUMN_REFRESH           = 0x30014;    // Column has new update
+	public static final int	STATUS_PREVIEW_REFRESH          = 0x30015;    // Preview has new update
+	public static final int	STATUS_INTERFACE_REFRESH        = 0x30016;    // UI resource has new update
+	
+	public static final int TDT_TIME_SYNC                   = 0x30017;    // Time format: 2012-12-22 18:03:14
+
+	public static final int MOTHER_DISC_INITIALIZE_START    = 0x30018;
+	public static final int MOTHER_DISC_INITIALIZE_PROCESS  = 0x30019;
+	public static final int MOTHER_DISC_INITIALIZE_FAILED   = 0x30020;
+	public static final int MOTHER_DISC_INITIALIZE_SUCCESS  = 0x30021;
+
+	public static final int DISK_FORMAT_SUCCESS             = 0x30022;
+	public static final int DISK_FORMAT_FAILED              = 0x30023;
+	public static final int DEVICE_INIT_SUCCESS             = 0x30024;
+	public static final int DEVICE_INIT_FAILED              = 0x30025;
+	
+
+
 	public static final String CA_NO_ENTITLE = "NO_ENTITLE";
 	public static final String CA_NO_DEVICE = "NO_DEVICE";
 	public static final String CA_NOT_ENOUGH_SPACE = "NOT_ENOUGH_SPACE";

@@ -1125,3 +1125,16 @@ void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, i
 	//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",g_loaderInfo.file_type,g_loaderInfo.img_len,g_loaderInfo.download_type);
 }
 
+int tuner_get_signalinfo(char *freq, char *buf, unsigned int len)
+{
+    int ret = 0;
+
+    return ret;
+}
+
+int tuner_scan(char *buf, unsigned int len)
+{
+    int ret = 0;
+
+    return ret;
+}
