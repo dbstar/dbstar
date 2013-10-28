@@ -24,7 +24,6 @@ typedef CDCA_U8 CDCA_BOOL;
 
 /*--------- 智能卡相关限制 --------*/
 #define CDCA_MAXLEN_SN            16U   /* 智能卡序列号的长度 */
-#define CDCA_MAXLEN_SN_PATH	  CDCA_MAXLEN_SN + 128
 #define CDCA_MAXLEN_PINCODE       6U    /* PIN码的长度 */
 #define CDCA_MAXLEN_TVSPRIINFO    32U   /* 运营商私有信息的长度 */
 #define CDCA_MAXNUM_OPERATOR      4U    /* 最多的运营商个数 */
@@ -228,17 +227,6 @@ typedef CDCA_U16  CDCA_DATE;
 
 /*-- 信号量定义（不同的操作系统可能不一样）--*/
 typedef CDCA_U32  CDCA_Semaphore;
-typedef struct {
-	char sn[CDCA_MAXLEN_SN_PATH];
-	int  fd;
-}SCDCACardEntitleInfo;
-
-typedef struct {
-	CDCA_U16      wPID;
-	CDCA_U8       byReqID;
-	//  CDCA_U8       fid;
-	CDCA_U32      timeouttime;
-}SCDCAFilterInfo;
 
 /*-- 运营商信息 --*/
 typedef struct {
@@ -707,7 +695,6 @@ extern CDCA_U16 CDCASTB_DRM_SyncEntitleToCard(void);
 extern CDCA_U16 CDCASTB_PatchSmartCard(const void* pFileHandle);
 
 
-    
 
 /*------------------------以上接口是CA_LIB提供给STB---------------------------*/
 
@@ -951,3 +938,4 @@ extern CDCA_U8* CDSTBCA_ReadLine(const void* pFileHandle, CDCA_U8* pbyBuf, CDCA_
 #endif
 #endif
 /*EOF*/
+
