@@ -40,6 +40,8 @@ typedef enum{
 int smarthome_reset();
 int smarthome_ctrl(char **buf, int *len);
 int smarthome_gw_sn_set(char *sm_gw_sn);
-int smarthome_gw_sn_init();
+void smarthome_gw_sn_init();
+int smarthome_gw_sn_save();
+void smarthome_sn_init_when_network_init();
 
 #endif

@@ -50,6 +50,11 @@ typedef enum{
 #define HARDWARE_VERSION	"03.01"
 #define LOADER_VERSION		"1.2.1"
 
+// 如果是第三方定制版本或者DRM测试认证的版本，定义此宏
+//#define PROJECT_CUSTOMIZE
+// 如果是DRM认证版本，则定义此宏
+//#define DRM_TEST
+
 
 /*
 程序自行使用的配置、fifo文件等
@@ -67,6 +72,10 @@ typedef enum{
 #define PUSH_DATA_DIR_DF	"/mnt/sda1"		// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
 #define DBSTAR_DATABASE			WORKING_DATA_DIR"/Dbstar.db"
 #define SMARTHOME_DATABASE		WORKING_DATA_DIR"/Smarthome.db"
+
+// 首次开机Launcher需要进行网络初始化，初始化完毕后Launcher写入此标记文件，目前内容仅一个字符“1”
+#define NETWORK_INIT_FLAG		"/data/data/com.dbstar/files/flag"
+#define DEVICE_NUM_CHANGED_FLAG	"/cache/recovery/last_log"
 
 #define	SERVICE_ID			"01"
 #define ROOT_CHANNEL		(400)	// 0x190
@@ -121,7 +130,7 @@ typedef enum{
 #define DBDATASERVERPORT_DFT		"4321"
 
 // 除了应该给本次下载留出足够空间外，额外预留20G
-#define HDFOREWARNING_M_DFT			(20480LL)
+#define HDFOREWARNING_M_DFT			(51200LL)
 // 给本次下载留出足够空间外，至少32G
 #define DOWNLOAD_ONCE_M_MIN			(32768LL)
 

@@ -955,7 +955,7 @@ static int drmlib_version_get(char *buf, unsigned int size)
 /*
  查询CA_LIB版本号，要求机顶盒以16进制显示
 */
-	snprintf(buf,size,"3.0(0x%lx)", CDCASTB_GetVer());
+	snprintf(buf,size,"0X%lX", CDCASTB_GetVer());
 	DEBUG("CA_LIB Ver: %s\n", buf);
 	
 	return 0;
@@ -1466,8 +1466,11 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 	SCDCAEmailHead EmailHeads[EMAIL_HEADS_NUM];
 	CDCA_U8 byCount = EMAIL_HEADS_NUM;
 	CDCA_U8 byFromIndex = 0;
-	int i = 0;
+	int i = 0, j = 0, firstread_flag = 1, markIndex = -1;
 	char email_createtime[64];
+	time_t t;
+	struct tm area;
+	CDCA_U32 mailCreateTimeMin = 0;
 	int ret = -1;
 	
 	while(1){
@@ -1477,34 +1480,64 @@ static int DRM_emailheads_get(char *buf, unsigned int size)
 应当根据邮件的日期顺序排序
 */
 			DEBUG("byCount: %d, byFromIndex: %d\n",byCount, byFromIndex);
-			for(i=0;i<byCount;i++)
-			{
-#if 0
-				memset(email_createtime,0,sizeof(email_createtime));
-				drm_time_convert(EmailHeads[i].m_tCreateTime, email_createtime, sizeof(email_createtime));
-#else
-				snprintf(email_createtime,sizeof(email_createtime),"%lu",EmailHeads[i].m_tCreateTime);
-#endif
-				if(0==i)
-					snprintf(buf,size,"%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,0==EmailHeads[i].m_bNewEmail?1:0,EmailHeads[i].m_szEmailHead);
-				else
-					snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%s\t%d\t%s",EmailHeads[i].m_dwActionID,email_createtime,0==EmailHeads[i].m_bNewEmail?1:0,EmailHeads[i].m_szEmailHead);
+			for(i=0;i<byCount;i++){
+				mailCreateTimeMin = 0;
+				markIndex = -1;
+				for(j=0;j<byCount;j++)
+				{
+					if(EmailHeads[j].m_tCreateTime>0){
+						if(0==mailCreateTimeMin){
+							mailCreateTimeMin = EmailHeads[j].m_tCreateTime;
+							markIndex = j;
+						}
+						else{
+							if(mailCreateTimeMin > EmailHeads[j].m_tCreateTime){
+								mailCreateTimeMin = EmailHeads[j].m_tCreateTime;
+								markIndex = j;
+							}
+						}
+					}
+				}
+				
+				DEBUG("[%d] EmailHeads[%d].m_tCreateTime=%lu\n",i,markIndex,EmailHeads[markIndex].m_tCreateTime);
+				
+				if(-1<markIndex && markIndex<byCount){
+					t = EmailHeads[markIndex].m_tCreateTime;
+					localtime_r(&t, &area);
+	
+					snprintf(email_createtime,sizeof(email_createtime),
+						"%d%02d%02d %02d%02d%02d", 
+						(1900+area.tm_year), (1+area.tm_mon), area.tm_mday,
+						area.tm_hour, area.tm_min, area.tm_sec);
+					DEBUG("convert %lu as %s", EmailHeads[markIndex].m_tCreateTime,email_createtime);
+					
+					if(1==firstread_flag){
+						snprintf(buf,size,"%lu\t%s\t%d\t%s",EmailHeads[markIndex].m_dwActionID,email_createtime,0==EmailHeads[markIndex].m_bNewEmail?1:0,EmailHeads[markIndex].m_szEmailHead);
+						firstread_flag = 0;
+					}
+					else
+						snprintf(buf+strlen(buf),size-strlen(buf),"\n%lu\t%s\t%d\t%s",EmailHeads[markIndex].m_dwActionID,email_createtime,0==EmailHeads[markIndex].m_bNewEmail?1:0,EmailHeads[markIndex].m_szEmailHead);
+					
+					EmailHeads[markIndex].m_tCreateTime = 0;
+				}
 			}
 			
 			if(byCount<EMAIL_HEADS_NUM){
 				DEBUG("get email head finish\n");
 				break;
 			}
-			else
+			else{
 				DEBUG("have other email head not get\n");
+				byFromIndex = byCount;
+			}
 			
-			DEBUG("%s\n", buf);
 		}
 		else{
 			drm_errors("CDCASTB_GetEmailHeads", ret);
 			break;
 		}
 	}
+//	DEBUG("%s\n", buf);
 	
 	return ret;
 }
@@ -1731,17 +1764,6 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DVBPUSH_GETINFO_STOP:
 			dvbpush_getinfo_stop();
 			break;
-		case CMD_DVBPUSH_GETTS_STATUS:
-#if 0
-			DEBUG("baby, this command %d is discarded already\n",CMD_DVBPUSH_GETTS_STATUS);
-#else
-			memset(s_jni_cmd_data_status,0,sizeof(s_jni_cmd_data_status));
-			data_stream_status_str_get(s_jni_cmd_data_status,sizeof(s_jni_cmd_data_status));
-			*buf = s_jni_cmd_data_status;
-			*len = strlen(s_jni_cmd_data_status);
-			break;
-#endif
-
 		case CMD_NETWORK_CONNECT:
 			net_rely_condition_set(cmd);
 			break;
@@ -1784,6 +1806,12 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 			break;
 			
+		case CMD_DVBPUSH_GETTS_STATUS:
+			memset(s_jni_cmd_data_status,0,sizeof(s_jni_cmd_data_status));
+			data_stream_status_str_get(s_jni_cmd_data_status,sizeof(s_jni_cmd_data_status));
+			*buf = s_jni_cmd_data_status;
+			*len = strlen(s_jni_cmd_data_status);
+			break;
 		case CMD_UPGRADE_CANCEL:
 			DEBUG("CMD_UPGRADE_CANCEL\n");
 			upgrade_sign_set();
@@ -1956,9 +1984,9 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			smarthome_ctrl(buf,len);
 			break;
 		case CMD_DEVICE_INIT:
-			DEBUG("CMD_DEVICE_INIT\n");
-			smarthome_gw_sn_init();
-			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
+			DEBUG("CMD_DEVICE_INIT but do nothing\n");
+//			smarthome_gw_sn_save();
+//			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
 			break;
 		case CMD_SMARTLIFE_SEND:
 			DEBUG("CMD_SMARTLIFE_SEND, *len=%d\n", *len);
@@ -2030,11 +2058,11 @@ static int upgrade_type_check( unsigned char *software_version)
 	DEBUG("%03d.%03d.%03d.%03d\n",software_version[1],software_version[2],software_version[2],software_version[3]);
 	if(255==software_version[0] && 255==software_version[1]
 		&& 255==software_version[2] && 255==software_version[3]){
-		DEBUG("It has finish a repeat upgrade\n");
+		DEBUG("this is a repeat version\n");
 		return 255;
 	}
 	else{
-		DEBUG("It has finish a normal upgrade\n");
+		DEBUG("this is a normal version\n");
 		return 0;
 	}
 }
@@ -2089,18 +2117,6 @@ void upgrade_info_init()
 			g_loaderInfo.hardware_version[3] = TC_HARDWARE_VERSION3;
 		}
 		
-		if(255==upgrade_type_check(g_loaderInfo.software_version)){
-			memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
-			if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
-				DEBUG("can not read RepeatUpgradeCount\n");
-			}
-			else{
-				DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
-			}
-		}
-			
-
 		DEBUG("read loader msg: %d", mark);
 		
 		if(255==upgrade_type_check(g_loaderInfo.software_version)){
@@ -2124,13 +2140,6 @@ void upgrade_info_init()
 				upgrade_info_refresh("RepeatUpgradeCount", tmpinfo);
 			}
 		}
-		
-#if 0
-		if(255==upgrade_type_check(g_loaderInfo.software_version)){
-			snprintf(msg_2_UI,sizeof(msg_2_UI),"Repeat upgrade count: %s\n", tmpinfo);
-			msg_send2_UI(DIALOG_NOTICE, msg_2_UI, strlen(msg_2_UI));
-		}
-#endif
 		
 		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
 		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
@@ -3012,5 +3021,37 @@ int setting_init_with_database()
 	TestSpecialProductID_init();
 	
 	return 0;
+}
+
+
+int network_init_status()
+{
+	struct stat filestat;
+	int ret = 0;
+	
+	int stat_ret = stat(NETWORK_INIT_FLAG, &filestat);
+	if(0==stat_ret){
+		DEBUG("%s is exist, network init finished\n",NETWORK_INIT_FLAG);
+		ret = 1;
+	}
+	
+	return ret;
+}
+
+int device_num_changed()
+{
+	struct stat filestat;
+	int ret = 0;
+	
+	int stat_ret = stat(DEVICE_NUM_CHANGED_FLAG, &filestat);
+	if(0==stat_ret){
+		DEBUG("%s is exist, %ldB\n",DEVICE_NUM_CHANGED_FLAG,filestat.st_size);
+		if(filestat.st_size<1024LL){
+			DEBUG("device num is changed\n");
+			ret = 1;
+		}
+	}
+	
+	return ret;
 }
 

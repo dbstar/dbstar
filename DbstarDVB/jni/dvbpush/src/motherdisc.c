@@ -140,6 +140,7 @@ static int motherdisc_parse()
 {
 	char xml_uri[512];
 	char sqlite_cmd[1024];
+	char error_num[32];
 	int ret = 0;
 
 	DEBUG("%s, process motherdisc...\n", MOTHERDISC_XML_URI);
@@ -158,7 +159,8 @@ static int motherdisc_parse()
 		else{
 			DEBUG("read URI or parse for %d failed\n",SERVICE_XML);
 			// Service.xml是无关紧要的文件，即便失败也继续。
-			//msg_send2_UI(MOTHER_DISK_INITIALIZE_FAILED, NULL, 0);
+			//msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, NULL, 0);
+			
 			//ret = -1;
 		}
 		
@@ -171,7 +173,9 @@ static int motherdisc_parse()
 		}
 		else{
 			DEBUG("read URI or parse for %d failed\n",GUIDELIST_XML);
-			msg_send2_UI(MOTHER_DISK_INITIALIZE_FAILED, NULL, 0);
+			snprintf(error_num,sizeof(error_num),"%d",GUIDELIST_XML);
+			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, error_num, strlen(error_num));
+			
 			ret = -1;
 		}
 #endif
@@ -188,14 +192,16 @@ static int motherdisc_parse()
 			DEBUG("parse xmls for mother disc initialize finish, waiting for programs parsing...\n");
 			
 			parse_progs();
-			msg_send2_UI(MOTHER_DISK_INITIALIZE_SUCCESS, NULL, 0);
+			msg_send2_UI(MOTHER_DISC_INITIALIZE_SUCCESS, NULL, 0);
 			DEBUG("parse publications for mother disc initialize finished\n");
 			
 			ret = 0;
 		}
 		else{
 			DEBUG("read URI or parse for %d failed\n",PRODUCTDESC_XML);
-			msg_send2_UI(MOTHER_DISK_INITIALIZE_FAILED, NULL, 0);
+			snprintf(error_num,sizeof(error_num),"%d",PRODUCTDESC_XML);
+			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, error_num, strlen(error_num));
+			
 			ret = -1;
 		}
 		
@@ -204,7 +210,9 @@ static int motherdisc_parse()
 	}
 	else{
 		DEBUG("parse %d for motherdisc init failed\n", INITIALIZE_XML);
-		msg_send2_UI(MOTHER_DISK_INITIALIZE_FAILED, NULL, 0);
+		snprintf(error_num,sizeof(error_num),"%d",INITIALIZE_XML);
+		msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, error_num, strlen(error_num));
+		
 		ret = -1;
 	}
 	
@@ -234,7 +242,7 @@ int motherdisc_process()
 		s_motherdisc_processing_status = 1;
 		
 		DEBUG("%s is exist, initialize disc starting...\n", MOTHERDISC_XML_URI);
-		msg_send2_UI(MOTHER_DISK_INITIALIZE_START, NULL, 0);
+		msg_send2_UI(MOTHER_DISC_INITIALIZE_START, NULL, 0);
 		
 		if(0==motherdisc_parse()){
 			DEBUG("parse mother disc finish\n");
@@ -245,15 +253,17 @@ int motherdisc_process()
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
 			sqlite_execute(sqlite_cmd);
 			
-			snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
-			snprintf(new_uri_motherdisc_xml,sizeof(new_uri_motherdisc_xml),"%s_PROCESSED__",direct_uri);
 			
-			if(0!=rename(direct_uri,new_uri_motherdisc_xml)){
-				ERROROUT("rename %s to %s failed\n", direct_uri, new_uri_motherdisc_xml);
-				remove(new_uri_motherdisc_xml);
-			}
 		
 			ret = 0;
+		}
+		
+		snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
+		snprintf(new_uri_motherdisc_xml,sizeof(new_uri_motherdisc_xml),"%s_PROCESSED__",direct_uri);
+		
+		if(0!=rename(direct_uri,new_uri_motherdisc_xml)){
+			ERROROUT("rename %s to %s failed\n", direct_uri, new_uri_motherdisc_xml);
+			remove(direct_uri);
 		}
 		
 		s_motherdisc_processing_status = 0;

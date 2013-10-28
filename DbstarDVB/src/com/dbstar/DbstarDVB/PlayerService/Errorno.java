@@ -50,6 +50,8 @@ public class Errorno{
     
     public static final int DIVX_SUCCESS            =   0;
     public static final int DIVX_AUTHOR_ERR         =   -0x04000001;
+    
+    public static final String ERR0R_UNKOWN = "Unknow Error";
 
     public static String getErrorInfo(int errID)
     {
@@ -97,7 +99,7 @@ public class Errorno{
 				errStr = "Unsupport ff/fb";
 				break;
 			default:
-				errStr = "Unknow Error";
+				errStr = ERR0R_UNKOWN;
 				break;
     	}
     	return errStr;

@@ -32,6 +32,8 @@ void *main_thread()
         
 	_wLBM_zyzdmb(13578642);
    	
+   	smarthome_gw_sn_init();
+   	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
 		//return NULL;
@@ -58,23 +60,22 @@ void *main_thread()
 		//return NULL;
 	}
 
-         if(-1==push_decoder_thread_init()){
-                DEBUG("push_decoder_thread_init failed\n");
-                //return NULL;
-        }
-
-         //tuner_init(int freq, int symbolrate, int voltage)
-        tuner_init(1371000, 28800000, 0);
+	//tuner_init(int freq, int symbolrate, int voltage)
+	tuner_init(1371000, 28800000, 0);
 
 	
 //	return parse_xml("pushroot/pushinfo/1/ProductDesc.xml", PRODUCTDESC_XML, NULL);
 	
-	if(0!=drm_init())
-        {
+	if(0!=drm_init()){
 		DEBUG("drm init failed\n");
 		//return NULL;
 	}
-
+	
+	upgrade_info_init();
+	
+// 根据首次开机标记"/data/data/com.dbstar/files/flag"决定是否要重置国电网关序列号
+	smarthome_sn_init_when_network_init();
+	
 	
 #if 0
 /*
@@ -85,6 +86,10 @@ CDCASTB_FormatBuffer();
 #endif
 
 
+	if(-1==mid_push_init(PUSH_CONF)){
+		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
+		//return NULL;
+	}
 #if 0 //liukevin add 
 	if(-1==igmp_init()){
 		DEBUG("igmp init failed\n");

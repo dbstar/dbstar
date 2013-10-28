@@ -119,17 +119,22 @@
     <!-- Smartcard -->
     <string name="smartcard_status_title">智能卡</string>
     <string name="smartcard_status_in">智能卡已经插入！</string>
-    <string name="smartcard_status_out">请插入智能卡!</string>
-    <string name="smartcard_status_invlid">智能卡无效，请检查智能卡！</string>
+    <string name="smartcard_status_out">智能卡无效</string>
+    <string name="smartcard_status_invlid">智能卡无效</string>
     
     <string name="button_text_ok">确定</string>
     <string name="button_text_cancel">取消</string>
     
     <string name="error_unknown">未知错误</string>
     <string name="drm_error_fileerror">文件错误</string>
-    <string name="drm_error_noentitle">此节目无授权</string>
-    <string name="drm_error_notwatchtime">此节目不满足观看时间</string>
-    <string name="drm_error_notissuetime">此节目不满足发行时间</string>
+   <string name="drm_error_noentitle">没有授权</string>
+    <!-- <string name="drm_error_notwatchtime">此节目不满足观看时间</string>
+    <string name="drm_error_notissuetime">此节目不满足发行时间</string> -->
     <string name="drm_error_rightlimit">此节目有版权限制</string>
     <string name="drm_error_card_invalid">智能卡无效</string>
+    
+    
+     <string name="player_play_mode">播放模式</string>
+    <string name="player_play_mode_single">单次播放</string>
+    <string name="player_play_mode_loop">循环播放</string>
 </resources>

@@ -106,6 +106,7 @@ public class PlayerActivity extends Activity {
 	protected static final int MSG_RESUME_DELAYED = 0x30002;
 	protected static final int MSG_PLAY_DELAYED = 0x30003;
 	protected static final int MSG_POWEROFF = 0x30004;
+	protected static final int MSG_UPDATE_INFO_BAR = 0x30005;
 	
 	protected boolean mIsSmartcardIn = false;
 
@@ -161,11 +162,27 @@ public class PlayerActivity extends Activity {
 				exitPlayer(1);
 				break;
 			}
-
+			case  MSG_UPDATE_INFO_BAR:{
+			    int currentTime = msg.arg1;
+			    currentTime = mCurrentTime + currentTime;
+			    
+			    if(currentTime > mTotalTime){
+			        stopFFRew();
+			        currentTime = mTotalTime ;
+			        
+                }else if(currentTime <= 0){
+                   stopFFRew();
+                   currentTime = 0;
+                }
+			    
+                updatePlaybackTimeInfo(currentTime, mTotalTime);
+                
+			}
 			}
 		}
 	};
-
+	
+	protected void stopFFRew(){};
 	protected static final int DLG_ID_MEDIAINFO = 0;
 	protected static final int DLG_ID_SMARTCARDINFO = 1;
 	protected static final int DLG_ID_ALERT = 2;
@@ -274,7 +291,7 @@ public class PlayerActivity extends Activity {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_in);
 		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVING
 				|| smartcardState == SmartcardStateTracker.SMARTCARD_STATE_REMOVED) {
-			mSmartcardDialog.setMessage(R.string.smartcard_status_out);
+			mSmartcardDialog.setMessage(R.string.drm_error_card_invalid);
 		} else if (smartcardState == SmartcardStateTracker.SMARTCARD_STATE_INVALID) {
 			mSmartcardDialog.setMessage(R.string.smartcard_status_invlid);
 		}
@@ -306,6 +323,8 @@ public class PlayerActivity extends Activity {
 					mVideoInfoDlg.dismiss();
 				}
 			} else if (dialog instanceof GDAlertDialog) {
+				setOSDOn(true);
+				
 				if (mVideoInfoDlg != null && mVideoInfoDlg.isShowing()) {
 					mVideoInfoDlg.dismiss();
 				}
@@ -757,8 +776,9 @@ public class PlayerActivity extends Activity {
 
 				mCurrentTime = msg.arg1 / 1000;
 				mTotalTime = msg.arg2;
-
-				updatePlaybackTimeInfo(mCurrentTime, mTotalTime);
+				
+				if(mPlayerStatus == VideoInfo.PLAYER_RUNNING)
+				    updatePlaybackTimeInfo(mCurrentTime, mTotalTime);
 
 				// for subtitle tick;
 				if (mPlayerStatus == VideoInfo.PLAYER_RUNNING) {
@@ -797,6 +817,10 @@ public class PlayerActivity extends Activity {
 					break;
 
 				case VideoInfo.PLAYER_ERROR:
+				    int error = msg.arg2;
+				    if(error == PlayerErrorInfo.CDCA_RC_PREVIEWOVER && mCurrentTime <=0){
+				         return;
+				    }
 					playbackError(msg.arg2);
 					break;
 				case VideoInfo.PLAYER_SEARCHOK:
@@ -857,6 +881,8 @@ public class PlayerActivity extends Activity {
 				break;
 			case VideoInfo.HAS_ERROR_MSG:
 				String errStr = Errorno.getErrorInfo(msg.arg2);
+				if(errStr.equals(Errorno.ERR0R_UNKOWN))
+				    return;
 				Toast tp = Toast.makeText(PlayerActivity.this, errStr,
 						Toast.LENGTH_SHORT);
 				tp.show();

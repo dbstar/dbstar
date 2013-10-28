@@ -26,11 +26,11 @@ typedef enum{
 #define DATABASE_DIR 		WORKSPACE_SURFIX"database/"
 #define DATABASE			"/data/dbstar/Smarthome.db"	//sqlite3 database
 #define SETTING_BASE		WORKSPACE_SURFIX"settings/base.ini"	//serverconfig path on ppc
-#define SQLITECMDLEN (256)							//the max number byte contained in "cmdStr"---command string--sqlite.cpp
+#define SQLITECMDLEN (512)							//the max number byte contained in "cmdStr"---command string--sqlite.cpp
 #define WAITRES	(600)									//wait 600*myDelay(5) ms, if no response, return "#ff ff ff ffff#ff#ff ff#ff#"
 #define SYNCTIME (10)									//sync time
-#define CMD_SIZE		(4096)
-#define ALTERABLE_ENTITY_SIZE	(4096)
+#define CMD_SIZE		(8192)
+#define ALTERABLE_ENTITY_SIZE	(8192)
 
 #define SN_DEFAULT_TEST			"72392061919421673185"		//WARNING: only for test, the lenght of sn is 20 currently
 #define SW_VERSION				"1.2.1"
@@ -49,7 +49,7 @@ typedef enum{
 #define CMD_KEYWORD_SYNC			"sync"
 #define SMART_POWER_CMD_NUM			(32)
 
-#define FIFO_STR_SIZE				(32)
+#define FIFO_STR_SIZE				(128)
 #define FIFO_DIR					WORKSPACE_SURFIX"fifo/"
 #define FIFO_2_SOCKET				FIFO_DIR"fifo_2_socket"
 #define FIFO_2_INSTRUCTION			FIFO_DIR"fifo_2_instruction"
@@ -205,17 +205,22 @@ typedef struct{
 typedef enum{
 	SMART_SOCKET_ACTION_UNDEFINED = -1,
 	SMART_SOCKET_ACTIVE_POWER_CONSUMPTION_READ = 0,	// 有功总电量
-	SMART_SOCKET_VOLTAGE_READ,											// 电压
-	SMART_SOCKET_POWER_CURRENT_READ,								// 电流
-	SMART_SOCKET_ACTIVE_POWER_READ,									// 有功功率
-	SMART_SOCKET_REACTIVE_POWER_READ,								// 无功功率
-	SMART_SOCKET_POWER_COEFFICIENT_READ,						// 功率因数
-	SMART_SOCKET_RELAY_DISCONNECT,									// 继电器断开
-	SMART_SOCKET_RELAY_CONNECT,											// 继电器闭合
-	SMART_SOCKET_RELAY_STATUS_READ,									// 继电器状态
-	SMART_SOCKET_ADDR_CONFIRM,											// 地址确认
-	SMART_SOCKET_INSTRUCTION_INVALID,								// 指令错误
-	SMART_SOCKET_COMMUNICATION_FAILD								// 通讯失败
+	SMART_SOCKET_VOLTAGE_READ,						// 电压
+	SMART_SOCKET_POWER_CURRENT_READ,				// 电流
+	SMART_SOCKET_ACTIVE_POWER_READ,					// 有功功率
+	SMART_SOCKET_REACTIVE_POWER_READ,				// 无功功率
+	SMART_SOCKET_POWER_COEFFICIENT_READ,			// 功率因数
+	SMART_SOCKET_RELAY_DISCONNECT,					// 继电器断开
+	SMART_SOCKET_RELAY_CONNECT,						// 继电器闭合
+	SMART_SOCKET_RELAY_STATUS_READ,					// 继电器状态
+	SMART_SOCKET_ADDR_CONFIRM,						// 地址确认
+	SMART_SOCKET_INSTRUCTION_INVALID,				// 指令错误
+	SMART_SOCKET_COMMUNICATION_FAILD,				// 通讯失败
+	
+	CURTAIN_GOAHEAD = 20,						// 窗帘前进
+	CURTAIN_GOBACK,								// 窗帘后退
+	CURTAIN_STOP,								// 窗帘停止
+	CURTAIN_CONFIRM								// 窗帘地址验证
 }SMART_SOCKET_ACTION_E;
 
 typedef enum{
@@ -254,8 +259,10 @@ void ms_sleep(unsigned int ms);
 unsigned int randint(float rand_top);
 int timezone_repair(void);
 int dir_exist_ensure(char *dir);
-int zero_sec_get(time_t appoint_secs);
+time_t zero_sec_get(time_t appoint_secs);
+time_t sec_from_0_at_day(time_t appoint_secs);
 time_t time_get(time_t *timer);
+int print_localtime_sec2str(time_t your_sec);
 
 #endif
 

@@ -37,6 +37,7 @@
 #include "multicast.h"
 #include "motherdisc.h"
 #include "drmport.h"
+#include "prodrm20.h"
 
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (60000)		//定义缓冲区大小，单位：包
@@ -245,7 +246,7 @@ rewake:
 		
 		// 此线程的运行影响到升级，即使没有硬盘也必须让此线程运行。
 		// 但要避免母盘中Initialize或其他xml被下载的xml覆盖
-		if(len && 0==motherdisc_processing() && 1==s_push_regist_inited)
+		if(len && 1==s_motherdisc_init_flag && 1==pushdir_usable())
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
@@ -472,7 +473,7 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 //				else
 				{
 					snprintf(buf+strlen(buf), size-strlen(buf),
-						"\n%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
+						"%s%s\t%s\t%lld\t%lld", "\n",s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 				}
 			}
 			else
@@ -598,7 +599,6 @@ void preview_refresh_flag_set(int flag)
 	s_preview_refresh = flag;
 }
 
-
 static int push_regist_init()
 {
 //	push_file_register("pushroot/initialize/Initialize.xml");
@@ -643,6 +643,8 @@ void *maintenance_thread()
 	time_t now_sec;
 	struct tm now_tm;
 	char sqlite_cmd[256];
+	int ret = 0;
+	char SmartCardSn[128];
 	
 	time(&s_pin_sec);
 	
@@ -662,7 +664,9 @@ void *maintenance_thread()
 			DEBUG("maintenance thread is awaked by external signal\n");
 		}
 #endif
-		
+
+#ifdef DRM_TEST
+#else		
 		// 每隔12个小时，打开tdt pid进行时间同步，这里只是借用了monitor这个低频循环。
 		loop_cnt ++;
 		if(loop_cnt>(43200)){
@@ -674,6 +678,7 @@ void *maintenance_thread()
 			tdt_time_sync_awake();
 			loop_cnt = 0;
 		}
+#endif
 		
 		// 当栏目和界面产品发生改变时，不能直接在parse_xml()函数中通过JNI向UI发送notify，否则很容易导致Launcher死掉。
 		if(s_column_refresh>0){
@@ -706,43 +711,51 @@ void *maintenance_thread()
 		if(smart_card_insert_flag_get()>0){
 			// 测试发现差不到1s，硬盘此时还未准备完毕
 			DEBUG("smart card insert, wait 2s for disc ready\n");
-			sleep(2);
-			if(1==smartcard_entitleinfo_refresh())
-				pushinfo_reset();
-			smart_card_insert_flag_set(0);
+			sleep(1);
+			
+			memset(SmartCardSn,0,sizeof(SmartCardSn));
+			ret = CDCASTB_GetCardSN(SmartCardSn);
+			if(CDCA_RC_OK==ret)
+			{
+				DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
+				
+				if(1==smartcard_entitleinfo_refresh())
+					pushinfo_reset();
+				smart_card_insert_flag_set(0);
+				
+				send_sc_notify(1,DRM_SC_INSERT_OK, NULL, 0);
+			}
+			else{
+				DEBUG("read card sn failed, retry again\n");
+				drm_sc_insert();
+			}
 		}
-
-#if 0		
-		if(1==s_disk_manage_flag){
-			DEBUG("will clean disk\n");
-			disk_space_check();
-			s_disk_manage_flag = 0;
-		}
-#endif
 		
 		// 硬盘挂载后才能开始检查是否需要母盘初始化
-		if(0==s_motherdisc_init_flag && 1==pushdir_usable()){
-			s_motherdisc_init_flag = 1;
-			
-			DEBUG("need do mother disc process\n");
+		if(0==s_motherdisc_init_flag && 1==pushdir_usable() && 1==network_init_status()){
+			DEBUG("do mother disc process\n");
 			motherdisc_process();
+			
+			s_motherdisc_init_flag = 1;
 		}
 		
 		// 母盘初始化动作一定是在push初始化之前，确保在母盘初始化操作数据库过程中不混乱
 		if(0==s_push_regist_inited && 1==pushdir_usable()){
 			s_push_regist_inited = 1;
 			
-#if 1
-//2013-06-29
-//push_decoder_thread必须起来才能顺利执行ota升级过程，因此mid_push_init还要及早初始化，只是push_regist_init要等到硬盘加载完毕
+#if 0
+2013-06-29
+push_decoder_thread必须起来才能顺利执行ota升级过程，因此mid_push_init还要及早初始化，只是push_regist_init要等到硬盘加载完毕
 			if(-1==mid_push_init(PUSH_CONF)){
 				DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
 			}
 #endif
-			
+
 			push_regist_init();
 		}
 		
+#ifdef DRM_TEST
+#else
 		if(1==user_idle_status_get()){
 			time(&now_sec);
 			
@@ -776,6 +789,8 @@ void *maintenance_thread()
 				}
 			}
 		}
+#endif
+
 	}
 	DEBUG("exit from push monitor thread\n");
 	
@@ -920,11 +935,15 @@ int mid_push_cb(const char *path, int flag)
 // 如果对已经下载完毕的节目再次注册，还会调用callback
 void callback(const char *path, long long size, int flag)
 {
-	DEBUG("\n\n\n===========================path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
+#ifdef DRM_TEST
+	DEBUG("\n\n\n===== not parse xml because of drm test  ======path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
+#else
+	DEBUG("\n\n\n===========path:%s, size:%lld, flag:%d=============\n\n\n", path, size, flag);
 	
 	/* 由于涉及到解析和数据库操作，这里不直接调用parse_xml，避免耽误push任务的运行效率 */
 	// settings/allpid/allpid.xml
 	mid_push_cb(path, flag);
+#endif
 }
 
 
@@ -972,15 +991,6 @@ int maintenance_thread_init()
 	return 0;
 }
 
-int push_decoder_thread_init()
-{
-	//创建数据解码线程
-	pthread_create(&tidDecodeData, NULL, push_decoder_thread, NULL);
-	//pthread_detach(tidDecodeData);
-	
-	return 0;
-}
-
 int mid_push_init(char *push_conf)
 {
 	int i = 0;
@@ -1011,6 +1021,10 @@ int mid_push_init(char *push_conf)
 	s_push_has_data = 7;
 	
 	push_set_notice_callback(callback);
+	
+	//创建数据解码线程
+	pthread_create(&tidDecodeData, NULL, push_decoder_thread, NULL);
+	//pthread_detach(tidDecodeData);
 	
 	//创建xml解析线程
 	pthread_t tidxmlparse;

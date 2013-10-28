@@ -24,6 +24,7 @@
 #include "timing.h"
 #include "sqlite.h"
 #include "instruction.h"
+#include "equipment.h"
 
 static SMART_POWER_CMD_S 	g_smart_power_cmds[SMART_POWER_CMD_NUM];
 static sem_t				s_sem_smart_power_cmds;
@@ -148,7 +149,7 @@ int smart_power_cmds_open(CMD_ARRAY_OP_E cmd_op, BOOL_E insert_flag)
 			return -1;
 	}
 	int i = i_start;
-	//DEBUG("poll smart power cmds array start from index: %d\n", i);
+	DEBUG("poll smart power cmds array start from index: %d,op_note=%s,cmd_op=%d\n", i,op_note,cmd_op);
 	
 	for(; i<i_start+SMART_POWER_CMD_NUM; i++){
 		if(CMD_ARRAY_OP_W==cmd_op && CMD_STATUS_NULL==g_smart_power_cmds[i%SMART_POWER_CMD_NUM].status){
@@ -180,8 +181,10 @@ int smart_power_cmds_open(CMD_ARRAY_OP_E cmd_op, BOOL_E insert_flag)
 	}
 	sem_post(&s_sem_smart_power_cmds);
 	
-	if(i>SMART_POWER_CMD_NUM)
-		i -= SMART_POWER_CMD_NUM;
+	if(i>=SMART_POWER_CMD_NUM){
+		DEBUG("Warning: i=%d\n",i);
+		i = i%SMART_POWER_CMD_NUM;
+	}
 	DEBUG("cmds array open with operation \"%s\", return with index %d\n", op_note, i);
 	return i;
 }
@@ -195,6 +198,7 @@ int smart_power_cmds_close(unsigned int index, int close_flag)
 		DEBUG("this index(%d) is invalid\n", index);
 		return -1;
 	}
+//	DEBUG("index=%d, close_flag=%d\n",index,close_flag);
 
 	sem_wait(&s_sem_smart_power_cmds);
 	if(-1==close_flag){
@@ -240,6 +244,8 @@ int smart_power_cmds_close(unsigned int index, int close_flag)
 	}
 	sem_post(&s_sem_smart_power_cmds);
 
+	DEBUG("g_smart_power_cmds[%d].status=%d\n",index,g_smart_power_cmds[index].status);
+	
 	return 0;
 }
 
@@ -319,7 +325,7 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 	char *p_tmp_entity = NULL;
 	int index_w = 0;
 	char tmp_serv_str[128];
-	int ret = -1;
+	char sqlite_cmd[SQLITECMDLEN];
 	
 	if(NULL==cmd_str || 0==str_len){
 		cmd_header = CMD_HEADER_INVALID;
@@ -367,26 +373,39 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 						if(		0==strncmp(p_str, "devs", abs(p_mark-p_str))
 							||	0==strncmp(p_str, "modl", abs(p_mark-p_str))
 							||	0==strncmp(p_str, "time", abs(p_mark-p_str))){
-							if(0==strncmp(p_str, "devs", abs(p_mark-p_str)))
+							if(0==strncmp(p_str, "devs", abs(p_mark-p_str))){
 								s_sync_cmd_exec_record = SYNC_DEVS;
+								
+								snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM devlist;");
+							}
 							else if(0==strncmp(p_str, "modl", abs(p_mark-p_str))){
 								if(-1==s_sync_cmd_exec_record){
 									DEBUG("has failed sync cmd, ignore this and return failed\n");
 									return CMD_HEADER_INVALID;
 								}
-								else
+								else{
 									s_sync_cmd_exec_record += SYNC_MODL;
+									
+									snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM model;");
+									sqlite_execute(sqlite_cmd);
+									snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM modtime;");
+								}
 							}
 							else if(0==strncmp(p_str, "time", abs(p_mark-p_str))){
 								if(-1==s_sync_cmd_exec_record){
 									DEBUG("has failed sync cmd, ignore this and return failed\n");
 									return CMD_HEADER_INVALID;
 								}
-								else
+								else{
 									s_sync_cmd_exec_record += SYNC_TIME;
+									
+									snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM time;");
+								}
 							}
 							
-							// skip such as 'devs'/'modl'/'time'
+							INSTRUCTION_RESULT_E ret = sqlite_execute(sqlite_cmd);
+							
+							// skip such string as 'devs'/'modl'/'time'
 							p_mark = strchr(p_str, '#');
 							p_str = p_mark+1;
 							
@@ -431,8 +450,15 @@ static CMD_HEADER_E smart_power_cmd_parse(char *cmd_str, unsigned int str_len)
 								p_str = p_sync_str;
 							}
 							
+							if(SYNC_DEVS==s_sync_cmd_exec_record)
+								equipment_refresh();
+							
+							if(SYNC_TIME==s_sync_cmd_exec_record)
+								timing_task_refresh();
+							
 							if(0==ret){
 								cmd_header = CMD_HEADER_SYNC_OK;
+								
 								if((SYNC_DEVS+SYNC_MODL+SYNC_TIME)==s_sync_cmd_exec_record){
 									DEBUG("do three sync cmds OK\n");
 									sync_cmds_finish(CMD_HEADER_SYNC_OK, tmp_serv_str);
@@ -639,6 +665,7 @@ static int continue_myself(int g_fifo_fd)
 	char fifo_str[FIFO_STR_SIZE];
 	memset(fifo_str, 0, FIFO_STR_SIZE);
 	strncpy(fifo_str, MSGSTR_SOCKET_SELF, FIFO_STR_SIZE-1);
+	
 	if(-1==write(g_fifo_fd, fifo_str, strlen(fifo_str))){
 		ERROROUT("write to fifo failed\n");
 		return -1;
@@ -795,9 +822,9 @@ void socket_mainloop()
 					l_socket_fd = -1;
 				}
 				g_socket_status = SOCKET_STATUS_CLOSED;
-				DEBUG("has exception, socket is closed, retry connecting after 5mins\n");
+				DEBUG("has exception, socket is closed, retry connecting after 3s\n");
 				continue_myself(g_fifo_fd);
-				sleep(60*5);
+				sleep(3);
 				break;
 			case SOCKET_STATUS_CLOSED:				
 				fifo_buf_clear(g_fifo_fd, rdfds);
@@ -866,7 +893,7 @@ Accept-Charset: GBK,utf-8;q=0.7,*;q=0.3\r\n\r\n", sizeof(l_send_buf));
 				}
 				else{
 					ERROROUT("send registration to server failed!\n");
-					delay_sec = 30 + randint(60.0);
+					delay_sec = 17 + randint(60.0);
 					DEBUG("will regist again after %d seconds...\n", delay_sec);
 					continue_myself(g_fifo_fd);
 					sleep(delay_sec);
@@ -979,55 +1006,63 @@ Accept-Charset: GBK,utf-8;q=0.7,*;q=0.3\r\n\r\n", sizeof(l_send_buf));
 					else
 						DEBUG("read from fifo_2_socket: %s\n", fifo_str);
 					
-					index_r = smart_power_cmds_open(CMD_ARRAY_OP_R, BOOL_FALSE);
-					if(-1!=index_r){
-						memset(l_send_buf, 0, sizeof(l_send_buf));
-						l_return = smart_power_cmd_splice(index_r, l_send_buf, sizeof(l_send_buf));
-						if(0==l_return){
-							DEBUG("will send to server: %s\n", l_send_buf);
-							char sqlite_cmd[128];
-							memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
-							if(0==sendToServer(l_socket_fd, l_send_buf, strlen(l_send_buf))){
-								smart_power_cmds_close(index_r, 1);
-								/*如果主动上报成功，则将actpower或power表相应记录删除，避免下次重复上报*/
-								if(CMD_ACTIVE_REPORTED_ACTPOWER==g_smart_power_cmds[index_r].type){
-									snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM actpower WHERE status=1;");
-									sqlite_execute(sqlite_cmd);
-								}
-								else if(CMD_ACTIVE_REPORTED_POWER==g_smart_power_cmds[index_r].type){
-									snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM power WHERE status=1;");
-									sqlite_execute(sqlite_cmd);
-								}
-							}
-							else{
-#ifdef WORK_NORMAL_NOT_TEST
-								if(g_smart_power_cmds[index_r].send_try<3){
-									smart_power_cmds_close(index_r, 0);
-									DEBUG("will retry to sendto server again, send_try=%d\n", g_smart_power_cmds[index_r].send_try);
-									g_smart_power_cmds[index_r].send_try ++;
-									continue_myself(g_fifo_fd);	// try to send again
-								}
-								else{
-									smart_power_cmds_close(index_r, -1);
-									/*如果主动上报失败，则对actpower或power表相应记录重新打上标记“0”，允许再次上报*/
+					char *p_msg = strstr(fifo_str,"msgstr");
+					//DEBUG("p_msg: [%s]\n", p_msg);
+					
+					while(p_msg){
+						DEBUG("will send to server ctrled by p_msg: [%s]\n", p_msg);
+						p_msg = strstr(p_msg+strlen("msgstr"),"msgstr");
+						
+						index_r = smart_power_cmds_open(CMD_ARRAY_OP_R, BOOL_FALSE);
+						if(-1!=index_r){
+							memset(l_send_buf, 0, sizeof(l_send_buf));
+							l_return = smart_power_cmd_splice(index_r, l_send_buf, sizeof(l_send_buf));
+							if(0==l_return){
+								DEBUG("will send to server: %s\n", l_send_buf);
+								char sqlite_cmd[128];
+								memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
+								if(0==sendToServer(l_socket_fd, l_send_buf, strlen(l_send_buf))){
+									smart_power_cmds_close(index_r, 1);
+									/*如果主动上报成功，则将actpower或power表相应记录删除，避免下次重复上报*/
 									if(CMD_ACTIVE_REPORTED_ACTPOWER==g_smart_power_cmds[index_r].type){
-										snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE actpower SET status=0 WHERE status=1;");
+										snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM actpower WHERE status=1;");
 										sqlite_execute(sqlite_cmd);
 									}
 									else if(CMD_ACTIVE_REPORTED_POWER==g_smart_power_cmds[index_r].type){
-										snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE power SET status=0 WHERE status=1;");
+										snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM power WHERE status=1;");
 										sqlite_execute(sqlite_cmd);
 									}
 								}
-#else
-								smart_power_cmds_close(index_r, -1);
-#endif
-								DEBUG("send to server failed\n");
+								else{
+	#ifdef WORK_NORMAL_NOT_TEST
+									if(g_smart_power_cmds[index_r].send_try<3){
+										smart_power_cmds_close(index_r, 0);
+										DEBUG("will retry to sendto server again, send_try=%d\n", g_smart_power_cmds[index_r].send_try);
+										g_smart_power_cmds[index_r].send_try ++;
+										continue_myself(g_fifo_fd);	// try to send again
+									}
+									else{
+										smart_power_cmds_close(index_r, -1);
+										/*如果主动上报失败，则对actpower或power表相应记录重新打上标记“0”，允许再次上报*/
+										if(CMD_ACTIVE_REPORTED_ACTPOWER==g_smart_power_cmds[index_r].type){
+											snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE actpower SET status=0 WHERE status=1;");
+											sqlite_execute(sqlite_cmd);
+										}
+										else if(CMD_ACTIVE_REPORTED_POWER==g_smart_power_cmds[index_r].type){
+											snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE power SET status=0 WHERE status=1;");
+											sqlite_execute(sqlite_cmd);
+										}
+									}
+	#else
+									smart_power_cmds_close(index_r, -1);
+	#endif
+									DEBUG("send to server failed\n");
+								}
 							}
 						}
+						else
+							DEBUG("smart_power_cmds_open(CMD_ARRAY_OP_R, BOOL_FALSE) return with -1\n");
 					}
-					else
-						DEBUG("smart_power_cmds_open(CMD_ARRAY_OP_R, BOOL_FALSE) return with -1\n");
 				}
 				break;
 			case SOCKET_STATUS_UNREGIST:
@@ -1040,7 +1075,7 @@ Accept-Charset: GBK,utf-8;q=0.7,*;q=0.3\r\n\r\n", sizeof(l_send_buf));
 				fifo_buf_clear(g_fifo_fd, rdfds);
 				DEBUG("this status(%d) of socket can not be dealed with\n", g_socket_status);
 				continue_myself(g_fifo_fd);
-				sleep(60*3);
+				sleep(37);
 				break;
 		}
 	}

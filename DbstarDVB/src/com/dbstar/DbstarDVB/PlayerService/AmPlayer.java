@@ -254,6 +254,10 @@ public class AmPlayer extends Service {
 			set3Dgrating(isOn);
 			return 0;
 		}
+		public int SetRepeat(int isRepeat){
+		    setRepeat(isRepeat);
+		    return 0;
+		}
 		public int RegisterClientMessager(IBinder hbinder)
 				throws RemoteException {
 			mClient = new Messenger(hbinder);
@@ -301,6 +305,8 @@ public class AmPlayer extends Service {
 	public static void onUpdateState(int pid, int status, int full_time,
 			int current_time, int last_time, int error_no, int param)
 	{
+		Log.i(TAG, "######### error_no=" + error_no + ", pid=" + pid + ", full_time=" + full_time
+			+ ", current_time=" + current_time + ", status=" + status + ", param=" + param);
 		if (null == mClient)
 		{
 			Log.i(TAG, "RegisterClientMessager has not be called. ");

@@ -10,6 +10,7 @@ public class PlayerErrorInfo {
 	public static final int CDCA_RC_NOT_ISSUETIME = 0x33;
 	public static final int CDCA_RC_NOT_WATCHTIME = 0x34;
 	public static final int CDCA_RC_RIGHT_LIMIT = 0x35;
+	public static final int CDCA_RC_PREVIEWOVER  = 0x37;
 
 	
 	public static boolean isDRMError(int errorCode) {
@@ -18,7 +19,8 @@ public class PlayerErrorInfo {
 				errorCode == CDCA_RC_NOENTITLE ||
 				errorCode == CDCA_RC_NOT_ISSUETIME ||
 				errorCode == CDCA_RC_NOT_WATCHTIME ||
-				errorCode == CDCA_RC_RIGHT_LIMIT);
+				errorCode == CDCA_RC_RIGHT_LIMIT ||
+				errorCode == CDCA_RC_PREVIEWOVER);
 	}
 	
 	
@@ -34,23 +36,32 @@ public class PlayerErrorInfo {
 			break;
 		}
 		case CDCA_RC_NOT_ISSUETIME: {
-			errStr = res.getString(R.string.drm_error_notissuetime);
+			errStr = res.getString(R.string.drm_error_noentitle);
 			break;
 		}
 		case CDCA_RC_NOT_WATCHTIME: {
-			errStr = res.getString(R.string.drm_error_notwatchtime);
+			errStr = res.getString(R.string.drm_error_noentitle);
 			break;
 		}
 		case CDCA_RC_RIGHT_LIMIT: {
-			errStr = res.getString(R.string.drm_error_rightlimit);
+			errStr = res.getString(R.string.drm_error_noentitle);
 			break;
 		}
 		case CDCA_RC_CARD_INVALID: {
 			errStr = res.getString(R.string.drm_error_card_invalid);
 			break;
+		}case CDCA_RC_PREVIEWOVER :{
+		    errStr = res.getString(R.string.drm_error_noentitle);
+            break;
 		}
 		default: {
-			errStr = res.getString(R.string.error_unknown);
+		    String strCode = "";
+		    try {
+		        strCode = " ( 0x" +  Integer.toHexString(code) + " )";
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+			errStr = res.getString(R.string.error_unknown) + strCode ;
 			break;
 		}
 		}

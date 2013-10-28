@@ -68,21 +68,20 @@ public class DbstarServiceApi {
 	public static final int	CMD_TUNER_SCAN                  = 0x00302;
 
 	public static final int CMD_MAX                         = 0x0FFFF;
-
-
-
 	/* NOTIFY STATUS or ERROR */
 	public static final int	MSG_MARQUEE                     = 0x10000;
 	public static final int	MSG_UPGRADE                     = 0x20000;
 	public static final int	MSG_STATUS						= 0x30000;
 	public static final int	MSG_ERROR                       = 0x40000;
-
-
 	public static final int DIALOG_NOTICE                   = 0x20000;    // Update times info
 	public static final int	UPGRADE_NEW_VER                 = 0x20001;
 	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;
-
-	public static final int SYSTEM_REBOOT                   = 0x20090;    // System reboot
+	public static final int	UPGRADE_START                   = 0x20003;
+	public static final int	UPGRADE_PERCENT                 = 0x20004;
+	public static final int	UPGRADE_SUCCESS                 = 0x21000;
+	public static final int	UPGRADE_FAILED                  = 0x21001;
+	
+	public static final int SYSTEM_REBOOT				    = 0x20090;    // System reboot
 
 	public static final int DRM_SC_INSERT_OK                = 0x20100;    // DRM smartcard Insert OK
 	public static final int DRM_SC_INSERT_FAILED            = 0x20101;    // DRM smartcard Insert failed
@@ -91,7 +90,6 @@ public class DbstarServiceApi {
 	public static final int DRM_EMAIL_NEW                   = 0x20104;
 	public static final int	DRM_OSD_SHOW                    = 0x20107;
 	public static final int	DRM_OSD_HIDE                    = 0x20108;
-
 	public static final int	STATUS_DVBPUSH_INIT_FAILED      = 0x30010;
 	public static final int	STATUS_DVBPUSH_INIT_SUCCESS     = 0x30011;
 	public static final int	STATUS_DATA_SIGNAL_ON           = 0x30012;
@@ -102,10 +100,10 @@ public class DbstarServiceApi {
 	
 	public static final int TDT_TIME_SYNC                   = 0x30017;    // Time format: 2012-12-22 18:03:14
 
-	public static final int MOTHER_DISK_INITIALIZE_START    = 0x30018;
-	public static final int MOTHER_DISK_INITIALIZE_PROCESS  = 0x30019;
-	public static final int MOTHER_DISK_INITIALIZE_FAILED   = 0x30020;
-	public static final int MOTHER_DISK_INITIALIZE_SUCCESS  = 0x30021;
+	public static final int MOTHER_DISC_INITIALIZE_START    = 0x30018;
+	public static final int MOTHER_DISC_INITIALIZE_PROCESS  = 0x30019;
+	public static final int MOTHER_DISC_INITIALIZE_FAILED   = 0x30020;
+	public static final int MOTHER_DISC_INITIALIZE_SUCCESS  = 0x30021;
 
 	public static final int DISK_FORMAT_SUCCESS             = 0x30022;
 	public static final int DISK_FORMAT_FAILED              = 0x30023;

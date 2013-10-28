@@ -75,40 +75,51 @@ static int instruction_reset(INSTRUCTION_S* instruction)
 输出：	err_str		——指令返回串
 返回：	0——成功；-1——失败
 */
-int alterable_entity_result(INSTRUCTION_RESULT_E inst_result, char *err_str, unsigned int len)
+int alterable_entity_result(INSTRUCTION_RESULT_E inst_result, INSTRUCTION_S *p_instrction)	//char *err_str, unsigned int len
 {
-	if(NULL==err_str || len<=0){
+	if(NULL==p_instrction){
 		DEBUG("arguments have some error\n");
 		return -1;
 	}
 	switch(inst_result)		///if operate time-out
 	{
 		case RESULT_OK:
-			strncpy(err_str, "&00", len);
+			strncpy(p_instrction->alterable_entity, "&00", sizeof(p_instrction->alterable_entity));
+			
+			if(INSTRUCTION_CTRL==p_instrction->type){
+				DEBUG("this is a ctrl cmd, arg1=%02d, arg2=%02d\n", p_instrction->arg1,p_instrction->arg2);
+				if(01==p_instrction->arg1){
+					DEBUG("this is a %s action of ctrl cmd\n", 1==p_instrction->arg2?"openup":"shutdown");
+					snprintf(p_instrction->alterable_entity,sizeof(p_instrction->alterable_entity),"&%02d", p_instrction->arg2);
+				}
+			}
+			
+			DEBUG("finally, get alterable_entity: %s\n", p_instrction->alterable_entity);
+			
 			break;
 		case ERR_TIMEOUT:		// caution
-			strncpy(err_str, "#ffffffffff#ff#ffff#ff#", len);
+			strncpy(p_instrction->alterable_entity, "#ffffffffff#ff#ffff#ff#", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_FORMAT:		// caution
-			strncpy(err_str, "&f1", len);
+			strncpy(p_instrction->alterable_entity, "&f1", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_FORMATPRO:
-			strncpy(err_str, "&f1", len);
+			strncpy(p_instrction->alterable_entity, "&f1", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_SOCKET:
-			strncpy(err_str, "&f2", len);
+			strncpy(p_instrction->alterable_entity, "&f2", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_DATABASE:
-			strncpy(err_str, "&f3", len);
+			strncpy(p_instrction->alterable_entity, "&f3", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_MEMORY:
-			strncpy(err_str, "&f4", len);
+			strncpy(p_instrction->alterable_entity, "&f4", sizeof(p_instrction->alterable_entity));
 			break;
 		case ERR_SERIAL:
-			strncpy(err_str, "&f5", len);
+			strncpy(p_instrction->alterable_entity, "&f5", sizeof(p_instrction->alterable_entity));
 			break;
 		default:	// ERR_OTHER
-			strncpy(err_str, "&ff", len);
+			strncpy(p_instrction->alterable_entity, "&ff", sizeof(p_instrction->alterable_entity));
 			break;
 	}
 	
@@ -223,7 +234,7 @@ static int alterable_flag_result(int flag)
 static INSTRUCTION_RESULT_E instruction_timing_task_add(INSTRUCTION_S *instruction)
 {
 	char sqlite_cmd_str[SQLITECMDLEN];
-
+	
 	int l_typeID=instruction->type_id;
 	int l_cmdType=instruction->type;
 	int l_controlValue=instruction->arg1 * 256 + instruction->arg2;
@@ -232,36 +243,33 @@ static INSTRUCTION_RESULT_E instruction_timing_task_add(INSTRUCTION_S *instructi
 	int control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity),2, 10, 10);
 	char *p_entity = instruction->alterable_entity;
 
-//	instant_timing_task_regist(l_typeID, l_frequency, control_time);
-	
 	/*
 	数据库记录的是定时任务的开始时间，（服务器时间，原样入库）
 	*/
 	
+	print_localtime_sec2str(control_time);
+	
+	// 由于单次定时任务存在执行后自动关闭的问题，所以单次任务保存的是从1970年开始的秒数，不是相对于当天0时的秒数
+	if(00!=l_frequency)
+		control_time = sec_from_0_at_day(control_time);
+
+	// 不在这里判断，否则在修改任务时（先删除旧任务后添加新任务）逻辑很复杂
+	// 如果是当次执行的频度任务，则判断非法值
+	
 	///	insert the value in the command into time
 	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	if(l_frequency>=0 && control_time>=0){
-		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"SELECT typeID FROM time WHERE typeID=%d AND cmdType=%d AND controlVal=%d AND controlTime=%d AND frequency=%d;",l_typeID,l_cmdType,l_controlValue,control_time,l_frequency);
-		DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-		int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
-		if(ret_sqlexec>RESULT_OK){
-			DEBUG("this time task is exist in table\n");
-			return RESULT_OK;
-		}
-		else if(ret_sqlexec<RESULT_OK){
-			DEBUG("sqlite cmd exec failed\n");
-			return ret_sqlexec;
-		}
-		else	// 0==ret_sqlexec
-			DEBUG("read time task from database none\n");
 		
-		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"INSERT INTO time(typeID,cmdType,controlVal,controlTime,frequency,remark) VALUES(%d,%d,%d,%d,%d,'%s');",\
+//		// 先清理掉相同插座、相同频率、相同时间点的旧任务
+//		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE typeID=%d AND frequency=%d AND controlTime=%d;",l_typeID,l_frequency,control_time);
+//		ret = sqlite_execute(sqlite_cmd_str);
+//		if(ret!=RESULT_OK)
+//			DEBUG("delete overdue timer failed\n");
+		
+		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"REPLACE INTO time(typeID,cmdType,controlVal,controlTime,frequency,remark) VALUES(%d,%d,%d,%d,%d,'%s');",\
 				l_typeID,l_cmdType,l_controlValue,control_time,l_frequency,p_entity+12);
 		
 		ret = sqlite_execute(sqlite_cmd_str);											///	quit
-		if(RESULT_OK==ret){
-			timing_task_refresh();
-		}
 	}
 	else{
 		DEBUG("invalid arguments: frequency=%d, control_time=%d\n", l_frequency, control_time);
@@ -302,19 +310,18 @@ static INSTRUCTION_RESULT_E instruction_model_task_add(INSTRUCTION_S *instructio
 //		return ERR_FORMAT;
 	}
 
-	memset(sqlite_cmd_str, 0, sizeof(sqlite_cmd_str));
-	sprintf(sqlite_cmd_str,"SELECT modeID FROM model WHERE modeID=%d;",instruction->arg2);
-	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-
-	int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
-	if(ret_sqlexec>RESULT_OK){
-		DEBUG("modeID(%d) is exist in table\n", instruction->arg2);
-		return RESULT_OK;
-	}
-	else if(ret_sqlexec<RESULT_OK){
-		DEBUG("sqlite cmd exec failed\n");
-		return ret_sqlexec;
-	}
+//	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"SELECT modeID FROM model WHERE modeID=%d;",instruction->arg2);
+//	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
+//
+//	int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
+//	if(ret_sqlexec>RESULT_OK){
+//		DEBUG("modeID(%d) is exist in table\n", instruction->arg2);
+//		return RESULT_OK;
+//	}
+//	else if(ret_sqlexec<RESULT_OK){
+//		DEBUG("sqlite cmd exec failed\n");
+//		return ret_sqlexec;
+//	}
 
 	DEBUG("will insert %d model tasks\n", l_num);
 	p_entity += 2;
@@ -325,9 +332,8 @@ static INSTRUCTION_RESULT_E instruction_model_task_add(INSTRUCTION_S *instructio
 	if('#'==tmp_str[strlen(tmp_str)])
 		tmp_str[strlen(tmp_str)] = '\0';
 	///	insert modelID,modelName into tabel model
-	sprintf(sqlite_cmd_str,"INSERT INTO model(modeID,name) VALUES(%d,'%s');",instruction->arg2,tmp_str);
-	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-
+	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"REPLACE INTO model(modeID,name) VALUES(%d,'%s');",instruction->arg2,tmp_str);
+	
 	INSTRUCTION_RESULT_E ret = sqlite_execute(sqlite_cmd_str);
 	if(RESULT_OK!=ret)
 		return ret;
@@ -339,10 +345,9 @@ static INSTRUCTION_RESULT_E instruction_model_task_add(INSTRUCTION_S *instructio
 		l_controlValue=appoint_str2int(p_entity+i*24, strlen(p_entity+i*24), 8, 4, 16);
 		l_frequency=appoint_str2int(p_entity+i*24, strlen(p_entity+i*24), 12, 2, 16);
 		l_controlTime=appoint_str2int(p_entity+i*24, strlen(p_entity+i*24), 14, 10, 10);
-		sprintf(sqlite_cmd_str,"INSERT INTO modtime(typeID,cmdType,controlVal,controlTime,frequency,remark,modeID) VALUES(%d,%d,%d,%d,%d,'0',%d);",\
+		snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"REPLACE INTO modtime(typeID,cmdType,controlVal,controlTime,frequency,remark,modeID) VALUES(%d,%d,%d,%d,%d,'0',%d);",\
 				l_typeID,l_cmdType,l_controlValue,l_controlTime,l_frequency,instruction->arg2);
 
-		DEBUG("insert model sqlite cmd str: %s\n", sqlite_cmd_str);
 		ret = sqlite_execute(sqlite_cmd_str);
 		if(RESULT_OK!=ret)
 			return ret;
@@ -447,7 +452,7 @@ static INSTRUCTION_RESULT_E exec_model_with_id(int model_id, char *typeIDs, unsi
 		num			——待计算命令串长度
 返回：	0——失败；others——计算的校验位
 */
-unsigned int serialcmd_checksum(unsigned char *serialcmd, int num)
+int serialcmd_checksum(unsigned char *serialcmd, int num)
 {
 	if(num <= 0){
 		DEBUG("can not do checksum for %d element\n", num);
@@ -485,47 +490,6 @@ static int socket_relay_status_trans(int origine_value, double *result)
 static int bcdChange(unsigned char input)
 {
 	return ((input>>4)*10+(input&0x0f));
-}
-
-/*
-功能：	解析串口命令串，只针对智能插座
-注意：	目前存在这样的情况，串口返回的命令串重复了多遍，需要能兼容这种情况，形如下面的结果是读取有功功率时一次返回的：
-		68 20 11 12 21 06 36 68 81 05 63 e9 33 33 33 db 16 68 20 11 12 21 06 36 68 c5 03 e9 01 63 85 16 68 20 11 06 00 41 56 68 81 06 43 c3 3c 33 33 33 00 16
-*/
-static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result);
-int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result)
-{
-	unsigned char *serial_cmd_son = serial_cmd;
-	unsigned int cmd_len_son = cmd_len;
-	
-	unsigned int i = 0;
-	int ret = 0;
-	
-	for(i=0;i<(cmd_len-SERIAL_RESPONSE_LEN_MIN);i++){
-		if(0x68==*(serial_cmd_son+i) && 0x68==*(serial_cmd_son+7+i)){
-			DEBUG("catch valid cmd head,i=%d\n",i);
-			ret = smart_socket_serial_cmd_parse_son(serial_cmd_son+i, cmd_len_son-i, socket_action, socket_id, result);
-			if(-1==ret){
-				DEBUG("cmd parse failed thoroughly\n");
-				break;
-			}
-			else if(0==ret){
-				DEBUG("cmd parse successfully\n");
-				break;
-			}
-			else if(-2==ret){
-				DEBUG("this parse failed, but will try again\n");
-			}
-			else
-				DEBUG("look this return value: %d, what a fucking meaning\n", ret);
-		}
-	}
-	DEBUG("parse action finished\n");
-	
-	if(0!=ret)
-		ret = -1;
-		
-	return ret;
 }
 
 /*
@@ -677,6 +641,7 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 			}
 			else{
 				*result = 1;
+				ret = 0;
 			}
 			break;
 		case SMART_SOCKET_INSTRUCTION_INVALID:		// 指令错误
@@ -703,12 +668,123 @@ static int smart_socket_serial_cmd_parse_son(unsigned char *serial_cmd, unsigned
 				ret = -2;
 			}
 			break;
+		
+		case CURTAIN_GOAHEAD:		// 窗帘前进
+			// 68 20 11 11 05 01 xx 68 84 02 E3 33 cs 16
+			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
+				DEBUG("check sum failed\n");
+				ret = -2;
+			}
+			else{
+				if(0x33==serial_cmd[11]){
+					DEBUG("curtain goahead success\n");
+					ret = 0;
+				}
+				else{
+					DEBUG("curtain goahead failed\n");
+					ret = 0;
+				}
+			}
+			break;
+		case CURTAIN_GOBACK:		// 窗帘后退
+			// 68 20 11 11 05 01 xx 68 84 02 E3 34 cs 16
+			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
+				DEBUG("check sum failed\n");
+				ret = -2;
+			}
+			else{
+				if(0x34==serial_cmd[11]){
+					DEBUG("curtain goback success\n");
+					ret = 0;
+				}
+				else{
+					DEBUG("curtain goback failed\n");
+					ret = -1;
+				}
+			}
+			break;
+		case CURTAIN_STOP:		// 窗帘停止
+			// 68 20 11 11 05 01 xx 68 84 02 E3 35 cs 16
+			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
+				DEBUG("check sum failed\n");
+				ret = -2;
+			}
+			else{
+				if(0x35==serial_cmd[11]){
+					DEBUG("curtain stop success\n");
+					ret = 0;
+				}
+				else{
+					DEBUG("curtain stop failed\n");
+					ret = -1;
+				}
+			}
+			break;
+		case CURTAIN_CONFIRM:		// 窗帘地址验证
+			// 68 20 11 11 05 01 xx 68 84 02 E3 36 cs 16
+			if(serial_cmd[12]!=serialcmd_checksum(serial_cmd, 12)){
+				DEBUG("check sum failed\n");
+				ret = -2;
+			}
+			else{
+				if(0x36==serial_cmd[11]){
+					DEBUG("curtain verify success\n");
+					ret = 0;
+					*result = 1;
+				}
+				else{
+					DEBUG("curtain verify failed\n");
+					ret = -1;
+				}
+			}
+			break;
+		
 		default:
 			DEBUG("can not support this action of smart socket\n");
 			ret = -2;
 			break;
 	}
 	
+	return ret;
+}
+
+/*
+功能：	解析串口命令串，只针对智能插座
+注意：	目前存在这样的情况，串口返回的命令串重复了多遍，需要能兼容这种情况，形如下面的结果是读取有功功率时一次返回的：
+		68 20 11 12 21 06 36 68 81 05 63 e9 33 33 33 db 16 68 20 11 12 21 06 36 68 c5 03 e9 01 63 85 16 68 20 11 06 00 41 56 68 81 06 43 c3 3c 33 33 33 00 16
+*/
+int smart_socket_serial_cmd_parse(unsigned char *serial_cmd, unsigned int cmd_len, SMART_SOCKET_ACTION_E socket_action, char *socket_id, double *result)
+{
+	unsigned char *serial_cmd_son = serial_cmd;
+	unsigned int cmd_len_son = cmd_len;
+	
+	unsigned int i = 0;
+	int ret = 0;
+	
+	for(i=0;i<(cmd_len-SERIAL_RESPONSE_LEN_MIN);i++){
+		if(0x68==*(serial_cmd_son+i) && 0x68==*(serial_cmd_son+7+i)){
+			DEBUG("catch valid cmd head,i=%d\n",i);
+			ret = smart_socket_serial_cmd_parse_son(serial_cmd_son+i, cmd_len_son-i, socket_action, socket_id, result);
+			if(-1==ret){
+				DEBUG("cmd parse failed thoroughly\n");
+				break;
+			}
+			else if(0==ret){
+				DEBUG("cmd parse successfully\n");
+				break;
+			}
+			else if(-2==ret){
+				DEBUG("this parse failed, but will try again\n");
+			}
+			else
+				DEBUG("look this return value: %d, what a fucking meaning\n", ret);
+		}
+	}
+	DEBUG("parse action finished\n");
+	
+	if(0!=ret)
+		ret = -1;
+		
 	return ret;
 }
 
@@ -881,6 +957,60 @@ int smart_socket_serial_cmd_splice(unsigned char *serial_cmd, unsigned int cmd_s
 				serial_cmd[index++] = 0x00;
 			}
 			break;
+		
+		
+		case CURTAIN_GOAHEAD:				// 窗帘前进
+			// 68 20 11 11 05 01 xx 68 04 02 e3 33 cs 16
+			if(cmd_size<12){
+				DEBUG("length of CURTAIN_GOAHEAD cmd buffer is too short: %d\n", cmd_size);
+				ret = -1;
+			}
+			else{
+				serial_cmd[index++] = 0x04;
+				serial_cmd[index++] = 0x02;
+				serial_cmd[index++] = 0xe3;
+				serial_cmd[index++] = 0x33;
+			}
+			break;
+		case CURTAIN_GOBACK:				// 窗帘后退
+			// 68 20 11 11 05 01 xx 68 04 02 e3 34 cs 16
+			if(cmd_size<12){
+				DEBUG("length of CURTAIN_GOBACK cmd buffer is too short: %d\n", cmd_size);
+				ret = -1;
+			}
+			else{
+				serial_cmd[index++] = 0x04;
+				serial_cmd[index++] = 0x02;
+				serial_cmd[index++] = 0xe3;
+				serial_cmd[index++] = 0x34;
+			}
+			break;
+		case CURTAIN_STOP:				// 窗帘停止
+			// 68 20 11 11 05 01 xx 68 04 02 e3 35 cs 16
+			if(cmd_size<12){
+				DEBUG("length of CURTAIN_STOP cmd buffer is too short: %d\n", cmd_size);
+				ret = -1;
+			}
+			else{
+				serial_cmd[index++] = 0x04;
+				serial_cmd[index++] = 0x02;
+				serial_cmd[index++] = 0xe3;
+				serial_cmd[index++] = 0x35;
+			}
+			break;
+		case CURTAIN_CONFIRM:				// 窗帘地址验证
+			// 68 20 11 11 05 01 xx 68 04 02 e3 36 cs 16
+			if(cmd_size<12){
+				DEBUG("length of CURTAIN_CONFIRM cmd buffer is too short: %d\n", cmd_size);
+				ret = -1;
+			}
+			else{
+				serial_cmd[index++] = 0x04;
+				serial_cmd[index++] = 0x02;
+				serial_cmd[index++] = 0xe3;
+				serial_cmd[index++] = 0x36;
+			}
+			break;
 		default:
 			DEBUG("can not support this action of smart socket\n");
 			ret = -1;
@@ -946,7 +1076,31 @@ static INSTRUCTION_RESULT_E immediatly_task_run(INSTRUCTION_S *instruction)
 	}
 	else
 	{
-		return ERR_FORMAT;
+		DEBUG("instruction->type_id: [0x%06x]0x%02x\n",instruction->type_id,(0xff&((instruction->type_id)>>8)));
+		if(0x06==(0xff&((instruction->type_id)>>8))){	// 电动窗帘curtain
+			DEBUG("this is a curtaion action\n");
+			if(0x02==instruction->arg1)				///stop
+			{
+				serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),CURTAIN_STOP,myequipment.socket_id);
+			}
+			else if(0x03==instruction->arg1)			///CURTAIN_GOAHEAD
+			{
+				serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),CURTAIN_GOAHEAD,myequipment.socket_id);
+			}
+			else if(0x04==instruction->arg1)			///CURTAIN_GOBACK
+			{
+				serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),CURTAIN_GOBACK,myequipment.socket_id);
+			}
+			else
+			{
+				DEBUG("can not distinguish such instruction for curtaion, instruction->arg1=0x%02x\n",instruction->arg1);
+				return ERR_FORMAT;
+			}
+		}
+		else{
+			DEBUG("can not distinguish such electric device\n");
+			return ERR_FORMAT;
+		}
 	}
 	
 	if(serial_cmd_len<SERIAL_CMD_SEND_LEN_MIN || serial_cmd_len>SERIAL_CMD_SEND_LEN_MAX){
@@ -954,25 +1108,44 @@ static INSTRUCTION_RESULT_E immediatly_task_run(INSTRUCTION_S *instruction)
 		return ERR_FORMAT;
 	}
 	
-#if 0
-	ret = sendto_serial(serial_cmd, serial_cmd_len);
-	if(RESULT_OK!=ret){
-		DEBUG("send to serial failed\n");
-		return ret;
-	}
-	//ms_sleep(500);
-	memset(serial_cmd, 0, sizeof(serial_cmd));
-	int recv_serial_len = recvfrom_serial(serial_cmd, sizeof(serial_cmd));
-#else
 	int recv_serial_len = serial_access(serial_cmd, serial_cmd_len, sizeof(serial_cmd));
-#endif
+
 	double result = 0.0;
 	if(recv_serial_len>0){
-		if(0x01==instruction->arg2)
-			ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, SMART_SOCKET_RELAY_CONNECT, myequipment.socket_id, &result);
-		else if(0x00==instruction->arg2)
-			ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, SMART_SOCKET_RELAY_DISCONNECT, myequipment.socket_id, &result);
-
+		if(0x01==instruction->arg1){
+			if(0x01==instruction->arg2)
+				ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, SMART_SOCKET_RELAY_CONNECT, myequipment.socket_id, &result);
+			else if(0x00==instruction->arg2)
+				ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, SMART_SOCKET_RELAY_DISCONNECT, myequipment.socket_id, &result);
+		}
+		else{
+			DEBUG("instruction->type_id: [0x%06x]0x%02x\n",instruction->type_id,(0xff&((instruction->type_id)>>8)));
+			if(0x06==(0xff&((instruction->type_id)>>8))){	// 电动窗帘curtain
+				DEBUG("this is a curtaion action\n");
+				if(0x02==instruction->arg1)				///stop
+				{
+					ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, CURTAIN_STOP, myequipment.socket_id, &result);
+				}
+				else if(0x03==instruction->arg1)			///CURTAIN_GOAHEAD
+				{
+					ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, CURTAIN_GOAHEAD, myequipment.socket_id, &result);
+				}
+				else if(0x04==instruction->arg1)			///CURTAIN_GOBACK
+				{
+					ret = smart_socket_serial_cmd_parse(serial_cmd, recv_serial_len, CURTAIN_GOBACK, myequipment.socket_id, &result);
+				}
+				else
+				{
+					DEBUG("can not distinguish such instruction for curtaion, instruction->arg1=0x%02x\n",instruction->arg1);
+					return ERR_FORMAT;
+				}
+			}
+			else{
+				DEBUG("can not distinguish such electric device\n");
+				return ERR_FORMAT;
+			}
+		}
+		
 		if(RESULT_OK==ret /*&& 1==result*/){
 			DEBUG("do immedatly task OK\n");
 			return RESULT_OK;
@@ -1425,14 +1598,14 @@ static INSTRUCTION_RESULT_E electric_equipment_insert(INSTRUCTION_S *instruction
 		strncpy(socket_id, p_tmp, 12);
 		p_tmp += (12+4);	/* jump socketID and the filling '0000' */
 		
-		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND socketID='%s';",instruction->type_id, socket_id);
+//		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND socketID='%s';",instruction->type_id, socket_id);
 	}
 	else if(0x02==instruction->arg2){
 		// operID, len=4;
 		oper_id = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 4, 16);
 		p_tmp += (4);
 		
-		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND operID=%d;",instruction->type_id, oper_id);
+//		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND operID=%d;",instruction->type_id, oper_id);
 	}
 	else if(0x03==instruction->arg2){
 		// operID, len=4
@@ -1440,7 +1613,7 @@ static INSTRUCTION_RESULT_E electric_equipment_insert(INSTRUCTION_S *instruction
 		strncpy(socket_id, p_tmp+4, 12);
 		p_tmp += (4+12+4);	/* jump operID, socketID and the filling '0000' */
 		
-		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND socketID='%s' AND operID=%d;",instruction->type_id, socket_id, oper_id);
+//		sprintf(sqlite_cmd_str,"SELECT typeID FROM devlist WHERE typeID=%d AND socketID='%s' AND operID=%d;",instruction->type_id, socket_id, oper_id);
 	}
 	else{
 		DEBUG("this arg2(0x%02x) is not supported\n", instruction->arg2);
@@ -1458,30 +1631,26 @@ static INSTRUCTION_RESULT_E electric_equipment_insert(INSTRUCTION_S *instruction
 		strncpy(dev_name, p_star, MIN_LOCAL(strlen(p_star), (sizeof(dev_name)-1)));
 	}
 
-	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-//	int (*sqlite_callback)(char **,int,int,void *) = equipment_check_callback;
-	int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
-	if(ret_sqlexec>RESULT_OK){
-		DEBUG("this equipment is exist in table\n");
-		return RESULT_OK;
-	}
-	else if(ret_sqlexec<RESULT_OK){
-		DEBUG("sqlite cmd exec failed\n");
-		return ret_sqlexec;
-	}
-	else	// 0==ret_sqlexec
-		DEBUG("read equipment from database none\n");
+//	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
+////	int (*sqlite_callback)(char **,int,int,void *) = equipment_check_callback;
+//	int ret_sqlexec = sqlite_read(sqlite_cmd_str, NULL, NULL);
+//	if(ret_sqlexec>RESULT_OK){
+//		DEBUG("this equipment is exist in table\n");
+//		return RESULT_OK;
+//	}
+//	else if(ret_sqlexec<RESULT_OK){
+//		DEBUG("sqlite cmd exec failed\n");
+//		return ret_sqlexec;
+//	}
+//	else	// 0==ret_sqlexec
+//		DEBUG("read equipment from database none\n");
 		
-	sprintf(sqlite_cmd_str,"INSERT INTO devlist(typeID,locationID,iconID,operID,socketID,roomName,devName) VALUES(%d,%d,%d,%d,'%s','%s','%s');",\
+	sprintf(sqlite_cmd_str,"REPLACE INTO devlist(typeID,locationID,iconID,operID,socketID,roomName,devName) VALUES(%d,%d,%d,%d,'%s','%s','%s');",\
 			instruction->type_id,location_id,icon_id,oper_id,socket_id,room_name,dev_name);
 
-	DEBUG("insert model sqlite cmd str: %s\n", sqlite_cmd_str);
 	INSTRUCTION_RESULT_E ret = sqlite_execute(sqlite_cmd_str);
-	DEBUG("sqlite_execute ret = %d\n", ret);
-	if(RESULT_OK==ret)
-		return equipment_refresh();
-	else
-		return ret;
+	
+	return ret;
 }
 
 /*
@@ -1599,9 +1768,6 @@ static INSTRUCTION_RESULT_E model_delete(INSTRUCTION_S *instruction)
 	char sqlite_cmd_str[SQLITECMDLEN];
 	memset(sqlite_cmd_str, 0, sizeof(sqlite_cmd_str));
 
-	///	delete the value in the time according controlValue
-	// sprintf(cmdStr,"DELETE FROM time WHERE controlVal=%d;",l_controlValue);
-	
 	sprintf(sqlite_cmd_str,"DELETE FROM model WHERE modeID=%d;",instruction->arg2);
 	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
 	INSTRUCTION_RESULT_E ret = sqlite_execute(sqlite_cmd_str);
@@ -1617,45 +1783,64 @@ static INSTRUCTION_RESULT_E model_delete(INSTRUCTION_S *instruction)
 
 static INSTRUCTION_RESULT_E timing_task_delete(INSTRUCTION_S *instruction)
 {
+	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	char sqlite_cmd_str[SQLITECMDLEN];
-
-	/*
-	在实测时，当在UI上更新一个定时任务时，服务器先发送一个删除旧任务的指令，然后再发送添加新任务的指令。
-	但是删除旧任务的“参数1+参数2+频度+时间戳”是新任务的参数，无法识别。
-	*/
-#if 0
+	
 	int control_val = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 0, 4, 16);
 	int frequency = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 2, 16);
 	int control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 6, 10, 10);
 	
-	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE (cmdType=1 AND controlVal=%d AND frequency=%d AND controlTime=%d);",
-																control_val, frequency, control_time);
-#else
-	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE (typeID=%d);",
-																instruction->type_id);
-#endif
-	//DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-	return sqlite_execute(sqlite_cmd_str);
+	print_localtime_sec2str(control_time);
+	
+	if(00!=frequency)
+		control_time = sec_from_0_at_day(control_time);
+
+	snprintf(sqlite_cmd_str,sizeof(sqlite_cmd_str),"DELETE FROM time WHERE (typeID=%d AND controlVal=%d AND frequency=%d AND controlTime=%d);",
+																instruction->type_id, control_val, frequency, control_time);
+
+//	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
+	ret = sqlite_execute(sqlite_cmd_str);
+	
+	if(RESULT_OK==ret){
+		timing_task_refresh();
+	}
+	
+	return ret;
 }
 
 static INSTRUCTION_RESULT_E timing_task_update(INSTRUCTION_S *instruction)
 {
+	INSTRUCTION_RESULT_E ret = ERR_OTHER;
 	char sqlite_cmd_str[SQLITECMDLEN];
 	memset(sqlite_cmd_str, 0, sizeof(sqlite_cmd_str));
 
 	int old_control_val = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 0, 4, 16);
 	int old_frequency = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 4, 2, 16);
 	int old_control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 6, 10, 10);
-
+	
+	if(00!=old_frequency)
+		old_control_time = sec_from_0_at_day(old_control_time);
+	
 	int control_val = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 16, 4, 16);
 	int frequency = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 20, 2, 16);
 	int control_time = appoint_str2int(instruction->alterable_entity, strlen(instruction->alterable_entity), 22, 10, 10);
 	char *p_remark = instruction->alterable_entity + 32;
 	
+	if(00!=frequency)
+		control_time = sec_from_0_at_day(control_time);
+	
+	// 不在这里判断任务时间是否合法，否则在修改任务时（先删除旧任务后添加新任务）逻辑很复杂
+	
 	sprintf(sqlite_cmd_str,"UPDATE time SET controlVal=%d,frequency=%d,controlTime=%d,remark='%s' WHERE (controlVal=%d AND frequency=%d AND controlTime=%d);",
 											control_val, frequency, control_time, p_remark, old_control_val, old_frequency, old_control_time);
 	DEBUG("sqlite cmd str: %s\n", sqlite_cmd_str);
-	return sqlite_execute(sqlite_cmd_str);
+	ret = sqlite_execute(sqlite_cmd_str);
+	
+	if(RESULT_OK==ret){
+		timing_task_refresh();
+	}
+	
+	return ret;
 }
 
 static INSTRUCTION_RESULT_E verify_address(INSTRUCTION_S *instruction)
@@ -1671,8 +1856,14 @@ static INSTRUCTION_RESULT_E verify_address(INSTRUCTION_S *instruction)
 	unsigned char serial_cmd[SERIAL_CMD_SIZE];
 	memset(serial_cmd, 0, sizeof(serial_cmd));
 	
-	if(0x02==instruction->arg2 && 0x07==instruction->alterable_flag){
-		DEBUG("verify socket address\n");
+	if( (0x02==instruction->arg2 || 0x03==instruction->arg2 || 0x04==instruction->arg2) && 0x07==instruction->alterable_flag){
+		if(0x04==instruction->arg2){
+			smart_socket_action = CURTAIN_CONFIRM;
+			DEBUG("verify curtain address\n");
+		}
+		else{
+			DEBUG("verify socket address\n");
+		}
 		serial_cmd_len = smart_socket_serial_cmd_splice(serial_cmd,sizeof(serial_cmd),smart_socket_action,instruction->alterable_entity);
 		if(serial_cmd_len>0)
 		{
@@ -1738,7 +1929,7 @@ INSTRUCTION_RESULT_E instruction_dispatch(INSTRUCTION_S *instruction)
 					}
 					else
 					{
-						DEBUG("this instruction can not support\n");
+						DEBUG("this instruction can not support, vendor_id=0x%02x\n",vendor_id);
 						return ERR_FORMAT;
 					}
 				}
@@ -2019,7 +2210,8 @@ void instruction_insert_poll(void)
 			if(-1!=g_insert_insts[i].alterable_flag){
 				for(j=0;j<EQUIPMENT_NUM;j++)
 				{
-					if(-1!=tmp_equipments[j].type_id)
+//					DEBUG( "(0xff&((tmp_equipments[j].type_id)>>8))=0x%02x\n",(0xff&((tmp_equipments[j].type_id)>>8)) );
+					if(-1!=tmp_equipments[j].type_id && 0x06!=(0xff&((tmp_equipments[j].type_id)>>8)))
 					{
 						type_id = tmp_equipments[j].type_id;
 						memset(socket_id, 0, sizeof(socket_id));
@@ -2048,7 +2240,7 @@ void instruction_insert_poll(void)
 											snprintf(sqlite_cmd,sizeof(sqlite_cmd),"INSERT INTO actpower(typeID,hourTime,data,status) VALUES(%d,%d,%lf,0);",\
 													type_id,(int)time(NULL)+smart_power_difftime_get(),power);
 											
-											DEBUG("insert power sqlite cmd str: %s\n", sqlite_cmd);
+											DEBUG("insert actpower sqlite cmd str: %s\n", sqlite_cmd);
 											sqlite_execute(sqlite_cmd);
 										}
 										else if(SMART_SOCKET_ACTIVE_POWER_CONSUMPTION_READ==smart_socket_action){
@@ -2071,6 +2263,7 @@ void instruction_insert_poll(void)
 											}
 											sqlite_execute(sqlite_cmd);
 											
+											float tmp_power = power;
 											power -= basic_power_data;
 											DEBUG("basic_power_data: %lf, calculate power: %lf\n", basic_power_data, power);
 											if(power>0.0){
@@ -2081,7 +2274,7 @@ void instruction_insert_poll(void)
 												sqlite_execute(sqlite_cmd);
 											}
 											else{
-												DEBUG("shit! calculate power little than 0(%lf-%lf), translate is as 0", power, basic_power_data);
+												DEBUG("shit! calculate power little than 0(%lf-%lf), translate is as 0\n", tmp_power, basic_power_data);
 												power=0.0;
 											}
 										}
@@ -2214,7 +2407,7 @@ void instruction_mainloop()
 								if(RESULT_ALTERABLE_ENTITY_FILL_OK!=inst_result){
 									DEBUG("the return alterable entity str will be filled manually, inst_result=%d\n", inst_result);
 									memset(instruction.alterable_entity, 0, sizeof(instruction.alterable_entity));
-									alterable_entity_result(inst_result, instruction.alterable_entity, sizeof(instruction.alterable_entity));
+									alterable_entity_result(inst_result, &instruction);
 								}
 								else
 									DEBUG("the return alterable entity str is filled automaticly\n");

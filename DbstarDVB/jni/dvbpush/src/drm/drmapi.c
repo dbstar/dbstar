@@ -130,14 +130,8 @@ int drm_read(int *fd, unsigned char *buf, int size)
 		LOGD("@@@@@@@@@@@ CDCASTB_DRM_ReadFile[%d] ERROR(0x%x) (size=%d)\n", *((int *)fd), ret, size);
 		
 		if ((ret == 0x42) || (ret == 0x1)
-			|| CDCA_RC_CARD_INVALID==ret) { // || CDCA_RC_PREVIEWOVER==ret) { // CA card plug out
+			|| (CDCA_RC_CARD_INVALID==ret)) { // CA card plug out
 			rdsize = 0;
-		}
-		else if(CDCA_RC_PREVIEWOVER==ret){// && 1==s_0x37_1st){
-//			LOGD("catch CDCA_RC_PREVIEWOVER(0x37) firstly, ignore it\n");
-//			rdsize = 1024;
-//			s_0x37_1st = 0;
-                        return -0x37;
 		}
 		else{ // CA error
 			LOGD("@@@@@@@@@@@ CA ERROR =0x%x\n", ret);

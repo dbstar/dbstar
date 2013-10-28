@@ -31,18 +31,21 @@
 #define LOGE(...)
 #endif
 
-#if 0
-typedef struct {
-	char sn[CDCA_MAXLEN_SN + 1];
-	FILE *fd;
-} SCDCACardEntitleInfo;
+#define CDCA_MAXLEN_SN_PATH	  (CDCA_MAXLEN_SN + 128)
 
 typedef struct {
-	CDCA_U8        byReqID;
-	CDCA_U16      wPID;
-	CDCA_U32      timeouttime;
-} SCDCAFilterInfo;
-#endif
+    char sn[CDCA_MAXLEN_SN_PATH+1];
+    int  fd;
+}SCDCACardEntitleInfo;
+
+typedef struct {
+        CDCA_U8       byReqID;
+        CDCA_U8       fid;
+        CDCA_U16      wPID;
+        CDCA_U32      timeouttime;
+}SCDCAFilterInfo;
+
+
 //#define CDCA_MAX_CARD_NUM 2
 #define SMC_DEVICE  "/dev/smc0"
 #define BLOCK01_FILE "/data/dbstar/drm/entitle/block01"
@@ -584,7 +587,7 @@ resendwrite:
 /* 通知授权变化 */
 void CDSTBCA_EntitleChanged(CDCA_U16 wTvsID)
 {
-	LOGD("###############CDSTBCA_EntitleChanged function not implemented\n");
+	LOGD("###############CDSTBCA_EntitleChanged function not implemented, wTvsID=%u\n",wTvsID);
 }
 
 
@@ -807,7 +810,7 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 	
 	*(int *)pFileHandle = -1;
 	sprintf(fullentitle, "%s/%s", ENTITLE_FILE_PATH, CardSN);
-	LOGD("open the entitle file [%s]\n", fullentitle);
+//	LOGD("will open entitle file [%s]\n", fullentitle);
 	if (access(fullentitle, 0)) { //not exsit
 		if (card_sn.fd != -1) {
 			close(card_sn.fd);
@@ -874,7 +877,7 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 	long long file_pos = 0LL;
 	
 //	LOGD("++++ seek file(%d) byori=[%d] posk=[%lu] pos=[%lu] offset=[%llu]\n", *(int *)pFileHandle,byOrigin, dwOffsetKByte, dwOffsetByte, offset);
-	LOGD(">--- seek fd(%d) from file pos: %lld\n", *(int *)pFileHandle,lseek64(*(int *)pFileHandle, 0, SEEK_CUR));
+//	LOGD(">--- seek fd(%d) from file pos: %lld\n", *(int *)pFileHandle,lseek64(*(int *)pFileHandle, 0, SEEK_CUR));
 	
 	if (*(int *)pFileHandle < 0) {
 		return CDCA_FALSE;
@@ -886,7 +889,7 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 			LOGE("!!!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_SET!!fseek error\n");
 			return CDCA_FALSE;
 		}
-		LOGD(">>>> lseek64(%d,%lld,%d) at [%lld]\n", *(int *)pFileHandle,offset,byOrigin,file_pos);
+//		LOGD(">>>> lseek64(%d,%lld,%d) at [%lld]\n", *(int *)pFileHandle,offset,byOrigin,file_pos);
 	} else if (byOrigin == CDCA_SEEK_CUR_BACKWARD) {
 		if ((file_pos=lseek64(*(int *)pFileHandle, -offset, SEEK_CUR)) < 0) {
 			LOGE("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_CUR_BACKWARD!!!!fseek error\n");
@@ -920,10 +923,10 @@ CDCA_U32 CDSTBCA_ReadFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLen
 		return -1;
 	}
 	
-//LOGD("read fd(%d) at file pos: %lld\n", *(int *)pFileHandle,lseek64(*(int *)pFileHandle, 0, SEEK_CUR));
+//	LOGD("read fd(%d) at file pos: %lld\n", *(int *)pFileHandle,lseek64(*(int *)pFileHandle, 0, SEEK_CUR));
 	ret = read((*(int *)pFileHandle), pBuf, dwLen);
 	if (ret > 0) {
-		LOGD("read [%lu] from fd(%d), file pos arrive at %lld\n", dwLen,(*(int *)pFileHandle),lseek64(*(int *)pFileHandle, 0, SEEK_CUR));
+//		LOGD("read [%lu] from fd(%d), file pos arrive at %lld\n", dwLen,(*(int *)pFileHandle),lseek64(*(int *)pFileHandle, 0, SEEK_CUR));
 	} else {
 		LOGD("want read [%lu] from fd(%d) but failed[%d]\n", dwLen, (*(int *)pFileHandle), ret);
 	}
