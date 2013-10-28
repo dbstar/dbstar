@@ -61,6 +61,7 @@ static DVRFeedData data_threads;
 // tuner api
 static int tuner_inited = 0;
 static int feedpush_started = 0;
+static unsigned int blindscan_process = 0;
 
 int data_stream_status_str_get(char *buf, unsigned int size)
 {
@@ -91,6 +92,81 @@ DEBUG("GET TUNER STATUS locked[%x]\n",status);
     return 0;
        
 }
+
+static void blindscan_cb(int dev_no, AM_FEND_BlindEvent_t *evt, void *user_data)
+{
+	if(evt->status == AM_FEND_BLIND_START)
+	{
+		DEBUG("++++++blindscan_start %u\n", evt->freq);
+	}
+	else if(evt->status == AM_FEND_BLIND_UPDATEPROCESS)
+	{
+		blindscan_process = evt->process;
+		DEBUG("++++++blindscan_process %u\n", blindscan_process);
+	}
+	else if(evt->status == AM_FEND_BLIND_UPDATETP)
+	{
+		DEBUG("++++++blindscan_tp\n");
+	}
+}
+
+struct blindscan_result{
+	int count;
+	unsigned int freq[128];
+	unsigned int sr[128];
+};
+
+int tuner_blindscan(struct  blindscan_result *scan_result)
+{
+    int fe_id = FEND_DEV_NO;
+    struct dvb_frontend_parameters blindscan_para[128];
+    unsigned int count = 128;
+
+    if(tuner_inited == 1) {
+	AM_FEND_BlindScan(fe_id, blindscan_cb, (void *)&fe_id, 950000000, 2150000000);
+	while(1){
+	    if(blindscan_process == 100){
+		break;
+	    }
+	    //printf("wait process %u\n", blindscan_process);
+	    usleep(500 * 1000);
+	}
+	AM_FEND_BlindExit(fe_id); 
+	//printf("start AM_FEND_BlindGetTPInfo\n");
+					
+	AM_FEND_BlindGetTPInfo(fe_id, blindscan_para, &count);
+
+	DEBUG("dump TPInfo: %d\n", count);
+	int i = 0;
+				
+	DEBUG("\n\n");
+        if(count > 128) count=128;
+
+        scan_result->count=count;
+    
+	for(i=0; i < count; i++)
+	{
+	    scan_result->freq[i] = blindscan_para[i].frequency/1000;
+	    scan_result->sr[i] = blindscan_para[i].u.qpsk.symbol_rate/1000;
+	
+            DEBUG("Ch%2d: RF: %4d SR: %5d ",i+1, (blindscan_para[i].frequency/1000),(blindscan_para[i].u.qpsk.symbol_rate/1000));
+	    DEBUG("\n");
+	}	
+    }
+    else {
+        return -1;
+    }
+    return 0;
+}
+
+void tuner_search_satelite(int *snr, int *strength)
+{
+    AM_FEND_GetSNR(FEND_DEV_NO, snr);
+    AM_FEND_GetStrength(FEND_DEV_NO, strength);
+
+    DEBUG("cb status: snr:%d, strength:%d\n",snr, strength);
+}
+
 
 static void fend_cb(int dev_no, struct dvb_frontend_event *evt, void *user_data)
 {

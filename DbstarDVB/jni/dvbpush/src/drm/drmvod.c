@@ -172,9 +172,14 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 		if (ret == 0) {
 			//LOGD("DRM_READ AGAIN!\n");
 			ret = -EAGAIN;
-		} else if (ret < 0) {
+		} 
+                else if (ret == -0x37)
+                {
+                        ret = -111;
+                }else if (ret < 0) {
 			LOGD("DRM_READ ERROR!, ret=%d\n", ret);
 			set_player_errno(-ret);
+                        if (ret == -0x37) ret = -EAGAIN;
 		}
 	} else {
 		ret = read(drmvod->fd_media, buf, len);
