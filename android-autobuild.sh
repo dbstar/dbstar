@@ -28,8 +28,8 @@ LOG_LOGGER=$LOG_BUILD
 GIT_SREVER="git://git.myamlogic.com/platform/manifest.git"
 GIT_BRANCH="jb-mr1-amlogic"
 REPO_URL="git://10.8.9.5/tools/repo.git"
-ANDROID_LUNCH="12"
-UBOOT_CONFIG="m6_mbox_config"
+ANDROID_LUNCH="15"
+UBOOT_CONFIG="m6_mbox_v1_config"
 KERNEL_CONFIG="meson6_g18_jbmr1_defconfig"
 MAKE_ARGS=""
 
@@ -272,6 +272,8 @@ dbstar_make()
 		call mmm $DBSTAR_SRC/DbstarLauncher -B
 		call mmm $DBSTAR_SRC/DbstarSettings -B
 		call mmm $DBSTAR_SRC/GuodianApp -B
+                call mmm $DBSTAR_SRC/DBStarAppManager -B
+                call mmm $DBSTAR_SRC/DbstarFileBrowser -B
 	else
 		call mmm $DBSTAR_SRC/DbstarDVB
 		if [ $? -ne 0 ]; then
@@ -289,6 +291,15 @@ dbstar_make()
 		if [ $? -ne 0 ]; then
 			logger "ERROR make GuodianApp"
 		fi
+                call mmm $DBSTAR_SRC/DBStarAppManager
+                if [ $? -ne 0 ]; then
+                        logger "ERROR make DBStarAppManager"
+                fi
+                call mmm $DBSTAR_SRC/DbstarFileBrowser
+                if [ $? -ne 0 ]; then
+                        logger "ERROR make DbstarFileBrowser"
+                fi
+
 	fi
 	if [ $? -eq 0 ]; then
 		logger "FINISH make dbstar"
