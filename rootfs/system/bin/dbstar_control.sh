@@ -44,6 +44,7 @@ dbstar_init()
 		chmod 777 /data/dbstar
 		chmod 777 /data/dbstar/ColumnRes
 		chmod 777 /data/dbstar/ColumnRes/LocalColumnIcon
+		chmod 777 /data/dbstar/ColumnRes/LocalColumnIcon/*
 		setprop dbstar.inited 1
 	fi
 
