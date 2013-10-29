@@ -50,10 +50,24 @@ typedef enum{
 #define HARDWARE_VERSION	"03.01"
 #define LOADER_VERSION		"1.2.1"
 
-// 如果是第三方定制版本或者DRM测试认证的版本，定义此宏
-//#define PROJECT_CUSTOMIZE
+
 // 如果是DRM认证版本，则定义此宏
 //#define DRM_TEST
+
+// 国电栏目
+#define SMARTLIFE_LC
+
+// 本地栏目：文件浏览
+//#define FILEBROWSER_LC
+
+// 本地栏目：我的应用
+//#define MYAPP_LC
+
+// 本地栏目：浏览器
+//#define WEBBROWSER_LC
+
+// 本地栏目：CNTV
+//#define CNTV_LC
 
 
 /*
