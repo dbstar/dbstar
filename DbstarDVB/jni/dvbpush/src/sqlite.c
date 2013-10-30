@@ -511,6 +511,7 @@ ColumnIcon_onclick	NVARCHAR(256) DEFAULT '',\
 ColumnIcon_spare	NVARCHAR(256) DEFAULT '',\
 SequenceNum	INTEGER DEFAULT 100,\
 URI	NVARCHAR(256) DEFAULT '',\
+Visible	CHAR(32) DEFAULT '1',\
 Favorite NVARCHAR(32) DEFAULT '0',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ColumnID));", name);
@@ -1547,6 +1548,30 @@ int localcolumn_init()
 	else{
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9802';");
 		sqlite_transaction_exec(sqlite_cmd);
+	}
+	/*
+	 二级菜单“富媒体分享”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","L9804")){
+#ifdef MEDIASHARING_LC
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',4);",
+			"L9804","L98","L98/L9804","L98","","","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9804",CURLANGUAGE_DFT,"DisplayName","媒体分享","");
+		sqlite_transaction_exec(sqlite_cmd);
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+			"Column","L9804","eng","DisplayName","MediaSharing","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+#endif
+	}
+	else{
+#ifdef MEDIASHARING_LC
+#else
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9804';");
+		sqlite_transaction_exec(sqlite_cmd);
+#endif
 	}
 	/*
 	 二级菜单“文件浏览”
