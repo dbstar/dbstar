@@ -55,22 +55,22 @@ typedef enum{
 //#define DRM_TEST
 
 // 国电栏目
-#define SMARTLIFE_LC
+//#define SMARTLIFE_LC
 
 // 本地栏目：富媒体分享
-//#define MEDIASHARING_LC
+#define MEDIASHARING_LC
 
 // 本地栏目：文件浏览
-//#define FILEBROWSER_LC
+#define FILEBROWSER_LC
 
 // 本地栏目：我的应用
-//#define MYAPP_LC
+#define MYAPP_LC
 
 // 本地栏目：浏览器
-//#define WEBBROWSER_LC
+#define WEBBROWSER_LC
 
 // 本地栏目：CNTV
-//#define CNTV_LC
+#define CNTV_LC
 
 
 /*

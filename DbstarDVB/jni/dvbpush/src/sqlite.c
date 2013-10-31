@@ -1554,7 +1554,7 @@ int localcolumn_init()
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9804")){
 #ifdef MEDIASHARING_LC
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',4);",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',10);",
 			"L9804","L98","L98/L9804","L98","","","");
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
@@ -1578,7 +1578,7 @@ int localcolumn_init()
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9805")){
 #ifdef FILEBROWSER_LC
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',5);",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',11);",
 			"L9805","L98","L98/L9805","L98","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
@@ -1603,7 +1603,7 @@ int localcolumn_init()
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9806")){
 #ifdef MYAPP_LC
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',6);",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',12);",
 			"L9806","L98","L98/L9806","L98","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
@@ -1628,7 +1628,7 @@ int localcolumn_init()
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9807")){
 #ifdef WEBBROWSER_LC
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',7);",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',13);",
 			"L9807","L98","L98/L9807","L98","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
@@ -1652,7 +1652,7 @@ int localcolumn_init()
 	 二级菜单“个人中心－帮助信息”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9808")){
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',8);",
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',20);",
 			"L9908","L98","L98/L9908","L99","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
