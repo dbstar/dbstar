@@ -1191,7 +1191,7 @@ static INSTRUCTION_RESULT_E inquire_electrical_status(INSTRUCTION_S *instruction
 		else if(SMART_SOCKET_ACTIVE_POWER_READ==sock_action || SMART_SOCKET_REACTIVE_POWER_READ==sock_action){
 			if(RESULT_OK==smart_socket_serial_cmd_parse(serial_cmd,recv_serial_len,sock_action,myequipment.socket_id,&power))
 			{
-				snprintf(instruction->alterable_entity, sizeof(instruction->alterable_entity),"%lf", power);
+				snprintf(instruction->alterable_entity, sizeof(instruction->alterable_entity),"&%lf", power);
 				DEBUG("power=%lf\n", power);
 				return RESULT_ALTERABLE_ENTITY_FILL_OK;
 			}
