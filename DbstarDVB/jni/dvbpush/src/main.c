@@ -13,6 +13,8 @@
 #include "timeprint.h"
 #include "dvbpush_api.h"
 #include "drmapi.h"
+#include "smarthome_shadow/smarthome.h"
+#include "smarthome_shadow/socket.h"
 
 #define DVB_TEST_ENABLE 0
 static int s_dvbpush_init_flag = 0;

@@ -436,32 +436,6 @@ void CDSTBCA_ScrSetCW(CDCA_U16       wEcmPID,
 	LOGD("####################CDSTBCA_ScrSetCW function not implementted\n");
 }
 
-// -1表示拔卡，1表示插卡，0表示处理完插卡动作。这里表示的纯物理动作，不含软件层面reset的过程。
-static int s_smartcard_action = 0;
-
-int smartcard_action_set(int smartcard_action)
-{
-	s_smartcard_action = smartcard_action;
-	LOGD("s_smartcard_action=%d\n", s_smartcard_action);
-	
-	return s_smartcard_action;
-}
-
-int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, int len)
-{
-	int ret = -1;
-	
-	if(1==can_send_nofity && -1!=s_smartcard_action){
-		ret = msg_send2_UI(sc_notify, msg, len);
-	}
-	else{
-		LOGD("can_send_nofity=%d, s_smartcard_action=%d, no need to send 0x%x\n", can_send_nofity,s_smartcard_action,sc_notify);
-		ret = -1;
-	}
-	
-	return ret;
-}
-
 /*--------- 智能卡管理 ---------*/
 
 /* 智能卡复位 */
@@ -473,11 +447,11 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	AM_SMC_CardStatus_t status;
 	int can_send_nofity = 0;
 	
-	LOGD("CDSTBCA_SCReset s_smartcard_action=%d, smc_fd=%d\n", s_smartcard_action,smc_fd);
-	if(1==s_smartcard_action)
+	LOGD("CDSTBCA_SCReset s_smartcard_action=%d, smc_fd=%d\n", smartcard_action_get(),smc_fd);
+	if(1==smartcard_action_get())
 		can_send_nofity = 1;
 	
-	s_smartcard_action = 0;
+	smartcard_action_set(0);
 	
 	if (smc_fd == -1) {
 		smc_fd = open(SMC_DEVICE, O_RDWR);
