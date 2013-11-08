@@ -234,4 +234,3 @@ public class GDSmartActivity extends GDBaseActivity {
         }
     }
 }
-

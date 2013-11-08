@@ -300,10 +300,10 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                 }
               }
               initRoomEleListView();
-            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_DEFAULT_ELECTRICAL == guodianEvent.Type){
                 ElecTurnResponse elecTurnResponse = (ElecTurnResponse) guodianEvent.Data;
                 updateEleSwitch(elecTurnResponse);
-            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL== guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_CURTAIN_ELECTRICAL== guodianEvent.Type){
                 ResultData resultData = (ResultData) guodianEvent.Data;
                     if(!"true".equals(resultData.Result)){
                         showErrorMsg(resultData.Reason);
@@ -315,7 +315,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             }
         }else if(type == EventData.EVENT_GUODIAN_DATA_ERROR){
             EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
-            if(GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL == guodianEvent.Type){
+            if(GDRequestType.DATATYPE_TUNN_ON_OFF_DEFAULT_ELECTRICAL == guodianEvent.Type){
                 showErrorMsg(R.string.server_error);
             }else if(GDRequestType.DATATYPE_REFRESH_ELECTRICAL == guodianEvent.Type){
                 showErrorMsg(R.string.server_error);
@@ -323,7 +323,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                 showErrorMsg(R.string.loading_error);
             }else if(GDRequestType.DATATYPE_ROOM_ELECTRICAL_LIST == guodianEvent.Type){
                 showErrorMsg(R.string.loading_room_ele_list_fail);
-            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL == guodianEvent.Type){
+            }else if(GDRequestType.DATATYPE_TUNN_ON_OFF_CURTAIN_ELECTRICAL == guodianEvent.Type){
                 showErrorMsg(R.string.server_error);
             }else{
                 showErrorMsg(R.string.loading_error);
@@ -567,19 +567,19 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                 
                 if(convertView != null && convertView.findViewById(R.id.on) != null){
                     myView = convertView;
-                    v= (CurtainHolder) convertView.getTag();
-                    
+                    vh= (CurtainHolder) convertView.getTag();
+                    v = vh;
                 }else{
                     convertView = LayoutInflater
                             .from(getApplicationContext())
                             .inflate(R.layout.smart_home_my_elec_equ_curtain_itme, null);
                     myView = convertView;
-                    v = new CurtainHolder();
-                    vh = (CurtainHolder) v;
+                    vh = new CurtainHolder();
+                    v = vh;
                     vh.mEleTitle = (TextView)  convertView
                             .findViewById(R.id.ele_title);
                     
-                    v.mRefresh = (Button) myView
+                    vh.mRefresh = (Button) myView
                             .findViewById(R.id.smart_home_refresh);
 
                     vh.mDayAmount = (TextView) convertView
@@ -620,8 +620,6 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                     convertView.setTag(vh);
                 }
                 
-                vh = (CurtainHolder) v;
-                
                 vh.mRefresh.setOnFocusChangeListener(new OnFocusChangeListener() {
                     
                     @Override
@@ -656,8 +654,58 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                     }
                 });
                 
+            }else if(eletrical.DevicePic.equals(DEVICE_TYPE_LIGHTING)){
+                
+                if(convertView != null && convertView.findViewById(R.id.smart_home_light_switch) != null){
+                    myView = convertView;
+                    v= (EquViewHolder) convertView.getTag();
+                    
+                }else{
+                    convertView = LayoutInflater
+                            .from(getApplicationContext())
+                            .inflate(R.layout.smart_home_my_elec_equ_light_itme, null);
+                    myView = convertView;
+                    v = new EquViewHolder();
+                    v.mEleTitle = (TextView)  convertView
+                            .findViewById(R.id.ele_title);
+                    v.mTurn = (Button) myView
+                            .findViewById(R.id.smart_home_light_switch);
+                    v.mDayAmount = (TextView) convertView
+                            .findViewById(R.id.smarthome_ele_day_amount);
+                    v.mMonthAmount = (TextView) convertView
+                            .findViewById(R.id.smarthome_ele_month_amount);
+                    v.mDevicePic = (ImageView) convertView
+                            .findViewById(R.id.smarthome_bottom_device_pic);
+                    v.mTurn.setOnKeyListener(new OnKeyListener() {
+
+                        @Override
+                        public boolean onKey(View v, int keyCode, KeyEvent event) {
+                            return handOnEleListOnKeyLinstener(v, keyCode,
+                                    event);
+                        }
+                    });
+                    
+                    convertView.setTag(v); 
+                }
+                v.mTurn.setOnFocusChangeListener(new OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                        mEleListselectedIndex = index;
+                        handOnEleListFocusLinstener(hasFocus, myView);
+                    }
+                });
+                
+                if (eletrical.AdapterFlag.equals(SOCKET_ELE_ON)) {
+                    v.mTurn.setBackgroundResource(R.drawable.smart_home_on_off_on_selecter);
+                } else if (eletrical.AdapterFlag.equals(SOCKET_ELE_OFF)) {
+                    v.mTurn.setBackgroundResource(R.drawable.smart_home_on_off_offselecter);
+                } else if (eletrical.AdapterFlag.equals(SOCKET_ELE_INVALID)) {
+                    v.mTurn.setBackgroundDrawable(null);
+                    v.mTurn.setText("");
+                }
+                
             }else{
-                if(convertView != null  && convertView.findViewById(R.id.on) == null){
+                if(convertView != null  && convertView.findViewById(R.id.on) == null && convertView.findViewById(R.id.smart_home_light_switch) == null){
                     myView = convertView;
                     v = (EquViewHolder) convertView.getTag();
                 }else{
@@ -784,17 +832,18 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
             Button mStop;
             Button mOff;
         }
+        
     }
 
     private void handOnEleListFocusLinstener(boolean hasFocus,View v){
         if (hasFocus) {
-            if(v.findViewById(R.id.on) != null){
+            if(v.findViewById(R.id.on) != null|| v.findViewById(R.id.smart_home_light_switch) != null){
                 v.setBackgroundResource(R.drawable.smart_home_mode_equ_focus_bg);
             }else{
                 v.setBackgroundResource(R.drawable.smart_home_room_ele_focus_bg);
             }
         } else
-            if(v.findViewById(R.id.on) != null){
+            if(v.findViewById(R.id.on) != null|| v.findViewById(R.id.smart_home_light_switch) != null){
                 v.setBackgroundResource(R.drawable.smarthome_model_ele_nomarl);
             }else{
                 v.setBackgroundResource(R.drawable.smarthome_myele_bottom_equ_normal);
@@ -833,6 +882,8 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                         requestTurnOnOrOff(DEVICE_TYPE_CURTAIN,SMART_ELE_STOP);
                     }else if(v.getId() == R.id.off){
                         requestTurnOnOrOff(DEVICE_TYPE_CURTAIN,SMART_ELE_OFF);
+                    }else if(v.getId() == R.id.smart_home_light_switch){
+                        requestTurnOnOrOff(DEVICE_TYPE_LIGHTING,"");
                     }
 
                 break;
@@ -860,7 +911,7 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
        RequestParams params = null;
        mSystemFlag = "sml";
        mRequestMethodId = "m001f014";
-       int requestType = GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL;
+       int requestType = GDRequestType.DATATYPE_TUNN_ON_OFF_DEFAULT_ELECTRICAL;
        if(DEVICE_TYPE_DEFAULT.equals(deviceType)){
            params = new RequestParams(requestType);
            oper = SOCKET_ELE_INVALID;
@@ -870,10 +921,20 @@ public class GDSmartHomeMyEleActivity extends GDSmartActivity {
                oper = SOCKET_ELE_ON;
            }
        }else if(DEVICE_TYPE_CURTAIN.equals(deviceType)){
-           requestType = GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL;
+           requestType = GDRequestType.DATATYPE_TUNN_ON_OFF_CURTAIN_ELECTRICAL;
            mRequestMethodId = "m001f001";
            params = new RequestParams(requestType);
            params.put("device_iconid", deviceType);
+       }else if(DEVICE_TYPE_LIGHTING.equals(deviceType)){
+           mRequestMethodId = "m001f001";
+           params = new RequestParams(requestType);
+           params.put("device_iconid", deviceType);
+           oper = SOCKET_ELE_INVALID;
+           if(eletrical.AdapterFlag.equals(SOCKET_ELE_ON)){
+               oper = SOCKET_ELE_OFF;
+           }else if(eletrical.AdapterFlag.equals(SOCKET_ELE_OFF)){
+               oper = SOCKET_ELE_ON;
+           }
        }
        params.put(RequestParams.KEY_SYSTEM_FLAG, mSystemFlag);
        params.put(RequestParams.KEY_METHODID, mRequestMethodId);
