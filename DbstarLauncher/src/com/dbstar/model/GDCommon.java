@@ -90,13 +90,16 @@ public class GDCommon {
 
 	public static final String ColumnIDReceiveChooser = "L9801";
 	public static final String ColumnIDDownloadStatus = "L9802";
-	public static final String ColumnIDAPPLIST = "L9803";
+	public static final String ColumnIDMediaShare = "L9804";
+	public static final String ColumnIDAPPLIST = "L9806";
+	public static final String ColumnIDFileBrowser = "L9805";
+	public static final String ColumnIDBrowser = "L9807";
 	public static final String ColumnIDSystemManagement = "L9809";
 
 	public static final String ColumnIDGeneralInfoSettings = "L9901";
 	public static final String ColumnIDMultimediaSettings = "L9902";
 	public static final String ColumnIDNetworkSettings = "L9903";
-	public static final String ColumnIDFileBrowser = "L9904";
+	
 	public static final String ColumnIDAdvancedSettings = "L9905";
 	public static final String ColumnIDSmartcardSettings = "L9906";
 	public static final String ColumnIDHelp = "L9908";
@@ -107,7 +110,7 @@ public class GDCommon {
 	public static final String ColumnIDGuodianHomeEfficiency = "G2";
 	public static final String ColumnIDGuodianSmartHome = "G3";
 	public static final String ColumnIDGuodianNews = "G5";
-	public static final String ColumnIDCNTV = "CNTV";
+	public static final String ColumnIDCNTV = "L97";
 
 	public static final String ColumnIDGuodianMyPower = "G101";
 	public static final String ColumnIDGuodianPowerBill = "G102";
@@ -125,7 +128,10 @@ public class GDCommon {
 	public static final String ColumnIDGuodianPowerTips = "G204";
 	
 	public static final String ColumnIDGuodianNewsFlash = "G501";
-
+	
+	public static final String ColumnIDMULTIPLEMEDIABOOK = "3";
+	public static final String ColumnIDMULTIPLEMEDIANEWSPAPER = "5";
+	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";
 

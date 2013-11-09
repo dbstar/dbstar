@@ -68,6 +68,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final int COLUMN_LEVEL_1 = 1;
 	private static final String ROOT_COLUMN_PARENTID = "-1";
 	private static final int REQUEST_POWER_TARGET_ACTIVITY_RESULT = 1;
+	private static final int START_NETWORKSETTING_ACTIVITY_RESULT = 2;
 	// Engine
 	GDCelanderThread mCelanderThread;
 
@@ -156,9 +157,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 //		startEngine();
 		mPowerController.start(mService);
 		
-		if (DeviceInitController.isBootFirstTime()) {
+		/*if (DeviceInitController.isBootFirstTime()) {
 			showLoadingDialog(getResources().getString(R.string.device_init_str));
-		}
+		}*/
 	}
 
 	public void onServiceStop() {
@@ -404,8 +405,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// enterSubMenu(menuItem.SubMenu);
 			// else
 			// showPopupMenu();
-			enterSubMenu(menuItem.SubMenu);
-			return true;
+		    if(!menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK) && !menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)){
+    			enterSubMenu(menuItem.SubMenu);
+    			return true;
+		    }
 		} else {
 			// no sub items
 		}
@@ -433,13 +436,28 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			showSettingView(menuItem.ColumnId());
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeUserCenter)) {
 			showUserCenter(menuItem.ColumnId());
-		} else if(menuItem.Type().equals(GDCommon.ColumnTypeIPTV)) {
+		} else if(menuItem.Type().equals(GDCommon.ColumnIDCNTV)) {
 			startIPTVView(menuItem.ColumnId());
+		}else if(menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK)){
+		    startMultipleMediaView(menuItem.ColumnId());
+		}else if(menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)){
+		    startMultipleMediaView(menuItem.ColumnId());
 		}
 
 		return ret;
 	}
-
+	private void startMultipleMediaView(String columnId){
+			Intent intent = null;
+			if(columnId.equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK)){
+				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.BookShelfActivity");
+			}else if(columnId.equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)){
+				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.NewsPaperActivity");
+			}
+			if(intent != null){
+			    intent.putExtra("Id", columnId);
+			    startActivity(intent);
+			}
+		}
 	void showHighlightMenuItem() {
 //		if (mIsParentMenuBeingUp)
 //			return;
@@ -561,7 +579,18 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent.setClass(this, GDSystemMgrActivity.class);
 		}else if(columnId.equals(GDCommon.ColumnIDAPPLIST)){
 		    intent  = getPackageManager().getLaunchIntentForPackage("com.dbstar.myapplication");
-		}
+		} else if (columnId.equals(GDCommon.ColumnIDFileBrowser)) {
+            intent = startComponent("com.fb.FileBrower", "FileBrower");
+        } else if(columnId.equals(GDCommon.ColumnIDBrowser)){
+            intent = getPackageManager().getLaunchIntentForPackage("com.android.browser");
+        }else if(columnId.equals(GDCommon.ColumnIDMediaShare)){
+            intent = startComponent("com.dbstar.multiple.media.shelf", "share.MediaShareActivity");
+            intent.putExtra("mColumnBookId", GDCommon.ColumnIDMULTIPLEMEDIABOOK);
+            intent.putExtra("mColumnNewsPaperPaperId", GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER);
+            intent.putExtra("mColumnBookType", GDCommon.ColumnIDMULTIPLEMEDIABOOK);
+            intent.putExtra("mColumnNewsPaperType", GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER);
+            
+        }
 
 		if (intent != null) {
 			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
@@ -583,9 +612,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent = startDbstarSettingActivity("GDMultimediaSettingsActivity");
 		} else if (columnId.equals(GDCommon.ColumnIDNetworkSettings)) {
 			intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
-		} else if (columnId.equals(GDCommon.ColumnIDFileBrowser)) {
-			intent = startComponent("com.fb.FileBrower", "FileBrower");
-		} else if (columnId.equals(GDCommon.ColumnIDAdvancedSettings)) {
+			if (intent != null) {
+	            intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+	            startActivityForResult(intent, START_NETWORKSETTING_ACTIVITY_RESULT);
+	        }
+			return;
+		}else if (columnId.equals(GDCommon.ColumnIDAdvancedSettings)) {
 			intent = startComponent("com.android.settings", "Settings");
 		} else if (columnId.equals(GDCommon.ColumnIDSmartcardSettings)) {
 			intent = new Intent();
@@ -616,6 +648,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	        boolean  isUpdate = data.getBooleanExtra("isUpdate", true);
 	        if(mPowerController != null && isUpdate)
 	            mPowerController.getPowerData();
+	    }else if(requestCode == START_NETWORKSETTING_ACTIVITY_RESULT && data != null){
+	            boolean isFinishSet = data.getBooleanExtra("isFinish", false);
+	            if(isFinishSet){
+	                DeviceInitController.handleBootFirstTime();
+	            }
 	    }
 	}
 	private void showGuodianApp(String columnId) {
@@ -1234,14 +1271,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 	
 	void deviceInitFinished() {
-		hideLoadingDialog();
+		//hideLoadingDialog();
 
-		DeviceInitController.handleBootFirstTime();
 
 		Intent intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
 		if (intent != null) {
 			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-			startActivity(intent);
+			startActivityForResult(intent, START_NETWORKSETTING_ACTIVITY_RESULT);
 		}
 	}
 
@@ -1305,8 +1341,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					if (item.ItemData != null && item.ItemData.Id != null
 							&& !item.ItemData.Id.isEmpty()) {
 						mLevel2RequestCount++;
-						mService.getColumns(this, columnLevel + 1, i,
-								item.ItemData.Id);
+						if(!item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK) && !item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER))
+						    mService.getColumns(this, columnLevel + 1, i,item.ItemData.Id);
+						else{
+						    item.HasSubMenu = NO_SUBCOLUMNS;
+						}
 					} else {
 						item.HasSubMenu = NO_SUBCOLUMNS;
 					}

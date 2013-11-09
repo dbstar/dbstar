@@ -57,6 +57,7 @@
             android:gravity="center_vertical"
             android:text="@string/hotline"
             android:textColor="#3d3d3d"
+            android:visibility="invisible"
             android:textSize="@dimen/gl_text_size_20sp" />
     </RelativeLayout>
 
@@ -100,8 +101,27 @@
     </RelativeLayout>
 
     <!-- context view -->
-
+      <RelativeLayout
+        android:id="@+id/context_view"
+        android:layout_width="425dp"
+        android:layout_height="364dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="105dp"
+        android:layout_marginTop="123dp"
+        android:background="@drawable/context_view_bg"
+        android:padding="8dp"
+        android:focusable="false" >
+        
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@drawable/context_view_bg_1"
+            
+        />
+        </RelativeLayout>
     <RelativeLayout
+        android:visibility="invisible"
         android:id="@+id/context_view"
         android:layout_width="425dp"
         android:layout_height="364dp"

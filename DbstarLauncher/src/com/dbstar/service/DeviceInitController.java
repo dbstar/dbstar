@@ -1,6 +1,7 @@
 package com.dbstar.service;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -14,7 +15,32 @@ import com.dbstar.util.LogUtil;
 public class DeviceInitController {
 	public static final String TAG = "DeviceInitController";
 	public static final String FlagFile = "flag";
+	public static final String FactoryQualifiedFile = "/data/dbstar/product/factory.stat";
 
+	public static boolean isQualifiedDevice(){
+	    boolean isQualified = false;
+	    File file = new File(FactoryQualifiedFile);
+	        try {
+	            int count = 0;
+	            byte[] buf = new byte[100];
+	            FileInputStream in = new FileInputStream(file);
+	            BufferedInputStream bIn = new BufferedInputStream(in);
+	            count = bIn.read(buf, 0, buf.length);
+	            bIn.close();
+	            
+	            if (count > 0) {
+	                String vlues = new String(buf, 0, count);
+	                
+	                if ((vlues.compareTo("1")) == 0) {
+	                    isQualified = true;
+	            }
+            } 
+	        }catch (Exception e) {
+                e.printStackTrace();
+            }
+	    
+	    return isQualified;
+	}
 	public static boolean isBootFirstTime() {
 		boolean firstTime = true;
 

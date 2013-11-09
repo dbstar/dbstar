@@ -221,11 +221,11 @@ public class ResponseHandler {
             List<RoomElectrical> eles = SmartHomeDataHandler.parseRoomElectrical(task.ResponseData[7]);
             task.ParsedData = eles;
             break;
-        case GDRequestType.DATATYPE_TUNN_ON_OFF_ELECTRICAL:
+        case GDRequestType.DATATYPE_TUNN_ON_OFF_DEFAULT_ELECTRICAL:
             ElecTurnResponse turnResponse = SmartHomeDataHandler.parseEleTurnResponse(task.ResponseData[7]);
             task.ParsedData = turnResponse;
             break;
-        case GDRequestType.DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL:
+        case GDRequestType.DATATYPE_TUNN_ON_OFF_CURTAIN_ELECTRICAL:
             task.ParsedData = SmartHomeDataHandler.parseExecuteModeResult(task.ResponseData[7]);
             break;
         case GDRequestType.DATATYPE_REFRESH_ELECTRICAL:

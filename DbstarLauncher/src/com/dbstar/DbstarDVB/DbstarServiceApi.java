@@ -81,7 +81,10 @@ public class DbstarServiceApi {
 	public static final int DIALOG_NOTICE                   = 0x20000;    // Update times info
 	public static final int	UPGRADE_NEW_VER                 = 0x20001;
 	public static final int	UPGRADE_NEW_VER_FORCE           = 0x20002;
-
+	public static final int	UPGRADE_START                   = 0x20003;
+	public static final int	UPGRADE_PERCENT                 = 0x20004;
+	public static final int	UPGRADE_SUCCESS                 = 0x21000;
+	public static final int	UPGRADE_FAILED                  = 0x21001;
 	public static final int SYSTEM_REBOOT                   = 0x20090;    // System reboot
 
 	public static final int DRM_SC_INSERT_OK                = 0x20100;    // DRM smartcard Insert OK

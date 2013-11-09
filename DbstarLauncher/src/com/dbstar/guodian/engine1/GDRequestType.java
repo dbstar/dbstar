@@ -24,7 +24,7 @@ public class GDRequestType {
 	public static final int DATATYPE_POWER_TIPS = 0x60020;
 	public static final int DATATYPE_ROOM_LIST = 0x60021;
 	public static final int DATATYPE_ROOM_ELECTRICAL_LIST = 0x60022;
-	public static final int DATATYPE_TUNN_ON_OFF_ELECTRICAL = 0x60023;
+	public static final int DATATYPE_TUNN_ON_OFF_DEFAULT_ELECTRICAL = 0x60023;
 	public static final int DATATYPE_REFRESH_ELECTRICAL = 0x60024;
 	public static final int DATATYPE_MODEL_LIST = 0x60025;
 	public static final int DATATYPE_MODEL_ELECTRICAL_LIST = 0x60026;
@@ -39,7 +39,7 @@ public class GDRequestType {
 	public static final int DATATYPE_DEFAULT_POWER_TARGET = 0x60034;
 	public static final int DATATYPE_POWER_TARGET = 0x60035;
 	public static final int DATATYPE_SETTING_POWER_TARGET = 0x60036;
-	public static final int DATATYPE_TUNN_ON_OFF_SMART_ELECTRICAL = 0x60037;
+	public static final int DATATYPE_TUNN_ON_OFF_CURTAIN_ELECTRICAL = 0x60037;
 	
 	public static final String KeyPriceType = "price_type";
 	

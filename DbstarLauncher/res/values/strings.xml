@@ -108,8 +108,8 @@
     <!-- Smartcard -->
     <string name="smartcard_status_title">智能卡</string>
     <string name="smartcard_status_in">智能卡已经插入！</string>
-    <string name="smartcard_status_out">请插入智能卡!</string>
-    <string name="smartcard_status_invlid">智能卡无效，请检查智能卡！</string>
+    <string name="smartcard_status_out">智能卡无效</string>
+    <string name="smartcard_status_invlid">智能卡无效</string>
 
     <!-- Smartcard settings -->
     <string name="smartcard_info">智能卡信息</string>
@@ -129,6 +129,7 @@
     <string name="content_id">内容ID</string>
 
     <string name="ca_edition">CA版本:</string>
+    <string name="drm_edition">DRM版本:</string>
     <string name="import_ca">导入授权</string>
     <string name="export_ca">导出授权</string>
     
@@ -138,12 +139,12 @@
     
     <!-- CA message -->
     <string name="alert_title">提示</string>
-    <string name="ca_message_no_entitle">无记录导出!</string>
-    <string name="ca_message_no_device">请插入移动设备!</string>
-    <string name="ca_message_no_space">空间不足!</string>
-    <string name="ca_message_export_finished">授权导出完成.</string>
-    <string name="ca_message_import_failed">授权导入失败，请检查移动设备!</string>
-    <string name="ca_message_import_finished">授权导入完成.</string>
+    <string name="ca_message_no_entitle">没有授权文件</string>
+    <string name="ca_message_no_device">系统错误</string>
+    <string name="ca_message_no_space">系统错误：空间不足</string>
+    <string name="ca_message_export_finished">导出成功</string>
+    <string name="ca_message_import_failed">系统错误</string>
+    <string name="ca_message_import_finished">导入成功</string>
     
     <!-- Mail -->
     <string name="email_id">ID</string>
@@ -415,7 +416,7 @@
 	<string name="disk_init_title">母盘初始化</string>
 	<string name="disk_init_start">母盘初始化开始&#8230;</string>
 	<string name="disk_init_progress">完成%1$s%</string>
-	<string name="disk_init_failed">%1$s：母盘初始化错误，可以通过网络接收新内容。5秒钟后自动重启</string>
+	<string name="disk_init_failed">%1$s：母盘初始化错误，可以通过网络接收新内容。请按遥控器【返回】键关闭本提示。</string>
 	<string name="disk_init_successed">母盘初始化完成，5秒钟后自动重启</string>
 	
 	<string name="device_init_str">设备初始化，请稍候......</string>
