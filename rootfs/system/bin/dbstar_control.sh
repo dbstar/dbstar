@@ -7,6 +7,7 @@ system_init()
 	setprop persist.sys.strictmode.disable 1
 	setprop dbstar.deepsleep 0
 	setprop libplayer.ts.softdemux true
+	setprop media.p2pplay.enable false
 }
 
 dbstar_init()
