@@ -572,15 +572,20 @@ public class WifiSettings {
 			if (mSelectedAccessPoint != null
 					&& !requireKeyStore(mSelectedAccessPoint.getConfig())
 					&& mSelectedAccessPoint.networkId != INVALID_NETWORK_ID) {
+					mWifiManager.connect(mSelectedAccessPoint.networkId,null);
 				//mWifiManager.connectNetwork(mSelectedAccessPoint.networkId);
-				mWifiManager.enableNetwork(mSelectedAccessPoint.networkId, true);
+				
 			}
 		} else {
+		
+			mWifiManager.save(config, null);
+			mWifiManager.connect(config, null);
 			//mWifiManager.saveNetwork(config);
-			mWifiManager.addNetwork(config);
-			mWifiManager.saveConfiguration();
+			//mWifiManager.addNetwork(config);
+			//mWifiManager.saveConfiguration();
 			//mWifiManager.connectNetwork(config);
-			mWifiManager.enableNetwork(config.networkId, true);
+			//mWifiManager.enableNetwork(config.networkId, true);
+			
 		}
 
 		if (mWifiManager.isWifiEnabled()) {

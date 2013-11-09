@@ -14,8 +14,10 @@ import android.widget.TextView;
 import com.dbstar.settings.R;
 import com.dbstar.settings.base.BaseFragment;
 import com.dbstar.settings.utils.SettingsCommon;
+import com.dbstar.settings.utils.Utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.net.ethernet.EthernetManager;
@@ -132,6 +134,12 @@ public class ChannelSelectorPage extends BaseFragment {
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putString(NetworkCommon.KeyChannel, channelValues);
 		editor.commit();
+		
+		Utils.setValue(NetworkCommon.ChannelFile, channelValues);
+		
+		Intent intent = new Intent(NetworkCommon.ActionChannelModeChange);
+		intent.putExtra(NetworkCommon.KeyChannel, channelValues);
+		mActivity.sendBroadcast(intent);
 	}
 
 	void setChannelEthernet() {

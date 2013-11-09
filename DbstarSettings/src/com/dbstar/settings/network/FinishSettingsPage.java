@@ -333,29 +333,32 @@ public class FinishSettingsPage extends BaseFragment {
 		}
 	}
 
-	void finishNetsettings() {
-		try {
-			String setflagValues = "1";
-			byte[] setflag = setflagValues.getBytes();
-			FileOutputStream fos = mActivity.openFileOutput(
-					NetworkCommon.FlagFile, Context.MODE_WORLD_READABLE);
-			fos.write(setflag);
-
-			fos.close();
-		} catch (Exception e) {
-			Log.e(TAG,
-					"Exception Occured: Trying to add set setflag : "
-							+ e.toString());
-			Log.e(TAG, "Finishing the Application");
-		}
-	}
+//	void finishNetsettings() {
+//		try {
+//			String setflagValues = "1";
+//			byte[] setflag = setflagValues.getBytes();
+//			FileOutputStream fos = mActivity.openFileOutput(
+//					NetworkCommon.FlagFile, Context.MODE_WORLD_READABLE);
+//			fos.write(setflag);
+//
+//			fos.close();
+//		} catch (Exception e) {
+//			Log.e(TAG,
+//					"Exception Occured: Trying to add set setflag : "
+//							+ e.toString());
+//			Log.e(TAG, "Finishing the Application");
+//		}
+//	}
 
 	private View.OnClickListener mOnClickListener = new View.OnClickListener() {
 
 		@Override
 		public void onClick(View v) {
 			if (v.getId() == R.id.okbutton) {
-				finishNetsettings();
+				//finishNetsettings();
+			    Intent intent =  mActivity.getIntent();
+                intent.putExtra("isFinish", true);
+			    mActivity.setResult(0, intent);
 				mActivity.finish();
 			} else if (v.getId() == R.id.prevbutton) {
 				mManager.prevPage(SettingsCommon.PAGE_FINISH);

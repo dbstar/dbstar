@@ -310,12 +310,18 @@ public class EthernetConfigController {
 			Log.d(TAG, "Devices = " + Devs + " count " + Devs.length);
 			if (mEthManager.isEthConfigured()) {
 				mEthInfo = mEthManager.getSavedEthConfig();
-
+				DhcpInfo dhcpInfo = mEthManager.getDhcpInfo();
 				mDev = mEthInfo.getIfName();
-				mIpaddr.setText(mEthInfo.getIpAddress());
-				mGw.setText(mEthInfo.getRouteAddr());
-				mDns.setText(mEthInfo.getDnsAddr());
-				mMask.setText(mEthInfo.getNetMask());
+				if(dhcpInfo != null){
+    				mIpaddr.setText(getAddress(dhcpInfo.ipAddress));
+    	            mMask.setText(getAddress(dhcpInfo.netmask));
+    	            mGw.setText(getAddress(dhcpInfo.gateway));
+    	            mDns.setText(getAddress(dhcpInfo.dns1));
+				}
+//				mIpaddr.setText(mEthInfo.getIpAddress());
+//				mGw.setText(mEthInfo.getRouteAddr());
+//				mDns.setText(mEthInfo.getDnsAddr());
+//				mMask.setText(mEthInfo.getNetMask());
 
 				if (mEthInfo.getConnectMode().equals(
 						EthernetDevInfo.ETH_CONN_MODE_DHCP)) {
