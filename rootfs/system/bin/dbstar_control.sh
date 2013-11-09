@@ -51,6 +51,16 @@ dbstar_init()
 		setprop dbstar.inited 1
 	fi
 
+        if [ -e "/data/dbstar/ColumnRes/Books_losefocus.png" ]; then
+                echo "ColumnRes/Books_losefocus.png already inited!"
+        else
+                cp -rf /system/etc/dbstar/ColumnRes/*.png /data/dbstar/ColumnRes
+                sync
+                chown system /data/dbstar/ColumnRes
+                chmod 777 /data/dbstar/ColumnRes/*.png
+                setprop dbstar.inited 1
+        fi
+ 
 	if [ -e "/data/dbstar/drm" ]; then
 		echo "drm entitle already inited!"
 	else
@@ -87,6 +97,10 @@ dbstar_init()
 	if [ -e "/data/misc/dhcp/dhcpcd-eth0.lease" ]; then
 		rm /data/misc/dhcp/dhcpcd-eth0.lease
 	fi
+
+        setprop service.adb.tcp.port 5555
+        stop adbd
+        start adbd
 }
 
 
