@@ -5,10 +5,11 @@ on init
 
 on fs
     setprop ro.crypto.umount_sd false
-    mount ext4 /dev/block/system /system ro noatime nodiratime noauto_da_alloc
+    mount ext4 /dev/block/system /system wait ro noatime nodiratime noauto_da_alloc
     e2fsck -y /dev/block/data
     mount ext4 /dev/block/data /data noatime nodiratime norelatime nosuid nodev noauto_da_alloc
     mount ext4 /dev/block/cache /cache noatime nodiratime norelatime nosuid nodev noauto_da_alloc
+    write /sys/class/aml_keys/aml_keys/version auto3
 
 on post-fs-data
 
@@ -69,7 +70,7 @@ on property:init.svc.bootanim=stopped
     write /sys/class/aml_mod/mod_off stream
     write /sys/class/aml_mod/mod_off blk_mov
     write /sys/class/aml_mod/mod_off dvin
-    write /sys/class/aml_mod/mod_off rdma
+#    write /sys/class/aml_mod/mod_off rdma
     write /sys/class/aml_mod/mod_off ge2d
 #    write /sys/class/aml_mod/mod_off vdin
     write /sys/class/aml_mod/mod_off lvds
@@ -83,6 +84,7 @@ on property:init.svc.bootanim=stopped
    #write /sys/class/aml_mod/dynamical_control vdin
 
     write /sys/class/boot_monitor/boot_timer 0
+    write /sys/module/di/parameters/bypass_1080p 1
 
 service wpa_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin
@@ -106,6 +108,12 @@ service p2p_supplicant /system/bin/wpa_supplicant \
     socket wpa_wlan0 dgram 660 wifi wifi
     disabled
     oneshot
+
+service xcmidware /system/bin/xcmid-amlogic
+    class main
+    user root
+    group root system input
+
 
 # dbstar
 service dbstar /system/bin/logwrapper /system/bin/dbstar_control.sh init
