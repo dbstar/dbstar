@@ -725,6 +725,8 @@ void *maintenance_thread()
 						pushinfo_reset();
 					smart_card_insert_flag_set(0);
 					
+					DEBUG("CA_LIB Ver: 0X%lX\n", CDCASTB_GetVer());
+					
 					send_sc_notify(1,DRM_SC_INSERT_OK, NULL, 0);
 				}
 				else{
