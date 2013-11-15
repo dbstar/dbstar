@@ -54,7 +54,13 @@ size_t tc_fwrite(const void *buffer, size_t size, size_t count, FILE64 *stream)
 {
 //printf("@@@@@@@@@@@@@@@@@@@tc_write file pointer [%x]\n",stream);
 //DEBUG("@@@@@@@@@1@@@@@@@@@@tc_write file pointer [%x]\n",stream);
-    return tc_fwrite1(buffer,size,count,stream);
+size_t ret = tc_fwrite1(buffer,size,count,stream);
+
+if(ret != count)
+{
+DEBUG("@@@@@@@@@1@@@@@@@@@@@@@tc_write file pointer [%d]\n",ret);
+}
+    return ret;
 }
 
 int tc_fseeko(FILE64 *stream, off_t64 offset, int whence)

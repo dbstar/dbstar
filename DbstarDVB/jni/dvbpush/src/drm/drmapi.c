@@ -24,7 +24,6 @@
 
 static int s_drm_inited = 0;
 static int s_drm_sc_in = 0;
-static int s_0x37_1st = 0;
 
 int drm_init()
 {
@@ -114,9 +113,6 @@ int drm_open(int *fd1, int *fd2)
 		LOGD("this is a preview prog, reset as 0\n");
 		ret = 0x0;
 	}
-	
-	if(0x0==ret)
-		s_0x37_1st = 1;
 
 	return ret;
 }
@@ -138,7 +134,7 @@ int drm_read(int *fd, unsigned char *buf, int size)
 			return -ret;
 		}
 	}
-	//LOGD("CDCASTB_DRM_ReadFile[%d](size=%d), rdsize=%lu\n", *((int *)fd),size, rdsize);
+//	LOGD("CDCASTB_DRM_ReadFile[%d](size=%d), rdsize=%lu\n", *((int *)fd),size, rdsize);
 
 	return (int)rdsize;
 }

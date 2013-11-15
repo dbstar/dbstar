@@ -20,14 +20,13 @@ static pthread_t tid_main;
 static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
 extern int _wLBM_zyzdmb(int miZon);
-extern int tuner_init(int freq, int symbolrate, int voltage);
+
 /*
  考虑到升级是个非常重要但又较少依赖其他模块的功能，因此即使大部分模块初始化失败，也一样要继续运行，只要组播功能正常即可。
 */
 void *main_thread()
-{
+{	
 	DEBUG("main thread start...\n");
-
 	compile_timeprint();
         
 	_wLBM_zyzdmb(13578642);
@@ -44,7 +43,8 @@ void *main_thread()
 		//return NULL;
 	}
 	
-	 smc_init();
+	chanFilterInit();
+    smc_init();
 	
 	if(-1==sqlite_init()){
 		DEBUG("sqlite init failed\n");
@@ -59,10 +59,6 @@ void *main_thread()
 		DEBUG("xmlparser init failed\n");
 		//return NULL;
 	}
-
-	//tuner_init(int freq, int symbolrate, int voltage)
-	tuner_init(1371000, 28800000, 0);
-
 	
 //	return parse_xml("pushroot/pushinfo/1/ProductDesc.xml", PRODUCTDESC_XML, NULL);
 	
@@ -90,18 +86,16 @@ CDCASTB_FormatBuffer();
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
 		//return NULL;
 	}
-#if 0 //liukevin add 
+	
 	if(-1==igmp_init()){
 		DEBUG("igmp init failed\n");
 		//return NULL;
 	}
-#endif
+	
 	if(-1==softdvb_init()){
 		DEBUG("dvb init with failed\n");
 		//return NULL;
 	}
-
-	upgrade_info_init();
 	
 	smartlife_connect_init();
 	

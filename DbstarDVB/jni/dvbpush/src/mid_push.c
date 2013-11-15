@@ -446,9 +446,7 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 		return -1;
 	}
 	
-	data_stream_status_str_get(buf,size);
-
-	snprintf(buf+strlen(buf),size-strlen(buf),"\n%d",s_dvbpush_info_refresh_flag);
+	snprintf(buf,size,"%d",s_dvbpush_info_refresh_flag);
 	s_dvbpush_info_refresh_flag = 0;
 	
 	int i = 0;
@@ -467,7 +465,7 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type)
 			{
 //				if(0==i){
-//					snprintf(buf+strlen(buf), size-strlen(buf),
+//					snprintf(buf, size,
 //						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 //				}
 //				else
@@ -1513,6 +1511,65 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	return 0;
 }
 
+#if 0
+/*
+ 扫描硬盘，删除没有纳入数据库管理的野节目
+ 节目所在目录，一般是/mnt/sda1/pushroot/pushfile
+*/
+static int clear_wild_prog()
+{
+	DIR * pdir = NULL;
+	struct dirent *ptr = NULL;
+	struct stat filestat;
+	
+	char prog_rootdir[512];	// e.g.: /mnt/sda1/pushroot/pushfile
+	char prog_path[512+128];
+	char publicationid[64];
+	char sqlite_cmd[1024];
+	int ret = -1;
+	
+	snprintf(prog_rootdir,sizeof(prog_rootdir),"%s/pushroot/pushfile",push_dir_get());
+	
+	int stat_ret = stat(prog_rootdir, &filestat);
+	if(0==stat_ret){
+		if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
+			pdir = opendir(prog_rootdir);
+			if(pdir){
+				while((ptr = readdir(pdir))!=NULL)
+				{
+					if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
+						continue;
+					
+					snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM Publication WHERE URI LIKE '%%pushroot%%pushfile%%%s%%'", ptr->d_name);
+					
+					memset(publicationid,0,sizeof(publicationid));
+					if(0!=str_sqlite_read(publicationid,sizeof(publicationid),sqlite_cmd)){
+						snprintf(prog_path,sizeof(prog_path),"%s/%s",prog_rootdir,ptr->d_name);
+						DEBUG("get nothing for %s, remove wild dir %s\n",sqlite_cmd,prog_path);
+						remove_force(prog_path);
+					}
+					else
+						DEBUG("get %s for %s\n",publicationid,sqlite_cmd);
+				}
+				closedir(pdir);
+				
+				ret = 0;
+			}
+			else{
+				ERROROUT("opendir(%s) failed\n", prog_rootdir);
+				ret = -1;
+			}
+		}
+	}
+	else{
+		ERROROUT("can not stat(%s)\n", prog_rootdir);
+		ret = -1;
+	}
+	
+	return ret;   
+}
+#endif
+
 unsigned long long should_clean_M_get()
 {
 	return s_should_clean_M;
@@ -1542,6 +1599,9 @@ int disk_space_check()
 		if(free_size_M<=(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get())){
 			s_should_clean_M = HDFOREWARNING_M_DFT + recv_totalsize_sum_M_get() - free_size_M;
 			DEBUG("should cleaning hd %llu MiB...\n",s_should_clean_M);
+			
+			//clear_wild_prog();
+			
 			disk_manage(NULL,NULL);
 			ret = 0;
 		}

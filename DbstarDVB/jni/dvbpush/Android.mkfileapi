@@ -29,17 +29,26 @@ include $(PREBUILD_STATIC_LIBRARY)
 #include $(PREBUILD_STATIC_LIBRARY)
 
 #include $(CLEAR_VARS)
-#mylib := libfileapi
+#mylib := libfileapi.so
 #LOCAL_MODULE := $(mylib)
 #LOCAL_MODULE_TAGS := optional
 #LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-#LOCAL_MODULE_SUFFIX := .so
 #LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
-#LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
+#LOCAL_SRC_FILES := lib/$(mylib)
 #OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 #include $(BUILD_PREBUILT)
 
-#//=======
+#include $(CLEAR_VARS)
+#mylib := libfileapic.so
+#LOCAL_MODULE := $(mylib)
+#LOCAL_MODULE_TAGS := optional
+#LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+#LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+#LOCAL_SRC_FILES := lib/$(mylib)
+#OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+#include $(BUILD_PREBUILT)
+
+//=======
 include $(CLEAR_VARS)
 LOCAL_MODULE := libfileapi
 LOCAL_ARM_MODE := arm
@@ -53,63 +62,39 @@ LOCAL_CFLAGS += -W -Wall
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_SHARED_LIBRARIES += libc libdl liblog libfileapic
 include $(BUILD_SHARED_LIBRARY)
-#//======
+//======
 
-
-#include $(CLEAR_VARS)
-#mylib := libfileapic
-#LOCAL_MODULE := $(mylib)
-#LOCAL_MODULE_TAGS := optional
-#LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-#LOCAL_MODULE_SUFFIX := .so
-#LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
-#LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
-#OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
-#include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-mylib := libpush
+mylib := libpush.so
 LOCAL_MODULE := $(mylib)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_MODULE_SUFFIX := .so
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
-LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
+LOCAL_SRC_FILES := lib/$(mylib)
 OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 include $(BUILD_PREBUILT)
 
-#include $(CLEAR_VARS)
-#mylib := libam_adp
-#LOCAL_MODULE := $(mylib)
-#LOCAL_MODULE_TAGS := optional
-#LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-#LOCAL_MODULE_SUFFIX := .so
-#LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
-#LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
-#OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
-#include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
-mylib := libxml2
+mylib := libxml2.so
 LOCAL_MODULE := $(mylib)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_MODULE_SUFFIX := .so
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
-LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
+LOCAL_SRC_FILES := lib/$(mylib)
 OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 include $(BUILD_PREBUILT)
 
-#include $(CLEAR_VARS)
-#mylib := libiconv
-#LOCAL_MODULE := $(mylib)
-#LOCAL_MODULE_TAGS := optional
-#LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-#LOCAL_MODULE_SUFFIX := .so
-#LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
-#LOCAL_SRC_FILES := lib/$(mylib)$(LOCAL_MODULE_SUFFIX)
-#OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
-#include $(BUILD_PREBUILT)
+include $(CLEAR_VARS)
+mylib := libiconv.so
+LOCAL_MODULE := $(mylib)
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_SRC_FILES := lib/$(mylib)
+OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libdvbpushjni
@@ -127,23 +112,14 @@ LOCAL_SRC_FILES += \
 	src/xmlparser.c \
 	src/sqlite.c \
 	src/porting.c \
-	src/tunerdmx.c \
-        src/softdmx.c \
+	src/softdmx.c \
 	src/dvbpush_jni.c \
-	src/network.c \
 	src/sha_verify.c \
-	src/mtdutils.c \
-	src/motherdisc.c \
-	src/smarthome_shadow/smarthome.c \
-	src/smarthome_shadow/serial.c \
-        src/smarthome_shadow/socket.c 
+	src/mtdutils.c 
 LOCAL_CFLAGS += -W -Wall
 LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
-LIBDVB_PATH := $(LOCAL_PATH)/../../../../../external/dvb/include
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/include \
-        $(LIBDVB_PATH)/am_adp
-LOCAL_SHARED_LIBRARIES += libc libcutils libdl liblog libsqlite
-LOCAL_SHARED_LIBRARIES += libfileapi libfileapic libpush libam_adp libxml2 libiconv
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
+LOCAL_SHARED_LIBRARIES += libc libdl liblog libsqlite libfileapi libfileapic libpush libxml2 libiconv
 include $(BUILD_SHARED_LIBRARY)
 
 #include $(CLEAR_VARS)
@@ -166,19 +142,19 @@ include $(BUILD_SHARED_LIBRARY)
 #include $(BUILD_SHARED_LIBRARY)
 
 
-#include $(CLEAR_VARS)
-#LOCAL_MODULE := drmtest
-#LOCAL_MODULE_TAGS := optional
-#LOCAL_PRELINK_MODULE := false
-#LOCAL_SRC_FILES := \
-#	src/drm/drmport.c \
-#	src/softdmx.c \
-#	src/porting.c \
-#	src/drm/smcdrv.c \
-#	src/drm/drmtest.c 
-#LOCAL_CFLAGS := -Wall
-#LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
-#LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/
-#LOCAL_SHARED_LIBRARIES += libc liblog
-#include $(BUILD_EXECUTABLE)
+include $(CLEAR_VARS)
+LOCAL_MODULE := drmtest
+LOCAL_MODULE_TAGS := optional
+LOCAL_PRELINK_MODULE := false
+LOCAL_SRC_FILES := \
+	src/drm/drmport.c \
+	src/softdmx.c \
+	src/porting.c \
+	src/drm/smcdrv.c \
+	src/drm/drmtest.c 
+LOCAL_CFLAGS := -Wall
+LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib -ldbstardrm
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/
+LOCAL_SHARED_LIBRARIES += libc liblog
+include $(BUILD_EXECUTABLE)
 

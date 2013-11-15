@@ -915,7 +915,7 @@ public class PlayerMenu extends PlayerActivity {
                         } catch (Exception e) {
                         }
                     }
-                }, 1000);
+                }, 0);
                 }else{
                     mAmplayer.Resume();
                 }
@@ -1522,7 +1522,8 @@ public class PlayerMenu extends PlayerActivity {
 	public void cancelResumeDelayed() {
 		mHandler.removeMessages(MSG_RESUME_DELAYED);
 	}
-
+	
+	private boolean isFF,isFB;
 	public void updatePlaybackTimeInfo(int currentTime, int totalTime) {
 		if (currentTime == 0 && FB_FLAG) {
 			FB_FLAG = false;
@@ -1549,7 +1550,22 @@ public class PlayerMenu extends PlayerActivity {
 		if (totalTime == 0)
 			mProgressBar.setProgress(0);
 		else {
-			int progress = currentTime * 100 / totalTime;
+		int progress = currentTime * 100 / totalTime;
+		    if(mPlayerStatus == VideoInfo.PLAYER_RUNNING){
+    		    if(isFF){
+    		        if(progress < mProgressBar.getProgress()){
+    		            return;
+    		        }else{
+    		            isFF = false;
+    		        }
+    		    }else if(isFB){
+    		        if(progress - mProgressBar.getProgress() > 2){
+    		            return;
+    		        }else {
+    		            isFB = false;
+    		        }
+    		    }
+		    }
 			mProgressBar.setProgress(progress);
 		}
 		

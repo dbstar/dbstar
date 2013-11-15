@@ -58,7 +58,9 @@ FILE *block01_fd = NULL;
 extern int smc_set(struct am_smc_atr *abuf);
 SCDCACardEntitleInfo card_sn = {"", -1}; //[CDCA_MAX_CARD_NUM];
 SCDCAFilterInfo dmx_filter[MAX_CHAN_FILTER];
-//extern Channel_t chanFilter[];
+extern Channel_t chanFilter[];
+extern int max_filter_num;
+
 
 static int mkdirp(char *path)
 {
@@ -289,7 +291,7 @@ void filter_timeout_process()
 		now_sec = time(NULL);
 //		LOGD("checkTimeoutMark: %d, now_sec: %lu\n",checkTimeoutMark,now_sec);
 		
-		for(i=0; i<MAX_CHAN_FILTER; i++)
+		for(i=0; i<max_filter_num; i++)
 		{
 			theni = dmx_filter[i].timeouttime;
 //			LOGD("dmx_filter[%d].timeouttime=%lu\n",i,dmx_filter[i].timeouttime);
@@ -310,7 +312,7 @@ void filter_timeout_process()
 }
 
 
-static void filter_dump_bytes(int dev_no, int fid, const uint8_t *data, int len, void *user_data)
+static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_data)
 {
 	CDCA_U8        byReqID;
 	CDCA_U16       wPid;
@@ -367,7 +369,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	time_t now_sec = 0;
 
 	for (fid = 0; fid < MAX_CHAN_FILTER; fid++) {
-		if (dmx_filter[fid].byReqID == byReqID) {
+		if ((dmx_filter[fid].byReqID == byReqID) && (chanFilter[fid].used)) {
 			CDSTBCA_ReleasePrivateDataFilter(byReqID, dmx_filter[fid].wPID);
 			break;
 		}
@@ -382,13 +384,13 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	PRINTF("filter[8]: %x,%x,%x,%x,%x,%x,%x,%x\n",param.filter[0],param.filter[1],param.filter[2],param.filter[3],param.filter[4],param.filter[5],param.filter[6],param.filter[7]);
 	PRINTF("mask  [8]: %x,%x,%x,%x,%x,%x,%x,%x\n\n",param.mask[0],param.mask[1],param.mask[2],param.mask[3],param.mask[4],param.mask[5],param.mask[6],param.mask[7]);
 
-	fid = TC_alloc_filter(wPid, &param, (AM_DMX_DataCb)filter_dump_bytes, NULL, 0);
-	if ((fid >= MAX_CHAN_FILTER) ||(fid < 0)){
+	fid = TC_alloc_filter(wPid, &param, (dataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
+	if ((fid >= MAX_CHAN_FILTER)||(fid < 0)) {
 		return  CDCA_FALSE;
 	}
 	dmx_filter[fid].wPID = wPid;
 	dmx_filter[fid].byReqID = byReqID;
-
+	dmx_filter[fid].fid = fid;
 	if (byWaitSeconds) {
 		checkTimeoutMark ++;
 		now_sec = time(NULL);
@@ -405,21 +407,23 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 /* 释放私有数据过滤器 */
 void CDSTBCA_ReleasePrivateDataFilter(CDCA_U8  byReqID, CDCA_U16 wPid)
 {
+#if 1
 	int fid;
 
-	for (fid = 0; fid < MAX_CHAN_FILTER; fid++) {
-		if ((dmx_filter[fid].byReqID == byReqID) && (dmx_filter[fid].wPID == wPid)) {
+	for (fid = 0; fid < max_filter_num; fid++) {
+		if ((dmx_filter[fid].byReqID == byReqID) && (dmx_filter[fid].wPID == wPid) && (chanFilter[fid].used)) {
 			break;
 		}
 	}
-    
-    if (fid < MAX_CHAN_FILTER)
-    {
-	    TC_free_filter(fid);
-	    dmx_filter[fid].byReqID = 0xff;
-	    dmx_filter[fid].wPID = 0xffff;
-	    dmx_filter[fid].timeouttime = 0;
+	LOGD("release fid[%d] filter\n", fid);
+	if (fid >= max_filter_num) {
+		return;
 	}
+	TC_free_filter(fid);
+	dmx_filter[fid].byReqID = 0xff;
+	dmx_filter[fid].wPID = 0xffff;
+	dmx_filter[fid].timeouttime = 0;
+#endif
 }
 
 /* 设置CW给解扰器 */
@@ -461,8 +465,7 @@ int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, i
 /*--------- 智能卡管理 ---------*/
 
 /* 智能卡复位 */
-//int smc_set(struct am_smc_atr *abuf);
-//extern int smc_set4k();
+int smc_set(struct am_smc_atr *abuf);
 CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 {
 	struct am_smc_atr abuf;
@@ -510,8 +513,6 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	} while (status == AM_SMC_CARD_OUT);
 
 	LOGD("card in\n");
-
-
 	//=============================
 #endif
 
@@ -528,8 +529,8 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	for (i = 0; i < *pbyLen; i++) {
 		LOGD("0x%x,", abuf.atr[i]);
 	}
-    //smc_set(&abuf);
-	send_sc_notify(can_send_nofity,DRM_SC_INSERT_OK, NULL, 0);
+    smc_set(&abuf);
+//	send_sc_notify(can_send_nofity,DRM_SC_INSERT_OK, NULL, 0);
 	smart_card_insert_flag_set(1);
 	
 	return CDCA_TRUE;
@@ -543,42 +544,33 @@ CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
                           CDCA_U16*      pwReplyLen)
 {
 	//int i;
+#if 0
+	int j;
+	#define TMP_STR_SIZE	4096
+	char tmp_str[TMP_STR_SIZE];
+	
+	memset(tmp_str,0,TMP_STR_SIZE);
+	for(j=0;j<wCommandLen;j++)
+		snprintf(tmp_str+strlen(tmp_str),TMP_STR_SIZE-strlen(tmp_str),"0x%x\t",pbyCommand[j]);
+	LOGD("smart card command[%d]: %s\n",wCommandLen,tmp_str);
+#endif
+
 	//LOGD("ooooooooooooori send len [%d][%d]--[%d][%d]\n",wCommandLen,*pwReplyLen,pbyCommand[0],pbyCommand[1]);
 	//for (i = 0; i < 3; i++) {
-resendwrite:
- if (AM_SMC_readwrite(pbyCommand, (int)wCommandLen,  pbyReply, (int *) pwReplyLen) == AM_SUCCESS) {
-	/*		{int j;
-			LOGD("smart card command:\n");
-			for (j=0;j<wCommandLen;j++)
-			    LOGD("0x%x,",pbyCommand[j]);
-			LOGD("\n");
-			LOGD("smart card reply:\n");
-
-			for (j=0;j<*pwReplyLen;j++)
-			    LOGD("0x%x,",pbyReply[j]);
-			LOGD("\n");
-
-			}*/
-			//LOGD("sssssssssssssssssssssssend read successful\n");
-
+		if (AM_SMC_readwrite(pbyCommand, (int)wCommandLen,  pbyReply, (int *) pwReplyLen) == AM_SUCCESS) {
+#if 0
+			{
+				memset(tmp_str,0,TMP_STR_SIZE);
+				for (j=0;j<*pwReplyLen;j++)
+				    snprintf(tmp_str+strlen(tmp_str),TMP_STR_SIZE-strlen(tmp_str),"0x%x\t",pbyReply[j]);
+				LOGD("smart card reply[%d]: %s\n",*pwReplyLen,tmp_str);
+			}
+			//LOGD("AM_SMC_readwrite successful yyyyyyyyyyyyyyyyyy\n\n\n");
+#endif
 			return CDCA_TRUE;
 		}
 	//}
-       {
-           struct am_smc_atr abuf;
-           static int retry = 0;
-
-           if (retry < 2)
-           {
-               ioctl(smc_fd, AMSMC_IOC_RESET, &abuf);
-               retry ++;
-               goto resendwrite;
-           }
-           retry = 0;
-       } 
-
-	LOGD("sssssssssssssssssssssssssssend fail \n");
-
+	LOGD("AM_SMC_readwrite fail xxxxxxxxxxxxxxx\n\n\n");
 	return CDCA_FALSE;
 }
 
@@ -895,22 +887,25 @@ CDCA_BOOL CDSTBCA_SeekPos(const void* pFileHandle,
 			LOGE("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_CUR_BACKWARD!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
+		
+//		LOGD(">>>> lseek64(%d,%lld,%d) at [%lld]\n", *(int *)pFileHandle,offset,byOrigin,file_pos);
 	} else if (byOrigin == CDCA_SEEK_CUR_FORWARD) {
 		if ((file_pos=lseek64(*(int *)pFileHandle, offset, SEEK_CUR)) < 0) {
 			LOGE("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_CUR_FORWARD!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
-		LOGD(">>>> lseek64(%d,%lld,%d) at [%lld]\n", *(int *)pFileHandle,offset,byOrigin,file_pos);
+//		LOGD(">>>> lseek64(%d,%lld,%d) at [%lld]\n", *(int *)pFileHandle,offset,byOrigin,file_pos);
 	} else if (byOrigin == CDCA_SEEK_END) {
 		if ((file_pos=lseek64(*(int *)pFileHandle, -offset, SEEK_END)) < 0) {
 			LOGE("!!!!!!!!!!!!!!!!!!!!CDCA_SEEK_END!!!!fseek error\n");
 			return CDCA_FALSE;
 		}
-		LOGD(">>>> lseek64(%d,%lld,%d) at [%lld]\n", *(int *)pFileHandle,offset,byOrigin,file_pos);
+//		LOGD(">>>> lseek64(%d,%lld,%d) at [%lld]\n", *(int *)pFileHandle,offset,byOrigin,file_pos);
 	}
 	else
 		LOGD(">>>> faile to lseek64(%d,%d,%lld)\n", *(int *)pFileHandle,byOrigin,offset);
 	//LOGD("seek the file pos successful\n");
+	
 	return CDCA_TRUE;
 }
 

@@ -47,14 +47,30 @@ typedef enum{
 /*
  盒端版本号，不是从loader读取的，而是根据管理需要定义的，每次发布版本都要手工更新
 */
-#define HARDWARE_VERSION	"03.01"
-#define LOADER_VERSION		"1.2.1"
+#define HARDWARE_VERSION	"06.01"
+#define LOADER_VERSION		"1.0.1"
 
-// 如果是第三方定制版本或者DRM测试认证的版本，定义此宏
-//#define PROJECT_CUSTOMIZE
+
 // 如果是DRM认证版本，则定义此宏
 //#define DRM_TEST
 
+// 国电栏目
+//#define SMARTLIFE_LC
+
+// 本地栏目：富媒体分享
+#define MEDIASHARING_LC
+
+// 本地栏目：文件浏览
+#define FILEBROWSER_LC
+
+// 本地栏目：我的应用
+#define MYAPP_LC
+
+// 本地栏目：浏览器
+#define WEBBROWSER_LC
+
+// 本地栏目：CNTV
+#define CNTV_LC
 
 /*
 程序自行使用的配置、fifo文件等
@@ -62,14 +78,14 @@ typedef enum{
 #define	WORKING_DATA_DIR	"/data/dbstar"
 #define	MSG_FIFO_ROOT_DIR	WORKING_DATA_DIR"/msg_fifo"
 #define SETTING_BASE		WORKING_DATA_DIR"/dbstar.conf"
-#define PUSH_CONF			"/system/etc/dbstar/push.conf"
+#define PUSH_CONF		"/system/etc/dbstar/push.conf"
 #define INITIALIZE_XML_URI	"pushroot/initialize/Initialize.xml"
 #define MOTHERDISC_XML_URI	"ContentDelivery.xml"
 
 /*
 程序运行过程中产生的数据，包括：下载的片源、对应的数据库
 */
-#define PUSH_DATA_DIR_DF	"/mnt/sda1"		// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
+#define PUSH_DATA_DIR_DF	"/storage/external_storage/sda1"	// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
 #define DBSTAR_DATABASE			WORKING_DATA_DIR"/Dbstar.db"
 #define SMARTHOME_DATABASE		WORKING_DATA_DIR"/Smarthome.db"
 
@@ -82,7 +98,9 @@ typedef enum{
 #define PROG_DATA_PID_DF	(411)	// 0x19b
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
-//#define MULTI_BUF_SIZE		(16171008)	/* (16171008)=(12*1024*1316) */
+#define MULTI_BUF_SIZE	(16171008)	/* (16171008)=(12*1024*1316) */
+//#define MULTI_BUF_SIZE		(86245376)	/* (86245376)=(64*1024*1316) ~ 79M */
+//#define MULTI_BUF_SIZE		(43122688)	/* (43122688)=(32*1024*1316) ~ 41M */
 
 #define SERVICEID_FILL		"0"
 #define XML_ROOT_ELEMENT	"RootElement"

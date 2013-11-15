@@ -127,7 +127,6 @@ LOCAL_SRC_FILES += \
 	src/xmlparser.c \
 	src/sqlite.c \
 	src/porting.c \
-	src/tunerdmx.c \
         src/softdmx.c \
 	src/dvbpush_jni.c \
 	src/network.c \

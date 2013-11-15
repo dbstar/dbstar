@@ -20,7 +20,6 @@ extern int smc_fd;
 
 int smc_set(struct am_smc_atr *abuf)
 {
-#if 0
      AM_SMC_Param_t para;
 
     if(ioctl(smc_fd, AMSMC_IOC_GET_PARAM, &para))
@@ -33,33 +32,12 @@ int smc_set(struct am_smc_atr *abuf)
 	{
 		return -1;
 	}
-#endif
+
     return 0;
 }
-
-int smc_set4k()
-{
-#if 0
-     AM_SMC_Param_t para;
-
-    if(ioctl(smc_fd, AMSMC_IOC_GET_PARAM, &para))
-    {
-        return -1;
-    }
-
-    para.freq = 4000;
-    if(ioctl(smc_fd, AMSMC_IOC_SET_PARAM, &para))
-    {
-        return -1;
-    }
-#endif
-    return 0;
-}
-
 
 int smc_init(void)
 {
-#if 1
     struct am_smc_atr abuf;
     int ds, i;
     AM_SMC_CardStatus_t status;
@@ -90,7 +68,6 @@ int smc_init(void)
 
     if (smc_set(&abuf) < 0)
         return -1;
-#endif
     return 0;
 }
 
@@ -99,8 +76,8 @@ AM_ErrorCode_t AM_TIME_GetClock(long long *clock)
 	struct timespec ts;
 	//int ms;
 
-	clock_gettime(CLOCK_REALTIME, &ts); //liukevin changed for overflow int 
-    //clock_gettime(CLOCK_MONOTONIC,&ts);
+	//clock_gettime(CLOCK_REALTIME, &ts); //liukevin changed for overflow int 
+    clock_gettime(CLOCK_MONOTONIC,&ts);
 	*clock = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
 	return AM_SUCCESS;
