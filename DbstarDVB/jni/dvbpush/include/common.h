@@ -149,7 +149,7 @@ typedef enum{
 #define DBDATASERVERPORT_DFT		"4321"
 
 // 除了应该给本次下载留出足够空间外，额外预留20G
-#define HDFOREWARNING_M_DFT			(51200LL)
+#define HDFOREWARNING_M_DFT			(102400LL)
 // 给本次下载留出足够空间外，至少32G
 #define DOWNLOAD_ONCE_M_MIN			(32768LL)
 

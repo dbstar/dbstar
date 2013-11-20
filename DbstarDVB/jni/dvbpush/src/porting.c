@@ -2099,6 +2099,11 @@ void upgrade_info_init()
 			g_loaderInfo.hardware_version[2] = TC_HARDWARE_VERSION2;
 			g_loaderInfo.hardware_version[3] = TC_HARDWARE_VERSION3;
 		}
+		else{
+			DEBUG("g_loaderInfo(%p).oui(%p)=%d, TC_OUI=%d\n",&g_loaderInfo,&(g_loaderInfo.oui),g_loaderInfo.oui,TC_OUI);
+			DEBUG("g_loaderInfo.model_type=%d, TC_MODEL_TYPE=%d",g_loaderInfo.model_type,TC_MODEL_TYPE);
+			DEBUG("g_loaderInfo.hardware_version=%d.%d.%d.%d\n",g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
+		}
 		
 		DEBUG("read loader msg: %d", mark);
 		
@@ -3018,7 +3023,7 @@ int network_init_status()
 	
 	int stat_ret = stat(NETWORK_INIT_FLAG, &filestat);
 	if(0==stat_ret){
-		DEBUG("%s is exist, network init finished\n",NETWORK_INIT_FLAG);
+		DEBUG("%s is exist, network preinited already\n",NETWORK_INIT_FLAG);
 		ret = 1;
 	}
 	
