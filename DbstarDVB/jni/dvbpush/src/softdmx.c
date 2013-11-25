@@ -19,7 +19,7 @@
 Channel_t chanFilter[MAX_CHAN_FILTER+1];
 int max_filter_num = 0;
 int loader_dsc_fid;
-int tdt_dsc_fid = -1;;
+int tdt_dsc_fid = -1;
 LoaderInfo_t g_loaderInfo;
 static pthread_t loaderthread = 0;
 static int loaderAction = 0;
@@ -1091,7 +1091,7 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 	int part=0;
 	unsigned char *optr=NULL;
 	Channel_t *chan = &chanFilter[fid];
-	//DEBUG("startmak = [%d],chanbytes[%d]\n",start,chan->bytes);
+	
 	optr = ptr;
 	if(start)
 	{
@@ -1100,6 +1100,12 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 	}
 	else if(chan->stage==CHAN_STAGE_START)
 	{
+		return 0;
+	}
+	
+// should make SURE sizeof(chan->buf)==FILTER_BUF_SIZE
+	if((chan->bytes + dlen)>FILTER_BUF_SIZE){
+//		DEBUG("chanFilter[%d].pid=0x%x, chanFilter[%d].bytes=%d, overflow\n",fid,chanFilter[fid].pid,fid,chanFilter[fid].bytes);
 		return 0;
 	}
 	
@@ -1164,7 +1170,7 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 		memmove(chan->buf, chan->buf+len, left);
 		chan->bytes = left;*/
 		if (left < 3)
-		return 0;
+			return 0;
 		if(chan->buf[len]==0xFF)
 		{
 			chan->stage = CHAN_STAGE_END;
@@ -1214,86 +1220,89 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 retry:
 	if(chan->stage==CHAN_STAGE_DATA_SEC)
 	{
-		/*				if(chan->bytes<1)
-		return 0;
+		/*
+		if(chan->bytes<1)
+			return 0;
 		
 		if(chan->buf[0]==0xFF)
-			{
-		//DEBUG("eeeeeeeeeeeeeeeeeeeend \n");
-		chan->stage = CHAN_STAGE_END;
-			}
+		{
+			//DEBUG("eeeeeeeeeeeeeeeeeeeend \n");
+			chan->stage = CHAN_STAGE_END;
+		}
 		else
-			{
-		int sec_len, left;
+		{
+			int sec_len, left;
+			
+			if(chan->bytes<3)
+				return 0;
+			
+			sec_len = ((chan->buf[1]<<8)|chan->buf[2])&0xFFF;
+			//DEBUG("section len = [%d]\n",sec_len);
+			sec_len += 3;
+		*/
 		
-		if(chan->bytes<3)
-		return 0;
-		
-		sec_len = ((chan->buf[1]<<8)|chan->buf[2])&0xFFF;
-		//DEBUG("section len = [%d]\n",sec_len);
-		sec_len += 3;*/
 		if((chan->bytes - chan->offset) < chan->sec_len)
 			return 0;
 		{
 			unsigned char *chanbuf=NULL;
 			int sec_len=0,left=0;
-			
+					
 			chanbuf = chan->buf + chan->offset;
+			
 			sec_len = chan->sec_len;
 			if(*chanbuf == 0x3e)
 			{
 				if(0==tc_crc32(chanbuf,sec_len))
 					send_mpe_sec_to_push_fifo(chanbuf, sec_len);
-				
+							
 				//DEBUG("payload [%d]\n",total);
 			}
 #if 0
 			else if(*chanbuf == tc_tid) 
-                        {//0xf1){
-				//DEBUG("chan->pid: 0x%x\n", chan->pid);
-                                if(chan->pid == tc_pid)
-                                {
-				    loader_section_handle(0, chanbuf, sec_len, NULL);
-                                }
-                                else
-                                    goto chandle;
+            {	
+            	if(chan->pid == tc_pid)
+                {
+					loader_section_handle(0, chanbuf, sec_len, NULL);
+                }
+                else
+                	goto chandle;
 			}
 #endif
 			else if (chan->pid == 0x1)
 			{
-			     if(*chanbuf == 0x1)
-			     {
-			         ca_section_handle(0, chanbuf, sec_len, NULL);
-			     }
+				if(*chanbuf == 0x1)
+				{
+					ca_section_handle(0, chanbuf, sec_len, NULL);
+				}
 			}
 			else
 			{
-        		int j;
+				int j;
 				for(j = 0; j < max_filter_num; j++)
 				{
 					unsigned char match = 1;
 					unsigned char neq = 0;
 					Channel_t *f = &chanFilter[j];
 					int i = 0;
-					
+								
 					if(!f->used||(f->pid != chan->pid)){
 						continue;
 					}
-					
+								
 					for(i=0; i<DMX_FILTER_SIZE+2; i++)
 					{
 						unsigned char xor = chanbuf[i]^f->value[i];
-						
+										
 						if(xor&f->maskandmode[i])
 						{
 							match = 0;
 							break;
 						}
-						
+										
 						if(xor&f->maskandnotmode[i])
 							neq = 1;
 					}
-						
+									
 					if(match && f->neq && !neq)
 						match = 0;
 					if(!match)
@@ -1311,20 +1320,21 @@ retry:
 				left = chan->bytes - sec_len - chan->offset;
 				if(left>0)
 				{
-					//DEBUG("llllllllllleft some data!!!!!!!!!!!!! [%d]\n",left);
+					//DEBUG("llllllllllleft some data!!!!!!!!!!!!!sec_len=%d [%d]\n",sec_len,left);
 					if(chanbuf[sec_len]==0xFF)
 					{
 						chan->stage = CHAN_STAGE_END;
 						chan->bytes = 0;
+						
 						return 0;
 					}
 					memmove(chan->buf, chanbuf+sec_len, left);
 				}
 				else
 					left = 0;
-					chan->bytes = left;
-					if(left)
-						goto retry;
+				chan->bytes = left;
+				if(left)
+					goto retry;
 			}
 		}
 	}
@@ -1360,6 +1370,9 @@ retry:
 		chan->bytes = 0;
 		return 0;
 	}
+	else{
+//		DEBUG("other packet, chan->stage=%d,fid=%d,chanFilter[%d].pid=%d\n",chan->stage,fid,fid,chanFilter[fid].pid);
+	}
 	
 	if(chan->stage==CHAN_STAGE_END)
 		chan->bytes = 0;
@@ -1370,7 +1383,7 @@ retry:
 //static unsigned short last_pid=0;
 int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 {
-	static int p = 0;
+	int p = *read;
 	int left=0,p1=0,tmp=0,size=0,chan=0;
 	unsigned char *optr=NULL;
 	unsigned short pid=0;
@@ -1391,9 +1404,10 @@ resync:
 				*read = p;
 				return 0;
 			}
-			else
+			else{
 				if(p>=MULTI_BUF_SIZE)
-			p = 0;
+					p = 0;
+			}
 		}
 		
 		if ((p+188) < MULTI_BUF_SIZE)
@@ -1431,63 +1445,55 @@ resync:
 	p += 188;
 	if ( p >= MULTI_BUF_SIZE)
 		p = p - MULTI_BUF_SIZE;
-	*read = p;
-	//ptr = &optr[p];//p;
-	//t
-	//return 0;
 	
 	p1++;
 	if (p1 >= MULTI_BUF_SIZE)
 		p1 = 0;
 	tmp =  optr[p1];
+	
+	//传输错误标识符
 	tei  = tmp&0x80;
 	//tei = ptr[1]&0x80;
+	
+	if(tei)
+	{
+//		DEBUG("xxxxxxxxxxx ts error\n");
+		goto end;
+	}
+	
+	//有效负载的开始标记
 	ts_start = tmp&0x40;
 	//ts_start = ptr[1]&0x40;
-	tmp = optr[p1];
+	
 	p1++;
 	if (p1 >= MULTI_BUF_SIZE)
 		p1 = 0;
+	
+	//有效负载的数据类型pid
 	pid = ((tmp<<8)|optr[p1])&0x1FFF;
+	
+	//如果是空包，直接退出
+	if(pid==0x1FFF)
+		goto end;
 	
 	p1++;
 	if (p1 >= MULTI_BUF_SIZE)
 		p1 = 0;
 	tmp = optr[p1];
+	
+	//加密标志位,00表示未加密
 	sc = tmp&0xC0;
 	//sc  = ptr[3]&0xC0;
+	
+	//一个4bit的计数器，范围0-15
 	cc  = tmp&0x0F;
 	//cc  = ptr[3]&0x0F;
+	
+	//调整字段控制,。01仅含有效负载，10仅含调整字段，11含有调整字段和有效负载。为00的话解码器不进行处理。
 	af_avail = tmp&0x20;
 	//af_avail = ptr[3]&0x20;
 	p_avail  = tmp&0x10;
 	//p_avail  = ptr[3]&0x10;
-	
-	if(pid==0x1FFF)
-		goto end;
-	
-	if(tei)
-	{
-		//AM_DEBUG(3, "ts error");
-		goto end;
-	}
-	
-	//chan = get_filter(pid);
-	/*if(chan == -1)
-	goto end;*/
-	/*chan = parser_get_chan(parser, pid);
-	if(!chan)
-	goto end;
-	*/
-	/*if(chan->cc!=0xFF)
-	{
-	if(chan->cc!=cc)
-	AM_DEBUG(3, "discontinuous");
-	}*/
-	
-	/*if(p_avail)
-	cc = (cc+1)&0x0f;
-	chan->cc = cc;*/
 	
 	p1++;
 	if (p1 >= MULTI_BUF_SIZE)
@@ -1511,11 +1517,14 @@ resync:
 //		if(last_pid!=pid)
 //			DEBUG("get channel [%d][%x]\n",chan,pid);
 //		last_pid = pid;
-		if(chan != -1)
+		if(chan != -1){
 			parse_payload(chan, p1, left, ts_start, ptr);
+		}
 	}
 	
 end:
+	*read = p;
+	
 	return 1;
 }
 
