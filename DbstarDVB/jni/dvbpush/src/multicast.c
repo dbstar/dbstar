@@ -388,8 +388,7 @@ MULTITASK_START:
 					p_write = tmp_write;
 			}
 			else{
-				if(s_data_stream_status>0)
-					s_data_stream_status --;
+				s_data_stream_status = 0;
 			}
 		}
 		else{
@@ -417,8 +416,7 @@ MULTITASK_START:
 				PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d,p_write=%d\n", free_size,recv_size,recv_len,p_write);
 			}
 			else{
-				if(s_data_stream_status>0)
-					s_data_stream_status --;
+				s_data_stream_status = 0;
 			}
 		}
 		
@@ -442,6 +440,8 @@ MULTITASK_START:
 	
 		close(sock);
 		DEBUG("close igmp socket: %d\n", sock);
+		
+		s_data_stream_status = 0;
 	}
 	sock = -1;
 	
