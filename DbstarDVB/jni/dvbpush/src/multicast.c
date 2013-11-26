@@ -388,7 +388,8 @@ MULTITASK_START:
 					p_write = tmp_write;
 			}
 			else{
-				s_data_stream_status = 0;
+				if(s_data_stream_status>0)
+					s_data_stream_status --;
 			}
 		}
 		else{
@@ -416,7 +417,8 @@ MULTITASK_START:
 				PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d,p_write=%d\n", free_size,recv_size,recv_len,p_write);
 			}
 			else{
-				s_data_stream_status = 0;
+				if(s_data_stream_status>0)
+					s_data_stream_status --;
 			}
 		}
 		
