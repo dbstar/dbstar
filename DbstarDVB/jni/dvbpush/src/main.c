@@ -89,20 +89,15 @@ CDCASTB_FormatBuffer();
 		//return NULL;
 	}
 	
-/*	if(-1==igmp_init()){
+	if(-1==igmp_init()){
 		DEBUG("igmp init failed\n");
 		//return NULL;
-	}*/
+	}
 	
 	if(-1==softdvb_init()){
 		DEBUG("dvb init with failed\n");
 		//return NULL;
 	}
-
-    if(-1==igmp_init()){
-        DEBUG("igmp init failed\n");
-        //return NULL;
-    }
 	
 	smartlife_connect_init();
 	

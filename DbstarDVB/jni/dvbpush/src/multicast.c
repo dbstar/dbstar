@@ -171,6 +171,7 @@ static void *igmp_thread()
 	
 
 MULTITASK_START:
+	DEBUG("%s waiting cond_net_rely_condition\n",__FUNCTION__ );
 	pthread_mutex_lock(&mtx_net_rely_condition);
 #if 0
 	pthread_cond_wait(&cond_net_rely_condition,&mtx_net_rely_condition); //wait
