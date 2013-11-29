@@ -92,13 +92,38 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 		DEBUG("invalid arguments\n");
 		return -1;
 	}
+	char sqlite_cmd[8192];
+	char tmp_strvalue[8192];
+	
+	int i = 0;
+	unsigned int check_pin = 0;	// 指示当前检查到哪个位置
+	char *p_ESC = NULL;
 	
 	if(0==strcmp("chi",p->StrLang)){
 		DEBUG("shit, here should be 'cho', not 'chi'\n");
 		snprintf(p->StrLang,sizeof(p->StrLang),"%s",CURLANGUAGE_DFT);
 	}
 	
-	char sqlite_cmd[8192];
+// 不用while循环，防止意外引起死循环
+	for(i=0;i<512;i++){
+		p_ESC = strchr(p->StrValue+check_pin,'\'');
+		if(p_ESC){
+			snprintf(tmp_strvalue,sizeof(tmp_strvalue),"%s",p_ESC);
+			check_pin = p_ESC-(p->StrValue);
+//			PRINTF("p_ESC[%d]:%s,check_pin=%d,sizeof(p->StrValue)-check_pin=%d\n",i,p_ESC,check_pin,sizeof(p->StrValue)-check_pin);
+			snprintf(p_ESC,sizeof(p->StrValue)-check_pin,"\'%s",tmp_strvalue);
+			check_pin += 2;
+//			PRINTF("has ESC in StrValue, translate as (%s)\n",p->StrValue);
+			
+			if(check_pin>=strlen(p->StrValue))
+				break;
+		}
+		else
+			break;
+	}
+	
+	if(512==i)
+		PRINTF("fuck, there are too much ESC\n");
 	
 	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s','%s');",
 		p->ServiceID, p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
