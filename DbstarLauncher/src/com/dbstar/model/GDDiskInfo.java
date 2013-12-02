@@ -29,21 +29,17 @@ public class GDDiskInfo {
 		if (disk == null || !disk.exists())
 			return info;
 		
-		StatFs sf = new StatFs(diskPath);
-		long blockSize = sf.getBlockSize();
-		long blockCount = sf.getBlockCount();
-		long availCount = sf.getAvailableBlocks();
 
 		info = new DiskInfo();
 
-		long diskSize = blockSize * blockCount;
-		info.RawDiskSize = diskSize;
+		long diskSize = disk.getTotalSpace();
+        info.RawDiskSize = diskSize;
 
-		long diskSpace = blockSize * availCount;
-		info.RawDiskSpace = diskSpace;
-		
-		long diskUsed = diskSize - diskSpace;
-		info.RawDiskUsed = diskUsed;
+        long diskSpace = disk.getFreeSpace();
+        info.RawDiskSpace = diskSpace;
+        
+        long diskUsed = diskSize - diskSpace;
+        info.RawDiskUsed = diskUsed;
 
 		if (convert) {
 
