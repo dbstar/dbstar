@@ -47,6 +47,8 @@ int device_num_changed();
 int smartcard_action_set(int smartcard_action);
 int smartcard_action_get();
 
+int motherdisc_check();
+
 #include "dvbpush_api.h"
 int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, int len);
 

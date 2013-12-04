@@ -2482,6 +2482,43 @@ char *multi_addr_get(void)
 }
 
 
+// 0 means not a motherdisc, 1 means it is a motherdisc
+int motherdisc_check()
+{
+	char direct_uri[1024];
+	struct stat filestat;
+	int ret = 0;
+	
+	snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
+	
+	// check ContentDelivery.xml for mother disc
+	int stat_ret = stat(direct_uri, &filestat);
+	if(0==stat_ret){
+		DEBUG("this is a mother disc\n");
+		ret = 1;
+	}
+	else{
+		ERROROUT("can not stat(%s)\n", direct_uri);
+		DEBUG("this is not a mother disc\n");
+		ret = 0;
+	}
+	
+	return ret;
+}
+
+
+static int delete_initialize()
+{
+	char total_uri[1024];
+	
+	if(0==motherdisc_check()){
+		snprintf(total_uri,sizeof(total_uri),"%s/pushroot/initialize", push_dir_get());
+		return remove_force(total_uri);
+	}
+	else
+		return -1;
+}
+
 static int serviceID_init()
 {
 	char sqlite_cmd[512];
@@ -2492,16 +2529,7 @@ static int serviceID_init()
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sizeof(s_serviceID), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no serviceID from db\n");
-		int i = 0;
-		char total_xmluri[512];
-		snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-		for(i=0;i<2;i++){
-			if(0==remove_force(total_xmluri)){
-				DEBUG("remove_force(%s) at %d\n", total_xmluri, i);
-				break;
-			}
-			sleep(1);
-		}
+		delete_initialize();
 	}
 	else
 		DEBUG("read serviceID: %s\n", s_serviceID);
@@ -2846,8 +2874,12 @@ int pushinfo_reset(void)
 	char sqlite_cmd[256];
 	char total_xmluri[512];
 	int ret = 0;
-	int i = 0;
-
+	
+	if(1==motherdisc_check()){
+		DEBUG("this is a motherdisc, do not reset initialize and pushinfo\n");
+		return -1;
+	}
+	
 #if 0
 // 2013-03-11 对节目单的处理留到收到ProductDesc.xml时进行处理，这里不用着急删除。
 // 1、停止现有正在接收的节目
@@ -2870,18 +2902,10 @@ int pushinfo_reset(void)
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
 	sqlite_execute(sqlite_cmd);
 	
-	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-	for(i=0;i<60;i++){
-		if(0==remove_force(total_xmluri)){
-			DEBUG("remove_force(%s) at %d\n", total_xmluri, i);
-			break;
-		}
-		sleep(1);
-	}
+	delete_initialize();
 
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", push_dir_get());
 	remove_force(total_xmluri);
-	
 
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
 	ret = push_file_register(total_xmluri);
