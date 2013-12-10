@@ -18,6 +18,7 @@
 extern int smc_fd;
 #define SMC_DEVICE  "/dev/smc0"
 
+#if 0
 int smc_set(struct am_smc_atr *abuf)
 {
      AM_SMC_Param_t para;
@@ -35,6 +36,7 @@ int smc_set(struct am_smc_atr *abuf)
 
     return 0;
 }
+#endif
 
 int smc_init(void)
 {
@@ -66,8 +68,8 @@ int smc_init(void)
         return  -1;
     }
 
-    if (smc_set(&abuf) < 0)
-        return -1;
+//	if (smc_set(&abuf) < 0)
+//		return -1;
     return 0;
 }
 
@@ -76,8 +78,8 @@ AM_ErrorCode_t AM_TIME_GetClock(long long *clock)
 	struct timespec ts;
 	//int ms;
 
-	//clock_gettime(CLOCK_REALTIME, &ts); //liukevin changed for overflow int 
-    clock_gettime(CLOCK_MONOTONIC,&ts);
+	clock_gettime(CLOCK_REALTIME, &ts); //liukevin changed for overflow int 
+    //clock_gettime(CLOCK_MONOTONIC,&ts);
 	*clock = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
 	return AM_SUCCESS;

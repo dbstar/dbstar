@@ -12,5 +12,5 @@ int drm_read(int *fd, unsigned char *buf, int size);
 int64_t drm_seek(int *fd, int64_t pos, int whence);
 void drm_close(int *fd);
 int smc_init(void);
-int smc_set(struct am_smc_atr *abuf);
+//int smc_set(am_smc_atr *abuf);
 #endif

@@ -42,4 +42,9 @@ int dvbpush_download_finish();
 int disk_space_check();
 unsigned long long should_clean_M_get();
 
+int TC_loader_to_push_order(int ord);
+int TC_loader_get_push_state(void);
+int TC_loader_get_push_buf_size(void);
+unsigned char * TC_loader_get_push_buf_pointer(void);
+
 #endif

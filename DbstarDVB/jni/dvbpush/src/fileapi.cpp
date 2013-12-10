@@ -52,14 +52,14 @@ DEBUG("$$$$$$$$ fclose handler [%x], ret=[%d]\n", (int)stream,ret);
 
 size_t tc_fwrite(const void *buffer, size_t size, size_t count, FILE64 *stream)
 {
-//printf("@@@@@@@@@@@@@@@@@@@tc_write file pointer [%x]\n",stream);
-//DEBUG("@@@@@@@@@1@@@@@@@@@@tc_write file pointer [%x]\n",stream);
-size_t ret = tc_fwrite1(buffer,size,count,stream);
-
-if(ret != count)
-{
-DEBUG("@@@@@@@@@1@@@@@@@@@@@@@tc_write file pointer [%d]\n",ret);
-}
+	//printf("@@@@@@@@@@@@@@@@@@@tc_write file pointer [%x]\n",stream);
+	//DEBUG("@@@@@@@@@1@@@@@@@@@@tc_write file pointer [%x]\n",stream);
+	size_t ret = tc_fwrite1(buffer,size,count,stream);
+	
+	if(ret != count)
+	{
+		DEBUG("@@@@@@@@@1@@@@@@@@@@@@@tc_write file pointer [%d]\n",ret);
+	}
     return ret;
 }
 

@@ -230,15 +230,10 @@ int motherdisc_process()
 {
 	char direct_uri[1024];
 	char new_uri_motherdisc_xml[1024];
-	struct stat filestat;
 	char sqlite_cmd[1024];
 	int ret = 0;
 	
-	snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
-	
-	// check ContentDelivery.xml for mother disc
-	int stat_ret = stat(direct_uri, &filestat);
-	if(0==stat_ret){
+	if(1==motherdisc_check()){
 		s_motherdisc_processing_status = 1;
 		
 		DEBUG("%s is exist, initialize disc starting...\n", MOTHERDISC_XML_URI);
@@ -269,9 +264,6 @@ int motherdisc_process()
 		s_motherdisc_processing_status = 0;
 	}
 	else{
-		ERROROUT("can not stat(%s)\n", direct_uri);
-		DEBUG("this is not a mother disc\n");
-	
 		s_motherdisc_processing_status = 0;
 		ret = -1;
 	}

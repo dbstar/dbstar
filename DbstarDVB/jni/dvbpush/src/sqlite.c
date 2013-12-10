@@ -1053,7 +1053,7 @@ int sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, in
 					DEBUG("no row, l_row=0, l_column=%d\n", l_column);
 				}
 				else{
-					DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
+//					DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
 					if(sqlite_callback)	// && receiver
 						sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
 					else{

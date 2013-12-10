@@ -33,6 +33,9 @@
 #include "push.h"
 #include "smarthome_shadow/smarthome.h"
 #include "smarthome_shadow/socket.h"
+#include "drmport.h"
+#include "network.h"
+#include "tunerdmx.h"
 
 #define INVALID_PRODUCTID_AT_ENTITLEINFO	(0)
 
@@ -89,8 +92,6 @@ static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
 
-extern int network_getinfo(char *buf, unsigned int len);
-extern int smartcard_action_set(int smartcard_action);
 
 /* define some general interface function here */
 
@@ -684,7 +685,7 @@ int guidelist_select_refresh()
 #define DELETE_SIZE_ONCE	(53687091200LL)
 //(107374182400)==(100*1024*1024*1024)==100G
 //(53687091200)==(50*1024*1024*1024)==50G
-static long long s_delete_total_size = 0LL;
+static unsigned long long s_delete_total_size = 0LL;
 
 static int disk_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
@@ -696,7 +697,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 	
 	int i = 0;
 	long long total_size = 0LL;
-	long long total_size_actually = 0LL;
+	unsigned long long total_size_actually = 0LL;
 	char total_uri[512];
 	char *ids = (char *)receiver;
 	int ret = 0;
@@ -716,7 +717,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
 		
 		total_size_actually = dir_size(total_uri);
-		DEBUG("total_size=%lld, total_size_actually=%lld\n", total_size,total_size_actually);
+		DEBUG("total_size=%lld, total_size_actually=%llu\n", total_size,total_size_actually);
 		
 		if(0==remove_force(total_uri)){
 			if(strlen(ids)>0)
@@ -727,11 +728,11 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 				s_delete_total_size += total_size_actually;
 			
 			if((s_delete_total_size>>20) >= should_clean_M_get()){
-				DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
+				DEBUG("delete %llu finished, %s, total finish!\n", s_delete_total_size,total_uri);
 				break;
 			}
 			else
-				DEBUG("delete %lld finished, %s\n", s_delete_total_size, total_uri);
+				DEBUG("delete %llu finished, %s\n", s_delete_total_size, total_uri);
 			
 			if(strlen(ids)>(receiver_size-64)){
 				DEBUG("receiver can load no more than such PublicationID\n");
@@ -1761,12 +1762,15 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DVBPUSH_GETINFO_STOP:
 			dvbpush_getinfo_stop();
 			break;
+#ifdef TUNER_INPUT
+#else
 		case CMD_NETWORK_CONNECT:
 			net_rely_condition_set(cmd);
 			break;
 		case CMD_NETWORK_DISCONNECT:
 			net_rely_condition_set(cmd);
 			break;
+#endif
 		case CMD_NETWORK_GETINFO:
 			network_getinfo(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			*buf = s_jni_cmd_public_space;
@@ -1828,12 +1832,12 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			smartcard_action_set(1);
 			if(-1==drm_sc_insert()){
 				DEBUG("drm_sc_insert return with -1\n");
-				msg_send2_UI(DRM_SC_INSERT_FAILED, NULL, 0);
+				send_sc_notify(1,DRM_SC_INSERT_FAILED, NULL, 0);
 			}
 #if 0
 // drm_sc_insert调用成功并不意味着智能卡复位成功，因此成功的信号不在这里发送。
 			else
-				msg_send2_UI(DRM_SC_INSERT_OK, NULL, 0);
+				send_sc_notify(1,DRM_SC_INSERT_OK, NULL, 0);
 #else
 			DEBUG("call drm_sc_insert success, but it not means reset card OK, wait a moment...\n");
 #endif
@@ -1841,7 +1845,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DRM_SC_REMOVE:
 			DEBUG("CMD_SMARTCARD_REMOVE\n");
 			smartcard_action_set(-1);
-			smart_card_insert_flag_set(0);
+			smart_card_insert_flag_set(-1);
 			
 			if(-1==drm_sc_remove())
 				msg_send2_UI(DRM_SC_REMOVE_FAILED, NULL, 0);
@@ -2000,6 +2004,24 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			*buf = s_jni_cmd_smartlife_connect_status;
 			*len = strlen(s_jni_cmd_smartlife_connect_status);
 			break;
+		
+#ifdef TUNER_INPUT
+		case CMD_TUNER_GET_SIGNALINFO:
+			DEBUG("CMD_TUNER_GET_SIGNALINFO, *buf=%s\n", *buf);
+			tuner_get_signalinfo(*buf, s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			DEBUG("CMD_TUNER_GET_SIGNALINFO > [%s]\n", s_jni_cmd_public_space);
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
+			break;
+		case CMD_TUNER_SCAN:
+			DEBUG("CMD_TUNER_SCAN\n");
+			tuner_scan(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			DEBUG("CMD_TUNER_SCAN > [%s]\n", s_jni_cmd_public_space);
+			*buf = s_jni_cmd_public_space;
+			*len = strlen(s_jni_cmd_public_space);
+			break;
+#endif
+
 		default:
 			DEBUG("can not distinguish such cmd %d=0x%x\n", cmd,cmd);
 			ret = -1;
@@ -2097,6 +2119,11 @@ void upgrade_info_init()
 			g_loaderInfo.hardware_version[1] = TC_HARDWARE_VERSION1;
 			g_loaderInfo.hardware_version[2] = TC_HARDWARE_VERSION2;
 			g_loaderInfo.hardware_version[3] = TC_HARDWARE_VERSION3;
+		}
+		else{
+			DEBUG("g_loaderInfo(%p).oui(%p)=%d, TC_OUI=%d\n",&g_loaderInfo,&(g_loaderInfo.oui),g_loaderInfo.oui,TC_OUI);
+			DEBUG("g_loaderInfo.model_type=%d, TC_MODEL_TYPE=%d",g_loaderInfo.model_type,TC_MODEL_TYPE);
+			DEBUG("g_loaderInfo.hardware_version=%d.%d.%d.%d\n",g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
 		}
 		
 		DEBUG("read loader msg: %d", mark);
@@ -2476,6 +2503,43 @@ char *multi_addr_get(void)
 }
 
 
+// 0 means not a motherdisc, 1 means it is a motherdisc
+int motherdisc_check()
+{
+	char direct_uri[1024];
+	struct stat filestat;
+	int ret = 0;
+	
+	snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
+	
+	// check ContentDelivery.xml for mother disc
+	int stat_ret = stat(direct_uri, &filestat);
+	if(0==stat_ret){
+		DEBUG("this is a mother disc\n");
+		ret = 1;
+	}
+	else{
+		ERROROUT("can not stat(%s)\n", direct_uri);
+		DEBUG("this is not a mother disc\n");
+		ret = 0;
+	}
+	
+	return ret;
+}
+
+
+static int delete_initialize()
+{
+	char total_uri[1024];
+	
+	if(0==motherdisc_check()){
+		snprintf(total_uri,sizeof(total_uri),"%s/pushroot/initialize", push_dir_get());
+		return remove_force(total_uri);
+	}
+	else
+		return -1;
+}
+
 static int serviceID_init()
 {
 	char sqlite_cmd[512];
@@ -2486,16 +2550,7 @@ static int serviceID_init()
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sizeof(s_serviceID), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no serviceID from db\n");
-		int i = 0;
-		char total_xmluri[512];
-		snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-		for(i=0;i<2;i++){
-			if(0==remove_force(total_xmluri)){
-				DEBUG("remove_force(%s) at %d\n", total_xmluri, i);
-				break;
-			}
-			sleep(1);
-		}
+		delete_initialize();
 	}
 	else
 		DEBUG("read serviceID: %s\n", s_serviceID);
@@ -2840,8 +2895,12 @@ int pushinfo_reset(void)
 	char sqlite_cmd[256];
 	char total_xmluri[512];
 	int ret = 0;
-	int i = 0;
-
+	
+	if(1==motherdisc_check()){
+		DEBUG("this is a motherdisc, do not reset initialize and pushinfo\n");
+		return -1;
+	}
+	
 #if 0
 // 2013-03-11 对节目单的处理留到收到ProductDesc.xml时进行处理，这里不用着急删除。
 // 1、停止现有正在接收的节目
@@ -2864,18 +2923,10 @@ int pushinfo_reset(void)
 	snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
 	sqlite_execute(sqlite_cmd);
 	
-	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", push_dir_get());
-	for(i=0;i<60;i++){
-		if(0==remove_force(total_xmluri)){
-			DEBUG("remove_force(%s) at %d\n", total_xmluri, i);
-			break;
-		}
-		sleep(1);
-	}
+	delete_initialize();
 
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", push_dir_get());
 	remove_force(total_xmluri);
-	
 
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
 	ret = push_file_register(total_xmluri);
@@ -2884,12 +2935,16 @@ int pushinfo_reset(void)
 	return 0;
 }
 
+// 1: smartcard insert; -1: smartcard remove; 0: smartcart insert failed/successed, finished
 int smart_card_insert_flag_set(int insert_flag)
 {
-	s_smart_card_insert_flag = insert_flag;
+	if(insert_flag>0)
+		s_smart_card_insert_flag += insert_flag;
+	else
+		s_smart_card_insert_flag = 0;
 	DEBUG("s_smart_card_insert_flag=%d\n", s_smart_card_insert_flag);
 	
-	if(1==s_smart_card_insert_flag){
+	if(s_smart_card_insert_flag>0){
 		maintenance_thread_awake();
 		DEBUG("maintenance thread awake\n");
 	}
@@ -3013,7 +3068,7 @@ int network_init_status()
 	
 	int stat_ret = stat(NETWORK_INIT_FLAG, &filestat);
 	if(0==stat_ret){
-		DEBUG("%s is exist, network init finished\n",NETWORK_INIT_FLAG);
+		DEBUG("%s is exist, network preinited already\n",NETWORK_INIT_FLAG);
 		ret = 1;
 	}
 	
@@ -3027,11 +3082,43 @@ int device_num_changed()
 	
 	int stat_ret = stat(DEVICE_NUM_CHANGED_FLAG, &filestat);
 	if(0==stat_ret){
-		DEBUG("%s is exist, %ldB\n",DEVICE_NUM_CHANGED_FLAG,filestat.st_size);
+		DEBUG("%s is exist, %lldB\n",DEVICE_NUM_CHANGED_FLAG,filestat.st_size);
 		if(filestat.st_size<1024LL){
 			DEBUG("device num is changed\n");
 			ret = 1;
 		}
+	}
+	
+	return ret;
+}
+
+// -1表示拔卡，1表示插卡，0表示处理完插卡动作。这里表示的纯物理动作，不含软件层面reset的过程。
+static int s_smartcard_action = 0;
+
+int smartcard_action_set(int smartcard_action)
+{
+	s_smartcard_action = smartcard_action;
+	DEBUG("s_smartcard_action=%d\n", s_smartcard_action);
+	
+	return s_smartcard_action;
+}
+
+int smartcard_action_get()
+{
+	return s_smartcard_action;
+}
+
+// 由于在maintance_thread中独立检查插卡是否成功，是个异步过程，所以在发送智能卡的notify之前要再次确认目前智能卡是否被拔出（-1）
+int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, int len)
+{
+	int ret = -1;
+	
+	if(1==can_send_nofity && -1!=s_smartcard_action){
+		ret = msg_send2_UI(sc_notify, msg, len);
+	}
+	else{
+		DEBUG("can_send_nofity=%d, s_smartcard_action=%d, no need to send 0x%x\n", can_send_nofity,s_smartcard_action,sc_notify);
+		ret = -1;
 	}
 	
 	return ret;

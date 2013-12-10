@@ -18,5 +18,6 @@ int str_sqlite_read(char *buf, unsigned int buf_size, char *sql_cmd);
 
 int global_info_init(int force_reset);
 int smarthome_setting_reset(char *sqlite_cmd);
+int smartlife_sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, int (*sqlite_read_callback)(char **result, int row, int column, void *receiver, unsigned int receiver_size));
 
 #endif

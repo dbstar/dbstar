@@ -37,6 +37,7 @@
 #include "multicast.h"
 #include "motherdisc.h"
 #include "drmport.h"
+#include "drmapi.h"
 #include "prodrm20.h"
 
 #define MAX_PACK_LEN (1500)
@@ -446,7 +447,13 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 		return -1;
 	}
 	
+#ifdef TUNER_INPUT
+	data_stream_status_str_get(buf,size);
+	snprintf(buf+strlen(buf),size-strlen(buf),"\n%d",s_dvbpush_info_refresh_flag);
+#else
 	snprintf(buf,size,"%d",s_dvbpush_info_refresh_flag);
+#endif
+
 	s_dvbpush_info_refresh_flag = 0;
 	
 	int i = 0;
@@ -465,7 +472,7 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type)
 			{
 //				if(0==i){
-//					snprintf(buf, size,
+//					snprintf(buf+strlen(buf), size-strlen(buf),
 //						"%s\t%s\t%lld\t%lld", s_prgs[i].id,s_prgs[i].caption,s_prgs[i].cur>s_prgs[i].total?s_prgs[i].total:s_prgs[i].cur,s_prgs[i].total);
 //				}
 //				else
@@ -636,6 +643,7 @@ void *maintenance_thread()
 	//char sqlite_cmd[256];
 	int monitor_interval = 1;
 	unsigned int loop_cnt = 0;
+	int smart_card_insert_flag = -1;
 	
 	time_t s_pin_sec;	// 记录开机时间（秒）
 	time_t now_sec;
@@ -706,26 +714,39 @@ void *maintenance_thread()
 		
 		filter_timeout_process();
 		
-		if(smart_card_insert_flag_get()>0){
-			// 测试发现差不到1s，硬盘此时还未准备完毕
-			DEBUG("smart card insert, wait 2s for disc ready\n");
-			sleep(1);
-			
-			memset(SmartCardSn,0,sizeof(SmartCardSn));
-			ret = CDCASTB_GetCardSN(SmartCardSn);
-			if(CDCA_RC_OK==ret)
-			{
-				DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
+		if(smart_card_insert_flag != smart_card_insert_flag_get()){
+			smart_card_insert_flag = smart_card_insert_flag_get();
+			if(smart_card_insert_flag>0){
+				// 测试发现差不到1s，硬盘此时还未准备完毕
+				DEBUG("smart card insert, wait 1s for disc ready\n");
+				sleep(1);
 				
-				if(1==smartcard_entitleinfo_refresh())
-					pushinfo_reset();
-				smart_card_insert_flag_set(0);
-				
-				send_sc_notify(1,DRM_SC_INSERT_OK, NULL, 0);
-			}
-			else{
-				DEBUG("read card sn failed, retry again\n");
-				drm_sc_insert();
+				memset(SmartCardSn,0,sizeof(SmartCardSn));
+				ret = CDCASTB_GetCardSN(SmartCardSn);
+				if(CDCA_RC_OK==ret)
+				{
+					DEBUG("read smartcard sn OK: %s\n", SmartCardSn);
+					
+					if(1==smartcard_entitleinfo_refresh())
+						pushinfo_reset();
+					smart_card_insert_flag_set(0);
+					
+					DEBUG("CA_LIB Ver: 0X%lX\n", CDCASTB_GetVer());
+					
+					send_sc_notify(1,DRM_SC_INSERT_OK, NULL, 0);
+				}
+				else{
+					if(smart_card_insert_flag<=3){
+						DEBUG("read card sn failed, will retry %dth times\n",smart_card_insert_flag+1);
+						drm_sc_insert();
+					}
+					else{
+						DEBUG("reset smartcard finally failed after try %d times\n",smart_card_insert_flag);
+						smart_card_insert_flag_set(0);
+						
+						send_sc_notify(1,DRM_SC_INSERT_FAILED, NULL, 0);
+					}
+				}
 			}
 		}
 		

@@ -19,6 +19,7 @@
 #include "prodrm20.h"
 #include "dvbpush_api.h"
 #include "porting.h"
+#include "tunerdmx.h"
 
 #define DRMVOD_LOG_TAG "DRMLIB"
 #if 1
@@ -55,12 +56,14 @@ typedef struct {
 CDCA_U8 checkTimeoutMark = 0;
 int smc_fd = -1;
 FILE *block01_fd = NULL;
-extern int smc_set(struct am_smc_atr *abuf);
 SCDCACardEntitleInfo card_sn = {"", -1}; //[CDCA_MAX_CARD_NUM];
 SCDCAFilterInfo dmx_filter[MAX_CHAN_FILTER];
+
+#ifdef TUNER_INPUT
+#else
 extern Channel_t chanFilter[];
 extern int max_filter_num;
-
+#endif
 
 static int mkdirp(char *path)
 {
@@ -266,8 +269,6 @@ void CDSTBCA_WriteBuffer(CDCA_U8 byBlockID, const CDCA_U8* pbyData, CDCA_U32 dwL
 
 /*-------- TS流管理 --------*/
 
-#if 1
-
 void dmx_filter_init(void)
 {
     int i;
@@ -291,7 +292,11 @@ void filter_timeout_process()
 		now_sec = time(NULL);
 //		LOGD("checkTimeoutMark: %d, now_sec: %lu\n",checkTimeoutMark,now_sec);
 		
+#ifdef TUNER_INPUT
+		for(i=0; i<MAX_CHAN_FILTER; i++)
+#else
 		for(i=0; i<max_filter_num; i++)
+#endif
 		{
 			theni = dmx_filter[i].timeouttime;
 //			LOGD("dmx_filter[%d].timeouttime=%lu\n",i,dmx_filter[i].timeouttime);
@@ -311,8 +316,11 @@ void filter_timeout_process()
 	}
 }
 
-
+#ifdef TUNER_INPUT
+static void filter_dump_bytes(int dev_no, int fid, const uint8_t *data, int len, void *user_data)
+#else
 static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_data)
+#endif
 {
 	CDCA_U8        byReqID;
 	CDCA_U16       wPid;
@@ -351,7 +359,6 @@ static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_
 		filter_timeout_process();
 	}
 }
-#endif
 
 /* 设置私有数据过滤器 */
 CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
@@ -369,7 +376,12 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	time_t now_sec = 0;
 
 	for (fid = 0; fid < MAX_CHAN_FILTER; fid++) {
-		if ((dmx_filter[fid].byReqID == byReqID) && (chanFilter[fid].used)) {
+#ifdef TUNER_INPUT
+		if (dmx_filter[fid].byReqID == byReqID)
+#else
+		if ((dmx_filter[fid].byReqID == byReqID) && (chanFilter[fid].used))
+#endif
+		{
 			CDSTBCA_ReleasePrivateDataFilter(byReqID, dmx_filter[fid].wPID);
 			break;
 		}
@@ -384,13 +396,23 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	PRINTF("filter[8]: %x,%x,%x,%x,%x,%x,%x,%x\n",param.filter[0],param.filter[1],param.filter[2],param.filter[3],param.filter[4],param.filter[5],param.filter[6],param.filter[7]);
 	PRINTF("mask  [8]: %x,%x,%x,%x,%x,%x,%x,%x\n\n",param.mask[0],param.mask[1],param.mask[2],param.mask[3],param.mask[4],param.mask[5],param.mask[6],param.mask[7]);
 
+#ifdef TUNER_INPUT
+	fid = TC_alloc_filter(wPid, &param, (AM_DMX_DataCb)filter_dump_bytes, NULL, 0);
+#else
 	fid = TC_alloc_filter(wPid, &param, (dataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
+#endif
+
 	if ((fid >= MAX_CHAN_FILTER)||(fid < 0)) {
 		return  CDCA_FALSE;
 	}
 	dmx_filter[fid].wPID = wPid;
 	dmx_filter[fid].byReqID = byReqID;
+	
+#ifdef TUNER_INPUT
+#else
 	dmx_filter[fid].fid = fid;
+#endif
+
 	if (byWaitSeconds) {
 		checkTimeoutMark ++;
 		now_sec = time(NULL);
@@ -407,23 +429,37 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 /* 释放私有数据过滤器 */
 void CDSTBCA_ReleasePrivateDataFilter(CDCA_U8  byReqID, CDCA_U16 wPid)
 {
-#if 1
 	int fid;
 
+#ifdef TUNER_INPUT
+	for (fid = 0; fid < MAX_CHAN_FILTER; fid++) {
+		if ((dmx_filter[fid].byReqID == byReqID) && (dmx_filter[fid].wPID == wPid)) {
+#else
 	for (fid = 0; fid < max_filter_num; fid++) {
 		if ((dmx_filter[fid].byReqID == byReqID) && (dmx_filter[fid].wPID == wPid) && (chanFilter[fid].used)) {
+#endif
 			break;
 		}
 	}
-	LOGD("release fid[%d] filter\n", fid);
-	if (fid >= max_filter_num) {
-		return;
-	}
-	TC_free_filter(fid);
-	dmx_filter[fid].byReqID = 0xff;
-	dmx_filter[fid].wPID = 0xffff;
-	dmx_filter[fid].timeouttime = 0;
+
+#ifdef TUNER_INPUT	
+	if (fid < MAX_CHAN_FILTER)
+#else
+	if (fid < max_filter_num)
 #endif
+	{
+		TC_free_filter(fid);
+		dmx_filter[fid].byReqID = 0xff;
+		dmx_filter[fid].wPID = 0xffff;
+		dmx_filter[fid].timeouttime = 0;
+		
+		LOGD("release fid[%d] filter\n", fid);
+	}
+	else{
+		LOGD("fail to release fid %d\n",fid);
+	}
+	
+	return;
 }
 
 /* 设置CW给解扰器 */
@@ -436,36 +472,9 @@ void CDSTBCA_ScrSetCW(CDCA_U16       wEcmPID,
 	LOGD("####################CDSTBCA_ScrSetCW function not implementted\n");
 }
 
-// -1表示拔卡，1表示插卡，0表示处理完插卡动作。这里表示的纯物理动作，不含软件层面reset的过程。
-static int s_smartcard_action = 0;
-
-int smartcard_action_set(int smartcard_action)
-{
-	s_smartcard_action = smartcard_action;
-	LOGD("s_smartcard_action=%d\n", s_smartcard_action);
-	
-	return s_smartcard_action;
-}
-
-int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, int len)
-{
-	int ret = -1;
-	
-	if(1==can_send_nofity && -1!=s_smartcard_action){
-		ret = msg_send2_UI(sc_notify, msg, len);
-	}
-	else{
-		LOGD("can_send_nofity=%d, s_smartcard_action=%d, no need to send 0x%x\n", can_send_nofity,s_smartcard_action,sc_notify);
-		ret = -1;
-	}
-	
-	return ret;
-}
-
 /*--------- 智能卡管理 ---------*/
 
 /* 智能卡复位 */
-int smc_set(struct am_smc_atr *abuf);
 CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 {
 	struct am_smc_atr abuf;
@@ -473,11 +482,11 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	AM_SMC_CardStatus_t status;
 	int can_send_nofity = 0;
 	
-	LOGD("CDSTBCA_SCReset s_smartcard_action=%d, smc_fd=%d\n", s_smartcard_action,smc_fd);
-	if(1==s_smartcard_action)
+	LOGD("CDSTBCA_SCReset s_smartcard_action=%d, smc_fd=%d\n", smartcard_action_get(),smc_fd);
+	if(1==smartcard_action_get())
 		can_send_nofity = 1;
 	
-	s_smartcard_action = 0;
+	smartcard_action_set(0);
 	
 	if (smc_fd == -1) {
 		smc_fd = open(SMC_DEVICE, O_RDWR);
@@ -529,7 +538,7 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 	for (i = 0; i < *pbyLen; i++) {
 		LOGD("0x%x,", abuf.atr[i]);
 	}
-    smc_set(&abuf);
+//	smc_set(&abuf);
 //	send_sc_notify(can_send_nofity,DRM_SC_INSERT_OK, NULL, 0);
 	smart_card_insert_flag_set(1);
 	
@@ -537,40 +546,48 @@ CDCA_BOOL CDSTBCA_SCReset(CDCA_U8* pbyATR, CDCA_U8* pbyLen)
 }
 
 /* 智能卡通讯 */
-extern AM_ErrorCode_t AM_SMC_readwrite(const uint8_t *send, int slen, uint8_t *recv, int *rlen);
 CDCA_BOOL CDSTBCA_SCPBRun(const CDCA_U8* pbyCommand,
                           CDCA_U16       wCommandLen,
                           CDCA_U8*       pbyReply,
                           CDCA_U16*      pwReplyLen)
 {
 	//int i;
-#if 0
-	int j;
-	#define TMP_STR_SIZE	4096
-	char tmp_str[TMP_STR_SIZE];
-	
-	memset(tmp_str,0,TMP_STR_SIZE);
-	for(j=0;j<wCommandLen;j++)
-		snprintf(tmp_str+strlen(tmp_str),TMP_STR_SIZE-strlen(tmp_str),"0x%x\t",pbyCommand[j]);
-	LOGD("smart card command[%d]: %s\n",wCommandLen,tmp_str);
-#endif
-
 	//LOGD("ooooooooooooori send len [%d][%d]--[%d][%d]\n",wCommandLen,*pwReplyLen,pbyCommand[0],pbyCommand[1]);
 	//for (i = 0; i < 3; i++) {
-		if (AM_SMC_readwrite(pbyCommand, (int)wCommandLen,  pbyReply, (int *) pwReplyLen) == AM_SUCCESS) {
-#if 0
-			{
-				memset(tmp_str,0,TMP_STR_SIZE);
-				for (j=0;j<*pwReplyLen;j++)
-				    snprintf(tmp_str+strlen(tmp_str),TMP_STR_SIZE-strlen(tmp_str),"0x%x\t",pbyReply[j]);
-				LOGD("smart card reply[%d]: %s\n",*pwReplyLen,tmp_str);
-			}
-			//LOGD("AM_SMC_readwrite successful yyyyyyyyyyyyyyyyyy\n\n\n");
-#endif
+resendwrite:
+ if (AM_SMC_readwrite(pbyCommand, (int)wCommandLen,  pbyReply, (int *) pwReplyLen) == AM_SUCCESS) {
+	/*		{int j;
+			LOGD("smart card command:\n");
+			for (j=0;j<wCommandLen;j++)
+			    LOGD("0x%x,",pbyCommand[j]);
+			LOGD("\n");
+			LOGD("smart card reply:\n");
+
+			for (j=0;j<*pwReplyLen;j++)
+			    LOGD("0x%x,",pbyReply[j]);
+			LOGD("\n");
+
+			}*/
+			//LOGD("sssssssssssssssssssssssend read successful\n");
+
 			return CDCA_TRUE;
 		}
 	//}
+       {
+           struct am_smc_atr abuf;
+           static int retry = 0;
+
+           if (retry < 2)
+           {
+               ioctl(smc_fd, AMSMC_IOC_RESET, &abuf);
+               retry ++;
+               goto resendwrite;
+           }
+           retry = 0;
+       } 
+
 	LOGD("AM_SMC_readwrite fail xxxxxxxxxxxxxxx\n\n\n");
+
 	return CDCA_FALSE;
 }
 

@@ -8,6 +8,9 @@
 #include <fcntl.h>
 #include <time.h>
 #include "common.h"
+
+#ifdef TUNER_INPUT
+
 #include "softdmx.h"
 #include "dmx.h"
 #include "prodrm20.h"
@@ -15,11 +18,9 @@
 #include "bootloader.h"
 #include "softdmx_print.h"
 #include "porting.h"
-
-#include "libinclude/am_dmx.h"
-#include "libinclude/am_fend.h"
-#include "libinclude/am_util.h"
-#include "am_dvr.h"
+#include "mid_push.h"
+#include "sha_verify.h"
+#include "tunerdmx.h"
 
 int loader_dsc_fid;
 int tdt_dsc_fid = -1;;
@@ -29,22 +30,7 @@ static int loaderAction = 0;
 static int s_print_cnt = 0;
 static unsigned char tc_tid = 0xff;
 static unsigned short tc_pid = 0xffff;
-
 static unsigned char software_version[4];
-
-extern int TC_loader_get_push_state(void);
-extern int TC_loader_get_push_buf_size(void);
-extern unsigned char * TC_loader_get_push_buf_pointer(void);
-//static void mpe_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data);
-extern int sha_verify(FILE *f,  uint8_t*sha0, size_t signed_len);
-extern int TC_loader_to_push_order(int ord);
-//int TC_loader_filter_handle(int aof);
-extern unsigned int tc_crc32(const unsigned char *buf, int len);
-
-#define UPGRADEFILE_ALL "/tmp/upgrade.zip"
-#define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
-#define COMMAND_FILE  "/cache/recovery/command0"
-#define LOADER_PACKAGE_SIZE		(4084)
 
 #define FEND_DEV_NO 0
 #define DMX_DEV_NO 2
@@ -109,12 +95,6 @@ static void blindscan_cb(int dev_no, AM_FEND_BlindEvent_t *evt, void *user_data)
 		DEBUG("++++++blindscan_tp\n");
 	}
 }
-
-struct blindscan_result{
-	int count;
-	unsigned int freq[128];
-	unsigned int sr[128];
-};
 
 int tuner_blindscan(struct  blindscan_result *scan_result)
 {
@@ -246,8 +226,8 @@ int TC_free_filter(int fid)
 {
 	AM_TRY(AM_DMX_StopFilter(DMX_DEV_NO, fid));
 	AM_TRY(AM_DMX_FreeFilter(DMX_DEV_NO, fid));
-DEBUG("TC free filter fid=[%d]\n", fid);
-        return 0;
+	DEBUG("TC free filter fid=[%d]\n", fid);
+	return 0;
 }
 
 int TC_alloc_filter(unsigned short pid, Filter_param* sparam, AM_DMX_DataCb hdle, void* userdata, char priority)
@@ -273,7 +253,6 @@ int TC_alloc_filter(unsigned short pid, Filter_param* sparam, AM_DMX_DataCb hdle
     return fid;
 }
 
-extern int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read);
 static void* dvr_data_thread(void *arg)
 {
 	DVRFeedData *dd = (DVRFeedData*)arg;
@@ -378,11 +357,9 @@ int stop_feedpush()
     }
     return -1;
 }
-//tuner api end 
-//extern  int test_tc();
+
 int upgradefile_clear()
 {
-//test_tc();
 	PRINTF("unlink %s\n", UPGRADEFILE_IMG);
 	return unlink(UPGRADEFILE_IMG);
 }
@@ -1138,3 +1115,5 @@ int tuner_scan(char *buf, unsigned int len)
 
     return ret;
 }
+
+#endif

@@ -28,6 +28,11 @@
 #include "sqlite.h"
 #include "softdmx.h"
 #include "dvbpush_api.h"
+#include "tunerdmx.h"
+
+#ifdef TUNER_INPUT
+#include "am_dvr.h"
+#endif
 
 // 测试显示，提供给recvfrom的buffer最小为1316才是安全的，否则可能丢失188整数倍的包。因此缓冲buffer、用于隔开读写位置的空白区、以及最小接收buffer，大小均为1316的整数倍
 #define IGMP_BUF_GAP		(1316)
@@ -35,26 +40,31 @@
 // 1316+32=1348
 #define TMP_RECV_BUF_SIZE	(1348)
 
-static int p_read = 0;
-static int p_write = 0;
-static unsigned char *p_buf = NULL;
+
 extern int loader_dsc_fid;
 extern int tdt_dsc_fid;
 
-static pthread_mutex_t mtx_getip = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond_getip = PTHREAD_COND_INITIALIZER;
-static int s_igmp_running = 0;
-static int softdvb_running = 0;
-static pthread_t pth_softdvb_id;
-static pthread_t pth_igmp_id;
+#ifdef TUNER_INPUT
+	static int root_filter = -1;
+	extern unsigned short chanFilter[];
+#else
+	static pthread_mutex_t mtx_getip = PTHREAD_MUTEX_INITIALIZER;
+	static pthread_cond_t cond_getip = PTHREAD_COND_INITIALIZER;
+	
+	static int p_read = 0;
+	static int p_write = 0;
+	static unsigned char *p_buf = NULL;
+	static int s_igmp_running = 0;
+	static int softdvb_running = 0;
+	static pthread_t pth_softdvb_id;
+	static pthread_t pth_igmp_id;
+	static pthread_mutex_t mtx_net_rely_condition = PTHREAD_MUTEX_INITIALIZER;
+	static pthread_cond_t cond_net_rely_condition = PTHREAD_COND_INITIALIZER;
+	static int s_igmp_restart = 0;
+	static int s_igmp_recvbuf_init_flag = 0;
+	
+	static int s_data_stream_status = 0;	/* 标识ts流的状态 */
 
-
-static pthread_mutex_t mtx_net_rely_condition = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t cond_net_rely_condition = PTHREAD_COND_INITIALIZER;
-static int s_igmp_restart = 0;
-static int s_igmp_recvbuf_init_flag = 0;
-
-static int s_data_stream_status = 0;	/* 标识ts流的状态 */
 
 static int multicast_init()
 {
@@ -171,6 +181,7 @@ static void *igmp_thread()
 	
 
 MULTITASK_START:
+	DEBUG("%s waiting cond_net_rely_condition\n",__FUNCTION__ );
 	pthread_mutex_lock(&mtx_net_rely_condition);
 #if 0
 	pthread_cond_wait(&cond_net_rely_condition,&mtx_net_rely_condition); //wait
@@ -441,6 +452,8 @@ MULTITASK_START:
 	
 		close(sock);
 		DEBUG("close igmp socket: %d\n", sock);
+		
+		s_data_stream_status = 0;
 	}
 	sock = -1;
 	
@@ -585,6 +598,7 @@ int multicast_add()
 	
 	return ret;
 }
+#endif
 
 static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
 {
@@ -595,15 +609,40 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 	}
 	
 	int i = 0;
-	
+#ifdef TUNER_INPUT
+	int j = 0;
+	AM_DVR_StartRecPara_t spara;
+
+	DEBUG("FREE root_filter [%d]\n",root_filter);
+	if (root_filter != -1)
+	{
+		TC_free_filter(root_filter);
+		root_filter = -1;
+		DEBUG("tc free root filter !!!!!!!!!!!!!!!!\n");
+	}
+	memset(&spara,0,sizeof(spara));
+#endif
+
 	for(i=1;i<row+1;i++)
 	{
 		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
 		if(0==*((int *)filter_act) || 0==atoi(result[i*column+2])){
 			int ret = free_filter(pid);
 			DEBUG("free pid %d[%s] return with %d\n", pid, result[i*column], ret);
+#ifdef TUNER_INPUT
+			j++;
+#endif
 		}
 	}
+	
+#ifdef TUNER_INPUT
+	if (j!=0)
+	{
+		stop_feedpush();
+	}
+
+	j = 0;
+#endif
 	
 	for(i=1;i<row+1;i++)
 	{
@@ -615,6 +654,12 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 				filter = alloc_filter(pid, 1);
 			else
 				filter = alloc_filter(pid, 0);
+			
+#ifdef TUNER_INPUT
+			spara.pids[j] = pid;
+			j++;
+#endif
+			
 			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
 		}
 //		else{
@@ -622,6 +667,18 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 //			DEBUG("free pid %d return with %d\n", pid, ret);
 //		}
 	}
+	
+#ifdef TUNER_INPUT
+	if (j!=0)
+	{
+		unsigned short root_pid = root_channel_get();
+		spara.pids[j] = root_pid;
+		spara.pid_count = j+1;
+		
+		alloc_filter(root_pid,0);
+		start_feedpush(&spara);
+	}
+#endif
 	
 	return 0;
 }
@@ -649,9 +706,20 @@ int softdvb_init()
 	
 	// xml 根pid
 	unsigned short root_pid = root_channel_get();
-	int filter1 = alloc_filter(root_pid, 0);
-	DEBUG("set dvb filter, pid=%d, fid=%d\n", root_pid, filter1);
 	
+#ifdef TUNER_INPUT
+	chanFilterInit();
+	
+	memset(&param,0,sizeof(param));
+	param.filter[0] = 0x3e;
+	param.mask[0] = 0xff;
+	root_filter = TC_alloc_filter(root_pid, &param, root_section_handle, NULL, 0);
+	DEBUG("set filter, pid=%d, fid=%d\n", root_pid, root_filter);
+#else
+	int filter1 = alloc_filter(root_pid, 0);
+	DEBUG("set filter, pid=%d, fid=%d\n", root_pid, filter1);
+#endif
+
 	// 升级pid
 	memset(&param,0,sizeof(param));
 	param.filter[0] = 0xf0;
@@ -666,7 +734,7 @@ int softdvb_init()
 	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
 	DEBUG("set ca filter, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
-#ifdef PUSH_LOCAL_TEST
+#ifdef LOCAL_PUSH_TEST
 	// prog/video
 	unsigned short video_pid = 123;
 	int filter5 = alloc_filter(video_pid, 1);
@@ -689,7 +757,9 @@ int softdvb_init()
 #endif
 	
 	tdt_time_sync_awake();
-	
+
+#ifdef TUNER_INPUT
+#else
 	if(0==pthread_create(&pth_softdvb_id, NULL, softdvb_thread, NULL)){
 		//pthread_detach(pth_softdvb_id);
 		DEBUG("create soft dvb thread success\n");
@@ -699,6 +769,7 @@ int softdvb_init()
 		ERROROUT("create multicast receive thread failed\n");
 		ret = -1;
 	}
+#endif
 	
 	return ret;
 }
@@ -707,15 +778,18 @@ int softdvb_uninit()
 {
 	int ret = 0;
 	
+#ifdef TUNER_INPUT
+#else
 	softdvb_running = 0;
 	pthread_join(pth_softdvb_id, NULL);
+#endif
 	
 	// prog/file
 	unsigned short root_pid = root_channel_get();
 	ret = free_filter(root_pid);
 	DEBUG("free pid %d return with %d\n", root_pid, ret);
 	
-#ifdef PUSH_LOCAL_TEST
+#ifdef LOCAL_PUSH_TEST
 	// prog/video
 	unsigned short video_pid = 123;
 	ret = free_filter(video_pid);

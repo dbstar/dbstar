@@ -6,6 +6,9 @@
 
 extern int debug_level_get(void);
 
+// 如果是tuner信号版本，定义此宏；否则是网络版本
+#define TUNER_INPUT
+
 #define DVBPUSH_DEBUG_ANDROID 1
 #if DVBPUSH_DEBUG_ANDROID
 #include <android/log.h>
@@ -78,7 +81,7 @@ typedef enum{
 #define	WORKING_DATA_DIR	"/data/dbstar"
 #define	MSG_FIFO_ROOT_DIR	WORKING_DATA_DIR"/msg_fifo"
 #define SETTING_BASE		WORKING_DATA_DIR"/dbstar.conf"
-#define PUSH_CONF		"/system/etc/dbstar/push.conf"
+#define PUSH_CONF			"/system/etc/dbstar/push.conf"
 #define INITIALIZE_XML_URI	"pushroot/initialize/Initialize.xml"
 #define MOTHERDISC_XML_URI	"ContentDelivery.xml"
 
@@ -148,7 +151,7 @@ typedef enum{
 #define DBDATASERVERPORT_DFT		"4321"
 
 // 除了应该给本次下载留出足够空间外，额外预留20G
-#define HDFOREWARNING_M_DFT			(51200LL)
+#define HDFOREWARNING_M_DFT			(102400LL)
 // 给本次下载留出足够空间外，至少32G
 #define DOWNLOAD_ONCE_M_MIN			(32768LL)
 
@@ -270,7 +273,7 @@ typedef enum{
 /*
 本地测试push时使用（针对hytd.ts播发流），正常情况下关闭此宏。
 */
-//#define PUSH_LOCAL_TEST
+//#define LOCAL_PUSH_TEST
 
 typedef struct{
 	char	Name[64];
@@ -583,6 +586,93 @@ typedef struct{
 	DBSTAR_CMD_OBJ_TYPE_E	objectType;
 	DBSTAR_CMD_OBJ_S		object;			
 }DBSTAR_CMD_OPERATION_S;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// for dmx
+#define FILTER_BUF_SIZE (4096+184)
+
+#ifdef TUNER_INPUT
+	#define MAX_CHAN_FILTER 32
+	#define DMX_FILTER_SIZE 16
+#else
+	#define MAX_CHAN_FILTER 16
+	#define DMX_FILTER_SIZE 8  //16
+#endif
+
+typedef void (*dataCb) (int fid, const unsigned char *data, int len, void *user_data);
+
+#define HIGH_PRIORITY_FILTER_NUM 2
+
+typedef enum {
+        CHAN_STAGE_START,
+        CHAN_STAGE_HEADER,
+        CHAN_STAGE_PTS,
+        CHAN_STAGE_PTR,
+        CHAN_STAGE_DATA_SEC,
+        CHAN_STAGE_DATA_PES,
+        CHAN_STAGE_END
+} ChannelStage_t;
+
+
+typedef struct LoaderInfo LoaderInfo_t;
+struct LoaderInfo {
+    unsigned int stb_id_h;  //64bit
+    unsigned int stb_id_l;
+    unsigned char software_version[4]; //32bit
+    unsigned char hardware_version[4]; //32bit
+    unsigned int img_len;          //32bit
+    int fid;                       //32bit
+    unsigned short oui;            //16bit
+    unsigned short model_type;     //16bit
+    unsigned short user_group_id;  //16bit
+    unsigned char  download_type;  //8bit
+    unsigned char  file_type;      //8bit
+	char guodian_serialnum[24];
+};
+
+/*
+升级相关的定义
+*/
+#define UPGRADEFILE_ALL "/tmp/upgrade.zip"
+#define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
+#define COMMAND_FILE  "/cache/recovery/command0"
+#define LOADER_PACKAGE_SIZE		(4084)
+
+#define UPGRADE_PARA_STRUCT "/cache/recovery/last_install"
+#define TC_OUI 3
+#define TC_MODEL_TYPE 1
+#define TC_HARDWARE_VERSION0 0
+#define TC_HARDWARE_VERSION1 0
+#define TC_HARDWARE_VERSION2 3
+#define TC_HARDWARE_VERSION3 1
+ 
+typedef struct Channel Channel_t;
+struct Channel {
+        int              bytes;
+        int              fid;
+        int              offset;
+        int              sec_len;
+        void             *userdata;
+        dataCb           hdle;
+        unsigned short   pid;
+        unsigned char    buf[FILTER_BUF_SIZE];
+        unsigned char    used;
+        unsigned char    value[DMX_FILTER_SIZE+2];
+        unsigned char    maskandmode[DMX_FILTER_SIZE+2];
+        unsigned char    maskandnotmode[DMX_FILTER_SIZE+2];
+        unsigned char    neq;
+        ChannelStage_t   stage;
+        unsigned char    samepidnum;
+};
+
+struct Filterp {
+        unsigned char filter[DMX_FILTER_SIZE];
+        unsigned char mask[DMX_FILTER_SIZE];
+        unsigned char mode[DMX_FILTER_SIZE];
+};
+typedef struct Filterp Filter_param;
+////////////////////////////////////////////////////////////////////////////////
 
 
 int appoint_str2int(char *str, unsigned int str_len, unsigned int start_position, unsigned int appoint_len, int base);

@@ -13,6 +13,10 @@
 #include "timeprint.h"
 #include "dvbpush_api.h"
 #include "drmapi.h"
+#include "softdmx.h"
+#include "tunerdmx.h"
+#include "smarthome_shadow/smarthome.h"
+#include "smarthome_shadow/socket.h"
 
 #define DVB_TEST_ENABLE 0
 static int s_dvbpush_init_flag = 0;
@@ -21,11 +25,12 @@ static pthread_mutex_t mtx_main = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
 extern int _wLBM_zyzdmb(int miZon);
 
+
 /*
  考虑到升级是个非常重要但又较少依赖其他模块的功能，因此即使大部分模块初始化失败，也一样要继续运行，只要组播功能正常即可。
 */
 void *main_thread()
-{	
+{
 	DEBUG("main thread start...\n");
 	compile_timeprint();
         
@@ -42,8 +47,13 @@ void *main_thread()
 		DEBUG("push decoder buf init failed\n");
 		//return NULL;
 	}
-	
+
+#ifdef TUNER_INPUT
+	DEBUG("this is a tuner box, build at %s %s\n", __DATE__,__TIME__);
+#else
+	DEBUG("this is a network box, build at %s %s\n", __DATE__,__TIME__);
 	chanFilterInit();
+#endif
     smc_init();
 	
 	if(-1==sqlite_init()){
@@ -59,6 +69,10 @@ void *main_thread()
 		DEBUG("xmlparser init failed\n");
 		//return NULL;
 	}
+
+#ifdef TUNER_INPUT
+	tuner_init(1320000,43200000,0);//(1371000, 28800000, 0);
+#endif
 	
 //	return parse_xml("pushroot/pushinfo/1/ProductDesc.xml", PRODUCTDESC_XML, NULL);
 	
@@ -86,11 +100,14 @@ CDCASTB_FormatBuffer();
 		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
 		//return NULL;
 	}
-	
+
+#ifdef TUNER_INPUT
+#else
 	if(-1==igmp_init()){
 		DEBUG("igmp init failed\n");
 		//return NULL;
 	}
+#endif
 	
 	if(-1==softdvb_init()){
 		DEBUG("dvb init with failed\n");
@@ -144,7 +161,10 @@ int dvbpush_uninit()
 		2、g_recvBuffer——在mid_push_init()中malloc，在mid_push_uninit()中free
 		*/
 		softdvb_uninit();
+#ifdef TUNER_INPUT
+#else
 		igmp_uninit();
+#endif
 		mid_push_uninit();
 		xmlparser_uninit();
 		sqlite_uninit();
@@ -178,3 +198,4 @@ int main(int argc, char **argv)
 	return 0;
 }
 #endif
+

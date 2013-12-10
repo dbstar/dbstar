@@ -3,7 +3,7 @@
 
 static void compile_timeprint()
 {
-	DEBUG("%s %s\n", __DATE__, __TIME__);
+	DEBUG("build at %s %s\n", __DATE__, __TIME__);
 	return;
 }
 
