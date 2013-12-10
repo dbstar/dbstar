@@ -275,7 +275,7 @@
 #define CONFIG_ENV_OVERWRITE
 #define CONFIG_CMD_SAVEENV
 #define CONFIG_ENV_SECT_SIZE		0x1000
- #define CONFIG_ENV_IN_SPI_OFFSET           		0x80000
+#define CONFIG_ENV_IN_SPI_OFFSET        0x68000 //   		0x80000
 //nand
 #define CONFIG_ENV_IN_NAND_OFFSET       0x400000
 #define CONFIG_ENV_BLOCK_NUM    2
@@ -309,7 +309,7 @@
 	#define CONFIG_ENV_SECT_SIZE        0x1000
 	//#endif
 
-	#define CONFIG_ENV_OFFSET           0x80000
+	#define CONFIG_ENV_OFFSET           0x68000  //0x80000
 #elif defined CONFIG_NAND_BOOT
 	#define CONFIG_ENV_IS_IN_AML_NAND
 	#define CONFIG_CMD_SAVEENV
@@ -337,7 +337,7 @@
 
 
 #define BOARD_LATE_INIT
-#define CONFIG_PREBOOT
+//liukevin #define CONFIG_PREBOOT
 #define CONFIG_VIDEO_AML
 /* config TV output */
 #define CONFIG_VIDEO_AMLTVOUT
