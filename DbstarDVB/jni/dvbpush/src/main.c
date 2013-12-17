@@ -10,7 +10,6 @@
 #include "mid_push.h"
 #include "porting.h"
 #include "multicast.h"
-#include "timeprint.h"
 #include "dvbpush_api.h"
 #include "drmapi.h"
 #include "softdmx.h"
@@ -32,7 +31,6 @@ extern int _wLBM_zyzdmb(int miZon);
 void *main_thread()
 {
 	DEBUG("main thread start...\n");
-	compile_timeprint();
         
 	_wLBM_zyzdmb(13578642);
    	

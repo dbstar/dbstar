@@ -111,6 +111,8 @@ include $(BUILD_PREBUILT)
 #OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 #include $(BUILD_PREBUILT)
 
+$(shell touch $(LOCAL_PATH)/src/main.c)
+
 include $(CLEAR_VARS)
 LOCAL_MODULE := libdvbpushjni
 LOCAL_ARM_MODE := arm
