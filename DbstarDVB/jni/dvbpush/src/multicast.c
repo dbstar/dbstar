@@ -45,7 +45,14 @@ extern int loader_dsc_fid;
 extern int tdt_dsc_fid;
 
 #ifdef TUNER_INPUT
-	static int root_filter = -1;
+	//root pid （400），只在第一次初始化是硬dmx，此后就是软的dmx。
+	typedef enum{
+		ROOTCHANNEL_CHANGEDTOSOFTDMX = -3,	// 改为软dmx
+		ROOTCHANNEL_FREEFROMHDDXM = -2,		// 由硬dmx释放
+		ROOTCHANNEL_NOTINIT = -1			// 未初始化，接下来应该使用硬dmx初始化
+	}ROOTCHANNEL_STATUS;
+
+	static ROOTCHANNEL_STATUS root_filter = ROOTCHANNEL_NOTINIT;
 	extern unsigned short chanFilter[];
 #else
 	static pthread_mutex_t mtx_getip = PTHREAD_MUTEX_INITIALIZER;
@@ -613,16 +620,22 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 	int j = 0;
 	AM_DVR_StartRecPara_t spara;
 
-	DEBUG("FREE root_filter [%d]\n",root_filter);
-	if (root_filter != -1)
+	if (ROOTCHANNEL_NOTINIT!=root_filter && ROOTCHANNEL_FREEFROMHDDXM!=root_filter && ROOTCHANNEL_CHANGEDTOSOFTDMX!=root_filter)
 	{
+		DEBUG("FREE root_filter [%d]\n",root_filter);
 		TC_free_filter(root_filter);
-		root_filter = -1;
+		root_filter = ROOTCHANNEL_FREEFROMHDDXM;
 		DEBUG("tc free root filter !!!!!!!!!!!!!!!!\n");
 	}
-	memset(&spara,0,sizeof(spara));
 #endif
-
+	
+//	for(i=1;i<row+1;i++)
+//	{
+//		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
+//		// SELECT pid,pidtype,FreshFlag FROM Channel;
+//		DEBUG("row %d: pid=%d,pidType=%s,FreshFlag=%s",i,pid,result[i*column+1],result[i*column+2]);
+//	}
+	
 	for(i=1;i<row+1;i++)
 	{
 		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
@@ -636,12 +649,14 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 	}
 	
 #ifdef TUNER_INPUT
-	if (j!=0)
+	if (j>0)
 	{
+		DEBUG("j=%d do stop_feedpush()\n",j);
 		stop_feedpush();
 	}
 
 	j = 0;
+	memset(&spara,0,sizeof(spara));
 #endif
 	
 	for(i=1;i<row+1;i++)
@@ -660,7 +675,7 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 			j++;
 #endif
 			
-			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
+			DEBUG("set filter, pid=%d[%s], fid=%d, j=%d\n", pid, result[i*column], filter, j);
 		}
 //		else{
 //			int ret = free_filter(pid);
@@ -669,13 +684,21 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 	}
 	
 #ifdef TUNER_INPUT
-	if (j!=0)
-	{
+	
+	if(ROOTCHANNEL_FREEFROMHDDXM==root_filter){
 		unsigned short root_pid = root_channel_get();
 		spara.pids[j] = root_pid;
-		spara.pid_count = j+1;
-		
+		j++;
 		alloc_filter(root_pid,0);
+		
+		root_filter = ROOTCHANNEL_CHANGEDTOSOFTDMX;
+	}
+	
+	if (j>0)
+	{
+		spara.pid_count = j;
+		
+		DEBUG("spara.pid_count=%d, do start_feedpush()\n",spara.pid_count);
 		start_feedpush(&spara);
 	}
 #endif

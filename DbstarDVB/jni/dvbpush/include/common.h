@@ -101,7 +101,7 @@ typedef enum{
 #define PROG_DATA_PID_DF	(411)	// 0x19b
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
-#define MULTI_BUF_SIZE	(16171008)	/* (16171008)=(12*1024*1316) */
+#define MULTI_BUF_SIZE		(524288)	/* (524288)=(512*1024) */
 //#define MULTI_BUF_SIZE		(86245376)	/* (86245376)=(64*1024*1316) ~ 79M */
 //#define MULTI_BUF_SIZE		(43122688)	/* (43122688)=(32*1024*1316) ~ 41M */
 
@@ -268,7 +268,6 @@ typedef enum{
 	PRODUCTFLAG_PREVIEW = 2,	// 小片产品
 	PRODUCTFLAG_SPRODUCT = 3	// 界面产品
 }PRODUCTFLAG_E;
-
 
 /*
 本地测试push时使用（针对hytd.ts播发流），正常情况下关闭此宏。

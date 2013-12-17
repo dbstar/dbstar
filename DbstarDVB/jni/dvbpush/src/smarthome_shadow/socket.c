@@ -23,6 +23,8 @@
 #include "sqlite.h"
 #include "porting.h"
 
+#ifdef SMARTLIFE_LC
+
 #define MAXSLEEP					(128)
 #define BUF_SIZE_DFT				(40960)
 #define FIFO_STR_SIZE				(32)
@@ -662,3 +664,4 @@ int smartlife_connect_status_get(char *buf, int buf_size)
 	return 0;
 }
 
+#endif

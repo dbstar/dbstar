@@ -172,7 +172,7 @@ int tuner_init(int freq, int symbolrate, int voltage)
 	AM_DVR_OpenPara_t dpara;
 	struct dvb_frontend_parameters p;
 	fe_status_t status;
-DEBUG("in tuner init frq[%d] sbr[%d] v[%d] tinit[%d]\n",freq,symbolrate, voltage,tuner_inited);	
+	DEBUG("in tuner init frq[%d] sbr[%d] v[%d] tinit[%d]\n",freq,symbolrate, voltage,tuner_inited);	
 	if((freq)&&(tuner_inited==0))
 	{
 		memset(&para, 0, sizeof(para));
@@ -184,7 +184,7 @@ DEBUG("in tuner init frq[%d] sbr[%d] v[%d] tinit[%d]\n",freq,symbolrate, voltage
 		AM_DVR_SetBufferSize(DVR_DEV_NO,0x800000);
 		AM_DVR_SetSource(DVR_DEV_NO, AM_DVR_SRC_ASYNC_FIFO0);
 		data_threads.running = 0;
-                data_threads.id = DVR_DEV_NO;
+		data_threads.id = DVR_DEV_NO;
 		
 		memset(&fpara, 0, sizeof(fpara));
 		fpara.mode = AM_FEND_DEMOD_DVBS;
@@ -198,7 +198,7 @@ DEBUG("in tuner init frq[%d] sbr[%d] v[%d] tinit[%d]\n",freq,symbolrate, voltage
 		p.u.qpsk.fec_inner = FEC_AUTO;
 		
 		AM_TRY(AM_FEND_Lock(FEND_DEV_NO, &p, &status));
-DEBUG("tuner lock status: 0x%x\n", status);
+		DEBUG("tuner lock status: 0x%x\n", status);
 		
 		tuner_inited = 1;
 		return status;
@@ -250,6 +250,8 @@ int TC_alloc_filter(unsigned short pid, Filter_param* sparam, AM_DMX_DataCb hdle
 	AM_TRY(AM_DMX_SetSecFilter(DMX_DEV_NO, fid, &param));
 	AM_TRY(AM_DMX_SetBufferSize(DMX_DEV_NO, fid, 32*1024));
 	AM_TRY(AM_DMX_StartFilter(DMX_DEV_NO, fid));
+	
+	DEBUG("alloc filter pid=%d=0x%x, fid=%d=0x%x\n",pid,pid,fid,fid);
     return fid;
 }
 
@@ -267,16 +269,17 @@ static void* dvr_data_thread(void *arg)
 
 	while (dd->running)
 	{
-reread:		//cnt = AM_DVR_Read(dd->id, buf+p_write, p_free,1000);
-               cnt = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, buf+p_write,p_free,1000);
-               //printf("READ DATA LEN = [%d]\n",cnt);
+		//cnt = AM_DVR_Read(dd->id, buf+p_write, p_free,1000);
+		cnt = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, buf+p_write,p_free,1000);
+		//printf("READ DATA LEN = [%d]\n",cnt);
 
-pri++;
-if(pri == 1000)
-{
-pri = 0;
-printf("dvr read 1000 packets len[%d],pw[%d],pr[%d]\n",cnt,p_write,p_read);
-}
+//		pri++;
+//		if(pri == 1000)
+//		{
+//			pri = 0;
+//			DEBUG("dvr read 1000 packets len[%d],pw[%d],pr[%d]\n",cnt,p_write,p_read);
+//		}
+
 		if (cnt <= 0)
 		{
 			DEBUG("No data available from DVR%d cnt=[%d]\n", dd->id,cnt);
@@ -318,15 +321,19 @@ static void start_data_thread()
 	if (data_threads.running)
 		return;
 		
-DEBUG("start data thread ....\n");
+	DEBUG("start data thread ....\n");
 	data_threads.running = 1;
 	pthread_create(&data_threads.thread, NULL, dvr_data_thread, &data_threads);
 }
 
 static void stop_data_thread()
 {
+	DEBUG("stop data thread data_threads.running=%d\n",data_threads.running);
+	
 	if (data_threads.running == 0)
 		return;
+	
+	DEBUG("stop data thread ....\n");
 	data_threads.running = 0;
 	pthread_join(data_threads.thread, NULL);
 	DEBUG("Data thread for DVR0 has exit\n");
@@ -334,11 +341,13 @@ static void stop_data_thread()
 
 int start_feedpush(AM_DVR_StartRecPara_t *spara)
 {
+	DEBUG("feedpush_started=%d\n",feedpush_started);
+	
 	if(feedpush_started)
 		return -1;
     if (AM_DVR_StartRecord(DVR_DEV_NO, spara) == AM_SUCCESS)
 	{
-DEBUG("begin record ....\n");
+		DEBUG("begin record ....\n");
 	    start_data_thread();
 	    feedpush_started = 1;
 	    return 0;

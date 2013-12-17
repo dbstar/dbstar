@@ -685,7 +685,7 @@ int guidelist_select_refresh()
 #define DELETE_SIZE_ONCE	(53687091200LL)
 //(107374182400)==(100*1024*1024*1024)==100G
 //(53687091200)==(50*1024*1024*1024)==50G
-static unsigned long long s_delete_total_size = 0LL;
+static long long s_delete_total_size = 0LL;
 
 static int disk_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
@@ -697,7 +697,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 	
 	int i = 0;
 	long long total_size = 0LL;
-	unsigned long long total_size_actually = 0LL;
+	long long total_size_actually = 0LL;
 	char total_uri[512];
 	char *ids = (char *)receiver;
 	int ret = 0;
@@ -717,7 +717,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
 		
 		total_size_actually = dir_size(total_uri);
-		DEBUG("total_size=%lld, total_size_actually=%llu\n", total_size,total_size_actually);
+		DEBUG("total_size=%lld, total_size_actually=%lld\n", total_size,total_size_actually);
 		
 		if(0==remove_force(total_uri)){
 			if(strlen(ids)>0)
@@ -728,11 +728,11 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 				s_delete_total_size += total_size_actually;
 			
 			if((s_delete_total_size>>20) >= should_clean_M_get()){
-				DEBUG("delete %llu finished, %s, total finish!\n", s_delete_total_size,total_uri);
+				DEBUG("delete %lld finished, %s, total finish!\n", s_delete_total_size,total_uri);
 				break;
 			}
 			else
-				DEBUG("delete %llu finished, %s\n", s_delete_total_size, total_uri);
+				DEBUG("delete %lld finished, %s\n", s_delete_total_size, total_uri);
 			
 			if(strlen(ids)>(receiver_size-64)){
 				DEBUG("receiver can load no more than such PublicationID\n");
@@ -1989,6 +1989,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 //			smarthome_gw_sn_save();
 //			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
 			break;
+#ifdef SMARTLIFE_LC
 		case CMD_SMARTLIFE_SEND:
 			DEBUG("CMD_SMARTLIFE_SEND, *len=%d\n", *len);
 			smartlife_send(*buf,*len);
@@ -2004,6 +2005,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			*buf = s_jni_cmd_smartlife_connect_status;
 			*len = strlen(s_jni_cmd_smartlife_connect_status);
 			break;
+#endif
 		
 #ifdef TUNER_INPUT
 		case CMD_TUNER_GET_SIGNALINFO:

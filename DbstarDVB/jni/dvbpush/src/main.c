@@ -114,8 +114,10 @@ CDCASTB_FormatBuffer();
 		//return NULL;
 	}
 	
+#ifdef SMARTLIFE_LC
 	smartlife_connect_init();
-	
+#endif
+
 	DEBUG("OK ================================ OK\n");
 	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
 	
