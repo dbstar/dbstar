@@ -138,6 +138,8 @@ typedef enum{
 #define GLB_NAME_DBDATASERVERIP		"DBDataServerIP"
 #define GLB_NAME_DBDATASERVERPORT	"DBDataServerPort"
 #define GLB_NAME_REBOOT_TIMESTAMP	"RebootStamp"
+#define GLB_NAME_TUNERARGS			"TunerArgs"
+#define GLB_NAME_TUNERARGS_DFT		"TunerArgsDefault"
 
 #define INITIALIZE_MIDPATH	"pushroot/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
@@ -149,6 +151,7 @@ typedef enum{
 #define DEVICEMODEL_DFT				"01"
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
+#define TUNERARGS_DFT				"12620\t43200\t11300\t0\t0"
 
 // 除了应该给本次下载留出足够空间外，额外预留20G
 #define HDFOREWARNING_M_DFT			(102400LL)

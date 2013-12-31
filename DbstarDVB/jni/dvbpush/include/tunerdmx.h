@@ -16,6 +16,26 @@ struct blindscan_result{
 	unsigned int sr[128];
 };
 
+typedef enum{
+	POL_TYPE_V = 0,		// 垂直极化
+	POL_TYPE_H			// 水平极化
+}POL_TYPE_E;
+
+typedef enum{
+	MOD_TYPE_QPSK = 0,
+	MOD_TYPE_8PSK,
+	MOD_TYPE_16PSK,
+	MOD_TYPE_32PSK
+}MOD_TYPE_E;
+
+typedef struct{
+	int			frequency;				//频率，单位MHz
+	int			symbolRate;				//符号率，单位k/s
+	int			local_oscillator;		//本振频率，单位MHz
+	POL_TYPE_E	polarization_type;		//极化方式
+	MOD_TYPE_E	modulation_type;		//调试方式
+}TUNER_SETTINGS;
+
 typedef void (*AM_DMX_DataCb) (int dev_no, int fhandle, const uint8_t *data, int len, void *user_data);
 
 int data_stream_status_str_get(char *buf, unsigned int size);
@@ -32,8 +52,8 @@ void root_section_handle(int dev_no, int fid, const unsigned char *data, int len
 void tdt_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data);
 void ca_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data);
 void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data);
-int tuner_get_signalinfo(char *freq, char *buf, unsigned int len);
-int tuner_scan(char *buf, unsigned int len);
+int tuner_get_signalinfo(char *args, char *buf, unsigned int len);
+int tuner_lock(char* args, char *buf, unsigned int len);
 
 #endif
 

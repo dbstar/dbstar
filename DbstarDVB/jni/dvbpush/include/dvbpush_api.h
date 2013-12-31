@@ -57,7 +57,7 @@ typedef enum {
 	CMD_USER_IDLE_STATUS			= 0x00200,		//	用户处于空闲状态通知
 
     CMD_TUNER_GET_SIGNALINFO        = 0x00301,
-    CMD_TUNER_SCAN                  = 0x00302,
+    CMD_TUNER_LOCK                  = 0x00302,
 	
 	CMD_MAX                         = 0x0FFFF,
 	

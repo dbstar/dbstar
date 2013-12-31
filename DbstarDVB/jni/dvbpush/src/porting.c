@@ -2015,10 +2015,10 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			*buf = s_jni_cmd_public_space;
 			*len = strlen(s_jni_cmd_public_space);
 			break;
-		case CMD_TUNER_SCAN:
-			DEBUG("CMD_TUNER_SCAN\n");
-			tuner_scan(s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
-			DEBUG("CMD_TUNER_SCAN > [%s]\n", s_jni_cmd_public_space);
+		case CMD_TUNER_LOCK:
+			DEBUG("CMD_TUNER_LOCK\n");
+			tuner_lock(*buf, s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			DEBUG("CMD_TUNER_LOCK > [%s]\n", s_jni_cmd_public_space);
 			*buf = s_jni_cmd_public_space;
 			*len = strlen(s_jni_cmd_public_space);
 			break;

@@ -1111,16 +1111,116 @@ void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, i
 	//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",g_loaderInfo.file_type,g_loaderInfo.img_len,g_loaderInfo.download_type);
 }
 
-int tuner_get_signalinfo(char *freq, char *buf, unsigned int len)
+
+static int tuner_settings_parse(char* args, TUNER_SETTINGS *tuner_s)
+{
+	if(NULL==args || NULL==tuner_s){
+		return -1;
+	}
+	else
+		DEBUG("tuner settings: %s\n",args);
+	
+	char *buf = args;
+	char *p = strchr(buf,'\t');
+	
+	if(p){
+		*p = '\0';
+		tuner_s->frequency = atoi(buf);
+		
+		buf = p+1;
+		p = strchr(buf,'\t');
+		if(p){
+			*p = '\0';
+			tuner_s->symbolRate = atoi(buf);
+			
+			buf = p+1;
+			p = strchr(buf,'\t');
+			if(p){
+				*p = '\0';
+				tuner_s->local_oscillator = atoi(buf);
+				
+				buf = p+1;
+				p = strchr(buf,'\t');
+				if(p){
+					*p = '\0';
+					tuner_s->polarization_type = atoi(buf);
+					
+					buf = p+1;
+					p = strchr(buf,'\t');
+					if(p)
+						*p = '\0';
+						
+					p = strchr(buf,'\n');
+					if(p)
+						*p = '\0';
+						
+					p = strchr(buf,' ');
+					if(p)
+						*p = '\0';
+					
+					tuner_s->modulation_type = atoi(buf);
+					
+					DEBUG("frequency:%d\n",tuner_s->frequency);
+					DEBUG("symbolRate:%d\n",tuner_s->symbolRate);
+					DEBUG("local_oscillator:%d\n",tuner_s->local_oscillator);
+					DEBUG("polarization_type:%d\n",tuner_s->polarization_type);
+					DEBUG("modulation_type:%d\n",tuner_s->modulation_type);
+					
+					return 0;
+				}
+				else
+					return -1;
+			}
+			else
+				return -1;
+		}
+		else
+			return -1;
+	}
+	else
+		return -1;
+}
+
+int tuner_get_signalinfo(char *args, char *buf, unsigned int len)
 {
     int ret = 0;
+    int snr = 0;
+    int strength = 0;
+    
+    TUNER_SETTINGS tuner_s;
+    
+    if(0==tuner_settings_parse(args,&tuner_s)){
+	    // do some settings here, e.g.: tuner_s.frequency, etc.
+	    
+	    
+    	tuner_search_satelite(&snr, &strength);
+    	snprintf(buf,len,"%d\t%d\n",snr,strength);
+    	
+    	ret = 0;
+	}
 
     return ret;
 }
 
-int tuner_scan(char *buf, unsigned int len)
+int tuner_lock(char *args, char *buf, unsigned int len)
 {
     int ret = 0;
+    int snr = 0;
+    int strength = 0;
+    
+    TUNER_SETTINGS tuner_s;
+    
+    if(0==tuner_settings_parse(args,&tuner_s)){
+	    // do some settings here, e.g.: tuner_s.frequency, etc.
+	    
+	    
+	    // do tuner lock action here
+	    
+
+    	snprintf(buf,len,"%d\t%d\n",snr,strength);
+    	
+    	ret = 0;
+	}
 
     return ret;
 }

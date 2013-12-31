@@ -1436,7 +1436,7 @@ int localcolumn_init()
 	if(-1==check_record_in_trans("Column","ColumnID","L97")){
 #ifdef CNTV_LC
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',10000);",
-			"L97","-1","L97","L97","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
+			"L97","-1","L97","L97","LocalColumnIcon/CNTV_losefocus.png","LocalColumnIcon/CNTV_losefocus.png","LocalColumnIcon/CNTV_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 			"Column","L97",CURLANGUAGE_DFT,"DisplayName","CNTV","");
@@ -2201,6 +2201,23 @@ int global_info_init(int force_reset)
 	
 	if(1==force_reset || -1==check_record_in_trans("Global","Name","ColumnIconDft")){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','LocalColumnIcon/DefaultIcon_losefocus.png','');");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
+	
+	
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_TUNERARGS);
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			GLB_NAME_TUNERARGS,TUNERARGS_DFT);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
+	
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_TUNERARGS_DFT);
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+			GLB_NAME_TUNERARGS_DFT,TUNERARGS_DFT);
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_record_cnt ++;
 	}
