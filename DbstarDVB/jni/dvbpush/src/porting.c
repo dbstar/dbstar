@@ -2010,7 +2010,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 #ifdef TUNER_INPUT
 		case CMD_TUNER_GET_SIGNALINFO:
 			DEBUG("CMD_TUNER_GET_SIGNALINFO, *buf=%s\n", *buf);
-			tuner_get_signalinfo(*buf, s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
+			tuner_lock(*buf, s_jni_cmd_public_space,sizeof(s_jni_cmd_public_space));
 			DEBUG("CMD_TUNER_GET_SIGNALINFO > [%s]\n", s_jni_cmd_public_space);
 			*buf = s_jni_cmd_public_space;
 			*len = strlen(s_jni_cmd_public_space);

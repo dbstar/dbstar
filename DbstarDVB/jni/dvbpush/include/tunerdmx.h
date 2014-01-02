@@ -41,7 +41,7 @@ typedef void (*AM_DMX_DataCb) (int dev_no, int fhandle, const uint8_t *data, int
 int data_stream_status_str_get(char *buf, unsigned int size);
 int tuner_blindscan(struct  blindscan_result *scan_result);
 void tuner_search_satelite(int *snr, int *strength);
-int tuner_init(int freq, int symbolrate, int voltage);
+int tuner_init();
 int tuner_uninit();
 int TC_free_filter(int fid);
 int TC_alloc_filter(unsigned short pid, Filter_param* sparam, AM_DMX_DataCb hdle, void* userdata, char priority);

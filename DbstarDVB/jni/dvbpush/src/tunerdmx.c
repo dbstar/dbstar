@@ -31,6 +31,7 @@ static int s_print_cnt = 0;
 static unsigned char tc_tid = 0xff;
 static unsigned short tc_pid = 0xffff;
 static unsigned char software_version[4];
+static char last_tuner_args[512];
 
 #define FEND_DEV_NO 0
 #define DMX_DEV_NO 2
@@ -144,7 +145,7 @@ void tuner_search_satelite(int *snr, int *strength)
     AM_FEND_GetSNR(FEND_DEV_NO, snr);
     AM_FEND_GetStrength(FEND_DEV_NO, strength);
 
-    DEBUG("cb status: snr:%d, strength:%d\n",snr, strength);
+    DEBUG("cb status: snr:%d, strength:%d\n",*snr, *strength);
 }
 
 
@@ -165,15 +166,109 @@ static void fend_cb(int dev_no, struct dvb_frontend_event *evt, void *user_data)
 	DEBUG("cb status: 0x%0x ber:%d snr:%d, strength:%d\n", status, ber, snr, strength);
 }
 
-int tuner_init(int freq, int symbolrate, int voltage)
+static int tuner_settings_parse(char* args, TUNER_SETTINGS *tuner_s)
+{
+	if(NULL==args || NULL==tuner_s){
+		return -1;
+	}
+	else
+		DEBUG("tuner settings: %s\n",args);
+	
+	char *buf = args;
+	char *p = strchr(buf,'\t');
+	
+	if(p){
+		*p = '\0';
+		tuner_s->frequency = atoi(buf);
+		
+		buf = p+1;
+		p = strchr(buf,'\t');
+		if(p){
+			*p = '\0';
+			tuner_s->symbolRate = atoi(buf);
+			
+			buf = p+1;
+			p = strchr(buf,'\t');
+			if(p){
+				*p = '\0';
+				tuner_s->local_oscillator = atoi(buf);
+				
+				buf = p+1;
+				p = strchr(buf,'\t');
+				if(p){
+					*p = '\0';
+					tuner_s->polarization_type = atoi(buf);
+					
+					buf = p+1;
+					p = strchr(buf,'\t');
+					if(p)
+						*p = '\0';
+						
+					p = strchr(buf,'\n');
+					if(p)
+						*p = '\0';
+						
+					p = strchr(buf,' ');
+					if(p)
+						*p = '\0';
+					
+					tuner_s->modulation_type = atoi(buf);
+					
+					PRINTF("frequency:%d\n",tuner_s->frequency);
+					PRINTF("symbolRate:%d\n",tuner_s->symbolRate);
+					PRINTF("local_oscillator:%d\n",tuner_s->local_oscillator);
+					PRINTF("polarization_type:%d\n",tuner_s->polarization_type);
+					PRINTF("modulation_type:%d\n",tuner_s->modulation_type);
+					
+					return 0;
+				}
+				else
+					return -1;
+			}
+			else
+				return -1;
+		}
+		else
+			return -1;
+	}
+	else
+		return -1;
+}
+
+static int tuner_set(TUNER_SETTINGS *tpara)
+{
+    AM_FEND_OpenPara_t fpara;
+	struct dvb_frontend_parameters p;
+	fe_status_t status;
+	
+	memset(&fpara, 0, sizeof(fpara));
+	fpara.mode = AM_FEND_DEMOD_DVBS;
+	AM_TRY(AM_FEND_Open(FEND_DEV_NO, &fpara)); 
+    AM_TRY(AM_FEND_SetCallback(FEND_DEV_NO, fend_cb, NULL));
+    
+    AM_FEND_SetVoltage(FEND_DEV_NO, (fe_sec_voltage_t)tpara->polarization_type);//voltage);   //v13-0/v18-1/v_off-2
+    
+    memset(&p, 0, sizeof(struct dvb_frontend_parameters));
+	p.frequency = (tpara->frequency - tpara->local_oscillator)*1000;//freq;   //khz
+	p.inversion = INVERSION_AUTO;
+	p.u.qpsk.symbol_rate = tpara->symbolRate*1000;//symbolrate;  //1hz
+	p.u.qpsk.fec_inner = FEC_AUTO;
+	
+	AM_TRY(AM_FEND_Lock(FEND_DEV_NO, &p, &status));
+	DEBUG("tuner lock status: 0x%x\n", status);
+	
+	return status;
+}
+
+int tuner_init()
 {
 	AM_FEND_OpenPara_t fpara;
 	AM_DMX_OpenPara_t para;
 	AM_DVR_OpenPara_t dpara;
 	struct dvb_frontend_parameters p;
 	fe_status_t status;
-	DEBUG("in tuner init frq[%d] sbr[%d] v[%d] tinit[%d]\n",freq,symbolrate, voltage,tuner_inited);	
-	if((freq)&&(tuner_inited==0))
+	
+	if(0==tuner_inited)
 	{
 		memset(&para, 0, sizeof(para));
 		AM_TRY(AM_DMX_Open(DMX_DEV_NO, &para));
@@ -185,7 +280,13 @@ int tuner_init(int freq, int symbolrate, int voltage)
 		AM_DVR_SetSource(DVR_DEV_NO, AM_DVR_SRC_ASYNC_FIFO0);
 		data_threads.running = 0;
 		data_threads.id = DVR_DEV_NO;
+#ifdef TUNER_INIT_STATIC
 		
+		int freq = 1320000;
+		int symbolrate = 43200000;
+		int voltage = 0
+		
+		DEBUG("in tuner init frq[%d] sbr[%d] v[%d] tinit[%d]\n",freq,symbolrate, voltage,tuner_inited);	
 		memset(&fpara, 0, sizeof(fpara));
 		fpara.mode = AM_FEND_DEMOD_DVBS;
 		AM_TRY(AM_FEND_Open(FEND_DEV_NO, &fpara));
@@ -199,7 +300,42 @@ int tuner_init(int freq, int symbolrate, int voltage)
 		
 		AM_TRY(AM_FEND_Lock(FEND_DEV_NO, &p, &status));
 		DEBUG("tuner lock status: 0x%x\n", status);
+#else
+		char sqlite_cmd[512];
+		char tuner_args[512];
+		TUNER_SETTINGS tuner_s;
 		
+		memset(tuner_args,0,sizeof(tuner_args));
+		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s'",GLB_NAME_TUNERARGS);
+		
+		if(0==str_sqlite_read(tuner_args,sizeof(tuner_args),sqlite_cmd)){
+			DEBUG("get user tuner args: %s\n",tuner_args);
+		}
+		else{
+			DEBUG("get user tuner args failed\n");
+			memset(tuner_args,0,sizeof(tuner_args));
+			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s'",GLB_NAME_TUNERARGS_DFT);
+			if(0==str_sqlite_read(tuner_args,sizeof(tuner_args),sqlite_cmd)){
+				DEBUG("get default tuner args: %s\n",tuner_args);
+			}
+			else{
+				DEBUG("get default tuner args failed, use default manually\n");
+				snprintf(tuner_args,sizeof(tuner_args),"%s",TUNERARGS_DFT);
+			}
+		}
+		
+    	if(0==tuner_settings_parse(tuner_args,&tuner_s)){
+			snprintf(last_tuner_args,sizeof(last_tuner_args),"%s",tuner_args);
+		}
+    	else{
+    		tuner_s.frequency = 12620;
+    		tuner_s.symbolRate = 43200;
+    		tuner_s.local_oscillator = 11300;
+    		tuner_s.polarization_type = 0;
+    		tuner_s.modulation_type = 0;
+    	}
+		tuner_set(&tuner_s);
+#endif	
 		tuner_inited = 1;
 		return status;
 	}
@@ -1111,97 +1247,6 @@ void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, i
 	//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",g_loaderInfo.file_type,g_loaderInfo.img_len,g_loaderInfo.download_type);
 }
 
-
-static int tuner_settings_parse(char* args, TUNER_SETTINGS *tuner_s)
-{
-	if(NULL==args || NULL==tuner_s){
-		return -1;
-	}
-	else
-		DEBUG("tuner settings: %s\n",args);
-	
-	char *buf = args;
-	char *p = strchr(buf,'\t');
-	
-	if(p){
-		*p = '\0';
-		tuner_s->frequency = atoi(buf);
-		
-		buf = p+1;
-		p = strchr(buf,'\t');
-		if(p){
-			*p = '\0';
-			tuner_s->symbolRate = atoi(buf);
-			
-			buf = p+1;
-			p = strchr(buf,'\t');
-			if(p){
-				*p = '\0';
-				tuner_s->local_oscillator = atoi(buf);
-				
-				buf = p+1;
-				p = strchr(buf,'\t');
-				if(p){
-					*p = '\0';
-					tuner_s->polarization_type = atoi(buf);
-					
-					buf = p+1;
-					p = strchr(buf,'\t');
-					if(p)
-						*p = '\0';
-						
-					p = strchr(buf,'\n');
-					if(p)
-						*p = '\0';
-						
-					p = strchr(buf,' ');
-					if(p)
-						*p = '\0';
-					
-					tuner_s->modulation_type = atoi(buf);
-					
-					DEBUG("frequency:%d\n",tuner_s->frequency);
-					DEBUG("symbolRate:%d\n",tuner_s->symbolRate);
-					DEBUG("local_oscillator:%d\n",tuner_s->local_oscillator);
-					DEBUG("polarization_type:%d\n",tuner_s->polarization_type);
-					DEBUG("modulation_type:%d\n",tuner_s->modulation_type);
-					
-					return 0;
-				}
-				else
-					return -1;
-			}
-			else
-				return -1;
-		}
-		else
-			return -1;
-	}
-	else
-		return -1;
-}
-
-int tuner_get_signalinfo(char *args, char *buf, unsigned int len)
-{
-    int ret = 0;
-    int snr = 0;
-    int strength = 0;
-    
-    TUNER_SETTINGS tuner_s;
-    
-    if(0==tuner_settings_parse(args,&tuner_s)){
-	    // do some settings here, e.g.: tuner_s.frequency, etc.
-	    
-	    
-    	tuner_search_satelite(&snr, &strength);
-    	snprintf(buf,len,"%d\t%d\n",snr,strength);
-    	
-    	ret = 0;
-	}
-
-    return ret;
-}
-
 int tuner_lock(char *args, char *buf, unsigned int len)
 {
     int ret = 0;
@@ -1210,16 +1255,20 @@ int tuner_lock(char *args, char *buf, unsigned int len)
     
     TUNER_SETTINGS tuner_s;
     
-    if(0==tuner_settings_parse(args,&tuner_s)){
-	    // do some settings here, e.g.: tuner_s.frequency, etc.
-	    
-	    
-	    // do tuner lock action here
-	    
-
-    	snprintf(buf,len,"%d\t%d\n",snr,strength);
-    	
-    	ret = 0;
+    if(0==strcmp(last_tuner_args,args))
+    	DEBUG("has same tuner args: %s\n", args);
+    else{
+    	if(0==tuner_settings_parse(args,&tuner_s)){
+			tuner_set(&tuner_s);
+			snprintf(last_tuner_args,sizeof(last_tuner_args),"%s",args);
+		}
+		else
+			ret = -1;
+    }
+    
+    if(0==ret){
+	    tuner_search_satelite(&snr, &strength);
+		snprintf(buf,len,"%d\t%d\n",snr,strength);
 	}
 
     return ret;

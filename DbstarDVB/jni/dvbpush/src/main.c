@@ -69,7 +69,7 @@ void *main_thread()
 	}
 
 #ifdef TUNER_INPUT
-	tuner_init(1320000,43200000,0);//(1371000, 28800000, 0);
+	tuner_init();
 #endif
 	
 //	return parse_xml("pushroot/pushinfo/1/ProductDesc.xml", PRODUCTDESC_XML, NULL);
