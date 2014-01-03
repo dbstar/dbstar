@@ -84,6 +84,9 @@
         <service
             android:name=".service.GDDataProviderService"
             android:exported="false" />
+          <provider android:name=".model.MultipleLanguageInfoProvider"
+             android:authorities="com.dbstar.multipleLanguageInfo.provider"
+             ></provider>
     </application>
 
 </manifest>

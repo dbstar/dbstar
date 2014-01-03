@@ -40,6 +40,7 @@ import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.engine.GDClientObserver;
 import com.dbstar.guodian.engine1.ClientRequestService;
 import com.dbstar.guodian.engine1.RequestParams;
+import com.dbstar.model.APPVersion;
 import com.dbstar.model.ColumnData;
 import com.dbstar.model.ContentData;
 import com.dbstar.model.EventData;
@@ -256,8 +257,8 @@ public class GDDataProviderService extends Service {
 
 		//mGuodianEngine = new GDEngine(this);
 		//mGuodianEngine.setDbStarClint(mDBStarClient);
-
-		mRequestService = new ClientRequestService(this);
+		if(APPVersion.GUODIAN)
+		    mRequestService = new ClientRequestService(this);
 		
 		
 		mTaskQueue = new LinkedList<RequestTask>();
@@ -355,11 +356,13 @@ public class GDDataProviderService extends Service {
 
 	}
 	void startRequestServer(){
-	    mRequestService.start(mDBStarClient, mGDObserver);
+	    if(mRequestService != null)
+	        mRequestService.start(mDBStarClient, mGDObserver);
 	}
 	
 	void stopRequestServer(){
-	    mRequestService.stop();
+	    if(mRequestService != null)
+	        mRequestService.stop();
 	}
 	void startGuodianEngine() {
 		LogUtil.d(TAG, "========== startGuodianEngine ==========");
@@ -2763,7 +2766,8 @@ public class GDDataProviderService extends Service {
 //		
 //	}
 	public void requestData(RequestParams params){
-	    mRequestService.RequestData(params);
+	    if(mRequestService != null)
+	        mRequestService.RequestData(params);
 	}
 	// query cached data
 	public ElectricityPrice getElecPrice() {
@@ -2773,7 +2777,9 @@ public class GDDataProviderService extends Service {
 	}
 	
 	public LoginData getLoginData(){
-	    return mRequestService.getLoginData();
+	    if(mRequestService != null)
+	        return mRequestService.getLoginData();
+	    return null;
 	}
 	
 	

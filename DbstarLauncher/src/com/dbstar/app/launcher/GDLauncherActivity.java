@@ -29,6 +29,7 @@ import com.dbstar.guodian.engine1.GDRequestType;
 import com.dbstar.model.ColumnData;
 import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDApplicationObserver;
+import com.dbstar.model.APPVersion;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDVBDataContract.Content;
@@ -54,6 +55,7 @@ import android.view.animation.LayoutAnimationController;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.FrameLayout;
 import android.widget.VideoView;
@@ -155,7 +157,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		initializeData();
 //		startEngine();
-		mPowerController.start(mService);
+		if(mPowerController != null)
+		    mPowerController.start(mService);
 		
 		/*if (DeviceInitController.isBootFirstTime()) {
 			showLoadingDialog(getResources().getString(R.string.device_init_str));
@@ -587,8 +590,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
             intent = startComponent("com.dbstar.multiple.media.shelf", "share.MediaShareActivity");
             intent.putExtra("mColumnBookId", GDCommon.ColumnIDMULTIPLEMEDIABOOK);
             intent.putExtra("mColumnNewsPaperPaperId", GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER);
-            intent.putExtra("mColumnBookType", GDCommon.ColumnIDMULTIPLEMEDIABOOK);
-            intent.putExtra("mColumnNewsPaperType", GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER);
             
         }
 
@@ -713,7 +714,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	private Intent startLocalGuodianActivity(String columnId, String menuPath) {
-		return mPowerController.startGuoidanActivity(columnId, menuPath);
+	    if(mPowerController != null)
+	        return mPowerController.startGuoidanActivity(columnId, menuPath);
+	    return  null;
 	}
 
 	private void enterSubMenu(Menu newMenu) {
@@ -1579,6 +1582,17 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		super.initializeView();
 
+		View contentViewHouseBook = findViewById(R.id.context_view_housebook);
+		View contentViewGD = findViewById(R.id.context_view_gd);
+        
+        if(APPVersion.GUODIAN){
+            contentViewHouseBook.setVisibility(View.GONE);
+            contentViewGD.setVisibility(View.VISIBLE);
+        }else{
+            contentViewHouseBook.setVisibility(View.VISIBLE);
+            contentViewGD.setVisibility(View.GONE);
+        }
+        
 		mMarqeeView = (GDMarqeeTextView) findViewById(R.id.marqeeView);
 
 		mFocusItemBackground = (ImageView) findViewById(R.id.focus_item_bg);
@@ -1618,8 +1632,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		// mIsPopupMenuHided = true;
 		mIsPopupMenuHided = false;
 		// displayPopupMenu(false);
-
-		mPowerController = new GDPowerController(this);
+		if(APPVersion.GUODIAN)
+		    mPowerController = new GDPowerController(this);
 	}
 
 	private void initializeEngine() {
@@ -1711,21 +1725,24 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
 			handlePowerData(guodianEvent.Type, guodianEvent.Data);
 		}else if(type == EventData.EVENT_LOGIN_SUCCESSED){
-		    mPowerController.reRequestData();
+		    if(mPowerController != null)
+		        mPowerController.reRequestData();
 		}
 	}
 
 	void loginFinished(LoginData loginData) {
 		LogUtil.d(TAG, " === loginFinished ===");
-
-		mPowerController.handleLogin(loginData);
+		  if(mPowerController != null)
+		      mPowerController.handleLogin(loginData);
 	}
 
 	void handlePowerData(int type, Object data) {
 		if (type == GDRequestType.DATATYPE_POWERPANELDATA) {
-			mPowerController.updatePowerPanel((PowerPanelData) data);
+		    if(mPowerController != null)
+		        mPowerController.updatePowerPanel((PowerPanelData) data);
 		} else if(type == GDRequestType.DATATYPE_ELECTRICAL_POWER_CONSUMPTION_CONSTITUTE){
-		    mPowerController.updateElectriDimension((EPCConstitute)data);
+		    if(mPowerController != null)
+		        mPowerController.updateElectriDimension((EPCConstitute)data);
 		}
 	}
 
@@ -1761,7 +1778,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private void startEngine() {
 		mMediaScheduler.start(mService);
-		mPowerController.start(mService);
+		  if(mPowerController != null)
+		      mPowerController.start(mService);
 
 		checkSmartcardStatus();
 	}

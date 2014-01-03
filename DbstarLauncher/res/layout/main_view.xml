@@ -102,7 +102,7 @@
 
     <!-- context view -->
       <RelativeLayout
-        android:id="@+id/context_view"
+        android:id="@+id/context_view_housebook"
         android:layout_width="425dp"
         android:layout_height="364dp"
         android:layout_alignParentLeft="true"
@@ -120,9 +120,10 @@
             
         />
         </RelativeLayout>
+        
     <RelativeLayout
         android:visibility="invisible"
-        android:id="@+id/context_view"
+        android:id="@+id/context_view_gd"
         android:layout_width="425dp"
         android:layout_height="364dp"
         android:layout_alignParentLeft="true"
