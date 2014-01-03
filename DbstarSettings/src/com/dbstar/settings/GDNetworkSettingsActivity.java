@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import com.dbstar.settings.R;
 import com.dbstar.settings.base.PageManager;
+import com.dbstar.settings.utils.APPVersion;
 import com.dbstar.settings.utils.SettingsCommon;
 
 public class GDNetworkSettingsActivity extends GDBaseActivity implements
@@ -35,8 +36,11 @@ public class GDNetworkSettingsActivity extends GDBaseActivity implements
 		if (mMenuPath != null) {
 			showMenuPath(mMenuPath.split(MENU_STRING_DELIMITER));
 		}
-
-		switchToPage(SettingsCommon.PAGE_GATEWAY);
+		
+		if(APPVersion.SATELLITE)
+		    switchToPage(SettingsCommon.PAGE_CHANNELSELECTOR);
+		else
+		    switchToPage(SettingsCommon.PAGE_GATEWAY);
 	}
 
 	@Override

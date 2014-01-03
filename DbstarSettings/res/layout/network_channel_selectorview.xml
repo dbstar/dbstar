@@ -11,6 +11,7 @@
         android:orientation="horizontal" >
         
            <LinearLayout
+               android:id="@+id/satellie_content"
             android:layout_width="494dp"
             android:layout_height="550dp"
             android:layout_marginTop="120dp"
@@ -45,10 +46,18 @@
                         android:textColor="#000000"
                         android:textSize="@dimen/gl_text_size_22sp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <EditText
+                        android:id="@+id/serarch_rate"
+                        android:layout_width="150dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/network_satellite_search_rate_value"
+                        android:textColor="#000000"
+                        android:background="@drawable/textview_bgselector"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+                    
+                      <TextView
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/network_satellite_search_rate_unit"
                         android:textColor="#000000"
                         android:textSize="@dimen/gl_text_size_22sp" />
                 </TableRow>
@@ -66,10 +75,17 @@
                         android:textColor="#000000"
                         android:textSize="@dimen/gl_text_size_22sp" />
 
+                    <EditText
+                        android:id="@+id/symbol_rate"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:textColor="#000000"
+                        android:background="@drawable/textview_bgselector"
+                        android:textSize="@dimen/gl_text_size_22sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/network_satellite_symbol_rate_value"
+                        android:text="@string/network_satellite_symbol_rate_unit"
                         android:textColor="#000000"
                         android:textSize="@dimen/gl_text_size_22sp" />
                 </TableRow>
@@ -87,10 +103,17 @@
                         android:textColor="#000000"
                         android:textSize="@dimen/gl_text_size_22sp" />
 
-                    <TextView
+                    <EditText
+                        android:id="@+id/loacl_frequency"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:textColor="#000000"
+                        android:background="@drawable/textview_bgselector"
+                        android:textSize="@dimen/gl_text_size_22sp" />
+                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/network_satellite_local_frequency_value"
+                        android:text="@string/network_satellite_search_rate_unit"
                         android:textColor="#000000"
                         android:textSize="@dimen/gl_text_size_22sp" />
                 </TableRow>
@@ -107,13 +130,19 @@
                         android:text="@string/network_satellite_polarization_mode"
                         android:textColor="#000000"
                         android:textSize="@dimen/gl_text_size_22sp" />
-
-                    <TextView
+                        
+                    <Spinner 
+                        android:id="@+id/polarization_mode"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:spinnerMode="dropdown"
+                        />
+                 <!--    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/network_satellite_polarization_mode_value"
                         android:textColor="#000000"
-                        android:textSize="@dimen/gl_text_size_22sp" />
+                        android:textSize="@dimen/gl_text_size_22sp" /> -->
                 </TableRow>
 
                 <TableRow
@@ -128,13 +157,19 @@
                         android:text="@string/network_satellite_modulation_mode"
                         android:textColor="#000000"
                         android:textSize="@dimen/gl_text_size_22sp" />
-
+                      <Spinner 
+                        android:id="@+id/modulation_mode"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:spinnerMode="dropdown"
+                        />
+<!-- 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/network_satellite_modulation_mode_value"
                         android:textColor="#000000"
-                        android:textSize="@dimen/gl_text_size_22sp" />
+                        android:textSize="@dimen/gl_text_size_22sp" /> -->
                 </TableRow>
             </TableLayout>
 
@@ -198,6 +233,7 @@
                     android:textSize="@dimen/gl_text_size_22sp" />
                 
                 <ProgressBar 
+                    android:id="@+id/single_quality"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="132dp"
                     android:layout_height="7dp"
@@ -207,6 +243,7 @@
                     />
                 
                 <TextView
+                    android:id="@+id/single_quality_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/network_satellite_signal_quality_unit"
@@ -230,6 +267,7 @@
                     android:textSize="@dimen/gl_text_size_20sp" />
                 
                   <ProgressBar 
+                    android:id="@+id/single_strength"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="132dp"
                     android:layout_height="7dp"
@@ -238,11 +276,12 @@
                     android:progressDrawable="@drawable/satellite_signal_progressbar"
                     />
                   <TextView
+                    android:id="@+id/single_strength_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/network_satellite_signal_intensity_unit"
                     android:textColor="#000000"
-                     android:layout_marginLeft="10dp"
+                    android:layout_marginLeft="10dp"
                     android:textSize="@dimen/gl_text_size_20sp" />
             </LinearLayout>
         </LinearLayout>
@@ -352,11 +391,9 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/eth_button_bg"
                 android:textSize="@dimen/gl_text_size_20sp"
+                android:layout_marginRight="80dp"
                 android:text="@string/button_text_previous" />
 
-            <Space
-                android:layout_width="80dp"
-                android:layout_height="0dp" />
 
             <Button
                 android:id="@+id/nextbutton"

@@ -250,4 +250,14 @@ public class Utils {
 			mgr.setFrequencyBand(value, ret);
 		}
 	}
+	
+	public static int getInt(String value){
+	    int v = 0;
+	    try {
+            v = Integer.parseInt(value.trim());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+	    return v;
+	}
 }

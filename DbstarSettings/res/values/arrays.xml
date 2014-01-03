@@ -136,5 +136,14 @@
         <item msgid="3565079809875324621">"较强"</item>
         <item msgid="5702329417707689835">"强"</item>
     </string-array>
-
+   <string-array name="satellite_polarization_mode">
+        <item >"V-垂直"</item>
+        <item >"H-水平"</item>
+    </string-array>
+    <string-array name="satellite_modulation_mode">
+        <item >"QPSK"</item>
+        <item >"8PSK"</item>
+        <item >"16PSK"</item>
+        <item >"32PSK"</item>
+    </string-array>
 </resources>

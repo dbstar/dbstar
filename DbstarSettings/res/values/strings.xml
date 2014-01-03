@@ -49,24 +49,27 @@
 
     <string name="network_gateway_setup_title">配置国电服务器和组播源地址</string>
     <string name="network_satellite_setup_title">卫星连接</string>
-    <string name="network_satellite_search_rate">搜索平率&#160;:&#160;&#160;&#160;</string>
-    <string name="network_satellite_symbol_rate">符号率&#160;:</string>
-    <string name="network_satellite_local_frequency">本振频率&#160;:</string>
-    <string name="network_satellite_polarization_mode">极化方式&#160;:</string>
-    <string name="network_satellite_modulation_mode">调制方式&#160;:</string>
+    <string name="network_satellite_search_rate">搜索频率&#160;:&#160;</string>
+    <string name="network_satellite_search_rate_unit">&#160;MHZ</string>
+    <string name="network_satellite_symbol_rate">符号率&#160;:&#160;</string>
+    <string name="network_satellite_symbol_rate_unit">&#160;k/s</string>
+    <string name="network_satellite_local_frequency">本振频率&#160;:&#160;</string>
+    <string name="network_satellite_polarization_mode">极化方式&#160;:&#160;</string>
+    <string name="network_satellite_modulation_mode">调制方式&#160;:&#160;</string>
     <string name="network_satellite_search">搜索</string>
     <string name="network_satellite_restore_default">恢复默认</string>
     <string name="network_satellite_star_patten">对星模式</string>
     <string name="network_satellite_status">状态&#160;:&#160;</string>
     <string name="network_satellite_signal_quality">信号质量&#160;:&#160;</string>
-    <string name="network_satellite_signal_quality_unit">20dB(Es/No)</string>
+    <string name="network_satellite_signal_quality_unit">dB(Es/No)</string>
     <string name="network_satellite_signal_intensity">信号强度&#160;:&#160;</string>
-    <string name="network_satellite_signal_intensity_unit">-72dBm</string>
-    <string name="network_satellite_search_rate_value">12671 MHZ</string>
-   <string name="network_satellite_symbol_rate_value">28800 k/s</string>
-    <string name="network_satellite_local_frequency_value">11301 MHz</string>
+    <string name="network_satellite_signal_intensity_unit">dBm</string>
+    <string name="network_satellite_search_rate_value">12671</string>
+   <string name="network_satellite_symbol_rate_value">28800</string>
+    <string name="network_satellite_local_frequency_value">11301</string>
      <string name="network_satellite_polarization_mode_value">&lt;V- 垂直 &gt;</string>
     <string name="network_satellite_modulation_mode_value">&lt;QPSK &gt;</string>
+    <string name="satellite_param_is_null">上面输入框的值不能为空</string>
     
     <string name="network_channelselector_title">选择回传通道</string>
     <string name="network_channel_cable">有线网</string>
