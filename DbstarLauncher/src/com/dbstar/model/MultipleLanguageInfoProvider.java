@@ -207,7 +207,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             break;
         }case LOAD_ALL_NEWSPAPERS:{
             
-            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate from Publication p ,MultipleLanguageInfoRM m " +
+            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate ,Favorite from Publication p ,MultipleLanguageInfoRM m " +
                     "where  p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.[ColumnID] in (select ColumnID from Column c where c.ParentID = ?) order by PublishDate desc";
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
