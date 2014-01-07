@@ -628,6 +628,7 @@ Duration	NVARCHAR(32) DEFAULT '',\
 Resolution	NVARCHAR(32) DEFAULT '',\
 BitRate	NVARCHAR(32) DEFAULT '',\
 CodeFormat	NVARCHAR(32) DEFAULT '',\
+Preference	NVARCHAR(32) DEFAULT '',\
 AccessTime	NOT NULL DEFAULT (datetime('now','localtime')),\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,PublicationID,ColumnID));", name);

@@ -70,7 +70,7 @@ typedef enum{
 #define MYAPP_LC
 
 // 本地栏目：浏览器
-#define WEBBROWSER_LC
+//#define WEBBROWSER_LC
 
 // 本地栏目：CNTV
 #define CNTV_LC
