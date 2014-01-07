@@ -131,6 +131,7 @@ public class GDCommon {
 	
 	public static final String ColumnIDMULTIPLEMEDIABOOK = "3";
 	public static final String ColumnIDMULTIPLEMEDIANEWSPAPER = "5";
+	public static final String ColumnIDMULTIPLEMEDIAVOICEDBOOK = "L10000";
 	
 	public static final String KeyMediaData = "media_data";
 	public static final String KeyPackgeFile = "packge_file";

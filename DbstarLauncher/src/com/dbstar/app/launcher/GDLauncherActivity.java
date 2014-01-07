@@ -408,7 +408,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// enterSubMenu(menuItem.SubMenu);
 			// else
 			// showPopupMenu();
-		    if(!menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK) && !menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)){
+		    if(!menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK) && !menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER) 
+		            && !menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIAVOICEDBOOK)){
     			enterSubMenu(menuItem.SubMenu);
     			return true;
 		    }
@@ -445,6 +446,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		    startMultipleMediaView(menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)){
 		    startMultipleMediaView(menuItem.ColumnId());
+		}else if(menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIAVOICEDBOOK)){
+		    startMultipleMediaView(menuItem.ColumnId());
 		}
 
 		return ret;
@@ -455,6 +458,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.BookShelfActivity");
 			}else if(columnId.equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)){
 				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.NewsPaperActivity");
+			}else if(columnId.equals(GDCommon.ColumnIDMULTIPLEMEDIAVOICEDBOOK)){
+			    intent = startComponent("com.dbstar.multiple.media.shelf", "activity.VoicedBookShelfActivity");
 			}
 			if(intent != null){
 			    intent.putExtra("Id", columnId);
@@ -1344,7 +1349,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					if (item.ItemData != null && item.ItemData.Id != null
 							&& !item.ItemData.Id.isEmpty()) {
 						mLevel2RequestCount++;
-						if(!item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK) && !item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER))
+						if(!item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK) && !item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)
+						        && !item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIAVOICEDBOOK))
 						    mService.getColumns(this, columnLevel + 1, i,item.ItemData.Id);
 						else{
 						    item.HasSubMenu = NO_SUBCOLUMNS;
