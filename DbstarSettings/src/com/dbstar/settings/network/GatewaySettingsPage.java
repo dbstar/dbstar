@@ -39,6 +39,7 @@ public class GatewaySettingsPage extends BaseFragment {
 	View mNullview;
 	Button mNextButton;
 	
+	boolean isReceiveData;
 	public GatewaySettingsPage () {
 		
 	}
@@ -104,6 +105,7 @@ public class GatewaySettingsPage extends BaseFragment {
 				mMulticastPort.setText(multicastPort);
 				mGatewayIP.setText(gatewayIP);
 				mGatewayPort.setText(gatewayPort);
+				isReceiveData = true;
 			}
 		}
 	};
@@ -111,10 +113,14 @@ public class GatewaySettingsPage extends BaseFragment {
 	void getNetworkInfo() {
 		Intent intent = new Intent();
 		intent.setAction(ActionGetNetworkInfo);
+		isReceiveData = false;
 		mActivity.sendBroadcast(intent);
 	}
 
 	void setNetworkInfo() {
+	    if(!isReceiveData)
+	        return;
+	    
 		String gatewaySerialNumber = mGatewaySerialNumber.getText().toString();
 		String gatewayIP = mGatewayIP.getText().toString();
 		String gatewayPort = mGatewayPort.getText().toString();

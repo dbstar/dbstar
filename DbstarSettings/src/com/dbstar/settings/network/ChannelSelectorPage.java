@@ -413,7 +413,7 @@ public class ChannelSelectorPage extends BaseFragment {
         int quality = 0,strenth = 0;
         String [] results = null;
         if(result != null){
-            results = result.replace("\n", "").split( "\t");
+            results = result.replace("\n", "").split(SatelliteSetting.SEPARATOR);
         }
         if( results != null && results.length == 2){
             try {
