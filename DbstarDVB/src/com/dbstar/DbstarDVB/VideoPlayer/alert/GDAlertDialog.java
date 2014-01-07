@@ -1,8 +1,11 @@
 package com.dbstar.DbstarDVB.VideoPlayer.alert;
 
 import com.dbstar.DbstarDVB.R;
+import com.dbstar.DbstarDVB.VideoPlayer.Common;
+
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -74,7 +77,32 @@ public class GDAlertDialog extends Dialog {
 		mCenterSpacer.setVisibility(View.GONE);
 		mOkButton.requestFocus();
 	}
+	
+	public void showDeleteButton(final Intent intent){
+	    mCancelButton.setText(R.string.delete_button_text);
+	    mCancelButton.setVisibility(View.VISIBLE);
+        mCenterSpacer.setVisibility(View.VISIBLE);
+        
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            
+            @Override
+            public void onClick(View v) {
+                String publicationId = intent.getStringExtra("publication_id");
+                String publicationSetId =intent.getStringExtra("publicationset_id");;
 
+                Intent intent = new Intent();
+                intent.setAction(Common.ActionDelete);
+                intent.putExtra("publication_id", publicationId);
+                if (publicationSetId != null) {
+                    intent.putExtra("publicationset_id", publicationSetId);
+                }
+                
+                getContext().sendBroadcast(intent);
+                closeDialog();
+            }
+        });
+        mOkButton.requestFocus();
+	}
 	public int getId() {
 		return mId;
 	}

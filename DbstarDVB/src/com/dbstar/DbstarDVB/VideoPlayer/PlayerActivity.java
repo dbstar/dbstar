@@ -302,8 +302,13 @@ public class PlayerActivity extends Activity {
 	void setupErrorInfoDlg() {
 		String errorStr = PlayerErrorInfo.getErrorString(this.getResources(),
 				mErrorCode);
+		
 		mAlertDlg.setMessage(errorStr);
-		mAlertDlg.showSingleButton();
+		if(PlayerErrorInfo.isDeleteError(mErrorCode)){
+		    mAlertDlg.showDeleteButton(getIntent());
+		}else{
+		    mAlertDlg.showSingleButton();
+		}
 	}
 
 	protected void clearScreen() {

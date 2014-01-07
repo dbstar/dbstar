@@ -14,16 +14,23 @@ public class PlayerErrorInfo {
 
 	
 	public static boolean isDRMError(int errorCode) {
-		return (errorCode == CDCA_RC_CARD_INVALID || 
-				errorCode == CDCA_RC_FILE_ERROR ||
+		return (errorCode == CDCA_RC_FILE_ERROR ||
 				errorCode == CDCA_RC_NOENTITLE ||
 				errorCode == CDCA_RC_NOT_ISSUETIME ||
 				errorCode == CDCA_RC_NOT_WATCHTIME ||
-				errorCode == CDCA_RC_RIGHT_LIMIT ||
-				errorCode == CDCA_RC_PREVIEWOVER);
+				errorCode == CDCA_RC_RIGHT_LIMIT );
 	}
 	
 	
+	public static boolean isDeleteError(int errorCode){
+	    return (errorCode == CDCA_RC_CARD_INVALID || 
+                errorCode == CDCA_RC_FILE_ERROR ||
+                errorCode == CDCA_RC_NOENTITLE ||
+                errorCode == CDCA_RC_NOT_ISSUETIME ||
+                errorCode == CDCA_RC_NOT_WATCHTIME ||
+                errorCode == CDCA_RC_RIGHT_LIMIT ||
+                errorCode == CDCA_RC_PREVIEWOVER);
+	}
 	public static String getErrorString(Resources res, int code) {
 		String errStr = null;
 		switch(code) {
