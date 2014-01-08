@@ -513,6 +513,7 @@ SequenceNum	INTEGER DEFAULT 100,\
 URI	NVARCHAR(256) DEFAULT '',\
 Visible	CHAR(32) DEFAULT '1',\
 Favorite NVARCHAR(32) DEFAULT '0',\
+Param	NVARCHAR(1024) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ColumnID));", name);
 			}
