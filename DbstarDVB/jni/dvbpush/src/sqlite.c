@@ -1433,6 +1433,13 @@ int localcolumn_init()
 	/*
 	 一级菜单“CNTV”
 	*/
+	if(-1!=check_record_in_trans("Column","ColumnID","CNTV")){
+		DEBUG("change ColumnID of CNTV from \'CNTV\' to \'L97\', so delete \'CNTV\' firstly\n");
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='CNTV';");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+	
 	if(-1==check_record_in_trans("Column","ColumnID","L97")){
 #ifdef CNTV_LC
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',10000);",
@@ -1450,7 +1457,7 @@ int localcolumn_init()
 	else{
 #ifdef CNTV_LC
 #else
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L97';");
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L97' or ColumnID='CNTV';");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 #endif
