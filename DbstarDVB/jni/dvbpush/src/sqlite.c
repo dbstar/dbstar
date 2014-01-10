@@ -1218,7 +1218,7 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 		DEBUG("invalid argument\n");
 		return -1;
 	}
-	//PRINTF("%s\n", sqlite_cmd);
+//	PRINTF("%s\n", sqlite_cmd);
 	
 	int ret = -1;
 	
@@ -1232,7 +1232,7 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 			ret = 0;
 		}
 		else{
-			DEBUG("sqlite3 errmsg: %s\n", sqlite3_errmsg(g_db));
+			DEBUG("sqlite3 [%s]\nERRMSG!!!: %s\n", sqlite_cmd,sqlite3_errmsg(g_db));
 			ret = -1;
 		}
 	}

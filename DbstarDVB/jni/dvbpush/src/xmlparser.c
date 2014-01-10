@@ -2830,7 +2830,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 		memset(&xmlinfo, 0, sizeof(xmlinfo));
 		snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", actual_xml_flag);
 		
-		char sqlite_cmd[256];
+		char sqlite_cmd[1024];
 		char old_xmlver[64];
 		memset(old_xmlver, 0, sizeof(old_xmlver));
 
@@ -2986,7 +2986,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						/*
 						 不能一股脑的清理掉Column的所有数据，保留本地菜单
 						*/
-						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType=='1' OR ColumnType=='2' OR ColumnType=='3' OR ColumnType=='4' OR ColumnType=='5' OR ColumnType=='6' OR ColumnType=='7' OR ColumnType=='8' OR ColumnType=='9' OR ColumnType=='10' OR ColumnType=='11' OR ColumnType=='12' OR ColumnType=='13' OR ColumnType=='14';");
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType='1' OR ColumnType='2' OR ColumnType='3' OR ColumnType='4' OR ColumnType='5' OR ColumnType='6' OR ColumnType='7' OR ColumnType='8' OR ColumnType='9' OR ColumnType='10' OR ColumnType='11' OR ColumnType='12' OR ColumnType='13' OR ColumnType='14';");
 						sqlite_transaction_exec(sqlite_cmd);
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='Column' AND ServiceID!='%s' AND ServiceID!='0';", serviceID_get());
 						sqlite_transaction_exec(sqlite_cmd);
