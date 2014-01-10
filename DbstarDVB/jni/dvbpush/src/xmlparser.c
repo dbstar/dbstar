@@ -2986,13 +2986,13 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						/*
 						 不能一股脑的清理掉Column的所有数据，保留本地菜单
 						*/
-						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType!='L98' AND ColumnType!='L99' AND ColumnType!='SmartLife' AND ColumnType!='OTT';");
+						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnType=='1' OR ColumnType=='2' OR ColumnType=='3' OR ColumnType=='4' OR ColumnType=='5' OR ColumnType=='6' OR ColumnType=='7' OR ColumnType=='8' OR ColumnType=='9' OR ColumnType=='10' OR ColumnType=='11' OR ColumnType=='12' OR ColumnType=='13' OR ColumnType=='14';");
 						sqlite_transaction_exec(sqlite_cmd);
 						snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ResStr WHERE ObjectName='Column' AND ServiceID!='%s' AND ServiceID!='0';", serviceID_get());
 						sqlite_transaction_exec(sqlite_cmd);
 						
 						s_column_SequenceNum = 10;	// 允许一些内置的栏目（如国电业务）排在下发栏目之前，故SequenceNum从10计起
-								
+						
 						DBSTAR_COLUMN_S column_s;
 						memset(&column_s, 0, sizeof(column_s));
 						snprintf(column_s.ServiceID,sizeof(column_s.ServiceID),"%s", xmlinfo.ServiceID);
