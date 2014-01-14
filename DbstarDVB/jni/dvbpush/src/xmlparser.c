@@ -953,13 +953,13 @@ static int cmd_op_refresh(DBSTAR_CMD_OPERATION_S *p)
 	
 // 小片处理比较特别，由于早先没有给Preview预留Visible字段，因此处理“显示/隐藏”时通过ReceiveStatus进行控制
 	if(DBSTAR_CMD_OBJ_PREVIEW==p->objectType){
-		if(DBSTAR_CMD_OP_FORCEDISPLAY==p->objectType){
+		if(DBSTAR_CMD_OP_FORCEDISPLAY==p->type){
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Preview SET ReceiveStatus='1' WHERE PublicationID='%s';", p->object.ID);
 			sqlite_execute(sqlite_cmd);
 			
 			preview_refresh_flag_set(1);
 		}
-		else if(DBSTAR_CMD_OP_FORCEHIDE==p->objectType){
+		else if(DBSTAR_CMD_OP_FORCEHIDE==p->type{
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Preview SET ReceiveStatus='0' WHERE PublicationID='%s';", p->object.ID);
 			sqlite_execute(sqlite_cmd);
 			
