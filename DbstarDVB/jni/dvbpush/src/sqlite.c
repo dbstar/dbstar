@@ -603,7 +603,7 @@ ColumnID	NVARCHAR(64) DEFAULT '',\
 PublicationType	NVARCHAR(64) DEFAULT '',\
 ProductID	NVARCHAR(64) DEFAULT '',\
 URI	NVARCHAR(256) DEFAULT '',\
-DescURI	NVARCHAR(256) DEFAULT '',\
+DescURI	NVARCHAR(512) DEFAULT '',\
 TotalSize	NVARCHAR(64) DEFAULT '',\
 ProductDescID	NVARCHAR(64) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
@@ -611,8 +611,13 @@ PushStartTime	DATETIME DEFAULT '',\
 PushEndTime	DATETIME DEFAULT '',\
 IsReserved	CHAR(32) DEFAULT '0',\
 Visible	CHAR(32) DEFAULT '1',\
-DRMFile	NVARCHAR(256) DEFAULT '',\
+DRMFile	NVARCHAR(512) DEFAULT '',\
 SetID	NVARCHAR(64) DEFAULT '',\
+SetName	NVARCHAR(512) DEFAULT '',\
+SetDesc	NVARCHAR(1024) DEFAULT '',\
+SetPosterID	NVARCHAR(64) DEFAULT '',\
+SetPosterName	NVARCHAR(512) DEFAULT '',\
+SetPosterURI	NVARCHAR(512) DEFAULT '',\
 IndexInSet	NVARCHAR(32) DEFAULT '',\
 Favorite	NVARCHAR(32) DEFAULT '0',\
 Bookmark	NVARCHAR(32) DEFAULT '0',\
@@ -622,7 +627,7 @@ VODPlatform	NVARCHAR(256) DEFAULT '',\
 Deleted NVARCHAR(256) DEFAULT '0',\
 FileID	NVARCHAR(64) DEFAULT '',\
 FileSize	NVARCHAR(64) DEFAULT '',\
-FileURI	NVARCHAR(256) DEFAULT '',\
+FileURI	NVARCHAR(512) DEFAULT '',\
 FileType	NVARCHAR(64) DEFAULT '',\
 FileFormat	NVARCHAR(32) DEFAULT '',\
 Duration	NVARCHAR(32) DEFAULT '',\
@@ -661,19 +666,24 @@ PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
 					"CREATE TABLE %s(\
 ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
-language	NVARCHAR(64) DEFAULT 'cho',\
+infolang	NVARCHAR(64) DEFAULT 'cho',\
 PublishID	NVARCHAR(64) DEFAULT '',\
-RMCategory	NVARCHAR(64) DEFAULT '',\
-Title	NVARCHAR(256) DEFAULT '',\
-Author	NVARCHAR(128) DEFAULT '',\
-Publisher	NVARCHAR(128) DEFAULT '',\
+RMCategory	NVARCHAR(32) DEFAULT '',\
+Author	NVARCHAR(512) DEFAULT '',\
+Publisher	NVARCHAR(512) DEFAULT '',\
 Issue	NVARCHAR(64) DEFAULT '',\
-Keywords	NVARCHAR(256) DEFAULT '',\
+Keywords	NVARCHAR(512) DEFAULT '',\
 Description	NVARCHAR(1024) DEFAULT '',\
 PublishDate	NVARCHAR(64) DEFAULT '',\
-PublishWeek	NVARCHAR(64) DEFAULT '',\
-TotalLayout	NVARCHAR(64) DEFAULT '',\
-PRIMARY KEY (ServiceID,PublicationID,language));", name);
+PublishWeek	NVARCHAR(32) DEFAULT '',\
+PublishPlace	NVARCHAR(256) DEFAULT '',\
+CopyrightInfo	NVARCHAR(256) DEFAULT '',\
+TotalEdition	NVARCHAR(64) DEFAULT '',\
+Data	NVARCHAR(64) DEFAULT '',\
+Format	NVARCHAR(64) DEFAULT '',\
+TotalIssue	NVARCHAR(64) DEFAULT '',\
+Recommendation	NVARCHAR(1024) DEFAULT '',\
+PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoApp"))
 			{
@@ -1220,7 +1230,7 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 		DEBUG("invalid argument\n");
 		return -1;
 	}
-	//PRINTF("%s\n", sqlite_cmd);
+//	PRINTF("%s\n", sqlite_cmd);
 	
 	int ret = -1;
 	
@@ -1234,7 +1244,7 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 			ret = 0;
 		}
 		else{
-			DEBUG("sqlite3 errmsg: %s\n", sqlite3_errmsg(g_db));
+			DEBUG("sqlite3 [%s]\nERRMSG!!!: %s\n", sqlite_cmd,sqlite3_errmsg(g_db));
 			ret = -1;
 		}
 	}
@@ -1435,6 +1445,13 @@ int localcolumn_init()
 	/*
 	 一级菜单“CNTV”
 	*/
+	if(-1!=check_record_in_trans("Column","ColumnID","CNTV")){
+		DEBUG("change ColumnID of CNTV from \'CNTV\' to \'L97\', so delete \'CNTV\' firstly\n");
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='CNTV';");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+	}
+	
 	if(-1==check_record_in_trans("Column","ColumnID","L97")){
 #ifdef CNTV_LC
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',10000);",
@@ -1452,7 +1469,7 @@ int localcolumn_init()
 	else{
 #ifdef CNTV_LC
 #else
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L97';");
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L97' or ColumnID='CNTV';");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 #endif

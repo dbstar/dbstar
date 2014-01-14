@@ -101,7 +101,7 @@ typedef enum{
 #define PROG_DATA_PID_DF	(411)	// 0x19b
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
-#define MULTI_BUF_SIZE		(524288)	/* (524288)=(512*1024) */
+#define MULTI_BUF_SIZE	(16171008)	/* (16171008)=(12*1024*1316) */
 //#define MULTI_BUF_SIZE		(86245376)	/* (86245376)=(64*1024*1316) ~ 79M */
 //#define MULTI_BUF_SIZE		(43122688)	/* (43122688)=(32*1024*1316) ~ 41M */
 
@@ -273,6 +273,25 @@ typedef enum{
 }PRODUCTFLAG_E;
 
 /*
+成品类型
+*/
+typedef enum{
+	PUBLICATIONTYPE_RM = 1,
+	PUBLICATIONTYPE_VA = 2,
+	PUBLICATIONTYPE_APP = 3
+}PUBLICATIONTYPE_E;
+
+/*
+富媒体分类
+*/
+typedef enum{
+	RMCATEGORY_BOOKS = 1,
+	RMCATEGORY_MAGAZINE = 2,
+	RMCATEGORY_NEWSPAPER = 3
+}RMCATEGORY_E;
+
+
+/*
 本地测试push时使用（针对hytd.ts播发流），正常情况下关闭此宏。
 */
 //#define LOCAL_PUSH_TEST
@@ -340,8 +359,8 @@ typedef struct{
 	char	ObjectName[64];
 	char	EntityID[64];
 	char	PosterID[64];
-	char	PosterName[64];
-	char	PosterURI[256];
+	char	PosterName[256];
+	char	PosterURI[512];
 }DBSTAR_RESPOSTER_S;
 
 typedef struct{
@@ -466,6 +485,13 @@ typedef struct{
 	char	BitRate[32];
 	char	FileFormat[32];
 	char	CodeFormat[32];
+	char	SetID[64];
+	char	SetName[512];
+	char	SetDesc[1024];
+	char	SetPosterID[64];
+	char	SetPosterName[512];
+	char	SetPosterURI[512];
+	char	RMCategory[32];		// RMCategory本身并不入Publication库，只是用来判断“报纸”类型
 }DBSTAR_PUBLICATION_S;
 
 /*
@@ -493,15 +519,30 @@ typedef struct{
 	char	ServiceID[64];
 	char	PublicationID[64];
 	char	infolang[64];
-	char	*PublicationDesc;
-	char	Keywords[256];
-	char	Publisher[128];
-	char	Area[64];
-	char	Language[64];
-	char	Episode[64];
-	char	AspectRatio[64];
-	char	VolNum[64];
-	char	ISSN[64];
+	char	PublishID[64];
+	char	RMCategory[32];
+	char	Author[512];
+	char	Publisher[512];
+	char	Issue[64];
+	char	Keywords[512];
+	char	Description[1024];
+	char	PublishDate[64];
+	char	PublishWeek[32];
+	char	PublishPlace[256];
+	char	CopyrightInfo[256];
+	char	TotalEdition[64];
+	char	Data[64];
+	char	Format[64];
+	char	TotalIssue[64];
+	char	Recommendation[1024];
+	
+	// SetInfo节点临时存储在DBSTAR_MULTIPLELANGUAGEINFORM_S，等处理完毕后要先拷贝为DBSTAR_PUBLICATION_S，然后通过DBSTAR_PUBLICATION_S存储到数据库之Publication表中
+	char	SetID[64];
+	char	SetName[512];
+	char	SetDesc[1024];
+	char	SetPosterID[64];
+	char	SetPosterName[512];
+	char	SetPosterURI[512];
 }DBSTAR_MULTIPLELANGUAGEINFORM_S;
 
 typedef struct{

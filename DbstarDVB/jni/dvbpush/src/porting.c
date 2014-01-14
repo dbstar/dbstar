@@ -76,7 +76,9 @@ static char			s_jni_cmd_drm_ver[256];
 static char			s_jni_cmd_eigenvalue[1024];
 static char			s_jni_cmd_data_status[64];
 static char			s_jni_cmd_system_awake_timer[64];
+#ifdef SMARTLIFE_LC
 static char			s_jni_cmd_smartlife_connect_status[32];
+#endif
 
 // 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
