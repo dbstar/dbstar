@@ -959,7 +959,7 @@ static int cmd_op_refresh(DBSTAR_CMD_OPERATION_S *p)
 			
 			preview_refresh_flag_set(1);
 		}
-		else if(DBSTAR_CMD_OP_FORCEHIDE==p->type{
+		else if(DBSTAR_CMD_OP_FORCEHIDE==p->type){
 			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Preview SET ReceiveStatus='0' WHERE PublicationID='%s';", p->object.ID);
 			sqlite_execute(sqlite_cmd);
 			
