@@ -139,7 +139,7 @@ static void settingDefault_set(void)
 char *setting_item_value(char *buf, unsigned int buf_len, char separator)
 {
 	if(NULL==buf || 0==buf_len || '#'==buf[0]){
-		DEBUG("this line is ignored as explain\n");
+//		DEBUG("this line is ignored as explain\n");
 		return NULL;
 	}
 //	DEBUG("read line: %s\n", buf);

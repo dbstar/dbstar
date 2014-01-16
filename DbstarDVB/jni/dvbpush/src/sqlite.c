@@ -1496,7 +1496,7 @@ int localcolumn_init()
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9901")){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',1);",
-			"L9901","L98","L98/L9901","L99","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png");
+			"L9901","L98","L98/L9901","L98","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 			"Column","L9901",CURLANGUAGE_DFT,"DisplayName","基本信息","");
@@ -1506,16 +1506,13 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Column SET ParentID='L98',Path='L98/L9901',ColumnType='L99',SequenceNum=1 WHERE ColumnID='L9901';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+	
 	/*
 	 二级菜单“个人中心－购买信息”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9907")){
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%s','%s','%s','%s','%s','%s','%s',2);",
-			"L9907","L98","L98/L9907","L99","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png");
+			"L9907","L98","L98/L9907","L98","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
 			"Column","L9907",CURLANGUAGE_DFT,"DisplayName","购买信息","");
@@ -1524,10 +1521,6 @@ int localcolumn_init()
 			"Column","L9907","eng","DisplayName","PurchaseInfo","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
-	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Column SET ParentID='L98',Path='L98/L9907',ColumnType='L99',SequenceNum=2 WHERE ColumnID='L9907';");
-		sqlite_transaction_exec(sqlite_cmd);
 	}
 	
 	/*
@@ -1545,10 +1538,6 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Column SET SequenceNum=3 WHERE ColumnID='L9801';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
 	/*
 	 二级菜单“下载状态”
 	*/
@@ -1563,10 +1552,6 @@ int localcolumn_init()
 			"Column","L9802","eng","DisplayName","Download","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
-	}
-	else{
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9802';");
-		sqlite_transaction_exec(sqlite_cmd);
 	}
 	/*
 	 二级菜单“富媒体分享”
@@ -1588,7 +1573,7 @@ int localcolumn_init()
 	else{
 #ifdef MEDIASHARING_LC
 #else
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9804';");
+		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Column WHERE ColumnID='L9804';");
 		sqlite_transaction_exec(sqlite_cmd);
 #endif
 	}
