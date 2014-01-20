@@ -101,7 +101,11 @@ typedef enum{
 #define PROG_DATA_PID_DF	(411)	// 0x19b
 #define ROOT_PUSH_FILE		"Initialize.xml"
 #define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
-#define MULTI_BUF_SIZE	(16171008)	/* (16171008)=(12*1024*1316) */
+#ifdef TUNER_INPUT
+	#define MULTI_BUF_SIZE	(524288)	/* (524288)=(512*1024) */
+#else
+	#define MULTI_BUF_SIZE	(16171008)	/* (16171008)=(12*1024*1316) */
+#endif
 //#define MULTI_BUF_SIZE		(86245376)	/* (86245376)=(64*1024*1316) ~ 79M */
 //#define MULTI_BUF_SIZE		(43122688)	/* (43122688)=(32*1024*1316) ~ 41M */
 
