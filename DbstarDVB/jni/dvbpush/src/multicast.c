@@ -675,7 +675,7 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 			j++;
 #endif
 			
-			DEBUG("set filter, pid=%d[%s], fid=%d, j=%d\n", pid, result[i*column], filter, j);
+			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
 		}
 //		else{
 //			int ret = free_filter(pid);
