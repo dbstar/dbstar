@@ -64,15 +64,15 @@ static int column_visible_proc_cb(char **result, int row, int column, void *rece
 	}
 	
 	PRINTF("addr of receiver: %p, addr of gene_cmd: %p\n",receiver,gene_cmd);
-	snprintf(gene_cmd,receiver_size,"UPDATE Column SET Visible=1 WHERE");
+	sqlite3_snprintf(receiver_size,gene_cmd,"UPDATE Column SET Visible=1 WHERE");
 	for(i=1;i<row+1;i++){
 		if(atoi(result[i*column+2])>0){
 			if(strlen(gene_cmd)>strlen("UPDATE Column SET Visible=1 WHERE"))
-				snprintf(gene_cmd+strlen(gene_cmd),receiver_size-strlen(gene_cmd)," OR");
-			snprintf(gene_cmd+strlen(gene_cmd),receiver_size-strlen(gene_cmd)," ColumnID='%s'",result[i*column+0]);
+				sqlite3_snprintf(receiver_size-strlen(gene_cmd),gene_cmd+strlen(gene_cmd)," OR");
+			sqlite3_snprintf(receiver_size-strlen(gene_cmd),gene_cmd+strlen(gene_cmd)," ColumnID='%q'",result[i*column+0]);
 		}
 	}
-	snprintf(gene_cmd+strlen(gene_cmd),receiver_size-strlen(gene_cmd),";");
+	sqlite3_snprintf(receiver_size-strlen(gene_cmd),gene_cmd+strlen(gene_cmd),";");
 	
 	return 0;
 }
@@ -88,10 +88,10 @@ int column_visible_proc()
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = column_visible_proc_cb;
 	
 	// 将ColumnID非-1的叶子且其下有Publication的节点Visible置为1
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"UPDATE Column SET Visible=1 WHERE ColumnID IN (SELECT ColumnID FROM Column WHERE ColumnID NOT IN(SELECT DISTINCT ParentID FROM Column) AND ColumnID IN (SELECT DISTINCT ColumnID FROM Publication where ColumnID!='-1'));");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET Visible=1 WHERE ColumnID IN (SELECT ColumnID FROM Column WHERE ColumnID NOT IN(SELECT DISTINCT ParentID FROM Column) AND ColumnID IN (SELECT DISTINCT ColumnID FROM Publication where ColumnID!='-1'));");
 	sqlite_execute(sqlite_cmd);
 	
-	snprintf(sqlite_cmd,size(sqlite_cmd),"SELECT ColumnID,ParentID,Visible FROM Column WHERE (ColumnType='%d' OR ColumnType='%d') AND ParentID!='-1';",COLUMNTYPE_SINGLEPROG,COLUMNTYPE_MULTIPROG);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ColumnID,ParentID,Visible FROM Column WHERE (ColumnType='%d' OR ColumnType='%d') AND ParentID!='-1';",COLUMNTYPE_SINGLEPROG,COLUMNTYPE_MULTIPROG);
 	
 	PRINTF("addr of sqlite_cmd_secondary: %p\n",sqlite_cmd_secondary);
 	ret = sqlite_read(sqlite_cmd, sqlite_cmd_secondary, sizeof(sqlite_cmd_secondary), sqlite_callback);

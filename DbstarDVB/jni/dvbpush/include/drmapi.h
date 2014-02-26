@@ -1,6 +1,8 @@
 #ifndef _DRMAPI_H_
 #define _DRMAPI_H_
 
+#include "linux/amsmc.h"
+
 int drm_init();
 int drm_sc_insert();
 int drm_sc_remove();
@@ -13,4 +15,5 @@ int64_t drm_seek(int *fd, int64_t pos, int whence);
 void drm_close(int *fd);
 int smc_init(void);
 int smc_set(struct am_smc_atr *abuf);
+
 #endif

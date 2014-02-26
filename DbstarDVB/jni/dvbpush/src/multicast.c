@@ -25,6 +25,7 @@
 #include "porting.h"
 #include "multicast.h"
 #include "mid_push.h"
+#include "sqlite3.h"
 #include "sqlite.h"
 #include "softdmx.h"
 #include "dvbpush_api.h"
@@ -639,7 +640,7 @@ int pid_init(int act_flag)
 	char sqlite_cmd[256+128];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = allpid_sqlite_cb;
 
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT pid,pidtype,FreshFlag FROM Channel;");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT pid,pidtype,FreshFlag FROM Channel;");
 	// 1 means alloc filter
 	int filter_act = act_flag;
 	return sqlite_read(sqlite_cmd, &filter_act, sizeof(filter_act), sqlite_callback);

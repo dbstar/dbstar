@@ -32,6 +32,7 @@
 #include "mid_push.h"
 #include "porting.h"
 #include "xmlparser.h"
+#include "sqlite3.h"
 #include "sqlite.h"
 #include "dvbpush_api.h"
 #include "multicast.h"
@@ -349,7 +350,7 @@ static int push_prog_finish(char *id, RECEIVETYPE_E type,char *DescURI)
 int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_ext)
 {
 	char sqlite_cmd[512];
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%s';", xml_uri);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE ProductDesc SET Parsed='1' WHERE DescURI='%q';", xml_uri);
 	int ret = sqlite_execute(sqlite_cmd);
 	
 	if(arg_ext && push_flag>0){
@@ -621,7 +622,6 @@ static int push_regist_init()
 	return 0;
 }
 
-
 void maintenance_thread_awake()
 {
 	pthread_mutex_lock(&mtx_maintenance);
@@ -778,15 +778,15 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 			if((now_sec-s_pin_sec>21600) && (now_sec-reboot_timestamp_get())>7200){
 				localtime_r(&now_sec, &now_tm);
 				
-				// ¹úµçÍø¹ØĞèÒªÔÚ45·ÖºÍÕûµãÖ®¼ä±£³Ö¿ª»ú×´Ì¬£¬Ô¤Áô15·ÖÖÓÖØÆôÊ±¼ä£¬´°¿ÚÊ±¼äÎª0·Öµ½30·Ö
-				if(4==now_tm.tm_hour && now_tm.tm_min>=0 && now_tm.tm_min<=30){
+				// ¹úµçÍø¹ØĞèÒªÔÚ45·ÖºÍÕûµãÖ®¼ä±£³Ö¿ª»ú×´Ì¬£¬Ô¤Áô15·ÖÖÓÖØÆôÊ±¼ä£¬´°¿ÚÊ±¼äÃ¿Ğ¡Ê±Îª0·Öµ½30·Ö
+				if(onehour_before_pushend_get()==now_tm.tm_hour && now_tm.tm_min>=0 && now_tm.tm_min<=30){
 					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d\n", 
 						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
 					
 					now_sec += 1;
 					reboot_timestamp_set(now_sec);
 					
-					snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%ld','');",
+					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%ld','');",
 						GLB_NAME_REBOOT_TIMESTAMP,now_sec);
 					if(0==sqlite_execute(sqlite_cmd)){
 						s_decoder_running = 0;
@@ -1284,10 +1284,10 @@ static int prog_name_fill()
 		if(1==prog_is_valid(&s_prgs[i]) && 0==strlen(s_prgs[i].caption)){
 			memset(s_prgs[i].caption, 0, sizeof(s_prgs[i].caption));
 #if 0
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ServiceID='%s' AND ObjectName='ProductDesc' AND EntityID='%s' AND StrLang='%s' AND (StrName='ProductDescName' OR StrName='SProductName' OR StrName='ColumnName');", 
+			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT StrValue FROM ResStr WHERE ServiceID='%q' AND ObjectName='ProductDesc' AND EntityID='%q' AND StrLang='%q' AND (StrName='ProductDescName' OR StrName='SProductName' OR StrName='ColumnName');", 
 				serviceID_get(),s_prgs[i].id,language_get());
 #else
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID='%s' AND StrLang='%s' AND (StrName='ProductDescName' OR StrName='SProductName' OR StrName='ColumnName');", 
+			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT StrValue FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID='%q' AND StrLang='%q' AND (StrName='ProductDescName' OR StrName='SProductName' OR StrName='ColumnName');", 
 				s_prgs[i].id,language_get());
 #endif
 			
@@ -1317,9 +1317,9 @@ int delete_publication_from_monitor(char *PublicationID, char *ProductID)
 	char sqlite_cmd[1024];
 	
 	if(NULL!=PublicationID)
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ProductDesc WHERE ID='%s';",PublicationID);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc WHERE ID='%q';",PublicationID);
 	else
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"DELETE FROM ProductDesc WHERE productID='%s';",ProductID);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc WHERE productID='%q';",ProductID);
 		
 	sqlite_execute(sqlite_cmd);
 	
@@ -1555,7 +1555,7 @@ static int clear_wild_prog()
 					if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
 						continue;
 					
-					snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM Publication WHERE URI LIKE '%%pushroot%%pushfile%%%s%%'", ptr->d_name);
+					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PublicationID FROM Publication WHERE URI LIKE '%%pushroot%%pushfile%%%q%%'", ptr->d_name);
 					
 					memset(publicationid,0,sizeof(publicationid));
 					if(0!=str_sqlite_read(publicationid,sizeof(publicationid),sqlite_cmd)){
@@ -1649,7 +1649,7 @@ int push_recv_manage_refresh()
  ÓÉÓÚÒ»¸öPublication¿ÉÄÜ´æÔÚÓÚ¶à¸öserviceÖĞ£¬Òò´ËĞèÒªÈ«²¿È¡³ö£¬ÔÚ»Øµ÷ÖĞ±éÀúÄÇĞ©ĞèÒª¾Ü¾øµÄpublicationÊÇ·ñÇ¡ºÃÒ²ÔÚĞèÒª½ÓÊÕÖ®ÁĞ¡£
  ËùÒÔ¶ÔFreshFlagµÄÅĞ¶ÏÒÆ¶¯µ½»Øµ÷ÖĞ½øĞĞ£¬±ÜÃâÆäÌõ¼şÔÚFreshFlagÖ®Íâ
 */
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc;");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc;");
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*
@@ -1717,13 +1717,13 @@ int info_xml_refresh(int regist_flag, int push_flags[], unsigned int push_flags_
 	int resgist_action = regist_flag;
 	
 	DEBUG("regist action: %d\n", regist_flag);
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PushFlag,URI FROM Initialize WHERE");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PushFlag,URI FROM Initialize WHERE");
 	for(i=0;i<push_flags_cnt;i++){
 		if(i>0)
-			snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR");
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PushFlag='%d'", push_flags[i]);
+			sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd)," OR");
+		sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd)," PushFlag='%d'", push_flags[i]);
 	}
-	snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
+	sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd),";");
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&resgist_action), sizeof(resgist_action), sqlite_callback);
 

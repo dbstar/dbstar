@@ -5,6 +5,7 @@
 #include <pthread.h>
 
 #include "common.h"
+#include "sqlite3.h"
 #include "sqlite.h"
 #include "mid_push.h"
 #include "porting.h"
@@ -18,16 +19,16 @@ int smarthome_reset()
 {
 	char sqlite_cmd[512];
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmarthomeServerIP','%s');", SMARTPOWER_SERVER_IP);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO global VALUES('SmarthomeServerIP','%q');", SMARTPOWER_SERVER_IP);
 	smarthome_setting_reset(sqlite_cmd);
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmarthomeServerPort','%d');", SMARTPOWER_SERVER_PORT);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO global VALUES('SmarthomeServerPort','%d');", SMARTPOWER_SERVER_PORT);
 	smarthome_setting_reset(sqlite_cmd);
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifeIP','%s');", SMARTPOWER_SERVER_IP);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO global VALUES('SmartLifeIP','%q');", SMARTPOWER_SERVER_IP);
 	smarthome_setting_reset(sqlite_cmd);
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmartLifePort','%d');",SMARTLIFE_SERVER_PORT);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO global VALUES('SmartLifePort','%d');",SMARTLIFE_SERVER_PORT);
 	smarthome_setting_reset(sqlite_cmd);
 	
 	smarthome_gw_sn_save();
@@ -598,7 +599,7 @@ int smarthome_gw_sn_save()
 	char sqlite_cmd[512];
 	
 	if(strlen(s_smarthome_gw_sn)>12){
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"REPLACE INTO global VALUES('SmarthomeSN','%s');", s_smarthome_gw_sn);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO global VALUES('SmarthomeSN','%q');", s_smarthome_gw_sn);
 		smarthome_setting_reset(sqlite_cmd);
 	}
 	return 0;

@@ -20,6 +20,7 @@
 
 #include "common.h"
 #include "dvbpush_api.h"
+#include "sqlite3.h"
 #include "sqlite.h"
 #include "porting.h"
 
@@ -419,7 +420,7 @@ void *smartlife_connect_thread()
 	memset(server_port_str,0,sizeof(server_port_str));
 	
 	int (*sqlite_cb)(char **, int, int, void *,unsigned int) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select value from global where name='SmarthomeServerIP';");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select value from global where name='SmarthomeServerIP';");
 	int ret_sqlexec = smartlife_sqlite_read(sqlite_cmd, server_ip, sizeof(server_ip), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no server_ip from db for smartlife\n");
@@ -432,7 +433,7 @@ void *smartlife_connect_thread()
 		DEBUG("get invalid server_ip, use default value: %s\n",server_ip);
 	}
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"select value from global where name='SmartLifePort';");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select value from global where name='SmartLifePort';");
 	ret_sqlexec = smartlife_sqlite_read(sqlite_cmd, server_port_str, sizeof(server_port_str), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no server_port_str from db for smartlife\n");
