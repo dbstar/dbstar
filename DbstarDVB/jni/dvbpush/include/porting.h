@@ -42,6 +42,8 @@ int pushdir_usable();
 int user_idle_status_get();
 time_t reboot_timestamp_get();
 int reboot_timestamp_set(time_t time_stamp_s);
+int onehour_before_pushend_get();
+int onehour_before_pushend_set(int onehour_before_pushend);
 int network_init_status();
 int device_num_changed();
 int smartcard_action_set(int smartcard_action);

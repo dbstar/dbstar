@@ -25,6 +25,7 @@
 #include "softdmx.h"
 #include "bootloader.h"
 #include "xmlparser.h"
+#include "sqlite3.h"
 #include "sqlite.h"
 #include "prodrm20.h"
 #include "multicast.h"
@@ -68,6 +69,7 @@ static char			s_Language[64];
 static char			s_serviceID[64];
 static char			s_push_root_path[512];
 static char			s_reboot_timestamp_str[32];
+static char			s_onehour_before_pushend[32];
 //static char 		*s_guidelist_unselect = NULL;
 
 static char			s_jni_cmd_public_space[20480];
@@ -665,7 +667,7 @@ int guidelist_select_refresh()
 	char sqlite_cmd[256];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = guidelist_select_refresh_cb;
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID FROM GuideList WHERE UserStatus='0';");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PublicationID FROM GuideList WHERE UserStatus='0';");
 	int ret = sqlite_read(sqlite_cmd, (void *)(&s_guidelist_unselect), sizeof(s_guidelist_unselect), sqlite_callback);
 	if(ret>0){
 		DEBUG("unselect by user[%p]: %s\n",s_guidelist_unselect,s_guidelist_unselect);
@@ -774,17 +776,17 @@ int disk_manage(char *PublicationID, char *ProductID)
 		snprintf(time_stamp,sizeof(time_stamp),"%s",REMOTE_FUTURE);
 	}
 
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted FROM Publication WHERE (PushEndTime<'%s' AND ReceiveStatus!='0') GROUP BY PublicationID ORDER BY IsReserved,Deleted DESC,ReceiveStatus,TimeStamp LIMIT 16;",time_stamp);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted FROM Publication WHERE (PushEndTime<'%q' AND ReceiveStatus!='0') GROUP BY PublicationID ORDER BY IsReserved,Deleted DESC,ReceiveStatus,TimeStamp LIMIT 16;",time_stamp);
 #else
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted,ReceiveStatus FROM Publication");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PublicationID,URI,TotalSize,PushEndTime,TimeStamp,Deleted,ReceiveStatus FROM Publication");
 	if(NULL!=PublicationID && strlen(PublicationID)>0){
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE PublicationID='%s';",PublicationID);
+		sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd)," WHERE PublicationID='%q';",PublicationID);
 	}
 	else if(NULL!=ProductID && strlen(ProductID)>0){
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ProductID='%s' GROUP BY PublicationID;",ProductID);
+		sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd)," WHERE ProductID='%q' GROUP BY PublicationID;",ProductID);
 	}
 	else{
-		snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," WHERE ReceiveStatus!='%d' GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;",RECEIVESTATUS_WAITING);
+		sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd)," WHERE ReceiveStatus!='%d' GROUP BY PublicationID ORDER BY IsReserved,ReceiveStatus,Deleted DESC,Favorite,TimeStamp LIMIT 16;",RECEIVESTATUS_WAITING);
 	}
 	DEBUG("%s\n", sqlite_cmd);
 #endif
@@ -799,25 +801,25 @@ int disk_manage(char *PublicationID, char *ProductID)
 		char *p_HT = NULL;
 		int first_publicaiton_flag = 1;
 		
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM Publication WHERE ");
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Publication WHERE ");
 		
 		char sqlite_cmd_ResStr[4096];
-		snprintf(sqlite_cmd_ResStr, sizeof(sqlite_cmd_ResStr), "DELETE FROM ResStr WHERE ");
+		sqlite3_snprintf(sizeof(sqlite_cmd_ResStr),sqlite_cmd_ResStr,"DELETE FROM ResStr WHERE ");
 		
 		char sqlite_cmd_ResPoster[2048];
-		snprintf(sqlite_cmd_ResPoster, sizeof(sqlite_cmd_ResPoster), "DELETE FROM ResPoster WHERE ");
+		sqlite3_snprintf(sizeof(sqlite_cmd_ResPoster),sqlite_cmd_ResPoster,"DELETE FROM ResPoster WHERE ");
 		
 		char sqlite_cmd_ResSubTitle[2048];
-		snprintf(sqlite_cmd_ResSubTitle, sizeof(sqlite_cmd_ResSubTitle), "DELETE FROM ResSubTitle WHERE ");
+		sqlite3_snprintf(sizeof(sqlite_cmd_ResSubTitle),sqlite_cmd_ResSubTitle,"DELETE FROM ResSubTitle WHERE ");
 		
 		char sqlite_cmd_MultipleLanguageInfoVA[2048];
-		snprintf(sqlite_cmd_MultipleLanguageInfoVA, sizeof(sqlite_cmd_MultipleLanguageInfoVA), "DELETE FROM MultipleLanguageInfoVA WHERE ");
+		sqlite3_snprintf(sizeof(sqlite_cmd_MultipleLanguageInfoVA),sqlite_cmd_MultipleLanguageInfoVA,"DELETE FROM MultipleLanguageInfoVA WHERE ");
 		
 		char sqlite_cmd_Initialize[2048];
-		snprintf(sqlite_cmd_Initialize, sizeof(sqlite_cmd_Initialize), "DELETE FROM Initialize WHERE ");
+		sqlite3_snprintf(sizeof(sqlite_cmd_Initialize),sqlite_cmd_Initialize,"DELETE FROM Initialize WHERE ");
 
 		char sqlite_cmd_Preview[2048];
-		snprintf(sqlite_cmd_Preview, sizeof(sqlite_cmd_Preview), "DELETE FROM Preview WHERE ");
+		sqlite3_snprintf(sizeof(sqlite_cmd_Preview),sqlite_cmd_Preview,"DELETE FROM Preview WHERE ");
 		
 		while(NULL!=p_publicationid){
 			p_HT = strchr(p_publicationid,'\t');
@@ -829,22 +831,22 @@ int disk_manage(char *PublicationID, char *ProductID)
 			
 			if(strlen(p_publicationid)>0){
 				if(0==first_publicaiton_flag){
-					snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," OR");
-					snprintf(sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr)," OR");
-					snprintf(sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster)," OR");
-					snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle)," OR");
-					snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA)," OR");
-					snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize)," OR");
-					snprintf(sqlite_cmd_Preview+strlen(sqlite_cmd_Preview),sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview)," OR");
+					sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd)," OR");
+					sqlite3_snprintf(sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr),sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr)," OR");
+					sqlite3_snprintf(sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster),sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster)," OR");
+					sqlite3_snprintf(sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle),sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle)," OR");
+					sqlite3_snprintf(sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA),sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA)," OR");
+					sqlite3_snprintf(sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize),sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize)," OR");
+					sqlite3_snprintf(sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview),sqlite_cmd_Preview+strlen(sqlite_cmd_Preview)," OR");
 				}
 				
-				snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd)," PublicationID='%s'", p_publicationid);
-				snprintf(sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr)," ((ObjectName='Publication' OR ObjectName='MFile') AND EntityID='%s')", p_publicationid);
-				snprintf(sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
-				snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle)," (ObjectName='Publication' AND EntityID='%s')", p_publicationid);
-				snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA)," PublicationID='%s'", p_publicationid);
-				snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize)," (PushFlag='%d' AND ID='%s')", PUBLICATION_XML,p_publicationid);
-				snprintf(sqlite_cmd_Preview+strlen(sqlite_cmd_Preview),sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview)," (PublicationID='%s')", p_publicationid);
+				sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd)," PublicationID='%q'", p_publicationid);
+				sqlite3_snprintf(sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr),sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr)," ((ObjectName='Publication' OR ObjectName='MFile') AND EntityID='%q')", p_publicationid);
+				sqlite3_snprintf(sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster),sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster)," (ObjectName='Publication' AND EntityID='%q')", p_publicationid);
+				sqlite3_snprintf(sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle),sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle)," (ObjectName='Publication' AND EntityID='%q')", p_publicationid);
+				sqlite3_snprintf(sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA),sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA)," PublicationID='%q'", p_publicationid);
+				sqlite3_snprintf(sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize),sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize)," (PushFlag='%d' AND ID='%q')", PUBLICATION_XML,p_publicationid);
+				sqlite3_snprintf(sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview),sqlite_cmd_Preview+strlen(sqlite_cmd_Preview)," (PublicationID='%q')", p_publicationid);
 				
 				if(1==first_publicaiton_flag)
 					first_publicaiton_flag = 0;
@@ -854,13 +856,13 @@ int disk_manage(char *PublicationID, char *ProductID)
 		}
 		
 		if(0==first_publicaiton_flag){
-			snprintf(sqlite_cmd+strlen(sqlite_cmd),sizeof(sqlite_cmd)-strlen(sqlite_cmd),";");
-			snprintf(sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr),";");
-			snprintf(sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster),";");
-			snprintf(sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle),";");
-			snprintf(sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA),";");
-			snprintf(sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize),";");
-			snprintf(sqlite_cmd_Preview+strlen(sqlite_cmd_Preview),sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview),";");
+			sqlite3_snprintf(sizeof(sqlite_cmd)-strlen(sqlite_cmd),sqlite_cmd+strlen(sqlite_cmd),";");
+			sqlite3_snprintf(sizeof(sqlite_cmd_ResStr)-strlen(sqlite_cmd_ResStr),sqlite_cmd_ResStr+strlen(sqlite_cmd_ResStr),";");
+			sqlite3_snprintf(sizeof(sqlite_cmd_ResPoster)-strlen(sqlite_cmd_ResPoster),sqlite_cmd_ResPoster+strlen(sqlite_cmd_ResPoster),";");
+			sqlite3_snprintf(sizeof(sqlite_cmd_ResSubTitle)-strlen(sqlite_cmd_ResSubTitle),sqlite_cmd_ResSubTitle+strlen(sqlite_cmd_ResSubTitle),";");
+			sqlite3_snprintf(sizeof(sqlite_cmd_MultipleLanguageInfoVA)-strlen(sqlite_cmd_MultipleLanguageInfoVA),sqlite_cmd_MultipleLanguageInfoVA+strlen(sqlite_cmd_MultipleLanguageInfoVA),";");
+			sqlite3_snprintf(sizeof(sqlite_cmd_Initialize)-strlen(sqlite_cmd_Initialize),sqlite_cmd_Initialize+strlen(sqlite_cmd_Initialize),";");
+			sqlite3_snprintf(sizeof(sqlite_cmd_Preview)-strlen(sqlite_cmd_Preview),sqlite_cmd_Preview+strlen(sqlite_cmd_Preview),";");
 			
 			if(-1==sqlite_transaction_begin()){
 				ret = -1;
@@ -884,7 +886,7 @@ int disk_manage(char *PublicationID, char *ProductID)
 				
 				sqlite_transaction_end(1);
 				
-				snprintf(sqlite_cmd_ResStr,sizeof(sqlite_cmd_ResStr),"DELETE FROM PublicationsSet WHERE SetID NOT IN (SELECT SetID FROM Publication WHERE SetID!='' GROUP BY SetID);");
+				sqlite3_snprintf(sizeof(sqlite_cmd_ResStr),sqlite_cmd_ResStr,"DELETE FROM PublicationsSet WHERE SetID NOT IN (SELECT SetID FROM Publication WHERE SetID!='' GROUP BY SetID);");
 				DEBUG("%s",sqlite_cmd_ResStr);
 				sqlite_execute(sqlite_cmd_ResStr);
 			}
@@ -1175,7 +1177,7 @@ static int smartcard_purchaseinfo_get(char *buf, unsigned int size)
 					;
 				}
 				
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT StrValue FROM ResStr WHERE ObjectName='Product' AND EntityID='%lu' AND StrLang='%s';", 
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT StrValue FROM ResStr WHERE ObjectName='Product' AND EntityID='%lu' AND StrLang='%q';", 
 					EntitleInfo[i].m_ID,language_get());
 				
 				memset(ProductName,0,sizeof(ProductName));
@@ -1585,7 +1587,7 @@ static int DRM_programinfo_get(char *PublicationID, char *buf, unsigned int size
 	char DRMFile[512];
 	char TotalDRMFile[512];
 	memset(DRMFile, 0, sizeof(DRMFile));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DRMFile from Publication where PublicationID='%s';",PublicationID);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT DRMFile from Publication where PublicationID='%q';",PublicationID);
 	if(-1==str_sqlite_read(DRMFile,sizeof(DRMFile),sqlite_cmd)){
 		DEBUG("can not read DRMFile for PublicationID: %s\n", PublicationID);
 		ret = -1;
@@ -1664,12 +1666,12 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 		if(1==dvbpush_download_finish()){
 			system_awake_timer = system_awake_timer_deadline;
 			
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT DateValue FROM GuideList WHERE DateValue>=datetime('now','localtime','+1 day','start of day') OR DateValue=date('now','localtime','+1 day','start of day') ORDER BY DateValue LIMIT 1;");
+			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT DateValue FROM GuideList WHERE DateValue>=datetime('now','localtime','+1 day','start of day') OR DateValue=date('now','localtime','+1 day','start of day') ORDER BY DateValue LIMIT 1;");
 			memset(sql_readstr,0,sizeof(sql_readstr));
 			if(0==str_sqlite_read(sql_readstr,sizeof(sql_readstr),sqlite_cmd)){
 				DEBUG("get next_push_datetime %s\n",sql_readstr);
 				
-				snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT strftime(\'%%s\','%s')-strftime(\'%%s\',datetime('now','localtime'));", sql_readstr);
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT strftime(\'%%s\','%q')-strftime(\'%%s\',datetime('now','localtime'));", sql_readstr);
 				memset(sql_readstr,0,sizeof(sql_readstr));
 				DEBUG("do sqlite cmd: %s\n", sqlite_cmd);
 				if(0==str_sqlite_read(sql_readstr,sizeof(sql_readstr),sqlite_cmd)){
@@ -2042,14 +2044,14 @@ static void upgrade_info_refresh(char *info_name, char *info_value)
 	char stbinfo[128];
 	
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", info_name);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", info_name);
 	
 	memset(stbinfo, 0, sizeof(stbinfo));
 	int ret_sqlexec = sqlite_read(sqlite_cmd, stbinfo, sizeof(stbinfo), sqlite_cb);
 	
 	if(ret_sqlexec<=0 || strcmp(stbinfo, info_value)){
 		DEBUG("replace %s as %s to table 'Global'\n", info_name, info_value);
-		snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%q','');",
 			info_name,info_value);
 		sqlite_execute(sqlite_cmd);
 	}
@@ -2134,7 +2136,7 @@ void upgrade_info_init()
 		
 		if(255==upgrade_type_check(g_loaderInfo.software_version)){
 			memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='RepeatUpgradeCount';");
+			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value from Global where Name='RepeatUpgradeCount';");
 			if(-1==str_sqlite_read(repeat_upgrade_count,sizeof(repeat_upgrade_count),sqlite_cmd)){
 				DEBUG("can not read RepeatUpgradeCount\n");
 			}
@@ -2459,7 +2461,7 @@ char *language_get()
 		char sqlite_cmd[512];
 		
 		int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_CURLANGUAGE);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_CURLANGUAGE);
 	
 		int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sizeof(s_Language), sqlite_cb);
 		if(ret_sqlexec<=0){
@@ -2480,7 +2482,7 @@ char *multi_addr_get(void)
 	
 	memset(read_str, 0, sizeof(read_str));
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_DBDATASERVERIP);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_DBDATASERVERIP);
 	int ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sizeof(read_str), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read nothing for multi ip, filled with default\n");
@@ -2492,7 +2494,7 @@ char *multi_addr_get(void)
 	DEBUG("multi ip: %s\n", read_str);
 	
 	memset(read_str, 0, sizeof(read_str));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_DBDATASERVERPORT);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_DBDATASERVERPORT);
 	ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sizeof(read_str), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read nothing for multi port, filled with default\n");
@@ -2549,7 +2551,7 @@ static int serviceID_init()
 	char sqlite_cmd[512];
 	memset(s_serviceID, 0, sizeof(s_serviceID));
 	int (*sqlite_cb)(char **, int, int, void *,unsigned int) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_SERVICEID);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_SERVICEID);
 
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sizeof(s_serviceID), sqlite_cb);
 	if(ret_sqlexec<=0){
@@ -2600,7 +2602,7 @@ static int push_dir_init()
 	memset(s_push_root_path, 0, sizeof(s_push_root_path));
 	
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_PUSHDIR);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_PUSHDIR);
 
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_push_root_path, sizeof(s_push_root_path), sqlite_cb);
 	if(ret_sqlexec<=0 || strlen(s_push_root_path)<2){
@@ -2620,7 +2622,7 @@ static int reboot_timestamp_init()
 	memset(s_reboot_timestamp_str,0,sizeof(s_reboot_timestamp_str));
 	
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_REBOOT_TIMESTAMP);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_REBOOT_TIMESTAMP);
 
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_reboot_timestamp_str, sizeof(s_reboot_timestamp_str), sqlite_cb);
 	if(ret_sqlexec<=0 || strlen(s_reboot_timestamp_str)<1){
@@ -2643,6 +2645,48 @@ int reboot_timestamp_set(time_t time_stamp_s)
 	return snprintf(s_reboot_timestamp_str,sizeof(s_reboot_timestamp_str),"%lu",time_stamp_s);
 }
 
+//播发单中的停止播发时间之前一“时”，比如：2015-02-28 20:00:30得到20-1=19，而2015-02-27 00:00:30得到23
+static int push_end_early_hour_init()
+{
+	char sqlite_cmd[512];
+	
+	memset(s_onehour_before_pushend,0,sizeof(s_onehour_before_pushend));
+	
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select strftime(\'%%H\',(select max(PushEndTime) from ProductDesc),\'-1 hour\');");
+
+	int ret_sqlexec = sqlite_read(sqlite_cmd, s_onehour_before_pushend, sizeof(s_onehour_before_pushend), sqlite_cb);
+	if(ret_sqlexec<=0 || strlen(s_onehour_before_pushend)<1){
+		DEBUG("read no s_onehour_before_pushend from db\n");
+		snprintf(s_onehour_before_pushend, sizeof(s_onehour_before_pushend), "0");
+	}
+	else
+		DEBUG("read s_onehour_before_pushend: %s\n", s_onehour_before_pushend);
+		
+	return 0;
+}
+
+//获取重启的时间点（小时），返回0——23，考虑到用户的感受，目前只限定后半夜（0——6点重启）
+//由于每个小时的后15分钟（hh:45——hh:00）要预留给查询上报国电网关数据，另预留重启、开机15分钟（hh:30——hh:45），因此实际上可以发起重启动作的时间窗为（hh:01——hh:30）
+//但是预告单GuideList.xml没有给出具体的播发时间，因此根据今天的播发单ProductDesc.xml时间预测明天的播发时间。如果当前没有播发单，则默认为播发时间为凌晨1点
+//重启时间在新播发单前一个小时，此时有最大的可能接受已经完毕，尽可能的避免大码率写硬盘时重启。比如：1点播发新单，那么就是0点重启。
+//新播发单的开始和旧播发单结束是同一个时间，这里采用PushEndTime计算
+int onehour_before_pushend_get()
+{
+	int onehour_before_pushend = atoi(s_onehour_before_pushend);
+	
+	if(onehour_before_pushend<0 || onehour_before_pushend>6)
+		onehour_before_pushend = 0;
+	
+	return onehour_before_pushend;
+}
+
+int onehour_before_pushend_set(int onehour_before_pushend)
+{
+	DEBUG("onehour_before_pushend_set(%d)\n",onehour_before_pushend);
+	
+	return snprintf(s_onehour_before_pushend,sizeof(s_onehour_before_pushend),"%d",onehour_before_pushend);
+}
 
 // 联调测试阶段，智能卡数量不够，这里直接指定业务ID。正式运营的盒子不能执行到这里
 static int TestSpecialProductID_init()
@@ -2650,7 +2694,7 @@ static int TestSpecialProductID_init()
 // only for test
 	char sqlite_cmd[256];
 	memset(s_TestSpecialProductID, 0, sizeof(s_TestSpecialProductID));
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value from Global where Name='TestSpecialProductID';");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value from Global where Name='TestSpecialProductID';");
 	if(-1==str_sqlite_read(s_TestSpecialProductID,sizeof(s_TestSpecialProductID),sqlite_cmd)){
 		DEBUG("can not read s_TestSpecialProductID\n");
 		return -1;
@@ -2709,7 +2753,7 @@ static int SCEntitleInfo_init(void)
 		s_SCEntitleInfo[i].EntitleInfo.m_ID = INVALID_PRODUCTID_AT_ENTITLEINFO;
 	}
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue from SCEntitleInfo;");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue from SCEntitleInfo;");
 	int ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
 	DEBUG("read %d record for SmartCard Entitle Info in database\n", ret);	
 	
@@ -2811,7 +2855,7 @@ int smartcard_entitleinfo_refresh()
 			
 			if(1==SC_EntitleInfo_fresh){
 				DEBUG("refresh smart card entitle infos to memery and database\n");
-				snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM SCEntitleInfo;");
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM SCEntitleInfo;");
 				sqlite_execute(sqlite_cmd);
 				
 				if(disk_usable_check(push_dir_get(),NULL,NULL)>0){
@@ -2830,7 +2874,7 @@ int smartcard_entitleinfo_refresh()
 							s_SCEntitleInfo[i].EntitleInfo.m_LimitUsedValue = EntitleInfo[i].m_LimitUsedValue;
 							
 							if(0==sqlite_transaction_flag){
-								snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO SCEntitleInfo(SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue) VALUES('%s','%u','%lu','%lu','%lu','%lu','%lu','%lu','%lu');",
+								sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO SCEntitleInfo(SmartCardID,m_OperatorID,m_ID,m_ProductStartTime,m_ProductEndTime,m_WatchStartTime,m_WatchEndTime,m_LimitTotaltValue,m_LimitUsedValue) VALUES('%q','%u','%lu','%lu','%lu','%lu','%lu','%lu','%lu');",
 									SmartCardSn,EntitleInfo[i].m_OperatorID,EntitleInfo[i].m_ID,EntitleInfo[i].m_ProductStartTime,EntitleInfo[i].m_ProductEndTime,EntitleInfo[i].m_WatchStartTime,EntitleInfo[i].m_WatchEndTime,EntitleInfo[i].m_LimitTotaltValue,EntitleInfo[i].m_LimitUsedValue);
 								sqlite_transaction_exec(sqlite_cmd);
 							}
@@ -2911,20 +2955,20 @@ int pushinfo_reset(void)
 	prog_monitor_reset();
 
 // 2、删除播发单ProductDesc表
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc;");
 	sqlite_execute(sqlite_cmd);
 #endif
 
 // 3、重置xml注册
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushinfo_unregist_cb;
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize;");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT URI FROM Initialize;");
 	ret = sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback);
 	if(ret>0){
 		DEBUG("unregist %d pushinfo xml\n",ret);
 	}
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Initialize;");
 	sqlite_execute(sqlite_cmd);
 	
 	delete_initialize();
@@ -3055,6 +3099,7 @@ int setting_init_with_database()
 	cur_language_init();
 	push_dir_init();
 	reboot_timestamp_init();
+	push_end_early_hour_init();
 	serviceID_init();
 //	guidelist_select_refresh();
 	SCEntitleInfo_init();

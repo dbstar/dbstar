@@ -10,6 +10,7 @@
 #include "common.h"
 #include "mid_push.h"
 #include "xmlparser.h"
+#include "sqlite3.h"
 #include "sqlite.h"
 #include "porting.h"
 #include "push.h"
@@ -87,7 +88,7 @@ static int parse_progs()
 		ret = -1;
 	}
 	else{
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT ReceiveType,DescURI,productID FROM ProductDesc;");
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ReceiveType,DescURI,productID FROM ProductDesc;");
 		ret = sqlite_read(sqlite_cmd, (void *)(&resgist_action), sizeof(resgist_action), sqlite_callback);
 		DEBUG("ret=%d\n", ret);
 		
@@ -145,13 +146,13 @@ static int motherdisc_parse()
 
 	DEBUG("%s, process motherdisc...\n", MOTHERDISC_XML_URI);
 	
-	snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Initialize;");
 	sqlite_execute(sqlite_cmd);
 	
 	// parse Initialize.xml
 	if(0==parse_xml(initialize_uri_get(), INITIALIZE_XML, NULL)){
 		// parse Service.xml
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag='%d';", SERVICE_XML);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT URI FROM Initialize WHERE PushFlag='%d';", SERVICE_XML);
 		memset(xml_uri,0,sizeof(xml_uri));
 		if(0==str_sqlite_read(xml_uri,sizeof(xml_uri),sqlite_cmd) && 0==parse_xml(xml_uri, SERVICE_XML, NULL)){
 			
@@ -166,7 +167,7 @@ static int motherdisc_parse()
 		
 #if 0
 		// parse GuideList.xml	
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag='%d';", GUIDELIST_XML);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT URI FROM Initialize WHERE PushFlag='%d';", GUIDELIST_XML);
 		memset(xml_uri,0,sizeof(xml_uri));
 		if(0==str_sqlite_read(xml_uri,sizeof(xml_uri),sqlite_cmd) && 0==parse_xml(xml_uri, GUIDELIST_XML, NULL)){
 			
@@ -183,10 +184,10 @@ static int motherdisc_parse()
 		// parse ProductDesc.xml
 		// 解析ProductDesc.xml时判断拒绝的节目也入库
 		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc;");
 		sqlite_execute(sqlite_cmd);
 		
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT URI FROM Initialize WHERE PushFlag='%d';", PRODUCTDESC_XML);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT URI FROM Initialize WHERE PushFlag='%d';", PRODUCTDESC_XML);
 		memset(xml_uri,0,sizeof(xml_uri));
 		if(0==str_sqlite_read(xml_uri,sizeof(xml_uri),sqlite_cmd) && 0==parse_xml(xml_uri, PRODUCTDESC_XML, NULL)){
 			DEBUG("parse xmls for mother disc initialize finish, waiting for programs parsing...\n");
@@ -242,10 +243,10 @@ int motherdisc_process()
 		if(0==motherdisc_parse()){
 			DEBUG("parse mother disc finish\n");
 			
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM Initialize;");
+			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Initialize;");
 			sqlite_execute(sqlite_cmd);
 			
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd), "DELETE FROM ProductDesc;");
+			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc;");
 			sqlite_execute(sqlite_cmd);
 			
 			
