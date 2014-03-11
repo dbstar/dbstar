@@ -551,7 +551,7 @@ int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int 
 		}
 	}
 	
-	int len_now = str_dad_len>strlen(str_dad)?strlen(str_dad):str_dad_len;
+	unsigned int len_now = str_dad_len>strlen(str_dad)?strlen(str_dad):str_dad_len;
 	if(1==flag || 3==flag){
 		for(i=0; i<len_now; i++){
 			if(sign_c!=str_dad[i])

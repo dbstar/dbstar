@@ -108,7 +108,8 @@ static int s_preview_refresh = 0;
 static int s_push_regist_inited = 0;
 static int s_motherdisc_init_flag = 0;
 
-static unsigned long long s_should_clean_M = 0LL;
+// 本次应清理的磁盘大小，单位Byte
+static unsigned long long s_should_clean_hd = 0LL;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
@@ -1526,68 +1527,19 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 	return 0;
 }
 
-#if 0
-/*
- 扫描硬盘，删除没有纳入数据库管理的野节目
- 节目所在目录，一般是/mnt/sda1/pushroot/pushfile
-*/
-static int clear_wild_prog()
-{
-	DIR * pdir = NULL;
-	struct dirent *ptr = NULL;
-	struct stat filestat;
-	
-	char prog_rootdir[512];	// e.g.: /mnt/sda1/pushroot/pushfile
-	char prog_path[512+128];
-	char publicationid[64];
-	char sqlite_cmd[1024];
-	int ret = -1;
-	
-	snprintf(prog_rootdir,sizeof(prog_rootdir),"%s/pushroot/pushfile",push_dir_get());
-	
-	int stat_ret = stat(prog_rootdir, &filestat);
-	if(0==stat_ret){
-		if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
-			pdir = opendir(prog_rootdir);
-			if(pdir){
-				while((ptr = readdir(pdir))!=NULL)
-				{
-					if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
-						continue;
-					
-					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PublicationID FROM Publication WHERE URI LIKE '%%pushroot%%pushfile%%%q%%'", ptr->d_name);
-					
-					memset(publicationid,0,sizeof(publicationid));
-					if(0!=str_sqlite_read(publicationid,sizeof(publicationid),sqlite_cmd)){
-						snprintf(prog_path,sizeof(prog_path),"%s/%s",prog_rootdir,ptr->d_name);
-						DEBUG("get nothing for %s, remove wild dir %s\n",sqlite_cmd,prog_path);
-						remove_force(prog_path);
-					}
-					else
-						DEBUG("get %s for %s\n",publicationid,sqlite_cmd);
-				}
-				closedir(pdir);
-				
-				ret = 0;
-			}
-			else{
-				ERROROUT("opendir(%s) failed\n", prog_rootdir);
-				ret = -1;
-			}
-		}
-	}
-	else{
-		ERROROUT("can not stat(%s)\n", prog_rootdir);
-		ret = -1;
-	}
-	
-	return ret;   
-}
-#endif
 
-unsigned long long should_clean_M_get()
+unsigned long long should_clean_hd_get()
 {
-	return s_should_clean_M;
+	return s_should_clean_hd;
+}
+
+// 磁盘的预警空间，单位为Byte，目前按照总大小的15%=19.2/128计算
+static unsigned long long hd_forewarning(unsigned long long tt_size)
+{
+	if(0==tt_size)
+		return 0;
+	else
+		return ((tt_size>>7)*19);
 }
 
 /*
@@ -1606,22 +1558,20 @@ int disk_space_check()
 		ret = -1;
 	}
 	else{
+		unsigned long long need_storage = hd_forewarning(tt_size) + recv_totalsize_sum_get();
 		DEBUG("HardDisc %s enable, total_size: %llu, free_size: %llu\n",push_dir_get(),tt_size,free_size);
-		unsigned long long free_size_M = (free_size >> 20);
-		
-		DEBUG("has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get()));
-		
-		if(free_size_M<=(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get())){
-			s_should_clean_M = HDFOREWARNING_M_DFT + recv_totalsize_sum_M_get() - free_size_M;
-			DEBUG("should cleaning hd %llu MiB...\n",s_should_clean_M);
-			
-			//clear_wild_prog();
+		DEBUG("no need to clean hd, has free: %llu; need storage: %llu (forewarning: %llu, will recv: %llu)\n", 
+					free_size, need_storage, hd_forewarning(tt_size), recv_totalsize_sum_get());
+		if(free_size<=need_storage){
+			s_should_clean_hd = need_storage - free_size;
+			DEBUG("should cleaning hd %llu B...\n",s_should_clean_hd);
 			
 			disk_manage(NULL,NULL);
 			ret = 0;
 		}
 		else{
-			DEBUG("no need to clean hd\n");
+			DEBUG("no need to clean hd, has free: %llu; need storage: %llu (forewarning: %llu, will recv: %llu)\n", 
+					free_size, need_storage, hd_forewarning(tt_size), recv_totalsize_sum_get());
 			ret = 1;
 		}
 	}

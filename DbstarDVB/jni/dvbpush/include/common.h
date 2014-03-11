@@ -148,10 +148,10 @@ typedef enum{
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
 
-// 除了应该给本次下载留出足够空间外，额外预留20G
-#define HDFOREWARNING_M_DFT			(102400LL)
-// 给本次下载留出足够空间外，至少32G
-#define DOWNLOAD_ONCE_M_MIN			(32768LL)
+// 至少留出约100G剩余空间，在实际使用时，是采用硬盘的实际总大小计算的，此值一般用不上。
+#define HDFOREWARNING_DFT			(102400000LL)
+// 每个播发单修正其总大小约32G
+#define DOWNLOAD_ONCE_MIN			(32768000LL)
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
@@ -336,8 +336,8 @@ typedef struct{
 	char	ObjectName[64];
 	char	EntityID[64];
 	char	PosterID[64];
-	char	PosterName[64];
-	char	PosterURI[256];
+	char	PosterName[256];
+	char	PosterURI[512];
 }DBSTAR_RESPOSTER_S;
 
 typedef struct{
@@ -462,6 +462,13 @@ typedef struct{
 	char	BitRate[32];
 	char	FileFormat[32];
 	char	CodeFormat[32];
+	char	SetID[64];
+	char	SetName[512];
+	char	SetDesc[1024];
+	char	SetPosterID[64];
+	char	SetPosterName[512];
+	char	SetPosterURI[512];
+	char	RMCategory[32];		// RMCategory本身并不入Publication库，只是用来判断“报纸”类型
 }DBSTAR_PUBLICATION_S;
 
 /*
@@ -489,15 +496,30 @@ typedef struct{
 	char	ServiceID[64];
 	char	PublicationID[64];
 	char	infolang[64];
-	char	*PublicationDesc;
-	char	Keywords[256];
-	char	Publisher[128];
-	char	Area[64];
-	char	Language[64];
-	char	Episode[64];
-	char	AspectRatio[64];
-	char	VolNum[64];
-	char	ISSN[64];
+	char	PublishID[64];
+	char	RMCategory[32];
+	char	Author[512];
+	char	Publisher[512];
+	char	Issue[64];
+	char	Keywords[512];
+	char	Description[1024];
+	char	PublishDate[64];
+	char	PublishWeek[32];
+	char	PublishPlace[256];
+	char	CopyrightInfo[256];
+	char	TotalEdition[64];
+	char	Data[64];
+	char	Format[64];
+	char	TotalIssue[64];
+	char	Recommendation[1024];
+	
+	// SetInfo节点临时存储在DBSTAR_MULTIPLELANGUAGEINFORM_S，等处理完毕后要先拷贝为DBSTAR_PUBLICATION_S，然后通过DBSTAR_PUBLICATION_S存储到数据库之Publication表中
+	char	SetID[64];
+	char	SetName[512];
+	char	SetDesc[1024];
+	char	SetPosterID[64];
+	char	SetPosterName[512];
+	char	SetPosterURI[512];
 }DBSTAR_MULTIPLELANGUAGEINFORM_S;
 
 typedef struct{

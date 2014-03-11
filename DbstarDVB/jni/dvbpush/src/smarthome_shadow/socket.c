@@ -619,9 +619,10 @@ void *smartlife_connect_thread()
 
 int smartlife_send(char *buf, int buf_len)
 {
-	int valid_len = buf_len>sizeof(s_sendbuf)?sizeof(s_sendbuf):buf_len;
+	unsigned buf_ulen = (unsigned int)buf_len;
+	unsigned int valid_len = buf_ulen>sizeof(s_sendbuf)?sizeof(s_sendbuf):buf_ulen;
 	
-	DEBUG("len=%d -> %d\n", buf_len,valid_len);
+	DEBUG("len=%u -> %u\n", buf_ulen,valid_len);
 	
 	memcpy(s_sendbuf,buf,valid_len);
 	s_sendbuf_len = valid_len;
