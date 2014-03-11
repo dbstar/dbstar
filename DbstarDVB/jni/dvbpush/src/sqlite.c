@@ -89,6 +89,14 @@ static int createDatabase(char *database_uri)
 				else{
 					ret += createtable_ret;
 				}
+				createtable_ret = createTable("TRIGGER_DELETE_Service");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
 				
 				createtable_ret = createTable("ResStr");
 				if(-1==createtable_ret){
@@ -152,6 +160,14 @@ static int createDatabase(char *database_uri)
 				else{
 					ret += createtable_ret;
 				}
+				createtable_ret = createTable("TRIGGER_DELETE_Column");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
 				
 				createtable_ret = createTable("ColumnEntity");
 				if(-1==createtable_ret){
@@ -170,8 +186,24 @@ static int createDatabase(char *database_uri)
 				else{
 					ret += createtable_ret;
 				}
+				createtable_ret = createTable("TRIGGER_DELETE_Product");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
 				
 				createtable_ret = createTable("PublicationsSet");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				createtable_ret = createTable("TRIGGER_DELETE_PublicationsSet");
 				if(-1==createtable_ret){
 					ret = -1;
 					goto CREATE_TABLE_END;
@@ -190,6 +222,14 @@ static int createDatabase(char *database_uri)
 				}
 				
 				createtable_ret = createTable("Publication");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				createtable_ret = createTable("TRIGGER_DELETE_Publication");
 				if(-1==createtable_ret){
 					ret = -1;
 					goto CREATE_TABLE_END;
@@ -242,8 +282,24 @@ static int createDatabase(char *database_uri)
 				else{
 					ret += createtable_ret;
 				}
+				createtable_ret = createTable("TRIGGER_DELETE_GuideList");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
 				
 				createtable_ret = createTable("ProductDesc");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
+				createtable_ret = createTable("TRIGGER_DELETE_ProductDesc");
 				if(-1==createtable_ret){
 					ret = -1;
 					goto CREATE_TABLE_END;
@@ -423,6 +479,14 @@ OfflineTime	DATETIME DEFAULT '',\
 Status	RCHAR(32) DEFAULT '0',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')));", name);
 			}
+			else if(!strcmp(name,"TRIGGER_DELETE_Service"))
+			{
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
+				"CREATE TRIGGER %q AFTER DELETE ON Service \
+BEGIN \
+	DELETE FROM ResStr WHERE ObjectName='Service'; \
+END", name);
+			}
 			else if(!strcmp(name,"ResStr"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
@@ -517,6 +581,14 @@ Param	NVARCHAR(1024) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ColumnID));", name);
 			}
+			else if(!strcmp(name,"TRIGGER_DELETE_Column"))
+			{
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
+				"CREATE TRIGGER %q AFTER DELETE ON Column \
+BEGIN \
+	DELETE FROM ResStr WHERE ObjectName='Column' AND EntityID=OLD.ColumnID; \
+END", name);
+			}
 			else if(!strcmp(name,"ColumnEntity"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
@@ -550,6 +622,14 @@ VODPlatform	NVARCHAR(256),\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ProductID));", name);
 			}
+			else if(!strcmp(name,"TRIGGER_DELETE_Product"))
+			{
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
+				"CREATE TRIGGER %q AFTER DELETE ON Product \
+BEGIN \
+	DELETE FROM ResStr WHERE ObjectName='Product' AND EntityID=OLD.ProductID; \
+END", name);
+			}
 			else if(!strcmp(name,"PublicationsSet"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
@@ -574,6 +654,14 @@ VODPlatform	NVARCHAR(256) DEFAULT '',\
 Deleted NVARCHAR(256) DEFAULT '0',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,SetID,ColumnID));", name);
+			}
+			else if(!strcmp(name,"TRIGGER_DELETE_PublicationsSet"))
+			{
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
+				"CREATE TRIGGER %q AFTER DELETE ON PublicationsSet \
+BEGIN \
+	DELETE FROM SetInfo WHERE SetID=OLD.SetID; \
+END", name);
 			}
 			else if(!strcmp(name,"SetInfo"))
 			{
@@ -638,6 +726,20 @@ Preference	NVARCHAR(32) DEFAULT '',\
 AccessTime	NOT NULL DEFAULT (datetime('now','localtime')),\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,PublicationID,ColumnID));", name);
+			}
+			else if(!strcmp(name,"TRIGGER_DELETE_Publication"))
+			{
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
+				"CREATE TRIGGER %q AFTER DELETE ON Publication \
+BEGIN \
+	DELETE FROM ResStr WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
+	DELETE FROM ResPoster WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
+	DELETE FROM ResSubTitle WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
+	DELETE FROM MultipleLanguageInfoVA WHERE PublicationID=OLD.PublicationID; \
+	DELETE FROM MultipleLanguageInfoRM WHERE PublicationID=OLD.PublicationID; \
+	DELETE FROM MultipleLanguageInfoAPP WHERE PublicationID=OLD.PublicationID; \
+	DELETE FROM Preview WHERE PublicationID=OLD.PublicationID; \
+END", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoVA"))
 			{
@@ -736,6 +838,14 @@ UserStatus	NVARCHAR(64) DEFAULT '1',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,DateValue,PublicationID));", name);
 			}
+			else if(!strcmp(name,"TRIGGER_DELETE_GuideList"))
+			{
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
+				"CREATE TRIGGER %q AFTER DELETE ON GuideList \
+BEGIN \
+	DELETE FROM ResStr WHERE ObjectName='GuideList' AND EntityID=OLD.GuideListID; \
+END", name);
+			}
 			else if(!strcmp(name,"ProductDesc"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
@@ -758,6 +868,15 @@ FreshFlag INTEGER DEFAULT 1,\
 Parsed	NVARCHAR(32) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
+			}
+			else if(!strcmp(name,"TRIGGER_DELETE_ProductDesc"))
+			{
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
+				"CREATE TRIGGER %q AFTER DELETE ON ProductDesc \
+BEGIN \
+	DELETE FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID=OLD.ProductDescID; \
+	UPDATE Publication SET ReceiveStatus='%d' WHERE ID=OLD.ProductDescID AND ReceiveStatus='%d'; \
+END", name,RECEIVESTATUS_FAILED,RECEIVESTATUS_WAITING);
 			}
 			else if(!strcmp(name,"Preview"))
 			{

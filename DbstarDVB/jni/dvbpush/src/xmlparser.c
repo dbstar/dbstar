@@ -221,8 +221,6 @@ static int service_insert(DBSTAR_SERVICE_S *p)
 #else
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Service;");
 	sqlite_transaction_exec(sqlite_cmd);
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ResStr WHERE ObjectName='Service' AND ServiceID!='%q';", serviceID_get());
-	sqlite_transaction_exec(sqlite_cmd);
 #endif
 	
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Service(ServiceID,RegionCode,OnlineTime,OfflineTime,Status) VALUES('%q','%q','%q','%q','%d');",
@@ -3205,9 +3203,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					{
 						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Product;");
 						sqlite_transaction_exec(sqlite_cmd);
-						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ResStr WHERE ObjectName='Product' AND ServiceID!='%s';", serviceID_get());
-						sqlite_transaction_exec(sqlite_cmd);
-						
+
 						/*
 						在父节点上定义子节点的结构体，并清空
 						*/
@@ -3274,9 +3270,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						*/
 						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnType='1' OR ColumnType='2' OR ColumnType='3' OR ColumnType='4' OR ColumnType='5' OR ColumnType='6' OR ColumnType='7' OR ColumnType='8' OR ColumnType='9' OR ColumnType='10' OR ColumnType='11' OR ColumnType='12' OR ColumnType='13' OR ColumnType='14';");
 						sqlite_transaction_exec(sqlite_cmd);
-						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ResStr WHERE ObjectName='Column' AND ServiceID!='%s' AND ServiceID!='0';", serviceID_get());
-						sqlite_transaction_exec(sqlite_cmd);
-						
+
 						s_column_SequenceNum = 10;	// 允许一些内置的栏目（如国电业务）排在下发栏目之前，故SequenceNum从10计起
 						
 						DBSTAR_COLUMN_S column_s;
@@ -3305,8 +3299,6 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 #else
 						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM GuideList WHERE DateValue<datetime('now','localtime','-2 days');");
-						sqlite_transaction_exec(sqlite_cmd);
-						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ResStr WHERE ObjectName='GuideList' AND ServiceID!='%s';", serviceID_get());
 						sqlite_transaction_exec(sqlite_cmd);
 #endif
 						
@@ -3343,11 +3335,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						
 						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc;");
 						sqlite_transaction_exec(sqlite_cmd);
-						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ResStr WHERE ObjectName='ProductDesc' AND ServiceID!='%s';", serviceID_get());
-						sqlite_transaction_exec(sqlite_cmd);
-						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Publication SET ReceiveStatus='%d' WHERE ReceiveStatus='%d';", RECEIVESTATUS_FAILED,RECEIVESTATUS_WAITING);
-						sqlite_transaction_exec(sqlite_cmd);
-						
+
 						DEBUG("old ver: %s, new ver: %s\n",old_xmlver, xmlinfo.Version);
 						DBSTAR_PRODUCTDESC_S productdesc_s;
 						memset(&productdesc_s, 0, sizeof(productdesc_s));
