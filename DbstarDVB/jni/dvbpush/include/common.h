@@ -157,10 +157,10 @@ typedef enum{
 #define DBDATASERVERPORT_DFT		"4321"
 #define TUNERARGS_DFT				"12620\t43200\t11300\t0\t0"
 
-// 除了应该给本次下载留出足够空间外，额外预留20G
-#define HDFOREWARNING_M_DFT			(102400LL)
-// 给本次下载留出足够空间外，至少32G
-#define DOWNLOAD_ONCE_M_MIN			(32768LL)
+// 至少留出约100G剩余空间，在实际使用时，是采用硬盘的实际总大小计算的，此值一般用不上。
+#define HDFOREWARNING_DFT			(102400000LL)
+// 每个播发单修正其总大小约32G
+#define DOWNLOAD_ONCE_MIN			(32768000LL)
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,

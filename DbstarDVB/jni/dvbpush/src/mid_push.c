@@ -108,7 +108,8 @@ static int s_preview_refresh = 0;
 static int s_push_regist_inited = 0;
 static int s_motherdisc_init_flag = 0;
 
-static unsigned long long s_should_clean_M = 0LL;
+// 本次应清理的磁盘大小，单位Byte
+static unsigned long long s_should_clean_hd = 0LL;
 
 /*
 当向push中写数据时才有必要监听进度，否则直接使用数据库中记录的进度即可。
@@ -1533,9 +1534,18 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 }
 
 
-unsigned long long should_clean_M_get()
+unsigned long long should_clean_hd_get()
 {
-	return s_should_clean_M;
+	return s_should_clean_hd;
+}
+
+// 磁盘的预警空间，单位为Byte，目前按照总大小的15%=19.2/128计算
+static unsigned long long hd_forewarning(unsigned long long tt_size)
+{
+	if(0==tt_size)
+		return 0;
+	else
+		return ((tt_size>>7)*19);
 }
 
 /*
@@ -1554,22 +1564,20 @@ int disk_space_check()
 		ret = -1;
 	}
 	else{
+		unsigned long long need_storage = hd_forewarning(tt_size) + recv_totalsize_sum_get();
 		DEBUG("HardDisc %s enable, total_size: %llu, free_size: %llu\n",push_dir_get(),tt_size,free_size);
-		unsigned long long free_size_M = (free_size >> 20);
-		
-		DEBUG("has free size %llu M, compared with level %llu M\n", free_size_M,(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get()));
-		
-		if(free_size_M<=(HDFOREWARNING_M_DFT+recv_totalsize_sum_M_get())){
-			s_should_clean_M = HDFOREWARNING_M_DFT + recv_totalsize_sum_M_get() - free_size_M;
-			DEBUG("should cleaning hd %llu MiB...\n",s_should_clean_M);
-			
-			//clear_wild_prog();
+		DEBUG("no need to clean hd, has free: %llu; need storage: %llu (forewarning: %llu, will recv: %llu)\n", 
+					free_size, need_storage, hd_forewarning(tt_size), recv_totalsize_sum_get());
+		if(free_size<=need_storage){
+			s_should_clean_hd = need_storage - free_size;
+			DEBUG("should cleaning hd %llu B...\n",s_should_clean_hd);
 			
 			disk_manage(NULL,NULL);
 			ret = 0;
 		}
 		else{
-			DEBUG("no need to clean hd\n");
+			DEBUG("no need to clean hd, has free: %llu; need storage: %llu (forewarning: %llu, will recv: %llu)\n", 
+					free_size, need_storage, hd_forewarning(tt_size), recv_totalsize_sum_get());
 			ret = 1;
 		}
 	}

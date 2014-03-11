@@ -703,6 +703,7 @@ static int clear_wild_prog_cb(char **result, int row, int column, void *receiver
 	
 	char pushfile_uri[512];	// e.g.: /mnt/sda1/pushroot/pushfile
 	char *publication_dir = NULL;
+	char *p_slash_tail = NULL;
 	char publication_uri[1024];
 	
 	snprintf(pushfile_uri,sizeof(pushfile_uri),"%s/pushroot/pushfile",push_dir_get());
@@ -718,18 +719,21 @@ static int clear_wild_prog_cb(char **result, int row, int column, void *receiver
 						continue;
 					
 					// PublicationID,URI
-					// e.g.: pushroot/pushfile/10301
+					// e.g.: pushroot/pushfile/10301 or /pushroot///pushfile//10301/
 					for(i=1;i<row+1;i++)
 					{
 						publication_dir = strstr(result[i*column+1],"/pushfile/");
 						if(publication_dir){
-							publication_dir += 10;
+							publication_dir += 10;	// 10=strlen("/pushfile/");
 							for(j=0;j<256;j++){
 								if('/' == *publication_dir)
 									publication_dir ++;
 								else
 									break;
 							}
+							p_slash_tail = strchr(publication_dir,'/');
+							if(p_slash_tail)
+								*p_slash_tail = '\0';
 							
 							if(0==strcmp(publication_dir,ptr->d_name)){
 								DEBUG("confirm %s dir %s/%s\n",result[i*column+0],pushfile_uri,ptr->d_name);
@@ -784,18 +788,18 @@ static int clear_wild_prog()
 		DEBUG("clear wild progs finished\n");
 	}
 	else if(0==ret){
-		DEBUG("select no progs for clear_wild_prog OK\n");
+		DEBUG("select no progs for clear_wild_prog(), OK\n");
 		return 0;
 	}
 	else{	// (ret<0)
-		DEBUG("select progs for clear_wild_prog failed\n");
+		DEBUG("select progs for clear_wild_prog() failed\n");
 		return -1;
 	}
 	
 	return ret;   
 }
 
-
+#if 0
 static int clear_noclumn_prog_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -827,7 +831,7 @@ static int clear_noclumn_prog_cb(char **result, int row, int column, void *recei
 	return 0;
 }
 
-// 清理所属栏目已经不存在的节目
+// 清理所属栏目已经不存在的节目记录
 static int clear_noclumn_prog()
 {
 	int ret = 0;
@@ -873,6 +877,22 @@ static int clear_noclumn_prog()
 	
 	return ret;
 }
+#else
+// 清理所属栏目已经不属于叶子节点的节目记录（栏目ID为-1的小片仍然保留），只从数据库中删除
+static int clear_noclumn_prog_record()
+{
+	int ret = 0;
+	char sqlite_cmd[2048];
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"delete from Publication where ColumnID in (select ParentID from Column where ParentID!='-1' group by ParentID);");
+	sqlite_execute(sqlite_cmd);
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM PublicationsSet WHERE SetID NOT IN (SELECT SetID FROM Publication WHERE SetID!='' GROUP BY SetID);");
+	sqlite_execute(sqlite_cmd);
+	
+	return ret;
+}
+#endif
 
 
 static unsigned long long s_delete_total_size = 0LL;
@@ -925,12 +945,13 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 
 /*
  按照三大步骤进行磁盘清理
- 一、清理pushroot/pushfile目录下未被数据库管理的文件夹
- 二、清理数据库中成品挂在空栏目的成品，包括所属栏目已经不存在或者所属栏目为非叶子节点
+ 一、清理数据库中成品挂在空栏目的成品记录，包括所属栏目已经不存在或者所属栏目为非叶子节点
+ 	此步骤不删除具体文件夹，遗留下来的文件夹在第二步清理。
+ 二、清理pushroot/pushfile目录下未被数据库管理的文件夹
  三、按照先进先出清理
- 1、参数不是必须的，如果两个参数都为空，则按照FIFO原则从数据库中挨个删除；
- 2、如果PublicationID不为空，则按照指定的ID进行删除；
- 3、如果PublicationID为空，但ProductID不为空，则按照指定的产品进行删除。
+	 1、参数不是必须的，如果两个参数都为空，则按照FIFO原则从数据库中挨个删除；
+	 2、如果PublicationID不为空，则按照指定的成品ID进行删除；
+	 3、如果PublicationID为空，但ProductID不为空，则按照指定的产品进行删除。
 */
 int disk_manage(char *PublicationID, char *ProductID)
 {
@@ -939,10 +960,11 @@ int disk_manage(char *PublicationID, char *ProductID)
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = disk_manage_cb;
 	char publicationid[1024];
 	
-	// 正常情况下，clear_wild_prog和clear_noclumn_prog执行后没有任何效果。只是为了应对意外情况。
-	// 如果clear_wild_prog或clear_noclumn_prog删除了数据，下面的先进先出应该重新判断磁盘是否满，然后计算需要清理的大小。但是这里不那么细化，不重新计算了。
+	// 注意两者的顺序，clear_noclumn_prog_record只删除数据库中的记录，其遗留的文件夹在clear_wild_prog中清理
+	// 正常情况下，clear_noclumn_prog_record和clear_wild_prog执行后没有任何效果。只是为了应对意外情况。
+	// 如果clear_noclumn_prog_record或clear_wild_prog删除了数据，下面的先进先出前应该重新判断磁盘是否满，然后计算需要清理的大小。但是这里不那么细化，不重新计算了。
+	clear_noclumn_prog_record();
 	clear_wild_prog();
-	clear_noclumn_prog();
 	
 	s_delete_total_size = 0LL;
 	
@@ -963,14 +985,14 @@ int disk_manage(char *PublicationID, char *ProductID)
 		if(ret>0){
 			DEBUG("delete such Publications: %s\n", publicationid);
 			
-			if(strcmp(publicationid,"-1")){
+			if(strcmp(publicationid,"-1")){	// 删除成品目录成功
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Publication WHERE PublicationID='%q'", publicationid);
 				sqlite_execute(sqlite_cmd);
-						
+				
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM PublicationsSet WHERE SetID NOT IN (SELECT SetID FROM Publication WHERE SetID!='' GROUP BY SetID);");
 				sqlite_execute(sqlite_cmd);
 				
-				if((s_delete_total_size>>20) >= should_clean_M_get()){
+				if((s_delete_total_size) >= should_clean_hd_get()){
 					DEBUG("delete %lld finished finally\n", s_delete_total_size);
 					
 					ret = 0;
