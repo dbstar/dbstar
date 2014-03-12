@@ -383,7 +383,7 @@ unsigned long long recv_totalsize_sum_get()
 		s_recv_totalsize_sum = DOWNLOAD_ONCE_MIN;
 	}
 	else
-		DEBUG("recv totalsize sum %llu Mbytes\n",s_recv_totalsize_sum);
+		DEBUG("recv totalsize sum %llu Bytes\n",s_recv_totalsize_sum);
 	
 	return s_recv_totalsize_sum;
 }
@@ -413,6 +413,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		return -1;
 	}
 	
+	char direct_uri[1024];
 	char sqlite_cmd[4096];
 	unsigned long long this_total_size = 0LL;
 	
@@ -447,26 +448,30 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	预备过一段时间后特殊产品下发下来后可以正确的显示。
 	由于母盘初始化是直接通过代码驱动解析，解析完ProductDesc.xml后接着就解析相应节目的描述文件。在解析节目描述文件时还要判断产品。
 	*/
+	
 	if(1==motherdisc_processing()){
 		struct stat filestat;
-		char desc_direct_uri[1024];
 		
-		snprintf(desc_direct_uri,sizeof(desc_direct_uri),"%s/%s", push_dir_get(),ptr->DescURI);
+		// check Publication.xml for mother disc
+		snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->DescURI);
 		
-		// check ContentDelivery.xml for mother disc
-		int stat_ret = stat(desc_direct_uri, &filestat);
+		int stat_ret = stat(direct_uri, &filestat);
 		if(0==stat_ret){
-			DEBUG("in motherdisc processing, make receive_status as RECEIVESTATUS_WAITING, %s\n", desc_direct_uri);
+			DEBUG("in motherdisc processing, make receive_status as RECEIVESTATUS_WAITING, %s\n", direct_uri);
 			receive_status = RECEIVESTATUS_WAITING;
 		}
 		else{
-			ERROROUT("can not stat(%s)\n", desc_direct_uri);
-			DEBUG("this Publication(%s) is not exist\n", desc_direct_uri);
+			ERROROUT("can not stat(%s)\n", direct_uri);
+			DEBUG("this Publication(%s) is not exist\n", direct_uri);
 			receive_status = RECEIVESTATUS_REJECT;
 		}
 	}
 	
 	if(RECEIVESTATUS_WAITING==receive_status){
+		// 准备接收前先删除旧有目录，防止push库判断异常。
+		snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
+		remove_force(direct_uri);
+		
 		this_total_size = 0LL;
 		sscanf(ptr->TotalSize,"%llu", &this_total_size);
 		s_recv_totalsize_sum += this_total_size;

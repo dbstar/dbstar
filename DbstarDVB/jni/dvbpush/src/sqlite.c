@@ -273,6 +273,14 @@ static int createDatabase(char *database_uri)
 				else{
 					ret += createtable_ret;
 				}
+				createtable_ret = createTable("TRIGGER_DELETE_Message");
+				if(-1==createtable_ret){
+					ret = -1;
+					goto CREATE_TABLE_END;
+				}
+				else{
+					ret += createtable_ret;
+				}
 				
 				createtable_ret = createTable("GuideList");
 				if(-1==createtable_ret){
@@ -732,7 +740,7 @@ PRIMARY KEY (ServiceID,PublicationID,ColumnID));", name);
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
 				"CREATE TRIGGER %q AFTER DELETE ON Publication \
 BEGIN \
-	DELETE FROM ResStr WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
+	DELETE FROM ResStr WHERE (ObjectName='Publication' OR ObjectName='MFile') AND EntityID=OLD.PublicationID; \
 	DELETE FROM ResPoster WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
 	DELETE FROM ResSubTitle WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
 	DELETE FROM MultipleLanguageInfoVA WHERE PublicationID=OLD.PublicationID; \
@@ -818,6 +826,14 @@ EndTime		DATETIME DEFAULT '',\
 Interval	CHAR(32) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (ServiceID,MessageID));", name);
+			}
+			else if(!strcmp(name,"TRIGGER_DELETE_Message"))
+			{
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd, \
+				"CREATE TRIGGER %q AFTER DELETE ON Message \
+BEGIN \
+	DELETE FROM ResStr WHERE ObjectName='Message' AND EntityID=OLD.MessageID; \
+END", name);
 			}
 			else if(!strcmp(name,"GuideList"))
 			{
