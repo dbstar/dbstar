@@ -61,7 +61,7 @@ typedef enum{
 //#define SMARTLIFE_LC
 
 // 本地栏目：富媒体分享
-#define MEDIASHARING_LC
+//#define MEDIASHARING_LC
 
 // 本地栏目：文件浏览
 #define FILEBROWSER_LC
