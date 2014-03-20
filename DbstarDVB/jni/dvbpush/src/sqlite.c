@@ -1642,10 +1642,10 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9901',ColumnType='L99',SequenceNum=1 WHERE ColumnID='L9901';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	else{
+//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9901',ColumnType='L99',SequenceNum=1 WHERE ColumnID='L9901';");
+//		sqlite_transaction_exec(sqlite_cmd);
+//	}
 	/*
 	 二级菜单“个人中心－购买信息”
 	*/
@@ -1661,10 +1661,10 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9907',ColumnType='L99',SequenceNum=2 WHERE ColumnID='L9907';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	else{
+//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9907',ColumnType='L99',SequenceNum=2 WHERE ColumnID='L9907';");
+//		sqlite_transaction_exec(sqlite_cmd);
+//	}
 	
 	/*
 	 二级菜单“选择接收”
@@ -1681,10 +1681,10 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=3 WHERE ColumnID='L9801';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	else{
+//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=3 WHERE ColumnID='L9801';");
+//		sqlite_transaction_exec(sqlite_cmd);
+//	}
 	/*
 	 二级菜单“下载状态”
 	*/
@@ -1700,10 +1700,10 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9802';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	else{
+//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9802';");
+//		sqlite_transaction_exec(sqlite_cmd);
+//	}
 	/*
 	 二级菜单“富媒体分享”
 	*/
@@ -1806,7 +1806,7 @@ int localcolumn_init()
 	/*
 	 二级菜单“个人中心－帮助信息”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9808")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9908")){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',20);",
 			"L9908","L98","L98/L9908","L99","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
