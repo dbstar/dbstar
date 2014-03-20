@@ -408,8 +408,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// enterSubMenu(menuItem.SubMenu);
 			// else
 			// showPopupMenu();
-		    if(!menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK) && !menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER) 
-		            && !menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIAVOICEDBOOK)){
+		    if(!menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK) && !menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER) 
+		            && !menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
     			enterSubMenu(menuItem.SubMenu);
     			return true;
 		    }
@@ -442,23 +442,25 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			showUserCenter(menuItem.ColumnId());
 		} else if(menuItem.Type().equals(GDCommon.ColumnIDCNTV)) {
 			startIPTVView(menuItem.ColumnId());
-		}else if(menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK)){
-		    startMultipleMediaView(menuItem.ColumnId());
-		}else if(menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)){
-		    startMultipleMediaView(menuItem.ColumnId());
-		}else if(menuItem.Type().equals(GDCommon.ColumnIDMULTIPLEMEDIAVOICEDBOOK)){
-		    startMultipleMediaView(menuItem.ColumnId());
+		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)){
+		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
+		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAMAGAZINE)){
+		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
+		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)){
+		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
+		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
+		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
 		}
 
 		return ret;
 	}
-	private void startMultipleMediaView(String columnId){
+	private void startMultipleMediaView(String columnType,String columnId){
 			Intent intent = null;
-			if(columnId.equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK)){
+			if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)){
 				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.BookShelfActivity");
-			}else if(columnId.equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)){
+			}else if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)){
 				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.NewsPaperActivity");
-			}else if(columnId.equals(GDCommon.ColumnIDMULTIPLEMEDIAVOICEDBOOK)){
+			}else if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
 			    intent = startComponent("com.dbstar.multiple.media.shelf", "activity.VoicedBookShelfActivity");
 			}
 			if(intent != null){
@@ -1349,8 +1351,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					if (item.ItemData != null && item.ItemData.Id != null
 							&& !item.ItemData.Id.isEmpty()) {
 						mLevel2RequestCount++;
-						if(!item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIABOOK) && !item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER)
-						        && !item.ItemData.Id.equals(GDCommon.ColumnIDMULTIPLEMEDIAVOICEDBOOK))
+						if(!item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK) && !item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)
+						        && !item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK))
 						    mService.getColumns(this, columnLevel + 1, i,item.ItemData.Id);
 						else{
 						    item.HasSubMenu = NO_SUBCOLUMNS;

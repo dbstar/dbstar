@@ -87,6 +87,10 @@ public class GDCommon {
 	public static final String ColumnTypeUserCenter = "L98";
 	public static final String ColumnTypeSmartLife = "SmartLife";
 	public static final String ColumnTypeIPTV = "OTT";
+	public static final String ColumnTypeMULTIPLEMEDIABOOK = "3";
+	public static final String ColumnTypeMULTIPLEMEDIAMAGAZINE = "4";
+	public static final String ColumnTypeMULTIPLEMEDIANEWSPAPER = "5";
+	public static final String ColumnTypeMULTIPLEMEDIAVOICEDBOOK = "L10000";
 
 	public static final String ColumnIDReceiveChooser = "L9801";
 	public static final String ColumnIDDownloadStatus = "L9802";
