@@ -131,7 +131,7 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 #else
 	// use sqlite3_snprintf instead of snprintf, Note that the order of the first two parameters is reversed from snprintf(). This is an historical accident that cannot be fixed without breaking backwards compatibility.
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd), sqlite_cmd, "REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q','%q');",
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q','%q');",
 		p->ServiceID, p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
 #endif
 
@@ -448,21 +448,21 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	预备过一段时间后特殊产品下发下来后可以正确的显示。
 	由于母盘初始化是直接通过代码驱动解析，解析完ProductDesc.xml后接着就解析相应节目的描述文件。在解析节目描述文件时还要判断产品。
 	*/
-	
 	if(1==motherdisc_processing()){
 		struct stat filestat;
+		char desc_direct_uri[1024];
 		
-		// check Publication.xml for mother disc
-		snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->DescURI);
+		snprintf(desc_direct_uri,sizeof(desc_direct_uri),"%s/%s", push_dir_get(),ptr->DescURI);
 		
-		int stat_ret = stat(direct_uri, &filestat);
+		// check ContentDelivery.xml for mother disc
+		int stat_ret = stat(desc_direct_uri, &filestat);
 		if(0==stat_ret){
-			DEBUG("in motherdisc processing, make receive_status as RECEIVESTATUS_WAITING, %s\n", direct_uri);
+			DEBUG("in motherdisc processing, make receive_status as RECEIVESTATUS_WAITING, %s\n", desc_direct_uri);
 			receive_status = RECEIVESTATUS_WAITING;
 		}
 		else{
-			ERROROUT("can not stat(%s)\n", direct_uri);
-			DEBUG("this Publication(%s) is not exist\n", direct_uri);
+			ERROROUT("can not stat(%s)\n", desc_direct_uri);
+			DEBUG("this Publication(%s) is not exist\n", desc_direct_uri);
 			receive_status = RECEIVESTATUS_REJECT;
 		}
 	}
@@ -731,8 +731,8 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 		}
 	}
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Publication SET PublicationType='%q',IsReserved='%q',Visible='%q',DRMFile='%q',FileID='%q',FileSize='%q',FileURI='%q',FileType='%q',Duration='%q',Resolution='%q',BitRate='%q',FileFormat='%q',CodeFormat='%q',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%q';",
-		p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,receive_status_tmp,p->PublicationID);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Publication SET PublicationType='%q',IsReserved='%q',Visible='%q',DRMFile='%q',FileID='%q',FileSize='%q',FileURI='%q',FileType='%q',Duration='%q',Resolution='%q',BitRate='%q',FileFormat='%q',CodeFormat='%q',SetID='%q',SetName='%q',SetDesc='%q',SetPosterID='%q',SetPosterName='%q',SetPosterURI='%q',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%q';",
+		p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,p->SetID,p->SetName,p->SetDesc,p->SetPosterID,p->SetPosterName,p->SetPosterURI,receive_status_tmp,p->PublicationID);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -1414,7 +1414,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 	
 	cur = cur->xmlChildrenNode;
 	while (cur != NULL) {
-		//DEBUG("%s cur->name:%s\n", XML_TEXT_NODE==cur->type?"XML_TEXT_NODE":"not XML_TEXT_NODE", cur->name);
+//		DEBUG("%s cur->name:%s\n", XML_TEXT_NODE==cur->type?"XML_TEXT_NODE":"not XML_TEXT_NODE", cur->name);
 		if(XML_TEXT_NODE==cur->type || 0==xmlStrcmp(BAD_CAST"comment", cur->name)){
 			cur = cur->next;
 			continue;
@@ -2220,6 +2220,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						strncpy(p_column->ColumnIcon_onclick, columnicon_s.uri, sizeof(p_column->ColumnIcon_onclick)-1);
 				}
 			}
+			
 // GuideList.xml
 			else if(0==strncmp(new_xmlroute, "GuideList^", strlen("GuideList^"))){
 				if(0==strcmp(new_xmlroute, "GuideList^Date")){
@@ -2349,7 +2350,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				else
 					DEBUG("can not parse such xml route:[%s]\n",new_xmlroute);
  			}
-
 
 // ProductDesc.xml 当前投递单
 			else if(0==strncmp(new_xmlroute, "ProductDesc^", strlen("ProductDesc^"))){
@@ -2550,7 +2550,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						// 显式清理本目录，避免本次判断接收进度异常
 						char absolute_sproduct_uri[512];
 						snprintf(absolute_sproduct_uri,sizeof(absolute_sproduct_uri),"%s/%s", push_dir_get(),p->URI);
-						DEBUG("3333 clear %s for this receive task\n", absolute_sproduct_uri);
+						DEBUG("clear %s for this receive task\n", absolute_sproduct_uri);
 						remove_force(absolute_sproduct_uri);
 					}
 					else{
@@ -2790,8 +2790,9 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 	//			DEBUG("can NOT process such element '%s' in xml route '%s'\n", cur->name, xmlroute);
 		}
 		
-		if(XML_EXIT_NORMALLY==process_over || XML_EXIT_UNNECESSARY==process_over)
+		if(XML_EXIT_NORMALLY==process_over || XML_EXIT_UNNECESSARY==process_over){
 			cur = cur->next;
+		}
 		else{	// if(XML_EXIT_MOVEUP==process_over || XML_EXIT_ERROR==process_over)
 			DEBUG("process over advance !!!\n");
 			break;

@@ -425,7 +425,7 @@ static int createTable(char* name)
 	int ret = -1;
 	
 	memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT name FROM sqlite_master WHERE type='table' AND name='%q';", name);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT name FROM sqlite_master WHERE (type='table' or type='trigger') AND name='%q';", name);
 	if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg))
 	{
 		ERROROUT("read tables from database failed.");
@@ -771,14 +771,15 @@ Model	NVARCHAR(32) DEFAULT '',\
 PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoRM"))
-			{
+			{	// use 'language' instead of 'infolang'
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
 ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
-infolang	NVARCHAR(64) DEFAULT 'cho',\
+language	NVARCHAR(64) DEFAULT 'cho',\
 PublishID	NVARCHAR(64) DEFAULT '',\
 RMCategory	NVARCHAR(32) DEFAULT '',\
+Title	NVARCHAR(64) DEFAULT '',\
 Author	NVARCHAR(512) DEFAULT '',\
 Publisher	NVARCHAR(512) DEFAULT '',\
 Issue	NVARCHAR(64) DEFAULT '',\
@@ -793,7 +794,7 @@ Data	NVARCHAR(64) DEFAULT '',\
 Format	NVARCHAR(64) DEFAULT '',\
 TotalIssue	NVARCHAR(64) DEFAULT '',\
 Recommendation	NVARCHAR(1024) DEFAULT '',\
-PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
+PRIMARY KEY (ServiceID,PublicationID,language));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoApp"))
 			{
@@ -891,7 +892,7 @@ PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
 				"CREATE TRIGGER %q AFTER DELETE ON ProductDesc \
 BEGIN \
 	DELETE FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID=OLD.ProductDescID; \
-	UPDATE Publication SET ReceiveStatus='%d' WHERE ID=OLD.ProductDescID AND ReceiveStatus='%d'; \
+	UPDATE Publication SET ReceiveStatus='%d' WHERE PublicationID=OLD.ID AND ReceiveStatus='%d'; \
 END", name,RECEIVESTATUS_FAILED,RECEIVESTATUS_WAITING);
 			}
 			else if(!strcmp(name,"Preview"))
@@ -1641,10 +1642,10 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9901',ColumnType='L99',SequenceNum=1 WHERE ColumnID='L9901';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	else{
+//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9901',ColumnType='L99',SequenceNum=1 WHERE ColumnID='L9901';");
+//		sqlite_transaction_exec(sqlite_cmd);
+//	}
 	/*
 	 二级菜单“个人中心－购买信息”
 	*/
@@ -1660,10 +1661,10 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9907',ColumnType='L99',SequenceNum=2 WHERE ColumnID='L9907';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	else{
+//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9907',ColumnType='L99',SequenceNum=2 WHERE ColumnID='L9907';");
+//		sqlite_transaction_exec(sqlite_cmd);
+//	}
 	
 	/*
 	 二级菜单“选择接收”
@@ -1680,10 +1681,10 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=3 WHERE ColumnID='L9801';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	else{
+//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=3 WHERE ColumnID='L9801';");
+//		sqlite_transaction_exec(sqlite_cmd);
+//	}
 	/*
 	 二级菜单“下载状态”
 	*/
@@ -1699,10 +1700,10 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9802';");
-		sqlite_transaction_exec(sqlite_cmd);
-	}
+//	else{
+//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9802';");
+//		sqlite_transaction_exec(sqlite_cmd);
+//	}
 	/*
 	 二级菜单“富媒体分享”
 	*/
@@ -1805,7 +1806,7 @@ int localcolumn_init()
 	/*
 	 二级菜单“个人中心－帮助信息”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9808")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9908")){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',20);",
 			"L9908","L98","L98/L9908","L99","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
