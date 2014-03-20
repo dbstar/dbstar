@@ -591,6 +591,21 @@ static int need_push_monitor()
 }
 #endif
 
+// 富媒体栏目叶子节点实际上是分类，重新修改其ColumnType方便栏目过滤
+static int richmedia_columntype_edit()
+{
+	char sqlite_cmd[512];
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ColumnType='%d',Param='Classification' WHERE ColumnType='%d' AND ColumnID NOT IN (SELECT ParentID FROM Column);",COLUMN_TYPE_LEAF_BOOK,COLUMN_TYPE_BOOK);
+	sqlite_execute(sqlite_cmd);
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ColumnType='%d',Param='Classification' WHERE ColumnType='%d' AND ColumnID NOT IN (SELECT ParentID FROM Column);",COLUMN_TYPE_LEAF_MAGAZINE,COLUMN_TYPE_MAGAZINE);
+	sqlite_execute(sqlite_cmd);
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ColumnType='%d',Param='Classification' WHERE ColumnType='%d' AND ColumnID NOT IN (SELECT ParentID FROM Column);",COLUMN_TYPE_LEAF_NEWSPAPER,COLUMN_TYPE_NEWSPAPER);
+	return sqlite_execute(sqlite_cmd);
+}
+
 void column_refresh_flag_set(int flag)
 {
 	s_column_refresh = flag;
@@ -689,7 +704,11 @@ void *maintenance_thread()
 		
 		// 当栏目和界面产品发生改变时，不能直接在parse_xml()函数中通过JNI向UI发送notify，否则很容易导致Launcher死掉。
 		if(s_column_refresh>0){
-			DEBUG("column refresh\n");
+			if(1==s_column_refresh){
+				DEBUG("column refresh, edit ColumnType for RM Column secondary\n");
+				richmedia_columntype_edit();
+			}
+			
 			s_column_refresh ++;
 			if(s_column_refresh>2){
 				msg_send2_UI(STATUS_COLUMN_REFRESH, NULL, 0);

@@ -763,14 +763,15 @@ Model	NVARCHAR(32) DEFAULT '',\
 PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoRM"))
-			{
+			{	// use 'language' instead of 'infolang'
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
 ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
-infolang	NVARCHAR(64) DEFAULT 'cho',\
+language	NVARCHAR(64) DEFAULT 'cho',\
 PublishID	NVARCHAR(64) DEFAULT '',\
 RMCategory	NVARCHAR(32) DEFAULT '',\
+Title	NVARCHAR(64) DEFAULT '',\
 Author	NVARCHAR(512) DEFAULT '',\
 Publisher	NVARCHAR(512) DEFAULT '',\
 Issue	NVARCHAR(64) DEFAULT '',\
@@ -785,7 +786,7 @@ Data	NVARCHAR(64) DEFAULT '',\
 Format	NVARCHAR(64) DEFAULT '',\
 TotalIssue	NVARCHAR(64) DEFAULT '',\
 Recommendation	NVARCHAR(1024) DEFAULT '',\
-PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
+PRIMARY KEY (ServiceID,PublicationID,language));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoApp"))
 			{
@@ -875,7 +876,7 @@ PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
 				"CREATE TRIGGER %q AFTER DELETE ON ProductDesc \
 BEGIN \
 	DELETE FROM ResStr WHERE ObjectName='ProductDesc' AND EntityID=OLD.ProductDescID; \
-	UPDATE Publication SET ReceiveStatus='%d' WHERE ID=OLD.ProductDescID AND ReceiveStatus='%d'; \
+	UPDATE Publication SET ReceiveStatus='%d' WHERE PublicationID=OLD.ID AND ReceiveStatus='%d'; \
 END", name,RECEIVESTATUS_FAILED,RECEIVESTATUS_WAITING);
 			}
 			else if(!strcmp(name,"Preview"))
@@ -1110,7 +1111,7 @@ int sqlite_execute(char *exec_str)
 			ret = -1;
 		}
 		else{
-			//DEBUG("%s\n", exec_str);
+			DEBUG("%s\n", exec_str);
 			if(sqlite3_exec(g_db,exec_str,NULL,NULL,&errmsg)){
 				DEBUG("sqlite3 errmsg: %s\n", errmsg);
 				ret = -1;
@@ -1349,7 +1350,7 @@ int sqlite_transaction_exec(char *sqlite_cmd)
 		DEBUG("invalid argument\n");
 		return -1;
 	}
-//	PRINTF("%s\n", sqlite_cmd);
+	PRINTF("%s\n", sqlite_cmd);
 	
 	int ret = -1;
 	

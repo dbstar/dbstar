@@ -191,6 +191,30 @@ typedef enum{
 	PUSH_XML_FLAG_MAXLINE
 }PUSH_XML_FLAG_E;
 
+/*
+富媒体叶子栏目用于富媒体内部的分类，不是显示在栏目位置，需要特殊处理，因此自行定义了200——203
+*/
+typedef enum{
+	COLUMN_TYPE_MOVIE = 1,
+	COLUMN_TYPE_TVSERIAL = 2,
+	COLUMN_TYPE_BOOK = 3,
+	COLUMN_TYPE_MAGAZINE = 4,
+	COLUMN_TYPE_NEWSPAPER = 5,
+	COLUMN_TYPE_MUSIC = 6,
+	COLUMN_TYPE_CARTOON = 7,
+	COLUMN_TYPE_FLASH = 8,
+	COLUMN_TYPE_APP = 9,
+	COLUMN_TYPE_WEBSITE = 10,
+	
+	COLUMN_TYPE_MYCENTER = 101,
+	COLUMN_TYPE_SETTINGS = 102,
+	COLUMN_TYPE_SMARTPOWER = 103,
+	COLUMN_TYPE_SMARTHOME = 104,
+	
+	COLUMN_TYPE_LEAF_BOOK = 200,
+	COLUMN_TYPE_LEAF_MAGAZINE = 201,
+	COLUMN_TYPE_LEAF_NEWSPAPER = 202,
+}COLUMN_TYPE_E;
 
 /*
 	若兄弟节点中，只需要处理本节点内部信息，完毕后不需要继续扫描其余兄弟节点，则置process_over为1。
@@ -293,7 +317,6 @@ typedef enum{
 	RMCATEGORY_MAGAZINE = 2,
 	RMCATEGORY_NEWSPAPER = 3
 }RMCATEGORY_E;
-
 
 /*
 本地测试push时使用（针对hytd.ts播发流），正常情况下关闭此宏。
@@ -539,6 +562,7 @@ typedef struct{
 	char	Format[64];
 	char	TotalIssue[64];
 	char	Recommendation[1024];
+	char	Title[256];			// Publication.xml本没有这个字段，但是早期的DbstarLauncher却从Title中取值，这里临时由dvbpush变通兼容，将SetName拷贝到Title中
 	
 	// SetInfo节点临时存储在DBSTAR_MULTIPLELANGUAGEINFORM_S，等处理完毕后要先拷贝为DBSTAR_PUBLICATION_S，然后通过DBSTAR_PUBLICATION_S存储到数据库之Publication表中
 	char	SetID[64];

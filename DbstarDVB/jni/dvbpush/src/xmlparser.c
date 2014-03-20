@@ -131,7 +131,7 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 #else
 	// use sqlite3_snprintf instead of snprintf, Note that the order of the first two parameters is reversed from snprintf(). This is an historical accident that cannot be fixed without breaking backwards compatibility.
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd), sqlite_cmd, "REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q','%q');",
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q','%q');",
 		p->ServiceID, p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
 #endif
 
@@ -726,34 +726,58 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 		}
 	}
 	
-// 判断是否为“报纸”类型，若是，则解压epub(zip)
+// 判断为“报纸”类型，则：
+//（1）解压epub(zip)，并将解压后的目录uri作为FileURI入库；
+//（2）如果SetID以1打头，如：10017等，则在SetID前加字母a。
+//		DbstarLauncher实现有误，如果SetID以1打头，则报纸的第一级栏目（实际上是SetID的父分类）无法显示名称。
+//		由dvbpush临时兼容，后续由DbstarLauncher修改
 	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType) && RMCATEGORY_NEWSPAPER==atoi(p->RMCategory)){
 		char epub_file_uri[1024];
 		char epub_dir_uri[1024];
 		char *epub_suffix = NULL;
 		char unzip_cmd[1024];
 		
-		snprintf(epub_file_uri,sizeof(epub_file_uri),"%s/%s",push_dir_get(),p->FileURI);
+		if('/'==p->FileURI[0])
+			snprintf(epub_file_uri,sizeof(epub_file_uri),"%s%s",push_dir_get(),p->FileURI);
+		else
+			snprintf(epub_file_uri,sizeof(epub_file_uri),"%s/%s",push_dir_get(),p->FileURI);
 		PRINTF("newspaper publication, unzip %s\n",epub_file_uri);
 		
 		snprintf(epub_dir_uri,sizeof(epub_dir_uri),"%s",epub_file_uri);
 		epub_suffix = strrchr(epub_dir_uri,'.');
 		if(epub_suffix && strncasecmp(epub_dir_uri,".epub",5)){
+			*epub_suffix = '/';
+			epub_suffix++;
 			*epub_suffix = '\0';
 			
 			remove_force(epub_dir_uri);
-			dir_stat_ensure(epub_dir_uri);
+			dir_exist_ensure(epub_dir_uri);
 			
 			snprintf(unzip_cmd,sizeof(unzip_cmd),"unzip %s -d %s",epub_file_uri,epub_dir_uri);
+			DEBUG("system(%s)\n",unzip_cmd);
 			system(unzip_cmd);
+			
+			// 报纸epub解压后，存入数据库的FileURI为解压目录的路径
+			epub_suffix = strrchr(p->FileURI,'.');
+			*epub_suffix = '\0';
 		}
 		else{
 			PRINTF("this newspaper content file is not epub!!!\n");
 			return -1;
 		}
+		
+// 下面是一个临时规避措施，实际上应当由Android来解决这个bug
+		if('1'==p->SetID[0]){
+			char tmp_setid[128];
+			
+			snprintf(tmp_setid,sizeof(tmp_setid),"a%s",p->SetID);
+			DEBUG("SetID(%s) is starting by 1, add char a as %s", p->SetID,tmp_setid);
+			
+			snprintf(p->SetID,sizeof(p->SetID),"%s",tmp_setid);
+		}
 	}
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd),"UPDATE Publication SET PublicationType='%s',IsReserved='%s',Visible='%s',DRMFile='%s',FileID='%s',FileSize='%s',FileURI='%s',FileType='%s',Duration='%s',Resolution='%s',BitRate='%s',FileFormat='%s',CodeFormat='%s',SetID='%s',SetName='%s',SetDesc='%s',SetPosterID='%s',SetPosterName='%s',SetPosterURI='%s',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%s';",
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Publication SET PublicationType='%q',IsReserved='%q',Visible='%q',DRMFile='%q',FileID='%q',FileSize='%q',FileURI='%q',FileType='%q',Duration='%q',Resolution='%q',BitRate='%q',FileFormat='%q',CodeFormat='%q',SetID='%q',SetName='%q',SetDesc='%q',SetPosterID='%q',SetPosterName='%q',SetPosterURI='%q',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%q';",
 		p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,p->SetID,p->SetName,p->SetDesc,p->SetPosterID,p->SetPosterName,p->SetPosterURI,receive_status_tmp,p->PublicationID);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
@@ -787,8 +811,8 @@ static int publicationrm_info_insert(DBSTAR_MULTIPLELANGUAGEINFORM_S *p)
 	}
 	
 	char sqlite_cmd[8192];
-	sqlite3_snprintf(sizeof(sqlite_cmd),"REPLACE INTO MultipleLanguageInfoRM(PublicationID,infolang,PublishID,RMCategory,Author,Publisher,Issue,Keywords,Description,PublishDate,PublishWeek,PublishPlace,CopyrightInfo,TotalEdition,Data,Format,TotalIssue,Recommendation) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');",
-		p->PublicationID,p->infolang,p->PublishID,p->RMCategory,p->Author,p->Publisher,p->Issue,p->Keywords,p->Description,p->PublishDate,p->PublishWeek,p->PublishPlace,p->CopyrightInfo,p->TotalEdition,p->Data,p->Format,p->TotalIssue,p->Recommendation);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO MultipleLanguageInfoRM(PublicationID,language,PublishID,RMCategory,Author,Publisher,Issue,Keywords,Description,PublishDate,PublishWeek,PublishPlace,CopyrightInfo,TotalEdition,Data,Format,TotalIssue,Recommendation,Title) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q');",
+		p->PublicationID,p->infolang,p->PublishID,p->RMCategory,p->Author,p->Publisher,p->Issue,p->Keywords,p->Description,p->PublishDate,p->PublishWeek,p->PublishPlace,p->CopyrightInfo,p->TotalEdition,p->Data,p->Format,p->TotalIssue,p->Recommendation,p->Title);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -1446,7 +1470,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 	
 	cur = cur->xmlChildrenNode;
 	while (cur != NULL) {
-		//DEBUG("%s cur->name:%s\n", XML_TEXT_NODE==cur->type?"XML_TEXT_NODE":"not XML_TEXT_NODE", cur->name);
+//		DEBUG("%s cur->name:%s\n", XML_TEXT_NODE==cur->type?"XML_TEXT_NODE":"not XML_TEXT_NODE", cur->name);
 		if(XML_TEXT_NODE==cur->type || 0==xmlStrcmp(BAD_CAST"comment", cur->name)){
 			cur = cur->next;
 			continue;
@@ -1475,7 +1499,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 		
 		if(0==uniform_parse){
 			snprintf(new_xmlroute, sizeof(new_xmlroute), "%s^%s", xmlroute, cur->name);
-			//PRINTF("XML route: %s\n", new_xmlroute);
+			PRINTF("XML route: %s\n", new_xmlroute);
 			
 // Initialize.xml
 			if(0==strncmp(new_xmlroute, "Initialize^", strlen("Initialize^"))){
@@ -1994,19 +2018,16 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					xmlFree(szKey);
 				}
 				
-				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile")
-						|| 0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile")){
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile")){
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
-				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileID")
-						|| 0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileID")){
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileID")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
 					strncpy(p->FileID, (char *)szKey, sizeof(p->FileID)-1);
 					xmlFree(szKey);
 				}
-				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileNames")
-						|| 0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileNames")){
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileNames")){
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileNames^FileName")
@@ -2029,15 +2050,13 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					
 					resstr_insert(&resstr_s);
 				}
-				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileType")
-						|| 0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileType")){
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileType")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
 					strncpy(p->FileType, (char *)szKey, sizeof(p->FileType)-1);
 					xmlFree(szKey);
 				}
-				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileSize")
-						|| 0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileSize")){
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileSize")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
 					strncpy(p->FileSize, (char *)szKey, sizeof(p->FileSize)-1);
@@ -2049,8 +2068,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					strncpy(p->Duration, (char *)szKey, sizeof(p->Duration)-1);
 					xmlFree(szKey);
 				}
-				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileURI")
-						|| 0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileURI")){
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileURI")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
 					strncpy(p->FileURI, (char *)szKey, sizeof(p->FileURI)-1);
@@ -2066,13 +2084,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
 					strncpy(p->BitRate, (char *)szKey, sizeof(p->BitRate)-1);
-					xmlFree(szKey);
-				}
-				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileFormat")
-						|| 0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileFormat")){
-					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
-					szKey = xmlNodeGetContent(cur);
-					strncpy(p->FileFormat, (char *)szKey, sizeof(p->FileFormat)-1);
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileFormat")){
@@ -2256,49 +2267,51 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				
 				// SetInfo in PublicationRM's MultipleLanguageInfo
 				// SetInfo节点临时存储在DBSTAR_MULTIPLELANGUAGEINFORM_S，等处理完毕后要先拷贝为DBSTAR_PUBLICATION_S，然后通过DBSTAR_PUBLICATION_S存储到数据库之Publication表中
-					else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo")){
-						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
-					}
-					else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^SetID")){
-						DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
-						szKey = xmlNodeGetContent(cur);
-						snprintf(p->SetID, sizeof(p->SetID), "%s", (char *)szKey);
-						xmlFree(szKey);
-					}
-					else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^SetName")){
-						DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
-						szKey = xmlNodeGetContent(cur);
-						snprintf(p->SetName, sizeof(p->SetName), "%s", (char *)szKey);
-						xmlFree(szKey);
-					}
-					else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^SetDesc")){
-						DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
-						szKey = xmlNodeGetContent(cur);
-						snprintf(p->SetDesc, sizeof(p->SetDesc), "%s", (char *)szKey);
-						xmlFree(szKey);
-					}
-					else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster")){
-						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
-					}
-					else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster^PosterID")){
-						DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
-						szKey = xmlNodeGetContent(cur);
-						snprintf(p->SetPosterID, sizeof(p->SetPosterID), "%s", (char *)szKey);
-						xmlFree(szKey);
-					}
-					else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster^PosterName")){
-						DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
-						szKey = xmlNodeGetContent(cur);
-						snprintf(p->SetPosterName, sizeof(p->SetPosterName), "%s", (char *)szKey);
-						xmlFree(szKey);
-					}
-					else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster^PosterURI")){
-						DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
-						szKey = xmlNodeGetContent(cur);
-						snprintf(p->SetPosterURI, sizeof(p->SetPosterURI), "%s", (char *)szKey);
-						xmlFree(szKey);
-					}
-				
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo")){
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^SetID")){
+					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->SetID, sizeof(p->SetID), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^SetName")){
+					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->SetName, sizeof(p->SetName), "%s", (char *)szKey);
+					xmlFree(szKey);
+					
+					DEBUG("Compatible for early DbstarLauncher, add column Title\n");
+					snprintf(p->Title, sizeof(p->Title), "%s", p->SetName);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^SetDesc")){
+					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->SetDesc, sizeof(p->SetDesc), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster")){
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster^PosterID")){
+					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->SetPosterID, sizeof(p->SetPosterID), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster^PosterName")){
+					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->SetPosterName, sizeof(p->SetPosterName), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster^PosterURI")){
+					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->SetPosterURI, sizeof(p->SetPosterURI), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
 				
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^Posters")){
 					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
@@ -2390,9 +2403,70 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(p->Recommendation, sizeof(p->Recommendation), "%s", (char *)szKey);
 					xmlFree(szKey);
 				}
+				
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile")){
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileID")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->FileID, (char *)szKey, sizeof(p->FileID)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileNames")){
+					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileNames^FileName")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					
+					DBSTAR_RESSTR_S resstr_s;
+					memset(&resstr_s, 0, sizeof(resstr_s));
+					
+					snprintf(resstr_s.ServiceID,sizeof(resstr_s.ServiceID),"%s",p->ServiceID);
+					strncpy(resstr_s.ObjectName, OBJ_MFILE, sizeof(resstr_s.ObjectName)-1);
+					//DEBUG("ProductID: %s\n", p_product->ProductID);
+					if(strlen(p->PublicationID)>0)
+						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s", p->PublicationID);
+					else
+						snprintf(resstr_s.EntityID, sizeof(resstr_s.EntityID), "%s%s", OBJID_PAUSE, OBJ_MFILE);
+					strncpy(resstr_s.StrName, "FileName", sizeof(resstr_s.StrName)-1);
+					
+					parseProperty(cur, new_xmlroute, (void *)(&resstr_s));
+					
+					resstr_insert(&resstr_s);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileType")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->FileType, (char *)szKey, sizeof(p->FileType)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileSize")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->FileSize, (char *)szKey, sizeof(p->FileSize)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileURI")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->FileURI, (char *)szKey, sizeof(p->FileURI)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^FileFormat")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->FileFormat, (char *)szKey, sizeof(p->FileFormat)-1);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MFile^CodeFormat")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->CodeFormat, (char *)szKey, sizeof(p->CodeFormat)-1);
+					xmlFree(szKey);
+				}
 				else
 					PRINTF("CAN NOT proccess such %s\n",new_xmlroute);
-				
 			}
 			
 // Column.xml
@@ -2471,6 +2545,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						strncpy(p_column->ColumnIcon_onclick, columnicon_s.uri, sizeof(p_column->ColumnIcon_onclick)-1);
 				}
 			}
+			
 // GuideList.xml
 			else if(0==strncmp(new_xmlroute, "GuideList^", strlen("GuideList^"))){
 				if(0==strcmp(new_xmlroute, "GuideList^Date")){
@@ -2600,7 +2675,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				else
 					DEBUG("can not parse such xml route:[%s]\n",new_xmlroute);
  			}
-
 
 // ProductDesc.xml 当前投递单
 			else if(0==strncmp(new_xmlroute, "ProductDesc^", strlen("ProductDesc^"))){
@@ -2801,7 +2875,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						// 显式清理本目录，避免本次判断接收进度异常
 						char absolute_sproduct_uri[512];
 						snprintf(absolute_sproduct_uri,sizeof(absolute_sproduct_uri),"%s/%s", push_dir_get(),p->URI);
-						DEBUG("3333 clear %s for this receive task\n", absolute_sproduct_uri);
+						DEBUG("clear %s for this receive task\n", absolute_sproduct_uri);
 						remove_force(absolute_sproduct_uri);
 					}
 					else{
@@ -3036,15 +3110,16 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 			}
 			
+			else
+				DEBUG("can NOT process such element '%s' in xml route '%s'\n", cur->name, xmlroute);
 			
-	//		else
-	//			DEBUG("can NOT process such element '%s' in xml route '%s'\n", cur->name, xmlroute);
 		}
 		
-		if(XML_EXIT_NORMALLY==process_over || XML_EXIT_UNNECESSARY==process_over)
+		if(XML_EXIT_NORMALLY==process_over || XML_EXIT_UNNECESSARY==process_over){
 			cur = cur->next;
+		}
 		else{	// if(XML_EXIT_MOVEUP==process_over || XML_EXIT_ERROR==process_over)
-			DEBUG("process over advance !!!\n");
+//			DEBUG("process over advance !!!\n");
 			break;
 		}
 	}
