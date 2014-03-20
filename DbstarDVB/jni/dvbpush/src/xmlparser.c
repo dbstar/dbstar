@@ -383,7 +383,7 @@ unsigned long long recv_totalsize_sum_get()
 		s_recv_totalsize_sum = DOWNLOAD_ONCE_MIN;
 	}
 	else
-		DEBUG("recv totalsize sum %llu Mbytes\n",s_recv_totalsize_sum);
+		DEBUG("recv totalsize sum %llu Bytes\n",s_recv_totalsize_sum);
 	
 	return s_recv_totalsize_sum;
 }
@@ -413,6 +413,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		return -1;
 	}
 	
+	char direct_uri[1024];
 	char sqlite_cmd[4096];
 	unsigned long long this_total_size = 0LL;
 	
@@ -467,6 +468,10 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	}
 	
 	if(RECEIVESTATUS_WAITING==receive_status){
+		// 准备接收前先删除旧有目录，防止push库判断异常。
+		snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
+		remove_force(direct_uri);
+		
 		this_total_size = 0LL;
 		sscanf(ptr->TotalSize,"%llu", &this_total_size);
 		s_recv_totalsize_sum += this_total_size;
@@ -2092,6 +2097,12 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					strncpy(p->FileFormat, (char *)szKey, sizeof(p->FileFormat)-1);
 					xmlFree(szKey);
 				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^FileFormat")){
+					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					strncpy(p->FileFormat, (char *)szKey, sizeof(p->FileFormat)-1);
+					xmlFree(szKey);
+				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^MFile^CodeFormat")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
@@ -3119,7 +3130,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 			cur = cur->next;
 		}
 		else{	// if(XML_EXIT_MOVEUP==process_over || XML_EXIT_ERROR==process_over)
-//			DEBUG("process over advance !!!\n");
+			DEBUG("process over advance !!!\n");
 			break;
 		}
 	}

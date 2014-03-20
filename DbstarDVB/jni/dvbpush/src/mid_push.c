@@ -1584,9 +1584,8 @@ int disk_space_check()
 	}
 	else{
 		unsigned long long need_storage = hd_forewarning(tt_size) + recv_totalsize_sum_get();
-		DEBUG("HardDisc %s enable, total_size: %llu, free_size: %llu\n",push_dir_get(),tt_size,free_size);
-		DEBUG("no need to clean hd, has free: %llu; need storage: %llu (forewarning: %llu, will recv: %llu)\n", 
-					free_size, need_storage, hd_forewarning(tt_size), recv_totalsize_sum_get());
+		DEBUG("HardDisc %s enable, total_size: %llu, has free: %llu; need storage: %llu (forewarning: %llu, will recv: %llu)\n", 
+					push_dir_get(),tt_size,free_size, need_storage, hd_forewarning(tt_size), recv_totalsize_sum_get());
 		if(free_size<=need_storage){
 			s_should_clean_hd = need_storage - free_size;
 			DEBUG("should cleaning hd %llu B...\n",s_should_clean_hd);
@@ -1595,8 +1594,7 @@ int disk_space_check()
 			ret = 0;
 		}
 		else{
-			DEBUG("no need to clean hd, has free: %llu; need storage: %llu (forewarning: %llu, will recv: %llu)\n", 
-					free_size, need_storage, hd_forewarning(tt_size), recv_totalsize_sum_get());
+			DEBUG("no need to clean hd\n");
 			ret = 1;
 		}
 	}

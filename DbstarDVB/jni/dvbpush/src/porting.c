@@ -736,14 +736,14 @@ static int clear_wild_prog_cb(char **result, int row, int column, void *receiver
 								*p_slash_tail = '\0';
 							
 							if(0==strcmp(publication_dir,ptr->d_name)){
-								DEBUG("confirm %s dir %s/%s\n",result[i*column+0],pushfile_uri,ptr->d_name);
+								DEBUG("confirm %s uri %s/%s\n",result[i*column+0],pushfile_uri,ptr->d_name);
 								break;
 							}
 						}
 					}
 					
 					if(i==(row+1)){
-						DEBUG("wild dir %s/%s\n",pushfile_uri,ptr->d_name);
+						DEBUG("wild uri %s/%s\n",pushfile_uri,ptr->d_name);
 						snprintf(publication_uri,sizeof(publication_uri),"%s/%s",pushfile_uri,ptr->d_name);
 						if(0==remove_force(publication_uri)){
 							DEBUG("clear wild prog %s success\n", publication_uri);

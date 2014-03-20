@@ -157,10 +157,10 @@ typedef enum{
 #define DBDATASERVERPORT_DFT		"4321"
 #define TUNERARGS_DFT				"12620\t43200\t11300\t0\t0"
 
-// 至少留出约100G剩余空间，在实际使用时，是采用硬盘的实际总大小计算的，此值一般用不上。
-#define HDFOREWARNING_DFT			(102400000LL)
-// 每个播发单修正其总大小约32G
-#define DOWNLOAD_ONCE_MIN			(32768000LL)
+// 至少留出100G剩余空间，在实际使用时，是采用硬盘的实际总大小计算的，此值一般用不上。
+#define HDFOREWARNING_DFT			(107374182400LL)
+// 每个播发单修正其总大小32G
+#define DOWNLOAD_ONCE_MIN			(34359738368LL)
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
@@ -321,7 +321,7 @@ typedef enum{
 /*
 本地测试push时使用（针对hytd.ts播发流），正常情况下关闭此宏。
 */
-//#define LOCAL_PUSH_TEST
+//#define PUSH_LOCAL_TEST
 
 typedef struct{
 	char	Name[64];

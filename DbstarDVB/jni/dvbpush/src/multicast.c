@@ -758,7 +758,7 @@ int softdvb_init()
 	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
 	DEBUG("set ca filter, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
-#ifdef LOCAL_PUSH_TEST
+#ifdef PUSH_LOCAL_TEST
 	// prog/video
 	unsigned short video_pid = 123;
 	int filter5 = alloc_filter(video_pid, 1);
@@ -813,7 +813,7 @@ int softdvb_uninit()
 	ret = free_filter(root_pid);
 	DEBUG("free pid %d return with %d\n", root_pid, ret);
 	
-#ifdef LOCAL_PUSH_TEST
+#ifdef PUSH_LOCAL_TEST
 	// prog/video
 	unsigned short video_pid = 123;
 	ret = free_filter(video_pid);
