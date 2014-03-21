@@ -733,9 +733,8 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 	
 // 判断为“报纸”类型，则：
 //（1）解压epub(zip)，并将解压后的目录uri作为FileURI入库；
-//（2）如果SetID以1打头，如：10017等，则在SetID前加字母a。
-//		DbstarLauncher实现有误，如果SetID以1打头，则报纸的第一级栏目（实际上是SetID的父分类）无法显示名称。
-//		由dvbpush临时兼容，后续由DbstarLauncher修改
+//（2）DbstarLauncher实现有bug，目前发现如果SetID以1打头，则报纸的第一级栏目（实际上是SetID的父分类）无法显示名称。如果是5打头则无显示问题。
+//		临时由dvbpush兼容，将所有的报纸SetID前均添加字母a，后续由DbstarLauncher修改
 	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType) && RMCATEGORY_NEWSPAPER==atoi(p->RMCategory)){
 		char epub_file_uri[1024];
 		char epub_dir_uri[1024];
@@ -772,11 +771,16 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 		}
 		
 // 下面是一个临时规避措施，实际上应当由Android来解决这个bug
-		if('1'==p->SetID[0]){
+		// if('1'==p->SetID[0])
+		// 统一处理，将所有报纸的SetID前均添加a
+		{
 			char tmp_setid[128];
 			
 			snprintf(tmp_setid,sizeof(tmp_setid),"a%s",p->SetID);
-			DEBUG("SetID(%s) is starting by 1, add char a as %s", p->SetID,tmp_setid);
+			
+			DEBUG("add char 'a' before SetID(%s), as result %s", p->SetID,tmp_setid);
+			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE PublicationsSet SET SetID='%q' WHERE SetID='%q';",tmp_setid,p->SetID);
+			sqlite_transaction_exec(sqlite_cmd);
 			
 			snprintf(p->SetID,sizeof(p->SetID),"%s",tmp_setid);
 		}
@@ -1740,6 +1744,11 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					parseProperty(cur, new_xmlroute, (void *)(&resstr_s));
 						
 					resstr_insert(&resstr_s);
+					
+					if(0==strcmp(resstr_s.StrLang,language_get())){
+						snprintf(p->PublicationName,sizeof(p->PublicationName),"%s",resstr_s.StrValue);
+						DEBUG("will transit PublicationName: %s,%s\n",language_get(),p->PublicationName);
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationType")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
@@ -2220,6 +2229,9 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(info_rm_s.ServiceID, sizeof(info_rm_s.ServiceID), "%s", p->ServiceID);
 					snprintf(info_rm_s.PublicationID, sizeof(info_rm_s.PublicationID), "%s", p->PublicationID);
 					
+					DEBUG("Compatible for early DbstarLauncher, add 'Title' from PublicationName values (%s)\n",p->PublicationName);
+					snprintf(info_rm_s.Title, sizeof(info_rm_s.Title), "%s", p->PublicationName);
+					
 					parseProperty(cur, new_xmlroute, (void *)&info_rm_s);
 					parseNode(doc, cur, new_xmlroute, (void *)&info_rm_s, NULL, NULL, NULL);
 					publicationrm_info_insert(&info_rm_s);
@@ -2292,9 +2304,6 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(p->SetName, sizeof(p->SetName), "%s", (char *)szKey);
 					xmlFree(szKey);
-					
-					DEBUG("Compatible for early DbstarLauncher, add column Title\n");
-					snprintf(p->Title, sizeof(p->Title), "%s", p->SetName);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^SetDesc")){
 					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;

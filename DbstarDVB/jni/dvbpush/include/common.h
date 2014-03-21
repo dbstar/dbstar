@@ -61,13 +61,13 @@ typedef enum{
 //#define SMARTLIFE_LC
 
 // 本地栏目：富媒体分享
-//#define MEDIASHARING_LC
+#define MEDIASHARING_LC
 
 // 本地栏目：文件浏览
 #define FILEBROWSER_LC
 
 // 本地栏目：我的应用
-#define MYAPP_LC
+//#define MYAPP_LC
 
 // 本地栏目：浏览器
 //#define WEBBROWSER_LC
@@ -499,6 +499,7 @@ typedef struct{
 typedef struct{
 	char	ServiceID[64];
 	char	PublicationID[64];
+	char	PublicationName[512];	// 不入库，只中转传递默认语言cho的PublicationName到DBSTAR_MULTIPLELANGUAGEINFORM_S中的Title
 	char	PublicationType[64];
 	char	IsReserved[32];
 	char	Visible[32];
@@ -562,7 +563,7 @@ typedef struct{
 	char	Format[64];
 	char	TotalIssue[64];
 	char	Recommendation[1024];
-	char	Title[256];			// Publication.xml本没有这个字段，但是早期的DbstarLauncher却从Title中取值，这里临时由dvbpush变通兼容，将SetName拷贝到Title中
+	char	Title[256];			// Publication.xml本没有这个字段，但是早期的DbstarLauncher却从Title中取值，这里临时由dvbpush变通兼容，将PublicationName拷贝到Title中
 	
 	// SetInfo节点临时存储在DBSTAR_MULTIPLELANGUAGEINFORM_S，等处理完毕后要先拷贝为DBSTAR_PUBLICATION_S，然后通过DBSTAR_PUBLICATION_S存储到数据库之Publication表中
 	char	SetID[64];
