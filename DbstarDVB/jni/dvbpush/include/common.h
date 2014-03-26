@@ -499,7 +499,7 @@ typedef struct{
 typedef struct{
 	char	ServiceID[64];
 	char	PublicationID[64];
-	char	PublicationName[512];	// 不入库，只中转传递默认语言cho的PublicationName到DBSTAR_MULTIPLELANGUAGEINFORM_S中的Title
+	char	PublicationName[512];	// 不入库，只中转传递默认语言cho的PublicationName，本来打算用到DBSTAR_MULTIPLELANGUAGEINFORM_S中的Title，但是哏屁不用了
 	char	PublicationType[64];
 	char	IsReserved[32];
 	char	Visible[32];
@@ -563,7 +563,8 @@ typedef struct{
 	char	Format[64];
 	char	TotalIssue[64];
 	char	Recommendation[1024];
-	char	Title[256];			// Publication.xml本没有这个字段，但是早期的DbstarLauncher却从Title中取值，这里临时由dvbpush变通兼容，将PublicationName拷贝到Title中
+	char	Words[32];			// 字数，“图书”时有用
+	char	Title[256];			// Publication.xml本没有这个字段，但是早期的DbstarLauncher却从Title中取值，这里临时由dvbpush变通兼容，将SetName拷贝到Title中
 	
 	// SetInfo节点临时存储在DBSTAR_MULTIPLELANGUAGEINFORM_S，等处理完毕后要先拷贝为DBSTAR_PUBLICATION_S，然后通过DBSTAR_PUBLICATION_S存储到数据库之Publication表中
 	char	SetID[64];

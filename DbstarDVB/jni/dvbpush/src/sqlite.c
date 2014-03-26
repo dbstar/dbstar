@@ -794,6 +794,7 @@ Data	NVARCHAR(64) DEFAULT '',\
 Format	NVARCHAR(64) DEFAULT '',\
 TotalIssue	NVARCHAR(64) DEFAULT '',\
 Recommendation	NVARCHAR(1024) DEFAULT '',\
+Words	NVARCHAR(32) DEFAULT '',\
 PRIMARY KEY (ServiceID,PublicationID,language));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoApp"))

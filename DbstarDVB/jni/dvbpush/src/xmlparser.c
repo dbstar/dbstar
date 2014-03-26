@@ -820,8 +820,8 @@ static int publicationrm_info_insert(DBSTAR_MULTIPLELANGUAGEINFORM_S *p)
 	}
 	
 	char sqlite_cmd[8192];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO MultipleLanguageInfoRM(PublicationID,language,PublishID,RMCategory,Author,Publisher,Issue,Keywords,Description,PublishDate,PublishWeek,PublishPlace,CopyrightInfo,TotalEdition,Data,Format,TotalIssue,Recommendation,Title) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q');",
-		p->PublicationID,p->infolang,p->PublishID,p->RMCategory,p->Author,p->Publisher,p->Issue,p->Keywords,p->Description,p->PublishDate,p->PublishWeek,p->PublishPlace,p->CopyrightInfo,p->TotalEdition,p->Data,p->Format,p->TotalIssue,p->Recommendation,p->Title);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO MultipleLanguageInfoRM(PublicationID,language,PublishID,RMCategory,Author,Publisher,Issue,Keywords,Description,PublishDate,PublishWeek,PublishPlace,CopyrightInfo,TotalEdition,Data,Format,TotalIssue,Recommendation,Words,Title) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q');",
+		p->PublicationID,p->infolang,p->PublishID,p->RMCategory,p->Author,p->Publisher,p->Issue,p->Keywords,p->Description,p->PublishDate,p->PublishWeek,p->PublishPlace,p->CopyrightInfo,p->TotalEdition,p->Data,p->Format,p->TotalIssue,p->Recommendation,p->Words,p->Title);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -1745,10 +1745,12 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						
 					resstr_insert(&resstr_s);
 					
+#ifdef GET_TITLE_FROM_PUBLICATIONNAME
 					if(0==strcmp(resstr_s.StrLang,language_get())){
 						snprintf(p->PublicationName,sizeof(p->PublicationName),"%s",resstr_s.StrValue);
 						DEBUG("will transit PublicationName: %s,%s\n",language_get(),p->PublicationName);
 					}
+#endif
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationType")){
 					DBSTAR_PUBLICATION_S *p = (DBSTAR_PUBLICATION_S *)ptr;
@@ -2229,8 +2231,10 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(info_rm_s.ServiceID, sizeof(info_rm_s.ServiceID), "%s", p->ServiceID);
 					snprintf(info_rm_s.PublicationID, sizeof(info_rm_s.PublicationID), "%s", p->PublicationID);
 					
+#ifdef GET_TITLE_FROM_PUBLICATIONNAME
 					DEBUG("Compatible for early DbstarLauncher, add 'Title' from PublicationName values (%s)\n",p->PublicationName);
 					snprintf(info_rm_s.Title, sizeof(info_rm_s.Title), "%s", p->PublicationName);
+#endif
 					
 					parseProperty(cur, new_xmlroute, (void *)&info_rm_s);
 					parseNode(doc, cur, new_xmlroute, (void *)&info_rm_s, NULL, NULL, NULL);
@@ -2304,6 +2308,9 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					szKey = xmlNodeGetContent(cur);
 					snprintf(p->SetName, sizeof(p->SetName), "%s", (char *)szKey);
 					xmlFree(szKey);
+					
+					DEBUG("Compatible for early DbstarLauncher, add 'Title' from SetName values (%s)\n",p->SetName);
+					snprintf(p->Title, sizeof(p->Title), "%s", p->SetName);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^SetDesc")){
 					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
@@ -2421,6 +2428,12 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
 					snprintf(p->Recommendation, sizeof(p->Recommendation), "%s", (char *)szKey);
+					xmlFree(szKey);
+				}
+				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^Words")){
+					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
+					szKey = xmlNodeGetContent(cur);
+					snprintf(p->Words, sizeof(p->Words), "%s", (char *)szKey);
 					xmlFree(szKey);
 				}
 				
