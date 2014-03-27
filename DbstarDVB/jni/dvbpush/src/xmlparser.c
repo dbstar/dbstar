@@ -2379,7 +2379,44 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^PublishDate")){
 					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
 					szKey = xmlNodeGetContent(cur);
+					
 					snprintf(p->PublishDate, sizeof(p->PublishDate), "%s", (char *)szKey);
+					
+					// 纯粹为了兼容产品发布系统的垃圾格式：20140304兼容为2014-03-04
+					// DbstarLauncher也奇怪，格式不对直接异常退出，鲁棒性太差
+					if(10!=strlen(p->PublishDate)){
+						DEBUG("unusual PublishDate(%s), try to translate it\n", p->PublishDate);
+						
+						char tmp_publishdate[32];
+						char *p_publishdate = NULL;
+						char tmp_date[8];
+						
+						snprintf(tmp_publishdate, sizeof(tmp_publishdate), "%s", p->PublishDate);
+						p_publishdate = tmp_publishdate;
+						
+						snprintf(tmp_date, 5, "%s", p_publishdate);	// year
+						if(atoi(tmp_date)>2000 && atoi(tmp_date)<3000)
+							snprintf(p->PublishDate, sizeof(p->PublishDate), "%s", tmp_date);
+						else
+							snprintf(p->PublishDate, sizeof(p->PublishDate), "2014");
+						
+						p_publishdate += 4;
+						snprintf(tmp_date, 3, "%s", p_publishdate);	// month
+						if(atoi(tmp_date)>0 && atoi(tmp_date)<13)
+							snprintf(p->PublishDate+strlen(p->PublishDate), sizeof(p->PublishDate)-strlen(p->PublishDate), "-%s", tmp_date);
+						else
+							snprintf(p->PublishDate+strlen(p->PublishDate), sizeof(p->PublishDate)-strlen(p->PublishDate), "-06");
+						
+						p_publishdate += 2;
+						snprintf(tmp_date, 3, "%s", p_publishdate);	// day
+						if(atoi(tmp_date)>0 && atoi(tmp_date)<32)
+							snprintf(p->PublishDate+strlen(p->PublishDate), sizeof(p->PublishDate)-strlen(p->PublishDate), "-%s", tmp_date);
+						else
+							snprintf(p->PublishDate+strlen(p->PublishDate), sizeof(p->PublishDate)-strlen(p->PublishDate), "-06");
+						
+						DEBUG("translate PublishDate as %s\n", p->PublishDate);
+					}
+					
 					xmlFree(szKey);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^PublishWeek")){
