@@ -21,6 +21,8 @@
 #include "mid_push.h"
 #include "sha_verify.h"
 #include "tunerdmx.h"
+#include "sqlite3.h"
+#include "sqlite.h"
 
 int loader_dsc_fid;
 int tdt_dsc_fid = -1;;
@@ -306,7 +308,7 @@ int tuner_init()
 		TUNER_SETTINGS tuner_s;
 		
 		memset(tuner_args,0,sizeof(tuner_args));
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s'",GLB_NAME_TUNERARGS);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q'",GLB_NAME_TUNERARGS);
 		
 		if(0==str_sqlite_read(tuner_args,sizeof(tuner_args),sqlite_cmd)){
 			DEBUG("get user tuner args: %s\n",tuner_args);
@@ -314,7 +316,7 @@ int tuner_init()
 		else{
 			DEBUG("get user tuner args failed\n");
 			memset(tuner_args,0,sizeof(tuner_args));
-			snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s'",GLB_NAME_TUNERARGS_DFT);
+			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q'",GLB_NAME_TUNERARGS_DFT);
 			if(0==str_sqlite_read(tuner_args,sizeof(tuner_args),sqlite_cmd)){
 				DEBUG("get default tuner args: %s\n",tuner_args);
 			}
@@ -391,6 +393,7 @@ int TC_alloc_filter(unsigned short pid, Filter_param* sparam, AM_DMX_DataCb hdle
     return fid;
 }
 
+#if 0
 static void* dvr_data_thread(void *arg)
 {
 	DVRFeedData *dd = (DVRFeedData*)arg;
@@ -425,7 +428,8 @@ static void* dvr_data_thread(void *arg)
 		}
 		
 		p_write += cnt;
-        if (p_write >= MULTI_BUF_SIZE) p_write = 0;
+        if (p_write >= MULTI_BUF_SIZE)
+        	p_write = 0;
 		if(p_write >= p_read)
             left = p_write - p_read;
         else
@@ -448,7 +452,142 @@ static void* dvr_data_thread(void *arg)
 
 	return NULL;
 }
+#else
+
+#define NORMAL_AM_DVR_READ
+static int left_len_calcu(int p_write, int p_read, int full_flag)
+{
+	int left = 0;
 	
+	if(p_write > p_read)
+	{
+        left = p_write - p_read;
+    }
+    else if(p_write==p_read)
+    {
+    	if(1==full_flag)
+    		left = MULTI_BUF_SIZE;
+    	else
+    		left = 0;
+    }
+    else
+    {
+    	left = MULTI_BUF_SIZE - p_read + p_write;
+    }
+    
+    return left;
+}
+
+static void* dvr_data_thread(void *arg)
+{
+	DVRFeedData *dd = (DVRFeedData*)arg;
+	uint8_t buf[MULTI_BUF_SIZE];
+    int p_write = 0, p_read = 0, left = 0;
+    int recv_size = 0;	// 可用的接收大小，<=free_size，当空闲区域分布在两端时，本次只使用右端
+    int recv_len = 0;	// 实际接收大小
+    int full_flag = 0;	// 标记当p_write==p_read时，究竟是满还是空
+    int pin_read = 0;
+    
+#ifdef NORMAL_AM_DVR_READ
+#else
+	int recv_cnt = 0;	// 接收成功，向正值递增；无接收失败，向负值递减
+#endif
+
+	while (dd->running)
+	{
+#ifdef NORMAL_AM_DVR_READ
+		if (p_write >= p_read)
+        {
+        	if(0==full_flag)
+        		recv_size = MULTI_BUF_SIZE - p_write;
+        	else
+        		recv_size = 0;
+        }
+        else
+        {
+        	recv_size = p_read - p_write;
+        }
+        
+        if(recv_size>0)
+        {
+        	recv_len = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, buf+p_write,recv_size,1000);
+			
+			if (recv_len>0)
+			{
+				p_write += recv_len;
+				if(p_write >= MULTI_BUF_SIZE){	// actually, p_write is equal with MULTI_BUF_SIZE
+					p_write = 0;
+				}
+				
+				if(p_read==p_write)
+					full_flag = 1;
+			}
+			else
+			{
+				DEBUG("No data available from DVR%d recv_len=[%d]\n", dd->id, recv_len);
+	                        //AM_DEBUG(1,"IN No data available from DVR%d\n", dd->id);
+				usleep(20000);
+				//continue;
+			}
+		}
+        
+		left = left_len_calcu(p_write, p_read, full_flag);
+
+		while (left>=188)	// use 188 instead of 1880
+		{
+			pin_read = p_read;
+			parse_ts_packet(buf,p_write,&p_read); // make sure 'p_buf' is not NULL
+			if(pin_read!=p_read)
+			{
+				full_flag = 0;
+			}
+			left = left_len_calcu(p_write, p_read, full_flag);
+		}
+#else	// 仅用于测试AM_DVR_Read的稳定性，不存数据。
+		recv_size = MULTI_BUF_SIZE;
+		recv_len = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, buf+p_write,recv_size,1000);
+		if(recv_len>0)
+		{
+			if(recv_cnt>=0){
+				recv_cnt++;
+				
+				if(recv_cnt>=500){
+					DEBUG("AM_DVR_Read data cnt %d\n", recv_cnt);
+					recv_cnt = 0;
+				}
+			}
+			else{
+				DEBUG("AM_DVR_Read NO data cnt %d, and has data >>>\n", recv_cnt);
+				
+				recv_cnt = 1;
+			}
+		}
+		else
+		{
+			//DEBUG("recv_cnt: %d\n", recv_cnt);
+			if(recv_cnt<=0){
+				recv_cnt--;
+				
+				if(recv_cnt<=-50){
+					DEBUG("AM_DVR_Read NO data cnt %d\n", recv_cnt);
+					recv_cnt = 0;
+				}
+			}
+			else{
+				DEBUG("AM_DVR_Read cnt %d, but NO data ...\n", recv_cnt);
+				
+				recv_cnt = -1;
+			}
+			
+			usleep(20000);
+		}
+#endif
+	}
+
+	return NULL;
+}
+
+#endif	
 
 static void start_data_thread()
 {

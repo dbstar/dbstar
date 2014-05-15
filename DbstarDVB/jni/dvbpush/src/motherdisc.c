@@ -249,8 +249,6 @@ int motherdisc_process()
 			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc;");
 			sqlite_execute(sqlite_cmd);
 			
-			
-		
 			ret = 0;
 		}
 		

@@ -454,7 +454,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		
 		snprintf(desc_direct_uri,sizeof(desc_direct_uri),"%s/%s", push_dir_get(),ptr->DescURI);
 		
-		// check ContentDelivery.xml for mother disc
+		// check Publication.xml for every publication in mother disc
 		int stat_ret = stat(desc_direct_uri, &filestat);
 		if(0==stat_ret){
 			DEBUG("in motherdisc processing, make receive_status as RECEIVESTATUS_WAITING, %s\n", desc_direct_uri);
@@ -468,9 +468,11 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	}
 	
 	if(RECEIVESTATUS_WAITING==receive_status){
-		// 准备接收前先删除旧有目录，防止push库判断异常。
-		snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
-		remove_force(direct_uri);
+		if(1!=motherdisc_processing()){
+			// 准备接收前先删除旧有目录，防止push库判断异常。
+			snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
+			remove_force(direct_uri);
+		}
 		
 		this_total_size = 0LL;
 		sscanf(ptr->TotalSize,"%llu", &this_total_size);
@@ -2320,6 +2322,21 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster")){
 					parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
+					
+					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
+					
+					DBSTAR_RESPOSTER_S poster_s;
+					memset(&poster_s, 0, sizeof(poster_s));
+					snprintf(poster_s.ObjectName, sizeof(poster_s.ObjectName), "%s", OBJ_PUBLICATION);
+					snprintf(poster_s.EntityID, sizeof(poster_s.EntityID), "%s", p->PublicationID);
+					
+					snprintf(poster_s.PosterID, sizeof(poster_s.PosterID), "%s", p->SetPosterID);
+					snprintf(poster_s.PosterName, sizeof(poster_s.PosterName), "%s", p->SetPosterName);
+					snprintf(poster_s.PosterURI, sizeof(poster_s.PosterURI), "%s", p->SetPosterURI);
+					
+					if(strlen(poster_s.PosterURI)>0){
+						poster_insert(&poster_s);
+					}
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^SetInfo^Poster^PosterID")){
 					DBSTAR_MULTIPLELANGUAGEINFORM_S *p = (DBSTAR_MULTIPLELANGUAGEINFORM_S *)ptr;
@@ -2349,14 +2366,9 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					strncpy(poster_s.EntityID, p->PublicationID, sizeof(poster_s.EntityID)-1);
 					parseNode(doc, cur, new_xmlroute, &poster_s, NULL, NULL, NULL);
 					
-					if(0==strlen(poster_s.PosterURI)){
-						PRINTF("PosterURI of Publication %s is NULL, copy from SetPosterURI(%s)\n",p->PublicationID,p->SetPosterURI);
-						snprintf(poster_s.PosterID,sizeof(poster_s.PosterID),"%s",p->SetPosterID);
-						snprintf(poster_s.PosterName,sizeof(poster_s.PosterName),"%s",p->SetPosterName);
-						snprintf(poster_s.PosterURI,sizeof(poster_s.PosterURI),"%s",p->SetPosterURI);
+					if(strlen(poster_s.PosterURI)>0){
+						poster_insert(&poster_s);
 					}
-					
-					poster_insert(&poster_s);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationRM^MultipleLanguageInfos^MultipleLanguageInfo^Posters^PosterID")){
 					DBSTAR_RESPOSTER_S *p = (DBSTAR_RESPOSTER_S *)ptr;

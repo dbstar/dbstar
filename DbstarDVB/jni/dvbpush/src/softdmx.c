@@ -1030,7 +1030,7 @@ void TC_free_filter(int fid)
 				if ((chanFilter[j].used)&&(chanFilter[j].pid == pid))
 				{
 					if(chanFilter[j].samepidnum)
-					chanFilter[j].samepidnum--;
+						chanFilter[j].samepidnum--;
 				}
 			}
 		}

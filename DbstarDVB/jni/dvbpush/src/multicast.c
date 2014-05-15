@@ -758,27 +758,10 @@ int softdvb_init()
 	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
 	DEBUG("set ca filter, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
-#ifdef PUSH_LOCAL_TEST
-	// prog/video
-	unsigned short video_pid = 123;
-	int filter5 = alloc_filter(video_pid, 1);
-	DEBUG("set dvb filter3, pid=%d, fid=%d\n", video_pid, filter5);
-	
-	// prog/file
-	unsigned short file_pid = 654;
-	int filter4 = alloc_filter(file_pid, 1);
-	DEBUG("set dvb filter3, pid=%d, fid=%d\n", file_pid, filter4);
-	
-	// prog/audio
-	unsigned short audio_pid = 8123;
-	int filter3 = alloc_filter(audio_pid, 1);
-	DEBUG("set dvb filter3, pid=%d, fid=%d\n", audio_pid, filter3);
-#else
 	if(-1==pid_init(1)){
 		DEBUG("allpid init faild\n");
 		return -1;
 	}
-#endif
 	
 	tdt_time_sync_awake();
 
