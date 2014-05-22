@@ -326,26 +326,30 @@ static void filter_dump_bytes(int fid, const uint8_t *data, int len, void *user_
 	CDCA_U16       wPid;
 	SCDCAFilterInfo *filterinfo;
 
-	LOGD("Got EMM data len [%d]\n", len);
+//	LOGD("fid(%d) Got EMM data len [%d]\n", fid, len);
+	
 	/*{
-	 int i;
+		int i;
 
-	                for(i=0;i<len;i++)
-	                {
-	                        LOGD("%02x ", data[i]);
-	                        if(((i+1)%32)==0) LOGD("\n");
-	                }
-
-	                if((i%32)!=0) LOGD("\n");
+		for(i=0;i<len;i++)
+		{
+			LOGD("%02x ", data[i]);
+			if(((i+1)%32)==0) LOGD("\n");
+		}
+		
+		if((i%32)!=0) LOGD("\n");
 
 	}*/
+	
 	if (!user_data) {
+		LOGD("user_data is NULL\n");
 		return;
 	}
 	filterinfo = (SCDCAFilterInfo *)user_data;
 	filterinfo += fid;
 	byReqID = filterinfo->byReqID;
 	wPid = filterinfo->wPID;
+//	LOGD("byReqID=0x%x, wPid=%d=0x%x, len=%d, filterinfo->fid=%d\n", byReqID, wPid, wPid, len, filterinfo->fid);
 	CDCASTB_PrivateDataGot(byReqID, CDCA_FALSE, wPid, data, len);
 	if ((byReqID & 0x80) == 0x80) {
 		if (checkTimeoutMark>0) {
@@ -368,7 +372,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
                                        CDCA_U16       wPid,
                                        CDCA_U8        byWaitSeconds)
 {
-	LOGD("CDSTBCA_SetPrivateDataFilter() called\n");
+	LOGD("CDSTBCA_SetPrivateDataFilter() called, wPid=%d\n");
 #if 1
 	Filter_param param;
 	//Channel_t *filter;
@@ -395,9 +399,10 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 	}
 	PRINTF("filter[8]: %x,%x,%x,%x,%x,%x,%x,%x\n",param.filter[0],param.filter[1],param.filter[2],param.filter[3],param.filter[4],param.filter[5],param.filter[6],param.filter[7]);
 	PRINTF("mask  [8]: %x,%x,%x,%x,%x,%x,%x,%x\n\n",param.mask[0],param.mask[1],param.mask[2],param.mask[3],param.mask[4],param.mask[5],param.mask[6],param.mask[7]);
-
+	
+	PRINTF("TC_alloc_filter(%d=0x%x)\n", wPid, wPid);
 #ifdef TUNER_INPUT
-	fid = TC_alloc_filter(wPid, &param, (AM_DMX_DataCb)filter_dump_bytes, NULL, 0);
+	fid = TC_alloc_filter(wPid, &param, (AM_DMX_DataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
 #else
 	fid = TC_alloc_filter(wPid, &param, (dataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
 #endif
@@ -819,7 +824,7 @@ CDCA_BOOL CDSTBCA_DRM_OpenEntitleFile(char   CardSN[CDCA_MAXLEN_SN + 1],  void**
 	
 	*(int *)pFileHandle = -1;
 	sprintf(fullentitle, "%s/%s", ENTITLE_FILE_PATH, CardSN);
-//	LOGD("will open entitle file [%s]\n", fullentitle);
+	LOGD("will open entitle file [%s]\n", fullentitle);
 	if (access(fullentitle, 0)) { //not exsit
 		if (card_sn.fd != -1) {
 			close(card_sn.fd);
@@ -950,7 +955,7 @@ CDCA_U32 CDSTBCA_WriteFile(const void* pFileHandle, CDCA_U8* pBuf, CDCA_U32 dwLe
 {
 	CDCA_U32 ret;
 
-	LOGD("write file len [%lu]\n", dwLen);
+	LOGD("write file(%d) len [%lu]\n", *(int *)pFileHandle, dwLen);
 	if ((*(int *)pFileHandle) < 0) {
 		return -1;
 	}

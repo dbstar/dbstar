@@ -374,7 +374,7 @@ int TC_alloc_filter(unsigned short pid, Filter_param* sparam, AM_DMX_DataCb hdle
 	struct dmx_sct_filter_params param;
 	
 	AM_TRY(AM_DMX_AllocateFilter(DMX_DEV_NO, &fid));
-	AM_TRY(AM_DMX_SetCallback(DMX_DEV_NO, fid, hdle, NULL));
+	AM_TRY(AM_DMX_SetCallback(DMX_DEV_NO, fid, hdle, userdata));
 	
 	memset(&param, 0, sizeof(param));
 	param.pid = pid;
