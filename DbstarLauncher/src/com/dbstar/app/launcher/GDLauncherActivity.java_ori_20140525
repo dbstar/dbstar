@@ -71,9 +71,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final String ROOT_COLUMN_PARENTID = "-1";
 	private static final int REQUEST_POWER_TARGET_ACTIVITY_RESULT = 1;
 	private static final int START_NETWORKSETTING_ACTIVITY_RESULT = 2;
-	
-	private String mColumnBookId, mColumnMagazineId, mColumnNewsPaperId, mColumnVoiceBookId;
-	
 	// Engine
 	GDCelanderThread mCelanderThread;
 
@@ -446,16 +443,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if(menuItem.Type().equals(GDCommon.ColumnIDCNTV)) {
 			startIPTVView(menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)){
-			mColumnBookId = menuItem.ColumnId();
 		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAMAGAZINE)){
-			mColumnMagazineId = menuItem.ColumnId();
 		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)){
-			mColumnNewsPaperId = menuItem.ColumnId();
 		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
-			mColumnVoiceBookId = menuItem.ColumnId();
 		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
 		}
 
@@ -602,8 +595,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
             intent = getPackageManager().getLaunchIntentForPackage("com.android.browser");
         }else if(columnId.equals(GDCommon.ColumnIDMediaShare)){
             intent = startComponent("com.dbstar.multiple.media.shelf", "share.MediaShareActivity");
-            intent.putExtra("mColumnBookId", mColumnBookId);
-            intent.putExtra("mColumnNewsPaperPaperId", mColumnNewsPaperId);
+            intent.putExtra("mColumnBookId", GDCommon.ColumnIDMULTIPLEMEDIABOOK);
+            intent.putExtra("mColumnNewsPaperPaperId", GDCommon.ColumnIDMULTIPLEMEDIANEWSPAPER);
+            
         }
 
 		if (intent != null) {
