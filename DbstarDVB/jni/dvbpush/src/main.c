@@ -25,24 +25,26 @@ static pthread_cond_t cond_main = PTHREAD_COND_INITIALIZER;
 extern int _wLBM_zyzdmb(int miZon);
 
 /*
- 考虑到升级是个非常重要但又较少依赖其他模块的功能，因此即使大部分模块初始化失败，也一样要继续运行，只要组播功能正常即可。
+ 考虑到升级是个非常重要但又较少依赖其他模块的功能，也和硬盘存储无关，因此即使大部分模块初始化失败、或者无硬盘，也一样要继续运行，只要组播功能正常即可。
 */
 void *main_thread()
 {
 	DEBUG("main thread start...\n");
         
 	_wLBM_zyzdmb(13578642);
-   	
+
+#ifdef SMARTLIFE_LC
    	smarthome_gw_sn_init();
+#endif
    	
 	if(-1==setting_init()){
 		DEBUG("setting init failed\n");
-		//return NULL;
+		//return NULL;	// continue for upgrade
 	}
 	
 	if(-1==push_decoder_buf_init()){
 		DEBUG("push decoder buf init failed\n");
-		//return NULL;
+		//return NULL;	// continue for upgrade
 	}
 
 #ifdef TUNER_INPUT
@@ -53,18 +55,22 @@ void *main_thread()
 #endif
     smc_init();
 	
-	if(-1==sqlite_init()){
+	// 只用来确保flash中主数据库的存在和完整，待pushroot确定后，再进行硬盘中数据库初始化
+	if(-1==db_init(DB_MAIN_URI)){
 		DEBUG("sqlite init failed\n");
-		//return NULL;
+		//return NULL;	// continue for upgrade
 	}
 	
 	setting_init_with_database();
-	
+
+#if 0
+线程maintenance_thread直接放在main中执行
 	maintenance_thread_init();
+#endif
 	
 	if(-1==xmlparser_init()){
 		DEBUG("xmlparser init failed\n");
-		//return NULL;
+		//return NULL;	// continue for upgrade
 	}
 
 #ifdef TUNER_INPUT
@@ -75,61 +81,43 @@ void *main_thread()
 	
 	if(0!=drm_init()){
 		DEBUG("drm init failed\n");
-		//return NULL;
+		//return NULL;	// continue for upgrade
 	}
 	
 	upgrade_info_init();
-	
+
+#ifdef SMARTLIFE_LC	
 // 根据首次开机标记"/data/data/com.dbstar/files/flag"决定是否要重置国电网关序列号
 	smarthome_sn_init_when_network_init();
-	
-	
-#if 0
-/*
- 慎用：只有在需要清理已有授权、重新接收授权时使用，正式版本不能调用。
-*/
-DEBUG("\n\nWarning: you call function CDCASTB_FormatBuffer, it is an unnormal action\n\n\n");
-CDCASTB_FormatBuffer();
 #endif
-
-
-	if(-1==mid_push_init(PUSH_CONF)){
-		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF);
-		//return NULL;
+	
+	if(-1==mid_push_init(PUSH_CONF_WORKING)){
+		DEBUG("push model init with \"%s\" failed\n", PUSH_CONF_WORKING);
+		//return NULL;	// continue for upgrade
 	}
 
 #ifdef TUNER_INPUT
 #else
+// 可以加入组播组
 	if(-1==igmp_init()){
 		DEBUG("igmp init failed\n");
-		//return NULL;
+		//return NULL;	// continue for upgrade
 	}
 #endif
 	
 	if(-1==softdvb_init()){
 		DEBUG("dvb init with failed\n");
-		//return NULL;
+		//return NULL;	// continue for upgrade
 	}
 	
 #ifdef SMARTLIFE_LC
 	smartlife_connect_init();
 #endif
 
-	DEBUG("OK ================================ OK\n");
+	DEBUG("OK ========== dvbpush init finished ========== OK\n");
 	msg_send2_UI(STATUS_DVBPUSH_INIT_SUCCESS, NULL, 0);
 	
-	int main_running = 1;
-	while(1==main_running)
-	{
-		pthread_mutex_lock(&mtx_main);
-		/*
-		需要本线程先运行到这里，再在其他非父线程中执行pthread_cond_signal(&cond_push_monitor)才能生效。
-		*/
-		pthread_cond_wait(&cond_main,&mtx_main);
-		DEBUG("main thread is closed by external call\n");
-		main_running = 0;
-		pthread_mutex_unlock(&mtx_main);
-	}
+	maintenance_thread();
 	DEBUG("exit from main thread\n");
 	
 	return NULL;
@@ -166,7 +154,7 @@ int dvbpush_uninit()
 #endif
 		mid_push_uninit();
 		xmlparser_uninit();
-		sqlite_uninit();
+		db_uninit();
 		setting_uninit();
 		
 		pthread_mutex_lock(&mtx_main);

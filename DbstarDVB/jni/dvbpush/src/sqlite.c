@@ -17,358 +17,309 @@
 */
 
 ///used in this file
-static sqlite3* g_db = NULL;												///the pointer of database created or opened
-static int s_sqlite_init_flag = 0;
+static char g_db_uri[512];				// 根据是否挂载内置硬盘，此uri指向flash或硬盘中的数据库
+static sqlite3* g_db = NULL;			//the pointer of database created or opened
 
-static int createTable(char* name);
+static int createTable(sqlite3* h_db, char* name);
 static void closeDatabase();
-static int localcolumn_init();
-
 static int createDatabase(char *database_uri)
 {
-	char	*errmsgOpen=NULL;
+	sqlite3* h_db = NULL;
+	char	*errmsgOpen = NULL;
 	int		ret = 0;
 	
-	if(g_db!=NULL){
-		DEBUG("the database has opened\n");
-		ret = 0;
+	if(NULL==database_uri){
+		DEBUG("can not create NULL database\n");
 	}
-	else
-	{
-		if(-1==dir_exist_ensure(database_uri)){
-			return -1;
-		}
+	
+//	if(-1==dir_exist_ensure(database_uri)){
+//		return -1;
+//	}
 
-		if(SQLITE_OK!=sqlite3_open(database_uri,&g_db)){
-			ERROROUT("can't open database: %s\n", database_uri);
+	if(SQLITE_OK!=sqlite3_open(database_uri,&h_db)){
+		ERROROUT("can't open database %s\n", database_uri);
+		ret = -1;
+	}
+	else{
+		/// open foreign key support
+		// 比较操蛋的是，外键在sqlite中不能生效，还得傻不拉唧的自己判断
+		if(sqlite3_exec(h_db,"PRAGMA foreign_keys=ON;",NULL,NULL,&errmsgOpen)
+			|| NULL!=errmsgOpen){
+			ERROROUT("can't open foreign_keys\n");
+			DEBUG("database errmsg: %s\n", errmsgOpen);
 			ret = -1;
 		}
 		else{
-			/// open foreign key support
-			if(sqlite3_exec(g_db,"PRAGMA foreign_keys=ON;",NULL,NULL,&errmsgOpen)
-				|| NULL!=errmsgOpen){
-				ERROROUT("can't open foreign_keys\n");
-				DEBUG("database errmsg: %s\n", errmsgOpen);
+			ret = 0;
+			
+			int createtable_ret = createTable(h_db, "Global");
+			if(-1==createtable_ret){
 				ret = -1;
+				goto CREATE_TABLE_END;
 			}
 			else{
-				ret = 0;
-				
-				int createtable_ret = createTable("Global");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("Initialize");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("Channel");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("Service");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				createtable_ret = createTable("TRIGGER_DELETE_Service");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("ResStr");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("ResPoster");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("ResTrailer");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("ResSubTitle");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("ResExtension");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("ResExtensionFile");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("Column");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				createtable_ret = createTable("TRIGGER_DELETE_Column");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("ColumnEntity");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("Product");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				createtable_ret = createTable("TRIGGER_DELETE_Product");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("PublicationsSet");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				createtable_ret = createTable("TRIGGER_DELETE_PublicationsSet");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("SetInfo");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("Publication");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				createtable_ret = createTable("TRIGGER_DELETE_Publication");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("MultipleLanguageInfoVA");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("MultipleLanguageInfoRM");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("MultipleLanguageInfoApp");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("Message");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				createtable_ret = createTable("TRIGGER_DELETE_Message");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("GuideList");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				createtable_ret = createTable("TRIGGER_DELETE_GuideList");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("ProductDesc");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				createtable_ret = createTable("TRIGGER_DELETE_ProductDesc");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("Preview");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("RejectRecv");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				createtable_ret = createTable("SProduct");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				// 智能卡中的授权产品ID
-				createtable_ret = createTable("SCEntitleInfo");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-				// 记录Initialize.xml中所有的特殊产品ID，用于判断智能卡中的那些ID号是特殊产品
-				createtable_ret = createTable("SpecialProduct");
-				if(-1==createtable_ret){
-					ret = -1;
-					goto CREATE_TABLE_END;
-				}
-				else{
-					ret += createtable_ret;
-				}
-				
-CREATE_TABLE_END:
-				DEBUG("shot tables finished, ret=%d\n", ret);
+				ret += createtable_ret;
 			}
-			sqlite3_free(errmsgOpen);
-			closeDatabase();
+			
+			createtable_ret = createTable(h_db, "Initialize");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "Channel");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "Service");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			createtable_ret = createTable(h_db, "TRIGGER_DELETE_Service");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "ResStr");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "ResPoster");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "ResTrailer");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "ResSubTitle");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "Column");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			createtable_ret = createTable(h_db, "TRIGGER_DELETE_Column");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "Product");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			createtable_ret = createTable(h_db, "TRIGGER_DELETE_Product");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "PublicationsSet");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			createtable_ret = createTable(h_db, "TRIGGER_DELETE_PublicationsSet");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "SetInfo");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "Publication");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			createtable_ret = createTable(h_db, "TRIGGER_DELETE_Publication");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "MultipleLanguageInfoVA");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "MultipleLanguageInfoRM");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "MultipleLanguageInfoApp");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "Message");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			createtable_ret = createTable(h_db, "TRIGGER_DELETE_Message");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "GuideList");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			createtable_ret = createTable(h_db, "TRIGGER_DELETE_GuideList");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "ProductDesc");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			createtable_ret = createTable(h_db, "TRIGGER_DELETE_ProductDesc");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "Preview");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			createtable_ret = createTable(h_db, "SProduct");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+			// 智能卡中的授权产品ID
+			createtable_ret = createTable(h_db, "SCEntitleInfo");
+			if(-1==createtable_ret){
+				ret = -1;
+				goto CREATE_TABLE_END;
+			}
+			else{
+				ret += createtable_ret;
+			}
+			
+CREATE_TABLE_END:
+			DEBUG("shot tables finished, ret=%d\n", ret);
 		}
+		sqlite3_free(errmsgOpen);
+		sqlite3_close(h_db);
 	}
 	
 	return ret;
@@ -384,7 +335,7 @@ static int openDatabase()
 	}
 	else
 	{
-		if(SQLITE_OK!=sqlite3_open(dbstar_database_uri(),&g_db)){
+		if(SQLITE_OK!=sqlite3_open(g_db_uri,&g_db)){
 			ERROROUT("can't open database\n");
 			ret = -1;
 		}
@@ -415,18 +366,18 @@ static void closeDatabase()
 -1——创建表失败；
 1——指定的表创建成功。
 */
-static int createTable(char* name)
+static int createTable(sqlite3* h_db, char* name)
 {
 	char* errmsg=NULL;
-	char ** l_result=NULL;									    	///result of tables in database
-	int l_row=0;                                            	///the row of result
-	int l_column=0;									        	///the column of result
+	char ** l_result=NULL;		//result of tables in database
+	int l_row=0;                //the row of result
+	int l_column=0;				//the column of result
 	char sqlite_cmd[4096];
 	int ret = -1;
 	
 	memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT name FROM sqlite_master WHERE (type='table' or type='trigger') AND name='%q';", name);
-	if(sqlite3_get_table(g_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg))
+	if(sqlite3_get_table(h_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg))
 	{
 		ERROROUT("read tables from database failed.");
 		ret = -1;
@@ -455,26 +406,24 @@ Param	NVARCHAR(1024) DEFAULT '');", name);
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
 PushFlag	NVARCHAR(64) DEFAULT '',\
-ServiceID	NVARCHAR(64) DEFAULT '',\
 XMLName	NVARCHAR(64) DEFAULT '',\
 Version	NVARCHAR(64) DEFAULT '',\
 StandardVersion	NVARCHAR(32) DEFAULT '',\
 URI	NVARCHAR(256) DEFAULT '',\
 ID	NVARCHAR(64) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (PushFlag,ServiceID,ID));", name);
+PRIMARY KEY (PushFlag,ID));", name);
 			}
 			else if(!strcmp(name,"Channel"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
 pid	NVARCHAR(64) DEFAULT '',\
-ServiceID	NVARCHAR(64) DEFAULT '',\
 pidtype	NVARCHAR(64) DEFAULT '',\
 URI NVARCHAR(256) DEFAULT '',\
 FreshFlag INTEGER DEFAULT 1,\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (pid,ServiceID));", name);
+PRIMARY KEY (pid));", name);
 			}
 			else if(!strcmp(name,"Service"))
 			{
@@ -499,80 +448,52 @@ END", name);
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 StrLang		NVARCHAR(32) DEFAULT '',\
 StrName		NVARCHAR(64) DEFAULT '',\
 Extension	NVARCHAR(64) DEFAULT '',\
 StrValue	NVARCHAR(1024) DEFAULT '',\
-PRIMARY KEY (ServiceID,ObjectName,EntityID,StrLang,StrName,Extension));", name);
+PRIMARY KEY (ObjectName,EntityID,StrLang,StrName,Extension));", name);
 			}
 			else if(!strcmp(name,"ResPoster"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 PosterID	NVARCHAR(64) DEFAULT '',\
 PosterName	NVARCHAR(64) DEFAULT '',\
 PosterURI	NVARCHAR(256) DEFAULT '',\
-PRIMARY KEY (ServiceID,ObjectName,EntityID,PosterID));", name);
+PRIMARY KEY (ObjectName,EntityID,PosterID));", name);
 			}
 			else if(!strcmp(name,"ResTrailer"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 TrailerID	NVARCHAR(64) DEFAULT '',\
 TrailerName	NVARCHAR(64) DEFAULT '',\
 TrailerURI	NVARCHAR(256) DEFAULT '',\
-PRIMARY KEY (ServiceID,ObjectName,EntityID,TrailerID));", name);
+PRIMARY KEY (ObjectName,EntityID,TrailerID));", name);
 			}
 			else if(!strcmp(name,"ResSubTitle"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 ObjectName	NVARCHAR(64) DEFAULT '',\
 EntityID	NVARCHAR(128) DEFAULT '',\
 SubTitleID	NVARCHAR(64) DEFAULT '',\
 SubTitleName	NVARCHAR(64) DEFAULT '',\
 SubTitleLanguage	NVARCHAR(64) DEFAULT '',\
 SubTitleURI	NVARCHAR(256) DEFAULT '',\
-PRIMARY KEY (ServiceID,ObjectName,EntityID,SubTitleID));", name);
-			}
-			else if(!strcmp(name,"ResExtension"))
-			{
-				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
-					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
-ObjectName	NVARCHAR(256) DEFAULT '',\
-EntityID	NVARCHAR(128) DEFAULT '',\
-Name	NVARCHAR(64) DEFAULT '',\
-Type	NVARCHAR(64) DEFAULT '',\
-PRIMARY KEY (ServiceID,ObjectName,EntityID,Name));", name);
-			}
-			else if(!strcmp(name,"ResExtensionFile"))
-			{
-				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
-					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
-ObjectName	NVARCHAR(256) DEFAULT '',\
-EntityID	NVARCHAR(128) DEFAULT '',\
-FileID	NVARCHAR(64) DEFAULT '',\
-FileName	NVARCHAR(64) DEFAULT '',\
-FileURI	NVARCHAR(256) DEFAULT '',\
-PRIMARY KEY (ServiceID,ObjectName,EntityID,FileID));", name);
+PRIMARY KEY (ObjectName,EntityID,SubTitleID));", name);
 			}
 			else if(!strcmp(name,"Column"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 ParentID	NVARCHAR(64) DEFAULT '',\
 Path	NVARCHAR(256) DEFAULT '',\
@@ -587,7 +508,7 @@ Visible	CHAR(32) DEFAULT '1',\
 Favorite NVARCHAR(32) DEFAULT '0',\
 Param	NVARCHAR(1024) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,ColumnID));", name);
+PRIMARY KEY (ColumnID));", name);
 			}
 			else if(!strcmp(name,"TRIGGER_DELETE_Column"))
 			{
@@ -597,21 +518,10 @@ BEGIN \
 	DELETE FROM ResStr WHERE ObjectName='Column' AND EntityID=OLD.ColumnID; \
 END", name);
 			}
-			else if(!strcmp(name,"ColumnEntity"))
-			{
-				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
-					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
-ColumnID	NVARCHAR(64) DEFAULT '',\
-EntityID	NVARCHAR(64) DEFAULT '',\
-EntityType	NVARCHAR(64) DEFAULT '',\
-TimeStamp NOT NULL DEFAULT (datetime('now','localtime')));", name);
-			}
 			else if(!strcmp(name,"Product"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 ProductID	NVARCHAR(64) DEFAULT '',\
 ProductType	NVARCHAR(64) DEFAULT '',\
 Flag	NVARCHAR(64) DEFAULT '',\
@@ -628,7 +538,7 @@ Deleted	NVARCHAR(32) DEFAULT '',\
 VODNum	NVARCHAR(64) DEFAULT '',\
 VODPlatform	NVARCHAR(256),\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,ProductID));", name);
+PRIMARY KEY (ProductID));", name);
 			}
 			else if(!strcmp(name,"TRIGGER_DELETE_Product"))
 			{
@@ -642,7 +552,6 @@ END", name);
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 SetID	NVARCHAR(64) DEFAULT '',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 ProductID	NVARCHAR(64) DEFAULT '',\
@@ -657,11 +566,9 @@ IsReserved	NVARCHAR(64) DEFAULT '0',\
 Visible	NVARCHAR(64) DEFAULT '1',\
 Favorite	NVARCHAR(64) DEFAULT '0',\
 IsAuthorized	NVARCHAR(64) DEFAULT '',\
-VODNum	NVARCHAR(64) DEFAULT '',\
-VODPlatform	NVARCHAR(256) DEFAULT '',\
 Deleted NVARCHAR(256) DEFAULT '0',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,SetID,ColumnID));", name);
+PRIMARY KEY (SetID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"TRIGGER_DELETE_PublicationsSet"))
 			{
@@ -675,7 +582,6 @@ END", name);
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 SetID	NVARCHAR(64) DEFAULT '',\
 ProductID	NVARCHAR(64) DEFAULT '',\
 infolang	NVARCHAR(64) DEFAULT 'cho',\
@@ -687,13 +593,12 @@ Period	NVARCHAR(64) DEFAULT '',\
 CollectionNumber	NVARCHAR(64) DEFAULT '',\
 Review	NVARCHAR(64) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,SetID,infolang));", name);
+PRIMARY KEY (SetID,infolang));", name);
 			}
 			else if(!strcmp(name,"Publication"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
 ColumnID	NVARCHAR(64) DEFAULT '',\
 PublicationType	NVARCHAR(64) DEFAULT '',\
@@ -718,8 +623,6 @@ IndexInSet	NVARCHAR(32) DEFAULT '',\
 Favorite	NVARCHAR(32) DEFAULT '0',\
 Bookmark	NVARCHAR(32) DEFAULT '0',\
 IsAuthorized	NVARCHAR(64) DEFAULT '',\
-VODNum	NVARCHAR(64) DEFAULT '',\
-VODPlatform	NVARCHAR(256) DEFAULT '',\
 Deleted NVARCHAR(256) DEFAULT '0',\
 FileID	NVARCHAR(64) DEFAULT '',\
 FileSize	NVARCHAR(64) DEFAULT '',\
@@ -733,7 +636,7 @@ CodeFormat	NVARCHAR(32) DEFAULT '',\
 Preference	NVARCHAR(32) DEFAULT '',\
 AccessTime	NOT NULL DEFAULT (datetime('now','localtime')),\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,PublicationID,ColumnID));", name);
+PRIMARY KEY (PublicationID,ColumnID));", name);
 			}
 			else if(!strcmp(name,"TRIGGER_DELETE_Publication"))
 			{
@@ -742,10 +645,10 @@ PRIMARY KEY (ServiceID,PublicationID,ColumnID));", name);
 BEGIN \
 	DELETE FROM ResStr WHERE (ObjectName='Publication' OR ObjectName='MFile') AND EntityID=OLD.PublicationID; \
 	DELETE FROM ResPoster WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
-	DELETE FROM ResSubTitle WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
+	delete FROM ResSubTitle WHERE ObjectName='Publication' AND EntityID=OLD.PublicationID; \
 	DELETE FROM MultipleLanguageInfoVA WHERE PublicationID=OLD.PublicationID; \
 	DELETE FROM MultipleLanguageInfoRM WHERE PublicationID=OLD.PublicationID; \
-	DELETE FROM MultipleLanguageInfoAPP WHERE PublicationID=OLD.PublicationID; \
+	delete FROM MultipleLanguageInfoAPP WHERE PublicationID=OLD.PublicationID; \
 	DELETE FROM Preview WHERE PublicationID=OLD.PublicationID; \
 END", name);
 			}
@@ -753,7 +656,6 @@ END", name);
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
 infolang	NVARCHAR(64) DEFAULT '',\
 PublicationDesc	NVARCHAR(1024) DEFAULT '',\
@@ -768,13 +670,12 @@ Director	NVARCHAR(128) DEFAULT '',\
 Actor	NVARCHAR(256) DEFAULT '',\
 Audience	NVARCHAR(64) DEFAULT '',\
 Model	NVARCHAR(32) DEFAULT '',\
-PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
+PRIMARY KEY (PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoRM"))
 			{	// use 'language' instead of 'infolang'
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
 language	NVARCHAR(64) DEFAULT 'cho',\
 PublishID	NVARCHAR(64) DEFAULT '',\
@@ -795,13 +696,12 @@ Format	NVARCHAR(64) DEFAULT '',\
 TotalIssue	NVARCHAR(64) DEFAULT '',\
 Recommendation	NVARCHAR(1024) DEFAULT '',\
 Words	NVARCHAR(32) DEFAULT '',\
-PRIMARY KEY (ServiceID,PublicationID,language));", name);
+PRIMARY KEY (PublicationID,language));", name);
 			}
 			else if(!strcmp(name,"MultipleLanguageInfoApp"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
 infolang	NVARCHAR(64) DEFAULT '',\
 PublicationDesc	NVARCHAR(1024) DEFAULT '',\
@@ -813,13 +713,12 @@ Language	NVARCHAR(64) DEFAULT '',\
 Developer	NVARCHAR(64) DEFAULT '',\
 Rated	NVARCHAR(64) DEFAULT '',\
 Requirements	NVARCHAR(64) DEFAULT '',\
-PRIMARY KEY (ServiceID,PublicationID,infolang));", name);
+PRIMARY KEY (PublicationID,infolang));", name);
 			}
 			else if(!strcmp(name,"Message"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 MessageID	NVARCHAR(64) DEFAULT '',\
 type	NVARCHAR(64) DEFAULT '',\
 displayForm	NVARCHAR(64) DEFAULT '',\
@@ -827,7 +726,7 @@ StartTime	DATETIME DEFAULT '',\
 EndTime		DATETIME DEFAULT '',\
 Interval	CHAR(32) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,MessageID));", name);
+PRIMARY KEY (MessageID));", name);
 			}
 			else if(!strcmp(name,"TRIGGER_DELETE_Message"))
 			{
@@ -841,7 +740,6 @@ END", name);
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 DateValue	DATETIME DEFAULT '',\
 GuideListID	NVARCHAR(64) DEFAULT '',\
 productID	NVARCHAR(64) DEFAULT '',\
@@ -854,7 +752,7 @@ PushStartTime	DATETIME DEFAULT '',\
 PushEndTime	DATETIME DEFAULT '',\
 UserStatus	NVARCHAR(64) DEFAULT '1',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,DateValue,PublicationID));", name);
+PRIMARY KEY (DateValue,PublicationID));", name);
 			}
 			else if(!strcmp(name,"TRIGGER_DELETE_GuideList"))
 			{
@@ -868,7 +766,6 @@ END", name);
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '',\
 ReceiveType	NVARCHAR(64) DEFAULT '',\
 rootPath	NVARCHAR(256) DEFAULT '',\
 ProductDescID	NVARCHAR(128) DEFAULT '',\
@@ -884,8 +781,9 @@ Columns	NVARCHAR(512) DEFAULT '',\
 ReceiveStatus	NVARCHAR(64) DEFAULT '0',\
 FreshFlag INTEGER DEFAULT 1,\
 Parsed	NVARCHAR(32) DEFAULT '',\
+RecvSeqence	INTEGER DEFAULT 0,\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,ReceiveType,ID));", name);
+PRIMARY KEY (ReceiveType,ID));", name);
 			}
 			else if(!strcmp(name,"TRIGGER_DELETE_ProductDesc"))
 			{
@@ -900,7 +798,6 @@ END", name,RECEIVESTATUS_FAILED,RECEIVESTATUS_WAITING);
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 PreviewID	NVARCHAR(64) DEFAULT '0',\
 ProductID	NVARCHAR(64) DEFAULT '',\
 PublicationID	NVARCHAR(64) DEFAULT '',\
@@ -925,32 +822,18 @@ StartTime	DATETIME DEFAULT '',\
 EndTime	DATETIME DEFAULT '',\
 PlayMode	NVARCHAR(64) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,PreviewID));", name);
-			}
-			else if(!strcmp(name,"RejectRecv"))
-			{
-				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
-					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '',\
-ID	NVARCHAR(64) DEFAULT '',\
-URI	NVARCHAR(512) DEFAULT '',\
-Type	NVARCHAR(64) DEFAULT '',\
-PushStartTime	DATETIME DEFAULT '',\
-PushEndTime	DATETIME DEFAULT '',\
-TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,ID));", name);
+PRIMARY KEY (PreviewID));", name);
 			}
 			else if(!strcmp(name,"SProduct"))
 			{
 				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
 					"CREATE TABLE %q(\
-ServiceID	NVARCHAR(64) DEFAULT '0',\
 SType	NVARCHAR(64) DEFAULT '',\
 Name	NVARCHAR(64) DEFAULT '',\
 URI	NVARCHAR(256) DEFAULT '',\
 URI_spare	NVARCHAR(256) DEFAULT '',\
 TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (ServiceID,SType));", name);
+PRIMARY KEY (SType));", name);
 			}
 			
 			else if(!strcmp(name,"SCEntitleInfo"))
@@ -970,25 +853,6 @@ TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
 PRIMARY KEY (SmartCardID,m_OperatorID,m_ID));", name);
 			}
 			
-			// 目前实际使用的只有m_ID和ServiceID字段
-			else if(!strcmp(name,"SpecialProduct"))
-			{
-				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,\
-					"CREATE TABLE %q(\
-SmartCardID		NVARCHAR(64) DEFAULT '',\
-m_OperatorID	NVARCHAR(64) DEFAULT '',\
-m_ID	NVARCHAR(64) DEFAULT '',\
-m_ProductStartTime	NVARCHAR(64) DEFAULT '',\
-m_ProductEndTime	NVARCHAR(64) DEFAULT '',\
-m_WatchStartTime	NVARCHAR(64) DEFAULT '',\
-m_WatchEndTime	NVARCHAR(64) DEFAULT '',\
-m_LimitTotaltValue	NVARCHAR(64) DEFAULT '',\
-m_LimitUsedValue	NVARCHAR(64) DEFAULT '',\
-ServiceID		NVARCHAR(64) DEFAULT '',\
-TimeStamp NOT NULL DEFAULT (datetime('now','localtime')),\
-PRIMARY KEY (m_ID));", name);
-			}
-			
 			else{
 				DEBUG("baby: table %s is not defined, so can not create it\n", name);
 				memset(sqlite_cmd, 0, sizeof(sqlite_cmd));
@@ -996,7 +860,7 @@ PRIMARY KEY (m_ID));", name);
 			}
 			
 			if(strlen(sqlite_cmd)>0){
-				if(0==sqlite3_exec(g_db,sqlite_cmd,NULL,NULL,&errmsg))
+				if(0==sqlite3_exec(h_db,sqlite_cmd,NULL,NULL,&errmsg))
 				{
 					DEBUG("create table '%s' success\n", name);
 					ret = 1;
@@ -1043,43 +907,39 @@ int str_read_cb(char **result, int row, int column, void *some_str, unsigned int
 	return 0;
 }
 
+int db_uri_set(char *db_uri)
+{
+	return snprintf(g_db_uri, sizeof(g_db_uri), "%s", db_uri);
+}
 
 /***sqlite_init() brief init sqlite, include open database, create table, and so on.
  * param null
  *
  * retval int,0 if successful or -1 failed
  ***/
-int sqlite_init()
+int db_init(char *db_uri)
 {
-	if(0==s_sqlite_init_flag){
-		g_db = NULL;
+	DEBUG("db_init(%s)\n", db_uri);
+	int ret = createDatabase(db_uri);
+	if(ret>=0){
+		if(ret>0){
+			DEBUG("create database[%s] success(some/all tables are created)\n", db_uri);
+			chmod(db_uri,0666);
+		}
+		DEBUG("open database success\n");
 		
-		int ret = createDatabase(dbstar_database_uri());
-		if(ret>=0){
-			if(ret>0){
-				DEBUG("create database success(some/all tables are created)\n");
-				chmod(dbstar_database_uri(),0666);
-			}
-			DEBUG("open database success\n");
-			localcolumn_init();
-			global_info_init(0);
-		}
-		else{						///open database failed
-			DEBUG("create/open database failed\n");
-			return -1;
-		}
-			
-		s_sqlite_init_flag = 1;
+		return 0;
 	}
-
-	return 0;						/// quit
+	else{						///open database failed
+		DEBUG("create/open database[%s] failed\n", db_uri);
+		return -1;
+	}
 }
 
-int sqlite_uninit()
+int db_uninit()
 {
 	return 0;
 }
-
 
 /*
  数据库事务使用规则：
@@ -1147,6 +1007,37 @@ int sqlite_execute(char *exec_str)
 	
 	return ret;	
 }
+
+// 指定数据库执行sqlite，目前专门用于存储storage_id到主数据库中
+int sqlite_execute_db(char *db_uri, char *exec_str)
+{
+	sqlite3* h_db = NULL;
+	char* errmsg=NULL;
+	int ret = -1;
+	
+	//open database
+	if(SQLITE_OK!=sqlite3_open(db_uri,&h_db)){
+		ERROROUT("can't open database %s\n", db_uri);
+		ret = -1;
+	}
+	else{
+		DEBUG("%s\n", exec_str);
+		if(sqlite3_exec(h_db,exec_str,NULL,NULL,&errmsg)){
+			DEBUG("sqlite3 errmsg: %s\n", errmsg);
+			ret = -1;
+		}
+		else{
+			//DEBUG("sqlite3_exec success\n");
+			ret = 0;
+		}
+		
+		sqlite3_free(errmsg);		//	release the memery possessed by error message
+		sqlite3_close(h_db);		//	close database
+	}
+
+	return ret;	
+}
+
 
 /*
 功能：	执行SELECT语句
@@ -1217,6 +1108,76 @@ int sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receiver_size, in
 			sqlite3_free_table(l_result);
 			sqlite3_free(errmsg);
 			closeDatabase();
+		}
+		
+		s_sql_status = SQL_STATUS_IDLE;
+	}
+	
+	return ret;
+}
+
+
+/*
+功能：	对指定数据库执行SELECT语句，主要用于单独读取主数据库，基本功能和sqlite_read类似
+输入：	db_uri					——数据库全路径，如：/data/dbstar/Dbstar.db
+		sqlite_cmd				——sql SELECT语句
+		receiver				——用于处理SELECT结果的参数，如果sqlite_read_callback为NULL，则receiver也可以为NULL
+		receiver_size			——receiver的大小，在receiver为数组时应根据此值做安全拷贝
+		sqlite_read_callback	——用于处理SELECT结果的回调，如果只是想知道查询到几条记录，则此回调可以为NULL
+返回：	-1——失败；其他值——查询到的记录数
+*/
+int sqlite_read_db(char *db_uri, char *sqlite_cmd, void *receiver, unsigned int receiver_size, int (*sqlite_read_callback)(char **result, int row, int column, void *receiver, unsigned int receiver_size))
+{
+	sqlite3* h_db = NULL;
+	char* errmsg=NULL;
+	char** l_result = NULL;
+	int l_row = 0;
+	int l_column = 0;
+	int ret = 0;
+	int (*sqlite_callback)(char **,int,int,void *,unsigned int) = sqlite_read_callback;
+
+	//DEBUG("sqlite read: %s\n", sqlite_cmd);
+	
+	if(SQL_STATUS_IDLE!=s_sql_status){
+		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
+		ret = -1;
+	}
+	else{
+		s_sql_status = SQL_STATUS_BUSY;
+		
+		if(SQLITE_OK!=sqlite3_open(db_uri,&h_db)){
+			ERROROUT("can't open database %s\n", db_uri);
+			ret = -1;
+		}
+		else{
+			// open database ok
+			if(sqlite3_get_table(h_db,sqlite_cmd,&l_result,&l_row,&l_column,&errmsg)
+				|| NULL!=errmsg)
+			{
+				ERROROUT("sqlite cmd: %s\n", sqlite_cmd);
+				DEBUG("errmsg: %s\n", errmsg);
+				ret = -1;
+			}
+			else{ // inquire table ok
+				if(0==l_row){
+					DEBUG("no row, l_row=0, l_column=%d\n", l_column);
+				}
+				else{
+//					DEBUG("sqlite select OK, %s\n", NULL==sqlite_callback?"no callback fun":"do callback fun");
+					if(sqlite_callback)	// && receiver
+						sqlite_callback(l_result, l_row, l_column, receiver, receiver_size);
+					else{
+						DEBUG("no sqlite callback, l_row=%d, l_column=%d\n", l_row, l_column);
+	//					int i = 0;
+	//					for(i=0;i<(l_column+1);i++)
+	//						printf("\t\t%s\n", l_result[i]);
+					}
+				}
+				ret = l_row;
+			}
+			sqlite3_free_table(l_result);
+			sqlite3_free(errmsg);
+			sqlite3_close(h_db);
 		}
 		
 		s_sql_status = SQL_STATUS_IDLE;
@@ -1543,6 +1504,7 @@ static int check_record_in_trans(char *table_name, char *column_name, char *colu
 	}
 }
 
+#ifdef SMARTLIFE_LC
 // 从确定目录拷贝指定栏目图标到确定目录
 static int columnicon_init(char *columnicon_name)
 {
@@ -1550,7 +1512,7 @@ static int columnicon_init(char *columnicon_name)
 	char to_file[256];
 	
 	snprintf(from_file,sizeof(from_file),"%s/%s", LOCAL_COLUMNICON_ORIGIN_DIR,columnicon_name);
-	snprintf(to_file,sizeof(to_file),"%s/LocalColumnIcon/%s",column_res_get(),columnicon_name);
+	snprintf(to_file,sizeof(to_file),"%s/LocalColumnIcon/%s",COLUMN_RES,columnicon_name);
 	
 	if(NULL!=columnicon_name && 0==fcopy_c(from_file,to_file)){
 		DEBUG("copy %s to %s success\n",from_file,to_file);
@@ -1561,7 +1523,7 @@ static int columnicon_init(char *columnicon_name)
 		return -1;
 	}
 }
-
+#endif
 
 /*
  本地栏目的初始化
@@ -1571,46 +1533,14 @@ int localcolumn_init()
 {
 	DEBUG("init local column, such as 'Settings' or 'My Center\n");
 	int insert_column_cnt = 0;
+#ifdef SMARTLIFE_LC
 	char localcolumn_iconname[128];
+#endif
 	
 	if(-1==sqlite_transaction_begin())
 		return -1;
 	
 	char sqlite_cmd[512];
-	
-	
-	/*
-	 一级菜单“CNTV”
-	*/
-	if(-1!=check_record_in_trans("Column","ColumnID","CNTV")){
-		DEBUG("change ColumnID of CNTV from \'CNTV\' to \'L97\', so delete \'CNTV\' firstly\n");
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='CNTV';");
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_column_cnt ++;
-	}
-	
-	if(-1==check_record_in_trans("Column","ColumnID","L97")){
-#ifdef CNTV_LC
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',10000);",
-			"L97","-1","L97","L97","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
-		sqlite_transaction_exec(sqlite_cmd);
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L97",CURLANGUAGE_DFT,"DisplayName","CNTV","");
-		sqlite_transaction_exec(sqlite_cmd);
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L97","eng","DisplayName","CNTV","");
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_column_cnt ++;
-#endif
-	}
-	else{
-#ifdef CNTV_LC
-#else
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='L97' or ColumnID='CNTV';");
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_column_cnt ++;
-#endif
-	}
 	
 	/*
 	 一级菜单“个人中心”
@@ -1631,93 +1561,77 @@ int localcolumn_init()
 	/*
 	 二级菜单“个人中心－基本信息”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9901")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9801")){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',1);",
-			"L9901","L98","L98/L9901","L99","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png");
+			"L9801","L98","L98/L9801","L99","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png","LocalColumnIcon/BasicInfo_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9901",CURLANGUAGE_DFT,"DisplayName","基本信息","");
+			"Column","L9801",CURLANGUAGE_DFT,"DisplayName","基本信息","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9901","eng","DisplayName","Basic Info","");
+			"Column","L9801","eng","DisplayName","Basic Info","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-//	else{
-//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9901',ColumnType='L99',SequenceNum=1 WHERE ColumnID='L9901';");
-//		sqlite_transaction_exec(sqlite_cmd);
-//	}
 	/*
 	 二级菜单“个人中心－购买信息”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9907")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9802")){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',2);",
-			"L9907","L98","L98/L9907","L99","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png");
+			"L9802","L98","L98/L9802","L99","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png","LocalColumnIcon/PurchaseInfo_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9907",CURLANGUAGE_DFT,"DisplayName","购买信息","");
+			"Column","L9802",CURLANGUAGE_DFT,"DisplayName","购买信息","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9907","eng","DisplayName","PurchaseInfo","");
+			"Column","L9802","eng","DisplayName","PurchaseInfo","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-//	else{
-//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET ParentID='L98',Path='L98/L9907',ColumnType='L99',SequenceNum=2 WHERE ColumnID='L9907';");
-//		sqlite_transaction_exec(sqlite_cmd);
-//	}
 	
 	/*
 	 二级菜单“选择接收”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9801")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9803")){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',3);",
-			"L9801","L98","L98/L9801","L98","LocalColumnIcon/Receiving_losefocus.png","LocalColumnIcon/Receiving_losefocus.png","LocalColumnIcon/Receiving_losefocus.png");
+			"L9803","L98","L98/L9803","L98","LocalColumnIcon/Receiving_losefocus.png","LocalColumnIcon/Receiving_losefocus.png","LocalColumnIcon/Receiving_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9801",CURLANGUAGE_DFT,"DisplayName","选择接收","");
+			"Column","L9803",CURLANGUAGE_DFT,"DisplayName","选择接收","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9801","eng","DisplayName","Receiving","");
+			"Column","L9803","eng","DisplayName","Receiving","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-//	else{
-//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=3 WHERE ColumnID='L9801';");
-//		sqlite_transaction_exec(sqlite_cmd);
-//	}
 	/*
 	 二级菜单“下载状态”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9802")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9804")){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',4);",
-			"L9802","L98","L98/L9802","L98","LocalColumnIcon/Download_losefocus.png","LocalColumnIcon/Download_losefocus.png","LocalColumnIcon/Download_losefocus.png");
+			"L9804","L98","L98/L9804","L98","LocalColumnIcon/Download_losefocus.png","LocalColumnIcon/Download_losefocus.png","LocalColumnIcon/Download_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9802",CURLANGUAGE_DFT,"DisplayName","下载状态","");
+			"Column","L9804",CURLANGUAGE_DFT,"DisplayName","下载状态","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9802","eng","DisplayName","Download","");
+			"Column","L9804","eng","DisplayName","Download","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
-//	else{
-//		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Column SET SequenceNum=4 WHERE ColumnID='L9802';");
-//		sqlite_transaction_exec(sqlite_cmd);
-//	}
 	/*
 	 二级菜单“富媒体分享”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9804")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9805")){
 #ifdef MEDIASHARING_LC
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',10);",
-			"L9804","L98","L98/L9804","L98","","","");
+			"L9804","L98","L98/L9805","L98","","","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9804",CURLANGUAGE_DFT,"DisplayName","媒体分享","");
+			"Column","L9805",CURLANGUAGE_DFT,"DisplayName","媒体分享","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9804","eng","DisplayName","MediaSharing","");
+			"Column","L9805","eng","DisplayName","MediaSharing","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 #endif
@@ -1725,54 +1639,29 @@ int localcolumn_init()
 	else{
 #ifdef MEDIASHARING_LC
 #else
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='L9804';");
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='L9805';");
 		sqlite_transaction_exec(sqlite_cmd);
 #endif
 	}
 	/*
 	 二级菜单“文件浏览”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9805")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9806")){
 #ifdef FILEBROWSER_LC
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',11);",
-			"L9805","L98","L98/L9805","L98","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
+			"L9805","L98","L98/L9806","L98","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9805",CURLANGUAGE_DFT,"DisplayName","文件浏览","");
+			"Column","L9806",CURLANGUAGE_DFT,"DisplayName","文件浏览","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9805","eng","DisplayName","FileBrowser","");
+			"Column","L9806","eng","DisplayName","FileBrowser","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 #endif
 	}
 	else{
 #ifdef FILEBROWSER_LC
-#else
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='L9805';");
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_column_cnt ++;
-#endif
-	}
-	/*
-	 二级菜单“我的应用”
-	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9806")){
-#ifdef MYAPP_LC
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',12);",
-			"L9806","L98","L98/L9806","L98","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
-		sqlite_transaction_exec(sqlite_cmd);
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9806",CURLANGUAGE_DFT,"DisplayName","我的应用","");
-		sqlite_transaction_exec(sqlite_cmd);
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9806","eng","DisplayName","MyApp","");
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_column_cnt ++;
-#endif
-	}
-	else{
-#ifdef MYAPP_LC
 #else
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='L9806';");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1780,24 +1669,24 @@ int localcolumn_init()
 #endif
 	}
 	/*
-	 二级菜单“浏览器”
+	 二级菜单“我的应用”
 	*/
 	if(-1==check_record_in_trans("Column","ColumnID","L9807")){
-#ifdef WEBBROWSER_LC
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',13);",
+#ifdef MYAPP_LC
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',12);",
 			"L9807","L98","L98/L9807","L98","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9807",CURLANGUAGE_DFT,"DisplayName","浏览器","");
+			"Column","L9807",CURLANGUAGE_DFT,"DisplayName","我的应用","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9807","eng","DisplayName","WebBrowser","");
+			"Column","L9807","eng","DisplayName","MyApp","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 #endif
 	}
 	else{
-#ifdef WEBBROWSER_LC
+#ifdef MYAPP_LC
 #else
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='L9807';");
 		sqlite_transaction_exec(sqlite_cmd);
@@ -1805,17 +1694,42 @@ int localcolumn_init()
 #endif
 	}
 	/*
+	 二级菜单“浏览器”
+	*/
+	if(-1==check_record_in_trans("Column","ColumnID","L9808")){
+#ifdef WEBBROWSER_LC
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',13);",
+			"L9808","L98","L98/L9808","L98","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png","LocalColumnIcon/DefaultIcon_losefocus.png");
+		sqlite_transaction_exec(sqlite_cmd);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
+			"Column","L9808",CURLANGUAGE_DFT,"DisplayName","浏览器","");
+		sqlite_transaction_exec(sqlite_cmd);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
+			"Column","L9808","eng","DisplayName","WebBrowser","");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+#endif
+	}
+	else{
+#ifdef WEBBROWSER_LC
+#else
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='L9808';");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
+#endif
+	}
+	/*
 	 二级菜单“个人中心－帮助信息”
 	*/
-	if(-1==check_record_in_trans("Column","ColumnID","L9908")){
+	if(-1==check_record_in_trans("Column","ColumnID","L9920")){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',20);",
-			"L9908","L98","L98/L9908","L99","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png");
+			"L9920","L98","L98/L9920","L99","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png","LocalColumnIcon/Help_losefocus.png");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9908",CURLANGUAGE_DFT,"DisplayName","帮助信息","");
+			"Column","L9920",CURLANGUAGE_DFT,"DisplayName","帮助信息","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9908","eng","DisplayName","Help","");
+			"Column","L9920","eng","DisplayName","Help","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
@@ -1913,6 +1827,8 @@ int localcolumn_init()
 		insert_column_cnt ++;
 #endif
 	}
+
+#ifdef SMARTLIFE_LC
 	/*
 	 二级菜单“设置－用电目标”
 	*/
@@ -2288,6 +2204,7 @@ int localcolumn_init()
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
+#endif
 	
 	
 	if(insert_column_cnt>0)
@@ -2298,7 +2215,7 @@ int localcolumn_init()
 
 int global_info_init(int force_reset)
 {
-	DEBUG("init table 'Global', set default records\n");
+	DEBUG("init table 'Global', set default records with %d\n", force_reset);
 	
 	if(-1==sqlite_transaction_begin())
 		return -1;
@@ -2306,14 +2223,6 @@ int global_info_init(int force_reset)
 	int insert_record_cnt = 0;
 	char key_value[128];
 	char sqlite_cmd[1024];
-	
-	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_PREVIEWPATH);
-	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%q','');",
-			GLB_NAME_PREVIEWPATH,DBSTAR_PREVIEWPATH);
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_record_cnt ++;
-	}
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_CURLANGUAGE);
 	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
@@ -2347,20 +2256,14 @@ int global_info_init(int force_reset)
 		insert_record_cnt ++;
 	}
 	
-	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_HDFOREWARNING);
-	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%llu','');",
-			GLB_NAME_HDFOREWARNING,HDFOREWARNING_DFT);
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_record_cnt ++;
-	}
-	
 	if(1==force_reset || -1==check_record_in_trans("Global","Name","ColumnIconDft")){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','LocalColumnIcon/DefaultIcon_losefocus.png','');");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_record_cnt ++;
 	}
 	
+#ifdef TUNER_INPUT
+	can not run to here
 	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_TUNERARGS);
 	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
@@ -2377,6 +2280,7 @@ int global_info_init(int force_reset)
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_record_cnt ++;
 	}
+#endif
 	
 	if(insert_record_cnt>0){
 		return sqlite_transaction_end(1);
@@ -2387,7 +2291,7 @@ int global_info_init(int force_reset)
 	}
 }
 
-
+#ifdef SMARTLIFE_LC
 int smarthome_setting_reset(char *sqlite_cmd)
 {
 	char* errmsg=NULL;
@@ -2416,7 +2320,6 @@ int smarthome_setting_reset(char *sqlite_cmd)
 	
 	return ret;	
 }
-
 
 /*
 功能：	执行SELECT语句
@@ -2478,3 +2381,4 @@ int smartlife_sqlite_read(char *sqlite_cmd, void *receiver, unsigned int receive
 	
 	return ret;
 }
+#endif

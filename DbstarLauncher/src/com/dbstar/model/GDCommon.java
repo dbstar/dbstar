@@ -92,22 +92,22 @@ public class GDCommon {
 	public static final String ColumnTypeMULTIPLEMEDIANEWSPAPER = "5";
 	public static final String ColumnTypeMULTIPLEMEDIAVOICEDBOOK = "L10000";
 
-	public static final String ColumnIDReceiveChooser = "L9801";
-	public static final String ColumnIDDownloadStatus = "L9802";
-	public static final String ColumnIDMediaShare = "L9804";
-	public static final String ColumnIDAPPLIST = "L9806";
-	public static final String ColumnIDFileBrowser = "L9805";
-	public static final String ColumnIDBrowser = "L9807";
+	public static final String ColumnIDReceiveChooser = "L9803";
+	public static final String ColumnIDDownloadStatus = "L9804";
+	public static final String ColumnIDMediaShare = "L9805";
+	public static final String ColumnIDAPPLIST = "L9807";
+	public static final String ColumnIDFileBrowser = "L9806";
+	public static final String ColumnIDBrowser = "L9808";
 	public static final String ColumnIDSystemManagement = "L9809";
 
-	public static final String ColumnIDGeneralInfoSettings = "L9901";
+	public static final String ColumnIDGeneralInfoSettings = "L9801";
 	public static final String ColumnIDMultimediaSettings = "L9902";
 	public static final String ColumnIDNetworkSettings = "L9903";
 	
 	public static final String ColumnIDAdvancedSettings = "L9905";
 	public static final String ColumnIDSmartcardSettings = "L9906";
-	public static final String ColumnIDHelp = "L9908";
-	public static final String ColumnIDProducts = "L9907";
+	public static final String ColumnIDHelp = "L9920";
+	public static final String ColumnIDProducts = "L9802";
 	public static final String ColumnIDPowerTarget = "L9909";
 	
 	public static final String ColumnIDGuodianSmartPower = "G1";

@@ -656,6 +656,54 @@ int fcopy_c(char *from_file, char *to_file)
 	return ret;
 }
 
+// 将一个目录下的所有文件拷贝到另一个指定目录下。懒省事，只拷贝文件，不管其中的目录
+int files_copy(char *from_dir, char *to_dir)
+{
+	DIR * pdir = NULL;
+	struct dirent *ptr = NULL;
+	char fileson[1024];
+	char fileson_to[1024];
+	struct stat filestat;
+	struct stat fileson_stat;
+	long long cur_size = 0LL;
+	
+	if(NULL==from_dir || 0==strlen(from_dir) || NULL==to_dir || 0==strlen(to_dir)){
+		DEBUG("can not copy will null uri\n");
+		return -1;
+	}
+	
+	int stat_ret = stat(from_dir, &filestat);
+	if(0==stat_ret){
+		if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
+			pdir = opendir(from_dir);
+			if(pdir){
+				while((ptr = readdir(pdir))!=NULL)
+				{
+					if(0==strcmp(ptr->d_name, ".") || 0==strcmp(ptr->d_name, ".."))
+						continue;
+					
+					snprintf(fileson,sizeof(fileson),"%s/%s", from_dir,ptr->d_name);
+					snprintf(fileson_to,sizeof(fileson_to),"%s/%s", to_dir,ptr->d_name);
+					if(0==stat(fileson, &fileson_stat)){
+						if((fileson_stat.st_mode & S_IFREG) == S_IFREG)
+							fcopy_c(fileson, fileson_to);
+					}
+				}
+				closedir(pdir);
+			}
+			else{
+				ERROROUT("opendir(%s) failed\n", from_dir);
+				cur_size = -1;
+			}
+		}
+	}
+	else{
+		ERROROUT("can not stat(%s)\n", from_dir);
+		cur_size = -1;
+	}
+	
+	return cur_size;   
+}
 
 /*
  扫描指定的目录，如果其下的文件/文件夹stat失败，则将其重命名。

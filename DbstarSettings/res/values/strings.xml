@@ -47,7 +47,7 @@
     <string name="eth_mask">子网掩码</string>
     <string name="eth_settings_error">设置失败：请输入有效的字符 0~255</string>
 
-    <string name="network_gateway_setup_title">配置国电服务器和组播源地址</string>
+    <string name="network_gateway_setup_title">配置组播源地址</string>
     <string name="network_satellite_setup_title">卫星连接</string>
     <string name="network_satellite_search_rate">搜索频率&#160;:&#160;</string>
     <string name="network_satellite_search_rate_unit">&#160;MHZ</string>

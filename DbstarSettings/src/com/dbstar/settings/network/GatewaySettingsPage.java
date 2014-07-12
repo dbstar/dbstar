@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.dbstar.settings.R;
 import com.dbstar.settings.base.BaseFragment;
 import com.dbstar.settings.utils.SettingsCommon;
+import com.dbstar.settings.utils.APPVersion;
 
 public class GatewaySettingsPage extends BaseFragment {
 	private static final String TAG = "GatewaySettingsPage";
@@ -92,19 +93,22 @@ public class GatewaySettingsPage extends BaseFragment {
 			Log.d("@@@", "onReceive msg " + action);
 
 			if (action.equals(ActionUpateNetworkInfo)) {
-				String gatewaySerialNumber = intent
-						.getStringExtra(PropertyGatewaySerialNumber);
-				String gatewayIP = intent.getStringExtra(PropertyGatewayIP);
-				String gatewayPort = intent.getStringExtra(PropertyGatewayPort);
+//				if(APPVersion.GUODIAN){
+//					String gatewaySerialNumber = intent
+//							.getStringExtra(PropertyGatewaySerialNumber);
+//					String gatewayIP = intent.getStringExtra(PropertyGatewayIP);
+//					String gatewayPort = intent.getStringExtra(PropertyGatewayPort);
+//					
+//					mGatewaySerialNumber.setText(gatewaySerialNumber);
+//					mGatewayIP.setText(gatewayIP);
+//					mGatewayPort.setText(gatewayPort);
+//				}
 				String multicastIP = intent.getStringExtra(PropertyMulticastIP);
 				String multicastPort = intent
 						.getStringExtra(PropertyMulticastPort);
-
-				mGatewaySerialNumber.setText(gatewaySerialNumber);
+				
 				mMulticastIP.setText(multicastIP);
 				mMulticastPort.setText(multicastPort);
-				mGatewayIP.setText(gatewayIP);
-				mGatewayPort.setText(gatewayPort);
 				isReceiveData = true;
 			}
 		}
@@ -121,18 +125,22 @@ public class GatewaySettingsPage extends BaseFragment {
 	    if(!isReceiveData)
 	        return;
 	    
-		String gatewaySerialNumber = mGatewaySerialNumber.getText().toString();
-		String gatewayIP = mGatewayIP.getText().toString();
-		String gatewayPort = mGatewayPort.getText().toString();
+//	    if(APPVersion.GUODIAN){
+//			String gatewaySerialNumber = mGatewaySerialNumber.getText().toString();
+//			String gatewayIP = mGatewayIP.getText().toString();
+//			String gatewayPort = mGatewayPort.getText().toString();
+//		}
 		String multicastIP = mMulticastIP.getText().toString();
 		String multicastPort = mMulticastPort.getText().toString();
 
 		Intent intent = new Intent();
 		intent.setAction(ActionSetNetworkInfo);
-
-		intent.putExtra(PropertyGatewaySerialNumber, gatewaySerialNumber);
-		intent.putExtra(PropertyGatewayIP, gatewayIP);
-		intent.putExtra(PropertyGatewayPort, gatewayPort);
+		
+//		if(APPVersion.GUODIAN){
+//			intent.putExtra(PropertyGatewaySerialNumber, gatewaySerialNumber);
+//			intent.putExtra(PropertyGatewayIP, gatewayIP);
+//			intent.putExtra(PropertyGatewayPort, gatewayPort);
+//		}
 		intent.putExtra(PropertyMulticastIP, multicastIP);
 		intent.putExtra(PropertyMulticastPort, multicastPort);
 
@@ -140,27 +148,38 @@ public class GatewaySettingsPage extends BaseFragment {
 	}
 
 	void initializeView() {
-		mNullview = mActivity.findViewById(R.id.nullview);
-		mGatewaySerialNumber = (TextView) mActivity
-				.findViewById(R.id.gateway_serialnumber);
+//		if(APPVersion.GUODIAN){
+//			mNullview = mActivity.findViewById(R.id.nullview);
+//			mGatewaySerialNumber = (TextView) mActivity
+//					.findViewById(R.id.gateway_serialnumber);
+//			
+//		}
 		mMulticastIP = (TextView) mActivity.findViewById(R.id.multicast_ip);
 		mMulticastPort = (TextView) mActivity.findViewById(R.id.multicast_port);
-		mGatewayIP = (TextView) mActivity.findViewById(R.id.gateway_ip);
-		mGatewayPort = (TextView) mActivity.findViewById(R.id.gateway_port);
+//		if(APPVersion.GUODIAN){
+//			mGatewayIP = (TextView) mActivity.findViewById(R.id.gateway_ip);
+//			mGatewayPort = (TextView) mActivity.findViewById(R.id.gateway_port);
+//		}
 		mNextButton = (Button) mActivity.findViewById(R.id.nextbutton);
-
-		mGatewaySerialNumber.setOnFocusChangeListener(mFocusChangedListener);
+		
+//		if(APPVersion.GUODIAN){
+//			mGatewaySerialNumber.setOnFocusChangeListener(mFocusChangedListener);
+//		}
 		mMulticastIP.setOnFocusChangeListener(mFocusChangedListener);
 		mMulticastPort.setOnFocusChangeListener(mFocusChangedListener);
-		mGatewayIP.setOnFocusChangeListener(mFocusChangedListener);
-		mGatewayPort.setOnFocusChangeListener(mFocusChangedListener);
-
-		mGatewaySerialNumber.setLongClickable(false);
+//		if(APPVersion.GUODIAN){
+//			mGatewayIP.setOnFocusChangeListener(mFocusChangedListener);
+//			mGatewayPort.setOnFocusChangeListener(mFocusChangedListener);
+//		
+//			mGatewaySerialNumber.setLongClickable(false);
+//		}
 		mMulticastIP.setLongClickable(false);
 		mMulticastPort.setLongClickable(false);
-		mGatewayIP.setLongClickable(false);
-		mGatewayPort.setLongClickable(false);
-
+//		if(APPVersion.GUODIAN){
+//			mGatewayIP.setLongClickable(false);
+//			mGatewayPort.setLongClickable(false);
+//		}
+		
 		mNextButton.setOnClickListener(mOnClickListener);
 		
 

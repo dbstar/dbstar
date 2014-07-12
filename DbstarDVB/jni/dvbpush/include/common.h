@@ -7,7 +7,7 @@
 extern int debug_level_get(void);
 
 // 如果是tuner信号版本，定义此宏；否则是网络版本
-#define TUNER_INPUT
+//#define TUNER_INPUT
 
 #define DVBPUSH_DEBUG_ANDROID 1
 #if DVBPUSH_DEBUG_ANDROID
@@ -61,10 +61,10 @@ typedef enum{
 //#define SMARTLIFE_LC
 
 // 本地栏目：富媒体分享
-#define MEDIASHARING_LC
+//#define MEDIASHARING_LC
 
 // 本地栏目：文件浏览
-#define FILEBROWSER_LC
+//#define FILEBROWSER_LC
 
 // 本地栏目：我的应用
 //#define MYAPP_LC
@@ -72,35 +72,34 @@ typedef enum{
 // 本地栏目：浏览器
 //#define WEBBROWSER_LC
 
-// 本地栏目：CNTV
-#define CNTV_LC
-
 /*
 程序自行使用的配置、fifo文件等
 */
-#define	WORKING_DATA_DIR	"/data/dbstar"
-#define	MSG_FIFO_ROOT_DIR	WORKING_DATA_DIR"/msg_fifo"
-#define SETTING_BASE		WORKING_DATA_DIR"/dbstar.conf"
-#define PUSH_CONF			"/system/etc/dbstar/push.conf"
-#define INITIALIZE_XML_URI	"pushroot/initialize/Initialize.xml"
-#define MOTHERDISC_XML_URI	"ContentDelivery.xml"
+#define	WORKING_DATA_DIR		"/data/dbstar"
+#define	MSG_FIFO_ROOT_DIR		WORKING_DATA_DIR"/msg_fifo"
+#define PUSH_CONF_SEED			"/system/etc/dbstar/push.conf"
+#define PUSH_CONF_WORKING		WORKING_DATA_DIR"/push.conf"
+#define INITIALIZE_XML_URI		"pushroot/initialize/Initialize.xml"
+#define MOTHERDISC_XML_URI		"ContentDelivery.xml"
 
 /*
 程序运行过程中产生的数据，包括：下载的片源、对应的数据库
 */
-#define PUSH_DATA_DIR_DF	"/storage/external_storage/sda1"	// 参考push.conf中DATA_DIR定义及时刷新，以备应急使用
-#define DBSTAR_DATABASE			WORKING_DATA_DIR"/Dbstar.db"
+#define PUSH_STORAGE_HD		"/storage/external_storage/sda1"	// 下载到硬盘的目录
+#define PUSH_STORAGE_FLASH	WORKING_DATA_DIR			// 下载到flash的目录
+#define UDISK_MOUNT_PREFIX	"/storage/external_storage/sdb"		// U盘挂载路径前缀，只用于drm测试，前提是内置硬盘，外插U盘，不再外接其他设备
+
+#define DB_PROTOTYPE		"/system/etc/dbstar/Dbstar.db"	// 系统内置的数据库原型，在此基础上添加数据用于业务使用
+#define DB_MAIN_URI			WORKING_DATA_DIR"/Dbstar.db"	// 用来存储终端基础信息的主数据库，以及flash存储小片的信息
+#define DB_SUB_NAME				"Dbstar.db"		// 用来存储下载到硬盘中的节目信息，数据库也存储在硬盘中
 #define SMARTHOME_DATABASE		WORKING_DATA_DIR"/Smarthome.db"
 
 // 首次开机Launcher需要进行网络初始化，初始化完毕后Launcher写入此标记文件，目前内容仅一个字符“1”
 #define NETWORK_INIT_FLAG		"/data/data/com.dbstar/files/flag"
 #define DEVICE_NUM_CHANGED_FLAG	"/cache/recovery/last_log"
 
-#define	SERVICE_ID			"01"
+#define	SHOW_FLASH_COLUMNTYPE			(12)
 #define ROOT_CHANNEL		(400)	// 0x190
-#define PROG_DATA_PID_DF	(411)	// 0x19b
-#define ROOT_PUSH_FILE		"Initialize.xml"
-#define ROOT_PUSH_FILE_SIZE	(1024)			/* Is this len right??? */
 #ifdef TUNER_INPUT
 	#define MULTI_BUF_SIZE	(524288)	/* (524288)=(512*1024) */
 #else
@@ -125,15 +124,11 @@ typedef enum{
 #define OBJ_PREVIEW			"Preview"
 
 #define GLB_NAME_SERVICEID			"serviceID"
-#define GLB_NAME_PUSHDIR			"PushDir"
+#define GLB_NAME_PUSHDIR			"PushDir"		// 此值由DbstarLauncher.apk根据硬盘是否挂载，在libpush启动前进行初始化
 #define GLB_NAME_COLUMNRES			"ColumnRes"
 #define GLB_NAME_PREVIEWPATH		"PreviewPath"
 #define GLB_NAME_CURLANGUAGE		"CurLanguage"
-#define GLB_NAME_OPERATIONBUSINESS	"OperationBusiness"
-#define GLB_NAME_SMARTCARDID		"SmartCardID"
-#define GLB_NAME_ORDERPRODUCT		"OrderProduct"
 #define GLB_NAME_DATASOURCE			"PushSource"
-#define GLB_NAME_HDFOREWARNING		"HDForeWarning"
 #define GLB_NAME_PRODUCTSN			"ProductSN"
 #define GLB_NAME_DEVICEMODEL		"DeviceModel"
 #define GLB_NAME_HARDWARE_VERSION	"HardwareVersion"
@@ -144,6 +139,7 @@ typedef enum{
 #define GLB_NAME_REBOOT_TIMESTAMP	"RebootStamp"
 #define GLB_NAME_TUNERARGS			"TunerArgs"
 #define GLB_NAME_TUNERARGS_DFT		"TunerArgsDefault"
+#define GLB_NAME_STORAGE_ID			"storage_id"			// 记录下载内容存储在什么设备上，用于判断是否更换硬盘或插拔硬盘
 
 #define INITIALIZE_MIDPATH	"pushroot/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
@@ -157,9 +153,10 @@ typedef enum{
 #define DBDATASERVERPORT_DFT		"4321"
 #define TUNERARGS_DFT				"12620\t43200\t11300\t0\t0"
 
-// 至少留出100G剩余空间，在实际使用时，是采用硬盘的实际总大小计算的，此值一般用不上。
-#define HDFOREWARNING_DFT			(107374182400LL)
-// 每个播发单修正其总大小32G
+#define STORAGE_ID_FLASH		"flash"
+#define STORAGE_ID_HD_DFT		"hd"	// 存储设备为硬盘，但是无法读出其识别值sn，正常情况下是硬盘的sn
+
+// 当硬盘下载时，每个播发单最小下载修正为32G，用于计算是否需要磁盘清理
 #define DOWNLOAD_ONCE_MIN			(34359738368LL)
 
 typedef enum{
@@ -251,8 +248,20 @@ typedef enum{
 	RECEIVETYPE_PUBLICATION	= 0,
 	RECEIVETYPE_SPRODUCT	= 1,
 	RECEIVETYPE_COLUMN		= 2,
-	RECEIVETYPE_PREVIEW		= 3
+	RECEIVETYPE_PREVIEW		= 3,
+	RECEIVETYPE_ALL			= 100
 }RECEIVETYPE_E;
+
+/*
+	数据投递单中的不同节目类型的接收顺序
+*/
+typedef enum{
+	RECV_SEQUENCE_ALL	= 0,	// 不计顺序，全部接收
+	RECV_SEQUENCE_1		= 1,	// 顺序1
+	RECV_SEQUENCE_2		= 2,	// 顺序2
+	
+	RECV_SEQUENCE_TAIL	= 10000	// 队尾，顺序靠后
+}RECV_SEQUENCE_E;
 
 /*
 	接收状态
@@ -764,6 +773,7 @@ int strtailcmp(const char *str_dad, char *str_tail, int case_cmp);
 int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port);
 int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int flag);
 int fcopy_c(char *from_file, char *to_file);
+int files_copy(char *from_dir, char *to_dir);
 int remove_force(const char *uri);
 long long dir_size(const char *uri);
 int dir_stat_ensure(const char *uri);

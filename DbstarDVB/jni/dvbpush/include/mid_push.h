@@ -27,6 +27,7 @@ int prog_monitor_reset(void);
 int push_recv_manage_refresh();
 int send_xml_to_parse(const char *path, int flag, char *id);
 int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_ext);
+int productdesc_column_finished();
 
 void disk_manage_flag_set(int flag);
 void column_refresh_flag_set(int flag);
@@ -37,6 +38,7 @@ int info_xml_refresh(int regist_flag, int push_flags[], unsigned int push_flags_
 int info_xml_regist();
 int maintenance_thread_init();
 void maintenance_thread_awake();
+void *maintenance_thread();
 int delete_publication_from_monitor(char *PublicationID, char *ProductID);
 int dvbpush_download_finish();
 unsigned long long should_clean_hd_get();

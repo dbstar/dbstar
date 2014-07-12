@@ -18,6 +18,7 @@ import com.dbstar.model.GDDVBDataContract.*;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
 import com.dbstar.model.GDDVBDataProvider.ResStrQuery;
 import com.dbstar.util.LogUtil;
+import com.dbstar.model.APPVersion;
 
 public class GDDataModel {
 	private static final String TAG = "GDDataModel";
@@ -38,7 +39,14 @@ public class GDDataModel {
 
 	public void initialize(GDSystemConfigure configure) {
 		mDVBDataProvider.initialize(configure);
-		mSmartHomeProvider.initialize(configure);
+		
+		if(APPVersion.GUODIAN){
+			LogUtil.d(TAG, "APPVersion.GUODIAN is true, go GDSmartHomeProvider init");
+			mSmartHomeProvider.initialize(configure);
+		}
+		else{
+			LogUtil.d(TAG, "APPVersion.GUODIAN is false, do not init GDSmartHomeProvider");
+		}
 		// mUserDataProvider.initialize(configure);
 
 		String language = getLanguage();
@@ -707,11 +715,11 @@ public class GDDataModel {
 
 	// Global property query
 	public String getPreviewPath() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyPreviewPath);
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyPreviewPath);
 	}
 
 	public String getPushDir() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyPushDir);
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyPushDir);
 	}
 
 	public String getColumnResDir() {
@@ -719,36 +727,36 @@ public class GDDataModel {
 	}
 
 	public String getLanguage() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyLanguage);
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyLanguage);
 	}
 
 	public String getPushSource() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyPushSource);
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyPushSource);
 	}
 
 	public boolean setPushDir(String pushDir) {
-		return updateGlobalProperty(GDDVBDataContract.PropertyPushDir, pushDir);
+		return updateDeviceGlobalProperty(GDDVBDataContract.PropertyPushDir, pushDir);
 	}
 
 	public boolean setPushSource(String source) {
-		return updateGlobalProperty(GDDVBDataContract.PropertyPushSource,
+		return updateDeviceGlobalProperty(GDDVBDataContract.PropertyPushSource,
 				source);
 	}
 
 	public String getDeviceSearialNumber() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyDeviceSearialNumber);
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyDeviceSearialNumber);
 	}
 
 	public String getHardwareType() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyHardwareType);
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyHardwareType);
 	}
 
 	public String getSoftwareVersion() {
-		return queryGlobalProperty(GDDVBDataContract.PropertySoftwareVersion);
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertySoftwareVersion);
 	}
 
 	public String getLoaderVersion() {
-		return queryGlobalProperty(GDDVBDataContract.PropertyLoaderVersion);
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyLoaderVersion);
 	}
 
 	public String queryGlobalProperty(String property) {
@@ -772,10 +780,36 @@ public class GDDataModel {
 
 		return value;
 	}
+	
+	// this property is related to Device but not storage(flash/harddisk), such as PushDir, ProductSN, DeviceModel...
+	public String queryDeviceGlobalProperty(String property) {
+		String value = null;
+		String selection = GDDVBDataContract.Global.NAME + "=?";
+		String[] selectionArgs = { property };
+		Cursor cursor = mDVBDataProvider.deviceGlobalQuery(
+				GDDVBDataContract.Global.CONTENT_URI,
+				GDDVBDataProvider.GlobalQuery.COLUMNS, selection,
+				selectionArgs, null);
 
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				value = cursor.getString(GDDVBDataProvider.GlobalQuery.VALUE);
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+		
+		LogUtil.d(TAG, "queryDeviceGlobal: query property["+property+"] has value["+value+"]");
+
+		return value;
+	}
+	
 	public boolean updateGlobalProperty(String property, String value) {
 		String selection = GDDVBDataContract.Global.NAME + "=?";
 		String[] selectionArgs = { property };
+		//LogUtil.d(TAG, "updateGlobalProperty: selection["+selection+"]");
 		Cursor cursor = mDVBDataProvider.query(
 				GDDVBDataContract.Global.CONTENT_URI,
 				GDDVBDataProvider.GlobalQuery.COLUMNS, selection,
@@ -784,13 +818,14 @@ public class GDDataModel {
 		boolean ret = true;
 		int Id = -1;
 		String oldValue = "";
-
+		
+		LogUtil.d(TAG, "updateGlobalProperty: want set property["+property+"] value["+value+"]");
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				Id = 0;
 				oldValue = cursor
 						.getString(GDDVBDataProvider.GlobalQuery.VALUE);
-				LogUtil.d(TAG, "=========== global table=== "+ property + " old value = " + oldValue);
+				LogUtil.d(TAG, "Global["+ property + "], old value = " + oldValue);
 			}
 		}
 
@@ -799,6 +834,7 @@ public class GDDataModel {
 		}
 
 		if (Id < 0) {
+			LogUtil.d(TAG, "insert to Global["+property+"] value=" + value);
 			// insert
 			ContentValues values = new ContentValues();
 			values.put(GDDVBDataContract.Global.NAME, property);
@@ -812,14 +848,72 @@ public class GDDataModel {
 			if (retUri != null)
 				ret = true;
 		} else {
-			
-			LogUtil.d(TAG, "=========== global === " + oldValue + " " + value);
+			LogUtil.d(TAG, "update " + oldValue + " to " + value);
 
 			if (oldValue != null && !oldValue.equals(value)) {
 				// update
 				ContentValues values = new ContentValues();
 				values.put(GDDVBDataContract.Global.VALUE, value);
 				int count = mDVBDataProvider.update(
+						GDDVBDataContract.Global.CONTENT_URI, values,
+						selection, selectionArgs);
+				if (count == 1)
+					ret = true;
+			}
+		}
+
+		return ret;
+	}
+	
+	// this property is related to Device but not storage(flash/harddisk), such as PushDir, ProductSN, DeviceModel...
+	public boolean updateDeviceGlobalProperty(String property, String value) {
+		String selection = GDDVBDataContract.Global.NAME + "=?";
+		String[] selectionArgs = { property };
+		Cursor cursor = mDVBDataProvider.deviceGlobalQuery(
+				GDDVBDataContract.Global.CONTENT_URI,
+				GDDVBDataProvider.GlobalQuery.COLUMNS, selection,
+				selectionArgs, null);
+
+		boolean ret = true;
+		int Id = -1;
+		String oldValue = "";
+		
+		LogUtil.d(TAG, "updateDeviceGlobal: want set property["+property+"] value["+value+"]");
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				Id = 0;
+				oldValue = cursor
+						.getString(GDDVBDataProvider.GlobalQuery.VALUE);
+				LogUtil.d(TAG, "updateDeviceGlobal["+ property + "], old value = " + oldValue);
+			}
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+
+		if (Id < 0) {
+			LogUtil.d(TAG, "updateDeviceGlobal, insert to Global["+property+"] value=" + value);
+			// insert
+			ContentValues values = new ContentValues();
+			values.put(GDDVBDataContract.Global.NAME, property);
+			values.put(GDDVBDataContract.Global.VALUE, value);
+			Uri retUri = mDVBDataProvider.DeviceGlobalinsert(
+					GDDVBDataContract.Global.CONTENT_URI, values);
+			/*
+			 * long rowId = Long.valueOf(retUri.getLastPathSegment()); if (rowId
+			 * > 0)
+			 */
+			if (retUri != null)
+				ret = true;
+		} else {
+			LogUtil.d(TAG, "updateDeviceGlobal, update " + oldValue + " to " + value);
+
+			if (oldValue != null && !oldValue.equals(value)) {
+				// update
+				ContentValues values = new ContentValues();
+				values.put(GDDVBDataContract.Global.VALUE, value);
+				int count = mDVBDataProvider.DeviceGlobalupdate(
 						GDDVBDataContract.Global.CONTENT_URI, values,
 						selection, selectionArgs);
 				if (count == 1)

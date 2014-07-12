@@ -28,15 +28,15 @@ dbstar_init()
 		setprop dbstar.inited 1
 	fi
 
-	if [ -s "/data/dbstar/Smarthome.db" ]; then
-		echo "Smarthome.db already inited!"
-	else
-		cp -rf /system/etc/dbstar/Smarthome.db /data/dbstar/
-		sync
-		chown system:system /data/dbstar/Smarthome.db
-		chmod 666 /data/dbstar/Smarthome.db
-		setprop dbstar.inited 1
-	fi
+#	if [ -s "/data/dbstar/Smarthome.db" ]; then
+#		echo "Smarthome.db already inited!"
+#	else
+#		cp -rf /system/etc/dbstar/Smarthome.db /data/dbstar/
+#		sync
+#		chown system:system /data/dbstar/Smarthome.db
+#		chmod 666 /data/dbstar/Smarthome.db
+#		setprop dbstar.inited 1
+#	fi
 
 	if [ -e "/data/dbstar/ColumnRes" ]; then
 		echo "ColumnRes already inited!"

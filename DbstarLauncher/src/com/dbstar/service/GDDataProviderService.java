@@ -8,6 +8,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream; 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.FileChannel;
+
 import android.app.AlertDialog;
 import android.app.Instrumentation;
 import android.app.Service;
@@ -117,6 +127,12 @@ public class GDDataProviderService extends Service {
 	private static final String PARAMETER_KEYS = "keys";
 	private static final String PARAMETER_KEY = "key";
 	private static final String PARAMETER_VALUE = "value";
+	
+	private static final String DBSTAR_SOURCE_DIR = "/system/etc/dbstar/";
+	private static final String DBSTAR_FLASH = "/data/dbstar/";
+	private static final String DBSTARDB_NAME = "Dbstar.db";
+	private static final String COLUMNICON_DIR = "ColumnRes/";
+	private static final String LOCALCOLUMNICON_DIR = "LocalColumnIcon/";
 
 	private Object mTaskQueueLock = new Object();
 	private LinkedList<RequestTask> mTaskQueue = null;
@@ -235,7 +251,7 @@ public class GDDataProviderService extends Service {
 
 	public void onCreate() {
 		super.onCreate();
-		LogUtil.d(TAG, "onCreate");
+		LogUtil.d(TAG, "GDDataProviderService onCreate");
 
 		mMainThreadId = Process.myTid();
 		mMainThreadPriority = Process.getThreadPriority(mMainThreadId);
@@ -257,9 +273,13 @@ public class GDDataProviderService extends Service {
 
 		//mGuodianEngine = new GDEngine(this);
 		//mGuodianEngine.setDbStarClint(mDBStarClient);
-		if(APPVersion.GUODIAN)
+		if(APPVersion.GUODIAN){
+		    LogUtil.d(TAG, "APPVersion.GUODIAN is true");
 		    mRequestService = new ClientRequestService(this);
-		
+		}
+		else{
+		    LogUtil.d(TAG, "APPVersion.GUODIAN is false");
+		}
 		
 		mTaskQueue = new LinkedList<RequestTask>();
 		mFinishedTaskQueue = new LinkedList<RequestTask>();
@@ -307,7 +327,6 @@ public class GDDataProviderService extends Service {
 
 			if (!disk.isEmpty()) {
 				//mIsStorageReady = true;
-				LogUtil.d(TAG, "disk is ready " + disk);
 
 				//mDiskMonitor.addDiskToMonitor(disk);
 				
@@ -315,9 +334,33 @@ public class GDDataProviderService extends Service {
 				Bundle data = new Bundle();
 				data.putString("disk", disk);
 				diskMessage.setData(data);
+				
+				LogUtil.d(TAG, "disk(" + disk + ") is ready, use it as PushDir");
+				//mDataModel.setPushDir(disk);	// too early to update database
+				
+				String vIconRootDir = disk + "/" + COLUMNICON_DIR;
+				String vDBUri = disk + "/" + DBSTARDB_NAME;
+				mConfigure.setStorageDisk(disk);
+				mConfigure.setStorageDir(disk);
+				mConfigure.setIconRootDir(vIconRootDir);
+				mConfigure.setDVBDatabaseFile(vDBUri);
+				
+				// check Database and column icon is exist
+				fileEnsure(DBSTAR_SOURCE_DIR+DBSTARDB_NAME, disk+"/"+DBSTARDB_NAME);
+				dirEnsure(DBSTAR_SOURCE_DIR+COLUMNICON_DIR+LOCALCOLUMNICON_DIR, disk+"/"+COLUMNICON_DIR+LOCALCOLUMNICON_DIR);
 
 				mHandler.sendMessageDelayed(diskMessage, 5000);
 			}
+		}
+		else
+		{
+			LogUtil.d(TAG, "disk is unusable, use flash(" + DBSTAR_FLASH + ") as PushDir");
+			//mDataModel.setPushDir(DBSTAR_FLASH);	// too early to update database
+			
+			mConfigure.setStorageDisk(DBSTAR_FLASH);
+			mConfigure.setStorageDir(DBSTAR_FLASH);
+			mConfigure.setIconRootDir(DBSTAR_FLASH+COLUMNICON_DIR);
+			mConfigure.setDVBDatabaseFile(DBSTAR_FLASH+DBSTARDB_NAME);
 		}
 
 		String channel = FileOperation.read(GDCommon.ChannelFile);
@@ -337,14 +380,15 @@ public class GDDataProviderService extends Service {
 		//queryDiskGuardSize();
 
 		//if (mIsStorageReady) {
-		//	mDataModel.setPushDir(mConfigure.getStorageDir());
+			mDataModel.setPushDir(mConfigure.getStorageDir());
 		//}
-
+		
 		// start smart home service
 		mIsSmartHomeServiceStarted = false;
 
 		if (mIsNetworkReady) {
 			startDbStarService();
+			
 			startGuodianEngine();
 		}
 
@@ -355,6 +399,87 @@ public class GDDataProviderService extends Service {
 		startRequestServer();
 
 	}
+	
+	public void fileEnsure(String file_src, String file_dis)
+	{
+		File file=new File(file_dis);
+		if(null!=file && !file.exists())
+		{
+			try {
+				LogUtil.d(TAG, "file["+file_dis+"] is not exist, init it from "+file_src);
+				
+				fileChannelCopy(new File(file_src), new File(file_dis));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else{
+			LogUtil.d(TAG, "file["+file_dis+"] is exist already\n");
+		}
+	}
+	
+	public void dirEnsure(String dir_src, String dir_dis)
+	{
+		File file=new File(dir_dis);
+		if(null!=file && !file.exists() && !file.isDirectory())
+		{
+			try {
+				LogUtil.d(TAG, "dir["+dir_dis+"] is not exist, init it from "+dir_src);
+				
+				dir_copy(dir_src, dir_dis);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else{
+			LogUtil.d(TAG, "dir["+dir_dis+"] is exist already\n");
+		}
+	}
+	
+	// copy file by channel
+	public void fileChannelCopy(File s, File t) {
+		FileInputStream fi = null;
+		FileOutputStream fo = null;
+		FileChannel in = null;
+		FileChannel out = null;
+		
+		try {
+			fi = new FileInputStream(s);
+			fo = new FileOutputStream(t);
+			in = fi.getChannel();
+			out = fo.getChannel();
+			in.transferTo(0, in.size(), out);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				fi.close();
+				in.close();
+				fo.close();
+				out.close();
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	// copy files from dir_source, but without son-dir
+	public void dir_copy(String dir_source, String dir_dist) {
+		(new File(dir_dist)).mkdirs();
+		
+		File[] file = (new File(dir_source)).listFiles();
+		for (int i = 0; i < file.length; i++) {
+			if (file[i].isFile()) {
+				fileChannelCopy(file[i],new File(dir_dist+file[i].getName()));
+			}
+		}
+	}
+	
 	void startRequestServer(){
 	    if(mRequestService != null)
 	        mRequestService.start(mDBStarClient, mGDObserver);
@@ -365,20 +490,25 @@ public class GDDataProviderService extends Service {
 	        mRequestService.stop();
 	}
 	void startGuodianEngine() {
-		LogUtil.d(TAG, "========== startGuodianEngine ==========");
-		String serverIP = mDataModel
-				.getSettingValue(GDSettings.PropertyGuodianServerIP);
-		String serverPort = mDataModel
-				.getSettingValue(GDSettings.PropertyGuodianServerPort);
-		if (serverIP == null || serverIP.isEmpty() || serverPort == null
-				|| serverPort.isEmpty())
-			return;
-
-		//mGuodianEngine.setReconnectTime(mConfigure.getGuodianReconnectTime());
-		//mGuodianEngine
-				//.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
-		
-		mIsGuodianEngineStarted = true;
+		if(APPVersion.GUODIAN){
+			LogUtil.d(TAG, "APPVersion.GUODIAN is true, ===== startGuodianEngine ====");
+			String serverIP = mDataModel
+					.getSettingValue(GDSettings.PropertyGuodianServerIP);
+			String serverPort = mDataModel
+					.getSettingValue(GDSettings.PropertyGuodianServerPort);
+			if (serverIP == null || serverIP.isEmpty() || serverPort == null
+					|| serverPort.isEmpty())
+				return;
+	
+			//mGuodianEngine.setReconnectTime(mConfigure.getGuodianReconnectTime());
+			//mGuodianEngine
+					//.start(serverIP, Integer.valueOf(serverPort), mGDObserver);
+			
+			mIsGuodianEngineStarted = true;
+		}
+		else{
+			LogUtil.d(TAG, "========== smarthome is rejected by this version ==========");
+		}
 	}
 
 	void stopGuodianEngine() {
@@ -432,22 +562,27 @@ public class GDDataProviderService extends Service {
 	}
 
 	private void startDbStarService() {
-		LogUtil.d(TAG, "++++++++++++++++++startDbStarService++++++++++++++++++++");
-
-		if (mIsSmartHomeServiceStarted)
-			return;
-
-		mIsSmartHomeServiceStarted = true;
-
-		// SharedPreferences settings = null;
-		// SharedPreferences.Editor editor = null;
-		//
-		// settings = getSharedPreferences(SmartHomePrepertyName, 0);
-		// editor = settings.edit();
-		// editor.putInt(SmartHomePrepertyName, 1);
-		// editor.commit();
-
-		SystemUtils.startSmartHomeServer();
+		if(APPVersion.GUODIAN){
+			LogUtil.d(TAG, "++++++++++++++++++startDbStarService++++++++++++++++++++");
+	
+			if (mIsSmartHomeServiceStarted)
+				return;
+	
+			mIsSmartHomeServiceStarted = true;
+	
+			// SharedPreferences settings = null;
+			// SharedPreferences.Editor editor = null;
+			//
+			// settings = getSharedPreferences(SmartHomePrepertyName, 0);
+			// editor = settings.edit();
+			// editor.putInt(SmartHomePrepertyName, 1);
+			// editor.commit();
+	
+			SystemUtils.startSmartHomeServer();
+		}
+		else{
+			LogUtil.d(TAG, "xxxxx smarthome is reject in this version xxxxx");
+		}
 	}
 
 	private void stopDbStarService() {
@@ -542,24 +677,26 @@ public class GDDataProviderService extends Service {
 			}
 
 			case GDCommon.MSG_MEDIA_MOUNTED: {
-			    
-			  
 				Bundle data = msg.getData();
 				String disk = data.getString("disk");
-				// LogUtil.d(TAG, "mount storage = " + disk);
-				LogUtil.d(TAG, "++++++++ mount storage ++++++++" + disk);
 
 				// check whether the disk is mounted.
 				mConfigure.configureStorage();
 				String storage = mConfigure.getStorageDisk();
+				LogUtil.d(TAG, "MSG_MEDIA_MOUNTED, disk: " + disk + ", storage: " + storage );
 				if (disk.equals(storage)) {
 					// disk is mounted
 					mIsStorageReady = true;
 					String dir = mConfigure.getStorageDir();
-					LogUtil.d(TAG, "11111111111111111  dir === " + dir);
-					mDataModel.setPushDir(dir);
+					LogUtil.d(TAG, "getStorageDir() dir === " + dir);
+					if(mIsDbServiceStarted){
+						LogUtil.d(TAG, "dvbpush id started already, do not setPushDir()");
+					}
+					else{
+						LogUtil.d(TAG, "setPushDir(" + dir + ") in onCreate() already;");
+						//mDataModel.setPushDir(dir); // Zhang Shiyun: do setPushDir in onCreate() instead
+					}
 
-					LogUtil.d(TAG, " +++++++++++ monitor disk ++++++++" + disk);
 					//mDiskMonitor.removeDiskFromMonitor(disk);
 					//mDiskMonitor.addDiskToMonitor(disk);
 
@@ -821,17 +958,19 @@ public class GDDataProviderService extends Service {
 				intent.setAction(GDCommon.ActionUpateNetworkInfo);
 
 				for (int i = 0; i < 2; i++) {
-					String value = mDataModel.queryGlobalProperty(keys[i]);
-					LogUtil.d(TAG, "+++++++++++ queryGlobalProperty key=" + keys[i]
+					String value = mDataModel.queryDeviceGlobalProperty(keys[i]);
+					LogUtil.d(TAG, "for settings, queryDeviceGlobalProperty key=" + keys[i]
 							+ " value=" + value);
 					intent.putExtra(keys[i], value);
 				}
-
-				for (int i = 2; i < keys.length; i++) {
-					String value = mDataModel.getSettingValue(keys[i]);
-					LogUtil.d(TAG, "+++++++++++ getSettingValue key=" + keys[i]
-							+ " value=" + value);
-					intent.putExtra(keys[i], value);
+				
+				if(APPVersion.GUODIAN){
+					for (int i = 2; i < keys.length; i++) {
+						String value = mDataModel.getSettingValue(keys[i]);
+						LogUtil.d(TAG, "for settings, getSettingValue key=" + keys[i]
+								+ " value=" + value);
+						intent.putExtra(keys[i], value);
+					}
 				}
 
 				sendNetworkInfo(intent);
@@ -854,13 +993,15 @@ public class GDDataProviderService extends Service {
 				values[2] = data.getString(GDSettings.PropertyGatewayPort);
 				values[3] = data.getString(GDSettings.PropertyMulticastIP);
 				values[4] = data.getString(GDSettings.PropertyMulticastPort);
-
-				for (int i = 0; i < 3; i++) {
-					mDataModel.setSettingValue(keys[i], values[i]);
+				
+				if(APPVersion.GUODIAN){
+					for (int i = 0; i < 3; i++) {
+						mDataModel.setSettingValue(keys[i], values[i]);
+					}
 				}
 
 				for (int i = 3; i < keys.length; i++) {
-					mDataModel.updateGlobalProperty(keys[i], values[i]);
+					mDataModel.updateDeviceGlobalProperty(keys[i], values[i]);
 				}
 				break;
 			}
@@ -2287,7 +2428,7 @@ public class GDDataProviderService extends Service {
 					mIsDbServiceStarted = true;
 
 					LogUtil.d(TAG,
-							" ========== DbstarServer init success ===========");
+							"========== DbstarServer init success ===========");
 					if (mDBStarClient.isBoundToServer()) {
 						mHandler.sendEmptyMessage(GDCommon.SYNC_STATUS_TODBSERVER);
 					}

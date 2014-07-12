@@ -24,7 +24,6 @@ int software_check(void);
 char *serviceID_get();
 int serviceID_set(char *serv_id);
 void upgrade_sign_set();
-char *column_res_get();
 char *push_dir_get();
 char *initialize_uri_get();
 int guidelist_select_status(const char *publication_id);
@@ -38,7 +37,7 @@ int intialize_xml_reset(void);
 int setting_init_with_database();
 int pushinfo_reset(void);
 int smartcard_entitleinfo_refresh();
-int pushdir_usable();
+int storage_hd_enable();
 int user_idle_status_get();
 time_t reboot_timestamp_get();
 int reboot_timestamp_set(time_t time_stamp_s);
@@ -50,6 +49,9 @@ int smartcard_action_set(int smartcard_action);
 int smartcard_action_get();
 
 int motherdisc_check();
+
+int storage_hd_enable();
+int storage_flash_check();
 
 #include "dvbpush_api.h"
 int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, int len);

@@ -19,6 +19,7 @@
 #include <sys/vfs.h>
 #include <pthread.h>
 #include <dirent.h>
+#include <linux/hdreg.h>
 
 #include "common.h"
 #include "dvbpush_api.h"
@@ -53,22 +54,19 @@ static int 			s_settingInitFlag = 0;
 
 static char			s_service_id[32];
 static int			s_root_channel;
-static char			s_root_push_file[256];
-static unsigned int	s_root_push_file_size = 0;
 static char			s_data_source[256];
-static int			s_prog_data_pid = 0;
 
-static char			s_dbstar_database_uri[256];
+#ifdef SMARTLIFE_LC
 static char			s_smarthome_database_uri[256];
-static int			s_debug_level = 0;
-static char			s_parse_xml_test[512];
+static char			s_jni_cmd_smartlife_connect_status[32];
+#endif
+
 static char			s_initialize_xml_uri[512];
-static char			s_column_res[256];
 static int			s_software_check = 1;
 
 static char			s_Language[64];
 static char			s_serviceID[64];
-static char			s_push_root_path[512];
+static char			s_pushdir[512];
 static char			s_reboot_timestamp_str[32];
 static char			s_onehour_before_pushend[32];
 //static char 		*s_guidelist_unselect = NULL;
@@ -79,15 +77,12 @@ static char			s_jni_cmd_drm_ver[256];
 static char			s_jni_cmd_eigenvalue[1024];
 static char			s_jni_cmd_data_status[64];
 static char			s_jni_cmd_system_awake_timer[64];
-#ifdef SMARTLIFE_LC
-static char			s_jni_cmd_smartlife_connect_status[32];
-#endif
 
 // 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
 
+static char			s_previous_storage_id[64];	// 存储前一次开机的存储设备识别值，用于区别无盘开机、换盘开机、插盘开机等
 static char			s_TestSpecialProductID[64];
-static int			s_PushDir_usable = 0;	// 0表示不可用，1表示可用
 static char			s_udisk_mount[64];
 static char			s_push_log_dir[512];
 static int			s_user_idle_status = 1;	// 0表示用户处在使用状态、非空闲，1表示用户处在空闲状态
@@ -99,27 +94,20 @@ static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int 
 
 
 /* define some general interface function here */
-
 static void settingDefault_set(void)
 {
 	memset(s_service_id, 0, sizeof(s_service_id));
-	memset(s_root_push_file, 0, sizeof(s_root_push_file));
 	memset(s_data_source, 0, sizeof(s_data_source));
 	
-	memset(s_service_id, 0, sizeof(s_service_id));
 	s_root_channel = ROOT_CHANNEL;
-	strncpy(s_root_push_file, ROOT_PUSH_FILE, sizeof(s_root_push_file)-1);
-	s_root_push_file_size = ROOT_PUSH_FILE_SIZE;
 	
-	s_prog_data_pid = PROG_DATA_PID_DF;
-	snprintf(s_push_root_path, sizeof(s_push_root_path), "%s", PUSH_DATA_DIR_DF);
+	memset(s_pushdir, 0, sizeof(s_pushdir));
 	
-	snprintf(s_dbstar_database_uri, sizeof(s_dbstar_database_uri), "%s", DBSTAR_DATABASE);
+#ifdef SMARTLIFE_LC
 	snprintf(s_smarthome_database_uri, sizeof(s_smarthome_database_uri), "%s", SMARTHOME_DATABASE);
-	s_debug_level = 0;
-	memset(s_parse_xml_test, 0, sizeof(s_parse_xml_test));
+#endif
+
 	snprintf(s_initialize_xml_uri, sizeof(s_initialize_xml_uri), "%s", INITIALIZE_XML_URI);
-	snprintf(s_column_res, sizeof(s_column_res), "%s", COLUMN_RES);
 	s_software_check = 1;
 	
 	memset(s_udisk_mount,0,sizeof(s_udisk_mount));
@@ -184,52 +172,50 @@ char *setting_item_value(char *buf, unsigned int buf_len, char separator)
 */
 // (33554432)==32*1024*1024	(8388608)==8*1024*1024 (3145728)==3*1024*1024
 #define LIBPUSH_LOGDIR_SIZE	(3145728)
-static int libpush_conf_init(void)
+static int push_conf_init(void)
 {
-	FILE* fp;
-	char tmp_buf[256];
+	FILE* fp_from = NULL;
+	char tmp_buf[1024];
 	char *p_value;
 	long long dir_size_total = 0LL;
 	
 	memset(s_push_log_dir,0,sizeof(s_push_log_dir));
 	
-	fp = fopen(PUSH_CONF,"r");
-	if (NULL == fp)
+	fp_from = fopen(PUSH_CONF_WORKING,"r");
+	if (NULL == fp_from)
 	{
-		ERROROUT("fopen %s faild!\n", PUSH_CONF);
+		ERROROUT("fopen %s faild!\n", PUSH_CONF_WORKING);
+		return -1;
 	}
-	else{
-		DEBUG("fopen %s success\n", PUSH_CONF);
-		memset(tmp_buf, 0, sizeof(tmp_buf));
-		
-		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
-			//DEBUG("[%s]\n", tmp_buf);
-			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), '=');
-			if(NULL!=p_value)
-			{
-				DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
-				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
-					if(0==strcmp(tmp_buf, "LOG_DIR")){
-						snprintf(s_push_log_dir,sizeof(s_push_log_dir),"%s/libpush",p_value);
-						dir_size_total = dir_size(s_push_log_dir);
-						DEBUG("size of %s is %lld\n", s_push_log_dir, dir_size_total);
-						if(dir_size_total>=LIBPUSH_LOGDIR_SIZE){
-							DEBUG("WARNING: log dir %s is too large, remove it\n", s_push_log_dir);
-							remove_force(s_push_log_dir);
-						}
-						else
-							snprintf(s_push_log_dir,sizeof(s_push_log_dir),"/data/dbstar/libpush");
-					}
-					else if(0==strcmp(tmp_buf, "INITFILE")){
-						snprintf(s_initialize_xml_uri,sizeof(s_initialize_xml_uri),"%s", p_value);
-						DEBUG("read INITFILE as %s from push.conf\n", s_initialize_xml_uri);
+	
+	memset(tmp_buf, 0, sizeof(tmp_buf));
+	
+	while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp_from)){
+		//DEBUG("[%s]\n", tmp_buf);
+		p_value = setting_item_value(tmp_buf, strlen(tmp_buf), '=');
+		if(NULL!=p_value)
+		{
+			DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
+			if(strlen(tmp_buf)>0 && strlen(p_value)>0){
+				if(0==strcmp(tmp_buf, "LOG_DIR")){
+					snprintf(s_push_log_dir,sizeof(s_push_log_dir),"%s/libpush",p_value);
+					dir_size_total = dir_size(s_push_log_dir);
+					DEBUG("size of %s is %lld\n", s_push_log_dir, dir_size_total);
+					if(dir_size_total>=LIBPUSH_LOGDIR_SIZE){
+						DEBUG("WARNING: log dir %s is too large, remove it\n", s_push_log_dir);
+						remove_force(s_push_log_dir);
 					}
 				}
+				else if(0==strcmp(tmp_buf, "INITFILE")){
+					snprintf(s_initialize_xml_uri,sizeof(s_initialize_xml_uri),"%s", p_value);
+					DEBUG("read INITFILE as %s from push.conf\n", s_initialize_xml_uri);
+				}
 			}
-			memset(tmp_buf, 0, sizeof(tmp_buf));
 		}
-		fclose(fp);
+		memset(tmp_buf, 0, sizeof(tmp_buf));
 	}
+	fclose(fp_from);
+	
 	DEBUG("check libpush logdir finish\n");
 	
 	return 0;
@@ -241,60 +227,8 @@ int setting_init(void)
 		DEBUG("setting is init already\n");
 		return 0;
 	}
-		
-	FILE* fp;
-	char tmp_buf[256];
-	char *p_value;
 	
 	settingDefault_set();
-	
-	libpush_conf_init();
-	
-	DEBUG("init settings with %s\n", SETTING_BASE);
-	fp = fopen(SETTING_BASE,"r");
-	if (NULL == fp)
-	{
-		ERROROUT("fopen %s faild! use default setting\n", SETTING_BASE);
-	}
-	else{
-		DEBUG("fopen %s success\n", SETTING_BASE);
-		memset(tmp_buf, 0, sizeof(tmp_buf));
-		
-		while(NULL!=fgets(tmp_buf, sizeof(tmp_buf), fp)){
-			p_value = setting_item_value(tmp_buf, strlen(tmp_buf), ':');
-			if(NULL!=p_value)
-			{
-				//DEBUG("setting item: %s, value: %s\n", tmp_buf, p_value);
-				if(strlen(tmp_buf)>0 && strlen(p_value)>0){
-					if(0==strcmp(tmp_buf, "server_id"))
-						strncpy(s_service_id, p_value, sizeof(s_service_id)-1);
-					else if(0==strcmp(tmp_buf, "root_channel"))
-						s_root_channel = atoi(p_value);
-					else if(0==strcmp(tmp_buf, "root_push_file"))
-						strncpy(s_root_push_file, p_value, sizeof(s_root_push_file)-1);
-					else if(0==strcmp(tmp_buf, "root_push_file_size"))
-						s_root_push_file_size = atoi(p_value);
-					else if(0==strcmp(tmp_buf, "prog_data_pid"))
-						s_prog_data_pid = atoi(p_value);
-					else if(0==strcmp(tmp_buf, "dbstar_database"))
-						strncpy(s_dbstar_database_uri, p_value, sizeof(s_dbstar_database_uri)-1);
-					else if(0==strcmp(tmp_buf, "smarthome_database"))
-						strncpy(s_smarthome_database_uri, p_value, sizeof(s_smarthome_database_uri)-1);
-					else if(0==strcmp(tmp_buf, "dbstar_debug_level"))
-						s_debug_level = atoi(p_value);
-					else if(0==strcmp(tmp_buf, "parse_xml"))	/* this xml only for parse testing */
-						strncpy(s_parse_xml_test, p_value, sizeof(s_parse_xml_test)-1);
-					else if(0==strcmp(tmp_buf, "localcolumn_res"))
-						strncpy(s_column_res, p_value, sizeof(s_column_res)-1);
-					else if(0==strcmp(tmp_buf, "software_check"))
-						s_software_check = atoi(p_value);
-				}
-			}
-			memset(tmp_buf, 0, sizeof(tmp_buf));
-		}
-		fclose(fp);
-	}
-	DEBUG("init settings OK\n");
 	
 	s_settingInitFlag = 1;
 	return 0;
@@ -311,75 +245,23 @@ int root_channel_get(void)
 	return s_root_channel;
 }
 
-int root_push_file_get(char *filename, unsigned int len)
-{
-	if(NULL==filename || 0==len)
-		return -1;
-
-	strncpy(filename, s_root_push_file, len);
-	
-	return 0;
-}
-
-int root_push_file_size_get(void)
-{
-	return s_root_push_file_size;
-}
-
-int prog_data_pid_get(void)
-{
-	return s_prog_data_pid;
-}
-
-char *dbstar_database_uri()
-{
-	return s_dbstar_database_uri;
-}
-
+#ifdef SMARTLIFE_LC
 char *smartlife_database_uri_get()
 {
 	return s_smarthome_database_uri;
 }
-
-int debug_level_get(void)
-{
-	return s_debug_level;
-}
+#endif
 
 int software_check(void)
 {
 	return s_software_check;
 }
 
-int parse_xml_get(char *xml_uri, unsigned int size)
-{
-	if(NULL==xml_uri || 0==size)
-		return -1;
-	
-	strncpy(xml_uri, s_parse_xml_test, size);
-	return 0;
-}
-
-char *column_res_get()
-{
-	return s_column_res;
-}
-
-/*
- 1: usable
- others: disable
-*/
-int pushdir_usable()
-{
-	return s_PushDir_usable;
-}
-
 int factory_renew(void)
 {
 	DEBUG("CAUTION: begin to renew factory status\n");
 
-	unlink(DBSTAR_DATABASE);
-	unlink(SETTING_BASE);
+	unlink(DB_MAIN_URI);
 	sync();
 	sleep(1);
 	
@@ -602,6 +484,7 @@ void upgrade_sign_set()
  检查指定的成品id是用户选择接收还是选择不接收
  return 1——用户选择接收（默认）；return 0——用户选择不接收；return -1——检查失败
 */
+// 2014-07-01 对用户选择的判断放在解析ProductDesc.xml时进行，不提前读出
 int guidelist_select_status(const char *publication_id)
 {
 	// 制表符\t
@@ -685,6 +568,7 @@ int guidelist_select_refresh()
 }
 #endif
 
+#if 0
 static int clear_wild_prog_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -799,7 +683,6 @@ static int clear_wild_prog()
 	return ret;   
 }
 
-#if 0
 static int clear_noclumn_prog_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -877,7 +760,7 @@ static int clear_noclumn_prog()
 	
 	return ret;
 }
-#else
+
 // 清理所属栏目已经不属于叶子节点的节目记录（栏目ID为-1的小片仍然保留），只从数据库中删除
 static int clear_noclumn_prog_record()
 {
@@ -893,7 +776,6 @@ static int clear_noclumn_prog_record()
 	return ret;
 }
 #endif
-
 
 static unsigned long long s_delete_total_size = 0LL;
 static int disk_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
@@ -963,8 +845,8 @@ int disk_manage(char *PublicationID, char *ProductID)
 	// 注意两者的顺序，clear_noclumn_prog_record只删除数据库中的记录，其遗留的文件夹在clear_wild_prog中清理
 	// 正常情况下，clear_noclumn_prog_record和clear_wild_prog执行后没有任何效果。只是为了应对意外情况。
 	// 如果clear_noclumn_prog_record或clear_wild_prog删除了数据，下面的先进先出前应该重新判断磁盘是否满，然后计算需要清理的大小。但是这里不那么细化，不重新计算了。
-	clear_noclumn_prog_record();
-	clear_wild_prog();
+	//clear_noclumn_prog_record();
+	// clear_wild_prog();	// 这一步风险太大，还是暂时屏蔽
 	
 	s_delete_total_size = 0LL;
 	
@@ -1382,8 +1264,8 @@ static void printf_statfs_ret(char *statfs_dir,int ret)
 }
 
 #define ENTITLE_SPACESIZE_MIN		(1024LL)
-#define ENTITLE_STORE_1ST	"/mnt/sdb1"
-#define ENTITLE_STORE_3RD	"/mnt/sdcard/external_sdcard"
+#define ENTITLE_STORE_1ST	"/storage/external_storage/sdb1"
+#define ENTITLE_STORE_3RD	"/storage/external_storage/external_sdcard"
 #define ENTITLE_FILEDIR		"/data/dbstar/drm/entitle"
 static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 {
@@ -1862,10 +1744,10 @@ int msg_send2_UI(int type, char *msg, int len)
 	}
 }
 
-#define UDISK_MOUNT_PREFIX	"/mnt/sdb"
 int dvbpush_command(int cmd, char **buf, int *len)
 {
 	int ret = 0;
+	char tmp_buf[512];
 
 	DEBUG("command: %d=0x%x\n", cmd,cmd);
 	memset(s_jni_cmd_public_space,0,sizeof(s_jni_cmd_public_space));
@@ -1898,32 +1780,35 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_DISK_MOUNT:
 			DEBUG("CMD_DISK_MOUNT: %s\n", *buf);
-			if(NULL!=*buf && 0==strncasecmp(*buf,UDISK_MOUNT_PREFIX,strlen(UDISK_MOUNT_PREFIX))){
-				DEBUG("<<<<<<<<< udisk is mounted at %s\n", *buf);
-				snprintf(s_udisk_mount,sizeof(s_udisk_mount),"%s",*buf);
-			}
-			else{
-				if(-1==disk_usable_check(push_dir_get(),NULL,NULL)){
-					s_PushDir_usable = 0;
-					DEBUG("HardDisc disable\n");
+			if(NULL!=*buf){
+				if(0==strncasecmp(*buf,UDISK_MOUNT_PREFIX,strlen(UDISK_MOUNT_PREFIX))){
+					DEBUG("<<<<<<<<< udisk is mounted at %s\n", *buf);
+					snprintf(s_udisk_mount,sizeof(s_udisk_mount),"%s",*buf);
 				}
-				else{
-					s_PushDir_usable = 1;
-					DEBUG("HardDisc enable\n");
-					
-					maintenance_thread_awake();
+				else if(0==strcmp(*buf, PUSH_STORAGE_HD)){
+					if(-1==disk_usable_check(push_dir_get(),NULL,NULL)){
+						DEBUG("HardDisc disable\n");
+					}
+					else{
+						DEBUG("HardDisc enable\n");
+						
+//						maintenance_thread_awake();
+					}
 				}
+				else
+					DEBUG("%s is mounted\n", *buf);
 			}
 			break;
 		case CMD_DISK_UNMOUNT:
 			DEBUG("CMD_DISK_UNMOUNT: %s\n", *buf);
-			if(NULL!=*buf && 0==strncasecmp(*buf,UDISK_MOUNT_PREFIX,strlen(UDISK_MOUNT_PREFIX))){
-				DEBUG(">>>>>>>>> udisk is unmount from %s\n", *buf);
-				memset(s_udisk_mount,0,sizeof(s_udisk_mount));
-			}
-			else{
-				s_PushDir_usable = 0;
-				DEBUG("HardDisc umount, disable\n");
+			if(NULL!=*buf){
+				if(0==strncasecmp(*buf,UDISK_MOUNT_PREFIX,strlen(UDISK_MOUNT_PREFIX))){
+					DEBUG(">>>>>>>>> udisk is unmount from %s\n", *buf);
+					memset(s_udisk_mount,0,sizeof(s_udisk_mount));
+				}
+				else if(0==strcmp(*buf, PUSH_STORAGE_HD)){
+					DEBUG("HardDisc umount, disable\n");
+				}
 			}
 			break;
 			
@@ -2041,7 +1926,9 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_FACTORY_RESET:
 			DEBUG("CMD_FACTORY_RESET\n");
 			global_info_init(1);
+#ifdef SMARTLIFE_LC
 			smarthome_reset();
+#endif
 			DEBUG("remove push log dir: %s\n", s_push_log_dir);
 			remove_force(s_push_log_dir);
 			break;
@@ -2064,21 +1951,28 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DISC_FORMAT:
 			DEBUG("CMD_DISC_FORMAT\n");
 			
-			s_PushDir_usable = 0;
-			DEBUG("set s_PushDir_usable as %d\n", s_PushDir_usable);
-			
-			if(0==remove_force(COLUMN_RES)){
-				DEBUG("remove %s success\n", COLUMN_RES);
+			snprintf(tmp_buf,sizeof(tmp_buf),"%s/ColumnRes", s_pushdir);
+			if(0==remove_force(tmp_buf)){
+				DEBUG("remove %s success\n", tmp_buf);
 			}
 			else{
-				DEBUG("remove %s failed\n", COLUMN_RES);
+				DEBUG("remove %s failed\n", tmp_buf);
 			}
 			
-			if(0==remove_force(DBSTAR_DATABASE)){
-				DEBUG("remove %s success\n", DBSTAR_DATABASE);
+			snprintf(tmp_buf,sizeof(tmp_buf),"%s/Dbstar.db", s_pushdir);
+			if(0==remove_force(tmp_buf)){
+				DEBUG("remove %s success\n", tmp_buf);
 			}
 			else{
-				DEBUG("remove %s failed\n", DBSTAR_DATABASE);
+				DEBUG("remove %s failed\n", tmp_buf);
+			}
+			
+			snprintf(tmp_buf,sizeof(tmp_buf),"%s/pushroot", s_pushdir);
+			if(0==remove_force(tmp_buf)){
+				DEBUG("remove %s success\n", tmp_buf);
+			}
+			else{
+				DEBUG("remove %s failed\n", tmp_buf);
 			}
 			
 			DEBUG("remove push log dir: %s\n", s_push_log_dir);
@@ -2100,16 +1994,16 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 			break;
 		
-		case CMD_SMARTHOME_CTRL:
-			DEBUG("CMD_SMARTHOME_CTRL: %s\n", *buf);
-			smarthome_ctrl(buf,len);
-			break;
 		case CMD_DEVICE_INIT:
 			DEBUG("CMD_DEVICE_INIT but do nothing\n");
 //			smarthome_gw_sn_save();
 //			msg_send2_UI(DEVICE_INIT_SUCCESS, NULL, 0);
 			break;
 #ifdef SMARTLIFE_LC
+		case CMD_SMARTHOME_CTRL:
+			DEBUG("CMD_SMARTHOME_CTRL: %s\n", *buf);
+			smarthome_ctrl(buf,len);
+			break;
 		case CMD_SMARTLIFE_SEND:
 			DEBUG("CMD_SMARTLIFE_SEND, *len=%d\n", *len);
 			smartlife_send(*buf,*len);
@@ -2206,10 +2100,13 @@ void upgrade_info_init()
 	memset(&g_loaderInfo, 0, sizeof(g_loaderInfo));
 	//if(0==get_loader_message(&mark, &g_loaderInfo))
 		get_loader_message(&mark, &g_loaderInfo);
-	   
+
+#ifdef SMARTLIFE_LC	   
 		DEBUG("read loader msg: %d, smarthome_gw_sn: %s\n", mark, g_loaderInfo.guodian_serialnum);
 		smarthome_gw_sn_set(g_loaderInfo.guodian_serialnum);
-		
+#else
+		DEBUG("read loader msg: %d\n", mark);
+#endif
 		if ((g_loaderInfo.oui != TC_OUI)||(g_loaderInfo.model_type != TC_MODEL_TYPE)
 			||(g_loaderInfo.hardware_version[0] != TC_HARDWARE_VERSION0)
 			||(g_loaderInfo.hardware_version[1] != TC_HARDWARE_VERSION1)
@@ -2553,20 +2450,18 @@ static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int 
 
 static int cur_language_init()
 {
-	if(0==strlen(s_Language)){
-		char sqlite_cmd[512];
-		
-		int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-		snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_CURLANGUAGE);
+	char sqlite_cmd[512];
 	
-		int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sizeof(s_Language), sqlite_cb);
-		if(ret_sqlexec<=0){
-			DEBUG("read no Language from db, filled with %s\n", CURLANGUAGE_DFT);
-			snprintf(s_Language, sizeof(s_Language), "%s", CURLANGUAGE_DFT);
-		}
-		else
-			DEBUG("read Language: %s\n", s_Language);
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+	snprintf(sqlite_cmd,sizeof(sqlite_cmd),"SELECT Value FROM Global WHERE Name='%s';", GLB_NAME_CURLANGUAGE);
+
+	int ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, s_Language, sizeof(s_Language), sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("read no Language from db, filled with %s\n", CURLANGUAGE_DFT);
+		snprintf(s_Language, sizeof(s_Language), "%s", CURLANGUAGE_DFT);
 	}
+	else
+		DEBUG("read Language: %s\n", s_Language);
 	
 	return 0;
 }
@@ -2574,18 +2469,7 @@ static int cur_language_init()
 char *language_get()
 {
 	if(0==strlen(s_Language)){
-		char sqlite_cmd[512];
-		
-		int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_CURLANGUAGE);
-	
-		int ret_sqlexec = sqlite_read(sqlite_cmd, s_Language, sizeof(s_Language), sqlite_cb);
-		if(ret_sqlexec<=0){
-			DEBUG("read no Language from db, filled with %s\n", CURLANGUAGE_DFT);
-			snprintf(s_Language, sizeof(s_Language), "%s", CURLANGUAGE_DFT);
-		}
-		else
-			DEBUG("read Language: %s\n", s_Language);
+		cur_language_init();
 	}
 	
 	return s_Language;
@@ -2599,7 +2483,7 @@ char *multi_addr_get(void)
 	memset(read_str, 0, sizeof(read_str));
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_DBDATASERVERIP);
-	int ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sizeof(read_str), sqlite_cb);
+	int ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, read_str, sizeof(read_str), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read nothing for multi ip, filled with default\n");
 		snprintf(s_data_source, sizeof(s_data_source), "igmp://%s", DBDATASERVERIP_DFT);
@@ -2611,7 +2495,7 @@ char *multi_addr_get(void)
 	
 	memset(read_str, 0, sizeof(read_str));
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_DBDATASERVERPORT);
-	ret_sqlexec = sqlite_read(sqlite_cmd, read_str, sizeof(read_str), sqlite_cb);
+	ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, read_str, sizeof(read_str), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read nothing for multi port, filled with default\n");
 		snprintf(s_data_source+strlen(s_data_source), sizeof(s_data_source)-strlen(s_data_source), ":%s", DBDATASERVERPORT_DFT);
@@ -2631,6 +2515,11 @@ int motherdisc_check()
 	char direct_uri[1024];
 	struct stat filestat;
 	int ret = 0;
+	
+	if(1==storage_flash_check()){
+		DEBUG("use flash as storage, must not a motherdisc\n");
+		return 0;
+	}
 	
 	snprintf(direct_uri,sizeof(direct_uri),"%s/pushroot/%s", push_dir_get(),MOTHERDISC_XML_URI);
 	
@@ -2665,11 +2554,12 @@ static int delete_initialize()
 static int serviceID_init()
 {
 	char sqlite_cmd[512];
-	memset(s_serviceID, 0, sizeof(s_serviceID));
 	int (*sqlite_cb)(char **, int, int, void *,unsigned int) = str_read_cb;
+	
+	memset(s_serviceID, 0, sizeof(s_serviceID));
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_SERVICEID);
 
-	int ret_sqlexec = sqlite_read(sqlite_cmd, s_serviceID, sizeof(s_serviceID), sqlite_cb);
+	int ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, s_serviceID, sizeof(s_serviceID), sqlite_cb);
 	if(ret_sqlexec<=0){
 		DEBUG("read no serviceID from db\n");
 		delete_initialize();
@@ -2696,37 +2586,266 @@ int serviceID_set(char *serv_id)
 
 
 
-/*
- 从数据表Global中读取push的根路径，此路径由上层写入数据库。
- 此路径应当更新到push.conf中供push模块初始化使用。
- 之所以这么更新，是因为无法确保硬盘一定是挂在/mnt/sda1下。
-*/
-char *push_dir_get()
-{
-	return s_push_root_path;
-}
-
 char *initialize_uri_get()
 {
 	return s_initialize_xml_uri;
 }
 
+
+static int storage_id_save(char *storage_id)
+{
+	char sqlite_cmd[512];
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%q','');",
+			GLB_NAME_STORAGE_ID, storage_id);
+	return sqlite_execute_db(DB_MAIN_URI, sqlite_cmd);
+}
+
+/*
+提取存储设备的识别信息，获取硬盘/storage/external_storage/sda1的序列号
+*/
+int storage_id_read(char *identify, unsigned int identify_size)
+{
+	if(NULL==identify || 0==identify_size){
+		DEBUG("invalid args, failed to get storage identify\n");
+		return -2;
+	}
+	
+	struct hd_driveid hdinfo;
+	int fd = open(PUSH_STORAGE_HD, O_RDONLY);
+	int ret = -1;
+	
+	if(fd>0){
+		DEBUG("fd[%d]=open(%s)\n", fd, PUSH_STORAGE_HD);
+		memset(&hdinfo, 0, sizeof(hdinfo));
+		if (!ioctl(fd, HDIO_GET_IDENTITY, &hdinfo)){
+			if(hdinfo.serial_no)
+				DEBUG("serialno:[%s]\n", hdinfo.serial_no);
+			if(hdinfo.model)
+				DEBUG("module:[%s]\n", hdinfo.model);
+			
+			snprintf(identify, identify_size, "%s", hdinfo.serial_no);
+			ret = 0;
+		}
+		else{
+			ERROROUT("ioctl %d failed\n", fd);
+			ret = -1;
+		}
+		
+		close(fd);
+	}
+	else{
+		ERROROUT("open %s failed\n", PUSH_STORAGE_HD);
+		ret = -1;
+	}
+	
+	if(-1==ret){
+		snprintf(identify, identify_size, "%s", STORAGE_ID_HD_DFT);
+		DEBUG("can not get id of storage %s, filled with %s\n", PUSH_STORAGE_HD, STORAGE_ID_HD_DFT);
+	}
+	
+	return ret;
+}
+
+// 发生了内部push存储设备变更，清理其pushinfo和initalize目录和对应的数据库，为push更新做准备
+static int push_clear(char *storage)
+{
+	char sqlite_cmd[256];
+	char total_xmluri[512];
+	
+	if(1==motherdisc_check()){
+		DEBUG("this is a motherdisc, do not reset initialize and pushinfo\n");
+		return -1;
+	}
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc;");
+	sqlite_execute(sqlite_cmd);
+
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM GuideList;");
+	sqlite_execute(sqlite_cmd);
+
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Initialize;");
+	sqlite_execute(sqlite_cmd);
+	
+	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", storage);
+	remove_force(total_xmluri);
+	
+	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", storage);
+	remove_force(total_xmluri);
+	
+	return 0;
+}
+
+// 对硬盘sda1存储设备初始化数据库
+static int storage_hd_db_init()
+{
+	char hd_db[128];
+	char columnres_uri[256];
+	
+	snprintf(hd_db, sizeof(hd_db), "%s/%s", s_pushdir, DB_SUB_NAME);
+	if(0!=access(hd_db, F_OK)){
+		ERROROUT("%s is not exist, copy it from %s\n", hd_db, DB_PROTOTYPE);
+		if(0==fcopy_c(DB_PROTOTYPE, hd_db)){
+			DEBUG("%s is inited from %s success\n", hd_db, DB_PROTOTYPE);
+			
+			// 将内置的ColumnIcon复制到硬盘目录下
+			snprintf(columnres_uri, sizeof(columnres_uri), "%s/ColumnRes/", s_pushdir);
+			dir_exist_ensure(columnres_uri);
+			snprintf(columnres_uri, sizeof(columnres_uri), "%s/ColumnRes/LocalColumnIcon/", s_pushdir);
+			dir_exist_ensure(columnres_uri);
+			
+			files_copy(LOCAL_COLUMNICON_ORIGIN_DIR, columnres_uri);
+			
+			return 0;
+		}
+		else{
+			DEBUG("%s is inited from %s FAILED\n", hd_db, PUSH_STORAGE_HD);
+			return -1;
+		}
+	}
+	else{
+		DEBUG("database %s is exist already\n", hd_db);
+		return 0;
+	}
+}
+
+static int push_conf_file_init(char *pushdir)
+{
+	FILE *fp_from = fopen(PUSH_CONF_SEED, "r");
+	if(NULL==fp_from)
+		return -1;
+	
+	FILE *fp_to = fopen(PUSH_CONF_WORKING, "w");
+	if(NULL==fp_to)
+		return -1;
+		
+	char buf[1024];
+	char *p = NULL;
+	
+	while(fgets(buf, sizeof(buf), fp_from)){
+		p = buf;
+		while(*p!='\0' && isspace(*p)){
+			p++;
+		}
+		
+		if(p && strlen(p)>0){
+			if(0==strncmp(p, "DATA_DIR", 8)){
+				snprintf(buf, sizeof(buf), "DATA_DIR=%s\n", pushdir);
+				fputs(buf, fp_to);
+			}
+			else{
+				fputs(p, fp_to);
+			}
+		}
+	}
+	
+	fclose(fp_from);
+	fclose(fp_to);
+	
+	DEBUG("init push conf file at %s finished\n", PUSH_CONF_WORKING);
+	
+	return 0;
+}
+
+// 存储设备初始化
+static int storage_init()
+{
+	char cur_storage_id[64];
+	char cur_db_uri[256];
+	
+	if(1==storage_flash_check()){
+		snprintf(cur_storage_id, sizeof(cur_storage_id), "%s", STORAGE_ID_FLASH);
+		snprintf(cur_db_uri, sizeof(cur_db_uri), "%s", DB_MAIN_URI);
+	}
+	else{// 如果是硬盘（即：非flash），提取硬盘sn作为身份标识
+		storage_id_read(cur_storage_id, sizeof(cur_storage_id));
+		snprintf(cur_db_uri, sizeof(cur_db_uri), "%s/%s", s_pushdir, DB_SUB_NAME);
+	}
+	
+	DEBUG("s_previous_storage_id[%s], cur_storage_id[%s]\n", s_previous_storage_id, cur_storage_id);
+	db_uri_set(cur_db_uri);
+	
+	// 如果存储设备发生了变化，有可能是有、无硬盘切换，也可能是硬盘间切换
+	if(strcmp(s_previous_storage_id, cur_storage_id)){
+		// 且当前存储设备是硬盘，则对硬盘中的数据库进行初始化；如果是flash则不需要此步骤，因为flash中的数据库是主数据库，系统启动时一定进行初始化
+		if(0==storage_flash_check()){
+			if(0==storage_hd_db_init()){
+				DEBUG("work with db in sda1 start\n");
+			}
+			else{
+				DEBUG("can not work without db in sda1\n");
+				
+				// 如果是硬盘存储，但数据库无法在硬盘中初始化，则退出。
+				// ！！！！！ 应当是改回到flash存储继续。。。。
+				return -1;
+			}
+		}
+		
+		// 清理当前存储设备中pushinfo和initialize，为更新push信息创造条件
+		push_clear(s_pushdir);
+		
+		// 将新的存储设备标识存入主数据库
+		storage_id_save(cur_storage_id);
+		
+		// 刷新push库配置文件push.conf
+		push_conf_file_init(s_pushdir);
+	}
+	
+	// 如果是硬盘存储，则根据版本升级情况，有可能动态的更新表结构
+	// flash存储时，在初始化时就已经对/data/dbstar/Dbstar.db完成初始化
+	if(0==storage_flash_check()){
+		snprintf(cur_db_uri, sizeof(cur_db_uri), "%s/%s", s_pushdir, DB_SUB_NAME);
+		db_init(cur_db_uri);
+	}
+	
+	// 根据版本的升级情况，在存储设备发生变化时，重置内置栏目和全局Global中数据
+	// 但要注意，对Global的重置不能包括storage_id等超全局信息
+	localcolumn_init();
+	global_info_init(0);
+	
+	push_conf_init();
+	
+	return 0;
+}
+
+// 是否是flash接收，1——是flash接收；0——是硬盘接收；-1——异常，状态不确定
+int storage_flash_check()
+{
+	if(0==strncmp(s_pushdir, PUSH_STORAGE_FLASH, strlen(PUSH_STORAGE_FLASH)))
+		return 1;
+	else if(0==strncmp(s_pushdir, "/mnt", 4) || 0==strncmp(s_pushdir, "/storage/external_storage/sda1", strlen("/storage/external_storage/sda1")))
+		return 0;
+	else
+		return -1;
+}
+
+/*
+ 从数据表Global中读取push的根路径，此路径由上层写入数据库。
+ 此路径应当更新到push.conf中供push模块初始化使用。
+ 之所以这么更新，（1）因为无法确保硬盘一定是挂在/mnt/sda1下；（2）可能是无硬盘开机，push下载到flash里
+*/
+char *push_dir_get()
+{
+	return s_pushdir;
+}
+
+// PushDir由DbstarLauncher.apk根据硬盘是否挂载，在libpush启动前进行初始化
 static int push_dir_init()
 {
 	char sqlite_cmd[512];
 	
-	memset(s_push_root_path, 0, sizeof(s_push_root_path));
+	memset(s_pushdir, 0, sizeof(s_pushdir));
 	
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_PUSHDIR);
 
-	int ret_sqlexec = sqlite_read(sqlite_cmd, s_push_root_path, sizeof(s_push_root_path), sqlite_cb);
-	if(ret_sqlexec<=0 || strlen(s_push_root_path)<2){
-		DEBUG("read no PushDir from db, filled with %s\n", PUSH_DATA_DIR_DF);
-		snprintf(s_push_root_path, sizeof(s_push_root_path), "%s", PUSH_DATA_DIR_DF);
+	int ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, s_pushdir, sizeof(s_pushdir), sqlite_cb);
+	if(ret_sqlexec<=0 || strlen(s_pushdir)<2){
+		snprintf(s_pushdir, sizeof(s_pushdir), "%s", PUSH_STORAGE_FLASH);
+		DEBUG("read no PushDir from db, filled with %s\n", s_pushdir);
 	}
 	else
-		DEBUG("read PushDir: %s\n", s_push_root_path);
+		DEBUG("read PushDir: %s\n", s_pushdir);
 		
 	return 0;
 }
@@ -2740,7 +2859,7 @@ static int reboot_timestamp_init()
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q';", GLB_NAME_REBOOT_TIMESTAMP);
 
-	int ret_sqlexec = sqlite_read(sqlite_cmd, s_reboot_timestamp_str, sizeof(s_reboot_timestamp_str), sqlite_cb);
+	int ret_sqlexec = sqlite_read_db(DB_MAIN_URI,sqlite_cmd, s_reboot_timestamp_str, sizeof(s_reboot_timestamp_str), sqlite_cb);
 	if(ret_sqlexec<=0 || strlen(s_reboot_timestamp_str)<1){
 		DEBUG("read no s_reboot_timestamp_str from db\n");
 		snprintf(s_reboot_timestamp_str, sizeof(s_reboot_timestamp_str), "0");
@@ -2762,6 +2881,7 @@ int reboot_timestamp_set(time_t time_stamp_s)
 }
 
 //播发单中的停止播发时间之前一“时”，比如：2015-02-28 20:00:30得到20-1=19，而2015-02-27 00:00:30得到23
+//如果提供AP功能，则不能重启机顶盒，这个时间就没有用
 static int push_end_early_hour_init()
 {
 	char sqlite_cmd[512];
@@ -2771,7 +2891,7 @@ static int push_end_early_hour_init()
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select strftime(\'%%H\',(select max(PushEndTime) from ProductDesc),\'-1 hour\');");
 
-	int ret_sqlexec = sqlite_read(sqlite_cmd, s_onehour_before_pushend, sizeof(s_onehour_before_pushend), sqlite_cb);
+	int ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, s_onehour_before_pushend, sizeof(s_onehour_before_pushend), sqlite_cb);
 	if(ret_sqlexec<=0 || strlen(s_onehour_before_pushend)<1){
 		DEBUG("read no s_onehour_before_pushend from db\n");
 		snprintf(s_onehour_before_pushend, sizeof(s_onehour_before_pushend), "0");
@@ -2804,19 +2924,24 @@ int onehour_before_pushend_set(int onehour_before_pushend)
 	return snprintf(s_onehour_before_pushend,sizeof(s_onehour_before_pushend),"%d",onehour_before_pushend);
 }
 
-// 联调测试阶段，智能卡数量不够，这里直接指定业务ID。正式运营的盒子不能执行到这里
-static int TestSpecialProductID_init()
+// 读取上次存储设备的识别信息，"flash"表示存储在flash中，其他值表示硬盘sn
+// 将用于判断是否更换硬盘或插拔硬盘
+// 读不到值时不要赋默认值，当全新终端开机时确保一定能正确初始化PushDir
+static int storage_id_init()
 {
-// only for test
-	char sqlite_cmd[256];
-	memset(s_TestSpecialProductID, 0, sizeof(s_TestSpecialProductID));
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value from Global where Name='TestSpecialProductID';");
-	if(-1==str_sqlite_read(s_TestSpecialProductID,sizeof(s_TestSpecialProductID),sqlite_cmd)){
-		DEBUG("can not read s_TestSpecialProductID\n");
+	char sqlite_cmd[512];
+	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
+	
+	memset(s_previous_storage_id, 0, sizeof(s_previous_storage_id));
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value from Global where Name='GLB_NAME_STORAGE_ID';");
+	
+	int ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, s_previous_storage_id, sizeof(s_previous_storage_id), sqlite_cb);
+	if(ret_sqlexec<=0){
+		DEBUG("can not read s_previous_storage_id\n");
 		return -1;
 	}
 	else{
-		DEBUG("read s_TestSpecialProductID: %s\n", s_TestSpecialProductID);
+		DEBUG("read s_previous_storage_id: %s\n", s_previous_storage_id);
 	}
 	
 	return 0;
@@ -3212,15 +3337,23 @@ int user_idle_status_get()
 
 int setting_init_with_database()
 {
-	cur_language_init();
+	// 读取主数据库Global表中PushDir，此值由Launcher写入，用于区分flash接收还是硬盘接收
 	push_dir_init();
+	// 读取主数据库Global表中storage_id，将用于判断设备是否发生更换（主要是硬盘更换）
+	storage_id_init();
+	// 根据存储设备标识storage_id判断初始化哪个存储设备，对设备中数据库、pushinfo等进行初始化
+	storage_init();
+	
+	// 下面几个全局信息只有flash中主数据库有效，硬盘中数据库无效
+	cur_language_init();
 	reboot_timestamp_init();
 	push_end_early_hour_init();
 	serviceID_init();
-//	guidelist_select_refresh();
+	
+	// 接下来的运行是在确定的存储设备上进行的，操作的数据库由storage_id确定，不一定是主数据库
 	SCEntitleInfo_init();
 	
-	TestSpecialProductID_init();
+//	TestSpecialProductID_init();	only for testing
 	
 	return 0;
 }

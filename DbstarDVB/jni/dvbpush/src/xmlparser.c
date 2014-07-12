@@ -126,13 +126,13 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 	if(512==i)
 		PRINTF("fuck, there are too much ESC\n");
 	
-	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s','%s');",
-		p->ServiceID, p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
+	snprintf(sqlite_cmd, sizeof(sqlite_cmd), "REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%s','%s','%s','%s','%s','%s');",
+		p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
 #else
 	// use sqlite3_snprintf instead of snprintf, Note that the order of the first two parameters is reversed from snprintf(). This is an historical accident that cannot be fixed without breaking backwards compatibility.
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ServiceID,ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q','%q');",
-		p->ServiceID, p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
+		p->ObjectName, p->EntityID, p->StrLang, p->StrName, p->StrValue, p->Extension);
 #endif
 
 	return sqlite_transaction_exec(sqlite_cmd);
@@ -153,12 +153,12 @@ static int xmlinfo_insert(DBSTAR_XMLINFO_S *xmlinfo)
 //		return 0;
 //	}
 	
-	DEBUG("%s,%s,%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->ServiceID, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI, xmlinfo->ID);
+	DEBUG("%s,%s,%s,%s,%s,%s\n", xmlinfo->PushFlag, xmlinfo->XMLName, xmlinfo->Version, xmlinfo->StandardVersion, xmlinfo->URI, xmlinfo->ID);
 	
 	if(strlen(xmlinfo->Version)>0 || strlen(xmlinfo->StandardVersion)>0 || strlen(xmlinfo->URI)>0){
 		char sqlite_cmd[2048];
 		
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Initialize(PushFlag,ServiceID,ID) VALUES('%q','%q','%q');", xmlinfo->PushFlag, xmlinfo->ServiceID, xmlinfo->ID);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Initialize(PushFlag,ID) VALUES('%q','%q');", xmlinfo->PushFlag, xmlinfo->ID);
 		sqlite_transaction_exec(sqlite_cmd);
 		
 		if(strlen(xmlinfo->XMLName)>0){
@@ -240,20 +240,8 @@ static int product_insert(DBSTAR_PRODUCT_S *p)
 	
 	char sqlite_cmd[4096];
 
-#if 0
-// 新push只注册了属于自己的service，所以不用再判断serviceID	
-	if(0==strcmp(serviceID_get(),p->ServiceID))
-
-// 2013-3-18 16:07 不刷新ProductDesc表了。实际上Service.xml中的产品无用，判断接收依据的是智能卡信息。
-	{
-		DEBUG("product %s in service %s is mine, receive its publications\n", p->ProductID,p->ServiceID);
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE ProductDesc SET ReceiveStatus='%d',FreshFlag=1 where productID='%q' AND ReceiveStatus='%d';",RECEIVESTATUS_WAITING,p->ProductID,RECEIVESTATUS_REJECT);
-		sqlite_transaction_exec(sqlite_cmd);
-	}
-#endif
-	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Product(ServiceID,ProductID,ProductType,Flag,OnlineDate,OfflineDate,IsReserved,Price,CurrencyType) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q');",
-		p->ServiceID,p->ProductID,p->ProductType,p->Flag,p->OnlineDate,p->OfflineDate,p->IsReserved,p->Price,p->CurrencyType);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Product(ProductID,ProductType,Flag,OnlineDate,OfflineDate,IsReserved,Price,CurrencyType) VALUES('%q','%q','%q','%q','%q','%q','%q','%q');",
+		p->ProductID,p->ProductType,p->Flag,p->OnlineDate,p->OfflineDate,p->IsReserved,p->Price,p->CurrencyType);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -273,6 +261,13 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	char to_file[256];
 	char cmd[4096];
 	
+	if(1==storage_flash_check()){
+		if(SHOW_FLASH_COLUMNTYPE!=strtol(ptr->ColumnType,NULL,10)){
+			DEBUG("in storage flash, only show ColumnType='12', don't show ColumnID[%s],ColumnType[%s]\n",ptr->ColumnID,ptr->ColumnType);
+			return 0;
+		}
+	}
+	
 	if(0==strlen(ptr->ParentID))
 		snprintf(ptr->ParentID, sizeof(ptr->ParentID), "-1");
 	
@@ -285,19 +280,19 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 		p_slash = ptr->ColumnIcon_losefocus;
 	
 	snprintf(from_file,sizeof(from_file),"%s/%s", push_dir_get(),ptr->ColumnIcon_losefocus);
-	snprintf(to_file,sizeof(to_file),"%s/%s",column_res_get(),p_slash);
+	snprintf(to_file,sizeof(to_file),"%s/%s",push_dir_get(),p_slash);
 	
 	if(strlen(ptr->ColumnIcon_losefocus)>0 && 0==fcopy_c(from_file,to_file)){
 		DEBUG("copy %s to %s success\n",from_file,to_file);
-		sqlite3_snprintf(sizeof(cmd),cmd,"REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q',%d);",
-			ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
+		sqlite3_snprintf(sizeof(cmd),cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q','%q',%d);",
+			ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
 	}
 	else{
 		DEBUG("copy %s to %s failed\n",from_file,to_file);
 		//即便拷贝失败，也可以继续插入栏目项。UI展现时，如果没有栏目icon，有一个默认icon可以填充
 		//return -1;
-		sqlite3_snprintf(sizeof(cmd),cmd,"REPLACE INTO Column(ServiceID,ColumnID,ParentID,Path,ColumnType,SequenceNum) VALUES('%q','%q','%q','%q','%q',%d);",
-			ptr->ServiceID,ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,s_column_SequenceNum);
+		sqlite3_snprintf(sizeof(cmd),cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,SequenceNum) VALUES('%q','%q','%q','%q',%d);",
+			ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,s_column_SequenceNum);
 	}
 	
 	return sqlite_transaction_exec(cmd);
@@ -347,34 +342,16 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 	char sqlite_cmd[2048];
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PublicationID FROM GuideList WHERE PublicationID='%q';",ptr->PublicationID);
 	if(0<sqlite_transaction_read(sqlite_cmd,NULL,0)){
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%q',datetime('%q'),'%q','%q','%q',(select UserStatus from GuideList where PublicationID='%q'));",
-			ptr->ServiceID,ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID,ptr->PublicationID);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO GuideList(DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES(datetime('%q'),'%q','%q','%q',(select UserStatus from GuideList where PublicationID='%q'));",
+			ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID,ptr->PublicationID);
 		return sqlite_transaction_exec(sqlite_cmd);
 	}
 	else{
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO GuideList(ServiceID,DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES('%q',datetime('%q'),'%q','%q','%q','1');",
-			ptr->ServiceID,ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID);
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO GuideList(DateValue,GuideListID,productID,PublicationID,UserStatus) VALUES(datetime('%q'),'%q','%q','%q','1');",
+			ptr->DateValue,ptr->GuideListID,ptr->productID,ptr->PublicationID);
 		return sqlite_transaction_exec(sqlite_cmd);
 	}
 }
-
-#if 0
-int check_productid_from_db_in_trans(char *productid)
-{
-	char read_productid[64];
-	memset(read_productid, 0, sizeof(read_productid));
-	char sqlite_cmd[512];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select ProductID from Product where ProductID='%q';",productid);
-	if(0<sqlite_transaction_read(sqlite_cmd,read_productid,sizeof(read_productid))){
-		DEBUG("check ServiceID %s from datebase OK\n", productid);
-		return 0;
-	}
-	else{
-		DEBUG("check ServiceID %s from datebase failed\n", productid);
-		return -1;
-	}
-}
-#endif
 
 unsigned long long recv_totalsize_sum_get()
 {
@@ -432,7 +409,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		|| (RECEIVETYPE_PREVIEW==strtol(ptr->ReceiveType,NULL,10) && (0==ProductID_check(ptr->productID))) )
 		receive_status = RECEIVESTATUS_WAITING;
 	
-	DEBUG("I will %s this program(%s), serviceID:%s, ProductID:%s\n", 0==receive_status?"receive":"reject",ptr->ID,ptr->ServiceID,ptr->productID);
+	DEBUG("I will %s this program(%s), ProductID:%s\n", 0==receive_status?"receive":"reject",ptr->ID,ptr->productID);
 #endif
 
 	/*
@@ -467,6 +444,20 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		}
 	}
 	
+	// 当flash作为push下载目录时，先下载栏目，然后解析得到ColumnType='12'的栏目ID，再根据栏目ID过滤成品下载
+	int recv_sequence = RECV_SEQUENCE_ALL;
+	if(1==storage_flash_check()){
+		if(	RECEIVETYPE_COLUMN==strtol(ptr->ReceiveType,NULL,10)){
+			recv_sequence = RECV_SEQUENCE_1;
+		}
+		else{
+			recv_sequence = RECV_SEQUENCE_2;
+		}
+	}
+	else{
+		recv_sequence = RECV_SEQUENCE_ALL;
+	}
+	
 	if(RECEIVESTATUS_WAITING==receive_status){
 		if(1!=motherdisc_processing()){
 			// 准备接收前先删除旧有目录，防止push库判断异常。
@@ -479,9 +470,8 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		s_recv_totalsize_sum += this_total_size;
 		DEBUG("ptr->TotalSize: %s, this_total_size=%llu,s_recv_totalsize_sum=%llu\n", ptr->TotalSize,this_total_size,s_recv_totalsize_sum);
 		
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ProductDesc(ServiceID,ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag,Parsed) \
-VALUES('%s',\
-'%q',\
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ProductDesc(ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag,Parsed,RecvSeqence) \
+VALUES('%q',\
 '%q',\
 '%q',\
 '%q',\
@@ -495,8 +485,8 @@ VALUES('%s',\
 '%q',\
 '%d',\
 1,\
-'0');",
-ptr->ServiceID,
+'0'\
+'%d');",
 ptr->ReceiveType,
 ptr->ProductDescID,
 ptr->rootPath,
@@ -509,7 +499,8 @@ ptr->DescURI,
 ptr->PushStartTime,
 ptr->PushEndTime,
 ptr->Columns,
-receive_status);
+receive_status,
+recv_sequence);
 
 		sqlite_transaction_exec(sqlite_cmd);
 		
@@ -535,20 +526,17 @@ receive_status);
  如果是剧集，将将Column信息拆分后存入PubliationsSet；如果是非剧集，则拆分后存入Publication
 */
 				if(strlen(ptr->SetID)>0){
-					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO PublicationsSet(ServiceID,ColumnID,ProductID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
+					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO PublicationsSet(ColumnID,ProductID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
 VALUES('%q',\
 '%q',\
 '%q',\
 '%q',\
-'%q',\
-(SELECT ReceiveStatus FROM PublicationsSet WHERE ServiceID='%q' AND ColumnID='%q' AND SetID='%q'),\
+(SELECT ReceiveStatus FROM PublicationsSet WHERE ColumnID='%q' AND SetID='%q'),\
 '%q');",
-ptr->ServiceID,
 p_column,
 ptr->productID,
 ptr->PushStartTime,
 ptr->PushEndTime,
-ptr->ServiceID,
 p_column,
 ptr->SetID,
 ptr->SetID);
@@ -556,9 +544,8 @@ ptr->SetID);
 					sqlite_transaction_exec(sqlite_cmd);
 				}
 				else{
-					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Publication(ServiceID,PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
+					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
 VALUES('%q',\
-'%q',\
 '%q',\
 '%q',\
 '%q',\
@@ -569,7 +556,6 @@ VALUES('%q',\
 '%q',\
 '%d',\
 '%q');",
-ptr->ServiceID,
 ptr->ID,
 p_column,
 ptr->productID,
@@ -591,9 +577,8 @@ ptr->SetID);
 如果是剧集，除了上面存入PublicationsSet外，还要存入单集Publication，但是不拆分Column信息
 */		
 			if(strlen(ptr->SetID)>0){
-				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Publication(ServiceID,PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
+				sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
 VALUES('%q',\
-'%q',\
 '%q',\
 '%q',\
 '%q',\
@@ -604,7 +589,6 @@ VALUES('%q',\
 '%q',\
 '%d',\
 '%q');",
-ptr->ServiceID,
 ptr->ID,
 ptr->Columns,
 ptr->productID,
@@ -674,7 +658,7 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 		return -1;
 	
 	char sqlite_cmd[512];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Channel(pid,ServiceID,pidtype,FreshFlag) VALUES('%q','%q','%q',1);",p->pid,serviceID_get(),p->pidtype);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Channel(pid,pidtype,FreshFlag) VALUES('%q','%q',1);",p->pid,p->pidtype);
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
@@ -684,7 +668,7 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 static int channel_ineffective_set()
 {
 	char sqlite_cmd[512];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Channel SET FreshFlag=0,ServiceID='-1';");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Channel SET FreshFlag=0;");
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
@@ -805,8 +789,8 @@ static int publicationva_info_insert(DBSTAR_MULTIPLELANGUAGEINFOVA_S *p)
 	}
 	
 	char sqlite_cmd[8192];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO MultipleLanguageInfoVA(ServiceID,PublicationID,infolang,PublicationDesc,ImageDefinition,Keywords,Area,Language,Episode,AspectRatio,AudioChannel,Director,Actor,Audience,Model) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q');",
-		p->ServiceID,p->PublicationID,p->infolang,p->PublicationDesc,p->ImageDefinition,p->Keywords,p->Area,p->Language,p->Episode,p->AspectRatio,p->AudioChannel,p->Director,p->Actor,p->Audience,p->Model);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO MultipleLanguageInfoVA(PublicationID,infolang,PublicationDesc,ImageDefinition,Keywords,Area,Language,Episode,AspectRatio,AudioChannel,Director,Actor,Audience,Model) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q');",
+		p->PublicationID,p->infolang,p->PublicationDesc,p->ImageDefinition,p->Keywords,p->Area,p->Language,p->Episode,p->AspectRatio,p->AudioChannel,p->Director,p->Actor,p->Audience,p->Model);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -855,22 +839,6 @@ static int publicationsset_insert(DBSTAR_PUBLICATIONSSET_S *p)
 	}
 	
 	char sqlite_cmd[8192];
-
-#if 0
-	char old_PublicationType[64];	memset(old_PublicationType,0,sizeof(old_PublicationType));
-	char old_IsReserved[64];		memset(old_IsReserved,0,sizeof(old_IsReserved));
-	char old_Visible[64];			memset(old_Visible,0,sizeof(old_Visible));
-	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PublicationType FROM PublicationsSet WHERE SetID='%q';",xmlinfo->PushFlag,xmlinfo->ServiceID,xmlinfo->ID);
-	if(0<sqlite_transaction_read(sqlite_cmd,old_xmlver,old_xmlver_size)){
-		DEBUG("read xml old version: %s\n", old_xmlver);
-		return 0;
-	}
-	else{
-		DEBUG("read xml old version failed\n");
-		return -1;
-	}
-#endif
 	
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE PublicationsSet SET PublicationType='%q',IsReserved='%q',Visible='%q',ReceiveStatus='1' WHERE SetID='%q';",
 		p->PublicationType,p->IsReserved,p->Visible,p->SetID);
@@ -894,8 +862,8 @@ static int subtitle_insert(DBSTAR_RESSUBTITLE_S *p)
 	}
 	
 	char sqlite_cmd[2048];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResSubTitle(ServiceID,ObjectName,EntityID,SubTitleID,SubTitleName,SubTitleLanguage,SubTitleURI) VALUES('%q','%q','%q','%q','%q','%q','%q');",
-		p->ServiceID,p->ObjectName,p->EntityID,p->SubTitleID,p->SubTitleName,p->SubTitleLanguage,p->SubTitleURI);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResSubTitle(ObjectName,EntityID,SubTitleID,SubTitleName,SubTitleLanguage,SubTitleURI) VALUES('%q','%q','%q','%q','%q','%q');",
+		p->ObjectName,p->EntityID,p->SubTitleID,p->SubTitleName,p->SubTitleLanguage,p->SubTitleURI);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -912,8 +880,8 @@ static int poster_insert(DBSTAR_RESPOSTER_S *p)
 	}
 	
 	char sqlite_cmd[2048];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResPoster(ServiceID,ObjectName,EntityID,PosterID,PosterName,PosterURI) VALUES('%q','%q','%q','%q','%q','%q');",
-		p->ServiceID,p->ObjectName, p->EntityID, p->PosterID, p->PosterName, p->PosterURI);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResPoster(ObjectName,EntityID,PosterID,PosterName,PosterURI) VALUES('%q','%q','%q','%q','%q');",
+		p->ObjectName, p->EntityID, p->PosterID, p->PosterName, p->PosterURI);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -930,8 +898,8 @@ static int trailer_insert(DBSTAR_RESTRAILER_S *p)
 	}
 	
 	char sqlite_cmd[2048];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResTrailer(ServiceID,ObjectName,EntityID,TrailerID,TrailerName,TrailerURI) VALUES('%q','%q','%q','%q','%q','%q');",
-		p->ServiceID,p->ObjectName, p->EntityID, p->TrailerID, p->TrailerName, p->TrailerURI);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResTrailer(ObjectName,EntityID,TrailerID,TrailerName,TrailerURI) VALUES('%q','%q','%q','%q','%q');",
+		p->ObjectName, p->EntityID, p->TrailerID, p->TrailerName, p->TrailerURI);
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -970,9 +938,9 @@ static int preview_insert(DBSTAR_PREVIEW_S *p)
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Publication SET ColumnID='-1' WHERE PublicationID='%q';",p->PublicationID);
 	sqlite_transaction_exec(sqlite_cmd);
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Preview(ServiceID,PreviewID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,PublicationID,ReceiveStatus) \
-VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','1');",
-p->ServiceID,p->PreviewID,p->PreviewType,p->PreviewSize,p->ShowTime,p->PreviewURI,p->PreviewFormat,p->Duration,p->Resolution,p->BitRate,p->CodeFormat,p->PublicationID);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Preview(PreviewID,PreviewType,PreviewSize,ShowTime,PreviewURI,PreviewFormat,Duration,Resolution,BitRate,CodeFormat,PublicationID,ReceiveStatus) \
+VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','1');",
+p->PreviewID,p->PreviewType,p->PreviewSize,p->ShowTime,p->PreviewURI,p->PreviewFormat,p->Duration,p->Resolution,p->BitRate,p->CodeFormat,p->PublicationID);
 	
 	s_preview_publication = 1;
 	
@@ -988,12 +956,10 @@ static int sproduct_insert(DBSTAR_SPRODUCT_S *p)
 	}
 	
 	char sqlite_cmd[4096];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO SProduct(ServiceID,SType,Name,URI) \
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO SProduct(SType,Name,URI) \
 	VALUES('%q',\
 	'%q',\
-	'%q',\
 	'%q');",
-	p->ServiceID,
 	p->SType,
 	p->Name,
 	p->URI);
@@ -3280,10 +3246,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 			parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 			read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 			
-			// || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
 			if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) ){
-				DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-						old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+				DEBUG("old ver: %s, new ver: %s, xml  no need to parse\n",\
+						old_xmlver, xmlinfo.Version);
 				ret = -1;
 			}
 			else
@@ -3341,9 +3306,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					/*
 					 新push只接收注册的文件，所以不用处理非当前业务的文件夹进行反注册
 					*/
-					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+						DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
+								old_xmlver, xmlinfo.Version);
 #if 0
 						ret = -1;
 #else
@@ -3383,9 +3348,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 // 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 					
-					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))  || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) ){
+						DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
+								old_xmlver, xmlinfo.Version);
 						ret = -1;
 					}
 					else
@@ -3411,9 +3376,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 #if 0			
 // 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+						DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
+								old_xmlver, xmlinfo.Version);
 						ret = -1;
 					}
 					else
@@ -3441,10 +3406,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 					
-					//	|| 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
 					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) ){
-						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+						DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
+								old_xmlver, xmlinfo.Version);
 						ret = -1;
 					}
 					else{
@@ -3472,13 +3436,10 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-					/*
-					 新push只接收注册的文件，所以不用处理非当前业务的节目进行反注册
-					  || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
-					*/
+					
 					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) ){
-						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+						DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
+								old_xmlver, xmlinfo.Version);
 						ret = -1;
 					}
 					else{
@@ -3505,10 +3466,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
 					
-					// || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)
 					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) ){
-						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+						DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
+								old_xmlver, xmlinfo.Version);
 						ret = -1;
 					}
 					else{
@@ -3528,9 +3488,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 #if 0			
 // 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
-					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version)) || 0!=strcmp(serviceID_get(), xmlinfo.ServiceID)){
-						DEBUG("old ver: %s, new ver: %s, my ServiceID: %s, xml ServiceID: %s, no need to parse\n",\
-								old_xmlver, xmlinfo.Version, serviceID_get(), xmlinfo.ServiceID);
+					if((strlen(old_xmlver)>0 && 0==strcmp(old_xmlver, xmlinfo.Version))){
+						DEBUG("old ver: %s, new ver: %s, no need to parse\n",\
+								old_xmlver, xmlinfo.Version);
 						ret = -1;
 					}
 					else
@@ -3588,6 +3548,12 @@ PARSE_XML_END:
 		else if(COLUMN_XML==actual_xml_flag){
 			column_refresh_flag_set(1);
 			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
+			
+			if(1==storage_flash_check()){
+				DEBUG("column is download finished, %d\n", storage_flash_check());
+				productdesc_column_finished();
+				push_recv_manage_refresh(storage_flash_check());
+			}
 		}
 		else if(SPRODUCT_XML==actual_xml_flag){
 			interface_refresh_flag_set(1);
@@ -3609,7 +3575,8 @@ PARSE_XML_END:
 					sleep(3);
 				}
 				
-				push_recv_manage_refresh();
+				DEBUG("has parsed ProductDesc, will regist for push, %d\n", storage_flash_check());
+				push_recv_manage_refresh(storage_flash_check());
 			}
 		}
 		else if(INITIALIZE_XML==actual_xml_flag){

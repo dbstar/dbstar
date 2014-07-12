@@ -17,8 +17,8 @@ public class GDSystemConfigure {
 	public static final String EBooKFolder = "ebook";
 
 	// Default Property values
-	public static final String DefaultStorageDisk = "/mnt/sda1";
-	public static final String DefaultPushDir = "/mnt/sda1";
+	public static final String DefaultStorageDisk = "/storage/external_storage/sda1";
+	public static final String DefaultPushDir = "/storage/external_storage/sda1";
 
 	private static final String ConfigureFile = "/data/dbstar/dbstar.conf";
 	public static final String UserDatabaseFile = "/data/dbstar/userdb.db";
@@ -27,6 +27,11 @@ public class GDSystemConfigure {
 	public static final String DefaultColumnResDir = "/data/dbstar/ColumnRes";
 	public static final String DefaultDesFile = "/info/desc/Publication.xml";
 	public static final long DefaultReconnectTime = 30000;
+	
+	// some global property, is related to device but not storage(flash/harddisk) should only save in /data/dbstar/Dbstar.db,
+	// such as igmp addr, PushDir, ProductSN, DeviceModel and so on
+	public static final String DeviceGlobalDB = "/data/dbstar/Dbstar.db";
+	
 	// Property Name
 	private static final String PROPERTY_LOCALIZATION = "language";
 	private static final String PROPERTY_DBSTARDATABSE = "DbstarDatabase";
@@ -92,17 +97,23 @@ public class GDSystemConfigure {
 	}
 
 	private void defaultValueInit() {
+		LogUtil.d(TAG, "defaultValueInit(): mDefaultStorageDisk[" + mDefaultStorageDisk + "]");
 		if (mDefaultStorageDisk == null || mDefaultStorageDisk.isEmpty()) {
+			LogUtil.d(TAG, "defaultValueInit(): mDefaultStorageDisk is nothing");
 			mDefaultStorageDisk = DefaultStorageDisk;
 		}
 
 		if (mIconRootDir == null || mIconRootDir.isEmpty()) {
+			LogUtil.d(TAG, "defaultValueInit(): mIconRootDir is nothing");
 			mIconRootDir = DefaultColumnResDir;
 		}
 
 		if (mDbstarDatabase == null || mDbstarDatabase.isEmpty()) {
+			LogUtil.d(TAG, "defaultValueInit(): mDbstarDatabase is nothing");
 			mDbstarDatabase = DefaultDbstarDBFile;
 		}
+		
+		LogUtil.d(TAG, "defaultValueInit(): mDefaultStorageDisk[" + mDefaultStorageDisk + "], mIconRootDir[" + mIconRootDir + "], mDbstarDatabase[" + mDbstarDatabase + "]");
 	}
 
 	// find the storage disk and push directory.
@@ -112,20 +123,28 @@ public class GDSystemConfigure {
 		mStorageDir = mStorageDisk = null;
 
 		String disk = mDefaultStorageDisk;
+		
 		File file = new File(disk);
 		if (file.exists()) {
 			mStorageDir = disk;
 			mStorageDisk = disk;
-			LogUtil.d(TAG, " disk is ready ===  " + mStorageDisk);
+			LogUtil.d(TAG, "configureStorage(): disk[" + disk + "] is ready");
 			return true;
 		}
-
-		return false;
+		else{
+			LogUtil.d(TAG, "configureStorage(): disk[" + disk + "] is NOT ready");
+			return false;
+		}
 	}
 
 	// Parameters for Flash/Local storage
 	public String getIconRootDir() {
 		return mIconRootDir;
+	}
+	
+	public void setIconRootDir(String vIconRootDir) {
+		mIconRootDir = vIconRootDir;
+		LogUtil.d(TAG, "setIconRootDir: " + mIconRootDir);
 	}
 
 	public String getLocalization() {
@@ -134,10 +153,20 @@ public class GDSystemConfigure {
 
 	public void setLocalization(String localization) {
 		mLocalization = localization;
+		LogUtil.d(TAG, "setLocalization: " + mLocalization);
 	}
 
 	public String getDVBDatabaseFile() {
 		return mDbstarDatabase;
+	}
+	
+	public String getDeviceGlobalDB() {
+		return DeviceGlobalDB;
+	}
+
+	public void setDVBDatabaseFile(String vDbstarDatabase) {
+		mDbstarDatabase = vDbstarDatabase;
+		LogUtil.d(TAG, "setDVBDatabaseFile: " + mDbstarDatabase);
 	}
 
 	public String getSmartHomeDBFile() {
@@ -148,9 +177,19 @@ public class GDSystemConfigure {
 	public String getStorageDisk() {
 		return mStorageDisk;
 	}
+	
+	public void setStorageDisk(String vStorageDisk) {
+		mStorageDisk = vStorageDisk;
+		LogUtil.d(TAG, "setStorageDisk: " + mStorageDisk);
+	}
 
 	public String getStorageDir() {
 		return mStorageDir;
+	}
+	
+	public void setStorageDir(String vStorageDir) {
+		mStorageDir = vStorageDir;
+		LogUtil.d(TAG, "setStorageDir: " + mStorageDir);
 	}
 	
 	public long getGuodianReconnectTime() {
@@ -295,6 +334,7 @@ public class GDSystemConfigure {
 
 		File configureFile = new File(ConfigureFile);
 		if (configureFile == null || !configureFile.exists()) {
+			LogUtil.d(TAG, "there is no configureFile");
 			return false;
 		}
 
@@ -325,12 +365,13 @@ public class GDSystemConfigure {
 					property[0] = line.substring(0, start);
 					property[1] = line.substring(start + 1);
 
-					// Log.d(TAG, property[0] + "=" + property[1]);
+					//Log.d(TAG, property[0] + "=" + property[1]);
 
 					if (property[0].equals(PROPERTY_DBSTARDATABSE)) {
 						mDbstarDatabase = property[1].trim();
 					} else if (property[0].equals(PROPERTY_PUSH_DIR)) {
 						mDefaultStorageDisk = property[1].trim();
+						LogUtil.d(TAG, "config file property[" + PROPERTY_PUSH_DIR + "]:[" + mDefaultStorageDisk + "]");
 					} else if (property[0].equals(PROPERTY_COLUMNRES_DIR)) {
 						mIconRootDir = property[1].trim();
 					} else if (property[0].equals(PROPERTY_LOCALIZATION)) {

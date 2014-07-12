@@ -1,5 +1,7 @@
 package com.dbstar.model;
 
+import com.dbstar.util.LogUtil;
+
 import com.dbstar.model.GDDVBDataContract.Column;
 import com.dbstar.model.GDDVBDataContract.ColumnEntity;
 import com.dbstar.model.GDDVBDataContract.Global;
@@ -389,6 +391,7 @@ public class GDDVBDataProvider extends GDDBProvider {
 		}
 
 		mDbFile = dbFile;
+		LogUtil.d(TAG, "initialize in GDDVBDataProvider, mDbFile[" + mDbFile + "]");
 
 		return true;
 	}
