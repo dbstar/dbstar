@@ -144,6 +144,7 @@ typedef enum{
 #define INITIALIZE_MIDPATH	"pushroot/initialize"
 #define DBSTAR_PREVIEWPATH	"/mnt/sda1/dbstar/PreView"
 #define COLUMN_RES			WORKING_DATA_DIR"/ColumnRes"
+#define STORAGE_HD_MARK_FILE		".hd_mark"		// 文件中记录一串随机数表示一个硬盘，用以区别其他硬盘
 
 #define LOCAL_COLUMNICON_ORIGIN_DIR	"/system/etc/dbstar/ColumnRes/LocalColumnIcon"
 

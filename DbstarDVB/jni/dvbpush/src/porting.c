@@ -2611,12 +2611,15 @@ int storage_id_read(char *identify, unsigned int identify_size)
 		return -2;
 	}
 	
+	int ret = 0;
+#if 0	// 采用读取硬盘串号的方法不可行，执行时system用户无法open硬盘设备/dev/block/...
 	struct hd_driveid hdinfo;
-	int fd = open(PUSH_STORAGE_HD, O_RDONLY);
-	int ret = -1;
+	char dev_name[64];	//"/dev/block/vold/8:1";
+	snprintf(dev_name, sizeof(dev_name), "%s", PUSH_STORAGE_HD);
+	int fd = open(dev_name, O_RDONLY|O_NONBLOCK);
 	
 	if(fd>0){
-		DEBUG("fd[%d]=open(%s)\n", fd, PUSH_STORAGE_HD);
+		DEBUG("fd[%d]=open(%s)\n", fd, dev_name);
 		memset(&hdinfo, 0, sizeof(hdinfo));
 		if (!ioctl(fd, HDIO_GET_IDENTITY, &hdinfo)){
 			if(hdinfo.serial_no)
@@ -2635,15 +2638,50 @@ int storage_id_read(char *identify, unsigned int identify_size)
 		close(fd);
 	}
 	else{
-		ERROROUT("open %s failed\n", PUSH_STORAGE_HD);
+		ERROROUT("open %s failed\n", dev_name);
 		ret = -1;
 	}
 	
+#else
+	FILE *fp = NULL;
+	char storage_hd_mark_uri[128];
+	
+	snprintf(storage_hd_mark_uri, sizeof(storage_hd_mark_uri), "%s/%s", PUSH_STORAGE_HD, STORAGE_HD_MARK_FILE);
+	if(0==access(storage_hd_mark_uri, R_OK)){
+		fp = fopen(storage_hd_mark_uri, "r");
+		if(fp){
+			fread(identify, identify_size, 1, fp);
+			DEBUG("read [%s] from %s\n", identify, storage_hd_mark_uri);
+			fclose(fp);
+			ret = 0;
+		}
+		else{
+			ERROROUT("%s is exist but can not read\n", storage_hd_mark_uri);
+			ret = -1;
+		}
+	}
+	else{
+		fp = fopen(storage_hd_mark_uri, "w");
+		if(fp){
+			snprintf(identify, identify_size, "%u", randint());
+			fwrite(identify, strlen(identify), 1, fp);
+			fclose(fp);
+			DEBUG("create %s with hd_mark [%s]\n", storage_hd_mark_uri, identify);
+			ret = 0;
+		}
+		else{
+			ERROROUT("%s is exist but can not read\n", storage_hd_mark_uri);
+			ret = -1;
+		}
+	}
+	
+#endif
+
 	if(-1==ret){
 		snprintf(identify, identify_size, "%s", STORAGE_ID_HD_DFT);
 		DEBUG("can not get id of storage %s, filled with %s\n", PUSH_STORAGE_HD, STORAGE_ID_HD_DFT);
 	}
-	
+
 	return ret;
 }
 
@@ -2758,6 +2796,7 @@ static int storage_init()
 		snprintf(cur_db_uri, sizeof(cur_db_uri), "%s", DB_MAIN_URI);
 	}
 	else{// 如果是硬盘（即：非flash），提取硬盘sn作为身份标识
+		memset(cur_storage_id, 0, sizeof(cur_storage_id));
 		storage_id_read(cur_storage_id, sizeof(cur_storage_id));
 		snprintf(cur_db_uri, sizeof(cur_db_uri), "%s/%s", s_pushdir, DB_SUB_NAME);
 	}
@@ -2767,6 +2806,7 @@ static int storage_init()
 	
 	// 如果存储设备发生了变化，有可能是有、无硬盘切换，也可能是硬盘间切换
 	if(strcmp(s_previous_storage_id, cur_storage_id)){
+		DEBUG("storage has changed, init it\n");
 		// 且当前存储设备是硬盘，则对硬盘中的数据库进行初始化；如果是flash则不需要此步骤，因为flash中的数据库是主数据库，系统启动时一定进行初始化
 		if(0==storage_flash_check()){
 			if(0==storage_hd_db_init()){
@@ -2933,7 +2973,7 @@ static int storage_id_init()
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
 	
 	memset(s_previous_storage_id, 0, sizeof(s_previous_storage_id));
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value from Global where Name='GLB_NAME_STORAGE_ID';");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value from Global where Name='%q';", GLB_NAME_STORAGE_ID);
 	
 	int ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, s_previous_storage_id, sizeof(s_previous_storage_id), sqlite_cb);
 	if(ret_sqlexec<=0){

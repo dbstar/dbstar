@@ -1136,7 +1136,7 @@ int sqlite_read_db(char *db_uri, char *sqlite_cmd, void *receiver, unsigned int 
 	int ret = 0;
 	int (*sqlite_callback)(char **,int,int,void *,unsigned int) = sqlite_read_callback;
 
-	//DEBUG("sqlite read: %s\n", sqlite_cmd);
+	DEBUG("[%s] sqlite read: %s\n", db_uri, sqlite_cmd);
 	
 	if(SQL_STATUS_IDLE!=s_sql_status){
 		DEBUG("s_sql_status=%d, failed\n", s_sql_status);
