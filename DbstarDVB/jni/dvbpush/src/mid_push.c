@@ -462,12 +462,8 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 		return -1;
 	}
 	
-#ifdef TUNER_INPUT
 	data_stream_status_str_get(buf,size);
 	snprintf(buf+strlen(buf),size-strlen(buf),"\n%d",s_dvbpush_info_refresh_flag);
-#else
-	snprintf(buf,size,"%d",s_dvbpush_info_refresh_flag);
-#endif
 
 	s_dvbpush_info_refresh_flag = 0;
 	

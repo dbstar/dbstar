@@ -2641,7 +2641,7 @@ int storage_id_read(char *identify, unsigned int identify_size)
 		ERROROUT("open %s failed\n", dev_name);
 		ret = -1;
 	}
-	
+
 #else
 	FILE *fp = NULL;
 	char storage_hd_mark_uri[128];

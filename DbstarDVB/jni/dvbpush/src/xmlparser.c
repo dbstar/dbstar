@@ -280,7 +280,7 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 		p_slash = ptr->ColumnIcon_losefocus;
 	
 	snprintf(from_file,sizeof(from_file),"%s/%s", push_dir_get(),ptr->ColumnIcon_losefocus);
-	snprintf(to_file,sizeof(to_file),"%s/%s",push_dir_get(),p_slash);
+	snprintf(to_file,sizeof(to_file),"%s/%s/%s",push_dir_get(),COLUMNRES_DIR,p_slash);
 	
 	if(strlen(ptr->ColumnIcon_losefocus)>0 && 0==fcopy_c(from_file,to_file)){
 		DEBUG("copy %s to %s success\n",from_file,to_file);
@@ -445,7 +445,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	}
 	
 	// 当flash作为push下载目录时，先下载栏目，然后解析得到ColumnType='12'的栏目ID，再根据栏目ID过滤成品下载
-	int recv_sequence = RECV_SEQUENCE_ALL;
+	RECV_SEQUENCE_E recv_sequence = RECV_SEQUENCE_ALL;
 	if(1==storage_flash_check()){
 		if(	RECEIVETYPE_COLUMN==strtol(ptr->ReceiveType,NULL,10)){
 			recv_sequence = RECV_SEQUENCE_1;
@@ -485,8 +485,8 @@ VALUES('%q',\
 '%q',\
 '%d',\
 1,\
-'0'\
-'%d');",
+'0',\
+%d);",
 ptr->ReceiveType,
 ptr->ProductDescID,
 ptr->rootPath,

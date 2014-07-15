@@ -1512,7 +1512,7 @@ static int columnicon_init(char *columnicon_name)
 	char to_file[256];
 	
 	snprintf(from_file,sizeof(from_file),"%s/%s", LOCAL_COLUMNICON_ORIGIN_DIR,columnicon_name);
-	snprintf(to_file,sizeof(to_file),"%s/LocalColumnIcon/%s",COLUMN_RES,columnicon_name);
+	snprintf(to_file,sizeof(to_file),"%s/%s/%s/%s",WORKING_DATA_DIR,COLUMNRES_DIR,LOCALCOLUMNICON_DIR,columnicon_name);
 	
 	if(NULL!=columnicon_name && 0==fcopy_c(from_file,to_file)){
 		DEBUG("copy %s to %s success\n",from_file,to_file);
