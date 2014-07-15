@@ -160,8 +160,10 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		initializeData();
 //		startEngine();
-		if(mPowerController != null)
-		    mPowerController.start(mService);
+		if(APPVersion.GUODIAN){
+			if(mPowerController != null)
+			    mPowerController.start(mService);
+		}
 		
 		/*if (DeviceInitController.isBootFirstTime()) {
 			showLoadingDialog(getResources().getString(R.string.device_init_str));
@@ -1646,8 +1648,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		// mIsPopupMenuHided = true;
 		mIsPopupMenuHided = false;
 		// displayPopupMenu(false);
-		if(APPVersion.GUODIAN)
-		    mPowerController = new GDPowerController(this);
+		if(APPVersion.GUODIAN){
+			LogUtil.d(TAG, "for GUODIAN, mPowerController = new GDPowerController(this)");
+			mPowerController = new GDPowerController(this);
+		}
+		else{
+			LogUtil.d(TAG, "for NO GUODIAN, mPowerController = new GDPowerController(this)");
+		}
 	}
 
 	private void initializeEngine() {
@@ -1723,24 +1730,28 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	public void handleEvent(int type, Object event) {
-		switch (type) {
-		case EventData.EVENT_LOGIN_SUCCESSED: {
-			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
-			loginFinished((LoginData) guodianEvent.Data);
-			break;
-		}
+		if(APPVersion.GUODIAN){
+			switch (type) {
+				case EventData.EVENT_LOGIN_SUCCESSED: {
+					EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+					loginFinished((LoginData) guodianEvent.Data);
+					break;
+				}
+			}
 		}
 	}
 
 	public void notifyEvent(int type, Object event) {
 		super.notifyEvent(type, event);
-
-		if (type == EventData.EVENT_GUODIAN_DATA) {
-			EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
-			handlePowerData(guodianEvent.Type, guodianEvent.Data);
-		}else if(type == EventData.EVENT_LOGIN_SUCCESSED){
-		    if(mPowerController != null)
-		        mPowerController.reRequestData();
+		
+		if(APPVersion.GUODIAN){
+			if (type == EventData.EVENT_GUODIAN_DATA) {
+				EventData.GuodianEvent guodianEvent = (EventData.GuodianEvent) event;
+				handlePowerData(guodianEvent.Type, guodianEvent.Data);
+			}else if(type == EventData.EVENT_LOGIN_SUCCESSED){
+			    if(mPowerController != null)
+			        mPowerController.reRequestData();
+			}
 		}
 	}
 
