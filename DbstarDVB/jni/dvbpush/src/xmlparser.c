@@ -82,6 +82,22 @@ static int global_insert(DBSTAR_GLOBAL_S *p)
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
+// 向指定的主数据库中插入serviceID等与终端而不是存储设备有关的信息
+static int device_global_insert(DBSTAR_GLOBAL_S *p)
+{
+	if(NULL==p || 0==strlen(p->Name) || 0==strlen(p->Value)){
+		DEBUG("invalid arguments\n");
+		return -1;
+	}
+	
+	char sqlite_cmd[2048];
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%q','%q');",
+		p->Name, p->Value, p->Param);
+	
+	return sqlite_execute_db(DB_MAIN_URI, sqlite_cmd);
+}
+
 /*
  向字符串资源表ResStr中插入数据。
  由于Res表都是依存于宿主表的寄生表，因此它们自身不能独立封装为事务，应为某事务的一部分。
@@ -1491,12 +1507,15 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					if(1==motherdisc_processing() || 0==ProductID_check(product_service_s.productID)){
 						DEBUG("detect valid productID: %s\n", product_service_s.productID);
 						s_detect_valid_productID = 1;
+						serviceID_set(product_service_s.serviceID);
+#if 0
+作为与终端相关的全局信息serviceID存储在主数据库中，与存储是硬盘还是flash设备无关
 						DBSTAR_GLOBAL_S global_s;
 						memset(&global_s, 0, sizeof(global_s));
 						strncpy(global_s.Name, GLB_NAME_SERVICEID, sizeof(global_s.Name)-1);
 						strncpy(global_s.Value, product_service_s.serviceID, sizeof(global_s.Value)-1);
-						global_insert(&global_s);
-						serviceID_set(product_service_s.serviceID);
+						device_global_insert(&global_s);
+#endif
 						
 						sqlite_transaction_table_clear("Initialize");
 						parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL);
@@ -3195,6 +3214,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 //	int push_flags[16];
 	char xml_uri[512];
 	PUSH_XML_FLAG_E actual_xml_flag = xml_flag;
+	DBSTAR_GLOBAL_S tmp_global_s;
 	
 	s_preview_publication = 0;
 	
@@ -3580,6 +3600,13 @@ PARSE_XML_END:
 			}
 		}
 		else if(INITIALIZE_XML==actual_xml_flag){
+			if(s_detect_valid_productID){
+				memset(&tmp_global_s, 0, sizeof(tmp_global_s));
+				snprintf(tmp_global_s.Name,  sizeof(tmp_global_s.Name), "%s", GLB_NAME_SERVICEID);
+				snprintf(tmp_global_s.Value, sizeof(tmp_global_s.Value), "%s", serviceID_get());
+				device_global_insert(&tmp_global_s);
+			}
+			
 			pid_init(1);
 			channel_ineffective_clear();
 			

@@ -828,7 +828,7 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 					
 					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%ld','');",
 						GLB_NAME_REBOOT_TIMESTAMP,now_sec);
-					if(0==sqlite_execute(sqlite_cmd)){
+					if(0==sqlite_execute_db(DB_MAIN_URI, sqlite_cmd)){
 						s_decoder_running = 0;
 						DEBUG("set s_decoder_running=%d to stop push write\n", s_decoder_running);
 						sleep(1);
