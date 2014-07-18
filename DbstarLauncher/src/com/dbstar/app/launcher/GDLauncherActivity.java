@@ -440,7 +440,12 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeTV)) {
 			startTVView(menuItem.ColumnId());
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSmartLife)) {
-			showGuodianApp(menuItem.ColumnId());
+			if(APPVersion.GUODIAN){
+				showGuodianApp(menuItem.ColumnId());
+			}
+			else{
+				LogUtil.d(TAG, "without GUODIAN definition, do nothing with smartlife");
+			}
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeSettings)) {
 			showSettingView(menuItem.ColumnId());
 		} else if (menuItem.Type().equals(GDCommon.ColumnTypeUserCenter)) {
@@ -645,10 +650,15 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent = new Intent();
 			intent.setClass(this, GDProductsActivity.class);
 		}else if(columnId.equals(GDCommon.ColumnIDPowerTarget)){
-		    intent = new Intent();
-		    intent.setClass(this, GDPowerTargetSettingActivity.class);
-		    intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-            startActivityForResult(intent, REQUEST_POWER_TARGET_ACTIVITY_RESULT);
+			if(APPVersion.GUODIAN){
+			    intent = new Intent();
+			    intent.setClass(this, GDPowerTargetSettingActivity.class);
+			    intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+            	startActivityForResult(intent, REQUEST_POWER_TARGET_ACTIVITY_RESULT);
+            }
+            else{
+				LogUtil.d(TAG, "do nothing for columnID: " + columnId);
+            }
             return;
 		}
 
@@ -1653,7 +1663,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mPowerController = new GDPowerController(this);
 		}
 		else{
-			LogUtil.d(TAG, "for NO GUODIAN, mPowerController = new GDPowerController(this)");
+			LogUtil.d(TAG, "for NO GUODIAN, do nothing for mPowerController");
+			mPowerController = null;
 		}
 	}
 
@@ -1803,9 +1814,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private void startEngine() {
 		mMediaScheduler.start(mService);
-		  if(mPowerController != null)
-		      mPowerController.start(mService);
-
+		if(mPowerController != null){
+			LogUtil.d(TAG, "do mPowerController.start(mService)");
+			mPowerController.start(mService);
+		}
+		else{
+			LogUtil.d(TAG, "do nothing for smarthome for startEngine");
+		}
 		checkSmartcardStatus();
 	}
 

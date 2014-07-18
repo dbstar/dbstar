@@ -67,7 +67,9 @@
         <activity android:name=".app.help.GDHelpActivity" />
         <activity android:name=".app.settings.GDProductsActivity" />
         <activity android:name=".app.settings.GDAdvancedToolsActivity" />
-        <activity android:name=".guodian.app.mypower.GDMypowerActivity" />
+
+<!--
+        <activity android:name=".guodian.app.mypower.GDMypowerActivity" />
         <activity android:name=".guodian.app.mypower.GDBillActivity" />
         <activity android:name=".guodian.app.mypower.GDBusinessAreaActvity" />
         <activity android:name=".guodian.app.mypower.GDNoticeActivity" />
@@ -81,6 +83,7 @@
         <activity android:name=".guodian.app.smarthome.GDSmartHomeTimedTaskActivity"/>
         <activity android:name=".guodian.app.mypower.GDPowerTargetSettingActivity"/>
         <activity android:name=".guodian.app.newsflash.GDNewsFlashActivity"/>
+-->
         <service
             android:name=".service.GDDataProviderService"
             android:exported="false" />

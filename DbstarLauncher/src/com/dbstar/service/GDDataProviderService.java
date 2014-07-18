@@ -188,7 +188,7 @@ public class GDDataProviderService extends Service {
 
 	//private GDEngine mGuodianEngine;
     
-    private ClientRequestService mRequestService;
+    private ClientRequestService mRequestService = null;
     
     private boolean mIsConnectNetWork;
     
@@ -274,11 +274,12 @@ public class GDDataProviderService extends Service {
 		//mGuodianEngine = new GDEngine(this);
 		//mGuodianEngine.setDbStarClint(mDBStarClient);
 		if(APPVersion.GUODIAN){
-		    LogUtil.d(TAG, "APPVersion.GUODIAN is true");
+		    LogUtil.d(TAG, "APPVersion.GUODIAN is true, new ClientRequestService(this)");
 		    mRequestService = new ClientRequestService(this);
 		}
 		else{
 		    LogUtil.d(TAG, "APPVersion.GUODIAN is false");
+		    mRequestService = null;
 		}
 		
 		mTaskQueue = new LinkedList<RequestTask>();
@@ -498,7 +499,7 @@ public class GDDataProviderService extends Service {
 					.getSettingValue(GDSettings.PropertyGuodianServerPort);
 			if (serverIP == null || serverIP.isEmpty() || serverPort == null
 					|| serverPort.isEmpty())
-				return;
+			return;
 	
 			//mGuodianEngine.setReconnectTime(mConfigure.getGuodianReconnectTime());
 			//mGuodianEngine
@@ -507,7 +508,8 @@ public class GDDataProviderService extends Service {
 			mIsGuodianEngineStarted = true;
 		}
 		else{
-			LogUtil.d(TAG, "========== smarthome is rejected by this version ==========");
+			LogUtil.d(TAG, "xxxxxx smarthome is rejected by this version xxxxxxx");
+			mIsGuodianEngineStarted = false;
 		}
 	}
 
@@ -582,26 +584,32 @@ public class GDDataProviderService extends Service {
 		}
 		else{
 			LogUtil.d(TAG, "xxxxx smarthome is reject in this version xxxxx");
+			mIsSmartHomeServiceStarted = false;
 		}
 	}
 
 	private void stopDbStarService() {
-		if (!mIsSmartHomeServiceStarted)
-			return;
-
-		mIsSmartHomeServiceStarted = false;
-
-		LogUtil.d(TAG, "stopDbStarService");
-
-		// SharedPreferences settings = null;
-		// SharedPreferences.Editor editor = null;
-		//
-		// settings = getSharedPreferences(SmartHomePrepertyName, 0);
-		// editor = settings.edit();
-		// editor.putInt(SmartHomePrepertyName, 0);
-		// editor.commit();
-
-		SystemUtils.stopSmartHomeServer();
+		if(APPVersion.GUODIAN){
+			if (!mIsSmartHomeServiceStarted)
+				return;
+	
+			mIsSmartHomeServiceStarted = false;
+	
+			LogUtil.d(TAG, "stopDbStarService");
+	
+			// SharedPreferences settings = null;
+			// SharedPreferences.Editor editor = null;
+			//
+			// settings = getSharedPreferences(SmartHomePrepertyName, 0);
+			// editor = settings.edit();
+			// editor.putInt(SmartHomePrepertyName, 0);
+			// editor.commit();
+	
+			SystemUtils.stopSmartHomeServer();
+		}
+		else{
+			mIsSmartHomeServiceStarted = false;
+		}
 	}
 
 	private void startPowerTask() {
@@ -2831,47 +2839,51 @@ public class GDDataProviderService extends Service {
 	GDClientObserver mGDObserver = new GDClientObserver() {
 
 		public void notifyEvent(int type, Object event) {
-
-			LogUtil.d(TAG, " == notifyEvent == " + type);
-
-			switch (type) {
-			case EventData.EVENT_LOGIN_SUCCESSED: {
-				if (mApplicationObserver != null) {
-					mApplicationObserver.handleEvent(
-							EventData.EVENT_LOGIN_SUCCESSED, event);
+			if(APPVersion.GUODIAN){
+				LogUtil.d(TAG, " == notifyEvent == " + type);
+	
+				switch (type) {
+				case EventData.EVENT_LOGIN_SUCCESSED: {
+					if (mApplicationObserver != null) {
+						mApplicationObserver.handleEvent(
+								EventData.EVENT_LOGIN_SUCCESSED, event);
+					}
+					
+					if (mPageOberser != null) {
+						mPageOberser.notifyEvent(EventData.EVENT_LOGIN_SUCCESSED,
+								event);
+					}
+					
+					break;
+				}
+	
+				case EventData.EVENT_GUODIAN_DATA: {
+					if (mPageOberser != null) {
+						mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA,
+								event);
+					}
+					break;
+				}
+	
+				case EventData.EVENT_GUODIAN_DATA_ERROR: {
+				    if (mPageOberser != null) {
+	                    mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA_ERROR,
+	                            event);
+	                }
+				    break;
 				}
 				
-				if (mPageOberser != null) {
-					mPageOberser.notifyEvent(EventData.EVENT_LOGIN_SUCCESSED,
-							event);
+				// connection related event
+				default: {
+					if (mPageOberser != null) {
+	                    mPageOberser.notifyEvent(type, event);
+	                }
+					break;
 				}
-				
-				break;
-			}
-
-			case EventData.EVENT_GUODIAN_DATA: {
-				if (mPageOberser != null) {
-					mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA,
-							event);
 				}
-				break;
 			}
-
-			case EventData.EVENT_GUODIAN_DATA_ERROR: {
-			    if (mPageOberser != null) {
-                    mPageOberser.notifyEvent(EventData.EVENT_GUODIAN_DATA_ERROR,
-                            event);
-                }
-			    break;
-			}
-			
-			// connection related event
-			default: {
-				if (mPageOberser != null) {
-                    mPageOberser.notifyEvent(type, event);
-                }
-				break;
-			}
+			else{
+				LogUtil.d(TAG, " == smarthome notifyEvent ==, but do nothing " + type);
 			}
 		}
 
