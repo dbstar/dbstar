@@ -2853,7 +2853,7 @@ int storage_flash_check()
 {
 	if(0==strncmp(s_pushdir, PUSH_STORAGE_FLASH, strlen(PUSH_STORAGE_FLASH)))
 		return 1;
-	else if(0==strncmp(s_pushdir, "/mnt", 4) || 0==strncmp(s_pushdir, "/storage/external_storage/sda1", strlen("/storage/external_storage/sda1")))
+	else if(0==strncmp(s_pushdir, "/mnt/sd", 7) || 0==strncmp(s_pushdir, "/storage/external_storage/sd", 28))
 		return 0;
 	else
 		return -1;
@@ -2886,7 +2886,40 @@ static int push_dir_init()
 	}
 	else
 		DEBUG("read PushDir: %s\n", s_pushdir);
+	
+	if(0==storage_flash_check()){
+		DEBUG("use hd %s as storage\n", s_pushdir);
 		
+		// 检查硬盘是否真的就绪了。要不然开机接收到文件了，为啥去解析时又找不到，这不是逗我玩儿嘛
+		unsigned long long tt_size = 0LL;
+		unsigned long long free_size = 0LL;
+		int i = 0;
+		int ret = -1;
+		
+		for(i=0; i<10; i++){
+			if(-1==disk_usable_check(push_dir_get(),&tt_size,&free_size)){
+				DEBUG("hd %s disable...\n", s_pushdir);
+			}
+			else{
+				if(tt_size>128000000000LL){
+					DEBUG("hd %s is ready, %llu\n", s_pushdir, tt_size);
+					ret = 0;
+					break;
+				}
+				else{
+					DEBUG("hd %s is too small %llu, it's not a valid hd\n", s_pushdir, tt_size);
+				}
+			}
+			
+			sleep(2);
+		}
+		
+		if(-1==ret){
+			snprintf(s_pushdir, sizeof(s_pushdir), "%s", PUSH_STORAGE_FLASH);
+			DEBUG("Launcher says use hd, but it can not work, so use flash %s\n", s_pushdir);
+		}
+	}
+	
 	return 0;
 }
 
