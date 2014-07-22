@@ -2915,6 +2915,8 @@ static int push_dir_init()
 		}
 		
 		if(-1==ret){
+			// 虽然dvbpush认为是flash接收push，但是Launcher却认为是hd接收push
+			// 唯一的好处是，可以避免hd意外导致的接收混乱，这种混乱可能引起系统阻塞
 			snprintf(s_pushdir, sizeof(s_pushdir), "%s", PUSH_STORAGE_FLASH);
 			DEBUG("Launcher says use hd, but it can not work, so use flash %s\n", s_pushdir);
 		}
