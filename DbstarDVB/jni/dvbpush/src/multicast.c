@@ -369,6 +369,15 @@ MULTITASK_START:
 	if(-1==igmp_recvbuf_init())
 		return NULL;
 	
+	// if storage is hd, wait for hd mount signal from launcher
+	if(0==storage_flash_check()){
+		DEBUG("waiting for hd mount signel from launcher...\n");
+		while(0==hd_is_ready_by_launcher()){
+			sleep(2);
+		}
+		DEBUG("hd mount signel from launcher is comed\n");
+	}
+	
 	s_igmp_running = 1;
 	s_igmp_restart = 0;
 	

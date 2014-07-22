@@ -86,6 +86,7 @@ static char			s_TestSpecialProductID[64];
 static char			s_udisk_mount[64];
 static char			s_push_log_dir[512];
 static int			s_user_idle_status = 1;	// 0表示用户处在使用状态、非空闲，1表示用户处在空闲状态
+static int			s_hd_ready_by_launcher = 0;
 
 static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
@@ -1715,6 +1716,12 @@ static int system_awake_timer_get(char *buf, unsigned int bufsize)
 	return ret;
 }
 
+// after the luncher say "CMD_DISK_MOUNT" by jni, dvbpush can recv push data. or, the system will be blocked
+int hd_is_ready_by_launcher()
+{
+	return s_hd_ready_by_launcher;
+}
+
 /*
  通过jni提供给UI使用的函数，UI可以由此设置向上发送消息的回调函数。
  实际调用参见dvbpush_jni.c
@@ -1785,14 +1792,20 @@ int dvbpush_command(int cmd, char **buf, int *len)
 					DEBUG("<<<<<<<<< udisk is mounted at %s\n", *buf);
 					snprintf(s_udisk_mount,sizeof(s_udisk_mount),"%s",*buf);
 				}
-				else if(0==strcmp(*buf, PUSH_STORAGE_HD)){
-					if(-1==disk_usable_check(push_dir_get(),NULL,NULL)){
-						DEBUG("HardDisc disable\n");
+				else if(0==storage_flash_check() && 0==s_hd_ready_by_launcher){
+					if(0==strncmp(*buf, push_dir_get(), strlen(*buf))){
+						if(-1==disk_usable_check(push_dir_get(),NULL,NULL)){
+							DEBUG("HardDisc disable\n");
+						}
+						else{
+							s_hd_ready_by_launcher = 1;
+							DEBUG("HardDisc enable\n");
+							
+//							maintenance_thread_awake();
+						}
 					}
 					else{
-						DEBUG("HardDisc enable\n");
-						
-//						maintenance_thread_awake();
+						DEBUG("%s is not mount for push storage %s\n", *buf, push_dir_get());
 					}
 				}
 				else
@@ -1951,7 +1964,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DISC_FORMAT:
 			DEBUG("CMD_DISC_FORMAT\n");
 			
-			snprintf(tmp_buf,sizeof(tmp_buf),"%s/ColumnRes", s_pushdir);
+			snprintf(tmp_buf,sizeof(tmp_buf),"%s/ColumnRes", push_dir_get());
 			if(0==remove_force(tmp_buf)){
 				DEBUG("remove %s success\n", tmp_buf);
 			}
@@ -1959,7 +1972,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				DEBUG("remove %s failed\n", tmp_buf);
 			}
 			
-			snprintf(tmp_buf,sizeof(tmp_buf),"%s/Dbstar.db", s_pushdir);
+			snprintf(tmp_buf,sizeof(tmp_buf),"%s/Dbstar.db", push_dir_get());
 			if(0==remove_force(tmp_buf)){
 				DEBUG("remove %s success\n", tmp_buf);
 			}
@@ -1967,7 +1980,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				DEBUG("remove %s failed\n", tmp_buf);
 			}
 			
-			snprintf(tmp_buf,sizeof(tmp_buf),"%s/pushroot", s_pushdir);
+			snprintf(tmp_buf,sizeof(tmp_buf),"%s/pushroot", push_dir_get());
 			if(0==remove_force(tmp_buf)){
 				DEBUG("remove %s success\n", tmp_buf);
 			}
@@ -2897,7 +2910,7 @@ static int push_dir_init()
 		int ret = -1;
 		
 		for(i=0; i<10; i++){
-			if(-1==disk_usable_check(push_dir_get(),&tt_size,&free_size)){
+			if(-1==disk_usable_check(s_pushdir,&tt_size,&free_size)){
 				DEBUG("hd %s disable...\n", s_pushdir);
 			}
 			else{
