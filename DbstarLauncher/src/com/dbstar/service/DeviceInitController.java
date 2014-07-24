@@ -20,24 +20,30 @@ public class DeviceInitController {
 	public static boolean isQualifiedDevice(){
 	    boolean isQualified = false;
 	    File file = new File(FactoryQualifiedFile);
-	        try {
-	            int count = 0;
-	            byte[] buf = new byte[100];
-	            FileInputStream in = new FileInputStream(file);
-	            BufferedInputStream bIn = new BufferedInputStream(in);
-	            count = bIn.read(buf, 0, buf.length);
-	            bIn.close();
-	            
-	            if (count > 0) {
-	                String vlues = new String(buf, 0, count);
-	                
-	                if ((vlues.compareTo("1")) == 0) {
-	                    isQualified = true;
-	            }
-            } 
-	        }catch (Exception e) {
-                e.printStackTrace();
+		
+		if (!file.exists()) {
+			LogUtil.e(TAG, FactoryQualifiedFile + " is not exist");
+	        return false;
+	    }
+		
+        try {
+            int count = 0;
+            byte[] buf = new byte[100];
+            FileInputStream in = new FileInputStream(file);
+            BufferedInputStream bIn = new BufferedInputStream(in);
+            count = bIn.read(buf, 0, buf.length);
+            bIn.close();
+            
+            if (count > 0) {
+                String vlues = new String(buf, 0, count);
+                
+                if ((vlues.compareTo("1")) == 0) {
+                    isQualified = true;
             }
+        } 
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
 	    
 	    return isQualified;
 	}
@@ -45,7 +51,12 @@ public class DeviceInitController {
 		boolean firstTime = true;
 
 		Context context = GDApplication.getAppContext();
-
+		
+		if (context == null) {
+			LogUtil.d("isBootFirstTime", "----------=========" + context);
+		    return true;
+		}
+		
 		try {
 			int count = 0;
 			byte[] buf = new byte[100];

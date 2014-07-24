@@ -35,6 +35,10 @@ public class GDAudioController extends BroadcastReceiver {
 
 		context.registerReceiver(this, filter);
 	}
+	
+	public void unRegisterBroadcastReceiver(Context context) {
+	    context.unregisterReceiver(this);
+	}
 
 	public void muteAudio(int mute) {
 		mIsMute = mute == GDCommon.MUTE_TRUE ? true : false;
