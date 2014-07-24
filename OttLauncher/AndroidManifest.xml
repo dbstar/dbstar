@@ -28,7 +28,9 @@
             android:name="com.dbstar.app.DbstarOTTActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
-            android:theme="@style/Transparent" >
+            android:launchMode="singleTask"
+            android:clearTaskOnLaunch="true"
+            android:stateNotNeeded="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
