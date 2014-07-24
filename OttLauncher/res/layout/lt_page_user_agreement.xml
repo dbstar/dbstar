@@ -1,0 +1,82 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/userAgreement_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/protocol_bk"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.0"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:background="@drawable/protocol_main_bk"
+        android:orientation="vertical" >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/protocol_words" />
+
+        <!-- TextView本身带有滚动条，没有必要套在ScrollView中 -->
+
+        <TextView
+            android:id="@+id/userAgreement_mustknow"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:paddingBottom="10dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingTop="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:singleLine="false"
+            android:text="@string/lt_page_user_mustknow"
+            android:background="@drawable/big_app"
+            android:textColor="#ff000000"
+            android:textSize="22dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/userAgreement_container1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <CheckBox
+            android:id="@+id/userAgreement_checkBox"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginRight="10dp"
+            android:button="@drawable/checkbox_selector"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:gravity="center_vertical" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/protocol_agreewords" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/userAgreement_agreeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="30dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/protocol_agreebtn"
+        android:background="@drawable/lt_common_button_focuse_selector" />
+
+</LinearLayout>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list android:oneshot="false"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0001" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0002" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0003" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0004" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0005" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0006" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0007" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0008" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0009" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0010" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0011" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0012" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0013" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0014" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0015" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0016" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0017" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0018" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0019" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0020" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0021" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0022" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0023" />
+    <item android:duration="40" android:drawable="@drawable/load_dbstar0024" />
+</animation-list>

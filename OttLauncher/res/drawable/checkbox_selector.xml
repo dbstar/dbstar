@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 选中没有焦点 -->
+    <item android:drawable="@drawable/focus1" android:state_checked="true" android:state_focused="false"/>
+    <!-- 既没有选中，又没有焦点 -->
+    <item android:drawable="@drawable/focus4" android:state_checked="false" android:state_focused="false"/>
+    <!-- 有焦点但是没有选中 -->
+    <item android:drawable="@drawable/focus0" android:state_checked="false" android:state_focused="true" />
+    <!-- 既被选中又有焦点        图片需要换 -->
+    <item android:drawable="@drawable/focus2" android:state_checked="true" android:state_focused="true" />
+
+</selector>
