@@ -271,9 +271,9 @@ dbstar_make()
 		call mmm $DBSTAR_SRC/DbstarDVB -B
 		call mmm $DBSTAR_SRC/DbstarLauncher -B
 		call mmm $DBSTAR_SRC/DbstarSettings -B
-#		call mmm $DBSTAR_SRC/GuodianApp -B
-        call mmm $DBSTAR_SRC/DBStarAppManager -B
-        call mmm $DBSTAR_SRC/DbstarFileBrowser -B
+		call mmm $DBSTAR_SRC/DBStarAppManager -B
+		call mmm $DBSTAR_SRC/DbstarFileBrowser -B
+		call mmm $DBSTAR_SRC/OttLauncher -B
 	else
 		call mmm $DBSTAR_SRC/DbstarDVB
 		if [ $? -ne 0 ]; then
@@ -287,23 +287,22 @@ dbstar_make()
 		if [ $? -ne 0 ]; then
 			logger "ERROR make DbstarSettings"
 		fi
-#		call mmm $DBSTAR_SRC/GuodianApp
-#		if [ $? -ne 0 ]; then
-#			logger "ERROR make GuodianApp"
-#		fi
-        call mmm $DBSTAR_SRC/DBStarAppManager
-        if [ $? -ne 0 ]; then
-        	logger "ERROR make DBStarAppManager"
-        fi
-        call mmm $DBSTAR_SRC/DbstarFileBrowser
-        if [ $? -ne 0 ]; then
-        	logger "ERROR make DbstarFileBrowser"
-        fi
-        call mmm $DBSTAR_SRC/OttLauncher
-        if [ $? -ne 0 ]; then
-        	logger "ERROR make OttLauncher"
-        fi
-
+		call mmm $DBSTAR_SRC/DBStarAppManager
+		if [ $? -ne 0 ]; then
+			logger "ERROR make DBStarAppManager"
+		fi
+		call mmm $DBSTAR_SRC/DbstarFileBrowser
+		if [ $? -ne 0 ]; then
+			logger "ERROR make DbstarFileBrowser"
+		fi
+		call mmm $DBSTAR_SRC/MultipleMediaReader
+		if [ $? -ne 0 ]; then
+			logger "ERROR make MultipleMediaReader"
+		fi
+		call mmm $DBSTAR_SRC/OttLauncher
+		if [ $? -ne 0 ]; then
+			logger "ERROR make OttLauncher"
+		fi
 	fi
 	if [ $? -eq 0 ]; then
 		logger "FINISH make dbstar"
