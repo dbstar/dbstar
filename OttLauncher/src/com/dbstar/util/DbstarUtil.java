@@ -164,7 +164,7 @@ public class DbstarUtil {
 		// 保存在本地
 		try {
 			// 通过openFileOutput方法得到一个输出流，方法参数为创建的文件名（不能有斜杠），操作模式(可以覆盖原有的)
-			FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_WORLD_READABLE);
+			FileOutputStream fos = context.openFileOutput(fileName, Context.MODE_WORLD_WRITEABLE);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(map);
 			oos.flush();
@@ -187,13 +187,16 @@ public class DbstarUtil {
 			String filePath = "/data/dbstar/" + fileName;
 			
 			File file = new File(filePath);
-			if (!file.exists()) {
-				try {
+			try {
+				if (!file.exists()) {
 					file.createNewFile();
-				} catch (IOException e) {
-					LogUtil.i("saveHsahMap", "文件创建失败");
-					e.printStackTrace();
+				} else {
+					file.delete();
+					file.createNewFile();
 				}
+			} catch (IOException e) {
+				LogUtil.i("saveHsahMap", "文件创建失败");
+				e.printStackTrace();
 			}
 			
 			try {

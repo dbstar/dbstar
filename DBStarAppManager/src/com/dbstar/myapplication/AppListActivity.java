@@ -386,8 +386,31 @@ public class AppListActivity extends Activity {
                 // continue;
                 //
                 
-                if(info.activityInfo.applicationInfo.packageName.equals("com.dbstar.myapplication"))
-                    continue;
+                if(	info.activityInfo.applicationInfo.packageName.equals("com.dbstar.myapplication")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.PPPoE")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.farcore.videoplayer")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.mediacenter")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.mbx.settingsmbox")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlapp.update.otaupgrade")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.android.gallery3d")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.netfilebrowser")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.android.providers.downloads.ui")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.android.music")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.android.music.ArtistAlbumBrowserActivity")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.gsoft.appinstall")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.media.android.dbstarplayer")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar.settings")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar.DbstarDVB")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.adobe.flashplayer")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.miracast")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.moretv.tvapp")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar.ottlauncher")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.android.service.remotecontrol")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.mediaboxlauncher")){
+					Log.i("AllApps3D", "do not show Built-in app(packageName): " + info.activityInfo.applicationInfo.packageName);
+					continue;
+                }
                 application.title = info.loadLabel(manager);
                 application.setActivity(new ComponentName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name), Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);

@@ -17,6 +17,11 @@ dbstar_init()
 		mv /system/app/Launcher2.apk /system/app/Launcher2.apk.bk
 		mv /system/app/dongle_launcher.apk /system/app/dongle_launcher.apk.bk
 	fi
+	
+	if [ -e "/system/app/MediaBoxLauncher.apk" ]; then
+		mount -o remount,rw /system
+		mv /system/app/MediaBoxLauncher.apk /system/app/MediaBoxLauncher.apk.bk
+	fi
 
 	if [ -s "/data/dbstar/Dbstar.db" ]; then
 		echo "dbstar already inited!"
