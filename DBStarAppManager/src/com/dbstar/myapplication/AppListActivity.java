@@ -407,7 +407,9 @@ public class AppListActivity extends Activity {
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.moretv.tvapp")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar.ottlauncher")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.android.service.remotecontrol")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.mediaboxlauncher")){
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.mediaboxlauncher")
+                	|| info.activityInfo.applicationInfo.packageName.equals("app.android.applicationxc")
+                	|| info.activityInfo.applicationInfo.packageName.equals("com.hycstv.android")){
 					Log.i("AllApps3D", "do not show Built-in app(packageName): " + info.activityInfo.applicationInfo.packageName);
 					continue;
                 }
