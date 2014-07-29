@@ -57,10 +57,6 @@ public class NetworkController extends BroadcastReceiver {
 
 		context.registerReceiver(this, filter);
 	}
-	
-	public void unRegisterBroadcastReceiver(Context context) {
-	    context.unregisterReceiver(this);
-	}
 
 	@Override
 	public void onReceive(Context context, Intent intent) {

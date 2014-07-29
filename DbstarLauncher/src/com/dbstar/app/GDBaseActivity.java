@@ -202,8 +202,8 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 		mResource = new GDResourceAccessor(this);
 
-		//Intent intent = new Intent(this, GDDataProviderService.class);
-		//bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+		Intent intent = new Intent(this, GDDataProviderService.class);
+		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -230,7 +230,7 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
 		if (mBound) {
 			mService.unRegisterPageObserver(this);
-			//unbindService(mConnection);
+			unbindService(mConnection);
 			mBound = false;
 		}
 

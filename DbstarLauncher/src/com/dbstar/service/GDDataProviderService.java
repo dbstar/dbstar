@@ -561,9 +561,6 @@ public class GDDataProviderService extends Service {
 		}
 
 		destroyGuodianEngine();
-		
-		mEthernetController.unRegisterBroadcastReceiver(this);
-		mAudioController.unRegisterBroadcastReceiver(this);
 	}
 
 	private void startDbStarService() {

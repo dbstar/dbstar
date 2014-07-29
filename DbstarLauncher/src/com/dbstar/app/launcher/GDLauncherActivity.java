@@ -287,15 +287,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		case KeyEvent.KEYCODE_DPAD_DOWN:
 		case KeyEvent.KEYCODE_BACK:
-			boolean back_ret = onBackKeyEvent();
-			LogUtil.d(TAG, "==== onKeyDown KEYCODE_BACK = " + back_ret);
-			if(false == back_ret){ // not handle back key in main view
-				LogUtil.d(TAG, "return super.... ");
-				return super.onKeyDown(keyCode, event);
-			}else{
-				LogUtil.d(TAG, "return true");
-				return true;
-			}
+			onBackKeyEvent();
+			return true; // not handle back key in main view
 		}
 
 		return super.onKeyDown(keyCode, event);
@@ -320,35 +313,28 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// case 82: // just for test on emulator
 		case KeyEvent.KEYCODE_DPAD_CENTER:
 		case KeyEvent.KEYCODE_ENTER:
-//		case KeyEvent.KEYCODE_BACK: 
+		case KeyEvent.KEYCODE_BACK: {
 			return true;
-		
+		}
 		}
 
 		return super.onKeyUp(keyCode, event);
 	}
 	
-	private boolean onBackKeyEvent() {
+	private void onBackKeyEvent() {
 
 		// Hide popup menu first!
 		// if (isPopupMenuShown()) {
 		// hidePopupMenu();
 		// return true;
 		// }
-		Menu menu = mMenuStack.peek();
-
-		LogUtil.d(TAG, "======== onBackKeyEvent " + menu.MenuLevel );
-		if(1==menu.MenuLevel){
-			LogUtil.d(TAG, "<<<<< return false for BACK KEY <<<<" );
-			return false;
-		}
 		
-		LogUtil.d(TAG, " ==== press back key === " + mLeaveStart + " " + mEnterStart);
-		LogUtil.d(TAG, "mMenuStack.size()" + mMenuStack.size());
+//		LogUtil.d(TAG, " ==== press back key === " + mLeaveStart + " " + mEnterStart);
+
 		if (mMenuStack.size() > 1) {
 			
 			if(mLeaveStart || mEnterStart) {
-				return false;
+				return;
 			}
 			
 			mLeaveStart = true;
@@ -367,10 +353,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 				mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
 			}
 			
-			mMainMenu.startLayoutAnimation();	
-			return true;
-		} else {
-			return false;
+			mMainMenu.startLayoutAnimation();
 		}
 	}
 	
