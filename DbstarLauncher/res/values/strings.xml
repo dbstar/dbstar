@@ -428,4 +428,54 @@
 	<string name="applist_title">应用名称</string>
 	<string name="external_storage_mount_alert">已插入外部储存！ 是否打开文件管理器</string>
 	
+	<!-- OttLauncher -->
+    
+    <!-- 首页面 -->
+    <string name="lt_page_launcher_startv">星影院</string>
+    <string name="lt_page_launcher_cntv">网络电视</string>
+    <string name="lt_page_launcher_appshop">应用商城</string>
+    <string name="lt_page_launcher_myapp">本地应用</string>
+    <string name="lt_page_launcher_settings">设置</string>
+    
+    <!-- 用户协议页面 -->
+	<string name="lt_page_user_agreement">用户协议</string>
+	<string name="lt_page_user_mustknow">"
+用户须知
+
+尊敬的用户，欢迎使用航天数字传媒有限公司（“公司”）的高清播放机（“播放机”）！本《用户须知》中的播放机仅指播放机设备本身，不涉及通过播放机接入、链接、检索、下载、浏览、观看或使用任何内容或服务。在用户使用本播放机之前，应仔细阅读本《用户须知》的所有内容。
+一、本播放机的知识产权归公司所有。用户不得且不会促使他人对本播放机进行复制、解码、反汇编、倒序制造、修改软件或制造其衍生产品等侵犯公司知识产权的行为。
+二、用户使用本播放机时，应通过有法律资格为用户提供网络接入服务的第三方进入服务网络。本播放机能使用户访问基于互联网络的第三方服务或网址，可能显示来自第三方的链接、内容、数据、信息或应用软件（“第三方信息”），并且可能需要用户向网络接入服务提供商和第三方信息提供商支付额外费用或自行添置其他必要设备，如电视机、网线、显示器等。用户通过本播放机接入、检索、下载、浏览、观看或使用第三方信息及产生的费用与公司无关，用户应谨慎判断是否通过本播放机接入、检索、下载、浏览、观看或使用第三方信息和支付相应费用。
+三、公司并非网络接入服务的提供方，用户通过本播放机接入、检索、下载、浏览、观看或使用第三方信息，因不可抗力、黑客攻击、网络不稳定、关机以及其他任何网络、技术、通信线路等播放机质量以外的原因造成的服务中断、播放机受损、隐私泄露、资料丢失以及其他任何风险，须由用户自行承担，公司不承担任何责任和义务。
+四、公司并非第三方信息的提供方，不负担对第三方信息的审核责任，也不提供任何明示或默示的保证或担保，不负责检查或评估第三方信息的真实性、及时性、准确性、完整性、有效性、合法性、适用性、符合版权规定或任何其他方面等。用户通过本播放机进行任何接入、检索、下载、浏览、观看或使用第三方信息时，可能会遇到侵权、违法、不准确、错误或不合宜的链接或内容，这些链接或内容并非公司生成或提供，用户应自担风险，公司不承担任何责任和义务。
+五、用户应在法律法规及政策许可的范围内使用本播放机及通过本播放机接入、检索、下载、浏览、观看或使用第三方信息，不得利用本播放机及通过本播放机接入、检索、下载、浏览、观看或使用的第三方信息用于任何违法、违规或侵权活动，包括但不限于将本播放机用于展示、传播包含危害国家安全、损害国家荣誉和利益、煽动民族仇恨、破坏国家宗教政策、散布谣言、色情、淫秽、赌博、暴力、恐怖、教唆犯罪、侮辱、诽谤、侵犯第三方权利等内容。如用户违反法律法规及政策，被第三方追责或被行政、司法机关等处罚，均由用户自行承担。若由于用户的行为给公司造成损失，公司有权对其采取法律措施。
+六、公司根据国家法律规定为用户提供播放机维修、升级、技术支持等售后服务。保修期时限及保修内容遵循国家现行有效的与产品销售和“三包”服务相关的法律规定。保修期内，如因用户的原因或其他不可抗力因素造成播放机损坏，不在保修范围内，公司可为用户提供有偿维修服务。在保修期外，公司提供终身有偿维修服务及相应技术支持。
+七、公司有权根据有关法律、法规及政策的变化，以及公司经营策略修改本《用户须知》，如果用户继续使用本播放机，则视为用户接受最新版本的《用户须知》。
+
+航天数字传媒有限公司
+	    "</string>
+	<string name="lt_page_user_read">我已阅读用户协议</string>
+	<string name="lt_page_user_beginUser">开始使用</string>
+	<string name="lt_page_user_beginUser_toast">请先选择同意协议之后再进入</string>
+    
+	
+	<!-- 注册页面 -->
+	<string name="lt_page_register_text_font">微软雅黑</string>
+	<string name="lt_page_register_name">您的姓氏：</string>
+	<string name="lt_page_register_sex">性别：</string>
+	<string name="lt_page_register_boy">男</string>
+	<string name="lt_page_register_girl">女</string>
+	<string name="lt_page_register_phone">输入手机号码：</string>
+	<string name="lt_page_register_code">请输入验证码：</string>
+	<string name="lt_page_register_get_code">获取验证码</string>
+	<string name="lt_page_register_register">注册</string>
+	
+	
+	
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_my_setting">MySetting</string>
+    <string name="main_pic_bk">BackGround</string>
+    <string name="main_pic_up">Up_Pic</string>
+    <string name="main_pic_down">Down_Pic</string>
+    <string name="main_pic_isoffline_logo">IsOffLineLogo</string>
+	
 </resources>

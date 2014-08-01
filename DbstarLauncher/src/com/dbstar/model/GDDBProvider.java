@@ -208,6 +208,9 @@ public class GDDBProvider {
 	}
 
 	protected synchronized SQLiteDatabase getDeviceGlobalReadableDatabase() {
+		
+		LogUtil.d("getDeviceGlobalReadableDatabase", mConfigure + ">>>>>>>>>>>====");
+		
 		String dbFile = mConfigure.getDeviceGlobalDB();
 
 		if (!isFileExist(dbFile)) {

@@ -20,6 +20,9 @@ public class DeviceInitController {
 	public static boolean isQualifiedDevice(){
 	    boolean isQualified = false;
 	    File file = new File(FactoryQualifiedFile);
+	    if (!file.exists()) {
+	        return false;
+	    }	    
 	        try {
 	            int count = 0;
 	            byte[] buf = new byte[100];

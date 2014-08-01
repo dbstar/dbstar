@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:drawable="@drawable/login_btn_new" android:state_focused="true" android:state_selected="true"/>
+    <item android:drawable="@drawable/login_btn_new_unfocusable" android:state_focused="false" android:state_selected="false"/>
+
+</selector>

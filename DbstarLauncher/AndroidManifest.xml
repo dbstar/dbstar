@@ -30,7 +30,7 @@
         android:theme="@style/DbstarAppTheme" >
 
         <activity
-            android:name=".app.launcher.GDLauncherActivity"
+            android:name=".app.DbstarOTTActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:launchMode="singleTask"
@@ -45,6 +45,7 @@
                 <category android:name="android.intent.category.MONKEY" />
             </intent-filter>
         </activity>
+        <activity android:name=".app.launcher.GDLauncherActivity" />
         <activity android:name=".app.GDHDMovieActivity" />
         <activity android:name=".app.GDTVActivity" />
         <activity android:name=".app.GDReceiveStatusActivity" />
@@ -90,6 +91,16 @@
           <provider android:name=".model.MultipleLanguageInfoProvider"
              android:authorities="com.dbstar.multipleLanguageInfo.provider"
              ></provider>
+          
+          <activity android:name=".openuser.activity.UserAgreementActivity" />
+        <activity android:name=".app.MainActivity" />
+        <activity
+            android:name=".openuser.activity.UserRegisterActivity"
+            android:windowSoftInputMode="stateHidden" />
+
+        <activity android:name=".app.DbstarAppShopActivity" />
+        
+        <service android:name=".app.DbstarService" />
     </application>
 
 </manifest>
