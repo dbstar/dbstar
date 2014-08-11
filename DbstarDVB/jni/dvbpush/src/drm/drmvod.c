@@ -156,23 +156,26 @@ static int drmvod_read(URLContext *h, unsigned char *buf, int size)
 	
 	len = MIN(size, (drmvod->length - drmvod->curpos));
 	if (len <= 0) {
-		LOGD("drmvod_read() len<=0, return!\n");
+		LOGD("drmvod_read() len[%d]=MIN(size[%d],(drmvod->length[%lld] - drmvod->curpos[%lld])), return!\n", len,size,drmvod->length,drmvod->curpos);
 		return 0;
 	}
+	
 	pthread_mutex_lock(&s_drmvod_mutex);
 //	LOGD("########## 1. %s(size=%d), curpos=%lld, len=%d\n", __FUNCTION__, size, drmvod->curpos, len);
 	if (s_drmvod.inited && s_drmvod.ready) {
-		//LOGD("read drm file\n");
-		if (get_player_status() == 0x20003) {
-			 ret = 0;
-			 LOGD("Player PAUSE, read later!\n");
-			 usleep(500000);
-		} else {
+//		LOGD("read drm file, get_player_status()=0x%x\n", get_player_status());
+//		if (get_player_status() == 0x20003) {
+//			 ret = 0;
+//			 LOGD("Player PAUSE, read later!\n");
+//			 usleep(500000);
+//		} 
+//		else 
+		{
 			ret = drm_read(&drmvod->fd_media, buf, len);
 		}
 		
 		if (ret == 0) {
-			//LOGD("DRM_READ AGAIN!\n");
+			LOGD("DRM_READ AGAIN!\n");
 			ret = -EAGAIN;
 		}
 		else if (ret < 0) {

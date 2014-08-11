@@ -27,7 +27,6 @@ int prog_monitor_reset(void);
 int push_recv_manage_refresh();
 int send_xml_to_parse(const char *path, int flag, char *id);
 int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_ext);
-int productdesc_column_finished();
 
 void disk_manage_flag_set(int flag);
 void column_refresh_flag_set(int flag);

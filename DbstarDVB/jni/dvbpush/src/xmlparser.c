@@ -381,6 +381,57 @@ unsigned long long recv_totalsize_sum_get()
 	return s_recv_totalsize_sum;
 }
 
+static int calculate_totalsize_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
+	if(row<1){
+		DEBUG("no record in table, return\n");
+		return 0;
+	}
+	
+//TotalSize
+	int i = 0;
+	long long totalsize = 0LL;
+	
+	*((int *)receiver) = 0LL;
+	
+	for(i=1;i<row+1;i++)
+	{
+		totalsize = 0LL;
+		sscanf(result[i*column+0],"%lld", &totalsize);
+		*((int *)receiver) += totalsize;
+	}
+	
+	return 0;
+}
+
+// 只有在无盘开机、flash接收push时才调用此函数，用于清理ColumnType不等于12的成品
+static int productdesc_column_finished()
+{
+	int ret = -1;
+	char sqlite_cmd[512];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = calculate_totalsize_cb;
+	long long totalsize = 0LL;
+	
+	// 无盘开机时，只有ColumnType=='12'的栏目才入库，所以那些成品所属栏目不属于现有column表的成品，均删除。
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"delete from ProductDesc where RecvSequence='%d' or ColumnID not in(select ColumnID from Column);", RECV_SEQUENCE_1);
+	ret = sqlite_execute(sqlite_cmd);
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select TotalSize from ProductDesc;");
+	ret = sqlite_read(sqlite_cmd, (void *)(&totalsize), sizeof(totalsize), sqlite_callback);
+	
+	PRINTF("ret: %d, flag_carrier: %lld\n", ret, totalsize);
+	if(ret>0 && totalsize>0){
+		s_recv_totalsize_sum = totalsize;
+		ret = 0;
+	}
+	else
+		ret = -1;
+	
+	return ret;
+}
+
+
 //datetime类型得到小时
 //比如：2015-02-28 20:00:30得到20-1=19，而2015-02-27 00:00:30得到00-1=23
 int datetime2onehourbefore(char *datetime_str)
@@ -486,7 +537,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		s_recv_totalsize_sum += this_total_size;
 		DEBUG("ptr->TotalSize: %s, this_total_size=%llu,s_recv_totalsize_sum=%llu\n", ptr->TotalSize,this_total_size,s_recv_totalsize_sum);
 		
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ProductDesc(ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag,Parsed,RecvSeqence) \
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ProductDesc(ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag,Parsed,RecvSequence) \
 VALUES('%q',\
 '%q',\
 '%q',\
@@ -788,8 +839,14 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 		}
 	}
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Publication SET PublicationType='%q',IsReserved='%q',Visible='%q',DRMFile='%q',FileID='%q',FileSize='%q',FileURI='%q',FileType='%q',Duration='%q',Resolution='%q',BitRate='%q',FileFormat='%q',CodeFormat='%q',SetID='%q',SetName='%q',SetDesc='%q',SetPosterID='%q',SetPosterName='%q',SetPosterURI='%q',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%q';",
-		p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,p->SetID,p->SetName,p->SetDesc,p->SetPosterID,p->SetPosterName,p->SetPosterURI,receive_status_tmp,p->PublicationID);
+	if(strlen(p->SetID)>0){
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Publication SET PublicationType='%q',IsReserved='%q',Visible='%q',DRMFile='%q',FileID='%q',FileSize='%q',FileURI='%q',FileType='%q',Duration='%q',Resolution='%q',BitRate='%q',FileFormat='%q',CodeFormat='%q',SetID='%q',SetName='%q',SetDesc='%q',SetPosterID='%q',SetPosterName='%q',SetPosterURI='%q',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%q';",
+			p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,p->SetID,p->SetName,p->SetDesc,p->SetPosterID,p->SetPosterName,p->SetPosterURI,receive_status_tmp,p->PublicationID);
+	}
+	else{
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Publication SET PublicationType='%q',IsReserved='%q',Visible='%q',DRMFile='%q',FileID='%q',FileSize='%q',FileURI='%q',FileType='%q',Duration='%q',Resolution='%q',BitRate='%q',FileFormat='%q',CodeFormat='%q',SetName='%q',SetDesc='%q',SetPosterID='%q',SetPosterName='%q',SetPosterURI='%q',ReceiveStatus='%d',TimeStamp=datetime('now','localtime') WHERE PublicationID='%q';",
+			p->PublicationType,p->IsReserved,p->Visible,p->DRMFile,p->FileID,p->FileSize,p->FileURI,p->FileType,p->Duration,p->Resolution,p->BitRate,p->FileFormat,p->CodeFormat,p->SetName,p->SetDesc,p->SetPosterID,p->SetPosterName,p->SetPosterURI,receive_status_tmp,p->PublicationID);
+	}
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
@@ -1869,6 +1926,8 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					
 					parseNode(doc, cur, new_xmlroute, &sset_s, NULL, NULL, NULL);
 					publicationsset_insert(&sset_s);
+					
+					snprintf(p->SetID,sizeof(p->SetID),"%s",sset_s.SetID);
 				}
 				else if(0==strcmp(new_xmlroute, "Publication^PublicationVA^SetInfo^Title")){
 					DBSTAR_PUBLICATIONSSET_S *p = (DBSTAR_PUBLICATIONSSET_S *)ptr;
@@ -3571,8 +3630,13 @@ PARSE_XML_END:
 			
 			if(1==storage_flash_check()){
 				DEBUG("column is download finished, %d\n", storage_flash_check());
-				productdesc_column_finished();
-				push_recv_manage_refresh(storage_flash_check());
+				if(0==productdesc_column_finished()){
+					while(0==disk_space_check()){
+						DEBUG("do disk_space_check() finish with 0, sleep(3) and check again\n");
+						sleep(3);
+					}
+					push_recv_manage_refresh(storage_flash_check());
+				}
 			}
 		}
 		else if(SPRODUCT_XML==actual_xml_flag){
@@ -3590,9 +3654,12 @@ PARSE_XML_END:
 				 如果是进行了磁盘清理，需要再重试一次进行硬盘空间检查。因为磁盘清理时，清理空间计算依据的是数据库记录，但是有的节目没有下载完整，导致数据库标识的节目体积有虚高的风险，
 				 也因此导致实际清理掉的空间没有达到期望值。
 				*/
-				while(0==disk_space_check()){
-					DEBUG("do disk_space_check() finish with 0, sleep(3) and check again\n");
-					sleep(3);
+				if(0==storage_flash_check())
+					// If storage with hd, check storage(hd) here; or, check storage(flash) after column_info is downloaded
+					while(0==disk_space_check()){
+						DEBUG("do disk_space_check() finish with 0, sleep(3) and check again\n");
+						sleep(3);
+					}
 				}
 				
 				DEBUG("has parsed ProductDesc, will regist for push, %d\n", storage_flash_check());

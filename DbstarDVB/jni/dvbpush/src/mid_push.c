@@ -369,20 +369,6 @@ int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_e
 	return ret;
 }
 
-// 只有在无盘开机、flash接收push时才调用此函数，用于清理ColumnType不等于12的成品
-int productdesc_column_finished()
-{
-	char sqlite_cmd[512];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE ProductDesc SET RecvSeqence='%d' WHERE RecvSeqence='%d';", RECV_SEQUENCE_TAIL, RECV_SEQUENCE_1);
-	int ret = sqlite_execute(sqlite_cmd);
-	
-	// 无盘开机时，只有ColumnType=='12'的栏目才入库，所以那些成品所属栏目不属于现有column表的成品，均删除。
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"delete from ProductDesc where ColumnID not in(select ColumnID from Column);");
-	ret = sqlite_execute(sqlite_cmd);
-	
-	return ret;
-}
-
 /*
  功能判断是否是合法节目，节目名称长度大于0，并且总大小大于0
  返回值：	-1表示非法，1表示合法。
@@ -1596,7 +1582,7 @@ int disk_space_check()
 	char flash_pushroot[256];
 	int ret = -1;
 	
-	// 如果是flash下载，则直接计算现有的pushroot体积
+	// If storage with flash, calculate /data/dbstar/pushroot
 	if(1==storage_flash_check()){
 		snprintf(flash_pushroot, sizeof(flash_pushroot), "%s/pushroot", PUSH_STORAGE_FLASH);
 		free_size = (900000000LL)-dir_size(flash_pushroot);
@@ -1606,11 +1592,13 @@ int disk_space_check()
 			s_should_clean_hd = recv_totalsize_sum_get()-free_size;
 			DEBUG("%s/pushroot need clean %llu\n", PUSH_STORAGE_FLASH, s_should_clean_hd);
 			disk_manage(NULL,NULL);
+			
+			ret = 0;
 		}
 		else{
-			DEBUG("storage size is enough for download\n");
+			DEBUG("storage flash size is enough for download\n");
+			ret = 1;
 		}
-		ret = 0;
 	}
 	else{
 		if(-1==disk_usable_check(push_dir_get(),&tt_size,&free_size)){
@@ -1642,7 +1630,7 @@ int disk_space_check()
 2013-01-23
 	简化操作，新播发单下发就清除旧的播发单，否则不更新播发单，不考虑PushStartTime和PushEndTime
 */
-// recv_by_sequence为0，表示全部走正常流程，为1表示接收min(RecvSequence)，主要是无盘开机使用flash接收特定ColumnType节目，需要先接收column，然后才能接收publication
+// recv_by_sequence为0，表示全部走正常流程
 int push_recv_manage_refresh(int recv_by_sequence)
 {
 	int ret = -1;
@@ -1659,7 +1647,7 @@ int push_recv_manage_refresh(int recv_by_sequence)
 	
 	if(recv_by_sequence){
 		DEBUG("%d: push regist by sequence\n", recv_by_sequence);
-		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " WHERE RecvSeqence=(select min(RecvSeqence) from ProductDesc);");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " WHERE RecvSequence=(select min(RecvSequence) from ProductDesc);");
 	}
 	else{
 		DEBUG("%d: push regist reguler, without sequence\n", recv_by_sequence);
