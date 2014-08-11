@@ -70,9 +70,10 @@ int tc_fseeko(FILE64 *stream, off_t64 offset, int whence)
 #else
 
     int ret = -1;
+    off_t64 offset_ori = offset;
     ret = tc_fseeko1(stream,offset,whence);
-if (ret < 0)
-    DEBUG("$$$$$$$$ fseeko para[handler=%x, offset=%lld, whence=%d, ret=%d]\n",(int)stream,offset,whence,ret);
+	if (ret < 0)
+	    DEBUG("fseeko para[handler=%x, offset_ori=%lld, offset=%lld, whence=%d, ret=%d]\n",(int)stream,offset_ori,offset,whence,ret);
     return ret;
 #endif
 }

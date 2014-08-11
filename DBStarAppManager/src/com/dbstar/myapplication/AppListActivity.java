@@ -390,7 +390,7 @@ public class AppListActivity extends Activity {
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.PPPoE")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.farcore.videoplayer")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.mediacenter")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.mbx.settingsmbox")
+             //   	|| info.activityInfo.applicationInfo.packageName.equals("com.mbx.settingsmbox")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.amlapp.update.otaupgrade")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.android.gallery3d")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.netfilebrowser")

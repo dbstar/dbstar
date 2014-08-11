@@ -347,7 +347,8 @@ public class DbstarOTTActivity extends Activity {
 		imgAppShop.setOnClickListener(new BtnOnClickListener("com.guozi.appstore"));
 		imgMyApp.setOnClickListener(new BtnOnClickListener("com.dbstar.myapplication"));
 		// TODO：调用设置应用的时候有可能会用到jni
-		imgSetting.setOnClickListener(new BtnOnClickListener("com.mbx.settingsmbox"));
+//		imgSetting.setOnClickListener(new BtnOnClickListener("com.mbx.settingsmbox"));
+		imgSetting.setOnClickListener(new BtnOnClickListener("com.settings.ottsettings"));
 	}
 	
 	private void getQueryPoster() {
@@ -539,7 +540,8 @@ public class DbstarOTTActivity extends Activity {
 			imgMyApp.setOnClickListener(new BtnOnClickListener("com.dbstar.myapplication"));
 		} else {
 			txtSetting.setText(name);
-			imgSetting.setOnClickListener(new BtnOnClickListener("com.mbx.settingsmbox"));
+//			imgSetting.setOnClickListener(new BtnOnClickListener("com.mbx.settingsmbox"));
+			imgSetting.setOnClickListener(new BtnOnClickListener("com.settings.ottsettings"));
 		}
 	}
 	
