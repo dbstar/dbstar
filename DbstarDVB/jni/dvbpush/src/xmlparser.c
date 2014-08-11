@@ -3654,7 +3654,7 @@ PARSE_XML_END:
 				 如果是进行了磁盘清理，需要再重试一次进行硬盘空间检查。因为磁盘清理时，清理空间计算依据的是数据库记录，但是有的节目没有下载完整，导致数据库标识的节目体积有虚高的风险，
 				 也因此导致实际清理掉的空间没有达到期望值。
 				*/
-				if(0==storage_flash_check())
+				if(0==storage_flash_check()){
 					// If storage with hd, check storage(hd) here; or, check storage(flash) after column_info is downloaded
 					while(0==disk_space_check()){
 						DEBUG("do disk_space_check() finish with 0, sleep(3) and check again\n");
