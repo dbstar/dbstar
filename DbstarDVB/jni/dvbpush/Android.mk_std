@@ -40,13 +40,13 @@ include $(PREBUILD_STATIC_LIBRARY)
 #include $(BUILD_PREBUILT)
 
 #//=======
-#include $(CLEAR_VARS)
-#LOCAL_MODULE := libfileapi
-#LOCAL_ARM_MODE := arm
-#LOCAL_MODULE_TAGS := optional
-#LOCAL_PRELINK_MODULE := false
-#LOCAL_SRC_FILES += \
-#        src/fileapi.cpp
+include $(CLEAR_VARS)
+LOCAL_MODULE := libfileapi
+LOCAL_ARM_MODE := arm
+LOCAL_MODULE_TAGS := optional
+LOCAL_PRELINK_MODULE := false
+LOCAL_SRC_FILES += \
+        src/fileapi.cpp
 
 LOCAL_CFLAGS += -W -Wall
 #LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib
@@ -145,7 +145,7 @@ LIBDVB_PATH := $(LOCAL_PATH)/../../../../../external/dvb/include
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include \
         $(LIBDVB_PATH)/am_adp
 LOCAL_SHARED_LIBRARIES += libc libcutils libdl liblog libsqlite
-LOCAL_SHARED_LIBRARIES += libpush libam_adp libxml2 libiconv
+LOCAL_SHARED_LIBRARIES += libfileapi libfileapic libpush libam_adp libxml2 libiconv
 include $(BUILD_SHARED_LIBRARY)
 
 #include $(CLEAR_VARS)

@@ -371,7 +371,7 @@ static int guidelist_insert(DBSTAR_GUIDELIST_S *ptr)
 
 unsigned long long recv_totalsize_sum_get()
 {
-	if(s_recv_totalsize_sum<DOWNLOAD_ONCE_MIN){
+	if(0==storage_flash_check() && s_recv_totalsize_sum<DOWNLOAD_ONCE_MIN){
 		DEBUG("check recv totalsize sum %llu Bytes is smaller than %llu, reset it as %llu\n",s_recv_totalsize_sum,DOWNLOAD_ONCE_MIN,DOWNLOAD_ONCE_MIN);
 		s_recv_totalsize_sum = DOWNLOAD_ONCE_MIN;
 	}
@@ -414,7 +414,14 @@ static int productdesc_column_finished()
 	long long totalsize = 0LL;
 	
 	// 无盘开机时，只有ColumnType=='12'的栏目才入库，所以那些成品所属栏目不属于现有column表的成品，均删除。
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"delete from ProductDesc where RecvSequence='%d' or ColumnID not in(select ColumnID from Column);", RECV_SEQUENCE_1);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"delete from ProductDesc where RecvSequence='%d' or Columns not in(select ColumnID from Column);", RECV_SEQUENCE_1);
+	ret = sqlite_execute(sqlite_cmd);
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"delete from Publication where ColumnID not in(select ColumnID from Column);");
+	ret = sqlite_execute(sqlite_cmd);
+	
+	// don't show ColumnType='12' in column
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"delete from Column where ColumnType='%d';", SHOW_FLASH_COLUMNTYPE);
 	ret = sqlite_execute(sqlite_cmd);
 	
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select TotalSize from ProductDesc;");
