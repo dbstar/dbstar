@@ -277,11 +277,20 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	char to_file[256];
 	char cmd[4096];
 	
+	// storage push data with flash
 	if(1==storage_flash_check()){
+		// if Columntype is NOT '12', ignore the column and clear rubbish in ResStr.
 		if(SHOW_FLASH_COLUMNTYPE!=strtol(ptr->ColumnType,NULL,10)){
 			DEBUG("in storage flash, only show ColumnType='12', don't show ColumnID[%s],ColumnType[%s]\n",ptr->ColumnID,ptr->ColumnType);
-			return 0;
+			sqlite3_snprintf(sizeof(cmd),cmd,"delete from ResStr where ObjectName='%q' and EntityID='%s';", OBJ_COLUMN, ptr->ColumnID);
+			return sqlite_transaction_exec(cmd);
 		}
+	}
+	
+	// if ColumnType is '12', reset ColumnType as '1'. Then, the column as a normal movie
+	if(SHOW_FLASH_COLUMNTYPE==strtol(ptr->ColumnType,NULL,10)){
+		DEBUG("show ColumnID(%s) as ColumnType(1) from ColumnType(12)\n", ptr->ColumnID);
+		snprintf(ptr->ColumnType, sizeof(ptr->ColumnType), "1");
 	}
 	
 	if(0==strlen(ptr->ParentID))
