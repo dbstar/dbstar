@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -48,6 +49,7 @@ import com.dbstar.http.HttpConnect;
 import com.dbstar.http.SimpleWorkPool.ConnectWork;
 import com.dbstar.http.SimpleWorkPool.ReadSDCardData;
 import com.dbstar.http.SimpleWorkPool.SimpleWorkPoolInstance;
+import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.util.Constants;
 import com.dbstar.util.DbstarUtil;
@@ -56,6 +58,13 @@ import com.dbstar.util.LogUtil;
 public class DbstarOTTActivity extends Activity {
 
 	public static final String ColumnIDCNTV = "L97";
+	
+	private static final int Btn_StarTV_Sequence = 10;
+	private static final int Btn_CntvTV_Sequence = 11;
+	private static final int Btn_AppShop_Sequence = 12;
+	private static final int Btn_MyApp_Sequence = 13;
+	private static final int Btn_Setting_Sequence = 2;
+//	private static final int START_NETWORKSETTING_ACTIVITY_RESULT = 2;
 	
 	private FlashGallery gallery;
 	private ImageView imgStarTV;
@@ -150,7 +159,9 @@ public class DbstarOTTActivity extends Activity {
 		Intent intent = new Intent(this, DbstarService.class);
 		startService(intent);
 		
-		initViews();
+//		initViews();
+		findViews();
+		imgStarTV.requestFocus();
 		populateData();
 		setEventListener();
 	}
@@ -254,47 +265,7 @@ public class DbstarOTTActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (isToAthorAvtivity) {
-			if (mImageSet == null || mImageSet.getCount() == 0) {
-				mImageSet = new ImageSet(adapter2);
-			}
-			// 检查联网情况
-			boolean isNetworkConnected = DbstarUtil.isNetworkConnected(this);
-			// 先判断是否联网，如果没有联网，就停留在海报页面
-
-			if (!isNetworkConnected) {
-				// 如果没有网络，则判断sd卡中是否存在已经存储的文件
-				readQueryPosterFromSDCard();
-				readQueryRecommandFromSDCard();
-			} else {
-				boolean isNetworkAvailable = DbstarUtil.isNetworkAvailable(this);
-				if (isNetworkAvailable) {					
-					// 如果有网络，则登录，并从服务器端取得数据
-					getQueryPoster();
-					getQueryRecommand();
-				} else {
-					// 如果有网络，但没有连接成功，则判断sd卡中是否存在已经存储的文件
-					readQueryPosterFromSDCard();
-					readQueryRecommandFromSDCard();
-				}
-			}
-
-			if (adapter2 == null) {
-				adapter2 = new GalleryAdapter(this, pictures);
-			} else {
-				adapter2.notifyDataSetChanged();
-			}
-
-			initViews();
-			populateData();
-			setEventListener();
-		}
-	
-	}
-	
-//	@Override
-//	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//		super.onActivityResult(requestCode, resultCode, data);
+//		if (isToAthorAvtivity) {
 //			if (mImageSet == null || mImageSet.getCount() == 0) {
 //				mImageSet = new ImageSet(adapter2);
 //			}
@@ -328,7 +299,68 @@ public class DbstarOTTActivity extends Activity {
 //			initViews();
 //			populateData();
 //			setEventListener();
-//	}
+//		}
+	
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		LogUtil.d(getClass().getName(), "<<<<<<///onActivityResult///>>>>>>>>" + data);
+		if (requestCode == Btn_CntvTV_Sequence) {
+			imgCntv.requestFocus();
+		} else if (requestCode == Btn_AppShop_Sequence) {
+			imgAppShop.requestFocus();
+		} else if (requestCode == Btn_MyApp_Sequence) {
+			imgMyApp.requestFocus();
+		} else if (requestCode == Btn_Setting_Sequence) {
+			LogUtil.d(getClass().getName(), "<<<<<<///data///>>>>>>>>" + data);
+			if (data != null) {
+				boolean isFinishSet = data.getBooleanExtra("isFinish", false);
+				if (isFinishSet) {
+					LogUtil.d(getClass().getName(), "<<<<<<///isFinishSet///>>>>>>>>" + isFinishSet);
+					DeviceInitController.handleBootFirstTime();
+				}
+			}
+			imgSetting.requestFocus();
+		}else {
+			imgStarTV.requestFocus();
+		}
+		if (mImageSet == null || mImageSet.getCount() == 0) {
+			mImageSet = new ImageSet(adapter2);
+		}
+		// 检查联网情况
+		boolean isNetworkConnected = DbstarUtil.isNetworkConnected(this);
+		// 先判断是否联网，如果没有联网，就停留在海报页面
+
+		if (!isNetworkConnected) {
+			// 如果没有网络，则判断sd卡中是否存在已经存储的文件
+			readQueryPosterFromSDCard();
+			readQueryRecommandFromSDCard();
+		} else {
+			boolean isNetworkAvailable = DbstarUtil.isNetworkAvailable(this);
+			if (isNetworkAvailable) {					
+				// 如果有网络，则登录，并从服务器端取得数据
+				getQueryPoster();
+				getQueryRecommand();
+			} else {
+				// 如果有网络，但没有连接成功，则判断sd卡中是否存在已经存储的文件
+				readQueryPosterFromSDCard();
+				readQueryRecommandFromSDCard();
+			}
+		}
+
+		if (adapter2 == null) {
+			adapter2 = new GalleryAdapter(this, pictures);
+		} else {
+			adapter2.notifyDataSetChanged();
+		}
+
+//		initViews();
+		populateData();
+		setEventListener();
+	
+		
+	}
 	
 	private void setEventListener() {
 		
@@ -339,16 +371,27 @@ public class DbstarOTTActivity extends Activity {
 			public void onClick(View v) {
 				Intent intent = new Intent();
 				intent.setClass(DbstarOTTActivity.this, GDLauncherActivity.class);
-				startActivity(intent);
+//				startActivity(intent);
+				startActivityForResult(intent, Btn_StarTV_Sequence);
 				isToAthorAvtivity = true;
 			}
 		});
-		imgCntv.setOnClickListener(new BtnOnClickListener("tv.icntv.ott"));
-		imgAppShop.setOnClickListener(new BtnOnClickListener("com.guozi.appstore"));
-		imgMyApp.setOnClickListener(new BtnOnClickListener("com.dbstar.myapplication"));
+		imgCntv.setOnClickListener(new BtnOnClickListener("tv.icntv.ott", Btn_CntvTV_Sequence));
+		imgAppShop.setOnClickListener(new BtnOnClickListener("com.guozi.appstore", Btn_AppShop_Sequence));
+		imgMyApp.setOnClickListener(new BtnOnClickListener("com.dbstar.myapplication", Btn_MyApp_Sequence));
 		// TODO：调用设置应用的时候有可能会用到jni
 //		imgSetting.setOnClickListener(new BtnOnClickListener("com.mbx.settingsmbox"));
-		imgSetting.setOnClickListener(new BtnOnClickListener("com.settings.ottsettings"));
+//		imgSetting.setOnClickListener(new BtnOnClickListener("com.settings.ottsettings", Btn_Setting_Sequence));
+		imgSetting.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent intent = startDbstarSettingActivity("OTTSettingsActivity");
+				if (intent != null) {
+					startActivityForResult(intent, Btn_Setting_Sequence);
+				}
+			}
+		});
 	}
 	
 	private void getQueryPoster() {
@@ -524,24 +567,25 @@ public class DbstarOTTActivity extends Activity {
 				public void onClick(View v) {
 					Intent intent = new Intent();
 					intent.setClass(DbstarOTTActivity.this, GDLauncherActivity.class);
-					startActivity(intent);
+//					startActivity(intent);
+					startActivityForResult(intent, Btn_StarTV_Sequence);
 					isToAthorAvtivity = true;
 				}
 			});
 		} else if (sequence == 2) {
 			txtCntv.setText(name);
-			imgCntv.setOnClickListener(new BtnOnClickListener(packageName));
+			imgCntv.setOnClickListener(new BtnOnClickListener(packageName, Btn_CntvTV_Sequence));
 		} else if (sequence == 3) {
 			txtAppShop.setText(name);
 			// TODO:调用接口返回的apk本地没有
-			imgAppShop.setOnClickListener(new BtnOnClickListener("com.guozi.appstore"));
+			imgAppShop.setOnClickListener(new BtnOnClickListener("com.guozi.appstore", Btn_AppShop_Sequence));
 		} else if (sequence == 4) {
 			txtMyApp.setText(name);
-			imgMyApp.setOnClickListener(new BtnOnClickListener("com.dbstar.myapplication"));
+			imgMyApp.setOnClickListener(new BtnOnClickListener("com.dbstar.myapplication", Btn_MyApp_Sequence));
 		} else {
 			txtSetting.setText(name);
 //			imgSetting.setOnClickListener(new BtnOnClickListener("com.mbx.settingsmbox"));
-			imgSetting.setOnClickListener(new BtnOnClickListener("com.settings.ottsettings"));
+			imgSetting.setOnClickListener(new BtnOnClickListener("com.settings.ottsettings", Btn_Setting_Sequence));
 		}
 	}
 	
@@ -711,72 +755,80 @@ public class DbstarOTTActivity extends Activity {
         
 		
 		gallery.setFocusable(false);
-		imgStarTV.requestFocus();
+//		imgStarTV.requestFocus();
 	}
-
+	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		
-		OBean oBean = (OBean) objectMap2.get(curFocusPosition);
-		if (oBean == null) {
-			return true;
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			return true;			
 		}
-		
-		lastcurFocusPosition = curFocusPosition;
-		
-		switch (keyCode) {
-		case KeyEvent.KEYCODE_DPAD_CENTER:
-		case KeyEvent.KEYCODE_ENTER:
-			break;
-		case KeyEvent.KEYCODE_DPAD_UP:
-			if (oBean.getUp() != null && !"".equals(oBean.getUp())) {
-				curFocusPosition = oBean.getUp();
-			}
-			break;
-		case KeyEvent.KEYCODE_DPAD_DOWN:
-			if (oBean.getDown() != null && !"".equals(oBean.getDown())) {
-				curFocusPosition = oBean.getDown();
-			}
-			break;
-		case KeyEvent.KEYCODE_DPAD_LEFT:
-			if (oBean.getLeft() != null && !"".equals(oBean.getLeft())) {
-				curFocusPosition = oBean.getLeft();
-			}
-			break;
-		case KeyEvent.KEYCODE_DPAD_RIGHT:
-			if (oBean.getRight() != null && !"".equals(oBean.getRight())) {
-				curFocusPosition = oBean.getRight();
-			}
-			break;
-		case KeyEvent.KEYCODE_BACK:
-		case KeyEvent.KEYCODE_ESCAPE:
-//			this.finish();
-			// TODO:
-			break;
-		}
-		
-		switch (keyCode) {
-		case KeyEvent.KEYCODE_DPAD_CENTER:
-		case KeyEvent.KEYCODE_ENTER:
-			break;
-		case KeyEvent.KEYCODE_DPAD_UP:
-			requestFocusForView(oBean.getUp());
-			break;
-		case KeyEvent.KEYCODE_DPAD_DOWN:
-			requestFocusForView(oBean.getDown());
-			break;
-		case KeyEvent.KEYCODE_DPAD_LEFT:
-			requestFocusForView(oBean.getLeft());
-			break;
-		case KeyEvent.KEYCODE_DPAD_RIGHT:
-			requestFocusForView(oBean.getRight());
-			break;
-		default:
-			return super.onKeyDown(keyCode, event);
-		}
-		
-		return true;
+		return super.onKeyDown(keyCode, event);
 	}
+
+//	@Override
+//	public boolean onKeyDown(int keyCode, KeyEvent event) {
+//		
+//		OBean oBean = (OBean) objectMap2.get(curFocusPosition);
+//		if (oBean == null) {
+//			return true;
+//		}
+//		
+//		lastcurFocusPosition = curFocusPosition;
+//		
+//		switch (keyCode) {
+//		case KeyEvent.KEYCODE_DPAD_CENTER:
+//		case KeyEvent.KEYCODE_ENTER:
+//			break;
+//		case KeyEvent.KEYCODE_DPAD_UP:
+//			if (oBean.getUp() != null && !"".equals(oBean.getUp())) {
+//				curFocusPosition = oBean.getUp();
+//			}
+//			break;
+//		case KeyEvent.KEYCODE_DPAD_DOWN:
+//			if (oBean.getDown() != null && !"".equals(oBean.getDown())) {
+//				curFocusPosition = oBean.getDown();
+//			}
+//			break;
+//		case KeyEvent.KEYCODE_DPAD_LEFT:
+//			if (oBean.getLeft() != null && !"".equals(oBean.getLeft())) {
+//				curFocusPosition = oBean.getLeft();
+//			}
+//			break;
+//		case KeyEvent.KEYCODE_DPAD_RIGHT:
+//			if (oBean.getRight() != null && !"".equals(oBean.getRight())) {
+//				curFocusPosition = oBean.getRight();
+//			}
+//			break;
+//		case KeyEvent.KEYCODE_BACK:
+//		case KeyEvent.KEYCODE_ESCAPE:
+////			this.finish();
+//			// TODO:
+//			break;
+//		}
+//		
+//		switch (keyCode) {
+//		case KeyEvent.KEYCODE_DPAD_CENTER:
+//		case KeyEvent.KEYCODE_ENTER:
+//			break;
+//		case KeyEvent.KEYCODE_DPAD_UP:
+//			requestFocusForView(oBean.getUp());
+//			break;
+//		case KeyEvent.KEYCODE_DPAD_DOWN:
+//			requestFocusForView(oBean.getDown());
+//			break;
+//		case KeyEvent.KEYCODE_DPAD_LEFT:
+//			requestFocusForView(oBean.getLeft());
+//			break;
+//		case KeyEvent.KEYCODE_DPAD_RIGHT:
+//			requestFocusForView(oBean.getRight());
+//			break;
+//		default:
+//			return super.onKeyDown(keyCode, event);
+//		}
+//		
+//		return true;
+//	}
 
 
 	private void requestFocusForView(String direction) {
@@ -817,12 +869,28 @@ public class DbstarOTTActivity extends Activity {
 		txtSetting = (TextView) findViewById(R.id.flash_setting_txt);
 	}
 	
+	private Intent startComponent(String packageName, String activityName) {
+		Intent intent = new Intent();
+		String componentName = packageName + "." + activityName;
+		intent.setComponent(new ComponentName(packageName, componentName));
+		intent.setAction("android.intent.action.VIEW");
+
+		LogUtil.d(getClass().getName(), "--------start------- " + componentName);
+		return intent;
+	}
+
+	private Intent startDbstarSettingActivity(String activityName) {
+		return startComponent("com.settings.ottsettings", activityName);
+	}
+	
 	private class BtnOnClickListener implements OnClickListener {
 		private long lastClick = 0l;
 		private String packageName;
+		private int btnSequence;
 		
-		public BtnOnClickListener(String packageName) {
+		public BtnOnClickListener(String packageName, int btnSequence) {
 			this.packageName = packageName;
+			this.btnSequence = btnSequence;
 		}
 		
 		@Override
@@ -838,10 +906,14 @@ public class DbstarOTTActivity extends Activity {
 				Intent intent = new Intent();
 				intent.putExtras(bundle);
 				intent.setClass(DbstarOTTActivity.this, MainActivity.class);
-				startActivity(intent);
+//				startActivity(intent);
+				startActivityForResult(intent, btnSequence);
 			} else {
 				Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-				startActivity(intent);	
+//				startActivity(intent);	
+				LogUtil.d("DbstarOTTActivity", "((((((((((((<>BtnOnClickListener<>))))))intent)))))))" + intent);
+				LogUtil.d("DbstarOTTActivity", "((((((((((((<>BtnOnClickListener<>))))))btnsequence)))))))" + btnSequence);
+				startActivityForResult(intent, btnSequence);
 			}
 			
 			
