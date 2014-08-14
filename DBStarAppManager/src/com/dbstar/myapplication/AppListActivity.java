@@ -265,8 +265,11 @@ public class AppListActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        mGrid = (GridView) mFlipper.getCurrentView().findViewById(R.id.all_apps);
-        prepareScaleAnimation(mGrid.getChildAt(mGrid.getSelectedItemPosition()));
+        View currentView = mFlipper.getCurrentView();
+        if (currentView != null) {            
+            mGrid = (GridView) mFlipper.getCurrentView().findViewById(R.id.all_apps);
+			prepareScaleAnimation(mGrid.getChildAt(mGrid.getSelectedItemPosition()));
+        }
         
     }
     private void prepareScaleAnimation(View view){
@@ -387,37 +390,38 @@ public class AppListActivity extends Activity {
                 //
                 
                 if(	info.activityInfo.applicationInfo.packageName.equals("com.dbstar.myapplication")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.PPPoE")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.PPPoE")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.android.browser")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.farcore.videoplayer")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.farcore.videoplayer")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.mediacenter")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.guozi.appstore")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.guozi.appstore")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.mbx.settingsmbox")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlapp.update.otaupgrade")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.amlapp.update.otaupgrade")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.android.gallery3d")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.netfilebrowser")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.netfilebrowser")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.fb.FileBrower")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.android.providers.downloads.ui")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.android.providers.downloads.ui")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.android.music")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.android.music.ArtistAlbumBrowserActivity")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.android.music.ArtistAlbumBrowserActivity")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.gsoft.appinstall")
                 	|| info.activityInfo.applicationInfo.packageName.equals("tv.icntv.ott")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.media.android.dbstarplayer")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar.settings")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar.DbstarDVB")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar.DbstarDVB")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.adobe.flashplayer")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.miracast")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.moretv.tvapp")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.moretv.tvapp")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.settings.ottsettings")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.dbstar.ottlauncher")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.android.service.remotecontrol")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.android.service.remotecontrol")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.mediaboxlauncher")
-                	|| info.activityInfo.applicationInfo.packageName.equals("app.android.applicationxc")
-                	|| info.activityInfo.applicationInfo.packageName.equals("com.hycstv.android")){
+					|| info.activityInfo.applicationInfo.packageName.equals("com.hycstv.android")
+					|| info.activityInfo.applicationInfo.packageName.equals("app.android.applicationxc")){
 					Log.i("AllApps3D", "do not show Built-in app(packageName): " + info.activityInfo.applicationInfo.packageName);
 					continue;
                 }
+
                 application.title = info.loadLabel(manager);
                 application.setActivity(new ComponentName(info.activityInfo.applicationInfo.packageName, info.activityInfo.name), Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
@@ -505,8 +509,10 @@ public class AppListActivity extends Activity {
 
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(appBroadcastReceiver);
-        mWindowManager.removeView(mlayout);
+        unregisterReceiver(appBroadcastReceiver);	
+		if (mlayout != null) {            
+            mWindowManager.removeView(mlayout);
+        }
     };
     public class AppInfoAdapter extends ArrayAdapter<AppInfo> {
         private AppInfo [] mApplications;
