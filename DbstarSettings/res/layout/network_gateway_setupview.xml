@@ -176,7 +176,7 @@
             android:textSize="@dimen/gl_text_size_20sp"
             android:background="@drawable/eth_button_bg"
             android:nextFocusDown="@+id/gateway_serialnumber"
-            android:text="@string/button_text_next" />
+            android:text="@string/button_text_confirm" />
     </LinearLayout>
 
 </RelativeLayout>
