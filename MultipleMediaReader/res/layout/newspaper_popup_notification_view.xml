@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#00000000"
+    >
+    
+    <LinearLayout
+        android:id="@+id/operation_notify_view" 
+        android:layout_width="129dp"
+        android:layout_height="75dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/book_operation_bg"
+        android:gravity="center_horizontal"
+        >
+        
+        <TextView 
+            android:id="@+id/message"
+            android:layout_marginTop="18dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#fff"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:text="@string/text_do_successful"
+            />
+    </LinearLayout>
+</RelativeLayout>

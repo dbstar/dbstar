@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="195dp"
+    android:layout_height="159dp"
+    android:background="#00000000"
+    >
+
+    <LinearLayout
+        android:id="@+id/operation_content_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/book_operation_bg"
+        android:orientation="horizontal" >
+
+        <com.dbstar.multiple.media.widget.VerticalSeekBar
+            android:id="@+id/operation_seekbar"
+            android:layout_width="95dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="9dp"
+            android:layout_marginTop="20dp"
+            android:max="100"
+            android:maxHeight="9dp"
+            android:minHeight="9dp"
+            android:padding="2dp"
+            android:progress="80"
+            android:progressDrawable="@drawable/seekbar_style"
+            android:thumb="@drawable/reader_custom_dialog_vertical_seekbar_thumb"
+            android:thumbOffset="0dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="95dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="28dp"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/operation_collect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/text_collect_book"
+                android:textColor="#fff"
+                android:textSize="22dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/operation_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="@string/text_delete_book"
+                android:textColor="#fff"
+                android:textSize="22dp"
+                 />
+        </LinearLayout>
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/operation_notify_view" 
+        android:visibility="gone"
+        android:layout_width="129dp"
+        android:layout_height="75dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/book_operation_bg"
+        android:gravity="center_horizontal"
+        >
+        
+        <TextView 
+            android:layout_marginTop="18dp"
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#fff"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:text="@string/text_do_successful"
+            />
+    </LinearLayout>
+</RelativeLayout>

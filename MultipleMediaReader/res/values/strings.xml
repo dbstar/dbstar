@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="empty_string"></string>
+	<!--reader tool bar labels  -->
+	<string name="app_name">富媒体</string>
+	<string name="label_page_operation">页面操作</string>
+	<string name="label_font_increase">放大</string>
+	<string name="label_font_decrease">缩小</string>
+	<string name="label_page_next">后一页</string>
+	<string name="label_page_prev">前一页</string>
+	<string name="label_chapter_next">快进　后一章</string>
+	<string name="label_chapter_prev">快退　前一章</string>
+	
+	<!-- Tip for increase or decrease text font -->
+    <string name="tip_max_text_size">字体已至最大</string>
+    <string name="tip_min_text_size">字体已至最小</string>
+    
+    <string name="label_toast">提示</string>
+    <string name="msg_exit_application">确定要退出？</string>
+    <string name="label_cancel">取消</string>
+	<string name="label_confirm">确定</string>
+	
+	
+	<string name="label_delete_bookmark">删除书签</string>
+	
+	<string name="lable_font_smaller">特小</string>
+	<string name="lable_font_small">小</string>
+	<string name="lable_font_medium">中</string>
+	<string name="lable_font_big">大</string>
+	<string name="lable_font_bigger">特大</string>
+	<string name="hotline">客服电话 ：400-165-3438</string>
+	<string name="text_string_author">作者 ： </string>
+	<string name="text_play_book">播放节目 </string>
+	<string name="text_pre_cotegory"> 上一类别</string>
+	<string name="text_next_cotegory">下一类别 </string>
+	<string name="text_pre_book">上一本 </string>
+	<string name="text_next_book">下一本 </string>
+	<string name="text_fast_rewind">快退 上五本 </string>
+	<string name="text_fast_forward">快进 下五本 </string>
+	<string name="text_no_book">该分类下没有图书 </string>
+	<string name="text_book_operation">i 节目操作 </string>
+	<string name="text_collect_book">收藏本书</string>
+	<string name="text_do_successful">操作成功</string>
+	<string name="text_do_fail">操作失败</string>
+	<string name="text_collection">收藏</string>
+	<string name="text_delete_book"> 删除本书</string>
+	<string name="text_start_tag">《</string>
+    <string name="text_end_tag">》</string>
+    
+    
+    
+    
+    
+    <!--  newspaper -->
+       <string name="gong">共</string>
+       <string name="ban">版</string>
+       <string name="error_message_parse_xml_fail">解析报纸出错</string>
+       <string name="aticle_titie">本篇标题</string>
+       <string name="paly_next_acticle">本篇完毕，进入下一篇</string>
+       <string name="newspaper">报纸</string>
+       <string name="up_donw_read">上下浏览</string>
+       <string name="up_donw_select_title">上下选标题</string>
+       <string name="up_donw_select_move">上下移动</string>
+       <string name="area_select">左右热区选择</string>
+       <string name="left_right_type">左右类别</string>
+       <string name="back_pre_level">返回上一级</string>
+       <string name="read_mute">伴读/静音</string>
+       <string name="read_detailed">详细阅读</string>
+       <string name="font_setting">设置字号</string>
+       <string name="one_key_collect">一键收藏</string>
+       <string name="okey_enter">确认进入</string>
+       <string name="text_font_setting_title">请根据个人喜好，选择字号大小！</string>
+       <string name="big">大</string>
+       <string name="middle">中</string>
+       <string name="small">小</string>
+       <string name="add_newspaper_to_personal_preference">加入个人喜好</string>
+       <string name="remove_newspaper_from_personal_preference">取消个人喜好</string>
+       <string name="personal_preference">个人喜好</string>
+       <string name="cancel_collection">取消收藏</string>
+       <string name="collect_newspaper">收藏本报</string>
+       
+       <!--meida share  -->
+       
+       <string name="share_help_title">操作方式：</string>
+       <string name="share_help_first">1：连接到当前网络。</string>
+       <string name="share_help_second">2：安装并打开富媒体分享应用。</string>
+       <string name="share_help_third">3：接入以下地址</string>
+       <string name="share_error">分享启动失败：请检查机顶盒是否已经连上网络?</string>
+       
+       
+       
+       <string name="point">.</string>
+       <string name="read">伴读</string>
+       <string name="increase_volumn">音量增大</string>
+       <string name="decrease_volumn">音量减小</string>
+       <string name="pre_chapter">前一章</string>
+       <string name="next_chapter">后一章</string>
+       
+	
+	
+</resources>

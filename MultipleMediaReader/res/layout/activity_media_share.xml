@@ -1,0 +1,108 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="1280dp"
+    android:layout_height="720dp"
+    android:background="@drawable/reader_view_background" >
+
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="110dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp"
+        android:visibility="invisible"
+        android:focusable="false" >
+
+        <ImageView
+            android:layout_width="187dp"
+            android:layout_height="58dp"
+            android:layout_marginLeft="46dp"
+            android:layout_marginTop="46dp"
+            android:background="@drawable/dbstar_backgroud_logo" />
+
+        <TextView
+            android:id="@+id/custom_service_hotline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="50dp"
+            android:layout_marginTop="58dp"
+            android:gravity="center_vertical"
+            android:text="@string/hotline"
+            android:textColor="#AEC3D8"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="800dp"
+        android:layout_height="400dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/notice_bg" >
+
+        <LinearLayout
+            android:id="@+id/share_help_guide"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20sp"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/share_help_title"
+                android:textColor="#fff"
+                android:textSize="24sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="48dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/share_help_first"
+                android:textColor="#fff"
+                android:textSize="24sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="48dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/share_help_second"
+                android:textColor="#fff"
+                android:textSize="24sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="48dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/share_help_third"
+                android:textColor="#fff"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/ipaddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20sp"
+                android:layout_marginLeft="48dp"
+                android:layout_marginTop="10dp"
+                android:textColor="#fff"
+                android:textSize="24sp" />
+        </LinearLayout>
+         <TextView
+                android:id="@+id/no_network"
+                android:visibility="invisible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textColor="#fff"
+                android:text="@string/share_error"
+                android:textSize="34sp" />
+    </RelativeLayout>
+
+</RelativeLayout>

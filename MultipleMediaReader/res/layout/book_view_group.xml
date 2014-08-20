@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.dbstar.multiple.media.widget.BookShelfGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/shelf_group"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="80dp" >
+
+    <com.dbstar.multiple.media.widget.BookView
+        android:id="@+id/bookview"
+        android:layout_width="202dp"
+        android:layout_height="287dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="116dp"
+        android:visibility="visible" >
+
+    </com.dbstar.multiple.media.widget.BookView>
+
+    <com.dbstar.multiple.media.widget.BookView
+        android:id="@+id/book4"
+        android:layout_width="228dp"
+        android:layout_height="323dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginTop="103dp"
+        android:visibility="visible" >
+
+    </com.dbstar.multiple.media.widget.BookView>
+
+    <com.dbstar.multiple.media.widget.BookView
+        android:id="@+id/book3"
+        android:layout_width="244dp"
+        android:layout_height="360dp"
+        android:layout_marginLeft="82dp"
+        android:layout_marginTop="90dp"
+        android:visibility="visible" >
+
+    </com.dbstar.multiple.media.widget.BookView>
+
+    <com.dbstar.multiple.media.widget.BookView
+        android:id="@+id/book2"
+        android:layout_width="279dp"
+        android:layout_height="398dp"
+        android:layout_marginLeft="128dp"
+        android:layout_marginTop="76dp"
+        android:visibility="visible" >
+
+    </com.dbstar.multiple.media.widget.BookView>
+
+    <com.dbstar.multiple.media.widget.BookView
+        android:id="@+id/book1"
+        android:layout_width="301dp"
+        android:layout_height="450dp"
+        android:layout_marginLeft="180dp"
+        android:layout_marginTop="57dp"
+        android:visibility="visible" >
+
+    </com.dbstar.multiple.media.widget.BookView>
+
+</com.dbstar.multiple.media.widget.BookShelfGroup>

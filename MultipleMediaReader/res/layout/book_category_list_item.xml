@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    <TextView 
+        android:id="@+id/category_name"
+        android:layout_width="fill_parent"
+        android:layout_height="70dp"
+        android:paddingRight="40dp"
+        android:textColor="@drawable/book_category_font_bg"
+        android:gravity="center_vertical|right"
+        android:textSize="18sp"
+        />
+</LinearLayout>

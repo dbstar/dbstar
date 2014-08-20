@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center"
+   >
+    
+    <LinearLayout 
+        android:layout_width="667dp"
+        android:layout_height="223dp"
+          android:background="@drawable/notice_bg"
+          android:orientation="vertical"
+        >
+        <TextView 
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/text_font_setting_title"
+            android:textColor="#fff"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="50dp"
+            />
+        
+        <LinearLayout 
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            >
+            <Button 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/big"
+                android:background="@drawable/shelf_text_font_setting_btn_selector"
+                android:layout_marginLeft="45dp"
+                android:text="@string/big"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                />
+              <Button 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/middle"
+                android:background="@drawable/shelf_text_font_setting_btn_selector"
+                android:layout_marginLeft="45dp"
+                android:text="@string/middle"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                />
+                <Button 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/small"
+                android:background="@drawable/shelf_text_font_setting_btn_selector"
+                android:layout_marginLeft="45dp"
+                android:text="@string/small"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

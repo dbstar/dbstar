@@ -1,0 +1,419 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res/com.dbstar.multiple.media.bookshelf"
+    android:layout_width="1280dp"
+    android:layout_height="720dp"
+    android:background="@drawable/reader_view_background" >
+
+    <RelativeLayout
+        android:id="@+id/view_header"
+        android:layout_width="fill_parent"
+        android:layout_height="110dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp"
+        android:visibility="invisible"
+        android:focusable="false" >
+
+        <ImageView
+            android:layout_width="187dp"
+            android:layout_height="58dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="50dp"
+            android:background="@drawable/dbstar_backgroud_logo" />
+
+        <TextView
+            android:id="@+id/custom_service_hotline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="100dp"
+            android:gravity="center_vertical"
+            android:text="@string/hotline"
+            android:textColor="#AEC3D8"
+            android:textSize="20dp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="520dp"
+        android:layout_below="@+id/view_header"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginTop="20dp" >
+
+        <!-- <ListView
+            android:id="@+id/book_category"
+            android:layout_width="158dp"
+            android:layout_height="490dp"
+            android:layout_marginTop="10dp"
+            android:cacheColorHint="#00000000"
+            android:divider="@null"
+            android:fadeScrollbars="true"
+            android:listSelector="#00000000"
+            android:nextFocusRight="@+id/book1"
+            android:scrollbars="none"
+             >
+        </ListView> -->
+    <com.dbstar.multiple.media.widget.BookCategoryView
+            android:id="@+id/book_category"
+            android:layout_width="158dp"
+            android:layout_height="490dp"
+            android:layout_marginTop="10dp"
+            android:paddingRight="15dp"
+            android:focusable="true"
+            android:gravity="right|center_vertical"
+            android:nextFocusDown="@null"
+            android:nextFocusRight="@+id/category2"
+            android:nextFocusUp="@null"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0.35"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:textColor="#5D89D1"
+                android:textSize="18dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:alpha="0.5"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:textColor="#5D89D1"
+                android:textSize="22dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:alpha="0.68"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:textColor="#5D89D1"
+                android:textSize="26dp" />
+
+            <com.dbstar.multiple.media.widget.AlwaysMarqueeTextView
+                android:layout_width="150dp"
+                android:layout_height="64dp"
+                android:layout_marginTop="30dp"
+                android:singleLine="true"
+                android:gravity="right|center_vertical"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:textStyle="bold"
+                android:textColor="#fff"
+                android:textSize="33dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:alpha="0.68"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:textColor="#5D89D1"
+                android:textSize="26dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:alpha="0.5"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:textColor="#5D89D1"
+                android:textSize="22dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:alpha="0.35"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:textColor="#5D89D1"
+                android:textSize="18dp" />
+        </com.dbstar.multiple.media.widget.BookCategoryView>
+        <ImageView
+            android:id="@+id/category_indicator"
+            android:layout_width="158dp"
+            android:layout_marginLeft="20dp"
+            android:layout_height="496dp"
+            android:background="@drawable/category_bk" />
+        <RelativeLayout 
+            android:id="@+id/shwoNoticeView"
+            android:layout_width="650dp"
+            android:layout_height="fill_parent"
+            android:layout_toRightOf="@+id/book_category"
+            android:gravity="center"
+            >
+            <LinearLayout 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/notice_bg"
+                android:gravity="center"
+                >
+                <TextView 
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_no_book"
+                    android:textColor="#fff"
+                    android:textSize="24dp"
+                    />
+            </LinearLayout>
+        </RelativeLayout>
+     <include 
+            android:id="@+id/shelf_group"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_toRightOf="@+id/book_category"
+            layout="@layout/book_view_group"
+            />
+        <RelativeLayout
+            android:id="@+id/bookContent_synopsis"
+            android:layout_width="363dp"
+            android:layout_height="516dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="20dp" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bookcontent_synopsis" />
+
+            <ImageView
+                android:id="@+id/line"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="70dp"
+                android:background="@drawable/bookcontent_synopsis_line" />
+
+            <TextView
+                android:id="@+id/autho_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="32dp"
+                android:layout_marginTop="35dp"
+                android:singleLine="true"
+                android:text="@string/text_string_author"
+                android:textColor="#000000"
+                android:textSize="18dp" />
+
+            <com.dbstar.multiple.media.widget.AlwaysMarqueeTextView
+                android:id="@+id/author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/autho_title"
+                android:layout_toRightOf="@+id/autho_title"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:textColor="#000000"
+                android:textSize="18dp" />
+
+            <com.dbstar.multiple.media.widget.AlwaysMarqueeTextView
+                android:id="@+id/bookName_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="32dp"
+                android:layout_marginTop="85dp"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:textColor="#000000"
+                android:textSize="24dp"
+                android:textStyle="bold" />
+
+            <com.dbstar.multiple.media.widget.BookSynopsisView
+                android:id="@+id/synopsis"
+                android:layout_width="302dp"
+                android:layout_height="330dp"
+                android:layout_centerHorizontal="true"
+                android:lineSpacingExtra="10dp"
+                android:layout_marginTop="130dp"
+                android:textColor="#000000"
+                android:textSize="20dp" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/dbstar_toolbar_bg"
+        android:orientation="horizontal"
+        android:paddingLeft="60dp" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_key_guide" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_arrow_right" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_ok" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="50dp"
+                android:gravity="center_vertical"
+                android:text="@string/text_play_book"
+                android:textSize="21dp"
+                android:textColor="#fff" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_arrow_up" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:gravity="center_vertical"
+                android:text="@string/text_pre_cotegory"
+                android:textSize="21dp"
+                android:textColor="#fff" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_spliter" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:gravity="center_vertical"
+                android:text="@string/text_next_cotegory"
+                android:textSize="21dp"
+                android:textColor="#fff" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="50dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_arrow_down" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_arrow_left" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:gravity="center_vertical"
+                android:text="@string/text_pre_book"
+                android:textSize="21dp"
+                android:textColor="#fff" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_spliter" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:gravity="center_vertical"
+                android:text="@string/text_next_book"
+                android:textSize="21dp"
+                android:textColor="#fff" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="50dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_arrow_right_thick" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_darrow_left" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:gravity="center_vertical"
+                android:text="@string/text_fast_rewind"
+                android:textSize="21dp"
+                android:textColor="#fff" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_spliter" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="10dp"
+                android:gravity="center_vertical"
+                android:text="@string/text_fast_forward"
+                android:textSize="21dp"
+                android:textColor="#fff" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/reader_darrow_right" />
+              <TextView
+                  android:id="@+id/operation_location_view"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical"
+                android:text="@string/text_book_operation"
+                android:textSize="21dp"
+                android:textColor="#fff" />
+            
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:id="@+id/reader_toolbar_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="60dp"
+        android:layout_marginLeft="65dp"
+        android:orientation="horizontal" >
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="-40dp"
+            android:layout_marginTop="0dp" >
+
+            <Button
+                android:id="@+id/reader_add_bookmark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@xml/reader_add_bookmark_selector" />
+
+            <Button
+                android:id="@+id/reader_delete_bookmark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@xml/reader_delete_bookmark_selector" />
+        </RelativeLayout>
+
+
+        <Button
+            android:id="@+id/reader_find_toc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+             android:layout_marginRight="-40dp"
+            android:background="@drawable/reader_read_image_find_toc_no_focus" />
+         <Button
+            android:id="@+id/reader_find_bookmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:layout_marginRight="-40dp"
+            android:background="@drawable/reader_read_image_find_bookmark_no_focus"/>"
+         <Button
+            android:id="@+id/reader_language_transformation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:background="@xml/reader_language_transformation_selector" />
+       
+    </LinearLayout>
+    
+     <ListView
+            android:id="@+id/list_bookmark"
+            android:layout_width="606dp"
+            android:layout_height="492dp"
+            android:layout_marginLeft="117dp"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/voicedbook_catalogue_background"
+            android:scrollbarFadeDuration="0"
+            android:fadeScrollbars="false" 
+            android:scrollbarStyle="insideInset"
+            android:scrollbarTrackVertical="@drawable/voicedbook_dialog_vertical_seekbar_progress"
+            android:scrollbarThumbVertical="@drawable/voicedbook_scrollbar_thumb"
+            android:cacheColorHint="#00000000"
+            android:listSelector="#00000000"
+            android:divider="@null"
+            >
+        </ListView>
+</RelativeLayout>

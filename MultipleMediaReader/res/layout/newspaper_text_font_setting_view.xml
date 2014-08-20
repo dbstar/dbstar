@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="130dp"
+    android:layout_height="211dp"
+    android:background="#00000000"
+    >
+
+    <LinearLayout
+        android:id="@+id/operation_content_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/newspaper_text_font_setting_bg"
+        android:orientation="horizontal" >
+
+        <com.dbstar.multiple.media.widget.VerticalSeekBar
+            android:id="@+id/operation_seekbar"
+            android:layout_width="156dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="9dp"
+            android:layout_marginTop="20dp"
+            android:max="100"
+            android:maxHeight="7dp"
+            android:minHeight="7dp"
+            android:padding="2dp"
+            android:progress="100"
+            android:progressDrawable="@drawable/newspaper_text_font_seekbar_style"
+            android:thumb="@drawable/reader_custom_dialog_vertical_seekbar_thumb"
+            android:thumbOffset="0dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="156dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/big"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/big"
+                android:textColor="#fff"
+                android:textSize="29dp"
+                />
+
+            <TextView
+                android:id="@+id/middle"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="@string/middle"
+                android:textColor="#fff"
+                android:textSize="26dp"
+                 />
+              <TextView
+                 android:id="@+id/small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/small"
+                android:textColor="#fff"
+                android:textSize="23dp"
+                 />
+        </LinearLayout>
+    </LinearLayout>
+    
+    <LinearLayout
+        android:id="@+id/operation_notify_view" 
+        android:visibility="gone"
+        android:layout_width="129dp"
+        android:layout_height="75dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/book_operation_bg"
+        android:gravity="center_horizontal"
+        >
+        
+        <TextView 
+            android:layout_marginTop="18dp"
+            
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#fff"
+            android:textSize="22dp"
+            android:textStyle="bold"
+            android:text="@string/text_do_successful"
+            />
+    </LinearLayout>
+</RelativeLayout>
