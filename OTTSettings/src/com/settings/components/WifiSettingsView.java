@@ -2,7 +2,9 @@ package com.settings.components;
 
 import android.app.Activity;
 import android.view.View;
+import android.widget.ListView;
 
+import com.settings.ottsettings.R;
 import com.settings.utils.LogUtil;
 import com.settings.wifi.WifiSettings;
 
@@ -11,6 +13,7 @@ public class WifiSettingsView {
 	
 	private WifiSettings mSettings;
 	private Activity mActivity;
+	private ListView wifiListView;
 	
 	public WifiSettingsView(Activity activity) {
 		this.mActivity = activity;
@@ -19,6 +22,10 @@ public class WifiSettingsView {
 
 	public void initView(View view) {
 		LogUtil.d(TAG, "initView++++--------->>>>mSettings<<<<" + mSettings);
+		
+		wifiListView = (ListView) view.findViewById(R.id.wifi_aplist);
+		wifiListView.requestFocus();
+		
 		mSettings.initView(view);
 		resume();
 //		pause();

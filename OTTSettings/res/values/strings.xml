@@ -15,7 +15,7 @@
     <string name="pageName_settings_showAdjust">显示调整</string>
     <string name="pageName_settings_sysUpgrade">系统升级</string>
     <string name="pageName_settings_appManager">应用管理</string>
-    <string name="pageName_settings_help">帮助</string>
+    <string name="pageName_settings_help">用户须知</string>
     <string name="pageName_settings_about">关于</string>
     
     <!-- 网络状态 -->
@@ -136,7 +136,7 @@
     
     <!-- Wi-Fi热点 -->
     <string name="page_wifi_hotspot_select">便携式Wi-Fi热点</string>
-    <string name="page_wifi_hotspot_settings">设置Wi-Fi热点</string>
+    <string name="page_wifi_hotspot_settings">配置</string>
     <string name="page_wifi_hotspot_ssid">网络SSID</string>
     <string name="page_wifi_hotspot_security">安全性</string>
     <string name="page_wifi_hotspot_password">密码</string>
@@ -216,7 +216,9 @@
     
     <!-- 帮助 -->
     <string name="page_help_title">用户须知</string>
-    <string name="page_help_content">"尊敬的用户，欢迎使用航天数字传媒有限公司（“公司”）的高清播放机（“播放机”）！本《用户须知》中的播放机仅指播放机设备本身，不涉及通过播放机接入、链接、检索、下载、浏览、观看或使用任何内容或服务。在用户使用本播放机之前，应仔细阅读本《用户须知》的所有内容。
+    <string name="page_help_content">"尊敬的用户：
+        
+        欢迎使用航天数字传媒有限公司（“公司”）的高清播放机（“播放机”）！本《用户须知》中的播放机仅指播放机设备本身，不涉及通过播放机接入、链接、检索、下载、浏览、观看或使用任何内容或服务。在用户使用本播放机之前，应仔细阅读本《用户须知》的所有内容。
         
 一、本播放机的知识产权归公司所有。用户不得且不会促使他人对本播放机进行复制、解码、反汇编、倒序制造、修改软件或制造其衍生产品等侵犯公司知识产权的行为。
 

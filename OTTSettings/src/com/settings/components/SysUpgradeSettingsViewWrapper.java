@@ -57,7 +57,7 @@ public class SysUpgradeSettingsViewWrapper {
 //		UpgradeTask task = new UpgradeTask();
 //		task.execute();
 		
-		btnOnline.requestFocus();
+		btnLocal.requestFocus();
 		
 		btnLocal.setOnClickListener(new OnClickListener() {
 			

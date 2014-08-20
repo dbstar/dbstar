@@ -25,8 +25,13 @@
 	        android:layout_height="wrap_content"
 	        android:textSize="@dimen/gl_text_size_22sp"
 	        android:gravity="center"
+	        android:focusable="true"
+	        android:focusableInTouchMode="true"
 	        android:background="@drawable/eth_button_bg"
 	        android:textColor="@color/text_white"
+	        android:nextFocusLeft="@+id/settings_showAdjust"
+	        android:nextFocusUp="@+id/showAdjust_settings_btn"
+	        android:nextFocusDown="@+id/showAdjust_settings_btn"
 	        android:text="@string/page_showAdjust_button_text"/>
 
 </LinearLayout>

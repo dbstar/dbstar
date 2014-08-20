@@ -22,5 +22,7 @@
     <color name="bg_content">#FFFFFF</color>
     <!-- 常规边线(淡金色)  -->
     <color name="border_common">#D9D6CB</color>
+    
+    <color name="orange_color">#FF8C00</color>
 
 </resources>

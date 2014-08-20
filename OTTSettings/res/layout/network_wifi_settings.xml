@@ -45,6 +45,9 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:nextFocusLeft="@+id/settings_wifi"
+            android:nextFocusUp="@+id/wifi_aplist"
+            android:nextFocusDown="@+id/wifi_aplist"
             android:scrollbarStyle="outsideOverlay"
             android:visibility="visible" />
 

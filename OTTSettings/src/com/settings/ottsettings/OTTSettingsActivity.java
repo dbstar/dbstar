@@ -54,7 +54,6 @@ public class OTTSettingsActivity extends Activity {
 		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
 		findViews();
-//		initViews();
 		switchToNetStatus();
 		
 		populateData();
@@ -63,7 +62,6 @@ public class OTTSettingsActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-//		initViews();
 	}
 	
 	@Override

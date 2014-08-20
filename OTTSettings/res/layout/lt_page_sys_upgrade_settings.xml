@@ -44,6 +44,7 @@
             android:nextFocusDown="@+id/sysUpgrade_settings_btn_local_upgrade"
             android:nextFocusRight="@+id/sysUpgrade_settings_btn_online_upgrade"
             android:nextFocusUp="@+id/sysUpgrade_settings_btn_local_upgrade"
+            android:nextFocusLeft="@+id/settings_sysUpgrade"
             android:text="@string/page_sysUpgrade_local_upgrade"
             android:textColor="@color/text_white"
             android:textSize="@dimen/gl_text_size_22sp" />

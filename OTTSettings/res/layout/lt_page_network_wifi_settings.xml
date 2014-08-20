@@ -32,6 +32,7 @@
                 android:checked="true"
                 android:nextFocusDown="@+id/network_wifi_scan"
                 android:nextFocusUp="@+id/network_wifi_btn_next"
+                android:nextFocusLeft="@+id/settings_wifi"
                 android:text="@string/network_wifi_setup_2"
                 android:textColor="@color/text_white"
                 android:textSize="@dimen/gl_text_size_24sp" />
@@ -42,6 +43,7 @@
                 android:layout_height="wrap_content"
                 android:nextFocusDown="@+id/network_wifi_btn_next"
                 android:nextFocusUp="@+id/network_wifi_hotspot"
+                android:nextFocusLeft="@+id/settings_wifi"
                 android:text="@string/network_wifi_setup_1"
                 android:textColor="@color/text_white"
                 android:textSize="@dimen/gl_text_size_24sp" />
@@ -54,6 +56,7 @@
             android:layout_gravity="center"
             android:background="@drawable/eth_button_bg"
             android:nextFocusDown="@+id/network_wifi_hotspot"
+          	android:nextFocusLeft="@+id/settings_wifi"
             android:nextFocusUp="@+id/network_wifi_scan"
             android:text="@string/button_text_next"
             android:textColor="@color/text_white"

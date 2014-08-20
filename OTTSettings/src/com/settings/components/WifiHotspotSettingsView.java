@@ -72,6 +72,7 @@ public class WifiHotspotSettingsView {
 		findViews(view);
 		
 		mSettingsContainer.setVisibility(View.GONE);
+		mOpenHotspot.requestFocus();
 		
 		wifiHotspot = new WifiHotspot();
 		String ssid = DataUtils.getPreference(mContext, Data_Key_SSID, "DbstarAP");
@@ -276,7 +277,7 @@ public class WifiHotspotSettingsView {
 	}
 
 	private void findViews(View view) {
-		txtopen = (TextView) view.findViewById(R.id.wifi_hotspot_content);
+//		txtopen = (TextView) view.findViewById(R.id.wifi_hotspot_content);
 		txtSettingsContent = (TextView) view.findViewById(R.id.wifi_hotspot_settings_content);
 		mOpenHotspot = (CheckBox) view.findViewById(R.id.wifi_hotspot_cb_select);
 		mTxtContainer = (LinearLayout) view.findViewById(R.id.wifi_hotspot_settings_container);

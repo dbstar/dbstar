@@ -135,7 +135,7 @@ public class WifiSettings {
 		mAccessPointListView.setOnItemClickListener(mOnAPSelectedListener);
 		mAccessPointListView.setOnItemSelectedListener(mItemSelectedListener);
 
-		// mAccessPointListView.requestFocus();
+		mAccessPointListView.requestFocus();
 	}
 
 	public void resume() {
@@ -634,7 +634,7 @@ public class WifiSettings {
 
 		@Override
 		public Object getItem(int position) {
-			return null;
+			return position;
 		}
 
 		@Override

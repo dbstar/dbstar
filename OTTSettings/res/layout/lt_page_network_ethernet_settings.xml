@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:layout_marginTop="12dp"
-            android:nextFocusLeft="@+id/gateway_serialnumber"
+            android:nextFocusLeft="@+id/settings_wired"
             android:nextFocusUp="@+id/eth_btn_confirm"
             android:orientation="horizontal" >
 
@@ -41,6 +41,7 @@
                 android:button="@drawable/checkbox_selector"
                 android:clickable="true"
                 android:focusable="true"
+                android:nextFocusLeft="@+id/settings_wired"
                 android:focusableInTouchMode="false"
                 android:gravity="center_vertical" />
 
@@ -72,7 +73,7 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:gravity="left|center_vertical"            
-            android:nextFocusLeft="@+id/gateway_serialnumber"
+            android:nextFocusLeft="@+id/settings_wired"
             android:orientation="horizontal" >
 
             <CheckBox
@@ -82,6 +83,7 @@
                 android:button="@drawable/checkbox_selector"
                 android:clickable="true"
                 android:focusable="true"
+                android:nextFocusLeft="@+id/settings_wired"
                 android:focusableInTouchMode="false"
                 android:gravity="center_vertical" />
 
@@ -131,6 +133,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/textview_bgselector"
                     android:inputType="number|text"
+                    android:nextFocusLeft="@+id/settings_wired"
                     android:scrollHorizontally="true"
                     android:singleLine="true" />
             </TableRow>
@@ -155,6 +158,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/textview_bgselector"
                     android:inputType="number|text"
+                    android:nextFocusLeft="@+id/settings_wired"
                     android:scrollHorizontally="true"
                     android:singleLine="true" />
             </TableRow>
@@ -179,6 +183,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/textview_bgselector"
                     android:inputType="number|text"
+                    android:nextFocusLeft="@+id/settings_wired"
                     android:scrollHorizontally="true"
                     android:singleLine="true" />
             </TableRow>
@@ -203,6 +208,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/textview_bgselector"
                     android:inputType="number|text"
+                    android:nextFocusLeft="@+id/settings_wired"
                     android:scrollHorizontally="true"
                     android:singleLine="true" />
             </TableRow>
@@ -227,25 +233,27 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/textview_bgselector"
                     android:inputType="number|text"
+                    android:nextFocusLeft="@+id/settings_wired"
                     android:scrollHorizontally="true"
                     android:singleLine="true" />
             </TableRow>
         </TableLayout>
 
         <Button 
-        android:id="@+id/eth_btn_confirm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="40dp"
-        android:textColor="@color/text_white"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:background="@drawable/eth_button_bg"
-        android:nextFocusDown="@+id/dhcp_switch_button"
-        android:textSize="@dimen/gl_text_size_22sp"
-        android:text="@string/page_wired_begin"/>
-        
+	        android:id="@+id/eth_btn_confirm"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginBottom="10dp"
+	        android:layout_marginTop="40dp"
+	        android:textColor="@color/text_white"
+	        android:layout_gravity="center"
+	        android:gravity="center"
+	        android:background="@drawable/eth_button_bg"
+	        android:nextFocusLeft="@+id/settings_wired"
+	        android:nextFocusDown="@+id/dhcp_switch_button"
+	        android:textSize="@dimen/gl_text_size_22sp"
+	        android:text="@string/page_wired_begin"/>
+	        
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

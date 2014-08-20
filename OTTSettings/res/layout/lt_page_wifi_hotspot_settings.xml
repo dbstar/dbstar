@@ -39,12 +39,16 @@
                 android:textColor="@color/text_white"
                 android:textSize="@dimen/gl_text_size_22sp" />
 
+            <!--             
+	            android:nextFocusDown="@+id/wifi_hotspot_settings_container"
+             -->
+            
             <CheckBox
                 android:id="@+id/wifi_hotspot_cb_select"
                 android:layout_width="wrap_content"
-	            android:nextFocusDown="@+id/wifi_hotspot_settings_container"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
+                android:nextFocusLeft="@+id/settings_wifi"
 	            android:focusable="true"
 	            android:focusableInTouchMode="true"
                 android:checked="false" />
@@ -65,19 +69,23 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/lt_common_rectangle_txt_selector"
-            android:clickable="true"
-            android:nextFocusDown="@+id/wifi_hotspot_et_ssid"
-            android:focusable="true"
             android:orientation="vertical" >
 
-            <TextView
+            <!-- 
+            android:background="@drawable/lt_common_rectangle_txt_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:nextFocusDown="@+id/wifi_hotspot_et_ssid"
+             -->
+            <Button
                 android:id="@+id/wifi_hotspot_settings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="5dp"
                 android:text="@string/page_wifi_hotspot_settings"
                 android:textColor="@color/text_white"
+                android:background="@drawable/eth_button_bg"
+                android:nextFocusLeft="@+id/settings_wifi"
                 android:textSize="@dimen/gl_text_size_22sp" />
 
             <TextView
@@ -116,6 +124,7 @@
                 android:inputType="none"
                 android:textColor="@color/text_dark"
                 android:drawableTop="@null"
+                android:nextFocusLeft="@+id/settings_wifi"
                 android:nextFocusDown="@+id/wifi_hotspot_security_spinner"
                 android:textSize="@dimen/gl_text_size_22sp" />
 
@@ -133,6 +142,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 style="@android:attr/spinnerDropDownItemStyle"
+                android:nextFocusLeft="@+id/settings_wifi"                
+                android:nextFocusDown="@+id/wifi_hotspot_et_password"
                 android:layout_marginTop="5dp" />
 
             <TextView
@@ -157,6 +168,7 @@
                 android:scrollHorizontally="true"
                 android:singleLine="true"
                 android:drawableTop="@null"
+                android:nextFocusLeft="@+id/settings_wifi"
                 android:nextFocusDown="@+id/wifi_hotspot_cb_showPwd"
                 android:textColor="@color/text_dark"
                 android:textSize="@dimen/gl_text_size_22sp" />
@@ -180,6 +192,7 @@
                 android:text="@string/page_wifi_hotspot_showPwd"
                 android:textColor="@color/text_white"
                 android:nextFocusDown="@+id/wifi_hotspot_btn_ok"
+                android:nextFocusLeft="@+id/settings_wifi"
                 android:textSize="@dimen/gl_text_size_22sp" />
 
             <LinearLayout
@@ -190,6 +203,9 @@
                 android:gravity="center"
                 android:orientation="horizontal" >
 
+                <!-- 
+                    android:nextFocusDown="@id/wifi_hotspot_select_container"
+                 -->
                 <Button
                     android:id="@+id/wifi_hotspot_btn_ok"
                     android:layout_width="wrap_content"
@@ -197,7 +213,7 @@
                     android:background="@drawable/eth_button_bg"
                     android:text="@string/page_wifi_hotspot_ok"
                     android:textColor="@color/text_white"
-                    android:nextFocusDown="@id/wifi_hotspot_select_container"
+                    android:nextFocusLeft="@+id/settings_wifi"
                     android:textSize="@dimen/gl_text_size_22sp" />
 
                 <Button

@@ -243,7 +243,7 @@ public class EthernetConfigController {
 		enableAfterConfig();
 
 		NetworkInfo ethernetInfo = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
-
+		// 只是打印
 		if (ethernetInfo.isConnected()) {
 			int ip = mEthManager.getDhcpInfo().ipAddress;
 			Log.d(TAG, "---mDhcpSwitchIndicator-----networkInfo IpAddress ===== " + NetworkUtils.intToInetAddress(ip).getHostAddress());
@@ -254,8 +254,6 @@ public class EthernetConfigController {
 			// }
 			Log.d(TAG, "---mDhcpSwitchIndicator-----mEthManager.getDhcpInfo().ipAddress===== " + ipAddress);
 			Log.d(TAG, "---mDhcpSwitchIndicator-----mEthInfo IpAddress ===== " + ipAddr);
-			
-			
 		}
 	}
 
@@ -468,11 +466,11 @@ public class EthernetConfigController {
 		mGw.setFocusable(enable);
 		mMask.setFocusable(enable);
 
-		mIpaddr.setNextFocusLeftId(R.id.gateway_serialnumber);
-		mDns.setNextFocusLeftId(R.id.gateway_serialnumber);
-		mBackupDns.setNextFocusLeftId(R.id.gateway_serialnumber);
-		mGw.setNextFocusLeftId(R.id.gateway_serialnumber);
-		mMask.setNextFocusLeftId(R.id.gateway_serialnumber);
+		mIpaddr.setNextFocusLeftId(R.id.settings_wired);
+		mDns.setNextFocusLeftId(R.id.settings_wired);
+		mBackupDns.setNextFocusLeftId(R.id.settings_wired);
+		mGw.setNextFocusLeftId(R.id.settings_wired);
+		mMask.setNextFocusLeftId(R.id.settings_wired);
 
 		if (isNetworkConnected()) {
 			mDhcpConnectState.setVisibility(View.GONE);

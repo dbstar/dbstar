@@ -80,6 +80,7 @@
                 android:textSize="@dimen/gl_text_size_20sp"
                 android:background="@drawable/eth_button_bg"
                 android:nextFocusDown="@+id/cable_check_button"
+                android:nextFocusLeft="@+id/settings_wired"
                 android:text="@string/button_text_finish" />
         </LinearLayout>
     </LinearLayout>
