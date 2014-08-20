@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/sysUpgrade_settings_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:text="@string/page_sysUpgrade_title"
+        android:textColor="@color/text_white"
+        android:textSize="@dimen/gl_text_size_24sp" />
+
+    <TextView
+        android:id="@+id/sysUpgrade_settings_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:lineSpacingMultiplier="1.5"
+        android:paddingRight="20dp"
+        android:paddingTop="10dp"
+        android:singleLine="false"
+        android:text="@string/page_sysUpgrade_neednot_upgrade"
+        android:textColor="@color/text_white"
+        android:textSize="@dimen/gl_text_size_24sp" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/sysUpgrade_settings_btn_local_upgrade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/eth_button_bg"
+            android:nextFocusDown="@+id/sysUpgrade_settings_btn_local_upgrade"
+            android:nextFocusRight="@+id/sysUpgrade_settings_btn_online_upgrade"
+            android:nextFocusUp="@+id/sysUpgrade_settings_btn_local_upgrade"
+            android:text="@string/page_sysUpgrade_local_upgrade"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_22sp" />
+
+        <Button
+            android:id="@+id/sysUpgrade_settings_btn_online_upgrade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:background="@drawable/eth_button_bg"
+            android:nextFocusDown="@+id/sysUpgrade_settings_btn_online_upgrade"
+            android:nextFocusLeft="@+id/sysUpgrade_settings_btn_local_upgrade"
+            android:nextFocusUp="@+id/sysUpgrade_settings_btn_online_upgrade"
+            android:text="@string/page_sysUpgrade_online_upgrade"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_22sp" />
+    </LinearLayout>
+
+</LinearLayout>

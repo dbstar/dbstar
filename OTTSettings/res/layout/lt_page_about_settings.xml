@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TableLayout
+        android:layout_width="480dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" >
+
+        <TableRow
+            android:id="@+id/about_settings_terminal_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp" >
+
+            <TextView
+                android:id="@+id/about_settings_txt_terminal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|right"
+                android:text="@string/page_about_terminal_number"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+
+            <TextView
+                android:id="@+id/about_settings_terminal_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|left"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+        </TableRow>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <TableRow
+            android:id="@+id/about_settings_hardware_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp" >
+
+            <TextView
+                android:id="@+id/about_settings_txt_hardware"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|right"
+                android:text="@string/page_about_hardware_version"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+
+            <TextView
+                android:id="@+id/about_settings_hardware_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|left"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+        </TableRow>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <TableRow
+            android:id="@+id/about_settings_software_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp" >
+
+            <TextView
+                android:id="@+id/about_settings_txt_software"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|right"
+                android:text="@string/page_about_software_version"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+
+            <TextView
+                android:id="@+id/about_settings_software_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|left"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+        </TableRow>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <TableRow
+            android:id="@+id/about_settings_loader_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp" >
+
+            <TextView
+                android:id="@+id/about_settings_txt_loader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|right"
+                android:text="@string/page_about_loader_version"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+
+            <TextView
+                android:id="@+id/about_settings_loader_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|left"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+        </TableRow>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <TableRow
+            android:id="@+id/about_settings_mac_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp" >
+
+            <TextView
+                android:id="@+id/about_settings_txt_mac"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|right"
+                android:text="@string/page_about_mac_address"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+
+            <TextView
+                android:id="@+id/about_settings_mac_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|left"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+        </TableRow>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <TableRow
+            android:id="@+id/about_settings_memory_total_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp" >
+
+            <TextView
+                android:id="@+id/about_settings_txt_memory_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|right"
+                android:text="@string/page_about_memory_total"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+
+            <TextView
+                android:id="@+id/about_settings_memory_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|left"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+        </TableRow>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <TableRow
+            android:id="@+id/about_settings_memory_canuse_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp" >
+
+            <TextView
+                android:id="@+id/about_settings_txt_memory_canuse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|right"
+                android:text="@string/page_about_memory_can_use"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+
+            <TextView
+                android:id="@+id/about_settings_memory_canuse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1.0"
+                android:gravity="center_vertical|left"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/gl_text_size_24sp" />
+        </TableRow>
+
+    </TableLayout>
+
+</LinearLayout>

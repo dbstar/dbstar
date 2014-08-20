@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    coreApp="true"
+    package="com.settings.ottsettings"
+    android:sharedUserId="android.uid.system"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="17" />
+
+    <!-- new -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIMAX_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIMAX_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
+    <uses-permission android:name="com.android.launcher.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
+    <!-- 
+    <uses-permission android:name="android.permission.CONNECTIVITY_INTERNAL" />
+     -->
+    
+    
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.HARDWARE_TEST" />
+    <uses-permission android:name="android.permission.MOVE_PACKAGE" />
+    <uses-permission android:name="android.permission.BACKUP" />
+    
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/OTTAppTheme" >
+        <activity
+            android:name="com.settings.ottsettings.OTTSettingsActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+				
+                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.settings.ottsettings.MainActivity" />
+		<activity
+            android:name=".display.OutputSetConfirm"
+            android:theme="@android:style/Theme.NoTitleBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".display.OutputSettingsBroadcastReceiver" >
+            <intent-filter>
+                <action android:name="dbstar.intent.action.OUTPUTMODE_CHANGE" />
+                <action android:name="dbstar.intent.action.OUTPUTMODE_CANCEL" />
+                <action android:name="dbstar.intent.action.OUTPUTMODE_SAVE" />
+                <action android:name="dbstar.intent.action.OUTPUTPOSITION_CHANGE" />
+                <action android:name="dbstar.intent.action.OUTPUTPOSITION_CANCEL" />
+                <action android:name="dbstar.intent.action.OUTPUTPOSITION_SAVE" />
+                <action android:name="dbstar.intent.action.OUTPUTPOSITION_DEFAULT_SAVE" />
+                <action android:name="dbstar.intent.action.DISP_CHANGE" />
+                <action android:name="dbstar.intent.action.VIDEOPOSITION_CHANGE" />
+                <action android:name="dbstar.intent.action.CVBSMODE_CHANGE" />
+            </intent-filter>
+        </receiver>
+        
+        <receiver android:name=".DbstarNetSettingsReceiver">
+			<intent-filter>
+				<action android:name="com.dbstar.settings.action.CLEAR_SETTINGS" />
+			</intent-filter>
+		</receiver>
+		
+        <service 
+            android:name="com.settings.service.OTTSettingsService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.settings.service.action.OTTSettingsService"/>
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>

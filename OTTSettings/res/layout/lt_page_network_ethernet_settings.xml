@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/network_container"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+       	android:layout_width="494dp"
+        android:layout_height="569dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="120dp"
+        android:orientation="vertical"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="54dp"
+            android:gravity="left|center_vertical"
+            android:text="@string/page_wired_ethernet_setup_title"
+            android:textColor="#000000"
+            android:textSize="@dimen/gl_text_size_24sp" />
+        
+        <LinearLayout
+            android:id="@+id/dhcp_switch_button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:layout_marginTop="12dp"
+            android:nextFocusLeft="@+id/gateway_serialnumber"
+            android:nextFocusUp="@+id/eth_btn_confirm"
+            android:orientation="horizontal" >
+
+            <CheckBox
+                android:id="@+id/dhcp_switch_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/checkbox_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                android:gravity="center_vertical" />
+
+            <TextView
+                android:id="@+id/dhcp_switch_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"
+                android:gravity="center_vertical"
+                android:textColor="#000000"
+                android:text="@string/page_wired_eth_con_type_dhcp"
+                android:textSize="@dimen/gl_text_size_22sp" />
+
+            <TextView
+                android:id="@+id/dhcp_conncetion_state"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="@string/page_wired_network_connected"
+                android:textColor="#000000"
+                android:textSize="@dimen/gl_text_size_22sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/manual_switch_button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:gravity="left|center_vertical"            
+            android:nextFocusLeft="@+id/gateway_serialnumber"
+            android:orientation="horizontal" >
+
+            <CheckBox
+                android:id="@+id/manual_switch_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/checkbox_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                android:gravity="center_vertical" />
+
+            <TextView
+                android:id="@+id/manaul_switch_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"
+                android:gravity="center_vertical"
+                android:textColor="#000000"
+                android:text="@string/page_wired_eth_con_type_manual"
+                android:textSize="@dimen/gl_text_size_22sp" />
+
+            <TextView
+                android:id="@+id/manual_conncetion_state"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="@string/page_wired_network_connected"
+                android:textColor="#000000"
+                android:textSize="@dimen/gl_text_size_22sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:layout_marginRight="30dp"
+                    android:gravity="left|center_vertical"
+                    android:text="@string/page_wired_eth_ipaddr"
+                    android:textColor="#000000"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+
+                <EditText
+                    android:id="@+id/eth_ip"
+                    android:layout_width="197dp"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/textview_bgselector"
+                    android:inputType="number|text"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:layout_marginRight="30dp"
+                    android:gravity="left|center_vertical"
+                    android:text="@string/page_wired_eth_mask"
+                    android:textColor="#000000"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+
+                <EditText
+                    android:id="@+id/eth_mask"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/textview_bgselector"
+                    android:inputType="number|text"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:layout_marginRight="30dp"
+                    android:gravity="left|center_vertical"
+                    android:text="@string/page_wired_eth_gw"
+                    android:textColor="#000000"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+
+                <EditText
+                    android:id="@+id/eth_gateway"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/textview_bgselector"
+                    android:inputType="number|text"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:layout_marginRight="30dp"
+                    android:gravity="left|center_vertical"
+                    android:text="@string/page_wired_eth_dns"
+                    android:textColor="#000000"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+
+                <EditText
+                    android:id="@+id/eth_dns"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/textview_bgselector"
+                    android:inputType="number|text"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:layout_marginRight="30dp"
+                    android:gravity="left|center_vertical"
+                    android:text="@string/page_wired_eth_backup_dns"
+                    android:textColor="#000000"
+                    android:textSize="@dimen/gl_text_size_22sp" />
+
+                <EditText
+                    android:id="@+id/eth_backup_dns"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/textview_bgselector"
+                    android:inputType="number|text"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true" />
+            </TableRow>
+        </TableLayout>
+
+        <Button 
+        android:id="@+id/eth_btn_confirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="40dp"
+        android:textColor="@color/text_white"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="@drawable/eth_button_bg"
+        android:nextFocusDown="@+id/dhcp_switch_button"
+        android:textSize="@dimen/gl_text_size_22sp"
+        android:text="@string/page_wired_begin"/>
+        
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal" >
+
+            <!-- 
+            <Button
+                android:id="@+id/prevbutton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="40dp"
+                android:background="@drawable/eth_button_bg"
+                android:nextFocusDown="@+id/dhcp_switch_button"
+                android:textSize="@dimen/gl_text_size_20sp"
+                android:text="@string/button_text_previous" />
+
+            <Space
+                android:layout_width="80dp"
+                android:layout_height="0dp" />
+
+            <Button
+                android:id="@+id/okbutton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="40dp"
+                android:background="@drawable/eth_button_bg"
+                android:textSize="@dimen/gl_text_size_20sp"
+                android:nextFocusDown="@+id/dhcp_switch_button"
+                android:text="@string/button_text_confirm" />
+             -->
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

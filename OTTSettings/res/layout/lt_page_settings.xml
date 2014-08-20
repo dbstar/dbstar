@@ -1,0 +1,172 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/protocol_bk" >
+
+    <RadioGroup
+        android:id="@+id/settings_rg_container"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_marginBottom="30dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="55dp"
+        android:layout_marginTop="30dp"
+        android:layout_alignParentLeft="true"
+        android:layout_gravity="center_vertical|left"
+        android:orientation="vertical" >
+
+        <RadioButton
+            android:id="@+id/settings_net_status"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_wired"
+            android:nextFocusUp="@+id/settings_about"
+            android:text="@string/pageName_settings_net_status"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <RadioButton
+            android:id="@+id/settings_wired"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_wifi"
+            android:text="@string/pageName_settings_wired"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <RadioButton
+            android:id="@+id/settings_wifi"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_audio"
+            android:text="@string/pageName_settings_wifi"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <RadioButton
+            android:id="@+id/settings_wifi_hotspot"
+            android:layout_width="136dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center"
+            android:button="@null"
+            android:text="@string/pageName_settings_wifi_hotspot"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp"
+            android:visibility="gone" />
+
+        <RadioButton
+            android:id="@+id/settings_audio"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_vedio"
+            android:text="@string/pageName_settings_audio"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <RadioButton
+            android:id="@+id/settings_vedio"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_showAdjust"
+            android:text="@string/pageName_settings_vedio"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <RadioButton
+            android:id="@+id/settings_showAdjust"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_sysUpgrade"
+            android:text="@string/pageName_settings_showAdjust"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <RadioButton
+            android:id="@+id/settings_sysUpgrade"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_help"
+            android:text="@string/pageName_settings_sysUpgrade"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <RadioButton
+            android:id="@+id/settings_help"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center_vertical|left"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_about"
+            android:text="@string/pageName_settings_help"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <RadioButton
+            android:id="@+id/settings_about"
+            android:layout_width="128dp"
+            android:layout_height="56dp"
+            android:layout_weight="1.0"
+            android:background="@drawable/lt_common_button_focuse_selector"
+            android:gravity="center_vertical|left"
+            android:button="@null"
+            android:nextFocusDown="@+id/settings_net_status"
+            android:text="@string/pageName_settings_about"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+    </RadioGroup>
+
+    <ImageView
+        android:id="@+id/settings_img"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_toRightOf="@id/settings_rg_container"
+        android:src="@drawable/app_arrowright" />
+
+    <LinearLayout
+        android:id="@+id/settings_dynamic_container"
+        android:layout_width="1000dp"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@id/settings_img"
+        android:layout_marginRight="20dp"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:layout_alignParentRight="true"
+        android:orientation="vertical" >
+    </LinearLayout>
+
+</RelativeLayout>
