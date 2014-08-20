@@ -1686,7 +1686,7 @@ int localcolumn_init()
 			"Column","L9903",CURLANGUAGE_DFT,"DisplayName","数据源","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
-			"Column","L9903","eng","DisplayName","PushData Resource","");
+			"Column","L9903","eng","DisplayName","PushData Res","");
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_column_cnt ++;
 	}
