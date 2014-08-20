@@ -227,6 +227,7 @@ public class DbstarService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		unregisterReceiver(receiver);
 		SimpleWorkPoolInstance.instance().shutdown();
 		LogUtil.e("DbstarService", "service销毁，线程池关闭");
 	}

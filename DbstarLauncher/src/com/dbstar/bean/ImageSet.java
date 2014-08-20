@@ -31,7 +31,7 @@ public class ImageSet {
 	}
 
 	/*
-	 * Ö±½Ó»ñÈ¡bitmap
+	 * ç›´æ¥è·å–bitmap
 	 */
 	public Bitmap getImage(int position) {
 		if (mList == null || mList.size() <= 0 || mList.size() <= position) {
@@ -61,21 +61,21 @@ public class ImageSet {
 
 		private String mUri;
 		/*
-		 * ÔÚSDCardÖĞ»º´æÍ¼Æ¬µÄ¾ø¶ÔÂ·¾¶¡£
+		 * åœ¨SDCardä¸­ç¼“å­˜å›¾ç‰‡çš„ç»å¯¹è·¯å¾„ã€‚
 		 * 
-		 * Èç¹û¿ÉÒÔÍ¨¹ıuriÒ²¿ÉÒÔµÃµ½ÔÚSDCardÖĞ»º´æµÄÍ¼Æ¬£¬Õâ¸öÊôĞÔ¿ÉÒÔÈ¥µô£¬ÍêÈ«¿´Äã×Ô¼º»º´æÊÇÔõÃ´ÊµÏÖµÄ¡£
+		 * å¦‚æœå¯ä»¥é€šè¿‡uriä¹Ÿå¯ä»¥å¾—åˆ°åœ¨SDCardä¸­ç¼“å­˜çš„å›¾ç‰‡ï¼Œè¿™ä¸ªå±æ€§å¯ä»¥å»æ‰ï¼Œå®Œå…¨çœ‹ä½ è‡ªå·±ç¼“å­˜æ˜¯æ€ä¹ˆå®ç°çš„ã€‚
 		 */
 		private String mLocalPath;
 
 		private SoftReference<Bitmap> mImage;
 
 		/*
-		 * Ìá¹©Á½ÖÖ¹¹Ôìº¯Êı
+		 * æä¾›ä¸¤ç§æ„é€ å‡½æ•°
 		 */
 		public Image() {
 		}
 
-		// Bitmap ¿ÉÒÔÎª¿Õ£¬ÕâÑù»áÔÚÊ¹ÓÃÕâÕÅÍ¼Æ¬Ê±²Å»áÁªÍø»òÕß´ÓSDCardÖĞ¼ÓÔØ
+		// Bitmap å¯ä»¥ä¸ºç©ºï¼Œè¿™æ ·ä¼šåœ¨ä½¿ç”¨è¿™å¼ å›¾ç‰‡æ—¶æ‰ä¼šè”ç½‘æˆ–è€…ä»SDCardä¸­åŠ è½½
 		public Image(String uri, String localPath, Bitmap bm) {
 			setUri(uri);
 			setLocalPath(localPath);
@@ -83,7 +83,7 @@ public class ImageSet {
 		}
 
 		/*
-		 * get ºÍ set ·½·¨
+		 * get å’Œ set æ–¹æ³•
 		 */
 		public void setUri(String uri) {
 			this.mUri = uri;
@@ -122,7 +122,7 @@ public class ImageSet {
 		}
 
 		/*
-		 * Õâ¸ö·½·¨ÊÇµ±ÈíÁ¬½ÓÀïµÄÍ¼Æ¬±»»ØÊÕµôºó£¬´ÓĞÂ´ÓT¿¨µÄ»º´æÖĞ»ñµÃÍ¼Æ¬»òÕßÁªÍø´ÓĞÂ»ñµÃÍ¼Æ¬¡£
+		 * è¿™ä¸ªæ–¹æ³•æ˜¯å½“è½¯è¿æ¥é‡Œçš„å›¾ç‰‡è¢«å›æ”¶æ‰åï¼Œä»æ–°ä»Tå¡çš„ç¼“å­˜ä¸­è·å¾—å›¾ç‰‡æˆ–è€…è”ç½‘ä»æ–°è·å¾—å›¾ç‰‡ã€‚
 		 */
 		private Bitmap getImageFromNetOrSDCard() {
 			Bitmap bm = null;
@@ -134,21 +134,21 @@ public class ImageSet {
 		}
 
 		/*
-		 * ´ÓT¿¨»º´æ»ñµÃÍ¼Æ¬
+		 * ä»SDå¡ç¼“å­˜è·å¾—å›¾ç‰‡
 		 */
 		private Bitmap getImageFromeSDCard() {
 			return null;
 		}
 
 		/*
-		 * ÁªÍø»ñµÃÍ¼Æ¬
+		 * è”ç½‘è·å¾—å›¾ç‰‡
 		 */
 		private Bitmap getImageFromeNet() {
 			return null;
 		}
 
 		/*
-		 * »ØÊÕ¸ÃÊµÀı
+		 * å›æ”¶è¯¥å®ä¾‹
 		 */
 		public void recycle() {
 			mUri = null;
@@ -170,7 +170,7 @@ public class ImageSet {
 		
 		@Override
 		public Bitmap processResult(HttpEntity entity) {
-        	// ´¦ÀíµÃµ½£â£é£ô£í£á£ğ
+			// å¤„ç†å¾—åˆ°çš„bitmap
         	// TODO Auto-generated method stub
         	Bitmap bitmap = null;
         	if (entity != null) {        		

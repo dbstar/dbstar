@@ -61,7 +61,7 @@
         </activity>
         <activity android:name="com.settings.ottsettings.MainActivity" />
 		<activity
-            android:name=".display.OutputSetConfirm"
+            android:name="com.settings.display.OutputSetConfirm"
             android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -70,7 +70,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".display.OutputSettingsBroadcastReceiver" >
+        <receiver android:name="com.settings.display.OutputSettingsBroadcastReceiver" >
             <intent-filter>
                 <action android:name="dbstar.intent.action.OUTPUTMODE_CHANGE" />
                 <action android:name="dbstar.intent.action.OUTPUTMODE_CANCEL" />

@@ -64,7 +64,9 @@ public class DbstarOTTActivity extends Activity {
 	private static final int Btn_AppShop_Sequence = 12;
 	private static final int Btn_MyApp_Sequence = 13;
 	private static final int Btn_Setting_Sequence = 2;
-//	private static final int START_NETWORKSETTING_ACTIVITY_RESULT = 2;
+	
+	private static int Ethernet_Network_Mode = 0;
+	private static final String Ethernet_Mode = "ethernet_mode";
 	
 	private FlashGallery gallery;
 	private ImageView imgStarTV;
@@ -92,6 +94,7 @@ public class DbstarOTTActivity extends Activity {
 	private GalleryAdapter adapter2;
 	private boolean isToAthorAvtivity = false;
 	
+	private Intent intentSer; 
 	private GalleryTask task;
 	private Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -142,28 +145,34 @@ public class DbstarOTTActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.lt_dbstar_main_luncher_flash);
 		
-		getWindow().getDecorView().setSystemUiVisibility(
-				View.SYSTEM_UI_FLAG_LOW_PROFILE);
-		getWindow().getDecorView().setSystemUiVisibility(
-				View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
 		findViews();
 		
-		//action：： "com.dbstar.service.GDDataProviderService"
-		Intent intentSer = new Intent();
-//		intentSer.setAction("com.dbstar.service.GDDataProviderService");
+		intentSer = new Intent();
 		intentSer.setClass(this, GDDataProviderService.class);
 		startService(intentSer);
 		LogUtil.d("Intent Service", "跨进程调用service========" + intentSer.toString());
 		
-		Intent intent = new Intent(this, DbstarService.class);
-		startService(intent);
+		startService(new Intent(this, DbstarService.class));
+		
+		LogUtil.d("Intent Service", "跨进程调用intentSettings========" + new Intent("com.settings.service.action.OTTSettingsService").toString());
+		startService(new Intent("com.settings.service.action.OTTSettingsService"));
 		
 //		initViews();
 		findViews();
 		imgStarTV.requestFocus();
 		populateData();
 		setEventListener();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		stopService(intentSer);
+		stopService(new Intent(this, DbstarService.class));
+		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
 	}
 
 	private void readQueryPosterFromSDCard() {
@@ -316,6 +325,7 @@ public class DbstarOTTActivity extends Activity {
 			LogUtil.d(getClass().getName(), "<<<<<<///data///>>>>>>>>" + data);
 			if (data != null) {
 				boolean isFinishSet = data.getBooleanExtra("isFinish", false);
+				Ethernet_Network_Mode = data.getIntExtra(Ethernet_Mode, 0);
 				if (isFinishSet) {
 					LogUtil.d(getClass().getName(), "<<<<<<///isFinishSet///>>>>>>>>" + isFinishSet);
 					DeviceInitController.handleBootFirstTime();
@@ -325,6 +335,7 @@ public class DbstarOTTActivity extends Activity {
 		}else {
 			imgStarTV.requestFocus();
 		}
+		
 		if (mImageSet == null || mImageSet.getCount() == 0) {
 			mImageSet = new ImageSet(adapter2);
 		}
@@ -388,6 +399,9 @@ public class DbstarOTTActivity extends Activity {
 			public void onClick(View v) {
 				Intent intent = startDbstarSettingActivity("OTTSettingsActivity");
 				if (intent != null) {
+					Bundle bundle = new Bundle();
+					bundle.putInt(Ethernet_Mode, Ethernet_Network_Mode);
+					intent.putExtra("mode", bundle);
 					startActivityForResult(intent, Btn_Setting_Sequence);
 				}
 			}

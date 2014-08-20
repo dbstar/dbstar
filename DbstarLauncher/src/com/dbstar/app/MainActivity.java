@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.view.Window;
 
 import com.dbstar.R;
+import com.dbstar.app.launcher.GDLauncherActivity;
 
 /**
  * 过渡页面
@@ -30,16 +31,19 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void run() {
-				Bundle bundle = getIntent().getExtras();
-//				if (bundle.containsKey("appShop") && bundle.getBoolean("appShop")) {
-//					Intent intent = new Intent();
-//					intent.setClass(MainActivity.this, DbstarAppShopActivity.class);
-//					startActivity(intent);
-//				} else {
-					String packageName = (String) bundle.get("packageName");
-					Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-					startActivity(intent);					
-//				}
+//				Bundle bundle = getIntent().getExtras();
+////				if (bundle.containsKey("appShop") && bundle.getBoolean("appShop")) {
+////					Intent intent = new Intent();
+////					intent.setClass(MainActivity.this, DbstarAppShopActivity.class);
+////					startActivity(intent);
+////				} else {
+//					String packageName = (String) bundle.get("packageName");
+//					Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
+//					startActivity(intent);					
+////				}
+				
+				Intent intent = new Intent();
+				intent.setClass(MainActivity.this, GDLauncherActivity.class);
 				MainActivity.this.finish();
 			}
 		}, 1000);

@@ -25,6 +25,7 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
@@ -70,9 +71,9 @@ public class HttpConnect {
         ConnManagerParams.setMaxTotalConnections(params, 80); 
 
         /* 连接超时 */
-//        HttpConnectionParams.setConnectionTimeout(params, 60000);
+        HttpConnectionParams.setConnectionTimeout(params, 60000);
         /* 请求超时 */
-//        HttpConnectionParams.setSoTimeout(params, 60000);
+        HttpConnectionParams.setSoTimeout(params, 60000);
 
         // 设置我们的HttpClient支持HTTP和HTTPS两种模式
         SchemeRegistry schReg = new SchemeRegistry();

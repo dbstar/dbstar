@@ -264,6 +264,7 @@ public class FinishSettingsViewWrapper {
 		mPrevButton.setOnClickListener(mOnClickListener);
 
 		mOkButton.requestFocus();
+		mOkButton.setEnabled(true);
 	}
 
 	private void reqisterConnectReceiver() {
@@ -364,11 +365,13 @@ public class FinishSettingsViewWrapper {
                 intent.putExtra("isFinish", true);
                 intent.putExtra("ethernet_mode", ethernetMode);
 			    mActivity.setResult(0, intent);
-				mActivity.finish();
+//				mActivity.finish();
 			} else if (v.getId() == R.id.prev_button) {
 				switchToWiredSettings();
 			}
 			onStop();
+			
+			mOkButton.setEnabled(false);
 		}
 	};
 

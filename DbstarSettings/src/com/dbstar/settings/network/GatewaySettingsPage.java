@@ -6,13 +6,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -20,8 +17,6 @@ import android.widget.Toast;
 
 import com.dbstar.settings.R;
 import com.dbstar.settings.base.BaseFragment;
-import com.dbstar.settings.utils.SettingsCommon;
-import com.dbstar.settings.utils.APPVersion;
 
 public class GatewaySettingsPage extends BaseFragment {
 	private static final String TAG = "GatewaySettingsPage";
@@ -193,9 +188,11 @@ public class GatewaySettingsPage extends BaseFragment {
 
 		@Override
 		public void onClick(View v) {
-			mManager.nextPage(SettingsCommon.PAGE_GATEWAY,
-					SettingsCommon.PAGE_CHANNELSELECTOR);
+//			mManager.nextPage(SettingsCommon.PAGE_GATEWAY, SettingsCommon.PAGE_CHANNELSELECTOR);
+			
 			onToNextPage();
+			
+			finishFragment();
 		}
 	};
 

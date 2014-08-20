@@ -27,4 +27,6 @@
     <drawable name="purple">#800080</drawable>
 	<drawable name="black">#000000</drawable>
 
+	<color name="bg_blue">#00FFFF</color>
+	<color name="bg_green">#D7FD3A</color>
 </resources>

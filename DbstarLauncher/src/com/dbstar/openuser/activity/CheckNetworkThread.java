@@ -27,11 +27,11 @@ public class CheckNetworkThread extends Thread {
 			boolean isNetworkAvailable = DbstarUtil.isNetworkAvailable(context);
 
 			if (!isNetworkAvailable) {
-				ToastUtils.showToast(context, "Ã»ÓĞÍøÂç£¬Çë¼ì²éÍøÂçÁ¬½Ó£¡");
+				ToastUtils.showToast(context, "æ²¡æœ‰ç½‘ç»œï¼Œè¯·æ£€æŸ¥ç½‘ç»œè¿æ¥ï¼");
 			}
 
 			try {
-				// Ã¿¸ô15-30·ÖÖÓ¾Í·¢Ò»´Î¹ã²¥
+				// æ¯éš”15-30åˆ†é’Ÿå°±å‘ä¸€æ¬¡å¹¿æ’­
 				Random random = new Random();
 				int time = random.nextInt(15) + 15; 
 				Thread.sleep(time * 60 * 1000);
@@ -40,31 +40,31 @@ public class CheckNetworkThread extends Thread {
 				intent.setAction(Check_NetWork);
 				context.sendBroadcast(intent);
 				
-				LogUtil.i("CheckNetworkThread", "¶¨Ê±¼ì²éÍøÂçÁ¬½Ó");
+				LogUtil.i("CheckNetworkThread", "å®šæ—¶æ£€æŸ¥ç½‘ç»œè¿æ¥");
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-				LogUtil.i("CheckNetworkThread", "¶¨Ê±¼ì²éÍøÂçÁ¬½ÓµÄÏß³Ì±»´ò¶Ï£¡" + e);
+				LogUtil.i("CheckNetworkThread", "å®šæ—¶æ£€æŸ¥ç½‘ç»œè¿æ¥çš„çº¿ç¨‹è¢«æ‰“æ–­ï¼" + e);
 			}
 		}
 
 	}
 
 	/**
-	 * Æô¶¯Ïß³Ì
+	 * å¯åŠ¨çº¿ç¨‹
 	 */
 	public void startThred() {
 		super.start();
 	}
 
 	/**
-	 * ½áÊøÏß³Ì
+	 * ç»“æŸçº¿ç¨‹
 	 */
 	public void shutdown() {
 		isRun = false;
 		try {
 			this.interrupt();
 		} catch (Exception e) {
-			LogUtil.i("CheckNetworkThread", "½áÊøÏß³Ì³ö´í£º£ºshutdown()");
+			LogUtil.i("CheckNetworkThread", "ç»“æŸçº¿ç¨‹å‡ºé”™ï¼šï¼šshutdown()");
 		}
 	}
 

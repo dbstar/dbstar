@@ -301,9 +301,9 @@ public class OTTSettingsActivity extends Activity {
 			switch (checkedId) {
 			case R.id.settings_net_status:
 				switchToNetStatus();
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				if (isFromWifi) {					
 					pauseOfWifi();
 				}
@@ -318,69 +318,69 @@ public class OTTSettingsActivity extends Activity {
 			case R.id.settings_wifi:
 				switchToWifiSetting();
 				
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				isFromWifi = true;
 				break;
 			case R.id.settings_wifi_hotspot:
 				switchToWifiHotspotSettings();
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				if (isFromWifi) {					
 					pauseOfWifi();
 				}
 				break;
 			case R.id.settings_audio:
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				if (isFromWifi) {					
 					pauseOfWifi();
 				}
 				switchToAudioSettings();
 				break;
 			case R.id.settings_vedio:
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				if (isFromWifi) {					
 					pauseOfWifi();
 				}
 				switchToVedioSettings();
 				break;
 			case R.id.settings_showAdjust:
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				if (isFromWifi) {					
 					pauseOfWifi();
 				}
 				switchToShowAdjustSettings();
 				break;
 			case R.id.settings_sysUpgrade:
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				if (isFromWifi) {					
 					pauseOfWifi();
 				}
 				switchToSysUpgradeSettings();
 				break;
 			case R.id.settings_help:
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				if (isFromWifi) {					
 					pauseOfWifi();
 				}
 				switchToHelpSettings();
 				break;
 			case R.id.settings_about:
-				if (isFromWired) {					
-					pauseOfWired();
-				}
+//				if (isFromWired) {					
+//					pauseOfWired();
+//				}
 				if (isFromWifi) {					
 					pauseOfWifi();
 				}
