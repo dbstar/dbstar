@@ -51,7 +51,8 @@
         android:theme="@style/OTTAppTheme" >
         <activity
             android:name="com.settings.ottsettings.OTTSettingsActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 				
@@ -68,6 +69,13 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+        
+		 <activity
+            android:name=".PositionSetting"
+            android:configChanges="screenLayout|screenSize|smallestScreenSize"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize" >
         </activity>
 
         <receiver android:name="com.settings.display.OutputSettingsBroadcastReceiver" >

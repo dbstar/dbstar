@@ -5,33 +5,41 @@
     android:layout_gravity="center"
     android:gravity="center"
     android:orientation="vertical" >
-    
-    <TextView 
+
+    <TextView
         android:id="@+id/showAdjust_settings_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:singleLine="false"
-        android:paddingTop="10dp"
-        android:paddingRight="20dp"
+        android:layout_marginBottom="40dp"
         android:lineSpacingMultiplier="1.5"
+        android:paddingRight="20dp"
+        android:paddingTop="10dp"
+        android:singleLine="false"
         android:text="@string/page_showAdjust_text"
         android:textColor="@color/text_white"
-        android:layout_marginBottom="40dp"
-        android:textSize="@dimen/gl_text_size_22sp"/>
-	    
-	    <Button 
-	        android:id="@+id/showAdjust_settings_btn"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:textSize="@dimen/gl_text_size_22sp"
-	        android:gravity="center"
-	        android:focusable="true"
-	        android:focusableInTouchMode="true"
-	        android:background="@drawable/eth_button_bg"
-	        android:textColor="@color/text_white"
-	        android:nextFocusLeft="@+id/settings_showAdjust"
-	        android:nextFocusUp="@+id/showAdjust_settings_btn"
-	        android:nextFocusDown="@+id/showAdjust_settings_btn"
-	        android:text="@string/page_showAdjust_button_text"/>
+        android:textSize="@dimen/gl_text_size_22sp" />
+
+    <Button
+        android:id="@+id/showAdjust_settings_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/eth_button_bg"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center"
+        android:nextFocusDown="@+id/showAdjust_settings_btn"
+        android:nextFocusLeft="@+id/settings_showAdjust"
+        android:nextFocusUp="@+id/showAdjust_settings_btn"
+        android:text="@string/page_showAdjust_button_text"
+        android:textColor="@color/text_white"
+        android:textSize="@dimen/gl_text_size_22sp" />
+
+    <include
+        android:id="@+id/showAdjust_settings_content_postion"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        layout="@layout/position_adjust"
+        android:visibility="gone" >
+    </include>
 
 </LinearLayout>

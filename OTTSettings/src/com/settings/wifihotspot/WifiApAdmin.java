@@ -16,6 +16,8 @@ import android.util.Log;
  */
 public class WifiApAdmin {
 	public static final String TAG = "WifiApAdmin";
+
+	private static final String Boolean = null;
 	
 	public static void closeWifiAp(Context context) {
 		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE); 
@@ -41,6 +43,7 @@ public class WifiApAdmin {
 		mPasswd = passwd;
 		
 		if (mWifiManager.isWifiEnabled()) {
+			LogUtil.d(TAG, "startWifiAp-=-=-=-=-------------" + mWifiManager.isWifiEnabled());
 			mWifiManager.setWifiEnabled(false);
 		} 
 		
@@ -52,11 +55,14 @@ public class WifiApAdmin {
 			public void doTimerCheckWork() {
 				// TODO Auto-generated method stub
 				
+				LogUtil.d(TAG, "isWifiEnabled-=-=-=-=-------------" + mWifiManager.isWifiEnabled());
+				LogUtil.d(TAG, "isWifiEnabled-=-=-=-=isWifiApEnabled(mWifiManager)-------------" + isWifiApEnabled(mWifiManager));
+				
 				if (isWifiApEnabled(mWifiManager)) {
-					Log.v(TAG, "Wifi enabled success!");
+					Log.v(TAG, "WifiAP enabled success!");
 					this.exit();
 				} else {
-					Log.v(TAG, "Wifi enabled failed!");
+					Log.v(TAG, "WifiAP enabled failed!");
 				}
 			}
 
@@ -140,10 +146,13 @@ public class WifiApAdmin {
 	private static boolean isWifiApEnabled(WifiManager wifiManager) {
 		try {
 			Method method = wifiManager.getClass().getMethod("isWifiApEnabled");
+			LogUtil.d(TAG, "isWifiAPEnabled()-----method------" + method);
 			method.setAccessible(true);
-			return (Boolean) method.invoke(wifiManager);
+			boolean bol = (Boolean) method.invoke(wifiManager);
+			LogUtil.d(TAG, "isWifiAPEnabled()-----method.invoke------" + bol + "----");
+			return bol;
 		} catch (Exception e) {
-			LogUtil.d(TAG, "-----isWifiApEnabled======" + e);
+			LogUtil.d(TAG, "-----isWifiApEnabled()===exception===" + e);
 			e.printStackTrace();
 		}
 

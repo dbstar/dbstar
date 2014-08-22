@@ -206,6 +206,7 @@
     <!-- 显示调整 -->
     <string name="page_showAdjust_text">电视屏幕边缘的文字、图像显示不完全时，您可以使用“显示区域调整”，调整页面显示的位置，方向键上、下、左、右微调，使屏幕居中显示。</string>
     <string name="page_showAdjust_button_text">显示区域调整</string>
+    <string name="screen_tips_01"> 如果你的电视画面无法被完整显示，请使用“上”“下”键调节缩放比例，直到底图区域被移除到屏幕外。按“确定”键应用设置并返回。按“返回”键不设置并返回。</string>
     
     <!-- 系统升级 -->
     <string name="page_sysUpgrade_title">系统升级</string>

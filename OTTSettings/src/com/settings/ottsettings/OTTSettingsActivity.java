@@ -3,6 +3,8 @@ package com.settings.ottsettings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -41,6 +43,7 @@ public class OTTSettingsActivity extends Activity {
 	
 	private static int Ethernet_Network_Mode = 0;
 	private static final String Ethernet_Mode = "ethernet_mode";
+	private ShowAdjustSettingsViewWrapper showAdjustSettingsViewWrapper = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -155,12 +158,11 @@ public class OTTSettingsActivity extends Activity {
 	 * 显示调整
 	 */
 	private void switchToShowAdjustSettings() {
-		ShowAdjustSettingsViewWrapper wrapper = null;
 		View view = populateViewToDynamicPanel(R.layout.lt_page_show_adjust_settings);
-		if (wrapper == null) {
-			wrapper = new ShowAdjustSettingsViewWrapper(this);
-			wrapper.initView(view);
+		if (showAdjustSettingsViewWrapper == null) {
+			showAdjustSettingsViewWrapper = new ShowAdjustSettingsViewWrapper(this);
 		}
+		showAdjustSettingsViewWrapper.initView(view);
 	}
 	
 	/**
@@ -392,6 +394,24 @@ public class OTTSettingsActivity extends Activity {
 
 		}
 		
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+//		Log.d(getClass().getName(), "onKeyDown---------isOpenAdjustScreenView : " + showAdjustSettingsViewWrapper.isOpenAdjustScreenView());
+		if (showAdjustSettingsViewWrapper != null && showAdjustSettingsViewWrapper.isOpenAdjustScreenView()) {
+			return showAdjustSettingsViewWrapper.onKeyDown(keyCode, event);
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+	
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+//		Log.d(getClass().getName(), "onKeyUp-------isOpenAdjustScreenView : " + showAdjustSettingsViewWrapper.isOpenAdjustScreenView());
+		if (showAdjustSettingsViewWrapper != null && showAdjustSettingsViewWrapper.isOpenAdjustScreenView()) {			
+			return showAdjustSettingsViewWrapper.onKeyUp(keyCode, event);
+		}
+		return super.onKeyUp(keyCode, event);
 	}
 	
 	private void findViews() {

@@ -8,10 +8,8 @@ import android.os.IBinder;
 
 import com.settings.bean.WifiHotspot;
 import com.settings.bean.WifiHotspotConfig;
-import com.settings.ottsettings.R;
 import com.settings.utils.DataUtils;
 import com.settings.utils.LogUtil;
-import com.settings.utils.ToastUtils;
 import com.settings.wifihotspot.WifiAdmin;
 import com.settings.wifihotspot.WifiApAdmin;
 
@@ -33,53 +31,59 @@ public class OTTSettingsService extends Service{
 			LogUtil.d(TAG, "OTTSettingsService-----------wifi hotspot is opened");
 			String ssid = DataUtils.getPreference(this, Data_Key_SSID, "DbstarAP");
 			String password = DataUtils.getPreference(this, Data_Key_PWD, "12345678");
-			String security = DataUtils.getPreference(this, Data_Key_SECURITY, "WPA PSK");
+			String security = DataUtils.getPreference(this, Data_Key_SECURITY, "WPA2 PSK");
 			wifiHotspot.setSsid(ssid);
 			wifiHotspot.setPassword(password);
 			wifiHotspot.setSecurity(security);
 			
-			WifiApAdmin wifiAp = new WifiApAdmin(this);
-//			wifiAp.startWifiAp("\"HotSpot\"", "hhhhhh123");
-			wifiAp.startWifiAp(wifiHotspot.getSsid(), wifiHotspot.getPassword());
+			LogUtil.d(TAG, "OTTSettingsService-----------ssid=" + ssid);
+			LogUtil.d(TAG, "OTTSettingsService-----------password=" + password);
+			LogUtil.d(TAG, "OTTSettingsService-----------security=" + security);
 			
-			WifiAdmin wifiAdmin = new WifiAdmin(this) {
-				
-				@Override
-				public void onNotifyWifiConnected() {
-					LogUtil.d("OTTSettingsActivity", "have connected success!");
-					LogUtil.d("OTTSettingsActivity", "###############################");
-					
-				}
-				
-				@Override
-				public void onNotifyWifiConnectFailed() {
-					LogUtil.d("OTTSettingsActivity", "have connected failed!");
-					LogUtil.d("OTTSettingsActivity", "###############################");
-					
-				}
-				
-				@Override
-				public Intent myRegisterReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-					registerReceiver(receiver, filter);
-					return null;
-				}
-				
-				@Override
-				public void myUnregisterReceiver(BroadcastReceiver receiver) {
-					unregisterReceiver(receiver);
-				}					
-			};
-			
-			wifiAdmin.openWifi();
-			wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), getTypeOfSecurity(wifiHotspot));
-//			wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(),  WifiAdmin.TYPE_WPA);
-			
-			ToastUtils.showToast(this, R.string.page_wifi_hotspot_settingsOk);
+			wifiHotspotConnect(wifiHotspot);
 			LogUtil.d(TAG, "OTTSettingsService-----------open wifi hotspot");			
 		} else {
 			LogUtil.d(TAG, "OTTSettingsService-----------wifi hotspot is colosed");
 			return;
 		}
+	}
+	
+	private void wifiHotspotConnect(WifiHotspot wifiHotspot) {
+		WifiApAdmin wifiAp = new WifiApAdmin(this);
+//				wifiAp.startWifiAp("\"HotSpot\"", "hhhhhh123");
+		wifiAp.startWifiAp(wifiHotspot.getSsid(), wifiHotspot.getPassword());
+		
+		WifiAdmin wifiAdmin = new WifiAdmin(this) {
+			
+			@Override
+			public void onNotifyWifiConnected() {
+				LogUtil.d("OTTSettingsActivity", "have connected success!");
+				LogUtil.d("OTTSettingsActivity", "###############################");
+				
+			}
+			
+			@Override
+			public void onNotifyWifiConnectFailed() {
+				LogUtil.d("OTTSettingsActivity", "have connected failed!");
+				LogUtil.d("OTTSettingsActivity", "###############################");
+				
+			}
+			
+			@Override
+			public Intent myRegisterReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+				registerReceiver(receiver, filter);
+				return null;
+			}
+			
+			@Override
+			public void myUnregisterReceiver(BroadcastReceiver receiver) {
+				unregisterReceiver(receiver);
+			}					
+		};
+		
+		wifiAdmin.openWifi();
+		wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), getTypeOfSecurity(wifiHotspot));
+//				wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(),  WifiAdmin.TYPE_WPA);
 	}
 	
 	private int getTypeOfSecurity(WifiHotspot wifiHotspot) {

@@ -97,6 +97,7 @@ public class WifiHotspotSettingsViewWrapper {
 			mOpenHotspot.setChecked(true);
 			btnSetHotsopt.setVisibility(View.VISIBLE);
 			mSettingsContainer.setVisibility(View.VISIBLE);
+			wifiHotspotConnect(wifiHotspot);
 		} else {
 			// 如果mOpenHotspot没有选中，则“设置Wi-Fi热点”不可点击。
 			LogUtil.d(TAG, "initView   isOpenWifiHotspot------==mOpenHotspot.isChecked() == false");

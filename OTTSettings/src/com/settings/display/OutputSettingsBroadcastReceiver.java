@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.os.SystemProperties;
 import android.util.Log;
 
+import com.settings.utils.LogUtil;
 import com.settings.utils.SettingsCommon;
 import com.settings.utils.Utils;
+import android.app.SystemWriteManager;
 
 public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 
@@ -69,6 +71,8 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 	private static final int OUTPUT720_FULL_HEIGHT = 720;
 	private static final int OUTPUT1080_FULL_WIDTH = 1920;
 	private static final int OUTPUT1080_FULL_HEIGHT = 1080;
+	
+	private SystemWriteManager sw = null;
 
 	private boolean hasCvbsOutput = Utils.hasCVBSMode();
 
@@ -83,12 +87,16 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		
+		sw = (SystemWriteManager) context.getSystemService("system_write");
+		
 		// boot completed
 		if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)) {
-//			if (SystemProperties.getInt(SettingsCommon.STR_1080SCALE, 0) == 2) {
-//				Utils.setValue(VideoAxisFile, "0 0 1280 720");
-//				Utils.setValue(DispFile, "1280 720");
-//			}
+			if (SystemProperties.getInt(SettingsCommon.STR_1080SCALE, 0) == 2) {
+				Log.d("OutputSettingsBroadcastReceiver", "onReceive ---------intent---" + intent);
+				Utils.setValue(VideoAxisFile, "0 0 1280 720");
+				Utils.setValue(DispFile, "1280 720");
+			}
 		}
 		// change output mode
 		else if (intent.getAction().equalsIgnoreCase(
@@ -216,15 +224,18 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 					+ (curPosition[3] + curPosition[1] - 1) + " " + 0);
 		}
 		// save output position change
-		else if (intent.getAction().equalsIgnoreCase(
-				SettingsCommon.ACTION_OUTPUTPOSITION_SAVE)) {
+		else if (intent.getAction().equalsIgnoreCase(SettingsCommon.ACTION_OUTPUTPOSITION_SAVE)) {
 			int x = intent.getIntExtra(OUTPUT_POSITION_X, -1);
 			int y = intent.getIntExtra(OUTPUT_POSITION_Y, -1);
 			int w = intent.getIntExtra(OUTPUT_POSITION_W, -1);
 			int h = intent.getIntExtra(OUTPUT_POSITION_H, -1);
+			Log.d("OutputSettingsBroadcastReceiver", "///////////x===" + x);
+			Log.d("OutputSettingsBroadcastReceiver", "///////////y===" + y);
+			Log.d("OutputSettingsBroadcastReceiver", "///////////w===" + w);
+			Log.d("OutputSettingsBroadcastReceiver", "///////////h===" + h);
 			if ((x != -1) && (y != -1) && (w != -1) && (h != -1)) {
-				savePosition(String.valueOf(x), String.valueOf(y),
-						String.valueOf(w), String.valueOf(h));
+				savePosition(String.valueOf(x), String.valueOf(y), String.valueOf(w), String.valueOf(h));
+				Log.d("OutputSettingsBroadcastReceiver", "///////////savePosition in receiver!");
 			}
 		}
 		// set and save output position to default values
@@ -419,12 +430,21 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 			if (cur_mode.equalsIgnoreCase(mOutputModeList[i]))
 				index = i;
 		}
+		
+		Log.d("OutputSettingsBroadcastReceiver", "------index-----" + index);
+		
 		switch (index) {
 		case 0: // 480i
 			SystemProperties.set(sel_480ioutput_x, x);
 			SystemProperties.set(sel_480ioutput_y, y);
 			SystemProperties.set(sel_480ioutput_width, w);
 			SystemProperties.set(sel_480ioutput_height, h);
+			
+			
+			sw.setProperty(sel_480poutput_x, x);
+			sw.setProperty(sel_480poutput_y, y);
+			sw.setProperty(sel_480poutput_width, w);
+			sw.setProperty(sel_480poutput_height, h);
 			break;
 		case 1: // 480p
 			SystemProperties.set(sel_480poutput_x, x);
@@ -449,6 +469,16 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 			SystemProperties.set(sel_720poutput_y, y);
 			SystemProperties.set(sel_720poutput_width, w);
 			SystemProperties.set(sel_720poutput_height, h);
+			Log.d("OutputSettingsBroadcastReceiver", "----------------------indext is 4!");
+			
+			// TODO:test
+			SystemProperties.set("sel_poutput", "50");
+			LogUtil.d("OutputSettingsBroadcastReceiver", SystemProperties.get("sel_poutput"));
+			
+			sw.setProperty(sel_720poutput_x, x);
+			sw.setProperty(sel_720poutput_y, y);
+			sw.setProperty(sel_720poutput_width, w);
+			sw.setProperty(sel_720poutput_height, h);
 			break;
 		case 5: // 1080i
 			SystemProperties.set(sel_1080ioutput_x, x);
@@ -463,6 +493,16 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 			SystemProperties.set(sel_1080poutput_height, h);
 			break;
 		}
+		
+		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_x));
+		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_y));
+		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_width));
+		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_height));
+		Log.d("OutputSettingsBroadcastReceiver", "------x-----" + x);
+		Log.d("OutputSettingsBroadcastReceiver", "------y-----" + y);
+		Log.d("OutputSettingsBroadcastReceiver", "------w-----" + w);
+		Log.d("OutputSettingsBroadcastReceiver", "------h-----" + h);
+
 	}
 
 	public void disableVpp2() {
@@ -488,14 +528,10 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 			}
 
 			if (valOutputMode.equals("1080p")) {
-				Utils.setValue(
-						"/sys/module/amvideo2/parameters/clone_frame_scale_width",
-						"960");
+				Utils.setValue("/sys/module/amvideo2/parameters/clone_frame_scale_width", "960");
 
 			} else {
-				Utils.setValue(
-						"/sys/module/amvideo2/parameters/clone_frame_scale_width",
-						"0");
+				Utils.setValue("/sys/module/amvideo2/parameters/clone_frame_scale_width", "0");
 			}
 		} else {
 			disableVpp2();
