@@ -3,7 +3,6 @@ package com.settings.ottsettings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,6 @@ import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
-import com.settings.bean.WifiHotspot;
 import com.settings.components.AboutSettingsViewWrapper;
 import com.settings.components.AudioSettingsViewWrapper;
 import com.settings.components.HelpSettingsViewWrapper;
@@ -38,8 +36,6 @@ public class OTTSettingsActivity extends Activity {
 	
 	private VedioSettingsViewWrapper vedioSettingsViewWrapper = null;
 	private WiredSettingsView wiredSettingsView = null;
-	private WifiSettingsView wifiSettingsView = null;
-	private WifiHotspot wifiHotspot = new WifiHotspot();
 	
 	private static int Ethernet_Network_Mode = 0;
 	private static final String Ethernet_Mode = "ethernet_mode";
@@ -89,8 +85,6 @@ public class OTTSettingsActivity extends Activity {
 	}
 	
 	private void populateData() {
-		wifiHotspot.setSsid("DbstarAP");
-		wifiHotspot.setPassword("123456789");
 		rgContainer.setOnCheckedChangeListener(new RbCheckedChangeListener());
 		
 		Bundle bundle = getIntent().getBundleExtra("mode");

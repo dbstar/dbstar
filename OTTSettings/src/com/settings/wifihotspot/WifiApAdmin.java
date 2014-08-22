@@ -89,11 +89,11 @@ public class WifiApAdmin {
 			netConfig.allowedAuthAlgorithms .set(WifiConfiguration.AuthAlgorithm.OPEN);
 			netConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
 			netConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
-			netConfig.allowedKeyManagement .set(WifiConfiguration.KeyMgmt.WPA_PSK);
-			netConfig.allowedPairwiseCiphers .set(WifiConfiguration.PairwiseCipher.CCMP);
-			netConfig.allowedPairwiseCiphers .set(WifiConfiguration.PairwiseCipher.TKIP);
-			netConfig.allowedGroupCiphers .set(WifiConfiguration.GroupCipher.CCMP);
-			netConfig.allowedGroupCiphers .set(WifiConfiguration.GroupCipher.TKIP);
+			netConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+			netConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+			netConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+			netConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+			netConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
 
 			// 启动热点
 			boolean isSuccess = (Boolean) method1.invoke(mWifiManager, netConfig, true);

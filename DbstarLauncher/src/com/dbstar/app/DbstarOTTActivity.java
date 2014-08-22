@@ -105,6 +105,10 @@ public class DbstarOTTActivity extends Activity {
 				gallery.setSelection(index);
 				gallery.setFocusable(false);
 				break;
+			case 3:
+				LogUtil.d("Intent Service", "跨进程调用intentSettings========" + new Intent("com.settings.service.action.OTTSettingsService").toString());
+				startService(new Intent("com.settings.service.action.OTTSettingsService"));
+				break;
 			default:
 				break;
 			}
@@ -157,9 +161,6 @@ public class DbstarOTTActivity extends Activity {
 		
 		startService(new Intent(this, DbstarService.class));
 		
-		LogUtil.d("Intent Service", "跨进程调用intentSettings========" + new Intent("com.settings.service.action.OTTSettingsService").toString());
-		startService(new Intent("com.settings.service.action.OTTSettingsService"));
-		
 //		initViews();
 		findViews();
 		imgStarTV.requestFocus();
@@ -172,7 +173,7 @@ public class DbstarOTTActivity extends Activity {
 		super.onDestroy();
 		stopService(intentSer);
 		stopService(new Intent(this, DbstarService.class));
-		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
+//		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
 	}
 
 	private void readQueryPosterFromSDCard() {
@@ -274,42 +275,6 @@ public class DbstarOTTActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-//		if (isToAthorAvtivity) {
-//			if (mImageSet == null || mImageSet.getCount() == 0) {
-//				mImageSet = new ImageSet(adapter2);
-//			}
-//			// 检查联网情况
-//			boolean isNetworkConnected = DbstarUtil.isNetworkConnected(this);
-//			// 先判断是否联网，如果没有联网，就停留在海报页面
-//
-//			if (!isNetworkConnected) {
-//				// 如果没有网络，则判断sd卡中是否存在已经存储的文件
-//				readQueryPosterFromSDCard();
-//				readQueryRecommandFromSDCard();
-//			} else {
-//				boolean isNetworkAvailable = DbstarUtil.isNetworkAvailable(this);
-//				if (isNetworkAvailable) {					
-//					// 如果有网络，则登录，并从服务器端取得数据
-//					getQueryPoster();
-//					getQueryRecommand();
-//				} else {
-//					// 如果有网络，但没有连接成功，则判断sd卡中是否存在已经存储的文件
-//					readQueryPosterFromSDCard();
-//					readQueryRecommandFromSDCard();
-//				}
-//			}
-//
-//			if (adapter2 == null) {
-//				adapter2 = new GalleryAdapter(this, pictures);
-//			} else {
-//				adapter2.notifyDataSetChanged();
-//			}
-//
-//			initViews();
-//			populateData();
-//			setEventListener();
-//		}
-	
 	}
 	
 	@Override
@@ -403,6 +368,7 @@ public class DbstarOTTActivity extends Activity {
 					bundle.putInt(Ethernet_Mode, Ethernet_Network_Mode);
 					intent.putExtra("mode", bundle);
 					startActivityForResult(intent, Btn_Setting_Sequence);
+					
 				}
 			}
 		});
@@ -770,6 +736,27 @@ public class DbstarOTTActivity extends Activity {
 		
 		gallery.setFocusable(false);
 //		imgStarTV.requestFocus();
+		
+		
+		final Timer APServiceTimer = new Timer();
+		TimerTask timerTask = new TimerTask() {
+			
+			@Override
+			public void run() {
+				Message message = new Message();
+				message.what = 3;
+				handler.sendMessage(message);
+				LogUtil.d("DbstarOTTActivity", "------------APServiceTimer==" + System.currentTimeMillis());
+				if (APServiceTimer != null) {					
+					APServiceTimer.cancel();
+				}
+			}
+		};
+		
+		if (APServiceTimer != null) {
+			APServiceTimer.schedule(timerTask, 15*1000);
+		}
+		
 	}
 	
 	@Override
@@ -929,7 +916,6 @@ public class DbstarOTTActivity extends Activity {
 				LogUtil.d("DbstarOTTActivity", "((((((((((((<>BtnOnClickListener<>))))))btnsequence)))))))" + btnSequence);
 				startActivityForResult(intent, btnSequence);
 			}
-			
 			
 			isToAthorAvtivity = true;
 			LogUtil.d("BtnOnClickListener", "包名：：" + packageName);

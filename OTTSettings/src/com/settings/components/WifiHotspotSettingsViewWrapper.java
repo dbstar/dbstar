@@ -218,10 +218,6 @@ public class WifiHotspotSettingsViewWrapper {
 					mSettingsContainer.setVisibility(View.GONE);
 					
 					WifiApAdmin.closeWifiAp(mContext);
-					if (!mWifiManager.isWifiEnabled()) {						
-						mWifiManager.setWifiEnabled(true);
-					}
-					
 				}
 				
 				DataUtils.savePreference(mContext, Data_Key_IsOpenWifiHotspot, isChecked);
