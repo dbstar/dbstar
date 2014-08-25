@@ -1464,6 +1464,38 @@ static int boolean_translate(char *bool_str, unsigned int bool_str_len)
 		return 0;
 }
 
+/*
+将界面产品SProduct文件夹拷贝到flash指定位置，Launcher启动时会从这个目录更新界面
+此函数实现的不够严谨，懒省事从SProduct.xml的全路径反向推出SProduct文件夹路径，当文件夹结构变化时可能导致不能更新
+*/
+#define SPRODUCT_BEACON	"/data/dbstar/SProduct.beacon"
+static int SProduct_beacon(char *xmluri)
+{
+	char buf[512];
+	int ret = -1;
+	
+	FILE *fp = fopen(SPRODUCT_BEACON, "w");
+	if(fp){
+		snprintf(buf, sizeof(SPRODUCT_BEACON), "SProductXml=%s", xmluri);
+		if(1==fwrite(buf, strlen(buf), 1, fp)){
+			DEBUG("fwrite(%s) to %s\n", buf, SPRODUCT_BEACON);
+			ret = 0;
+		}
+		else{
+			ERROROUT("fwrite(%s) to %s failed\n", buf, SPRODUCT_BEACON);
+			ret = -1;
+		}
+		
+		fclose(fp);
+	}
+	else{
+		ERROROUT("fopen(%s) failed\n", SPRODUCT_BEACON);
+		ret = -1;
+	}
+	
+	return ret;
+}
+
 #define PROCESS_OVER_CHECK(f) ( (XML_EXIT_NORMALLY==f || XML_EXIT_MOVEUP==f)?0:-1 )
 
 static int read_xmlver_in_trans(DBSTAR_XMLINFO_S *xmlinfo,char *old_xmlver,unsigned int old_xmlver_size)
@@ -3580,6 +3612,7 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 					snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", actual_xml_flag);
 					
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+#ifdef PARSE_SPRODUCT
 #if 0			
 // 成品、栏目和特殊产品均通过文件通道下发，是否已解析通过ProductDesc的Parsed字段控制，这里不再判断
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
@@ -3597,6 +3630,9 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						
 						ret = PROCESS_OVER_CHECK(ret);
 					}
+#else
+					ret = SProduct_beacon(xml_uri);
+#endif
 				}
 			
 				else{
