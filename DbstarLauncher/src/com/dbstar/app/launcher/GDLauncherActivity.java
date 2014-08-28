@@ -4,6 +4,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.TypedValue;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
+import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.app.GDCelanderThread;
@@ -26,41 +47,23 @@ import com.dbstar.guodian.data.EPCConstitute;
 import com.dbstar.guodian.data.LoginData;
 import com.dbstar.guodian.data.PowerPanelData;
 import com.dbstar.guodian.engine1.GDRequestType;
-import com.dbstar.model.ColumnData;
-import com.dbstar.service.DeviceInitController;
-import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.model.APPVersion;
+import com.dbstar.model.ColumnData;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDVBDataContract.Content;
+import com.dbstar.model.GDDataModel;
+import com.dbstar.model.GDSystemConfigure;
+import com.dbstar.service.DeviceInitController;
+import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.service.GDDataProviderService;
-import com.dbstar.widget.*;
-import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
-
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.os.Bundle;
-import android.os.Handler;
-import android.util.TypedValue;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.AnimationUtils;
-import android.view.animation.LayoutAnimationController;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.FrameLayout;
-import android.widget.VideoView;
 import com.dbstar.util.FileOperation;
 import com.dbstar.util.LogUtil;
+import com.dbstar.widget.GDAdapterView;
+import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
+import com.dbstar.widget.GDMarqeeTextView;
+import com.dbstar.widget.GDMenuGallery;
+import com.dbstar.widget.GDVideoView;
 
 public class GDLauncherActivity extends GDBaseActivity implements
 		GDApplicationObserver {
@@ -619,6 +622,20 @@ public class GDLauncherActivity extends GDBaseActivity implements
             intent = getPackageManager().getLaunchIntentForPackage("com.android.browser");
         }else if(columnId.equals(GDCommon.ColumnIDMediaShare)){
             intent = startComponent("com.dbstar.multiple.media.shelf", "share.MediaShareActivity");
+            
+            GDDataModel dataModel = new GDDataModel();
+            GDSystemConfigure mConfigure = new GDSystemConfigure();
+    		dataModel.initialize(mConfigure);
+            
+            if (mColumnBookId == null) {
+            	LogUtil.d(TAG, "----------mColumnBookId===" + dataModel.mColumnBookId);
+            	mColumnBookId = dataModel.mColumnBookId;
+            }
+            if (mColumnNewsPaperId == null) {
+            	LogUtil.d(TAG, "----------mColumnNewsPaperId===" + dataModel.mColumnNewsPaperId);
+            	mColumnNewsPaperId = dataModel.mColumnNewsPaperId;
+            }
+            
             intent.putExtra("mColumnBookId", mColumnBookId);
             intent.putExtra("mColumnNewsPaperPaperId", mColumnNewsPaperId);
         }

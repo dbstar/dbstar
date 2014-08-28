@@ -32,8 +32,11 @@ public class MediaShareActivity extends Activity {
         setContentView(R.layout.activity_media_share);
         
         mColumnBookId = getIntent().getStringExtra("mColumnBookId");
+        
         mColumnNewsPaperPaperId = getIntent().getStringExtra("mColumnNewsPaperPaperId");
         
+        Log.d("MediaShareActivity", "-----mColumnBookId----- = " + mColumnBookId);
+        Log.d("MediaShareActivity", "-----mColumnNewsPaperPaperId----- = " + mColumnNewsPaperPaperId);
         
         mGuideView = (LinearLayout) findViewById(R.id.share_help_guide);
         mIpAddress = (TextView) findViewById(R.id.ipaddress);

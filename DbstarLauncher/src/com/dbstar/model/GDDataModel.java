@@ -24,6 +24,8 @@ public class GDDataModel {
 	private static final String TAG = "GDDataModel";
 
 	private String mLocalization;
+	public static String mColumnBookId;
+	public static String mColumnNewsPaperId; 
 
 	GDDVBDataProvider mDVBDataProvider;
 	GDSmartHomeProvider mSmartHomeProvider;
@@ -71,7 +73,7 @@ public class GDDataModel {
 	private String getLocalization() {
 		return mLocalization;
 	}
-
+	
 	public ColumnData[] getColumns(String columnId) {
 
 		LogUtil.d(TAG, "get columns: id=" + columnId);
@@ -110,6 +112,12 @@ public class GDDataModel {
 		for (int i = 0; Columns != null && i < Columns.length; i++) {
 			Columns[i].Name = getColumnName(Columns[i].Id);
 		}
+		
+		if (columnId.equals("-1")) {
+			mColumnBookId = queryRichMediaColumnId(GDCommon.ColumnTypeMULTIPLEMEDIABOOK);
+			mColumnNewsPaperId = queryRichMediaColumnId(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER);
+			LogUtil.d(TAG, "----getColumns----mColumnBookId=" + mColumnBookId);
+		}
 
 		return Columns;
 	}
@@ -136,6 +144,20 @@ public class GDDataModel {
 
 		return columnName;
 	}
+	
+	public String queryRichMediaColumnId(String columnType) {
+//    	String sql = "select ColumnID from Column where ColumnType= ? and ParentID='-1'";
+    	Cursor cursor = mDVBDataProvider.query(Column.CONTENT_URI, new String[]{"ColumnID"}, "ColumnType = ? and ParentID = '-1'", new String[]{columnType}, null);
+    	if (cursor != null && cursor.moveToNext()) {
+    		LogUtil.d(TAG, "--------columnType = " + columnType + "------columnID = " + cursor.getString(0));
+    		return cursor.getString(0);
+    	}
+    	if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+    	return null;
+    	
+    }
 	
 	public int getPublicationCount(String columnId) {
 		String selection = Publication.COLUMNID + "=?  AND ("

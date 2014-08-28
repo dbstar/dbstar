@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 
 public class MultipleLanguageInfoProvider extends ContentProvider {
@@ -132,6 +131,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
        }
        return null;
     }
+    
     public SQLiteDatabase getWritableDatabase() {
         return SQLiteDatabase.openOrCreateDatabase("/data/dbstar/Dbstar.db", null);
         // return
@@ -173,7 +173,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             break;
         }
         case LOAD_ALL_BOOKS:{
-            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite from " +
+            String sql = "select p.PublicationID,ColumnID,FileURI,Title,r.PosterURI,m.Description,m.Author,p.Favorite from " +
                     "Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
                     " where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID in"+
                     " (select ColumnID From Column where ParentID = ? )";
@@ -207,7 +207,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             break;
         }case LOAD_ALL_NEWSPAPERS:{
             
-            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate ,Favorite from Publication p ,MultipleLanguageInfoRM m " +
+            String sql = "select p.PublicationID,ColumnID,FileURI,Title,PublishDate ,Favorite from Publication p ,MultipleLanguageInfoRM m " +
                     "where  p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.[ColumnID] in (select ColumnID from Column c where c.ParentID = ?) order by PublishDate desc";
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
