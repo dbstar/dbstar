@@ -1625,7 +1625,7 @@ int localcolumn_init()
 	if(-1==check_record_in_trans("Column","ColumnID","L9805")){
 #ifdef MEDIASHARING_LC
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q',10);",
-			"L9804","L98","L98/L9805","L98","","","");
+			"L9805","L98","L98/L9805","L98","","","");
 		sqlite_transaction_exec(sqlite_cmd);
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResStr(ObjectName,EntityID,StrLang,StrName,StrValue,Extension) VALUES('%q','%q','%q','%q','%q','%q');",
 			"Column","L9805",CURLANGUAGE_DFT,"DisplayName","媒体分享","");
