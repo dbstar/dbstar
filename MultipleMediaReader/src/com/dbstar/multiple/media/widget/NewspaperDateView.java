@@ -2,23 +2,19 @@ package com.dbstar.multiple.media.widget;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import android.content.Context;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.multiple.media.data.NewsPaper;
-import com.dbstar.multiple.media.data.NewsPaperMap;
 import com.dbstar.multiple.media.data.NewsPaperCategory;
+import com.dbstar.multiple.media.data.NewsPaperMap;
 import com.dbstar.multiple.media.shelf.R;
 import com.dbstar.multiple.media.util.DateUtil;
 import com.dbstar.multiple.media.util.DisplayUtil;
@@ -109,6 +105,8 @@ public class NewspaperDateView extends RelativeLayout {
 
     private void updateChildViewBg() {
         if(mSelectedListener != null){
+        	if (mData == null)
+        		return;
             NewsPaper newsPaper = mData.getCurrentNewsPaper();
             if(newsPaper != mLastNewsPaper){
                 mSelectedListener.onSelected(newsPaper);

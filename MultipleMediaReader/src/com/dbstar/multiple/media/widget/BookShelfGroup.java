@@ -343,6 +343,7 @@ public class BookShelfGroup extends RelativeLayout {
             return;
         count = 0;
         BookView child = getChiView(count);
+        
         removeViewAt(count);
         int left = getChildAt(getChildCount() - 1).getLeft() + 500;
         int right = getChildAt(getChildCount() - 1).getRight() + 500;

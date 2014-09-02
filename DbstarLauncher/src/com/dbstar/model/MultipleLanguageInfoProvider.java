@@ -1,5 +1,7 @@
 package com.dbstar.model;
 
+import com.dbstar.util.LogUtil;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -133,7 +135,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
     }
     
     public SQLiteDatabase getWritableDatabase() {
-        return SQLiteDatabase.openOrCreateDatabase("/data/dbstar/Dbstar.db", null);
+        return SQLiteDatabase.openOrCreateDatabase("/storage/external_storage/sda1/Dbstar.db", null);
         // return
         // SQLiteDatabase.openOrCreateDatabase("/mnt/sda1/myBooks/multiplyplayer.db",
         // null);
@@ -143,7 +145,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
     }
 
     public SQLiteDatabase getReadableDatabase() {
-        return SQLiteDatabase.openOrCreateDatabase("/data/dbstar/Dbstar.db", null);
+        return SQLiteDatabase.openOrCreateDatabase("/storage/external_storage/sda1/Dbstar.db", null);
     }
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
@@ -168,12 +170,13 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
         case LOAD_BOOK_CATEGORIES:{
             String sql = "select ColumnID,StrValue" +
                     " From Column c,ResStr r " +
-                    "WHERE c.ParentID = ? and c.ColumnID = r.EntityID and r.StrLang = '"+ mCurLanguage+ "' and ObjectName= 'Column' and StrName = 'DisplayName'";
+                    "WHERE c.ParentID = ? and c.ColumnID = r.EntityID and r.StrLang = '"+ mCurLanguage+ "' and ObjectName= 'Column' and StrName = 'DisplayName'" +
+                    " and ColumnID in (select ColumnID from Publication where ReceiveStatus='1' and PublicationType='1')";
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);     
             break;
         }
         case LOAD_ALL_BOOKS:{
-            String sql = "select p.PublicationID,ColumnID,FileURI,Title,r.PosterURI,m.Description,m.Author,p.Favorite from " +
+            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite from " +
                     "Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
                     " where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID in"+
                     " (select ColumnID From Column where ParentID = ? )";
@@ -181,9 +184,9 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             break;
         }
         case LOAD_NEWSPAPER_CATEGORIES:{
-            String sql = "select SetID as CategorySon,ColumnID as CategoryDad ,Title as Name ,'" + mPushDir  + "/' || PosterURI as icon,p.Preference as preference from Publication p,ResPoster rp , MultipleLanguageInfoRM m " +
-            		"where rp.EntityID = p.PublicationID and p.PublicationID = m.PublicationID and ColumnID in (select ColumnID from Column where ParentID= ? ) group by SetID "+
-            		"union select ColumnID as CategorySon,ParentID as CategoryDad ,StrValue as Name,ColumnIcon_onclick as icon,c.Favorite as preference from Column c, ResStr r where c.ColumnID = r.EntityID and ParentID= ? and r.StrLang = '"+mCurLanguage+"' and ObjectName= 'Column' and StrName = 'DisplayName'";
+            String sql = "select ColumnID as CategorySon,ParentID as CategoryDad ,StrValue as Name,ColumnIcon_onclick as icon,c.Favorite as preference from Column c, ResStr r where c.ColumnID = r.EntityID and ParentID= ? and r.StrLang = '"+mCurLanguage+"' and ObjectName= 'Column' and StrName = 'DisplayName' " +
+            		" union select SetID as CategorySon,ColumnID as CategoryDad ,Title as Name ,'" + mPushDir  + "/' || PosterURI as icon,p.Preference as preference from Publication p,ResPoster rp , MultipleLanguageInfoRM m " +
+            		" where rp.EntityID = p.PublicationID and p.PublicationID = m.PublicationID and ColumnID in (select ColumnID from Column where ParentID= ? ) group by SetID ";
             String ParentID = selectionArgs[0];
             cursor = getReadableDatabase().rawQuery(sql, new String []{ParentID,ParentID});           
             break;
@@ -207,7 +210,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             break;
         }case LOAD_ALL_NEWSPAPERS:{
             
-            String sql = "select p.PublicationID,ColumnID,FileURI,Title,PublishDate ,Favorite from Publication p ,MultipleLanguageInfoRM m " +
+            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate ,Favorite from Publication p ,MultipleLanguageInfoRM m " +
                     "where  p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.[ColumnID] in (select ColumnID from Column c where c.ParentID = ?) order by PublishDate desc";
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;

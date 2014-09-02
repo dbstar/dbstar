@@ -95,10 +95,18 @@ public class GDDataModel {
 					Columns[i] = new ColumnData();
 					Columns[i].Id = cursor.getString(ColumnQuery.ID);
 					Columns[i].Type = cursor.getString(ColumnQuery.TYPE);
-					Columns[i].IconNormalPath = cursor
-							.getString(ColumnQuery.ICON_NORMAL);
-					Columns[i].IconFocusedPath = cursor
-							.getString(ColumnQuery.ICON_FOCUSED);
+					Columns[i].IconNormalPath = cursor.getString(ColumnQuery.ICON_NORMAL);
+					Columns[i].IconFocusedPath = cursor.getString(ColumnQuery.ICON_FOCUSED);
+					
+					if (columnId.equals("-1") && Columns[i].Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)) {
+						mColumnBookId = Columns[i].Id;
+						LogUtil.d(TAG, "----getColumns----mColumnBookId = " + mColumnBookId);
+					}
+					
+					if (columnId.equals("-1") && Columns[i].Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)) {
+						mColumnNewsPaperId = Columns[i].Id;
+						LogUtil.d(TAG, "----getColumns----mColumnNewsPaperId = " + mColumnNewsPaperId);
+					}
 
 					i++;
 				} while (cursor.moveToNext());
@@ -113,11 +121,6 @@ public class GDDataModel {
 			Columns[i].Name = getColumnName(Columns[i].Id);
 		}
 		
-		if (columnId.equals("-1")) {
-			mColumnBookId = queryRichMediaColumnId(GDCommon.ColumnTypeMULTIPLEMEDIABOOK);
-			mColumnNewsPaperId = queryRichMediaColumnId(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER);
-			LogUtil.d(TAG, "----getColumns----mColumnBookId=" + mColumnBookId);
-		}
 
 		return Columns;
 	}
@@ -135,6 +138,7 @@ public class GDDataModel {
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				columnName = cursor.getString(ResStrQuery.STRVALUE);
+				LogUtil.d(TAG, "--------columnId=" + columnId + "----columnName = " + columnName);
 			}
 		}
 
@@ -779,6 +783,10 @@ public class GDDataModel {
 
 	public String getLoaderVersion() {
 		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyLoaderVersion);
+	}
+	
+	public String getRichMediaColumnID(String columnType) {
+		return queryRichMediaColumnId(columnType);
 	}
 
 	public String queryGlobalProperty(String property) {

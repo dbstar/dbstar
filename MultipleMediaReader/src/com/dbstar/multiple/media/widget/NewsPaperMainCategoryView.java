@@ -8,7 +8,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -39,6 +38,11 @@ public class NewsPaperMainCategoryView extends LinearLayout{
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+    	
+    	if (mData == null || mData.size() <= 0) {
+    		return false;
+    	}
+    	
         switch (keyCode) {
         case KeyEvent.KEYCODE_DPAD_DOWN:
             mSelectedIndex = ( ++mSelectedIndex + mData.size())% mData.size();
