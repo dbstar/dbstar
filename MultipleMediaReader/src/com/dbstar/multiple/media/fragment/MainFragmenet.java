@@ -1,7 +1,6 @@
 package com.dbstar.multiple.media.fragment;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -11,25 +10,20 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dbstar.multiple.media.adapter.NewsPaperPageAdapter;
 import com.dbstar.multiple.media.common.ImageManager;
@@ -99,6 +93,7 @@ public class MainFragmenet extends BaseFragment {
         View view = inflater.inflate(R.layout.newspaper_main_fragment_view, null);
         initView(view);
         loadMainCategoryData();
+        
         return view;
     }
     

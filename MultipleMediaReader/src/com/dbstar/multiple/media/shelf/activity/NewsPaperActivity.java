@@ -1,23 +1,18 @@
 package com.dbstar.multiple.media.shelf.activity;
 
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.FragmentTransaction;
-import android.content.Context;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.widget.RelativeLayout;
 
-import com.dbstar.multiple.media.common.ShelfController;
 import com.dbstar.multiple.media.data.NewsPaperPage;
 import com.dbstar.multiple.media.fragment.BaseFragment;
 import com.dbstar.multiple.media.fragment.MainFragmenet;
 import com.dbstar.multiple.media.fragment.NewsPaperArticleContentFragment;
 import com.dbstar.multiple.media.fragment.NewsPaperArticleListFragment;
 import com.dbstar.multiple.media.shelf.R;
-import com.dbstar.multiple.media.shelf.R.animator;
 
 public class NewsPaperActivity extends Activity{
     

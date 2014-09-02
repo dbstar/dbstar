@@ -108,7 +108,7 @@ class ServerHandler extends Thread {
 		}
     	catch (Exception ex){}
     }
-    Log.i("Futao", dokument);
+    Log.i("ServerHandler", dokument);
 
 		if (dokument.equals("") || dokument.equalsIgnoreCase("index.html") || dokument.equalsIgnoreCase("e.html")) {
 			
@@ -120,7 +120,7 @@ class ServerHandler extends Thread {
 			dokument = "index.html";
 			
 			File file = new File(ServiceApi.WEB_ROOT + dokument);
-			Log.i("Futao", "------dokument-------is null-----file.exists() = " + file.exists());
+			Log.i("ServerHandler", "------dokument-------is null-----file.exists() = " + file.exists());
 			if (file.exists()) {
 				try {
 					// 把文件的内容读取到in对象中
@@ -213,11 +213,11 @@ class ServerHandler extends Thread {
 						"content-disposition:attachment;filename ="+ fileName + "\n" + 
 						"Content-Length: %length%\n"+
 						"Connection:Keep-Alive \n"+
-						"Content-Type: application/octet-stream;\n\n";
+						"Content-Type: application/octet-stream  charset=utf-8;\n\n";
 				String header = headerBase1;
 				header = headerBase1.replace("%code%", "200 OK");
 				
-				filePath = "../" + dokument;
+				filePath = "../../../../" + dokument;
 				Log.i("ServerHandler", "filePath = " + filePath);
 				try {
 					File f = new File(filePath);
@@ -225,7 +225,7 @@ class ServerHandler extends Thread {
 						BufferedInputStream in = new BufferedInputStream(new FileInputStream(f));
 						BufferedOutputStream out = new BufferedOutputStream(toClient.getOutputStream());
 						header = header.replace("%length%", ""+in.available());
-						Log.i("Futao", header);
+						Log.i("ServerHandler", header);
 						out.write(header.getBytes());
 						byte[] buf = new byte[4096];
 						int count = 0;
@@ -250,12 +250,8 @@ class ServerHandler extends Thread {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				
 			}
 		}
-    
-    
-	    
 	}
 
 	private void populateDataToClient(String headerBase, List<LoadData> loadDatas) {
@@ -315,7 +311,7 @@ class ServerHandler extends Thread {
 //    	  BufferedInputStream in = new BufferedInputStream(new FileInputStream(f));
 //    	  BufferedOutputStream out = new BufferedOutputStream(toClient.getOutputStream());
 //    	  header = header.replace("%length%", ""+in.available());
-//    	  Log.i("Futao", header);
+//    	  Log.i("ServerHandler", header);
 //    	  out.write(header.getBytes());
 //    	  byte[] buf = new byte[4096];
 //    	  int count = 0;

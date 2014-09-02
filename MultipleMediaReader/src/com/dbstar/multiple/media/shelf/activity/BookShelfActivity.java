@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -25,7 +24,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.dbstar.multiple.media.common.ShelfController;
-import com.dbstar.multiple.media.common.VoicedBookService;
 import com.dbstar.multiple.media.data.Book;
 import com.dbstar.multiple.media.data.BookCategory;
 import com.dbstar.multiple.media.shelf.R;
@@ -143,7 +141,7 @@ public class BookShelfActivity extends Activity {
                 }
                 @Override
                 protected void onPostExecute(List<Book> books) {
-                    Log.i("Futao", category.Name + ""+  books.size());
+                    Log.i("BookShelfActivity", category.Name + ""+  books.size());
                     if(books == null || books.isEmpty()){
                         updateBookShelf(SHELF_ACTION_INIT_BOOK,null);
                         return;
@@ -188,7 +186,8 @@ public class BookShelfActivity extends Activity {
                         category.BookList = new ArrayList<Book>();
                     category.BookList.addAll(books);
                     constructBookPage(category, books);
-                    Log.i("Futao", "pageNumer = " + category.PageNumber + "pageCount  = " + category.PageCount + "last index = " + category.LastIndex + "/" +category.PageBooks.size() );
+                    Log.i("BookShelfActivity", "pageNumer = " + category.PageNumber + "pageCount  = " + category.PageCount + "--last index = " + category.LastIndex + "/" + category.PageBooks.size() );
+                    Log.d("BookShelfActivity", "---------------category.LastIndex = " + category.LastIndex);
                     updateBookShelf(SHELF_ACTION_NEXT_5_BOOK,category);
                     }
             }.execute(category);
