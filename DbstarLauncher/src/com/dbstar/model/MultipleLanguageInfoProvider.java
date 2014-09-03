@@ -135,7 +135,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
     }
     
     public SQLiteDatabase getWritableDatabase() {
-        return SQLiteDatabase.openOrCreateDatabase("/storage/external_storage/sda1/Dbstar.db", null);
+        return SQLiteDatabase.openOrCreateDatabase("/data/dbstar/Dbstar.db", null);
         // return
         // SQLiteDatabase.openOrCreateDatabase("/mnt/sda1/myBooks/multiplyplayer.db",
         // null);
@@ -145,7 +145,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
     }
 
     public SQLiteDatabase getReadableDatabase() {
-        return SQLiteDatabase.openOrCreateDatabase("/storage/external_storage/sda1/Dbstar.db", null);
+        return SQLiteDatabase.openOrCreateDatabase("/data/dbstar/Dbstar.db", null);
     }
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
