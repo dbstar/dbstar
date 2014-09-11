@@ -163,14 +163,7 @@
 #endif
 */
 
-
-#if defined(CONFIG_AM_VDEC_H264MVC)
-	#define CODEC_MEM_SIZE U_ALIGN(64*SZ_1M) 
-#elif defined(CONFIG_AM_VDEC_H264) 
-	#define CODEC_MEM_SIZE U_ALIGN(32*SZ_1M) 
-#else 
-	#define CODEC_MEM_SIZE U_ALIGN(16*SZ_1M) 
-#endif
+#define CODEC_MEM_SIZE U_ALIGN(64*SZ_1M) 
 
 #define CODEC_ADDR_START    U_ALIGN(OSD2_ADDR_END)
 #define CODEC_ADDR_END      (CODEC_ADDR_START+CODEC_MEM_SIZE-1)
@@ -234,7 +227,7 @@
 #ifdef CONFIG_AM_MEMPROTECT
 #define STREAMBUF_MEM_SIZE          (SZ_1M*3)
 #else
-#define STREAMBUF_MEM_SIZE          (SZ_1M*10)
+#define STREAMBUF_MEM_SIZE          (SZ_1M*12)
 #endif
 #define STREAMBUF_ADDR_START        U_ALIGN(VIDEO_CAP_ADDR_END)
 #define STREAMBUF_ADDR_END      (STREAMBUF_ADDR_START+STREAMBUF_MEM_SIZE-1)
@@ -890,34 +883,21 @@ static struct platform_device aml_nand_device = {
 
 #if defined(CONFIG_AMLOGIC_SPI_NOR)
 static struct mtd_partition spi_partition_info[] = {
-            {
-                    .name = "bootloader",
-                    .offset = 0,
-#ifdef CONFIG_MESON_TRUSTZONE
-                    .size = 0x100000,
-#elif defined CONFIG_AM_IPTV_SECURITY
-                    .size = 0x70000,
-#else
-                    .size = 0x60000,
-#endif
-            },
-    
+	{
+		.name = "bootloader",
+		.offset = 0,
+		.size = 0x60000,
+	},
     {
         .name = "ubootenv",
-#ifdef CONFIG_MESON_TRUSTZONE
-        .offset = 0x100000,
-#else
         .offset = 0x68000, //liukevin changed from 0x80000,
-#endif
         .size = 0x8000,
     },
-#if defined(CONFIG_AM_IPTV_SECURITY) || defined(CONFIG_SECURITY_USB_BURNING)
     {
         .name = "hashtable",
         .offset = 0x90000,
         .size = 0x100000,
-    },
-#endif 
+    }, 
 };
 
 static struct flash_platform_data amlogic_spi_platform = {
@@ -1931,7 +1911,6 @@ static struct meson_cs_pdata_t vcck_pdata = {
         1190000, 1180000, 1160000, 1140000,
         1120000, 1110000, 1090000, 1070000,
     },
-    .default_uV = 1110000,
     .get_voltage = get_voltage,
     .set_voltage = set_voltage,
 };
@@ -2392,262 +2371,9 @@ static  struct platform_device amlogic_dvb_device = {
 	},	
 };
 
-#ifndef CONFIG_AM_NEW_TV_ARCH
-
-#ifdef CONFIG_AM_DIB7090P
-static struct resource dib7090p_resource[]  = {
-
-	[0] = {
-		.start = 0,                                    //frontend  i2c adapter id
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_i2c"
-	},
-	[1] = {
-		.start = 0x10,                                 //frontend 0 demod address
-		.end   = 0x10,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_demod_addr"
-	},
-};
-
-static  struct platform_device dib7090p_device = {
-	.name             = "DiB7090P",
-	.id               = -1,
-	.num_resources    = ARRAY_SIZE(dib7090p_resource),
-	.resource         = dib7090p_resource,
-};
-#endif//CONFIG_AM_DIB7090P
-
-#ifdef CONFIG_AM_MXL101
-static struct resource mxl101_resource[]  = {
-
-	[0] = {
-		.start = 0,                                    //frontend  i2c adapter id
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_i2c"
-	},
-	[1] = {
-		.start = 0xc0,                                 //frontend 0 demod address
-		.end   = 0xc0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_demod_addr"
-	},
-	[2] = {
-		.start = PAD_GPIOD_8, //reset pin
-		.end   = PAD_GPIOD_8,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_reset_pin"
-	},
-	[3] = {
-		.start = 0, //reset enable value
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_reset_value_enable"
-	},
-	[5] = {
-		.start = 0xc0,                                 //is mxl101
-		.end   = 0xc0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_tuner_addr"
-	},	
-};
-
-
-static  struct platform_device mxl101_device = {
-	.name             = "mxl101",
-	.id               = -1,
-	.num_resources    = ARRAY_SIZE(mxl101_resource),
-	.resource         = mxl101_resource,
-};
-#endif//CONFIG_AM_MXL101
-
-#ifdef CONFIG_AM_AVL6211
-static struct resource avl6211_resource[]  = {
-
-	[0] = {
-		.start = 0,                                    //frontend  i2c adapter id
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_i2c"
-	},
-	[1] = {
-		.start = 0xc0,                                 //frontend 0 demod address
-		.end   = 0xc0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_demod_addr"
-	},
-	[2] = {
-		.start = PAD_GPIOD_8, //reset pin
-		.end  = PAD_GPIOD_8,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_reset_pin"
-	},
-	[3] = {
-		.start = 0, //reset enable value
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_reset_value_enable"
-	},
-	[4] = {
-		.start = 0xc0,                                 //is avl6211
-		.end   = 0xc0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_tuner_addr"
-	},
-};
-
-static  struct platform_device avl6211_device = {
-	.name             = "avl6211",
-	.id               = -1,
-	.num_resources    = ARRAY_SIZE(avl6211_resource),
-	.resource         = avl6211_resource,
-};
-#endif//CONFIG_AM_AVL6211
-
-#ifdef CONFIG_AM_ITE9173
-static struct resource ite9173_resource[]  = {
-	[0] = {
-		.start = PAD_GPIOD_8,//(GPIOD_bank_bit0_9(8)<<16)|GPIOD_bit_bit0_9(8), //reset pin
-		.end   = PAD_GPIOD_8,//(GPIOD_bank_bit0_9(8)<<16)|GPIOD_bit_bit0_9(8),
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_reset"
-	},
-	[1] = {
-		.start = 0,                                    //frontend 0 i2c adapter id
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_i2c"
-	},
-	[2] = {
-		.start = 0x9E,                                 //frontend 0 tuner address
-		.end   = 0x9E,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_tuner_addr"
-	},
-	[3] = {
-		.start =  0x38,                                 //frontend 0 demod address
-		.end   =  0x38,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_demod_addr"
-	},
-	[4] = {
-		.start = PAD_GPIOB_21,//(GPIOB_bank_bit0_23(21)<<16)|GPIOB_bit_bit0_23(21),  // TUNER_POWERC pin
-		.end   = PAD_GPIOB_21,//(GPIOB_bank_bit0_23(21)<<16)|GPIOB_bit_bit0_23(21),
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_TUNER_POWER"
-	},
-	[5] = {
-		.start = PAD_GPIOB_20,//(GPIOB_bank_bit0_23(20)<<16)|GPIOB_bit_bit0_23(20),  // ANT_OVERLOAD pin
-		.end   = PAD_GPIOB_20,//(GPIOB_bank_bit0_23(20)<<16)|GPIOB_bit_bit0_23(20),
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_ANT_OVERLOAD"
-	},
-	[6] = {
-		.start = PAD_GPIOB_23,//(GPIOB_bank_bit0_23(23)<<16)|GPIOB_bit_bit0_23(23),  //ANT_POWER pin
-		.end   = PAD_GPIOB_23,//(GPIOB_bank_bit0_23(23)<<16)|GPIOB_bit_bit0_23(23),
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_ANT_POWER"
-	},	
-};
-
-static  struct platform_device ite9173_device = {
-	.name             = "ite9173",
-	.id               = -1,
-	.num_resources    = ARRAY_SIZE(ite9173_resource),
-	.resource         = ite9173_resource,
-};
-#endif//CONFIG_AM_ITE9173
-
-#ifdef CONFIG_AM_LGS9XB1
-static struct resource lgs9xb1_resource[]  = {
-	[0] = {
-		.start = 0,                                    //frontend 0 i2c adapter id
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_i2c"
-	},
-	[1] = {
-		.start = PAD_GPIOD_8,//(GPIOD_bank_bit0_9(8)<<16)|GPIOD_bit_bit0_9(8), //reset pin
-		.end   = PAD_GPIOD_8,//(GPIOD_bank_bit0_9(8)<<16)|GPIOD_bit_bit0_9(8),
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_reset"
-	},
-	[2] = {
-		.start = PAD_GPIOB_21,//(GPIOB_bank_bit0_23(21)<<16)|GPIOB_bit_bit0_23(21),  // TUNER_POWERC pin
-		.end   = PAD_GPIOB_21,//(GPIOB_bank_bit0_23(21)<<16)|GPIOB_bit_bit0_23(21),
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_TUNER_POWER"
-	},
-};
-
-static  struct platform_device lgs9xb1_device = {
-	.name             = "lgs9x",
-	.id               = -1,
-	.num_resources    = ARRAY_SIZE(lgs9xb1_resource),
-	.resource         = lgs9xb1_resource,
-};
-#endif//CONFIG_AM_LGS9XB1
-
-#ifdef CONFIG_AM_SI2168
-static struct resource si2168_resource[]  = {
-
-	[0] = {
-		.start = 0,                                    //frontend  i2c adapter id
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_i2c"
-	},
-	[1] = {
-		.start = 0x38,                                 //frontend 0 demod address
-		.end   = 0x38,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_demod_addr"
-	},
-	[2] = {
-		.start = PAD_GPIOD_8, //reset pin
-		.end  = PAD_GPIOD_8,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_reset_pin"
-	},
-	[3] = {
-		.start = 0, //reset enable value
-		.end   = 0,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_reset_value_enable"
-	},
-	[4] = {
-		.start = 0xce,                                 
-		.end   = 0xce,
-		.flags = IORESOURCE_MEM,
-		.name  = "frontend0_tuner_addr"
-	},
-    [5] = {
-            .start = PAD_GPIOD_4,  
-            .end   = PAD_GPIOD_4,
-            .flags = IORESOURCE_MEM,
-            .name  = "frontend0_POWERON/OFF"
-    },   
-    [6] = {
-            .start = PAD_GPIOD_3,  
-            .end   = PAD_GPIOD_3,
-            .flags = IORESOURCE_MEM,
-            .name  = "frontend0_ANTOVERLOAD"
-    },       
-};
-
-static  struct platform_device si2168_device = {
-	.name             = "si2168",
-	.id               = -1,
-	.num_resources    = ARRAY_SIZE(si2168_resource),
-	.resource         = si2168_resource,
-};
-#endif//CONFIG_AM_SI2168
-#else //!CONFIG_AM_NEW_TV_ARCH
 
 static struct resource amlogic_dvb_fe_resource[]  = {
-#if (defined CONFIG_AM_MXL101)
+#if defined (CONFIG_AM_MXL101)
 	[0] = {
 		.start = 2,                                 //DTV demod: M1=0, SI2176=1, MXL101=2
 		.end   = 2,
@@ -2696,8 +2422,8 @@ static struct resource amlogic_dvb_fe_resource[]  = {
 		.flags = IORESOURCE_MEM,
 		.name  = "fe0_dev"
 	},	
-#endif	
-#if (defined CONFIG_AM_AVL6211)
+#endif
+#if defined (CONFIG_AM_AVL6211)
 	[0] = {
 		.start = 4,                                 //DTV demod: M1=0, SI2176=1, MXL101=2, AVL6211=4
 		.end   = 4,
@@ -2766,7 +2492,7 @@ static struct resource amlogic_dvb_fe_resource[]  = {
 		.name  = "dtv_demod0_antoverload"
 	},		
 #endif
-#if (defined CONFIG_AM_SI2168)
+#if defined (CONFIG_AM_SI2168)
 	[0] = {
 		.start = 5,                                 //DTV demod: M1=0, SI2176=1, MXL101=2,AVL6211=4,SI2168=5;
 		.end   = 5,
@@ -2817,7 +2543,7 @@ static struct resource amlogic_dvb_fe_resource[]  = {
 	},	
 #endif
 
-#if (defined CONFIG_AM_ITE9133)
+#if defined (CONFIG_AM_ITE9133)
 
 	[0] = {
 		.start = 6,                                 //DTV demod: M1=0, SI2176=1, MXL101=2,AVL6211=4,SI2168=5.ite9133=6;
@@ -2869,7 +2595,7 @@ static struct resource amlogic_dvb_fe_resource[]  = {
 	},	
 #endif
 
-#if (defined CONFIG_AM_ITE9173)
+#if defined (CONFIG_AM_ITE9173)
 
 	[0] = {
 		.start = 7,                                 //DTV demod: M1=0, SI2176=1, MXL101=2,AVL6211=4,SI2168=5.ite9133=6;ite9173=7;
@@ -2938,7 +2664,6 @@ static  struct platform_device amlogic_dvb_fe_device = {
 	.resource         = amlogic_dvb_fe_resource,
 #endif	
 };
-#endif
 
 #endif//CONFIG_AM_DVB
 
@@ -3216,28 +2941,7 @@ static struct platform_device  *platform_devs[] = {
 
 #ifdef CONFIG_AM_DVB
 	&amlogic_dvb_device,
-#ifdef CONFIG_AM_NEW_TV_ARCH	
 	&amlogic_dvb_fe_device,	
-#else
-#ifdef CONFIG_AM_MXL101	
-	&mxl101_device,
-#endif
-#ifdef CONFIG_AM_AVL6211
-	&avl6211_device,
-#endif
-#ifdef CONFIG_AM_ITE9173
-	&ite9173_device,
-#endif
-#ifdef CONFIG_AM_LGS9XB1
-	&lgs9xb1_device,
-#endif
-#ifdef CONFIG_AM_DIB7090P
-	&dib7090p_device,
-#endif
-#ifdef CONFIG_AM_SI2168
-	&si2168_device,
-#endif
-#endif
 #endif
 
 #if defined(CONFIG_AM_TV_OUTPUT2)

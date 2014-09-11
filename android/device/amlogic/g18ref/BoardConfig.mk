@@ -63,16 +63,12 @@ TARGET_HAS_HDMIONLY_FUNCTION := true
 
 USE_OPENGL_RENDERER := true
 
-
-#Enable TARGET_USE_PLAYREADY(only support SmoothStreaming),Enable BOARD_PLAYREADY_TVP(support PlayReady TVP)
-
-TARGET_USE_PLAYREADY := true
-TARGET_USE_MSPLAYREADY_TEST:= true
-
-#BOARD_PLAYREADY_TVP:=1
-ifeq ($(BOARD_PLAYREADY_TVP),1)
-    TARGET_USE_SECURE_STORAGE := true
-    TARGET_USE_SECUREOS := true
+ifeq ($(BUILD_WITH_PLAYREADY_DRM), true)
+#playready license process in smoothstreaming(default)
+BOARD_PLAYREADY_LP_IN_SS := true
+#set BOARD_PLAYREADY_TVP and TARGET_USE_SECUREOS to enable PlayReady TVP
+#BOARD_PLAYREADY_TVP:= true
+#TARGET_USE_SECUREOS := true  #for secureos kernel compiling
 endif
 
 #PRODUCT_EXTRA_RECOVERY_KEYS := ../common/releasekey.x509.pem

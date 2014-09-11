@@ -55,9 +55,9 @@ ro.platform.has.cecmode=false
 ro.platform.filter.modes=480p,576p,1080i,1080i50hz
 
 # Use OSD2 mouse patch
-ro.ui.cursor=osd2
-ro.ui.cursor.autohide=true
-ro.ui.cursor.timeout=10000
+ro.ui.cursor=surface
+#ro.ui.cursor.autohide=true
+#ro.ui.cursor.timeout=10000
 
 #set to 0 temporarily so touch works without other changes
 ro.sf.hwrotation=0
@@ -84,7 +84,7 @@ media.amsuperplayer.defplayer=PV_PLAYER
 media.amplayer.thumbnail=true
 media.amplayer.startmode=true
 media.p2pplay.enable=true
-media.arm.audio.decoder=ape,flac,aac_latm
+media.arm.audio.decoder=ape,flac,aac_latm,ac3,eac3
 mbx.3D_Bright.enable=false
 # Nand write need force sync when gadget
 gadget.nand.force_sync=true
@@ -176,13 +176,15 @@ ro.app.optimization=true
 
 #add livhls,libcurl as default hls
 #media.libplayer.curlenable=true
-#media.libplayer.modules=vhls_mod,curl_mod
-media.libplayer.modules=vhls_mod,dash_mod
+media.libplayer.modules=vhls_mod,curl_mod
+#media.libplayer.modules=vhls_mod,dash_mod
 libplayer.hls.cmf=true
 
 #for full screen
 flash.hideStatusBar.enable=true
 
+#add for video boot, 1 means use video boot, others not .
+service.bootvideo=0
 #set default timezone
 persist.sys.timezone=Asia/Shanghai
 #set default ethernet on

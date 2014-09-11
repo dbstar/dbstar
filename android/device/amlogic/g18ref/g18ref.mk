@@ -146,6 +146,7 @@ PRODUCT_LOCALES := en_US fr_FR it_IT es_ES de_DE nl_NL cs_CZ pl_PL ja_JP zh_TW z
 BUILD_WITH_AMLOGIC_PLAYER := true
 BUILD_WITH_APP_OPTIMIZATION := true
 BUILD_WITH_WIDEVINE_DRM := true
+#BUILD_WITH_PLAYREADY_DRM := true
 BUILD_WITH_FLASH_PLAYER := true
 BUILD_WITH_EREADER := true 
 BUILD_WITH_MIRACAST := true
@@ -161,9 +162,9 @@ include device/amlogic/common/software.mk
 #
 #########################################################################
 #ifeq ($(TARGET_USE_PLAYREADY), true)
-PRODUCT_COPY_FILES += \
-    frameworks/av/drm/libdrmframework/plugins/playreadyplugin/keycert/zgpriv.dat:system/etc/drm/playready/zgpriv.dat \
-    frameworks/av/drm/libdrmframework/plugins/playreadyplugin/keycert/bgroupcert.dat:system/etc/drm/playready/bgroupcert.dat \
+#PRODUCT_COPY_FILES += \
+#    frameworks/av/drm/libdrmframework/plugins/playreadyplugin/keycert/zgpriv.dat:system/etc/drm/playready/zgpriv.dat \
+#    frameworks/av/drm/libdrmframework/plugins/playreadyplugin/keycert/bgroupcert.dat:system/etc/drm/playready/bgroupcert.dat \
     
 PRODUCT_PACKAGES +=libdrmplayreadyplugin  \ 
   
@@ -209,7 +210,12 @@ PRODUCT_PACKAGES += \
 	MediaBoxLauncher\
 	MboxSetting \
 	Discovery.apk \
-	IpRemote.apk	
+	IpRemote.apk \
+	libasound \
+	alsalib-alsaconf \
+	alsalib-pcmdefaultconf \
+	alsalib-cardsaliasesconf \
+	libamstreaming
 
 # Device specific system feature description
 PRODUCT_COPY_FILES += \
@@ -260,3 +266,10 @@ ifeq ($(strip $(TARGET_USE_SECURITY_MODE)),true)
 endif
 # inherit from the non-open-source side, if present
 $(call inherit-product-if-exists, vendor/amlogic/g18ref/device-vendor.mk)
+
+# boot video
+BUILD_WITH_BOOT_PLAYER := true
+PRODUCT_PACKAGES += \
+	bootplayer
+PRODUCT_COPY_FILES += \
+	$(LOCAL_PATH)/power_on.mp4:system/etc/bootvideo

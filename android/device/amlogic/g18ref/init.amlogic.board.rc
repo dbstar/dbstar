@@ -1,5 +1,6 @@
 on early-init
     write /sys/class/boot_monitor/boot_timer 1
+    insmod /boot/deferreddrv.ko
 
 on init
 
@@ -15,7 +16,7 @@ on post-fs-data
 
 on boot
 
-
+    write /proc/sys/kernel/printk 0
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1200000
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 96000
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor conservative
@@ -46,8 +47,9 @@ on boot
 
 
 
-on property:init.svc.bootanim=running
+on property:svc.bootanim=running
     write /sys/class/graphics/fb0/blank 0
+    write /sys/class/graphics/fb1/free_scale 0
     write /sys/class/graphics/fb1/blank 1
     write /sys/class/graphics/fb2/blank 1
     write /sys/class/graphics/fb3/blank 1
@@ -71,7 +73,7 @@ on property:init.svc.bootanim=stopped
     write /sys/class/aml_mod/mod_off tcon
 #    write /sys/class/aml_mod/mod_off ethernet
 #    write /sys/class/aml_mod/mod_off media_cpu
-#   write /sys/class/aml_mod/mod_off viu2
+   write /sys/class/aml_mod/mod_off viu2
 #    write /sys/class/aml_mod/mod_off smart_card
     write /sys/class/aml_mod/mod_off sdhc
     write /sys/class/aml_mod/mod_off stream
@@ -133,9 +135,7 @@ service sec_test /sbin/sec_test
     group system
 
 on property:init.svc.sec_test=stopped
-    start sec_tes
-
-
+    start sec_test
 
 
 
