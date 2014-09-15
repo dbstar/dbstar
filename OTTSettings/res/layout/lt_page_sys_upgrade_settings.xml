@@ -26,7 +26,7 @@
         android:paddingRight="20dp"
         android:paddingTop="10dp"
         android:singleLine="false"
-        android:text="@string/page_sysUpgrade_neednot_upgrade"
+        android:text="@string/page_sysUpgrade_isChecking"
         android:textColor="@color/text_white"
         android:textSize="@dimen/gl_text_size_24sp" />
 
