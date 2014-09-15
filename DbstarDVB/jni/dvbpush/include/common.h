@@ -50,8 +50,8 @@ typedef enum{
 /*
  盒端版本号，不是从loader读取的，而是根据管理需要定义的，每次发布版本都要手工更新
 */
-#define HARDWARE_VERSION	"06.01"
-#define LOADER_VERSION		"1.0.1"
+#define HARDWARE_VERSION	"6.1"
+#define LOADER_VERSION		"1.2.2"
 
 
 // 如果是DRM认证版本，则定义此宏
@@ -150,7 +150,7 @@ typedef enum{
 #define LOCAL_COLUMNICON_ORIGIN_DIR	"/system/etc/dbstar/ColumnRes/LocalColumnIcon"
 
 #define CURLANGUAGE_DFT				"cho"
-#define DEVICEMODEL_DFT				"01"
+#define DEVICEMODEL_DFT				"02"
 #define DBDATASERVERIP_DFT			"239.1.7.5"
 #define DBDATASERVERPORT_DFT		"4321"
 #define TUNERARGS_DFT				"12620\t43200\t11300\t0\t0"
@@ -700,7 +700,7 @@ typedef enum {
 
 
 typedef struct LoaderInfo LoaderInfo_t;
-struct LoaderInfo {
+/*struct LoaderInfo {
     unsigned int stb_id_h;  //64bit
     unsigned int stb_id_l;
     unsigned char software_version[4]; //32bit
@@ -713,22 +713,35 @@ struct LoaderInfo {
     unsigned char  download_type;  //8bit
     unsigned char  file_type;      //8bit
 	char guodian_serialnum[24];
+};*/
+struct LoaderInfo {
+    char oui[3];
+    char hardware_version[16];
+    char software_version[16];
+    char model_type[3];
+    char user_group_id[3];
+    char stbid[20];
+    char file_type[3];
+    char download_type[3];
+    unsigned int img_len;          //32bit
+    int fid;                      //32bit
 };
 
 /*
 升级相关的定义
 */
-#define UPGRADEFILE_ALL "/tmp/upgrade.zip"
-#define UPGRADEFILE_IMG "/cache/recovery/upgrade.zip"
-#define COMMAND_FILE  "/cache/recovery/command0"
+//#define UPGRADEFILE_ALL "/tmp/upgrade.zip"
+#define UPGRADEFILE_IMG "/cache/upgrade.zip"
+#define COMMAND_FILE  "/cache/command0"
+#define COMMAND_FILE1  "/cache/command1"
 #define LOADER_PACKAGE_SIZE		(4084)
 
 #define UPGRADE_PARA_STRUCT "/cache/recovery/last_install"
-#define TC_OUI 3
-#define TC_MODEL_TYPE 1
+#define TC_OUI "03"
+#define TC_MODEL_TYPE "02"
 #define TC_HARDWARE_VERSION0 0
 #define TC_HARDWARE_VERSION1 0
-#define TC_HARDWARE_VERSION2 3
+#define TC_HARDWARE_VERSION2 6
 #define TC_HARDWARE_VERSION3 1
  
 typedef struct Channel Channel_t;

@@ -7,7 +7,8 @@
 /system		ext4		/dev/block/system
 /cache		ext4		/dev/block/cache
 /data		ext4		/dev/block/data
-/sdcard		vfat		/dev/block/cardblksd#	/dev/block/mmcblk0p#
+#/sdcard		vfat		/dev/block/cardblksd#	/dev/block/mmcblk0p#  /dev/block/sda#
+/sdcard         vfat             /dev/block/sda#
 /media		vfat		/dev/block/media
 #/udisk          vfat            /dev/block/sda#
 /udisk      vfat        /dev/block/sdb#

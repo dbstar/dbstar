@@ -32,7 +32,7 @@ static int s_print_cnt = 0;
 static unsigned char tc_tid = 0xff;
 static unsigned short tc_pid = 0xffff;
 
-static unsigned char software_version[4];
+static char software_version[16];
 
 int TC_loader_filter_handle(int aof);
 #endif
@@ -291,20 +291,20 @@ reLoader:
 	if (!cfp)
 		return NULL;
 	//2 set upgrade mark
-	DEBUG("g_loaderInfo.download_type: %d\n", g_loaderInfo.download_type);
-	if (g_loaderInfo.download_type)
+	DEBUG("g_loaderInfo.download_type: %s\n", g_loaderInfo.download_type);
+	if (strcmp(g_loaderInfo.download_type,"1"))
 	{
 		//must upgrade,display upgrade info, wait 5 second, set uboot mark and then reboot
 		char msg[128];
 
-		if (g_loaderInfo.file_type)
+		if (strcmp(g_loaderInfo.file_type,"1"))
 		{
-			fprintf(cfp,"--update_package=%s\n",UPGRADEFILE_ALL);
+//			fprintf(cfp,"--update_package=%s\n",UPGRADEFILE_ALL);
 			//              fprintf(cfp,"--wipe_data\n");
 			//              fprintf(cfp,"--wipe_cache\n");
 			fprintf(cfp,"--orifile=%s\n",UPGRADEFILE_IMG);
-			snprintf(msg, sizeof(msg),"%.2x%.2x%.2x%.2x",software_version[0],software_version[1],software_version[2],software_version[3]);
-			fprintf(cfp,"%s\n",msg);
+			//snprintf(msg, sizeof(msg),"%d.%d.%d.%d",software_version[0],software_version[1],software_version[2],software_version[3]);
+			fprintf(cfp,"%s\n",software_version);
 			snprintf(msg, sizeof(msg),"%s",UPGRADEFILE_IMG);
 		}
 		else
@@ -318,14 +318,14 @@ reLoader:
 		//display info and ask to upgrade right now?
 		char msg[128];
 
-		if (g_loaderInfo.file_type)
+		if (strcmp(g_loaderInfo.file_type,"1"))
 		{
-			fprintf(cfp,"--update_package=%s\n",UPGRADEFILE_ALL);
+//			fprintf(cfp,"--update_package=%s\n",UPGRADEFILE_ALL);
 			//                fprintf(cfp,"--wipe_data\n");
 			//                fprintf(cfp,"--wipe_cache\n");
 			fprintf(cfp,"--orifile=%s\n",UPGRADEFILE_IMG);
-			snprintf(msg, sizeof(msg),"%.2x%.2x%.2x%.2x",software_version[0],software_version[1],software_version[2],software_version[3]);
-			fprintf(cfp,"%s\n",msg);
+			//snprintf(msg, sizeof(msg),"%d.%d.%d.%d",software_version[0],software_version[1],software_version[2],software_version[3]);
+			fprintf(cfp,"%s\n",software_version);
 
 			snprintf(msg, sizeof(msg),"%s",UPGRADEFILE_IMG);
 		}
@@ -337,7 +337,7 @@ reLoader:
 	}
 	fclose(cfp);
 	
-	upgrade_sign_set();
+	//upgrade_sign_set();
 	
 	TC_loader_filter_handle(0);
 #endif
@@ -780,11 +780,13 @@ void ca_section_handle(int fid, const unsigned char *data, int len, void *user_d
 
 void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data)
 {
-	unsigned char *datap=NULL;
+	unsigned char *datap=NULL, ctmp;
 //	unsigned char mark = 0;
-	char tmp[10];
+	char tmp[10],cmp[128],tmp_id[20];
+        int stb_id_l;
+        int stb_seral;
 	unsigned short tmp16=0;
-	unsigned int stb_id_l=0,stb_id_h=0;
+	//unsigned int stb_id_l=0,stb_id_h=0;
 	
 	if(s_print_cnt>2048)
 		s_print_cnt = 0;
@@ -830,8 +832,10 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	tmp16 = *datap;
 	datap++;
 	tmp16 = (tmp16<<8)|(*datap);
+        snprintf(cmp,3,"%.2d",tmp16);
+
 //	INTERMITTENT_PRINT("loader info oui = [%x]\n",tmp16);
-	if (tmp16 != g_loaderInfo.oui){
+	if (strncmp(cmp, g_loaderInfo.oui,2)){
 		INTERMITTENT_PRINT("loader oui check failed [0x%x], compare with my oui [0x%x]\n",tmp16,g_loaderInfo.oui);
 		return;
 	}
@@ -841,8 +845,10 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	tmp16 = *datap;
 	datap++;
 	tmp16 = (tmp16<<8)|(*datap);
-	INTERMITTENT_PRINT("loader info model type = [%x]\n",tmp16);
-	if (tmp16 != g_loaderInfo.model_type){
+        snprintf(cmp,3,"%.2d",tmp16);
+        if (strncmp(cmp, g_loaderInfo.model_type,2)){
+	//INTERMITTENT_PRINT("loader info model type = [%x]\n",tmp16);
+	//if (tmp16 != g_loaderInfo.model_type){
 		INTERMITTENT_PRINT("model type check failed [%x]\n",tmp16);
 		return;
 	}
@@ -853,56 +859,85 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	datap += 2;
 	//tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
 	INTERMITTENT_PRINT("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
-	if ((datap[0] != g_loaderInfo.hardware_version[0])||(datap[1] != g_loaderInfo.hardware_version[1])
-	||(datap[2] != g_loaderInfo.hardware_version[2])||(datap[3] != g_loaderInfo.hardware_version[3]))
+//	if ((datap[0] != g_loaderInfo.hardware_version[0])||(datap[1] != g_loaderInfo.hardware_version[1])
+//	||(datap[2] != g_loaderInfo.hardware_version[2])||(datap[3] != g_loaderInfo.hardware_version[3]))
+        sprintf(cmp,"%d.%d.%d.%d",datap[0],datap[1],datap[2],datap[3]);
+        if(strcmp(cmp, g_loaderInfo.hardware_version))
 	{
 		INTERMITTENT_PRINT("hardware version check failed!!!!!\n");
 		return;
 	}
 	//software_version
 	datap += 4;
-	//tmp32 = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	//DEBUG("loader info software version = [%x][%x]\n",tmp32,g_loaderInfo.software_version);
 	INTERMITTENT_PRINT("new software ver: [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
-	INTERMITTENT_PRINT("cur software ver: [%u][%u][%u][%u]\n",g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
 	if(255==datap[0] && 255==datap[1] && 255==datap[2] && 255==datap[3]){
 		INTERMITTENT_PRINT("software version is 255.255.255.255, do upgrade directly\n");
 	}
 	else{
-		if ((datap[0] == g_loaderInfo.software_version[0])&&(datap[1] == g_loaderInfo.software_version[1])
-		&&(datap[2] == g_loaderInfo.software_version[2])&&(datap[3] == g_loaderInfo.software_version[3]))
+                sprintf(cmp,"%d.%d.%d.%d",datap[0],datap[1],datap[2],datap[3]);
+                if(strcmp(cmp,g_loaderInfo.software_version)==0)
 		{
-//			if(-1==software_check()){
-//				INTERMITTENT_PRINT("software version is equal, but ignore it and continue to do upgrade\n");
-//			}
-//			else{
 				INTERMITTENT_PRINT("software version is equal, do not upgrade\n");
 				return;
-//			}
+
 		}
-		else if(	(datap[0] < g_loaderInfo.software_version[0])
-					||(((datap[0] == g_loaderInfo.software_version[0]))&&(datap[1] < g_loaderInfo.software_version[1]))
-					||(((datap[0] == g_loaderInfo.software_version[0]))&&(datap[1] == g_loaderInfo.software_version[1])&&(datap[2] < g_loaderInfo.software_version[2]))
-					||(((datap[0] == g_loaderInfo.software_version[0]))&&(datap[1] == g_loaderInfo.software_version[1])&&(datap[2] == g_loaderInfo.software_version[2])&&(datap[3] < g_loaderInfo.software_version[3]))
-		)
+		else if(strcmp(cmp,g_loaderInfo.software_version)<0)
 		{
 			INTERMITTENT_PRINT("software version of new upgrade package is less than mini, do not upgrade\n");
 			return;
 		}
 		else
-	    {
+	        {
 			INTERMITTENT_PRINT("software version is not equal, do upgrade\n");
 		}
 	}
 	
-	software_version[0] = datap[0];
-	software_version[1] = datap[1];
-	software_version[2] = datap[2];
-	software_version[3] = datap[3];
-	//DEBUG("get software version..\n");
+	strncpy(software_version,cmp,sizeof(software_version));
 	//stb_id
 	datap += 4;
-	snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
+        snprintf(cmp,7,"%6s",g_loaderInfo.stbid+10);
+INTERMITTENT_PRINT("stb serail = [%s]\n",cmp);
+        stb_seral = atol(cmp);
+INTERMITTENT_PRINT("serial = [%d]\n",stb_seral);
+        snprintf(cmp,11,"%.2x%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3],datap[4]);
+INTERMITTENT_PRINT("first 10 = [%s] == [%s]\n",cmp,g_loaderInfo.stbid);
+
+        if (0) //strncmp(stbid,cmp,10)) //loaderinfo.stb_id_h < stb_id_h)
+        {
+            INTERMITTENT_PRINT("stb id is not in this update sequence \n");
+            return;
+        }
+        else // if (loaderinfo.stb_id_h == stb_id_h)
+        {
+            sprintf(tmp_id,"%.2x%.2x%.2x",datap[5],datap[6],datap[7]);
+            stb_id_l = atol(tmp_id);
+printf("start id l=[%u], me=[%u]\n",stb_id_l,stb_seral);
+            if (stb_seral  < stb_id_l)
+            {
+                printf("stb id is not in this update sequence \n");
+                return ;
+            }
+        }
+        
+        datap += 8;
+        snprintf(cmp,11,"%.2x%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3],datap[4]);
+        if (0) //strncmp(stbid,cmp,10)) //loaderinfo.stb_id_h > stb_id_h)
+        {
+            printf("stb id is not in this update sequence \n");
+            return ;
+        }
+        else // if (loaderinfo.stb_id_h == stb_id_h)
+        {
+            snprintf(tmp_id,7,"%.2x%.2x%.2x",datap[5],datap[6],datap[7]);
+            stb_id_l = atol(tmp_id);
+            if (stb_seral > stb_id_l)
+            {
+                printf("stb id is not in this update sequence \n");
+                return ;
+            }
+        }
+
+/*	snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 	stb_id_h = atol(tmp);
 	INTERMITTENT_PRINT("start stb id h = [%u] me h[%u]\n",stb_id_h,g_loaderInfo.stb_id_h);
 	if (g_loaderInfo.stb_id_h < stb_id_h)
@@ -949,7 +984,8 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	}
 	else
 		datap += 4;
-
+*/
+        datap += 8;
         if (tc_crc32(data,len))  //verify the desc section data
         {
                 INTERMITTENT_PRINT("loader des error !!!!!!!!!!!!!!!!!!!!\n");
@@ -979,10 +1015,12 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		g_loaderInfo.fid = TC_alloc_filter(tc_pid, &param, loader_section_handle, NULL, 1);
 		//DEBUG("pid: %d|0x%x, fid: %d\n", tc_pid,tc_pid, g_loaderInfo.fid);
 	}
-	
-	g_loaderInfo.file_type = *datap++;
+
+        ctmp = *datap++;	
+	snprintf(g_loaderInfo.file_type,3,"%d",ctmp);
 	g_loaderInfo.img_len = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	g_loaderInfo.download_type = datap[4];
+        ctmp = datap[4];
+	snprintf(g_loaderInfo.download_type,3,"%d",ctmp);
 	DEBUG("g_loaderInfo.file_type=%d, g_loaderInfo.img_len=%d, g_loaderInfo.fid: %d\n", g_loaderInfo.file_type, g_loaderInfo.img_len, g_loaderInfo.fid);
 	//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",g_loaderInfo.file_type,g_loaderInfo.img_len,g_loaderInfo.download_type);
 }
@@ -1560,6 +1598,6 @@ void chanFilterInit(void)
 		chanFilter[i].samepidnum = 0;
 		chanFilter[i].fid = -1;
 	}
-    dmx_filter_init();
+        dmx_filter_init();
 }
 

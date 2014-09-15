@@ -464,7 +464,7 @@ int ifconfig_get(char *interface_name, char *ip, char *status, char *mac)
 	return ret;
 }
 
-#define UPGRADE_FLAG	2
+/*#define UPGRADE_FLAG	2
 void upgrade_sign_set()
 {
 	unsigned char mark = 0;
@@ -479,7 +479,7 @@ void upgrade_sign_set()
 	else
 		DEBUG("get loader message failed\n");
 }
-
+*/
 #if 0
 /*
  检查指定的成品id是用户选择接收还是选择不接收
@@ -1833,7 +1833,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_UPGRADE_CANCEL:
 			DEBUG("CMD_UPGRADE_CANCEL\n");
-			upgrade_sign_set();
+			//upgrade_sign_set();
 			break;
 		case CMD_PUSH_SELECT:
 			DEBUG("CMD_PUSH_SELECT: GuideList selected by user\n");
@@ -2086,11 +2086,13 @@ static void upgrade_info_refresh(char *info_name, char *info_value)
  0:		normal upgrade
  255:	repeat upgrade
 */
-static int upgrade_type_check( unsigned char *software_version)
+static int upgrade_type_check( char *software_version)
 {
-	DEBUG("%03d.%03d.%03d.%03d\n",software_version[1],software_version[2],software_version[2],software_version[3]);
-	if(255==software_version[0] && 255==software_version[1]
-		&& 255==software_version[2] && 255==software_version[3]){
+//	DEBUG("%03d.%03d.%03d.%03d\n",software_version[1],software_version[2],software_version[2],software_version[3]);
+	//if(255==software_version[0] && 255==software_version[1]
+	//	&& 255==software_version[2] && 255==software_version[3]){
+        if(strcmp(software_version,"255.255.255.255"))
+        {
 		DEBUG("this is a repeat version\n");
 		return 255;
 	}
@@ -2102,17 +2104,33 @@ static int upgrade_type_check( unsigned char *software_version)
 
 void upgrade_info_init()
 {
-	unsigned char mark = 0;
+	//unsigned char mark = 0;
 	char tmpinfo[128];
-	
 	char sqlite_cmd[256];
 	char repeat_upgrade_count[8];
-	
+	FILE *fp = NULL;
+        int i;
+
 	extern LoaderInfo_t g_loaderInfo;
-	
+
 	memset(&g_loaderInfo, 0, sizeof(g_loaderInfo));
+
+        if ((fp = fopen(UPGRADE_PARA_STRUCT,"r"))==NULL)
+        {
+            DEBUG("!!!!!open upgrade para file %s failed!\n",UPGRADE_PARA_STRUCT);
+            //g_loaderInfo.oui = '';
+            return;
+        }
+        fgets(g_loaderInfo.stbid, sizeof(g_loaderInfo.stbid), fp);
+        fgets(g_loaderInfo.software_version, sizeof(g_loaderInfo.software_version), fp);
+        fgets(g_loaderInfo.model_type, sizeof(g_loaderInfo.model_type), fp);
+        fgets(g_loaderInfo.oui, sizeof(g_loaderInfo.oui), fp);
+        fgets(g_loaderInfo.user_group_id, sizeof(g_loaderInfo.user_group_id), fp);
+        fgets(g_loaderInfo.hardware_version, sizeof(g_loaderInfo.hardware_version), fp);
+        fclose(fp);
+
 	//if(0==get_loader_message(&mark, &g_loaderInfo))
-		get_loader_message(&mark, &g_loaderInfo);
+/*		get_loader_message(&mark, &g_loaderInfo);
 
 #ifdef SMARTLIFE_LC	   
 		DEBUG("read loader msg: %d, smarthome_gw_sn: %s\n", mark, g_loaderInfo.guodian_serialnum);
@@ -2159,7 +2177,7 @@ void upgrade_info_init()
 		}
 		
 		DEBUG("read loader msg: %d", mark);
-		
+		*/
 		if(255==upgrade_type_check(g_loaderInfo.software_version)){
 			memset(repeat_upgrade_count,0,sizeof(repeat_upgrade_count));
 			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value from Global where Name='RepeatUpgradeCount';");
@@ -2167,11 +2185,14 @@ void upgrade_info_init()
 				DEBUG("can not read RepeatUpgradeCount\n");
 			}
 			else{
+                                snprintf(tmpinfo,sizeof(tmpinfo),"%d", atoi(repeat_upgrade_count)+1);
+                                upgrade_info_refresh("RepeatUpgradeCount", tmpinfo);
+
 				DEBUG("read RepeatUpgradeCount: %s\n", repeat_upgrade_count);
 			}
 		}
 		
-		if(0!=mark){
+/*		if(0!=mark){
 			DEBUG("clear upgrade mark and file\n");
 			set_loader_reboot_mark(0);
 			upgradefile_clear();
@@ -2180,11 +2201,10 @@ void upgrade_info_init()
 				snprintf(tmpinfo,sizeof(tmpinfo),"%d", atoi(repeat_upgrade_count)+1);
 				upgrade_info_refresh("RepeatUpgradeCount", tmpinfo);
 			}
-		}
-		
-		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
-		upgrade_info_refresh(GLB_NAME_PRODUCTSN, tmpinfo);
-		DEBUG("stb id: %s\n", tmpinfo);
+		}*/
+//		snprintf(tmpinfo, sizeof(tmpinfo), "%08u%08u", g_loaderInfo.stb_id_h,g_loaderInfo.stb_id_l);
+		upgrade_info_refresh(GLB_NAME_PRODUCTSN, g_loaderInfo.stbid);
+		//DEBUG("stb id: %s\n", tmpinfo);
 
 #if 0
 		snprintf(tmpinfo, sizeof(tmpinfo), "%03d.%03d.%03d.%03d", g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
@@ -2202,11 +2222,11 @@ void upgrade_info_init()
 4、设备型号固定使用分配的“01”
 */
 		//upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, HARDWARE_VERSION);
-		snprintf(tmpinfo, sizeof(tmpinfo), "%d.%d.%d.%d", g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
-		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, tmpinfo);
+		//snprintf(tmpinfo, sizeof(tmpinfo), "%d.%d.%d.%d", g_loaderInfo.hardware_version[0],g_loaderInfo.hardware_version[1],g_loaderInfo.hardware_version[2],g_loaderInfo.hardware_version[3]);
+		upgrade_info_refresh(GLB_NAME_HARDWARE_VERSION, g_loaderInfo.hardware_version);
 		
-		snprintf(tmpinfo, sizeof(tmpinfo), "%d.%d.%d.%d", g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
-		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, tmpinfo);
+//		snprintf(tmpinfo, sizeof(tmpinfo), "%d.%d.%d.%d", g_loaderInfo.software_version[0],g_loaderInfo.software_version[1],g_loaderInfo.software_version[2],g_loaderInfo.software_version[3]);
+		upgrade_info_refresh(GLB_NAME_SOFTWARE_VERSION, g_loaderInfo.software_version);
 
 		upgrade_info_refresh(GLB_NAME_LOADER_VERSION, LOADER_VERSION);		
 		upgrade_info_refresh(GLB_NAME_DEVICEMODEL, DEVICEMODEL_DFT);
