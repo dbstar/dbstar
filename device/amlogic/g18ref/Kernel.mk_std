@@ -20,6 +20,8 @@ mkdir -p $(TARGET_OUT)/lib
 cp $(UMP_OUT)/ump.ko $(PRODUCT_OUT)/root/boot/
 cp $(MALI_OUT)/mali.ko $(PRODUCT_OUT)/root/boot/
 cp $(KERNEL_OUT)/drivers/amlogic/wifi/rtl8xxx_CU/8192cu.ko $(TARGET_OUT)/lib/
+cp $(KERNEL_OUT)/drivers/amlogic/wifi/mt7601u/mt7601Usta.ko $(TARGET_OUT)/lib/
+cp $(KERNEL_OUT)/drivers/amlogic/wifi/rtl8xxx_EU/8188eu.ko $(TARGET_OUT)/lib/
 endef
 
 $(KERNEL_OUT):
