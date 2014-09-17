@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,11 +23,12 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.settings.bean.UpgradeInfo;
 import com.settings.bean.Vapks;
@@ -47,11 +49,17 @@ public class SysUpgradeSettingsViewWrapper {
 	private Context context;
 	private Button btnLocal;
 	private Button btnOnline;
-	private TextView txtContent;
+//	private TextView txtContent; 
+	private TextView txtPercent;
 	
 	private String localUpgradeFilePath;
-
-	UpgradeInfo mUpgradeInfo = null;
+	private UpgradeInfo mUpgradeInfo = null;
+	
+	public static Handler handler;
+	public static boolean flag = true;
+	public static float downloadSize = 0;
+	public static long downloadFileSize = 0;
+	public static long fileTotalSize;
 	
 	public SysUpgradeSettingsViewWrapper(Context context) {
 		this.context = context;
@@ -60,7 +68,51 @@ public class SysUpgradeSettingsViewWrapper {
 	public void initView(View view) {
 		btnLocal = (Button) view.findViewById(R.id.sysUpgrade_settings_btn_local_upgrade);
 		btnOnline = (Button) view.findViewById(R.id.sysUpgrade_settings_btn_online_upgrade);
-		txtContent = (TextView) view.findViewById(R.id.sysUpgrade_settings_text);
+//		txtContent = (TextView) view.findViewById(R.id.sysUpgrade_settings_text);
+		txtPercent = (TextView) view.findViewById(R.id.sysUpgrade_settings_download_percent);
+//		txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, "%10"));
+		populateData();
+		setEventListener();
+	}
+
+	private void populateData() {
+		final NumberFormat percentFormat = NumberFormat.getPercentInstance();
+		percentFormat.setMaximumFractionDigits(1); // 最大小数位数
+		percentFormat.setMaximumIntegerDigits(3); // 最大整数位数
+		percentFormat.setMinimumFractionDigits(0); // 最小小数位数
+		percentFormat.setMinimumIntegerDigits(1); // 最小整数位数
+		
+		handler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				super.handleMessage(msg);
+				switch (msg.what) {
+				case 1:
+					if (fileTotalSize > 0) {
+						downloadFileSize = (Integer) msg.obj;
+						downloadSize = ((Integer) msg.obj).floatValue() / fileTotalSize;
+						LogUtil.d("SysUpgradeSettingsViewWrapper", "------handler--fileTotalSize = " + fileTotalSize);
+						LogUtil.d("SysUpgradeSettingsViewWrapper", "------handler--downloadSize = " + downloadSize);
+						String percentNum = percentFormat.format(downloadSize);
+						LogUtil.d("SysUpgradeSettingsViewWrapper", "------handler--percentNum = " + percentNum);
+						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));				
+					} else {
+						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
+					}
+					
+					// 当网络断开的时候，下载失败
+					if (!SettingUtils.isNetworkAvailable(context)) {
+						fileTotalSize = 0;
+						btnOnline.setEnabled(true);
+						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
+					}
+					break;
+
+				default:
+					break;
+				}
+			}
+		};
 		
 		// 先检测硬盘，看看是否有升级文件，如果有，本地升级按钮变为可以点击的，在线升级仍然不可点击。
 		// 如果没有，则再检测在线升级是否有新的版本
@@ -68,9 +120,19 @@ public class SysUpgradeSettingsViewWrapper {
 		btnLocal.setEnabled(false);
 		btnOnline.setEnabled(false);
 		
-		LocalUpgradeTask task = new LocalUpgradeTask();
-		task.execute();
-		
+		if (fileTotalSize == 0) {			
+			LogUtil.d("SysUpgradeSettingsViewWrapper", "--------downloadSize = " + downloadSize);
+			txtPercent.setText("");	
+			LocalUpgradeTask task = new LocalUpgradeTask();
+			task.execute();
+		} else {
+			LogUtil.d("SysUpgradeSettingsViewWrapper", "--------downloadSize = " + downloadSize);
+			String percentNum = percentFormat.format(downloadSize);
+			txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));	
+		}
+	}
+
+	private void setEventListener() {
 		btnLocal.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -81,7 +143,7 @@ public class SysUpgradeSettingsViewWrapper {
 				// 如果存在就检测看看dbstar-upgrade.zip是否存在
 				
 				if (localUpgradeFilePath == null || localUpgradeFilePath.equals("")) {
-					ToastUtils.showToast(context, "未检测到升级包");
+//					ToastUtils.showToast(context, "未检测到升级包");
 					return;
 				}
 				
@@ -102,6 +164,8 @@ public class SysUpgradeSettingsViewWrapper {
 					return;
 				}
 				
+				btnOnline.setEnabled(false);
+				
 				List<Vapks> list = mUpgradeInfo.getVapksList();
 				if (list != null && !list.isEmpty()) {
 					for (final Vapks vapks : list) {
@@ -113,13 +177,12 @@ public class SysUpgradeSettingsViewWrapper {
 								boolean success = false;
 								try {
 									InputStream is = entity.getContent();
-									long contentLength = entity.getContentLength();
+									fileTotalSize = entity.getContentLength();
 									// 将zip文件保存到
-									success = SettingUtils.SaveFile(is, contentLength, vapks.getVersion());									
-								} catch (IllegalStateException e) {
-									LogUtil.d("SysUpgradeSettingsViewWrapper", "=-=-=-btnOnline=-=-=-=" + e);
+									success = SettingUtils.SaveFile(is, fileTotalSize, vapks.getVersion());									
 								} catch (IOException e) {
 									LogUtil.d("SysUpgradeSettingsViewWrapper", "=-=-=-btnOnline=-=-=-=" + e);
+									fileTotalSize = 0;
 								}
 								return success;
 							}
@@ -127,7 +190,7 @@ public class SysUpgradeSettingsViewWrapper {
 							@Override
 							public void connectComplete(Boolean success) {
 								if (success) {
-									Toast.makeText(context, "正在下载升级文件...", Toast.LENGTH_LONG).show();
+//									Toast.makeText(context, "正在下载升级文件...", Toast.LENGTH_LONG).show();
 									
 									int mode = vapks.getUpgradeMode();
 									// 强制升级
@@ -140,7 +203,11 @@ public class SysUpgradeSettingsViewWrapper {
 									intent.putExtra("packge_file", "/cache/upgrade.zip");
 									context.startActivity(intent);
 								} else {
-									Toast.makeText(context, "升级文件下载失败！", Toast.LENGTH_LONG).show();											
+									LogUtil.d("SysUpgradeSettingsViewWrapper", "=-=-=- save file failed!");
+									btnOnline.setEnabled(true);
+									txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));				
+									fileTotalSize = 0;
+//									Toast.makeText(context, "升级文件下载失败！", Toast.LENGTH_LONG).show();											
 								} 
 							}
 						};
@@ -149,7 +216,6 @@ public class SysUpgradeSettingsViewWrapper {
 				}
 			}
 		});
-		
 	}
 	
 	private class LocalUpgradeTask extends AsyncTask<Void, Void, ArrayList<String>> {
@@ -162,42 +228,19 @@ public class SysUpgradeSettingsViewWrapper {
 		@Override
 		protected void onPostExecute(ArrayList<String> arrayList) {
 			super.onPostExecute(arrayList);
-			GDDataModel dataModel = new GDDataModel();
-			GDSystemConfigure configure = new GDSystemConfigure();
-			dataModel.initialize(configure);
-			String productSN = dataModel.getDeviceSearialNumber();
-			String  deviceModel = dataModel.getHardwareType();
-			String  softVersion = dataModel.getSoftwareVersion();
-			String mac = SettingUtils.getLocalMacAddress(true);
-			
-			String string = "OEM$" + deviceModel + "$" + productSN + "$" + mac;
-			
-			LogUtil.d("SysUpgradeSettingsViewWrapper", "----string = " + string);
-			// md5加密
-			String md5String = MD5.getMD5(string);
-			
-			// 先将参数放入List,再对参数进行URL编码
-			List<NameValuePair> paramsList = new LinkedList<NameValuePair>();
-			paramsList.add(new BasicNameValuePair("TERMINALUNIQUE", "OEM$" + deviceModel + "$" + productSN));
-			paramsList.add(new BasicNameValuePair("TERMINALPROFILE", "1.0.0.0"));
-			paramsList.add(new BasicNameValuePair("AUTHENTICATOR", md5String));
-			paramsList.add(new BasicNameValuePair("VAPK", "system"));
-			paramsList.add(new BasicNameValuePair("CURVERSION", softVersion));
-			// 对参数进行编码
-			String param = URLEncodedUtils.format(paramsList, "UTF-8");
-			String url = Constants.Server_Url_Upgrade + param;
 			
 			if (arrayList != null && arrayList.size() > 0) {
 				LogUtil.d("SysUpgradeSettingsViewWrapper", "-----accept()----arrayList.size() = " + arrayList.size());																					
-				if (!arrayList.contains("upgrade.zip")) {
-//					txtContent.setText(context.getResources().get	String(R.string.page_sysUpgrade_neednot_upgrade));
-					ToastUtils.showToast(context, "未检测到升级包");
+				if (!arrayList.contains("m6_cytc_update.zip")) {
+//					txtContent.setText(context.getResources().getString(R.string.page_sysUpgrade_neednot_upgrade));
+//					ToastUtils.showToast(context, "未检测到升级包");
 					btnLocal.setEnabled(false);
 					btnOnline.setEnabled(false);
-					checkOnlineUpgradeFile(url, paramsList, softVersion);
+					checkOnlineUpgradeFile();
 					return;
 				} else {
-					txtContent.setText(context.getResources().getString(R.string.page_sysUpgrade_need_upgrade));
+//					txtContent.setText(context.getResources().getString(R.string.page_sysUpgrade_need_upgrade));
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_need_upgrade));
 					btnLocal.setEnabled(true);
 					btnOnline.setEnabled(false);
 					btnLocal.requestFocus();
@@ -207,9 +250,9 @@ public class SysUpgradeSettingsViewWrapper {
 			} else {				
 				btnLocal.setEnabled(false);
 				btnOnline.setEnabled(false);
-				checkOnlineUpgradeFile(url,paramsList, softVersion);
+				checkOnlineUpgradeFile();
 //				txtContent.setText(context.getResources().getString(R.string.page_sysUpgrade_neednot_upgrade));
-				ToastUtils.showToast(context, "未检测到升级包");
+//				ToastUtils.showToast(context, "未检测到升级包");
 			}
 		}
 	}
@@ -319,7 +362,32 @@ public class SysUpgradeSettingsViewWrapper {
 		return arrayList;
 	}
 	
-	private void checkOnlineUpgradeFile(String url, List<NameValuePair> paramsList, final String softVersion) {
+	private void checkOnlineUpgradeFile() {
+		
+		GDDataModel dataModel = new GDDataModel();
+		GDSystemConfigure configure = new GDSystemConfigure();
+		dataModel.initialize(configure);
+		String productSN = dataModel.getDeviceSearialNumber();
+		String  deviceModel = dataModel.getHardwareType();
+		final String  softVersion = dataModel.getSoftwareVersion();
+		String mac = SettingUtils.getLocalMacAddress(true);
+		
+		String string = "OEM$" + deviceModel + "$" + productSN + "$" + mac;
+		
+		LogUtil.d("SysUpgradeSettingsViewWrapper", "----string = " + string);
+		// md5加密
+		String md5String = MD5.getMD5(string);
+		
+		// 先将参数放入List,再对参数进行URL编码
+		List<NameValuePair> paramsList = new LinkedList<NameValuePair>();
+		paramsList.add(new BasicNameValuePair("TERMINALUNIQUE", "OEM$" + deviceModel + "$" + productSN));
+		paramsList.add(new BasicNameValuePair("TERMINALPROFILE", "1.0.0.0"));
+		paramsList.add(new BasicNameValuePair("AUTHENTICATOR", md5String));
+		paramsList.add(new BasicNameValuePair("VAPK", "system"));
+		paramsList.add(new BasicNameValuePair("CURVERSION", softVersion));
+		// 对参数进行编码
+		String param = URLEncodedUtils.format(paramsList, "UTF-8");
+		String url = Constants.Server_Url_Upgrade + param;
 		
 		LogUtil.d("SysUpgradeSettingsViewWrapper", "----url = " + url);
 		
@@ -332,8 +400,10 @@ public class SysUpgradeSettingsViewWrapper {
 			
 			@Override
 			public void connectComplete(final UpgradeInfo upgradeInfo) {
-				if (upgradeInfo == null) {
+				if (upgradeInfo == null || upgradeInfo.getVapksList() == null || upgradeInfo.getVapksList().size() <= 0) {
 					btnOnline.setEnabled(false);
+//					txtContent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
+					txtPercent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
 					return;
 				}
 				
@@ -391,21 +461,29 @@ public class SysUpgradeSettingsViewWrapper {
 					LogUtil.d("SysUpgradeSettingsViewWrapper", "------isNeedUpgrade = " + isNeedUpgrade);											
 					if (!isNeedUpgrade) {
 						btnOnline.setEnabled(false);
-						txtContent.setText(context.getString(R.string.page_sysUpgrade_neednot_upgrade));
+//						txtContent.setText(context.getString(R.string.page_sysUpgrade_neednot_upgrade));
+						txtPercent.setText(context.getString(R.string.page_sysUpgrade_neednot_upgrade));
 						ToastUtils.showToast(context, context.getResources().getString(R.string.page_sysUpgrade_neednot_upgrade));
 					} else {
-						txtContent.setText(context.getString(R.string.page_sysUpgrade_need_upgrade));				
+//						txtContent.setText(context.getString(R.string.page_sysUpgrade_need_upgrade));				
+						txtPercent.setText(context.getString(R.string.page_sysUpgrade_need_upgrade));				
 						btnOnline.setEnabled(true);
 						btnOnline.requestFocus();
 						btnOnline.setNextFocusLeftId(R.id.settings_sysUpgrade);
 					}
 				} else if (upgradeInfo.getRc() == -9001) {
 					btnOnline.setEnabled(false);
+//					txtContent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
+					txtPercent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
 					LogUtil.d("UpgradeTask", "无升级包");
 				} else if (upgradeInfo.getRc() == -2101) {
+//					txtContent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
+					txtPercent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
 					ToastUtils.showToast(context, "终端未登记");
 					LogUtil.d("UpgradeTask", "终端未登记");
 				} else if (upgradeInfo.getRc() == -2113) {
+//					txtContent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
+					txtPercent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
 					ToastUtils.showToast(context, "MAC地址不匹配");
 					LogUtil.d("UpgradeTask", "MAC地址不匹配");				
 				}

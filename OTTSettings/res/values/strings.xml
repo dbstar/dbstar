@@ -211,8 +211,12 @@
     <!-- 系统升级 -->
     <string name="page_sysUpgrade_title">系统升级</string>
     <string name="page_sysUpgrade_isChecking">正在检测新版本...</string>
+    <string name="page_sysUpgrade_download_percent">正在下载升级文件... %1$s</string>
+    <string name="page_sysUpgrade_download_failed">升级文件下载失败</string>
+    <string name="page_sysUpgrade_file_invalid">非法的升级文件</string>
     <string name="page_sysUpgrade_neednot_upgrade">当前已为最新版本</string>
     <string name="page_sysUpgrade_need_upgrade">检测到最新版本，可以进行系统升级</string>
+    <string name="page_sysUpgrade_check_upgrade_failed">未检测到新版本</string>
     <string name="page_sysUpgrade_local_upgrade">本地升级</string>
     <string name="page_sysUpgrade_online_upgrade">在线升级</string>
     

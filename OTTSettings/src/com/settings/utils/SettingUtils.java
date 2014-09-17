@@ -31,12 +31,14 @@ import android.net.NetworkInfo;
 import android.net.NetworkUtils;
 import android.net.ethernet.EthernetManager;
 import android.net.wifi.WifiManager;
+import android.os.Message;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.settings.components.NetStatusViewWrapper;
+import com.settings.components.SysUpgradeSettingsViewWrapper;
 import com.settings.ottsettings.R;
 
 public class SettingUtils {
@@ -272,8 +274,13 @@ public class SettingUtils {
 	 * @param softVersion 
 	 */
 	public static boolean SaveFile(InputStream is, long contentLength, String softVersion) {
-		
 		try {
+			// 当已下载文件的大小大于400M时，就不下载了，当做错误文件
+			if(contentLength > 419430400){
+				LogUtil.d("SettingUtils", "-----too loong file, fileTotalSize = " + contentLength);
+				is.close();
+				return false;
+			}
 			LogUtil.d("downloadAndSaveFile", "文件大小" + contentLength);
 			
 			if (is == null) {
@@ -300,28 +307,45 @@ public class SettingUtils {
 			}
 			
 			FileOutputStream fos = new FileOutputStream(filePath);
-			byte[] buf = new byte[1024 * 10];
+			byte[] buf = new byte[1024 * 30];
 			
 			int numread;
 			int has_recv=0;
+			int pin_recv = 0;
+
 			while((numread = is.read(buf)) != -1) {
 				fos.write(buf, 0, numread);
-				numread++;
+//				numread++;
 				
 				has_recv += numread;
-				// 当已下载文件的大小大于350M时，就不下载了，当做错误文件
-				if(has_recv > 367001600){
-					fos.flush();
-					fos.close();
-					is.close();
-					return false;
-				}
+				
 //				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv);
+				
+				if(has_recv-pin_recv > 1024000){
+					Message msg = new Message();
+					msg.what = 1;
+					msg.obj = has_recv;
+					LogUtil.d("SettingUtils", "-----pin_recv = " + has_recv);
+					SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
+					
+					pin_recv = has_recv;
+				}
 			}
 			
 			fos.flush();
 			fos.close();
 			is.close();
+			
+			if(has_recv!=contentLength){
+				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv + " contentLength = " + contentLength);
+				return false;
+			} else {
+				Message msg = new Message();
+				msg.what = 1;
+				msg.obj = has_recv;
+				LogUtil.d("SettingUtils", "-----pin_recv = " + has_recv);
+				SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
+			}
 			
 			// 等升级包下载完成之后，就将string写入/cache/command1文件
 			File resultFile = new File("/cache/command1");
