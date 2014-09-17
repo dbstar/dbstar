@@ -184,6 +184,7 @@ otapackage_make()
 		call cp $ROOTFS_OUT/boot.img $BUILD_OUT
 		call cp $ROOTFS_OUT/recovery.img $BUILD_OUT
 		call cp -rf $ROOTFS_OUT/root $BUILD_OUT
+		call cp $ROOTFS_OUT/u-boot.bin $BUILD_OUT
 	else
 		logger "ERROR make otapackage"
 		exit 1

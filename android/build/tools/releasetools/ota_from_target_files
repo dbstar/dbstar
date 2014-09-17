@@ -90,8 +90,6 @@ OPTIONS.extra_script = None
 OPTIONS.aslr_mode = True
 OPTIONS.worker_threads = 3
 
-boot_img_exists = 0
-recovery_img_exists = 0
 
 def MostPopularKey(d, default):
   """Given a dict, return the key corresponding to the largest
@@ -443,18 +441,36 @@ def WriteFullOTAPackage(input_zip, output_zip):
   device_specific.FullOTA_Assertions()
   device_specific.FullOTA_InstallBegin()
 
-  script.ShowProgress(0.5, 0)
+  script.ShowProgress(0.8, 80)
+
+  platform = GetBuildProp("ro.board.platform", OPTIONS.info_dict)
+  print "ro.board.platform: %s" % (platform)
+  if "meson3" in platform:
+    script.SetBootloaderEnv("upgrade_step", "0")
+  elif "meson6" in platform:
+    script.SetBootloaderEnv("upgrade_step", "0")
+  else:
+    script.SetBootloaderEnv("upgrade_step", "3")
 
   if OPTIONS.wipe_user_data:
     script.FormatPartition("/data")
 
   if "selinux_fc" in OPTIONS.info_dict:
     WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
-
+  systemmd5_img_exist = 0	
+  try:
+    systemmd5_img_info = input_zip.getinfo("SYSTEMMD5/rsa")
+    systemmd5_img_exist = 1
+    systemmd5_img = common.File("rsa.img", input_zip.read("SYSTEMMD5/rsa"));
+  except KeyError:
+    print 'WARNING: No SYSTEMMD5 found'
+  if systemmd5_img_exist:
+    common.ZipWriteStr(output_zip, "rsa.img", systemmd5_img.data)
+    script.WriteRawImage("/hashtable", "rsa.img")
   if not OPTIONS.no_wipe_system:
     script.FormatPartition("/system")
   script.Mount("/system")
-  script.UnpackPackageDir("recovery", "/system")
+  
   script.UnpackPackageDir("system", "/system")
 
   symlinks = CopySystemFiles(input_zip, output_zip)
@@ -462,9 +478,10 @@ def WriteFullOTAPackage(input_zip, output_zip):
 
   CopyFirmwareFiles(input_zip, output_zip, script)
 
+  boot_img_exists = 0
+  recovery_img_exists = 0
   bootloader_img_exist = 0
   spi_img_exist = 0
-
   if OPTIONS.amlogic:
     try:
       # FIXME
@@ -488,9 +505,7 @@ def WriteFullOTAPackage(input_zip, output_zip):
                                            OPTIONS.input_tmp, "RECOVERY")
     except KeyError:
       print 'WARNING: No kernel found'
-  
-  if boot_img_exists and recovery_img_exists:                       
-    MakeRecoveryPatch(OPTIONS.input_tmp, output_zip, recovery_img, boot_img)
+
 
   try:
     bootloader_img_info = input_zip.getinfo("BOOTLOADER/bootloader")
@@ -510,11 +525,16 @@ def WriteFullOTAPackage(input_zip, output_zip):
 
   script.UnmountAll()
 
+
+  if recovery_img_exists:
+    common.CheckSize(recovery_img.data, "recovery.img", OPTIONS.info_dict)
+    common.ZipWriteStr(output_zip, "recovery.img", recovery_img.data)
+    script.WriteRawImage("/recovery", "recovery.img")
   if boot_img_exists:
     common.CheckSize(boot_img.data, "boot.img", OPTIONS.info_dict)
     common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
-    script.ShowProgress(0.2, 0)
-    script.ShowProgress(0.2, 10)
+    #script.ShowProgress(0.2, 0)
+    script.ShowProgress(0.1, 10)
     script.WriteRawImage("/boot", "boot.img")
 
   if bootloader_img_exist:
@@ -575,6 +595,8 @@ def GetBuildProp(prop, info_dict):
 
 
 def WriteIncrementalOTAPackage(target_zip, source_zip, output_zip):
+  boot_img_exists = 1
+  recovery_img_exists = 1
   source_version = OPTIONS.source_info_dict["recovery_api_version"]
   target_version = OPTIONS.target_info_dict["recovery_api_version"]
 
@@ -648,9 +670,6 @@ def WriteIncrementalOTAPackage(target_zip, source_zip, output_zip):
 
   script.Mount("/system")
   script.AssertSomeFingerprint(source_fp, target_fp)
-
-  updating_boot = 0
-  updating_recovery = 0
 
   if boot_img_exists:
     source_boot = common.GetBootableImage(
