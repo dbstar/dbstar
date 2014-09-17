@@ -736,7 +736,7 @@ struct LoaderInfo {
 #define COMMAND_FILE1  "/cache/command1"
 #define LOADER_PACKAGE_SIZE		(4084)
 
-#define UPGRADE_PARA_STRUCT "/cache/recovery/last_install"
+#define UPGRADE_PARA_STRUCT "/cache/recovery/last_log"
 #define TC_OUI "03"
 #define TC_MODEL_TYPE "02"
 #define TC_HARDWARE_VERSION0 0
