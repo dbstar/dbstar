@@ -17,34 +17,29 @@ public class PageFactory {
 
     
     public static byte[] getIndexPage(String ipAddress){
-        StringBuffer sb = new StringBuffer();
-        sb.append("<html>");
-        sb.append("<meta http-equiv='content-type' content='text/html;charset=utf-8'>");
-        sb.append("<meta name='viewport' content ='width=device-width, initial-scale=1.0,user-scalable=yes'/>");
-        sb.append("<meta name='apple-mobile-web-app-capable' content='yes' />");
-        sb.append("<meta name='apple-mobile-web-app-status-bar-style' content='black' />");
-        sb.append("<meta name='apple-touch-fullscreen' content='yes'/>");
-        sb.append("<meta content='telephone=no' name='format-detection' />");
-        sb.append("<meta http-equiv='content-type' content='text/html;charset=utf-8'>");
-        sb.append("<head><title></title>");
-        sb.append("</head>");
-        sb.append("<body>");
-        sb.append("<table width = '100%' height = '100%' border = '0'>");
-        sb.append("<tr>");
-        sb.append("<td align='center'>");
-        sb.append("<table border = '0'>");
-        sb.append("<tr>");
-        sb.append("<td align='center'><input type = 'button' value = '图书'  style='font-size:50px' onclick=\"location='http://" +ipAddress + ":" + 8080 +"/" + ServiceApi.ACTION_DOWNLOAD_BOOK_LIST + "'\"/></td>");
-        sb.append("</tr>");
-        sb.append("<tr>");
-        sb.append("<td  align='center'><input type = 'button'  style='font-size:50px' value = '报纸'  onclick=\"location='http://" +ipAddress +":" + 8080+ "/" + ServiceApi.ACTION_DOWNLOAD_NEWSPAPER_LIST + "'\"/></td>");
-        sb.append("</tr>");
-        sb.append("</table>");
-        sb.append("</td>");
-        sb.append("</tr>");
-        sb.append("</table>");
-        sb.append("</body></html>");
-        return sb.toString().getBytes();
+    	StringBuffer sb = new StringBuffer();
+    	sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    	sb.append("<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:opensearch=\"http://a9.com/-/spec/opensearch/1.1/\" xmlns:app=\"http://www.w3.org/2007/app\" xmlns:thr=\"http://purl.org/syndication/thread/1.0\" xmlns:opds=\"http://opds-spec.org/2010/catalog\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xml:lang=\"en\">\n");
+    	sb.append("<id>http://www.feedbooks.com/catalog.atom</id>\n");
+    	sb.append("<title>卫星书屋</title>\n");
+    	sb.append("<icon>/e/books.png</icon>\n");
+    	sb.append("<entry>\n");
+    	sb.append("<title>图书</title>\n");
+    	sb.append("<link type=\"image/png\" href=\"/e/books.png\" rel=\"\"/>\n");
+    	sb.append("<link type=\"application/atom+xml;profile=opds-catalog;kind=acquisition\" href=\"e/ts.html\" rel=\"\"/>\n");
+    	sb.append("<id11>http://www.feedbooks.com/books/top.atom?range=week</id11>\n");
+    	sb.append("<content type=\"text\">在这里，可以看到你想要的图书</content>\n");
+    	sb.append("</entry>\n");
+    	sb.append("<entry>\n");
+    	sb.append("<title>报纸</title>\n");
+    	sb.append("<link type=\"application/atom+xml;profile=opds-catalog;kind=navigation\" href=\"e/bz.html\" rel=\"\"/>\n");
+    	sb.append("<id11>http://www.feedbooks.com/store/selection.atom</id11>\n");
+    	sb.append("<content type=\"text\">一报在手，知晓天下事</content>\n");
+    	sb.append("</entry>\n");
+    	sb.append("</feed>\n");
+    	
+    	Log.d("PageFactory", "-----index.html = " + sb.toString());    	
+    	return sb.toString().getBytes();
     }
     
     public static byte[] getDownLoadListPage(List<LoadData> datas,String ipAddress){

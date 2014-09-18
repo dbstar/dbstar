@@ -25,7 +25,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -121,33 +120,50 @@ class ServerHandler extends Thread {
 			
 			File file = new File(ServiceApi.WEB_ROOT + dokument);
 			Log.i("ServerHandler", "------dokument-------is null-----file.exists() = " + file.exists());
-			if (file.exists()) {
-				try {
-					// 把文件的内容读取到in对象中
-					FileInputStream in = new FileInputStream(file);
-					byte content[] = new byte[(int) file.length()];
-					in.read(content);
 
-					String header = headerBase;
-					header = headerBase.replace("%code%", "200 OK");
-					header = header.replace("%length%", String.valueOf(content.length));
-
-					BufferedOutputStream out = null;
-					out = new BufferedOutputStream(toClient.getOutputStream());
-					out.write(header.getBytes());
-					out.write(content);
-					out.flush();
-					ServerThread.remove(toClient);
-					toClient.close();
-					out.close();
-					in.close();
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		} else {
+			byte[] content = PageFactory.getIndexPage(IpAddress);
+			populateDataToClient(content, headerBase, null);
+		}
+		
+//		/*测试代码开始*/
+//		else if(dokument.contains(ServiceApi.ACTION_DOWNLOAD_BOOK_LIST)){
+//			String headerBase = "HTTP/1.1 %code%\n"
+//					+ "Content-Length: %length%\n" 
+//					+ "Connection:close \n"
+//					+ "Content-Type: text/html  charset=utf-8;\n\n";
+//			
+//			File file = new File(ServiceApi.WEB_ROOT + dokument);
+//			Log.i("ServerHandler", "------dokument ts.html file.exists() = " + file.exists());
+//			if (file.exists()) {
+//				try {
+//					// 把文件的内容读取到in对象中
+//					FileInputStream in = new FileInputStream(file);
+//					byte content[] = new byte[(int) file.length()];
+//					in.read(content);
+//
+//					String header = headerBase;
+//					header = headerBase.replace("%code%", "200 OK");
+//					header = header.replace("%length%", String.valueOf(content.length));
+//
+//					BufferedOutputStream out = null;
+//					out = new BufferedOutputStream(toClient.getOutputStream());
+//					out.write(header.getBytes());
+//					out.write(content);
+//					out.flush();
+//					ServerThread.remove(toClient);
+//					toClient.close();
+//					out.close();
+//					in.close();
+//				} catch (FileNotFoundException e) {
+//					e.printStackTrace();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//		/*测试代码结束*/
+		
+		else {
 			String headerBase = "HTTP/1.1 %code%\n"
 					+ "Content-Length: %length%\n"
 					+ "Connection:close \n"
@@ -179,7 +195,9 @@ class ServerHandler extends Thread {
 						loadDatas.add(loadData);
 					}
 				}
-				populateDataToClient(headerBase, loadDatas);
+				
+				byte[] content = PageFactory.getDownLoadListPage(loadDatas, IpAddress);
+				populateDataToClient(content, headerBase, loadDatas);
 			} else if (dokument.contains(ServiceApi.ACTION_DOWNLOAD_NEWSPAPER_LIST)) {
 				Log.i("ServerHandler", "-----dokument.contains(bz.html)-----");
 				List<NewsPaper> papers = ShelfController.getInstance(this.context).loadAllNewsPapers(mNewsPaperColumnId);
@@ -204,7 +222,8 @@ class ServerHandler extends Thread {
 					}
 				}
 				
-				populateDataToClient(headerBase, loadDatas);
+				byte[] content = PageFactory.getDownLoadListPage(loadDatas, IpAddress);
+				populateDataToClient(content, headerBase, loadDatas);
 
 			} else /*if(dokument.contains(ServiceApi.ACTION_LOAD_ITEM)) */ {
 				String  fileName = null;;
@@ -254,8 +273,8 @@ class ServerHandler extends Thread {
 		}
 	}
 
-	private void populateDataToClient(String headerBase, List<LoadData> loadDatas) {
-		byte[] content = PageFactory.getDownLoadListPage(loadDatas, IpAddress);
+	private void populateDataToClient(byte[] content, String headerBase, List<LoadData> loadDatas) {
+//		byte[] content = PageFactory.getDownLoadListPage(loadDatas, IpAddress);
 		String header = headerBase;
 		header = headerBase.replace("%code%", "200 OK");
 		header = header.replace("%length%", "" + content.length);
