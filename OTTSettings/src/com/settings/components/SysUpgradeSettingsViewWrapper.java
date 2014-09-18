@@ -70,7 +70,10 @@ public class SysUpgradeSettingsViewWrapper {
 		btnOnline = (Button) view.findViewById(R.id.sysUpgrade_settings_btn_online_upgrade);
 //		txtContent = (TextView) view.findViewById(R.id.sysUpgrade_settings_text);
 		txtPercent = (TextView) view.findViewById(R.id.sysUpgrade_settings_download_percent);
-//		txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, "%10"));
+		
+		btnLocal.setEnabled(false);
+		btnOnline.setEnabled(false);
+		txtPercent.setText(context.getString(R.string.page_sysUpgrade_isChecking));
 		populateData();
 		setEventListener();
 	}
@@ -105,6 +108,7 @@ public class SysUpgradeSettingsViewWrapper {
 						fileTotalSize = 0;
 						btnOnline.setEnabled(true);
 						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
+						ToastUtils.showToast(context, "请检查网络！");
 					}
 					break;
 
@@ -116,15 +120,21 @@ public class SysUpgradeSettingsViewWrapper {
 		
 		// 先检测硬盘，看看是否有升级文件，如果有，本地升级按钮变为可以点击的，在线升级仍然不可点击。
 		// 如果没有，则再检测在线升级是否有新的版本
-		
-		btnLocal.setEnabled(false);
-		btnOnline.setEnabled(false);
+		boolean isNetworkAvailable = SettingUtils.isNetworkAvailable(context);
+		LogUtil.d("SysUpgradeSettingsViewWrapper", "--------isNetworkAvailable = " + isNetworkAvailable);
 		
 		if (fileTotalSize == 0) {			
-			LogUtil.d("SysUpgradeSettingsViewWrapper", "--------downloadSize = " + downloadSize);
-			txtPercent.setText("");	
-			LocalUpgradeTask task = new LocalUpgradeTask();
-			task.execute();
+			if (isNetworkAvailable) {
+				txtPercent.setText("");	
+				LocalUpgradeTask task = new LocalUpgradeTask();
+				task.execute();				
+			} else {				
+				// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
+				fileTotalSize = 0;
+				btnOnline.setEnabled(false);
+				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed));										
+				ToastUtils.showToast(context, "请检查网络！");
+			}
 		} else {
 			LogUtil.d("SysUpgradeSettingsViewWrapper", "--------downloadSize = " + downloadSize);
 			String percentNum = percentFormat.format(downloadSize);
@@ -165,6 +175,7 @@ public class SysUpgradeSettingsViewWrapper {
 				}
 				
 				btnOnline.setEnabled(false);
+				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, ""));				
 				
 				List<Vapks> list = mUpgradeInfo.getVapksList();
 				if (list != null && !list.isEmpty()) {
@@ -338,7 +349,7 @@ public class SysUpgradeSettingsViewWrapper {
 							@Override
 							public boolean accept(File pathname) {
 								String sdFileName = pathname.getName();
-								LogUtil.d("SysUpgradeSettingsViewWrapper", "-----accept()----sdFileName = " + sdFileName);
+//								LogUtil.d("SysUpgradeSettingsViewWrapper", "-----accept()----sdFileName = " + sdFileName);
 								if (sdFileName.equals("m6_cytc_update.zip")) {
 									arrayList.add(sdFileName);
 									localUpgradeFilePath = pathname.getPath();
@@ -374,7 +385,7 @@ public class SysUpgradeSettingsViewWrapper {
 		
 		String string = "OEM$" + deviceModel + "$" + productSN + "$" + mac;
 		
-		LogUtil.d("SysUpgradeSettingsViewWrapper", "----string = " + string);
+//		LogUtil.d("SysUpgradeSettingsViewWrapper", "----string = " + string);
 		// md5加密
 		String md5String = MD5.getMD5(string);
 		
@@ -431,13 +442,13 @@ public class SysUpgradeSettingsViewWrapper {
 								LogUtil.d("SysUpgradeSettingsViewWrapper", "------newVersion = " + newVersion);
 								if (newVersion != null && !newVersion.equals("")) {
 									String[] newSoft = newVersion.split("\\.");							
-									LogUtil.d("SysUpgradeSettingsViewWrapper", "------newSoft.length = " + newSoft.length);
+//									LogUtil.d("SysUpgradeSettingsViewWrapper", "------newSoft.length = " + newSoft.length);
 									 Pattern pattern = Pattern.compile("[0-9]*"); 
 									for (int i = 0; i < newSoft.length; i++) {
 										boolean isNum = pattern.matcher(localSoft[i]).matches();
 										if (isNum) {
-											LogUtil.d("SysUpgradeSettingsViewWrapper", "------Integer.parseInt(localSoft[i] = " + Integer.parseInt(localSoft[i]));											
-											LogUtil.d("SysUpgradeSettingsViewWrapper", "------Integer.parseInt(newSoft[i] = " + Integer.parseInt(newSoft[i]));											
+//											LogUtil.d("SysUpgradeSettingsViewWrapper", "------Integer.parseInt(localSoft[i] = " + Integer.parseInt(localSoft[i]));											
+//											LogUtil.d("SysUpgradeSettingsViewWrapper", "------Integer.parseInt(newSoft[i] = " + Integer.parseInt(newSoft[i]));											
 											if (Integer.parseInt(localSoft[i]) < Integer.parseInt(newSoft[i])) {
 												// 有两种升级模式：
 												isNeedUpgrade = true;
@@ -446,7 +457,7 @@ public class SysUpgradeSettingsViewWrapper {
 											} 											
 										} else {
 											isNeedUpgrade = true;
-											LogUtil.d("SysUpgradeSettingsViewWrapper", "--version is not a num----need upgrade!");											
+											LogUtil.d("SysUpgradeSettingsViewWrapper", "--version is invalid----need upgrade!");											
 											break;
 										}
 									}

@@ -309,23 +309,30 @@ public class SettingUtils {
 			FileOutputStream fos = new FileOutputStream(filePath);
 			byte[] buf = new byte[1024 * 30];
 			
-			int numread;
+			int numread = 0;
 			int has_recv=0;
 			int pin_recv = 0;
 
-			while((numread = is.read(buf)) != -1) {
+			while(true) {
+				numread = is.read(buf);
+				if(-1 == numread) {
+					LogUtil.d("SettingUtils", "numread is -1");
+					break;
+				} else if (0 == numread){
+					LogUtil.d("SettingUtils", "numread is 0!!");
+				}
+				
 				fos.write(buf, 0, numread);
-//				numread++;
 				
 				has_recv += numread;
 				
 //				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv);
 				
-				if(has_recv-pin_recv > 1024000){
+				if(has_recv - pin_recv > 1024000) {
 					Message msg = new Message();
 					msg.what = 1;
 					msg.obj = has_recv;
-					LogUtil.d("SettingUtils", "-----pin_recv = " + has_recv);
+					LogUtil.d("SettingUtils", "-----pin_recv = " + pin_recv);
 					SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
 					
 					pin_recv = has_recv;
@@ -336,7 +343,7 @@ public class SettingUtils {
 			fos.close();
 			is.close();
 			
-			if(has_recv!=contentLength){
+			if(has_recv != contentLength){
 				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv + " contentLength = " + contentLength);
 				return false;
 			} else {
