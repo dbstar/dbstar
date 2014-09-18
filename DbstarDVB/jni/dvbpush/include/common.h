@@ -720,7 +720,7 @@ struct LoaderInfo {
     char software_version[16];
     char model_type[3];
     char user_group_id[3];
-    char stbid[20];
+    char stbid[32];
     char file_type[3];
     char download_type[3];
     unsigned int img_len;          //32bit
