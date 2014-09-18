@@ -9,8 +9,10 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.dbstar.R;
+import com.dbstar.model.GDDataModel;
 import com.dbstar.model.GDDiskInfo;
 import com.dbstar.model.GDDiskInfo.DiskInfo;
+import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.util.GDNetworkUtil;
 
 public class GDGeneralInfoActivity extends GDSettingActivity {
@@ -79,18 +81,26 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	}
 	
 	public void updateSettings(String key, String value) {
+		GDDataModel dataModel = new GDDataModel();
+		GDSystemConfigure configure = new GDSystemConfigure();
+		dataModel.initialize(configure);
+		
 		if (key.equals(GDSettings.SettingDeviceSerialNumber)) {
-			mDeviceSerialNumber += value;
-			mDeviceSerialNumberView.setText(mDeviceSerialNumber);
+//			mDeviceSerialNumber += value;
+//			mDeviceSerialNumberView.setText(mDeviceSerialNumber);
+			mDeviceSerialNumberView.setText(mDeviceSerialNumber + dataModel.getDeviceSearialNumber());
 		} else if (key.equals(GDSettings.SettingHardwareType)) {
-			mHardwareType += value;
-			mHardwareTypeView.setText(mHardwareType);
+//			mHardwareType += value;
+//			mHardwareTypeView.setText(mHardwareType);
+			mHardwareTypeView.setText(mHardwareType + dataModel.getHardwareType());
 		} else if (key.equals(GDSettings.SettingSoftwareVersion)) {
-			mSoftwareVersion += value;
-			mSoftwareVersionView.setText(mSoftwareVersion);
+//			mSoftwareVersion += value;
+//			mSoftwareVersionView.setText(mSoftwareVersion);
+			mSoftwareVersionView.setText(mSoftwareVersion + dataModel.getSoftwareVersion());
 		} else if (key.equals(GDSettings.SettingLoaderVersion)) {
-			mLoaderVersion += value;
-			mLoaderVersionView.setText(mLoaderVersion);
+//			mLoaderVersion += value;
+//			mLoaderVersionView.setText(mLoaderVersion);
+			mLoaderVersionView.setText(mLoaderVersion + dataModel.getLoaderVersion());
 		} else if (key.equals(GDSettings.SettingUpgradeCount)) {
 			if (value != null && !value.isEmpty()) {
 				mUpgradeCount += value;
@@ -114,14 +124,10 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mDiskUsedView = (TextView) findViewById(R.id.disk_usedsize);
 		mDiskSpaceView = (TextView) findViewById(R.id.disk_spacesize);
 
-		mDeviceSerialNumber = getResources().getString(
-				R.string.deviceinfo_device_serialnumber);
-		mHardwareType = getResources().getString(
-				R.string.deviceinfo_hardware_type);
-		mSoftwareVersion = getResources().getString(
-				R.string.deviceinfo_software_version);
-		mLoaderVersion = getResources().getString(
-				R.string.deviceinfo_loader_version);
+		mDeviceSerialNumber = getResources().getString(R.string.deviceinfo_device_serialnumber);
+		mHardwareType = getResources().getString(R.string.deviceinfo_hardware_type);
+		mSoftwareVersion = getResources().getString(R.string.deviceinfo_software_version);
+		mLoaderVersion = getResources().getString(R.string.deviceinfo_loader_version);
 		mMacAddress = getResources().getString(R.string.deviceinfo_mac_address);
 		mUpgradeCount = getResources().getString(R.string.upgrade_count);
 

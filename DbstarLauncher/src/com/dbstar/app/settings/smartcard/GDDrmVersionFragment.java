@@ -11,6 +11,8 @@ import android.widget.TextView;
 import com.dbstar.R;
 import com.dbstar.app.base.FragmentObserver;
 import com.dbstar.app.settings.GDSettings;
+import com.dbstar.model.GDDataModel;
+import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.util.LogUtil;
 
@@ -89,15 +91,21 @@ public class GDDrmVersionFragment extends GDSmartcardFragment {
 	}
 
 	public void updateSettings(String key, String value) {
+		GDDataModel dataModel = new GDDataModel();
+		GDSystemConfigure configure = new GDSystemConfigure();
+		dataModel.initialize(configure);
 		if (key.equals(GDSettings.SettingHardwareVersion)) {
-			mHardwareVersion += value;
-			mHardwareVersionView.setText(mHardwareVersion);
+//			mHardwareVersion += value;
+//			mHardwareVersionView.setText(mHardwareVersion);
+			mHardwareVersionView.setText(mHardwareVersion + dataModel.getHardwareType());
 		} else if (key.equals(GDSettings.SettingSoftwareVersion)) {
-			mSoftwareVersion += value;
-			mSoftwareVersionView.setText(mSoftwareVersion);
+//			mSoftwareVersion += value;
+//			mSoftwareVersionView.setText(mSoftwareVersion);
+			mSoftwareVersionView.setText(mSoftwareVersion + dataModel.getSoftwareVersion());
 		} else if (key.equals(GDSettings.SettingLoaderVersion)) {
-			mLoaderVersion += value;
-			mLoaderVersionView.setText(mLoaderVersion);
+//			mLoaderVersion += value;
+//			mLoaderVersionView.setText(mLoaderVersion);
+			mLoaderVersionView.setText(mLoaderVersion + dataModel.getLoaderVersion());
 		}
 	}
 }
