@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:background="#000000"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="500dp"
+        android:layout_height="wrap_content"
+        android:background="#D4D0C8"
+        android:orientation="vertical" >
+
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:gravity="center_horizontal"
+            android:text="@string/alert_message"
+            android:textColor="#000000"
+            android:textSize="20dp" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:gravity="center_horizontal" >
+
+            <RadioGroup
+                android:id="@+id/rg_result"
+                android:layout_width="wrap_content"
+                android:orientation="horizontal"
+                android:layout_height="wrap_content" >
+
+                <RadioButton
+                    android:id="@+id/yes"
+                    android:textColor="#000000"
+                    android:textSize="20dp" 
+                    android:text="@string/alert_yes" />
+
+                <RadioButton
+                    android:id="@+id/no"
+                    android:layout_marginLeft="20dp"
+                    android:textColor="#000000"
+                    android:textSize="20dp" 
+                    android:checked="true"
+                    android:text="@string/alert_no" />
+            </RadioGroup>
+        </LinearLayout>
+	      <TextView
+	            android:layout_width="fill_parent"
+	            android:gravity="center_horizontal"
+	            android:layout_height="wrap_content"
+	            android:layout_marginLeft="15dp"
+	            android:layout_marginTop="15dp"
+	            android:text="@string/alert_title"
+	            android:textColor="#000000"
+	            android:textSize="24dp" />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/sure"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="@string/alert_sure"
+                android:textColor="#000000"
+                android:textSize="24sp" />
+
+            <Button
+                android:id="@+id/cancel"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="40dp"
+                android:text="@string/alert_cancel"
+                android:textColor="#000000"
+                android:textSize="24sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
