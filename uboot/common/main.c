@@ -399,7 +399,7 @@ extern void init_suspend_firmware(void);
 	
 #ifdef CONFIG_PREBOOT
 	if ((p = getenv ("preboot")) != NULL) {
-printf("liukevin print preboot = [%s]\n",p); //liukevin
+//printf("liukevin print preboot = [%s]\n",p); //liukevin
 # ifdef CONFIG_AUTOBOOT_KEYED
 		int prev = disable_ctrlc(1);	/* disable Control C checking */
 # endif
@@ -448,7 +448,7 @@ extern int switch_boot_mode(void);
 	s = getenv ("bootdelay");
 	bootdelay = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
 
-	printf ("### liukevin main_loop entered: bootdelay=%d\n\n", bootdelay);
+	printf ("###  main_loop entered: bootdelay=%d\n\n", bootdelay);
 
 # ifdef CONFIG_BOOT_RETRY_TIME
 	init_cmd_timeout ();
@@ -470,7 +470,7 @@ extern int switch_boot_mode(void);
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
 		s = getenv ("bootcmd");
 
-	printf ("### liukevin1102 main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
+	printf ("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
 
 	if (bootdelay >= 0 && s && !abortboot (bootdelay)) {
 # ifdef CONFIG_AUTOBOOT_KEYED
@@ -478,7 +478,7 @@ extern int switch_boot_mode(void);
 # endif
 
 #ifdef CONFIG_SWITCH_BOOT_MODE   //liukevin moved here
-printf("liukevin 1102 switch boot mode\n");
+//printf("liukevin 1102 switch boot mode\n");
 extern int switch_boot_mode(void);
         switch_boot_mode();
 #endif

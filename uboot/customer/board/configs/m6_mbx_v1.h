@@ -22,8 +22,8 @@
 
 #define CONFIG_SECURITYKEY
 #ifdef CONFIG_SECURITYKEY
-#define CONFIG_AML_NAND_KEY
-#define CONFIG_AML_EMMC_KEY	1
+#define CONFIG_AML_NAND_KEY     1  //   liukevin 
+#define CONFIG_AML_EMMC_KEY	  // 1  liukevin  
 #endif
 
 #define CONFIG_SWITCH_BOOT_MODE 1  //liukevin modufied for loader upgrade
@@ -183,6 +183,12 @@
 	"cvbsmode=480cvbs\0" \
 	"cvbsenable=true\0" \
 	"vdacswitchmode=cvbs\0" \
+        "oui=03\0" \
+        "hardware_version=0.0.6.1\0" \
+        "software_version=2.0.2.17\0" \
+        "model_type=02\0" \
+        "group_id=03\0" \
+        "stbnum=0000000000000066\0" \
 	"vdacswitchconfig=if test ${cvbsenable} = true; then setenv vdacswitchmode cvbs;else if test ${cvbsenable} = false;then setenv vdacswitchmode component;fi;fi\0" \
 	"preboot=run detect_storage;get_rebootmode; clear_rebootmode; echo reboot_mode=${reboot_mode}; if test ${reboot_mode} = usb_burning; then tiny_usbtool 20000; fi; run nand_key_burning; run upgrade_check; run updatekey_or_not; run irremote_update; run switch_bootmode\0" \
 	"mbr_write=if test ${upgrade_step} != 2; then mmcinfo 1; mmc read 1 82000000 0 1; mw.l 820001fc 0 1; mmc write 1 82000000 0 1;fi;\0" \
@@ -203,7 +209,7 @@
 	"recovery=if test ${storage} = nand; then run nand_recovery; else if test ${storage} = mmc; then run mmc_recovery;fi;fi\0" \
 	"bootargs=root=/dev/cardblksd2 rw rootfstype=ext3 rootwait init=/init console=ttyS0,115200n8 nohlt vmalloc=256m mem=1024m logo=osd1,0x84100000,720p\0" \
 	"storage=null\0" \
-	"compatible_boot=if test ${storage} = null; then run detect_storage;fi;if test ${storage} = nand; then echo compatible nand;run nandboot;else if test ${storage} = mmc; then run mmcboot;fi;fi\0" \
+	"compatible_boot=if test ${storage} = null; then run detect_storage;fi;if test ${storage} = nand; then echo compatible nand;run preboot;run nandboot;else if test ${storage} = mmc; then run mmcboot;fi;fi\0" \
 	"usbnet_devaddr=00:15:18:01:81:31" \
 	"usbnet_hostddr=00:15:18:01:a1:3b" \
 	"cdc_connect_timeout=9999999999" \

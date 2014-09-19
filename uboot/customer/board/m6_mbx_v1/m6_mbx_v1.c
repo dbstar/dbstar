@@ -42,7 +42,7 @@ static int my_atoi(const char* p)
         neg_flag = (*p++ != '+');
 
     //liukevin add for delete the empty char
-printf("liukevin %x %x  %x\n",*p,'0','9');
+//printf("liukevin %x %x  %x\n",*p,'0','9');
     while((!my_isdigit(*p))&&(i<8)) 
     {
          p++;
@@ -60,13 +60,13 @@ int tc_aml_writemac(void)
         int     i = 0;
         char    str[128];
 
-printf("checking the mmc card, and find one...\n");
+//printf("checking the mmc card, and find one...\n");
         for(i = 0; i < SCAN_USB_PARTITION; i++)
         {
                     sprintf(str,"fatexist usb 0:%d %s",(i+1),MAC_FILENAME);
                     if (!run_command (str, 0))
                     {
-printf("liukevin find a MAC file in SD CARD\n");
+//printf("liukevin find a MAC file in SD CARD\n");
                             sprintf(str,"fatexist usb 0:%d %s",(i+1),MAC_NUM_FILENAME);
                             if (!run_command (str, 0))
                             {
@@ -90,6 +90,8 @@ printf("----------------------mac_num = %d\n",mac_num);
                                 sprintf(str,"set ethaddr %c%c:%c%c:%c%c:%c%c:%c%c:%c%c",addr[0],addr[1],addr[2],addr[3],addr[4],addr[5],
                                     addr[6],addr[7],addr[8],addr[9],addr[10],addr[11]);
 printf("----------------------mac cmd %s\n",str);
+                                run_command (str, 0);
+                                sprintf(str,"set stbnum 2000317130%.6d",mac_num); 
                                 run_command (str, 0);
                             }
                     }
@@ -583,14 +585,14 @@ int switch_boot_mode(void)
         int	i = 0;
 	char	str[128];
 
-	printf("liukevin1102 switch_boot_mode\n");
+//	printf("liukevin1102 switch_boot_mode\n");
 	unsigned int suspend_status_current2 = readl(P_AO_RTI_STATUS_REG2);
-	printf("suspend_status_current2=%x\n",suspend_status_current2);
+//	printf("suspend_status_current2=%x\n",suspend_status_current2);
 	if((suspend_status_current2 == 0))
 	{
 //		run_command ("suspend", 0);
 	}
-printf("usb start ......\n");
+//printf("usb start ......\n");
 #ifdef SCAN_USB_PARTITION
         if(!run_command ("usb start", 0))
 	{
