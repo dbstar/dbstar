@@ -1,5 +1,7 @@
 package com.dbstar.model;
 
+import java.io.File;
+
 import com.dbstar.util.LogUtil;
 
 import android.content.ContentProvider;
@@ -75,6 +77,8 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
 
     private static final UriMatcher mUriMathcer;
     
+    private GDSystemConfigure mConfigure = null;
+    
 
     static {
         mUriMathcer = new UriMatcher(UriMatcher.NO_MATCH);
@@ -121,6 +125,9 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
         if((Value =queryGlobalProperty("PushDir"))!= null){
             mPushDir = Value;
         }
+        
+        mConfigure = new GDSystemConfigure();
+        LogUtil.d("MultipleLanguageInfoProvider", "-------mConfigure.getStorageDir() = " + mConfigure.getStorageDir());
         return true;
     }
     
@@ -135,27 +142,42 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
     }
     
     public SQLiteDatabase getWritableDatabase() {
-        return SQLiteDatabase.openOrCreateDatabase("/data/dbstar/Dbstar.db", null);
-        // return
-        // SQLiteDatabase.openOrCreateDatabase("/mnt/sda1/myBooks/multiplyplayer.db",
-        // null);
-        // return
-        // SQLiteDatabase.openOrCreateDatabase("/mnt/sdcard/myBooks/multiplyplayer.db",
-        // null);
+    	SQLiteDatabase database = getReadableDatabase();
+        return database;
     }
 
     public SQLiteDatabase getReadableDatabase() {
-        return SQLiteDatabase.openOrCreateDatabase("/data/dbstar/Dbstar.db", null);
+//    	String dir = mConfigure.getStorageDir();
+//    	LogUtil.d("MultipleLanguageInfoProvider", "dir = " + dir);
+    	
+    	// TODO:测试，看看有没有这个文件
+    	File file = new File(mPushDir + "/Dbstar.db");
+    	LogUtil.d("MultipleLanguageInfoProvider", "----------mPushDir = " + mPushDir);
+    	LogUtil.d("MultipleLanguageInfoProvider", "----------file.exists() = " + file.exists());
+    	
+    	SQLiteDatabase sqLiteDatabase = null;
+    	try {
+			sqLiteDatabase = SQLiteDatabase.openOrCreateDatabase(mPushDir + "/Dbstar.db", null);
+		} catch (Exception e) {
+			LogUtil.d("MultipleLanguageInfoProvider", "dir = " + mPushDir + "////e = " + e);
+		}
+        return sqLiteDatabase;
     }
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         int option = mUriMathcer.match(uri);
         Cursor cursor = null;
+        
+        if (selectionArgs != null && selectionArgs.length > 0) {        	
+        	LogUtil.d("MultipleLanguageInfoProvider", "selectionArgs[0] = " + selectionArgs[0]);
+        }
+        
         switch (option) {
         case LOAD_BOOKS:{
             String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite from " +
             		"Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
             		" where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID = ? " + selection ;
+            LogUtil.d("MultipleLanguageInfoProvider", "LOAD_BOOKS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
         }
@@ -164,6 +186,8 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
                     "Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
                     " where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.Favorite = '1' and p.ColumnID in "+
                     " (select ColumnID From Column where ParentID = ? )";
+            
+            LogUtil.d("MultipleLanguageInfoProvider", "LOAD_ALL_FAVORITE_BOOK-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
         }
@@ -172,6 +196,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
                     " From Column c,ResStr r " +
                     "WHERE c.ParentID = ? and c.ColumnID = r.EntityID and r.StrLang = '"+ mCurLanguage+ "' and ObjectName= 'Column' and StrName = 'DisplayName'" +
                     " and ColumnID in (select ColumnID from Publication where ReceiveStatus='1' and PublicationType='1')";
+            LogUtil.d("MultipleLanguageInfoProvider", "LOAD_BOOK_CATEGORIES-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);     
             break;
         }
@@ -180,6 +205,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
                     "Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
                     " where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID in"+
                     " (select ColumnID From Column where ParentID = ? )";
+            LogUtil.d("MultipleLanguageInfoProvider", "LOAD_ALL_BOOKS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql,selectionArgs);
             break;
         }
@@ -188,6 +214,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             		" union select SetID as CategorySon,ColumnID as CategoryDad ,Title as Name ,'" + mPushDir  + "/' || PosterURI as icon,p.Preference as preference from Publication p,ResPoster rp , MultipleLanguageInfoRM m " +
             		" where rp.EntityID = p.PublicationID and p.PublicationID = m.PublicationID and ColumnID in (select ColumnID from Column where ParentID= ? ) group by SetID ";
             String ParentID = selectionArgs[0];
+            LogUtil.d("MultipleLanguageInfoProvider", "LOAD_NEWSPAPER_CATEGORIES-----sql = " + sql + "  (ParentID = " + ParentID + ")");
             cursor = getReadableDatabase().rawQuery(sql, new String []{ParentID,ParentID});           
             break;
         }
@@ -212,12 +239,15 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             
             String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate ,Favorite from Publication p ,MultipleLanguageInfoRM m " +
                     "where  p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.[ColumnID] in (select ColumnID from Column c where c.ParentID = ?) order by PublishDate desc";
+            
+            LogUtil.d("MultipleLanguageInfoProvider", "-------------LOAD_ALL_NEWSPAPERS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
         }
         case LOAD_COLLECTED_NEWSPAPERS:{
             String  sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate,Favorite from Publication p ,MultipleLanguageInfoRM m " +
                     "where p.Favorite = '1' and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.SetID = ? order by PublishDate desc";
+            LogUtil.d("MultipleLanguageInfoProvider", "-------------LOAD_COLLECTED_NEWSPAPERS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
         }
