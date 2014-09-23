@@ -3,7 +3,6 @@ package com.dbstar.multiple.media.widget;
 import java.util.List;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -14,6 +13,7 @@ import android.widget.LinearLayout;
 
 import com.dbstar.multiple.media.data.NewsPaperCategory;
 import com.dbstar.multiple.media.shelf.R;
+import com.dbstar.multiple.media.util.ImageUtil;
 
 public class NewsPaperSubCategoryView extends LinearLayout{
     
@@ -23,10 +23,6 @@ public class NewsPaperSubCategoryView extends LinearLayout{
     public NewsPaperSubCategoryView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-    
-    
-    
-    
     
     public void setSelection(int index ){
         mSelectedIndex = index;
@@ -43,6 +39,11 @@ public class NewsPaperSubCategoryView extends LinearLayout{
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+    	
+    	if (mData == null || mData.size() <= 0) {
+    		return true;
+    	}
+    	
         switch (keyCode) {
         case KeyEvent.KEYCODE_DPAD_DOWN:
             mSelectedIndex = ( ++mSelectedIndex + mData.size())% mData.size();
@@ -97,7 +98,8 @@ public class NewsPaperSubCategoryView extends LinearLayout{
             int index = (Math.abs(size-3) + mSelectedIndex + i) % size;
             Log.i("Futao", "index = "+ index) ;
             if( i == 3){
-                v.setImageBitmap(BitmapFactory.decodeFile(mData.get(index).unFocusedIcon));
+//                v.setImageBitmap(BitmapFactory.decodeFile(mData.get(index).unFocusedIcon));
+                v.setImageBitmap(ImageUtil.setDrawable(mData.get(index).unFocusedIcon, 195).getBitmap());
                 if(hasFocus()){
                     v.setBackgroundResource(R.drawable.newspaper_header_focus_bg); 
                 }
@@ -108,7 +110,8 @@ public class NewsPaperSubCategoryView extends LinearLayout{
                     mOnListener.onSelected(v, mData.get(index));
             }else{
                 if(v.isShown()){
-                    v.setImageBitmap(BitmapFactory.decodeFile(mData.get(index).unFocusedIcon));
+//                    v.setImageBitmap(BitmapFactory.decodeFile(mData.get(index).unFocusedIcon));
+                    v.setImageBitmap(ImageUtil.setDrawable(mData.get(index).unFocusedIcon, 195).getBitmap());
                     v.setBackgroundDrawable(null);
                 }
             }

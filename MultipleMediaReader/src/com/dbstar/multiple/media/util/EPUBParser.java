@@ -1,14 +1,21 @@
 package com.dbstar.multiple.media.util;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
+import android.text.Html;
 import android.util.Log;
 import android.util.Xml;
 
@@ -284,57 +291,105 @@ public class EPUBParser {
         }
         return  list;
     }
+
+	/**
+	 * 将一个字符串转化为输入流
+	 */
+	public static InputStream getStringStream(String inputString) {
+		if (inputString != null && !inputString.trim().equals("")) {
+			try {
+				ByteArrayInputStream stream = new ByteArrayInputStream(inputString.getBytes());
+				return stream;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 将一个输入流转化为字符串
+	 */
+	public static String getStreamString(InputStream inputStream) {
+		if (inputStream != null) {
+			try {
+				BufferedReader tBufferedReader = new BufferedReader(
+						new InputStreamReader(inputStream));
+				StringBuffer stringBuffer = new StringBuffer();
+				String sTempOneLine = new String("");
+				while ((sTempOneLine = tBufferedReader.readLine()) != null) {
+					stringBuffer.append(sTempOneLine);
+				}
+				return stringBuffer.toString();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+		return null;
+	}
+    
     public static NewsPaperArticleContent parseNewsPaperContent(String path){
         NewsPaperArticleContent data = null;
         Title title =null;
           try {
               InputStream in = new FileInputStream(path);
-              XmlPullParser parser = Xml.newPullParser();  
-              parser.setInput(in, "utf-8");  
+              String inToString = getStreamString(in);
+              String newString = inToString.replace("<br>", "\n");
+              InputStream inputStream = getStringStream(newString);
+              XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
+              parser.setInput(inputStream, "utf-8");  
               
               int event = parser.getEventType();//
               while(event!=XmlPullParser.END_DOCUMENT){
                   switch (event) {
                   case XmlPullParser.START_DOCUMENT:
-                      
                       break;
-
+                      
                   case XmlPullParser.START_TAG:
                       String tagName = parser.getName();
-                      if(tagName .equals("body")){
+                      if(tagName.equalsIgnoreCase("body")){
                           data = new NewsPaperArticleContent();
                           data.blocks = new ArrayList<Block>();
                           data.patchs = new ArrayList<Patch>();
                           data.titles = new ArrayList<NewsPaperArticleContent.Title>();
                       }else{
-                          if(tagName.equals("h211")){
+                          if(tagName.equalsIgnoreCase("h2")){
                               title = new Title ();
                               title.level = 2;
                               title.text = parser.nextText();
                               data.titles.add(title);
-                          }else if(tagName.equals("h311")){
+                          }else if(tagName.equalsIgnoreCase("h3")){
                               title = new Title();
                               title.level = 3;
                               title.text = parser.nextText();
                               data.titles.add(title);
-                           
-                          }else if(tagName.equals("p")){
-                              String content = parser.nextText();
+                          }else if(tagName.equalsIgnoreCase("p")){
+                        	  
+                        	  String content = null;
+                        	  if (parser.next() == XmlPullParser.TEXT) {
+                        		  content = parser.getText() + "\n";
+                            	  parser.nextTag();
+                        	  }
+                        	  
                               pasreContent(data, content);
-                          }else if(tagName.equals("img")){
+                          } else if(tagName.equalsIgnoreCase("img")) {
                               Block block = new Block();
                               block.type = 4;
                               block.value = parsePath(path,  parser.getAttributeValue(null, "src"));
                               data.blocks.add(block);
-                          }
-                          
+                          } else {
+                        	  /*if(tagName.equalsIgnoreCase("font")) */
+                        	  if (parser.next() == XmlPullParser.TEXT) {
+                        		  String content = parser.getText() + "\n";
+                        		  pasreContent(data, content);                        		  
+                        	  }
+                          } 
                       }
                       break;
                       
                   case XmlPullParser.END_TAG:
                        tagName = parser.getName();
                   }
-                  
                   event = parser.next();
               }
           } catch (Exception e) {
@@ -355,6 +410,8 @@ public class EPUBParser {
         
         if(content == null || content.isEmpty())
             return;
+        if (data == null)
+        	return;
         Patch patch = new Patch();
         if(data.patchs.size() > 0){
             patch.startIndex =  data.patchs.get(data.patchs.size()-1).endIndex +1;

@@ -10,6 +10,8 @@ import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 
+import com.dbstar.multiple.media.util.ImageUtil;
+
 public class ImageManager {
     
     private ThreadPoolExecutor executor;
@@ -64,15 +66,19 @@ public class ImageManager {
                     if (sfb != null) {
                         drawable = sfb.get();
                         if (drawable == null) {
-                            sfb = new SoftReference<BitmapDrawable>(drawable = new BitmapDrawable(mContext.getResources(), uri));
+                        	// 显示图片的区域规定为345x515
+                        	drawable = ImageUtil.setDrawable(uri, 345);
+//                        	drawable = new BitmapDrawable(mContext.getResources(), uri);
+                            sfb = new SoftReference<BitmapDrawable>(drawable);
                             mCache.put(uri, sfb);
                         }
                     } else {
-                        sfb = new SoftReference<BitmapDrawable>(drawable = new BitmapDrawable(mContext.getResources(), uri));
+                    	drawable = ImageUtil.setDrawable(uri, 345);
+//                    	drawable = new BitmapDrawable(mContext.getResources(), uri);
+                        sfb = new SoftReference<BitmapDrawable>(drawable);
                         mCache.put(uri, sfb);
 
                     }
-
                     return drawable;
                 }
 
@@ -83,6 +89,7 @@ public class ImageManager {
             }.execute(uri, callback, viewKey);
         }
     }
+    
     public BitmapDrawable getBitmapDrawable(final String uri){
         synchronized (uri) {
             

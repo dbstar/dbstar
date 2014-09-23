@@ -57,6 +57,7 @@ public class BookShelfActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_shelf);
         mRootId = getIntent().getStringExtra("Id");
+        Log.d("BookShelfActivity", "-----mRootId----- = " + mRootId);
         mController = ShelfController.getInstance(this);
         inintView();
       

@@ -142,6 +142,7 @@ public class ShelfController {
                     category = new BookCategory();
                     category.Id = cursor.getString(0);
                     category.Name = cursor.getString(1);
+                    Log.d("ShelfController", "loadBookCategoryInfo---category.Name = " + category.Name);
                     categories.add(category);
                 }
             }
