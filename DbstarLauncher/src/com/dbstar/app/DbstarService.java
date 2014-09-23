@@ -35,7 +35,6 @@ import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.util.Constants;
 import com.dbstar.util.DbstarUtil;
 import com.dbstar.util.LogUtil;
-import com.dbstar.util.ToastUtils;
 
 public class DbstarService extends Service {
 
@@ -59,10 +58,10 @@ public class DbstarService extends Service {
 				break;
 			case 1:
 				// 表示连接成功， 就需要每隔15-30分钟检查一次网络
-				isNetworkConnected = DbstarUtil.isNetworkConnected(DbstarService.this);
+				isNetworkConnected = DbstarUtil.isNetworkAvailable(DbstarService.this);
 				// TODO：如果网络断开
 				if (!isNetworkConnected) {
-					ToastUtils.showToast(DbstarService.this, "无法连接网络，请检查网络！");
+//					ToastUtils.showToast(DbstarService.this, "无法连接网络，请检查网络！");
 					isConnected = getHeartbeat();
 				}
 				break;
@@ -81,7 +80,7 @@ public class DbstarService extends Service {
 		registerReceiver(receiver, filter);
 		
 		// 检查联网情况
-		isNetworkConnected = DbstarUtil.isNetworkConnected(this);
+		isNetworkConnected = DbstarUtil.isNetworkAvailable(this);
 		if (isNetworkConnected) {
 			isConnected = getHeartbeat();
 		};
