@@ -18,6 +18,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.auth.AuthScheme;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -29,11 +31,14 @@ import android.net.NetworkInfo;
 import android.net.NetworkUtils;
 import android.net.ethernet.EthernetManager;
 import android.net.wifi.WifiManager;
+import android.os.Message;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.settings.components.NetStatusViewWrapper;
+import com.settings.components.SysUpgradeSettingsViewWrapper;
 import com.settings.ottsettings.R;
 
 public class SettingUtils {
@@ -68,7 +73,7 @@ public class SettingUtils {
 			NetworkInfo[] info = manager.getAllNetworkInfo();
 			if (info != null) {
 				for (int i = 0; i < info.length; i++) {
-					if (info[i].getState() == NetworkInfo.State.CONNECTED) {
+					if (info[i].getState() == NetworkInfo.State.CONNECTED || info[i].getState() == NetworkInfo.State.CONNECTING) {
 						LogUtil.i("NetWorkState", "Availabel");
 						return true;
 					}
@@ -266,16 +271,16 @@ public class SettingUtils {
 	//**-------------------------其他通用-------------------------------**//
 	/**
 	 * 保存文件
+	 * @param softVersion 
 	 */
-	public static void SaveFile(InputStream is, long contentLength) {
-		
+	public static boolean SaveFile(InputStream is, long contentLength, String softVersion) {
 		try {
-//			URL url = new URL(uri);
-//			URLConnection conn = url.openConnection();
-//			conn.connect();
-			
-//			InputStream is = conn.getInputStream();
-//			int contentLength = conn.getContentLength();
+			// 当已下载文件的大小大于400M时，就不下载了，当做错误文件
+			if(contentLength > 419430400){
+				LogUtil.d("SettingUtils", "-----too loong file, fileTotalSize = " + contentLength);
+				is.close();
+				return false;
+			}
 			LogUtil.d("downloadAndSaveFile", "文件大小" + contentLength);
 			
 			if (is == null) {
@@ -286,32 +291,87 @@ public class SettingUtils {
 				LogUtil.d("downloadAndSaveFile", "无法获取文件大小");	    	
 			}
 			
-			String filePath = "/data/dbstar/" + "upgrade.zip";
+			String filePath = "/cache/upgrade.zip";
 			
 			File file = new File(filePath);
-			try {
-				if (!file.exists()) {
-					file.createNewFile();
-				} else {
-					file.delete();
-					file.createNewFile();
-				}
-			} catch (IOException e) {
-				LogUtil.i("saveHsahMap", "文件创建失败");
-				e.printStackTrace();
+			
+			if (file.exists()) {
+				file.delete();
+			}
+			
+			boolean success = file.createNewFile();
+			
+			if (!success) {
+				LogUtil.d("SettingUtils", "-----file create failed!");
+				return false;
 			}
 			
 			FileOutputStream fos = new FileOutputStream(filePath);
-			byte[] buf = new byte[1024 * 10];
+			byte[] buf = new byte[1024 * 30];
 			
-			int numread;
-			while((numread = is.read(buf)) != -1) {
+			int numread = 0;
+			int has_recv=0;
+			int pin_recv = 0;
+
+			while(true) {
+				numread = is.read(buf);
+				if(-1 == numread) {
+					LogUtil.d("SettingUtils", "numread is -1");
+					break;
+				} else if (0 == numread){
+					LogUtil.d("SettingUtils", "numread is 0!!");
+				}
+				
 				fos.write(buf, 0, numread);
-				numread++;
-				LogUtil.d("downLoadAndSaveFile", "保存文件numread::" + numread);
+				
+				has_recv += numread;
+				
+//				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv);
+				
+				if(has_recv - pin_recv > 1024000) {
+					Message msg = new Message();
+					msg.what = 1;
+					msg.obj = has_recv;
+					LogUtil.d("SettingUtils", "-----pin_recv = " + pin_recv);
+					SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
+					
+					pin_recv = has_recv;
+				}
 			}
 			
+			fos.flush();
+			fos.close();
 			is.close();
+			
+			if(has_recv != contentLength){
+				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv + " contentLength = " + contentLength);
+				return false;
+			} else {
+				Message msg = new Message();
+				msg.what = 1;
+				msg.obj = has_recv;
+				LogUtil.d("SettingUtils", "-----pin_recv = " + has_recv);
+				SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
+			}
+			
+			// 等升级包下载完成之后，就将string写入/cache/command1文件
+			File resultFile = new File("/cache/command1");
+			if (resultFile.exists()) {
+				resultFile.delete();
+			}
+			boolean isCreateSuccess = resultFile.createNewFile();
+			if (isCreateSuccess) {
+				String string = "--orifile=/cache/upgrade.zip\n" + softVersion + "\n";
+				FileOutputStream stream = new FileOutputStream(resultFile);
+				stream.write(string.getBytes("utf-8"));
+				stream.flush();
+				stream.close();
+				LogUtil.d("SettingUtils", " command1 file createFile successed!");
+				return true;
+			} else {
+				LogUtil.d("SettingUtils", " when save command1 file, createFile failed !");
+				return false;
+			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (FileNotFoundException e) {
@@ -319,6 +379,7 @@ public class SettingUtils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return false;
 	}
 	
 	/**

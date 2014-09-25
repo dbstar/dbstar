@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal" >
+    <TextView 
+        style="@style/TestTextView"
+        android:id="@+id/order"
+        />
+    <TextView 
+         android:id="@+id/name"
+        style="@style/TestTextView"
+        android:text="@string/test_audio"
+        android:layout_marginLeft="10dp"
+        />
+    <ProgressBar
+        android:id="@+id/test_pb" 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="50dp"
+        />
+        <TextView 
+            style="@style/TestTextView"
+            android:id="@+id/test_disk_sda1_statu"
+            android:layout_marginLeft="50dp"
+            />
+         <TextView 
+          android:id="@+id/test_fail_reason"
+           style="@style/TestErrorTextView"
+           android:layout_marginLeft="50dp"
+          />
+          <Button 
+             android:id="@+id/btn_yes"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="@string/yes"
+             />
+         <Button 
+             android:id="@+id/btn_no"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="@string/no"
+             />
+</LinearLayout>

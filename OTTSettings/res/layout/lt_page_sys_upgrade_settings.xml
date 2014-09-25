@@ -21,14 +21,27 @@
         android:id="@+id/sysUpgrade_settings_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="20dp"
         android:lineSpacingMultiplier="1.5"
         android:paddingRight="20dp"
         android:paddingTop="10dp"
         android:singleLine="false"
-        android:text="@string/page_sysUpgrade_neednot_upgrade"
+        android:text="@string/page_sysUpgrade_isChecking"
         android:textColor="@color/text_white"
-        android:textSize="@dimen/gl_text_size_24sp" />
+        android:textSize="@dimen/gl_text_size_24sp" 
+        android:visibility="gone"/>
+    
+    <TextView 
+        android:id="@+id/sysUpgrade_settings_download_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:text="@string/page_sysUpgrade_isChecking"
+        android:singleLine="true"
+        android:paddingRight="20dp"
+        android:paddingTop="10dp"
+        android:textColor="@color/text_white"
+        android:textSize="@dimen/gl_text_size_22sp"/>
 
     <LinearLayout
         android:layout_width="fill_parent"

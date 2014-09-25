@@ -221,6 +221,7 @@ static int menukey = 0;
 static __inline__ int abortboot(int bootdelay)
 {
 	int abort = 0;
+	char cKey = 0; //for key filter, only "enter" key can triger abort
 #ifdef CONFIG_UBOOT_BATTERY_PARAMETER_TEST
     char key;
 #endif
@@ -228,50 +229,96 @@ static __inline__ int abortboot(int bootdelay)
 #ifdef CONFIG_MENUPROMPT
 	printf(CONFIG_MENUPROMPT);
 #else
-	printf("Hit any key to stop autoboot: %2d ", bootdelay);
+	printf("Hit Enter key to stop autoboot -- : %2d ", bootdelay);
 #endif
 
 #if defined CONFIG_ZERO_BOOTDELAY_CHECK
-	/*
-	 * Check if key already pressed
-	 * Don't check if bootdelay < 0
-	 */
-	if (bootdelay >= 0) {
-		if (tstc()) {	/* we got a key press	*/
-			(void) getc();  /* consume input	*/
-			puts ("\b\b\b 0");
-			abort = 1;	/* don't auto boot	*/
-		}
-	}
+    /*
+     * Check if key already pressed
+     * Don't check if bootdelay < 0
+     */
+    if (bootdelay >= 0) {
+#ifdef CONFIG_CRLC_TO_STOP_ATOBOOT
+        //int key = getc();
+        if (tstc()) {
+            switch (getc()) {
+            case 0x03:      /* ^C - Ctrl+C */
+                abort = 1;
+                break;
+            case 0x0d:      /* Enter */
+                abort = 1;
+                break;
+            case 0x20:      /* Space */
+                abort = 1;
+                break;
+            default:
+                break;
+            }
+        }
+    //    printf("CONFIG_CRLC_TO_STOP_ATOBOOT test ctrl c / enter / space tab\n");
+#else
+        if (tstc()) {   /* we got a key press   */
+            (void) getc();  /* consume input    */
+            puts ("\b\b\b 0");
+            abort = 1;  /* don't auto boot  */
+        }
+#endif
+    }
 #endif
 
-	while ((bootdelay > 0) && (!abort)) {
-		int i;
+    char *s_ms = getenv ("enablemsdelay");
+    int delay_ms = s_ms ? (int)simple_strtol(s_ms, NULL, 10) : 0;
+    //printf("\n ----- delay ms : %d \n",delay_ms);
+
+    if (abort == 1) {
+         //Disable Watchdog
+        writel(0, 0xc1109900);
+    }
+    unsigned int sect = get_timer(0);// 1---> 20ms
+   // printf("get_timer0 = %d \n",t1);
+
+    while ((bootdelay > 0) && (!abort)) {
+        int i;
 
 		--bootdelay;
 		/* delay 100 * 10ms */
 		for (i=0; !abort && i<100; ++i) {
 			if (tstc()) {	/* we got a key press	*/
-				abort  = 1;	/* don't auto boot	*/
-				bootdelay = 0;	/* no more delay	*/
+				printf("tstc enter\n");
 # ifdef CONFIG_MENUKEY
 				menukey = getc();
+				cKey = menukey;
             #ifdef CONFIG_UBOOT_BATTERY_PARAMETER_TEST
                 key = menukey;
             #endif
 # else
             #ifdef CONFIG_UBOOT_BATTERY_PARAMETER_TEST
 				key = getc();  /* consume input	*/
+				cKey = key;
             #else
-                getc();
+                cKey = getc();
             #endif
 # endif
-				break;
+	            switch (cKey) {
+	            case 0x03:      /* ^C - Ctrl+C */
+	            case 0x0d:      /* Enter */
+	            case 0x20:      /* Space */
+	                abort = 1;
+	                break;
+	            default:
+	                break;
+	            }
 			}
-			udelay(10000);
+			//printf("%2d\n",i);
+#if defined(CONFIG_VLSI_EMULATOR)
+			udelay(100);//Victor, From 10000 to 10
+#else
+			udelay(10000);//10000us x 100 = 1s
+#endif //CONFIG_VLSI_EMULATOR
 		}
 
-		printf("\b\b\b%2d ", bootdelay);
+		if(!abort)
+			printf("\b\b\b%2d ", bootdelay);
 	}
 
 	putc('\n');
@@ -292,7 +339,7 @@ static __inline__ int abortboot(int bootdelay)
     #endif
     }
 #endif
-
+	printf("exit abortboot: %d\n",abort);
 	return abort;
 }
 # endif	/* CONFIG_AUTOBOOT_KEYED */
@@ -384,7 +431,13 @@ void main_loop (void)
 #ifndef CONFIG_MESON_TRUSTZONE
 extern void init_suspend_firmware(void);
 	init_suspend_firmware();
+#else
+	meson_trustzone_suspend_init();
 #endif
+#endif
+#ifdef CONFIG_AML_SECURE
+extern void init_secure_firmware(void);
+	init_secure_firmware();
 #endif
 
 #ifdef CONFIG_CMD_CHIPREV
@@ -396,10 +449,14 @@ extern void init_suspend_firmware(void);
 	setenv("bootargs", env_bootargs);
 	printf("bootargs = %s\n", env_bootargs);
 #endif
-	
+
+#if defined(CONFIG_AML_MESON_8)&&defined(CONFIG_EFUSE)&&defined(CONFIG_VIDEO_AMLTVOUT)
+	extern void cvbs_trimming(void);
+	cvbs_trimming();
+#endif
+
 #ifdef CONFIG_PREBOOT
 	if ((p = getenv ("preboot")) != NULL) {
-printf("liukevin print preboot = [%s]\n",p); //liukevin
 # ifdef CONFIG_AUTOBOOT_KEYED
 		int prev = disable_ctrlc(1);	/* disable Control C checking */
 # endif
@@ -448,7 +505,7 @@ extern int switch_boot_mode(void);
 	s = getenv ("bootdelay");
 	bootdelay = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
 
-	printf ("### liukevin main_loop entered: bootdelay=%d\n\n", bootdelay);
+	debug ("### main_loop entered: bootdelay=%d\n\n", bootdelay);
 
 # ifdef CONFIG_BOOT_RETRY_TIME
 	init_cmd_timeout ();
@@ -470,7 +527,7 @@ extern int switch_boot_mode(void);
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
 		s = getenv ("bootcmd");
 
-	printf ("### liukevin1102 main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
+	debug ("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
 
 	if (bootdelay >= 0 && s && !abortboot (bootdelay)) {
 # ifdef CONFIG_AUTOBOOT_KEYED
@@ -478,7 +535,7 @@ extern int switch_boot_mode(void);
 # endif
 
 #ifdef CONFIG_SWITCH_BOOT_MODE   //liukevin moved here
-printf("liukevin 1102 switch boot mode\n");
+//printf("liukevin 1102 switch boot mode\n");
 extern int switch_boot_mode(void);
         switch_boot_mode();
 #endif

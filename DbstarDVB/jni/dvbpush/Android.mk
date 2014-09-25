@@ -39,7 +39,7 @@ include $(PREBUILD_STATIC_LIBRARY)
 #OVERRIDE_BUILT_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
 #include $(BUILD_PREBUILT)
 
-#//=======
+
 #include $(CLEAR_VARS)
 #LOCAL_MODULE := libfileapi
 #LOCAL_ARM_MODE := arm
@@ -47,13 +47,12 @@ include $(PREBUILD_STATIC_LIBRARY)
 #LOCAL_PRELINK_MODULE := false
 #LOCAL_SRC_FILES += \
 #        src/fileapi.cpp
-
-LOCAL_CFLAGS += -W -Wall
+#LOCAL_CFLAGS += -W -Wall
 #LOCAL_LDFLAGS += -L$(LOCAL_PATH)/lib
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_SHARED_LIBRARIES += libc libdl liblog libfileapic
-include $(BUILD_SHARED_LIBRARY)
-#//======
+#LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
+#LOCAL_SHARED_LIBRARIES += libc libdl liblog libfileapic
+#include $(BUILD_SHARED_LIBRARY)
+
 
 
 include $(CLEAR_VARS)

@@ -266,7 +266,8 @@ dbstar_make()
 		call mmm $DBSTAR_SRC/DbstarSettings -B
 		call mmm $DBSTAR_SRC/DBStarAppManager -B
 		call mmm $DBSTAR_SRC/DbstarFileBrowser -B
-		call mmm $DBSTAR_SRC/OttLauncher -B
+		call mmm $DBSTAR_SRC/MultipleMediaReader -B
+		call mmm $DBSTAR_SRC/OTTSettings -B
 	else
 		call mmm $DBSTAR_SRC/DbstarDVB
 		if [ $? -ne 0 ]; then
@@ -292,9 +293,9 @@ dbstar_make()
 		if [ $? -ne 0 ]; then
 			logger "ERROR make MultipleMediaReader"
 		fi
-		call mmm $DBSTAR_SRC/OttLauncher
+		call mmm $DBSTAR_SRC/OTTSettings
 		if [ $? -ne 0 ]; then
-			logger "ERROR make OttLauncher"
+			logger "ERROR make OTTSettings"
 		fi
 	fi
 	if [ $? -eq 0 ]; then

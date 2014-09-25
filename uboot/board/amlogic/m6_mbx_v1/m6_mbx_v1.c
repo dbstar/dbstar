@@ -42,7 +42,7 @@ static int my_atoi(const char* p)
         neg_flag = (*p++ != '+');
 
     //liukevin add for delete the empty char
-printf("liukevin %x %x  %x\n",*p,'0','9');
+//printf("liukevin %x %x  %x\n",*p,'0','9');
     while((!my_isdigit(*p))&&(i<8)) 
     {
          p++;
@@ -60,13 +60,13 @@ int tc_aml_writemac(void)
         int     i = 0;
         char    str[128];
 
-printf("checking the mmc card, and find one...\n");
+//printf("checking the mmc card, and find one...\n");
         for(i = 0; i < SCAN_USB_PARTITION; i++)
         {
                     sprintf(str,"fatexist usb 0:%d %s",(i+1),MAC_FILENAME);
                     if (!run_command (str, 0))
                     {
-printf("liukevin find a MAC file in SD CARD\n");
+//printf("liukevin find a MAC file in SD CARD\n");
                             sprintf(str,"fatexist usb 0:%d %s",(i+1),MAC_NUM_FILENAME);
                             if (!run_command (str, 0))
                             {
@@ -90,6 +90,8 @@ printf("----------------------mac_num = %d\n",mac_num);
                                 sprintf(str,"set ethaddr %c%c:%c%c:%c%c:%c%c:%c%c:%c%c",addr[0],addr[1],addr[2],addr[3],addr[4],addr[5],
                                     addr[6],addr[7],addr[8],addr[9],addr[10],addr[11]);
 printf("----------------------mac cmd %s\n",str);
+                                run_command (str, 0);
+                                sprintf(str,"set stbnum 2000317130%.6d",mac_num); 
                                 run_command (str, 0);
                             }
                     }
@@ -342,6 +344,19 @@ int board_mmc_init(bd_t	*bis)
 }
 #endif
 
+#if CONFIG_AML_HDMI_TX
+/*
+ * Init hdmi related power configuration
+ * Refer to your board SCH, power including HDMI5V, HDMI1.8V, AVDD18_HPLL, etc
+ */
+extern void hdmi_tx_power_init(void);
+void hdmi_tx_power_init(void)
+{
+    // 
+    printf("hdmi tx power init\n");
+}
+#endif
+
 #ifdef CONFIG_AML_I2C 
 /*I2C module is board depend*/
 static void board_i2c_set_pinmux(void){
@@ -496,10 +511,6 @@ struct aml_nand_device aml_nand_mid_device = {
 #define IO_AOBUS_BASE	0xc8100000
 #define AOBUS_REG_OFFSET(reg)   ((reg) )
 #define AOBUS_REG_ADDR(reg)	    (IO_AOBUS_BASE + AOBUS_REG_OFFSET(reg))
-static __inline__ void aml_set_reg32_bits( uint32_t _reg, const uint32_t _value,const uint32_t _start, const uint32_t _len)
-{
-	writel((readl(_reg) & ~((( 1L << (_len) )-1) << (_start)) | ((unsigned)((_value)&((1L<<(_len))-1)) << (_start))), _reg );
-}
 
 static void gpio_set_vbus_power(char is_power_on)
 {
@@ -566,13 +577,28 @@ set_dcdc3(1100);	//set DC-DC3 to 1100mV
 //POWER key
 inline void key_init(void)
 {
+#ifdef CONFIG_MESON_TRUSTZONE
+	unsigned temp = meson_trustzone_rtc_read_reg32(P_RTC_ADDR0);
+	temp &= (~(1<<11));
+	meson_trustzone_rtc_write_reg32(P_RTC_ADDR0, temp);
+
+	temp = meson_trustzone_rtc_read_reg32(P_RTC_ADDR1);
+	temp &= (~(1<<3));
+	meson_trustzone_rtc_write_reg32(P_RTC_ADDR1, temp);
+#else
 	clrbits_le32(P_RTC_ADDR0, (1<<11));
 	clrbits_le32(P_RTC_ADDR1, (1<<3));
+#endif
 }
 
 inline int get_key(void)
 {
+#ifdef CONFIG_MESON_TRUSTZONE
+	unsigned temp = meson_trustzone_rtc_read_reg32(P_RTC_ADDR1);
+	return (((temp >> 2) & 1) ? 0 : 1);
+#else
 	return (((readl(P_RTC_ADDR1) >> 2) & 1) ? 0 : 1);
+#endif
 }
 #ifdef CONFIG_SWITCH_BOOT_MODE
 #define UPDATE_MAKR_FILE "8626m6.update"
@@ -583,14 +609,14 @@ int switch_boot_mode(void)
         int	i = 0;
 	char	str[128];
 
-	printf("liukevin1102 switch_boot_mode\n");
+//	printf("liukevin1102 switch_boot_mode\n");
 	unsigned int suspend_status_current2 = readl(P_AO_RTI_STATUS_REG2);
-	printf("suspend_status_current2=%x\n",suspend_status_current2);
+//	printf("suspend_status_current2=%x\n",suspend_status_current2);
 	if((suspend_status_current2 == 0))
 	{
 //		run_command ("suspend", 0);
 	}
-printf("usb start ......\n");
+//printf("usb start ......\n");
 #ifdef SCAN_USB_PARTITION
         if(!run_command ("usb start", 0))
 	{

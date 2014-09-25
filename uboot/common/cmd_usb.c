@@ -529,8 +529,10 @@ int do_usb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #ifdef CONFIG_USB_STORAGE
 			/* try to recognize storage devices immediately */
 			usb_stor_curr_dev = usb_stor_scan(1);
-                        if (usb_stor_curr_dev == 0)  //liukevin for run_command return
-                            return 1;
+            if (usb_stor_curr_dev == 0) {  //liukevin for run_command return
+                   printf("liukevin add the usb storage scan!!!!!!\n");
+                   return 1;
+            }
 #endif
 #ifdef CONFIG_USB_HOST_ETHER
 			/* try to recognize ethernet devices immediately */
@@ -708,7 +710,6 @@ int do_usb(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return cmd_usage(cmdtp);
 }
 
-#ifdef CONFIG_M6
 #include <asm/arch/usb.h>
 int do_usbbc(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -721,7 +722,6 @@ U_BOOT_CMD(
 	"test usb bc",
 	"loadAddr dev:part"
 );
-#endif //CONFIG_M6
 
 #ifdef CONFIG_USB_STORAGE
 U_BOOT_CMD(
