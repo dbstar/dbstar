@@ -1,15 +1,20 @@
 package com.dbstar.app.settings;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.R;
@@ -17,11 +22,13 @@ import com.dbstar.DbstarDVB.DbstarServiceApi;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
+import com.dbstar.util.ImageUtil;
 import com.dbstar.util.LogUtil;
 
 public class GDProductsActivity extends GDBaseActivity {
 	private static final String TAG = "GDReceiveStatusActivity";
 
+	RelativeLayout mContainer;
 	TextView mSmartcardNumberView;
 	ListView mProductsList;
 	ListAdapter mAdapter;
@@ -140,6 +147,7 @@ public class GDProductsActivity extends GDBaseActivity {
 	public void initializeView() {
 		super.initializeView();
 
+		mContainer = (RelativeLayout) findViewById(R.id.products_view);
 		mSmartcardNumberView = (TextView) findViewById(R.id.card_id);
 		mProductsList = (ListView) findViewById(R.id.product_list);
 		mAdapter = new ListAdapter(this);
@@ -147,6 +155,18 @@ public class GDProductsActivity extends GDBaseActivity {
 		
 		mSNLabelStr = getResources().getString(R.string.smartcard_number);
 		mSmartcardNumberView.setText(mSNLabelStr);
+		
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		
+		if (bitmaps == null || bitmaps.size() <= 0) {
+			mContainer.setBackgroundResource(R.drawable.view_background);
+			return;
+		}
+		
+		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
+			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
+			mContainer.setBackgroundDrawable(drawable);		
+		}
 	}
 
 	class ProductItem {

@@ -1,11 +1,16 @@
 package com.dbstar.app.settings;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.R;
@@ -14,9 +19,11 @@ import com.dbstar.model.GDDiskInfo;
 import com.dbstar.model.GDDiskInfo.DiskInfo;
 import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.util.GDNetworkUtil;
+import com.dbstar.util.ImageUtil;
 
 public class GDGeneralInfoActivity extends GDSettingActivity {
 
+	private RelativeLayout mContainer;
 	private TextView mDeviceSerialNumberView;
 	private TextView mHardwareTypeView;
 	private TextView mSoftwareVersionView;
@@ -113,6 +120,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	public void initializeView() {
 		super.initializeView();
 
+		mContainer = (RelativeLayout) findViewById(R.id.generalinfo_view);
 		mDeviceSerialNumberView = (TextView) findViewById(R.id.device_serialnumber);
 		mHardwareTypeView = (TextView) findViewById(R.id.device_hardwaretype);
 		mSoftwareVersionView = (TextView) findViewById(R.id.device_softwareversion);
@@ -134,6 +142,18 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mDiskSize = getResources().getString(R.string.disk_totalsize);
 		mDiskUsed = getResources().getString(R.string.disk_usedsize);
 		mDiskSpace = getResources().getString(R.string.disk_spacesize);
+		
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		
+		if (bitmaps == null || bitmaps.size() <= 0) {
+			mContainer.setBackgroundResource(R.drawable.view_background);
+			return;
+		}
+		
+		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
+			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
+			mContainer.setBackgroundDrawable(drawable);
+		}
 	}
 	
 	// when long press menu key more than 5 seconds,

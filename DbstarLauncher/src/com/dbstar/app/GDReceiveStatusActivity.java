@@ -1,12 +1,15 @@
 package com.dbstar.app;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.R;
@@ -26,6 +30,7 @@ import com.dbstar.model.ReceiveData;
 import com.dbstar.model.ReceiveEntry;
 import com.dbstar.service.ClientObserver;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.ImageUtil;
 import com.dbstar.util.LogUtil;
 import com.dbstar.util.StringUtil;
 
@@ -52,6 +57,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	private ClientObserver mObserver = null;
 
+	RelativeLayout mContainer;
 	ListView mListView;
 	TextView mDownloadSpeedView;
 	TextView mDiskInfoView;
@@ -525,6 +531,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		mTextGong = getResources().getString(R.string.text_gong);
 		mTextTiao = getResources().getString(R.string.text_tiao);
 
+		mContainer = (RelativeLayout) findViewById(R.id.download_status_view_container);
 		mDownloadSpeedView = (TextView) findViewById(R.id.download_speed);
 		mSignalStatusView = (TextView) findViewById(R.id.signal_status);
 		mDiskInfoView = (TextView) findViewById(R.id.disk_info);
@@ -562,6 +569,18 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 				return ret;
 			}
 		});
+		
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		
+		if (bitmaps == null || bitmaps.size() <= 0) {
+			mContainer.setBackgroundResource(R.drawable.view_background);
+			return;
+		}
+		
+		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
+			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
+			mContainer.setBackgroundDrawable(drawable);		
+		}
 	}
 
 	public class DownloadProgressAdapter extends BaseAdapter {

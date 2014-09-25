@@ -1,6 +1,7 @@
 package com.dbstar.app;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -9,6 +10,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -16,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.R;
@@ -27,6 +31,7 @@ import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.model.Movie;
 import com.dbstar.model.ProductItem;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.ImageUtil;
 import com.dbstar.util.LogUtil;
 import com.dbstar.widget.GDAdapterView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
@@ -46,6 +51,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	String mColumnId;
 	List<Movie[]> mPageDatas;
 
+	RelativeLayout mContainer;
 	GDGridView mSmallThumbnailView;
 	MovieAdapter mAdapter;
 	int mSeletedItemIndex = 0;
@@ -75,6 +81,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	protected void initializeView() {
 		super.initializeView();
 
+		mContainer = (RelativeLayout) findViewById(R.id.movie_container);
+		
 		mPageNumberView = (TextView) findViewById(R.id.pageNumberView);
 
 		mScrollBar = (GDScrollBar) findViewById(R.id.scrollbar);
@@ -92,6 +100,18 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 		mSmallThumbnailView.requestFocus();
 		mPageNumberView.setText(formPageText(0, 0));
+		
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		
+		if (bitmaps == null || bitmaps.size() <= 0) {
+			mContainer.setBackgroundResource(R.drawable.view_background);
+			return;
+		}
+		
+		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
+			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
+			mContainer.setBackgroundDrawable(drawable);		
+		}
 	}
 
 	public void onStart() {
