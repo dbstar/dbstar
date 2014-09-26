@@ -244,7 +244,7 @@
 	    "</string>
 	    
 	<!-- 关于 -->
-	<string name="page_about_terminal_number">终端序列号:</string>
+	<string name="page_about_terminal_number">终端序列号：</string>
 	<string name="page_about_hardware_version">硬件版本号：</string>
 	<string name="page_about_software_version">软件版本号：</string>
 	<string name="page_about_loader_version">Loader版本：</string>

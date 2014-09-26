@@ -86,6 +86,7 @@ public class DbstarOTTActivity extends Activity {
 	
 	private GalleryAdapter adapter2;
 	private boolean isToAthorAvtivity = false;
+	private boolean timerTag = false;
 	
 	private Intent intentSer; 
 	private GalleryTask task;
@@ -101,6 +102,11 @@ public class DbstarOTTActivity extends Activity {
 			case 3:
 				LogUtil.d("Intent Service", "跨进程调用intentSettings========" + new Intent("com.settings.service.action.OTTSettingsService").toString());
 				startService(new Intent("com.settings.service.action.OTTSettingsService"));
+				
+				timerTag = true;
+				
+				//  每次进入程序15s后，都要看一下是否注册及登录。
+				DbstarUtil.login(DbstarOTTActivity.this);
 				break;
 			default:
 				break;
@@ -122,6 +128,14 @@ public class DbstarOTTActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		// 设置成无标题
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.lt_dbstar_main_luncher_flash);
+		
+		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
 		mImageSet = new ImageSet(adapter2);
 		// 检查联网情况
 		boolean isNetworkConnected = DbstarUtil.isNetworkAvailable(this);
@@ -131,21 +145,9 @@ public class DbstarOTTActivity extends Activity {
 			readQueryPosterFromSDCard();
 			readQueryRecommandFromSDCard();
 		} else {
-			//  如果有网络，则登录，并从服务器端取得数据
-			DbstarUtil.login(DbstarOTTActivity.this);
 			getQueryPoster();
 			getQueryRecommand();
 		}
-		
-		super.onCreate(savedInstanceState);
-		// 设置成无标题
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.lt_dbstar_main_luncher_flash);
-		
-		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-
-		findViews();
 		
 		String defaultStorage = "/storage/external_storage/sda1/";
 		File file = new File(defaultStorage);
@@ -350,12 +352,6 @@ public class DbstarOTTActivity extends Activity {
 		} else {
 			adapter2.notifyDataSetChanged();
 		}
-
-//		initViews();
-		populateData();
-		setEventListener();
-	
-		
 	}
 	
 	private void setEventListener() {
@@ -367,7 +363,6 @@ public class DbstarOTTActivity extends Activity {
 			public void onClick(View v) {
 				Intent intent = new Intent();
 				intent.setClass(DbstarOTTActivity.this, GDLauncherActivity.class);
-//				startActivity(intent);
 				startActivityForResult(intent, Btn_StarTV_Sequence);
 				isToAthorAvtivity = true;
 			}
@@ -712,16 +707,9 @@ public class DbstarOTTActivity extends Activity {
 	}
 	
 	private void populateData() {
-		// TODO：怎样设置才能在启动整个项目的时候直接跳转到该页面
-
-		// 按钮的点击事件
-		// 点击相对应的按钮该跳转到什么页面
-
 		gallery.setImageActivity(this, pictures, mImageSet);
 		adapter2 = new GalleryAdapter(this, pictures);
         gallery.setAdapter(adapter2);
-		
-		
         
         Timer timer = new Timer();
         if (timer != null) {
@@ -733,11 +721,8 @@ public class DbstarOTTActivity extends Activity {
         	task = new GalleryTask();
         	timer.schedule(task, 5000, 5000);
         }
-        
 		
 		gallery.setFocusable(false);
-//		imgStarTV.requestFocus();
-		
 		
 		final Timer APServiceTimer = new Timer();
 		TimerTask timerTask = new TimerTask() {
@@ -754,7 +739,7 @@ public class DbstarOTTActivity extends Activity {
 			}
 		};
 		
-		if (APServiceTimer != null) {
+		if (APServiceTimer != null && !timerTag) {
 			APServiceTimer.schedule(timerTask, 15*1000);
 		}
 		

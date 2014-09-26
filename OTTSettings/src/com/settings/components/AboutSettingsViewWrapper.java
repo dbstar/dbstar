@@ -34,7 +34,7 @@ public class AboutSettingsViewWrapper {
 		GDSystemConfigure configure = new GDSystemConfigure();
 		dataModel.initialize(configure);
 		// 从数据库读取数据
-		String hardwareType = dataModel.getHardwareType();
+		String hardwareType = dataModel.getHardwareVersion();
 		String terminalNum = dataModel.getDeviceSearialNumber();
 		String softwareVersion = dataModel.getSoftwareVersion();
 		String loaderVersion = dataModel.getLoaderVersion();

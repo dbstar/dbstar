@@ -119,6 +119,7 @@ public class DbstarService extends Service {
 						timer.schedule(timerTask, time * 60 * 1000, 60 * 1000);				
 					} else {
 						if (isNetworkConnected) {
+							LogUtil.d("DbstarService", "isNetworkConnected = " + isNetworkConnected);
 							DbstarUtil.login(DbstarService.this);
 						}
 						timer.schedule(timerTask, 60 * 1000, 60 * 1000);
@@ -130,11 +131,7 @@ public class DbstarService extends Service {
 	};
 	
 	private boolean getHeartbeat() {
-//		String deviceModel = SqliteUtils.getInstance().queryValue("DeviceModel");
-//		String productSN = SqliteUtils.getInstance().queryValue("ProductSN");
 		GDDataModel dataModel = new GDDataModel();
-//		String deviceModel = dataModel.queryDeviceGlobalProperty("DeviceModel");
-//		String productSN = dataModel.queryDeviceGlobalProperty("ProductSN");
 		GDSystemConfigure mConfigure = new GDSystemConfigure();
 		dataModel.initialize(mConfigure);
 		String deviceModel = dataModel.getHardwareType();
