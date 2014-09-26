@@ -167,6 +167,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 			if (mIsMenuKeyPressed) {
 				Intent intent = new Intent();
 				intent.setClass(GDGeneralInfoActivity.this, GDAdvancedToolsActivity.class);
+				intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
 				startActivity(intent);
 			}
 		}
@@ -175,11 +176,11 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
-		case KeyEvent.KEYCODE_MENU: {
+		case KeyEvent.KEYCODE_MENU:
+		case KeyEvent.KEYCODE_NOTIFICATION:
 			mIsMenuKeyPressed = true;
-			mHandler.postDelayed(mCheckLongPressTask, 8000);
+			mHandler.postDelayed(mCheckLongPressTask, 10000);
 			return true;
-		}
 		}
 		
 		return super.onKeyDown(keyCode, event);
@@ -187,11 +188,11 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		switch (keyCode) {
-		case KeyEvent.KEYCODE_MENU: {
+		case KeyEvent.KEYCODE_MENU:
+		case KeyEvent.KEYCODE_NOTIFICATION:
 			mIsMenuKeyPressed = false;
 			mHandler.removeCallbacks(mCheckLongPressTask);
 			return true;
-		}
 		}
 		return super.onKeyUp(keyCode, event);
 	}

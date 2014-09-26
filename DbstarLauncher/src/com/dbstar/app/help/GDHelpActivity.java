@@ -133,7 +133,7 @@ public class GDHelpActivity extends GDBaseActivity {
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_MENU: {
 			mIsMenuKeyPressed = true;
-			mHandler.postDelayed(mCheckLongPressTask, 5000);
+			mHandler.postDelayed(mCheckLongPressTask, 10000);
 			return true;
 		}
 		}

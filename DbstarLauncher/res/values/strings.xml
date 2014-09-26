@@ -421,6 +421,7 @@
 	
 	<string name="device_init_str">设备初始化，请稍候......</string>
 	
+	<string name="btn_system_manager">系统管理</string>
 	<string name="btn_webbrowser">浏览器</string>
 	<string name="text_advanced_settings">高级设置</string>
 	<string name="text_filebrowser">文件浏览器</string>
