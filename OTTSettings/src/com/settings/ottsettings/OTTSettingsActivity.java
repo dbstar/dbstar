@@ -396,6 +396,11 @@ public class OTTSettingsActivity extends Activity {
 		if (showAdjustSettingsViewWrapper != null && showAdjustSettingsViewWrapper.isOpenAdjustScreenView()) {
 			return showAdjustSettingsViewWrapper.onKeyDown(keyCode, event);
 		}
+		
+		if (keyCode == KeyEvent.KEYCODE_BACK && isFromWired) {
+			wiredSettingsView.onResume();
+			wiredSettingsView.onPause();
+		}
 		return super.onKeyDown(keyCode, event);
 	}
 	

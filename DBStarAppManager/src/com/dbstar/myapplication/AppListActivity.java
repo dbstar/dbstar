@@ -417,6 +417,7 @@ public class AppListActivity extends Activity {
 					|| info.activityInfo.applicationInfo.packageName.equals("com.android.service.remotecontrol")
                 	|| info.activityInfo.applicationInfo.packageName.equals("com.amlogic.mediaboxlauncher")
 					|| info.activityInfo.applicationInfo.packageName.equals("com.hycstv.android")
+					|| info.activityInfo.applicationInfo.packageName.equals("com.guodian.checkdevicetool")
 					|| info.activityInfo.applicationInfo.packageName.equals("app.android.applicationxc")){
 					Log.i("AllApps3D", "do not show Built-in app(packageName): " + info.activityInfo.applicationInfo.packageName);
 					continue;
