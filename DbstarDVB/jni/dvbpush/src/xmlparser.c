@@ -3313,7 +3313,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 #endif
 }
 
-static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
+int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
 {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
@@ -3570,11 +3570,6 @@ static int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_
 						ret = -1;
 					}
 					else{
-						/*
-						 不考虑PushStartTime和PushEndTime的限制，只要有新的播发单就删除旧单，简化逻辑
-						*/
-						prog_monitor_reset();
-						
 						sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc;");
 						sqlite_transaction_exec(sqlite_cmd);
 
@@ -3751,6 +3746,13 @@ PARSE_XML_END:
 */
 int parse_xml(char *relative, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
 {
+	if(PRODUCTDESC_XML==xml_flag){
+		DEBUG("arriving a new ProductDesc(%d):%s, process old ProductDesc\n", xml_flag, relative);
+		/*
+		 不考虑PushStartTime和PushEndTime的限制，只要有新的播发单就删除旧单，简化逻辑
+		*/
+		prog_monitor_reset();
+	}
 	int ret = parseDoc(relative, xml_flag, arg_ext);
 	
 	return ret;

@@ -1,0 +1,194 @@
+#rild.libpath=/system/lib/libreference-ril.so
+#rild.libargs=-d /dev/ttyS0
+#ro.sf.lcd_density=240
+keyguard.no_require_sim=1
+#set keyguard.enable=false to disable keyguard
+#keyguard.enable=false
+mbx.timeout.enable=false
+sys.screensaver.enable=true
+ro.statusbar.widget=false
+ro.statusbar.button=false
+ro.statusbar.yearmonthdayweek=false
+
+#wifi.interface=ra0
+# Time between scans in seconds. Keep it high to minimize battery drain.
+# This only affects the case in which there are remembered access points,
+# but none are in range.
+#wifi.supplicant_scan_interval = 60
+#alsa.mixer.playback.master=DAC2 Analog
+#alsa.mixer.capture.master=Analog
+
+hwui.render_dirty_regions=false
+
+# Configure features
+hw.nopm=true
+hw.nobattery=true
+hw.nophone=true
+hw.novibrate=true
+hw.nogps=true
+hw.cameras=0
+hw.hasethernet=true
+hw.hasusbcamera=true
+hw.has.accelerometer=false
+dongleLauncher.enable.Animation=false
+
+#used in packages/apps/Settings/.../Utils.java
+hw.has.bluetooth=false
+
+ro.ethernet.default_on=true
+
+ro.screen.has.timeout=false
+ro.screen.has.brightness=false
+ro.screen.has.tvout=true
+ro.platform.has.security=false
+ro.platform.has.tts=false
+ro.platform.has.touch=false
+ro.platform.has.mbxuimode=true
+ro.platform.has.1080scale=2
+#ro.fontScale=1.3
+ro.platform.has.digitaudio=true
+ro.platform.has.defaulttvfreq=false
+ro.hw.ethernet.onboard=true
+ro.platform.has.cvbsmode=false
+ro.platform.hdmionly=true
+ro.platform.has.cecmode=false
+ro.platform.filter.modes=480p,576p,1080i,1080i50hz
+
+# Use OSD2 mouse patch
+ro.ui.cursor=osd2
+ro.ui.cursor.autohide=true
+ro.ui.cursor.timeout=10000
+
+#set to 0 temporarily so touch works without other changes
+ro.sf.hwrotation=0
+
+ro.hardware=amlogic
+
+# Enable 32-bit OSD
+sys.fb.bits=32
+
+# Disable GPS
+gps.enable=false
+
+#keep landscape in launcher
+sys.keeplauncher.landcape=true
+
+#Enable player buildin
+media.amsuperplayer.enable=true
+media.amplayer.enable-acodecs=ape,flac,dts
+media.amplayer.enable=true
+media.amplayer.support-exname=divx,h264,avi,ts,m2ts,mkv,mp4,mpg,mpeg,rm,rmvb,wmv,ts,dat,vob,vc1
+media.amplayer.support-exname1=mp2,mp3,ac3
+media.amsuperplayer.m4aplayer=STAGEFRIGHT_PLAYER
+media.amsuperplayer.defplayer=PV_PLAYER
+media.amplayer.thumbnail=true
+media.amplayer.startmode=true
+media.p2pplay.enable=true
+media.arm.audio.decoder=ape,flac,aac_latm
+mbx.3D_Bright.enable=false
+# Nand write need force sync when gadget
+gadget.nand.force_sync=true
+
+# Camera exif
+ro.camera.exif.make=M6
+ro.camera.exif.model=g18ref
+#hide status bar
+persist.sys.hideStatusBar=true
+# when usbstorage, CPU mode and freq
+ro.usbstorage.cpumode=performance
+ro.usbstorage.maxfreq=600000
+#support media poll uevent,can use sd cardread on usb port
+has.media.poll=true
+#used forward seek for libplayer
+media.libplayer.seek.fwdsearch=1
+#enable address bar cover issue fixing
+ro.flashplayer.surfacehack=1
+######## UBOOTENV VARIBLES - r/w as system properties ##########
+#
+#  Now we can load ubootenv varibles to system properties. 
+#  We use a special prefix ("ubootenv.var" as default) to indicate that the 'property'
+#  actually is an ubootenv varible. 
+#  
+#  A ubootenv 'property' will be initialized during system booting. And when user set
+#  a different value, it will be written back to ubootenv device immediately.
+#
+
+## prefix of ubootenv varibles - should less than 16 chars.
+#UBOOTENV MTD NAME
+#ubootenv.var.bootcmd=
+#ubootenv.var.cpuclock=
+#ubootenv.var.gpuclock=
+#ubootenv.var.memsize=
+#ubootenv.var.ethaddr=
+#ubootenv.var.ipaddr=
+#ubootenv.var.gatewayip=
+ubootenv.var.outputmode=
+#ubootenv.var.screenratio=
+#ubootenv.var.oobeflag=
+ubootenv.var.480poutputx=
+ubootenv.var.480poutputy=
+ubootenv.var.480poutputwidth=
+ubootenv.var.480poutputheight=
+ubootenv.var.480ioutputx=
+ubootenv.var.480ioutputy=
+ubootenv.var.480ioutputwidth=
+ubootenv.var.480ioutputheight=
+ubootenv.var.576poutputx=
+ubootenv.var.576poutputy=
+ubootenv.var.576poutputwidth=
+ubootenv.var.576poutputheight=
+ubootenv.var.576ioutputx=
+ubootenv.var.576ioutputy=
+ubootenv.var.576ioutputwidth=
+ubootenv.var.576ioutputheight=
+ubootenv.var.720poutputx=
+ubootenv.var.720poutputy=
+ubootenv.var.720poutputwidth=
+ubootenv.var.720poutputheight=
+ubootenv.var.1080poutputx=
+ubootenv.var.1080poutputy=
+ubootenv.var.1080poutputwidth=
+ubootenv.var.1080poutputheight=
+ubootenv.var.1080ioutputx=
+ubootenv.var.1080ioutputy=
+ubootenv.var.1080ioutputwidth=
+ubootenv.var.1080ioutputheight=
+ubootenv.var.digitaudiooutput=
+ubootenv.var.defaulttvfrequency=
+ubootenv.var.has.accelerometer=
+ubootenv.var.cecconfig=
+ubootenv.var.cvbsmode=
+ubootenv.var.hdmimode=
+
+#Configure the dtv standard, can only be DVB,ATSC
+dtv.standard=DVBS
+
+# Disable preload-class
+ro.amlogic.no.preloadclass=1
+
+virtualsd.enable=true
+
+#service.adb.tcp.port=5555
+const.window.w=1280
+const.window.h=720
+sys.defaultStream.ismusic=true
+ro.app.optimization=true
+
+#add livhls,libcurl as default hls
+#media.libplayer.curlenable=true
+#media.libplayer.modules=vhls_mod,curl_mod
+media.libplayer.modules=vhls_mod,dash_mod
+libplayer.hls.cmf=true
+
+#for full screen
+flash.hideStatusBar.enable=true
+
+#set default timezone
+persist.sys.timezone=Asia/Shanghai
+#set default ethernet on
+ro.ethernet.default_on=true
+#set default language zh
+persist.sys.language=zh
+persist.sys.country=CN
+ro.product.locale.language=zh
+ro.product.locale.region=ZH

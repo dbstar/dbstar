@@ -80,7 +80,8 @@ typedef struct tagPRG
 	long long		total;
 	int				parsed;
 	char			publication_id[64];
-	char			product_id[64];	
+	char			product_id[64];
+	char			fileuri[512];
 }PROG_S;
 
 static int push_decoder_buf_uninit();
@@ -658,9 +659,10 @@ void *maintenance_thread()
 	int smart_card_insert_flag = -1;
 	
 	time_t s_pin_sec;	// ¼ÇÂ¼¿ª»úÊ±¼ä£¨Ãë£©
-//	time_t now_sec;
-//	struct tm now_tm;
-//	char sqlite_cmd[256];
+	time_t last_checkreboot_sec;	// ÉÏ´Î¼ì²éÊÇ·ñÖØÆôµÄÊ±¼ä
+	time_t now_sec;
+	struct tm now_tm;
+	char sqlite_cmd[256];
 	int ret = 0;
 	char SmartCardSn[128];
 	
@@ -793,19 +795,38 @@ push_decoder_thread±ØÐëÆðÀ´²ÅÄÜË³ÀûÖ´ÐÐotaÉý¼¶¹ý³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 #ifdef DRM_TEST
 #else
 
-#if 0
-Ôö¼ÓAP¹¦ÄÜºó£¬ÖÕ¶Ë²»ÄÜ×Ô¶¯ÖØÆô
+#if 1
+// Ôö¼ÓAP¹¦ÄÜºó£¬ÖÕ¶Ë²»ÄÜÆµ·±×Ô¶¯ÖØÆô£¬ÔÝ¶¨ÔÚÃ¿ÖÜÎåÁè³¿ÐÂ²¥·¢µ¥ÉúÐ§Ç°Ò»Ð¡Ê±
+// µ±Ç°µÄÖØÆôÊ±¼ä¾Í²»ÐèÒª¿¼ÂÇ¹úµçÁË¡£Ã¿¸ô20·ÖÖÓ¼ì²éÒ»ÏÂ¡£
 		if(1==user_idle_status_get()){
 			time(&now_sec);
 			
 //			DEBUG("in user idle status,now_sec: %ld, s_pin_sec=%ld, reboot_timestamp_get()=%d\n", now_sec, s_pin_sec, reboot_timestamp_get());
 			
-			// 1¡¢¿ª»ú³¬¹ý6¸öÐ¡Ê±(21600)£»2¡¢ÓëÉÏ´ÎÖØÆôµÄÊ±¼ä²î´óÓÚ7200£¨Á½¸öÐ¡Ê±£©²ÅÓÐÐ§
-			if((now_sec-s_pin_sec>21600) && (now_sec-reboot_timestamp_get())>7200){
-				localtime_r(&now_sec, &now_tm);
+			// 1¡¢ÓëÉÏ´Î¼ì²é¼ä¸ô´óÓÚ20·ÖÖÓ£¨1200£©
+			// 2¡¢ÓëÉÏ´ÎÖØÆôµÄÊ±¼ä²î´óÓÚ24¸öÐ¡Ê±(86400)
+			// 3¡¢¿ª»ú³¬¹ý24¸öÐ¡Ê±(86400)£»
+			// Ö®ËùÒÔÓÐµÚ2¸öÅÐ¶Ï£¬ÊÇÒòÎªÓÐ¿ÉÄÜ¿ª»úÊ±¼äÎª1970Äê£¬ºÜ¿ì½ÓÊÕµ½Ê±¼äÍ¬²½Îª2014Äê£¬ÒýÆðÒâÍâÂú×ã¿ª»ú´óÓÚ24¸öÐ¡Ê±
+			if(		now_sec-last_checkreboot_sec>1200
+				&&	(now_sec-s_pin_sec>86400) 
+				&&	(now_sec-reboot_timestamp_get())>86400 ){
 				
-				// ¹úµçÍø¹ØÐèÒªÔÚ45·ÖºÍÕûµãÖ®¼ä±£³Ö¿ª»ú×´Ì¬£¬Ô¤Áô15·ÖÖÓÖØÆôÊ±¼ä£¬´°¿ÚÊ±¼äÃ¿Ð¡Ê±Îª0·Öµ½30·Ö
-				if(onehour_before_pushend_get()==now_tm.tm_hour && now_tm.tm_min>=0 && now_tm.tm_min<=30){
+				last_checkreboot_sec = now_sec;
+				localtime_r(&now_sec, &now_tm);
+				int reboot_hour = onehour_before_pushend_get();
+				
+				DEBUG("last_checkreboot_sec=now_sec: %ld, s_pin_sec=%ld, reboot_hour=%d\n", now_sec, s_pin_sec, reboot_hour);
+				
+				// ·Ï¼Æ»®£º¹úµçÍø¹ØÐèÒªÔÚ45·ÖºÍÕûµãÖ®¼ä±£³Ö¿ª»ú×´Ì¬£¬Ô¤Áô15·ÖÖÓÖØÆôÊ±¼ä£¬´°¿ÚÊ±¼äÃ¿Ð¡Ê±Îª0·Öµ½30·Ö
+				//if(reboot_hour==now_tm.tm_hour && now_tm.tm_min>=0 && now_tm.tm_min<=30){
+				
+				// ÏÖ¼Æ»®2014-09-29£º²»ÔÙ¿¼ÂÇ¹úµç£¬¸ù¾Ý²¥·¢µ¥¿ªÊ¼Ê±¼ä£¬Ö»¿¼ÂÇÔÚÐÇÆÚËÄÁè³¿»òÐÇÆÚÎåÁè³¿¡£
+				// Èç¹ûÖØÆôÊ±¼äÔÚ0¡«7µã£¬ÔòÔÚÖÜÎåÖØÆô£»ÆäËûÊ±¼äµãÔÚÖÜËÄÖØÆô
+				if(	reboot_hour==now_tm.tm_hour
+					&&	((0<=reboot_hour && reboot_hour<=6 && 4==now_tm.tm_wday)
+						|| (reboot_hour>6 && 3==now_tm.tm_wday)
+						)
+					){
 					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d\n", 
 						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
 					
@@ -1199,12 +1220,14 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].parsed = prog->parsed;
 			snprintf(s_prgs[i].publication_id, sizeof(s_prgs[i].publication_id), "%s", prog->publication_id);
 			snprintf(s_prgs[i].product_id, sizeof(s_prgs[i].product_id), "%s", prog->product_id);
+			snprintf(s_prgs[i].fileuri, sizeof(s_prgs[i].fileuri), "%s", prog->fileuri);
 			
-			DEBUG("regist to push[%d]:%s(%s) in %s %s %s %s %lld\n",
+			DEBUG("regist to push[%d]:%s(%s) in %s %s %s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].publication_id,
 					s_prgs[i].product_id,
+					s_prgs[i].fileuri,
 					s_prgs[i].caption,
 					s_prgs[i].uri,
 					s_prgs[i].descURI,
@@ -1227,6 +1250,7 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].parsed = prog->parsed;
 			snprintf(s_prgs[i].publication_id, sizeof(s_prgs[i].publication_id), "%s", prog->publication_id);
 			snprintf(s_prgs[i].product_id, sizeof(s_prgs[i].product_id), "%s", prog->product_id);
+			snprintf(s_prgs[i].fileuri, sizeof(s_prgs[i].fileuri), "%s", prog->fileuri);
 			
 /*
  ÒÑ¾­½âÎö¹ýµÄ½ÚÄ¿£¬ÎÞÐè×¢²áµ½push¿âÖÐ£¬Ö»ÐèÒªUIÉÏÏÔÊ¾¼´¿É¡£
@@ -1239,11 +1263,12 @@ static int mid_push_regist(PROG_S *prog)
 			}
 			s_push_monitor_active++;
 			
-			PRINTF("regist to push[%d]:%s(%s) in %s %s %s %lld\n",
+			PRINTF("regist to push[%d]:%s(%s) in %s %s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].publication_id,
 					s_prgs[i].product_id,
+					s_prgs[i].fileuri,
 					s_prgs[i].uri,
 					s_prgs[i].descURI,
 					s_prgs[i].total);
@@ -1390,6 +1415,7 @@ int delete_publication_from_monitor(char *PublicationID, char *ProductID)
 				s_prgs[i].parsed = 0;
 				memset(s_prgs[i].publication_id, 0, sizeof(s_prgs[i].publication_id));
 				memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
+				memset(s_prgs[i].fileuri, 0, sizeof(s_prgs[i].fileuri));
 				
 				DEBUG("delete Publication %s from monitor and ProductDesc table finish\n", s_prgs[i].publication_id);
 				s_dvbpush_info_refresh_flag = 1;
@@ -1415,6 +1441,28 @@ int prog_monitor_reset(void)
  ½ÓÊÕÍê±ÏµÄ½ÚÄ¿pushÏµÍ³»á×Ô¶¯·´×¢²á£¬µ±²¥·¢µ¥¹ýÆÚÊ±£¬¶ÔÄÇÐ©½ÓÊÕ²»Íê±ÏµÄ½ÚÄ¿½øÐÐ·´×¢²á²¢É¾³ýÀ¬»ø
  µ±·´×¢²áÊ±ÎÄ¼þ±»¹Ø±Õ£¬¿ÉÒÔ½øÐÐÉ¾³ý
 */
+			int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
+			
+			// ³ÉÆ·ÒÑ¾­½ÓÊÕ98%¼°ÒÔÉÏ
+			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=2)
+			{
+				DEBUG("[%d]%s: cur=%lld, total=%lld, wanting %d%%, make it finished forced\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
+				
+				char tmp_fileuri[512];
+				char std_fileuri[512];
+				snprintf(tmp_fileuri,sizeof(tmp_fileuri),"%s/%s@tmp",push_dir_get(),s_prgs[i].fileuri);
+				snprintf(std_fileuri,sizeof(std_fileuri),"%s/%s",push_dir_get(),s_prgs[i].fileuri);
+				
+				if(0==rename(tmp_fileuri,std_fileuri)){
+					DEBUG("rename from %s to %s success\n", tmp_fileuri, std_fileuri);
+					parseDoc(s_prgs[i].descURI, PUBLICATION_DIR, "publication");
+					s_prgs[i].parsed = 1;
+				}
+				else{
+					DEBUG("rename from %s to %s failed\n", tmp_fileuri, std_fileuri);
+				}
+			}
+				
 			if(0==s_prgs[i].parsed){
 				PRINTF("[%s] %s is download stop but not complete, unregist and clean it\n", s_prgs[i].id,s_prgs[i].uri);
 				ret = push_dir_unregister(s_prgs[i].uri);
@@ -1432,15 +1480,6 @@ int prog_monitor_reset(void)
 					PRINTF("push unregist failed: %s, no registed uri\n", s_prgs[i].uri);
 				else
 					PRINTF("push unregist failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
-				
-				
-				int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
-				
-				// ´óÓÚ1GµÄ³ÉÆ·ÒÑ¾­½ÓÊÕ95%¼°ÒÔÉÏ
-				if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=5 && s_prgs[i].total>1073741824LL)
-				{
-					DEBUG("cur=%lld, total=%lld, wanting %d%%\n", s_prgs[i].cur, s_prgs[i].total, wanting_percent);
-				}
 			}
 			
 			DEBUG("unregist from push[%d]:%s(%s) in %s %s %s %lld\n",
@@ -1463,6 +1502,7 @@ int prog_monitor_reset(void)
 			s_prgs[i].parsed = 0;
 			memset(s_prgs[i].publication_id, 0, sizeof(s_prgs[i].publication_id));
 			memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
+			memset(s_prgs[i].fileuri, 0, sizeof(s_prgs[i].fileuri));
 		}
 	}
 	
@@ -1481,7 +1521,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 		DEBUG("no record in table, return\n");
 		return 0;
 	}
-//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed
+//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID,FileURI
 	int i = 0;
 	RECEIVESTATUS_E recv_stat = RECEIVESTATUS_REJECT;
 	long long totalsize = 0LL;
@@ -1527,6 +1567,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			cur_prog.parsed = atoi(result[i*column+10]);
 			snprintf(cur_prog.publication_id,sizeof(cur_prog.publication_id),"%s",result[i*column+1]);
 			snprintf(cur_prog.product_id,sizeof(cur_prog.product_id),"%s",result[i*column+11]);
+			snprintf(cur_prog.fileuri,sizeof(cur_prog.fileuri),"%s",result[i*column+12]);
 
 /*
  ÒÑ¾­½âÎö¹ýµÄ½ÚÄ¿£¬ÎÞÐè×¢²áµ½push¿âÖÐ£¬Ö»ÐèÒªUIÉÏÏÔÊ½¼´¿É¡£
@@ -1643,16 +1684,16 @@ int push_recv_manage_refresh(int recv_by_sequence)
 	
 	int flag_carrier = 0;
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ProductDesc.ProductDescID,ID,ReceiveType,ProductDesc.URI,ProductDesc.DescURI,ProductDesc.TotalSize,ProductDesc.PushStartTime,ProductDesc.PushEndTime,ProductDesc.ReceiveStatus,FreshFlag,Parsed,ProductDesc.productID,FileURI FROM ProductDesc,Publication where ID=PublicationID and ReceiveType='%d'", RECEIVETYPE_PUBLICATION);
 	
 	if(recv_by_sequence){
 		DEBUG("%d: push regist by sequence\n", recv_by_sequence);
-		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " WHERE RecvSequence=(select min(RecvSequence) from ProductDesc);");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " AND RecvSequence=(select min(RecvSequence) from ProductDesc)");
 	}
 	else{
 		DEBUG("%d: push regist reguler, without sequence\n", recv_by_sequence);
-		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), ";");
 	}
+	snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), "union SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID,TimeStamp FROM ProductDesc where ReceiveType!='%d';", RECEIVETYPE_PUBLICATION);
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*

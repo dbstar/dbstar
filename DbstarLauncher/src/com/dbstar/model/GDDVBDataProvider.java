@@ -386,6 +386,7 @@ public class GDDVBDataProvider extends GDDBProvider {
 		super.initialize(configure);
 
 		String dbFile = mConfigure.getDVBDatabaseFile();
+		LogUtil.d(TAG, "initialize in GDDVBDataProvider, dbFile [" + dbFile + "]");
 		if (!isFileExist(dbFile)) {
 			return false;
 		}

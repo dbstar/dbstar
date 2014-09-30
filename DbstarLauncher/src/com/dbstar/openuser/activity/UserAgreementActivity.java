@@ -70,7 +70,7 @@ public class UserAgreementActivity extends Activity {
 					// 根据需求，跳转到注册页面，就不能返回到上一个activity，必须注册完成，所以这里需要将“用户协议”页面finish掉
 					finish();
 				} else {
-					ToastUtils.showToast(UserAgreementActivity.this, getString(R.string.lt_page_user_beginUser_toast));
+					ToastUtils.showToast(UserAgreementActivity.this, getResources().getString(R.string.lt_page_user_beginUser_toast));
 				}
 			}
 		});

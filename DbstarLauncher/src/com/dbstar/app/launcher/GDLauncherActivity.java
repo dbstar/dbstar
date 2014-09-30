@@ -1,6 +1,7 @@
 package com.dbstar.app.launcher;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
@@ -8,6 +9,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.TypedValue;
@@ -23,6 +26,7 @@ import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.R;
@@ -58,6 +62,7 @@ import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.util.FileOperation;
+import com.dbstar.util.ImageUtil;
 import com.dbstar.util.LogUtil;
 import com.dbstar.widget.GDAdapterView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
@@ -103,6 +108,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	// Calendar View
 	TextView mTimeView, mDateView, mWeekView;
+	RelativeLayout mMainContainer;
+	ImageView mImgView;
 
 	// Animation
 	boolean mMoveLeft = true;
@@ -1650,6 +1657,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mFocusItemBackground = (ImageView) findViewById(R.id.focus_item_bg);
 
+		mMainContainer = (RelativeLayout) findViewById(R.id.main_view);
+		mImgView = (ImageView) findViewById(R.id.context_view_bg_1);
+		
 		// Calendar View
 		mTimeView = (TextView) findViewById(R.id.time_view);
 		mDateView = (TextView) findViewById(R.id.date_view);
@@ -1693,12 +1703,28 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			LogUtil.d(TAG, "for NO GUODIAN, do nothing for mPowerController");
 			mPowerController = null;
 		}
+		
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		
+		if (bitmaps == null || bitmaps.size() <= 0) {
+			mMainContainer.setBackgroundResource(R.drawable.view_background);
+			mImgView.setImageResource(R.drawable.context_view_bg_1);
+			return;
+		}
+		
+		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
+			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
+			mMainContainer.setBackgroundDrawable(drawable);		
+		}
+		
+		if (bitmaps.containsKey(ImageUtil.Service_Key)) {
+			mImgView.setImageBitmap(bitmaps.get(ImageUtil.Service_Key));					
+		}
 	}
 
 	private void initializeEngine() {
 		// start background engines
-		mCelanderThread = new GDCelanderThread(this, mTimeView, mDateView,
-				mWeekView);
+		mCelanderThread = new GDCelanderThread(this, mTimeView, mDateView, mWeekView);
 		mCelanderThread.start();
 
 		mMediaScheduler = new GDMediaScheduler(this, mVideoView, mPosterView);
@@ -1991,5 +2017,6 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		}
 
 	}
-
 }
+
+

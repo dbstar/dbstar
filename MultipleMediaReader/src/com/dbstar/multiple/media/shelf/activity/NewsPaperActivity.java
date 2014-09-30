@@ -3,6 +3,7 @@ package com.dbstar.multiple.media.shelf.activity;
 import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.widget.RelativeLayout;
@@ -38,6 +39,7 @@ public class NewsPaperActivity extends Activity{
         mGroupView = (RelativeLayout) findViewById(R.id.group_fragment);
         mRootId = getIntent().getStringExtra("Id");
         String showType = getIntent().getStringExtra("showType");
+        Log.d(TAG, "-----mRootId----- = " + mRootId);
         showType = SHOWTYPE_NORMAL;
         if(showType != null)
             mShowType = showType;

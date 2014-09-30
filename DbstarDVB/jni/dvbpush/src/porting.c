@@ -3075,8 +3075,9 @@ static int push_end_early_hour_init()
 	return 0;
 }
 
-//获取重启的时间点（小时），返回0——23，考虑到用户的感受，目前只限定后半夜（0——6点重启）
-//由于每个小时的后15分钟（hh:45——hh:00）要预留给查询上报国电网关数据，另预留重启、开机15分钟（hh:30——hh:45），因此实际上可以发起重启动作的时间窗为（hh:01——hh:30）
+// 获取重启的时间点（小时），返回0——23，
+// 废：考虑到用户的感受，目前只限定后半夜（0——6点重启）
+// 废：由于每个小时的后15分钟（hh:45——hh:00）要预留给查询上报国电网关数据，另预留重启、开机15分钟（hh:30——hh:45），因此实际上可以发起重启动作的时间窗为（hh:01——hh:30）
 //但是预告单GuideList.xml没有给出具体的播发时间，因此根据今天的播发单ProductDesc.xml时间预测明天的播发时间。如果当前没有播发单，则默认为播发时间为凌晨1点
 //重启时间在新播发单前一个小时，此时有最大的可能接受已经完毕，尽可能的避免大码率写硬盘时重启。比如：1点播发新单，那么就是0点重启。
 //新播发单的开始和旧播发单结束是同一个时间，这里采用PushEndTime计算
@@ -3084,8 +3085,8 @@ int onehour_before_pushend_get()
 {
 	int onehour_before_pushend = atoi(s_onehour_before_pushend);
 	
-	if(onehour_before_pushend<0 || onehour_before_pushend>6)
-		onehour_before_pushend = 0;
+//	if(onehour_before_pushend<0 || onehour_before_pushend>6)
+//		onehour_before_pushend = 0;
 	
 	return onehour_before_pushend;
 }

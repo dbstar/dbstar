@@ -4,11 +4,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -17,11 +20,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.model.GuideListItem;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.ImageUtil;
 import com.dbstar.util.LogUtil;
 import com.dbstar.widget.GDAdapterView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
@@ -39,6 +44,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 	GDGridView mListView = null;
 	ReceiveItemsAdapter mReceiveItemAdapter;
 	View mTimelineItemFousedView = null;
+	RelativeLayout mContainer;
 
 	Drawable mTimelineItemIconNormal, mTimelineItemIconFocused,
 			mTimelineItemTextFocusedBackground, mReceiveItemLightBackground,
@@ -126,6 +132,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		mReceiveItemUnchecked = getResources().getDrawable(
 				R.drawable.checkbox_unchecked);
 
+		mContainer = (RelativeLayout) findViewById(R.id.orderpush_view_container);
 		mTimelineView = (GDGridView) findViewById(R.id.timeline);
 		mTimelineAdapter = new TimelineAdapter(this);
 		mTimelineView.setAdapter(mTimelineAdapter);
@@ -188,6 +195,18 @@ public class GDOrderPushActivity extends GDBaseActivity {
 
 		mListView.setFocusable(true);
 //		mListView.setOnKeyListener(mReceiveItemsKeyListener);
+		
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		
+		if (bitmaps == null || bitmaps.size() <= 0) {
+			mContainer.setBackgroundResource(R.drawable.view_background);
+			return;
+		}
+		
+		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
+			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
+			mContainer.setBackgroundDrawable(drawable);		
+		}
 	}
 
 	public void onServiceStart() {

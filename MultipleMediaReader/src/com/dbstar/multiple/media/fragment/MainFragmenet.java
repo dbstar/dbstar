@@ -93,7 +93,6 @@ public class MainFragmenet extends BaseFragment {
         View view = inflater.inflate(R.layout.newspaper_main_fragment_view, null);
         initView(view);
         loadMainCategoryData();
-        
         return view;
     }
     

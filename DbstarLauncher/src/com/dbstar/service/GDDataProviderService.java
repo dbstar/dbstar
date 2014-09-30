@@ -1,22 +1,15 @@
 package com.dbstar.service;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream; 
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
 
 import android.app.AlertDialog;
 import android.app.Instrumentation;
@@ -24,9 +17,9 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.DialogInterface.OnClickListener;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -474,9 +467,11 @@ public class GDDataProviderService extends Service {
 		(new File(dir_dist)).mkdirs();
 		
 		File[] file = (new File(dir_source)).listFiles();
-		for (int i = 0; i < file.length; i++) {
-			if (file[i].isFile()) {
-				fileChannelCopy(file[i],new File(dir_dist+file[i].getName()));
+		if (file != null && file.length > 0) {			
+			for (int i = 0; i < file.length; i++) {
+				if (file[i].isFile()) {
+					fileChannelCopy(file[i],new File(dir_dist+file[i].getName()));
+				}
 			}
 		}
 	}

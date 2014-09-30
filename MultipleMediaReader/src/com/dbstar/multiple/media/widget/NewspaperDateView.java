@@ -68,6 +68,10 @@ public class NewspaperDateView extends RelativeLayout {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
+    	if (mData == null) {
+    		return true;
+    	}
+    	
         switch (keyCode) {
         case KeyEvent.KEYCODE_DPAD_DOWN:
             if (mData.mPostion < mCurrentPageSize-1) {

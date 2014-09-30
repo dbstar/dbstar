@@ -1,8 +1,13 @@
 package com.dbstar.app.help;
 
+import java.util.HashMap;
+
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -16,16 +21,19 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
 import com.dbstar.app.settings.GDSystemMgrActivity;
+import com.dbstar.util.ImageUtil;
 import com.dbstar.util.LogUtil;
 
 public class GDHelpActivity extends GDBaseActivity {
 	private static final String TAG = "GDHelpActivity";
 
+	private RelativeLayout mContainer;
 	private ListView mHeaderView;
 	private ListAdapter mAdapter;
 	private WebView mContentView;
@@ -51,6 +59,7 @@ public class GDHelpActivity extends GDBaseActivity {
 	public void initializeView() {
 		super.initializeView();
 
+		mContainer = (RelativeLayout) findViewById(R.id.help_view_container);
 		mHeaderView = (ListView) findViewById(R.id.list);
 		mContentView = (WebView) findViewById(R.id.web_view);
 
@@ -101,6 +110,18 @@ public class GDHelpActivity extends GDBaseActivity {
 
 			}
 		});
+		
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		
+		if (bitmaps == null || bitmaps.size() <= 0) {
+			mContainer.setBackgroundResource(R.drawable.view_background);
+			return;
+		}
+		
+		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
+			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
+			mContainer.setBackgroundDrawable(drawable);		
+		}
 	}
 
 	public void onStart() {
@@ -112,7 +133,7 @@ public class GDHelpActivity extends GDBaseActivity {
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_MENU: {
 			mIsMenuKeyPressed = true;
-			mHandler.postDelayed(mCheckLongPressTask, 5000);
+			mHandler.postDelayed(mCheckLongPressTask, 10000);
 			return true;
 		}
 		}

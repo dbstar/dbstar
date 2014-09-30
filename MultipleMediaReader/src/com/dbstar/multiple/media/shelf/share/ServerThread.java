@@ -28,13 +28,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
-import com.dbstar.multiple.media.util.GLog;
-
 import android.content.Context;
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
+
+import com.dbstar.multiple.media.util.GLog;
 
 public class ServerThread extends Thread {
 	private ServerSocket listener = null;

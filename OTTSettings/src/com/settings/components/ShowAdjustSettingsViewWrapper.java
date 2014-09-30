@@ -51,7 +51,7 @@ public class ShowAdjustSettingsViewWrapper {
     private final int MIN_Height = 80;
 	
     private int screen_rate = MIN_Height;
-    private int screen_rate_ok = 100;
+    private static int screen_rate_ok;
     
     
 	public static int mCurrentContentNum = 0;	
@@ -119,6 +119,7 @@ public class ShowAdjustSettingsViewWrapper {
         
         mScreenPositionManager.initPostion();
         screen_rate = mScreenPositionManager.getRateValue();
+        screen_rate_ok = screen_rate;
         
         LogUtil.d(TAG, "----openScreenAdjustLayout--------" + screen_rate);
         
@@ -147,6 +148,7 @@ public class ShowAdjustSettingsViewWrapper {
 				// mScreenPositionManager.zoomOut();
 				mScreenPositionManager.zoomByPercent(screen_rate);
 			}
+			
 			btn_position_zoom_in.setBackgroundResource(R.drawable.minus_focus);
 			btn_position_zoom_out.setBackgroundResource(R.drawable.plus_unfocus);
 			

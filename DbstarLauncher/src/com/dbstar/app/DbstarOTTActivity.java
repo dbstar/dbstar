@@ -1,12 +1,12 @@
 package com.dbstar.app;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -40,7 +40,6 @@ import com.dbstar.app.adapter.GalleryAdapter;
 import com.dbstar.app.components.FlashGallery;
 import com.dbstar.app.launcher.GDLauncherActivity;
 import com.dbstar.bean.ImageSet;
-import com.dbstar.bean.OBean;
 import com.dbstar.bean.QueryPoster;
 import com.dbstar.bean.QueryPosterData;
 import com.dbstar.bean.QueryRecommand;
@@ -81,18 +80,13 @@ public class DbstarOTTActivity extends Activity {
 	private TextView txtMyApp;
 	private TextView txtSetting;
 	
-	private static Map<String, Object> objectMap = new HashMap<String, Object>();// 每个按钮的id对应的每个key值
-	private static Map<String, Object> objectMap2 = new HashMap<String, Object>();// 每个按钮对应的上下左右的key值
-	
-	private static String curFocusPosition = "0";
-	private static String lastcurFocusPosition = "0";
-	
 	private int index = 0;
 	private ImageSet mImageSet;
 	private Integer[] pictures = {R.drawable.main_img1, R.drawable.main_img2, R.drawable.main_img3, R.drawable.main_img4, R.drawable.main_img5};
 	
 	private GalleryAdapter adapter2;
 	private boolean isToAthorAvtivity = false;
+	private boolean timerTag = false;
 	
 	private Intent intentSer; 
 	private GalleryTask task;
@@ -108,6 +102,11 @@ public class DbstarOTTActivity extends Activity {
 			case 3:
 				LogUtil.d("Intent Service", "跨进程调用intentSettings========" + new Intent("com.settings.service.action.OTTSettingsService").toString());
 				startService(new Intent("com.settings.service.action.OTTSettingsService"));
+				
+				timerTag = true;
+				
+				//  每次进入程序15s后，都要看一下是否注册及登录。
+				DbstarUtil.login(DbstarOTTActivity.this);
 				break;
 			default:
 				break;
@@ -129,21 +128,6 @@ public class DbstarOTTActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		mImageSet = new ImageSet(adapter2);
-		// 检查联网情况
-		boolean isNetworkConnected = DbstarUtil.isNetworkConnected(this);
-		//  先判断是否联网
-		if (!isNetworkConnected) {
-			//  如果没有网络，则读取文件中的数据，如果没有文件，则展现pictures里面的图片
-			readQueryPosterFromSDCard();
-			readQueryRecommandFromSDCard();
-		} else {
-			//  如果有网络，则登录，并从服务器端取得数据
-			DbstarUtil.login(DbstarOTTActivity.this);
-			getQueryPoster();
-			getQueryRecommand();
-		}
-		
 		super.onCreate(savedInstanceState);
 		// 设置成无标题
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -152,7 +136,46 @@ public class DbstarOTTActivity extends Activity {
 		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
 		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
-		findViews();
+		mImageSet = new ImageSet(adapter2);
+		// 检查联网情况
+		boolean isNetworkConnected = DbstarUtil.isNetworkAvailable(this);
+		//  先判断是否联网
+		if (!isNetworkConnected) {
+			//  如果没有网络，则读取文件中的数据，如果没有文件，则展现pictures里面的图片
+			readQueryPosterFromSDCard();
+			readQueryRecommandFromSDCard();
+		} else {
+			getQueryPoster();
+			getQueryRecommand();
+		}
+		
+		String defaultStorage = "/storage/external_storage/sda1/";
+		File file = new File(defaultStorage);
+		if (file.exists()){
+			LogUtil.d("DbstarOTTActivity", " before wait time = " + System.currentTimeMillis());
+			LogUtil.d("DbstarOTTActivity", " file.canWrite() = " + file.canWrite());
+			if (!file.canWrite()) {				
+				synchronized (this) {			
+					for (int i = 0; i < 10; i++){
+						try {
+							
+							wait(1000);
+							
+							if (file.canWrite()) {
+								LogUtil.d("DbstarOTTActivity", "storage " + defaultStorage + "is ready at loop " + i);
+								break;
+							} else {
+								LogUtil.d("DbstarOTTActivity", "storage " + defaultStorage + "is not ready at loop " + i);
+							}
+						} catch (InterruptedException e) {							
+							LogUtil.d("DbstarOTTActivity", " wait is interrupted");
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			LogUtil.d("DbstarOTTActivity", " after wait time = " + System.currentTimeMillis());
+		}
 		
 		intentSer = new Intent();
 		intentSer.setClass(this, GDDataProviderService.class);
@@ -161,7 +184,6 @@ public class DbstarOTTActivity extends Activity {
 		
 		startService(new Intent(this, DbstarService.class));
 		
-//		initViews();
 		findViews();
 		imgStarTV.requestFocus();
 		populateData();
@@ -305,7 +327,7 @@ public class DbstarOTTActivity extends Activity {
 			mImageSet = new ImageSet(adapter2);
 		}
 		// 检查联网情况
-		boolean isNetworkConnected = DbstarUtil.isNetworkConnected(this);
+		boolean isNetworkConnected = DbstarUtil.isNetworkAvailable(this);
 		// 先判断是否联网，如果没有联网，就停留在海报页面
 
 		if (!isNetworkConnected) {
@@ -330,12 +352,6 @@ public class DbstarOTTActivity extends Activity {
 		} else {
 			adapter2.notifyDataSetChanged();
 		}
-
-//		initViews();
-		populateData();
-		setEventListener();
-	
-		
 	}
 	
 	private void setEventListener() {
@@ -347,7 +363,6 @@ public class DbstarOTTActivity extends Activity {
 			public void onClick(View v) {
 				Intent intent = new Intent();
 				intent.setClass(DbstarOTTActivity.this, GDLauncherActivity.class);
-//				startActivity(intent);
 				startActivityForResult(intent, Btn_StarTV_Sequence);
 				isToAthorAvtivity = true;
 			}
@@ -368,7 +383,6 @@ public class DbstarOTTActivity extends Activity {
 					bundle.putInt(Ethernet_Mode, Ethernet_Network_Mode);
 					intent.putExtra("mode", bundle);
 					startActivityForResult(intent, Btn_Setting_Sequence);
-					
 				}
 			}
 		});
@@ -564,7 +578,6 @@ public class DbstarOTTActivity extends Activity {
 			imgMyApp.setOnClickListener(new BtnOnClickListener("com.dbstar.myapplication", Btn_MyApp_Sequence));
 		} else {
 			txtSetting.setText(name);
-//			imgSetting.setOnClickListener(new BtnOnClickListener("com.mbx.settingsmbox"));
 			imgSetting.setOnClickListener(new BtnOnClickListener("com.settings.ottsettings", Btn_Setting_Sequence));
 		}
 	}
@@ -693,34 +706,10 @@ public class DbstarOTTActivity extends Activity {
 		return recommandData;
 	}
 	
-	private void initViews() {
-		findViews();
-		
-		curFocusPosition = "0";
-		objectMap.put("0", R.id.flash_startv_img);
-		objectMap.put("1", R.id.flash_cntv_img);
-		objectMap.put("2", R.id.flash_appshop_img);
-		objectMap.put("3", R.id.flash_myapp_img);
-		objectMap.put("4", R.id.flash_setting_img);
-		
-		objectMap2.put("0", new OBean("0", "0", "4", "1", "0"));
-		objectMap2.put("1", new OBean("1", "1", "0", "2", "1"));
-		objectMap2.put("2", new OBean("2", "2", "1", "3", "2"));
-		objectMap2.put("3", new OBean("3", "3", "2", "4", "3"));
-		objectMap2.put("4", new OBean("4", "4", "3", "0", "4"));
-	}
-
 	private void populateData() {
-		// TODO：怎样设置才能在启动整个项目的时候直接跳转到该页面
-
-		// 按钮的点击事件
-		// 点击相对应的按钮该跳转到什么页面
-
 		gallery.setImageActivity(this, pictures, mImageSet);
 		adapter2 = new GalleryAdapter(this, pictures);
         gallery.setAdapter(adapter2);
-		
-		
         
         Timer timer = new Timer();
         if (timer != null) {
@@ -732,11 +721,8 @@ public class DbstarOTTActivity extends Activity {
         	task = new GalleryTask();
         	timer.schedule(task, 5000, 5000);
         }
-        
 		
 		gallery.setFocusable(false);
-//		imgStarTV.requestFocus();
-		
 		
 		final Timer APServiceTimer = new Timer();
 		TimerTask timerTask = new TimerTask() {
@@ -753,7 +739,7 @@ public class DbstarOTTActivity extends Activity {
 			}
 		};
 		
-		if (APServiceTimer != null) {
+		if (APServiceTimer != null && !timerTag) {
 			APServiceTimer.schedule(timerTask, 15*1000);
 		}
 		
@@ -763,98 +749,20 @@ public class DbstarOTTActivity extends Activity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			return true;			
+		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
+			// 主要是针对新遥控器上的设置键,但是新遥控器上设置的键值是旧遥控器上的菜单键的键值
+			Intent intent = startDbstarSettingActivity("OTTSettingsActivity");
+			if (intent != null) {
+				Bundle bundle = new Bundle();
+				bundle.putInt(Ethernet_Mode, Ethernet_Network_Mode);
+				intent.putExtra("mode", bundle);
+				startActivityForResult(intent, Btn_Setting_Sequence);
+			}
+			return true;
 		}
 		return super.onKeyDown(keyCode, event);
 	}
 
-//	@Override
-//	public boolean onKeyDown(int keyCode, KeyEvent event) {
-//		
-//		OBean oBean = (OBean) objectMap2.get(curFocusPosition);
-//		if (oBean == null) {
-//			return true;
-//		}
-//		
-//		lastcurFocusPosition = curFocusPosition;
-//		
-//		switch (keyCode) {
-//		case KeyEvent.KEYCODE_DPAD_CENTER:
-//		case KeyEvent.KEYCODE_ENTER:
-//			break;
-//		case KeyEvent.KEYCODE_DPAD_UP:
-//			if (oBean.getUp() != null && !"".equals(oBean.getUp())) {
-//				curFocusPosition = oBean.getUp();
-//			}
-//			break;
-//		case KeyEvent.KEYCODE_DPAD_DOWN:
-//			if (oBean.getDown() != null && !"".equals(oBean.getDown())) {
-//				curFocusPosition = oBean.getDown();
-//			}
-//			break;
-//		case KeyEvent.KEYCODE_DPAD_LEFT:
-//			if (oBean.getLeft() != null && !"".equals(oBean.getLeft())) {
-//				curFocusPosition = oBean.getLeft();
-//			}
-//			break;
-//		case KeyEvent.KEYCODE_DPAD_RIGHT:
-//			if (oBean.getRight() != null && !"".equals(oBean.getRight())) {
-//				curFocusPosition = oBean.getRight();
-//			}
-//			break;
-//		case KeyEvent.KEYCODE_BACK:
-//		case KeyEvent.KEYCODE_ESCAPE:
-////			this.finish();
-//			// TODO:
-//			break;
-//		}
-//		
-//		switch (keyCode) {
-//		case KeyEvent.KEYCODE_DPAD_CENTER:
-//		case KeyEvent.KEYCODE_ENTER:
-//			break;
-//		case KeyEvent.KEYCODE_DPAD_UP:
-//			requestFocusForView(oBean.getUp());
-//			break;
-//		case KeyEvent.KEYCODE_DPAD_DOWN:
-//			requestFocusForView(oBean.getDown());
-//			break;
-//		case KeyEvent.KEYCODE_DPAD_LEFT:
-//			requestFocusForView(oBean.getLeft());
-//			break;
-//		case KeyEvent.KEYCODE_DPAD_RIGHT:
-//			requestFocusForView(oBean.getRight());
-//			break;
-//		default:
-//			return super.onKeyDown(keyCode, event);
-//		}
-//		
-//		return true;
-//	}
-
-
-	private void requestFocusForView(String direction) {
-		String view_id;
-		if (direction != null && !"".equals(direction)) {
-			view_id = String.valueOf(objectMap.get(curFocusPosition));
-			if (view_id != null && !"".equals(view_id) && !"null".equals(view_id)) {
-
-				View view = null;
-				if ("0".equals(curFocusPosition) || "1".equals(curFocusPosition) || "2".equals(curFocusPosition) || "3".equals(curFocusPosition) || "4".equals(curFocusPosition)) {
-					try {
-						view = this.findViewById(Integer.parseInt(view_id));
-					} catch (Exception e) {
-						LogUtil.w("UserAgreementActivity", "UserAgreementActivity :: 请求焦点失败!");
-					}
-					if (view != null && view instanceof ImageView) {
-						view.setFocusable(true);
-						view.requestFocus();
-						
-					}
-				}
-			}
-		}
-	}
-	
 	private void findViews() {
 		gallery = (FlashGallery) findViewById(R.id.flash_gallery);
 		imgStarTV = (ImageView) findViewById(R.id.flash_startv_img);
@@ -876,7 +784,6 @@ public class DbstarOTTActivity extends Activity {
 		intent.setComponent(new ComponentName(packageName, componentName));
 		intent.setAction("android.intent.action.VIEW");
 
-		LogUtil.d(getClass().getName(), "--------start------- " + componentName);
 		return intent;
 	}
 
@@ -907,13 +814,10 @@ public class DbstarOTTActivity extends Activity {
 				Intent intent = new Intent();
 				intent.putExtras(bundle);
 				intent.setClass(DbstarOTTActivity.this, MainActivity.class);
-//				startActivity(intent);
 				startActivityForResult(intent, btnSequence);
 			} else {
 				Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-//				startActivity(intent);	
-				LogUtil.d("DbstarOTTActivity", "((((((((((((<>BtnOnClickListener<>))))))intent)))))))" + intent);
-				LogUtil.d("DbstarOTTActivity", "((((((((((((<>BtnOnClickListener<>))))))btnsequence)))))))" + btnSequence);
+				LogUtil.d("DbstarOTTActivity", "BtnOnClickListener btnsequence = " + btnSequence);
 				startActivityForResult(intent, btnSequence);
 			}
 			

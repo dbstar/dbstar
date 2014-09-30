@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/view_Footer"
     android:layout_width="fill_parent"
-    android:layout_height="50dp"
+    android:layout_height="68dp"
     android:layout_alignParentBottom="true"
     android:layout_alignParentLeft="true"
     android:layout_marginLeft="0dp"
@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="110dp"
+        android:layout_marginLeft="105dp"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
 

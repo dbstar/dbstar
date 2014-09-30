@@ -4,6 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
@@ -12,11 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dbstar.settings.R;
 import com.dbstar.settings.base.BaseFragment;
+import com.dbstar.settings.utils.ImageUtil;
 
 public class GatewaySettingsPage extends BaseFragment {
 	private static final String TAG = "GatewaySettingsPage";
@@ -30,6 +35,7 @@ public class GatewaySettingsPage extends BaseFragment {
 	public static final String PropertyMulticastIP = "DBDataServerIP";
 	public static final String PropertyMulticastPort = "DBDataServerPort";
 
+	private RelativeLayout mContainer;
 	private TextView mGatewaySerialNumber, mMulticastIP, mMulticastPort,
 			mGatewayIP, mGatewayPort;
 	View mNullview;
@@ -149,6 +155,7 @@ public class GatewaySettingsPage extends BaseFragment {
 //					.findViewById(R.id.gateway_serialnumber);
 //			
 //		}
+		mContainer = (RelativeLayout) mActivity.findViewById(R.id.network_gateway_settings);
 		mMulticastIP = (TextView) mActivity.findViewById(R.id.multicast_ip);
 		mMulticastPort = (TextView) mActivity.findViewById(R.id.multicast_port);
 //		if(APPVersion.GUODIAN){
@@ -182,6 +189,16 @@ public class GatewaySettingsPage extends BaseFragment {
 //		mNullview.requestFocus();
 		
 		mNextButton.requestFocus();
+		
+		Bitmap bitmap = ImageUtil.parserXmlAndLoadPic();
+		
+		if (bitmap == null) {
+			mContainer.setBackgroundResource(R.drawable.view_background);
+			return;
+		}
+
+		Drawable drawable = new BitmapDrawable(bitmap);
+		mContainer.setBackgroundDrawable(drawable);
 	}
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -340,5 +357,4 @@ public class GatewaySettingsPage extends BaseFragment {
 
 		return numBlocks == 4;
 	}
-
 }

@@ -92,7 +92,6 @@ public class BookNameView extends TextView{
     public float getTextSize() {
         return fontSize;
     }
-    
     public String calculateContent(Paint paint,String content){
         if(maxContentHeight == 0)
             return content;

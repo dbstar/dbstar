@@ -759,6 +759,10 @@ public class GDDataModel {
 	public String getHardwareType() {
 		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyHardwareType);
 	}
+	
+	public String getHardwareVersion() {
+		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyHardwareVersion);
+	}
 
 	public String getSoftwareVersion() {
 		return queryDeviceGlobalProperty(GDDVBDataContract.PropertySoftwareVersion);
