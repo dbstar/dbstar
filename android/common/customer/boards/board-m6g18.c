@@ -3153,9 +3153,9 @@ static struct platform_device  *platform_devs[] = {
 #ifdef CONFIG_SARADC_AM
         &saradc_device,
 #endif
-#if defined(CONFIG_ADC_KEYPADS_AM)||defined(CONFIG_ADC_KEYPADS_AM_MODULE)
-    &adc_kp_device,
-#endif
+//#if defined(CONFIG_ADC_KEYPADS_AM)||defined(CONFIG_ADC_KEYPADS_AM_MODULE)
+//    &adc_kp_device,
+//#endif
 #if defined(CONFIG_KEY_INPUT_CUSTOM_AM) || defined(CONFIG_KEY_INPUT_CUSTOM_AM_MODULE)
     &input_device_key,
 #endif

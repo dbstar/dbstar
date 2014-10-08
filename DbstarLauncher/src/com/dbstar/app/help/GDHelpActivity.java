@@ -130,27 +130,25 @@ public class GDHelpActivity extends GDBaseActivity {
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-// because of the inexplicable auto menu key, use KEYCODE_NOTIFICATION in GDGeneralInfoActivity
-//		switch (keyCode) {
-//		case KeyEvent.KEYCODE_MENU: {
-//			mIsMenuKeyPressed = true;
-//			mHandler.postDelayed(mCheckLongPressTask, 10000);
-//			return true;
-//		}
-//		}
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_MENU: {
+			mIsMenuKeyPressed = true;
+			mHandler.postDelayed(mCheckLongPressTask, 10000);
+			return true;
+		}
+		}
 		
 		return super.onKeyDown(keyCode, event);
 	}
 	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-// because of the inexplicable auto menu key, use KEYCODE_NOTIFICATION in GDGeneralInfoActivity
-//		switch (keyCode) {
-//		case KeyEvent.KEYCODE_MENU: {
-//			mIsMenuKeyPressed = false;
-//			mHandler.removeCallbacks(mCheckLongPressTask);
-//			return true;
-//		}
-//		}
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_MENU: {
+			mIsMenuKeyPressed = false;
+			mHandler.removeCallbacks(mCheckLongPressTask);
+			return true;
+		}
+		}
 		return super.onKeyUp(keyCode, event);
 	}
 	
