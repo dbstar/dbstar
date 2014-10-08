@@ -189,7 +189,6 @@ otapackage_make()
 		call cp $ROOTFS_OUT/boot.img $BUILD_OUT
 		call cp $ROOTFS_OUT/recovery.img $BUILD_OUT
 		call cp -rf $ROOTFS_OUT/root $BUILD_OUT
-		call cp $ROOTFS_OUT/u-boot.bin $BUILD_OUT
 	else
 		logger "ERROR make otapackage"
 		exit 1
@@ -250,8 +249,18 @@ dbstar_patch()
 {
 	logger "START patch dbstar"
 	call cd $ANDROID_SRC
-	echo ">>>> patching android ..."
-	cp -rf $DBSTAR_SRC/android/* $ANDROID_SRC/
+        echo ">>>> patching uboot ..."
+        cp -rf $DBSTAR_SRC/uboot/* $ANDROID_SRC/uboot/
+	echo ">>>> patching kernel ..."
+	cp -rf $DBSTAR_SRC/common/* $ANDROID_SRC/common/
+	echo ">>>> patching bionic ..."
+	cp -rf $DBSTAR_SRC/bionic/* $ANDROID_SRC/bionic/
+	echo ">>>> patching frameworks ..."
+	cp -rf $DBSTAR_SRC/frameworks/* $ANDROID_SRC/frameworks/
+	echo ">>>> patching device ..."
+	cp -rf $DBSTAR_SRC/device/* $ANDROID_SRC/device/
+	echo ">>>> patching build ..."
+	cp -rf $DBSTAR_SRC/build/* $ANDROID_SRC/build/
 	logger "FINISH patch dbstar"
 }
 
