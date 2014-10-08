@@ -176,7 +176,8 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
-		case KeyEvent.KEYCODE_MENU:
+// because of the inexplicable auto menu key, use KEYCODE_NOTIFICATION instead of KEYCODE_MENU
+//		case KeyEvent.KEYCODE_MENU:
 		case KeyEvent.KEYCODE_NOTIFICATION:
 			mIsMenuKeyPressed = true;
 			mHandler.postDelayed(mCheckLongPressTask, 10000);
@@ -188,7 +189,8 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		switch (keyCode) {
-		case KeyEvent.KEYCODE_MENU:
+// because of the inexplicable auto menu key, use KEYCODE_NOTIFICATION instead of KEYCODE_MENU
+//		case KeyEvent.KEYCODE_MENU:
 		case KeyEvent.KEYCODE_NOTIFICATION:
 			mIsMenuKeyPressed = false;
 			mHandler.removeCallbacks(mCheckLongPressTask);

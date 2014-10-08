@@ -749,17 +749,19 @@ public class DbstarOTTActivity extends Activity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			return true;			
-		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
-			// 主要是针对新遥控器上的设置键,但是新遥控器上设置的键值是旧遥控器上的菜单键的键值
-			Intent intent = startDbstarSettingActivity("OTTSettingsActivity");
-			if (intent != null) {
-				Bundle bundle = new Bundle();
-				bundle.putInt(Ethernet_Mode, Ethernet_Network_Mode);
-				intent.putExtra("mode", bundle);
-				startActivityForResult(intent, Btn_Setting_Sequence);
-			}
-			return true;
-		}
+		} 
+// because of the inexplicable auto menu key, don't goto OTTSettingsActivity
+//		else if (keyCode == KeyEvent.KEYCODE_MENU) {
+//			// 主要是针对新遥控器上的设置键,但是新遥控器上设置的键值是旧遥控器上的菜单键的键值
+//			Intent intent = startDbstarSettingActivity("OTTSettingsActivity");
+//			if (intent != null) {
+//				Bundle bundle = new Bundle();
+//				bundle.putInt(Ethernet_Mode, Ethernet_Network_Mode);
+//				intent.putExtra("mode", bundle);
+//				startActivityForResult(intent, Btn_Setting_Sequence);
+//			}
+//			return true;
+//		}
 		return super.onKeyDown(keyCode, event);
 	}
 
