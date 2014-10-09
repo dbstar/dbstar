@@ -1675,7 +1675,7 @@ int disk_space_check()
 int push_recv_manage_refresh(int recv_by_sequence)
 {
 	int ret = -1;
-	char sqlite_cmd[256+128];
+	char sqlite_cmd[1024];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = push_recv_manage_cb;
 	
 	pthread_mutex_lock(&mtx_push_monitor);
@@ -1693,7 +1693,7 @@ int push_recv_manage_refresh(int recv_by_sequence)
 	else{
 		DEBUG("%d: push regist reguler, without sequence\n", recv_by_sequence);
 	}
-	snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), "union SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID,TimeStamp FROM ProductDesc where ReceiveType!='%d';", RECEIVETYPE_PUBLICATION);
+	snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " union SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID,TimeStamp FROM ProductDesc where ReceiveType!='%d';", RECEIVETYPE_PUBLICATION);
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*
