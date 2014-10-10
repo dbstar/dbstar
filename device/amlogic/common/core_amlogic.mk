@@ -46,9 +46,6 @@ PRODUCT_PACKAGES := \
     PicoTts \
     SettingsProvider \
     SharedStorageBackup \
-    TelephonyProvider \
-    UserDictionaryProvider \
-    VpnDialogs \
     abcc \
     apache-xml \
     atrace \

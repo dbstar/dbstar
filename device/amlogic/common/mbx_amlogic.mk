@@ -69,7 +69,6 @@ PRODUCT_PACKAGES += \
 
 # Amlogic RIL
 PRODUCT_PACKAGES += \
-	Phone       \
 	usb_modeswitch \
 	libaml-ril.so \
 	init-pppd.sh \

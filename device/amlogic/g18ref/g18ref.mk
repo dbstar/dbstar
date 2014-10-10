@@ -191,11 +191,9 @@ PRODUCT_PACKAGES += \
 	FileBrowser \
 	AppInstaller \
 	VideoPlayer \
-	RemoteIME \
 	remotecfg \
 	MboxSetting \
-	MediaBoxLauncher\
-	IpRemote.apk	
+	MediaBoxLauncher
 
 # Device specific system feature description
 PRODUCT_COPY_FILES += \
