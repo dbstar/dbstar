@@ -1476,7 +1476,7 @@ static int SProduct_beacon(char *xmluri)
 	
 	FILE *fp = fopen(SPRODUCT_BEACON, "w");
 	if(fp){
-		snprintf(buf, sizeof(SPRODUCT_BEACON), "SProductXml=%s", xmluri);
+		snprintf(buf, sizeof(buf), "SProductXml=%s", xmluri);
 		if(1==fwrite(buf, strlen(buf), 1, fp)){
 			DEBUG("fwrite(%s) to %s\n", buf, SPRODUCT_BEACON);
 			ret = 0;
@@ -3687,7 +3687,7 @@ PARSE_XML_END:
 			}
 		}
 		else if(SPRODUCT_XML==actual_xml_flag){
-			interface_refresh_flag_set(1);
+//			interface_refresh_flag_set(1);
 			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
 		}
 		else if(PRODUCTDESC_XML==actual_xml_flag){	//  || SERVICE_XML==actual_xml_flag 只接收本service的播发单数据，无需根据Service.xml进行刷新

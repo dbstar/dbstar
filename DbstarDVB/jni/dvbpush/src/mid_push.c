@@ -659,7 +659,7 @@ void *maintenance_thread()
 	int smart_card_insert_flag = -1;
 	
 	time_t s_pin_sec;	// º«¬ºø™ª˙ ±º‰£®√Î£©
-	time_t last_checkreboot_sec;	// …œ¥ŒºÏ≤È «∑Ò÷ÿ∆Ùµƒ ±º‰
+	time_t last_checkreboot_sec = time(NULL);	// …œ¥ŒºÏ≤È «∑Ò÷ÿ∆Ùµƒ ±º‰
 	time_t now_sec;
 	struct tm now_tm;
 	char sqlite_cmd[256];
@@ -738,12 +738,13 @@ push_decoder_thread±ÿ–Î∆¿¥≤≈ƒ‹À≥¿˚÷¥––ota…˝º∂π˝≥Ã£¨“Ú¥Àmid_push_initªπ“™º∞‘Á≥ı 
 			}
 		}
 		if(s_interface_refresh>0){
-			DEBUG("interface refresh\n");
-			s_interface_refresh ++;
-			if(s_interface_refresh>2){
-				msg_send2_UI(STATUS_INTERFACE_REFRESH, NULL, 0);
-				s_interface_refresh = 0;
-			}
+			DEBUG("interface refresh, BUT dont notify to java\n");
+			s_interface_refresh = 0;
+//			s_interface_refresh ++;
+//			if(s_interface_refresh>2){
+//				msg_send2_UI(STATUS_INTERFACE_REFRESH, NULL, 0);
+//				s_interface_refresh = 0;
+//			}
 		}
 		if(s_preview_refresh>0){
 			DEBUG("preview refresh\n");
@@ -1446,7 +1447,7 @@ int prog_monitor_reset(void)
 			// ≥…∆∑“—æ≠Ω” ’98%º∞“‘…œ
 			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=2)
 			{
-				DEBUG("[%d]%s: cur=%lld, total=%lld, wanting %d%%, make it finished forced\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
+				DEBUG("[%s]%s: cur=%lld, total=%lld, wanting %d%%, make it finished forced\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
 				
 				char tmp_fileuri[512];
 				char std_fileuri[512];
