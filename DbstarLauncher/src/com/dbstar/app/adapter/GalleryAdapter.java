@@ -5,6 +5,7 @@ import java.io.InputStream;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -12,8 +13,8 @@ import android.widget.Gallery;
 import android.widget.Gallery.LayoutParams;
 import android.widget.ImageView;
 
-import com.dbstar.R;
 import com.dbstar.bean.ImageSet;
+import com.dbstar.util.LogUtil;
 
 public class GalleryAdapter extends BaseAdapter {
     private ImageSet mImageSet;
@@ -72,7 +73,10 @@ public class GalleryAdapter extends BaseAdapter {
     			view.setScaleType(ImageView.ScaleType.FIT_XY);
     			view.setAdjustViewBounds(true);
     			view.setLayoutParams(new Gallery.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-    		} 	
+    		} else {
+    			view.setImageResource(mImages[position % mImages.length]);
+    			LogUtil.d("GalleryAdapter", "in Gallery, bitmap is null!");
+    		}
     	}
         return view;
     }
