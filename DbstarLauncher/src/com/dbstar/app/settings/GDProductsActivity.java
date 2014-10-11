@@ -163,8 +163,8 @@ public class GDProductsActivity extends GDBaseActivity {
 			return;
 		}
 		
-		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
-			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
+		if (bitmaps.containsKey(ImageUtil.App_Key)) {
+			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.App_Key));
 			mContainer.setBackgroundDrawable(drawable);		
 		}
 	}

@@ -28,6 +28,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -213,6 +214,7 @@ public class DbstarOTTActivity extends Activity {
 					for (int i = 0; i < hashMap.size(); i++) {
 						String iconUrl = hashMap.get((i + 1) + "");
 						final String urlPath = Constants.Server_Url_Image + iconUrl;
+						final String localPath = "/data/dbstar/" + iconUrl;
 						
 						ConnectWork<Bitmap> connectWork = new ConnectWork<Bitmap>(HttpConnect.GET, urlPath, null) {
 
@@ -224,8 +226,8 @@ public class DbstarOTTActivity extends Activity {
 							@Override
 							public void connectComplete(Bitmap bitmap) {
 								if (bitmap != null) {
-									mImageSet.add(urlPath, null, bitmap);
-									adapter2.add(urlPath, null, bitmap);
+									mImageSet.add(urlPath, localPath, bitmap);
+									adapter2.add(urlPath, localPath, bitmap);
 								}
 							}
 						};
@@ -423,6 +425,7 @@ public class DbstarOTTActivity extends Activity {
 					for (final QueryPoster poster : queryPosters) {
 
 						final String urlPath = Constants.Server_Url_Image + poster.getIconUrl();
+						final String localPath = "/data/dbstar/" + poster.getIconUrl();
 
 						ConnectWork<Bitmap> connectWork = new ConnectWork<Bitmap>(HttpConnect.GET, urlPath, null) {
 
@@ -435,8 +438,8 @@ public class DbstarOTTActivity extends Activity {
 							public void connectComplete(Bitmap bitmap) {
 								if (bitmap != null) {
 									// 将得到的海报存放在软引用中
-									mImageSet.add(urlPath, null, bitmap);
-									adapter2.add(urlPath, null, bitmap);
+									mImageSet.add(urlPath, localPath, bitmap);
+									adapter2.add(urlPath, localPath, bitmap);
 								}
 							}
 						};
@@ -458,6 +461,22 @@ public class DbstarOTTActivity extends Activity {
 			try {
 				InputStream inputStream = entity.getContent();
 				bitmap = BitmapFactory.decodeStream(inputStream);
+				
+				// TODO:这样得到的图片，在画面上不显示，暂时没有找到原因
+//				BitmapFactory.Options options = new BitmapFactory.Options();
+//				options.inJustDecodeBounds = true;
+//				Bitmap btm = BitmapFactory.decodeStream(inputStream, null, options);
+//
+//				int width = options.outWidth;
+//				int height = options.outHeight;
+//				Log.d("DbstarOTTActivity", "width = " + width);
+//				Log.d("DbstarOTTActivity", "height = " + height);
+//
+//				options.inJustDecodeBounds = false;
+//				// bitmapOptions.outWidth为获取到的原图的宽度
+//				options.inSampleSize = (int) ((options.outWidth) * 1.0 / 1280);
+//				
+//				bitmap = BitmapFactory.decodeStream(inputStream, null, options);
 			} catch (IllegalStateException e) {
 				LogUtil.d("getBitmapFromEntity", "从实体获取图片异常：：" + e);
 			} catch (IOException e) {

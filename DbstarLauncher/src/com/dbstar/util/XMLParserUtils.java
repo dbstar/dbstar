@@ -11,6 +11,8 @@ public class XMLParserUtils {
 	
 	public static final String XML_PicHome_Bg_Name = "PicHomeBgNmae";
 	public static final String XML_PicHmoe_Bg_Uri = "PicHomeBg";
+	public static final String XML_PicApp_Bg_Name = "PicAppBgNmae";
+	public static final String XML_PicApp_Bg_Uri = "PicAppBg";
 	public static final String XML_PicService_Bg_Name = "PicServiceBgName";
 	public static final String XML_PicService_Bg_Uri = "PicServiceBg";
 	
@@ -49,6 +51,13 @@ public class XMLParserUtils {
 						
 						hashMap.put(XML_PicHome_Bg_Name, name);
 						hashMap.put(XML_PicHmoe_Bg_Uri, uri);
+					} else if (tagName.equalsIgnoreCase("AppBG")) {
+						
+						String name = pullParser.getAttributeValue(null, "name");
+						String uri = pullParser.getAttributeValue(null, "uri");
+						
+						hashMap.put(XML_PicApp_Bg_Name, name);
+						hashMap.put(XML_PicApp_Bg_Uri, uri);
 					}
 					break;
 				

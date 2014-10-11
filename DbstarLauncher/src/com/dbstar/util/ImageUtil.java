@@ -1,6 +1,5 @@
 package com.dbstar.util;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -10,6 +9,7 @@ import org.apache.http.util.EncodingUtils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import com.dbstar.model.GDDataModel;
 import com.dbstar.model.GDSystemConfigure;
@@ -18,6 +18,7 @@ public class ImageUtil {
 	
 	public static final String Home_Key = "home"; 
 	public static final String Service_Key = "service"; 
+	public static final String App_Key = "app"; 
 	
 	private static final String TAG = "ImageUtil";
 	
@@ -86,13 +87,30 @@ public class ImageUtil {
 					LogUtil.d(TAG, " homeFile.exists() = " + homeFile.exists());
 					// 如果图片存在则判断图片的大小，如果正常则填充在上面
 					if (homeFile.exists()) {
-						FileInputStream fileInputStream = new FileInputStream(picHomeUri);
-						BufferedInputStream bis = new BufferedInputStream(fileInputStream);
-						Bitmap bitmap = BitmapFactory.decodeStream(bis);
+//						FileInputStream fileInputStream = new FileInputStream(picHomeUri);
+//						BufferedInputStream bis = new BufferedInputStream(fileInputStream);
+//						Bitmap bitmap = BitmapFactory.decodeStream(bis);
+						
+						
+						BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+						bitmapOptions.inJustDecodeBounds = true;
+						
+						Bitmap bitmap = BitmapFactory.decodeFile(picHomeUri, bitmapOptions);
+						
+						int width = bitmapOptions.outWidth;
+						int height = bitmapOptions.outHeight;
+						Log.d("ImageUtil HomeBG", "width = " + width);
+						Log.d("ImageUtil HomeBG", "height = " + height);
 
-						if (bitmap.getWidth() * bitmap.getHeight() <= 1280 * 720) {
-							bitmaps.put(Home_Key, bitmap);
-						}
+						bitmapOptions.inJustDecodeBounds = false;
+						// bitmapOptions.outWidth为获取到的原图的宽度
+						bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
+
+						Bitmap resizedBitmap = BitmapFactory.decodeFile(picHomeUri, bitmapOptions);
+
+//						if (bitmap.getWidth() * bitmap.getHeight() <= 1280 * 720) {
+							bitmaps.put(Home_Key, resizedBitmap);
+//						}
 					}
 
 					String serviceName = hashMap.get(XMLParserUtils.XML_PicService_Bg_Name);
@@ -104,15 +122,68 @@ public class ImageUtil {
 					LogUtil.d(TAG, " serviceFile.exists() = " + serviceFile.exists());
 
 					if (serviceFile.exists()) {
-						FileInputStream stream = new FileInputStream(picServiceUri);
-						BufferedInputStream bis = new BufferedInputStream(stream);
+//						FileInputStream stream = new FileInputStream(picServiceUri);
+//						BufferedInputStream bis = new BufferedInputStream(stream);
+//
+//						Bitmap bitmap = BitmapFactory.decodeStream(bis);
+//
+//						if (bitmap.getWidth() * bitmap.getHeight() <= 560 * 400) {
+//							bitmaps.put("service", bitmap);
+//						}
+						
+						BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+						bitmapOptions.inJustDecodeBounds = true;
+						
+						Bitmap bitmap = BitmapFactory.decodeFile(picServiceUri, bitmapOptions);
+						
+						int width = bitmapOptions.outWidth;
+						int height = bitmapOptions.outHeight;
+						Log.d("ImageUtil HomeBG", "width = " + width);
+						Log.d("ImageUtil HomeBG", "height = " + height);
 
-						Bitmap bitmap = BitmapFactory.decodeStream(bis);
+						bitmapOptions.inJustDecodeBounds = false;
+						// bitmapOptions.outWidth为获取到的原图的宽度
+						bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 560);
 
-						if (bitmap.getWidth() * bitmap.getHeight() <= 560 * 400) {
-							bitmaps.put("service", bitmap);
-						}
+						Bitmap resizedBitmap = BitmapFactory.decodeFile(picServiceUri, bitmapOptions);
+
+						bitmaps.put(Service_Key, resizedBitmap);
 					}
+					
+					String appName = hashMap.get(XMLParserUtils.XML_PicApp_Bg_Name);
+					String appUri = hashMap.get(XMLParserUtils.XML_PicApp_Bg_Uri);
+					String picAppUri = disk + "/" + appUri + "/" + appName;
+					LogUtil.d(TAG, " picAppUri = --" + picAppUri);
+					File appFile = new File(picAppUri);
+					LogUtil.d(TAG, " appFile.exists() = " + appFile.exists());
+					if (appFile.exists()) {
+//						FileInputStream stream = new FileInputStream(picAppUri);
+//						BufferedInputStream bis = new BufferedInputStream(stream);
+//						
+//						Bitmap bitmap = BitmapFactory.decodeStream(stream);
+//						if (bitmap.getWidth() <= 1280 && bitmap.getHeight() <= 720) {
+//							bitmaps.put("app", bitmap);
+//						}
+						
+						BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+						bitmapOptions.inJustDecodeBounds = true;
+						
+						Bitmap bitmap = BitmapFactory.decodeFile(picAppUri, bitmapOptions);
+						
+						int width = bitmapOptions.outWidth;
+						int height = bitmapOptions.outHeight;
+						Log.d("ImageUtil HomeBG", "width = " + width);
+						Log.d("ImageUtil HomeBG", "height = " + height);
+
+						bitmapOptions.inJustDecodeBounds = false;
+						// bitmapOptions.outWidth为获取到的原图的宽度
+						bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
+
+						Bitmap resizedBitmap = BitmapFactory.decodeFile(picAppUri, bitmapOptions);
+
+						bitmaps.put(App_Key, resizedBitmap);
+					}
+					
 				}
 			}
 			

@@ -43,7 +43,7 @@ public class XMLParserUtils {
 						
 						hashMap.put(XML_PicService_Bg_Name, name);
 						hashMap.put(XML_PicService_Bg_Uri, uri);
-					} else if (tagName.equalsIgnoreCase("HomeBG_Common")) {
+					} else if (tagName.equalsIgnoreCase("AppBG")) {
 						
 						String name = pullParser.getAttributeValue(null, "name");
 						String uri = pullParser.getAttributeValue(null, "uri");
