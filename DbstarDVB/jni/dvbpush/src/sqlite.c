@@ -1641,6 +1641,7 @@ int localcolumn_init()
 #else
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Column WHERE ColumnID='L9805';");
 		sqlite_transaction_exec(sqlite_cmd);
+		insert_column_cnt ++;
 #endif
 	}
 	/*
