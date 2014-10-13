@@ -5,18 +5,18 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import com.settings.model.GDDataModel;
-import com.settings.model.GDSystemConfigure;
-import com.settings.ottsettings.R;
-import com.settings.utils.LogUtil;
-import com.settings.utils.SettingUtils;
-
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.content.Context;
 import android.text.format.Formatter;
 import android.view.View;
 import android.widget.TextView;
+
+import com.settings.ottsettings.R;
+import com.settings.utils.Constants;
+import com.settings.utils.DataUtils;
+import com.settings.utils.LogUtil;
+import com.settings.utils.SettingUtils;
 
 public class AboutSettingsViewWrapper {
 	private Context context;
@@ -30,19 +30,24 @@ public class AboutSettingsViewWrapper {
 	public void initView(View view) {
 		findViews(view);
 		
-		GDDataModel dataModel = new GDDataModel();
-		GDSystemConfigure configure = new GDSystemConfigure();
-		dataModel.initialize(configure);
-		// 从数据库读取数据
-		String hardwareType = dataModel.getHardwareVersion();
-		String terminalNum = dataModel.getDeviceSearialNumber();
-		String softwareVersion = dataModel.getSoftwareVersion();
-		String loaderVersion = dataModel.getLoaderVersion();
 		
-		txtTerminalNum.setText(terminalNum);
-		txtHardwareVersion.setText(hardwareType);
-		txtSoftwareVersion.setText(softwareVersion);
-		txtLoaderVersion.setText(loaderVersion);
+		// 读取/cache/recovery/last_log文件
+		String content = DataUtils.getCacheContent();
+
+		if (content != null && content.length() > 0) {
+			String[] split = content.split("\n");
+			if (split != null && split.length > 0) {
+
+				String terminalNum = split[0];
+				String softwareVersion = split[1];
+				String hardwareType = split[5];
+
+				txtTerminalNum.setText(terminalNum);
+				txtHardwareVersion.setText(hardwareType);
+				txtSoftwareVersion.setText(softwareVersion);
+				txtLoaderVersion.setText(Constants.Loader_Version);
+			}
+		}
 		
 		String macAddress = SettingUtils.getLocalMacAddress(true);
 		txtMACAddress.setText(macAddress);

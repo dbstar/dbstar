@@ -34,4 +34,6 @@ public class Constants {
 	// 应用升级
 	public static final String Server_Url_Upgrade = Server_Url_AAA + "GetUpgrade?";
 	
+	
+	public static final String Loader_Version = "1.2.2";
 }

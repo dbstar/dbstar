@@ -1,10 +1,33 @@
 package com.settings.utils;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+
+import org.apache.http.util.EncodingUtils;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
 public class DataUtils {
+	
+	public static String getCacheContent() {
+		try {
+			InputStream in = new FileInputStream("/cache/recovery/last_log");
+			int length = in.available();
+			byte[] bytes = new byte[length];
+			in.read(bytes);
+			String content = EncodingUtils.getString(bytes, "UTF-8");
+			in.close();
+			LogUtil.d("DataUtils", "/cache/recovery/last_log  content = " + content);
+			return content;
+		} catch (Exception e) {
+			Log.d("DataUtils", "-------read file failed------" + e);
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	// 系统保存偏好设置的引用
 	private static SharedPreferences marsorPreferences = null;
 	/** 系统偏好设置的名称 */

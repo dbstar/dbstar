@@ -35,10 +35,9 @@ import com.settings.bean.Vapks;
 import com.settings.http.HttpConnect;
 import com.settings.http.SimpleWorkPool.ConnectWork;
 import com.settings.http.SimpleWorkPool.SimpleWorkPoolInstance;
-import com.settings.model.GDDataModel;
-import com.settings.model.GDSystemConfigure;
 import com.settings.ottsettings.R;
 import com.settings.utils.Constants;
+import com.settings.utils.DataUtils;
 import com.settings.utils.LogUtil;
 import com.settings.utils.MD5;
 import com.settings.utils.SettingUtils;
@@ -53,6 +52,7 @@ public class SysUpgradeSettingsViewWrapper {
 	
 	private String localUpgradeFilePath;
 	private UpgradeInfo mUpgradeInfo = null;
+	private String productSN = null, deviceModel = null, softVersion = null;
 	
 	public static Handler handler;
 	public static boolean flag = true;
@@ -72,6 +72,17 @@ public class SysUpgradeSettingsViewWrapper {
 		btnLocal.setEnabled(false);
 		btnOnline.setEnabled(false);
 		txtPercent.setText(context.getString(R.string.page_sysUpgrade_isChecking));
+		
+		String content = DataUtils.getCacheContent();
+		if (content != null && content.length() > 0) {
+			String[] splits = content.split("\n");
+			if (splits != null && splits.length > 0) {
+				productSN = splits[0];
+				softVersion = splits[1];
+				deviceModel = splits[2];
+			}
+		}
+		
 		populateData();
 		setEventListener();
 	}
@@ -356,12 +367,13 @@ public class SysUpgradeSettingsViewWrapper {
 	
 	private void checkOnlineUpgradeFile() {
 		
-		GDDataModel dataModel = new GDDataModel();
-		GDSystemConfigure configure = new GDSystemConfigure();
-		dataModel.initialize(configure);
-		String productSN = dataModel.getDeviceSearialNumber();
-		String  deviceModel = dataModel.getHardwareType();
-		final String  softVersion = dataModel.getSoftwareVersion();
+//		GDDataModel dataModel = new GDDataModel();
+//		GDSystemConfigure configure = new GDSystemConfigure();
+//		dataModel.initialize(configure);
+//		String productSN = dataModel.getDeviceSearialNumber();
+//		String  deviceModel = dataModel.getHardwareType();
+//		final String  softVersion = dataModel.getSoftwareVersion();
+		
 		String mac = SettingUtils.getLocalMacAddress(true);
 		
 		String string = "OEM$" + deviceModel + "$" + productSN + "$" + mac;
