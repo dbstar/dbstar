@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:layout_height="match_parent" >
+
+    <!-- 
+        android:layout_marginTop="200dp"
+     -->
+    <LinearLayout
+        android:layout_width="494dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="54dp"
+            android:gravity="left|center_vertical"
+            android:text="@string/network_status_title"
+            android:textColor="#000000"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <TextView
+            android:id="@+id/ethernet_state_view"
+            android:layout_width="wrap_content"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:gravity="left|center_vertical"
+            android:text="@string/ethernet_status_waiting"
+            android:textColor="#000000"
+            android:textSize="@dimen/gl_text_size_24sp" />
+         <TextView
+            android:id="@+id/wifi_state_view"
+            android:layout_width="wrap_content"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:gravity="left|center_vertical"
+            android:text="@string/wifi_status_waiting"
+            android:textColor="#000000"
+            android:textSize="@dimen/gl_text_size_24sp" 
+            />
+         <!-- 
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+          -->
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_gravity="center_horizontal"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/prev_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="60dp"
+                android:background="@drawable/eth_button_bg"
+                android:nextFocusDown="@+id/cable_check_button"
+                android:textSize="@dimen/gl_text_size_20sp"
+                android:text="@string/button_text_previous"
+                android:visibility="gone" />
+
+            <Space
+                android:layout_width="80dp"
+                android:layout_height="0dp" />
+
+            <Button
+                android:id="@+id/ok_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/gl_text_size_20sp"
+                android:background="@drawable/eth_button_bg"
+                android:nextFocusDown="@+id/cable_check_button"
+                android:nextFocusLeft="@+id/settings_wired"
+                android:text="@string/button_text_finish" />
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

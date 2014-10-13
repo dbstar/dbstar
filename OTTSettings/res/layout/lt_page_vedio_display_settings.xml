@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="480dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:focusable="false"
+        android:gravity="center_vertical|left"
+        android:text="@string/page_vedio_HDMI"
+        android:textColor="@color/text_white"
+        android:textSize="@dimen/gl_text_size_24sp" />
+
+    <ListView
+        android:id="@+id/video_outputmode_list"
+        android:layout_width="480dp"
+        android:layout_height="wrap_content"
+        android:cacheColorHint="@android:color/transparent"
+        android:clipToPadding="false"
+        android:divider="#00000000"
+        android:dividerHeight="4dp"
+        android:drawSelectorOnTop="false"
+        android:listPreferredItemHeight="48dp"
+        android:listSelector="#00000000"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
+        android:nextFocusLeft="@+id/settings_vedio"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbarStyle="outsideOverlay" >
+    </ListView>
+
+</LinearLayout>

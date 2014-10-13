@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 白色 -->
+    <color name="text_white">#ffffff</color>
+    <!-- 透明色 -->
+    <color name="transparent_white">#00FFFFFF</color>
+    <!-- 透明色 -->
+    <color name="transparent">#00000000</color>
+    <!-- 透明色 -->
+    <color name="bg_alpha">#00000000</color>
+    <!-- 深色的文字（深灰色） -->
+    <color name="text_dark">#383c3d</color>
+
+    <!-- 高亮的按钮文字（白色） -->
+    <color name="text_button_highlight">#FFFFFF</color>
+    <!-- 蓝色 -->
+    <color name="bg_blue">#40BDF9</color>
+    <!-- 浅蓝色 -->
+    <color name="bg_light_blue">#A7FDFF</color>
+    <!-- 内容部分背景（白色）  -->
+    <color name="bg_content">#FFFFFF</color>
+    <!-- 常规边线(淡金色)  -->
+    <color name="border_common">#D9D6CB</color>
+    
+    <color name="orange_color">#FF8C00</color>
+
+</resources>

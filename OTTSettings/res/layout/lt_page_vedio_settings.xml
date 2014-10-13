@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/vedio_settings_HDMI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:gravity="center_vertical|left"
+        android:text="@string/page_vedio_HDMI"
+        android:textColor="@color/text_white"
+        android:textSize="@dimen/gl_text_size_24sp" />
+
+    <RadioGroup
+        android:id="@+id/vedio_settings_HDMI_rg_container"
+        android:layout_width="480dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="30dp" >
+
+        <RadioButton
+            android:id="@+id/vedio_settings_HDMI_rb1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/lt_common_rectangle_txt_selector"
+            android:button="@null"
+            android:drawableRight="@drawable/lt_common_radiobutton_selector"
+            android:text="@string/page_vedio_HDMI_1"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <RadioButton
+            android:id="@+id/vedio_settings_HDMI_rb2"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/lt_common_rectangle_txt_selector"
+            android:button="@null"
+            android:drawableRight="@drawable/lt_common_radiobutton_selector"
+            android:text="@string/page_vedio_HDMI_2"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <RadioButton
+            android:id="@+id/vedio_settings_HDMI_rb3"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/lt_common_rectangle_txt_selector"
+            android:button="@null"
+            android:drawableRight="@drawable/lt_common_radiobutton_selector"
+            android:text="@string/page_vedio_HDMI_3"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <RadioButton
+            android:id="@+id/vedio_settings_HDMI_rb4"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/lt_common_rectangle_txt_selector"
+            android:button="@null"
+            android:drawableRight="@drawable/lt_common_radiobutton_selector"
+            android:text="@string/page_vedio_HDMI_4"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <RadioButton
+            android:id="@+id/vedio_settings_HDMI_rb5"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/lt_common_rectangle_txt_selector"
+            android:button="@null"
+            android:checked="true"
+            android:drawableRight="@drawable/lt_common_radiobutton_selector"
+            android:text="@string/page_vedio_HDMI_5"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <RadioButton
+            android:id="@+id/vedio_settings_HDMI_rb6"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/lt_common_rectangle_txt_selector"
+            android:button="@null"
+            android:drawableRight="@drawable/lt_common_radiobutton_selector"
+            android:text="@string/page_vedio_HDMI_6"
+            android:textColor="@color/text_white"
+            android:textSize="@dimen/gl_text_size_24sp" />
+
+    </RadioGroup>
+
+</LinearLayout>
