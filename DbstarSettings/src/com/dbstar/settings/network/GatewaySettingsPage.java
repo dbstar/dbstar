@@ -194,11 +194,11 @@ public class GatewaySettingsPage extends BaseFragment {
 		
 		if (bitmap == null) {
 			mContainer.setBackgroundResource(R.drawable.view_background);
-			return;
+		} else {
+			Drawable drawable = new BitmapDrawable(bitmap);
+			mContainer.setBackgroundDrawable(drawable);			
 		}
 
-		Drawable drawable = new BitmapDrawable(bitmap);
-		mContainer.setBackgroundDrawable(drawable);
 	}
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {

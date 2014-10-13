@@ -1,6 +1,5 @@
 package com.dbstar.settings.utils;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -70,9 +69,6 @@ public class ImageUtil {
 					String homeName = hashMap.get(XMLParserUtils.XML_PicHome_Bg_Name);
 					String homeUri = hashMap.get(XMLParserUtils.XML_PicHmoe_Bg_Uri);
 
-//					Log.d("GDGeneralInfoActivity","-------xml parser----homeName = --" + homeName);
-//					Log.d("GDGeneralInfoActivity","-------xml parser----homeUri = --" + homeUri);
-
 					// 解析之后要判断图片文件在不在
 					// 图片路径
 					String picHomeUri = disk + "/" + homeUri + "/" + homeName;
@@ -82,16 +78,30 @@ public class ImageUtil {
 					Log.d(TAG, " homeFile.exists() = " + homeFile.exists());
 					// 如果图片存在则判断图片的大小，如果正常则填充在上面
 					if (homeFile.exists()) {
-						FileInputStream fileInputStream = new FileInputStream(picHomeUri);
-						BufferedInputStream bis = new BufferedInputStream(fileInputStream);
-						bitmap = BitmapFactory.decodeStream(bis);
+//						FileInputStream fileInputStream = new FileInputStream(picHomeUri);
+//						BufferedInputStream bis = new BufferedInputStream(fileInputStream);
+//						bitmap = BitmapFactory.decodeStream(bis);
+//
+//						if (bitmap.getWidth() != 1280 || bitmap.getHeight() != 720) {
+//							Log.d("GDGeneralInfoActivity", "-------bitmap.getWidth()------" + bitmap.getWidth());
+//							Log.d("GDGeneralInfoActivity", "-------bitmap.getHeight()------" + bitmap.getHeight());
+//							
+//							return null;
+//						}
+						
+						BitmapFactory.Options options = new BitmapFactory.Options();
+						options.inJustDecodeBounds = true;
+						Bitmap resizedBitmap = BitmapFactory.decodeFile(picHomeUri, options);
+						int width = options.outWidth;
+						int height = options.outHeight;
+						Log.d("ImageUtil HomeBG", "width = " + width);
+						Log.d("ImageUtil HomeBG", "height = " + height);
 
-						if (bitmap.getWidth() != 1280 || bitmap.getHeight() != 720) {
-							Log.d("GDGeneralInfoActivity", "-------bitmap.getWidth()------" + bitmap.getWidth());
-							Log.d("GDGeneralInfoActivity", "-------bitmap.getHeight()------" + bitmap.getHeight());
-							
-							return null;
-						}
+						options.inJustDecodeBounds = false;
+						// bitmapOptions.outWidth为获取到的原图的宽度
+						options.inSampleSize = (int) ((options.outWidth) * 1.0 / 1280);
+						
+						bitmap = BitmapFactory.decodeFile(picHomeUri, options);
 					}
 				}
 			}
