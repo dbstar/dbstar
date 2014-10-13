@@ -345,9 +345,7 @@ public class GDDataProviderService extends Service {
 
 				mHandler.sendMessageDelayed(diskMessage, 5000);
 			}
-		}
-		else
-		{
+		} else {
 			LogUtil.d(TAG, "disk is unusable, use flash(" + DBSTAR_FLASH + ") as PushDir");
 			//mDataModel.setPushDir(DBSTAR_FLASH);	// too early to update database
 			
@@ -666,6 +664,10 @@ public class GDDataProviderService extends Service {
 
 	class SystemEventHandler extends Handler {
 		public void handleMessage(Message msg) {
+			if (msg == null) {
+				return;
+			}
+			
 			int msgId = msg.what;
 			switch (msgId) {
 			case GDCommon.MSG_TASK_FINISHED: {
@@ -1105,7 +1107,7 @@ public class GDDataProviderService extends Service {
 			}
 			
 			case GDCommon.MSG_SYSTEM_RECOVERY: {
-				handleRecoveryAction(msg.arg1);
+				handleRecoveryAction(msg.arg1, msg.obj);
 				break;
 			}
 			
@@ -2634,8 +2636,10 @@ public class GDDataProviderService extends Service {
 				mHandler.sendEmptyMessage(GDCommon.MSG_GET_ETHERNETINFO);
 			} else if (action.equals(GDCommon.ActionSystemRecovery)) {
 				int type = intent.getIntExtra(GDCommon.KeyRecoveryType, 0);
+				String diskUri = intent.getStringExtra("format_uri");
 				Message msg = mHandler.obtainMessage(GDCommon.MSG_SYSTEM_RECOVERY);
 				msg.arg1 = type;
+				msg.obj = diskUri;
 				msg.sendToTarget();
 			} else if (action.equals(GDCommon.ActionClearSettings)) {
 				DeviceInitController.clearSettings();
@@ -2652,7 +2656,7 @@ public class GDDataProviderService extends Service {
 		}
 	};
 	
-	void handleRecoveryAction(int type) {
+	void handleRecoveryAction(int type, Object obj) {
 		switch(type) {
 		case GDCommon.RecoveryTypeClearPush: {
 			notifyDbstarService(DbstarServiceApi.CMD_FACTORY_RESET);
@@ -2664,7 +2668,7 @@ public class GDDataProviderService extends Service {
 		}
 		case GDCommon.RecoveryTypeFormatDisk: {
 			notifyDbstarService(DbstarServiceApi.CMD_DISK_FORMAT);
-			formatDisk();
+			formatDisk(obj);				
 			break;
 		}
 
@@ -2673,10 +2677,16 @@ public class GDDataProviderService extends Service {
 	
 	private DiskFormatter mFormatter;
 	
-	void formatDisk() {
+	void formatDisk(Object obj) {
 		mFormatter = new DiskFormatter();
 //		mFormatter.startFormat(mConfigure.getStorageDisk(), mHandler);
-		mFormatter.startFormatDisk(mConfigure.getStorageDisk(), mHandler);
+		
+		String diskUri = (String) obj;
+		if (diskUri != null && diskUri.equals("/dev/block/sda1")) 
+			mFormatter.startFormatDisk(diskUri, mHandler, false);
+		else 
+			mFormatter.startFormatDisk(mConfigure.getStorageDisk(), mHandler, true);
+			
 	}
 	
 	// if format failed, errorMsg is the message.

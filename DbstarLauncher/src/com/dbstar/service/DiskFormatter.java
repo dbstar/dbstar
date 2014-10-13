@@ -51,13 +51,16 @@ public class DiskFormatter {
 	
 	
 	// method - 1
-	public void startFormatDisk(String disk, Handler handler) {
+	public void startFormatDisk(String disk, Handler handler, boolean isMounted) {
 		mHandler = handler;
 		mMountPoint = disk;
 
 		startWatchingExternalStorage();
 		
-		updateProgressState(disk, Environment.MEDIA_MOUNTED);
+		if (isMounted)
+			updateProgressState(disk, Environment.MEDIA_MOUNTED);			
+		else 			
+			updateProgressState(disk, Environment.MEDIA_UNMOUNTED);			
 	}
 	
 	public void finishFormatDisk() {
@@ -105,12 +108,14 @@ public class DiskFormatter {
 	}
 	
 	private void formatDisk() {
+		LogUtil.d(TAG, "mFormatStarted = " + mFormatStarted);
 		if (mFormatStarted)
 			return;
 		
 		mFormatStarted = true;
 		
 		formatDiskPartition("/dev/block/sda");
+		LogUtil.d(TAG, "/dev/block/sda");
 		
 		new Thread() {
 			@Override
@@ -121,6 +126,7 @@ public class DiskFormatter {
 				while (true) {
 					try {
 						formatTime += 4;
+						LogUtil.d(TAG, "formatTime = " + formatTime);
 						if (formatTime > FormatTimeout) {
 							err = ErrTimeout;
 							break;
@@ -261,6 +267,7 @@ public class DiskFormatter {
 		Message msg = mHandler.obtainMessage(GDCommon.MSG_DISK_FORMAT_FINISHED);
 		msg.arg1 = GDCommon.VALUE_SUCCESSED;
 		msg.sendToTarget();
+		LogUtil.e(TAG, "formatSuccessed !!!");
 	}
 
 	private void formatFailed(String errorStr) {

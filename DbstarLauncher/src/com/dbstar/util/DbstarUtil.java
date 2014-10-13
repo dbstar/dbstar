@@ -149,7 +149,30 @@ public class DbstarUtil {
 		}
 		return false;
 	}
-
+	
+	/**
+	 * 获取硬盘格式
+	 * @return
+	 */
+	public static String fetchDiskInfo() {
+		String result = null;
+		CMDExecute cmdExecute = new CMDExecute();
+		String[] args = {"ls", "/dev/block/"};
+		result = cmdExecute.run(args, "/system/bin/");
+		LogUtil.d("fetchDiskInfo()", " result = " + result);
+		
+//		if (result != null) {
+//			if (result.contains("fuseblk") && result.contains("ext4")) {
+//				result = "ntfs";
+//			} else if (!result.contains("fuseblk") && result.contains("ext4")) {
+//				result = "ext4";				
+//			}
+//		}
+//		
+//		LogUtil.d("fetchDiskInfo()", "last result = " + result);
+		return result;
+	}
+	
 	/**
 	 * 保存数据到SD卡中
 	 * @param context
@@ -336,17 +359,13 @@ public class DbstarUtil {
 	 * @param context
 	 */
 	public static void login(final Context context) {
-//		String deviceModel = SqliteUtils.getInstance().queryValue("DeviceModel");
-//		String productSN = SqliteUtils.getInstance().queryValue("ProductSN");
 		GDDataModel dataModel = new GDDataModel();
-//		String deviceModel = dataModel.queryDeviceGlobalProperty("DeviceModel");
-//		String productSN = dataModel.queryDeviceGlobalProperty("ProductSN");
 		GDSystemConfigure mConfigure = new GDSystemConfigure();
 		dataModel.initialize(mConfigure);
 		String deviceModel = dataModel.getHardwareType();
 		String productSN = dataModel.getDeviceSearialNumber();
-		LogUtil.d("login:", "-----------==========" + deviceModel);
-		LogUtil.d("login:", "-----------==========" + productSN);
+		LogUtil.d("login:", "deviceModel = " + deviceModel);
+		LogUtil.d("login:", "productSN = " + productSN);
 		
 		
 		String mac = DbstarUtil.getLocalMacAddress(true);
@@ -361,6 +380,7 @@ public class DbstarUtil {
 		// 对参数进行编码
 		String param = URLEncodedUtils.format(paramsList, "UTF-8");
 		String url = Constants.Server_Url_Login + param;
+		LogUtil.d("login:", "url = " + url);
 		
 		ConnectWork<HashMap<Integer,String>> work = new ConnectWork<HashMap<Integer,String>>(HttpConnect.POST, url, paramsList) {
 			@Override
@@ -420,7 +440,9 @@ public class DbstarUtil {
 			JSONObject object = json.getJSONObject("Header");
 			
 			int rc = object.getInt("RC");
+			LogUtil.i("login", "rc = " + rc);
 			String rm = object.getString("RM");
+			LogUtil.i("login", "rm = " + rm);
 			map.put(rc, rm);
 		} catch (ParseException e) {
 			LogUtil.d("parserLoginResponse::", "解析异常");

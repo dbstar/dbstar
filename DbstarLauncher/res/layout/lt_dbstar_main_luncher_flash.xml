@@ -8,10 +8,10 @@
     android:orientation="vertical" >
         <com.dbstar.app.components.FlashGallery
             android:id="@+id/flash_gallery"
-            android:layout_width="fill_parent"
+            android:layout_width="1280dp"
             android:focusable="false"
             android:clickable="false"
-            android:layout_height="wrap_content" />
+            android:layout_height="455dp" />
 
         <!--         
     <FrameLayout

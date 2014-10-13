@@ -46,7 +46,7 @@ public class GDAdvancedToolsActivity extends Activity {
 		Item item = new Item();
 		PackageManager manager = getPackageManager();
 		
-		//
+		// Advanced Settings
 		btnSettings = (Button) findViewById(R.id.btn_settings);
 		Intent intent = new Intent();
 		String componentName = "com.android.settings.Settings";
@@ -65,7 +65,7 @@ public class GDAdvancedToolsActivity extends Activity {
 			}
 		});
 		
-		//
+		// Browser
 		btnWebBrowser = (Button) findViewById(R.id.btn_webbrowser);
 		final Intent webIntent = new Intent(Intent.ACTION_VIEW);
 		webIntent.setData(Uri.parse("http://www.baidu.com"));
@@ -82,7 +82,7 @@ public class GDAdvancedToolsActivity extends Activity {
 			}
 		});
 
-		//
+		// FileBrowser
 		btnFileBrowser = (Button) findViewById(R.id.btn_filebrowser);
 		btnFileBrowser.setOnClickListener(mListener);
 		item = new Item();
@@ -90,7 +90,7 @@ public class GDAdvancedToolsActivity extends Activity {
 		item.component = "com.fb.FileBrower";
 		item.activity = "FileBrower";
 		
-		//
+		// FactoryTest
 		btnFactoryTest = (Button) findViewById(R.id.btn_factorytest);
 		Intent testIntent = new Intent();
 		String testComponentName = "com.guodian.checkdevicetool.SelectTestActivity";
@@ -109,7 +109,7 @@ public class GDAdvancedToolsActivity extends Activity {
 			}
 		});
 	
-		//
+		// System manager
 		btnSysManager = (Button) findViewById(R.id.btn_system_manager);
 		btnSysManager.setOnClickListener(new OnClickListener() {
 			@Override
