@@ -191,6 +191,7 @@ PRODUCT_PACKAGES += \
 	FileBrowser \
 	AppInstaller \
 	VideoPlayer \
+	RemoteIME \
 	remotecfg \
 	MboxSetting \
 	MediaBoxLauncher
