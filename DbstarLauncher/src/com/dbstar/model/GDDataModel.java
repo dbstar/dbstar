@@ -829,6 +829,7 @@ public class GDDataModel {
 
 		if (cursor != null && !cursor.isClosed()) {
 			cursor.close();
+			mDVBDataProvider.closeDatabase();
 		}
 		
 		LogUtil.d(TAG, "queryDeviceGlobal: query property["+property+"] has value["+value+"]");
