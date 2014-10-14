@@ -3,6 +3,7 @@ package com.settings.components;
 import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,6 +27,8 @@ public class NetworkWifiSettings {
 	private RadioGroup radioGroup;
 	private RadioButton wifiMode, APMode;
 	private Button btnNext;
+	private WifiSettingsView wifiSettingsView;
+	private boolean isFromWifi = false;
 	
 	public NetworkWifiSettings(Activity activity) {
 		this.mActivity = activity;
@@ -66,10 +69,17 @@ public class NetworkWifiSettings {
 					switchToWifiHotspotSettings();
 				} else {
 					switchToWifiSetting();
+					isFromWifi = true;
 				}
 				
 			}
 		});
+	}
+	
+	public void onKeyDown(int keyCode, KeyEvent event) {
+		if (isFromWifi) {
+			wifiSettingsView.pause();
+		}
 	}
 	
 	/**
@@ -92,12 +102,9 @@ public class NetworkWifiSettings {
 	 * 网卡模式
 	 */
 	private void switchToWifiSetting() {
-		WifiSettingsView wifiSettingsView = null;
 //		View view = populateViewToDynamicPanel(R.layout.lt_page_wifi_settings);
 		View view = populateViewToDynamicPanel(R.layout.network_wifi_settings);
-		if (wifiSettingsView == null) {
-			wifiSettingsView = new WifiSettingsView(mActivity);
-		}
+		wifiSettingsView = new WifiSettingsView(mActivity);
 		wifiSettingsView.initView(view);
 	}
 	

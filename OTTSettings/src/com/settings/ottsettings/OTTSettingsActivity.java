@@ -36,6 +36,7 @@ public class OTTSettingsActivity extends Activity {
 	
 	private VedioSettingsViewWrapper vedioSettingsViewWrapper = null;
 	private WiredSettingsView wiredSettingsView = null;
+	private NetworkWifiSettings networkWifiSettings = null;
 	
 	private static int Ethernet_Network_Mode = 0;
 	private static final String Ethernet_Mode = "ethernet_mode";
@@ -57,32 +58,6 @@ public class OTTSettingsActivity extends Activity {
 		
 		populateData();
 	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-	}
-	
-	@Override
-	protected void onPause() {
-		super.onPause();
-//		if (wiredSettingdViewWrapper == null) {
-//			wiredSettingdViewWrapper = new WiredSettingsViewWrapper(this);
-//			wiredSettingdViewWrapper.onPause();
-//		}
-	
-		LogUtil.d(getLocalClassName(), "onPause<<<<<?????>>>>>");
-		
-		if (isFromWired) {	
-			LogUtil.d(getLocalClassName(), "onPause<<<<<?????isFromWired>>>>>" + isFromWired);			
-			
-//			pauseOfWired();
-		}
-		if (isFromWifi) {					
-			LogUtil.d(getLocalClassName(), "onPause<<<<<?????isFromWifi>>>>>" + isFromWifi);			
-//			pauseOfWifi();
-		}
-	}
 	
 	private void populateData() {
 		rgContainer.setOnCheckedChangeListener(new RbCheckedChangeListener());
@@ -101,15 +76,10 @@ public class OTTSettingsActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-//		VedioSettingsViewWrapper vedioSettingsViewWrapper = null;
 		if (vedioSettingsViewWrapper == null) {
 			vedioSettingsViewWrapper = new VedioSettingsViewWrapper(this);
 		}
 		vedioSettingsViewWrapper.onActivityResult(requestCode, resultCode, data);
-		
-		if (isFromWifi) {					
-			pauseOfWifi();
-		}
 	}
 	
 	/**
@@ -215,12 +185,11 @@ public class OTTSettingsActivity extends Activity {
 	 * 无线设置
 	 */
 	private void switchToWifiSetting() {
-		NetworkWifiSettings networkWifiSettings = null;
 //		View view = populateViewToDynamicPanel(R.layout.lt_page_wifi_settings);
 		View view = populateViewToDynamicPanel(R.layout.lt_page_network_wifi_settings);
-		if (networkWifiSettings == null) {
+//		if (networkWifiSettings == null) {
 			networkWifiSettings = new NetworkWifiSettings(this);
-		}
+//		}
 		networkWifiSettings.initView(view);
 //			wifiSettingsView.resume();
 	}
@@ -235,7 +204,6 @@ public class OTTSettingsActivity extends Activity {
 			wiredSettingsView = new WiredSettingsView(this, view, Ethernet_Network_Mode);
 //		}
 		wiredSettingsView.initView(view);
-//		wiredSettingsView.onResume();
 	}
 	
 	/**
@@ -297,89 +265,34 @@ public class OTTSettingsActivity extends Activity {
 			switch (checkedId) {
 			case R.id.settings_net_status:
 				switchToNetStatus();
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				break;
 			case R.id.settings_wired:
 				switchToWiredSettings();
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				isFromWired = true;
 				break;
 			case R.id.settings_wifi:
 				switchToWifiSetting();
-				
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
 				isFromWifi = true;
 				break;
 			case R.id.settings_wifi_hotspot:
 				switchToWifiHotspotSettings();
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				break;
 			case R.id.settings_audio:
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				switchToAudioSettings();
 				break;
 			case R.id.settings_vedio:
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				switchToVedioSettings();
 				break;
 			case R.id.settings_showAdjust:
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				switchToShowAdjustSettings();
 				break;
 			case R.id.settings_sysUpgrade:
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				switchToSysUpgradeSettings();
 				break;
 			case R.id.settings_help:
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				switchToHelpSettings();
 				break;
 			case R.id.settings_about:
-//				if (isFromWired) {					
-//					pauseOfWired();
-//				}
-				if (isFromWifi) {					
-					pauseOfWifi();
-				}
 				switchToAboutSettings();
 				break;
 			default:
@@ -392,21 +305,25 @@ public class OTTSettingsActivity extends Activity {
 	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-//		Log.d(getClass().getName(), "onKeyDown---------isOpenAdjustScreenView : " + showAdjustSettingsViewWrapper.isOpenAdjustScreenView());
 		if (showAdjustSettingsViewWrapper != null && showAdjustSettingsViewWrapper.isOpenAdjustScreenView()) {
 			return showAdjustSettingsViewWrapper.onKeyDown(keyCode, event);
 		}
 		
-		if (keyCode == KeyEvent.KEYCODE_BACK && isFromWired) {
-			wiredSettingsView.onResume();
-			wiredSettingsView.onPause();
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			if (isFromWired) {
+				wiredSettingsView.onResume();
+				wiredSettingsView.onPause();				
+			}
+			
+			if (isFromWifi) {
+				networkWifiSettings.onKeyDown(keyCode, event);
+			}
 		}
 		return super.onKeyDown(keyCode, event);
 	}
 	
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-//		Log.d(getClass().getName(), "onKeyUp-------isOpenAdjustScreenView : " + showAdjustSettingsViewWrapper.isOpenAdjustScreenView());
 		if (showAdjustSettingsViewWrapper != null && showAdjustSettingsViewWrapper.isOpenAdjustScreenView()) {			
 			return showAdjustSettingsViewWrapper.onKeyUp(keyCode, event);
 		}

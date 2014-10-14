@@ -78,6 +78,7 @@ public abstract class WifiAdmin {
 		int wcgID = mWifiManager.addNetwork(wcg);
 		boolean isSuccess = mWifiManager.enableNetwork(wcgID, true);
 		LogUtil.d(TAG, "--------addNetwork------------" + isSuccess);
+		unRegister();
 	}
 	
 	public static final int TYPE_NO_PASSWD = 0x11;
