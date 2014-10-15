@@ -1,6 +1,7 @@
 package com.dbstar.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,7 +13,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 import com.dbstar.util.LogUtil;
-import com.dbstar.model.APPVersion;
 
 public class GDDBProvider {
 	private static final String TAG = "GDDBProvider";
@@ -393,14 +393,19 @@ public class GDDBProvider {
 		}
 
 		Cursor curosr = null;
-		String table = getTableName(sURIMatcher.match(uri));
-		LogUtil.d(TAG, "deviceGlobalQuery: table = " + table);
+		try {
+			String table = getTableName(sURIMatcher.match(uri));
+			LogUtil.d(TAG, "deviceGlobalQuery: table = " + table);
 
-		if (table != null && !table.isEmpty()) {
-			LogUtil.d(TAG, "deviceGlobalQuery: db.query(...)");
+			if (table != null && !table.isEmpty()) {
+				LogUtil.d(TAG, "deviceGlobalQuery: db.query(...)");
 
-			curosr = db.query(table, projection, selection, selectionArgs,
-					null, null, sortOrder);
+				curosr = db.query(table, projection, selection, selectionArgs,
+						null, null, sortOrder);
+			}
+		} catch (Exception e) {
+			LogUtil.d(TAG, "deviceGlobalQuery: db.query(...) failed!!! and Exception = " + e);			
+			e.printStackTrace();
 		}
 
 		return curosr;
@@ -444,7 +449,7 @@ public class GDDBProvider {
 		if (table != null && !table.isEmpty()) {
 			LogUtil.d(TAG, " insert");
 
-			rowId = db.insert(table, null, values);
+			rowId = db.replace(table, null, values);
 			if (rowId > 0) {
 				LogUtil.d(TAG, " insert at id=" + rowId);
 				// retUri = ContentUris.withAppendedId(Global.CONTENT_URI,
@@ -473,7 +478,7 @@ public class GDDBProvider {
 		if (table != null && !table.isEmpty()) {
 			LogUtil.d(TAG, " insert");
 
-			rowId = db.insert(table, null, values);
+			rowId = db.replace(table, null, values);
 			if (rowId > 0) {
 				LogUtil.d(TAG, " insert at id=" + rowId);
 				// retUri = ContentUris.withAppendedId(Global.CONTENT_URI,
