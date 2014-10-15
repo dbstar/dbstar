@@ -1223,7 +1223,7 @@ static int mid_push_regist(PROG_S *prog)
 			snprintf(s_prgs[i].product_id, sizeof(s_prgs[i].product_id), "%s", prog->product_id);
 			snprintf(s_prgs[i].fileuri, sizeof(s_prgs[i].fileuri), "%s", prog->fileuri);
 			
-			DEBUG("regist to push[%d]:%s(%s) in %s %s %s %s %s %lld\n",
+			DEBUG("regist to push[%d]:%s(%s) in %s. %s, %s, %s, %s, %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].publication_id,
@@ -1442,27 +1442,35 @@ int prog_monitor_reset(void)
  接收完毕的节目push系统会自动反注册，当播发单过期时，对那些接收不完毕的节目进行反注册并删除垃圾
  当反注册时文件被关闭，可以进行删除
 */
+#if 0
+There is deadlock here: if dont parse desc.xml, can not get FileURI; if has no FileURI, can not rename it from @tmp@ to standard
 			int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
 			
-			// 成品已经接收98%及以上
-			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && wanting_percent<=2)
+			// publication receive more than 98% but not complete
+			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && 0<wanting_percent && wanting_percent<=2 && strlen(s_prgs[i].fileuri)>0)
 			{
 				DEBUG("[%s]%s: cur=%lld, total=%lld, wanting %d%%, make it finished forced\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
 				
 				char tmp_fileuri[512];
 				char std_fileuri[512];
-				snprintf(tmp_fileuri,sizeof(tmp_fileuri),"%s/%s@tmp",push_dir_get(),s_prgs[i].fileuri);
+				snprintf(tmp_fileuri,sizeof(tmp_fileuri),"%s/%s@tmp@",push_dir_get(),s_prgs[i].fileuri);
 				snprintf(std_fileuri,sizeof(std_fileuri),"%s/%s",push_dir_get(),s_prgs[i].fileuri);
 				
 				if(0==rename(tmp_fileuri,std_fileuri)){
 					DEBUG("rename from %s to %s success\n", tmp_fileuri, std_fileuri);
 					parseDoc(s_prgs[i].descURI, PUBLICATION_DIR, "publication");
 					s_prgs[i].parsed = 1;
+					
+					ret = push_dir_unregister(s_prgs[i].uri);
+					if(0!=ret){
+						DEBUG("can not unregister for %s, this publication is complete forced\n", s_prgs[i].uri);
+					}
 				}
 				else{
-					DEBUG("rename from %s to %s failed\n", tmp_fileuri, std_fileuri);
+					ERROROUT("rename from %s to %s failed\n", tmp_fileuri, std_fileuri);
 				}
 			}
+#endif
 				
 			if(0==s_prgs[i].parsed){
 				PRINTF("[%s] %s is download stop but not complete, unregist and clean it\n", s_prgs[i].id,s_prgs[i].uri);
