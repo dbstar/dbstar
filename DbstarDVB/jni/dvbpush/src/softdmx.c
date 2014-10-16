@@ -778,6 +778,60 @@ void ca_section_handle(int fid, const unsigned char *data, int len, void *user_d
 	}
 }
 
+typedef enum{
+	CHECK_UPGRADE_FAILED = -1,
+	NO_NEED_UPGRADE = 0,
+	NEED_UPGRADE = 1
+}CHECK_UPGRADE;
+
+// check if need upgrade, return 0 means no need upgrade; return -1 means failed; return 1 means need upgrade
+static CHECK_UPGRADE check_upgrade(char *cur_version, char *new_version)
+{
+	int curver[4];
+	int newver[4];
+	int i = 0;
+	
+	if(NULL==cur_version){
+		INTERMITTENT_PRINT("current version is null, upgrade directly\n");
+		return NEED_UPGRADE;
+	}
+	
+	if(4!=sscanf(cur_version, "%d.%d.%d.%d", &curver[0], &curver[1], &curver[2], &curver[3])){
+		INTERMITTENT_PRINT("current version (%s) format is invalid, upgrade directly\n", cur_version);
+		return NEED_UPGRADE;
+	}
+	
+	if(NULL==new_version){
+		INTERMITTENT_PRINT("new version is null, no need upgrade\n");
+		return NO_NEED_UPGRADE;
+	}
+	
+	if(4!=sscanf(new_version, "%d.%d.%d.%d", &newver[0], &newver[1], &newver[2], &newver[3])){
+		INTERMITTENT_PRINT("new version (%s) format is invalid, no need upgrade\n", new_version);
+		return NO_NEED_UPGRADE;
+	}
+	
+	for(i=0; i<4; i++){
+		if(newver[i]>curver[i]){
+			INTERMITTENT_PRINT("newver[%d]=%d is larger than curver[%d]=%d, need upgrade\n", i, newver[i], i, curver[i]);
+			return NEED_UPGRADE;
+		}
+		else if(newver[i]==curver[i]){
+			continue;
+		}
+		else{	// if(newver[i]<curver[i])
+			INTERMITTENT_PRINT("newver[%d]=%d is less than curver[%d]=%d, no need upgrade\n", i, newver[i], i, curver[i]);
+			return NO_NEED_UPGRADE;
+		}
+	}
+	
+	INTERMITTENT_PRINT("newver[%d][%d][%d][%d] is equal as curver[%d][%d][%d][%d], no need upgrade\n", 
+			newver[0], newver[1], newver[2], newver[3], 
+			curver[0], curver[1], curver[2], curver[3]);
+	
+	return NO_NEED_UPGRADE;
+}
+
 void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data)
 {
 	unsigned char *datap=NULL, ctmp;
@@ -836,7 +890,7 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 
 //	INTERMITTENT_PRINT("loader info oui = [%x]\n",tmp16);
 	if (strncmp(cmp, g_loaderInfo.oui,2)){
-		INTERMITTENT_PRINT("loader oui check failed [0x%x], compare with my oui [0x%x]\n",tmp16,g_loaderInfo.oui);
+		INTERMITTENT_PRINT("loader oui check failed [0x%x], compare with my oui [%s]\n",tmp16,g_loaderInfo.oui);
 		return;
 	}
 	
@@ -861,8 +915,8 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	INTERMITTENT_PRINT("loader harder version [%u][%u][%u][%u]\n",datap[0],datap[1],datap[2],datap[3]);
 //	if ((datap[0] != g_loaderInfo.hardware_version[0])||(datap[1] != g_loaderInfo.hardware_version[1])
 //	||(datap[2] != g_loaderInfo.hardware_version[2])||(datap[3] != g_loaderInfo.hardware_version[3]))
-        sprintf(cmp,"%d.%d.%d.%d",datap[0],datap[1],datap[2],datap[3]);
-        if(strcmp(cmp, g_loaderInfo.hardware_version))
+	sprintf(cmp,"%d.%d.%d.%d",datap[0],datap[1],datap[2],datap[3]);
+	if(strcmp(cmp, g_loaderInfo.hardware_version))
 	{
 		INTERMITTENT_PRINT("hardware version check failed!!!!!\n");
 		return;
@@ -874,22 +928,13 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		INTERMITTENT_PRINT("software version is 255.255.255.255, do upgrade directly\n");
 	}
 	else{
-                sprintf(cmp,"%d.%d.%d.%d",datap[0],datap[1],datap[2],datap[3]);
-                if(strcmp(cmp,g_loaderInfo.software_version)==0)
-		{
-				INTERMITTENT_PRINT("software version is equal, do not upgrade\n");
-				return;
-
-		}
-		else if(strcmp(cmp,g_loaderInfo.software_version)<0)
-		{
-			INTERMITTENT_PRINT("software version of new upgrade package is less than mini, do not upgrade\n");
-			return;
-		}
-		else
-	        {
-			INTERMITTENT_PRINT("software version is not equal, do upgrade\n");
-		}
+		sprintf(cmp,"%d.%d.%d.%d",datap[0],datap[1],datap[2],datap[3]);
+		
+		INTERMITTENT_PRINT("coming version[%s], g_loaderInfo.software_version[%s]\n", cmp,g_loaderInfo.software_version);
+        if(NEED_UPGRADE!=check_upgrade(g_loaderInfo.software_version, cmp)){
+        	INTERMITTENT_PRINT("no need upgrade\n");
+        	return;
+        }
 	}
 	
 	strncpy(software_version,cmp,sizeof(software_version));
@@ -1021,7 +1066,7 @@ printf("start id l=[%u], me=[%u]\n",stb_id_l,stb_seral);
 	g_loaderInfo.img_len = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
         ctmp = datap[4];
 	snprintf(g_loaderInfo.download_type,3,"%d",ctmp);
-	DEBUG("g_loaderInfo.file_type=%d, g_loaderInfo.img_len=%d, g_loaderInfo.fid: %d\n", g_loaderInfo.file_type, g_loaderInfo.img_len, g_loaderInfo.fid);
+	DEBUG("g_loaderInfo.file_type=%s, g_loaderInfo.img_len=%d, g_loaderInfo.fid: %d\n", g_loaderInfo.file_type, g_loaderInfo.img_len, g_loaderInfo.fid);
 	//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",g_loaderInfo.file_type,g_loaderInfo.img_len,g_loaderInfo.download_type);
 }
 #endif
