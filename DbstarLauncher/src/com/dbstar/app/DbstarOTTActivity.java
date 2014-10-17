@@ -65,7 +65,7 @@ interface TaskController {
 interface TaskObserver {
 	public void onFinished(int resultCode, Object result);
 }
-public class DbstarOTTActivity extends Activity{
+public class DbstarOTTActivity extends GDBaseActivity {
 //	extends GDBaseActivity implements TaskController {
 
 	public static final String ColumnIDCNTV = "L97";

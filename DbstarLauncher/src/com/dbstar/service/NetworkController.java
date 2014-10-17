@@ -76,6 +76,7 @@ public class NetworkController extends BroadcastReceiver {
 	private final void updateEth(Intent intent) {
 		final int event = intent.getIntExtra(EthernetManager.EXTRA_ETH_STATE,
 				EthernetStateTracker.EVENT_HW_DISCONNECTED);
+		
 
 		LogUtil.d(TAG, "============== ethernet event ===========" + event);
 
@@ -99,6 +100,7 @@ public class NetworkController extends BroadcastReceiver {
 		case EthernetStateTracker.EVENT_HW_PHYCONNECTED:
 			LogUtil.d(TAG, "============== ethernet connected ==========="
 					+ mEthernetPhyState);
+			mEthManager.setEthEnabled(true);
 			if (mEthernetPhyState != ETHERNET_PHYCONNECTED) {
 				mEthernetPhyState = ETHERNET_PHYCONNECTED;
 				configEthernet();
@@ -127,6 +129,7 @@ public class NetworkController extends BroadcastReceiver {
 			return;
 		case EthernetStateTracker.EVENT_HW_CHANGED:
 			LogUtil.d(TAG, "============== ethernet EVENT_HW_CHANGED ===========");
+			mEthManager.setEthEnabled(true);
 			return;
 
 		default:
