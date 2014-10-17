@@ -36,6 +36,7 @@ public class NetStatusViewWrapper{
 		// 判断网络是有线还是无线
 		netWorkStyle();
 		
+		mEthernetManager.setEthEnabled(true);
 		DataTask task = new DataTask();
 		task.execute();
 	}

@@ -62,6 +62,10 @@ public class WifiHotspotSettingsViewWrapper {
 	
 	private boolean isOpenWifiHotspot = false;
 
+	private WifiAdmin wifiAdmin;
+
+	private WifiApAdmin wifiAp;
+
 	public WifiHotspotSettingsViewWrapper(Context context) {
 		this.mContext = context;
 		mWifiManager =  (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
@@ -294,11 +298,11 @@ public class WifiHotspotSettingsViewWrapper {
 	}
 	
 	private void wifiHotspotConnect(WifiHotspot wifiHotspot) {
-		WifiApAdmin wifiAp = new WifiApAdmin(mContext);
+		wifiAp = new WifiApAdmin(mContext);
 //				wifiAp.startWifiAp("\"HotSpot\"", "hhhhhh123");
 		wifiAp.startWifiAp(wifiHotspot.getSsid(), wifiHotspot.getPassword());
 		
-		WifiAdmin wifiAdmin = new WifiAdmin(mContext) {
+		wifiAdmin = new WifiAdmin(mContext) {
 			
 			@Override
 			public void onNotifyWifiConnected() {

@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RadioGroup.OnCheckedChangeListener;
 
 import com.settings.ottsettings.R;
 import com.settings.wifihotspot.WifiApAdmin;
@@ -45,29 +44,18 @@ public class NetworkWifiSettings {
 		
 		btnNext.requestFocus();
 		
-		radioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				if (checkedId == R.id.network_wifi_scan) {
-					WifiApAdmin.closeWifiAp(mContext);
-					if (!mWifiManager.isWifiEnabled()) {						
-						mWifiManager.setWifiEnabled(true);
-					}					
-				} else if (checkedId == R.id.network_wifi_hotspot) {
-					mWifiManager.setWifiEnabled(false);
-				}
-				
-			}
-		});
-		
 		btnNext.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				if (APMode.isChecked()) {
+					mWifiManager.setWifiEnabled(false);
 					switchToWifiHotspotSettings();
 				} else {
+					WifiApAdmin.closeWifiAp(mContext);
+					if (!mWifiManager.isWifiEnabled()) {						
+						mWifiManager.setWifiEnabled(true);
+					}
 					switchToWifiSetting();
 					isFromWifi = true;
 				}

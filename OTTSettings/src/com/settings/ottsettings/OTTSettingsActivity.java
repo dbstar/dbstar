@@ -215,8 +215,8 @@ public class OTTSettingsActivity extends Activity {
 
 		if (wrapper == null) {
 			wrapper = new NetStatusViewWrapper(this, Ethernet_Network_Mode);
-			wrapper.initView(view);
 		}
+		wrapper.initView(view);
 	}
 
 	private View populateViewToDynamicPanel(int resId) {
