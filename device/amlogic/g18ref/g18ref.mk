@@ -192,9 +192,7 @@ PRODUCT_PACKAGES += \
 	AppInstaller \
 	VideoPlayer \
 	RemoteIME \
-	remotecfg \
-	MboxSetting \
-	MediaBoxLauncher
+	remotecfg
 
 # Device specific system feature description
 PRODUCT_COPY_FILES += \
