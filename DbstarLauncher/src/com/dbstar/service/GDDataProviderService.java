@@ -1030,7 +1030,9 @@ public class GDDataProviderService extends Service {
 			case GDCommon.MSG_UPDATE_COLUMN:
 			case GDCommon.MSG_UPDATE_PREVIEW:
 			case GDCommon.MSG_UPDATE_UIRESOURCE: {
-				mApplicationObserver.handleNotifiy(msgId, null);
+				if (mApplicationObserver != null) {					
+					mApplicationObserver.handleNotifiy(msgId, null);
+				}
 				break;
 			}
 
