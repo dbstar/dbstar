@@ -2,16 +2,22 @@ package com.settings.service;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.List;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ethernet.EthernetManager;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
 
 import com.settings.bean.WifiHotspot;
 import com.settings.bean.WifiHotspotConfig;
+import com.settings.ethernet.EthernetEnabler;
 import com.settings.utils.DataUtils;
 import com.settings.utils.LogUtil;
 import com.settings.wifihotspot.WifiAdmin;
@@ -25,6 +31,8 @@ public class OTTSettingsService extends Service{
 	private static final String Data_Key_SECURITY = "com.settings.security";
 	private static final String Data_Key_PWD = "com.settings.password";
 	
+	private static final String Data_Wireless_Switch = "com.wifi.network.isOpen";
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -35,25 +43,56 @@ public class OTTSettingsService extends Service{
 		
 		// 如果上次退出程序之前设置过wifi热点，并且没有关闭，则启动wifi热点，并将上次设置的信息显示在上面
 		LogUtil.d(TAG, "OTTSettingsService-----------onCreate()");
-		if (WifiHotspotConfig.getInstance(this).shouldRestoreWifiHotspot()) {
-			LogUtil.d(TAG, "OTTSettingsService-----------wifi hotspot is opened");
-			String ssid = DataUtils.getPreference(this, Data_Key_SSID, "DbstarAP");
-			String password = DataUtils.getPreference(this, Data_Key_PWD, "12345678");
-			String security = DataUtils.getPreference(this, Data_Key_SECURITY, "WPA2 PSK");
-			wifiHotspot.setSsid(ssid);
-			wifiHotspot.setPassword(password);
-			wifiHotspot.setSecurity(security);
-			
-			LogUtil.d(TAG, "OTTSettingsService-----------ssid=" + ssid);
-			LogUtil.d(TAG, "OTTSettingsService-----------password=" + password);
-			LogUtil.d(TAG, "OTTSettingsService-----------security=" + security);
-			
-			wifiHotspotConnect(wifiHotspot);
-			LogUtil.d(TAG, "OTTSettingsService-----------open wifi hotspot");			
+		
+		boolean wirelessIsOpen = DataUtils.getPreference(this, Data_Wireless_Switch, true);
+		
+		if (wirelessIsOpen) {
+			if (WifiHotspotConfig.getInstance(this).shouldRestoreWifiHotspot()) {
+				LogUtil.d(TAG, "OTTSettingsService-----------wifi hotspot is opened");
+				String ssid = DataUtils.getPreference(this, Data_Key_SSID, "DbstarAP");
+				String password = DataUtils.getPreference(this, Data_Key_PWD, "12345678");
+				String security = DataUtils.getPreference(this, Data_Key_SECURITY, "WPA2 PSK");
+				wifiHotspot.setSsid(ssid);
+				wifiHotspot.setPassword(password);
+				wifiHotspot.setSecurity(security);
+				
+				LogUtil.d(TAG, "OTTSettingsService-----------ssid=" + ssid);
+				LogUtil.d(TAG, "OTTSettingsService-----------password=" + password);
+				LogUtil.d(TAG, "OTTSettingsService-----------security=" + security);
+				
+				wifiHotspotConnect(wifiHotspot);
+				LogUtil.d(TAG, "OTTSettingsService-----------open wifi hotspot");			
+			} else {
+				LogUtil.d(TAG, "OTTSettingsService-----------wifi is opened!");
+				WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+				wifiManager.setWifiEnabled(true);
+				// TODO:找到上次关机之前连接的ssid，在这看是否有此ssid，如果有就连接
+				String connectSsid = wifiManager.getConnectionInfo().getSSID().toString();
+				LogUtil.d(TAG, "OTTSettingsService-----------connectSsid = " +connectSsid);
+//				ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+//				NetworkInfo wifi = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+				
+				if (connectSsid != null) {
+					wifiManager.reassociate();
+				}
+				
+//				List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
+//				
+//				LogUtil.d(TAG, "OTTSettingsService-----------configuredNetworks = " + configuredNetworks);						
+//				if (configuredNetworks != null) {
+//					for (WifiConfiguration config : configuredNetworks) {
+//						LogUtil.d(TAG, "OTTSettingsService-----------config.SSID = " + config.SSID.toString());						
+//						wifiManager.reassociate();
+//					}
+//				}
+				
+			}
 		} else {
-			LogUtil.d(TAG, "OTTSettingsService-----------wifi hotspot is colosed");
-			return;
+			LogUtil.d(TAG, "OTTSettingsService-----------wireless is closed! and eth0 should stract!");	
+			EthernetManager ethernetManager = (EthernetManager) getSystemService(Context.ETH_SERVICE);
+			ethernetManager.setEthEnabled(true);
 		}
+		
 	}
 	
 	private void wifiHotspotConnect(WifiHotspot wifiHotspot) {

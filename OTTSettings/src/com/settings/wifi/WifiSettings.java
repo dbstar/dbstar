@@ -605,7 +605,6 @@ public class WifiSettings {
 	}
 
 	private class AccessPointsAdapter extends BaseAdapter {
-
 		public class ViewHolder {
 			TextView mTitleView;
 			TextView mSummaryView;

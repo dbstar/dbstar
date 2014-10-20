@@ -21,7 +21,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -42,12 +41,8 @@ public class WifiHotspotSettingsViewWrapper {
 	private static final String Data_Key_SSID = "com.settings.ssid";
 	private static final String Data_Key_SECURITY = "com.settings.security";
 	private static final String Data_Key_PWD = "com.settings.password";
-	private static final String Data_Key_IsOpenWifiHotspot = "com.settings.isOpenWifiHotspot";
 	
-	private CheckBox mOpenHotspot;
-//	private LinearLayout mTxtContainer;
 	private Button btnSetHotsopt;
-	private LinearLayout mSettingsContainer;
 	private EditText mSSID;
 	private Spinner mSecurity;
 	private EditText mPassword;
@@ -60,8 +55,6 @@ public class WifiHotspotSettingsViewWrapper {
 	private String[] mTxtSecurity = new String[]{"Open", "WPA PSK", "WPA2 PSK"};
 	private WifiHotspot wifiHotspot = null;
 	
-	private boolean isOpenWifiHotspot = false;
-
 	private WifiAdmin wifiAdmin;
 
 	private WifiApAdmin wifiAp;
@@ -74,13 +67,8 @@ public class WifiHotspotSettingsViewWrapper {
 	public void initView(View view) {
 		findViews(view);
 		
-		mOpenHotspot.requestFocus();
+		btnSetHotsopt.requestFocus();
 		unenableSetWifiHotspot();
-//		mSSID.setEnabled(false);
-//		mSecurity.setEnabled(false);
-//		mPassword.setEnabled(false);
-//		mShowPwd.setEnabled(false);
-//		mBtnOk.setEnabled(false);
 		
 		wifiHotspot = new WifiHotspot();
 		String ssid = DataUtils.getPreference(mContext, Data_Key_SSID, "DbstarAP");
@@ -89,26 +77,6 @@ public class WifiHotspotSettingsViewWrapper {
 		wifiHotspot.setSsid(ssid);
 		wifiHotspot.setPassword(password);
 		wifiHotspot.setSecurity(security);
-		
-		// TODO：可以做成跟之前的那个一样的
-		// 如果上次退出程序之前设置了热点并没有关闭，则再进入程序就保存上次的设置
-		boolean isOpenWifiHotspot = DataUtils.getPreference(mContext, Data_Key_IsOpenWifiHotspot, false);
-		LogUtil.d(TAG, "initView   isOpenWifiHotspot------== ==" + isOpenWifiHotspot);
-		if (WifiHotspotConfig.getInstance(mContext).shouldRestoreWifiHotspot() && isOpenWifiHotspot) {
-//		if (mOpenHotspot.isChecked()) {
-			// 如果选中，则可以点击
-			LogUtil.d(TAG, "initView   isOpenWifiHotspot------==mOpenHotspot.isChecked() == true");
-			mOpenHotspot.setChecked(true);
-			btnSetHotsopt.setVisibility(View.VISIBLE);
-			mSettingsContainer.setVisibility(View.VISIBLE);
-			wifiHotspotConnect(wifiHotspot);
-		} else {
-			// 如果mOpenHotspot没有选中，则“设置Wi-Fi热点”不可点击。
-			LogUtil.d(TAG, "initView   isOpenWifiHotspot------==mOpenHotspot.isChecked() == false");
-			mOpenHotspot.setChecked(false);	
-			btnSetHotsopt.setVisibility(View.GONE);
-			mSettingsContainer.setVisibility(View.GONE);			
-		}
 		
 		if (wifiHotspot != null) {
 			mSSID.setText(wifiHotspot.getSsid());
@@ -174,9 +142,11 @@ public class WifiHotspotSettingsViewWrapper {
 		
 		wifiHotspot.setSecurity((String) mSecurity.getSelectedItem());
 		
+//		DataUtils.savePreference(mContext, Data_Key_SSID, wifiHotspot.getSsid());
+//		DataUtils.savePreference(mContext, Data_Key_PWD, wifiHotspot.getPassword());
+//		DataUtils.savePreference(mContext, Data_Key_SECURITY, wifiHotspot.getSecurity());
 		
-//		boolean shouldRestoreWifiHotspot = WifiHotspotConfig.getInstance(mContext).shouldRestoreWifiHotspot();
-//		mOpenHotspot.setChecked(shouldRestoreWifiHotspot);
+		wifiHotspotConnect(wifiHotspot);
 		
 		setEventListener(view);
 	}
@@ -202,33 +172,6 @@ public class WifiHotspotSettingsViewWrapper {
 			}
 		});
 		
-		mOpenHotspot.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					btnSetHotsopt.setVisibility(View.VISIBLE);
-					mSettingsContainer.setVisibility(View.VISIBLE);
-					wifiHotspotConnect(wifiHotspot);
-					ToastUtils.showToast(mContext, R.string.page_wifi_hotspot_settingsOk);
-					
-					DataUtils.savePreference(mContext, Data_Key_SSID, wifiHotspot.getSsid());
-					DataUtils.savePreference(mContext, Data_Key_PWD, wifiHotspot.getPassword());
-					DataUtils.savePreference(mContext, Data_Key_SECURITY, wifiHotspot.getSecurity());
-					
-					unenableSetWifiHotspot();
-				} else {
-					btnSetHotsopt.setVisibility(View.GONE);
-					mSettingsContainer.setVisibility(View.GONE);
-					
-					WifiApAdmin.closeWifiAp(mContext);
-				}
-				
-				DataUtils.savePreference(mContext, Data_Key_IsOpenWifiHotspot, isChecked);
-				WifiHotspotConfig.getInstance(mContext).setRestoreWifiHotspot(mContext, isChecked);
-			}
-		});
-		
 		// TODO:
 		mBtnOk.setOnClickListener(new OnClickListener() {
 			
@@ -242,7 +185,6 @@ public class WifiHotspotSettingsViewWrapper {
 				unenableSetWifiHotspot();
 				
 				if (WifiHotspotConfig.getInstance(mContext).shouldRestoreWifiHotspot()) {
-					LogUtil.d(TAG, "mBtnOk   mOpenHotspot.isChecked()------== ==" + mOpenHotspot.isChecked());
 //					DataUtils.savePreference(mContext, Data_Key_IsOpenWifiHotspot, true);
 					DataUtils.savePreference(mContext, Data_Key_SSID, wifiHotspot.getSsid());
 					DataUtils.savePreference(mContext, Data_Key_PWD, wifiHotspot.getPassword());
@@ -286,9 +228,7 @@ public class WifiHotspotSettingsViewWrapper {
 	}
 
 	private void findViews(View view) {
-		mOpenHotspot = (CheckBox) view.findViewById(R.id.wifi_hotspot_cb_select);
 		btnSetHotsopt = (Button) view.findViewById(R.id.wifi_hotspot_settings);
-		mSettingsContainer = (LinearLayout) view.findViewById(R.id.wifi_hotspot_settings_setContainer);
 		mSSID = (EditText) view.findViewById(R.id.wifi_hotspot_et_ssid);
 		mSecurity = (Spinner) view.findViewById(R.id.wifi_hotspot_security_spinner);
 		mPassword = (EditText) view.findViewById(R.id.wifi_hotspot_et_password);
@@ -299,7 +239,6 @@ public class WifiHotspotSettingsViewWrapper {
 	
 	private void wifiHotspotConnect(WifiHotspot wifiHotspot) {
 		wifiAp = new WifiApAdmin(mContext);
-//				wifiAp.startWifiAp("\"HotSpot\"", "hhhhhh123");
 		wifiAp.startWifiAp(wifiHotspot.getSsid(), wifiHotspot.getPassword());
 		
 		wifiAdmin = new WifiAdmin(mContext) {
@@ -308,14 +247,12 @@ public class WifiHotspotSettingsViewWrapper {
 			public void onNotifyWifiConnected() {
 				LogUtil.d("OTTSettingsActivity", "have connected success!");
 				LogUtil.d("OTTSettingsActivity", "###############################");
-				
 			}
 			
 			@Override
 			public void onNotifyWifiConnectFailed() {
 				LogUtil.d("OTTSettingsActivity", "have connected failed!");
 				LogUtil.d("OTTSettingsActivity", "###############################");
-				
 			}
 			
 			@Override
@@ -341,9 +278,7 @@ public class WifiHotspotSettingsViewWrapper {
 		mPassword.setEnabled(false);
 		mShowPwd.setEnabled(false);
 		mBtnOk.setEnabled(false);
-		btnSetHotsopt.setNextFocusDownId(R.id.wifi_hotspot_cb_select);
-		mOpenHotspot.setNextFocusUpId(R.id.wifi_hotspot_settings);		
-		mOpenHotspot.setNextFocusDownId(R.id.wifi_hotspot_settings);
+		btnSetHotsopt.requestFocus();
 	}
 
 	private void enableSetWifiHotspot() {
@@ -353,10 +288,9 @@ public class WifiHotspotSettingsViewWrapper {
 		mShowPwd.setEnabled(true);
 		mBtnOk.setEnabled(true);
 		
+		btnSetHotsopt.setNextFocusUpId(R.id.wifi_hotspot_btn_ok);
 		btnSetHotsopt.setNextFocusDownId(R.id.wifi_hotspot_et_ssid);
-		mBtnOk.setNextFocusDownId(R.id.wifi_hotspot_cb_select);
-		mOpenHotspot.setNextFocusUpId(R.id.wifi_hotspot_btn_ok);		
-		mOpenHotspot.setNextFocusDownId(R.id.wifi_hotspot_settings);
+		mBtnOk.setNextFocusDownId(R.id.wifi_hotspot_settings);
 	}
 
 	private class OnEditFocusChangeListner implements OnFocusChangeListener {

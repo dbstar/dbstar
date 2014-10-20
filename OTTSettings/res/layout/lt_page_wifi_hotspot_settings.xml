@@ -28,7 +28,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/lt_common_rectangle_txt_selector"
-            android:gravity="center" >
+            android:gravity="center" 
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/wifi_hotspot_select"
@@ -59,7 +60,8 @@
             android:layout_height="1dp"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="5dp"
-            android:background="?android:attr/listDivider" />
+            android:background="?android:attr/listDivider"
+            android:visibility="gone" />
 
         <!-- android:background="@drawable/lt_common_rectangle_txt_selector" -->
 

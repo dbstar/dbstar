@@ -13,7 +13,7 @@ public class WifiHotspotConfig {
 	private boolean restoreWifiHotspot = true;
 	
 	private WifiHotspotConfig(Context context) {
-		restoreWifiHotspot = DataUtils.getPreference(context, Data_Key_IsOpenWifiHotsput, true);
+		restoreWifiHotspot = DataUtils.getPreference(context, Data_Key_IsOpenWifiHotsput, false);
 	}
 	
 	/**

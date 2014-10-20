@@ -75,7 +75,7 @@ public class GalleryAdapter extends BaseAdapter {
     			view.setLayoutParams(new Gallery.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
     		} else {
     			view.setImageResource(mImages[position % mImages.length]);
-    			LogUtil.d("GalleryAdapter", "in Gallery, bitmap is null!");
+//    			LogUtil.d("GalleryAdapter", "in Gallery, bitmap is null!");
     		}
     	}
         return view;

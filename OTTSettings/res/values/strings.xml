@@ -7,8 +7,8 @@
     
     <!-- 设置首页面 -->
     <string name="pageName_settings_net_status">网络状态</string>
-    <string name="pageName_settings_wired">有线设置</string>
-    <string name="pageName_settings_wifi">WiFi设置</string>
+    <string name="pageName_settings_wired">有线网络</string>
+    <string name="pageName_settings_wifi">无线网络</string>
     <string name="pageName_settings_wifi_hotspot">Wi-Fi热点</string>
     <string name="pageName_settings_audio">音频设置</string>
     <string name="pageName_settings_vedio">视频设置</string>
@@ -30,7 +30,7 @@
     <string name="page_net_status_wired_net">有线网络</string>
     <string name="page_net_status_connected">已连接</string>
     
-    <!-- 有线设置 -->
+    <!-- 有线网络 -->
     <string name="page_wired_internet_style">网络配置方式</string>
     <string name="page_wired_autoGet">网络自动获取</string>
     <string name="page_wired_manualSet">网络手动设置</string>
@@ -63,7 +63,12 @@
     <string name="button_text_wifi_not_save">不保存</string>
     <string name="button_text_wifi_connect">连接</string>
     
-    <!-- 无线设置 -->
+    <!-- 无线网络 -->
+    <string name="network_wifi_switch_statu">当前状态：</string>    
+    <string name="network_wifi_switch_isClose">关</string>    
+    <string name="network_wifi_switch_isOpen">开</string>    
+    
+    <!-- wifi设置 -->
     <string name="network_wifi_setup_1">网卡模式</string>
     <string name="network_wifi_setup_2">AP模式</string>
     <string name="network_wifi_setup_title">无线网卡设置</string>
@@ -148,6 +153,7 @@
     <string name="page_wifi_hotspot_ssid_validation">请输入有效的SSID。</string>
     <string name="page_wifi_hotspot_pwd_validation">请输入有效的密码。</string>
     <string name="page_wifi_hotspot_settingsOk">Wi-Fi热点设置完成。</string>
+    <string name="page_wifi_hotspot_settingsFailed">Wi-Fi热点设置失败。</string>
     <string name="page_wifi_hotspot_AndroidAp">AndroidAp</string>
     <string name="page_wifi_hotspot_AndroidAp_pwd">12345678</string>
     

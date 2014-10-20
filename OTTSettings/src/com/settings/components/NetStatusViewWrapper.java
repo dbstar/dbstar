@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.settings.ottsettings.R;
+import com.settings.utils.LogUtil;
 import com.settings.utils.SettingUtils;
 
 public class NetStatusViewWrapper{
@@ -89,10 +90,14 @@ public class NetStatusViewWrapper{
 			String ipAddress;
 			DhcpInfo dhcpInfo = mEthernetManager.getDhcpInfo();
 			ipAddress = SettingUtils.getAddress(dhcpInfo.ipAddress);
+			LogUtil.d("NetStatusViewWrapper", " ipAddress = " + ipAddress);
 //			if (ethernetMode == 1) {
 //			} else {
 //				ipAddress = SettingUtils.getLocalIpAddress();
 //			}
+			if (ipAddress.equals("0.0.0.0")) {
+				ipAddress = SettingUtils.getLocalIpAddress();
+			}
 			map.put("ipAdddress", ipAddress);
 			
 			// MAC地址
