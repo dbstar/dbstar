@@ -71,56 +71,20 @@ public class NetworkWifiSettings {
 		wifiSwitch.requestFocus();
 		
 		boolean wirelessIsOpen = DataUtils.getPreference(mContext, Data_Wireless_Switch, true);
-		boolean isOpenWifiHotspot = DataUtils.getPreference(mContext, Data_Key_IsOpenWifiHotspot, false);
-		boolean isOpenWifi = DataUtils.getPreference(mContext, Data_Key_IsOpenWifi, true);
-		LogUtil.d("NetworkWifiSettings", "------wirelessIsOpen = " + wirelessIsOpen);
-		LogUtil.d("NetworkWifiSettings", "------isOpenWifiHotspot = " + isOpenWifiHotspot);
-		LogUtil.d("NetworkWifiSettings", "------isOpenWifi = " + isOpenWifi);
-		
-		wifiSwitch.setChecked(wirelessIsOpen);
-		
-		if (wirelessIsOpen) {
-			enable();
-			if (isOpenWifiHotspot) {
-				txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_setup_2));
-				// 打开AP
-				String ssid = DataUtils.getPreference(mContext, Data_Key_SSID, "DbstarAP");
-				String password = DataUtils.getPreference(mContext, Data_Key_PWD, "12345678");
-				String security = DataUtils.getPreference(mContext, Data_Key_SECURITY, "WPA2 PSK");
-				wifiHotspot.setSsid(ssid);
-				wifiHotspot.setPassword(password);
-				wifiHotspot.setSecurity(security);
-				wifiHotspotConnect(wifiHotspot);
-			} else {
-				txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_setup_1));
-				// 打开Wifi
-				if (!mWifiManager.isWifiEnabled()) {						
-					mWifiManager.setWifiEnabled(true);
-				}
-				mWifiManager.reassociate();
-			}
-		} else {
-			txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_switch_isClose));
-			unEnable();
-			WifiApAdmin.closeWifiAp(mContext);
-			mWifiManager.setWifiEnabled(false);
-		}
+		nowWirelessStatus(wirelessIsOpen);
 		
 		wifiSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				if (isChecked) {
-					enable();					
-					txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_switch_isOpen));
+					nowWirelessStatus(true);
 				} else {
 					wifiSwitch.requestFocus();
-					unEnable();
-					txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_switch_isClose));
-					
+					nowWirelessStatus(false);
 					// 将Ap和wifi都关掉
-					WifiApAdmin.closeWifiAp(mContext);
-					mWifiManager.setWifiEnabled(false);
+//					WifiApAdmin.closeWifiAp(mContext);
+//					mWifiManager.setWifiEnabled(false);
 				}
 				
 				DataUtils.savePreference(mContext, Data_Wireless_Switch, isChecked);
@@ -152,9 +116,47 @@ public class NetworkWifiSettings {
 		});
 	}
 
+	private void nowWirelessStatus(boolean wirelessIsOpen) {
+		boolean isOpenWifiHotspot = DataUtils.getPreference(mContext, Data_Key_IsOpenWifiHotspot, false);
+		boolean isOpenWifi = DataUtils.getPreference(mContext, Data_Key_IsOpenWifi, true);
+		LogUtil.d("NetworkWifiSettings", "------wirelessIsOpen = " + wirelessIsOpen);
+		LogUtil.d("NetworkWifiSettings", "------isOpenWifiHotspot = " + isOpenWifiHotspot);
+		LogUtil.d("NetworkWifiSettings", "------isOpenWifi = " + isOpenWifi);
+		
+		wifiSwitch.setChecked(wirelessIsOpen);
+		
+		if (wirelessIsOpen) {
+			enable();
+			if (isOpenWifiHotspot) {
+				txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_setup_2));
+				// 打开AP
+				String ssid = DataUtils.getPreference(mContext, Data_Key_SSID, "DbstarAP");
+				String password = DataUtils.getPreference(mContext, Data_Key_PWD, "12345678");
+				String security = DataUtils.getPreference(mContext, Data_Key_SECURITY, "WPA2 PSK");
+				wifiHotspot.setSsid(ssid);
+				wifiHotspot.setPassword(password);
+				wifiHotspot.setSecurity(security);
+				wifiHotspotConnect(wifiHotspot);
+				APMode.setChecked(true);
+			} else {
+				txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_setup_1));
+				// 打开Wifi
+				if (!mWifiManager.isWifiEnabled()) {						
+					mWifiManager.setWifiEnabled(true);
+				}
+				mWifiManager.reassociate();
+				wifiMode.setChecked(true);
+			}
+		} else {
+			txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_switch_isClose));
+			unEnable();
+			WifiApAdmin.closeWifiAp(mContext);
+			mWifiManager.setWifiEnabled(false);
+		}
+	}
+
 	private void wifiHotspotConnect(WifiHotspot wifiHotspot) {
 		wifiAp = new WifiApAdmin(mContext);
-//				wifiAp.startWifiAp("\"HotSpot\"", "hhhhhh123");
 		wifiAp.startWifiAp(wifiHotspot.getSsid(), wifiHotspot.getPassword());
 		
 		wifiAdmin = new WifiAdmin(mContext) {
@@ -187,7 +189,6 @@ public class NetworkWifiSettings {
 		
 		wifiAdmin.openWifi();
 		wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), getTypeOfSecurity(wifiHotspot));
-//				wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(),  WifiAdmin.TYPE_WPA);
 	}
 	
 	private int getTypeOfSecurity(WifiHotspot wifiHotspot) {
