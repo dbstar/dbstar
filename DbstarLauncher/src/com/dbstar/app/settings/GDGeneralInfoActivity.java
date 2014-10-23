@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -30,7 +31,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	private TextView mLoaderVersionView;
 	private TextView mMacAddressView;
 
-	private TextView mDiskSizeView, mDiskUsedView, mDiskSpaceView;
+	private TextView mDiskTitleName, mDiskSizeView, mDiskUsedView, mDiskSpaceView;
 	private TextView mUpgradeView;
 
 	private String mDeviceSerialNumber, mHardwareType, mSoftwareVersion,
@@ -68,13 +69,26 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mMacAddressView.setText(mMacAddress);
 
 		String disk = mService.getStorageDisk();
+		Log.d("GDGeneralInfoActivity", "--------------disk = " + disk);
+		if (disk.equals("/data/dbstar/")) {
+			mDiskSize = getResources().getString(R.string.disk_file_totalsize);
+			mDiskTitleName.setText(getResources().getString(R.string.disk_file_info));
+		} else {
+			mDiskSize = getResources().getString(R.string.disk_totalsize);				
+			mDiskTitleName.setText(getResources().getString(R.string.disk_info));
+		}
 		if (disk != null && !disk.isEmpty()) {
 			DiskInfo info = GDDiskInfo.getDiskInfo(disk, true);
+			
+			
+			if (info != null) {
+				mDiskSize += info.DiskSize;
+				mDiskUsed += info.DiskUsed;
+				mDiskSpace += info.DiskSpace;				
+			}
 
-			mDiskSize += info.DiskSize;
-			mDiskUsed += info.DiskUsed;
-			mDiskSpace += info.DiskSpace;
-
+			Log.d("GDGeneralInfoActivity", "mDiskSize = " + mDiskSize + " mDiskUsed = " + mDiskUsed + " mDiskSpace = " + mDiskSpace);
+			
 			mDiskSizeView.setText(mDiskSize);
 			mDiskUsedView.setText(mDiskUsed);
 			mDiskSpaceView.setText(mDiskSpace);
@@ -128,6 +142,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mMacAddressView = (TextView) findViewById(R.id.device_macaddress);
 		mUpgradeView = (TextView) findViewById(R.id.upgrade_count);
 
+		mDiskTitleName = (TextView) findViewById(R.id.generalinfo_disk_info);
 		mDiskSizeView = (TextView) findViewById(R.id.disk_totalsize);
 		mDiskUsedView = (TextView) findViewById(R.id.disk_usedsize);
 		mDiskSpaceView = (TextView) findViewById(R.id.disk_spacesize);
@@ -139,7 +154,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mMacAddress = getResources().getString(R.string.deviceinfo_mac_address);
 		mUpgradeCount = getResources().getString(R.string.upgrade_count);
 
-		mDiskSize = getResources().getString(R.string.disk_totalsize);
+//		mDiskSize = getResources().getString(R.string.disk_totalsize);
 		mDiskUsed = getResources().getString(R.string.disk_usedsize);
 		mDiskSpace = getResources().getString(R.string.disk_spacesize);
 		

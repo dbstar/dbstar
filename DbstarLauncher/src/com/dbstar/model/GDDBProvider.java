@@ -1,7 +1,6 @@
 package com.dbstar.model;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -185,12 +184,11 @@ public class GDDBProvider {
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
-			LogUtil.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
+//			LogUtil.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen());
 			if (mDataBase.isOpen()) {
 				if(mPreDbFile==dbFile){
 					db = mDataBase;
-				}
-				else{
+				} else {
 					LogUtil.d(TAG, "getReadableDatabase: this db[" + dbFile + " is diffrent with pre db[" + mPreDbFile + "], close pre db and open new");
 					mDataBase.close();
 					mDataBase = null;
@@ -209,7 +207,6 @@ public class GDDBProvider {
 
 	protected synchronized SQLiteDatabase getDeviceGlobalReadableDatabase() {
 		
-		LogUtil.d("getDeviceGlobalReadableDatabase", mConfigure + ">>>>>>>>>>>====");
 		
 		String dbFile = mConfigure.getDeviceGlobalDB();
 
@@ -223,12 +220,11 @@ public class GDDBProvider {
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
-			LogUtil.d(TAG, "getDeviceGlobalReadableDatabase: mDataBase.isOpen() " + mDataBase.isOpen());
+//			LogUtil.d(TAG, "getDeviceGlobalReadableDatabase: mDataBase.isOpen() " + mDataBase.isOpen());
 			if (mDataBase.isOpen()) {
 				if(mPreDbFile==dbFile){
 					db = mDataBase;
-				}
-				else{
+				} else {
 					LogUtil.d(TAG, "getDeviceGlobalReadableDatabase: this db[" + dbFile + "is diffrent with pre db[" + mPreDbFile + "], close pre db and open new");
 					mDataBase.close();
 					mDataBase = null;
@@ -258,16 +254,14 @@ public class GDDBProvider {
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
-			LogUtil.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
+//			LogUtil.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
 
 			if (mDataBase.isOpen()) {
-				LogUtil.d(TAG,
-						"mDataBase.isReadOnly() " + mDataBase.isReadOnly());
+//				LogUtil.d(TAG, "mDataBase.isReadOnly() " + mDataBase.isReadOnly());
 				if (!mDataBase.isReadOnly()) {
 					if(mPreDbFile==dbFile){
 						db = mDataBase;
-					}
-					else{
+					} else {
 						LogUtil.d(TAG, "getWriteableDatabase: this db[" + dbFile + "is diffrent with pre db[" + mPreDbFile + "], close pre db and open new");
 						mDataBase.close();
 						mDataBase = null;
@@ -301,16 +295,14 @@ public class GDDBProvider {
 		SQLiteDatabase db = null;
 
 		if (mDataBase != null) {
-			LogUtil.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
+//			LogUtil.d(TAG, "mDataBase.isOpen() " + mDataBase.isOpen() + " ");
 
 			if (mDataBase.isOpen()) {
-				LogUtil.d(TAG,
-						"mDataBase.isReadOnly() " + mDataBase.isReadOnly());
+//				LogUtil.d(TAG, "mDataBase.isReadOnly() " + mDataBase.isReadOnly());
 				if (!mDataBase.isReadOnly()) {
 					if(mPreDbFile==dbFile){
 						db = mDataBase;
-					}
-					else{
+					} else {
 						LogUtil.d(TAG, "getDeviceGlobalWriteableDatabase: this db[" + dbFile + "is diffrent with pre db[" + mPreDbFile + "], close pre db and open new");
 						mDataBase.close();
 						mDataBase = null;

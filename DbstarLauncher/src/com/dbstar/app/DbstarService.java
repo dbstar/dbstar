@@ -74,6 +74,8 @@ public class DbstarService extends Service {
 	
 	@Override
 	public void onCreate() {
+		super.onCreate();
+		
 		// 注册广播，检查网络状态
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -84,8 +86,6 @@ public class DbstarService extends Service {
 		if (isNetworkConnected) {
 			isConnected = getHeartbeat();
 		};
-		
-		super.onCreate();
 		
 //		mEthManager = this.getSystemService(getApplicationContext().ETHERNET_SERVICE);
 //		if (mEthManager.isEthDeviceAdded()) {
@@ -98,7 +98,6 @@ public class DbstarService extends Service {
 		
 //		thread = new CheckNetworkThread(this);
 //		thread.start();
-		LogUtil.e("DbstarService", "service创建");
 	}
 	
 	private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -136,8 +135,6 @@ public class DbstarService extends Service {
 		dataModel.initialize(mConfigure);
 		String deviceModel = dataModel.getHardwareType();
 		String productSN = dataModel.getDeviceSearialNumber();
-		LogUtil.d(getClass().getName() + "getHeartbeat", "<<<-----------==========" + deviceModel);
-		LogUtil.d(getClass().getName() + "getHeartbeat", "<<<-----------==========" + productSN);	
 		
 		// 先将参数放入List,再对参数进行URL编码
 		List<NameValuePair> paramsList = new LinkedList<NameValuePair>();
@@ -170,13 +167,13 @@ public class DbstarService extends Service {
 				
 				if (hashMap.containsKey(0)) {
 					isConnected = true;
-					LogUtil.d("getHeartbeat", "心跳接口调用返回正常，成功");
+					LogUtil.d("DbstarService", "in getHeartbeat，success!");
 				} else if (hashMap.containsKey(-2101)) {
 					isConnected = false;
-					LogUtil.d("getHeartbeat", "心跳接口调用返回异常，终端未登记");						
+					LogUtil.d("DbstarService", "in getHeartbeat，failed and terminal is not register!");						
 				} else {
 					isConnected = false;
-					LogUtil.d("getHeartbeat", "心跳接口调用返回异常,访问失败");											
+					LogUtil.d("DbstarService", "in getHeartbeat，visit failed!");											
 				}
 			}
 		};
@@ -197,11 +194,11 @@ public class DbstarService extends Service {
 			String rm = object.getString("RM");
 			map.put(rc, rm);
 		} catch (ParseException e) {
-			LogUtil.d("parserLoginResponse::", "解析异常");
+			LogUtil.d("DbstarService", "in parseHeartbeatResponse, parse failed and ParseException = " + e);
 		} catch (IOException e) {
-			LogUtil.d("parserLoginResponse::", "解析时IO异常");
+			LogUtil.d("DbstarService", "in parseHeartbeatResponse, parse failed and IOException = " + e);
 		} catch (JSONException e) {
-			LogUtil.d("parserLoginResponse::", "解析时Json异常");
+			LogUtil.d("DbstarService", "in parseHeartbeatResponse, parse failed and JSONException = " + e);
 		}
 		return map;
 	}
@@ -224,8 +221,8 @@ public class DbstarService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		unregisterReceiver(receiver);
+		// service销毁时，也将县城出关闭
 		SimpleWorkPoolInstance.instance().shutdown();
-		LogUtil.e("DbstarService", "service销毁，线程池关闭");
 	}
 
 	@Override

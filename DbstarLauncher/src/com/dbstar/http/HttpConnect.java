@@ -84,7 +84,6 @@ public class HttpConnect {
         ClientConnectionManager conMgr = new ThreadSafeClientConnManager(params, schReg);
         customerHttpClient = new DefaultHttpClient(conMgr, params);
         
-        LogUtil.d("initClient::::", customerHttpClient.toString());
     }
     
     private HttpClient getHttpClient() {
@@ -100,7 +99,6 @@ public class HttpConnect {
             throw new IllegalStateException("uri is null");
         }
         
-        LogUtil.d("openConnect::连接时间：：", System.currentTimeMillis() + "");
         
         HttpEntity entity = null;
         HttpResponse response = null;
@@ -117,7 +115,7 @@ public class HttpConnect {
                 if (response != null && response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 	entity = response.getEntity();
                 }
-                LogUtil.d("HttpConnect openConnect", "get：：联网成功");
+                LogUtil.d("HttpConnect openConnect", "post：：联网成功");
             } catch (UnsupportedEncodingException e) {
                 LogUtil.w("HttpConnect openConnect", "post：：UnsupportedEncodingException异常");
                 e.printStackTrace();
@@ -144,7 +142,6 @@ public class HttpConnect {
 				}
 				Log.e("HttpConnect", "GET  uri: " + uri);
 				HttpGet get = new HttpGet(uri);
-				LogUtil.d("get socket::", get.toString());
 				response = getHttpClient().execute(get);
 				if (response != null && response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 					entity = response.getEntity();

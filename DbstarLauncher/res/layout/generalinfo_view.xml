@@ -138,6 +138,7 @@
             android:paddingRight="40dp" >
 
             <TextView
+                android:id="@+id/generalinfo_disk_info"
                 android:layout_width="wrap_content"
                 android:layout_height="54dp"
                 android:gravity="left|center_vertical"

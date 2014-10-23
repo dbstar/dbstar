@@ -55,7 +55,7 @@ public class GDDataModel {
 		setLocalization(language);
 		configure.setLocalization(language);
 
-		LogUtil.d(TAG, "language = " + language);
+//		LogUtil.d(TAG, "language = " + language);
 		
 		mConfigure = configure;
 	}
@@ -88,7 +88,7 @@ public class GDDataModel {
 				ColumnQuery.COLUMNS, selection, selectionArgs, sortOrder);
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				LogUtil.d(TAG, "columnId: sub-column number = " + cursor.getCount());
+//				LogUtil.d(TAG, "columnId: sub-column number = " + cursor.getCount());
 				Columns = new ColumnData[cursor.getCount()];
 				int i = 0;
 				do {
@@ -100,12 +100,12 @@ public class GDDataModel {
 					
 					if (columnId.equals("-1") && Columns[i].Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)) {
 						mColumnBookId = Columns[i].Id;
-						LogUtil.d(TAG, "----getColumns----mColumnBookId = " + mColumnBookId);
+//						LogUtil.d(TAG, "----getColumns----mColumnBookId = " + mColumnBookId);
 					}
 					
 					if (columnId.equals("-1") && Columns[i].Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)) {
 						mColumnNewsPaperId = Columns[i].Id;
-						LogUtil.d(TAG, "----getColumns----mColumnNewsPaperId = " + mColumnNewsPaperId);
+//						LogUtil.d(TAG, "----getColumns----mColumnNewsPaperId = " + mColumnNewsPaperId);
 					}
 
 					i++;
@@ -153,7 +153,7 @@ public class GDDataModel {
 //    	String sql = "select ColumnID from Column where ColumnType= ? and ParentID='-1'";
     	Cursor cursor = mDVBDataProvider.query(Column.CONTENT_URI, new String[]{"ColumnID"}, "ColumnType = ? and ParentID = '-1'", new String[]{columnType}, null);
     	if (cursor != null && cursor.moveToNext()) {
-    		LogUtil.d(TAG, "--------columnType = " + columnType + "------columnID = " + cursor.getString(0));
+    		LogUtil.d(TAG, " columnType = " + columnType + ", columnID = " + cursor.getString(0));
     		return cursor.getString(0);
     	}
     	if (cursor != null && !cursor.isClosed()) {
@@ -854,8 +854,7 @@ public class GDDataModel {
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				Id = 0;
-				oldValue = cursor
-						.getString(GDDVBDataProvider.GlobalQuery.VALUE);
+				oldValue = cursor.getString(GDDVBDataProvider.GlobalQuery.VALUE);
 				LogUtil.d(TAG, "Global["+ property + "], old value = " + oldValue);
 			}
 		}
@@ -1105,7 +1104,7 @@ public class GDDataModel {
 
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
-				LogUtil.d(TAG, "query cursor size = " + cursor.getCount());
+//				LogUtil.d(TAG, "query cursor size = " + cursor.getCount());
 
 				value = cursor.getString(GDSmartHomeProvider.GlobalQuery.VALUE);
 			}
@@ -1133,7 +1132,7 @@ public class GDDataModel {
 	}
 
 	public Bitmap getImage(String file) {
-		LogUtil.d(TAG, "image =" + file);
+//		LogUtil.d(TAG, "image =" + file);
 
 		if (!isFileExist(file))
 			return null;

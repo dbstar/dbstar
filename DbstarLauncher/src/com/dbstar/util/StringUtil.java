@@ -15,6 +15,9 @@ public class StringUtil {
 	public static final int UNITSIZE_K = 1024;
 	public static final int UNITSIZE_M = 1048576;
 	public static final int UNITSIZE_G = 1073741824;
+	public static final int FILESIZE_K = 1000;
+	public static final int FILESIZE_M = 1000000;
+	public static final int FILESIZE_G = 1000000000;
 	// public static final long UNITSIZE_T = 1099511627776;
 
 	public static class SizePair {
@@ -53,6 +56,23 @@ public class StringUtil {
 		} else {
 			pair.Unit = UNIT_G;
 			pair.Value = (float)size / UNITSIZE_G;
+		}
+		
+		return pair;
+	}
+	
+	public static SizePair formatFileSize(long size) {
+		SizePair pair = new SizePair();
+		
+		if (size < FILESIZE_M) {
+			pair.Unit = UNIT_K;
+			pair.Value = (float)size / FILESIZE_K;
+		} else if (size < FILESIZE_G) {
+			pair.Unit = UNIT_M;
+			pair.Value = (float)size / FILESIZE_M;
+		} else {
+			pair.Unit = UNIT_G;
+			pair.Value = (float)size / FILESIZE_G;
 		}
 		
 		return pair;

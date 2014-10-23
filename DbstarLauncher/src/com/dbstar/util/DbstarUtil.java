@@ -62,7 +62,6 @@ public class DbstarUtil {
 	 */
 	 
 	public static String getLocalMacAddress(boolean isEthernet) {
-		LogUtil.d("DbstarUtil", "getLocalMacAddress");
 		
 		String macAddress = "";
 		if (isEthernet) {
@@ -182,7 +181,7 @@ public class DbstarUtil {
 	public static void saveHashMap(Context context, HashMap<String, String> map, String fileName) {
 		
 		if (map == null || map.isEmpty()) {
-			ToastUtils.showToast(context, "没有要保存的图片和文字");
+			ToastUtils.showToast(context, "没有要保存的图片和文字!");
 			return;
 		}
 		
@@ -194,12 +193,12 @@ public class DbstarUtil {
 			oos.writeObject(map);
 			oos.flush();
 			oos.close(); // 关闭输出流
-			LogUtil.d("saveHashMap", "保存" + fileName + "成功");
+			LogUtil.d("saveHashMap", " save " + fileName + " success!");
 		} catch (FileNotFoundException e) {
-			LogUtil.d("saveHashMap", "出现异常1::" + fileName);
+			LogUtil.d("saveHashMap", "found Exception = " + e + ", fileName = " + fileName);
 			e.printStackTrace();
 		} catch (IOException e) {
-			LogUtil.d("saveHashMap", "出现异常2::" + fileName);
+			LogUtil.d("saveHashMap", "found Exception = " + e + ", fileName = " + fileName);
 		}
 		
 		// 如果不存在sd卡就直接返回
@@ -220,7 +219,7 @@ public class DbstarUtil {
 					file.createNewFile();
 				}
 			} catch (IOException e) {
-				LogUtil.i("saveHsahMap", "文件创建失败");
+				LogUtil.i("saveHsahMap", "make file failed!");
 				e.printStackTrace();
 			}
 			
@@ -231,12 +230,11 @@ public class DbstarUtil {
 				oos.flush();
 				oos.close(); // 关闭输出流				
 			} catch (FileNotFoundException e) {
-				LogUtil.d("savaHashMap", "文件保存出现异常1" + fileName);
-				e.printStackTrace();
+				LogUtil.d("savaHashMap", "found exception when save file, and Exception = " + e);
 			} catch (IOException e) {
-				LogUtil.d("savaHashMap", "文件保存出现异常2");
+				LogUtil.d("savaHashMap", "found exception when save file, and Exception = " + e);
 			}
-			LogUtil.d("savaHashMap", "文件保存成功");
+			LogUtil.d("savaHashMap", "save file success!");
 			
 		}
 	}
@@ -302,7 +300,7 @@ public class DbstarUtil {
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			hashMap = (HashMap<String, String>) ois.readObject();
 			ois.close();
-			LogUtil.d("readQueryPosterFromSDCard", "读取成功");
+			LogUtil.d("readQueryPosterFromSDCard", "read success!");
 		} catch (StreamCorruptedException e) {
 			LogUtil.d("readQueryPosterFromSDCard", "读取失败");			
 			e.printStackTrace();
@@ -364,9 +362,7 @@ public class DbstarUtil {
 		dataModel.initialize(mConfigure);
 		String deviceModel = dataModel.getHardwareType();
 		String productSN = dataModel.getDeviceSearialNumber();
-		LogUtil.d("login:", "deviceModel = " + deviceModel);
-		LogUtil.d("login:", "productSN = " + productSN);
-		
+		LogUtil.d("login:", "deviceModel = " + deviceModel + ", productSN = " + productSN);
 		
 		String mac = DbstarUtil.getLocalMacAddress(true);
 		// md5加密

@@ -45,7 +45,9 @@
 
     <!-- Disk info -->
     <string name="disk_info">硬盘信息</string>
+    <string name="disk_file_info">磁盘信息</string>
     <string name="disk_totalsize">硬盘总容量:&#160;</string>
+    <string name="disk_file_totalsize">磁盘总容量:&#160;</string>
     <string name="disk_usedsize">占用空间:&#160;</string>
     <string name="disk_spacesize">剩余空间:&#160;</string>
 

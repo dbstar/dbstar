@@ -1,5 +1,6 @@
 package com.dbstar.app;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -16,6 +17,7 @@ import com.dbstar.service.GDAudioController;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.service.GDDataProviderService.DataProviderBinder;
 import com.dbstar.util.LogUtil;
+import com.dbstar.util.upgrade.RebootUtils;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -25,6 +27,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -34,7 +37,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class GDBaseActivity extends Activity implements ClientObserver {
+//Tasks
+interface TaskController {
+	public void taskFinished();
+
+	public void registerTask(TaskObserver observer);
+}
+
+interface TaskObserver {
+	public void onFinished(int resultCode, Object result);
+}
+public class GDBaseActivity extends Activity implements ClientObserver, TaskController{
 	private static final String TAG = "GDBaseActivity";
 
 	protected static final int DLG_ID_ALERT = 0;
@@ -382,6 +395,19 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 			msg.arg1 = diskInit.Type;
 			msg.obj = diskInit.Message;
 			msg.sendToTarget();
+		} else if (type == EventData.EVENT_DISK_FORMAT) {
+			EventData.DiskFormatEvent formatEvent = (EventData.DiskFormatEvent) event;
+			Resources res = getResources();
+			String msg = null;
+			if (formatEvent.Successed) {
+				msg = res.getString(R.string.format_disk_successed);
+			} else {
+				msg = String.format(res.getString(R.string.format_disk_failed), formatEvent.ErrorMessage);
+			}
+			
+			if (mCurrentTask != null) {
+				mCurrentTask.onFinished(formatEvent.Successed ? VALUE_TRUE : VALUE_FALSE, msg);
+			}
 		}
 	}
 
@@ -663,4 +689,156 @@ public class GDBaseActivity extends Activity implements ClientObserver {
 
         return loginData.CtrlNo;
     }
+    
+	private ArrayList<TaskEntity> mTasks = null;
+	static final int MSG_REBOOT_DELAYED = 0xE001;
+	private int mTaskIndex = 0;
+	static final int VALUE_TRUE = 1;
+	static final int VALUE_FALSE = 0;
+	TaskObserver mCurrentTask = null;
+    
+    Handler handler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_REBOOT_DELAYED:
+				rebootSystem();
+				break;
+			}
+		}
+	};
+	
+	void rebootSystem() {
+		// hideLoadingDialog();
+		RebootUtils.rebootNormal(this);
+	}
+	
+	void okButtonPressed() {
+
+		if (mTasks == null) {
+			mTasks = new ArrayList<TaskEntity>();
+		} else {
+			mTasks.clear();
+		}
+
+		FormatTaskEntity task = new FormatTaskEntity(this);
+		mTasks.add(task);
+
+		mTaskIndex = -1;
+		scheduleTaskSequently();
+	}
+
+	void scheduleTaskSequently() {
+		if (mTasks.size() > 0) {
+			mTaskIndex++;
+
+			if (mTaskIndex < mTasks.size()) {
+				TaskEntity task = mTasks.get(mTaskIndex);
+				task.doTask();
+			} else {
+				hideLoadingDialog();
+				// restart system here!
+				String msg = getResources().getString(R.string.reboot_notes);
+				showLoadingDialog(msg);
+				handler.sendEmptyMessageDelayed(MSG_REBOOT_DELAYED, 3000);
+			}
+		}
+	}
+    
+	public void taskFinished() {
+		scheduleTaskSequently();
+	}
+
+	public void registerTask(TaskObserver observer) {
+		mCurrentTask = observer;
+	}
+	
+//	public void notifyEvent(int type, Object event) {
+//		super.notifyEvent(type, event);
+//
+//		if (isFormatDisk) {			
+//			if (type == EventData.EVENT_DISK_FORMAT) {
+//				EventData.DiskFormatEvent formatEvent = (EventData.DiskFormatEvent) event;
+//				Resources res = getResources();
+//				String msg = null;
+//				if (formatEvent.Successed) {
+//					msg = res.getString(R.string.format_disk_successed);
+//				} else {
+//					msg = String.format(res.getString(R.string.format_disk_failed), formatEvent.ErrorMessage);
+//				}
+//				
+//				if (mCurrentTask != null) {
+//					mCurrentTask.onFinished(formatEvent.Successed ? VALUE_TRUE : VALUE_FALSE, msg);
+//				}
+//			}
+//		}
+//	}
+	
+	class TaskEntity implements TaskObserver {
+		public static final int TaskRestore = 1;
+		public static final int TaskClear = 2;
+		public static final int TaskFormat = 3;
+
+		public int Type = 0;
+
+		protected TaskController Controller = null;
+
+		public TaskEntity(TaskController controller, int type) {
+			Controller = controller;
+			Type = type;
+		}
+
+		protected void doTask() {
+
+		}
+
+		public void onFinished(int resultCode, Object result) {
+
+		}
+	}
+	
+	class FormatTaskEntity extends TaskEntity {
+		public FormatTaskEntity(TaskController controller) {
+			super(controller, TaskFormat);
+		}
+
+		public void doTask() {
+			Controller.registerTask(FormatTaskEntity.this);
+
+			String loadingText = getResources().getString(R.string.format_progress_text);
+			showLoadingDialog(loadingText);
+//			RestoreFactoryUtil.formatDisk();
+//			DiskFormatter mFormatter = new DiskFormatter();
+//			mFormatter.startFormatDisk("/dev/block/sda1", handler, false);
+			
+			Context context = GDApplication.getAppContext();
+			Intent intent = new Intent(GDCommon.ActionSystemRecovery);
+			intent.putExtra(GDCommon.KeyRecoveryType, GDCommon.RecoveryTypeFormatDisk);
+			intent.putExtra("format_uri", "/dev/block/sda1");
+			context.sendBroadcast(intent);
+		}
+
+		public void onFinished(int resultCode, Object result) {
+			// check format result here.
+			hideLoadingDialog();
+			String msg = (String) result;
+
+			showLoadingDialog(msg);
+
+			if (resultCode == VALUE_TRUE) {
+				rebootDelayed(3000);
+			} else {
+				rebootDelayed(5000);
+			}
+		}
+
+		void rebootDelayed(long delayMillis) {
+			mHandler.postDelayed(new Runnable() {
+				public void run() {
+					hideLoadingDialog();
+
+					Controller.taskFinished();
+				}
+			}, delayMillis);
+		}
+	}
 }

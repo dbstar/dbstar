@@ -97,7 +97,6 @@ public class GDSystemConfigure {
 	}
 
 	private void defaultValueInit() {
-		LogUtil.d(TAG, "defaultValueInit(): mDefaultStorageDisk[" + mDefaultStorageDisk + "]");
 		if (mDefaultStorageDisk == null || mDefaultStorageDisk.isEmpty()) {
 			LogUtil.d(TAG, "defaultValueInit(): mDefaultStorageDisk is nothing");
 			mDefaultStorageDisk = DefaultStorageDisk;
@@ -130,8 +129,7 @@ public class GDSystemConfigure {
 			mStorageDisk = disk;
 			LogUtil.d(TAG, "configureStorage(): disk[" + disk + "] is ready");
 			return true;
-		}
-		else{
+		} else {
 			LogUtil.d(TAG, "configureStorage(): disk[" + disk + "] is NOT ready");
 			return false;
 		}
@@ -144,7 +142,6 @@ public class GDSystemConfigure {
 	
 	public void setIconRootDir(String vIconRootDir) {
 		mIconRootDir = vIconRootDir;
-		LogUtil.d(TAG, "setIconRootDir: " + mIconRootDir);
 	}
 
 	public String getLocalization() {
@@ -153,7 +150,6 @@ public class GDSystemConfigure {
 
 	public void setLocalization(String localization) {
 		mLocalization = localization;
-		LogUtil.d(TAG, "setLocalization: " + mLocalization);
 	}
 
 	public String getDVBDatabaseFile() {
@@ -166,7 +162,6 @@ public class GDSystemConfigure {
 
 	public void setDVBDatabaseFile(String vDbstarDatabase) {
 		mDbstarDatabase = vDbstarDatabase;
-		LogUtil.d(TAG, "setDVBDatabaseFile: " + mDbstarDatabase);
 	}
 
 	public String getSmartHomeDBFile() {
@@ -180,7 +175,6 @@ public class GDSystemConfigure {
 	
 	public void setStorageDisk(String vStorageDisk) {
 		mStorageDisk = vStorageDisk;
-		LogUtil.d(TAG, "setStorageDisk: " + mStorageDisk);
 	}
 
 	public String getStorageDir() {
@@ -189,7 +183,6 @@ public class GDSystemConfigure {
 	
 	public void setStorageDir(String vStorageDir) {
 		mStorageDir = vStorageDir;
-		LogUtil.d(TAG, "setStorageDir: " + mStorageDir);
 	}
 	
 	public long getGuodianReconnectTime() {

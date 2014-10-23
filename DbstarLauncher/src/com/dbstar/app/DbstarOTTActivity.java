@@ -1,6 +1,7 @@
 package com.dbstar.app;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -20,8 +21,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnKeyListener;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -33,6 +36,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -49,24 +53,15 @@ import com.dbstar.http.HttpConnect;
 import com.dbstar.http.SimpleWorkPool.ConnectWork;
 import com.dbstar.http.SimpleWorkPool.ReadSDCardData;
 import com.dbstar.http.SimpleWorkPool.SimpleWorkPoolInstance;
+import com.dbstar.model.GDDiskInfo;
+import com.dbstar.model.GDDiskInfo.DiskInfo;
 import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDDataProviderService;
 import com.dbstar.util.Constants;
 import com.dbstar.util.DbstarUtil;
 import com.dbstar.util.LogUtil;
 
-//Tasks
-interface TaskController {
-	public void taskFinished();
-
-	public void registerTask(TaskObserver observer);
-}
-
-interface TaskObserver {
-	public void onFinished(int resultCode, Object result);
-}
 public class DbstarOTTActivity extends GDBaseActivity {
-//	extends GDBaseActivity implements TaskController {
 
 	public static final String ColumnIDCNTV = "L97";
 	
@@ -101,6 +96,7 @@ public class DbstarOTTActivity extends GDBaseActivity {
 	private boolean timerTag = false;
 	private boolean fileCanWrite = false;
 	private boolean isConstainsMarkFile = false;
+	private boolean isFormatDisk = false;
 	
 	private IMountService mMountService = null;
 	
@@ -116,7 +112,6 @@ public class DbstarOTTActivity extends GDBaseActivity {
 				gallery.setFocusable(false);
 				break;
 			case 3:
-				LogUtil.d("Intent Service", "跨进程调用intentSettings========" + new Intent("com.settings.service.action.OTTSettingsService").toString());
 				startService(new Intent("com.settings.service.action.OTTSettingsService"));
 				
 				timerTag = true;
@@ -206,55 +201,53 @@ public class DbstarOTTActivity extends GDBaseActivity {
 				} 
 				
 				LogUtil.d("DbstarOTTActivity", " after wait time = " + System.currentTimeMillis());
+			} else {
+				// 对话框提示内容：当前硬盘格式不可识别，是否格式化。这两个对话框（包括下面的那个）默认焦点都放在“否”上面
+				// 如果机顶盒上有硬盘，但是不认识，则就弹框确认格式化，不确认格式化就停留在该页面不再继续往下进行
+				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), false);
+				isFormatDisk = true;
 			}
-//			else {
-//				// 对话框提示内容：当前硬盘格式不可识别，是否格式化。这两个对话框（包括下面的那个）默认焦点都放在“否”上面
-//				// 如果机顶盒上有硬盘，但是不认识，则就弹框确认格式化，不确认格式化就停留在该页面不再继续往下进行
-//				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), false);
-//			}
 		} 
 		
-//		if (fileCanWrite) {
-//			// TODO：如果硬盘可写，就去判断是否存在.hd_mark
-//			final List<String> fileList = new ArrayList<String>();
-//			File[] files =  file.listFiles(new FileFilter() {
-//				
-//				@Override
-//				public boolean accept(File pathname) {
-//					String fileName = pathname.getName();
-//					LogUtil.d("DbstarOTTActivity", "fileName = " + fileName);
-//					LogUtil.d("DbstarOTTActivity", "filePath = " + pathname.getPath());
-//					fileList.add(fileName);
-//					if (fileName.equals(".hd_mark")) {
-//						isConstainsMarkFile = true;
-//						LogUtil.d("DbstarOTTActivity", "isConstainsMarkFile = " + isConstainsMarkFile);
-//						return true;
-//					}
-//					return false;
-//				}
-//			});
-//			
-//			LogUtil.d("DbstarOTTActivity", "fileList.size() = " + fileList.size());
-//			// 如果.hd_mark不存在 && 存在其他文件，就弹出对话框，提示：该盘将作为数据接收盘，是否格式化。
-//			if (!isConstainsMarkFile && files != null && fileList.size() > 1) {
-//				LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and exists other file!");
-//				// TODO: 在可写情况下，对话框上要显示硬盘总容量，占用空间、剩余空间。
-//				DiskInfo info = GDDiskInfo.getDiskInfo(defaultStorage, true);
-//				String diskSize = info.DiskSize;
-//				String diskUsed = info.DiskUsed;
-//				String diskSpace = info.DiskSpace;
-//				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
-//						+ "\n硬盘总容量：" + diskSize
-//						+ "\n占用空间：" + diskUsed
-//						+ "\n剩余空间：" + diskSpace, true);
-//			}
-//		}
+		if (fileCanWrite) {
+			// 如果硬盘可写，就去判断是否存在.hd_mark
+			final List<String> fileList = new ArrayList<String>();
+			File[] files =  file.listFiles(new FileFilter() {
+				
+				@Override
+				public boolean accept(File pathname) {
+					String fileName = pathname.getName();
+					LogUtil.d("DbstarOTTActivity", "fileName = " + fileName);
+					fileList.add(fileName);
+					if (fileName.equals(".hd_mark")) {
+						isConstainsMarkFile = true;
+						LogUtil.d("DbstarOTTActivity", "isConstainsMarkFile = " + isConstainsMarkFile);
+					}
+					return false;
+				}
+			});
+			
+			LogUtil.d("DbstarOTTActivity", "fileList.size() = " + fileList.size());
+			// 如果.hd_mark不存在 && 存在其他文件，就弹出对话框，提示：该盘将作为数据接收盘，是否格式化。
+			if (!isConstainsMarkFile && files != null && fileList.size() > 1) {
+				LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and exists other file!");
+				// 在可写情况下，对话框上要显示硬盘总容量，占用空间、剩余空间。
+				DiskInfo info = GDDiskInfo.getDiskInfo(defaultStorage, true);
+				String diskSize = info.DiskSize;
+				String diskUsed = info.DiskUsed;
+				String diskSpace = info.DiskSpace;
+				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
+						+ "\n硬盘总容量：" + diskSize
+						+ "\n占用空间：" + diskUsed
+						+ "\n剩余空间：" + diskSpace, true);
+			}
+		}
 		
 		intentSer = new Intent();
 		intentSer.setClass(this, GDDataProviderService.class);
 		startService(intentSer);
-		LogUtil.d("Intent Service", "跨进程调用service========" + intentSer.toString());
 		
+		startService(new Intent("com.settings.service.action.OTTSettingsModeService"));
 		startService(new Intent(this, DbstarService.class));
 		
 		findViews();
@@ -268,7 +261,8 @@ public class DbstarOTTActivity extends GDBaseActivity {
 		super.onDestroy();
 		stopService(intentSer);
 		stopService(new Intent(this, DbstarService.class));
-//		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
+		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
+		stopService(new Intent("com.settings.service.action.OTTSettingsModeService"));
 	}
 
 	private void readQueryPosterFromSDCard() {
@@ -375,7 +369,6 @@ public class DbstarOTTActivity extends GDBaseActivity {
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		LogUtil.d(getClass().getName(), "<<<<<<///onActivityResult///>>>>>>>>" + data);
 		if (requestCode == Btn_CntvTV_Sequence) {
 			imgCntv.requestFocus();
 		} else if (requestCode == Btn_AppShop_Sequence) {
@@ -383,12 +376,12 @@ public class DbstarOTTActivity extends GDBaseActivity {
 		} else if (requestCode == Btn_MyApp_Sequence) {
 			imgMyApp.requestFocus();
 		} else if (requestCode == Btn_Setting_Sequence) {
-			LogUtil.d(getClass().getName(), "<<<<<<///data///>>>>>>>>" + data);
+			LogUtil.d("DbstarOTTActivity", "in onActivityResult, data = " + data);
 			if (data != null) {
 				boolean isFinishSet = data.getBooleanExtra("isFinish", false);
 				Ethernet_Network_Mode = data.getIntExtra(Ethernet_Mode, 0);
 				if (isFinishSet) {
-					LogUtil.d(getClass().getName(), "<<<<<<///isFinishSet///>>>>>>>>" + isFinishSet);
+					LogUtil.d(getClass().getName(), "in onActivityResult, isFinishSet = " + isFinishSet);
 					DeviceInitController.handleBootFirstTime();
 				}
 			}
@@ -705,13 +698,13 @@ public class DbstarOTTActivity extends GDBaseActivity {
 			}
 			posterData.setQueryPosters(queryPosters);
 		} catch (ParseException e) {
-			LogUtil.e("processResult", "ParseException 解析失败", e);
+			LogUtil.d("DbstarOTTActivity", "in parseQueryPosterData, parse failed and ParseException = " + e);
 			e.printStackTrace();
 		} catch (IOException e) {
-			LogUtil.e("processResult", "IOException 失败", e);
+			LogUtil.d("DbstarOTTActivity", "in parseQueryPosterData, parse failed and IOException = " + e);
 			e.printStackTrace();
 		} catch (JSONException e) {
-			LogUtil.e("processResult", "JSONException JSON解析失败", e);
+			LogUtil.d("DbstarOTTActivity", "in parseQueryPosterData, parse failed and JSONException = " + e);
 			e.printStackTrace();
 		}
 		return posterData;
@@ -769,13 +762,13 @@ public class DbstarOTTActivity extends GDBaseActivity {
 
 			recommandData.setQueryRecommands(recommands);
 		} catch (ParseException e) {
-			LogUtil.e("processResult", "ParseException 解析失败", e);
+			LogUtil.e("DbstarOTTActivity", "in parseQueryRecommand, parse failed and ParseException = " + e);
 			e.printStackTrace();
 		} catch (IOException e) {
-			LogUtil.e("processResult", "IOException 失败", e);
+			LogUtil.e("DbstarOTTActivity", "in parseQueryRecommand, parse failed and IOException = " + e);
 			e.printStackTrace();
 		} catch (JSONException e) {
-			LogUtil.e("processResult", "JSONException JSON解析失败", e);
+			LogUtil.e("DbstarOTTActivity", "in parseQueryRecommand, parse failed and JSONException = " + e);
 			e.printStackTrace();
 		}
 		return recommandData;
@@ -807,13 +800,13 @@ public class DbstarOTTActivity extends GDBaseActivity {
 				Message message = new Message();
 				message.what = 3;
 				handler.sendMessage(message);
-				LogUtil.d("DbstarOTTActivity", "------------APServiceTimer==" + System.currentTimeMillis());
 				if (APServiceTimer != null) {					
 					APServiceTimer.cancel();
 				}
 			}
 		};
 		
+		LogUtil.d("DbstarOTTActivity", " timerTag =" + timerTag);
 		if (APServiceTimer != null && !timerTag) {
 			APServiceTimer.schedule(timerTask, 15*1000);
 		}
@@ -900,204 +893,52 @@ public class DbstarOTTActivity extends GDBaseActivity {
 			LogUtil.d("BtnOnClickListener", "包名：：" + packageName);
 		}
 	}
-//	
-//	private ArrayList<TaskEntity> mTasks = null;
-//	static final int MSG_REBOOT_DELAYED = 0xE001;
-//	private int mTaskIndex = 0;
-//	static final int VALUE_TRUE = 1;
-//	static final int VALUE_FALSE = 0;
-//	TaskObserver mCurrentTask = null;
-//	
-//	private AlertDialog mDialog;
-//    public void showIsFormatDialog(String content, boolean isShowNegativeBtn) {
-//        AlertDialog.Builder dialog = new AlertDialog.Builder(getApplicationContext());  
-//        dialog.setTitle(getResources().getString(R.string.alert_title));  
-//        dialog.setIcon(android.R.drawable.ic_dialog_info);  
-//        dialog.setMessage(content); 
-//        
-//        dialog.setPositiveButton(getResources().getString(R.string.button_text_ok), new DialogInterface.OnClickListener() {
-//			
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//				dialog.dismiss();
-//				okButtonPressed();
-//			}
-//		}).setCancelable(true);
-//        
-//        if (isShowNegativeBtn) {
-//        	dialog.setNegativeButton(getResources().getString(R.string.button_text_cancel), new DialogInterface.OnClickListener() {
-//        		
-//        		@Override
-//        		public void onClick(DialogInterface dialog, int which) {
-//        			dialog.dismiss();
-//        		}
-//        	});
-//        }
-//
-//        mDialog = dialog.create();  
-//        mDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);  
-//        mDialog.show();  
-//        LogUtil.d("DbstarOTTActivity", "dialog show");      
-//        
-//        mDialog.setOnKeyListener(keyListener);
-//    }
-//    
-//	OnKeyListener keyListener = new OnKeyListener() {
-//		
-//		@Override
-//		public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-//			LogUtil.d("DbstarOTTActivity", "onKey------------------- ");      
-//			if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-//				LogUtil.d("DbstarOTTActivity", "mDialog KeyEvent.KEYCODE_BACK keyCode = " + keyCode);      					
-//				return true;
-//			} else {
-//				return false;
-//			}
-//		}
-//	};
-//    
-//	Handler mHandler = new Handler() {
-//		public void handleMessage(Message msg) {
-//			switch (msg.what) {
-//			case MSG_REBOOT_DELAYED:
-//				rebootSystem();
-//				break;
-//			}
-//		}
-//	};
-//	
-//	void rebootSystem() {
-//		// hideLoadingDialog();
-//		RebootUtils.rebootNormal(this);
-//	}
-//	
-//	void okButtonPressed() {
-//
-//		if (mTasks == null) {
-//			mTasks = new ArrayList<TaskEntity>();
-//		} else {
-//			mTasks.clear();
-//		}
-//
-//		FormatTaskEntity task = new FormatTaskEntity(this);
-//		mTasks.add(task);
-//
-//		mTaskIndex = -1;
-//		scheduleTaskSequently();
-//	}
-//
-//	void scheduleTaskSequently() {
-//		if (mTasks.size() > 0) {
-//			mTaskIndex++;
-//
-//			if (mTaskIndex < mTasks.size()) {
-//				TaskEntity task = mTasks.get(mTaskIndex);
-//				task.doTask();
-//			} else {
-//				hideLoadingDialog();
-//				// restart system here!
-//				String msg = getResources().getString(R.string.reboot_notes);
-//				showLoadingDialog(msg);
-//				mHandler.sendEmptyMessageDelayed(MSG_REBOOT_DELAYED, 3000);
-//			}
-//		}
-//	}
-//    
-//	public void taskFinished() {
-//		scheduleTaskSequently();
-//	}
-//
-//	public void registerTask(TaskObserver observer) {
-//		mCurrentTask = observer;
-//	}
-//	
-//	public void notifyEvent(int type, Object event) {
-//		super.notifyEvent(type, event);
-//
-//		EventData.DiskFormatEvent formatEvent = (EventData.DiskFormatEvent) event;
-//		if (type == EventData.EVENT_DISK_FORMAT) {
-//			Resources res = getResources();
-//			String msg = null;
-//			if (formatEvent.Successed) {
-//				msg = res.getString(R.string.format_disk_successed);
-//			} else {
-//				msg = String.format(res.getString(R.string.format_disk_failed),
-//						formatEvent.ErrorMessage);
-//			}
-//
-//			if (mCurrentTask != null) {
-//				mCurrentTask.onFinished(formatEvent.Successed ? VALUE_TRUE : VALUE_FALSE, msg);
-//			}
-//		}
-//	}
-//	
-//	class TaskEntity implements TaskObserver {
-//		public static final int TaskRestore = 1;
-//		public static final int TaskClear = 2;
-//		public static final int TaskFormat = 3;
-//
-//		public int Type = 0;
-//
-//		protected TaskController Controller = null;
-//
-//		public TaskEntity(TaskController controller, int type) {
-//			Controller = controller;
-//			Type = type;
-//		}
-//
-//		protected void doTask() {
-//
-//		}
-//
-//		public void onFinished(int resultCode, Object result) {
-//
-//		}
-//	}
-//	
-//	class FormatTaskEntity extends TaskEntity {
-//		public FormatTaskEntity(TaskController controller) {
-//			super(controller, TaskFormat);
-//		}
-//
-//		public void doTask() {
-//			Controller.registerTask(FormatTaskEntity.this);
-//
-//			String loadingText = getResources().getString(R.string.format_progress_text);
-//			showLoadingDialog(loadingText);
-////			RestoreFactoryUtil.formatDisk();
-////			DiskFormatter mFormatter = new DiskFormatter();
-////			mFormatter.startFormatDisk("/dev/block/sda1", handler, false);
-//			
-//			Context context = GDApplication.getAppContext();
-//			Intent intent = new Intent(GDCommon.ActionSystemRecovery);
-//			intent.putExtra(GDCommon.KeyRecoveryType, GDCommon.RecoveryTypeFormatDisk);
-//			intent.putExtra("format_uri", "/dev/block/sda1");
-//			context.sendBroadcast(intent);
-//		}
-//
-//		public void onFinished(int resultCode, Object result) {
-//			// check format result here.
-//			hideLoadingDialog();
-//			String msg = (String) result;
-//
-//			showLoadingDialog(msg);
-//
-//			if (resultCode == VALUE_TRUE) {
-//				rebootDelayed(3000);
-//			} else {
-//				rebootDelayed(5000);
-//			}
-//		}
-//
-//		void rebootDelayed(long delayMillis) {
-//			mHandler.postDelayed(new Runnable() {
-//				public void run() {
-//					hideLoadingDialog();
-//
-//					Controller.taskFinished();
-//				}
-//			}, delayMillis);
-//		}
-//	}
 	
+	private AlertDialog mDialog;
+    public void showIsFormatDialog(String content, boolean isShowNegativeBtn) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getApplicationContext());  
+        dialog.setTitle(getResources().getString(R.string.alert_title));  
+        dialog.setIcon(android.R.drawable.ic_dialog_info);  
+        dialog.setMessage(content); 
+        
+        dialog.setPositiveButton(getResources().getString(R.string.button_text_ok), new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+				okButtonPressed();
+			}
+		}).setCancelable(true);
+        
+        if (isShowNegativeBtn) {
+        	dialog.setNegativeButton(getResources().getString(R.string.button_text_cancel), new DialogInterface.OnClickListener() {
+        		
+        		@Override
+        		public void onClick(DialogInterface dialog, int which) {
+        			dialog.dismiss();
+        		}
+        	});
+        }
+
+        mDialog = dialog.create();  
+        mDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);  
+        mDialog.show();  
+        LogUtil.d("DbstarOTTActivity", "dialog show");      
+        
+        mDialog.setOnKeyListener(keyListener);
+    }
+    
+	OnKeyListener keyListener = new OnKeyListener() {
+		
+		@Override
+		public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+			if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+				LogUtil.d("DbstarOTTActivity", "mDialog KeyEvent.KEYCODE_BACK keyCode = " + keyCode);      					
+				return true;
+			} else {
+				return false;
+			}
+		}
+	};
+    
 }

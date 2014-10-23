@@ -269,8 +269,7 @@ public class GDDataProviderService extends Service {
 		if(APPVersion.GUODIAN){
 		    LogUtil.d(TAG, "APPVersion.GUODIAN is true, new ClientRequestService(this)");
 		    mRequestService = new ClientRequestService(this);
-		}
-		else{
+		} else {
 		    LogUtil.d(TAG, "APPVersion.GUODIAN is false");
 		    mRequestService = null;
 		}
@@ -317,7 +316,7 @@ public class GDDataProviderService extends Service {
 		// so wait for mount event.
 		if (mConfigure.configureStorage()) {
 			String disk = mConfigure.getStorageDisk();
-			LogUtil.d(TAG, "monitor disk " + disk);
+//			LogUtil.d(TAG, "monitor disk " + disk);
 
 			if (!disk.isEmpty()) {
 				//mIsStorageReady = true;
@@ -392,11 +391,9 @@ public class GDDataProviderService extends Service {
 
 	}
 	
-	public void fileEnsure(String file_src, String file_dis)
-	{
+	public void fileEnsure(String file_src, String file_dis) {
 		File file=new File(file_dis);
-		if(null!=file && !file.exists())
-		{
+		if(null!=file && !file.exists()) {
 			try {
 				LogUtil.d(TAG, "file["+file_dis+"] is not exist, init it from "+file_src);
 				
@@ -405,17 +402,14 @@ public class GDDataProviderService extends Service {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-		else{
+		} else {
 			LogUtil.d(TAG, "file["+file_dis+"] is exist already\n");
 		}
 	}
 	
-	public void dirEnsure(String dir_src, String dir_dis)
-	{
+	public void dirEnsure(String dir_src, String dir_dis) {
 		File file=new File(dir_dis);
-		if(null!=file && !file.exists() && !file.isDirectory())
-		{
+		if(null!=file && !file.exists() && !file.isDirectory()) {
 			try {
 				LogUtil.d(TAG, "dir["+dir_dis+"] is not exist, init it from "+dir_src);
 				
@@ -424,8 +418,7 @@ public class GDDataProviderService extends Service {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-		else{
+		} else {
 			LogUtil.d(TAG, "dir["+dir_dis+"] is exist already\n");
 		}
 	}
@@ -443,18 +436,15 @@ public class GDDataProviderService extends Service {
 			in = fi.getChannel();
 			out = fo.getChannel();
 			in.transferTo(0, in.size(), out);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			try {
 				fi.close();
 				in.close();
 				fo.close();
 				out.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -694,10 +684,9 @@ public class GDDataProviderService extends Service {
 					mIsStorageReady = true;
 					String dir = mConfigure.getStorageDir();
 					LogUtil.d(TAG, "getStorageDir() dir === " + dir);
-					if(mIsDbServiceStarted){
+					if (mIsDbServiceStarted) {
 						LogUtil.d(TAG, "dvbpush id started already, do not setPushDir()");
-					}
-					else{
+					} else {
 						LogUtil.d(TAG, "setPushDir(" + dir + ") in onCreate() already;");
 						//mDataModel.setPushDir(dir); // Zhang Shiyun: do setPushDir in onCreate() instead
 					}
