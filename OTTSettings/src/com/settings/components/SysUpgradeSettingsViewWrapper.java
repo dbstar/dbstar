@@ -84,7 +84,7 @@ public class SysUpgradeSettingsViewWrapper {
 		}
 		
 		if (softVersion == null || softVersion.equals("")) {
-			softVersion = "2.0.3.0";
+			softVersion = "2.0.3.1";
 		}
 		
 		if (productSN == null || productSN.equals("")) {
