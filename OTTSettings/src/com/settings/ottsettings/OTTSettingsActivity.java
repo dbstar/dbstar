@@ -64,7 +64,7 @@ public class OTTSettingsActivity extends Activity {
 		
 		Bundle bundle = getIntent().getBundleExtra("mode");
 		Ethernet_Network_Mode = bundle.getInt(Ethernet_Mode);
-		LogUtil.d(getLocalClassName(), "populateData<<<<<?????>>>>>" + Ethernet_Network_Mode);			
+		LogUtil.d(getLocalClassName(), "Ethernet_Network_Mode = " + Ethernet_Network_Mode);			
 	}
 	
 	@Override
@@ -76,9 +76,9 @@ public class OTTSettingsActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (vedioSettingsViewWrapper == null) {
-			vedioSettingsViewWrapper = new VedioSettingsViewWrapper(this);
-		}
+//		if (vedioSettingsViewWrapper == null) {
+//			vedioSettingsViewWrapper = new VedioSettingsViewWrapper(this);
+//		}
 		vedioSettingsViewWrapper.onActivityResult(requestCode, resultCode, data);
 	}
 	

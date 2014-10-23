@@ -275,7 +275,7 @@ public abstract class WifiAdmin {
 		NetworkInfo wifiNetworkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 		
 		Log.v(TAG, "isConnectedOrConnecting =========== " + wifiNetworkInfo.isConnectedOrConnecting());
-		Log.d(TAG, "wifiNetworkInfo.getDetailedState() ============ " + wifiNetworkInfo.getDetailedState());
+//		Log.d(TAG, "wifiNetworkInfo.getDetailedState() ============ " + wifiNetworkInfo.getDetailedState());
 		if (wifiNetworkInfo.getDetailedState() == DetailedState.OBTAINING_IPADDR
 				|| wifiNetworkInfo.getDetailedState() == DetailedState.CONNECTING) {
 			return WIFI_CONNECTING;
@@ -288,9 +288,9 @@ public abstract class WifiAdmin {
 	}
 	
 	private WifiConfiguration IsExsits(String SSID) {
-		LogUtil.d(TAG, "{{{{{{{{mWifiManager}}}}}}}}" + mWifiManager);
+//		LogUtil.d(TAG, "{{{{{{{{mWifiManager}}}}}}}}" + mWifiManager);
 		List<WifiConfiguration> existingConfigs = mWifiManager.getConfiguredNetworks();
-		LogUtil.d(TAG, "{{{{{{{{existingConfigs}}}}}}}}" + existingConfigs);	
+//		LogUtil.d(TAG, "{{{{{{{{existingConfigs}}}}}}}}" + existingConfigs);	
 		if (existingConfigs != null) {			
 			for (WifiConfiguration existingConfig : existingConfigs) {
 				if (existingConfig.SSID.equals("\"" + SSID + "\"") /*&& existingConfig.preSharedKey.equals("\"" + password + "\"")*/) {

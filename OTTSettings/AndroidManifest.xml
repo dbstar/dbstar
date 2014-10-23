@@ -106,6 +106,13 @@
                 <action android:name="com.settings.service.action.OTTSettingsService"/>
             </intent-filter>
         </service>
+        <service 
+            android:name="com.settings.service.OTTSettingsModeService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.settings.service.action.OTTSettingsModeService"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

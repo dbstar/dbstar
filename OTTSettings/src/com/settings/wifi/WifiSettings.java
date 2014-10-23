@@ -140,26 +140,26 @@ public class WifiSettings {
 
 	public void resume() {
 
-		LogUtil.d(TAG, "WifiSettings++++---------<<>>resume");
+//		LogUtil.d(TAG, "WifiSettings++++---------<<>>resume");
 		mContext.registerReceiver(mReceiver, mFilter);
-		LogUtil.d(TAG, "WifiSettings++++---------<<>>resume+++registerReceiver");
+		LogUtil.d(TAG, "WifiSettings in resume+++registerReceiver");
 		if (mKeyStoreNetworkId != INVALID_NETWORK_ID && KeyStore.getInstance().state() == KeyStore.State.UNLOCKED) {
 			//mWifiManager.connectNetwork(mKeyStoreNetworkId);
 			mWifiManager.enableNetwork(mKeyStoreNetworkId, true);
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>resume+++mKeyStoreNetworkId");
+//			LogUtil.d(TAG, "WifiSettings++++---------<<>>resume+++mKeyStoreNetworkId");
 		}
 		mKeyStoreNetworkId = INVALID_NETWORK_ID;
-		LogUtil.d(TAG, "WifiSettings++++---------<<>>resume+++=INVALID_NETWORK_ID-----==" + mKeyStoreNetworkId);
+//		LogUtil.d(TAG, "WifiSettings++++---------<<>>resume+++=INVALID_NETWORK_ID-----==" + mKeyStoreNetworkId);
 
 		updateAccessPoints();
 	}
 
 	public void onPause() {
-		LogUtil.d(TAG, "WifiSettings++++---------<<>>onPause+++unregisterReceiver" + mActivity);
-		LogUtil.d(TAG, "WifiSettings++++---------<<>>onPause+++unregisterReceiver" + mReceiver);
+//		LogUtil.d(TAG, "WifiSettings++++---------<<>>onPause+++unregisterReceiver" + mActivity);
+//		LogUtil.d(TAG, "WifiSettings++++---------<<>>onPause+++unregisterReceiver" + mReceiver);
 		mContext.unregisterReceiver(mReceiver);
 		
-		LogUtil.d(TAG, "WifiSettings++++---------<<>>onPause+++unregisterReceiver");
+		LogUtil.d(TAG, "WifiSettings in onPause+++unregisterReceiver");
 		mScanner.pause();
 	}
 
@@ -170,20 +170,20 @@ public class WifiSettings {
 	private void updateAccessPoints() {
 		final int wifiState = mWifiManager.getWifiState();
 		
-		Log.d(TAG, "mWifiManager ==== " + mWifiManager);
+//		Log.d(TAG, "mWifiManager ==== " + mWifiManager);
 		mWifiManager.setWifiEnabled(true);
 //		Log.d(TAG, "mWifiManager = " + mWifiManager.setWifiEnabled(true));
 		Log.d(TAG, "wifiState = " + wifiState);
 
 		switch (wifiState) {
 		case WifiManager.WIFI_STATE_ENABLED:
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>" + WifiManager.WIFI_STATE_ENABLED);
+			LogUtil.d(TAG, "WifiManager.WIFI_STATE_ENABLED = " + WifiManager.WIFI_STATE_ENABLED);
 			// AccessPoints are automatically sorted with TreeSet.
 			final Collection<AccessPoint> accessPoints = constructAccessPoints();
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList" + accessPoints);
+//			LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList" + accessPoints);
 			mAccessPointList.clear();
 			for (AccessPoint accessPoint : accessPoints) {
-				LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList" + accessPoint);
+//				LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList" + accessPoint);
 				mAccessPointList.add(accessPoint);
 			}
 
@@ -191,33 +191,30 @@ public class WifiSettings {
 			break;
 
 		case WifiManager.WIFI_STATE_ENABLING:
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>" + WifiManager.WIFI_STATE_ENABLING);
+			LogUtil.d(TAG, "WifiManager.WIFI_STATE_ENABLING = " + WifiManager.WIFI_STATE_ENABLING);
 			mAccessPointList.clear();
 			mAPAdapter.notifyDataSetChanged();
 			break;
 
 		case WifiManager.WIFI_STATE_DISABLING:
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>" + WifiManager.WIFI_STATE_DISABLING);
+			LogUtil.d(TAG, "WifiManager.WIFI_STATE_DISABLING = " + WifiManager.WIFI_STATE_DISABLING);
 			mAccessPointList.clear();
 			mAPAdapter.notifyDataSetChanged();
 			// mWifiSwitchTitle.setText(R.string.wifi_stopping);
 			break;
 
 		case WifiManager.WIFI_STATE_DISABLED:
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>" + WifiManager.WIFI_STATE_DISABLED);
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList>>>" + mAccessPointList);
+			LogUtil.d(TAG, "WifiManager.WIFI_STATE_DISABLED = " + WifiManager.WIFI_STATE_DISABLED);
+//			LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList>>>" + mAccessPointList);
 			mAccessPointList.clear();
 			mAPAdapter.notifyDataSetChanged();
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList>>>" + mAPAdapter.getCount());
+//			LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList>>>" + mAPAdapter.getCount());
 			// mWifiSwitchTitle.setText(R.string.wifi_empty_list_wifi_off);
 			break;
 		
 		default:
-			LogUtil.d(TAG, "WifiSettings++++---------<<>>mAccessPointList>>>" + wifiState);	
+			LogUtil.d(TAG, "default wifiState = " + wifiState);	
 			// TODO:
-			
-			
-			
 			break;
 		} 
 	}

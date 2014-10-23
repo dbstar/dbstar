@@ -43,7 +43,7 @@ public class WifiApAdmin {
 		mPasswd = passwd;
 		
 		if (mWifiManager.isWifiEnabled()) {
-			LogUtil.d(TAG, "startWifiAp-=-=-=-=-------------" + mWifiManager.isWifiEnabled());
+//			LogUtil.d(TAG, "startWifiAp-=-=-=-=-------------" + mWifiManager.isWifiEnabled());
 			mWifiManager.setWifiEnabled(false);
 		} 
 		
@@ -53,10 +53,9 @@ public class WifiApAdmin {
 			
 			@Override
 			public void doTimerCheckWork() {
-				// TODO Auto-generated method stub
 				
-				LogUtil.d(TAG, "isWifiEnabled-=-=-=-=-------------" + mWifiManager.isWifiEnabled());
-				LogUtil.d(TAG, "isWifiEnabled-=-=-=-=isWifiApEnabled(mWifiManager)-------------" + isWifiApEnabled(mWifiManager));
+				LogUtil.d(TAG, "isWifiEnabled = " + mWifiManager.isWifiEnabled());
+//				LogUtil.d(TAG, "isWifiEnabled-=-=-=-=isWifiApEnabled(mWifiManager)-------------" + isWifiApEnabled(mWifiManager));
 				
 				if (isWifiApEnabled(mWifiManager)) {
 					Log.v(TAG, "WifiAP enabled success!");
@@ -97,7 +96,7 @@ public class WifiApAdmin {
 
 			// 启动热点
 			boolean isSuccess = (Boolean) method1.invoke(mWifiManager, netConfig, true);
-			LogUtil.d(TAG, "///////////startWifiAp\\\\\\\\\\\\" + isSuccess);
+			LogUtil.d(TAG, " startWifiAp = " + isSuccess);
 		} catch (IllegalArgumentException e) {
 			LogUtil.d(TAG, "-----stratWifiAp======" + e);
 			e.printStackTrace();
@@ -146,10 +145,10 @@ public class WifiApAdmin {
 	private static boolean isWifiApEnabled(WifiManager wifiManager) {
 		try {
 			Method method = wifiManager.getClass().getMethod("isWifiApEnabled");
-			LogUtil.d(TAG, "isWifiAPEnabled()-----method------" + method);
+//			LogUtil.d(TAG, "isWifiAPEnabled()-----method------" + method);
 			method.setAccessible(true);
 			boolean bol = (Boolean) method.invoke(wifiManager);
-			LogUtil.d(TAG, "isWifiAPEnabled()-----method.invoke------" + bol + "----");
+			LogUtil.d(TAG, "isWifiAPEnabled()-----method.invoke------" + bol);
 			return bol;
 		} catch (Exception e) {
 			LogUtil.d(TAG, "-----isWifiApEnabled()===exception===" + e);

@@ -214,12 +214,12 @@ public class EthernetConfigController {
 
 		} else {
 			if (mDhcpSwitchIndicator.isChecked()) {
-				Log.d(TAG, " =================== mDhcpSwitchIndicator =  " + mDhcpSwitchIndicator.isChecked());
+				Log.d(TAG, " mDhcpSwitchIndicator.isChecked() =  " + mDhcpSwitchIndicator.isChecked());
 				mDhcpConnectState.setVisibility(View.INVISIBLE);
 			}
 
 			if (mManualSwitchIndicator.isChecked()) {
-				Log.d(TAG, " =================== mManualSwitchIndicator.isChecked() =  " + mManualSwitchIndicator.isChecked());
+				Log.d(TAG, " mManualSwitchIndicator.isChecked() =  " + mManualSwitchIndicator.isChecked());
 				mManualConnectState.setVisibility(View.INVISIBLE);
 			}
 		}
@@ -231,9 +231,9 @@ public class EthernetConfigController {
 		mContext = activity;
 		Ethernet_Network_Mode = mode;
 		
-		LogUtil.d("EthernetConfigController", "<<<mActivity>>>>>" + mActivity);
-		LogUtil.d("EthernetConfigController", "<<<mEthManager>>>>>" + mEthManager);
-		LogUtil.d("EthernetConfigController", "<<<mContext>>>>>" + mContext);
+//		LogUtil.d("EthernetConfigController", "<<<mActivity>>>>>" + mActivity);
+//		LogUtil.d("EthernetConfigController", "<<<mEthManager>>>>>" + mEthManager);
+//		LogUtil.d("EthernetConfigController", "<<<mContext>>>>>" + mContext);
 		
 		mEthIntentFilter = new IntentFilter(EthernetManager.ETH_STATE_CHANGED_ACTION);
 		mConnectManager = (ConnectivityManager) mActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -244,21 +244,21 @@ public class EthernetConfigController {
 
 		NetworkInfo ethernetInfo = mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
 		// 只是打印
-		if (ethernetInfo.isConnected()) {
-			int ip = mEthManager.getDhcpInfo().ipAddress;
-			Log.d(TAG, "---mDhcpSwitchIndicator-----networkInfo IpAddress ===== " + NetworkUtils.intToInetAddress(ip).getHostAddress());
-			String ipAddr = NetworkUtils.intToInetAddress(ip).getHostAddress();
-			String ipAddress = NetworkUtils.intToInetAddress(mEthManager.getDhcpInfo().ipAddress).getHostAddress();
-			// if (!ipAddr.equals(ipAddress)) {
-			// mEthInfo.setIpAddress(ipAddress);
-			// }
-			Log.d(TAG, "---mDhcpSwitchIndicator-----mEthManager.getDhcpInfo().ipAddress===== " + ipAddress);
-			Log.d(TAG, "---mDhcpSwitchIndicator-----mEthInfo IpAddress ===== " + ipAddr);
-		}
+//		if (ethernetInfo.isConnected()) {
+//			int ip = mEthManager.getDhcpInfo().ipAddress;
+//			Log.d(TAG, "---mDhcpSwitchIndicator-----networkInfo IpAddress ===== " + NetworkUtils.intToInetAddress(ip).getHostAddress());
+//			String ipAddr = NetworkUtils.intToInetAddress(ip).getHostAddress();
+//			String ipAddress = NetworkUtils.intToInetAddress(mEthManager.getDhcpInfo().ipAddress).getHostAddress();
+//			// if (!ipAddr.equals(ipAddress)) {
+//			// mEthInfo.setIpAddress(ipAddress);
+//			// }
+//			Log.d(TAG, "---mDhcpSwitchIndicator-----mEthManager.getDhcpInfo().ipAddress===== " + ipAddress);
+//			Log.d(TAG, "---mDhcpSwitchIndicator-----mEthInfo IpAddress ===== " + ipAddr);
+//		}
 	}
 
 	public void resume() {
-		LogUtil.d(TAG + "???resume()???", "-=-=-=-=-"+mReceiver+"=-=-=-=");
+//		LogUtil.d(TAG + "???resume()???", "-=-=-=-=-"+mReceiver+"=-=-=-=");
 		getContext().registerReceiver(mReceiver, mEthIntentFilter);
 		reqisterSystemReceiver();
 
@@ -269,7 +269,7 @@ public class EthernetConfigController {
 	}
 
 	public void pause() {
-		LogUtil.d(TAG + "???pause()???", "-=-=-=-=-"+mReceiver+"=-=-=-=");
+//		LogUtil.d(TAG + "???pause()???", "-=-=-=-=-"+mReceiver+"=-=-=-=");
 		getContext().unregisterReceiver(mReceiver);
 		unregisterSystemReceiver();
 	}
@@ -298,15 +298,15 @@ public class EthernetConfigController {
 		mOkButton = (Button) activity.findViewById(R.id.eth_btn_confirm);
 //		mPrevButton = (Button) mActivity.findViewById(R.id.prevbutton);
 
-		LogUtil.d(TAG, ">>>>>>>>>View<<<<<<<<<" + activity);
-		LogUtil.d(TAG, ">>>>>>>>>mDhcpSwitchButton<<<<<<<<<" + mDhcpSwitchButton);
+//		LogUtil.d(TAG, ">>>>>>>>>View<<<<<<<<<" + activity);
+//		LogUtil.d(TAG, ">>>>>>>>>mDhcpSwitchButton<<<<<<<<<" + mDhcpSwitchButton);
 		
 		mDhcpSwitchButton.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				enableDhcp(true);
-				LogUtil.d("EthernetConfigController", "<<<----mDhcpSwitchButton>>>>>" );
+//				LogUtil.d("EthernetConfigController", "<<<----mDhcpSwitchButton>>>>>" );
 			}
 		});
 
@@ -397,7 +397,7 @@ public class EthernetConfigController {
 					mDhcpSwitchTitle.setTextColor(0xFFFFCC00);
 				} else if (v.getId() == R.id.manual_switch_button) {
 					mManualSwitchTitle.setTextColor(0xFFFFCC00);
-					LogUtil.d("EthernetConfigController", "<<<onFocusChange----mManualSwitchTitle");
+//					LogUtil.d("EthernetConfigController", "<<<onFocusChange----mManualSwitchTitle");
 				} else if (v instanceof EditText) {
 					EditText textView = (EditText) v;
 					textView.setSelection(0);
@@ -405,7 +405,7 @@ public class EthernetConfigController {
 			} else {
 				if (v.getId() == R.id.dhcp_switch_button) {
 					mDhcpSwitchTitle.setTextColor(0xFF000000);
-					LogUtil.d("EthernetConfigController", "<<<onFocusChange----mDhcpSwitchTitle");
+//					LogUtil.d("EthernetConfigController", "<<<onFocusChange----mDhcpSwitchTitle");
 				} else if (v.getId() == R.id.manual_switch_button) {
 					mManualSwitchTitle.setTextColor(0xFF000000);
 				} else if (v instanceof EditText) {
@@ -440,10 +440,10 @@ public class EthernetConfigController {
 		if (isNetworkConnected()) {
 			mDhcpConnectState.setVisibility(View.VISIBLE);
 			mManualConnectState.setVisibility(View.GONE);
-			LogUtil.d("EthernetConfigController", "<<<enableDhcp----isNetworkConnected()"  + isNetworkConnected());
+			LogUtil.d("EthernetConfigController", "<<<enableDhcp----isNetworkConnected() = "  + isNetworkConnected());
 		}
 
-		LogUtil.d("EthernetConfigController", "<<<----enableDhcp" + enable);
+		LogUtil.d("EthernetConfigController", "<<<----enableDhcp = " + enable);
 		mManualSwitchButton.setNextFocusDownId(R.id.eth_btn_confirm);
 
 //		mPrevButton.setNextFocusUpId(R.id.manual_switch_button);
@@ -505,7 +505,7 @@ public class EthernetConfigController {
 				mEthInfo = mEthManager.getSavedEthConfig();
 			}			
 			Log.d(TAG, "--------mEthManager.isEthConfigured() = " + mEthManager.isEthConfigured());
-			Log.d(TAG, "--------mEthInfo = " + mEthInfo);
+//			Log.d(TAG, "--------mEthInfo = " + mEthInfo);
 		}
 
 //		EthernetDevInfo info = new EthernetDevInfo();
@@ -521,10 +521,10 @@ public class EthernetConfigController {
 			Log.d(TAG, "---mDhcpSwitchIndicator-----info IpAddress ===== " + mEthInfo.getIpAddress());
 			mEthManager.updateEthDevInfo(mEthInfo);
 			
-			Log.d(TAG, "--------mEnablePending = " + mEnablePending);
+//			Log.d(TAG, "--------mEnablePending = " + mEnablePending);
 			if (mEnablePending) {
-				Log.d(TAG, "--------mEthManager.getEthState() = " + mEthManager.getEthState());
-				Log.d(TAG, "--------mEthManager.ETH_STATE_ENABLED = " + mEthManager.ETH_STATE_ENABLED);
+//				Log.d(TAG, "--------mEthManager.getEthState() = " + mEthManager.getEthState());
+//				Log.d(TAG, "--------mEthManager.ETH_STATE_ENABLED = " + mEthManager.ETH_STATE_ENABLED);
 				if (mEthManager.getEthState() == mEthManager.ETH_STATE_ENABLED) {
 					mEthManager.setEthEnabled(true);
 				}

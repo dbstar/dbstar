@@ -92,11 +92,11 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 		
 		// boot completed
 		if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)) {
-			if (SystemProperties.getInt(SettingsCommon.STR_1080SCALE, 0) == 2) {
-				Log.d("OutputSettingsBroadcastReceiver", "onReceive ---------intent---" + intent);
-				Utils.setValue(VideoAxisFile, "0 0 1280 720");
-				Utils.setValue(DispFile, "1280 720");
-			}
+//			if (SystemProperties.getInt(SettingsCommon.STR_1080SCALE, 0) == 2) {
+//				Log.d("OutputSettingsBroadcastReceiver", "onReceive ---------intent---" + intent);
+//				Utils.setValue(VideoAxisFile, "0 0 1280 720");
+//				Utils.setValue(DispFile, "1280 720");
+//			}
 		}
 		// change output mode
 		else if (intent.getAction().equalsIgnoreCase(
@@ -229,13 +229,11 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 			int y = intent.getIntExtra(OUTPUT_POSITION_Y, -1);
 			int w = intent.getIntExtra(OUTPUT_POSITION_W, -1);
 			int h = intent.getIntExtra(OUTPUT_POSITION_H, -1);
-			Log.d("OutputSettingsBroadcastReceiver", "///////////x===" + x);
-			Log.d("OutputSettingsBroadcastReceiver", "///////////y===" + y);
-			Log.d("OutputSettingsBroadcastReceiver", "///////////w===" + w);
-			Log.d("OutputSettingsBroadcastReceiver", "///////////h===" + h);
+			Log.d("OutputSettingsBroadcastReceiver", "x===" + x + ", y===" + y);
+			Log.d("OutputSettingsBroadcastReceiver", "w===" + w + ", h===" + h);
 			if ((x != -1) && (y != -1) && (w != -1) && (h != -1)) {
 				savePosition(String.valueOf(x), String.valueOf(y), String.valueOf(w), String.valueOf(h));
-				Log.d("OutputSettingsBroadcastReceiver", "///////////savePosition in receiver!");
+				Log.d("OutputSettingsBroadcastReceiver", "savePosition in receiver!");
 			}
 		}
 		// set and save output position to default values
@@ -431,7 +429,7 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 				index = i;
 		}
 		
-		Log.d("OutputSettingsBroadcastReceiver", "------index-----" + index);
+		Log.d("OutputSettingsBroadcastReceiver", "------index = " + index);
 		
 		switch (index) {
 		case 0: // 480i
@@ -469,7 +467,7 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 			SystemProperties.set(sel_720poutput_y, y);
 			SystemProperties.set(sel_720poutput_width, w);
 			SystemProperties.set(sel_720poutput_height, h);
-			Log.d("OutputSettingsBroadcastReceiver", "----------------------indext is 4!");
+			Log.d("OutputSettingsBroadcastReceiver", "------ index is 4!");
 			
 			// TODO:test
 			SystemProperties.set("sel_poutput", "50");
@@ -494,14 +492,14 @@ public class OutputSettingsBroadcastReceiver extends BroadcastReceiver {
 			break;
 		}
 		
-		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_x));
-		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_y));
-		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_width));
-		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_height));
-		Log.d("OutputSettingsBroadcastReceiver", "------x-----" + x);
-		Log.d("OutputSettingsBroadcastReceiver", "------y-----" + y);
-		Log.d("OutputSettingsBroadcastReceiver", "------w-----" + w);
-		Log.d("OutputSettingsBroadcastReceiver", "------h-----" + h);
+//		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_x));
+//		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_y));
+//		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_width));
+//		Log.d("OutputSettingsBroadcastReceiver", "------SystemProperties-----" + SystemProperties.get(sel_720poutput_height));
+//		Log.d("OutputSettingsBroadcastReceiver", "------x-----" + x);
+//		Log.d("OutputSettingsBroadcastReceiver", "------y-----" + y);
+//		Log.d("OutputSettingsBroadcastReceiver", "------w-----" + w);
+//		Log.d("OutputSettingsBroadcastReceiver", "------h-----" + h);
 
 	}
 

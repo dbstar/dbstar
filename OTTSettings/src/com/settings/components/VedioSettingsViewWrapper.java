@@ -18,6 +18,7 @@ import com.settings.adapter.ListAdapter;
 import com.settings.bean.OutputMode;
 import com.settings.display.OutputSetConfirm;
 import com.settings.ottsettings.R;
+import com.settings.utils.DataUtils;
 import com.settings.utils.DisplaySettings;
 import com.settings.utils.SettingsCommon;
 import com.settings.utils.Utils;
@@ -66,21 +67,27 @@ public class VedioSettingsViewWrapper {
 		initializeView();
 		// Video output mode
 				mHasCVBSOutput = Utils.hasCVBSMode();
+				Log.d(TAG, "mHasCVBSOutput = " + mHasCVBSOutput);
 				if (mHasCVBSOutput) {
 					String valCVBSmode = DisplaySettings.getCVBSOutpuMode();
+					Log.d(TAG, "valCVBSmode = " + valCVBSmode);
 					mCVBSValues = context.getResources().getStringArray(R.array.cvbsmode_entries);
 					if (!valCVBSmode.equals("null")) {
 						mCVBSIndex = DisplaySettings.findIndexOfEntry(valCVBSmode, mCVBSValues);
 					}
+					Log.d(TAG, "mCVBSIndex = " + mCVBSIndex);
 				}
 
 				// get default frequency
-				mHasDefaultFrequency = Utils.platformHasDefaultTVFreq();
-				Log.d(TAG, "has default frequency = " + mHasDefaultFrequency);
-				if (mHasDefaultFrequency) {
-					mDefaultFrequency = DisplaySettings.getDefaultFrequency();
-				}
+//				mHasDefaultFrequency = Utils.platformHasDefaultTVFreq();
+//				Log.d(TAG, "has default frequency = " + mHasDefaultFrequency);
+//				if (mHasDefaultFrequency) {
+//					mDefaultFrequency = DisplaySettings.getDefaultFrequency();
+//				}
+					
+				mDefaultFrequency = DataUtils.getPreference(context, "modeFrequecy", "");
 				
+				Log.d(TAG, "mDefaultFrequency = " + mDefaultFrequency);
 				if (mDefaultFrequency == null || mDefaultFrequency.isEmpty()) {
 					mDefaultFrequency = mDefaultFrequencyEntries[DefaultFrequecy60Hz].toString();
 				}
@@ -88,8 +95,9 @@ public class VedioSettingsViewWrapper {
 				Log.d(TAG, "default fq " + mDefaultFrequency);
 
 				// get default output mode
-				String videoMode = DisplaySettings.getOutpuMode();
-
+//				String videoMode = DisplaySettings.getOutpuMode();
+				String videoMode = DataUtils.getPreference(context, "modeValue", DisplaySettings.getOutpuMode());
+				
 				Log.d(TAG, "default mode " + videoMode);
 
 				mVideoSelectedMode = -1;
@@ -105,6 +113,7 @@ public class VedioSettingsViewWrapper {
 						boolean selected = false;
 						if (mode.modeValue.equals(videoMode)) {
 							if (mode.frequecy.equalsIgnoreCase(mDefaultFrequency)) {
+								Log.d(TAG, "mode.modeValue = " + mode.modeValue);
 								selected = true;
 							}
 						}
@@ -125,6 +134,7 @@ public class VedioSettingsViewWrapper {
 				mVideoOutputModeAdapter.notifyDataSetChanged();
 				
 				mVideoOutputView.requestFocus();
+				
 	}
 	
 	public void initializeView() {
@@ -192,6 +202,11 @@ public class VedioSettingsViewWrapper {
 		case (SettingsCommon.GET_USER_OPERATION):
 			if (resultCode == Activity.RESULT_OK) {
 				OutputMode mode = mVideoModes.get(mVideoSelectedMode);
+				Log.d(TAG, "onActivityResult ok  mode.modeValue = " + mode.modeValue + " mode.frequecy = " + mode.frequecy);
+				
+				DataUtils.savePreference(context, "modeValue",  mode.modeValue);
+				DataUtils.savePreference(context, "modeFrequecy",  mode.frequecy);
+				
 				Intent saveIntent = new Intent(SettingsCommon.ACTION_OUTPUTMODE_SAVE);
 				saveIntent.putExtra(SettingsCommon.OUTPUT_MODE, mode.modeValue);
 				context.sendBroadcast(saveIntent);
@@ -205,6 +220,14 @@ public class VedioSettingsViewWrapper {
 
 				// set the selected mode
 				mVideoSelectedMode = mVideoLastSelectedMode;
+				OutputMode mode = mVideoModes.get(mVideoSelectedMode);
+				Log.d(TAG, "onActivityResult cancle  mode.modeValue = " + mode.modeValue + " mode.frequecy = " + mode.frequecy);
+				
+				DataUtils.savePreference(context, "modeValue",  mode.modeValue);
+				DataUtils.savePreference(context, "modeFrequecy",  mode.frequecy);
+				Intent saveIntent = new Intent(SettingsCommon.ACTION_OUTPUTMODE_CHANGE);
+				saveIntent.putExtra(SettingsCommon.OUTPUT_MODE, mode.modeValue);
+				context.sendBroadcast(saveIntent);
 
 				mVideoOutputModeAdapter.notifyDataSetChanged();
 			}
@@ -272,6 +295,7 @@ public class VedioSettingsViewWrapper {
 	};
 
 	private void onModeChanged(int modeIndex) {
+		Log.d(TAG, "onModeChanged  modeIndex = " + modeIndex);
 		if (mVideoSelectedMode == modeIndex || mIsSettingOutputMode)
 			return;
 
@@ -357,5 +381,6 @@ public class VedioSettingsViewWrapper {
 		if (setFrequency) {
 			DisplaySettings.setDefaultFrequency(mode.frequecy);
 		}
+		Log.d(TAG, "mode.frequecy = " + mode.frequecy);
 	}
 }

@@ -81,7 +81,7 @@ public class AudioSettingsViewWrapper {
 	private void onStart() {
 
 		View v = mAudioOutputView.getSelectedView();
-		Log.d(TAG, "1 ================ v " + v);
+//		Log.d(TAG, "1 ================ v " + v);
 		showSelectedItem(v, false);
 
 	}

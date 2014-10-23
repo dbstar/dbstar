@@ -119,9 +119,8 @@ public class NetworkWifiSettings {
 	private void nowWirelessStatus(boolean wirelessIsOpen) {
 		boolean isOpenWifiHotspot = DataUtils.getPreference(mContext, Data_Key_IsOpenWifiHotspot, false);
 		boolean isOpenWifi = DataUtils.getPreference(mContext, Data_Key_IsOpenWifi, true);
-		LogUtil.d("NetworkWifiSettings", "------wirelessIsOpen = " + wirelessIsOpen);
-		LogUtil.d("NetworkWifiSettings", "------isOpenWifiHotspot = " + isOpenWifiHotspot);
-		LogUtil.d("NetworkWifiSettings", "------isOpenWifi = " + isOpenWifi);
+		LogUtil.d("NetworkWifiSettings", "wirelessIsOpen = " + wirelessIsOpen + 
+				", isOpenWifiHotspot = " + isOpenWifiHotspot + ", isOpenWifi = " + isOpenWifi);
 		
 		wifiSwitch.setChecked(wirelessIsOpen);
 		

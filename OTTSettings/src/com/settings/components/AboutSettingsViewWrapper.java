@@ -36,8 +36,8 @@ public class AboutSettingsViewWrapper {
 
 		if (content != null && content.length() > 0) {
 			String[] split = content.split("\n");
-			if (split != null && split.length > 0) {
-
+			if (split != null && split.length >= 5) {
+				
 				String terminalNum = split[0];
 				String softwareVersion = split[1];
 				String hardwareType = split[5];
@@ -84,12 +84,10 @@ public class AboutSettingsViewWrapper {
 			memoryStr = localBufferedReader.readLine();
 
 			arrayOfString = memoryStr.split("\\s+");
+			LogUtil.d("AboutSettingsViewWrapper::getTotalMemory", "memoryStr = " + memoryStr);
 
 			// 获取系统总内存，单位是KB，乘以1024转换为Byte
-			if (arrayOfString != null && arrayOfString.length != 0) {			
-				for (String num : arrayOfString) {
-					LogUtil.d("AboutSettingsViewWrapper::getTotalMemory", "num：：" + num + "\t");
-				}
+			if (arrayOfString != null && arrayOfString.length >= 1) {			
 				memory = Integer.valueOf(arrayOfString[1]).intValue() * 1024;
 			}
 			localBufferedReader.close();

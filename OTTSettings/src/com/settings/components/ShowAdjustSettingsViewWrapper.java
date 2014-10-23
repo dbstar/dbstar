@@ -81,10 +81,10 @@ public class ShowAdjustSettingsViewWrapper {
 //        LogUtil.d(TAG, "------initView-----" + screen_rate);
 		
 		
-		Log.d(TAG, "-----initViews----SystemProperties-----" + SystemProperties.get(sel_720poutput_x));
-		Log.d(TAG, "------initViews----SystemProperties-----" + SystemProperties.get(sel_720poutput_y));
-		Log.d(TAG, "------initViews----SystemProperties-----" + SystemProperties.get(sel_720poutput_width));
-		Log.d(TAG, "------initViews----SystemProperties-----" + SystemProperties.get(sel_720poutput_height));
+//		Log.d(TAG, "-----initViews----SystemProperties-----" + SystemProperties.get(sel_720poutput_x));
+//		Log.d(TAG, "------initViews----SystemProperties-----" + SystemProperties.get(sel_720poutput_y));
+//		Log.d(TAG, "------initViews----SystemProperties-----" + SystemProperties.get(sel_720poutput_width));
+//		Log.d(TAG, "------initViews----SystemProperties-----" + SystemProperties.get(sel_720poutput_height));
 		
 		btnShowAdjust.setOnClickListener(new OnClickListener() {
 			

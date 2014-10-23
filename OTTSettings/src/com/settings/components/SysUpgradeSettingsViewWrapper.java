@@ -76,11 +76,24 @@ public class SysUpgradeSettingsViewWrapper {
 		String content = DataUtils.getCacheContent();
 		if (content != null && content.length() > 0) {
 			String[] splits = content.split("\n");
-			if (splits != null && splits.length > 0) {
+			if (splits != null && splits.length >= 2) {
 				productSN = splits[0];
 				softVersion = splits[1];
 				deviceModel = splits[2];
 			}
+		}
+		
+		if (softVersion == null || softVersion.equals("")) {
+			softVersion = "2.0.3.0";
+		}
+		
+		if (productSN == null || productSN.equals("")) {
+			// TODO:现在的串号不标准
+			productSN = "0000000000000066";
+		}
+		
+		if (deviceModel == null || deviceModel.equals("")) {
+			deviceModel = "02";
 		}
 		
 		populateData();
@@ -311,11 +324,11 @@ public class SysUpgradeSettingsViewWrapper {
 			}
 			upgradeInfo.setVapksList(vapksList);
 		} catch (ParseException e) {
-			LogUtil.d("parseUpgradeEntity", "升级：：解析异常" + e);
+			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
 		} catch (IOException e) {
-			LogUtil.d("parseUpgradeEntity", "升级：：解析异常" + e);
+			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
 		} catch (JSONException e) {
-			LogUtil.d("parseUpgradeEntity", "升级：：解析异常" + e);
+			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
 		}
 		
 		return upgradeInfo;

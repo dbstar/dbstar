@@ -14,12 +14,15 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.settings.bean.WifiHotspot;
 import com.settings.bean.WifiHotspotConfig;
 import com.settings.ethernet.EthernetEnabler;
 import com.settings.utils.DataUtils;
+import com.settings.utils.DisplaySettings;
 import com.settings.utils.LogUtil;
+import com.settings.utils.SettingsCommon;
 import com.settings.wifihotspot.WifiAdmin;
 import com.settings.wifihotspot.WifiApAdmin;
 
@@ -42,13 +45,13 @@ public class OTTSettingsService extends Service{
 		task.execute();
 		
 		// 如果上次退出程序之前设置过wifi热点，并且没有关闭，则启动wifi热点，并将上次设置的信息显示在上面
-		LogUtil.d(TAG, "OTTSettingsService-----------onCreate()");
+//		LogUtil.d(TAG, "OTTSettingsService-----------onCreate()");
 		
 		boolean wirelessIsOpen = DataUtils.getPreference(this, Data_Wireless_Switch, true);
 		
 		if (wirelessIsOpen) {
 			if (WifiHotspotConfig.getInstance(this).shouldRestoreWifiHotspot()) {
-				LogUtil.d(TAG, "OTTSettingsService-----------wifi hotspot is opened");
+				LogUtil.d(TAG, "in OTTSettingsService, wifi hotspot is opened");
 				String ssid = DataUtils.getPreference(this, Data_Key_SSID, "DbstarAP");
 				String password = DataUtils.getPreference(this, Data_Key_PWD, "12345678");
 				String security = DataUtils.getPreference(this, Data_Key_SECURITY, "WPA2 PSK");
@@ -56,19 +59,19 @@ public class OTTSettingsService extends Service{
 				wifiHotspot.setPassword(password);
 				wifiHotspot.setSecurity(security);
 				
-				LogUtil.d(TAG, "OTTSettingsService-----------ssid=" + ssid);
-				LogUtil.d(TAG, "OTTSettingsService-----------password=" + password);
-				LogUtil.d(TAG, "OTTSettingsService-----------security=" + security);
+//				LogUtil.d(TAG, "OTTSettingsService-----------ssid=" + ssid);
+//				LogUtil.d(TAG, "OTTSettingsService-----------password=" + password);
+//				LogUtil.d(TAG, "OTTSettingsService-----------security=" + security);
 				
 				wifiHotspotConnect(wifiHotspot);
-				LogUtil.d(TAG, "OTTSettingsService-----------open wifi hotspot");			
+//				LogUtil.d(TAG, "OTTSettingsService-----------open wifi hotspot");			
 			} else {
 				LogUtil.d(TAG, "OTTSettingsService-----------wifi is opened!");
 				WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 				wifiManager.setWifiEnabled(true);
 				// TODO:找到上次关机之前连接的ssid，在这看是否有此ssid，如果有就连接
 				String connectSsid = wifiManager.getConnectionInfo().getSSID().toString();
-				LogUtil.d(TAG, "OTTSettingsService-----------connectSsid = " +connectSsid);
+				LogUtil.d(TAG, "OTTSettingsService-----------connectSsid = " + connectSsid);
 //				ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 //				NetworkInfo wifi = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 				
@@ -151,7 +154,13 @@ public class OTTSettingsService extends Service{
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			return CheckUpgradeFile();
+			boolean existsCommandFile = CheckUpgradeFile();
+			if (existsCommandFile)
+				LogUtil.d("OTTSettingsService", "-----command file exists! ");
+			else
+				LogUtil.d("OTTSettingsService", "-----command file is not exists! ");						
+				
+			return existsCommandFile;
 		}
 		
 		@Override
@@ -183,14 +192,14 @@ public class OTTSettingsService extends Service{
 					String fileNmae = pathname.getName();
 					String filePath = pathname.getPath();
 					if (fileNmae.startsWith("command")) {
-						LogUtil.d("OTTSettingsService", "-----accept()----filePath = " + filePath);
-						LogUtil.d("OTTSettingsService", "-----accept()----fileNmae = " + fileNmae);
-						LogUtil.d("OTTSettingsService", "-----command file exists! ");
+//						LogUtil.d("OTTSettingsService", "-----accept()----filePath = " + filePath);
+//						LogUtil.d("OTTSettingsService", "-----accept()----fileNmae = " + fileNmae);
+//						LogUtil.d("OTTSettingsService", "-----command file exists! ");
 
 						// 如果检测到/cache/command0或/cache/command1存在，则返回true
 						return true;
 					} else {
-						LogUtil.d("OTTSettingsService", "-----command file is not exists! ");						
+//						LogUtil.d("OTTSettingsService", "-----command file is not exists! ");						
 						return false;
 					}
 				}
@@ -201,7 +210,7 @@ public class OTTSettingsService extends Service{
 			else 
 				return false;
 		} else {			
-			LogUtil.d("OTTSettingsService", "-----exists command file! ");
+			LogUtil.d("OTTSettingsService", "-----do not exists command file! ");
 			return false;
 		}
 	}

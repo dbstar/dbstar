@@ -21,7 +21,7 @@ public class WifiSettingsView {
 	}
 
 	public void initView(View view) {
-		LogUtil.d(TAG, "initView++++--------->>>>mSettings<<<<" + mSettings);
+//		LogUtil.d(TAG, "initView++++--------->>>>mSettings<<<<" + mSettings);
 		
 		wifiListView = (ListView) view.findViewById(R.id.wifi_aplist);
 		wifiListView.requestFocus();
@@ -34,13 +34,13 @@ public class WifiSettingsView {
 	public void resume() {
 		if (mSettings != null) {
 			mSettings.resume();
-			LogUtil.d(TAG, "WifiSettingsView++++---------onResume");
+//			LogUtil.d(TAG, "WifiSettingsView++++---------onResume");
 		}
 	}
 
 	public void pause() {
 		if (mSettings != null) {
-			LogUtil.d(TAG, "WifiSettingsView++++---------onPause");
+//			LogUtil.d(TAG, "WifiSettingsView++++---------onPause");
 			mSettings.onPause();
 		}
 	}

@@ -90,7 +90,7 @@ public class SettingUtils {
 	 * @return
 	 */
 	public static String getLocalMacAddress(boolean isEthernet) {
-		LogUtil.d("DbstarUtil", "getLocalMacAddress");
+//		LogUtil.d("DbstarUtil", "getLocalMacAddress");
 
 		String macAddress = "";
 		if (isEthernet) {
@@ -189,10 +189,10 @@ public class SettingUtils {
 			dns1String = getAddress(dns1);
 			dns2String = getAddress(dns2);
 		}
-		LogUtil.d("getDNS()::", "dns1String = " + dns1String);
-		LogUtil.d("getDNS()::", "dns2String = " + dns2String);
-		LogUtil.d("getDNS()::", "dns1 = " + dns1);
-		LogUtil.d("getDNS()::", "dns2 = " + dns2);
+		LogUtil.d("SettingUtils", "dns1String = " + dns1String);
+//		LogUtil.d("getDNS()::", "dns2String = " + dns2String);
+//		LogUtil.d("getDNS()::", "dns1 = " + dns1);
+//		LogUtil.d("getDNS()::", "dns2 = " + dns2);
 		
 		if (dns1String != null && !"".equals(dns1String)) {
 			return dns1String;
@@ -203,8 +203,8 @@ public class SettingUtils {
 	}
 	
 	public static String getAddress(int addr) {
-		LogUtil.d("getAddress::", "addr = " + addr);
-		LogUtil.d("getAddress::", "getHostAddress = " + NetworkUtils.intToInetAddress(addr).getHostAddress());
+//		LogUtil.d("getAddress::", "addr = " + addr);
+//		LogUtil.d("getAddress::", "getHostAddress = " + NetworkUtils.intToInetAddress(addr).getHostAddress());
 		return NetworkUtils.intToInetAddress(addr).getHostAddress();
 	}
 	
@@ -238,13 +238,13 @@ public class SettingUtils {
 			DhcpInfo dhcpInfo = ethernetManager.getDhcpInfo();
 			int gateway = dhcpInfo.gateway;
 			String familyNetIP = getAddress(gateway);
-			LogUtil.d("ethernetManager----dhcpInfo.gateway:::::", "dhcpInfo.gateway = " + gateway);
-			LogUtil.d("ethernetManager----geteway:::::", "geteway = " + familyNetIP);
+//			LogUtil.d("SettingUtils", "dhcpInfo.gateway = " + gateway);
+			LogUtil.d("SettingUtils", "geteway = " + familyNetIP);
 			
 			int netmask = dhcpInfo.netmask;
 			String childNetIP = getAddress(netmask);
-			LogUtil.d("ethernetManager----dhcpInfo.netmask:::::", "dhcpInfo.netmask = " + netmask);
-			LogUtil.d("ethernetManager----netmask:::::", "netmask = " + childNetIP);
+//			LogUtil.d("SettingUtils", "dhcpInfo.netmask = " + netmask);
+			LogUtil.d("SettingUtils", "netmask = " + childNetIP);
 			
 			// TODO：
 			hashMap.put(NetStatusViewWrapper.Family_Net_IP, familyNetIP);
@@ -332,7 +332,7 @@ public class SettingUtils {
 					Message msg = new Message();
 					msg.what = 1;
 					msg.obj = has_recv;
-					LogUtil.d("SettingUtils", "-----pin_recv = " + pin_recv);
+//					LogUtil.d("SettingUtils", "-----pin_recv = " + pin_recv);
 					SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
 					
 					pin_recv = has_recv;
@@ -350,7 +350,7 @@ public class SettingUtils {
 				Message msg = new Message();
 				msg.what = 1;
 				msg.obj = has_recv;
-				LogUtil.d("SettingUtils", "-----pin_recv = " + has_recv);
+				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv);
 				SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
 			}
 			
@@ -465,8 +465,7 @@ public class SettingUtils {
 
 		StateListDrawable stateList = new StateListDrawable();
 
-		stateList.addState(new int[] { android.R.attr.state_checked,
-				android.R.attr.state_pressed }, checked);
+		stateList.addState(new int[] { android.R.attr.state_checked, android.R.attr.state_pressed }, checked);
 		stateList.addState(new int[] { android.R.attr.state_checked }, checked);
 		stateList.addState(new int[] {}, unchecked);
 		// stateList.setBounds(0, 0, width, width);

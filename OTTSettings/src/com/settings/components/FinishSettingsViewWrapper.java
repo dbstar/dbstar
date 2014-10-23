@@ -280,11 +280,8 @@ public class FinishSettingsViewWrapper {
 		mIsChecked = true;
 
 		NetworkInfo netInfo = mConnectManager.getActiveNetworkInfo();
-		Log.d(TAG, "============== checkConfigResult " + netInfo);
-		Log.d(TAG,
-				"============== checkConfigResult "
-						+ mConnectManager
-								.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET));
+//		Log.d(TAG, "============== checkConfigResult " + netInfo);
+		Log.d(TAG, "============== checkConfigResult " + mConnectManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET));
 
 		if (netInfo != null) {
 
