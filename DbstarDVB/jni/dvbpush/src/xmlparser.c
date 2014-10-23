@@ -776,27 +776,39 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 	}
 	
 	char sqlite_cmd[4096];
+	char ts_direct_uri[1024];
+	char ts_tmp_uri[1024];
+	struct stat filestat;
 	int receive_status_tmp = RECEIVESTATUS_FINISH;
 	
-	if(1==motherdisc_processing()){
+	snprintf(ts_direct_uri,sizeof(ts_direct_uri),"%s/%s", push_dir_get(),p->FileURI);
+	snprintf(ts_tmp_uri,sizeof(ts_tmp_uri),"%s@tmp@", ts_direct_uri);
+	
+	int stat_ret = stat(ts_direct_uri, &filestat);
+	if(0==stat_ret){
+		PRINTF("good normal publication, %s is exist\n",p->FileURI);
+	}
+	else{
+		ERROROUT("can not stat(%s)\n", ts_direct_uri);
+		if(1==motherdisc_processing()){
 #if 0
-// 不搞那么复杂，母盘解析时所有节目都正常展示
-		receive_status_tmp = receive_status_get();
+// when mother disc, accept all publication
+			receive_status_tmp = receive_status_get();
 #endif
-		struct stat filestat;
-		char ts_direct_uri[1024];
-		
-		snprintf(ts_direct_uri,sizeof(ts_direct_uri),"%s/%s", push_dir_get(),p->FileURI);
-		
-		// check ContentDelivery.xml for mother disc
-		int stat_ret = stat(ts_direct_uri, &filestat);
-		if(0==stat_ret){
-			PRINTF("in mother disc processing status, %s is exist\n",p->FileURI);
+			DEBUG("in mother disc processing status, %s is NOT exist, return and dont insert to database\n",p->FileURI);
+			
+			return -1;
 		}
 		else{
-			ERROROUT("can not stat(%s)\n", ts_direct_uri);
-			DEBUG("in mother disc processing status, %s is NOT exist, return and do nothing\n",p->FileURI);
-			return -1;
+			// download more than lowest level(such as 98%), make it finished forced
+			if(0==rename(ts_tmp_uri,ts_direct_uri)){
+				DEBUG("rename from %s to %s forced success\n", ts_tmp_uri, ts_direct_uri);
+			}
+			else{
+				ERROROUT("rename from %s to %s failed, return and dont insert to database\n", ts_tmp_uri, ts_direct_uri);
+				
+				return -1;
+			}
 		}
 	}
 	

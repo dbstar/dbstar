@@ -81,7 +81,6 @@ typedef struct tagPRG
 	int				parsed;
 	char			publication_id[64];
 	char			product_id[64];
-	char			fileuri[512];
 }PROG_S;
 
 static int push_decoder_buf_uninit();
@@ -148,7 +147,7 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	
 	if (pkt[5] & 0x3e)
 	{
-		printf("lxy add for youhua,too many!!!!!!!!\n");
+		PRINTF("lxy add for youhua,too many!!!!!!!!\n");
 		if ((pkt[5] & 0x3c) != 0x00) {
 			/* drop scrambled */
 			//	rx_errors++;
@@ -171,7 +170,7 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	offset = pkt_len - 16 - snap; 
 	//if (pkt_len - 12 - 4 + 14 - snap <= 0) {
 	if (offset + 14 <= 0) {
-		printf("IP/MPE packet length = %d too small.\n", pkt_len);
+		PRINTF("IP/MPE packet length = %d too small.\n", pkt_len);
 		//rx_errors++;
 		//rx_length_errors++;
 		return res;
@@ -185,7 +184,7 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	/*	if (g_wIndex == g_rIndex 
 	&& g_recvBuffer[g_wIndex].m_len) {
 	rx_fifo_dropped++;
-	printf("Push FIFO is full. lost pkt %d\n", rx_fifo_dropped);
+	PRINTF("Push FIFO is full. lost pkt %d\n", rx_fifo_dropped);
 	return res;
 	}*/
 	revbufw = g_wIndex;
@@ -902,10 +901,10 @@ void *push_xml_parse_thread()
 
 void usage()
 {
-	printf("-i	interface name, default value is eth0.\n");
-	printf("-h	print out this message.\n");
+	PRINTF("-i	interface name, default value is eth0.\n");
+	PRINTF("-h	print out this message.\n");
 	
-	printf("\n");
+	PRINTF("\n");
 	exit(0);
 }
 
@@ -1221,14 +1220,12 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].parsed = prog->parsed;
 			snprintf(s_prgs[i].publication_id, sizeof(s_prgs[i].publication_id), "%s", prog->publication_id);
 			snprintf(s_prgs[i].product_id, sizeof(s_prgs[i].product_id), "%s", prog->product_id);
-			snprintf(s_prgs[i].fileuri, sizeof(s_prgs[i].fileuri), "%s", prog->fileuri);
 			
-			DEBUG("regist to push[%d]:%s(%s) in %s. %s, %s, %s, %s, %lld\n",
+			DEBUG("regist to push[%d]:%s(%s) in %s. %s, %s, %s, %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].publication_id,
 					s_prgs[i].product_id,
-					s_prgs[i].fileuri,
 					s_prgs[i].caption,
 					s_prgs[i].uri,
 					s_prgs[i].descURI,
@@ -1251,7 +1248,6 @@ static int mid_push_regist(PROG_S *prog)
 			s_prgs[i].parsed = prog->parsed;
 			snprintf(s_prgs[i].publication_id, sizeof(s_prgs[i].publication_id), "%s", prog->publication_id);
 			snprintf(s_prgs[i].product_id, sizeof(s_prgs[i].product_id), "%s", prog->product_id);
-			snprintf(s_prgs[i].fileuri, sizeof(s_prgs[i].fileuri), "%s", prog->fileuri);
 			
 /*
  已经解析过的节目，无需注册到push库中，只需要UI上显示即可。
@@ -1264,12 +1260,11 @@ static int mid_push_regist(PROG_S *prog)
 			}
 			s_push_monitor_active++;
 			
-			PRINTF("regist to push[%d]:%s(%s) in %s %s %s %s %lld\n",
+			PRINTF("regist to push[%d]:%s(%s) in %s %s %s %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].publication_id,
 					s_prgs[i].product_id,
-					s_prgs[i].fileuri,
 					s_prgs[i].uri,
 					s_prgs[i].descURI,
 					s_prgs[i].total);
@@ -1416,7 +1411,6 @@ int delete_publication_from_monitor(char *PublicationID, char *ProductID)
 				s_prgs[i].parsed = 0;
 				memset(s_prgs[i].publication_id, 0, sizeof(s_prgs[i].publication_id));
 				memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
-				memset(s_prgs[i].fileuri, 0, sizeof(s_prgs[i].fileuri));
 				
 				DEBUG("delete Publication %s from monitor and ProductDesc table finish\n", s_prgs[i].publication_id);
 				s_dvbpush_info_refresh_flag = 1;
@@ -1441,49 +1435,38 @@ int prog_monitor_reset(void)
 /*
  接收完毕的节目push系统会自动反注册，当播发单过期时，对那些接收不完毕的节目进行反注册并删除垃圾
  当反注册时文件被关闭，可以进行删除
-*/
-#if 0
-There is deadlock here: if dont parse desc.xml, can not get FileURI; if has no FileURI, can not rename it from @tmp@ to standard
-			int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
-			
-			// publication receive more than 98% but not complete
-			if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && 0<wanting_percent && wanting_percent<=2 && strlen(s_prgs[i].fileuri)>0)
-			{
-				DEBUG("[%s]%s: cur=%lld, total=%lld, wanting %d%%, make it finished forced\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
-				
-				char tmp_fileuri[512];
-				char std_fileuri[512];
-				snprintf(tmp_fileuri,sizeof(tmp_fileuri),"%s/%s@tmp@",push_dir_get(),s_prgs[i].fileuri);
-				snprintf(std_fileuri,sizeof(std_fileuri),"%s/%s",push_dir_get(),s_prgs[i].fileuri);
-				
-				if(0==rename(tmp_fileuri,std_fileuri)){
-					DEBUG("rename from %s to %s success\n", tmp_fileuri, std_fileuri);
-					parseDoc(s_prgs[i].descURI, PUBLICATION_DIR, "publication");
-					s_prgs[i].parsed = 1;
-					
-					ret = push_dir_unregister(s_prgs[i].uri);
-					if(0!=ret){
-						DEBUG("can not unregister for %s, this publication is complete forced\n", s_prgs[i].uri);
-					}
-				}
-				else{
-					ERROROUT("rename from %s to %s failed\n", tmp_fileuri, std_fileuri);
-				}
-			}
-#endif
-				
+*/		
+			// if download not finished
 			if(0==s_prgs[i].parsed){
 				PRINTF("[%s] %s is download stop but not complete, unregist and clean it\n", s_prgs[i].id,s_prgs[i].uri);
 				ret = push_dir_unregister(s_prgs[i].uri);
 				if(0==ret){
-					ret = push_dir_remove(s_prgs[i].uri);
-					if(0==ret){
-						usleep(100000);
+					//There is deadlock here: if dont parse desc.xml, can not get FileURI; if has no FileURI, can not rename it from @tmp@ to standard
+					//FileURI is nothing if this program is not download finished
+					int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
+			
+					// publication receive more than 98% but not complete
+					if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && 0<wanting_percent && wanting_percent<=2)
+					{
+						DEBUG("[%s]%s: cur=%lld, total=%lld, wanting %d%%, make it finished forced\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
+						if(0==parseDoc(s_prgs[i].descURI, PUBLICATION_DIR, "publication")){
+							DEBUG("phony finished parse %s forced success\n", s_prgs[i].uri);
+							s_prgs[i].parsed = 1;
+						}
+						else{
+							DEBUG("phony finished parse %s forced failed\n", s_prgs[i].uri);
+						}
 					}
-					else if(-1==ret)
-						PRINTF("push remove failed: %s, no such uri\n", s_prgs[i].uri);
-					else
-						PRINTF("push remove failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+					else{
+						ret = push_dir_remove(s_prgs[i].uri);
+						if(0==ret){
+							usleep(100000);
+						}
+						else if(-1==ret)
+							PRINTF("push remove failed: %s, no such uri\n", s_prgs[i].uri);
+						else
+							PRINTF("push remove failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+					}
 				}
 				else if(-1==ret)
 					PRINTF("push unregist failed: %s, no registed uri\n", s_prgs[i].uri);
@@ -1511,7 +1494,6 @@ There is deadlock here: if dont parse desc.xml, can not get FileURI; if has no F
 			s_prgs[i].parsed = 0;
 			memset(s_prgs[i].publication_id, 0, sizeof(s_prgs[i].publication_id));
 			memset(s_prgs[i].product_id, 0, sizeof(s_prgs[i].product_id));
-			memset(s_prgs[i].fileuri, 0, sizeof(s_prgs[i].fileuri));
 		}
 	}
 	
@@ -1530,7 +1512,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 		DEBUG("no record in table, return\n");
 		return 0;
 	}
-//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID,FileURI
+//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID
 	int i = 0;
 	RECEIVESTATUS_E recv_stat = RECEIVESTATUS_REJECT;
 	long long totalsize = 0LL;
@@ -1576,8 +1558,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			cur_prog.parsed = atoi(result[i*column+10]);
 			snprintf(cur_prog.publication_id,sizeof(cur_prog.publication_id),"%s",result[i*column+1]);
 			snprintf(cur_prog.product_id,sizeof(cur_prog.product_id),"%s",result[i*column+11]);
-			snprintf(cur_prog.fileuri,sizeof(cur_prog.fileuri),"%s",result[i*column+12]);
-
+			
 /*
  已经解析过的节目，无需注册到push库中，只需要UI上显式即可。
 */
@@ -1693,16 +1674,16 @@ int push_recv_manage_refresh(int recv_by_sequence)
 	
 	int flag_carrier = 0;
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ProductDesc.ProductDescID,ID,ReceiveType,ProductDesc.URI,ProductDesc.DescURI,ProductDesc.TotalSize,ProductDesc.PushStartTime,ProductDesc.PushEndTime,ProductDesc.ReceiveStatus,FreshFlag,Parsed,ProductDesc.productID,FileURI FROM ProductDesc,Publication where ID=PublicationID and ReceiveType='%d'", RECEIVETYPE_PUBLICATION);
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc");
 	
 	if(recv_by_sequence){
 		DEBUG("%d: push regist by sequence\n", recv_by_sequence);
-		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " AND RecvSequence=(select min(RecvSequence) from ProductDesc)");
+		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " where RecvSequence=(select min(RecvSequence) from ProductDesc);");
 	}
 	else{
 		DEBUG("%d: push regist reguler, without sequence\n", recv_by_sequence);
+		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), ";");
 	}
-	snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " union SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID,TimeStamp FROM ProductDesc where ReceiveType!='%d';", RECEIVETYPE_PUBLICATION);
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*

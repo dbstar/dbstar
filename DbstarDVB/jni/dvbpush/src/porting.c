@@ -396,7 +396,7 @@ int ifconfig_get(char *interface_name, char *ip, char *status, char *mac)
 					if (!(ioctl (fd, SIOCGARP, (char *) &arp)))
 					{
 						puts ("HW address is:");     //以十六进制显示MAC地址
-						printf("%02x:%02x:%02x:%02x:%02x:%02x\n",
+						PRINTF("%02x:%02x:%02x:%02x:%02x:%02x\n",
 							(unsigned char)arp.arp_ha.sa_data[0],
 							(unsigned char)arp.arp_ha.sa_data[1],
 							(unsigned char)arp.arp_ha.sa_data[2],
@@ -412,7 +412,7 @@ int ifconfig_get(char *interface_name, char *ip, char *status, char *mac)
 					if (!(ioctl (fd, SIOCGENADDR, (char *) &buf[interface_num])))
 					{
 						puts ("HW address is:");
-						printf("%02x:%02x:%02x:%02x:%02x:%02x\n",
+						PRINTF("%02x:%02x:%02x:%02x:%02x:%02x\n",
 							(unsigned char)buf[interface_num].ifr_enaddr[0],
 							(unsigned char)buf[interface_num].ifr_enaddr[1],
 							(unsigned char)buf[interface_num].ifr_enaddr[2],
@@ -2467,10 +2467,10 @@ void drm_date_time_test()
 //	time_t timep;
 //	struct tm *p;
 //	time(&timep);
-//	printf(“time() : %d n”,timep);
+//	PRINTF("time() : %d n",timep);
 //	p=localtime(&timep);
 //	timep = mktime(p);
-//	printf(“time()->localtime()->mktime():%dn”,timep);
+//	PRINTF("time()->localtime()->mktime():%dn",timep);
 	
 	time_t sec_2000;
 	struct tm *p;
@@ -3363,16 +3363,6 @@ int pushinfo_reset(void)
 		DEBUG("this is a motherdisc, do not reset initialize and pushinfo\n");
 		return -1;
 	}
-	
-#if 0
-// 2013-03-11 对节目单的处理留到收到ProductDesc.xml时进行处理，这里不用着急删除。
-// 1、停止现有正在接收的节目
-	prog_monitor_reset();
-
-// 2、删除播发单ProductDesc表
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM ProductDesc;");
-	sqlite_execute(sqlite_cmd);
-#endif
 
 // 3、重置xml注册
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushinfo_unregist_cb;
