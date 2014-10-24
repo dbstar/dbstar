@@ -161,6 +161,8 @@ typedef enum{
 // 当硬盘下载时，每个播发单最小下载修正为32G，用于计算是否需要磁盘清理
 #define DOWNLOAD_ONCE_MIN			(34359738368LL)
 
+#define STORAGE_FLASH_SIZE			(1000000000LL)
+
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
 	NAVIGATIONTYPE_COLUMN
@@ -247,11 +249,12 @@ typedef enum{
 	数据投递单中的节目类型
 */
 typedef enum{
-	RECEIVETYPE_PUBLICATION	= 0,
-	RECEIVETYPE_SPRODUCT	= 1,
-	RECEIVETYPE_COLUMN		= 2,
-	RECEIVETYPE_PREVIEW		= 3,
-	RECEIVETYPE_ALL			= 100
+	RECEIVETYPE_SEQUENCE	= 0,
+	RECEIVETYPE_PUBLICATION	= 1,
+	RECEIVETYPE_SPRODUCT	= 2,
+	RECEIVETYPE_COLUMN		= 4,
+	RECEIVETYPE_PREVIEW		= 8,
+//	RECEIVETYPE_ALL			= 100
 }RECEIVETYPE_E;
 
 /*
@@ -761,6 +764,7 @@ struct Channel {
         unsigned char    neq;
         ChannelStage_t   stage;
         unsigned char    samepidnum;
+        unsigned char	 cc;
 };
 
 struct Filterp {

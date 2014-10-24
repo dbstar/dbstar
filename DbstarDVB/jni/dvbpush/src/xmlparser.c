@@ -29,6 +29,8 @@ static int s_column_SequenceNum = 0;
 static int s_detect_valid_productID = 0;
 static int s_preview_publication = 0;
 static unsigned long long s_recv_totalsize_sum = 0LL;
+static int s_need_recv_column = 0;
+static char s_invalid_publicationid[128];
 
 /*
  初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
@@ -108,6 +110,12 @@ static int resstr_insert(DBSTAR_RESSTR_S *p)
 		DEBUG("invalid arguments\n");
 		return -1;
 	}
+	
+	if((0==strcmp("Publication",p->ObjectName) || 0==strcmp("ProductDesc",p->ObjectName))&& 0==strcmp(s_invalid_publicationid,p->EntityID)){
+		DEBUG("invalid EntityID: %s\n", p->EntityID);
+		return -1;
+	}
+	
 	char sqlite_cmd[8192];
 	
 	if(0==strcmp("chi",p->StrLang)){
@@ -542,16 +550,30 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 	}
 	
 	if(RECEIVESTATUS_WAITING==receive_status){
-		if(1!=motherdisc_processing()){
-			// 准备接收前先删除旧有目录，防止push库判断异常。
-			snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
-			remove_force(direct_uri);
-		}
-		
 		this_total_size = 0LL;
 		sscanf(ptr->TotalSize,"%llu", &this_total_size);
+		
+		if(1==storage_flash_check()){
+			if((s_recv_totalsize_sum+this_total_size)>=STORAGE_FLASH_SIZE){
+				DEBUG("too large to recv to flash, %llu+%llu=%llu, ignore %s\n", s_recv_totalsize_sum, this_total_size, s_recv_totalsize_sum+this_total_size, ptr->ID);
+				snprintf(s_invalid_publicationid, sizeof(s_invalid_publicationid), "%s", ptr->ID);
+				return -1;
+			}
+		}
+		
 		s_recv_totalsize_sum += this_total_size;
 		DEBUG("ptr->TotalSize: %s, this_total_size=%llu,s_recv_totalsize_sum=%llu\n", ptr->TotalSize,this_total_size,s_recv_totalsize_sum);
+		
+		if(1!=motherdisc_processing()){
+			if(RECEIVETYPE_PREVIEW==ptr->ReceiveType){
+				DEBUG("preview %s dont reset before receive\n", ptr->ID);
+			}
+			else{
+				// 准备接收前先删除旧有目录，防止push库判断异常。
+				snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
+				remove_force(direct_uri);
+			}
+		}
 		
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ProductDesc(ReceiveType,ProductDescID,rootPath,productID,SetID,ID,TotalSize,URI,DescURI,PushStartTime,PushEndTime,Columns,ReceiveStatus,FreshFlag,Parsed,RecvSequence) \
 VALUES('%q',\
@@ -796,6 +818,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 			receive_status_tmp = receive_status_get();
 #endif
 			DEBUG("in mother disc processing status, %s is NOT exist, return and dont insert to database\n",p->FileURI);
+			snprintf(s_invalid_publicationid, sizeof(s_invalid_publicationid), "%s", p->PublicationID);
 			
 			return -1;
 		}
@@ -806,6 +829,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 			}
 			else{
 				ERROROUT("rename from %s to %s failed, return and dont insert to database\n", ts_tmp_uri, ts_direct_uri);
+				snprintf(s_invalid_publicationid, sizeof(s_invalid_publicationid), "%s", p->PublicationID);
 				
 				return -1;
 			}
@@ -889,6 +913,11 @@ static int publicationva_info_insert(DBSTAR_MULTIPLELANGUAGEINFOVA_S *p)
 		return -1;
 	}
 	
+	if(0==strcmp(s_invalid_publicationid,p->PublicationID)){
+		DEBUG("invalid publicationid: %s\n", p->PublicationID);
+		return -1;
+	}
+	
 	char sqlite_cmd[8192];
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO MultipleLanguageInfoVA(PublicationID,infolang,PublicationDesc,ImageDefinition,Keywords,Area,Language,Episode,AspectRatio,AudioChannel,Director,Actor,Audience,Model) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q','%q');",
 		p->PublicationID,p->infolang,p->PublicationDesc,p->ImageDefinition,p->Keywords,p->Area,p->Language,p->Episode,p->AspectRatio,p->AudioChannel,p->Director,p->Actor,p->Audience,p->Model);
@@ -903,6 +932,11 @@ static int publicationrm_info_insert(DBSTAR_MULTIPLELANGUAGEINFORM_S *p)
 {
 	if(NULL==p || 0==strlen(p->PublicationID) || 0==strlen(p->infolang)){
 		DEBUG("invalid argument\n");
+		return -1;
+	}
+	
+	if(0==strcmp(s_invalid_publicationid,p->PublicationID)){
+		DEBUG("invalid publicationid: %s\n", p->PublicationID);
 		return -1;
 	}
 	
@@ -921,6 +955,11 @@ static int publicationapp_info_insert(DBSTAR_MULTIPLELANGUAGEINFOAPP_S *p)
 {
 	if(NULL==p || 0==strlen(p->PublicationID) || 0==strlen(p->infolang)){
 		DEBUG("invalid argument\n");
+		return -1;
+	}
+	
+	if(0==strcmp(s_invalid_publicationid,p->PublicationID)){
+		DEBUG("invalid publicationid: %s\n", p->PublicationID);
 		return -1;
 	}
 	
@@ -962,6 +1001,11 @@ static int subtitle_insert(DBSTAR_RESSUBTITLE_S *p)
 		return -1;
 	}
 	
+	if(0==strcmp("Publication", p->ObjectName) && 0==strcmp(s_invalid_publicationid,p->EntityID)){
+		DEBUG("invalid EntityID: %s\n", p->EntityID);
+		return -1;
+	}
+	
 	char sqlite_cmd[2048];
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResSubTitle(ObjectName,EntityID,SubTitleID,SubTitleName,SubTitleLanguage,SubTitleURI) VALUES('%q','%q','%q','%q','%q','%q');",
 		p->ObjectName,p->EntityID,p->SubTitleID,p->SubTitleName,p->SubTitleLanguage,p->SubTitleURI);
@@ -980,6 +1024,11 @@ static int poster_insert(DBSTAR_RESPOSTER_S *p)
 		return -1;
 	}
 	
+	if(0==strcmp("Publication", p->ObjectName) && 0==strcmp(s_invalid_publicationid,p->EntityID)){
+		DEBUG("invalid EntityID: %s\n", p->EntityID);
+		return -1;
+	}
+	
 	char sqlite_cmd[2048];
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO ResPoster(ObjectName,EntityID,PosterID,PosterName,PosterURI) VALUES('%q','%q','%q','%q','%q');",
 		p->ObjectName, p->EntityID, p->PosterID, p->PosterName, p->PosterURI);
@@ -995,6 +1044,11 @@ static int trailer_insert(DBSTAR_RESTRAILER_S *p)
 {
 	if(NULL==p || 0==strlen(p->ObjectName) || 0==strlen(p->EntityID) || 0==strlen(p->TrailerID) || 0==strlen(p->TrailerURI)){
 		DEBUG("invalid arguments\n");
+		return -1;
+	}
+	
+	if(0==strcmp("Publication", p->ObjectName) && 0==strcmp(s_invalid_publicationid,p->EntityID)){
+		DEBUG("invalid EntityID: %s\n", p->EntityID);
 		return -1;
 	}
 	
@@ -3078,9 +3132,11 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					snprintf(xmlinfo_in_recv.PushFlag,sizeof(xmlinfo_in_recv.PushFlag),"%d",COLUMN_XML);
 					read_xmlver_in_trans(&xmlinfo_in_recv,old_xmlver_in_recv,sizeof(old_xmlver_in_recv));
 					if((strlen(old_xmlver_in_recv)>0 && 0==strcmp(old_xmlver_in_recv, p->version))){
+						s_need_recv_column = 0;
 						DEBUG("old ver: %s, new ver: %s, no need to regist and parse\n",old_xmlver_in_recv, p->version);
 					}
 					else{
+						s_need_recv_column = 1;
 						snprintf(p->ReceiveType, sizeof(p->ReceiveType), "%d", RECEIVETYPE_COLUMN);
 						parseNode(doc, cur, new_xmlroute, ptr, NULL, NULL, NULL);
 						
@@ -3478,6 +3534,8 @@ int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
 // Publication.xml
 				else if(0==xmlStrcmp(cur->name, BAD_CAST"Publication")){
 					// 成品、栏目和特殊产品均通过文件通道下发，原始PushFlag都是0，故此处进行修正
+					snprintf(s_invalid_publicationid, sizeof(s_invalid_publicationid), "-1");
+					
 					actual_xml_flag = PUBLICATION_XML;
 					snprintf(xmlinfo.PushFlag, sizeof(xmlinfo.PushFlag), "%d", actual_xml_flag);
 					
@@ -3571,7 +3629,8 @@ int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
 // ProductDesc.xml 当前投递单
 				else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
 					s_recv_totalsize_sum = 0LL;
-					DEBUG("reset s_recv_totalsize_sum as %lld\n", s_recv_totalsize_sum);
+					s_need_recv_column = 0;
+					snprintf(s_invalid_publicationid, sizeof(s_invalid_publicationid), "-1");
 					
 					parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
 					read_xmlver_in_trans(&xmlinfo,old_xmlver,sizeof(old_xmlver));
@@ -3688,13 +3747,14 @@ PARSE_XML_END:
 			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
 			
 			if(1==storage_flash_check()){
-				DEBUG("column is download finished, %d\n", storage_flash_check());
+				DEBUG("column is download finished for flash recv, %d\n", storage_flash_check());
 				if(0==productdesc_column_finished()){
 					while(0==disk_space_check()){
 						DEBUG("do disk_space_check() finish with 0, sleep(3) and check again\n");
 						sleep(3);
 					}
-					push_recv_manage_refresh(storage_flash_check());
+					DEBUG("will regist publication/sproduct/preview for push, storage with flash\n");
+					push_recv_manage_refresh(RECEIVETYPE_PUBLICATION|RECEIVETYPE_SPRODUCT|RECEIVETYPE_COLUMN|RECEIVETYPE_PREVIEW);
 				}
 			}
 		}
@@ -3711,7 +3771,7 @@ PARSE_XML_END:
 				
 				/*
 				 如果是进行了磁盘清理，需要再重试一次进行硬盘空间检查。因为磁盘清理时，清理空间计算依据的是数据库记录，但是有的节目没有下载完整，导致数据库标识的节目体积有虚高的风险，
-				 也因此导致实际清理掉的空间没有达到期望值。
+				 同时还有可能存在@tmp@文件，也因此导致实际清理掉的空间没有达到期望值。
 				*/
 				if(0==storage_flash_check()){
 					// If storage with hd, check storage(hd) here; or, check storage(flash) after column_info is downloaded
@@ -3721,8 +3781,20 @@ PARSE_XML_END:
 					}
 				}
 				
-				DEBUG("has parsed ProductDesc, will regist for push, %d\n", storage_flash_check());
-				push_recv_manage_refresh(storage_flash_check());
+				if(storage_flash_check()){
+					if(s_need_recv_column){
+						DEBUG("has parsed ProductDesc, will regist column for push, storage with flash\n");
+						push_recv_manage_refresh(RECEIVETYPE_COLUMN);
+					}
+					else{
+						DEBUG("has parsed ProductDesc, will regist publication/sproduct/preview for push, storage with flash\n");
+						push_recv_manage_refresh(RECEIVETYPE_PUBLICATION|RECEIVETYPE_SPRODUCT|RECEIVETYPE_COLUMN|RECEIVETYPE_PREVIEW);
+					}
+				}
+				else{
+					DEBUG("has parsed ProductDesc, will regist all for push, storage with hd\n");
+					push_recv_manage_refresh(RECEIVETYPE_PUBLICATION|RECEIVETYPE_SPRODUCT|RECEIVETYPE_COLUMN|RECEIVETYPE_PREVIEW);
+				}
 			}
 		}
 		else if(INITIALIZE_XML==actual_xml_flag){

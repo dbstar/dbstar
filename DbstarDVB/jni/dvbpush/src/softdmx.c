@@ -191,6 +191,7 @@ int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* 
 			chanFilter[i].samepidnum = m;
 			chanFilter[i].used = 1;
 			chanFilter[i].pid = pid;
+            chanFilter[i].cc = -1;
 			DEBUG("allcoate a filter fid(id)[%d],num[%d],pid[0x%x]\n",i,m,pid);
 			return i;
 		}
@@ -296,7 +297,8 @@ reLoader:
 	{
 		//must upgrade,display upgrade info, wait 5 second, set uboot mark and then reboot
 		char msg[128];
-
+		
+		DEBUG("g_loaderInfo.file_type=%s\n", g_loaderInfo.file_type);
 		if (strcmp(g_loaderInfo.file_type,"1"))
 		{
 //			fprintf(cfp,"--update_package=%s\n",UPGRADEFILE_ALL);
@@ -390,6 +392,12 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 	
 	static int s_first_package_flag = -1;
 	int tmp_i = 0;
+	
+	static int print_loader_section_handle_only_once = 0;
+	if(0==print_loader_section_handle_only_once){
+		DEBUG("in loader_section_handle, fid = %d, len = %d\n", fid, len);
+		print_loader_section_handle_only_once = 1;
+	}
 	
 	//DEBUG("call loader_section_handle\n");
 	if ((len < 12)||(len > 4096))
@@ -865,6 +873,18 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		INTERMITTENT_PRINT("loader info too small!!!!!!!!!![%d]\n",len);
 		//        return;
 	}
+	
+	int i = 0;
+	static int print_only_once = 0;
+	if(0==print_only_once || 100==print_only_once || 200==print_only_once || 300==print_only_once || 400==print_only_once || 500==print_only_once){
+		DEBUG("loader ori data start len=%d(", len);
+		for(i=0; i<len; i++){
+			PRINTF("[%x]", data[i]);
+		}
+		DEBUG(")\n loader ori data end\n");
+		print_only_once ++;
+	}
+	
 #if 0
 	if (tc_crc32(data,len))
 	{
@@ -956,10 +976,10 @@ INTERMITTENT_PRINT("first 10 = [%s] == [%s]\n",cmp,g_loaderInfo.stbid);
         {
             sprintf(tmp_id,"%.2x%.2x%.2x",datap[5],datap[6],datap[7]);
             stb_id_l = atol(tmp_id);
-printf("start id l=[%u], me=[%u]\n",stb_id_l,stb_seral);
+			INTERMITTENT_PRINT("start id l=[%u], me=[%u]\n",stb_id_l,stb_seral);
             if (stb_seral  < stb_id_l)
             {
-                printf("stb id is not in this update sequence \n");
+                INTERMITTENT_PRINT("stb id is not in this update sequence \n");
                 return ;
             }
         }
@@ -968,7 +988,7 @@ printf("start id l=[%u], me=[%u]\n",stb_id_l,stb_seral);
         snprintf(cmp,11,"%.2x%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3],datap[4]);
         if (0) //strncmp(stbid,cmp,10)) //loaderinfo.stb_id_h > stb_id_h)
         {
-            printf("stb id is not in this update sequence \n");
+            INTERMITTENT_PRINT("stb id is not in this update sequence \n");
             return ;
         }
         else // if (loaderinfo.stb_id_h == stb_id_h)
@@ -977,7 +997,7 @@ printf("start id l=[%u], me=[%u]\n",stb_id_l,stb_seral);
             stb_id_l = atol(tmp_id);
             if (stb_seral > stb_id_l)
             {
-                printf("stb id is not in this update sequence \n");
+                INTERMITTENT_PRINT("stb id is not in this update sequence\n");
                 return ;
             }
         }
@@ -1121,7 +1141,7 @@ void TC_free_filter(int fid)
 		chanFilter[fid].bytes = 0;
 		chanFilter[fid].fid = -1;
 		chanFilter[fid].stage  = CHAN_STAGE_START;
-		
+	    chanFilter[fid].cc = -1;	
 		//chanFilter[fid].pid = 0xffff;
 		if ((fid+1) == max_filter_num)
 		{
@@ -1193,17 +1213,21 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 	optr = ptr;
 	if(start)
 	{
-		chan->bytes = 0;
+		if(0!=chan->bytes){
+			//PRINTF("1111111111111111 chanFilter[%d].pid=%d, chan->bytes=%d\n", fid, chanFilter[fid].pid, chan->bytes);
+			chan->bytes = 0;
+		}
 		chan->stage = CHAN_STAGE_HEADER;
 	}
 	else if(chan->stage==CHAN_STAGE_START)
 	{
+		DEBUG("chan->stage==CHAN_STAGE_START\n");
 		return 0;
 	}
 	
 // should make SURE sizeof(chan->buf)==FILTER_BUF_SIZE
 	if((chan->bytes + dlen)>FILTER_BUF_SIZE){
-//		DEBUG("chanFilter[%d].pid=0x%x, chanFilter[%d].bytes=%d, overflow\n",fid,chanFilter[fid].pid,fid,chanFilter[fid].bytes);
+		DEBUG("chanFilter[%d].pid=0x%x, chanFilter[%d].bytes=%d, overflow\n",fid,chanFilter[fid].pid,fid,chanFilter[fid].bytes);
 		return 0;
 	}
 	
@@ -1223,8 +1247,10 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 		p = dlen - part;
 	}
 	//DEBUG("chan_bytes = [%d]\n",chan->bytes);
-	if(chan->bytes<3)
+	if(chan->bytes<3){
+		DEBUG("chan_bytes = [%d]\n",chan->bytes);
 		return 0;
+	}
 	
 	if(chan->stage==CHAN_STAGE_HEADER)
 	{
@@ -1254,7 +1280,7 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 			chan->stage = CHAN_STAGE_PTR;
 		}
 	}
-	
+retry:
 	if(chan->stage==CHAN_STAGE_PTR)
 	{
 		int sec_len;
@@ -1272,7 +1298,10 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 		if(chan->buf[len]==0xFF)
 		{
 			chan->stage = CHAN_STAGE_END;
-			chan->bytes = 0;
+			if(0!=chan->bytes){
+			//	PRINTF("222222222222222 chanFilter[%d].pid=%d, chan->bytes = %d\n", fid, chanFilter[fid].pid, chan->bytes);
+				chan->bytes = 0;
+			}
 			return 0;
 		}
 		else
@@ -1315,7 +1344,7 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 	//if(!chan->bytes)
 	//	return 0;
 	
-retry:
+//retry:
 	if(chan->stage==CHAN_STAGE_DATA_SEC)
 	{
 		/*
@@ -1352,6 +1381,10 @@ retry:
 			{
 				if(0==tc_crc32(chanbuf,sec_len))
 					send_mpe_sec_to_push_fifo(chanbuf, sec_len);
+                    else
+                    {
+                    	PRINTF("section crc error, sec_len=%d\n", sec_len);
+                    }
 							
 				//DEBUG("payload [%d]\n",total);
 			}
@@ -1419,6 +1452,7 @@ retry:
 						break;
 					}
 				}
+                          }
 				left = chan->bytes - sec_len - chan->offset;
 				if(left>0)
 				{
@@ -1426,7 +1460,10 @@ retry:
 					if(chanbuf[sec_len]==0xFF)
 					{
 						chan->stage = CHAN_STAGE_END;
-						chan->bytes = 0;
+						if(0!=chan->bytes){
+						//	PRINTF("3333333333333 chanFilter[%d].pid=%d, chan->bytes=%d left=%d, offset=%d\n", fid, chanFilter[fid].pid, chan->bytes,left, chan->offset);
+							chan->bytes = 0;
+						}
 						
 						return 0;
 					}
@@ -1436,8 +1473,12 @@ retry:
 					left = 0;
 				chan->bytes = left;
 				if(left)
+                {
+                	// DEBUG("aaaaaaaaaaaaaa chanFilter[%d].pid=%d, left=%d,  sec_len=%d\n", fid, chanFilter[fid].pid, left, sec_len);
+                	chan->stage = CHAN_STAGE_PTR;   //liukevin add
 					goto retry;
-			}
+                }
+
 		}
 	}
 	else if (chan->stage==CHAN_STAGE_DATA_PES)
@@ -1476,8 +1517,12 @@ retry:
 //		DEBUG("other packet, chan->stage=%d,fid=%d,chanFilter[%d].pid=%d\n",chan->stage,fid,fid,chanFilter[fid].pid);
 	}
 	
-	if(chan->stage==CHAN_STAGE_END)
-		chan->bytes = 0;
+	if(chan->stage==CHAN_STAGE_END){
+		if(0!=chan->bytes){
+			//PRINTF("444444444444 chanFilter[%d].pid=%d, chan->bytes=%d\n", fid, chanFilter[fid].pid, chan->bytes);
+			chan->bytes = 0;
+		}
+	}
 	
 	return 0;
 }
@@ -1491,6 +1536,8 @@ int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 	unsigned short pid=0;
 	unsigned char  tei=0, cc=0, af_avail=0, p_avail=0, ts_start=0, sc=0;
 	
+	//STATic unsigned char precc = 0;
+	
 	//DEBUG("aaaaaaaa\n");
 	optr = ptr;
 	/*Scan the sync byte*/
@@ -1499,7 +1546,7 @@ int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 resync:
 		while(optr[p]!=0x47)
 		{
-			//DEBUG("eeeeeeeeeeeerror\n");
+			PRINTF("not 0x47\n");
 			p++;
 			if( p == write_ptr)
 			{
@@ -1516,6 +1563,7 @@ resync:
 		{
 			if (optr[p+188] != 0x47)
 			{
+				PRINTF("optr[p+188] != 0x47\n");
 				p++;
 				goto resync;
 			}
@@ -1524,6 +1572,7 @@ resync:
 		{
 			if (optr[p+188 - MULTI_BUF_SIZE] != 0x47)
 			{
+				PRINTF("optr[p+188 - MULTI_BUF_SIZE] != 0x47\n");
 				p++;
 				if (p >= MULTI_BUF_SIZE)
 					p = 0;
@@ -1559,7 +1608,7 @@ resync:
 	
 	if(tei)
 	{
-//		DEBUG("xxxxxxxxxxx ts error\n");
+		PRINTF("transport_error_indicator\n");
 		goto end;
 	}
 	
@@ -1620,9 +1669,25 @@ resync:
 //			DEBUG("get channel [%d][%x]\n",chan,pid);
 //		last_pid = pid;
 		if(chan != -1){
-			parse_payload(chan, p1, left, ts_start, ptr);
+			if(cc !=  chanFilter[chan].cc) {
+				/* 
+				if(((chanFilter[chan].cc + 1)&0x0f)!=cc)
+				{
+					PRINTF("loss now=%d  last=%d\n",cc,chanFilter[chan].cc);
+				}
+				*/
+				chanFilter[chan].cc = cc;
+				parse_payload(chan, p1, left, ts_start, ptr);
+			}
+			else
+			{
+				//PRINTF("sssssssssssssssssssssame 184\n");
+			}
 		}
 	}
+//	else{
+//		DEBUG("ignor ts package: p_avail(%d), left(%d), sc(%d)\n", p_avail, left, sc);
+//	}
 	
 end:
 	*read = p;
@@ -1642,6 +1707,7 @@ void chanFilterInit(void)
 		chanFilter[i].stage  = CHAN_STAGE_START;
 		chanFilter[i].samepidnum = 0;
 		chanFilter[i].fid = -1;
+        chanFilter[i].cc = -1;
 	}
         dmx_filter_init();
 }

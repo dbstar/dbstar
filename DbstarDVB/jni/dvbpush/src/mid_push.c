@@ -634,8 +634,14 @@ static int push_regist_init()
 	push_flags_cnt++;
 	info_xml_refresh(1,push_flags,push_flags_cnt);
 	
-	DEBUG("push recv init\n");
-	push_recv_manage_refresh(storage_flash_check());
+	if(storage_flash_check()){
+		DEBUG("push receive with flash init\n");
+		push_recv_manage_refresh(RECEIVETYPE_SEQUENCE);
+	}
+	else{
+		DEBUG("push recv with hd init\n");
+		push_recv_manage_refresh(RECEIVETYPE_PUBLICATION|RECEIVETYPE_SPRODUCT|RECEIVETYPE_COLUMN|RECEIVETYPE_PREVIEW);
+	}
 	
 	return 0;
 }
@@ -1616,9 +1622,9 @@ int disk_space_check()
 	// If storage with flash, calculate /data/dbstar/pushroot
 	if(1==storage_flash_check()){
 		snprintf(flash_pushroot, sizeof(flash_pushroot), "%s/pushroot", PUSH_STORAGE_FLASH);
-		free_size = (900000000LL)-dir_size(flash_pushroot);
+		free_size = STORAGE_FLASH_SIZE-dir_size(flash_pushroot);
 		DEBUG("free_size(%llu) vs will recv size(%llu)\n", free_size, recv_totalsize_sum_get());
-		if(recv_totalsize_sum_get()>free_size) // 900MB
+		if(recv_totalsize_sum_get()>free_size)
 		{
 			s_should_clean_hd = recv_totalsize_sum_get()-free_size;
 			DEBUG("%s/pushroot need clean %llu\n", PUSH_STORAGE_FLASH, s_should_clean_hd);
@@ -1662,7 +1668,7 @@ int disk_space_check()
 	简化操作，新播发单下发就清除旧的播发单，否则不更新播发单，不考虑PushStartTime和PushEndTime
 */
 // recv_by_sequence为0，表示全部走正常流程
-int push_recv_manage_refresh(int recv_by_sequence)
+int push_recv_manage_refresh(RECEIVETYPE_E receivetype)
 {
 	int ret = -1;
 	char sqlite_cmd[1024];
@@ -1676,14 +1682,19 @@ int push_recv_manage_refresh(int recv_by_sequence)
 	
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc");
 	
-	if(recv_by_sequence){
-		DEBUG("%d: push regist by sequence\n", recv_by_sequence);
+	// receive push with flash, recv column firstly, then publication. dont receive SProduct and Preview
+	if(RECEIVETYPE_SEQUENCE==receivetype){
+		DEBUG("push init regist by RECEIVETYPE_SEQUENCE\n");
 		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " where RecvSequence=(select min(RecvSequence) from ProductDesc);");
 	}
+	else if(RECEIVETYPE_COLUMN==receivetype){
+		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), " where ReceiveType=%d;", RECEIVETYPE_COLUMN);
+	}
 	else{
-		DEBUG("%d: push regist reguler, without sequence\n", recv_by_sequence);
 		snprintf(sqlite_cmd+strlen(sqlite_cmd), sizeof(sqlite_cmd)-strlen(sqlite_cmd), ";");
 	}
+	
+	DEBUG("receive by type[%d]: %s\n", receivetype, sqlite_cmd);
 	
 	ret = sqlite_read(sqlite_cmd, (void *)(&flag_carrier), sizeof(flag_carrier), sqlite_callback);
 /*

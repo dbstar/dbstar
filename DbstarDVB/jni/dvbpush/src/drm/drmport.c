@@ -372,7 +372,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
                                        CDCA_U16       wPid,
                                        CDCA_U8        byWaitSeconds)
 {
-	LOGD("CDSTBCA_SetPrivateDataFilter() called, wPid=%d\n");
+	LOGD("CDSTBCA_SetPrivateDataFilter() called, wPid=%d\n", wPid);
 #if 1
 	Filter_param param;
 	//Channel_t *filter;

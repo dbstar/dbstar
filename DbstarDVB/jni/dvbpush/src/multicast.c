@@ -180,6 +180,7 @@ static void *igmp_thread()
 	
 	char multi_ip[16];
 	int multi_port = 3000;
+	int getip_try_cnt = 0;
 	
 	char tmp_recv_buf[TMP_RECV_BUF_SIZE];
 	int tmp_write = 0;	//p_write还要被其他线程使用，因此写完数据后，将p_write一次性修改完毕，write位置的中间值用tmp_write表示
@@ -222,6 +223,7 @@ MULTITASK_START:
 	
 	
 	while(1){
+		getip_try_cnt = 0;
 		while(1){
 			pthread_mutex_lock(&mtx_getip);
 			
@@ -259,9 +261,17 @@ MULTITASK_START:
 				return NULL;
 			}
 			pthread_mutex_unlock(&mtx_getip);
+			
+			getip_try_cnt++;
+			if(getip_try_cnt>=18){
+				DEBUG("try get ip for 17*18=306s failed, set 192.168.3.250\n");
+				system("ifconfig eth0 192.168.3.250");
+				snprintf(if_ip, sizeof(if_ip), "192.168.3.250");
+				break;
+			}
 		}
-		DEBUG("get eth0 ip: %s\n", if_ip);
-		sleep(13);
+		DEBUG("get eth0 ip: %s, will wait 33s for system ready\n", if_ip);
+		sleep(33);
 	
 		bzero((char *)&sin, sizeof(sin));
 		sin.sin_family = AF_INET;
@@ -381,6 +391,9 @@ MULTITASK_START:
 	s_igmp_running = 1;
 	s_igmp_restart = 0;
 	
+	p_write = 0;
+	p_read = 0;
+	
 	while(1==s_igmp_running){
         if (p_write >= p_read)
         {
@@ -414,10 +427,6 @@ MULTITASK_START:
 				else
 					p_write = tmp_write;
 			}
-			else{
-				if(s_data_stream_status>0)
-					s_data_stream_status --;
-			}
 		}
 		else{
 			//PRINTF("free_size=%d(%d),\tp_read=%d,\tp_write=%d\n", free_size,recv_size,p_read, p_write);
@@ -443,14 +452,13 @@ MULTITASK_START:
 				}
 				PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d,p_write=%d\n", free_size,recv_size,recv_len,p_write);
 			}
-			else{
-				if(s_data_stream_status>0)
-					s_data_stream_status --;
-			}
 		}
 		
 		if (recv_len < 16)
 		{
+			if(s_data_stream_status>0)
+				s_data_stream_status --;
+			
             usleep(10000);
             if(1==s_igmp_restart){
             	DEBUG("will restart igmp thread loop\n");
@@ -478,6 +486,9 @@ MULTITASK_START:
 	
 	if(1==s_igmp_restart)
 		goto MULTITASK_START;
+	
+	p_write = 0;
+	p_read = 0;
 	
 	free(p_buf);
 	p_buf = NULL;
@@ -580,8 +591,7 @@ void *softdvb_thread()
 		else
 			left = MULTI_BUF_SIZE - p_read + p_write;
 		
-		
-		if(left<1880){
+		if(left<1316){
 			//PRINTF("%d,%d,%d\n", p_write, p_read, left);
 			usleep(10000);
 			continue;
