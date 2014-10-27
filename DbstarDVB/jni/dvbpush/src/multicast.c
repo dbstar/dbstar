@@ -180,7 +180,6 @@ static void *igmp_thread()
 	
 	char multi_ip[16];
 	int multi_port = 3000;
-	int getip_try_cnt = 0;
 	
 	char tmp_recv_buf[TMP_RECV_BUF_SIZE];
 	int tmp_write = 0;	//p_write还要被其他线程使用，因此写完数据后，将p_write一次性修改完毕，write位置的中间值用tmp_write表示
@@ -223,7 +222,6 @@ MULTITASK_START:
 	
 	
 	while(1){
-		getip_try_cnt = 0;
 		while(1){
 			pthread_mutex_lock(&mtx_getip);
 			
@@ -261,14 +259,6 @@ MULTITASK_START:
 				return NULL;
 			}
 			pthread_mutex_unlock(&mtx_getip);
-			
-			getip_try_cnt++;
-			if(getip_try_cnt>=18){
-				DEBUG("try get ip for 17*18=306s failed, set 192.168.3.250\n");
-				system("ifconfig eth0 192.168.3.250");
-				snprintf(if_ip, sizeof(if_ip), "192.168.3.250");
-				break;
-			}
 		}
 		DEBUG("get eth0 ip: %s, will wait 33s for system ready\n", if_ip);
 		sleep(33);
@@ -307,8 +297,8 @@ MULTITASK_START:
 							DEBUG("1 get origine recvbuf size of socket: %d\n", opt);
 						}
 
-#if 0						
-						opt = 32*1024*1024;
+#if 1						
+						opt = 16*1024*1024;
 						if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (void*)&opt, sizeof(opt)) < 0){
 							DEBUG("Can't change system network size (wanted size = %d)\n", opt);
 						}
