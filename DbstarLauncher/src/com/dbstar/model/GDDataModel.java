@@ -1,24 +1,34 @@
 package com.dbstar.model;
 
-import android.net.Uri;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.content.ContentValues;
-import android.database.Cursor;
-
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+
 import com.dbstar.app.settings.GDSettings;
-import com.dbstar.model.GDDVBDataContract.*;
+import com.dbstar.model.GDDVBDataContract.Brand;
+import com.dbstar.model.GDDVBDataContract.Column;
+import com.dbstar.model.GDDVBDataContract.Content;
+import com.dbstar.model.GDDVBDataContract.GuideList;
+import com.dbstar.model.GDDVBDataContract.MultipleLanguageInfoVA;
+import com.dbstar.model.GDDVBDataContract.Preview;
+import com.dbstar.model.GDDVBDataContract.Publication;
+import com.dbstar.model.GDDVBDataContract.PublicationsSet;
+import com.dbstar.model.GDDVBDataContract.ResPoster;
+import com.dbstar.model.GDDVBDataContract.ResStr;
+import com.dbstar.model.GDDVBDataContract.ResSubTitle;
+import com.dbstar.model.GDDVBDataContract.SetInfo;
 import com.dbstar.model.GDDVBDataProvider.ColumnQuery;
 import com.dbstar.model.GDDVBDataProvider.ResStrQuery;
 import com.dbstar.util.LogUtil;
-import com.dbstar.model.APPVersion;
 
 public class GDDataModel {
 	private static final String TAG = "GDDataModel";
@@ -740,49 +750,78 @@ public class GDDataModel {
 	}
 
 	// Global property query
+	private static String PreviewPath;
 	public String getPreviewPath() {
-		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyPreviewPath);
+		if (PreviewPath == null || PreviewPath.equals("")) 
+			PreviewPath = queryDeviceGlobalProperty(GDDVBDataContract.PropertyPreviewPath);
+		return PreviewPath;
 	}
 
+	private static String PushDir;
 	public String getPushDir() {
-		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyPushDir);
+		if (PushDir == null || PushDir.equals(""))
+			PushDir = queryDeviceGlobalProperty(GDDVBDataContract.PropertyPushDir);
+		return PushDir;
 	}
 
 	public String getColumnResDir() {
 		return queryGlobalProperty(GDDVBDataContract.PropertyColumnResPath);
 	}
 
+	private static String Language;
 	public String getLanguage() {
-		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyLanguage);
+		if (Language == null || Language.equals(""))
+			Language = queryDeviceGlobalProperty(GDDVBDataContract.PropertyLanguage);
+		return Language;
 	}
 
+	private static String PushSource;
 	public String getPushSource() {
-		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyPushSource);
+		if (PushSource == null || PushSource.equals(""))
+			PushSource = queryDeviceGlobalProperty(GDDVBDataContract.PropertyPushSource);
+		return PushSource;
 	}
 
 	public boolean setPushDir(String pushDir) {
+		PushDir = pushDir;
 		return updateDeviceGlobalProperty(GDDVBDataContract.PropertyPushDir, pushDir);
 	}
 
 	public boolean setPushSource(String source) {
-		return updateDeviceGlobalProperty(GDDVBDataContract.PropertyPushSource,
-				source);
+		PushSource = source;
+		return updateDeviceGlobalProperty(GDDVBDataContract.PropertyPushSource, source);
 	}
 
+	private static String DeviceSearialNumber;
 	public String getDeviceSearialNumber() {
-		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyDeviceSearialNumber);
+		LogUtil.d("GDDataModel", "DeviceSearialNumber = " + DeviceSearialNumber);
+		if (DeviceSearialNumber == null || DeviceSearialNumber.equals(""))
+			DeviceSearialNumber = queryDeviceGlobalProperty(GDDVBDataContract.PropertyDeviceSearialNumber);
+		return DeviceSearialNumber;
 	}
 
+	private static String HardWareType;
 	public String getHardwareType() {
-		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyHardwareType);
+		LogUtil.d("GDDataModel", "HardWareType = " + HardWareType);
+		if (HardWareType == null || HardWareType.equals(""))
+			HardWareType = queryDeviceGlobalProperty(GDDVBDataContract.PropertyHardwareType);
+		return HardWareType;
 	}
 
+	private static String SoftwareVersion;
 	public String getSoftwareVersion() {
-		return queryDeviceGlobalProperty(GDDVBDataContract.PropertySoftwareVersion);
+		LogUtil.d("GDDataModel", "SoftwareVersion = " + SoftwareVersion);
+		if (SoftwareVersion == null || SoftwareVersion.equals(""))
+			SoftwareVersion = queryDeviceGlobalProperty(GDDVBDataContract.PropertySoftwareVersion);
+		return SoftwareVersion;
 	}
 
+	private static String LoaderVersion;
 	public String getLoaderVersion() {
-		return queryDeviceGlobalProperty(GDDVBDataContract.PropertyLoaderVersion);
+		LogUtil.d("GDDataModel", "LoaderVersion = " + LoaderVersion);
+		if (LoaderVersion == null || LoaderVersion.equals(""))
+			LoaderVersion = queryDeviceGlobalProperty(GDDVBDataContract.PropertyLoaderVersion);
+		return LoaderVersion;
 	}
 	
 	public String getRichMediaColumnID(String columnType) {
