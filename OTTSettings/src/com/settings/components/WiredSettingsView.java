@@ -67,7 +67,7 @@ public class WiredSettingsView{
 			
 			switchToFinishSettings(Ethernet_Network_Mode);
 			
-			onPause();
+//			onPause();
 		}
 	};
 

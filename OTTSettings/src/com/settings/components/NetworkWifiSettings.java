@@ -216,7 +216,7 @@ public class NetworkWifiSettings {
 		btnNext.setEnabled(false);
 	}
 	
-	public void onKeyDown(int keyCode, KeyEvent event) {
+	public void onPause() {
 		if (isFromWifi) {
 			wifiSettingsView.pause();
 		}

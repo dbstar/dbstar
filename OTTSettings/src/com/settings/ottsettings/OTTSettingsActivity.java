@@ -33,6 +33,7 @@ public class OTTSettingsActivity extends Activity {
 	
 	private boolean isFromWired = false;
 	private boolean isFromWifi = false;
+	private boolean isFromUpgrade = false;
 	
 	private VedioSettingsViewWrapper vedioSettingsViewWrapper = null;
 	private WiredSettingsView wiredSettingsView = null;
@@ -40,6 +41,7 @@ public class OTTSettingsActivity extends Activity {
 	
 	private static int Ethernet_Network_Mode = 0;
 	private static final String Ethernet_Mode = "ethernet_mode";
+	private SysUpgradeSettingsViewWrapper wrapper = null;
 	private ShowAdjustSettingsViewWrapper showAdjustSettingsViewWrapper = null;
 	
 	@Override
@@ -110,7 +112,6 @@ public class OTTSettingsActivity extends Activity {
 	 * 系统升级
 	 */
 	private void switchToSysUpgradeSettings() {
-		SysUpgradeSettingsViewWrapper wrapper = null;
 		View view = populateViewToDynamicPanel(R.layout.lt_page_sys_upgrade_settings);
 		if (wrapper == null) {
 			wrapper = new SysUpgradeSettingsViewWrapper(this);
@@ -264,35 +265,63 @@ public class OTTSettingsActivity extends Activity {
 		public void onCheckedChanged(RadioGroup group, int checkedId) {
 			switch (checkedId) {
 			case R.id.settings_net_status:
+				pauseWired();
+				pauseWifi();
+				pauseUpgrade();
 				switchToNetStatus();
 				break;
 			case R.id.settings_wired:
+				pauseWifi();
+				pauseUpgrade();
 				switchToWiredSettings();
 				isFromWired = true;
 				break;
 			case R.id.settings_wifi:
+				pauseWired();
+				pauseUpgrade();
 				switchToWifiSetting();
 				isFromWifi = true;
 				break;
 			case R.id.settings_wifi_hotspot:
+				pauseWired();
+				pauseWifi();
+				pauseUpgrade();
 				switchToWifiHotspotSettings();
 				break;
 			case R.id.settings_audio:
+				pauseWired();
+				pauseWifi();
+				pauseUpgrade();
 				switchToAudioSettings();
 				break;
 			case R.id.settings_vedio:
+				pauseWired();
+				pauseWifi();
+				pauseUpgrade();
 				switchToVedioSettings();
 				break;
 			case R.id.settings_showAdjust:
+				pauseWired();
+				pauseWifi();
+				pauseUpgrade();
 				switchToShowAdjustSettings();
 				break;
 			case R.id.settings_sysUpgrade:
+				isFromUpgrade = true;
+				pauseWired();
+				pauseWifi();
 				switchToSysUpgradeSettings();
 				break;
 			case R.id.settings_help:
+				pauseWired();
+				pauseWifi();
+				pauseUpgrade();
 				switchToHelpSettings();
 				break;
 			case R.id.settings_about:
+				pauseWired();
+				pauseWifi();
+				pauseUpgrade();
 				switchToAboutSettings();
 				break;
 			default:
@@ -300,7 +329,27 @@ public class OTTSettingsActivity extends Activity {
 			}
 
 		}
-		
+	}
+	
+	private void pauseWifi() {
+		if (isFromWifi) {
+			networkWifiSettings.onPause();
+			isFromWifi = false;
+		}
+	}
+	
+	private void pauseWired() {
+		if (isFromWired) {
+			wiredSettingsView.onPause();				
+			isFromWired = false;
+		}
+	}
+	
+	private void pauseUpgrade() {
+		if (isFromUpgrade) {
+			wrapper.pause();
+			isFromUpgrade = false;
+		}
 	}
 	
 	@Override
@@ -311,13 +360,16 @@ public class OTTSettingsActivity extends Activity {
 		
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			if (isFromWired) {
-				wiredSettingsView.onResume();
+//				wiredSettingsView.onResume();
 				wiredSettingsView.onPause();				
 			}
 			
 			if (isFromWifi) {
-				networkWifiSettings.onKeyDown(keyCode, event);
+				networkWifiSettings.onPause();
 			}
+			
+			if (isFromUpgrade) 
+				wrapper.pause();
 		}
 		return super.onKeyDown(keyCode, event);
 	}

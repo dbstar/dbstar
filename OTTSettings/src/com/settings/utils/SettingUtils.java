@@ -1,5 +1,6 @@
 package com.settings.utils;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,19 +9,30 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.ParseException;
 import org.apache.http.auth.AuthScheme;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -32,17 +44,24 @@ import android.net.NetworkUtils;
 import android.net.ethernet.EthernetManager;
 import android.net.wifi.WifiManager;
 import android.os.Message;
+import android.os.UserHandle;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import com.settings.bean.UpgradeInfo;
+import com.settings.bean.Vapks;
 import com.settings.components.NetStatusViewWrapper;
 import com.settings.components.SysUpgradeSettingsViewWrapper;
 import com.settings.ottsettings.R;
+import com.settings.service.OTTSettingsModeService;
 
 public class SettingUtils {
 
+	private static final String IsUpgrading_File = "/data/dbstar/isupgrade.upgrade";
+	public static final String Sys_Upgrade_Settings_Progress = "sysUpgradeSettingsProgress";
+	public static final String Sys_Auto_Upgrade_Settings_Progress = "sysAutoUpgradeSettingsProgress";
 
 	//**-----------------------关于网络通用的方法-------------------------------**//
 
@@ -269,26 +288,144 @@ public class SettingUtils {
 	
 	
 	//**-------------------------其他通用-------------------------------**//
+	
+	/**
+	 * 解析调用升级接口返回的数据
+	 * @param entity
+	 * @return 升级信息
+	 */
+	public static UpgradeInfo parseUpgradeEntity(HttpEntity entity) {
+		UpgradeInfo upgradeInfo = new UpgradeInfo();
+		
+		if (entity == null) {
+			return null;
+		}
+		
+		try {
+			String entiryString = EntityUtils.toString(entity, "UTF-8");
+			JSONObject jsonObject = new JSONObject(entiryString);
+			JSONObject json = jsonObject.getJSONObject("Response");
+			JSONObject jsonObj = json.getJSONObject("Body");
+			JSONArray array = jsonObj.getJSONArray("Vapks");
+			JSONObject object = json.getJSONObject("Header");
+			
+			int rc = object.getInt("RC");
+			upgradeInfo.setRc(rc);
+			String rm = object.getString("RM");
+			upgradeInfo.setRm(rm);
+			
+			List<Vapks> vapksList = new ArrayList<Vapks>();
+			if (rc == 0) {
+				for (int i = 0; i < array.length(); i++) {
+					Vapks vapks = new Vapks();
+					JSONObject obj = array.getJSONObject(i);
+					int compressType = obj.getInt("COMPRESSTYPE");
+					vapks.setCompressType(compressType);
+					String profileUrl = obj.getString("PROFILEURL");
+					vapks.setProfileUrl(profileUrl);
+					String version = obj.getString("VERSION");
+					vapks.setVersion(version);
+					String remake = obj.getString("REMARK");
+					vapks.setRemake(remake);
+					double profileSize = obj.getDouble("PROFILESIZE");
+					vapks.setProfileSize(profileSize);
+					String vapk = obj.getString("VAPK");
+					vapks.setVapk(vapk);
+					int upgradeMode = obj.getInt("UPGRADEMODE");
+					vapks.setUpgradeMode(upgradeMode);
+					String apkProfileName = obj.getString("APKPROFILENAME");
+					vapks.setApkProfileName(apkProfileName);
+					vapksList.add(vapks);
+				}
+			}
+			upgradeInfo.setVapksList(vapksList);
+		} catch (ParseException e) {
+			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
+		} catch (IOException e) {
+			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
+		} catch (JSONException e) {
+			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
+		}
+		
+		return upgradeInfo;
+	}
+	
+	public static boolean compareSoftVersionAndIsOrNotUpgrade(final String softVersion, final UpgradeInfo upgradeInfo, boolean isNeedUpgrade) {
+		// 判断版本号，如果取出的版本号大于本地的，就升级
+		if (softVersion == null || softVersion.equals("")) {
+			isNeedUpgrade = true;
+		} else {
+			String[] localSoft = softVersion.split("\\.");
+			LogUtil.d("SettingUtils", "localSoft.length = " + localSoft.length);
+			List<Vapks> vapksList = upgradeInfo.getVapksList();
+			if (vapksList != null && vapksList.size() > 0) {						
+				// 只处理一个，这样写只是因为数据结果定义成了多个，其实只有一个升级包
+				for (Vapks vapks : vapksList) {
+					String newVersion = vapks.getVersion();
+					LogUtil.d("SettingUtils", "newVersion = " + newVersion);
+					if (newVersion != null && !newVersion.equals("")) {
+						String[] newSoft = newVersion.split("\\.");							
+						 Pattern pattern = Pattern.compile("[0-9]*"); 
+						for (int i = 0; i < newSoft.length; i++) {
+							boolean isNum = pattern.matcher(localSoft[i]).matches();
+							if (isNum) {
+								if (Integer.parseInt(localSoft[i]) < Integer.parseInt(newSoft[i])) {
+									isNeedUpgrade = true;
+									LogUtil.d("SettingUtils", "Integer.parseInt(localSoft[" + i + "]) = " 
+											+ Integer.parseInt(localSoft[i]) + " < Integer.parseInt(newSoft[" + i + "]) = " 
+											+ Integer.parseInt(newSoft[i]) + " (need upgrade)");											
+									break;
+								} else if(Integer.parseInt(localSoft[i]) > Integer.parseInt(newSoft[i])) {
+									isNeedUpgrade = false;
+									LogUtil.d("SettingUtils", "Integer.parseInt(localSoft[" + i + "]) = " 
+											+ Integer.parseInt(localSoft[i]) + " > Integer.parseInt(newSoft[" + i + "]) = " 
+											+ Integer.parseInt(newSoft[i]) + " (no need upgrade)");											
+									break;
+								}
+							} else {
+								isNeedUpgrade = true;
+								LogUtil.d("SettingUtils", "--version is invalid----need upgrade!");											
+								break;
+							}
+						}
+					} else {
+						isNeedUpgrade = false;
+						LogUtil.d("SettingUtils", "need not upgrade!");											
+					}
+				}
+			}						
+		}
+		return isNeedUpgrade;
+	}
+	
 	/**
 	 * 保存文件
 	 * @param softVersion 
 	 */
-	public static boolean SaveFile(InputStream is, long contentLength, String softVersion) {
+	public static boolean SaveFile(Context context,InputStream is, long contentLength, String softVersion, boolean isShow) {
 		try {
 			// 当已下载文件的大小大于400M时，就不下载了，当做错误文件
 			if(contentLength > 419430400){
-				LogUtil.d("SettingUtils", "-----too loong file, fileTotalSize = " + contentLength);
+				LogUtil.d("SettingUtils", "-----too long file, fileTotalSize = " + contentLength);
 				is.close();
+				// 将“0”写进
+				save0ToFile();
 				return false;
 			}
 			LogUtil.d("downloadAndSaveFile", "文件大小" + contentLength);
 			
 			if (is == null) {
 				LogUtil.d("downloadAndSaveFile", "无法获取文件");
+				// 将“0”写进
+				save0ToFile();
+				return false;
 			}
 			
 			if (contentLength <= 0) {
 				LogUtil.d("downloadAndSaveFile", "无法获取文件大小");	    	
+				// 将“0”写进
+				save0ToFile();
+				return false;
 			}
 			
 			String filePath = "/cache/upgrade.zip";
@@ -303,6 +440,8 @@ public class SettingUtils {
 			
 			if (!success) {
 				LogUtil.d("SettingUtils", "-----file create failed!");
+				// 将“0”写进
+				save0ToFile();
 				return false;
 			}
 			
@@ -310,9 +449,11 @@ public class SettingUtils {
 			byte[] buf = new byte[1024 * 30];
 			
 			int numread = 0;
-			int has_recv=0;
-			int pin_recv = 0;
-
+			long has_recv=0l;
+			long pin_recv = 0l;
+			
+			// 将“1”写进
+			save1ToFile();
 			while(true) {
 				numread = is.read(buf);
 				if(-1 == numread) {
@@ -326,15 +467,24 @@ public class SettingUtils {
 				
 				has_recv += numread;
 				
-//				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv);
+//				LogUtil.d("SettingUtils", "-----has_recv - pin_recv = " + (has_recv - pin_recv));
 				
 				if(has_recv - pin_recv > 1024000) {
-					Message msg = new Message();
-					msg.what = 1;
-					msg.obj = has_recv;
-//					LogUtil.d("SettingUtils", "-----pin_recv = " + pin_recv);
-					SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
+					LogUtil.d("SettingUtils", "-----pin_recv = " + pin_recv);
 					
+					Intent intent;
+					
+					if (isShow)
+						intent = new Intent(Sys_Upgrade_Settings_Progress);
+					else {
+						intent = new Intent(Sys_Auto_Upgrade_Settings_Progress);
+						intent.putExtra("fileTotalSize", contentLength);
+					}
+					
+					if (intent != null) {
+						intent.putExtra("has_recv", has_recv);
+						context.sendBroadcastAsUser(intent, UserHandle.ALL); 						
+					}
 					pin_recv = has_recv;
 				}
 			}
@@ -343,15 +493,26 @@ public class SettingUtils {
 			fos.close();
 			is.close();
 			
-			if(has_recv != contentLength){
+			if (has_recv != contentLength) {
 				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv + " contentLength = " + contentLength);
+				// 将“0”写进
+				save0ToFile();
 				return false;
 			} else {
-				Message msg = new Message();
-				msg.what = 1;
-				msg.obj = has_recv;
-				LogUtil.d("SettingUtils", "-----has_recv = " + has_recv);
-				SysUpgradeSettingsViewWrapper.handler.sendMessage(msg);
+				Intent intent;
+				if (isShow) {
+					intent = new Intent(Sys_Upgrade_Settings_Progress);
+				} else {
+					intent = new Intent(Sys_Auto_Upgrade_Settings_Progress);
+					intent.putExtra("fileTotalSize", contentLength);
+				}
+				
+				if (intent != null) {
+					intent.putExtra("has_recv", has_recv);
+					LogUtil.d("SettingUtils", "-----has_recv = " + has_recv);
+					context.sendBroadcastAsUser(intent, UserHandle.ALL); 
+				}
+				
 			}
 			
 			// 等升级包下载完成之后，就将string写入/cache/command1文件
@@ -374,12 +535,105 @@ public class SettingUtils {
 			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
+			// 将“0”写进
+			save0ToFile();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	/**
+	 * 将“1”保存在文件中
+	 */
+	public static void save1ToFile() {
+		try {
+			File file = new File(IsUpgrading_File);
+			if (file.exists())
+				file.delete();
+			boolean success = file.createNewFile();
+			if (success) {				
+				LogUtil.d("SettingUtils", " isupgrade.upgrade '1' file createFile successed!");
+				String isUpgrade = "1";
+				FileOutputStream stream = new FileOutputStream(file);
+				stream.write(isUpgrade.getBytes("utf-8"));
+				stream.flush();
+				stream.close();
+			} else 
+				LogUtil.d("SettingUtils", " when save isupgrade.upgrade '1' file, createFile failed !");
+				
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 将“0”保存在文件中
+	 */
+	public static void save0ToFile() {
+		try {
+			File file = new File(IsUpgrading_File);
+			if (file.exists())
+				file.delete();
+			boolean success = file.createNewFile();
+			if (success) {
+				LogUtil.d("SettingUtils", " isupgrade.upgrade '0' file createFile successed!");
+				String notUpgrade = "0";
+				FileOutputStream stream = new FileOutputStream(file);
+				stream.write(notUpgrade.getBytes("utf-8"));
+				stream.flush();
+				stream.close();				
+			} else
+				LogUtil.d("SettingUtils", " when save isupgrade.upgrade '0' file, createFile failed !");
+				
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 读取文件看是否正在升级
+	 */
+	public static boolean readIsUpgrade() {
+		boolean isUpgrading = false;
+		File file = new File(IsUpgrading_File);
+		if (!file.exists()) {
+			return false;
+		}
+		
+		try {
+			int count = 0;
+			byte[] buf = new byte[100];
+			FileInputStream inputStream = new FileInputStream(file);
+			BufferedInputStream bufferedIn = new BufferedInputStream(inputStream);
+			count = bufferedIn.read(buf, 0, buf.length);
+			bufferedIn.close();
+			if (count > 0) {
+				String values = new String(buf, 0, count);
+				LogUtil.d("SettingUtils", " in readUpgradeFile(), values = " + values); 
+				
+				if (values.equals("1"))
+					isUpgrading = true;
+				else
+					isUpgrading = false;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return isUpgrading;
 	}
 	
 	/**

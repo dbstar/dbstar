@@ -8,21 +8,18 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
-import org.apache.http.ParseException;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
@@ -53,12 +50,12 @@ public class SysUpgradeSettingsViewWrapper {
 	private String localUpgradeFilePath;
 	private UpgradeInfo mUpgradeInfo = null;
 	private String productSN = null, deviceModel = null, softVersion = null;
+	public static boolean isNeedSysUpgrade = true;
+	private boolean isUpgrading;
 	
-	public static Handler handler;
-	public static boolean flag = true;
-	public static float downloadSize = 0;
-	public static long downloadFileSize = 0;
-	public static long fileTotalSize;
+	private static float downloadSize = 0;
+	private static long downloadFileSize = 0;
+	private static long fileTotalSize;
 	
 	public SysUpgradeSettingsViewWrapper(Context context) {
 		this.context = context;
@@ -98,6 +95,138 @@ public class SysUpgradeSettingsViewWrapper {
 		
 		populateData();
 		setEventListener();
+		resume();
+	}
+
+	BroadcastReceiver onReceiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+//			LogUtil.d("SysUpgradeSettingsViewWrapper", "-------------------downloadSize = " + downloadSize);
+			if (action.equals(SettingUtils.Sys_Upgrade_Settings_Progress)) {
+				Message msg = handler.obtainMessage(1);
+				msg.obj = intent.getLongExtra("has_recv", 0);
+				handler.sendMessage(msg);
+			} else if (action.equals(SettingUtils.Sys_Auto_Upgrade_Settings_Progress)) {
+				Message msg = handler.obtainMessage(2);
+				Bundle bundle = new Bundle();
+				bundle.putLong("fileTotalSize", intent.getLongExtra("fileTotalSize", fileTotalSize));
+				bundle.putLong("has_recv", intent.getLongExtra("has_recv", 0));
+				msg.setData(bundle);
+				handler.sendMessage(msg);
+			} else if (action.equals("com.settings.sysUpgrade")) {
+				Message message = handler.obtainMessage(3);
+				Bundle bundle = new Bundle();
+				bundle.putBoolean("isUpgrading", intent.getBooleanExtra("isUpgrading", false));
+				bundle.putLong("fileTotalSize", intent.getLongExtra("fileTotalSize", 0));
+				handler.sendMessage(message);
+			}
+		}
+	};
+	
+	Handler handler = new Handler() {
+		public void handleMessage(Message msg) {
+			final NumberFormat percentFormat = NumberFormat.getPercentInstance();
+			percentFormat.setMaximumFractionDigits(1); // 最大小数位数
+			percentFormat.setMaximumIntegerDigits(3); // 最大整数位数
+			percentFormat.setMinimumFractionDigits(0); // 最小小数位数
+			percentFormat.setMinimumIntegerDigits(1); // 最小整数位数
+			switch (msg.what) {
+			case 1:
+				if (fileTotalSize > 0) {
+					downloadFileSize = (Long) msg.obj;
+					downloadSize = ((Long) msg.obj).floatValue() / fileTotalSize;
+					String percentNum = percentFormat.format(downloadSize);
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));				
+					btnOnline.setEnabled(false);
+				} else {
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));
+					btnOnline.setEnabled(true);
+				}
+				
+				// 当网络断开的时候，下载失败
+				if (!SettingUtils.isNetworkAvailable(context)) {
+					fileTotalSize = 0;
+					btnOnline.setEnabled(true);
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
+					ToastUtils.showToast(context, "请检查网络！");
+				}
+				break;
+			case 2:
+				Bundle bundle = msg.getData();
+				downloadFileSize = bundle.getLong("has_recv");
+				fileTotalSize = bundle.getLong("fileTotalSize");
+				if (fileTotalSize > 0) {
+					downloadSize = ((Long) downloadFileSize).floatValue() / fileTotalSize;
+					String percentNum = percentFormat.format(downloadSize);
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));										
+					btnOnline.setEnabled(false);
+				} else {
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));						
+					btnOnline.setEnabled(true);
+				}
+				
+				// 当网络断开的时候，下载失败
+				if (!SettingUtils.isNetworkAvailable(context)) {
+					fileTotalSize = 0;
+					btnOnline.setEnabled(true);
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
+					ToastUtils.showToast(context, "请检查网络！");
+				}
+				break;
+			case 3:
+				Bundle bundle2 = msg.getData();
+				if (bundle2 != null) {
+					isUpgrading = bundle2.getBoolean("isUpgrading");
+					fileTotalSize = bundle2.getLong("fileTotalSize");					
+				}
+				
+				if (isUpgrading) {
+					btnLocal.setEnabled(false);
+					btnOnline.setEnabled(false);
+				} else {
+					boolean isNetworkAvailable = SettingUtils.isNetworkAvailable(context);
+					LogUtil.d("SysUpgradeSettingsViewWrapper", "isNetworkAvailable = " + isNetworkAvailable);
+					
+					if (fileTotalSize == 0) {			
+						if (isNetworkAvailable) {
+							txtPercent.setText("");	
+							if (!isUpgrading) {
+								LocalUpgradeTask task = new LocalUpgradeTask();
+								task.execute();									
+							} 
+						} else {				
+							// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
+							fileTotalSize = 0;
+							btnOnline.setEnabled(false);
+							txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed));										
+							ToastUtils.showToast(context, "请检查网络！");
+						}
+					} else {
+						LogUtil.d("SysUpgradeSettingsViewWrapper", "downloadSize = " + downloadSize);
+						String percentNum = percentFormat.format(downloadSize);
+						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));	
+					}
+				}
+					
+				break;
+			default:
+				break;
+			}
+		}
+	};
+	
+	public void resume() {
+		IntentFilter filter = new IntentFilter();		
+		filter.addAction("com.settings.sysUpgrade");
+		filter.addAction(SettingUtils.Sys_Upgrade_Settings_Progress);
+		filter.addAction(SettingUtils.Sys_Auto_Upgrade_Settings_Progress);
+		context.registerReceiver(onReceiver, filter);
+	}
+	
+	public void pause() {
+		context.unregisterReceiver(onReceiver);
 	}
 
 	private void populateData() {
@@ -107,46 +236,22 @@ public class SysUpgradeSettingsViewWrapper {
 		percentFormat.setMinimumFractionDigits(0); // 最小小数位数
 		percentFormat.setMinimumIntegerDigits(1); // 最小整数位数
 		
-		handler = new Handler() {
-			@Override
-			public void handleMessage(Message msg) {
-				super.handleMessage(msg);
-				switch (msg.what) {
-				case 1:
-					if (fileTotalSize > 0) {
-						downloadFileSize = (Integer) msg.obj;
-						downloadSize = ((Integer) msg.obj).floatValue() / fileTotalSize;
-						String percentNum = percentFormat.format(downloadSize);
-						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));				
-					} else {
-						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
-					}
-					
-					// 当网络断开的时候，下载失败
-					if (!SettingUtils.isNetworkAvailable(context)) {
-						fileTotalSize = 0;
-						btnOnline.setEnabled(true);
-						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
-						ToastUtils.showToast(context, "请检查网络！");
-					}
-					break;
-
-				default:
-					break;
-				}
-			}
-		};
-		
 		// 先检测硬盘，看看是否有升级文件，如果有，本地升级按钮变为可以点击的，在线升级仍然不可点击。
 		// 如果没有，则再检测在线升级是否有新的版本
+		
+		boolean isUpgrading = SettingUtils.readIsUpgrade();
+		LogUtil.d("SysUpgradeSettingsViewWrapper", "SettingUtils.readUpgradeFile() = " + isUpgrading);
+		
 		boolean isNetworkAvailable = SettingUtils.isNetworkAvailable(context);
 		LogUtil.d("SysUpgradeSettingsViewWrapper", "isNetworkAvailable = " + isNetworkAvailable);
 		
 		if (fileTotalSize == 0) {			
 			if (isNetworkAvailable) {
 				txtPercent.setText("");	
-				LocalUpgradeTask task = new LocalUpgradeTask();
-				task.execute();				
+				if (!isUpgrading) {
+					LocalUpgradeTask task = new LocalUpgradeTask();
+					task.execute();									
+				} 
 			} else {				
 				// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
 				fileTotalSize = 0;
@@ -188,60 +293,65 @@ public class SysUpgradeSettingsViewWrapper {
 			@Override
 			public void onClick(View v) {
 				
-				if (mUpgradeInfo == null) {
-					return;
-				}
-				
-				btnOnline.setEnabled(false);
-				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, ""));				
-				
-				List<Vapks> list = mUpgradeInfo.getVapksList();
-				if (list != null && !list.isEmpty()) {
-					for (final Vapks vapks : list) {
-						final String upgradeUrl = vapks.getProfileUrl();
-						ConnectWork<Boolean> work = new ConnectWork<Boolean>(HttpConnect.GET, upgradeUrl, null) {
-							
-							@Override
-							public Boolean processResult(HttpEntity entity) {
-								boolean success = false;
-								try {
-									InputStream is = entity.getContent();
-									fileTotalSize = entity.getContentLength();
-									// 将zip文件保存到
-									success = SettingUtils.SaveFile(is, fileTotalSize, vapks.getVersion());									
-								} catch (IOException e) {
-									LogUtil.d("SysUpgradeSettingsViewWrapper", " download upgrade file failed!" + e);
-									fileTotalSize = 0;
-								}
-								return success;
-							}
-							
-							@Override
-							public void connectComplete(Boolean success) {
-								if (success) {
-									int mode = vapks.getUpgradeMode();
-									// 强制升级
-									Intent intent = new Intent();
-									if (mode == 1) {
-								        intent.setClassName("com.dbstar", "com.dbstar.app.alert.GDForceUpgradeActivity");
-									} else {
-										intent.setClassName("com.dbstar", "com.dbstar.app.alert.GDUpgradeActivity");
-									}
-									intent.putExtra("packge_file", "/cache/upgrade.zip");
-									context.startActivity(intent);
-								} else {
-									LogUtil.d("SysUpgradeSettingsViewWrapper", " save file failed!");
-									btnOnline.setEnabled(true);
-									txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));				
-									fileTotalSize = 0;
-								} 
-							}
-						};
-						SimpleWorkPoolInstance.instance().execute(work);
-					}
-				}
+				upgrade();
 			}
+
 		});
+	}
+	
+	private void upgrade() {
+		if (mUpgradeInfo == null) {
+			return;
+		}
+		
+		btnOnline.setEnabled(false);
+		txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, ""));				
+		
+		List<Vapks> list = mUpgradeInfo.getVapksList();
+		if (list != null && !list.isEmpty()) {
+			for (final Vapks vapks : list) {
+				final String upgradeUrl = vapks.getProfileUrl();
+				ConnectWork<Boolean> work = new ConnectWork<Boolean>(HttpConnect.GET, upgradeUrl, null) {
+					
+					@Override
+					public Boolean processResult(HttpEntity entity) {
+						boolean success = false;
+						try {
+							InputStream is = entity.getContent();
+							fileTotalSize = entity.getContentLength();
+							// 将zip文件保存到
+							success = SettingUtils.SaveFile(context, is, fileTotalSize, vapks.getVersion(), true);									
+						} catch (IOException e) {
+							LogUtil.d("SysUpgradeSettingsViewWrapper", " download upgrade file failed!" + e);
+							fileTotalSize = 0;
+						}
+						return success;
+					}
+					
+					@Override
+					public void connectComplete(Boolean success) {
+						if (success) {
+							int mode = vapks.getUpgradeMode();
+							// 强制升级
+							Intent intent = new Intent();
+							if (mode == 1) {
+								intent.setClassName("com.dbstar", "com.dbstar.app.alert.GDForceUpgradeActivity");
+							} else {
+								intent.setClassName("com.dbstar", "com.dbstar.app.alert.GDUpgradeActivity");
+							}
+							intent.putExtra("packge_file", "/cache/upgrade.zip");
+							context.startActivity(intent);
+						} else {
+							LogUtil.d("SysUpgradeSettingsViewWrapper", " save file failed!");
+							btnOnline.setEnabled(true);
+							txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));				
+							fileTotalSize = 0;
+						} 
+					}
+				};
+				SimpleWorkPoolInstance.instance().execute(work);
+			}
+		}
 	}
 	
 	private class LocalUpgradeTask extends AsyncTask<Void, Void, ArrayList<String>> {
@@ -256,11 +366,11 @@ public class SysUpgradeSettingsViewWrapper {
 			super.onPostExecute(arrayList);
 			
 			if (arrayList != null && arrayList.size() > 0) {
-				LogUtil.d("SysUpgradeSettingsViewWrapper", " accept()----arrayList.size() = " + arrayList.size());																					
+//				LogUtil.d("SysUpgradeSettingsViewWrapper", " accept()----arrayList.size() = " + arrayList.size());																					
 				if (!arrayList.contains("m6_cytc_update.zip")) {
 					btnLocal.setEnabled(false);
 					btnOnline.setEnabled(false);
-					checkOnlineUpgradeFile();
+					checkOnlineUpgradeFile(deviceModel, productSN, softVersion);
 					return;
 				} else {
 					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_need_upgrade));
@@ -273,67 +383,10 @@ public class SysUpgradeSettingsViewWrapper {
 			} else {				
 				btnLocal.setEnabled(false);
 				btnOnline.setEnabled(false);
-				checkOnlineUpgradeFile();
+				checkOnlineUpgradeFile(deviceModel, productSN, softVersion);
 			}
 		}
 	}
-
-	private UpgradeInfo parseUpgradeEntity(HttpEntity entity) {
-		UpgradeInfo upgradeInfo = new UpgradeInfo();
-		
-		if (entity == null) {
-			return null;
-		}
-		
-		try {
-			String entiryString = EntityUtils.toString(entity, "UTF-8");
-			JSONObject jsonObject = new JSONObject(entiryString);
-			JSONObject json = jsonObject.getJSONObject("Response");
-			JSONObject jsonObj = json.getJSONObject("Body");
-			JSONArray array = jsonObj.getJSONArray("Vapks");
-			JSONObject object = json.getJSONObject("Header");
-			
-			int rc = object.getInt("RC");
-			upgradeInfo.setRc(rc);
-			String rm = object.getString("RM");
-			upgradeInfo.setRm(rm);
-			
-			List<Vapks> vapksList = new ArrayList<Vapks>();
-			if (rc == 0) {
-				for (int i = 0; i < array.length(); i++) {
-					Vapks vapks = new Vapks();
-					JSONObject obj = array.getJSONObject(i);
-					int compressType = obj.getInt("COMPRESSTYPE");
-					vapks.setCompressType(compressType);
-					String profileUrl = obj.getString("PROFILEURL");
-					vapks.setProfileUrl(profileUrl);
-					String version = obj.getString("VERSION");
-					vapks.setVersion(version);
-					String remake = obj.getString("REMARK");
-					vapks.setRemake(remake);
-					double profileSize = obj.getDouble("PROFILESIZE");
-					vapks.setProfileSize(profileSize);
-					String vapk = obj.getString("VAPK");
-					vapks.setVapk(vapk);
-					int upgradeMode = obj.getInt("UPGRADEMODE");
-					vapks.setUpgradeMode(upgradeMode);
-					String apkProfileName = obj.getString("APKPROFILENAME");
-					vapks.setApkProfileName(apkProfileName);
-					vapksList.add(vapks);
-				}
-			}
-			upgradeInfo.setVapksList(vapksList);
-		} catch (ParseException e) {
-			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
-		} catch (IOException e) {
-			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
-		} catch (JSONException e) {
-			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
-		}
-		
-		return upgradeInfo;
-	}
-	
 
 	private ArrayList<String> CheckLocalUpgradeFile() {
 		final ArrayList<String> arrayList = new ArrayList<String>();
@@ -378,14 +431,7 @@ public class SysUpgradeSettingsViewWrapper {
 		return arrayList;
 	}
 	
-	private void checkOnlineUpgradeFile() {
-		
-//		GDDataModel dataModel = new GDDataModel();
-//		GDSystemConfigure configure = new GDSystemConfigure();
-//		dataModel.initialize(configure);
-//		String productSN = dataModel.getDeviceSearialNumber();
-//		String  deviceModel = dataModel.getHardwareType();
-//		final String  softVersion = dataModel.getSoftwareVersion();
+	private void checkOnlineUpgradeFile(String deviceModel,String productSN, final String softVersion) {
 		
 		String mac = SettingUtils.getLocalMacAddress(true);
 		
@@ -412,7 +458,7 @@ public class SysUpgradeSettingsViewWrapper {
 			
 			@Override
 			public UpgradeInfo processResult(HttpEntity entity) {
-				return parseUpgradeEntity(entity);
+				return SettingUtils.parseUpgradeEntity(entity);
 			}
 			
 			@Override
@@ -433,56 +479,15 @@ public class SysUpgradeSettingsViewWrapper {
 					
 					LogUtil.d("SysUpgradeSettingsViewWrapper", "softVersion = " + softVersion);
 					
-					// 判断版本号，如果取出的版本号大于本地的，就升级
-					if (softVersion == null || softVersion.equals("")) {
-						isNeedUpgrade = true;
-					} else {
-						String[] localSoft = softVersion.split("\\.");
-						LogUtil.d("SysUpgradeSettingsViewWrapper", "localSoft.length = " + localSoft.length);
-						List<Vapks> vapksList = upgradeInfo.getVapksList();
-						if (vapksList != null && vapksList.size() > 0) {						
-							// 只处理一个，这样写只是因为数据结果定义成了多个，其实只有一个升级包
-							for (Vapks vapks : vapksList) {
-								String newVersion = vapks.getVersion();
-								LogUtil.d("SysUpgradeSettingsViewWrapper", "newVersion = " + newVersion);
-								if (newVersion != null && !newVersion.equals("")) {
-									String[] newSoft = newVersion.split("\\.");							
-									 Pattern pattern = Pattern.compile("[0-9]*"); 
-									for (int i = 0; i < newSoft.length; i++) {
-										boolean isNum = pattern.matcher(localSoft[i]).matches();
-										if (isNum) {
-											if (Integer.parseInt(localSoft[i]) < Integer.parseInt(newSoft[i])) {
-												isNeedUpgrade = true;
-												LogUtil.d("SysUpgradeSettingsViewWrapper", "Integer.parseInt(localSoft[" + i + "]) = " 
-														+ Integer.parseInt(localSoft[i]) + " < Integer.parseInt(newSoft[" + i + "]) = " 
-														+ Integer.parseInt(newSoft[i]) + " (need upgrade)");											
-												break;
-											} else if(Integer.parseInt(localSoft[i]) > Integer.parseInt(newSoft[i])) {
-												isNeedUpgrade = false;
-												LogUtil.d("SysUpgradeSettingsViewWrapper", "Integer.parseInt(localSoft[" + i + "]) = " 
-														+ Integer.parseInt(localSoft[i]) + " > Integer.parseInt(newSoft[" + i + "]) = " 
-														+ Integer.parseInt(newSoft[i]) + " (no need upgrade)");											
-												break;
-											}
-										} else {
-											isNeedUpgrade = true;
-											LogUtil.d("SysUpgradeSettingsViewWrapper", "--version is invalid----need upgrade!");											
-											break;
-										}
-									}
-								} else {
-									isNeedUpgrade = false;
-									LogUtil.d("SysUpgradeSettingsViewWrapper", "need not upgrade!");											
-								}
-							}
-						}						
-					}
+					isNeedUpgrade = SettingUtils.compareSoftVersionAndIsOrNotUpgrade(softVersion, upgradeInfo, isNeedUpgrade);
 					
 					LogUtil.d("SysUpgradeSettingsViewWrapper", "isNeedUpgrade = " + isNeedUpgrade);											
 					if (!isNeedUpgrade) {
+						isNeedSysUpgrade = false;
 						btnOnline.setEnabled(false);
 						txtPercent.setText(context.getString(R.string.page_sysUpgrade_neednot_upgrade));
 					} else {
+						isNeedSysUpgrade = true;
 						txtPercent.setText(context.getString(R.string.page_sysUpgrade_need_upgrade));				
 						btnOnline.setEnabled(true);
 						btnOnline.requestFocus();
@@ -512,4 +517,5 @@ public class SysUpgradeSettingsViewWrapper {
 		
 		SimpleWorkPoolInstance.instance().execute(work);
 	}
+
 }
