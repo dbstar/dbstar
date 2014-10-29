@@ -42,8 +42,11 @@ import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.app.adapter.GalleryAdapter;
+import com.dbstar.app.alert.GDForceUpgradeActivity;
+import com.dbstar.app.alert.GDUpgradeActivity;
 import com.dbstar.app.components.FlashGallery;
 import com.dbstar.app.launcher.GDLauncherActivity;
+import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.bean.ImageSet;
 import com.dbstar.bean.QueryPoster;
 import com.dbstar.bean.QueryPosterData;
@@ -53,15 +56,16 @@ import com.dbstar.http.HttpConnect;
 import com.dbstar.http.SimpleWorkPool.ConnectWork;
 import com.dbstar.http.SimpleWorkPool.ReadSDCardData;
 import com.dbstar.http.SimpleWorkPool.SimpleWorkPoolInstance;
+import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDiskInfo;
 import com.dbstar.model.GDDiskInfo.DiskInfo;
 import com.dbstar.service.DeviceInitController;
-import com.dbstar.service.GDDataProviderService;
+import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.util.Constants;
 import com.dbstar.util.DbstarUtil;
 import com.dbstar.util.LogUtil;
 
-public class DbstarOTTActivity extends GDBaseActivity {
+public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationObserver{
 
 	public static final String ColumnIDCNTV = "L97";
 	
@@ -100,7 +104,7 @@ public class DbstarOTTActivity extends GDBaseActivity {
 	
 	private IMountService mMountService = null;
 	
-	private Intent intentSer; 
+//	private Intent intentSer; 
 	private GalleryTask task;
 	private Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -189,6 +193,7 @@ public class DbstarOTTActivity extends GDBaseActivity {
 								if (file.canWrite()) {
 									fileCanWrite = true;
 									LogUtil.d("DbstarOTTActivity", "storage " + defaultStorage + "is ready at loop " + i);
+									break;
 								} else {
 									LogUtil.d("DbstarOTTActivity", "storage " + defaultStorage + "is not ready at loop " + i);
 								}
@@ -243,9 +248,9 @@ public class DbstarOTTActivity extends GDBaseActivity {
 			}
 		}
 		
-		intentSer = new Intent();
-		intentSer.setClass(this, GDDataProviderService.class);
-		startService(intentSer);
+//		intentSer = new Intent();
+//		intentSer.setClass(this, GDDataProviderService.class);
+//		startService(intentSer);
 		
 		startService(new Intent("com.settings.service.action.OTTSettingsModeService"));
 		startService(new Intent(this, DbstarService.class));
@@ -259,7 +264,7 @@ public class DbstarOTTActivity extends GDBaseActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		stopService(intentSer);
+//		stopService(intentSer);
 		stopService(new Intent(this, DbstarService.class));
 		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
 		stopService(new Intent("com.settings.service.action.OTTSettingsModeService"));
@@ -360,11 +365,6 @@ public class DbstarOTTActivity extends GDBaseActivity {
 			}
 		};
 		SimpleWorkPoolInstance.instance().execute(readWork);
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
 	}
 	
 	@Override
@@ -940,5 +940,75 @@ public class DbstarOTTActivity extends GDBaseActivity {
 			}
 		}
 	};
+	
+	@Override
+	protected void onServiceStart() {
+		super.onServiceStart();
+		mService.registerAppObserver(this);
+	}
+	
+	@Override
+	public void initializeApp() {
+	}
+
+	@Override
+	public void deinitializeApp() {
+	}
+
+	@Override
+	public void handleNotifiy(int what, Object data) {
+		LogUtil.d("DbstarOTTActivity", " in DbstarOTTActivity handleNotifiy, what = " + what);
+		switch (what) {
+			case GDCommon.MSG_DISK_SPACEWARNING: {
+				String disk = (String) data;
+				if (disk != null && !disk.isEmpty()) {
+					Intent intent = new Intent();
+					intent.putExtra(GDCommon.KeyDisk, disk);
+					intent.setClass(this, GDDiskManagementActivity.class);
+				}
+				break;
+			}
+			case GDCommon.MSG_SYSTEM_FORCE_UPGRADE:
+				notifyUpgrade((String) data, true);
+				break;
+			case GDCommon.MSG_SYSTEM_UPGRADE:
+				notifyUpgrade((String) data, false);
+				break;
+			default:
+				break;
+		}
+	}
+
+	@Override
+	public void handleEvent(int type, Object event) {
+	}
     
+	private Handler mUIUpdateHandler = new Handler();
+	String mUpgradePackageFile = "";
+	boolean mForcedUpgrade;
+	
+	void notifyUpgrade(String packageFile, boolean forced) {
+
+		mForcedUpgrade = forced;
+		mUpgradePackageFile = packageFile;
+		if (mUpgradePackageFile == null) {
+			mUpgradePackageFile = "";
+		}
+
+		mUIUpdateHandler.post(new Runnable() {
+
+			@Override
+			public void run() {
+				Intent intent = new Intent();
+				intent.putExtra(GDCommon.KeyPackgeFile, mUpgradePackageFile);
+				if (mForcedUpgrade) {
+					intent.setClass(DbstarOTTActivity.this, GDForceUpgradeActivity.class);
+				} else {
+					intent.setClass(DbstarOTTActivity.this, GDUpgradeActivity.class);
+				}
+				startActivity(intent);
+			}
+
+		});
+	}
 }
