@@ -360,7 +360,7 @@ service dhcpcd_p2p /system/bin/dhcpcd -aABKL
     disabled
     oneshot
 
-service dhcpcd_eth0 /system/bin/dhcpcd -BK -f/system/etc/dhcpcd/dhcpcd.conf
+service dhcpcd_eth0 /system/bin/dhcpcd -BK -f /system/etc/dhcpcd/dhcpcd.conf
     class main
     disabled
     oneshot
