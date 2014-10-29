@@ -215,8 +215,6 @@ static void* loader_thread()
 	FILE *fp = fopen(UPGRADEFILE_IMG,"r");
 	int ret;
 	unsigned int len = 0,wlen = 0,rlen = 0;
-	DBSTAR_CMD_MSG_E upgrade_msg_id = UPGRADE_NEW_VER;
-	char upgrade_msg[128];
 
 reLoader:
 	while (loaderAction == 0)
@@ -294,30 +292,33 @@ reLoader:
 	if (!cfp)
 		return NULL;
 	//2 set upgrade mark
-	DEBUG("g_loaderInfo.download_type: [%s], g_loaderInfo.file_type=[%s]\n", g_loaderInfo.download_type, g_loaderInfo.file_type);
-	if (0==strcmp(g_loaderInfo.download_type,"1"))
+	DEBUG("g_loaderInfo.download_type: %s\n", g_loaderInfo.download_type);
+	if (strcmp(g_loaderInfo.download_type,"1"))
 	{
 		//must upgrade,display upgrade info, wait 5 second, set uboot mark and then reboot
+		char msg[128];
 		
+		DEBUG("g_loaderInfo.file_type=%s\n", g_loaderInfo.file_type);
 		if (strcmp(g_loaderInfo.file_type,"1"))
 		{
 //			fprintf(cfp,"--update_package=%s\n",UPGRADEFILE_ALL);
 			//              fprintf(cfp,"--wipe_data\n");
 			//              fprintf(cfp,"--wipe_cache\n");
 			fprintf(cfp,"--orifile=%s\n",UPGRADEFILE_IMG);
-			//snprintf(upgrade_msg, sizeof(upgrade_msg),"%d.%d.%d.%d",software_version[0],software_version[1],software_version[2],software_version[3]);
+			//snprintf(msg, sizeof(msg),"%d.%d.%d.%d",software_version[0],software_version[1],software_version[2],software_version[3]);
 			fprintf(cfp,"%s\n",software_version);
-			snprintf(upgrade_msg, sizeof(upgrade_msg),"%s",UPGRADEFILE_IMG);
+			snprintf(msg, sizeof(msg),"%s",UPGRADEFILE_IMG);
 		}
 		else
 		{
-			snprintf(upgrade_msg, sizeof(upgrade_msg),"%s",UPGRADEFILE_IMG);
+			snprintf(msg, sizeof(msg),"%s",UPGRADEFILE_IMG);
 		}
-		upgrade_msg_id = UPGRADE_NEW_VER_FORCE;
+		msg_send2_UI(UPGRADE_NEW_VER_FORCE, msg, strlen(msg));
 	}
 	else
 	{
 		//display info and ask to upgrade right now?
+		char msg[128];
 
 		if (strcmp(g_loaderInfo.file_type,"1"))
 		{
@@ -325,19 +326,18 @@ reLoader:
 			//                fprintf(cfp,"--wipe_data\n");
 			//                fprintf(cfp,"--wipe_cache\n");
 			fprintf(cfp,"--orifile=%s\n",UPGRADEFILE_IMG);
-			//snprintf(upgrade_msg, sizeof(upgrade_msg),"%d.%d.%d.%d",software_version[0],software_version[1],software_version[2],software_version[3]);
+			//snprintf(msg, sizeof(msg),"%d.%d.%d.%d",software_version[0],software_version[1],software_version[2],software_version[3]);
 			fprintf(cfp,"%s\n",software_version);
 
-			snprintf(upgrade_msg, sizeof(upgrade_msg),"%s",UPGRADEFILE_IMG);
+			snprintf(msg, sizeof(msg),"%s",UPGRADEFILE_IMG);
 		}
 		else
 		{
-			snprintf(upgrade_msg, sizeof(upgrade_msg),"%s",UPGRADEFILE_IMG);
+			snprintf(msg, sizeof(msg),"%s",UPGRADEFILE_IMG);
 		}
-		upgrade_msg_id = UPGRADE_NEW_VER;
+		msg_send2_UI(UPGRADE_NEW_VER, msg, strlen(msg));
 	}
 	fclose(cfp);
-	msg_send2_UI(upgrade_msg_id, upgrade_msg, strlen(upgrade_msg));
 	
 	//upgrade_sign_set();
 	

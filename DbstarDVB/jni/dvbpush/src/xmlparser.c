@@ -69,6 +69,7 @@ static int xmluri_get(int pushflag, char *xmluri, unsigned int urisize)
  向全局信息表Global中插入或更新数据
  此函数调用处应当封装为事务。
 */
+/*
 static int global_insert(DBSTAR_GLOBAL_S *p)
 {
 	if(NULL==p || 0==strlen(p->Name) || 0==strlen(p->Value)){
@@ -83,6 +84,7 @@ static int global_insert(DBSTAR_GLOBAL_S *p)
 	
 	return sqlite_transaction_exec(sqlite_cmd);
 }
+*/
 
 // 向指定的主数据库中插入serviceID等与终端而不是存储设备有关的信息
 static int device_global_insert(DBSTAR_GLOBAL_S *p)
@@ -565,7 +567,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		DEBUG("ptr->TotalSize: %s, this_total_size=%llu,s_recv_totalsize_sum=%llu\n", ptr->TotalSize,this_total_size,s_recv_totalsize_sum);
 		
 		if(1!=motherdisc_processing()){
-			if(RECEIVETYPE_PREVIEW==ptr->ReceiveType){
+			if(RECEIVETYPE_PREVIEW==strtol(ptr->ReceiveType,NULL,10)){
 				DEBUG("preview %s dont reset before receive\n", ptr->ID);
 			}
 			else{

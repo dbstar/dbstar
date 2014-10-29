@@ -398,8 +398,8 @@ MULTITASK_START:
         
         if(free_size<=RECVFROM_MIN)
         {
-        	PRINTF("free_size=%d, %d,%d, multi buf is full\n", free_size, p_read, p_write);
-        	usleep(20000);
+//        	PRINTF("free_size=%d, %d,%d, multi buf is full\n", free_size, p_read, p_write);
+        	usleep(200000);
         	continue;
         }
         //PRINTF("free_size=%d",free_size);
