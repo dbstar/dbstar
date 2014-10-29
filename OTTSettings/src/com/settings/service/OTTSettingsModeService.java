@@ -86,6 +86,11 @@ public class OTTSettingsModeService extends Service{
 			deviceModel = "02";
 		}
 
+		File file = new File(SettingUtils.IsUpgrading_File);
+		if (file.exists()) {
+			file.delete();
+		}
+		
 		handler = new Handler() {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
@@ -296,20 +301,26 @@ public class OTTSettingsModeService extends Service{
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 				intent.setClassName("com.dbstar", "com.dbstar.app.alert.GDUpgradeActivity");
 				startActivity(intent);
-				LogUtil.d("OTTSettingsService", "-----to  GDUpgradeActivity!");
+				LogUtil.d("OTTSettingsModeService", "-----to  GDUpgradeActivity!");
 			} else {
 				boolean isNetworkAvailable = SettingUtils.isNetworkAvailable(getApplicationContext());
+				boolean isUpgrading = SettingUtils.readIsUpgrade();
+				LogUtil.d("OTTSettingsModeService", "SettingUtils.readUpgradeFile() = " + isUpgrading);
 				
 				if (isNetworkAvailable) {
-					checkSysUpgradeFile();
-					fileTotalSize = 1024000;
-				}
-				LogUtil.d("OTTSettingsService", "-----isUpgrading = " + isNetworkAvailable + ", fileTotalSize" + fileTotalSize);
+					if (!isUpgrading) {
+						checkSysUpgradeFile();
+						fileTotalSize = 1024000;						
+						LogUtil.d("OTTSettingsModeService", "-----isUpgrading = " + isNetworkAvailable + ", fileTotalSize" + fileTotalSize);
+						
+						Intent intent = new Intent("com.settings.sysUpgrade");
+						intent.putExtra("isUpgrading", isUpgrading);
+						intent.putExtra("fileTotalSize", fileTotalSize);
+						sendBroadcastAsUser(intent, UserHandle.ALL);
+					}
+				} else
+					SettingUtils.save0ToFile();
 				
-				Intent intent = new Intent("com.settings.sysUpgrade");
-				intent.putExtra("isUpgrading", isNetworkAvailable);
-				intent.putExtra("fileTotalSize", fileTotalSize);
-				sendBroadcastAsUser(intent, UserHandle.ALL);
 			}
 		}
 	}
@@ -327,16 +338,26 @@ public class OTTSettingsModeService extends Service{
 				@Override
 				public boolean accept(File pathname) {
 					String fileNmae = pathname.getName();
-//					String filePath = pathname.getPath();
+					String filePath = pathname.getPath();
 					if (fileNmae.startsWith("command")) {
 //						LogUtil.d("OTTSettingsModeService", "-----accept()----filePath = " + filePath);
 //						LogUtil.d("OTTSettingsModeService", "-----accept()----fileNmae = " + fileNmae);
 //						LogUtil.d("OTTSettingsModeService", "-----command file exists! ");
 
 						// if /cache/command0 or /cache/command1 exist, return true
-						return true;
+						File file = new File(filePath);
+						if (file.exists()) {
+							if (file.length() > 0) {
+								LogUtil.d("OTTSettingsModeService", "upgrade command exists!");						
+								return true;
+							} else {
+								LogUtil.d("OTTSettingsModeService", "upgrade command exists but length=0");		
+								return false;
+							}
+						} else
+							return false;
 					} else {
-//						LogUtil.d("OTTSettingsModeService", "-----command file is not exists! ");						
+						LogUtil.d("OTTSettingsModeService", "upgrade command is not exists!");						
 						return false;
 					}
 				}

@@ -59,7 +59,7 @@ import com.settings.service.OTTSettingsModeService;
 
 public class SettingUtils {
 
-	private static final String IsUpgrading_File = "/data/dbstar/isupgrade.upgrade";
+	public static final String IsUpgrading_File = "/data/dbstar/isupgrade.upgrade";
 	public static final String Sys_Upgrade_Settings_Progress = "sysUpgradeSettingsProgress";
 	public static final String Sys_Auto_Upgrade_Settings_Progress = "sysAutoUpgradeSettingsProgress";
 
@@ -93,7 +93,7 @@ public class SettingUtils {
 			if (info != null) {
 				for (int i = 0; i < info.length; i++) {
 					if (info[i].getState() == NetworkInfo.State.CONNECTED || info[i].getState() == NetworkInfo.State.CONNECTING) {
-						LogUtil.i("NetWorkState", "Availabel");
+//						LogUtil.i("NetWorkState", "Availabel");
 						return true;
 					}
 				}
@@ -487,6 +487,10 @@ public class SettingUtils {
 					}
 					pin_recv = has_recv;
 				}
+				
+//				if (!isNetworkAvailable(context)) {
+//					save0ToFile();
+//				}
 			}
 			
 			fos.flush();
@@ -538,8 +542,10 @@ public class SettingUtils {
 			// 将“0”写进
 			save0ToFile();
 		} catch (FileNotFoundException e) {
+			save0ToFile();
 			e.printStackTrace();
 		} catch (IOException e) {
+			save0ToFile();
 			e.printStackTrace();
 		}
 		return false;
