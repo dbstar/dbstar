@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,6 +15,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -79,6 +82,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final String ROOT_COLUMN_PARENTID = "-1";
 	private static final int REQUEST_POWER_TARGET_ACTIVITY_RESULT = 1;
 	private static final int START_NETWORKSETTING_ACTIVITY_RESULT = 2;
+	private static final int START_SETTINGS_ACTIVITY_RESULT = 3;
+	
+	private long lastClick = 0l;
 	
 	private String mColumnBookId, mColumnMagazineId, mColumnNewsPaperId, mColumnVoiceBookId;
 	
@@ -169,7 +175,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mService.registerAppObserver(this);
 
 		initializeData();
-//		startEngine();
+		startEngine();
 		if(APPVersion.GUODIAN){
 			if(mPowerController != null)
 			    mPowerController.start(mService);
@@ -265,9 +271,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 	private boolean mIsAnimationRunning = false;
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		lastClick = System.currentTimeMillis();
 		//LogUtil.d(TAG, "==== onKeyDown = " + keyCode);
 		mIsAnimationRunning = isAnimationRunning();
 		if (mIsAnimationRunning) {
+			lastClick = System.currentTimeMillis();
 			return true;
 		}
 		
@@ -314,6 +322,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		lastClick = System.currentTimeMillis();
 		if (mIsAnimationRunning) {
 			return true;
 		}
@@ -698,7 +707,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		if (intent != null) {
 			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-			startActivity(intent);
+//			startActivity(intent);
+			startActivityForResult(intent, START_SETTINGS_ACTIVITY_RESULT);
 		}
 	}
 
@@ -713,6 +723,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	            if(isFinishSet){
 	                DeviceInitController.handleBootFirstTime();
 	            }
+	    } else if (requestCode == START_SETTINGS_ACTIVITY_RESULT) {
+//	    	tag = false;
+//	    	startEngine();
 	    }
 	}
 	private void showGuodianApp(String columnId) {
@@ -1865,15 +1878,47 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		});
 	}
 
+	boolean tag = false;
+	Handler handler = new Handler(){
+		@Override
+		public void handleMessage(Message msg) {
+			super.handleMessage(msg);
+				if (msg.what == 10) {
+					if (System.currentTimeMillis() - lastClick > 10 * 1000l) {
+						LogUtil.d(TAG, "lastClick - System.currentTimeMillis() = " + (System.currentTimeMillis() - lastClick));
+						tag = true;
+						mMediaScheduler.start(mService);			
+					}
+				}
+		}
+	};
+	
 	private void startEngine() {
-		mMediaScheduler.start(mService);
-		if(mPowerController != null){
-			LogUtil.d(TAG, "do mPowerController.start(mService)");
-			mPowerController.start(mService);
-		}
-		else{
-			LogUtil.d(TAG, "do nothing for smarthome for startEngine");
-		}
+		final Timer timer = new Timer();
+		TimerTask timerTask = new TimerTask() {
+			
+			@Override
+			public void run() {
+				handler.sendEmptyMessage(10);
+//				LogUtil.d(TAG, "---------------in handler--------------------tag = " + tag);
+				if (tag && timer != null) {
+					timer.cancel();
+				}
+			}
+		};
+		
+//		LogUtil.d(TAG, "-----------------------------------tag = " + tag);
+		
+		if (!tag) {
+			timer.schedule(timerTask, 5000, 1000);
+		} 
+//		if(mPowerController != null){
+//			LogUtil.d(TAG, "do mPowerController.start(mService)");
+//			mPowerController.start(mService);
+//		}
+//		else{
+//			LogUtil.d(TAG, "do nothing for smarthome for startEngine");
+//		}
 		checkSmartcardStatus();
 	}
 

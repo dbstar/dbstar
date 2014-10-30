@@ -38,12 +38,19 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 			mLoaderVersion, mMacAddress;
 	private String mUpgradeCount;
 	private String mDiskSize, mDiskUsed, mDiskSpace;
+	
+	GDDataModel dataModel;
+	GDSystemConfigure configure;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.generalinfo_view);
 
+		dataModel = new GDDataModel();
+		configure = new GDSystemConfigure();
+		dataModel.initialize(configure);
+		
 		initializeView();
 
 		Intent intent = getIntent();
@@ -102,10 +109,6 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	}
 	
 	public void updateSettings(String key, String value) {
-		GDDataModel dataModel = new GDDataModel();
-		GDSystemConfigure configure = new GDSystemConfigure();
-		dataModel.initialize(configure);
-		
 		if (key.equals(GDSettings.SettingDeviceSerialNumber)) {
 //			mDeviceSerialNumber += value;
 //			mDeviceSerialNumberView.setText(mDeviceSerialNumber);

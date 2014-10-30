@@ -412,7 +412,7 @@ public class DbstarUtil {
 					}
 					lastToAgreement = System.currentTimeMillis();
 					Intent intent = new Intent();
-					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
+					intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					intent.setClass(context.getApplicationContext(), UserAgreementActivity.class);
 					context.startActivity(intent);
 				}

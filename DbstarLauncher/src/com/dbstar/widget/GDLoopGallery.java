@@ -70,7 +70,7 @@ public class GDLoopGallery extends GDAbsSpinner {
      * How long the transition animation should run when a child view changes
      * position, measured in milliseconds.
      */
-    private int mAnimationDuration = 400;
+    private int mAnimationDuration = 300;
 
     /**
      * The alpha of items that are not selected.
@@ -923,7 +923,7 @@ public class GDLoopGallery extends GDAbsSpinner {
         
         boolean mStartFling = false;
         boolean mToLeft = false;
-        int mFrameRate = 10;
+        int mFrameRate = 2;
         int mFrameInterval;
         long mStartTime = 0;
         int mDisctance = 0;

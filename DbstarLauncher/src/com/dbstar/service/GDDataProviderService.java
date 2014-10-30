@@ -660,481 +660,483 @@ public class GDDataProviderService extends Service {
 			
 			int msgId = msg.what;
 			switch (msgId) {
-			case GDCommon.MSG_TASK_FINISHED: {
-				// RequestTask task = dequeueFinishedTask();
-				RequestTask task = (RequestTask) msg.obj;
-
-				if (task != null) {
-					handleTaskFinished(task);
-				}
-
-				break;
-			}
-
-			case GDCommon.MSG_MEDIA_MOUNTED: {
-				Bundle data = msg.getData();
-				String disk = data.getString("disk");
-
-				// check whether the disk is mounted.
-				mConfigure.configureStorage();
-				String storage = mConfigure.getStorageDisk();
-				LogUtil.d(TAG, "MSG_MEDIA_MOUNTED, disk: " + disk + ", storage: " + storage );
-				if (disk.equals(storage)) {
-					// disk is mounted
-					mIsStorageReady = true;
-					String dir = mConfigure.getStorageDir();
-					LogUtil.d(TAG, "getStorageDir() dir === " + dir);
-					if (mIsDbServiceStarted) {
-						LogUtil.d(TAG, "dvbpush id started already, do not setPushDir()");
-					} else {
-						LogUtil.d(TAG, "setPushDir(" + dir + ") in onCreate() already;");
-						//mDataModel.setPushDir(dir); // Zhang Shiyun: do setPushDir in onCreate() instead
+				case GDCommon.MSG_TASK_FINISHED: {
+					// RequestTask task = dequeueFinishedTask();
+					RequestTask task = (RequestTask) msg.obj;
+	
+					if (task != null) {
+						handleTaskFinished(task);
 					}
-
+	
+					break;
+				}
+	
+				case GDCommon.MSG_MEDIA_MOUNTED: {
+					Bundle data = msg.getData();
+					String disk = data.getString("disk");
+	
+					// check whether the disk is mounted.
+					mConfigure.configureStorage();
+					String storage = mConfigure.getStorageDisk();
+					LogUtil.d(TAG, "MSG_MEDIA_MOUNTED, disk: " + disk + ", storage: " + storage );
+					if (disk.equals(storage)) {
+						// disk is mounted
+						mIsStorageReady = true;
+						String dir = mConfigure.getStorageDir();
+						LogUtil.d(TAG, "getStorageDir() dir === " + dir);
+						if (mIsDbServiceStarted) {
+							LogUtil.d(TAG, "dvbpush id started already, do not setPushDir()");
+						} else {
+							LogUtil.d(TAG, "setPushDir(" + dir + ") in onCreate() already;");
+							//mDataModel.setPushDir(dir); // Zhang Shiyun: do setPushDir in onCreate() instead
+						}
+	
+						//mDiskMonitor.removeDiskFromMonitor(disk);
+						//mDiskMonitor.addDiskToMonitor(disk);
+	
+						notifyDbstarServiceStorageStatus(disk);
+	
+						if (mApplicationObserver != null) {
+							// restart application
+							mApplicationObserver.initializeApp();
+						}
+					} else {
+						showDialog();
+						// U disk inserted
+						if (mIsDbServiceStarted) {
+							mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT, disk);
+						}
+					}
+	
+					break;
+				}
+	
+				case GDCommon.MSG_MEDIA_REMOVED: {
+				    
+				    if(mDialog != null && mDialog.isShowing()){
+				        mDialog.dismiss();
+				        mDialog = null;
+				    }
+				    
+					Bundle data = msg.getData();
+					String disk = data.getString("disk");
+	
 					//mDiskMonitor.removeDiskFromMonitor(disk);
-					//mDiskMonitor.addDiskToMonitor(disk);
-
-					notifyDbstarServiceStorageStatus(disk);
-
-					if (mApplicationObserver != null) {
-						// restart application
-						mApplicationObserver.initializeApp();
-					}
-				} else {
-					showDialog();
-					// U disk inserted
-					if (mIsDbServiceStarted) {
-						mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT, disk);
-					}
-				}
-
-				break;
-			}
-
-			case GDCommon.MSG_MEDIA_REMOVED: {
-			    
-			    if(mDialog != null && mDialog.isShowing()){
-			        mDialog.dismiss();
-			        mDialog = null;
-			    }
-			    
-				Bundle data = msg.getData();
-				String disk = data.getString("disk");
-
-				//mDiskMonitor.removeDiskFromMonitor(disk);
-
-				String storage = mConfigure.getStorageDisk();
-				if (disk.equals(storage)) {
-					mIsStorageReady = false;
-
-					notifyDbstarServiceStorageStatus(disk);
-
-					if (mApplicationObserver != null) {
-						mApplicationObserver.deinitializeApp();
-					}
-				} else {
-					// U disk removed
-					if (mIsDbServiceStarted) {
-						mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_UNMOUNT, disk);
-					}
-				}
-				break;
-			}
-
-			case GDCommon.MSG_NETWORK_CONNECT: {
-				LogUtil.d(TAG, " +++++++++++++ network connected +++++++++++++");
-				startDbStarService();
-				if (mChannelMode == GDCommon.EthernetMode) {
-					// single card
-					// ethernet connected
-					mIsNetworkReady = true;
-					mPeripheralController.setNetworkLedOn();
-					//startDbStarService();
-					startGuodianEngine();
-				} else {
-					// dual card
-					int type = msg.arg1;
-					if (type == GDCommon.TypeEthernet) {
-						//ethernet connected
-						if (mIsEthernetConnected) {
-							LogUtil.d(TAG, "ethernet is connected already!");
-							return;
+	
+					String storage = mConfigure.getStorageDisk();
+					if (disk.equals(storage)) {
+						mIsStorageReady = false;
+	
+						notifyDbstarServiceStorageStatus(disk);
+	
+						if (mApplicationObserver != null) {
+							mApplicationObserver.deinitializeApp();
 						}
-						
-						mIsEthernetConnected = true;
-						if (mIsWirelessConnected) {
-							// remove Ethernet gateway.
-							NativeUtil.shell("ip route del dev eth0");
-						}
-						
 					} else {
-						// wifi connected
-						if (mIsWirelessConnected) {
-							LogUtil.d(TAG, "ethernet is connected already!");
-							return;
+						// U disk removed
+						if (mIsDbServiceStarted) {
+							mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_UNMOUNT, disk);
 						}
-						
-						mIsWirelessConnected = true;
-						if (mIsEthernetConnected) {
-							// remove Ethernet gateway.
-							NativeUtil.shell("ip route del dev eth0");
-						}
-
+					}
+					break;
+				}
+	
+				case GDCommon.MSG_NETWORK_CONNECT: {
+					LogUtil.d(TAG, " +++++++++++++ network connected +++++++++++++");
+					startDbStarService();
+					if (mChannelMode == GDCommon.EthernetMode) {
+						// single card
+						// ethernet connected
 						mIsNetworkReady = true;
-
+						mPeripheralController.setNetworkLedOn();
 						//startDbStarService();
 						startGuodianEngine();
-					}
-					
-					if (mIsWirelessConnected || mIsEthernetConnected) {
-						mPeripheralController.setNetworkLedOn();
-					}
-				}
-
-				break;
-			}
-			case GDCommon.MSG_NETWORK_DISCONNECT: {
-				LogUtil.d(TAG, "++++++++++++ network disconnected +++++++++++");
-				if (mChannelMode == GDCommon.EthernetMode) {
-					mIsNetworkReady = false;
-					mPeripheralController.setNetworkLedOff();
-					stopGuodianEngine();
-				} else {
-					int type = msg.arg1;
-					if (type == GDCommon.TypeEthernet) {
-						//ethernet connected
-						if (!mIsEthernetConnected) {
-							LogUtil.d(TAG, "ethernet is disconnected already!");
-							return;
-						}
-						
-						mIsEthernetConnected = false;
 					} else {
-						// wifi connected
-						if (!mIsWirelessConnected) {
-							LogUtil.d(TAG, "ethernet is disconnected already!");
-							return;
+						// dual card
+						int type = msg.arg1;
+						if (type == GDCommon.TypeEthernet) {
+							//ethernet connected
+							if (mIsEthernetConnected) {
+								LogUtil.d(TAG, "ethernet is connected already!");
+								return;
+							}
+							
+							mIsEthernetConnected = true;
+							if (mIsWirelessConnected) {
+								// remove Ethernet gateway.
+								NativeUtil.shell("ip route del dev eth0");
+							}
+							
+						} else {
+							// wifi connected
+							if (mIsWirelessConnected) {
+								LogUtil.d(TAG, "ethernet is connected already!");
+								return;
+							}
+							
+							mIsWirelessConnected = true;
+							if (mIsEthernetConnected) {
+								// remove Ethernet gateway.
+								NativeUtil.shell("ip route del dev eth0");
+							}
+	
+							mIsNetworkReady = true;
+	
+							//startDbStarService();
+							startGuodianEngine();
 						}
 						
-						mIsWirelessConnected = false;
-
+						if (mIsWirelessConnected || mIsEthernetConnected) {
+							mPeripheralController.setNetworkLedOn();
+						}
+					}
+	
+					break;
+				}
+				case GDCommon.MSG_NETWORK_DISCONNECT: {
+					LogUtil.d(TAG, "++++++++++++ network disconnected +++++++++++");
+					if (mChannelMode == GDCommon.EthernetMode) {
 						mIsNetworkReady = false;
-
-						stopGuodianEngine();
-					}
-					
-					if (!mIsWirelessConnected && !mIsEthernetConnected) {
 						mPeripheralController.setNetworkLedOff();
+						stopGuodianEngine();
+					} else {
+						int type = msg.arg1;
+						if (type == GDCommon.TypeEthernet) {
+							//ethernet connected
+							if (!mIsEthernetConnected) {
+								LogUtil.d(TAG, "ethernet is disconnected already!");
+								return;
+							}
+							
+							mIsEthernetConnected = false;
+						} else {
+							// wifi connected
+							if (!mIsWirelessConnected) {
+								LogUtil.d(TAG, "ethernet is disconnected already!");
+								return;
+							}
+							
+							mIsWirelessConnected = false;
+	
+							mIsNetworkReady = false;
+	
+							stopGuodianEngine();
+						}
+						
+						if (!mIsWirelessConnected && !mIsEthernetConnected) {
+							mPeripheralController.setNetworkLedOff();
+						}
+						
 					}
-					
+	
+					break;
 				}
-
-				break;
-			}
-
-			case GDCommon.MSG_ETHERNET_PHYCONECTED: {
-				notifyDbstarServiceNetworkStatus();
-				break;
-			}
-
-			case GDCommon.MSG_ETHERNET_PHYDISCONECTED: {
-				ethernetDisconnected();
-				notifyDbstarServiceNetworkStatus();
-				break;
-			}
-			
-			case GDCommon.MSG_ETHERNET_CONNECTED: {
-				ethernetConnected();
-				break;
-			}
-			
-			case GDCommon.MSG_DISK_SPACEWARNING: {
-				Bundle data = msg.getData();
-				String disk = (String) data.get(GDCommon.KeyDisk);
-				if (mApplicationObserver != null) {
-					mApplicationObserver.handleNotifiy(
-							GDCommon.MSG_DISK_SPACEWARNING, disk);
+	
+				case GDCommon.MSG_ETHERNET_PHYCONECTED: {
+					notifyDbstarServiceNetworkStatus();
+					break;
 				}
-
-				mDBStarClient
-						.notifyDbServer(DbstarServiceApi.CMD_DISK_FOREWARNING, null);
-				break;
-			}
-
-			case GDCommon.MSG_SYSTEM_FORCE_UPGRADE:
-			case GDCommon.MSG_SYSTEM_UPGRADE: {
-				String packageFile = (String) msg.obj;
-				mApplicationObserver.handleNotifiy(msgId, packageFile);
-
-				break;
-			}
-
-			case GDCommon.MSG_USER_UPGRADE_CANCELLED: {
-				mNeedUpgrade = true;
-				mUpgradePackageFile = String.valueOf(msg.obj);
-				mDBStarClient
-						.notifyDbServer(DbstarServiceApi.CMD_UPGRADE_CANCEL, null);
-				break;
-			}
-
-			case GDCommon.MSG_ADD_TO_FAVOURITE: {
-				String publicationId = msg.getData().getString(
-						GDCommon.KeyPublicationID);
-
-				String publicationSetId = msg.getData().getString(
-						GDCommon.KeyPublicationSetID);
-
-				if (mDataModel != null) {
-					mDataModel.addPublicationToFavourite(publicationSetId,
-							publicationId);
-				}
-				break;
-			}
-			case GDCommon.MSG_DELETE: {
-				String publicationId = msg.getData().getString(
-						GDCommon.KeyPublicationID);
-
-				String publicationSetId = msg.getData().getString(
-						GDCommon.KeyPublicationSetID);
-
-				if (mDataModel != null) {
-					mDataModel.deletePublication(publicationSetId,
-							publicationId);
-
-					if (mPageOberser != null) {
-						EventData.DeleteEvent event = new EventData.DeleteEvent();
-						event.PublicationId = publicationId;
-						event.PublicationSetId = publicationSetId;
-						mPageOberser.notifyEvent(EventData.EVENT_DELETE, event);
-					}
-				}
-				break;
-			}
-			case GDCommon.MSG_SAVE_BOOKMARK: {
-				String publicationId = msg.getData().getString(
-						GDCommon.KeyPublicationID);
-
-				int bookmark = msg.getData().getInt(GDCommon.KeyBookmark);
-				if (mDataModel != null) {
-					mDataModel.savePublicationBookmark(publicationId, bookmark);
-				}
-
-				if (mPageOberser != null) {
-					EventData.UpdatePropertyEvent event = new EventData.UpdatePropertyEvent();
-					event.PublicationId = publicationId;
-					event.PropertyName = GDCommon.KeyBookmark;
-					event.PropertyValue = new Integer(bookmark);
-					mPageOberser.notifyEvent(EventData.EVENT_UPDATE_PROPERTY,
-							event);
-				}
-
-				break;
-			}
-			
-			case GDCommon.MSG_PLAY_COMPLETED: {
-				if (mPageOberser != null) {
-					EventData.PlaybackEvent event = new EventData.PlaybackEvent();
-					event.Event = GDCommon.PLAYBACK_COMPLETED;
-					mPageOberser.notifyEvent(EventData.EVENT_PLAYBACK,
-							event);
-				}
-				break;
-			}
-			case GDCommon.MSG_GET_NETWORKINFO: {
-				String[] keys = new String[5];
-				keys[0] = GDSettings.PropertyMulticastIP;
-				keys[1] = GDSettings.PropertyMulticastPort;
-				keys[2] = GDSettings.PropertyGatewaySerialNumber;
-				keys[3] = GDSettings.PropertyGatewayIP;
-				keys[4] = GDSettings.PropertyGatewayPort;
-
-				Intent intent = new Intent();
-				intent.setAction(GDCommon.ActionUpateNetworkInfo);
-
-				for (int i = 0; i < 2; i++) {
-					String value = mDataModel.queryDeviceGlobalProperty(keys[i]);
-					LogUtil.d(TAG, "for settings, queryDeviceGlobalProperty key=" + keys[i]
-							+ " value=" + value);
-					intent.putExtra(keys[i], value);
+	
+				case GDCommon.MSG_ETHERNET_PHYDISCONECTED: {
+					ethernetDisconnected();
+					notifyDbstarServiceNetworkStatus();
+					break;
 				}
 				
-				if(APPVersion.GUODIAN){
-					for (int i = 2; i < keys.length; i++) {
-						String value = mDataModel.getSettingValue(keys[i]);
-						LogUtil.d(TAG, "for settings, getSettingValue key=" + keys[i]
+				case GDCommon.MSG_ETHERNET_CONNECTED: {
+					ethernetConnected();
+					break;
+				}
+				
+				case GDCommon.MSG_DISK_SPACEWARNING: {
+					Bundle data = msg.getData();
+					String disk = (String) data.get(GDCommon.KeyDisk);
+					if (mApplicationObserver != null) {
+						mApplicationObserver.handleNotifiy(GDCommon.MSG_DISK_SPACEWARNING, disk);
+					}
+	
+					if (mDBStarClient != null) {
+						mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_FOREWARNING, null);
+					}
+					break;
+				}
+	
+				case GDCommon.MSG_SYSTEM_FORCE_UPGRADE:
+				case GDCommon.MSG_SYSTEM_UPGRADE: {
+					String packageFile = (String) msg.obj;
+					LogUtil.d(TAG, " mApplicationObserver = " + mApplicationObserver);
+					if (mApplicationObserver != null) {						
+						mApplicationObserver.handleNotifiy(msgId, packageFile);
+					}
+					break;
+				}
+	
+				case GDCommon.MSG_USER_UPGRADE_CANCELLED: {
+					mNeedUpgrade = true;
+					mUpgradePackageFile = String.valueOf(msg.obj);
+					mDBStarClient
+							.notifyDbServer(DbstarServiceApi.CMD_UPGRADE_CANCEL, null);
+					break;
+				}
+	
+				case GDCommon.MSG_ADD_TO_FAVOURITE: {
+					String publicationId = msg.getData().getString(
+							GDCommon.KeyPublicationID);
+	
+					String publicationSetId = msg.getData().getString(
+							GDCommon.KeyPublicationSetID);
+	
+					if (mDataModel != null) {
+						mDataModel.addPublicationToFavourite(publicationSetId,
+								publicationId);
+					}
+					break;
+				}
+				case GDCommon.MSG_DELETE: {
+					String publicationId = msg.getData().getString(
+							GDCommon.KeyPublicationID);
+	
+					String publicationSetId = msg.getData().getString(
+							GDCommon.KeyPublicationSetID);
+	
+					if (mDataModel != null) {
+						mDataModel.deletePublication(publicationSetId,
+								publicationId);
+	
+						if (mPageOberser != null) {
+							EventData.DeleteEvent event = new EventData.DeleteEvent();
+							event.PublicationId = publicationId;
+							event.PublicationSetId = publicationSetId;
+							mPageOberser.notifyEvent(EventData.EVENT_DELETE, event);
+						}
+					}
+					break;
+				}
+				case GDCommon.MSG_SAVE_BOOKMARK: {
+					String publicationId = msg.getData().getString(
+							GDCommon.KeyPublicationID);
+	
+					int bookmark = msg.getData().getInt(GDCommon.KeyBookmark);
+					if (mDataModel != null) {
+						mDataModel.savePublicationBookmark(publicationId, bookmark);
+					}
+	
+					if (mPageOberser != null) {
+						EventData.UpdatePropertyEvent event = new EventData.UpdatePropertyEvent();
+						event.PublicationId = publicationId;
+						event.PropertyName = GDCommon.KeyBookmark;
+						event.PropertyValue = new Integer(bookmark);
+						mPageOberser.notifyEvent(EventData.EVENT_UPDATE_PROPERTY,
+								event);
+					}
+	
+					break;
+				}
+				
+				case GDCommon.MSG_PLAY_COMPLETED: {
+					if (mPageOberser != null) {
+						EventData.PlaybackEvent event = new EventData.PlaybackEvent();
+						event.Event = GDCommon.PLAYBACK_COMPLETED;
+						mPageOberser.notifyEvent(EventData.EVENT_PLAYBACK,
+								event);
+					}
+					break;
+				}
+				case GDCommon.MSG_GET_NETWORKINFO: {
+					String[] keys = new String[5];
+					keys[0] = GDSettings.PropertyMulticastIP;
+					keys[1] = GDSettings.PropertyMulticastPort;
+					keys[2] = GDSettings.PropertyGatewaySerialNumber;
+					keys[3] = GDSettings.PropertyGatewayIP;
+					keys[4] = GDSettings.PropertyGatewayPort;
+	
+					Intent intent = new Intent();
+					intent.setAction(GDCommon.ActionUpateNetworkInfo);
+	
+					for (int i = 0; i < 2; i++) {
+						String value = mDataModel.queryDeviceGlobalProperty(keys[i]);
+						LogUtil.d(TAG, "for settings, queryDeviceGlobalProperty key=" + keys[i]
 								+ " value=" + value);
 						intent.putExtra(keys[i], value);
 					}
-				}
-
-				sendNetworkInfo(intent);
-				break;
-			}
-
-			case GDCommon.MSG_SET_NETWORKINFO: {
-				String[] keys = new String[5];
-				keys[0] = GDSettings.PropertyGatewaySerialNumber;
-				keys[1] = GDSettings.PropertyGatewayIP;
-				keys[2] = GDSettings.PropertyGatewayPort;
-				keys[3] = GDSettings.PropertyMulticastIP;
-				keys[4] = GDSettings.PropertyMulticastPort;
-
-				String[] values = new String[5];
-				Bundle data = msg.getData();
-				values[0] = data
-						.getString(GDSettings.PropertyGatewaySerialNumber);
-				values[1] = data.getString(GDSettings.PropertyGatewayIP);
-				values[2] = data.getString(GDSettings.PropertyGatewayPort);
-				values[3] = data.getString(GDSettings.PropertyMulticastIP);
-				values[4] = data.getString(GDSettings.PropertyMulticastPort);
-				
-				if(APPVersion.GUODIAN){
-					for (int i = 0; i < 3; i++) {
-						mDataModel.setSettingValue(keys[i], values[i]);
+					
+					if(APPVersion.GUODIAN){
+						for (int i = 2; i < keys.length; i++) {
+							String value = mDataModel.getSettingValue(keys[i]);
+							LogUtil.d(TAG, "for settings, getSettingValue key=" + keys[i]
+									+ " value=" + value);
+							intent.putExtra(keys[i], value);
+						}
 					}
+	
+					sendNetworkInfo(intent);
+					break;
 				}
-
-				for (int i = 3; i < keys.length; i++) {
-					mDataModel.updateDeviceGlobalProperty(keys[i], values[i]);
+	
+				case GDCommon.MSG_SET_NETWORKINFO: {
+					String[] keys = new String[5];
+					keys[0] = GDSettings.PropertyGatewaySerialNumber;
+					keys[1] = GDSettings.PropertyGatewayIP;
+					keys[2] = GDSettings.PropertyGatewayPort;
+					keys[3] = GDSettings.PropertyMulticastIP;
+					keys[4] = GDSettings.PropertyMulticastPort;
+	
+					String[] values = new String[5];
+					Bundle data = msg.getData();
+					values[0] = data
+							.getString(GDSettings.PropertyGatewaySerialNumber);
+					values[1] = data.getString(GDSettings.PropertyGatewayIP);
+					values[2] = data.getString(GDSettings.PropertyGatewayPort);
+					values[3] = data.getString(GDSettings.PropertyMulticastIP);
+					values[4] = data.getString(GDSettings.PropertyMulticastPort);
+					
+					if(APPVersion.GUODIAN){
+						for (int i = 0; i < 3; i++) {
+							mDataModel.setSettingValue(keys[i], values[i]);
+						}
+					}
+	
+					for (int i = 3; i < keys.length; i++) {
+						mDataModel.updateDeviceGlobalProperty(keys[i], values[i]);
+					}
+					break;
 				}
-				break;
-			}
-
-			case GDCommon.MSG_DATA_SIGNAL_STATUS: {
-				int hasSignal = msg.arg1;
-				if (mPageOberser != null) {
-					EventData.DataSignalEvent event = new EventData.DataSignalEvent();
-					event.hasSignal = hasSignal == GDCommon.STATUS_HASSIGNAL ? true
-							: false;
-					mPageOberser.notifyEvent(EventData.EVENT_DATASIGNAL, event);
+	
+				case GDCommon.MSG_DATA_SIGNAL_STATUS: {
+					int hasSignal = msg.arg1;
+					if (mPageOberser != null) {
+						EventData.DataSignalEvent event = new EventData.DataSignalEvent();
+						event.hasSignal = hasSignal == GDCommon.STATUS_HASSIGNAL ? true
+								: false;
+						mPageOberser.notifyEvent(EventData.EVENT_DATASIGNAL, event);
+					}
+					break;
 				}
-				break;
-			}
-
-			case GDCommon.SYNC_STATUS_TODBSERVER: {
-				syncStatusToDbServer();
-				break;
-			}
-
-			case GDCommon.MSG_UPDATE_COLUMN:
-			case GDCommon.MSG_UPDATE_PREVIEW:
-			case GDCommon.MSG_UPDATE_UIRESOURCE: {
-				if (mApplicationObserver != null) {					
-					mApplicationObserver.handleNotifiy(msgId, null);
+	
+				case GDCommon.SYNC_STATUS_TODBSERVER: {
+					syncStatusToDbServer();
+					break;
 				}
-				break;
-			}
-
-			case GDCommon.MSG_SMARTCARD_IN: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_INSERTING;
-
-				notifyDbstarServiceSDStatus();
-				// notifySmartcardStatusChange(mSmartcardState);
-				break;
-			}
-			case GDCommon.MSG_SMARTCARD_OUT: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVING;
-				notifyDbstarServiceSDStatus();
-				notifySmartcardStatusChange(mSmartcardState);
-				break;
-			}
-
-			case GDCommon.MSG_SMARTCARD_INSERT_OK: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_INSERTED;
-				LogUtil.d(TAG, "===========Smartcard========== reset ok! ");
-				notifySmartcardStatusChange(mSmartcardState);
-				break;
-			}
-
-			case GDCommon.MSG_SMARTCARD_INSERT_FAILED: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_INVALID;
-				LogUtil.d(TAG, "===========Smartcard========== invalid!");
-				notifySmartcardStatusChange(mSmartcardState);
-				break;
-			}
-
-			case GDCommon.MSG_SMARTCARD_REMOVE_OK: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVED;
-				LogUtil.d(TAG, "===========Smartcard========== remove ok!");
-				// notifySmartcardStatusChange(mSmartcardState);
-				break;
-			}
-
-			case GDCommon.MSG_SMARTCARD_REMOVE_FAILED: {
-				mSmartcardState = GDCommon.SMARTCARD_STATE_INVALID;
-				LogUtil.d(TAG, "===========Smartcard========== remove failed!");
-				// notifySmartcardStatusChange(mSmartcardState);
-				break;
-			}
-
-			case GDCommon.MSG_NEW_MAIL: {
-				notifyNewMail();
-				break;
-			}
-
-			case GDCommon.MSG_DISP_NOTIFICATION: {
-				diplayNotification((String) msg.obj);
-				break;
-			}
-			
-			case GDCommon.MSG_HIDE_NOTIFICATION: {
-				hideNotification();
-				break;
-			}
-			
-			case GDCommon.MSG_GET_ETHERNETINFO: {
-				getEthternetInfo();
-				break;
-			}
-			
-			case GDCommon.MSG_MUTE_AUDIO: {
-				mAudioController.muteAudio(msg.arg1);
-				break;
-			}
-			
-			case GDCommon.MSG_BOOT_COMPLETED: {
-				bootCompleted();
-				break;
-			}
-			
-			case GDCommon.MSG_SYSTEM_RECOVERY: {
-				handleRecoveryAction(msg.arg1, msg.obj);
-				break;
-			}
-			
-			case GDCommon.MSG_DISK_FORMAT_FINISHED: {
-				boolean successed = msg.arg1 == GDCommon.VALUE_SUCCESSED ? true : false;
-				String info = null;
-				if (!successed) {
-					info = (String) msg.obj;
+	
+				case GDCommon.MSG_UPDATE_COLUMN:
+				case GDCommon.MSG_UPDATE_PREVIEW:
+				case GDCommon.MSG_UPDATE_UIRESOURCE: {
+					if (mApplicationObserver != null) {					
+						mApplicationObserver.handleNotifiy(msgId, null);
+					}
+					break;
 				}
-		
-				handleDiskFormatResult(successed, info);
-				break;
-			}
+	
+				case GDCommon.MSG_SMARTCARD_IN: {
+					mSmartcardState = GDCommon.SMARTCARD_STATE_INSERTING;
+	
+					notifyDbstarServiceSDStatus();
+					// notifySmartcardStatusChange(mSmartcardState);
+					break;
+				}
+				case GDCommon.MSG_SMARTCARD_OUT: {
+					mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVING;
+					notifyDbstarServiceSDStatus();
+					notifySmartcardStatusChange(mSmartcardState);
+					break;
+				}
+	
+				case GDCommon.MSG_SMARTCARD_INSERT_OK: {
+					mSmartcardState = GDCommon.SMARTCARD_STATE_INSERTED;
+					LogUtil.d(TAG, "===========Smartcard========== reset ok! ");
+					notifySmartcardStatusChange(mSmartcardState);
+					break;
+				}
+	
+				case GDCommon.MSG_SMARTCARD_INSERT_FAILED: {
+					mSmartcardState = GDCommon.SMARTCARD_STATE_INVALID;
+					LogUtil.d(TAG, "===========Smartcard========== invalid!");
+					notifySmartcardStatusChange(mSmartcardState);
+					break;
+				}
+	
+				case GDCommon.MSG_SMARTCARD_REMOVE_OK: {
+					mSmartcardState = GDCommon.SMARTCARD_STATE_REMOVED;
+					LogUtil.d(TAG, "===========Smartcard========== remove ok!");
+					// notifySmartcardStatusChange(mSmartcardState);
+					break;
+				}
+	
+				case GDCommon.MSG_SMARTCARD_REMOVE_FAILED: {
+					mSmartcardState = GDCommon.SMARTCARD_STATE_INVALID;
+					LogUtil.d(TAG, "===========Smartcard========== remove failed!");
+					// notifySmartcardStatusChange(mSmartcardState);
+					break;
+				}
+	
+				case GDCommon.MSG_NEW_MAIL: {
+					notifyNewMail();
+					break;
+				}
+	
+				case GDCommon.MSG_DISP_NOTIFICATION: {
+					diplayNotification((String) msg.obj);
+					break;
+				}
+				
+				case GDCommon.MSG_HIDE_NOTIFICATION: {
+					hideNotification();
+					break;
+				}
+				
+				case GDCommon.MSG_GET_ETHERNETINFO: {
+					getEthternetInfo();
+					break;
+				}
+				
+				case GDCommon.MSG_MUTE_AUDIO: {
+					mAudioController.muteAudio(msg.arg1);
+					break;
+				}
+				
+				case GDCommon.MSG_BOOT_COMPLETED: {
+					bootCompleted();
+					break;
+				}
+				
+				case GDCommon.MSG_SYSTEM_RECOVERY: {
+					handleRecoveryAction(msg.arg1, msg.obj);
+					break;
+				}
+				
+				case GDCommon.MSG_DISK_FORMAT_FINISHED: {
+					boolean successed = msg.arg1 == GDCommon.VALUE_SUCCESSED ? true : false;
+					String info = null;
+					if (!successed) {
+						info = (String) msg.obj;
+					}
 			
-			case GDCommon.MSG_DISK_INITIALIZE: {
-				handleDiskInitMessage(msg.arg1, (String)msg.obj);
-				break;
-			}
-			
-			case GDCommon.MSG_HOMEKEY_PRESSED: {
-				handleHomeKeyPressed();
-				break;
-			}
-			
-			case GDCommon.MSG_DEVICE_INIT_FINISHED: {
-				handleDeviceInitFinished();
-				break;
-			}
-
-			case GDCommon.MSG_SYSTEM_REBOOT: {
-				handleSystemReboot();
-				break;
-			}
-
-			default:
-				break;
+					handleDiskFormatResult(successed, info);
+					break;
+				}
+				
+				case GDCommon.MSG_DISK_INITIALIZE: {
+					handleDiskInitMessage(msg.arg1, (String)msg.obj);
+					break;
+				}
+				
+				case GDCommon.MSG_HOMEKEY_PRESSED: {
+					handleHomeKeyPressed();
+					break;
+				}
+				
+				case GDCommon.MSG_DEVICE_INIT_FINISHED: {
+					handleDeviceInitFinished();
+					break;
+				}
+	
+				case GDCommon.MSG_SYSTEM_REBOOT: {
+					handleSystemReboot();
+					break;
+				}
+	
+				default:
+					break;
 			}
 		}
 
@@ -1455,281 +1457,281 @@ public class GDDataProviderService extends Service {
 				setProcessingTask(task);
 
 				switch (task.Type) {
-				case REQUESTTYPE_GETCOLUMNS: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_COLUMN_ID);
-					String columnId = String.valueOf(value);
-
-					ColumnData[] coloumns = mDataModel.getColumns(columnId);
-
-					for (int i = 0; coloumns != null && i < coloumns.length; i++) {
-						ColumnData column = coloumns[i];
-						String iconRootPath = mConfigure.getIconRootDir();
-						coloumns[i].IconNormal = mDataModel
-								.getImage(iconRootPath + "/"
-										+ column.IconNormalPath);
-						coloumns[i].IconFocused = mDataModel
-								.getImage(iconRootPath + "/"
-										+ column.IconFocusedPath);
-
-						if (coloumns[i].IconNormal == null) {
-							if (mDefaultColumnIconFile == null) {
-								mDefaultColumnIconFile = mDataModel
-										.queryGlobalProperty(GDDVBDataContract.PropertyDefaultColumnIcon);
-							}
-
+					case REQUESTTYPE_GETCOLUMNS: {
+						Object value = null;
+						value = task.Parameters.get(PARAMETER_COLUMN_ID);
+						String columnId = String.valueOf(value);
+	
+						ColumnData[] coloumns = mDataModel.getColumns(columnId);
+	
+						for (int i = 0; coloumns != null && i < coloumns.length; i++) {
+							ColumnData column = coloumns[i];
+							String iconRootPath = mConfigure.getIconRootDir();
 							coloumns[i].IconNormal = mDataModel
 									.getImage(iconRootPath + "/"
-											+ mDefaultColumnIconFile);
-						}
-					}
-
-					task.Data = coloumns;
-
-					taskFinished(task);
-					break;
-				}
-				
-				case REQUESTTYPE_GETMOVIECOUNT: {
-					String columnId = (String) task.Key;
-					int count = mDataModel.getPublicationCount(columnId);
-					task.Data = count;
-					taskFinished(task);
-					break;
-				}
-				
-				case REQUESTTYPE_GETTVCOUNT: {
-					String columnId = (String) task.Key;
-					int count = mDataModel.getPublicationSetCount(columnId);
-					task.Data = count;
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETPUBLICATION: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_COLUMN_ID);
-					String columnId = String.valueOf(value);
-
-					ContentData[] datas = mDataModel.getPublications(columnId,
-							null);
-					task.Data = datas;
-
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETPUBLICATIONSET: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_COLUMN_ID);
-					String columnId = String.valueOf(value);
-
-					ContentData[] contents = mDataModel.getPublicationSets(
-							columnId, null);
-
-					task.Data = contents;
-
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETPUBLICATIONS_OFSET: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_SET_ID);
-					String setId = String.valueOf(value);
-
-					ContentData[] contents = mDataModel.getPublicationsBySetId(
-							setId, null);
-
-					if (contents != null && contents.length > 0) {
-						for (int i = 0; i < contents.length; i++) {
-							// String xmlFile = getDetailsDataFile(contents[i]);
-							// mDataModel.getDetailsData(xmlFile, contents[i]);
-
-							mDataModel.getPublicationVAInfo(contents[i]);
-						}
-					}
-
-					task.Data = contents;
-
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETFAVORITEMOVIE:
-				case REQUESTTYPE_GETFAVORITETV:
-				case REQUESTTYPE_GETFAVORITERECORD:
-				case REQUESTTYPE_GETFAVORITEENTERTAINMENT: {
-					break;
-				}
-
-				case REQUESTTYPE_GETDETAILSDATA: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_CONTENTDATA);
-					ContentData content = (ContentData) value;
-					// String xmlFile = getDetailsDataFile(content);
-					// mDataModel.getDetailsData(xmlFile, content);
-
-					mDataModel.getPublicationVAInfo(content);
-					task.Data = content;
-
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETIMAGE: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_CONTENTDATA);
-					ContentData content = (ContentData) value;
-					String file = getThumbnailFile(content);
-
-					if (file != null && !file.isEmpty()) {
-						Bitmap image = mDataModel.getImage(file);
-						task.Data = image;
-
-						taskFinished(task);
-					}
-					break;
-				}
-
-				case REQUESTTYPE_STARTGETTASKINFO: {
-					mDBStarClient.startTaskInfo();
-					break;
-				}
-
-				case REQUESTTYPE_STOPGETTASKINFO: {
-					mDBStarClient.stopTaskInfo();
-					break;
-				}
-
-				case REQUESTTYPE_GETDOWNLOADSTATUS: {
-					ReceiveData entries = mDBStarClient.getTaskInfo();
-					task.Data = entries;
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETSMARTCARDINFO: {
-					int type = (Integer) task.Key;
-
-					Object data = mDBStarClient.getSmartcardInfo(type);
-
-					task.Data = data;
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETMAILCONTENT: {
-					String id = (String) task.Key;
-
-					Object data = mDBStarClient.getEMailContent(id);
-
-					task.Data = data;
-					taskFinished(task);
-					break;
-				}
-				
-				case REQUESTTYPE_GETPUBLICATIONDRMINFO: {
-					String id = (String) task.Key;
-
-					Object data = mDBStarClient.getPublicationDrmInfo(id);
-
-					task.Data = data;
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_MANAGECA: {
-					int type = (Integer) task.Key;
-
-					String result = mDBStarClient.manageCA(type);
-
-					task.Data = result;
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETTSSIGNALSTATUS: {
-					String status = mDBStarClient.getTSSignalStatus();
-					task.Data = status;
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_GETSETTINGS: {
-					task.Data = mDataModel.getSettingValue((String) task.Key);
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_SETSETTINGS: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_KEY);
-					String key = (String) value;
-					value = task.Parameters.get(PARAMETER_VALUE);
-					String sValue = (String) value;
-
-					mDataModel.setSettingValue(key, sValue);
-					break;
-				}
-
-				case REQUESTTYPE_GETGUIDELIST: {
-					// GuideListItem[] items = mDataModel.getGuideList();
-					GuideListItem[] items = mDataModel.getLatestGuideList();
-					task.Data = items;
-					taskFinished(task);
-					break;
-				}
-
-				case REQUESTTYPE_UPDATEGUIDELIST: {
-					mDataModel.updateGuideList((GuideListItem[]) task.Data);
-					// taskFinished(task);
-					notifyDbstarService(DbstarServiceApi.CMD_PUSH_SELECT);
-					break;
-				}
-
-				case REQUESTTYPE_GETPREVIEWS: {
-					PreviewData[] data = mDataModel.getPreviews();
-
-					ArrayList<PreviewData> previews = new ArrayList<PreviewData>();
-					if (data != null && data.length > 0) {
-
-						for (int i = 0; i < data.length; i++) {
-							String uri = getPreviewFile(data[i]);
-
-							if (uri != null && !uri.isEmpty()) {
-								data[i].FileURI = uri;
-								previews.add(data[i]);
+											+ column.IconNormalPath);
+							coloumns[i].IconFocused = mDataModel
+									.getImage(iconRootPath + "/"
+											+ column.IconFocusedPath);
+	
+							if (coloumns[i].IconNormal == null) {
+								if (mDefaultColumnIconFile == null) {
+									mDefaultColumnIconFile = mDataModel
+											.queryGlobalProperty(GDDVBDataContract.PropertyDefaultColumnIcon);
+								}
+	
+								coloumns[i].IconNormal = mDataModel
+										.getImage(iconRootPath + "/"
+												+ mDefaultColumnIconFile);
 							}
 						}
-
-						task.Data = previews.toArray(new PreviewData[previews
-								.size()]);
-
+	
+						task.Data = coloumns;
+	
 						taskFinished(task);
+						break;
 					}
-					break;
-				}
-
-				case REQUESTTYPE_GETDEVICEINFO: {
-					Object value = null;
-					value = task.Parameters.get(PARAMETER_KEYS);
-					String[] keys = (String[]) value;
-
-					Map<String, String> data = new HashMap<String, String>();
-					for (int i = 0; i < keys.length; i++) {
-						String propertyValue = mDataModel
-								.queryGlobalProperty(keys[i]);
-						data.put(keys[i], propertyValue);
+					
+					case REQUESTTYPE_GETMOVIECOUNT: {
+						String columnId = (String) task.Key;
+						int count = mDataModel.getPublicationCount(columnId);
+						task.Data = count;
+						taskFinished(task);
+						break;
 					}
-
-					task.Data = data;
-					taskFinished(task);
-					break;
-				}
-
-				default:
-					break;
+					
+					case REQUESTTYPE_GETTVCOUNT: {
+						String columnId = (String) task.Key;
+						int count = mDataModel.getPublicationSetCount(columnId);
+						task.Data = count;
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETPUBLICATION: {
+						Object value = null;
+						value = task.Parameters.get(PARAMETER_COLUMN_ID);
+						String columnId = String.valueOf(value);
+	
+						ContentData[] datas = mDataModel.getPublications(columnId,
+								null);
+						task.Data = datas;
+	
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETPUBLICATIONSET: {
+						Object value = null;
+						value = task.Parameters.get(PARAMETER_COLUMN_ID);
+						String columnId = String.valueOf(value);
+	
+						ContentData[] contents = mDataModel.getPublicationSets(
+								columnId, null);
+	
+						task.Data = contents;
+	
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETPUBLICATIONS_OFSET: {
+						Object value = null;
+						value = task.Parameters.get(PARAMETER_SET_ID);
+						String setId = String.valueOf(value);
+	
+						ContentData[] contents = mDataModel.getPublicationsBySetId(
+								setId, null);
+	
+						if (contents != null && contents.length > 0) {
+							for (int i = 0; i < contents.length; i++) {
+								// String xmlFile = getDetailsDataFile(contents[i]);
+								// mDataModel.getDetailsData(xmlFile, contents[i]);
+	
+								mDataModel.getPublicationVAInfo(contents[i]);
+							}
+						}
+	
+						task.Data = contents;
+	
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETFAVORITEMOVIE:
+					case REQUESTTYPE_GETFAVORITETV:
+					case REQUESTTYPE_GETFAVORITERECORD:
+					case REQUESTTYPE_GETFAVORITEENTERTAINMENT: {
+						break;
+					}
+	
+					case REQUESTTYPE_GETDETAILSDATA: {
+						Object value = null;
+						value = task.Parameters.get(PARAMETER_CONTENTDATA);
+						ContentData content = (ContentData) value;
+						// String xmlFile = getDetailsDataFile(content);
+						// mDataModel.getDetailsData(xmlFile, content);
+	
+						mDataModel.getPublicationVAInfo(content);
+						task.Data = content;
+	
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETIMAGE: {
+						Object value = null;
+						value = task.Parameters.get(PARAMETER_CONTENTDATA);
+						ContentData content = (ContentData) value;
+						String file = getThumbnailFile(content);
+	
+						if (file != null && !file.isEmpty()) {
+							Bitmap image = mDataModel.getImage(file);
+							task.Data = image;
+	
+							taskFinished(task);
+						}
+						break;
+					}
+	
+					case REQUESTTYPE_STARTGETTASKINFO: {
+						mDBStarClient.startTaskInfo();
+						break;
+					}
+	
+					case REQUESTTYPE_STOPGETTASKINFO: {
+						mDBStarClient.stopTaskInfo();
+						break;
+					}
+	
+					case REQUESTTYPE_GETDOWNLOADSTATUS: {
+						ReceiveData entries = mDBStarClient.getTaskInfo();
+						task.Data = entries;
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETSMARTCARDINFO: {
+						int type = (Integer) task.Key;
+	
+						Object data = mDBStarClient.getSmartcardInfo(type);
+	
+						task.Data = data;
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETMAILCONTENT: {
+						String id = (String) task.Key;
+	
+						Object data = mDBStarClient.getEMailContent(id);
+	
+						task.Data = data;
+						taskFinished(task);
+						break;
+					}
+					
+					case REQUESTTYPE_GETPUBLICATIONDRMINFO: {
+						String id = (String) task.Key;
+	
+						Object data = mDBStarClient.getPublicationDrmInfo(id);
+	
+						task.Data = data;
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_MANAGECA: {
+						int type = (Integer) task.Key;
+	
+						String result = mDBStarClient.manageCA(type);
+	
+						task.Data = result;
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETTSSIGNALSTATUS: {
+						String status = mDBStarClient.getTSSignalStatus();
+						task.Data = status;
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_GETSETTINGS: {
+						task.Data = mDataModel.getSettingValue((String) task.Key);
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_SETSETTINGS: {
+						Object value = null;
+						value = task.Parameters.get(PARAMETER_KEY);
+						String key = (String) value;
+						value = task.Parameters.get(PARAMETER_VALUE);
+						String sValue = (String) value;
+	
+						mDataModel.setSettingValue(key, sValue);
+						break;
+					}
+	
+					case REQUESTTYPE_GETGUIDELIST: {
+						// GuideListItem[] items = mDataModel.getGuideList();
+						GuideListItem[] items = mDataModel.getLatestGuideList();
+						task.Data = items;
+						taskFinished(task);
+						break;
+					}
+	
+					case REQUESTTYPE_UPDATEGUIDELIST: {
+						mDataModel.updateGuideList((GuideListItem[]) task.Data);
+						// taskFinished(task);
+						notifyDbstarService(DbstarServiceApi.CMD_PUSH_SELECT);
+						break;
+					}
+	
+					case REQUESTTYPE_GETPREVIEWS: {
+						PreviewData[] data = mDataModel.getPreviews();
+	
+						ArrayList<PreviewData> previews = new ArrayList<PreviewData>();
+						if (data != null && data.length > 0) {
+	
+							for (int i = 0; i < data.length; i++) {
+								String uri = getPreviewFile(data[i]);
+	
+								if (uri != null && !uri.isEmpty()) {
+									data[i].FileURI = uri;
+									previews.add(data[i]);
+								}
+							}
+	
+							task.Data = previews.toArray(new PreviewData[previews
+									.size()]);
+	
+							taskFinished(task);
+						}
+						break;
+					}
+	
+					case REQUESTTYPE_GETDEVICEINFO: {
+						Object value = null;
+						value = task.Parameters.get(PARAMETER_KEYS);
+						String[] keys = (String[]) value;
+	
+						Map<String, String> data = new HashMap<String, String>();
+						for (int i = 0; i < keys.length; i++) {
+							String propertyValue = mDataModel
+									.queryGlobalProperty(keys[i]);
+							data.put(keys[i], propertyValue);
+						}
+	
+						task.Data = data;
+						taskFinished(task);
+						break;
+					}
+	
+					default:
+						break;
 				}
 			}
 

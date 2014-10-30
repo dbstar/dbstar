@@ -62,11 +62,20 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 	int mResourceIndex = -1;
 
 	Handler mHandler = new Handler();
-
+	int mCount = 0;
+	
 	private Runnable mUpdateTimeTask = new Runnable() {
 		public void run() {
+//			LogUtil.d(TAG, "-----------------------------isReady() = " + isReady());
 			if (isReady()) {
-				playMedia();
+//				LogUtil.d(TAG, "-----------------------------playMedia");
+				if (mCount < mResources.length * 3) {
+					playMedia();
+					mCount++;					
+				} else {
+					mPosterView.setVisibility(View.VISIBLE);
+					mPosterView.setImageBitmap(mDefaultPoster);
+				}
 			} else {
 				mHandler.postDelayed(mUpdateTimeTask, 2000);
 			}
@@ -205,7 +214,9 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		mPosterView.setVisibility(View.VISIBLE);
 		mPosterView.setImageBitmap(mDefaultPoster);
 		
-		mHandler.postDelayed(mUpdateTimeTask, 2000);
+//		mHandler.postDelayed(mUpdateTimeTask, 2000);
+		mHandler.postDelayed(mUpdateTimeTask, 5 * 1000);
+		mCount = 0;
 	}
 
 	public void pause() {
@@ -348,8 +359,10 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		if (successed) {
 			String resourcePath = "";
 			int resourceType = RNONE;
-			resourcePath = mResources[mResourceIndex].FileURI;
-			resourceType = getResourceType(mResources[mResourceIndex].Type);
+			if (mResources != null && mResources.length > 0) {
+				resourcePath = mResources[mResourceIndex].FileURI;
+				resourceType = getResourceType(mResources[mResourceIndex].Type);
+			}
 
 			if (resourceType == RVideo) {
 				playVideo(resourcePath);
@@ -471,7 +484,9 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			mResourceIndex = mResourceIndex + 1;
 		}
 
-		mResourceIndex = mResourceIndex % mResources.length;
+		if (mResources != null && mResources.length > 0) {			
+			mResourceIndex = mResourceIndex % mResources.length;
+		}
 
 		LogUtil.d(TAG, "fetch resource mResourceIndex = " + mResourceIndex);
 		
