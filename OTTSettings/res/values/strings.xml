@@ -223,6 +223,7 @@
     <string name="page_sysUpgrade_neednot_upgrade">当前已为最新版本</string>
     <string name="page_sysUpgrade_need_upgrade">检测到最新版本，可以进行系统升级</string>
     <string name="page_sysUpgrade_check_upgrade_failed">未检测到新版本</string>
+    <string name="page_sysUpgrade_check_upgrade_failed_byNetwork">当前网络连接失败，请检查网络！</string>
     <string name="page_sysUpgrade_local_upgrade">本地升级</string>
     <string name="page_sysUpgrade_online_upgrade">在线升级</string>
     

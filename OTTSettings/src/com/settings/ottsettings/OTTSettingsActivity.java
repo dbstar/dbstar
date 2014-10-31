@@ -115,8 +115,8 @@ public class OTTSettingsActivity extends Activity {
 		View view = populateViewToDynamicPanel(R.layout.lt_page_sys_upgrade_settings);
 		if (wrapper == null) {
 			wrapper = new SysUpgradeSettingsViewWrapper(this);
-			wrapper.initView(view);
 		}
+		wrapper.initView(view);
 	}
 	
 	/**

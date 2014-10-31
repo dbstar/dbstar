@@ -115,12 +115,14 @@ public class SysUpgradeSettingsViewWrapper {
 				bundle.putLong("has_recv", intent.getLongExtra("has_recv", 0));
 				msg.setData(bundle);
 				handler.sendMessage(msg);
-			} else if (action.equals("com.settings.sysUpgrade")) {
+			} else if (action.equals(SettingUtils.Sys_Upgrade_Settings_Upgrade)) {
 				Message message = handler.obtainMessage(3);
 				Bundle bundle = new Bundle();
 				bundle.putBoolean("isUpgrading", intent.getBooleanExtra("isUpgrading", false));
 				bundle.putLong("fileTotalSize", intent.getLongExtra("fileTotalSize", 0));
 				handler.sendMessage(message);
+			} else if (action.equals(SettingUtils.Sys_Upgrade_Settings_Upgrade_Failed)) {
+				handler.sendEmptyMessage(4);
 			}
 		}
 	};
@@ -132,49 +134,53 @@ public class SysUpgradeSettingsViewWrapper {
 			percentFormat.setMaximumIntegerDigits(3); // 最大整数位数
 			percentFormat.setMinimumFractionDigits(0); // 最小小数位数
 			percentFormat.setMinimumIntegerDigits(1); // 最小整数位数
+			
+			boolean isAvaliable = SettingUtils.isNetworkAvailable(context);
+			
 			switch (msg.what) {
 			case 1:
-				if (fileTotalSize > 0) {
-					downloadFileSize = (Long) msg.obj;
-					downloadSize = ((Long) msg.obj).floatValue() / fileTotalSize;
-					String percentNum = percentFormat.format(downloadSize);
-					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));				
-					btnOnline.setEnabled(false);
-				} else {
-					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));
-					btnOnline.setEnabled(true);
-				}
-				
-				// 当网络断开的时候，下载失败
-				if (!SettingUtils.isNetworkAvailable(context)) {
+				if (isAvaliable) {
+					if (fileTotalSize > 0) {
+						downloadFileSize = (Long) msg.obj;
+						downloadSize = ((Long) msg.obj).floatValue() / fileTotalSize;
+						String percentNum = percentFormat.format(downloadSize);
+						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));				
+						btnOnline.setEnabled(false);
+					} else {
+						LogUtil.d("SysUpgradeSettingsViewWrapper", "--------1-------------------------fileTotalSize = " + fileTotalSize);
+						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));
+						btnOnline.setEnabled(true);
+					}					
+				} else { // 当网络断开的时候，下载失败
 					fileTotalSize = 0;
 					SettingUtils.save0ToFile();
 					btnOnline.setEnabled(false);
-					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
-					ToastUtils.showToast(context, "请检查网络！");
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
+//					ToastUtils.showToast(context, "请检查网络！");					
 				}
 				break;
 			case 2:
 				Bundle bundle = msg.getData();
 				downloadFileSize = bundle.getLong("has_recv");
 				fileTotalSize = bundle.getLong("fileTotalSize");
-				if (fileTotalSize > 0) {
-					downloadSize = ((Long) downloadFileSize).floatValue() / fileTotalSize;
-					String percentNum = percentFormat.format(downloadSize);
-					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));										
-					btnOnline.setEnabled(false);
-				} else {
-					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));						
-					btnOnline.setEnabled(true);
-				}
 				
-				// 当网络断开的时候，下载失败
-				if (!SettingUtils.isNetworkAvailable(context)) {
+				if (isAvaliable) {					
+					if (fileTotalSize > 0) {
+						downloadSize = ((Long) downloadFileSize).floatValue() / fileTotalSize;
+						String percentNum = percentFormat.format(downloadSize);
+						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));										
+						btnOnline.setEnabled(false);
+					} else {
+						LogUtil.d("SysUpgradeSettingsViewWrapper", "-------2--------------------------fileTotalSize = " + fileTotalSize);
+						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));						
+						btnOnline.setEnabled(true);
+					}
+				} else {
 					fileTotalSize = 0;
 					SettingUtils.save0ToFile();
 					btnOnline.setEnabled(false);
-					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
-					ToastUtils.showToast(context, "请检查网络！");
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
+					ToastUtils.showToast(context, "请检查网络！");					
 				}
 				break;
 			case 3:
@@ -190,14 +196,25 @@ public class SysUpgradeSettingsViewWrapper {
 				}
 				
 				// 当网络断开的时候，下载失败
-				if (!SettingUtils.isNetworkAvailable(context)) {
+				if (!isAvaliable) {
 					fileTotalSize = 0;
 					SettingUtils.save0ToFile();
 					btnOnline.setEnabled(false);
-					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
-					ToastUtils.showToast(context, "请检查网络！");
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
+//					ToastUtils.showToast(context, "请检查网络！");
 				}
-					
+				break;
+			case 4:
+				LogUtil.d("SysUpgradeSettingsViewWrapper", "-------4--------------------------fileTotalSize = " + fileTotalSize);
+				if (isAvaliable) {
+					btnOnline.setEnabled(true);
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));					
+				} else {
+					SettingUtils.save0ToFile();
+					btnOnline.setEnabled(false);
+					LogUtil.d("SysUpgradeSettingsViewWrapper", "-------4--------------------------isAvaliable = " + isAvaliable);
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));					
+				}
 				break;
 			default:
 				break;
@@ -207,7 +224,8 @@ public class SysUpgradeSettingsViewWrapper {
 	
 	public void resume() {
 		IntentFilter filter = new IntentFilter();		
-		filter.addAction("com.settings.sysUpgrade");
+		filter.addAction(SettingUtils.Sys_Upgrade_Settings_Upgrade);
+		filter.addAction(SettingUtils.Sys_Upgrade_Settings_Upgrade_Failed);
 		filter.addAction(SettingUtils.Sys_Upgrade_Settings_Progress);
 		filter.addAction(SettingUtils.Sys_Auto_Upgrade_Settings_Progress);
 		context.registerReceiver(onReceiver, filter);
@@ -233,34 +251,57 @@ public class SysUpgradeSettingsViewWrapper {
 		boolean isNetworkAvailable = SettingUtils.isNetworkAvailable(context);
 		LogUtil.d("SysUpgradeSettingsViewWrapper", "isNetworkAvailable = " + isNetworkAvailable);
 		
-		if (fileTotalSize == 0) {			
-			if (isNetworkAvailable) {
-				txtPercent.setText("");	
-				if (!isUpgrading) {
-					LocalUpgradeTask task = new LocalUpgradeTask();
-					task.execute();									
-				} 
-			} else {				
-				// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
-				fileTotalSize = 0;
-				btnOnline.setEnabled(false);
-				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed));										
-				ToastUtils.showToast(context, "请检查网络！");
+		
+		if (isNetworkAvailable) {
+			if (!isUpgrading) {
+				LocalUpgradeTask task = new LocalUpgradeTask();
+				task.execute();				
+			} else { // downloading
+				if (fileTotalSize == 0) {
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, ""));					
+				} else {					
+					LogUtil.d("SysUpgradeSettingsViewWrapper", "downloadSize = " + downloadSize);
+					String percentNum = percentFormat.format(downloadSize);
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));
+				}
 			}
 		} else {
-			if (isNetworkAvailable) {
-				LogUtil.d("SysUpgradeSettingsViewWrapper", "downloadSize = " + downloadSize);
-				String percentNum = percentFormat.format(downloadSize);
-				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));					
-			} else {
-				fileTotalSize = 0;
-				SettingUtils.save0ToFile();
-				btnOnline.setEnabled(false);
-				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
-				ToastUtils.showToast(context, "请检查网络！");
-			}
-				
+			// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
+			fileTotalSize = 0;
+			SettingUtils.save0ToFile();
+			btnOnline.setEnabled(false);
+			txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
+//			ToastUtils.showToast(context, "请检查网络！");
 		}
+		
+//		if (fileTotalSize == 0) {			
+//			if (isNetworkAvailable) {
+//				txtPercent.setText("");	
+//				if (!isUpgrading) {
+//					LocalUpgradeTask task = new LocalUpgradeTask();
+//					task.execute();									
+//				} 
+//			} else {				
+//				// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
+//				fileTotalSize = 0;
+//				btnOnline.setEnabled(false);
+//				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed));										
+//				ToastUtils.showToast(context, "请检查网络！");
+//			}
+//		} else {
+//			if (isNetworkAvailable) {
+//				LogUtil.d("SysUpgradeSettingsViewWrapper", "downloadSize = " + downloadSize);
+//				String percentNum = percentFormat.format(downloadSize);
+//				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));					
+//			} else {
+//				fileTotalSize = 0;
+//				SettingUtils.save0ToFile();
+//				btnOnline.setEnabled(false);
+//				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
+//				ToastUtils.showToast(context, "请检查网络！");
+//			}
+//				
+//		}
 	}
 
 	private void setEventListener() {
@@ -312,6 +353,11 @@ public class SysUpgradeSettingsViewWrapper {
 					
 					@Override
 					public Boolean processResult(HttpEntity entity) {
+						
+						if (entity == null) {
+							return false;
+						}
+						
 						boolean success = false;
 						try {
 							InputStream is = entity.getContent();
@@ -340,9 +386,14 @@ public class SysUpgradeSettingsViewWrapper {
 							context.startActivity(intent);
 						} else {
 							LogUtil.d("SysUpgradeSettingsViewWrapper", " save file failed!");
-							btnOnline.setEnabled(true);
-							txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));				
-							fileTotalSize = 0;
+							if (SettingUtils.isNetworkAvailable(context)) {
+								btnOnline.setEnabled(true);
+								txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));				
+							} else {
+								btnOnline.setEnabled(false);
+								txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));				
+							}
+							fileTotalSize = 0;																
 						} 
 					}
 				};

@@ -269,6 +269,9 @@ public class OTTSettingsModeService extends Service{
 							LogUtil.d("OTTSettingsModeService", " save file failed!");
 							fileTotalSize = 0;
 							upgradeIsSuccess = false;
+							
+							Intent intent = new Intent(SettingUtils.Sys_Upgrade_Settings_Upgrade_Failed);
+							sendBroadcastAsUser(intent, UserHandle.ALL);
 						}
 					}
 				};
@@ -313,7 +316,7 @@ public class OTTSettingsModeService extends Service{
 						fileTotalSize = 1024000;						
 						LogUtil.d("OTTSettingsModeService", "-----isUpgrading = " + isNetworkAvailable + ", fileTotalSize" + fileTotalSize);
 						
-						Intent intent = new Intent("com.settings.sysUpgrade");
+						Intent intent = new Intent(SettingUtils.Sys_Upgrade_Settings_Upgrade);
 						intent.putExtra("isUpgrading", isUpgrading);
 						intent.putExtra("fileTotalSize", fileTotalSize);
 						sendBroadcastAsUser(intent, UserHandle.ALL);

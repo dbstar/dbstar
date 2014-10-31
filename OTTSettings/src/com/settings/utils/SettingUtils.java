@@ -60,6 +60,8 @@ import com.settings.service.OTTSettingsModeService;
 public class SettingUtils {
 
 	public static final String IsUpgrading_File = "/data/dbstar/isupgrade.upgrade";
+	public static final String Sys_Upgrade_Settings_Upgrade = "com.settings.sysUpgrade";
+	public static final String Sys_Upgrade_Settings_Upgrade_Failed = "com.settings.sysUpgrade.failed";
 	public static final String Sys_Upgrade_Settings_Progress = "sysUpgradeSettingsProgress";
 	public static final String Sys_Auto_Upgrade_Settings_Progress = "sysAutoUpgradeSettingsProgress";
 
