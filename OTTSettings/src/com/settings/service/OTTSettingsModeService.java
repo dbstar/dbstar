@@ -232,11 +232,16 @@ public class OTTSettingsModeService extends Service{
 		if (list != null && !list.isEmpty()) {
 			for (final Vapks vapks : list) {
 				final String upgradeUrl = vapks.getProfileUrl();
+				LogUtil.d("OTTSettingsModeService", " upgradeUrl = " + upgradeUrl);
 				ConnectWork<Boolean> work = new ConnectWork<Boolean>(HttpConnect.GET, upgradeUrl, null) {
 
 					@Override
 					public Boolean processResult(HttpEntity entity) {
 						boolean success = false;
+						
+						if (entity == null)
+							return false;
+						
 						try {
 							InputStream is = entity.getContent();
 							fileTotalSize = entity.getContentLength();
