@@ -328,7 +328,7 @@ public class VedioSettingsViewWrapper {
 			if (mHasCVBSOutput) {
 				intent.putExtra(SettingsCommon.KeyCVBSMode, mCVBSIndex);
 			}
-			context.startActivity(intent);
+//			context.startActivity(intent);
 			((Activity)context).startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
 //			startActivityForResult(intent, SettingsCommon.GET_USER_OPERATION);
 		}
