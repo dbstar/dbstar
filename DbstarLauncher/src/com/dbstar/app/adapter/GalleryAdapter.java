@@ -5,7 +5,6 @@ import java.io.InputStream;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -14,7 +13,6 @@ import android.widget.Gallery.LayoutParams;
 import android.widget.ImageView;
 
 import com.dbstar.bean.ImageSet;
-import com.dbstar.util.LogUtil;
 
 public class GalleryAdapter extends BaseAdapter {
     private ImageSet mImageSet;

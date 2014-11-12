@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -89,7 +88,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private String mColumnBookId, mColumnMagazineId, mColumnNewsPaperId, mColumnVoiceBookId;
 	
 	// Engine
-	GDCelanderThread mCelanderThread;
+//	GDCelanderThread mCelanderThread;
 
 	// Video
 	GDVideoView mVideoView;
@@ -100,7 +99,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	FrameLayout mMenuContainer;
 	GDMenuGallery mMainMenu;
 	Stack<GDMenuGallery> mParentMenuStack = null, mChildMenuStack = null;
-	MainMenuAdapter mMainMenuAdapter;
+//	MainMenuAdapter mMainMenuAdapter;
 
 	ViewGroup mPopupMenuContainer;
 	ListView mPopupMenu;
@@ -113,13 +112,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	GDMarqeeTextView mMarqeeView;
 
 	// Calendar View
-	TextView mTimeView, mDateView, mWeekView;
-	RelativeLayout mMainContainer;
-	ImageView mImgView;
+//	TextView mTimeView, mDateView, mWeekView;
 
 	// Animation
 	boolean mMoveLeft = true;
 	ImageView mFocusItemBackground;
+	
+	private Bitmap mHomeBitmap, mServiceBitmap;
 
 	AnimationSet mPopupMenuFocusedAnimation,
 			mShowPopupMenuAnimation, mHidePopupMenuAnimation, mFocusZoomOut,
@@ -197,7 +196,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		LogUtil.d(TAG, "++++++onStart");
 	
-		mCelanderThread.setUpdate(true);
+//		mCelanderThread.setUpdate(true);
 	
 		turnOnMarqeeView(false);
 		showMarqueeView();
@@ -251,7 +250,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMediaScheduler.cancelSimulateHomeKey();
 		mMediaScheduler.unmuteWithSilence();
 
-		mCelanderThread.setUpdate(false);
+//		mCelanderThread.setUpdate(false);
 
 		hideMarqeeView();
 	}
@@ -259,8 +258,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	public void onDestroy() {
 		super.onDestroy();
 
-		mCelanderThread.setExit(true);
+//		mCelanderThread.setExit(true);
 		mMediaScheduler.stop();
+		
+		if (mHomeBitmap != null && !mHomeBitmap.isRecycled()) {
+			mHomeBitmap.recycle();
+		}
+		
+		if (mServiceBitmap != null && !mServiceBitmap.isRecycled()) {
+			mServiceBitmap.recycle();
+		}
 	}
 
 	public void onAttachedToWindow() {
@@ -1670,13 +1677,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 
 		mFocusItemBackground = (ImageView) findViewById(R.id.focus_item_bg);
 
-		mMainContainer = (RelativeLayout) findViewById(R.id.main_view);
-		mImgView = (ImageView) findViewById(R.id.context_view_bg_1);
+		RelativeLayout mMainContainer = (RelativeLayout) findViewById(R.id.main_view);
+		ImageView mImgView = (ImageView) findViewById(R.id.context_view_bg_1);
 		
 		// Calendar View
-		mTimeView = (TextView) findViewById(R.id.time_view);
-		mDateView = (TextView) findViewById(R.id.date_view);
-		mWeekView = (TextView) findViewById(R.id.week_view);
+//		mTimeView = (TextView) findViewById(R.id.time_view);
+//		mDateView = (TextView) findViewById(R.id.date_view);
+//		mWeekView = (TextView) findViewById(R.id.week_view);
 
 		mVideoView = (GDVideoView) findViewById(R.id.player_view);
 		mPosterView = (ImageView) findViewById(R.id.poster_view);
@@ -1684,7 +1691,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		mMainMenu = (GDMenuGallery) findViewById(R.id.menu_level_1);
 		//mMainMenu.setAnimationDuration(120);
 
-		mMainMenuAdapter = new MainMenuAdapter(this);
+		MainMenuAdapter mMainMenuAdapter = new MainMenuAdapter(this);
 		mMainMenuAdapter.setDataSet(mMainMenuItems);
 		mMainMenu.setAdapter(mMainMenuAdapter);
 
@@ -1717,28 +1724,33 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			mPowerController = null;
 		}
 		
-		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
-		
-		if (bitmaps == null || bitmaps.size() <= 0) {
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic(true, true, false);
+		if (bitmaps != null && bitmaps.size() > 0) {			
+			if (bitmaps.containsKey(ImageUtil.Home_Key)) {
+				mHomeBitmap = bitmaps.get(ImageUtil.Home_Key);
+				if (mHomeBitmap != null)
+					mMainContainer.setBackgroundDrawable(new BitmapDrawable(mHomeBitmap));						
+				else
+					mMainContainer.setBackgroundResource(R.drawable.view_background);				
+			}
+			
+			if (bitmaps.containsKey(ImageUtil.Service_Key)) {
+				mServiceBitmap = bitmaps.get(ImageUtil.Service_Key);
+				if (mServiceBitmap != null)
+					mImgView.setImageBitmap(mServiceBitmap);					
+				else 
+					mImgView.setImageResource(R.drawable.context_view_bg_1);				
+			}
+		} else {
 			mMainContainer.setBackgroundResource(R.drawable.view_background);
 			mImgView.setImageResource(R.drawable.context_view_bg_1);
-			return;
-		}
-		
-		if (bitmaps.containsKey(ImageUtil.Home_Key)) {
-			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.Home_Key));
-			mMainContainer.setBackgroundDrawable(drawable);		
-		}
-		
-		if (bitmaps.containsKey(ImageUtil.Service_Key)) {
-			mImgView.setImageBitmap(bitmaps.get(ImageUtil.Service_Key));					
 		}
 	}
 
 	private void initializeEngine() {
 		// start background engines
-		mCelanderThread = new GDCelanderThread(this, mTimeView, mDateView, mWeekView);
-		mCelanderThread.start();
+//		mCelanderThread = new GDCelanderThread(this, mTimeView, mDateView, mWeekView);
+//		mCelanderThread.start();
 
 		mMediaScheduler = new GDMediaScheduler(this, mVideoView, mPosterView);
 	}

@@ -36,7 +36,7 @@ public class ImageUtil {
 		return drawable;
 	}
 	
-private static final String TAG = "DbstarSetting ImageUtil";
+	private static final String TAG = "DbstarSetting ImageUtil";
 	
 	public static Bitmap parserXmlAndLoadPic() {
 

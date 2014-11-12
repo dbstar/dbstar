@@ -51,7 +51,6 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	String mColumnId;
 	List<Movie[]> mPageDatas;
 
-	RelativeLayout mContainer;
 	GDGridView mSmallThumbnailView;
 	MovieAdapter mAdapter;
 	int mSeletedItemIndex = 0;
@@ -62,6 +61,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	TextView mPageNumberView;
 	ImageView mViewMask = null;
 	boolean mEnterPlayer = false;
+	
+	private Bitmap mBitmap;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -81,7 +82,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 	protected void initializeView() {
 		super.initializeView();
 
-		mContainer = (RelativeLayout) findViewById(R.id.movie_container);
+		RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.movie_container);
 		
 		mPageNumberView = (TextView) findViewById(R.id.pageNumberView);
 
@@ -101,16 +102,17 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		mSmallThumbnailView.requestFocus();
 		mPageNumberView.setText(formPageText(0, 0));
 		
-		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic(false, false, true);
 		
-		if (bitmaps == null || bitmaps.size() <= 0) {
+		if (bitmaps != null && bitmaps.containsKey(ImageUtil.App_Key)) {
+			mBitmap = bitmaps.get(ImageUtil.App_Key);
+			if (mBitmap != null) {				
+				Drawable drawable = new BitmapDrawable(mBitmap);
+				mContainer.setBackgroundDrawable(drawable);		
+			} else 
+				mContainer.setBackgroundResource(R.drawable.view_background);				
+		} else {
 			mContainer.setBackgroundResource(R.drawable.view_background);
-			return;
-		}
-		
-		if (bitmaps.containsKey(ImageUtil.App_Key)) {
-			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.App_Key));
-			mContainer.setBackgroundDrawable(drawable);		
 		}
 	}
 
@@ -136,6 +138,10 @@ public class GDHDMovieActivity extends GDBaseActivity {
 
 	public void onDestroy() {
 		super.onDestroy();
+		
+		if (mBitmap != null && !mBitmap.isRecycled()) {
+			mBitmap.recycle();
+		}
 
 		for (int i = 0; mPageDatas != null && i < mPageDatas.size(); i++) {
 			Movie[] movies = mPageDatas.get(i);

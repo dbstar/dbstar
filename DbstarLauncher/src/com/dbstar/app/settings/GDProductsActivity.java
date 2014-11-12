@@ -28,7 +28,6 @@ import com.dbstar.util.LogUtil;
 public class GDProductsActivity extends GDBaseActivity {
 	private static final String TAG = "GDReceiveStatusActivity";
 
-	RelativeLayout mContainer;
 	TextView mSmartcardNumberView;
 	ListView mProductsList;
 	ListAdapter mAdapter;
@@ -36,6 +35,7 @@ public class GDProductsActivity extends GDBaseActivity {
 	String mSNLabelStr = null;
 	int mSmartcardState = GDCommon.SMARTCARD_STATE_NONE;
 	ProductItem[] mProducts;
+	private Bitmap mBitmap;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -147,7 +147,7 @@ public class GDProductsActivity extends GDBaseActivity {
 	public void initializeView() {
 		super.initializeView();
 
-		mContainer = (RelativeLayout) findViewById(R.id.products_view);
+		RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.products_view);
 		mSmartcardNumberView = (TextView) findViewById(R.id.card_id);
 		mProductsList = (ListView) findViewById(R.id.product_list);
 		mAdapter = new ListAdapter(this);
@@ -156,17 +156,23 @@ public class GDProductsActivity extends GDBaseActivity {
 		mSNLabelStr = getResources().getString(R.string.smartcard_number);
 		mSmartcardNumberView.setText(mSNLabelStr);
 		
-		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic(false, false, true);
 		
-		if (bitmaps == null || bitmaps.size() <= 0) {
-			mContainer.setBackgroundResource(R.drawable.view_background);
-			return;
-		}
-		
-		if (bitmaps.containsKey(ImageUtil.App_Key)) {
-			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.App_Key));
-			mContainer.setBackgroundDrawable(drawable);		
-		}
+		if (bitmaps != null && bitmaps.containsKey(ImageUtil.App_Key)) {
+			mBitmap = bitmaps.get(ImageUtil.App_Key);
+			if (mBitmap != null)
+				mContainer.setBackgroundDrawable(new BitmapDrawable(mBitmap));
+			else
+				mContainer.setBackgroundResource(R.drawable.view_background);				
+		} else
+			mContainer.setBackgroundResource(R.drawable.view_background);			
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mBitmap != null && !mBitmap.isRecycled())
+			mBitmap.recycle();
 	}
 
 	class ProductItem {

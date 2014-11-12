@@ -28,6 +28,7 @@ public class MediaShareActivity extends Activity {
     private TextView mIpAddress;
     private TextView mError;
     private ShareService mService;
+	private Bitmap mBitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,12 +50,12 @@ public class MediaShareActivity extends Activity {
         Intent intent = new Intent(this, ShareService.class);
         bindService(intent,connection,  Service.BIND_AUTO_CREATE);
     
-        Bitmap bitmap = ImageUtil.parserXmlAndLoadPic();
+        mBitmap = ImageUtil.parserXmlAndLoadPic();
         
-        if (bitmap == null) {
+        if (mBitmap == null) {
         	mContainer.setBackgroundResource(R.drawable.reader_view_background);
         } else {
-        	Drawable drawable = new BitmapDrawable(bitmap);
+        	Drawable drawable = new BitmapDrawable(mBitmap);
     		mContainer.setBackgroundDrawable(drawable);
         }
     }
@@ -92,5 +93,7 @@ public class MediaShareActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         unbindService(connection);
+        if (mBitmap != null && !mBitmap.isRecycled())
+        	mBitmap.recycle();
     }
 }

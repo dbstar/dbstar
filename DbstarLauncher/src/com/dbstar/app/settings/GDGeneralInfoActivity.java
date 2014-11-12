@@ -24,7 +24,6 @@ import com.dbstar.util.ImageUtil;
 
 public class GDGeneralInfoActivity extends GDSettingActivity {
 
-	private RelativeLayout mContainer;
 	private TextView mDeviceSerialNumberView;
 	private TextView mHardwareTypeView;
 	private TextView mSoftwareVersionView;
@@ -38,19 +37,13 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 			mLoaderVersion, mMacAddress;
 	private String mUpgradeCount;
 	private String mDiskSize, mDiskUsed, mDiskSpace;
+	private Bitmap mBitmap;
 	
-	GDDataModel dataModel;
-	GDSystemConfigure configure;
-
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.generalinfo_view);
 
-		dataModel = new GDDataModel();
-		configure = new GDSystemConfigure();
-		dataModel.initialize(configure);
-		
 		initializeView();
 
 		Intent intent = getIntent();
@@ -109,6 +102,10 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	}
 	
 	public void updateSettings(String key, String value) {
+		GDDataModel dataModel = new GDDataModel();
+		GDSystemConfigure configure = new GDSystemConfigure();
+		dataModel.initialize(configure);
+		
 		if (key.equals(GDSettings.SettingDeviceSerialNumber)) {
 //			mDeviceSerialNumber += value;
 //			mDeviceSerialNumberView.setText(mDeviceSerialNumber);
@@ -137,7 +134,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	public void initializeView() {
 		super.initializeView();
 
-		mContainer = (RelativeLayout) findViewById(R.id.generalinfo_view);
+		RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.generalinfo_view);
 		mDeviceSerialNumberView = (TextView) findViewById(R.id.device_serialnumber);
 		mHardwareTypeView = (TextView) findViewById(R.id.device_hardwaretype);
 		mSoftwareVersionView = (TextView) findViewById(R.id.device_softwareversion);
@@ -161,17 +158,16 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		mDiskUsed = getResources().getString(R.string.disk_usedsize);
 		mDiskSpace = getResources().getString(R.string.disk_spacesize);
 		
-		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic(false, false, true);
 		
-		if (bitmaps == null || bitmaps.size() <= 0) {
-			mContainer.setBackgroundResource(R.drawable.view_background);
-			return;
-		}
-		
-		if (bitmaps.containsKey(ImageUtil.App_Key)) {
-			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.App_Key));
-			mContainer.setBackgroundDrawable(drawable);
-		}
+		if (bitmaps != null && bitmaps.containsKey(ImageUtil.App_Key)) {
+			mBitmap = bitmaps.get(ImageUtil.App_Key);
+			if (mBitmap != null) 
+				mContainer.setBackgroundDrawable(new BitmapDrawable(mBitmap));
+			else
+				mContainer.setBackgroundResource(R.drawable.view_background);							
+		} else
+			mContainer.setBackgroundResource(R.drawable.view_background);			
 	}
 	
 	// when long press menu key more than 5 seconds,
@@ -192,6 +188,13 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 
 	};
 
+	
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mBitmap != null && !mBitmap.isRecycled())
+			mBitmap.recycle();
+	};
+	
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_MENU:

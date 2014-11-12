@@ -31,7 +31,6 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.storage.IMountService;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -101,8 +100,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	private boolean fileCanWrite = false;
 	private boolean isConstainsMarkFile = false;
 	private boolean isFormatDisk = false;
-	
-	private IMountService mMountService = null;
 	
 //	private Intent intentSer; 
 	private GalleryTask task;

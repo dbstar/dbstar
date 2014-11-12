@@ -74,6 +74,10 @@ public class GatewaySettingsPage extends BaseFragment {
 		super.onDestroy();
 
 		mActivity.unregisterReceiver(mReceiver);
+		
+		if (mBitmap != null && !mBitmap.isRecycled()) {
+			mBitmap.recycle();
+		}
 	}
 
 	private void onToNextPage() {
@@ -114,6 +118,7 @@ public class GatewaySettingsPage extends BaseFragment {
 			}
 		}
 	};
+	private Bitmap mBitmap;
 
 	void getNetworkInfo() {
 		Intent intent = new Intent();
@@ -190,12 +195,12 @@ public class GatewaySettingsPage extends BaseFragment {
 		
 		mNextButton.requestFocus();
 		
-		Bitmap bitmap = ImageUtil.parserXmlAndLoadPic();
+		mBitmap = ImageUtil.parserXmlAndLoadPic();
 		
-		if (bitmap == null) {
+		if (mBitmap == null) {
 			mContainer.setBackgroundResource(R.drawable.view_background);
 		} else {
-			Drawable drawable = new BitmapDrawable(bitmap);
+			Drawable drawable = new BitmapDrawable(mBitmap);
 			mContainer.setBackgroundDrawable(drawable);			
 		}
 

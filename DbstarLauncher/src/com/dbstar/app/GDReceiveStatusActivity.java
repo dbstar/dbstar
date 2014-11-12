@@ -57,7 +57,6 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	private ClientObserver mObserver = null;
 
-	RelativeLayout mContainer;
 	ListView mListView;
 	TextView mDownloadSpeedView;
 	TextView mDiskInfoView;
@@ -72,6 +71,8 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 
 	Timer mTimer = null;
 	TimerTask mTask = null;
+	
+	private Bitmap mBitmap;
 
 	private Handler mUIUpdateHandler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -132,6 +133,10 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		super.onDestroy();
 
 		mTimer.cancel();
+		
+		if (mBitmap != null && !mBitmap.isRecycled()) {
+			mBitmap.recycle();
+		}
 	}
 
 	public void onServiceStart() {
@@ -531,7 +536,7 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		mTextGong = getResources().getString(R.string.text_gong);
 		mTextTiao = getResources().getString(R.string.text_tiao);
 
-		mContainer = (RelativeLayout) findViewById(R.id.download_status_view_container);
+		RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.download_status_view_container);
 		mDownloadSpeedView = (TextView) findViewById(R.id.download_speed);
 		mSignalStatusView = (TextView) findViewById(R.id.signal_status);
 		mDiskInfoView = (TextView) findViewById(R.id.disk_info);
@@ -570,17 +575,16 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 			}
 		});
 		
-		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic(false, false, true);
 		
-		if (bitmaps == null || bitmaps.size() <= 0) {
-			mContainer.setBackgroundResource(R.drawable.view_background);
-			return;
-		}
-		
-		if (bitmaps.containsKey(ImageUtil.App_Key)) {
-			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.App_Key));
-			mContainer.setBackgroundDrawable(drawable);		
-		}
+		if (bitmaps != null && bitmaps.containsKey(ImageUtil.App_Key)) {
+			mBitmap = bitmaps.get(ImageUtil.App_Key);
+			if (mBitmap != null) 
+				mContainer.setBackgroundDrawable(new BitmapDrawable(mBitmap));						
+			else 
+				mContainer.setBackgroundResource(R.drawable.view_background);							
+		} else
+			mContainer.setBackgroundResource(R.drawable.view_background);			
 	}
 
 	public class DownloadProgressAdapter extends BaseAdapter {

@@ -44,7 +44,6 @@ public class GDOrderPushActivity extends GDBaseActivity {
 	GDGridView mListView = null;
 	ReceiveItemsAdapter mReceiveItemAdapter;
 	View mTimelineItemFousedView = null;
-	RelativeLayout mContainer;
 
 	Drawable mTimelineItemIconNormal, mTimelineItemIconFocused,
 			mTimelineItemTextFocusedBackground, mReceiveItemLightBackground,
@@ -58,6 +57,8 @@ public class GDOrderPushActivity extends GDBaseActivity {
 
 	ReceiveItem[] mReceiveItemCurrentPage;
 	int mReceiveItemIndex = -1;
+	
+	private Bitmap mBitmap;
 
 	class ReceiveItem {
 
@@ -132,7 +133,7 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		mReceiveItemUnchecked = getResources().getDrawable(
 				R.drawable.checkbox_unchecked);
 
-		mContainer = (RelativeLayout) findViewById(R.id.orderpush_view_container);
+		RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.orderpush_view_container);
 		mTimelineView = (GDGridView) findViewById(R.id.timeline);
 		mTimelineAdapter = new TimelineAdapter(this);
 		mTimelineView.setAdapter(mTimelineAdapter);
@@ -196,16 +197,23 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		mListView.setFocusable(true);
 //		mListView.setOnKeyListener(mReceiveItemsKeyListener);
 		
-		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic(false, false, true);
 		
-		if (bitmaps == null || bitmaps.size() <= 0) {
-			mContainer.setBackgroundResource(R.drawable.view_background);
-			return;
-		}
-		
-		if (bitmaps.containsKey(ImageUtil.App_Key)) {
-			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.App_Key));
-			mContainer.setBackgroundDrawable(drawable);		
+		if (bitmaps != null && bitmaps.containsKey(ImageUtil.App_Key)) {
+			mBitmap = bitmaps.get(ImageUtil.App_Key);
+			if (mBitmap != null) 
+				mContainer.setBackgroundDrawable(new BitmapDrawable(mBitmap));		
+			else
+				mContainer.setBackgroundResource(R.drawable.view_background);				
+		} else 
+			mContainer.setBackgroundResource(R.drawable.view_background);							
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mBitmap != null && !mBitmap.isRecycled()) {
+			mBitmap.recycle();
 		}
 	}
 

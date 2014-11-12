@@ -33,11 +33,12 @@ import com.dbstar.util.LogUtil;
 public class GDHelpActivity extends GDBaseActivity {
 	private static final String TAG = "GDHelpActivity";
 
-	private RelativeLayout mContainer;
 	private ListView mHeaderView;
 	private ListAdapter mAdapter;
 	private WebView mContentView;
 	ItemHeader[] mItems;
+	
+	private Bitmap mBitmap;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -59,7 +60,7 @@ public class GDHelpActivity extends GDBaseActivity {
 	public void initializeView() {
 		super.initializeView();
 
-		mContainer = (RelativeLayout) findViewById(R.id.help_view_container);
+		RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.help_view_container);
 		mHeaderView = (ListView) findViewById(R.id.list);
 		mContentView = (WebView) findViewById(R.id.web_view);
 
@@ -111,22 +112,29 @@ public class GDHelpActivity extends GDBaseActivity {
 			}
 		});
 		
-		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic();
+		HashMap<String, Bitmap> bitmaps = ImageUtil.parserXmlAndLoadPic(false, false, true);
 		
-		if (bitmaps == null || bitmaps.size() <= 0) {
+		if (bitmaps != null && bitmaps.containsKey(ImageUtil.App_Key)) {
+			mBitmap = bitmaps.get(ImageUtil.App_Key);
+			if (mBitmap != null)
+				mContainer.setBackgroundDrawable(new BitmapDrawable(mBitmap));						
+			else 
+				mContainer.setBackgroundResource(R.drawable.view_background);				
+		} else 
 			mContainer.setBackgroundResource(R.drawable.view_background);
-			return;
-		}
-		
-		if (bitmaps.containsKey(ImageUtil.App_Key)) {
-			Drawable drawable = new BitmapDrawable(bitmaps.get(ImageUtil.App_Key));
-			mContainer.setBackgroundDrawable(drawable);		
-		}
 	}
 
 	public void onStart() {
 		super.onStart();
 
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (mBitmap != null && !mBitmap.isRecycled()) {
+			mBitmap.recycle();
+		}
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
