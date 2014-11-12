@@ -249,18 +249,10 @@ dbstar_patch()
 {
 	logger "START patch dbstar"
 	call cd $ANDROID_SRC
-        echo ">>>> patching uboot ..."
-        cp -rf $DBSTAR_SRC/uboot/* $ANDROID_SRC/uboot/
-	echo ">>>> patching kernel ..."
-	cp -rf $DBSTAR_SRC/common/* $ANDROID_SRC/common/
-	echo ">>>> patching bionic ..."
-	cp -rf $DBSTAR_SRC/bionic/* $ANDROID_SRC/bionic/
-	echo ">>>> patching frameworks ..."
-	cp -rf $DBSTAR_SRC/frameworks/* $ANDROID_SRC/frameworks/
-	echo ">>>> patching device ..."
-	cp -rf $DBSTAR_SRC/device/* $ANDROID_SRC/device/
-	echo ">>>> patching build ..."
-	cp -rf $DBSTAR_SRC/build/* $ANDROID_SRC/build/
+	echo ">>>> patching uboot ..."
+	cp -rf $DBSTAR_SRC/uboot/* $ANDROID_SRC/uboot/
+	echo ">>>> patching android ..."
+	cp -rf $DBSTAR_SRC/android/* $ANDROID_SRC/
 	logger "FINISH patch dbstar"
 }
 
