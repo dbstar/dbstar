@@ -90,8 +90,8 @@ BUILD_WITH_AMLOGIC_OMX := true
 #
 #########################################################################
 
-#WIFI_MODULE := rtl8192cu
-WIFI_MODULE := rtl8188eu
+WIFI_MODULE := rtl8192cu
+#WIFI_MODULE := rtl8188eu
 include device/amlogic/common/wifi.mk
 
 # Change this to match target country
@@ -106,8 +106,8 @@ PRODUCT_DEFAULT_WIFI_CHANNELS := 11
 #
 #########################################################################
 
-GPS_MODULE :=
-include device/amlogic/common/gps.mk
+#GPS_MODULE :=
+#include device/amlogic/common/gps.mk
 
 
 
@@ -191,25 +191,8 @@ PRODUCT_PACKAGES += \
 	FileBrowser \
 	AppInstaller \
 	VideoPlayer \
-	Samba \
-	smbd\
-	libsmbbase \
-	libsmbmnt \
 	RemoteIME \
-	remotecfg \
-	PPPoE \
-        libpppoejni \
-        pppoe_wrapper \
-        pppoe \
-        amlogic.pppoe \
-        amlogic.pppoe.xml \
-	DLNA \
-	OTAUpgrade \
-	RC_Server \
-	MediaBoxLauncher\
-	MboxSetting \
-	Discovery.apk \
-	IpRemote.apk	
+	remotecfg
 
 # Device specific system feature description
 PRODUCT_COPY_FILES += \
@@ -246,13 +229,6 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/liboptimization.so:system/lib/liboptimization.so \
 	$(LOCAL_PATH)/config:system/etc/config
 	
-# xiaocong game center
-PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/xiaocong/libEventJNI4.so:system/lib/libEventJNI4.so \
-	$(LOCAL_PATH)/xiaocong/XCgamecenter.apk:system/app/XCgamecenter.apk \
-	$(LOCAL_PATH)/xiaocong/xcmid-amlogic:system/bin/xcmid-amlogic \
-	$(LOCAL_PATH)/xiaocong/xcuts.idc:/system/usr/idc/xcuts.idc \
-	$(LOCAL_PATH)/xiaocong/sensors.amlogic.so:/system/lib/hw/sensors.amlogic.so
 
 
 ifeq ($(strip $(TARGET_USE_SECURITY_MODE)),true)
