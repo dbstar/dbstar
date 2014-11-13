@@ -18,23 +18,13 @@ import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
+import com.dbstar.app.TaskController;
+import com.dbstar.app.TaskObserver;
 import com.dbstar.model.EventData;
 import com.dbstar.util.LogUtil;
 import com.dbstar.util.upgrade.RebootUtils;
 
-//Tasks
-interface TaskController {
-	public void taskFinished();
-
-	public void registerTask(TaskObserver observer);
-}
-
-interface TaskObserver {
-	public void onFinished(int resultCode, Object result);
-}
-
-public class GDSystemMgrActivity extends GDBaseActivity implements
-		TaskController {
+public class GDSystemMgrActivity extends GDBaseActivity {
 	private static final String TAG = "GDSystemMgrActivity";
 
 	static final int VALUE_TRUE = 1;
@@ -47,7 +37,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 	private TextView mSecurityCodeView;
 	private String mSecurityCode = DefaultSecurityCode;
 
-	private ArrayList<TaskEntity> mTasks = null;
+	private ArrayList<TaskEntity> mTaskEntitys = null;
 	private int mTaskIndex = 0;
 	TaskObserver mCurrentTask = null;
 
@@ -122,6 +112,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 	}
 
 	public void notifyEvent(int type, Object event) {
+		isShowFormatDisk = false;
 		super.notifyEvent(type, event);
 
 		EventData.DiskFormatEvent formatEvent = (EventData.DiskFormatEvent) event;
@@ -163,41 +154,42 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		}
 	}
 
-	void okButtonPressed() {
+	void okBtnPressed() {
 
 		//RestoreFactoryUtil.closeNetwork();
 
-		if (mTasks == null) {
-			mTasks = new ArrayList<TaskEntity>();
+		if (mTaskEntitys == null) {
+			mTaskEntitys = new ArrayList<TaskEntity>();
 		} else {
-			mTasks.clear();
+			mTaskEntitys.clear();
 		}
 
 		if (mRestoreChecker.isChecked()) {
 			RestoreTaskEntity task = new RestoreTaskEntity(this);
-			mTasks.add(task);
+			mTaskEntitys.add(task);
 		}
 
 		if (mClearChecker.isChecked()) {
 			ClearTaskEntity task = new ClearTaskEntity(this);
-			mTasks.add(task);
+			mTaskEntitys.add(task);
 		}
 
 		if (mFormatChecker.isChecked()) {
+			isShowFormatDisk = false;
 			FormatTaskEntity task = new FormatTaskEntity(this);
-			mTasks.add(task);
+			mTaskEntitys.add(task);
 		}
 
 		mTaskIndex = -1;
-		scheduleTaskSequently();
+		scheduleTaskSequentlys();
 	}
 
-	void scheduleTaskSequently() {
-		if (mTasks.size() > 0) {
+	void scheduleTaskSequentlys() {
+		if (mTaskEntitys.size() > 0) {
 			mTaskIndex++;
 
-			if (mTaskIndex < mTasks.size()) {
-				TaskEntity task = mTasks.get(mTaskIndex);
+			if (mTaskIndex < mTaskEntitys.size()) {
+				TaskEntity task = mTaskEntitys.get(mTaskIndex);
 				task.doTask();
 			} else {
 				hideLoadingDialog();
@@ -209,13 +201,8 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 		}
 	}
 
-	void rebootSystem() {
-		// hideLoadingDialog();
-		RebootUtils.rebootNormal(this);
-	}
-
 	public void taskFinished() {
-		scheduleTaskSequently();
+		scheduleTaskSequentlys();
 	}
 
 	public void registerTask(TaskObserver observer) {
@@ -241,7 +228,7 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 					} else if (v instanceof Button) {
 						Button button = (Button) v;
 						if (button == mOkButton) {
-							okButtonPressed();
+							okBtnPressed();
 						} else if (button == mCancelButton) {
 							cancelButtonPressed();
 						}
@@ -256,29 +243,6 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 			return false;
 		}
 	};
-
-	class TaskEntity implements TaskObserver {
-		public static final int TaskRestore = 1;
-		public static final int TaskClear = 2;
-		public static final int TaskFormat = 3;
-
-		public int Type = 0;
-
-		protected TaskController Controller = null;
-
-		public TaskEntity(TaskController controller, int type) {
-			Controller = controller;
-			Type = type;
-		}
-
-		protected void doTask() {
-
-		}
-
-		public void onFinished(int resultCode, Object result) {
-
-		}
-	}
 
 	class RestoreTaskEntity extends TaskEntity {
 		public RestoreTaskEntity(TaskController controller) {
@@ -320,45 +284,6 @@ public class GDSystemMgrActivity extends GDBaseActivity implements
 					Controller.taskFinished();
 				}
 			}, 6000);
-		}
-	}
-
-	class FormatTaskEntity extends TaskEntity {
-		public FormatTaskEntity(TaskController controller) {
-			super(controller, TaskFormat);
-		}
-
-		public void doTask() {
-			Controller.registerTask(FormatTaskEntity.this);
-
-			String loadingText = getResources().getString(
-					R.string.format_progress_text);
-			showLoadingDialog(loadingText);
-			RestoreFactoryUtil.formatDisk();
-		}
-
-		public void onFinished(int resultCode, Object result) {
-			// check format result here.
-			hideLoadingDialog();
-			String msg = (String) result;
-
-			showLoadingDialog(msg);
-
-			if (resultCode == VALUE_TRUE) {
-				rebootDelayed(3000);
-			} else {
-				rebootDelayed(5000);
-			}
-		}
-
-		void rebootDelayed(long delayMillis) {
-			mHandler.postDelayed(new Runnable() {
-				public void run() {
-					hideLoadingDialog();
-
-					Controller.taskFinished();
-				}
-			}, delayMillis);
 		}
 	}
 

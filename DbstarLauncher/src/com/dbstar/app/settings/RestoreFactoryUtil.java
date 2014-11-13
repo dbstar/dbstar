@@ -38,8 +38,10 @@ public class RestoreFactoryUtil {
 				.getSystemService(Context.WIFI_SERVICE);
 
 		List<WifiConfiguration> allConfigs = wifiMgr.getConfiguredNetworks();
-		for(WifiConfiguration config: allConfigs) {
-			wifiMgr.removeNetwork(config.networkId);
+		if (allConfigs != null && allConfigs.size() > 0) {			
+			for(WifiConfiguration config: allConfigs) {
+				wifiMgr.removeNetwork(config.networkId);
+			}
 		}
 		
 		wifiMgr.saveConfiguration();

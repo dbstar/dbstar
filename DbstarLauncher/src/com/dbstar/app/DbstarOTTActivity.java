@@ -903,6 +903,7 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
+				isShowFormatDisk = true;
 				okButtonPressed();
 			}
 		}).setCancelable(true);

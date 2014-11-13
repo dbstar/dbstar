@@ -37,16 +37,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-//Tasks
-interface TaskController {
-	public void taskFinished();
-
-	public void registerTask(TaskObserver observer);
-}
-
-interface TaskObserver {
-	public void onFinished(int resultCode, Object result);
-}
 public class GDBaseActivity extends Activity implements ClientObserver, TaskController{
 	private static final String TAG = "GDBaseActivity";
 
@@ -395,7 +385,7 @@ public class GDBaseActivity extends Activity implements ClientObserver, TaskCont
 			msg.arg1 = diskInit.Type;
 			msg.obj = diskInit.Message;
 			msg.sendToTarget();
-		} else if (type == EventData.EVENT_DISK_FORMAT) {
+		} else if (type == EventData.EVENT_DISK_FORMAT && isShowFormatDisk) {
 			EventData.DiskFormatEvent formatEvent = (EventData.DiskFormatEvent) event;
 			Resources res = getResources();
 			String msg = null;
@@ -690,14 +680,15 @@ public class GDBaseActivity extends Activity implements ClientObserver, TaskCont
         return loginData.CtrlNo;
     }
     
+    protected boolean isShowFormatDisk = true;
 	private ArrayList<TaskEntity> mTasks = null;
-	static final int MSG_REBOOT_DELAYED = 0xE001;
+	private static final int MSG_REBOOT_DELAYED = 0xE001;
 	private int mTaskIndex = 0;
-	static final int VALUE_TRUE = 1;
-	static final int VALUE_FALSE = 0;
-	TaskObserver mCurrentTask = null;
+	private static final int VALUE_TRUE = 1;
+	private static final int VALUE_FALSE = 0;
+	private TaskObserver mCurrentTask = null;
     
-    Handler handler = new Handler() {
+    private Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_REBOOT_DELAYED:
@@ -707,27 +698,28 @@ public class GDBaseActivity extends Activity implements ClientObserver, TaskCont
 		}
 	};
 	
-	void rebootSystem() {
+	protected void rebootSystem() {
 		// hideLoadingDialog();
 		RebootUtils.rebootNormal(this);
 	}
 	
 	void okButtonPressed() {
-
-		if (mTasks == null) {
-			mTasks = new ArrayList<TaskEntity>();
-		} else {
-			mTasks.clear();
-		}
-
-		FormatTaskEntity task = new FormatTaskEntity(this);
-		mTasks.add(task);
-
-		mTaskIndex = -1;
-		scheduleTaskSequently();
+		if (isShowFormatDisk) {			
+			if (mTasks == null) {
+				mTasks = new ArrayList<TaskEntity>();
+			} else {
+				mTasks.clear();
+			}
+			
+			FormatTaskEntity task = new FormatTaskEntity(this);
+			mTasks.add(task);
+			
+			mTaskIndex = -1;
+			scheduleTaskSequently();
+		} 
 	}
 
-	void scheduleTaskSequently() {
+	private void scheduleTaskSequently() {
 		if (mTasks.size() > 0) {
 			mTaskIndex++;
 
@@ -752,28 +744,7 @@ public class GDBaseActivity extends Activity implements ClientObserver, TaskCont
 		mCurrentTask = observer;
 	}
 	
-//	public void notifyEvent(int type, Object event) {
-//		super.notifyEvent(type, event);
-//
-//		if (isFormatDisk) {			
-//			if (type == EventData.EVENT_DISK_FORMAT) {
-//				EventData.DiskFormatEvent formatEvent = (EventData.DiskFormatEvent) event;
-//				Resources res = getResources();
-//				String msg = null;
-//				if (formatEvent.Successed) {
-//					msg = res.getString(R.string.format_disk_successed);
-//				} else {
-//					msg = String.format(res.getString(R.string.format_disk_failed), formatEvent.ErrorMessage);
-//				}
-//				
-//				if (mCurrentTask != null) {
-//					mCurrentTask.onFinished(formatEvent.Successed ? VALUE_TRUE : VALUE_FALSE, msg);
-//				}
-//			}
-//		}
-//	}
-	
-	class TaskEntity implements TaskObserver {
+	protected class TaskEntity implements TaskObserver {
 		public static final int TaskRestore = 1;
 		public static final int TaskClear = 2;
 		public static final int TaskFormat = 3;
@@ -787,7 +758,7 @@ public class GDBaseActivity extends Activity implements ClientObserver, TaskCont
 			Type = type;
 		}
 
-		protected void doTask() {
+		public void doTask() {
 
 		}
 
@@ -796,7 +767,7 @@ public class GDBaseActivity extends Activity implements ClientObserver, TaskCont
 		}
 	}
 	
-	class FormatTaskEntity extends TaskEntity {
+	public class FormatTaskEntity extends TaskEntity {
 		public FormatTaskEntity(TaskController controller) {
 			super(controller, TaskFormat);
 		}
