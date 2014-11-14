@@ -22,6 +22,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -252,7 +253,7 @@ public class SysUpgradeSettingsViewWrapper {
 		LogUtil.d("SysUpgradeSettingsViewWrapper", "isNetworkAvailable = " + isNetworkAvailable);
 		
 		
-		if (isNetworkAvailable) {
+//		if (isNetworkAvailable) {
 			if (!isUpgrading) {
 				LocalUpgradeTask task = new LocalUpgradeTask();
 				task.execute();				
@@ -265,42 +266,14 @@ public class SysUpgradeSettingsViewWrapper {
 					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));
 				}
 			}
-		} else {
-			// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
-			fileTotalSize = 0;
-			SettingUtils.save0ToFile();
-			btnOnline.setEnabled(false);
-			txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
-//			ToastUtils.showToast(context, "请检查网络！");
-		}
-		
-//		if (fileTotalSize == 0) {			
-//			if (isNetworkAvailable) {
-//				txtPercent.setText("");	
-//				if (!isUpgrading) {
-//					LocalUpgradeTask task = new LocalUpgradeTask();
-//					task.execute();									
-//				} 
-//			} else {				
-//				// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
-//				fileTotalSize = 0;
-//				btnOnline.setEnabled(false);
-//				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed));										
-//				ToastUtils.showToast(context, "请检查网络！");
-//			}
 //		} else {
-//			if (isNetworkAvailable) {
-//				LogUtil.d("SysUpgradeSettingsViewWrapper", "downloadSize = " + downloadSize);
-//				String percentNum = percentFormat.format(downloadSize);
-//				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));					
-//			} else {
-//				fileTotalSize = 0;
-//				SettingUtils.save0ToFile();
-//				btnOnline.setEnabled(false);
-//				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));										
-//				ToastUtils.showToast(context, "请检查网络！");
-//			}
-//				
+//		if (!isNetworkAvailable) {
+//			// 当网络断开的时候，肯定检测不到新的版本，把两个按钮都变灰色
+//			fileTotalSize = 0;
+//			SettingUtils.save0ToFile();
+//			btnOnline.setEnabled(false);
+//			txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
+////			ToastUtils.showToast(context, "请检查网络！");
 //		}
 	}
 
@@ -414,24 +387,22 @@ public class SysUpgradeSettingsViewWrapper {
 			super.onPostExecute(arrayList);
 			
 			if (arrayList != null && arrayList.size() > 0) {
-//				LogUtil.d("SysUpgradeSettingsViewWrapper", " accept()----arrayList.size() = " + arrayList.size());																					
-				if (!arrayList.contains("m6_cytc_update.zip")) {
-					btnLocal.setEnabled(false);
-					btnOnline.setEnabled(false);
-					checkOnlineUpgradeFile(deviceModel, productSN, softVersion);
-					return;
-				} else {
-					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_need_upgrade));
-					btnLocal.setEnabled(true);
-					btnOnline.setEnabled(false);
-					btnLocal.requestFocus();
-					btnLocal.setNextFocusRightId(R.id.sysUpgrade_settings_btn_local_upgrade);
-					btnLocal.setNextFocusLeftId(R.id.settings_sysUpgrade);
-				}
+				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_need_upgrade));
+				btnLocal.setEnabled(true);
+				btnOnline.setEnabled(false);
+				btnLocal.requestFocus();
+				btnLocal.setNextFocusRightId(R.id.sysUpgrade_settings_btn_local_upgrade);
+				btnLocal.setNextFocusLeftId(R.id.settings_sysUpgrade);
 			} else {				
 				btnLocal.setEnabled(false);
 				btnOnline.setEnabled(false);
-				checkOnlineUpgradeFile(deviceModel, productSN, softVersion);
+				boolean isNetworkAvailable = SettingUtils.isNetworkAvailable(context);
+				if (isNetworkAvailable) {
+					checkOnlineUpgradeFile(deviceModel, productSN, softVersion);						
+				} else {
+					LogUtil.d("SysUpgradeSettingsViewWrapper", " no local upgrade and network unAvailable!");
+					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed));
+				}
 			}
 		}
 	}
