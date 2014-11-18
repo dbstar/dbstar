@@ -200,7 +200,7 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 		case KeyEvent.KEYCODE_MENU:
 		case KeyEvent.KEYCODE_NOTIFICATION:
 			mIsMenuKeyPressed = true;
-			mHandler.postDelayed(mCheckLongPressTask, 10000);
+			mHandler.postDelayed(mCheckLongPressTask, 3000);
 			return true;
 		}
 		

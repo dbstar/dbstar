@@ -31,6 +31,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -238,10 +239,22 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				String diskSize = info.DiskSize;
 				String diskUsed = info.DiskUsed;
 				String diskSpace = info.DiskSpace;
-				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
-						+ "\n硬盘总容量：" + diskSize
-						+ "\n占用空间：" + diskUsed
-						+ "\n剩余空间：" + diskSpace, true);
+				String subSequence = (String) diskSize.subSequence(0, diskSize.length() - 1);
+				int size = 0;
+				try {
+					size = Integer.parseInt(subSequence);
+				} catch (NumberFormatException e) {
+					LogUtil.d("DbstarOTTActivity", "diskSize parse int Error and Exception =  " + e);
+					e.printStackTrace();
+				}
+				
+				if (diskSize.endsWith("G") && size > 200) {					
+					showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
+							+ "\n硬盘总容量：" + diskSize
+							+ "\n占用空间：" + diskUsed
+							+ "\n剩余空间：" + diskSpace, true);
+				} else 
+					LogUtil.d("DbstarOTTActivity", "diskSize = " + diskSize);
 			}
 		}
 		

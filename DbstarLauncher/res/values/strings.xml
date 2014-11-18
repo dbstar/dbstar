@@ -429,9 +429,9 @@
 	<string name="text_filebrowser">文件浏览器</string>
 	<string name="text_factorytest">厂测程序</string>
 	<string name="applist_title">应用名称</string>
-	<string name="external_storage_mount_alert">已插入外部储存！ 是否打开文件管理器</string>
-	<string name="external_storage_format_disk_alert">当前硬盘格式不可识别，是否格式化。</string>
-	<string name="external_storage_format_disk_alert_1">该盘将作为数据接收盘，是否格式化。</string>
+	<string name="external_storage_mount_alert">已插入外部储存！是否打开文件管理器？</string>
+	<string name="external_storage_format_disk_alert">当前硬盘格式不可识别，是否格式化？</string>
+	<string name="external_storage_format_disk_alert_1">该盘将作为数据接收盘，是否格式化？</string>
 	
 	<!-- OttLauncher -->
     
