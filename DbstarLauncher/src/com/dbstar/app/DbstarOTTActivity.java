@@ -236,31 +236,20 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and exists other file!");
 				// 在可写情况下，对话框上要显示硬盘总容量，占用空间、剩余空间。
 				DiskInfo info = GDDiskInfo.getDiskInfo(defaultStorage, true);
+				long rawDiskSize = info.RawDiskSize;
 				String diskSize = info.DiskSize;
 				String diskUsed = info.DiskUsed;
 				String diskSpace = info.DiskSpace;
-				String subSequence = (String) diskSize.subSequence(0, diskSize.length() - 1);
-				int size = 0;
-				try {
-					size = Integer.parseInt(subSequence);
-				} catch (NumberFormatException e) {
-					LogUtil.d("DbstarOTTActivity", "diskSize parse int Error and Exception =  " + e);
-					e.printStackTrace();
-				}
-				
-				if (diskSize.endsWith("G") && size > 200) {					
+				// 200 * 1000 * 1000 * 1000
+				if (rawDiskSize > 200000000000l) {					
 					showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
 							+ "\n硬盘总容量：" + diskSize
 							+ "\n占用空间：" + diskUsed
 							+ "\n剩余空间：" + diskSpace, true);
 				} else 
-					LogUtil.d("DbstarOTTActivity", "diskSize = " + diskSize);
+					LogUtil.d("DbstarOTTActivity", "rawDiskSize = " + rawDiskSize);
 			}
 		}
-		
-//		intentSer = new Intent();
-//		intentSer.setClass(this, GDDataProviderService.class);
-//		startService(intentSer);
 		
 		startService(new Intent("com.settings.service.action.OTTSettingsModeService"));
 		startService(new Intent(this, DbstarService.class));
