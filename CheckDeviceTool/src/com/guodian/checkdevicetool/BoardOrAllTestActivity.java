@@ -22,16 +22,14 @@ import android.widget.TextView;
 
 import com.dbstar.DbstarDVB.IDbstarService;
 import com.dbstar.DbstarDVB.common.Configs;
+import com.guodian.checkdevicetool.testentry.APTest;
 import com.guodian.checkdevicetool.testentry.AudioTest;
 import com.guodian.checkdevicetool.testentry.CopyVideoFileTest;
 import com.guodian.checkdevicetool.testentry.DefaultDiskTest;
 import com.guodian.checkdevicetool.testentry.Disk;
 import com.guodian.checkdevicetool.testentry.EthernetTest;
-import com.guodian.checkdevicetool.testentry.GDModuleTest;
 import com.guodian.checkdevicetool.testentry.NetWorkSignallampTest;
-import com.guodian.checkdevicetool.testentry.PowerLightTest;
 import com.guodian.checkdevicetool.testentry.SdcardTest;
-import com.guodian.checkdevicetool.testentry.SleepKeyTest;
 import com.guodian.checkdevicetool.testentry.SmartCardTest;
 import com.guodian.checkdevicetool.testentry.TestTask;
 import com.guodian.checkdevicetool.testentry.USB1Test;
@@ -89,38 +87,43 @@ public class BoardOrAllTestActivity extends BaseActivity {
             
             mTaskList.add(new EthernetTest(this, handler,R.layout.test_ethernet,true));
             mTaskList.add(new WifiTest(this, handler,R.layout.test_wifi,true));
+            mTaskList.add(new APTest(this, handler, R.layout.test_wifi_ap, true));
+            // 出厂的时候虽然不带硬盘，但是仍需检测硬盘
             mTaskList.add(new DefaultDiskTest(this, handler,R.layout.test_disk,true));
             mTaskList.add(new USB1Test(this, handler, R.layout.test_usb1, true));
             mTaskList.add(new USB2Test(this, handler, R.layout.test_usb2, true));
             mTaskList.add(new SdcardTest(this, handler,R.layout.test_sdcard,true));
+//            mTaskList.add(new PlayerTest(this, handler, R.layout.test_video,true));
             
         }else if(Configs.TYPE_ALL_TEST == mTestTyep){
-            
-            mTaskList.add(new GDModuleTest(this, handler,R.layout.test_gdmodule,false));
+        	// mTaskList.add(new GDModuleTest(this, handler,R.layout.test_gdmodule,false));
             mTaskList.add(new AudioTest(this, handler, R.layout.test_audio, false));
-            mTaskList.add(new PowerLightTest(this, handler,R.layout.test_power_light,false));
+            // 检测的是机顶盒盖上的电源指示灯
+            // mTaskList.add(new PowerLightTest(this, handler,R.layout.test_power_light,false));
             mTaskList.add(new NetWorkSignallampTest(this, handler,R.layout.test_network_signal_lamp,false));
-            mTaskList.add(new SleepKeyTest(this, handler, R.layout.test_sleep_key, false));
+            // 盒盖上的休眠灯
+            // mTaskList.add(new SleepKeyTest(this, handler, R.layout.test_sleep_key, false));
             mTaskList.add(new EthernetTest(this, handler,R.layout.test_ethernet,true));
             mTaskList.add(new WifiTest(this, handler,R.layout.test_wifi,true));
+            mTaskList.add(new APTest(this, handler, R.layout.test_wifi_ap, true));
             mTaskList.add(new SmartCardTest(this, handler,R.layout.test_smartcard,true));
-            //mTaskList.add(new DefaultDiskTest(this, handler,R.layout.test_disk,true));
+            mTaskList.add(new DefaultDiskTest(this, handler,R.layout.test_disk,true));
             mTaskList.add(new CopyVideoFileTest(this, handler, R.layout.test_copy_video, true));
             mTaskList.add(new USB1Test(this, handler, R.layout.test_usb1, true));
             mTaskList.add(new USB2Test(this, handler, R.layout.test_usb2, true));
             mTaskList.add(new SdcardTest(this, handler,R.layout.test_sdcard,true));
             
         }else if(Configs.TYPE_SELECTOR_TEST == mTestTyep){
-            
-            mTaskList.add(new GDModuleTest(this, handler,R.layout.test_gdmodule,false));
+        	// mTaskList.add(new GDModuleTest(this, handler,R.layout.test_gdmodule,false));
             mTaskList.add(new AudioTest(this, handler, R.layout.test_audio, false));
-            mTaskList.add(new PowerLightTest(this, handler,R.layout.test_power_light,false));
+            // mTaskList.add(new PowerLightTest(this, handler,R.layout.test_power_light,false));
             mTaskList.add(new NetWorkSignallampTest(this, handler,R.layout.test_network_signal_lamp,false));
-            mTaskList.add(new SleepKeyTest(this, handler, R.layout.test_sleep_key, false));
+            // mTaskList.add(new SleepKeyTest(this, handler, R.layout.test_sleep_key, false));
             mTaskList.add(new EthernetTest(this, handler,R.layout.test_ethernet,true));
             mTaskList.add(new SmartCardTest(this, handler,R.layout.test_smartcard,true));
             mTaskList.add(new WifiTest(this, handler,R.layout.test_wifi,true));
-            //mTaskList.add(new DefaultDiskTest(this, handler,R.layout.test_disk,true));
+            mTaskList.add(new APTest(this, handler, R.layout.test_wifi_ap, true));
+            mTaskList.add(new DefaultDiskTest(this, handler,R.layout.test_disk,true));
             mTaskList.add(new USB1Test(this, handler, R.layout.test_usb1, true));
             mTaskList.add(new USB2Test(this, handler, R.layout.test_usb2, true));
             mTaskList.add(new SdcardTest(this, handler,R.layout.test_sdcard,true));
@@ -254,8 +257,10 @@ public class BoardOrAllTestActivity extends BaseActivity {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    mCurrentTask = mTaskList.get(0);
-                    mCurrentTask.start();
+                	if (mTaskList.size() > 0) {
+                		mCurrentTask = mTaskList.get(0);
+                		mCurrentTask.start();                		
+                	}
                 }
             }, 1000);
         }else{
@@ -287,7 +292,7 @@ public class BoardOrAllTestActivity extends BaseActivity {
            str = getString(R.string.test_end_notify_2);
            writeNextTestType( Configs.TYPE_SELECTOR_TEST);
        }
-       textView.setText(getString(R.string.test_total) + mTotalCount + getString(R.string.test_xiang) +","+ getString(R.string.test_statu_seccuss) + mSuccessfullyCount +","+ getString(R.string.test_statu_fail) + mFailCount + "," + str );
+       textView.setText(getString(R.string.test_total) + " " + mTotalCount + getString(R.string.test_xiang) +"，"+ getString(R.string.test_statu_seccuss) + " " + mSuccessfullyCount +"，"+ getString(R.string.test_statu_fail) + " "  + mFailCount + "，" + str );
        writeResultToFile();
        mCurrentTask.release();
        handler.post(ScrollRunnable);

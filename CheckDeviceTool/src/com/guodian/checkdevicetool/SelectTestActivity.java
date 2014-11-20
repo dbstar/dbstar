@@ -16,6 +16,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -188,15 +189,22 @@ public class SelectTestActivity extends Activity {
         public ResultAdapter() {
             if(mResult != null){
                 mResult.remove(Configs.PLAY_TIME);
+                if (mResult.containsKey(getResources().getString(R.string.test_sleep_key))) {
+                	mResult.remove(getResources().getString(R.string.test_sleep_key));
+                }
+                if (mResult.containsKey(getResources().getString(R.string.test_power_light))) {
+                	mResult.remove(getResources().getString(R.string.test_power_light));
+                }
                 Iterator<String> iterator = mResult.keySet().iterator();
                 String key ,value;
                 titles = new ArrayList<String>();
                 results = new ArrayList<String>();
                 while(iterator.hasNext()){
-                    key = iterator.next();
-                    value = mResult.get(key);
-                    titles.add(key);
-                    results.add(value);
+					key = iterator.next();
+					value = mResult.get(key);
+					titles.add(key);
+					results.add(value);
+					Log.d("SelectTestActivity", "mResult key = " + key + " value = " + value);                    	
                 }
                 
                 

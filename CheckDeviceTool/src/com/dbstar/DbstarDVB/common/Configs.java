@@ -28,7 +28,10 @@ public class Configs {
     public static final String USB_2 = "usb2";
     public static final String USB_3 = "usb3";
     
-    public static String TEST_CONFIG_FILE_PAHT = "/storage/external_storage/sdcard1/test_configure.xml";
+    public static String TEST_CONFIG_FILE_PAHT_SDB1 = "/storage/external_storage/sdb1/test_configure.xml";
+    public static String TEST_CONFIG_FILE_PAHT_SDA1 = "/storage/external_storage/sda1/test_configure.xml";
+    public static String TEST_CONFIG_FILE_PAHT_SDCARD1 = "/storage/external_storage/sdcard1/test_configure.xml";
+    public static String TEST_CONFIG_FILE_PAHT_SDC1 = "/storage/external_storage/sdc1/test_configure.xml";
     public static String DEFALUT_DISK = "";
     
     public String mWifiSSID;
@@ -41,7 +44,7 @@ public class Configs {
     
     static {
         if(APPVersion.SINGLE){
-            TEST_CONFIG_FILE_PAHT = "/mnt/sdcard/external_sdcard/test_configure.xml";
+            TEST_CONFIG_FILE_PAHT_SDA1 = "/mnt/sdcard/external_sdcard/test_configure.xml";
             DEFALUT_DISK= "";
         }
     }

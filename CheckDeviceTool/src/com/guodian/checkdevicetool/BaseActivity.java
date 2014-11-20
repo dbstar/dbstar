@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.dbstar.DbstarDVB.common.Configs;
@@ -40,7 +41,9 @@ public class BaseActivity extends Activity{
             if(MESSAGE_WHAT_PREPARE_FINISH == what){
                 if(mInitDeviceDialog != null && mInitDeviceDialog.isShowing())
                     mInitDeviceDialog.dismiss();
-                mConfig = XmlParser.parseConfig(Configs.TEST_CONFIG_FILE_PAHT);
+                String path = CheckTestConfigFilePath();
+                
+                mConfig = XmlParser.parseConfig(path);
                 if(mConfig == null){
                     Toast.makeText(getApplication(), R.string.test_read_configfile_fail, 1).show(); 
                 }else{
@@ -60,9 +63,24 @@ public class BaseActivity extends Activity{
                     mLog.i("test config file in not found or sda1 hava not mounted");
                 }
             }
-        };
+        }
+
     };
    
+    private String CheckTestConfigFilePath() {
+    	String path = Configs.TEST_CONFIG_FILE_PAHT_SDA1;
+    	String[] filePaths = {Configs.TEST_CONFIG_FILE_PAHT_SDA1, Configs.TEST_CONFIG_FILE_PAHT_SDB1, 
+    			Configs.TEST_CONFIG_FILE_PAHT_SDC1, Configs.TEST_CONFIG_FILE_PAHT_SDCARD1};
+    	for (int i = 0; i < filePaths.length; i++) {
+    		File file = new File(filePaths[i]);
+    		if (file.exists()) {
+    			path = filePaths[i];
+    			Log.d("BaseActivity", "in CheckDeviceTool, TEST_CONFIG_FILE_PAHT = " + filePaths[i]);
+    			break;
+    		}
+    	}
+    	return path;
+    };
 
     private void waitting(int delayed){
         mHandler.postDelayed(new Runnable() {
@@ -143,7 +161,8 @@ public class BaseActivity extends Activity{
         int type = mTestTypePf.getInt(Configs.TEST_TYPE, Configs.TYPE_BOARD_TEST);
         if(Configs.TYPE_BOARD_TEST == type){
             File disk = new File(Configs.DEFALUT_DISK);
-            File file = new File(Configs.TEST_CONFIG_FILE_PAHT);
+            String path = CheckTestConfigFilePath();
+            File file = new File(path);
             mDisks = DeviceInfoProvider.loadDiskInfo();
             if(file.exists() && disk.exists() && mDisks.size() >=2){
                 return true;
@@ -153,7 +172,8 @@ public class BaseActivity extends Activity{
             
         }else {
            // File disk = new File(Configs.DEFALUT_DISK);
-            File file = new File(Configs.TEST_CONFIG_FILE_PAHT);
+        	String path = CheckTestConfigFilePath();
+            File file = new File(path);
             mDisks = DeviceInfoProvider.loadDiskInfo();
             if(file.exists() && /*disk.exists() &&*/ mDisks.size() >=2){
                 return true;

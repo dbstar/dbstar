@@ -19,6 +19,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.dbstar.DbstarDVB.common.Configs;
@@ -46,33 +47,40 @@ public class WifiTest extends TestTask{
             mWifiManager.setWifiEnabled(false);
         }*/
     }
-    public void start() {
-        super.start();
-          
-      if(isConnectedNetWork()){
-          sendSuccessMsg();
-          return;
-      }
-      Configs config = ((BoardOrAllTestActivity)context).getConfig();
-      if(config != null){
-          SSID = ((BoardOrAllTestActivity)context).getConfig().mWifiSSID;
-          password = ((BoardOrAllTestActivity)context).getConfig().mWifiPassword;
-      }
-        if(SSID == null || SSID.isEmpty()){
-            sendFailMsg(context.getResources().getString(R.string.test_read_configfile_fail));
-            return;
-        }
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                registerReceiver();
-                IfNeedToOpenWifi();
-                mHandler.removeCallbacks(timeOutTask);
-                mHandler.postDelayed(timeOutTask, 1000 * 120);
-            }
-        }, 1000 *1);
-       
-    }
+
+	public void start() {
+		super.start();
+
+		if (isConnectedNetWork()) {
+			sendSuccessMsg();
+			return;
+		}
+		
+		Configs config = ((BoardOrAllTestActivity) context).getConfig();
+		Log.d("WifiTest", "wifi config = " + config);
+		if (config != null) {
+			SSID = ((BoardOrAllTestActivity) context).getConfig().mWifiSSID;
+			password = ((BoardOrAllTestActivity) context).getConfig().mWifiPassword;
+		}
+		
+		Log.d("WifiTest", "wifi SSID = " + SSID);
+		Log.d("WifiTest", "wifi password = " + password);
+		if (SSID == null || SSID.isEmpty()) {
+			sendFailMsg(context.getResources().getString(R.string.test_read_configfile_fail));
+			return;
+		}
+		
+		mHandler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				registerReceiver();
+				IfNeedToOpenWifi();
+				mHandler.removeCallbacks(timeOutTask);
+				mHandler.postDelayed(timeOutTask, 1000 * 120);
+			}
+		}, 1000 * 1);
+
+	}
     private void registerReceiver(){
         IntentFilter mFilter = new IntentFilter();
         
@@ -93,7 +101,9 @@ public class WifiTest extends TestTask{
         }
     }
     private void IfNeedToOpenWifi(){
+    	Log.d("WifiTest", "need to open wifi!");
         if(!mWifiManager.isWifiEnabled() && mWifiManager.getWifiState() != WifiManager.WIFI_STATE_ENABLING){
+        	Log.d("WifiTest", "wifi is openning!");
             mWifiManager.setWifiEnabled(true);
             this.isAutoToNext = false;
             this.isShowResult = false;

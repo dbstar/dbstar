@@ -36,10 +36,10 @@ public class XmlParser {
                         config.mWifiPassword =parser.getText();
                     }
                     
-                    if(Configs.SOCKET.equals(parser.getName())){
-                        event = parser.next();
-                        config.mScoketNumber = parser.getText();
-                    }
+//                    if(Configs.SOCKET.equals(parser.getName())){
+//                        event = parser.next();
+//                        config.mScoketNumber = parser.getText();
+//                    }
                     
                     if(Configs.SMART_CARD_NUMBER.equals(parser.getName())){
                         event = parser.next();

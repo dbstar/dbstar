@@ -26,7 +26,6 @@ import android.widget.Toast;
 import com.dbstar.DbstarDVB.IDbstarService;
 import com.dbstar.DbstarDVB.common.Configs;
 import com.guodian.checkdevicetool.util.GLog;
-import com.guodian.checkdevicetool.util.XmlParser;
 import com.guodian.checkdevicetool.widget.InitDeviceDialog;
 
 public class AgingTestActivity extends Activity {

@@ -23,6 +23,7 @@ public class DeviceInfoProvider {
         ArrayList<Disk> disks = new ArrayList<Disk>();
         
         File mnt = new File("/storage/external_storage");
+        mLog.i("mnt.exists() = " + mnt.exists());
         if(APPVersion.SINGLE){
             mnt = new File("/mnt");
         }
@@ -32,6 +33,7 @@ public class DeviceInfoProvider {
         }
 
         File[] mnts = mnt.listFiles();
+        mLog.i("mnts = " + mnts);
         if (mnts == null)
             return null;
         if(APPVersion.SINGLE){

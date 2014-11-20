@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.dbstar.DbstarDVB.common.Configs;
 import com.guodian.checkdevicetool.BoardOrAllTestActivity;
@@ -63,6 +64,12 @@ public class CopyVideoFileTest extends TestTask{
                 
                 File targetFile = new File(Configs.TARGET_VIDEO_FILE);
                 File sdcartFile = new File(mConfig.mVideoPath);
+                Log.d("CopyVideoFileTest", "-------------sdcartFile.length() = " + sdcartFile.length());
+                Log.d("CopyVideoFileTest", "-------------targetFile.length() = " + targetFile.length());
+                Log.d("CopyVideoFileTest", "-------------mCopyState = " + mCopyState);
+                Log.d("CopyVideoFileTest", "-------------END_COPY = " + END_COPY);
+                Log.d("CopyVideoFileTest", "-------------mConfig.mVideoPath = " + mConfig.mVideoPath);
+                Log.d("CopyVideoFileTest", "-------------targetFile.exists() = " + targetFile.exists());
                 if(mCopyState == END_COPY && targetFile.exists() && sdcartFile.length() == targetFile.length()){
                     sendSuccessMsg();
                 }else{

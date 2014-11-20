@@ -43,6 +43,9 @@
         <activity
             android:name="com.guodian.checkdevicetool.AgingTestActivity" >
         </activity>
+        <activity
+            android:name="com.guodian.checkdevicetool.PlayerVideoActivity" >
+        </activity>
         <activity android:name="com.guodian.checkdevicetool.SelectTestActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

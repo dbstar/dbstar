@@ -16,7 +16,7 @@ public class TestTypeReceiver extends BroadcastReceiver {
             int value = preferences.getInt(Configs.TEST_TYPE, Configs.TYPE_BOARD_TEST);
             Intent startInTent = null;
             
-           GLog.getLogger("Futao").i("onReceive" + value);
+           GLog.getLogger("TestTypeReceiver").i("onReceive" + value);
             //mainboard test
             if(value == Configs.TYPE_BOARD_TEST){
                 startInTent = new Intent(context, BoardOrAllTestActivity.class);

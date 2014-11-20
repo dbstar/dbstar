@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import com.dbstar.DbstarDVB.common.Configs;
 import com.guodian.checkdevicetool.BoardOrAllTestActivity;
@@ -52,12 +53,14 @@ public class USB2Test extends TestTask{
             public void run() {
                 if(usbPaths.isEmpty()){
                    mLog.i("usb2---usbPaths.isEmpty()");
+                   Log.d("USB2Test", context.getResources().getString(R.string.test_disk_info_error));
                     sendFailMsg(context.getResources().getString(R.string.test_disk_info_error));
                     return;
                 }
                     File file = new File(usb2Path);
                     if(!file.exists()){
                        mLog.i("usb2---!file.exists())");
+                       Log.d("USB2Test", context.getResources().getString(R.string.test_disk_info_error));
                         sendFailMsg(context.getResources().getString(R.string.test_disk_info_error));
                     }else{
                         File file2 = new File(usb2Path + testFile1);
@@ -89,6 +92,7 @@ public class USB2Test extends TestTask{
     private void writAndReadFile(){
         if(usbPaths.isEmpty()){
            mLog.i("usb2---usbPaths.isEmpty()");
+	        Log.d("USB2Test", context.getResources().getString(R.string.test_disk_info_error));
             sendFailMsg(context.getResources().getString(R.string.test_disk_info_error));
             return;
         }
