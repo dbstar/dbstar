@@ -29,7 +29,7 @@ public class CopyVideoFileTest extends TestTask{
             boolean isAuto) {
         super(context, handler, viewId, isAuto);
         mActivity = (BoardOrAllTestActivity) context;
-        mLog = GLog.getLogger("Futao");
+        mLog = GLog.getLogger("FactoryTest");
     }
    
     public void start() {

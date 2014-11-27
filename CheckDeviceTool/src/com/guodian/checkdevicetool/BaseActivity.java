@@ -99,7 +99,7 @@ public class BaseActivity extends Activity{
         super.onCreate(savedInstanceState);
          mTestResultPf = getSharedPreferences(Configs.TEST_RESULT_PATH, Context.MODE_PRIVATE);
          mTestTypePf = getSharedPreferences(Configs.TEST_TYPE_ORDER_FILE_NAME, Context.MODE_PRIVATE);
-         mLog =  GLog.getLogger("Futao");
+         mLog =  GLog.getLogger("FactoryTest");
          
          mInitDeviceDialog = InitDeviceDialog.getInstance(this, null);
          mInitDeviceDialog.show();

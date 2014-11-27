@@ -15,7 +15,7 @@ import com.guodian.checkdevicetool.testentry.Disk;
 
 public class DeviceInfoProvider {
     
-    public static GLog mLog = GLog.getLogger("Futao");
+    public static GLog mLog = GLog.getLogger("FactoryTest");
     public static final long UNITSIZE_100G = 107374182400l;
     
     public static  ArrayList<Disk> loadDiskInfo(){

@@ -36,7 +36,7 @@ public class TestTask {
         inflater = LayoutInflater.from(context);
         count ++;
         order = count;
-        mLog = GLog.getLogger("Futao");
+        mLog = GLog.getLogger("FactoryTest");
     }
     //LinearLayout start(LinearLayout parentView, LayoutInflater inflater, TestTools tools);
     public void start(){

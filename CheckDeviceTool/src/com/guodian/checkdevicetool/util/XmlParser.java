@@ -12,7 +12,7 @@ import com.dbstar.DbstarDVB.common.Configs;
 public class XmlParser {
     
     public static Configs parseConfig(String path){
-        GLog.getLogger("Futao").i("start parseConfig ");
+        GLog.getLogger("FactoryTest").i("start parseConfig ");
         Configs config = null;
         try {
             InputStream in = new FileInputStream(path);
@@ -59,7 +59,7 @@ public class XmlParser {
                 event = parser.next();
             }
         } catch (Exception e) {
-           GLog.getLogger("Futao").i("parser fail ");
+           GLog.getLogger("FactoryTest").i("parser fail ");
             e.printStackTrace();
         }
         return  config;

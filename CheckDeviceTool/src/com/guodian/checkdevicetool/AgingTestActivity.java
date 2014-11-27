@@ -71,7 +71,7 @@ public class AgingTestActivity extends Activity {
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.aging_test_view);
-        mLog = GLog.getLogger("Futao");
+        mLog = GLog.getLogger("FactoryTest");
         mTestReuslt = (TextView) findViewById(R.id.test_result);
         
         mWindowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
