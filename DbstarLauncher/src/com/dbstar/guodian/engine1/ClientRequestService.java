@@ -238,7 +238,7 @@ public class ClientRequestService {
     }
 
     private void login(){
-        LogUtil.i("Futao", "login ------------------------------------------------------------------------------------");
+        LogUtil.i("ClientRequestService", "login ------------------------------------------------------------------------------------");
         String macAddr = GDNetworkUtil.getMacAddress(mContext, true);
         mUserId = macAddr;
         RequestParams params = new RequestParams( GDRequestType.DATATYPE_LOGIN);

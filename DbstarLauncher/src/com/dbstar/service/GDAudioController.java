@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class GDAudioController extends BroadcastReceiver {
 	private static final String TAG = "GDAudioController";
@@ -39,6 +40,7 @@ public class GDAudioController extends BroadcastReceiver {
 	public void muteAudio(int mute) {
 		mIsMute = mute == GDCommon.MUTE_TRUE ? true : false;
 		mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, mIsMute);
+		Log.d(TAG, " mIsMute = " + mIsMute);
 		SystemUtils.saveMute(mute);
 	}
 

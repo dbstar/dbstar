@@ -158,9 +158,9 @@ public class ImageUtil {
 			Log.d("ImageUtil HomeBG", "width = " + width);
 			Log.d("ImageUtil HomeBG", "height = " + height);
 			
-			bitmapOptions.inJustDecodeBounds = false;
 			// bitmapOptions.outWidth为获取到的原图的宽度
 			bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
+			bitmapOptions.inJustDecodeBounds = false;
 			
 			resizedBitmap  = BitmapFactory.decodeFile(picAppUri, bitmapOptions);
 		}
@@ -193,9 +193,9 @@ public class ImageUtil {
 			Log.d("ImageUtil HomeBG", "width = " + width);
 			Log.d("ImageUtil HomeBG", "height = " + height);
 			
-			bitmapOptions.inJustDecodeBounds = false;
 			// bitmapOptions.outWidth为获取到的原图的宽度
 			bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 560);
+			bitmapOptions.inJustDecodeBounds = false;
 			
 			resizedBitmap = BitmapFactory.decodeFile(picServiceUri, bitmapOptions);
 		}
@@ -222,9 +222,9 @@ public class ImageUtil {
 			Log.d("ImageUtil HomeBG", "width = " + width);
 			Log.d("ImageUtil HomeBG", "height = " + height);
 			
-			bitmapOptions.inJustDecodeBounds = false;
 			// bitmapOptions.outWidth为获取到的原图的宽度
 			bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
+			bitmapOptions.inJustDecodeBounds = false;
 			
 			resizedBitmap = BitmapFactory.decodeFile(picHomeUri, bitmapOptions);
 		}

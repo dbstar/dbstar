@@ -33,7 +33,6 @@ import android.widget.TextView;
 
 import com.dbstar.R;
 import com.dbstar.app.GDBaseActivity;
-import com.dbstar.app.GDCelanderThread;
 import com.dbstar.app.GDHDMovieActivity;
 import com.dbstar.app.GDMediaScheduler;
 import com.dbstar.app.GDOrderPushActivity;
@@ -82,6 +81,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	private static final int REQUEST_POWER_TARGET_ACTIVITY_RESULT = 1;
 	private static final int START_NETWORKSETTING_ACTIVITY_RESULT = 2;
 	private static final int START_SETTINGS_ACTIVITY_RESULT = 3;
+	private static final int START_RICHMEDIA_ACTIVITY_RESULT = 4;
 	
 	private long lastClick = 0l;
 	
@@ -394,6 +394,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 	
 	private boolean mIsStartingColumnView = false;
+
+	private boolean muteBeforRm;
 	
 	private void startMovieView(String columnId) {
 		Intent intent = new Intent();
@@ -515,7 +517,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			}
 			if(intent != null){
 			    intent.putExtra("Id", columnId);
-			    startActivity(intent);
+			    muteBeforRm = isMute();
+			    if (muteBeforRm) {
+//			    	LogUtil.d(TAG, " ---------------------------muteBeforRm = " + muteBeforRm);
+			    	setMute(!muteBeforRm);					
+			    }
+//			    startActivity(intent);
+			    intent.putExtra("app_uri", ImageUtil.App_Uri);
+			    startActivityForResult(intent, START_RICHMEDIA_ACTIVITY_RESULT);
 			}
 		}
 	void showHighlightMenuItem() {
@@ -661,6 +670,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
             
             intent.putExtra("mColumnBookId", mColumnBookId);
             intent.putExtra("mColumnNewsPaperPaperId", mColumnNewsPaperId);
+            
+            intent.putExtra("app_uri", ImageUtil.App_Uri);
         }
 
 		if (intent != null) {
@@ -685,6 +696,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
 			if (intent != null) {
 	            intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+	            intent.putExtra("app_uri", ImageUtil.App_Uri);
 	            startActivityForResult(intent, START_NETWORKSETTING_ACTIVITY_RESULT);
 	        }
 			return;
@@ -733,6 +745,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	    } else if (requestCode == START_SETTINGS_ACTIVITY_RESULT) {
 //	    	tag = false;
 //	    	startEngine();
+	    } else if (requestCode == START_RICHMEDIA_ACTIVITY_RESULT) {
+	    	LogUtil.d(TAG, "in onActivityResult, muteBeforRm = " + muteBeforRm);
+	    	setMute(muteBeforRm);
 	    }
 	}
 	private void showGuodianApp(String columnId) {
