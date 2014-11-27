@@ -4,11 +4,16 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.widget.RelativeLayout;
 
 import com.dbstar.settings.R;
 import com.dbstar.settings.base.PageManager;
 import com.dbstar.settings.utils.APPVersion;
+import com.dbstar.settings.utils.ImageUtil;
 import com.dbstar.settings.utils.SettingsCommon;
 
 public class GDNetworkSettingsActivity extends GDBaseActivity implements
@@ -21,6 +26,8 @@ public class GDNetworkSettingsActivity extends GDBaseActivity implements
 
 	Page[] mPages;
 
+	private Bitmap mBitmap;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -30,6 +37,20 @@ public class GDNetworkSettingsActivity extends GDBaseActivity implements
 		setContentView(R.layout.network_settings);
 		
 		initializeView();
+		
+		RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.network_settings_container);
+		
+		String appUri = getIntent().getStringExtra("app_uri");
+		
+		mBitmap = ImageUtil.loadPic(appUri);
+		
+		if (mBitmap == null) {
+			mContainer.setBackgroundResource(R.drawable.view_background);
+		} else {
+			Drawable drawable = new BitmapDrawable(mBitmap);
+			mContainer.setBackgroundDrawable(drawable);			
+		}
+		
 		
 		Intent intent = getIntent();
 		mMenuPath = intent.getStringExtra(INTENT_KEY_MENUPATH);
@@ -52,6 +73,9 @@ public class GDNetworkSettingsActivity extends GDBaseActivity implements
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		if (mBitmap != null && !mBitmap.isRecycled()) {
+			mBitmap.recycle();
+		}
 	}
 
 	protected void switchToPageInternal(String fragmentName, Bundle args) {

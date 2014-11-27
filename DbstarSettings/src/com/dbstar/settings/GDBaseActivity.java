@@ -3,13 +3,8 @@ package com.dbstar.settings;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.dbstar.settings.R;
-import com.dbstar.settings.alert.GDAlertDialog;
-
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,6 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.dbstar.settings.alert.GDAlertDialog;
 
 public class GDBaseActivity extends Activity {
 	private static final String TAG = "GDBaseActivity";

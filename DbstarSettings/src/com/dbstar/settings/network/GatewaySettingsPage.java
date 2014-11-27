@@ -4,9 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
@@ -21,7 +18,6 @@ import android.widget.Toast;
 
 import com.dbstar.settings.R;
 import com.dbstar.settings.base.BaseFragment;
-import com.dbstar.settings.utils.ImageUtil;
 
 public class GatewaySettingsPage extends BaseFragment {
 	private static final String TAG = "GatewaySettingsPage";
@@ -72,12 +68,7 @@ public class GatewaySettingsPage extends BaseFragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-
 		mActivity.unregisterReceiver(mReceiver);
-		
-		if (mBitmap != null && !mBitmap.isRecycled()) {
-			mBitmap.recycle();
-		}
 	}
 
 	private void onToNextPage() {
@@ -118,7 +109,6 @@ public class GatewaySettingsPage extends BaseFragment {
 			}
 		}
 	};
-	private Bitmap mBitmap;
 
 	void getNetworkInfo() {
 		Intent intent = new Intent();
@@ -194,16 +184,6 @@ public class GatewaySettingsPage extends BaseFragment {
 //		mNullview.requestFocus();
 		
 		mNextButton.requestFocus();
-		
-		mBitmap = ImageUtil.parserXmlAndLoadPic();
-		
-		if (mBitmap == null) {
-			mContainer.setBackgroundResource(R.drawable.view_background);
-		} else {
-			Drawable drawable = new BitmapDrawable(mBitmap);
-			mContainer.setBackgroundDrawable(drawable);			
-		}
-
 	}
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {
