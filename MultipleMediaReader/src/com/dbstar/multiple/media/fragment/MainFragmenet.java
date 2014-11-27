@@ -15,6 +15,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -259,14 +260,22 @@ public class MainFragmenet extends BaseFragment {
             }
         });
         
+        mDateViewGroup.setOnFocusChangeListener(new OnFocusChangeListener() {
+			
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if(mDateViewGroup.hasFocus()) {
+					initFooterInfo(true);                	
+				}
+				
+			}
+		});
+        
         mDateViewGroup.setOnSelectedListener(new OnDateViewSelectedListener() {
             
             @Override
             public void onSelected(NewsPaper paper) {
                     showPagePictureInfo(paper);
-                
-                if(mDateViewGroup.hasFocus())
-                    initFooterInfo(true);
             }
         });
     }

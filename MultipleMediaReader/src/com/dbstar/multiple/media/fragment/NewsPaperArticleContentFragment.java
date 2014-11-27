@@ -3,8 +3,7 @@ package com.dbstar.multiple.media.fragment;
 import java.util.List;
 
 import android.app.Activity;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
+import android.app.Service;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -18,8 +17,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -28,13 +25,10 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dbstar.multiple.media.common.ImageManager;
-import com.dbstar.multiple.media.common.ShelfController;
 import com.dbstar.multiple.media.common.ImageManager.ImageCallback;
-import com.dbstar.multiple.media.data.Book;
-import com.dbstar.multiple.media.data.BookCategory;
+import com.dbstar.multiple.media.common.ShelfController;
 import com.dbstar.multiple.media.data.NewsPaperArticleContent;
 import com.dbstar.multiple.media.data.NewsPaperArticleContent.Block;
 import com.dbstar.multiple.media.data.NewsPaperArticleContent.Patch;
@@ -49,6 +43,7 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
     
     private static int MESSAGE_PLAY_REFRESH_VIEW = 0x100;
     private static int MESSAGE_PLAY_NEXT_ARTICAL = 0x200;
+    private static int MESSAGE_PLAY_STOP = 0x300;
     
     private NewsPaperPage mPage;
     private NewsPaperContentView mContentView;
@@ -76,6 +71,9 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
                 mContentView.setPalyIndex(patch.startIndex, patch.endIndex);
             }else if(what == MESSAGE_PLAY_NEXT_ARTICAL){
                 mActivity.showNextArticle();
+            } else if (what == MESSAGE_PLAY_STOP) {
+            	stopPlay();
+            	hasStoped = true;
             }
             
         }
@@ -114,6 +112,9 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
         mFooterSubCategoryName = (TextView) v.findViewById(R.id.footer_sub_category);
         mFooterPageName = (TextView) v.findViewById(R.id.footer_page);
         
+        AudioManager audioManager = (AudioManager) getActivity().getSystemService(Service.AUDIO_SERVICE);
+        audioManager.setStreamMute(AudioManager.STREAM_SYSTEM, false);
+        
         mScrollView.setOnKeyListener(new OnKeyListener() {
             long lastOnKeyTime ;
             @Override
@@ -125,16 +126,34 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
                         //mActivity.showNextArticle();
                         return true;
                     }else if(keyCode == KeyEvent.KEYCODE_ALT_LEFT){
-                        long currentTime = System.currentTimeMillis();
-                            if(currentTime - lastOnKeyTime > 2000){
-                           if(isTtsInited && Tts.JniIsPlaying() == 1){
-                              stopPlay();
-                           }else if(!isTtsInited){
-                               initTtsEngine();
-                               startPlay();
-                           }
-                           lastOnKeyTime = currentTime;
-                        }
+						long currentTime = System.currentTimeMillis();
+						if (currentTime - lastOnKeyTime > 2000) {
+							Log.d("onkey in rm ", "------------------- isTtsInited = " + isTtsInited);
+							if(!isTtsInited) {
+								Log.d("onkey in rm ", " initTtsEngine(), Tts.JniIsPlaying() = " + Tts.JniIsPlaying());
+								if (Tts.JniIsPlaying() != 0) {
+									initTtsEngine();									
+								} else 
+									isTtsInited = true;
+							}
+							
+							if ((Tts.JniIsPlaying() == 0 || Tts.JniIsPlaying() == 1) && isPlay) {
+//								isPlay = false;
+								stopPlay();
+								hasStoped = true;
+								Log.d("onkey in rm ", " stopPlay(), KEYCODE_ALT_LEFT, Tts.JniIsPlaying() = " + Tts.JniIsPlaying());
+							} else if (Tts.JniIsPlaying() != 1 && hasStoped) {
+//								isPlay = true;
+								hasStoped = false;
+								Log.d("onkey in rm ", " startPlay(), KEYCODE_ALT_LEFT, Tts.JniIsPlaying() = " + Tts.JniIsPlaying());
+								startPlay();
+							} else {
+								Log.d("onkey in rm ", "ignore no status KEYCODE_ALT_LEFT, Tts.JniIsPlaying() = " + Tts.JniIsPlaying() + ", isPlay = " + isPlay + ", hasStoped = " + hasStoped);
+							}
+							lastOnKeyTime = currentTime;
+						} else {
+							Log.d("onkey in rm ", "ignore too frequency KEYCODE_ALT_LEFT");
+						}
                        
                         return true;
                     }else if(keyCode == KeyEvent.KEYCODE_NOTIFICATION){
@@ -174,17 +193,21 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        Log.d("onHiddenChanged", "hiddlen = " + hidden);
         if(!hidden)
             loadData();
         else{
-            if(isTtsInited)
-                stopPlay();
+            if(isTtsInited){
+            	Log.d("onHiddenChanged", "hiddlen = " + hidden + ", isTtsInited = " + isTtsInited);
+            	hasStoped = true;
+            	stopPlay();
+            }
         }
     }
     
     private void loadData(){
         if(isNeedLoad){
-            Log.i("Futao", "isNeedLoad");
+            Log.i("NewsPaperArticleContentFragment", "isNeedLoad");
             mTitleView.setText(mPage.title);
             mArticlePicLoadingView.setVisibility(View.VISIBLE);
             mImageManager.getBitmapDrawable(mPage.PicPath, new ImageCallback() {
@@ -230,9 +253,9 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
                         }
                     });
                      mScrollView.scrollTo(0, 0);
-                     isPlay = true;
-                     
-                     
+                     Log.d("NewsPaperArticleContentFragment", "in loadData(), and isPlay = " + isPlay + ", hasStoped = " + hasStoped);
+//                     isPlay = true;
+                     hasStoped = true;
                 }
             }.execute("");
         }else{
@@ -255,7 +278,8 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
             mFooterPageName.setText(arr[2]);
         }
     }
-    boolean isPlay = true;
+    boolean isPlay = false;
+    boolean hasStoped = true;
     boolean isTtsInited = false;
     private int readRecord = 0;
     private void startPlay(){
@@ -265,9 +289,18 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
             public void run() {
                 STOP:
                 while (true) {
-                    if(!isPlay)
-                        continue;
-                    List<NewsPaperArticleContent.Patch> patchs = mData.patchs;
+                    if(!isPlay){
+//                    	Log.d("startPlay thread", "isPlay is false, sleep...");
+                    	continue;
+                    }
+                        
+                    List<NewsPaperArticleContent.Patch> patchs = null;
+                    if (mData != null) {
+                    	patchs = mData.patchs;
+                    } else {
+                    	Log.d("startPlay thread", " mData is null!");
+                    }
+                    
                     if(patchs != null){
                         Patch patch;
                         String text = getString(R.string.aticle_titie) + mPage.title;
@@ -280,29 +313,51 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
                             }
                         }
                         if(patchs.size() == 0){
-                            isPlay = false;
+//                            isPlay = false;
                             mHandler.sendEmptyMessage(MESSAGE_PLAY_NEXT_ARTICAL);
                             Tts.JniSpeak(getString(R.string.paly_next_acticle));
+                        } else {                        	
+                        	for(int i = readRecord, count = patchs.size(); i < count; i ++) {
+                        		Log.d("NewsPaperArticleContentFragment", " i = " + i + ", count = " + count + ", readRecord = " + readRecord);
+//                        		if(!isPlay)
+//                        			break STOP;
+                        		if(isPlay){
+                        			patch = patchs.get(i);
+                        			text = getText(patch);
+                        			mLog.i(text);
+                        			mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_PLAY_REFRESH_VIEW, patch));
+                        			Tts.JniSpeak(text);
+                        			readRecord = i;
+                        			if(i == count -1){
+                        				readRecord = count;
+                        				mHandler.sendEmptyMessage(MESSAGE_PLAY_NEXT_ARTICAL);
+                        				Tts.JniSpeak(getString(R.string.paly_next_acticle));
+                        				Log.d("NewsPaperArticleContentFragment", "-------i == " + (count -1) + "------------patchs.size() != 0 and in for");
+                        			} 
+                        			
+                        			if (readRecord == count) {
+                        				mHandler.sendEmptyMessage(MESSAGE_PLAY_STOP);
+                        				Log.d("NewsPaperArticleContentFragment", " readRecord == count = " + readRecord);
+                        			}
+//                        			Log.d("NewsPaperArticleContentFragment", "-------i = " + i + "------------patchs.size() != 0 and in for");
+                        		} else {
+//                        			Log.d("NewsPaperArticleContentFragment", "-----------STOP--------isPlay = " + isPlay);
+                        			break STOP;
+                        		}
+                        	}
                         }
-                        for(int i = readRecord,count = patchs.size();i < count;i ++){
-                            if(!isPlay)
-                                break STOP;
-                            if(isPlay){
-                                patch = patchs.get(i);
-                                text = getText(patch);
-                                mLog.i(text);
-                                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_PLAY_REFRESH_VIEW, patch));
-                                Tts.JniSpeak(text);
-                                readRecord = i;
-                                if(i == count -1){
-                                    isPlay = false;
-                                    mHandler.sendEmptyMessage(MESSAGE_PLAY_NEXT_ARTICAL);
-                                    Tts.JniSpeak(getString(R.string.paly_next_acticle));
-                                }
-                            }
-                        }
+                    } else {
+                    	Log.d("startPlay thread", "patchs is null!");
+//                    	isPlay = false;
+                        mHandler.sendEmptyMessage(MESSAGE_PLAY_NEXT_ARTICAL);
+                        Tts.JniSpeak(getString(R.string.paly_next_acticle));
+                    }
+                    
+                    if (!isPlay) {
+                    	break;
                     }
                 }
+            	Log.d("NewsPaperArticleContentFragment", "break from while!");
             }           
         }       
         Thread ttsRun = (new Thread(new TtsRunThread()));
@@ -316,9 +371,15 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
         
         mLog.i("stopPlay");
         mVoiceIcon.setVisibility(View.INVISIBLE);
-        isTtsInited = false;
-        isPlay = false;
         Tts.JniStop();
+//        Log.d("NewsPaperArticleContentFragment", "===================isPlay = " + isPlay);
+        isPlay = false;
+    }
+
+    private void unInitTtsEngine() {
+        
+        mLog.i("uninit TtsEngine");
+        isTtsInited = false;
         Tts.JniDestory();
     }
     

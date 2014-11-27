@@ -2,6 +2,9 @@ package com.dbstar.multiple.media.shelf.activity;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
@@ -14,6 +17,7 @@ import com.dbstar.multiple.media.fragment.MainFragmenet;
 import com.dbstar.multiple.media.fragment.NewsPaperArticleContentFragment;
 import com.dbstar.multiple.media.fragment.NewsPaperArticleListFragment;
 import com.dbstar.multiple.media.shelf.R;
+import com.dbstar.multiple.media.util.ImageUtil;
 
 public class NewsPaperActivity extends Activity{
     
@@ -29,6 +33,7 @@ public class NewsPaperActivity extends Activity{
     public boolean isMute;
     private SparseArray <BaseFragment> mFragments;
     RelativeLayout mGroupView; 
+    private Bitmap mBitmap;
     
     public NewsPaperPage mCurrentPage,mLastEdition;
     private static int mCurrentFragement; 
@@ -37,6 +42,17 @@ public class NewsPaperActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_newspaper_shelf);
         mGroupView = (RelativeLayout) findViewById(R.id.group_fragment);
+        RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.newspaper_container);
+        
+        String appUri = getIntent().getStringExtra("app_uri");
+        mBitmap = ImageUtil.getBitmap(appUri);
+        if (mBitmap == null) {
+        	mContainer.setBackgroundResource(R.drawable.reader_view_background);
+        } else {
+        	Drawable drawable = new BitmapDrawable(mBitmap);
+    		mContainer.setBackgroundDrawable(drawable);
+        }
+        
         mRootId = getIntent().getStringExtra("Id");
         String showType = getIntent().getStringExtra("showType");
         Log.d(TAG, "-----mRootId----- = " + mRootId);
@@ -142,5 +158,8 @@ public class NewsPaperActivity extends Activity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mBitmap != null && !mBitmap.isRecycled()) {
+        	mBitmap.recycle();
+        }
     }
 }

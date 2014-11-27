@@ -5,9 +5,12 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,6 +30,7 @@ import com.dbstar.multiple.media.common.ShelfController;
 import com.dbstar.multiple.media.data.Book;
 import com.dbstar.multiple.media.data.BookCategory;
 import com.dbstar.multiple.media.shelf.R;
+import com.dbstar.multiple.media.util.ImageUtil;
 import com.dbstar.multiple.media.util.ToastUitl;
 import com.dbstar.multiple.media.widget.BookCategoryView;
 import com.dbstar.multiple.media.widget.BookShelfGroup;
@@ -52,6 +56,9 @@ public class BookShelfActivity extends Activity {
     private TextView mSynopsis;
     private BookCategory mCurrentBookCategory;
     private String mRootId;
+    private Bitmap mBitmap;
+	private String appUri;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,15 +66,16 @@ public class BookShelfActivity extends Activity {
         mRootId = getIntent().getStringExtra("Id");
         Log.d("BookShelfActivity", "-----mRootId----- = " + mRootId);
         mController = ShelfController.getInstance(this);
-        inintView();
-      
+        
+        appUri = getIntent().getStringExtra("app_uri");
+        inintView(appUri);
     }
     
     protected void onResume() {
         super.onResume();
     }
   
-    private void inintView() {
+    private void inintView(String appUri) {
         mBookCategoryView = (BookCategoryView) findViewById(R.id.book_category);
         mBookShefl = (BookShelfGroup) findViewById(R.id.shelf_group);
         
@@ -81,6 +89,14 @@ public class BookShelfActivity extends Activity {
         mBookSynopsisLayout.setVisibility(View.INVISIBLE);
         mNoticeView.setVisibility(View.GONE);
         
+        RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.book_shelf_container);
+        mBitmap = ImageUtil.getBitmap(appUri);
+        if (mBitmap == null) {
+        	mContainer.setBackgroundResource(R.drawable.reader_view_background);
+        } else {
+        	Drawable drawable = new BitmapDrawable(mBitmap);
+    		mContainer.setBackgroundDrawable(drawable);
+        }
         
         mCategoryInfo = mController.loadBookCategoryInfo(mRootId);
         if(mCategoryInfo == null || mCategoryInfo.isEmpty())
@@ -328,11 +344,17 @@ public class BookShelfActivity extends Activity {
             switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 updateBookShelf(SHELF_ACTION_SHOW_PRE_BOOK, null);
+                if (mBookShefl.getChildCount() == 1) {
+                	return false;
+                }
                 break;
     
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-              updateBookShelf(SHELF_ACTION_SHOW_NEXT_BOOK, null);
-                break;
+				updateBookShelf(SHELF_ACTION_SHOW_NEXT_BOOK, null);
+				if (mBookShefl.getChildCount() == 1) {
+					return false;
+				}
+				break;
             case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:{
                 updateBookShelf(SHELF_ACTION_NEXT_5_BOOK, mCurrentBookCategory);
                 break;
@@ -577,15 +599,23 @@ public class BookShelfActivity extends Activity {
         Intent intent = new Intent();
         intent.setClassName("com.media.android.dbstarplayer", "com.media.android.dbstarplayer.DbStarPlayer");
         intent.setData(Uri.parse("file:///" + book.Path));
+        Bundle bundle = new Bundle();
+        bundle.putString("AppBG", appUri);
+        intent.putExtra("BookBackground", bundle);
         startActivity(intent);
         overridePendingTransition(0, 0);
     }
     @Override
     protected void onDestroy() {
-       mController.saveCurrentRecord(mCurrentBookCategory.Id);
-       mController.destroy();
+    	if (mController != null && mCurrentBookCategory != null) {
+    		mController.saveCurrentRecord(mCurrentBookCategory.Id);
+    		mController.destroy();    		
+    	}
        super.onDestroy();
         
+       if (mBitmap != null && !mBitmap.isRecycled()) {
+    	   mBitmap.recycle();
+       }
     }
     
 }

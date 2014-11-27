@@ -14,7 +14,7 @@ public class BaseFragment extends Fragment{
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        mLog = GLog.getLogger("Futao");
+        mLog = GLog.getLogger("RM BaseFragment");
         mActivity = (NewsPaperActivity) activity;
     }
     public void SetData(Object object){

@@ -48,9 +48,10 @@ public class MediaShareActivity extends Activity {
         mError = (TextView) findViewById(R.id.no_network);
         
         Intent intent = new Intent(this, ShareService.class);
-        bindService(intent,connection,  Service.BIND_AUTO_CREATE);
+        bindService(intent, connection, Service.BIND_AUTO_CREATE);
     
-        mBitmap = ImageUtil.parserXmlAndLoadPic();
+        String appUri = getIntent().getStringExtra("app_uri");
+        mBitmap = ImageUtil.getBitmap(appUri);
         
         if (mBitmap == null) {
         	mContainer.setBackgroundResource(R.drawable.reader_view_background);
@@ -64,7 +65,7 @@ public class MediaShareActivity extends Activity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mService = null;
+//            mService = null;
         }
 
         @Override
@@ -77,7 +78,7 @@ public class MediaShareActivity extends Activity {
     
     private void initData(){
         String ip = mService.getIpAddress();
-        Log.i("Futao", "initData = " + ip);
+        Log.i("RM MediaShareActivity", "initData = " + ip);
         if(ip == null){
             mError.setVisibility(View.VISIBLE);
             mGuideView.setVisibility(View.INVISIBLE);

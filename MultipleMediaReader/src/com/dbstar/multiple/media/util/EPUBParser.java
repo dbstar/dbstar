@@ -1,21 +1,17 @@
 package com.dbstar.multiple.media.util;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import android.text.Html;
 import android.util.Log;
 import android.util.Xml;
 
@@ -55,7 +51,7 @@ public class EPUBParser {
 
                     case XmlPullParser.START_TAG:
                         String tagName = parser.getName();
-                        if(TAG_PAGE_IMG.equals(tagName)){
+                        if(TAG_PAGE_IMG.equalsIgnoreCase(tagName)){
                             edition.PicPath = parser.getAttributeValue(null, TAG_SRC);
                             edition.PicPath = parsePath(edition.path,edition.PicPath);
                         }
@@ -85,7 +81,7 @@ public class EPUBParser {
                 switch (event) {
                 case XmlPullParser.START_TAG:
                     String tagName = parser.getName();
-                    if(tagName.equals("rootfile"));
+                    if(tagName.equalsIgnoreCase("rootfile"));
                         path = parser.getAttributeValue(null, "full-path");
                     break;
                 }
@@ -103,9 +99,9 @@ public class EPUBParser {
                   switch (event2) {
                   case XmlPullParser.START_TAG:
                       String tagName = parser2.getName();
-                      if(tagName.equals("item"));
+                      if(tagName.equalsIgnoreCase("item"));
                           String id = parser2.getAttributeValue(null, "id");
-                          if(id != null && id.equals("ncx")){
+                          if(id != null && id.equalsIgnoreCase("ncx")){
                               path = parser2.getAttributeValue(null, "href");
                           }
                       break;
@@ -140,18 +136,18 @@ public class EPUBParser {
                 }
                 case XmlPullParser.START_TAG:{
                     String tagName = parser.getName();
-                    if(TAG_NAVPOINT.equals(tagName)){
+                    if(TAG_NAVPOINT.equalsIgnoreCase(tagName)){
                        enterlevel++;
                        page = new VoiceBookPageInfo();
                        page.Level = enterlevel +"";
                        page.PageId = parser.getAttributeValue(null, TAG_ID);
                        page.Order = parser.getAttributeValue(null, TAG_ORDER);
                        list.add(page);
-                    }else if(TAG_TEXT.equals(tagName)){
+                    }else if(TAG_TEXT.equalsIgnoreCase(tagName)){
                         if(page != null)
                             page.Title = parser.nextText();
                         
-                    }else if(TAG_CONTENT.equals(tagName)){
+                    }else if(TAG_CONTENT.equalsIgnoreCase(tagName)){
                         if (page != null) {
                             page.PagePath =  getParentPath(path, 1) + parser.getAttributeValue(null, TAG_SRC);
                             if (page.PagePath.contains(".html#ncx")) {
@@ -165,7 +161,7 @@ public class EPUBParser {
                 }   
                 case XmlPullParser.END_TAG: {
                     String tagName = parser.getName();
-                    if (TAG_NAVPOINT.equals(tagName)) {
+                    if (TAG_NAVPOINT.equalsIgnoreCase(tagName)) {
                         enterlevel--;
                     }
                     break;
@@ -191,9 +187,9 @@ public class EPUBParser {
                   switch (event) {
                   case XmlPullParser.START_TAG:
                       String tagName = parser.getName();
-                       if(tagName.equals("img")){
+                       if(tagName.equalsIgnoreCase("img")){
                           info.Image = parsePath(info.PagePath,  parser.getAttributeValue(null, "src"));
-                      }else if(tagName.equals("audio")){
+                      }else if(tagName.equalsIgnoreCase("audio")){
                           String src = parser.getAttributeValue(null, "src");
                           if(src != null){
                               int lastPoint = src.lastIndexOf('.');
@@ -231,7 +227,7 @@ public class EPUBParser {
                 }
                 case XmlPullParser.START_TAG:{
                     String tagName = parser.getName();
-                    if(TAG_NAVPOINT.equals(tagName)){
+                    if(TAG_NAVPOINT.equalsIgnoreCase(tagName)){
                        if(enterlevel == 0){
                            page = new NewsPaperPage();
                            list.add(page);
@@ -239,7 +235,7 @@ public class EPUBParser {
                            article = new NewsPaperPage();
                        }
                        enterlevel++;
-                    }else if(TAG_TEXT.equals(tagName)){
+                    }else if(TAG_TEXT.equalsIgnoreCase(tagName)){
                         if (enterlevel == 1) {
                             if(page != null)
                                 page.title = parser.nextText();
@@ -247,7 +243,7 @@ public class EPUBParser {
                             if(article != null)
                                 article.title = parser.nextText();
                         }
-                    }else if(TAG_CONTENT.equals(tagName)){
+                    }else if(TAG_CONTENT.equalsIgnoreCase(tagName)){
                         if (enterlevel == 1) {
                             if (page != null) {
                                 page.path =  getParentPath(path, 1) + parser.getAttributeValue(null, TAG_SRC);
@@ -273,7 +269,7 @@ public class EPUBParser {
                 }   
                 case XmlPullParser.END_TAG: {
                     String tagName = parser.getName();
-                    if (TAG_NAVPOINT.equals(tagName)) {
+                    if (TAG_NAVPOINT.equalsIgnoreCase(tagName)) {
                         enterlevel--;
                         if (enterlevel == 1)
                             article = null;
@@ -298,7 +294,9 @@ public class EPUBParser {
 	public static InputStream getStringStream(String inputString) {
 		if (inputString != null && !inputString.trim().equals("")) {
 			try {
-				ByteArrayInputStream stream = new ByteArrayInputStream(inputString.getBytes());
+				ByteArrayInputStream stream = new ByteArrayInputStream(inputString.getBytes("UTF-8"));
+				// TODO:是否应该关闭流
+				stream.close();
 				return stream;
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -313,14 +311,27 @@ public class EPUBParser {
 	public static String getStreamString(InputStream inputStream) {
 		if (inputStream != null) {
 			try {
-				BufferedReader tBufferedReader = new BufferedReader(
-						new InputStreamReader(inputStream));
-				StringBuffer stringBuffer = new StringBuffer();
-				String sTempOneLine = new String("");
-				while ((sTempOneLine = tBufferedReader.readLine()) != null) {
-					stringBuffer.append(sTempOneLine);
+//				BufferedReader tBufferedReader = new BufferedReader(
+//						new InputStreamReader(inputStream));
+//				StringBuffer stringBuffer = new StringBuffer();
+//				String sTempOneLine = new String("");
+//				while ((sTempOneLine = tBufferedReader.readLine()) != null) {
+//					stringBuffer.append(sTempOneLine);
+//				}
+//				inputStream.close();
+//				return stringBuffer.toString();
+				ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+				byte[] data = new byte[4096];// 1024 * 4
+				int count = -1;
+				while((count = inputStream.read(data, 0, 4096)) != -1) {
+					outStream.write(data, 0, count);
 				}
-				return stringBuffer.toString();
+				
+				data = null;
+				String string = new String(outStream.toByteArray(), "UTF-8");
+				// TODO:是否应该关闭流
+				outStream.close();
+				return string;
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -332,14 +343,23 @@ public class EPUBParser {
         NewsPaperArticleContent data = null;
         Title title =null;
           try {
+        	  XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
               InputStream in = new FileInputStream(path);
               String inToString = getStreamString(in);
-              String newString = inToString.replace("<br>", "\n");
-              InputStream inputStream = getStringStream(newString);
-              XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
-              parser.setInput(inputStream, "utf-8");  
+              if (inToString.contains("<br>") || inToString.contains("<Br>")) {
+            	  String newString = inToString.replace("<br>", "\n");
+            	  InputStream inputStream = getStringStream(newString);
+            	  parser.setInput(inputStream, "utf-8");             	  
+            	  Log.d("EPUBParser", "NewsPaperArticleContent contains('<br>')");
+              } else {
+            	  Log.d("EPUBParser", "NewsPaperArticleContent not contains('<br>')");
+            	  InputStream inputStream = getStringStream(inToString);
+            	  parser.setInput(inputStream, "utf-8");  
+              }
               
               int event = parser.getEventType();//
+              boolean hxFlag = false;
+              boolean bodyFlag = false;
               while(event!=XmlPullParser.END_DOCUMENT){
                   switch (event) {
                   case XmlPullParser.START_DOCUMENT:
@@ -352,45 +372,72 @@ public class EPUBParser {
                           data.blocks = new ArrayList<Block>();
                           data.patchs = new ArrayList<Patch>();
                           data.titles = new ArrayList<NewsPaperArticleContent.Title>();
+                          
+                          Log.d("EPUBParser", "in <body>-------------");
+                          bodyFlag = true;
                       }else{
                           if(tagName.equalsIgnoreCase("h2")){
                               title = new Title ();
                               title.level = 2;
                               title.text = parser.nextText();
                               data.titles.add(title);
+                              hxFlag = true;
                           }else if(tagName.equalsIgnoreCase("h3")){
                               title = new Title();
                               title.level = 3;
                               title.text = parser.nextText();
                               data.titles.add(title);
+                              hxFlag = true;
                           }else if(tagName.equalsIgnoreCase("p")){
                         	  
                         	  String content = null;
                         	  if (parser.next() == XmlPullParser.TEXT) {
-                        		  content = parser.getText() + "\n";
+                        		  content = parser.getText();
+                        		  if (hxFlag && content != null && content.equals(" ")) {
+                        			  Log.d("EPUBParser", "ignore blank char which is after hx tag");                        			  
+                        		  } else
+                        			  content += "\n";
+                        		  Log.d("EPUBParser", "in <p>, content = [" + content + "]");
                             	  parser.nextTag();
                         	  }
-                        	  
                               pasreContent(data, content);
+                              hxFlag = false;
                           } else if(tagName.equalsIgnoreCase("img")) {
                               Block block = new Block();
                               block.type = 4;
                               block.value = parsePath(path,  parser.getAttributeValue(null, "src"));
                               data.blocks.add(block);
+                              hxFlag = false;
                           } else {
                         	  /*if(tagName.equalsIgnoreCase("font")) */
-                        	  if (parser.next() == XmlPullParser.TEXT) {
-                        		  String content = parser.getText() + "\n";
+							Log.d("EPUBParser", " tagName = " + tagName);
+                        	  if (bodyFlag && parser.next() == XmlPullParser.TEXT) {
+                        		  String content = parser.getText();
+                        		  Log.d("EPUBParser", " in " + tagName + ", content = " + content);
                         		  pasreContent(data, content);                        		  
                         	  }
+                        	  
+                              hxFlag = false;
                           } 
                       }
                       break;
                       
+                  case XmlPullParser.TEXT:
+                	  String content = parser.getText();
+	                  Log.d("EPUBParser", "bodyFlag = " + bodyFlag);
+                	  if (bodyFlag && content != null && !content.startsWith("\n")) {
+                		  Log.d("EPUBParser", "parser.getText() = [" + content + "]");
+                		  pasreContent(data, content);                		  
+                	  }
+                	  break;
                   case XmlPullParser.END_TAG:
-                       tagName = parser.getName();
+                	  tagName = parser.getName();
+                      if(tagName.equalsIgnoreCase("body")){
+                          bodyFlag = false;
+                      }
                   }
                   event = parser.next();
+//                  Log.d("EPUBParser", "---------------------event = " + event);
               }
           } catch (Exception e) {
               e.printStackTrace();

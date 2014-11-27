@@ -10,7 +10,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +25,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dbstar.multiple.media.common.GDBHelper;
@@ -36,6 +39,7 @@ import com.dbstar.multiple.media.data.VoicedBook;
 import com.dbstar.multiple.media.model.ModelVoicedBook.Label;
 import com.dbstar.multiple.media.shelf.R;
 import com.dbstar.multiple.media.util.EPUBParser;
+import com.dbstar.multiple.media.util.ImageUtil;
 import com.dbstar.multiple.media.widget.VoicedBookMenuDialog;
 import com.dbstar.multiple.media.widget.VoicedBookMenuDialog.OnBookMarkChangeListener;
 import com.dbstar.multiple.media.widget.VoicedBookMenuDialog.OnBookMarkListItemClickListener;
@@ -66,6 +70,8 @@ public class VoicedBookReadActivity extends Activity {
     private int [] mVolumeBitmap;
     private int mPageNumber;
     private int mPageCount;
+    
+    private Bitmap mBitmap;
 
     private Handler mHandler = new Handler() {
         public void handleMessage(android.os.Message msg) {
@@ -95,7 +101,9 @@ public class VoicedBookReadActivity extends Activity {
         setContentView(R.layout.activity_voiced_book_read);
         RootPath = getIntent().getStringExtra("FilePath");
         BookId = getIntent().getStringExtra("BookId");
-        initView();
+        
+        String appUri = getIntent().getStringExtra("app_uri");
+        initView(appUri);
         mGdbHelper = GDBHelper.getInstance(this);
         mImageManager = ImageManager.getInstance(this);
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -104,7 +112,7 @@ public class VoicedBookReadActivity extends Activity {
         showUI();
     }
 
-    private void initView() {
+    private void initView(String appUri) {
         mPage1 = (ImageView) findViewById(R.id.view1);
         mPage2 = (ImageView) findViewById(R.id.view2);
         mPageGroup = (FrameLayout) findViewById(R.id.pageGroup);
@@ -114,11 +122,19 @@ public class VoicedBookReadActivity extends Activity {
         mReadProgressBar = (ProgressBar) findViewById(R.id.read_progress_bar);
         mReadProgressValue = (TextView) findViewById(R.id.txt_read_progress);
         
-        
         mVolumeBitmap = new int[]{R.drawable.volume_1,
                 R.drawable.volume_2,R.drawable.volume_3,R.drawable.volume_4,
                 R.drawable.volume_5,R.drawable.volume_6,R.drawable.volume_7,
                 R.drawable.volume_8,R.drawable.volume_9,R.drawable.volume_10};
+        
+        RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.activity_voiced_book_read_container);
+        mBitmap = ImageUtil.getBitmap(appUri);
+        if (mBitmap == null) {
+        	mContainer.setBackgroundResource(R.drawable.reader_view_background);
+        } else {
+        	Drawable drawable = new BitmapDrawable(mBitmap);
+    		mContainer.setBackgroundDrawable(drawable);
+        }
     }
 
     private void loadData() {
@@ -291,7 +307,7 @@ public class VoicedBookReadActivity extends Activity {
 
         isAnimationEnd = false;
         mPageNumber++;
-        // Log.e("Futao", "duration = " + duration);
+        // Log.e("VoicedBookReadActivity", "duration = " + duration);
 
         if (!isShowAnimation)
             duration = 10;
@@ -532,6 +548,8 @@ public class VoicedBookReadActivity extends Activity {
             unBindService();
         stopService(new Intent(this, VoicedBookService.class));
         
-        
+        if (mBitmap != null && !mBitmap.isRecycled()) {
+     	   mBitmap.recycle();
+        }
     }
 }

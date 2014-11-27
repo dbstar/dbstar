@@ -56,7 +56,7 @@ public class ShareService extends Service{
     @Override
     public void onCreate() {
         super.onCreate();
-        mLog = GLog.getLogger("Futao");
+        mLog = GLog.getLogger("RMShare");
         mLog.i("shareservice onCreate");
         mConnectManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         mEthManager = (EthernetManager)getSystemService(Context.ETH_SERVICE);

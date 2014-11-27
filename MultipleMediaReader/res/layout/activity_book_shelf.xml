@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res/com.dbstar.multiple.media.bookshelf"
+    android:id="@+id/book_shelf_container"
     android:layout_width="1280dp"
     android:layout_height="720dp"
     android:background="@drawable/reader_view_background" >

@@ -51,12 +51,12 @@ public class NewsPaperSubCategoryView extends LinearLayout{
             return true;
 
         case KeyEvent.KEYCODE_DPAD_UP:
-            Log.i("Futao", "----" + mSelectedIndex);
+            Log.i("NewsPaperSubCategoryView", "----" + mSelectedIndex);
             mSelectedIndex--;
             if(mSelectedIndex == -1){
                 mSelectedIndex = mData.size() -1;
             }
-            Log.i("Futao", "++++" + mSelectedIndex);
+            Log.i("NewsPaperSubCategoryView", "++++" + mSelectedIndex);
             notifyDataChanged();
             return true;
         }
@@ -96,7 +96,7 @@ public class NewsPaperSubCategoryView extends LinearLayout{
                 v.setVisibility(View.VISIBLE);
             }
             int index = (Math.abs(size-3) + mSelectedIndex + i) % size;
-            Log.i("Futao", "index = "+ index) ;
+            Log.i("NewsPaperSubCategoryView", "index = "+ index) ;
             if( i == 3){
 //                v.setImageBitmap(BitmapFactory.decodeFile(mData.get(index).unFocusedIcon));
                 v.setImageBitmap(ImageUtil.setDrawable(mData.get(index).unFocusedIcon, 195).getBitmap());

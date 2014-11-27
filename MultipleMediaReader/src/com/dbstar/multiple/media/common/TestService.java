@@ -18,7 +18,7 @@ public class TestService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Date date = new Date(System.currentTimeMillis());
-        Log.i("Futao", "test service on onStartCommand " + date.toLocaleString());
+        Log.i("RM TestService", "test service on onStartCommand " + date.toLocaleString());
         return super.onStartCommand(intent, flags, startId);
     }
     
@@ -26,13 +26,13 @@ public class TestService extends Service{
     public void onCreate() {
         super.onCreate();
         
-        Log.i("Futao", "test service on create ");
+        Log.i("RM TestService", "test service on create ");
         
     }
     
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i("Futao", "test service on onDestroy ");
+        Log.i("RM TestService", "test service on onDestroy ");
     }
 }

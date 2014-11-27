@@ -80,29 +80,33 @@ public class NewsPaperContentView extends View{
         Block block;
         String text;
         int type;
-        for(int i =0,count = data.blocks.size();i< count;i++){
-            block = data.blocks.get(i);
-            text = block.value;
-            type = block.type;
-            if(startIndex != endIndex && i >= startIndex &&  i<= endIndex){
-                mPaint.setColor(Color.BLUE);
-            }else{
-                mPaint.setColor(Color.BLACK);
-            }
-            if(type == 0){
-                canvas.drawText(text, block.x, block.y , mPaint);
-            }else if(type == 2){
-                if(!block.value.equals("&#xd;"))
-                    canvas.drawText("    ", block.x, block.y  , mPaint);
-            }else if(type == 4){
-                Bitmap bitmap = createBitmap(block.value);
-                if(bitmap != null)
-                    canvas.drawBitmap(bitmap,block.x, block.y , mPaint);
-            } 
+        if (data != null && data.blocks != null && data.blocks.size() > 0) {        	
+        	for(int i =0,count = data.blocks.size();i< count;i++){
+        		block = data.blocks.get(i);
+        		text = block.value;
+        		type = block.type;
+        		if(startIndex != endIndex && i >= startIndex &&  i<= endIndex){
+        			mPaint.setColor(Color.BLUE);
+        		}else{
+        			mPaint.setColor(Color.BLACK);
+        		}
+        		if(type == 0){
+        			canvas.drawText(text, block.x, block.y , mPaint);
+        		}else if(type == 2){
+        			if(!block.value.equals("&#xd;"))
+        				canvas.drawText("    ", block.x, block.y  , mPaint);
+        		}else if(type == 4){
+        			Bitmap bitmap = createBitmap(block.value);
+        			if(bitmap != null)
+        				canvas.drawBitmap(bitmap,block.x, block.y , mPaint);
+        		} 
+        	}
+        } else {
+        	Log.d("NewsPaperArticleContent", "no newspaper need draw!");
         }
         
         end = System.currentTimeMillis();
-        Log.i("Futao", " ondraw  take time = " + (end - start));
+        Log.i("NewsPaperContentView", " ondraw  take time = " + (end - start));
         
     }
     public void setPalyIndex(int start,int end){
@@ -182,7 +186,7 @@ public class NewsPaperContentView extends View{
             }
     }
         end = System.currentTimeMillis();
-        Log.i("Futao", " measure hight take time = " + (end - start));
+        Log.i("NewsPaperContentView", " measure hight take time = " + (end - start));
         return drawHeiht + 100;
 }
     

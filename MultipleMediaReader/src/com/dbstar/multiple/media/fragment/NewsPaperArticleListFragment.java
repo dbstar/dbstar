@@ -145,6 +145,7 @@ public class NewsPaperArticleListFragment extends BaseFragment{
         mPage.SelectedIndex ++;
         mLog.i("showNextArticle" +  mPage.SelectedIndex);
         NewsPaperPageAdapter adapter = (NewsPaperPageAdapter) mArticleTitleListView.getAdapter();
+//        Log.d("NewsPaperArticleListFragment", "<<<<<<<<<adapter.getCount() = " + adapter.getCount());
         if(mPage.SelectedIndex < adapter.getCount()){
             NewsPaperPage article = adapter.getEdition(mPage.SelectedIndex);
             adapter.setMarkPosition(mPage.SelectedIndex);
@@ -153,6 +154,7 @@ public class NewsPaperArticleListFragment extends BaseFragment{
             mActivity.switchFragment(article, NewsPaperActivity.FRAGMENT_ARTICLE_CONTENT);
         }else{
             //TODO  showNextEdition
+//        	Log.d("NewsPaperArticleListFragment", "<<<<<<<<<?<<<<<<<<");
             mActivity.showNextPage();
         }
     }

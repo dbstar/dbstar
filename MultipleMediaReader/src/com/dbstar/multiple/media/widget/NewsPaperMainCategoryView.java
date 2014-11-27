@@ -50,12 +50,12 @@ public class NewsPaperMainCategoryView extends LinearLayout{
             return true;
 
         case KeyEvent.KEYCODE_DPAD_UP:
-            Log.i("Futao", "----" + mSelectedIndex);
+            Log.i("NewsPaperMainCategoryView", "----" + mSelectedIndex);
             mSelectedIndex--;
             if(mSelectedIndex == -1){
                 mSelectedIndex = mData.size() -1;
             }
-            Log.i("Futao", "++++" + mSelectedIndex);
+            Log.i("NewsPaperMainCategoryView", "++++" + mSelectedIndex);
             notifyDataChanged();
             return true;
         }

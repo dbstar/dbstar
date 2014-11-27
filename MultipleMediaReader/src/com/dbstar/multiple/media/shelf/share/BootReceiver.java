@@ -9,7 +9,7 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i("Futao", "onReceive ----------");
+        Log.i("RM BootReceiver", "onReceive ----------");
         Intent i = new Intent(context, ShareService.class);
         context.startService(i);
     }

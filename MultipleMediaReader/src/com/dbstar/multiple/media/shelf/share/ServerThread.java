@@ -45,7 +45,7 @@ public class ServerThread extends Thread {
 	
     public ServerThread(String ip, int port, Handler handler,Context context) throws IOException {
 		super();
-		GLog.getLogger("Futao").i("new ServerThread ip = " + ip);
+		GLog.getLogger("RM ServerThread").i("new ServerThread ip = " + ip);
 		InetAddress ipadr = InetAddress.getByName(ip);
 		listener = new ServerSocket(port,0,ipadr);
 		mIp = ip;
@@ -59,7 +59,7 @@ public class ServerThread extends Thread {
         this.mNewsPaperColumnId = newspaper;
     }
     private static void send(String s) {
-       GLog.getLogger("Futao").i(s);
+       GLog.getLogger("RM ServerThread").i(s);
     }
     
     public String getIp(){
@@ -88,7 +88,7 @@ public class ServerThread extends Thread {
 	}
 
 	public void stopServer() {
-	    GLog.getLogger("Futao").i("stopServer");
+	    GLog.getLogger("RM ServerThread").i("stopServer");
 		running = false;
 		try {
 			listener.close();
