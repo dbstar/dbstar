@@ -85,7 +85,7 @@ public class WifiApAdmin {
 			netConfig.SSID = mSSID;
 			netConfig.preSharedKey = mPasswd;
 
-			netConfig.allowedAuthAlgorithms .set(WifiConfiguration.AuthAlgorithm.OPEN);
+			netConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
 			netConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
 			netConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
 			netConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
@@ -142,7 +142,7 @@ public class WifiApAdmin {
 		}
 	}
 
-	private static boolean isWifiApEnabled(WifiManager wifiManager) {
+	public static boolean isWifiApEnabled(WifiManager wifiManager) {
 		try {
 			Method method = wifiManager.getClass().getMethod("isWifiApEnabled");
 //			LogUtil.d(TAG, "isWifiAPEnabled()-----method------" + method);

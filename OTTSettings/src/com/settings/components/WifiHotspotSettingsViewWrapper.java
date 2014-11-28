@@ -146,7 +146,9 @@ public class WifiHotspotSettingsViewWrapper {
 //		DataUtils.savePreference(mContext, Data_Key_PWD, wifiHotspot.getPassword());
 //		DataUtils.savePreference(mContext, Data_Key_SECURITY, wifiHotspot.getSecurity());
 		
-		wifiHotspotConnect(wifiHotspot);
+		if (!WifiApAdmin.isWifiApEnabled(mWifiManager)) {			
+			wifiHotspotConnect(wifiHotspot);
+		}
 		
 		setEventListener(view);
 	}

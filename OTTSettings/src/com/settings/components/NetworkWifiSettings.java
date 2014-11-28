@@ -5,8 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -135,7 +136,9 @@ public class NetworkWifiSettings {
 				wifiHotspot.setSsid(ssid);
 				wifiHotspot.setPassword(password);
 				wifiHotspot.setSecurity(security);
-				wifiHotspotConnect(wifiHotspot);
+				if (!WifiApAdmin.isWifiApEnabled(mWifiManager)) {
+					wifiHotspotConnect(wifiHotspot);					
+				}
 				APMode.setChecked(true);
 			} else {
 				txtSelect.setText(mContext.getResources().getString(R.string.network_wifi_setup_1));
@@ -143,7 +146,16 @@ public class NetworkWifiSettings {
 				if (!mWifiManager.isWifiEnabled()) {						
 					mWifiManager.setWifiEnabled(true);
 				}
-				mWifiManager.reassociate();
+				
+				ConnectivityManager manager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+				NetworkInfo info = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+				if (!info.isConnected()) {
+					String connectSsid = mWifiManager.getConnectionInfo().getSSID().toString();
+					if (connectSsid != null) {					
+						mWifiManager.reassociate();
+					}					
+				}
+				
 				wifiMode.setChecked(true);
 			}
 		} else {
