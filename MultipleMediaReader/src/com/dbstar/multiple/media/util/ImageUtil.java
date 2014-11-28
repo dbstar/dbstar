@@ -8,6 +8,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 
 public class ImageUtil {
+	
+	public static final String AppBG_Uri = "AppBG";
 
 	public static BitmapDrawable setDrawable(String uri, int targetWidth) {
 		BitmapDrawable drawable;
@@ -33,25 +35,27 @@ public class ImageUtil {
 	
 	private static final String TAG = "MultipleMediaReader ImageUtil";
 	public static Bitmap getBitmap(String appUri) {
-		File appFile = new File(appUri);
 		Bitmap bitmap = null;
 		
-		if (appFile.exists()) {			
-			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-			bitmapOptions.inJustDecodeBounds = true;
-			
-			Bitmap resizedBitmap = BitmapFactory.decodeFile(appUri, bitmapOptions);
-			
-			int width = bitmapOptions.outWidth;
-			int height = bitmapOptions.outHeight;
-			Log.d(TAG, "width = " + width);
-			Log.d(TAG, "height = " + height);
-			
-			// bitmapOptions.outWidth为获取到的原图的宽度
-			bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
-			bitmapOptions.inJustDecodeBounds = false;
-			
-			bitmap = BitmapFactory.decodeFile(appUri, bitmapOptions);
+		if (appUri != null && !appUri.equals("")) {			
+			File appFile = new File(appUri);
+			if (appFile.exists()) {			
+				BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+				bitmapOptions.inJustDecodeBounds = true;
+				
+				Bitmap resizedBitmap = BitmapFactory.decodeFile(appUri, bitmapOptions);
+				
+				int width = bitmapOptions.outWidth;
+				int height = bitmapOptions.outHeight;
+				Log.d(TAG, "width = " + width);
+				Log.d(TAG, "height = " + height);
+				
+				// bitmapOptions.outWidth为获取到的原图的宽度
+				bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
+				bitmapOptions.inJustDecodeBounds = false;
+				
+				bitmap = BitmapFactory.decodeFile(appUri, bitmapOptions);
+			}
 		}
 		return bitmap;
 	}

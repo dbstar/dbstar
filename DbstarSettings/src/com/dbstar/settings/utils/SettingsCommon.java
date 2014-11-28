@@ -39,4 +39,6 @@ public class SettingsCommon {
 	public static final int PAGE_WIFI = 3;
 	public static final int PAGE_ETHERNET2 = 4;
 	public static final int PAGE_FINISH = 5;
+	
+	public static final String AppBG_Uri = "AppBG";
 }

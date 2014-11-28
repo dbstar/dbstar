@@ -34,4 +34,6 @@ public class Constants {
 	// 应用商城的url
 	public static final String Server_Url_QueryApp = Server_Url_EPG + "QueryApp";
 	
+	public static final String AppBG_Uri = "AppBG";
+	
 }

@@ -136,6 +136,11 @@ public class ImageUtil {
 
 	private static Bitmap getAppBitmap(String picAppUri) {
 		Bitmap resizedBitmap = null;
+		
+		if (picAppUri == null || picAppUri.equals("")) {
+			return null;
+		}
+		
 		File appFile = new File(picAppUri);
 		LogUtil.d(TAG, " appFile.exists() = " + appFile.exists());
 		
@@ -169,6 +174,10 @@ public class ImageUtil {
 
 	private static Bitmap getServiceBitmap(String picServiceUri) {
 		Bitmap resizedBitmap = null;
+		
+		if (picServiceUri == null || picServiceUri.equals("")) {
+			return null;
+		}
 		
 		File serviceFile = new File(picServiceUri);
 		LogUtil.d(TAG, " serviceFile.exists() = " + serviceFile.exists());
@@ -204,6 +213,11 @@ public class ImageUtil {
 
 	private static Bitmap getHomeBitmap(String picHomeUri) {
 		Bitmap resizedBitmap = null;
+		
+		if (picHomeUri == null || picHomeUri.equals("")) {
+			return null;
+		}
+		
 		File homeFile = new File(picHomeUri);
 		LogUtil.d(TAG, " homeFile.exists() = " + homeFile.exists());
 		// 如果图片存在则判断图片的大小，如果正常则填充在上面
