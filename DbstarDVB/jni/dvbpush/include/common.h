@@ -794,6 +794,7 @@ int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int 
 int fcopy_c(char *from_file, char *to_file);
 int files_copy(char *from_dir, char *to_dir);
 int remove_force(const char *uri);
+char *hms_stamp();
 long long dir_size(const char *uri);
 int dir_stat_ensure(const char *uri);
 int disk_usable_check(char *disk_dir, unsigned long long *tt_size, unsigned long long *free_size);

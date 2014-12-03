@@ -1938,6 +1938,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			break;
 		case CMD_FACTORY_RESET:
 			DEBUG("CMD_FACTORY_RESET\n");
+			channel_clear();
 			global_info_init(1);
 #ifdef SMARTLIFE_LC
 			smarthome_reset();

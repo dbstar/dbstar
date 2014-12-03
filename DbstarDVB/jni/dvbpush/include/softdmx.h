@@ -23,6 +23,8 @@ extern "C"
 	void loader_des_section_handle(int fid, const unsigned char *data, int len, void *user_data);
 	void ca_section_handle(int fid, const unsigned char *data, int len, void *user_data);
 	void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_data);
+	void ts_loss_printf_periodicity();
+	void ts_loss_log_init();
 #endif
 
 int alloc_filter(unsigned short pid, char pro);

@@ -908,6 +908,24 @@ int remove_force(const char *uri)
 	return ret;   
 }
 
+//// hour,minite,second, e.g.: 16:20:44
+static char s_hms_stamp[16];
+char *hms_stamp(void)
+{
+	time_t now_sec = 0;
+	if(-1==time(&now_sec)){
+		PRINTF("get now_sec failed\n");
+		memset(s_hms_stamp, 0, sizeof(s_hms_stamp));
+		return NULL;
+	}
+	
+	struct tm now_tm;
+	localtime_r(&now_sec, &now_tm);
+	snprintf(s_hms_stamp,sizeof(s_hms_stamp),"%02d:%02d:%02d", now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
+	
+	return s_hms_stamp;
+}
+
 // e.g.: 2013-01-26 09:23:05
 int localtime_rf(char *time_str, unsigned int time_str_size)
 {

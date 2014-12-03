@@ -2175,9 +2175,19 @@ int global_info_init(int force_reset)
 		return sqlite_transaction_end(1);
 	}
 	else{
-		DEBUG("no global default setting need save");
+		PRINTF("no global default setting need save\n");
 		return sqlite_transaction_end(0);
 	}
+}
+
+/*
+ 清理channel所有pid。直接执行，不进入数据库。
+*/
+int channel_clear()
+{
+	char sqlite_cmd[512];
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Channel;");
+	return sqlite_execute(sqlite_cmd);
 }
 
 #ifdef SMARTLIFE_LC

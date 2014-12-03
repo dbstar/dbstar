@@ -764,29 +764,24 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 	if(NULL==p || 0>=strlen(p->pid))
 		return -1;
 	
+	int pid_int = strtol(p->pid,NULL,0);
+	
+	if(-1==push_pid_add(pid_int,p->pidtype)){
+		PRINTF("pid[%d]:type[%s], add to monitor failed\n", pid_int,p->pidtype);
+	}
+	
 	char sqlite_cmd[512];
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Channel(pid,pidtype,FreshFlag) VALUES('%q','%q',1);",p->pid,p->pidtype);
 	return sqlite_transaction_exec(sqlite_cmd);
 }
 
 /*
- channel新记录入库前将Channel原有pid记录置为无效。
-*/
-static int channel_ineffective_set()
+ channel新记录入库前将Channel原有pid记录删除*/
+static int channel_clear_in_trans()
 {
 	char sqlite_cmd[512];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE Channel SET FreshFlag=0;");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Channel;");
 	return sqlite_transaction_exec(sqlite_cmd);
-}
-
-/*
- 清理channel中无效pid。直接执行，不进入数据库。
-*/
-static int channel_ineffective_clear()
-{
-	char sqlite_cmd[512];
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"DELETE FROM Channel WHERE FreshFlag=0;");
-	return sqlite_execute(sqlite_cmd);
 }
 
 /*
@@ -802,11 +797,13 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 	char sqlite_cmd[4096];
 	char ts_direct_uri[1024];
 	char ts_tmp_uri[1024];
+	char ts_status_uri[1024];
 	struct stat filestat;
 	int receive_status_tmp = RECEIVESTATUS_FINISH;
 	
 	snprintf(ts_direct_uri,sizeof(ts_direct_uri),"%s/%s", push_dir_get(),p->FileURI);
 	snprintf(ts_tmp_uri,sizeof(ts_tmp_uri),"%s@tmp@", ts_direct_uri);
+	snprintf(ts_status_uri,sizeof(ts_status_uri),"%s.status", ts_direct_uri);
 	
 	int stat_ret = stat(ts_direct_uri, &filestat);
 	if(0==stat_ret){
@@ -828,6 +825,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 			// download more than lowest level(such as 98%), make it finished forced
 			if(0==rename(ts_tmp_uri,ts_direct_uri)){
 				DEBUG("rename from %s to %s forced success\n", ts_tmp_uri, ts_direct_uri);
+				remove_force(ts_status_uri);
 			}
 			else{
 				ERROROUT("rename from %s to %s failed, return and dont insert to database\n", ts_tmp_uri, ts_direct_uri);
@@ -1700,7 +1698,8 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 					}
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels")){
-					channel_ineffective_set();
+					push_pid_ineffective_set();
+					channel_clear_in_trans();
 					parseNode(doc, cur, new_xmlroute, NULL, NULL, NULL, NULL);
 				}
 				else if(0==strcmp(new_xmlroute, "Initialize^ServiceInits^ServiceInit^Channels^Channel")){
@@ -3807,8 +3806,7 @@ PARSE_XML_END:
 				device_global_insert(&tmp_global_s);
 			}
 			
-			pid_init(1);
-			channel_ineffective_clear();
+			push_pid_refresh();
 			
 			if(1==motherdisc_processing()){
 				DEBUG("in mother disc processing, do nothing after INITIALIZE_XML parsed\n");

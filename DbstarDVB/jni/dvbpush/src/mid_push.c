@@ -40,10 +40,16 @@
 #include "drmport.h"
 #include "drmapi.h"
 #include "prodrm20.h"
+#include "softdmx.h"
 
 #define MAX_PACK_LEN (1500)
-#define MAX_PACK_BUF (60000)		//¶¨Òå»º³åÇø´óĞ¡£¬µ¥Î»£º°ü
+#define MAX_PACK_BUF (40000)		//¶¨Òå»º³åÇø´óĞ¡£¬µ¥Î»£º°ü
 //#define MEMSET_PUSHBUF_SAFE			// if MAX_PACK_BUF<200000 define
+#define PACK_BUF_TOPLEVEL	(MAX_PACK_BUF-8)
+#define PACK_BUF_LOWLEVEL	(10000)
+
+#define PUSH_PARSE_RESUMELEVEL	(30000)
+#define PUSH_PARSE_PAUSELEVEL	(1000)
 
 #define CLEAR_COLUMN_AFTER_PARSED
 
@@ -92,7 +98,9 @@ static PROG_S s_prgs[PROGS_NUM];
 /*************½ÓÊÕ»º³åÇø¶¨Òå***********/
 DataBuffer *g_recvBuffer = NULL;	//[MAX_PACK_BUF]
 static int g_wIndex = 0;
-//static int g_rIndex = 0;
+static int g_rIndex = 0;
+
+static int s_pack_buf_level_locking = 0;
 /**************************************/
 
 static pthread_t tidDecodeData;
@@ -187,6 +195,32 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	PRINTF("Push FIFO is full. lost pkt %d\n", rx_fifo_dropped);
 	return res;
 	}*/
+	
+	int fill_level = 0;
+	if(g_wIndex>=g_rIndex){
+		fill_level = g_wIndex-g_rIndex;
+	}
+	else{
+		fill_level = MAX_PACK_BUF-g_rIndex+g_wIndex;
+	}
+	
+	if(fill_level>=PACK_BUF_TOPLEVEL){
+		PRINTF("%ld: push pack top level!\n", time(NULL));
+		s_pack_buf_level_locking = 1;
+		return res;
+	}
+	
+	if(1==s_pack_buf_level_locking){
+		if(fill_level>PACK_BUF_LOWLEVEL){
+			// PRINTF("");
+			return res;
+		}
+		else{
+			PRINTF("%ld: push pack low level!\n", time(NULL));
+			s_pack_buf_level_locking = 0;
+		}
+	}
+	
 	revbufw = g_wIndex;
 	revbuf = &g_recvBuffer[revbufw];
 	//eth = g_recvBuffer[g_wIndex].m_buf;
@@ -224,7 +258,7 @@ int send_mpe_sec_to_push_fifo(uint8_t *pkt, int pkt_len)
 	else
 		g_wIndex = 0;
 	
-	//DEBUG("g_wIndex=%d\n", g_wIndex);
+	//PRINTF("pkt_len=%d,[%d]offset=%d\n", pkt_len,g_wIndex,offset);
 	//g_wIndex++;
 	//g_wIndex %= MAX_PACK_BUF;
 	
@@ -238,18 +272,20 @@ void *push_decoder_thread()
     short len;
     int push_loop_idle_cnt = 0;
     int ret = 0;
+    int fill_level = 0;
 	
 	DEBUG("push decoder thread will goto main loop\n");
 	s_decoder_running = 1;
 rewake:	
 	DEBUG("go to push main loop\n");
 	while (1==s_decoder_running && NULL!=g_recvBuffer)
-	{
+	{		
+		rindex = g_rIndex;
 		len = g_recvBuffer[rindex].m_len;
 		
 		// ´ËÏß³ÌµÄÔËĞĞÓ°Ïìµ½Éı¼¶£¬¼´Ê¹Ã»ÓĞÓ²ÅÌÒ²±ØĞëÈÃ´ËÏß³ÌÔËĞĞ¡£
 		// µ«Òª±ÜÃâÄ¸ÅÌÖĞInitialize»òÆäËûxml±»ÏÂÔØµÄxml¸²¸Ç
-		if(len && 1==s_motherdisc_init_flag)
+		if(len>0 && 1==s_motherdisc_init_flag)
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*
@@ -263,17 +299,18 @@ rewake:
 			
 			g_recvBuffer[rindex].m_len = 0;
 			rindex++;
-			if(rindex >= MAX_PACK_BUF)
-				rindex = 0;
-			//g_rIndex = rindex;
+			if(rindex < MAX_PACK_BUF)
+				g_rIndex = rindex;
+			else
+				g_rIndex = 0;
 		}
 		else
 		{
-			usleep(20000);
+			usleep(100000);
 			push_loop_idle_cnt++;
 			if(push_loop_idle_cnt > 1024)
 			{
-				PRINTF("read nothing, read index %d\n", rindex);
+				PRINTF("read nothing, fill_level %d, read index %d\n", fill_level, rindex);
 				push_loop_idle_cnt = 0;
 			}
 		}
@@ -295,7 +332,7 @@ rewake:
 		g_recvBuffer[1].m_len = 0;
 #endif
 		g_wIndex = 0;
-		rindex = 0;
+		g_rIndex = 0;
 		push_idle = 0;
 		goto rewake;
 	}
@@ -653,6 +690,48 @@ void maintenance_thread_awake()
 	pthread_mutex_unlock(&mtx_maintenance);
 }
 
+// e.g.: recv20141126.err
+static char s_push_err_filename[256];
+static long long s_push_err_file_last_size = 0LL;	// default and failed is 0LL
+void push_err_file_check(char *print_stamp)
+{
+	time_t now_sec = 0;
+	if(-1==time(&now_sec)){
+		PRINTF("get time failed\n");
+		return;
+	}
+	
+	struct tm now_tm;
+	struct stat filestat;
+	long long cur_size = 0LL;
+	long long grow_size = 0LL;
+	
+	localtime_r(&now_sec, &now_tm);
+	snprintf(s_push_err_filename, sizeof(s_push_err_filename), "/data/dbstar/libpush/recv%4d%02d%02d.err", now_tm.tm_year+1900,now_tm.tm_mon+1,now_tm.tm_mday);
+	int stat_ret = stat(s_push_err_filename, &filestat);
+	if(0==stat_ret){
+		cur_size = filestat.st_size;
+		
+		if(s_push_err_file_last_size>0LL){
+			grow_size = cur_size-s_push_err_file_last_size;
+			if(grow_size>12400LL){
+				PRINTF("%s size WARNING: %lld ->(%lld)-> %lld\n", s_push_err_filename, s_push_err_file_last_size, grow_size, cur_size);
+				// do something here, like: reboot igmp
+				// or reboot stb
+			}
+			else{
+				PRINTF("%s size: %lld ->(%lld)-> %lld\n", s_push_err_filename, s_push_err_file_last_size, grow_size, cur_size);
+			}
+		}
+		
+		s_push_err_file_last_size = cur_size;
+	}
+	else{
+		s_push_err_file_last_size = 0LL;
+		PRINTF("[%s]stat(%s) failed %d\n", print_stamp, s_push_err_filename, stat_ret);
+	}
+}
+
 void *maintenance_thread()
 {
 	struct timeval now;
@@ -670,6 +749,8 @@ void *maintenance_thread()
 	char sqlite_cmd[256];
 	int ret = 0;
 	char SmartCardSn[128];
+	int fill_level = 0;
+	char *print_stamp = NULL;
 	
 	// Ó²ÅÌ¹ÒÔØºó²ÅÄÜ¿ªÊ¼¼ì²éÊÇ·ñĞèÒªÄ¸ÅÌ³õÊ¼»¯
 	//  && 1==network_init_status()	// Ê¡ÂÔÕâ¸öÅĞ¶Ï¿ÉÄÜ¶Ô³§²âÁ÷³ÌÓĞÓ°Ïì£¬ÓÈÆäÊÇµ±²åÉÏÄ¸ÅÌ½øĞĞ³§²âÊ±ÈİÒ×µ¼ÖÂÄ¸ÅÌÊı¾İ»ìÂÒ
@@ -715,9 +796,11 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 #endif
 
 #ifdef DRM_TEST
-#else		
-		// Ã¿¸ô12¸öĞ¡Ê±£¬´ò¿ªtdt pid½øĞĞÊ±¼äÍ¬²½£¬ÕâÀïÖ»ÊÇ½èÓÃÁËmonitorÕâ¸öµÍÆµÑ­»·¡£
+#else
 		loop_cnt ++;
+		
+		// Ã¿¸ô12¸öĞ¡Ê±£¬´ò¿ªtdt pid½øĞĞÊ±¼äÍ¬²½£¬ÕâÀïÖ»ÊÇ½èÓÃÁËmonitorÕâ¸öµÍÆµÑ­»·¡£
+#if 0
 		if(loop_cnt>(43200)){
 			time_t timep;
 			struct tm *p_tm;
@@ -727,6 +810,27 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 			tdt_time_sync_awake();
 			loop_cnt = 0;
 		}
+#endif
+		
+		// only for test
+		if(loop_cnt>(3)){
+			print_stamp = hms_stamp();
+			
+			igmpbuf_monitor(print_stamp);
+			
+			if(g_wIndex>=g_rIndex){
+				fill_level = g_wIndex-g_rIndex;
+			}
+			else{
+				fill_level = MAX_PACK_BUF-g_rIndex+g_wIndex;
+			}
+			PRINTF("[%s]push buf filled %05d packs\n", print_stamp,fill_level);
+			push_err_file_check(print_stamp);
+			ts_loss_printf_periodicity();
+			
+			loop_cnt = 0;
+		}
+
 #endif
 		
 		// µ±À¸Ä¿ºÍ½çÃæ²úÆ··¢Éú¸Ä±äÊ±£¬²»ÄÜÖ±½ÓÔÚparse_xml()º¯ÊıÖĞÍ¨¹ıJNIÏòUI·¢ËÍnotify£¬·ñÔòºÜÈİÒ×µ¼ÖÂLauncherËÀµô¡£
@@ -829,8 +933,8 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 				// ÏÖ¼Æ»®2014-09-29£º²»ÔÙ¿¼ÂÇ¹úµç£¬¸ù¾İ²¥·¢µ¥¿ªÊ¼Ê±¼ä£¬Ö»¿¼ÂÇÔÚĞÇÆÚËÄÁè³¿»òĞÇÆÚÎåÁè³¿¡£
 				// Èç¹ûÖØÆôÊ±¼äÔÚ0¡«7µã£¬ÔòÔÚÖÜÎåÖØÆô£»ÆäËûÊ±¼äµãÔÚÖÜËÄÖØÆô
 				if(	reboot_hour==now_tm.tm_hour
-					&&	((0<=reboot_hour && reboot_hour<=6 && 4==now_tm.tm_wday)
-						|| (reboot_hour>6 && 3==now_tm.tm_wday)
+					&&	((0<=reboot_hour && reboot_hour<=6 && 5==now_tm.tm_wday)
+						|| (reboot_hour>6 && 4==now_tm.tm_wday)
 						)
 					){
 					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d\n", 
@@ -1017,14 +1121,22 @@ void callback(const char *path, long long size, int flag)
 
 int push_decoder_buf_init()
 {
+	int i = 0;
+	
 	g_recvBuffer = (DataBuffer *)malloc(sizeof(DataBuffer)*MAX_PACK_BUF);
 	if(NULL==g_recvBuffer){
 		ERROROUT("can not malloc %d*%d\n", sizeof(DataBuffer), MAX_PACK_BUF);
 		return -1;
 	}
-	else
+	else{
+		for(i=0; i<MAX_PACK_BUF; i++){
+			g_recvBuffer[i].m_len = 0;
+		}
+		g_wIndex = 0;
+		g_rIndex = 0;
+		
 		DEBUG("malloc for push decoder buffer %d*%d success\n", sizeof(DataBuffer), MAX_PACK_BUF);
-
+	}
 #ifdef MEMSET_PUSHBUF_SAFE	
 	memset(g_recvBuffer,0,sizeof(DataBuffer)*MAX_PACK_BUF);	
 	DEBUG("g_recvBuffer=%p\n", g_recvBuffer);
@@ -1434,6 +1546,7 @@ int prog_monitor_reset(void)
 {
 	int i = 0;
 	int ret = 0;
+	char direct_uri[1024];
 	
 	for(i=0; i<PROGS_NUM; i++)
 	{
@@ -1450,11 +1563,20 @@ int prog_monitor_reset(void)
 					//There is deadlock here: if dont parse desc.xml, can not get FileURI; if has no FileURI, can not rename it from @tmp@ to standard
 					//FileURI is nothing if this program is not download finished
 					int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
-			
+					
+					PRINTF("[%s]%s: cur=%lld, total=%lld, gap %d%% to finish\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
+					ret = push_dir_remove(s_prgs[i].uri);
+					if(0==ret)
+						PRINTF("push_dir_remove(%s) success\n", s_prgs[i].uri);
+					else if(-1==ret)
+						PRINTF("push_dir_remove(%s) failed, no such uri\n", s_prgs[i].uri);
+					else
+						PRINTF("push_dir_remove(%s) failed, some other err(%d)\n", s_prgs[i].uri, ret);
+						
 					// publication receive more than 98% but not complete
 					if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && 0<wanting_percent && wanting_percent<=2)
 					{
-						DEBUG("[%s]%s: cur=%lld, total=%lld, wanting %d%%, make it finished forced\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
+						PRINTF("finish reluctantly, make it completed forced, ignore gap %d%%\n", wanting_percent);
 						if(0==parseDoc(s_prgs[i].descURI, PUBLICATION_DIR, "publication")){
 							DEBUG("phony finished parse %s forced success\n", s_prgs[i].uri);
 							s_prgs[i].parsed = 1;
@@ -1464,14 +1586,9 @@ int prog_monitor_reset(void)
 						}
 					}
 					else{
-						ret = push_dir_remove(s_prgs[i].uri);
-						if(0==ret){
-							usleep(100000);
-						}
-						else if(-1==ret)
-							PRINTF("push remove failed: %s, no such uri\n", s_prgs[i].uri);
-						else
-							PRINTF("push remove failed: %s, some other err(%d)\n", s_prgs[i].uri, ret);
+						PRINTF("too rubbish as publication, remove %s\n", direct_uri);
+						snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),s_prgs[i].uri);
+						remove_force(direct_uri);
 					}
 				}
 				else if(-1==ret)

@@ -164,6 +164,27 @@ int data_stream_status_str_get(char *buf, unsigned int size)
 	return 0;
 }
 
+void igmpbuf_monitor(char *timestr)
+{
+	int recv_size = 0;
+	int free_size = 0;
+	
+	if(1==s_igmp_running){
+		if (p_write >= p_read)
+	    {
+	    	recv_size = MULTI_BUF_SIZE - p_write;
+	    	free_size = recv_size + p_read - IGMP_BUF_GAP;
+	    }
+	    else
+	    {
+	    	recv_size = p_read - p_write - IGMP_BUF_GAP;  //not let p_write == rindex 
+	    	free_size = recv_size;
+	    }
+	    
+		PRINTF("[%s]igmp buf w(%08d) r(%08d), can recv %08d in %08d\n", timestr,p_write,p_read,recv_size,free_size);
+	}
+}
+
 static void *igmp_thread()
 {
     char if_ip[16] = {0};
@@ -186,6 +207,7 @@ static void *igmp_thread()
 	int free_size = 0;	//空闲区域的总大小
 	int recv_size = 0;	//可用的接收大小，<=free_size
     int recv_len = 0;
+    int rindex = 0;
 	
 
 MULTITASK_START:
@@ -385,20 +407,22 @@ MULTITASK_START:
 	p_read = 0;
 	
 	while(1==s_igmp_running){
-        if (p_write >= p_read)
+		rindex = p_read;
+		
+        if (p_write >= rindex)
         {
         	recv_size = MULTI_BUF_SIZE - p_write;
-        	free_size = recv_size + p_read - IGMP_BUF_GAP;
+        	free_size = recv_size + rindex - IGMP_BUF_GAP;
         }
         else
         {
-        	recv_size = p_read - p_write - IGMP_BUF_GAP;  //not let p_write = p_read 
+        	recv_size = rindex - p_write - IGMP_BUF_GAP;  //not let p_write == rindex 
         	free_size = recv_size;
         }
         
         if(free_size<=RECVFROM_MIN)
         {
-//        	PRINTF("free_size=%d, %d,%d, multi buf is full\n", free_size, p_read, p_write);
+        	PRINTF("free_size=%d, %d,%d, igmp full\n", free_size, rindex, p_write);
         	usleep(200000);
         	continue;
         }
@@ -419,7 +443,7 @@ MULTITASK_START:
 			}
 		}
 		else{
-			//PRINTF("free_size=%d(%d),\tp_read=%d,\tp_write=%d\n", free_size,recv_size,p_read, p_write);
+			PRINTF("free_size=%d(%d),\tp_read=%d,\tp_write=%d\n", free_size,recv_size,rindex, p_write);
 			//memset(tmp_recv_buf,0,sizeof(tmp_recv_buf));
 			recv_len = recvfrom(sock, tmp_recv_buf, TMP_RECV_BUF_SIZE, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
 			//PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d\n", free_size,recv_size,recv_len);
@@ -439,6 +463,8 @@ MULTITASK_START:
 					tmp_write = p_write + recv_len;
 					if(tmp_write >= MULTI_BUF_SIZE)
 						p_write = 0;
+					else
+						p_write = tmp_write;
 				}
 				PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d,p_write=%d\n", free_size,recv_size,recv_len,p_write);
 			}
@@ -544,6 +570,7 @@ static int first_aid_for_igmp(int flag)
 void *softdvb_thread()
 {
 	int left = 0;
+	int windex = 0;
 	
 	softdvb_running = 1;
 
@@ -569,26 +596,29 @@ void *softdvb_thread()
 	
 	first_aid_for_igmp(0);
 #endif
-
+	
+	ts_loss_log_init();
 	DEBUG("go to softdvb_thread mainloop\n");
 	/*
 	 组播任务的开启、关闭会根据网络情况处理，这里就不再判断igmp_running了，要不然逻辑很复杂。
 	*/
 	while(1==softdvb_running)	// make sure the igmp thread is start firstly
 	{
-		if(p_write >= p_read)
-			left = p_write - p_read;
+		windex = p_write;
+		
+		if(windex >= p_read)
+			left = windex - p_read;
 		else
-			left = MULTI_BUF_SIZE - p_read + p_write;
+			left = MULTI_BUF_SIZE - p_read + windex;
 		
 		if(left<1316){
-			//PRINTF("%d,%d,%d\n", p_write, p_read, left);
+			//PRINTF("%d,%d,%d\n", windex, p_read, left);
 			usleep(10000);
 			continue;
 		}
 		
 //		if(p_buf)
-			parse_ts_packet(p_buf,p_write,&p_read);	// make sure 'p_buf' is not NULL
+			parse_ts_packet(p_buf,windex,&p_read);	// make sure 'p_buf' is not NULL
 	}
 	DEBUG("exit from soft dvb thread\n");
 	
@@ -617,6 +647,15 @@ int multicast_add()
 }
 #endif
 
+#define PUSH_PID_NUM	16
+typedef struct push_pid{
+	int pid;
+	char pid_type[32];
+	int fresh_flag;	// -1: useless pid need free; 0: has alloc already; 1: new pid need alloc
+}PUSH_PID;
+static PUSH_PID s_push_pids[PUSH_PID_NUM];
+
+#if 0
 static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p, receiver_size=%u\n", row, column, filter_act,receiver_size);
@@ -638,14 +677,7 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 		DEBUG("tc free root filter !!!!!!!!!!!!!!!!\n");
 	}
 #endif
-	
-//	for(i=1;i<row+1;i++)
-//	{
-//		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
-//		// SELECT pid,pidtype,FreshFlag FROM Channel;
-//		DEBUG("row %d: pid=%d,pidType=%s,FreshFlag=%s",i,pid,result[i*column+1],result[i*column+2]);
-//	}
-	
+
 	for(i=1;i<row+1;i++)
 	{
 		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
@@ -661,7 +693,7 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 #ifdef TUNER_INPUT
 	if (j>0)
 	{
-		DEBUG("j=%d do stop_feedpush()\n",j);
+		DEBUG("j=%d, do stop_feedpush()\n", j);
 		stop_feedpush();
 	}
 
@@ -715,21 +747,195 @@ static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act
 	
 	return 0;
 }
+#else
+static int push_pid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
+{
+	DEBUG("sqlite callback, row=%d, column=%d\n", row, column);
+	
+	int i = 0;
+	int j = 0;
+	
+	if(row<1){
+		DEBUG("no record in table Channel for push pid\n");
+	}
+	else{
+		for(i=1;i<row+1;i++)
+		{
+			PRINTF("push pid row[%d]: pid[%s], pidtype[%s], FreshFlag[%s]\n", i, result[i*column],result[i*column+1],result[i*column+2]);
+			if(atoi(result[i*column+2])>0){
+				unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
+				for(j=0; j<PUSH_PID_NUM; j++){
+					if(-1==s_push_pids[j].pid){
+						s_push_pids[j].pid = pid;
+						snprintf(s_push_pids[j].pid_type, sizeof(s_push_pids[j]), "%s", result[i*column+1]);
+						s_push_pids[j].fresh_flag = 1;
+						PRINTF("init push pid, monitor[%d].pid=%d\n", j, s_push_pids[j].pid);
+						break;
+					}
+				}
+				
+				if(PUSH_PID_NUM==j){
+					PRINTF("WARNING: push pid monitor is full\n");
+				}
+			}
+		}
+	}
+	
+	return 0;
+}
+
+// 只对动态新增加的pid做alloc，不对无用的pid做free
+int push_pid_refresh()
+{
+	int i = 0;
+	int filter = -1;
+	unsigned int alloc_cnt = 0;
+	unsigned int free_cnt = 0;
+	
+	for(i=0; i<PUSH_PID_NUM; i++){
+		if(-1!=s_push_pids[i].pid){
+			if(1==s_push_pids[i].fresh_flag){
+				if(0==strcmp(s_push_pids[i].pid_type,"file")){
+					PRINTF("alloc pid %d as file type, high property\n", s_push_pids[i].pid);
+					filter = alloc_filter(s_push_pids[i].pid, 1);
+				}
+				else{
+					filter = alloc_filter(s_push_pids[i].pid, 0);
+				}
+				
+				s_push_pids[i].fresh_flag = 0;
+				alloc_cnt++;
+				
+				PRINTF("alloc push pid, pid=%d, pid_type=%s, fid=%d\n", s_push_pids[i].pid, s_push_pids[i].pid_type, filter);
+			}
+			else if(-1==s_push_pids[i].fresh_flag){
+				int ret = free_filter(s_push_pids[i].pid);
+				s_push_pids[i].pid = -1;
+				s_push_pids[i].fresh_flag = -1;
+				free_cnt++;
+				
+				DEBUG("pid %d is useless, free it return %d!\n", s_push_pids[i].pid, ret);
+			}
+		}
+	}
+	
+	if(alloc_cnt>0)
+		DEBUG("total: alloc %d pid for dynamic refresh\n", alloc_cnt);
+	if(free_cnt>0)
+		DEBUG("total: free %d pid for dynamic refresh\n", free_cnt);
+	if(0==alloc_cnt && 0==free_cnt)
+		DEBUG("do nothing for dynamic pid refresh\n");
+	
+	return 0;
+}
+
+int push_pid_add(int pid, char *pid_type)
+{
+	if(pid<0){
+		PRINTF("pid %d is invalid\n", pid);
+		return -1;
+	}
+	
+	int i = 0;
+	
+	for(i=0; i<PUSH_PID_NUM; i++){
+		if(pid==s_push_pids[i].pid){
+			s_push_pids[i].fresh_flag = 0;
+			PRINTF("push pid %d is already exist in monitor[%d]\n", pid, i);
+			
+			return 1;
+		}
+	}
+	
+	for(i=0; i<PUSH_PID_NUM; i++){
+		if(-1==s_push_pids[i].pid){
+			s_push_pids[i].pid = pid;
+			snprintf(s_push_pids[i].pid_type, sizeof(s_push_pids[i]), "%s", pid_type);
+			s_push_pids[i].fresh_flag = 1;
+			PRINTF("add pid %d to monitor[%d]\n", pid, i);
+			
+			return 0;
+		}
+	}
+	
+	return -1;
+}
+
+int push_pid_ineffective_set()
+{
+	int i = 0;
+	
+	for(i=0; i<PUSH_PID_NUM; i++){
+		s_push_pids[i].fresh_flag = -1;
+		
+		if(-1!=s_push_pids[i].pid)
+			PRINTF("set push pid monitor[%d] %d ineffective\n", i, s_push_pids[i].pid);
+	}
+	
+	return 0;
+}
+
+#endif
+
+static void push_pid_monitor_init()
+{
+	int i = 0;
+	
+	for(i=0; i<PUSH_PID_NUM; i++){
+		s_push_pids[i].pid = -1;
+		s_push_pids[i].fresh_flag = -1;
+	}
+	
+	return;
+}
 
 /*
- 初始化及反初始化demux过滤器
- act_flag：	1——初始化demux过滤器
- 			0——反初始化demux过滤器
+ 初始化push pid
 */
-int pid_init(int act_flag)
+int push_pid_init()
 {
 	char sqlite_cmd[256+128];
-	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = allpid_sqlite_cb;
-
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = push_pid_sqlite_cb;
+	
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT pid,pidtype,FreshFlag FROM Channel;");
-	// 1 means alloc filter
-	int filter_act = act_flag;
-	return sqlite_read(sqlite_cmd, &filter_act, sizeof(filter_act), sqlite_callback);
+	
+	if(0>=sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback)){
+		DEBUG("read nothing from table Channel for push pid, set default manually\n");
+		
+		s_push_pids[0].pid = 0x19B;
+		snprintf(s_push_pids[0].pid_type, sizeof(s_push_pids[0].pid_type), "information");
+		s_push_pids[0].fresh_flag = 1;
+		
+		s_push_pids[1].pid = 0x19C;
+		snprintf(s_push_pids[1].pid_type, sizeof(s_push_pids[1].pid_type), "file");
+		s_push_pids[1].fresh_flag = 1;
+		
+		s_push_pids[2].pid = 0x19D;
+		snprintf(s_push_pids[2].pid_type, sizeof(s_push_pids[2].pid_type), "file");
+		s_push_pids[2].fresh_flag = 1;
+	}
+	
+	return push_pid_refresh();
+}
+
+/*
+ 反初始化push pid
+*/
+int push_pid_uninit()
+{
+	int i = 0;
+	
+	for(i=0; i<PUSH_PID_NUM; i++){
+		if(-1!=s_push_pids[i].pid){
+			int ret = free_filter(s_push_pids[i].pid);
+			DEBUG("pid %d is useless, free return %d!\n", s_push_pids[i].pid, ret);
+			
+			s_push_pids[i].pid = -1;
+			s_push_pids[i].fresh_flag = -1;
+		}
+	}
+	
+	return 0;
 }
 
 int softdvb_init()
@@ -767,7 +973,8 @@ int softdvb_init()
 	int ca_dsc_fid=TC_alloc_filter(0x1, &param, ca_section_handle, NULL, 0);
 	DEBUG("set ca filter, pid=0x1, fid=%d\n", ca_dsc_fid);
 	
-	if(-1==pid_init(1)){
+	push_pid_monitor_init();
+	if(-1==push_pid_init(1)){
 		DEBUG("allpid init faild\n");
 		return -1;
 	}
@@ -821,7 +1028,7 @@ int softdvb_uninit()
 	ret = free_filter(audio_pid);
 	DEBUG("free pid %d return with %d\n", audio_pid, ret);
 #else
-	if(-1==pid_init(0)){
+	if(-1==push_pid_uninit()){
 		DEBUG("allpid init faild\n");
 		return -1;
 	}	

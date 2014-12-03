@@ -410,11 +410,11 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 	datap = (unsigned char *)data+4;
 	if (getMaxSeq==0)
 	{
-                if (tc_crc32(data,len+12) )
-                {
-                        PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
-                        return;
-                }
+        if (tc_crc32(data,len+12) )
+        {
+			PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+			return;
+        }
 
 		if (datap[2]==datap[3])  //last section num = current section num
 		{
@@ -1214,20 +1214,23 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 	if(start)
 	{
 		if(0!=chan->bytes){
-			//PRINTF("1111111111111111 chanFilter[%d].pid=%d, chan->bytes=%d\n", fid, chanFilter[fid].pid, chan->bytes);
+			//if(0x19B==chanFilter[fid].pid || 0x19C==chanFilter[fid].pid || 0x19D==chanFilter[fid].pid || 0x190==chanFilter[fid].pid)
+			if(0x190==(0x190&(chanFilter[fid].pid))){
+				PRINTF("[%s] chanFilter[%d].pid=%d, chan->bytes=%d\n", hms_stamp(), fid, chanFilter[fid].pid, chan->bytes);
+			}
 			chan->bytes = 0;
 		}
 		chan->stage = CHAN_STAGE_HEADER;
 	}
 	else if(chan->stage==CHAN_STAGE_START)
 	{
-		DEBUG("chan->stage==CHAN_STAGE_START\n");
+		PRINTF("chan->stage==CHAN_STAGE_START\n");
 		return 0;
 	}
 	
 // should make SURE sizeof(chan->buf)==FILTER_BUF_SIZE
 	if((chan->bytes + dlen)>FILTER_BUF_SIZE){
-		DEBUG("chanFilter[%d].pid=0x%x, chanFilter[%d].bytes=%d, overflow\n",fid,chanFilter[fid].pid,fid,chanFilter[fid].bytes);
+		PRINTF("chanFilter[%d].pid=0x%x, chanFilter[%d].bytes=%d, overflow\n",fid,chanFilter[fid].pid,fid,chanFilter[fid].bytes);
 		return 0;
 	}
 	
@@ -1248,7 +1251,7 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 	}
 	//DEBUG("chan_bytes = [%d]\n",chan->bytes);
 	if(chan->bytes<3){
-		DEBUG("chan_bytes = [%d]\n",chan->bytes);
+		PRINTF("chan_bytes = [%d]\n",chan->bytes);
 		return 0;
 	}
 	
@@ -1381,10 +1384,10 @@ retry:
 			{
 				if(0==tc_crc32(chanbuf,sec_len))
 					send_mpe_sec_to_push_fifo(chanbuf, sec_len);
-                    else
-                    {
-                    	PRINTF("section crc error, sec_len=%d\n", sec_len);
-                    }
+                else
+                {
+                	PRINTF("section crc error, sec_len=%d\n", sec_len);
+                }
 							
 				//DEBUG("payload [%d]\n",total);
 			}
@@ -1527,6 +1530,21 @@ retry:
 	return 0;
 }
 
+// only for debug, print periodicity
+static char s_ts_loss_log[1024];
+void ts_loss_printf_periodicity()
+{
+	if(strlen(s_ts_loss_log)>0){
+		PRINTF("%s\n", s_ts_loss_log);
+		memset(s_ts_loss_log, 0, sizeof(s_ts_loss_log));
+	}
+}
+
+void ts_loss_log_init()
+{
+	memset(s_ts_loss_log, 0, sizeof(s_ts_loss_log));
+}
+
 //static unsigned short last_pid=0;
 int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 {
@@ -1563,7 +1581,7 @@ resync:
 		{
 			if (optr[p+188] != 0x47)
 			{
-				PRINTF("optr[p+188] != 0x47\n");
+				PRINTF("optr[p+188]!=0x47\n");
 				p++;
 				goto resync;
 			}
@@ -1572,7 +1590,7 @@ resync:
 		{
 			if (optr[p+188 - MULTI_BUF_SIZE] != 0x47)
 			{
-				PRINTF("optr[p+188 - MULTI_BUF_SIZE] != 0x47\n");
+				PRINTF("optr[p+188-MULTI_BUF_SIZE]!=0x47\n");
 				p++;
 				if (p >= MULTI_BUF_SIZE)
 					p = 0;
@@ -1589,6 +1607,7 @@ resync:
 	if (size < 188)
 	{
 		*read = p;
+		PRINTF("size<188\n");
 		return 0;
 	}
 	left = 188;
@@ -1670,12 +1689,13 @@ resync:
 //		last_pid = pid;
 		if(chan != -1){
 			if(cc !=  chanFilter[chan].cc) {
-				/* 
+				
 				if(((chanFilter[chan].cc + 1)&0x0f)!=cc)
 				{
-					PRINTF("loss now=%d  last=%d\n",cc,chanFilter[chan].cc);
+					snprintf(s_ts_loss_log+strlen(s_ts_loss_log), sizeof(s_ts_loss_log)-strlen(s_ts_loss_log),
+						"[%s] ts loss (%02d,%02d)\n",hms_stamp(),chanFilter[chan].cc,cc);
 				}
-				*/
+				
 				chanFilter[chan].cc = cc;
 				parse_payload(chan, p1, left, ts_start, ptr);
 			}
