@@ -53,6 +53,7 @@ int motherdisc_check();
 int storage_hd_enable();
 int storage_flash_check();
 int hd_is_ready_by_launcher();
+int hd_write_protected();
 
 #include "dvbpush_api.h"
 int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, int len);

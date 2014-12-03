@@ -3830,14 +3830,22 @@ PARSE_XML_END:
 */
 int parse_xml(char *relative, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
 {
-	if(PRODUCTDESC_XML==xml_flag){
-		DEBUG("arriving a new ProductDesc(%d):%s, process old ProductDesc\n", xml_flag, relative);
-		/*
-		 不考虑PushStartTime和PushEndTime的限制，只要有新的播发单就删除旧单，简化逻辑
-		*/
-		prog_monitor_reset();
+	int ret = 0;
+	
+	if(0==hd_write_protected()){
+		if(PRODUCTDESC_XML==xml_flag){
+			DEBUG("arriving a new ProductDesc(%d):%s, process old ProductDesc\n", xml_flag, relative);
+			/*
+			 不考虑PushStartTime和PushEndTime的限制，只要有新的播发单就删除旧单，简化逻辑
+			*/
+			prog_monitor_reset();
+		}
+		ret = parseDoc(relative, xml_flag, arg_ext);
 	}
-	int ret = parseDoc(relative, xml_flag, arg_ext);
+	else{
+		DEBUG("hard disk is write protect %d, dont parse any xml\n", hd_write_protected());
+		return -1;
+	}
 	
 	return ret;
 }

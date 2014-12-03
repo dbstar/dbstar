@@ -285,7 +285,7 @@ rewake:
 		
 		// 此线程的运行影响到升级，即使没有硬盘也必须让此线程运行。
 		// 但要避免母盘中Initialize或其他xml被下载的xml覆盖
-		if(len>0 && 1==s_motherdisc_init_flag)
+		if(len>0 && 1==s_motherdisc_init_flag && 0==hd_write_protected())
 		{
 			pBuf = g_recvBuffer[rindex].m_buf;
 			/*

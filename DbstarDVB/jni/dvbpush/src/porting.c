@@ -88,6 +88,8 @@ static char			s_push_log_dir[512];
 static int			s_user_idle_status = 1;	// 0表示用户处在使用状态、非空闲，1表示用户处在空闲状态
 static int			s_hd_ready_by_launcher = 0;
 
+static int			s_hd_write_protected = 0;	// if >0, means hard disk can not be write
+
 static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 
@@ -1937,17 +1939,23 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			*len = strlen(s_jni_cmd_public_space);
 			break;
 		case CMD_FACTORY_RESET:
-			DEBUG("CMD_FACTORY_RESET\n");
+			s_hd_write_protected += 1;
+			DEBUG("CMD_FACTORY_RESET, s_hd_write_protected=%d\n", s_hd_write_protected);
 			channel_clear();
 			global_info_init(1);
 #ifdef SMARTLIFE_LC
 			smarthome_reset();
 #endif
+			remove_force("/data/dbstar/pushroot");
+			remove_force("/data/dbstar/Dbstar.db");
+			remove_force("/data/dbstar/ColumnRes");
+			
 			DEBUG("remove push log dir: %s\n", s_push_log_dir);
 			remove_force(s_push_log_dir);
 			break;
 		case CMD_DRM_RESET:
-			DEBUG("CMD_DRM_RESET\n");
+			s_hd_write_protected += 2;
+			DEBUG("CMD_DRM_RESET, s_hd_write_protected=%d\n", s_hd_write_protected);
 			char *drm_dir = "/data/dbstar/drm";
 			char *drm_dir_rubbish = "/data/dbstar/drm_rubbish";
 			if(0==remove_force(drm_dir)){
@@ -1963,7 +1971,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			remove_force(s_push_log_dir);
 			break;
 		case CMD_DISC_FORMAT:
-			DEBUG("CMD_DISC_FORMAT\n");
+			s_hd_write_protected += 4;
+			DEBUG("CMD_DISC_FORMAT, s_hd_write_protected=%d\n", s_hd_write_protected);
 			
 			snprintf(tmp_buf,sizeof(tmp_buf),"%s/ColumnRes", push_dir_get());
 			if(0==remove_force(tmp_buf)){
@@ -3587,3 +3596,8 @@ int send_sc_notify(int can_send_nofity, DBSTAR_CMD_MSG_E sc_notify, char *msg, i
 	return ret;
 }
 
+// 当执行“恢复出厂设置”、“清理购买信息”、“格式化磁盘”等操作时，不向磁盘写数据，不解析xml，不写数据库，磁盘处于写保护状态
+int hd_write_protected()
+{
+	return s_hd_write_protected;
+}

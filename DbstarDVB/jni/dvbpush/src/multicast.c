@@ -428,46 +428,53 @@ MULTITASK_START:
         }
         //PRINTF("free_size=%d",free_size);
         
-		if(recv_size>=RECVFROM_MIN){
-			recv_len = recvfrom(sock, p_buf+p_write, recv_size, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
-			if(recv_len > 0)
-			{
-				s_data_stream_status = 8;
-				
-				tmp_write = p_write + recv_len;
-				if(tmp_write >= MULTI_BUF_SIZE){	// actually, p_write is equal with MULTI_BUF_SIZE
-					p_write = 0;
-				}
-				else
-					p_write = tmp_write;
-			}
-		}
-		else{
-			PRINTF("free_size=%d(%d),\tp_read=%d,\tp_write=%d\n", free_size,recv_size,rindex, p_write);
-			//memset(tmp_recv_buf,0,sizeof(tmp_recv_buf));
-			recv_len = recvfrom(sock, tmp_recv_buf, TMP_RECV_BUF_SIZE, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
-			//PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d\n", free_size,recv_size,recv_len);
-			
-			if(recv_len > 0)
-			{
-				s_data_stream_status = 8;
-				
-				if(recv_len>recv_size){
-					memcpy(p_buf+p_write,tmp_recv_buf,recv_size);
+        if(0==hd_write_protected()){
+			if(recv_size>=RECVFROM_MIN){
+				recv_len = recvfrom(sock, p_buf+p_write, recv_size, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
+				if(recv_len > 0)
+				{
+					s_data_stream_status = 8;
 					
-					memcpy(p_buf,tmp_recv_buf+recv_size,recv_len-recv_size);
-					p_write = recv_len-recv_size;
-				}
-				else{
-					memcpy(p_buf+p_write,tmp_recv_buf,recv_len);
 					tmp_write = p_write + recv_len;
-					if(tmp_write >= MULTI_BUF_SIZE)
+					if(tmp_write >= MULTI_BUF_SIZE){	// actually, p_write is equal with MULTI_BUF_SIZE
 						p_write = 0;
+					}
 					else
 						p_write = tmp_write;
 				}
-				PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d,p_write=%d\n", free_size,recv_size,recv_len,p_write);
 			}
+			else{
+				PRINTF("free_size=%d(%d),\tp_read=%d,\tp_write=%d\n", free_size,recv_size,rindex, p_write);
+				//memset(tmp_recv_buf,0,sizeof(tmp_recv_buf));
+				recv_len = recvfrom(sock, tmp_recv_buf, TMP_RECV_BUF_SIZE, 0, (struct sockaddr *)&sin, (socklen_t*)&sizeof_sin);
+				//PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d\n", free_size,recv_size,recv_len);
+				
+				if(recv_len > 0)
+				{
+					s_data_stream_status = 8;
+					
+					if(recv_len>recv_size){
+						memcpy(p_buf+p_write,tmp_recv_buf,recv_size);
+						
+						memcpy(p_buf,tmp_recv_buf+recv_size,recv_len-recv_size);
+						p_write = recv_len-recv_size;
+					}
+					else{
+						memcpy(p_buf+p_write,tmp_recv_buf,recv_len);
+						tmp_write = p_write + recv_len;
+						if(tmp_write >= MULTI_BUF_SIZE)
+							p_write = 0;
+						else
+							p_write = tmp_write;
+					}
+					PRINTF("free_size=%d(%d),\t\t\t\t\trecv_len=%d,p_write=%d\n", free_size,recv_size,recv_len,p_write);
+				}
+			}
+		}
+		else{
+			DEBUG("hard disk is write protect %d, dont receive anything from igmp\n", hd_write_protected());
+			recv_len = 0;
+			sleep(1);
 		}
 		
 		if (recv_len < 16)
@@ -475,7 +482,7 @@ MULTITASK_START:
 			if(s_data_stream_status>0)
 				s_data_stream_status --;
 			
-            usleep(10000);
+            usleep(100000);
             if(1==s_igmp_restart){
             	DEBUG("will restart igmp thread loop\n");
             	break;
