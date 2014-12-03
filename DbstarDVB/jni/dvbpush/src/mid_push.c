@@ -1586,8 +1586,8 @@ int prog_monitor_reset(void)
 						}
 					}
 					else{
-						PRINTF("too rubbish as publication, remove %s\n", direct_uri);
 						snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),s_prgs[i].uri);
+						PRINTF("too rubbish as publication, remove %s\n", direct_uri);
 						remove_force(direct_uri);
 					}
 				}
