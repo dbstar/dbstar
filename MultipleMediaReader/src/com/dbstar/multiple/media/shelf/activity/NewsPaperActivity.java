@@ -44,7 +44,7 @@ public class NewsPaperActivity extends Activity{
         mGroupView = (RelativeLayout) findViewById(R.id.group_fragment);
         RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.newspaper_container);
         
-        String appUri = getIntent().getStringExtra("app_uri");
+        String appUri = getIntent().getStringExtra(ImageUtil.AppBG_Uri);
         mBitmap = ImageUtil.getBitmap(appUri);
         if (mBitmap == null) {
         	mContainer.setBackgroundResource(R.drawable.reader_view_background);
@@ -145,6 +145,7 @@ public class NewsPaperActivity extends Activity{
                 return true;
             }else if(FRAGMENT_MAIN == mCurrentFragement){
                 finish();
+                System.gc();
                 overridePendingTransition(0, 0);
             }
         }
@@ -160,6 +161,8 @@ public class NewsPaperActivity extends Activity{
         super.onDestroy();
         if (mBitmap != null && !mBitmap.isRecycled()) {
         	mBitmap.recycle();
+        	mBitmap = null;
         }
+        System.gc();
     }
 }

@@ -6,7 +6,6 @@ import java.util.Map;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -191,8 +190,11 @@ public class GDGeneralInfoActivity extends GDSettingActivity {
 	
 	protected void onDestroy() {
 		super.onDestroy();
-		if (mBitmap != null && !mBitmap.isRecycled())
+		if (mBitmap != null && !mBitmap.isRecycled()) {
 			mBitmap.recycle();
+			mBitmap = null;
+		}
+		System.gc();
 	};
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event) {

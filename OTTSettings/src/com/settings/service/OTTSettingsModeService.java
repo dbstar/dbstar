@@ -107,7 +107,7 @@ public class OTTSettingsModeService extends Service{
 			};
 		};
 		
-		Timer timer = new Timer();
+		final Timer timer = new Timer();
 		TimerTask timerTask = new TimerTask() {
 			
 			@Override
@@ -121,6 +121,8 @@ public class OTTSettingsModeService extends Service{
 						handler.sendMessage(message);
 						mCheckCount ++;
 					}
+				} else {
+					timer.cancel();
 				}
 			}
 

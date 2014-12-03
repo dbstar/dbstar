@@ -62,6 +62,7 @@ import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.service.GDDataProviderService;
+import com.dbstar.util.Constants;
 import com.dbstar.util.FileOperation;
 import com.dbstar.util.ImageUtil;
 import com.dbstar.util.LogUtil;
@@ -263,11 +264,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		
 		if (mHomeBitmap != null && !mHomeBitmap.isRecycled()) {
 			mHomeBitmap.recycle();
+			mHomeBitmap = null;
 		}
 		
 		if (mServiceBitmap != null && !mServiceBitmap.isRecycled()) {
 			mServiceBitmap.recycle();
+			mServiceBitmap = null;
 		}
+		System.gc();
 	}
 
 	public void onAttachedToWindow() {
@@ -523,7 +527,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			    	setMute(!muteBeforRm);					
 			    }
 //			    startActivity(intent);
-			    intent.putExtra("app_uri", ImageUtil.App_Uri);
+			    intent.putExtra(Constants.AppBG_Uri, ImageUtil.App_Uri);
 			    startActivityForResult(intent, START_RICHMEDIA_ACTIVITY_RESULT);
 			}
 		}
@@ -671,7 +675,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
             intent.putExtra("mColumnBookId", mColumnBookId);
             intent.putExtra("mColumnNewsPaperPaperId", mColumnNewsPaperId);
             
-            intent.putExtra("app_uri", ImageUtil.App_Uri);
+            intent.putExtra(Constants.AppBG_Uri, ImageUtil.App_Uri);
         }
 
 		if (intent != null) {
@@ -696,7 +700,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			intent = startDbstarSettingActivity("GDNetworkSettingsActivity");
 			if (intent != null) {
 	            intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
-	            intent.putExtra("app_uri", ImageUtil.App_Uri);
+	            intent.putExtra(Constants.AppBG_Uri, ImageUtil.App_Uri);
 	            startActivityForResult(intent, START_NETWORKSETTING_ACTIVITY_RESULT);
 	        }
 			return;

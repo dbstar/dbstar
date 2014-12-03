@@ -21,8 +21,8 @@ import com.dbstar.app.GDBaseActivity;
 import com.dbstar.app.TaskController;
 import com.dbstar.app.TaskObserver;
 import com.dbstar.model.EventData;
+import com.dbstar.util.DbstarUtil;
 import com.dbstar.util.LogUtil;
-import com.dbstar.util.upgrade.RebootUtils;
 
 public class GDSystemMgrActivity extends GDBaseActivity {
 	private static final String TAG = "GDSystemMgrActivity";
@@ -229,6 +229,7 @@ public class GDSystemMgrActivity extends GDBaseActivity {
 						Button button = (Button) v;
 						if (button == mOkButton) {
 							okBtnPressed();
+							DbstarUtil.closeNetwork(GDSystemMgrActivity.this);
 						} else if (button == mCancelButton) {
 							cancelButtonPressed();
 						}

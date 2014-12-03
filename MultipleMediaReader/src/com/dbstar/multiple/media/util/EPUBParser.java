@@ -61,7 +61,7 @@ public class EPUBParser {
                     
                     event = parser.next();
                 }
-                
+                in.close();
             }
             
         } catch (Exception e) {
@@ -87,6 +87,7 @@ public class EPUBParser {
                 }
                 event = parser.next();
             }
+            in.close();
             
           if(path != null){
               String opfPath = rootPath + "/" + path;
@@ -108,6 +109,7 @@ public class EPUBParser {
                   }
                   event2 = parser2.next();
               }
+              inputStream.close();
               
               if(path != null){
                   path = getParentPath(opfPath, 1)+ path;
@@ -170,6 +172,7 @@ public class EPUBParser {
                 
                 event = parser.next();
             }
+            in.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -205,6 +208,7 @@ public class EPUBParser {
                   
                   event = parser.next();
               }
+              in.close();
           } catch (Exception e) {
               e.printStackTrace();
           }
@@ -282,6 +286,7 @@ public class EPUBParser {
                 
                 event = parser.next();
             }
+            in.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -346,16 +351,16 @@ public class EPUBParser {
         	  XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
               InputStream in = new FileInputStream(path);
               String inToString = getStreamString(in);
-              if (inToString.contains("<br>") || inToString.contains("<Br>")) {
+              InputStream inputStream;
+			if (inToString.contains("<br>") || inToString.contains("<Br>")) {
             	  String newString = inToString.replace("<br>", "\n");
-            	  InputStream inputStream = getStringStream(newString);
-            	  parser.setInput(inputStream, "utf-8");             	  
+            	  inputStream = getStringStream(newString);
             	  Log.d("EPUBParser", "NewsPaperArticleContent contains('<br>')");
               } else {
             	  Log.d("EPUBParser", "NewsPaperArticleContent not contains('<br>')");
-            	  InputStream inputStream = getStringStream(inToString);
-            	  parser.setInput(inputStream, "utf-8");  
+            	  inputStream = getStringStream(inToString);
               }
+			parser.setInput(inputStream, "utf-8");  
               
               int event = parser.getEventType();//
               boolean hxFlag = false;
@@ -439,6 +444,8 @@ public class EPUBParser {
                   event = parser.next();
 //                  Log.d("EPUBParser", "---------------------event = " + event);
               }
+              inputStream.close();
+              in.close();
           } catch (Exception e) {
               e.printStackTrace();
           }

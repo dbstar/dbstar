@@ -136,7 +136,9 @@ public class GDReceiveStatusActivity extends GDBaseActivity {
 		
 		if (mBitmap != null && !mBitmap.isRecycled()) {
 			mBitmap.recycle();
+			mBitmap = null;
 		}
+		System.gc();
 	}
 
 	public void onServiceStart() {

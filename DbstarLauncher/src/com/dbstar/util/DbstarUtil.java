@@ -32,6 +32,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.ethernet.EthernetManager;
+import android.net.wifi.WifiManager;
 import android.os.Environment;
 
 import com.dbstar.http.HttpConnect;
@@ -42,6 +44,17 @@ import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.openuser.activity.UserAgreementActivity;
 
 public class DbstarUtil {
+	
+	/**
+	 * 关闭网络
+	 * @param context
+	 */
+	public static void closeNetwork(Context context) {
+		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		wifiManager.setWifiEnabled(false);
+		EthernetManager ethernetManager = (EthernetManager) context.getSystemService(Context.ETH_SERVICE);
+		ethernetManager.setEthEnabled(false);
+	}
 	
 	/**
 	 * 检查网络是否可用

@@ -141,6 +141,7 @@ public class GDHDMovieActivity extends GDBaseActivity {
 		
 		if (mBitmap != null && !mBitmap.isRecycled()) {
 			mBitmap.recycle();
+			mBitmap = null;
 		}
 
 		for (int i = 0; mPageDatas != null && i < mPageDatas.size(); i++) {
@@ -151,6 +152,8 @@ public class GDHDMovieActivity extends GDBaseActivity {
 				}
 			}
 		}
+		
+		System.gc();
 	}
 
 	public void onServiceStart() {

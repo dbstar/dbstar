@@ -50,7 +50,8 @@ public class MediaShareActivity extends Activity {
         Intent intent = new Intent(this, ShareService.class);
         bindService(intent, connection, Service.BIND_AUTO_CREATE);
     
-        String appUri = getIntent().getStringExtra("app_uri");
+        String appUri = getIntent().getStringExtra(ImageUtil.AppBG_Uri);
+        Log.d("MediaShareActivity", " appUri = " + appUri);
         mBitmap = ImageUtil.getBitmap(appUri);
         
         if (mBitmap == null) {
@@ -94,7 +95,10 @@ public class MediaShareActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         unbindService(connection);
-        if (mBitmap != null && !mBitmap.isRecycled())
+        if (mBitmap != null && !mBitmap.isRecycled()) {
         	mBitmap.recycle();
+        	mBitmap = null;        	
+        }
+        System.gc();
     }
 }

@@ -3,9 +3,7 @@ package com.dbstar.multiple.media.common;
 import java.util.List;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -13,9 +11,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
-import android.util.Log;
 
 import com.dbstar.multiple.media.data.VoiceBookPageInfo;
 import com.dbstar.multiple.media.model.ModelVoicedBook.Language;

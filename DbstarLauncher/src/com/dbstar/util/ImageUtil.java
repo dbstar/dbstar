@@ -153,21 +153,26 @@ public class ImageUtil {
 			// bitmaps.put("app", bitmap);
 			// }
 			
-			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-			bitmapOptions.inJustDecodeBounds = true;
-			
-			Bitmap bitmap = BitmapFactory.decodeFile(picAppUri, bitmapOptions);
-			
-			int width = bitmapOptions.outWidth;
-			int height = bitmapOptions.outHeight;
-			Log.d("ImageUtil HomeBG", "width = " + width);
-			Log.d("ImageUtil HomeBG", "height = " + height);
-			
-			// bitmapOptions.outWidth为获取到的原图的宽度
-			bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
-			bitmapOptions.inJustDecodeBounds = false;
-			
-			resizedBitmap  = BitmapFactory.decodeFile(picAppUri, bitmapOptions);
+			try {
+				BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+				bitmapOptions.inJustDecodeBounds = true;
+				
+				Bitmap bitmap = BitmapFactory.decodeFile(picAppUri, bitmapOptions);
+				
+				int width = bitmapOptions.outWidth;
+				int height = bitmapOptions.outHeight;
+				Log.d("ImageUtil HomeBG", "width = " + width);
+				Log.d("ImageUtil HomeBG", "height = " + height);
+				
+				// bitmapOptions.outWidth为获取到的原图的宽度
+				bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
+				bitmapOptions.inJustDecodeBounds = false;
+				
+				resizedBitmap  = BitmapFactory.decodeFile(picAppUri, bitmapOptions);
+			} catch (OutOfMemoryError  e) {
+				LogUtil.d(TAG, " appBitmap out of memory error = " + e);
+				e.printStackTrace();
+			}
 		}
 		return resizedBitmap;
 	}
@@ -192,21 +197,26 @@ public class ImageUtil {
 			// bitmaps.put("service", bitmap);
 			// }
 			
-			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-			bitmapOptions.inJustDecodeBounds = true;
-			
-			Bitmap bitmap = BitmapFactory.decodeFile(picServiceUri, bitmapOptions);
-			
-			int width = bitmapOptions.outWidth;
-			int height = bitmapOptions.outHeight;
-			Log.d("ImageUtil HomeBG", "width = " + width);
-			Log.d("ImageUtil HomeBG", "height = " + height);
-			
-			// bitmapOptions.outWidth为获取到的原图的宽度
-			bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 560);
-			bitmapOptions.inJustDecodeBounds = false;
-			
-			resizedBitmap = BitmapFactory.decodeFile(picServiceUri, bitmapOptions);
+			try {
+				BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+				bitmapOptions.inJustDecodeBounds = true;
+				
+				Bitmap bitmap = BitmapFactory.decodeFile(picServiceUri, bitmapOptions);
+				
+				int width = bitmapOptions.outWidth;
+				int height = bitmapOptions.outHeight;
+				Log.d("ImageUtil HomeBG", "width = " + width);
+				Log.d("ImageUtil HomeBG", "height = " + height);
+				
+				// bitmapOptions.outWidth为获取到的原图的宽度
+				bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 560);
+				bitmapOptions.inJustDecodeBounds = false;
+				
+				resizedBitmap = BitmapFactory.decodeFile(picServiceUri, bitmapOptions);
+			} catch (OutOfMemoryError e) {
+				LogUtil.d(TAG, " serviceBitmap out of memory error = " + e);
+				e.printStackTrace();
+			}
 		}
 		return resizedBitmap;
 	}
@@ -226,21 +236,26 @@ public class ImageUtil {
 //			BufferedInputStream bis = new BufferedInputStream(fileInputStream);
 //			Bitmap bitmap = BitmapFactory.decodeStream(bis);
 			
-			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-			bitmapOptions.inJustDecodeBounds = true;
-			
-			Bitmap bitmap = BitmapFactory.decodeFile(picHomeUri, bitmapOptions);
-			
-			int width = bitmapOptions.outWidth;
-			int height = bitmapOptions.outHeight;
-			Log.d("ImageUtil HomeBG", "width = " + width);
-			Log.d("ImageUtil HomeBG", "height = " + height);
-			
-			// bitmapOptions.outWidth为获取到的原图的宽度
-			bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
-			bitmapOptions.inJustDecodeBounds = false;
-			
-			resizedBitmap = BitmapFactory.decodeFile(picHomeUri, bitmapOptions);
+			try {
+				BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+				bitmapOptions.inJustDecodeBounds = true;
+				
+				Bitmap bitmap = BitmapFactory.decodeFile(picHomeUri, bitmapOptions);
+				
+				int width = bitmapOptions.outWidth;
+				int height = bitmapOptions.outHeight;
+				Log.d("ImageUtil HomeBG", "width = " + width);
+				Log.d("ImageUtil HomeBG", "height = " + height);
+				
+				// bitmapOptions.outWidth为获取到的原图的宽度
+				bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 1280);
+				bitmapOptions.inJustDecodeBounds = false;
+				
+				resizedBitmap = BitmapFactory.decodeFile(picHomeUri, bitmapOptions);
+			} catch (OutOfMemoryError e) {
+				LogUtil.d(TAG, " homeBitmap out of memory error = " + e);
+				e.printStackTrace();
+			}
 		}
 		return resizedBitmap;
 	}

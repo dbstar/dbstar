@@ -40,7 +40,7 @@ public class GDNetworkSettingsActivity extends GDBaseActivity implements
 		
 		RelativeLayout mContainer = (RelativeLayout) findViewById(R.id.network_settings_container);
 		
-		String appUri = getIntent().getStringExtra("app_uri");
+		String appUri = getIntent().getStringExtra(SettingsCommon.AppBG_Uri);
 		
 		mBitmap = ImageUtil.loadPic(appUri);
 		
@@ -75,7 +75,9 @@ public class GDNetworkSettingsActivity extends GDBaseActivity implements
 		super.onDestroy();
 		if (mBitmap != null && !mBitmap.isRecycled()) {
 			mBitmap.recycle();
+			mBitmap = null;
 		}
+		System.gc();
 	}
 
 	protected void switchToPageInternal(String fragmentName, Bundle args) {

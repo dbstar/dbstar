@@ -98,14 +98,13 @@ class ServerHandler extends Thread {
         	dokument = dokument.replaceAll("[/]+","/");
         }
       }
-    }
-    catch (Exception e) {
+      
+//      in.close();
+    } catch (Exception e) {
     	ServerThread.remove(toClient);
-    	try
-		{
+    	try {
     		toClient.close();
-		}
-    	catch (Exception ex){}
+		} catch (Exception ex){}
     }
     Log.i("ServerHandler", dokument);
 
@@ -262,7 +261,7 @@ class ServerHandler extends Thread {
 						out.print(header);
 						out.print("404 - File not Found");
 						out.flush();
-						out.flush();
+						out.close();
 						ServerThread.remove(toClient);
 						toClient.close();
 					}
@@ -284,6 +283,7 @@ class ServerHandler extends Thread {
 			out.write(header.getBytes());
 			out.write(content);
 			out.flush();
+			out.close();
 			ServerThread.remove(toClient);
 			toClient.close();
 			return;

@@ -34,6 +34,7 @@ import android.os.Message;
 import android.os.Process;
 import android.view.KeyEvent;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.dbstar.R;
 import com.dbstar.DbstarDVB.DbstarServiceApi;
@@ -62,6 +63,7 @@ import com.dbstar.util.LogUtil;
 import com.dbstar.util.NativeUtil;
 import com.dbstar.util.PeripheralController;
 import com.dbstar.util.StringUtil;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.util.upgrade.RebootUtils;
 
 public class GDDataProviderService extends Service {
@@ -1462,33 +1464,41 @@ public class GDDataProviderService extends Service {
 						value = task.Parameters.get(PARAMETER_COLUMN_ID);
 						String columnId = String.valueOf(value);
 	
-						ColumnData[] coloumns = mDataModel.getColumns(columnId);
-	
-						for (int i = 0; coloumns != null && i < coloumns.length; i++) {
-							ColumnData column = coloumns[i];
-							String iconRootPath = mConfigure.getIconRootDir();
-							coloumns[i].IconNormal = mDataModel
-									.getImage(iconRootPath + "/"
-											+ column.IconNormalPath);
-							coloumns[i].IconFocused = mDataModel
-									.getImage(iconRootPath + "/"
-											+ column.IconFocusedPath);
-	
-							if (coloumns[i].IconNormal == null) {
-								if (mDefaultColumnIconFile == null) {
-									mDefaultColumnIconFile = mDataModel
-											.queryGlobalProperty(GDDVBDataContract.PropertyDefaultColumnIcon);
-								}
-	
+						try {
+							ColumnData[] coloumns = mDataModel.getColumns(columnId);
+
+							for (int i = 0; coloumns != null && i < coloumns.length; i++) {
+								ColumnData column = coloumns[i];
+								String iconRootPath = mConfigure.getIconRootDir();
 								coloumns[i].IconNormal = mDataModel
 										.getImage(iconRootPath + "/"
-												+ mDefaultColumnIconFile);
+												+ column.IconNormalPath);
+								coloumns[i].IconFocused = mDataModel
+										.getImage(iconRootPath + "/"
+												+ column.IconFocusedPath);
+
+								if (coloumns[i].IconNormal == null) {
+									if (mDefaultColumnIconFile == null) {
+										mDefaultColumnIconFile = mDataModel
+												.queryGlobalProperty(GDDVBDataContract.PropertyDefaultColumnIcon);
+									}
+
+									coloumns[i].IconNormal = mDataModel
+											.getImage(iconRootPath + "/"
+													+ mDefaultColumnIconFile);
+								}
 							}
+
+							task.Data = coloumns;
+
+							taskFinished(task);
+						} catch (Exception e) {
+							LogUtil.d(TAG, " when REQUESTTYPE_GETCOLUMNS found exception = " + e + ", and should reboot");
+							e.printStackTrace();
+							// TODO:
+//							sendBroadcast(new Intent("format disk"));
+							ToastUtil.showToast(getApplicationContext(), R.string.external_storage_alert_when_error);
 						}
-	
-						task.Data = coloumns;
-	
-						taskFinished(task);
 						break;
 					}
 					

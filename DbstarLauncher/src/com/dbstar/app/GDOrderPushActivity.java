@@ -214,7 +214,9 @@ public class GDOrderPushActivity extends GDBaseActivity {
 		super.onDestroy();
 		if (mBitmap != null && !mBitmap.isRecycled()) {
 			mBitmap.recycle();
+			mBitmap = null;
 		}
+		System.gc();
 	}
 
 	public void onServiceStart() {

@@ -102,7 +102,7 @@ public class VoicedBookReadActivity extends Activity {
         RootPath = getIntent().getStringExtra("FilePath");
         BookId = getIntent().getStringExtra("BookId");
         
-        String appUri = getIntent().getStringExtra("app_uri");
+        String appUri = getIntent().getStringExtra(ImageUtil.AppBG_Uri);
         initView(appUri);
         mGdbHelper = GDBHelper.getInstance(this);
         mImageManager = ImageManager.getInstance(this);
@@ -550,6 +550,8 @@ public class VoicedBookReadActivity extends Activity {
         
         if (mBitmap != null && !mBitmap.isRecycled()) {
      	   mBitmap.recycle();
+     	   mBitmap = null;
         }
+        System.gc();
     }
 }

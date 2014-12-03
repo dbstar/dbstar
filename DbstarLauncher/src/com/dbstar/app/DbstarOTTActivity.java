@@ -31,7 +31,6 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -46,6 +45,7 @@ import com.dbstar.app.alert.GDForceUpgradeActivity;
 import com.dbstar.app.alert.GDUpgradeActivity;
 import com.dbstar.app.components.FlashGallery;
 import com.dbstar.app.launcher.GDLauncherActivity;
+import com.dbstar.app.settings.GDAdvancedToolsActivity;
 import com.dbstar.app.settings.GDDiskManagementActivity;
 import com.dbstar.bean.ImageSet;
 import com.dbstar.bean.QueryPoster;
@@ -100,7 +100,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	private boolean timerTag = false;
 	private boolean fileCanWrite = false;
 	private boolean isConstainsMarkFile = false;
-	private boolean isFormatDisk = false;
 	
 //	private Intent intentSer; 
 	private GalleryTask task;
@@ -208,7 +207,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				// 对话框提示内容：当前硬盘格式不可识别，是否格式化。这两个对话框（包括下面的那个）默认焦点都放在“否”上面
 				// 如果机顶盒上有硬盘，但是不认识，则就弹框确认格式化，不确认格式化就停留在该页面不再继续往下进行
 				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), false);
-				isFormatDisk = true;
 			}
 		} 
 		
@@ -263,7 +261,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-//		stopService(intentSer);
 		stopService(new Intent(this, DbstarService.class));
 		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
 		stopService(new Intent("com.settings.service.action.OTTSettingsModeService"));
@@ -812,19 +809,63 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 		
 	}
 	
+	private boolean mIsMenuKeyPressed = false;
+	private long lastClickDown = 0l;
+	private boolean firstClick = true;
+
+	Runnable mCheckLongPressTask = new Runnable() {
+		public void run() {
+			if (mIsMenuKeyPressed) {
+				Intent intent = new Intent();
+				intent.setClass(DbstarOTTActivity.this, GDAdvancedToolsActivity.class);
+				intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);
+				startActivity(intent);
+			}
+		}
+	};
+	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_MENU:
+			if (firstClick) {
+				firstClick = false;
+				lastClickDown = System.currentTimeMillis();
+			}
+		case KeyEvent.KEYCODE_NOTIFICATION:
+			mIsMenuKeyPressed = true;
+			mHandler.postDelayed(mCheckLongPressTask, 3000);
+			return true;
+		}
+		
+		return super.onKeyDown(keyCode, event);
+	}
+	
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			return true;			
 		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
-			// 主要是针对新遥控器上的设置键,但是新遥控器上设置的键值是旧遥控器上的菜单键的键值
-			Intent intent = startDbstarSettingActivity("OTTSettingsActivity");
-			if (intent != null) {
-				Bundle bundle = new Bundle();
-				bundle.putInt(Ethernet_Mode, Ethernet_Network_Mode);
-				intent.putExtra("mode", bundle);
-				startActivityForResult(intent, Btn_Setting_Sequence);
+			mIsMenuKeyPressed = false;
+			mHandler.removeCallbacks(mCheckLongPressTask);
+			
+			LogUtil.d("DbstarOTTActivity", "lastClick - System.currentTimeMillis() = " + (System.currentTimeMillis() - lastClickDown));
+			if (System.currentTimeMillis() - lastClickDown < 2000l) {				
+				// 主要是针对新遥控器上的设置键,但是新遥控器上设置的键值是旧遥控器上的菜单键的键值
+				Intent intent = startDbstarSettingActivity("OTTSettingsActivity");
+				if (intent != null) {
+					Bundle bundle = new Bundle();
+					bundle.putInt(Ethernet_Mode, Ethernet_Network_Mode);
+					intent.putExtra("mode", bundle);
+					startActivityForResult(intent, Btn_Setting_Sequence);
+				}
 			}
+			firstClick = true;
+			lastClickDown = System.currentTimeMillis();
+			return true;
+		} else if (keyCode == KeyEvent.KEYCODE_NOTIFICATION) {
+			mIsMenuKeyPressed = false;
+			mHandler.removeCallbacks(mCheckLongPressTask);
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
@@ -907,6 +948,7 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				dialog.dismiss();
 				isShowFormatDisk = true;
 				okButtonPressed();
+				DbstarUtil.closeNetwork(DbstarOTTActivity.this);
 			}
 		}).setCancelable(true);
         

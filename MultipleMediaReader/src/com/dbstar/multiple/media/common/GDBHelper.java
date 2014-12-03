@@ -1,18 +1,15 @@
 package com.dbstar.multiple.media.common;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import android.R.bool;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 
-import com.dbstar.multiple.media.data.NewsPaperReadRecord;
 import com.dbstar.multiple.media.data.VoiceBookPageInfo;
 import com.dbstar.multiple.media.data.VoicedBook;
 import com.dbstar.multiple.media.model.ModelVoicedBook;

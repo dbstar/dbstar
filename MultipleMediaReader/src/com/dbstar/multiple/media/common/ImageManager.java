@@ -4,7 +4,6 @@ import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
@@ -14,15 +13,15 @@ import com.dbstar.multiple.media.util.ImageUtil;
 
 public class ImageManager {
     
-    private ThreadPoolExecutor executor;
+//    private ThreadPoolExecutor executor;
     
     private static ImageManager mInstance;
     private Map<String , SoftReference<BitmapDrawable>> mCache;
     private Context mContext;
     
-    private int corePoolSize=1;
-    private int maximumPoolSize=5;
-    private int keepAliveTime=2;
+//    private int corePoolSize=1;
+//    private int maximumPoolSize=5;
+//    private int keepAliveTime=2;
     
     private ImageManager (Context context){
         mCache = new HashMap<String, SoftReference<BitmapDrawable>>();

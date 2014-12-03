@@ -67,7 +67,7 @@ public class BookShelfActivity extends Activity {
         Log.d("BookShelfActivity", "-----mRootId----- = " + mRootId);
         mController = ShelfController.getInstance(this);
         
-        appUri = getIntent().getStringExtra("app_uri");
+        appUri = getIntent().getStringExtra(ImageUtil.AppBG_Uri);
         inintView(appUri);
     }
     
@@ -600,7 +600,7 @@ public class BookShelfActivity extends Activity {
         intent.setClassName("com.media.android.dbstarplayer", "com.media.android.dbstarplayer.DbStarPlayer");
         intent.setData(Uri.parse("file:///" + book.Path));
         Bundle bundle = new Bundle();
-        bundle.putString("AppBG", appUri);
+        bundle.putString(ImageUtil.AppBG_Uri, appUri);
         intent.putExtra("BookBackground", bundle);
         startActivity(intent);
         overridePendingTransition(0, 0);
@@ -615,7 +615,9 @@ public class BookShelfActivity extends Activity {
         
        if (mBitmap != null && !mBitmap.isRecycled()) {
     	   mBitmap.recycle();
+    	   mBitmap = null;
        }
+       System.gc();
     }
     
 }
