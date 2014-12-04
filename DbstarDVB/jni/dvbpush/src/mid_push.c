@@ -1565,16 +1565,16 @@ int prog_monitor_reset(void)
 					int wanting_percent = (100*(s_prgs[i].total-s_prgs[i].cur))/s_prgs[i].total;
 					
 					PRINTF("[%s]%s: cur=%lld, total=%lld, gap %d%% to finish\n", s_prgs[i].id,s_prgs[i].uri,s_prgs[i].cur, s_prgs[i].total, wanting_percent);
-					ret = push_dir_remove(s_prgs[i].uri);
-					if(0==ret)
-						PRINTF("push_dir_remove(%s) success\n", s_prgs[i].uri);
-					else if(-1==ret)
-						PRINTF("push_dir_remove(%s) failed, no such uri\n", s_prgs[i].uri);
-					else
-						PRINTF("push_dir_remove(%s) failed, some other err(%d)\n", s_prgs[i].uri, ret);
+//					ret = push_dir_remove(s_prgs[i].uri);
+//					if(0==ret)
+//						PRINTF("push_dir_remove(%s) success\n", s_prgs[i].uri);
+//					else if(-1==ret)
+//						PRINTF("push_dir_remove(%s) failed, no such uri\n", s_prgs[i].uri);
+//					else
+//						PRINTF("push_dir_remove(%s) failed, some other err(%d)\n", s_prgs[i].uri, ret);
 						
 					// publication receive more than 98% but not complete
-					if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && 0<wanting_percent && wanting_percent<=2)
+					if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && 0<=wanting_percent && wanting_percent<=2)
 					{
 						PRINTF("finish reluctantly, make it completed forced, ignore gap %d%%\n", wanting_percent);
 						if(0==parseDoc(s_prgs[i].descURI, PUBLICATION_DIR, "publication")){
