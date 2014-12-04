@@ -764,10 +764,13 @@ static int channel_insert(DBSTAR_CHANNEL_S *p)
 	if(NULL==p || 0>=strlen(p->pid))
 		return -1;
 	
-	int pid_int = strtol(p->pid,NULL,0);
+	PUSH_PID push_pid;
+	memset(&push_pid, 0, sizeof(push_pid));
+	push_pid.pid = strtol(p->pid,NULL,0);
+	snprintf(push_pid.pid_type, sizeof(push_pid.pid_type), "%s", p->pidtype);
 	
-	if(-1==push_pid_add(pid_int,p->pidtype)){
-		PRINTF("pid[%d]:type[%s], add to monitor failed\n", pid_int,p->pidtype);
+	if(-1==push_pid_add(&push_pid)){
+		PRINTF("pid[%d]:type[%s], add to monitor failed\n", push_pid.pid, push_pid.pid_type);
 	}
 	
 	char sqlite_cmd[512];

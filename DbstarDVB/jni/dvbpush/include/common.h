@@ -773,6 +773,15 @@ struct Filterp {
         unsigned char mode[DMX_FILTER_SIZE];
 };
 typedef struct Filterp Filter_param;
+
+
+#define PUSH_PID_NUM	16
+typedef struct push_pid{
+	int pid;
+	char pid_type[32];
+	int fresh_flag;	// -1: useless pid need free; 0: has alloc already; 1: new pid need alloc
+}PUSH_PID;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 

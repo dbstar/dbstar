@@ -41,9 +41,10 @@
 // 1316+32=1348
 #define TMP_RECV_BUF_SIZE	(1348)
 
-
 extern int loader_dsc_fid;
 extern int tdt_dsc_fid;
+
+static PUSH_PID s_push_pids[PUSH_PID_NUM];
 
 #ifdef TUNER_INPUT
 	//root pid （400），只在第一次初始化是硬dmx，此后就是软的dmx。
@@ -654,13 +655,6 @@ int multicast_add()
 }
 #endif
 
-#define PUSH_PID_NUM	16
-typedef struct push_pid{
-	int pid;
-	char pid_type[32];
-	int fresh_flag;	// -1: useless pid need free; 0: has alloc already; 1: new pid need alloc
-}PUSH_PID;
-static PUSH_PID s_push_pids[PUSH_PID_NUM];
 
 #if 0
 static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
@@ -836,19 +830,19 @@ int push_pid_refresh()
 	return 0;
 }
 
-int push_pid_add(int pid, char *pid_type)
+int push_pid_add(PUSH_PID *push_pid)
 {
-	if(pid<0){
-		PRINTF("pid %d is invalid\n", pid);
+	if(NULL==push_pid || (push_pid->pid)<0){
+		PRINTF("push pid is invalid\n");
 		return -1;
 	}
 	
 	int i = 0;
 	
 	for(i=0; i<PUSH_PID_NUM; i++){
-		if(pid==s_push_pids[i].pid){
+		if(push_pid->pid==s_push_pids[i].pid){
 			s_push_pids[i].fresh_flag = 0;
-			PRINTF("push pid %d is already exist in monitor[%d]\n", pid, i);
+			PRINTF("push pid %d is already exist in monitor[%d]\n", push_pid->pid, i);
 			
 			return 1;
 		}
@@ -856,10 +850,10 @@ int push_pid_add(int pid, char *pid_type)
 	
 	for(i=0; i<PUSH_PID_NUM; i++){
 		if(-1==s_push_pids[i].pid){
-			s_push_pids[i].pid = pid;
-			snprintf(s_push_pids[i].pid_type, sizeof(s_push_pids[i]), "%s", pid_type);
+			s_push_pids[i].pid = push_pid->pid;
+			snprintf(s_push_pids[i].pid_type, sizeof(s_push_pids[i]), "%s", push_pid->pid_type);
 			s_push_pids[i].fresh_flag = 1;
-			PRINTF("add pid %d to monitor[%d]\n", pid, i);
+			PRINTF("add pid %d to monitor[%d]\n", push_pid->pid, i);
 			
 			return 0;
 		}
@@ -901,6 +895,7 @@ static void push_pid_monitor_init()
 */
 int push_pid_init()
 {
+	PUSH_PID push_pid;
 	char sqlite_cmd[256+128];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = push_pid_sqlite_cb;
 	
@@ -909,17 +904,23 @@ int push_pid_init()
 	if(0>=sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback)){
 		DEBUG("read nothing from table Channel for push pid, set default manually\n");
 		
-		s_push_pids[0].pid = 0x19B;
-		snprintf(s_push_pids[0].pid_type, sizeof(s_push_pids[0].pid_type), "information");
-		s_push_pids[0].fresh_flag = 1;
+		push_pid.pid = 0x19B;
+		snprintf(push_pid.pid_type, sizeof(push_pid.pid_type), "information");
+		push_pid.fresh_flag = 1;
 		
-		s_push_pids[1].pid = 0x19C;
-		snprintf(s_push_pids[1].pid_type, sizeof(s_push_pids[1].pid_type), "file");
-		s_push_pids[1].fresh_flag = 1;
+		push_pid_add(&push_pid);
 		
-		s_push_pids[2].pid = 0x19D;
-		snprintf(s_push_pids[2].pid_type, sizeof(s_push_pids[2].pid_type), "file");
-		s_push_pids[2].fresh_flag = 1;
+		push_pid.pid = 0x19C;
+		snprintf(push_pid.pid_type, sizeof(push_pid.pid_type), "file");
+		push_pid.fresh_flag = 1;
+		
+		push_pid_add(&push_pid);
+		
+		push_pid.pid = 0x19D;
+		snprintf(push_pid.pid_type, sizeof(push_pid.pid_type), "file");
+		push_pid.fresh_flag = 1;
+		
+		push_pid_add(&push_pid);
 	}
 	
 	return push_pid_refresh();
