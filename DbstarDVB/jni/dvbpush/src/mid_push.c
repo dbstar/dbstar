@@ -1574,6 +1574,7 @@ int prog_monitor_reset(void)
 //						PRINTF("push_dir_remove(%s) failed, some other err(%d)\n", s_prgs[i].uri, ret);
 						
 					// publication receive more than 98% but not complete
+#if 0
 					if(RECEIVETYPE_PUBLICATION==s_prgs[i].type && 0<=wanting_percent && wanting_percent<=2)
 					{
 						PRINTF("finish reluctantly, make it completed forced, ignore gap %d%%\n", wanting_percent);
@@ -1585,7 +1586,9 @@ int prog_monitor_reset(void)
 							DEBUG("phony finished parse %s forced failed\n", s_prgs[i].uri);
 						}
 					}
-					else{
+					else
+#endif
+					{
 						snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),s_prgs[i].uri);
 						PRINTF("too rubbish as publication, remove %s\n", direct_uri);
 						remove_force(direct_uri);
