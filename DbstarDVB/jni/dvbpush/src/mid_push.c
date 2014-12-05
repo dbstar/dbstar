@@ -932,13 +932,16 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 				
 				// ÏÖ¼Æ»®2014-09-29£º²»ÔÙ¿¼ÂÇ¹úµç£¬¸ù¾İ²¥·¢µ¥¿ªÊ¼Ê±¼ä£¬Ö»¿¼ÂÇÔÚĞÇÆÚËÄÁè³¿»òĞÇÆÚÎåÁè³¿¡£
 				// Èç¹ûÖØÆôÊ±¼äÔÚ0¡«7µã£¬ÔòÔÚÖÜÎåÖØÆô£»ÆäËûÊ±¼äµãÔÚÖÜËÄÖØÆô
+//						((0<=reboot_hour && reboot_hour<=6 && 5==now_tm.tm_wday)
+//						|| (reboot_hour>6 && 4==now_tm.tm_wday)
 				if(	reboot_hour==now_tm.tm_hour
-					&&	((0<=reboot_hour && reboot_hour<=6 && 5==now_tm.tm_wday)
-						|| (reboot_hour>6 && 4==now_tm.tm_wday)
+					&&	((1==now_tm.tm_wday)
+						|| (3==now_tm.tm_wday)
+						|| (5==now_tm.tm_wday)
 						)
 					){
-					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d\n", 
-						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec);
+					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d, now_tm.tm_wday=%d\n", 
+						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec, now_tm.tm_wday);
 					
 					now_sec += 1;
 					reboot_timestamp_set(now_sec);
