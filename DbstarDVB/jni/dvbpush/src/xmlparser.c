@@ -573,7 +573,7 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 			else{
 				// 准备接收前先删除旧有目录，防止push库判断异常。
 				snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
-				remove_force(direct_uri);
+				remove_force(__FUNCTION__, direct_uri);
 			}
 		}
 		
@@ -828,7 +828,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 			// download more than lowest level(such as 98%), make it finished forced
 			if(0==rename(ts_tmp_uri,ts_direct_uri)){
 				DEBUG("rename from %s to %s forced success\n", ts_tmp_uri, ts_direct_uri);
-				remove_force(ts_status_uri);
+				remove_force(__FUNCTION__, ts_status_uri);
 			}
 			else{
 				ERROROUT("rename from %s to %s failed, return and dont insert to database\n", ts_tmp_uri, ts_direct_uri);
@@ -862,7 +862,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 			epub_suffix++;
 			*epub_suffix = '\0';
 			
-			remove_force(epub_dir_uri);
+			remove_force(__FUNCTION__, epub_dir_uri);
 			dir_exist_ensure(epub_dir_uri);
 			
 			snprintf(unzip_cmd,sizeof(unzip_cmd),"unzip %s -d %s",epub_file_uri,epub_dir_uri);
@@ -3120,7 +3120,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						char absolute_sproduct_uri[512];
 						snprintf(absolute_sproduct_uri,sizeof(absolute_sproduct_uri),"%s/%s", push_dir_get(),p->URI);
 						DEBUG("clear %s for this receive task\n", absolute_sproduct_uri);
-						remove_force(absolute_sproduct_uri);
+						remove_force(__FUNCTION__, absolute_sproduct_uri);
 					}
 					else{
 						DEBUG("shit tmp_URI=%s, p->URI=%s, motherdisc_processing()=%d, can not remove\n", tmp_URI, p->URI, motherdisc_processing());
@@ -3206,7 +3206,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 						char absolute_column_uri[512];
 						snprintf(absolute_column_uri,sizeof(absolute_column_uri),"%s/%s", push_dir_get(),p->URI);
 						DEBUG("clear %s for this receive task\n", absolute_column_uri);
-						remove_force(absolute_column_uri);
+						remove_force(__FUNCTION__, absolute_column_uri);
 					}
 					else{
 						DEBUG("shit tmp_URI=%s, p->URI=%s, motherdisc_processing()=%d, can not remove\n", tmp_URI, p->URI, motherdisc_processing());

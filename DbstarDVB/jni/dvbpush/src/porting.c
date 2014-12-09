@@ -206,7 +206,7 @@ static int push_conf_init(void)
 					DEBUG("size of %s is %lld\n", s_push_log_dir, dir_size_total);
 					if(dir_size_total>=LIBPUSH_LOGDIR_SIZE){
 						DEBUG("WARNING: log dir %s is too large, remove it\n", s_push_log_dir);
-						remove_force(s_push_log_dir);
+						remove_force(__FUNCTION__, s_push_log_dir);
 					}
 				}
 				else if(0==strcmp(tmp_buf, "INITFILE")){
@@ -632,7 +632,7 @@ static int clear_wild_prog_cb(char **result, int row, int column, void *receiver
 					if(i==(row+1)){
 						DEBUG("wild uri %s/%s\n",pushfile_uri,ptr->d_name);
 						snprintf(publication_uri,sizeof(publication_uri),"%s/%s",pushfile_uri,ptr->d_name);
-						if(0==remove_force(publication_uri)){
+						if(0==remove_force(__FUNCTION__, publication_uri)){
 							DEBUG("clear wild prog %s success\n", publication_uri);
 						}
 						else
@@ -705,7 +705,7 @@ static int clear_noclumn_prog_cb(char **result, int row, int column, void *recei
 		
 		snprintf(total_uri,sizeof(total_uri),"%s/%s",push_dir_get(),result[i*column+1]);
 		
-		if(0==remove_force(total_uri)){
+		if(0==remove_force(__FUNCTION__, total_uri)){
 			snprintf(publicationid,receiver_size,"%s",result[i*column]);
 		}
 		else{
@@ -813,7 +813,7 @@ static int disk_manage_cb(char **result, int row, int column, void *receiver, un
 		total_size_actually = dir_size(total_uri);
 		DEBUG("total_size=%lld, total_size_actually=%lld\n", total_size,total_size_actually);
 		
-		if(0==remove_force(total_uri)){
+		if(0==remove_force(__FUNCTION__, total_uri)){
 			snprintf(publicationid,receiver_size,"%s",result[i*column]);
 			
 			if(total_size_actually>0)
@@ -1946,19 +1946,19 @@ int dvbpush_command(int cmd, char **buf, int *len)
 #ifdef SMARTLIFE_LC
 			smarthome_reset();
 #endif
-			remove_force("/data/dbstar/pushroot");
-			remove_force("/data/dbstar/Dbstar.db");
-			remove_force("/data/dbstar/ColumnRes");
+			remove_force(__FUNCTION__, "/data/dbstar/pushroot");
+			remove_force(__FUNCTION__, "/data/dbstar/Dbstar.db");
+			remove_force(__FUNCTION__, "/data/dbstar/ColumnRes");
 			
 			DEBUG("remove push log dir: %s\n", s_push_log_dir);
-			remove_force(s_push_log_dir);
+			remove_force(__FUNCTION__, s_push_log_dir);
 			break;
 		case CMD_DRM_RESET:
 			s_hd_write_protected += 2;
 			DEBUG("CMD_DRM_RESET, s_hd_write_protected=%d\n", s_hd_write_protected);
 			char *drm_dir = "/data/dbstar/drm";
 			char *drm_dir_rubbish = "/data/dbstar/drm_rubbish";
-			if(0==remove_force(drm_dir)){
+			if(0==remove_force(__FUNCTION__, drm_dir)){
 				DEBUG("remove %s success\n", drm_dir);
 			}
 			else{
@@ -1968,14 +1968,14 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 			
 			DEBUG("remove push log dir: %s\n", s_push_log_dir);
-			remove_force(s_push_log_dir);
+			remove_force(__FUNCTION__, s_push_log_dir);
 			break;
 		case CMD_DISC_FORMAT:
 			s_hd_write_protected += 4;
 			DEBUG("CMD_DISC_FORMAT, s_hd_write_protected=%d\n", s_hd_write_protected);
 			
 			snprintf(tmp_buf,sizeof(tmp_buf),"%s/ColumnRes", push_dir_get());
-			if(0==remove_force(tmp_buf)){
+			if(0==remove_force(__FUNCTION__, tmp_buf)){
 				DEBUG("remove %s success\n", tmp_buf);
 			}
 			else{
@@ -1983,7 +1983,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 			
 			snprintf(tmp_buf,sizeof(tmp_buf),"%s/Dbstar.db", push_dir_get());
-			if(0==remove_force(tmp_buf)){
+			if(0==remove_force(__FUNCTION__, tmp_buf)){
 				DEBUG("remove %s success\n", tmp_buf);
 			}
 			else{
@@ -1991,7 +1991,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 			
 			snprintf(tmp_buf,sizeof(tmp_buf),"%s/pushroot", push_dir_get());
-			if(0==remove_force(tmp_buf)){
+			if(0==remove_force(__FUNCTION__, tmp_buf)){
 				DEBUG("remove %s success\n", tmp_buf);
 			}
 			else{
@@ -1999,7 +1999,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 			
 			DEBUG("remove push log dir: %s\n", s_push_log_dir);
-			remove_force(s_push_log_dir);
+			remove_force(__FUNCTION__, s_push_log_dir);
 
 			break;
 		case CMD_SYSTEM_AWAKE_TIMER:
@@ -2653,7 +2653,7 @@ static int delete_initialize()
 	
 	if(0==motherdisc_check()){
 		snprintf(total_uri,sizeof(total_uri),"%s/pushroot/initialize", push_dir_get());
-		return remove_force(total_uri);
+		return remove_force(__FUNCTION__, total_uri);
 	}
 	else
 		return -1;
@@ -2814,10 +2814,10 @@ static int push_clear(char *storage)
 	sqlite_execute(sqlite_cmd);
 	
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", storage);
-	remove_force(total_xmluri);
+	remove_force(__FUNCTION__, total_xmluri);
 	
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/initialize", storage);
-	remove_force(total_xmluri);
+	remove_force(__FUNCTION__, total_xmluri);
 	
 	return 0;
 }
@@ -3389,7 +3389,7 @@ int pushinfo_reset(void)
 	delete_initialize();
 
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/pushroot/pushinfo", push_dir_get());
-	remove_force(total_xmluri);
+	remove_force(__FUNCTION__, total_xmluri);
 
 	snprintf(total_xmluri,sizeof(total_xmluri),"%s/%s", push_dir_get(),s_initialize_xml_uri);
 	ret = push_file_register(total_xmluri);

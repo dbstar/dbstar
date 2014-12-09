@@ -398,7 +398,7 @@ int productdesc_parsed_set(char *xml_uri, PUSH_XML_FLAG_E push_flag, char *arg_e
 	if(COLUMN_XML==push_flag){
 		char reject_uri[512];
 		snprintf(reject_uri,sizeof(reject_uri),"%s/%s",push_dir_get(),arg_ext);
-		remove_force(__FUNCTION__, reject_uri);
+		remove_force(reject_uri);
 		DEBUG("remove(%s) finished\n", reject_uri);
 	}
 #endif
@@ -1590,12 +1590,12 @@ int prog_monitor_reset(void)
 						}
 					}
 					else
-#endif
 					{
 						snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),s_prgs[i].uri);
 						PRINTF("too rubbish as publication, remove %s\n", direct_uri);
-						remove_force(__FUNCTION__, direct_uri);
+						remove_force(direct_uri);
 					}
+#endif
 				}
 				else if(-1==ret)
 					PRINTF("push unregist failed: %s, no registed uri\n", s_prgs[i].uri);
@@ -1852,7 +1852,7 @@ static int info_xml_refresh_cb(char **result, int row, int column, void *receive
 			ret = push_file_unregister(result[i*column+1]);
 			
 			snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),result[i*column+1]);
-			remove_force(__FUNCTION__, direct_uri);
+			remove_force(direct_uri);
 		}
 		else{
 			ret = push_file_register(result[i*column+1]);

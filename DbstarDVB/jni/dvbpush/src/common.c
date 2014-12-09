@@ -837,7 +837,7 @@ long long dir_size(const char *uri)
  将uri下的文件夹和文件递归删除，rmdir不能删除非空文件夹
  注意：只有目录才能递归进去，不要递归到软链接里面，有可能导致死循环
 */
-int remove_force(const char *uri)
+static int remove_force_t(const char *uri)
 {
 	char newpath[1024];
 	int ret = -1;
@@ -846,7 +846,6 @@ int remove_force(const char *uri)
 	DIR * pdir = NULL;
 	struct dirent *ptr = NULL;
 	struct stat filestat;
-	
 	
 	if(NULL==uri || 0==strlen(uri)){
 		DEBUG("can not rm such uri, it is NULL, or length is 0\n");
@@ -863,7 +862,7 @@ int remove_force(const char *uri)
 						continue;
 					
 					snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
-					remove_force((const char *)newpath);
+					remove_force_t((const char *)newpath);
 				}
 				closedir(pdir);
 			}
@@ -875,8 +874,8 @@ int remove_force(const char *uri)
 		
 		ret = remove(uri);
 		if(0==ret){
-			DEBUG("remove(%s)\n", uri);
-			sync();
+//			PRINTF("remove(%s)\n", uri);
+//			sync();
 		}
 		else{
 			if(ENOENT==errno)
@@ -906,6 +905,26 @@ int remove_force(const char *uri)
 #endif
 
 	return ret;   
+}
+
+int remove_force(const char *from_fun, const char *uri)
+{
+	if(NULL==uri || 0==strlen(uri)){
+		DEBUG("can not rm such uri, it is NULL, or length is 0\n");
+		return -1;
+	}
+	
+	if(0==remove_force_t(uri)){
+		DEBUG("%s remove_force(%s) success\n", from_fun, uri);
+		sync();
+		
+		return 0;
+	}
+	else{
+		DEBUG("%s remove_force(%s) failed\n", from_fun, uri);
+		
+		return -1;
+	}
 }
 
 //// hour,minite,second, e.g.: 16:20:44

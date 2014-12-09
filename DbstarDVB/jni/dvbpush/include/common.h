@@ -802,7 +802,7 @@ int igmp_simple_check(const char *igmp_addr, char *igmp_ip, int *igmp_port);
 int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int flag);
 int fcopy_c(char *from_file, char *to_file);
 int files_copy(char *from_dir, char *to_dir);
-int remove_force(const char *uri);
+int remove_force(const char *from_fun, const char *uri);
 char *hms_stamp();
 long long dir_size(const char *uri);
 int dir_stat_ensure(const char *uri);

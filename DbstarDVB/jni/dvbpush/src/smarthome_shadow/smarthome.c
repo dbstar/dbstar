@@ -620,7 +620,7 @@ void smarthome_sn_init_when_network_init()
 		DEBUG("reset smarthome sn from recovery to db\n");
 		smarthome_gw_sn_save();
 		
-		remove_force(DEVICE_NUM_CHANGED_FLAG);
+		remove_force(__FUNCTION__, DEVICE_NUM_CHANGED_FLAG);
 		DEBUG("clear %s\n",DEVICE_NUM_CHANGED_FLAG);
 	}
 }
