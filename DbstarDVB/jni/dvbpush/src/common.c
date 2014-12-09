@@ -800,7 +800,7 @@ long long dir_size(const char *uri)
 	int stat_ret = stat(uri, &filestat);
 	if(0==stat_ret){
 		cur_size += filestat.st_size;
-		DEBUG("%s size %lld\n", uri, cur_size);
+		PRINTF("%s size %lld\n", uri, cur_size);
 		
 		if(S_IFDIR==(filestat.st_mode & S_IFDIR)){
 			pdir = opendir(uri);
@@ -822,7 +822,7 @@ long long dir_size(const char *uri)
 				cur_size = -1;
 			}
 			
-			DEBUG("%s size %lld\n", uri, cur_size);
+			PRINTF("%s size2 %lld\n", uri, cur_size);
 		}
 	}
 	else{
@@ -864,6 +864,7 @@ static int remove_force_t(const char *uri)
 					snprintf(newpath,sizeof(newpath),"%s/%s", uri,ptr->d_name);
 					remove_force_t((const char *)newpath);
 				}
+				
 				closedir(pdir);
 			}
 			else{
@@ -874,7 +875,7 @@ static int remove_force_t(const char *uri)
 		
 		ret = remove(uri);
 		if(0==ret){
-//			PRINTF("remove(%s)\n", uri);
+			PRINTF("remove(%s)\n", uri);
 //			sync();
 		}
 		else{
@@ -909,22 +910,20 @@ static int remove_force_t(const char *uri)
 
 int remove_force(const char *from_fun, const char *uri)
 {
-	if(NULL==uri || 0==strlen(uri)){
-		DEBUG("can not rm such uri, it is NULL, or length is 0\n");
-		return -1;
-	}
+	int ret = -1;
 	
 	if(0==remove_force_t(uri)){
-		DEBUG("%s remove_force(%s) success\n", from_fun, uri);
+		PRINTF("[%s] remove_force(%s) success\n", from_fun, uri);
 		sync();
 		
-		return 0;
+		ret = 0;
 	}
 	else{
-		DEBUG("%s remove_force(%s) failed\n", from_fun, uri);
-		
-		return -1;
+		DEBUG("[%s] remove_force(%s) failed\n", from_fun, uri);
+		ret = -1;
 	}
+	
+	return ret;
 }
 
 //// hour,minite,second, e.g.: 16:20:44
