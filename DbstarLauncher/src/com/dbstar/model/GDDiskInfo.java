@@ -33,9 +33,14 @@ public class GDDiskInfo {
             // if directory
             if (file.isDirectory()) {     
                 File[] childrenFile = file.listFiles();     
-                long size = 0l;     
-                for (File f : childrenFile)     
-                    size += getDirSize(f);     
+                Log.d("GDDiskInfo", "childrenFile = " + childrenFile);
+                long size = 0l; 
+                if (childrenFile != null && childrenFile.length > 0) {                	
+                	for (File f : childrenFile) {
+                		size += getDirSize(f);     
+                		
+                	}
+                }
                 return size;     
             } else {   
                 long size = file.length();        
@@ -88,9 +93,11 @@ public class GDDiskInfo {
 			long blockSize = sf.getBlockSize();
 			long blockCount = sf.getBlockCount();
 			long availCount = sf.getAvailableBlocks();
+			long freeCount = sf.getFreeBlocks();
 
 			diskSize = blockSize * blockCount;
-			diskSpace = blockSize * availCount;
+//			diskSpace = blockSize * availCount;
+			diskSpace = blockSize * freeCount;
 			diskUsed = diskSize - diskSpace;
 			isDisk = true;
 			Log.d("GDDiskInfo", "diskSize = " + diskSize + " diskUsed = " + diskUsed + " diskSpace = " + diskSpace);
