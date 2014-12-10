@@ -176,9 +176,11 @@ public class MainFragmenet extends BaseFragment {
                 
             
                 NewsPaperPageAdapter adapter = (NewsPaperPageAdapter) mPageListView.getAdapter();
-                NewsPaperPage page = adapter.getEdition(position);
-                if (page != null){
-                    loadEditionPic(page.PicPath);
+                if (adapter != null) {
+                	NewsPaperPage page = adapter.getEdition(position);
+                	if (page != null){
+                		loadEditionPic(page.PicPath);
+                	}                	
                 }
             }
 
@@ -572,13 +574,14 @@ public class MainFragmenet extends BaseFragment {
         mFooterMainCategoryName.setText(mCurrentMainCategroy.Name);
         mFooterSubCategoryName.setText(mCurrentSubCategory.Name);
         if(isCollection){
-            if("1".equals(mCurrentSubCategory.CurrentNewsPaper.Favarite)){
-                mOperationView.setText(R.string.cancel_collection);
-                
-            }else{
-                mOperationView.setText(R.string.collect_newspaper);
-            }
-            mOperationView.setTag(OPERATION_TYPE_COLLETION);
+        	if (mCurrentSubCategory != null && mCurrentSubCategory.CurrentNewsPaper != null) {        		
+        		if("1".equals(mCurrentSubCategory.CurrentNewsPaper.Favarite)){
+        			mOperationView.setText(R.string.cancel_collection);
+        		}else{
+        			mOperationView.setText(R.string.collect_newspaper);
+        		}
+        		mOperationView.setTag(OPERATION_TYPE_COLLETION);
+        	}
         }else{
             if("1".equals(mCurrentSubCategory.Preference))
                 mOperationView.setText(R.string.remove_newspaper_from_personal_preference);
@@ -708,7 +711,9 @@ public class MainFragmenet extends BaseFragment {
         if(mCurrentMainCategroy != null){
             mHistoryInfo.MainCategoryId = mCurrentMainCategroy.Id;
             mHistoryInfo.SubCategoryId = mCurrentMainCategroy.CurrentSubCategoryId;
-            mHistoryInfo.NewsPaperId = mCurrentSubCategory.CurrentNewsPaper.Id;
+            if (mCurrentSubCategory != null && mCurrentSubCategory.CurrentNewsPaper != null) {            	
+            	mHistoryInfo.NewsPaperId = mCurrentSubCategory.CurrentNewsPaper.Id;
+            }
             mController.saveNewsPaperHistoryInfo(mHistoryInfo);
         }
         mController.destroy();

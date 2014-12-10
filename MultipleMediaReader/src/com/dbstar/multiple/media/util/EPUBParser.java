@@ -378,7 +378,7 @@ public class EPUBParser {
                           data.patchs = new ArrayList<Patch>();
                           data.titles = new ArrayList<NewsPaperArticleContent.Title>();
                           
-                          Log.d("EPUBParser", "in <body>-------------");
+//                          Log.d("EPUBParser", "in <body>-------------");
                           bodyFlag = true;
                       }else{
                           if(tagName.equalsIgnoreCase("h2")){
@@ -402,7 +402,7 @@ public class EPUBParser {
                         			  Log.d("EPUBParser", "ignore blank char which is after hx tag");                        			  
                         		  } else
                         			  content += "\n";
-                        		  Log.d("EPUBParser", "in <p>, content = [" + content + "]");
+//                        		  Log.d("EPUBParser", "in <p>, content = [" + content + "]");
                             	  parser.nextTag();
                         	  }
                               pasreContent(data, content);
@@ -415,10 +415,10 @@ public class EPUBParser {
                               hxFlag = false;
                           } else {
                         	  /*if(tagName.equalsIgnoreCase("font")) */
-							Log.d("EPUBParser", " tagName = " + tagName);
+//							Log.d("EPUBParser", " tagName = " + tagName);
                         	  if (bodyFlag && parser.next() == XmlPullParser.TEXT) {
                         		  String content = parser.getText();
-                        		  Log.d("EPUBParser", " in " + tagName + ", content = " + content);
+//                        		  Log.d("EPUBParser", " in " + tagName + ", content = " + content);
                         		  pasreContent(data, content);                        		  
                         	  }
                         	  
@@ -429,9 +429,9 @@ public class EPUBParser {
                       
                   case XmlPullParser.TEXT:
                 	  String content = parser.getText();
-	                  Log.d("EPUBParser", "bodyFlag = " + bodyFlag);
+//	                  Log.d("EPUBParser", "bodyFlag = " + bodyFlag);
                 	  if (bodyFlag && content != null && !content.startsWith("\n")) {
-                		  Log.d("EPUBParser", "parser.getText() = [" + content + "]");
+//                		  Log.d("EPUBParser", "parser.getText() = [" + content + "]");
                 		  pasreContent(data, content);                		  
                 	  }
                 	  break;

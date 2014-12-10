@@ -7,6 +7,7 @@ import java.util.List;
 import android.content.Context;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -74,7 +75,9 @@ public class NewspaperDateView extends RelativeLayout {
     	
         switch (keyCode) {
         case KeyEvent.KEYCODE_DPAD_DOWN:
-            if (mData.mPostion < mCurrentPageSize-1) {
+//        	Log.d("NewspaperDateView", "---------mData.mPostion = " + mData.mPostion + ", mCurrentPageSize = " + mCurrentPageSize);
+//        	Log.d("NewspaperDateView", "---------mData.mCurrentPageIndex = " + mData.mCurrentPageIndex + ", mPageCount = " + mPageCount);
+            if (mData.mPostion < mCurrentPageSize - 1) {
                 mData.mPostion++;
                 updateChildViewBg();
             } else if (mData.mPostion == mCurrentPageSize-1) {
@@ -108,46 +111,49 @@ public class NewspaperDateView extends RelativeLayout {
     }
 
     private void updateChildViewBg() {
-        if(mSelectedListener != null){
-        	if (mData == null)
-        		return;
-            NewsPaper newsPaper = mData.getCurrentNewsPaper();
-            if(newsPaper != mLastNewsPaper){
+    	if (mData == null)
+    		return;
+    	NewsPaper newsPaper = mData.getCurrentNewsPaper();
+    	if(newsPaper != null && newsPaper != mLastNewsPaper){
+    		if(mSelectedListener != null){
                 mSelectedListener.onSelected(newsPaper);
-                mLastNewsPaper = newsPaper;
             }
+    		mLastNewsPaper = newsPaper;
         }
-        if(!isShown())
-            return;
-        TextView v;
-        for (int i = 0; i < getChildCount(); i++) {
-            v = (TextView) getChildAt(i);
-            if(!v.isShown())
-                continue;
-            if (i == mData.mPostion && hasFocus()) {
-                if (i == TOP_VIEW) {
-                    v.setBackgroundResource(R.drawable.newspaper_date_btn_focused_1);
-                } else {
-                    v.setBackgroundResource(R.drawable.newspaper_date_btn_focused_2);
-                }
-                v.setPadding(0, 0, getPx(7), 0);
-            } else if (i == mData.mPostion && !hasFocus()) {
-                if (i == TOP_VIEW) {
-                    v.setBackgroundResource(R.drawable.newspaper_date_btn_selected_1);
-                } else {
-                    v.setBackgroundResource(R.drawable.newspaper_date_btn_selected_2);
-                }
-                v.setPadding(0, 0, getPx(7), 0);
-            } else {
-                if (i == TOP_VIEW) {
-                    v.setBackgroundResource(R.drawable.newspaper_date_btn_normal_1);
-                } else {
-                    v.setBackgroundResource(R.drawable.newspaper_date_btn_normal_2);
-                }
-                v.setPadding(0, 0, getPx(2), 0);
-            }
-
-        }
+    	
+    	if (newsPaper != null) {    		
+    		if(!isShown())
+    			return;
+    		TextView v;
+    		for (int i = 0; i < getChildCount(); i++) {
+    			v = (TextView) getChildAt(i);
+    			if(!v.isShown())
+    				continue;
+    			if (i == mData.mPostion && hasFocus()) {
+    				if (i == TOP_VIEW) {
+    					v.setBackgroundResource(R.drawable.newspaper_date_btn_focused_1);
+    				} else {
+    					v.setBackgroundResource(R.drawable.newspaper_date_btn_focused_2);
+    				}
+    				v.setPadding(0, 0, getPx(7), 0);
+    			} else if (i == mData.mPostion && !hasFocus()) {
+    				if (i == TOP_VIEW) {
+    					v.setBackgroundResource(R.drawable.newspaper_date_btn_selected_1);
+    				} else {
+    					v.setBackgroundResource(R.drawable.newspaper_date_btn_selected_2);
+    				}
+    				v.setPadding(0, 0, getPx(7), 0);
+    			} else {
+    				if (i == TOP_VIEW) {
+    					v.setBackgroundResource(R.drawable.newspaper_date_btn_normal_1);
+    				} else {
+    					v.setBackgroundResource(R.drawable.newspaper_date_btn_normal_2);
+    				}
+    				v.setPadding(0, 0, getPx(2), 0);
+    			}
+    			
+    		}
+    	}
         
     }
 
@@ -179,18 +185,25 @@ public class NewspaperDateView extends RelativeLayout {
         NewsPaper paper;
         String key = null;
         for(int  i = 0;i< mPageCount ;i++){
-            pageSize = Math.min(PAGE_SIZE_MAX, size - i);
+//            Log.d("NewspaperDateView", "----------size = " + size + ", i = " + i  + ", size - i = " + (size - i));
+            pageSize = Math.min(PAGE_SIZE_MAX, size - i*PAGE_SIZE_MAX);
+//            Log.d("NewspaperDateView", "----------mPageCount = " + mPageCount + ", pageSize = " + pageSize);
             page = new NewsPaperMap(pageSize);
-            for(int j = 0 ;j< pageSize;j++){
-              paper = papers.get(index);
-              Date date = DateUtil.getDate(paper.PublishTime, DateUtil.FORMART3);
-              if(date != null){
-                  key = DateUtil.getStringFromDate(date, DateUtil.FORMART1);
-              }
-              if(key == null)
-                  key = "0\n月\n0\n日\n";
-              page.put(key, paper);
-              index ++;
+            for(int j = 0 ;j < pageSize; j++){
+//            	Log.d("NewspaperDateView", "----------index = " + index + ", and papers.size() = " + papers.size());
+            	if (index < papers.size()) {
+//            		Log.d("NewspaperDateView", "----------index = " + index);
+            		paper = papers.get(index);
+            		Date date = DateUtil.getDate(paper.PublishTime, DateUtil.FORMART3);
+            		if(date != null){
+            			key = DateUtil.getStringFromDate(date, DateUtil.FORMART1);
+            		}
+            		
+            		if(key == null)
+            			key = "0\n月\n0\n日\n";
+            		page.put(key, paper);
+            		index ++;
+            	}
             }
             mData.mPages.add(page);
         }
