@@ -1989,7 +1989,9 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			else{
 				DEBUG("remove %s failed\n", tmp_buf);
 			}
-			
+
+#if 0
+// if there are many files, it will kill too much time to delete
 			snprintf(tmp_buf,sizeof(tmp_buf),"%s/pushroot", push_dir_get());
 			if(0==remove_force(__FUNCTION__, tmp_buf)){
 				DEBUG("remove %s success\n", tmp_buf);
@@ -1997,6 +1999,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			else{
 				DEBUG("remove %s failed\n", tmp_buf);
 			}
+#endif
 			
 			DEBUG("remove push log dir: %s\n", s_push_log_dir);
 			remove_force(__FUNCTION__, s_push_log_dir);
