@@ -32,6 +32,8 @@ static unsigned long long s_recv_totalsize_sum = 0LL;
 static int s_need_recv_column = 0;
 static char s_invalid_publicationid[128];
 
+static int columntype12_insert(char *ColumnID);
+
 /*
  初始化函数，读取Global表中的ServiceID，初始化push的根目录供UI使用。
 */
@@ -286,6 +288,7 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	char from_file[256];
 	char to_file[256];
 	char cmd[4096];
+	char columntype[64];
 	
 	// storage push data with flash
 	if(1==storage_flash_check()){
@@ -299,8 +302,11 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	
 	// if ColumnType is '12', reset ColumnType as '1'. Then, the column as a normal movie
 	if(SHOW_FLASH_COLUMNTYPE==strtol(ptr->ColumnType,NULL,10)){
-		DEBUG("show ColumnID(%s) as ColumnType(1) from ColumnType(12)\n", ptr->ColumnID);
+		DEBUG("show ColumnID(%s) as ColumnType(1) from ColumnType(12) for movie showing, and set Param as %s manually\n", ptr->ColumnID, ptr->ColumnType);
+		snprintf(columntype, sizeof(columntype), "%d", SHOW_FLASH_COLUMNTYPE);
 		snprintf(ptr->ColumnType, sizeof(ptr->ColumnType), "1");
+		
+		columntype12_insert(ptr->ColumnID);
 	}
 	
 	if(0==strlen(ptr->ParentID))
@@ -319,15 +325,15 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 	
 	if(strlen(ptr->ColumnIcon_losefocus)>0 && 0==fcopy_c(from_file,to_file)){
 		DEBUG("copy %s to %s success\n",from_file,to_file);
-		sqlite3_snprintf(sizeof(cmd),cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q','%q',%d);",
-			ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,s_column_SequenceNum);
+		sqlite3_snprintf(sizeof(cmd),cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,ColumnIcon_losefocus,ColumnIcon_getfocus,ColumnIcon_onclick,ColumnIcon_spare,Param,SequenceNum) VALUES('%q','%q','%q','%q','%q','%q','%q','%q','%q',%d);",
+			ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,p_slash,ptr->ColumnIcon_getfocus,ptr->ColumnIcon_onclick,ptr->ColumnIcon_losefocus,columntype,s_column_SequenceNum);
 	}
 	else{
 		DEBUG("copy %s to %s failed\n",from_file,to_file);
 		//即便拷贝失败，也可以继续插入栏目项。UI展现时，如果没有栏目icon，有一个默认icon可以填充
 		//return -1;
-		sqlite3_snprintf(sizeof(cmd),cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,SequenceNum) VALUES('%q','%q','%q','%q',%d);",
-			ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,s_column_SequenceNum);
+		sqlite3_snprintf(sizeof(cmd),cmd,"REPLACE INTO Column(ColumnID,ParentID,Path,ColumnType,Param,SequenceNum) VALUES('%q','%q','%q','%q','%q',%d);",
+			ptr->ColumnID,ptr->ParentID,ptr->Path,ptr->ColumnType,columntype,s_column_SequenceNum);
 	}
 	
 	return sqlite_transaction_exec(cmd);
@@ -476,6 +482,142 @@ int datetime2onehourbefore(char *datetime_str)
 		return -1;
 }
 
+#define COLUMNTYPE12_NUM	16
+static char s_columntype12s[COLUMNTYPE12_NUM][64];
+static int columntype12_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
+{
+	DEBUG("columntype12 sqlite callback, row=%d, column=%d\n", row, column);
+	
+	int i = 0;
+	int j = 0;
+	
+	if(row<1){
+		DEBUG("no record in table Column for Param(ColumnType) 12\n");
+	}
+	else{
+		for(i=1;i<row+1;i++)
+		{
+			snprintf(s_columntype12s[j], sizeof(s_columntype12s[j]), "%s", result[i*column]);
+			PRINTF("Column row[%d]: ColummnID(%s)'s Param(ColumnType) is 12, insert at [%d]\n", i, result[i*column],j);
+			j++;
+			
+			if(COLUMNTYPE12_NUM==j){
+				PRINTF("too much Column with ColumnType(12)\n");
+				break;
+			}
+		}
+	}
+	
+	return 0;
+}
+
+// 0: no such ColumnID, -1: nothing in s_columntype12, 1: has this ColumnID;
+int columntype12_check(char* columnids)
+{
+	int i = 0;
+	int has_valid_columnid = -1;
+	
+	if(NULL==columnids || 0==strlen(columnids)){
+		PRINTF("cont check columnids with null or nothing\n");
+		has_valid_columnid = 0;
+		
+		return has_valid_columnid;
+	}
+	
+	char columns[512];
+	snprintf(columns,sizeof(columns),"%s",columnids);
+	char *p_column = columns;
+	
+	// \t
+	char *p_HT = NULL;
+	while(NULL!=p_column){
+		p_HT = strchr(p_column,'\t');
+		if(p_HT){
+			*p_HT = '\0';
+			p_HT ++;
+		}
+		PRINTF("p_column: %s, p_HT: %s\n", p_column, p_HT);
+		
+		if(NULL!=p_column && strlen(p_column)>0){
+			for(i=0;i<COLUMNTYPE12_NUM;i++){
+				if(strlen(s_columntype12s[i])>0){
+					has_valid_columnid = 0;
+					
+					if(0==strcmp(p_column,s_columntype12s[i])){
+						PRINTF("check %s at s_columntype12s[%d]\n", p_column, i);
+						has_valid_columnid = 1;
+						break;
+					}
+				}
+			}
+		}
+		else{
+			has_valid_columnid = 0;
+			break;
+		}
+		
+		if(1==has_valid_columnid)
+			break;
+		
+		p_column = p_HT;
+	}
+	
+	
+	return has_valid_columnid;
+}
+
+static void columntype12_reset()
+{
+	int i = 0;
+	
+	for(i=0;i<COLUMNTYPE12_NUM;i++){
+		memset(s_columntype12s[i], 0, sizeof(s_columntype12s[i]));
+	}
+	
+	return;
+}
+
+static int columntype12_insert(char *ColumnID)
+{
+	int i = 0;
+	
+	for(i=0;i<COLUMNTYPE12_NUM;i++){
+		if(0==strlen(s_columntype12s[i])){
+			snprintf(s_columntype12s[i],sizeof(s_columntype12s[i]),"%s",ColumnID);
+			PRINTF("insert Columntype(12) %s at s_columntype12s[%d]\n", ColumnID, i);
+			return 0;
+		}
+		else{
+			PRINTF("s_columntype12s[%d] is occupied\n", i);
+		}
+	}
+	
+	return -1;
+}
+
+// init ColumnID for ColumnType='12';
+int columntype12_init()
+{
+	int i = 0;
+	char sqlite_cmd[256+128];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = columntype12_sqlite_cb;
+	
+	for(i=0;i<COLUMNTYPE12_NUM;i++){
+		memset(s_columntype12s[i], 0, sizeof(s_columntype12s[i]));
+	}
+	
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ColumnID FROM Column where Param='%d';", SHOW_FLASH_COLUMNTYPE);
+	
+	if(0<sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback)){
+		PRINTF("has some ColumnType 12\n");
+	}
+	else{
+		PRINTF("has no ColumnType 12\n");
+	}
+	
+	return 0;
+}
+
 static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 {
 	if(NULL==ptr){
@@ -556,11 +698,24 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		sscanf(ptr->TotalSize,"%llu", &this_total_size);
 		
 		if(1==storage_flash_check()){
+#if 0
 			if((s_recv_totalsize_sum+this_total_size)>=STORAGE_FLASH_SIZE){
 				DEBUG("too large to recv to flash, %llu+%llu=%llu, ignore %s\n", s_recv_totalsize_sum, this_total_size, s_recv_totalsize_sum+this_total_size, ptr->ID);
 				snprintf(s_invalid_publicationid, sizeof(s_invalid_publicationid), "%s", ptr->ID);
 				return -1;
 			}
+#else
+			if(RECEIVETYPE_PUBLICATION==strtol(ptr->ReceiveType,NULL,10) && 0==columntype12_check(ptr->Columns)){
+				PRINTF("publication %s in column %s, its ColumnType is not 12, ignore it\n", ptr->ID, ptr->Columns);
+				snprintf(s_invalid_publicationid, sizeof(s_invalid_publicationid), "%s", ptr->ID);
+				return -1;
+			}
+			if(RECEIVETYPE_PREVIEW==strtol(ptr->ReceiveType,NULL,10)){
+				PRINTF("Preview %s, ignore it\n", ptr->ID);
+				snprintf(s_invalid_publicationid, sizeof(s_invalid_publicationid), "%s", ptr->ID);
+				return -1;
+			}
+#endif
 		}
 		
 		s_recv_totalsize_sum += this_total_size;
@@ -568,12 +723,20 @@ static int productdesc_insert(DBSTAR_PRODUCTDESC_S *ptr)
 		
 		if(1!=motherdisc_processing()){
 			if(RECEIVETYPE_PREVIEW==strtol(ptr->ReceiveType,NULL,10)){
-				DEBUG("preview %s dont reset before receive\n", ptr->ID);
+				PRINTF("dont clear preview %s before receive\n", ptr->ID);
 			}
 			else{
-				// 准备接收前先删除旧有目录，防止push库判断异常。
-				snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
-				remove_force(__FUNCTION__, direct_uri);
+				if(1==storage_flash_check()){
+					PRINTF("dont clear when storage with flash before receive\n");
+				}
+				else if(1==columntype12_check(ptr->Columns)){
+					PRINTF("dont clear %s in Column %s which ColumnType is 12 before receive\n", ptr->ID, ptr->Columns);
+				}
+				else{
+					// 准备接收前先删除旧有目录，防止push库判断异常。
+					snprintf(direct_uri,sizeof(direct_uri),"%s/%s", push_dir_get(),ptr->URI);
+					remove_force(__FUNCTION__, direct_uri);
+				}
 			}
 		}
 		
@@ -3593,6 +3756,8 @@ int parseDoc(char *xml_relative_uri, PUSH_XML_FLAG_E xml_flag, char *arg_ext)
 
 						s_column_SequenceNum = 10;	// 允许一些内置的栏目（如国电业务）排在下发栏目之前，故SequenceNum从10计起
 						
+						columntype12_reset();
+						
 						DBSTAR_COLUMN_S column_s;
 						memset(&column_s, 0, sizeof(column_s));
 						snprintf(column_s.ServiceID,sizeof(column_s.ServiceID),"%s", xmlinfo.ServiceID);
@@ -3752,12 +3917,17 @@ PARSE_XML_END:
 			
 			if(1==storage_flash_check()){
 				DEBUG("column is download finished for flash recv, %d\n", storage_flash_check());
+
 				if(0==productdesc_column_finished()){
+#if 0
+// check space in push_recv_manage_refresh()
 					while(0==disk_space_check()){
 						DEBUG("do disk_space_check() finish with 0, sleep(3) and check again\n");
 						sleep(3);
 					}
-					DEBUG("will regist publication/sproduct/preview for push, storage with flash\n");
+#endif
+					
+					PRINTF("will regist publication/sproduct/preview for push, storage with flash\n");
 					push_recv_manage_refresh(RECEIVETYPE_PUBLICATION|RECEIVETYPE_SPRODUCT|RECEIVETYPE_COLUMN|RECEIVETYPE_PREVIEW);
 				}
 			}

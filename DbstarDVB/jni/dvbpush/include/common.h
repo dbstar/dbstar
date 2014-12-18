@@ -161,7 +161,7 @@ typedef enum{
 // 当硬盘下载时，每个播发单最小下载修正为32G，用于计算是否需要磁盘清理
 #define DOWNLOAD_ONCE_MIN			(34359738368LL)
 
-#define STORAGE_FLASH_SIZE			(1000000000LL)
+#define STORAGE_FLASH_SIZE			(1073741824LL - 50000000LL)
 
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,

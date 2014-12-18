@@ -1634,6 +1634,8 @@ int prog_monitor_reset(void)
 /*
 回调结束时，receiver携带是否有进度注册的标记，1表示有注册，0表示无注册。
 */
+static long long s_flash_publications_recvsize = 0LL;
+static long long s_flash_need_space = 0LL;
 static int push_recv_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -1641,10 +1643,12 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 		DEBUG("no record in table, return\n");
 		return 0;
 	}
-//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID
+//ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID,Columns
 	int i = 0;
 	RECEIVESTATUS_E recv_stat = RECEIVESTATUS_REJECT;
 	long long totalsize = 0LL;
+	char flash_publication_absolute_uri[512];
+	long long actual_size = 0LL;
 	
 	*((int *)receiver) = 0;
 	
@@ -1674,6 +1678,63 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			//mid_push_reject(result[i*column+3],totalsize);
 		}
 		else{
+			// 如果flash存储push，先过滤只注册小于1G的publication，待注册完毕后，马上磁盘清理处理旧publication
+			if(1==storage_flash_check()){
+				// only regist publication which ColumnType is 12, SProduct, Column. dont regist preview
+				
+				if(	(RECEIVETYPE_PUBLICATION==strtol(result[i*column+2],NULL,10) && 1==columntype12_check(result[i*column+12]))
+					||	RECEIVETYPE_COLUMN==strtol(result[i*column+2],NULL,10)
+					||	RECEIVETYPE_SPRODUCT==strtol(result[i*column+2],NULL,10)){
+					
+					// only print info
+					if(RECEIVETYPE_PUBLICATION==strtol(result[i*column+2],NULL,10)){
+						PRINTF("ProductDesc: publication %s in column %s, its ColumnType is 12, recv it\n", result[i*column], result[i*column+12]);
+					}
+					else if(RECEIVETYPE_COLUMN==strtol(result[i*column+2],NULL,10)){
+						PRINTF("ProductDesc: Column %s, recv it\n", result[i*column]);
+					}
+					else if(RECEIVETYPE_SPRODUCT==strtol(result[i*column+2],NULL,10)){
+						PRINTF("ProductDesc: SProduct %s, recv it\n", result[i*column]);
+					}
+					else{
+						PRINTF("ProductDesc: who %s, recvtype %s\n", result[i*column], result[i*column+2]);
+					}
+					
+					
+					if((	s_flash_publications_recvsize+totalsize)<STORAGE_FLASH_SIZE
+						||	RECEIVETYPE_COLUMN==strtol(result[i*column+2],NULL,10)
+						||	RECEIVETYPE_SPRODUCT==strtol(result[i*column+2],NULL,10)){
+						s_flash_publications_recvsize += totalsize;
+					}
+					else{
+						PRINTF("too large to recv to flash, %llu+%llu=%llu, ignore %s\n", s_flash_publications_recvsize, totalsize, s_flash_publications_recvsize+totalsize, result[i*column]);
+						continue;
+					}
+					
+					snprintf(flash_publication_absolute_uri, sizeof(flash_publication_absolute_uri), "%s/%s", PUSH_STORAGE_FLASH, result[i*column+3]);
+					actual_size = dir_size(flash_publication_absolute_uri);
+					if(actual_size==totalsize){
+						PRINTF("%s is exist already\n", result[i*column+3]);
+					}
+					else{
+						PRINTF("%s actual size %lld\n", result[i*column+3], actual_size);
+						if(actual_size>0)
+							remove_force(__FUNCTION__, flash_publication_absolute_uri);
+						
+						s_flash_need_space += totalsize;
+					}
+				}
+				else{
+					if(RECEIVETYPE_PUBLICATION==strtol(result[i*column+2],NULL,10)){
+						PRINTF("ProductDesc: publication %s in column %s, its ColumnType is not 12, ignore it\n", result[i*column], result[i*column+12]);
+					}
+					else if(RECEIVETYPE_PREVIEW==strtol(result[i*column+2],NULL,10)){
+						PRINTF("ProductDesc: Preview %s, ignore it\n", result[i*column]);
+					}
+					continue;
+				}
+			}
+			
 			PROG_S cur_prog;
 			memset(&cur_prog,0,sizeof(cur_prog));
 			snprintf(cur_prog.id,sizeof(cur_prog.id),"%s",result[i*column]);
@@ -1689,7 +1750,7 @@ static int push_recv_manage_cb(char **result, int row, int column, void *receive
 			snprintf(cur_prog.product_id,sizeof(cur_prog.product_id),"%s",result[i*column+11]);
 			
 /*
- 已经解析过的节目，无需注册到push库中，只需要UI上显式即可。
+ 已经解析过的节目，无需注册到push库中，只需要UI上show即可。
 */
 			if(1==cur_prog.parsed){
 				PRINTF("[%s]%s is parsed already, make cur as total directly\n", cur_prog.id,cur_prog.uri);
@@ -1794,6 +1855,8 @@ int disk_space_check()
 int push_recv_manage_refresh(RECEIVETYPE_E receivetype)
 {
 	int ret = -1;
+	char flash_pushfile_uri[256];
+	long long free_size = 0LL;
 	char sqlite_cmd[1024];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = push_recv_manage_cb;
 	
@@ -1802,8 +1865,10 @@ int push_recv_manage_refresh(RECEIVETYPE_E receivetype)
 	s_dvbpush_info_refresh_flag = 1;
 	
 	int flag_carrier = 0;
+	s_flash_publications_recvsize = 0LL;
+	s_flash_need_space = 0LL;
 	
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID FROM ProductDesc");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT ProductDescID,ID,ReceiveType,URI,DescURI,TotalSize,PushStartTime,PushEndTime,ReceiveStatus,FreshFlag,Parsed,productID,Columns FROM ProductDesc");
 	
 	// receive push with flash, recv column firstly, then publication. dont receive SProduct and Preview
 	if(RECEIVETYPE_SEQUENCE==receivetype){
@@ -1826,6 +1891,17 @@ int push_recv_manage_refresh(RECEIVETYPE_E receivetype)
 	PRINTF("ret: %d, flag_carrier: %d\n", ret,flag_carrier);
 	if(ret>0 && flag_carrier>0){
 		prog_name_fill();
+		
+		if(1==storage_flash_check()){
+			snprintf(flash_pushfile_uri, sizeof(flash_pushfile_uri), "%s/pushroot/pushfile", PUSH_STORAGE_FLASH);
+			free_size = STORAGE_FLASH_SIZE-dir_size(flash_pushfile_uri);
+			PRINTF("free_size(%llu) vs need space(%llu)\n", free_size, s_flash_need_space);
+			if(free_size<s_flash_need_space){
+				s_should_clean_hd = s_flash_need_space;
+				PRINTF("clean %lld for flash receive\n", s_should_clean_hd);
+				disk_manage(NULL,NULL);
+			}
+		}
 	}
 	
 	pthread_mutex_unlock(&mtx_push_monitor);
