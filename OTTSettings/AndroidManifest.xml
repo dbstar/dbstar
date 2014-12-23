@@ -7,8 +7,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="17" />
+        android:minSdkVersion="14" />
 
     <!-- new -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -93,12 +92,20 @@
             </intent-filter>
         </receiver>
         
+        <receiver android:name="com.settings.service.OTTSettingsReceiver">
+            <intent-filter >
+                <action android:name="com.settings.service.OTTSettingsReceiver"/>
+                <action android:name="com.settings.service.action.OTTSettingsService"/>
+            </intent-filter>
+        </receiver>
+        
         <receiver android:name=".DbstarNetSettingsReceiver">
 			<intent-filter>
 				<action android:name="com.dbstar.settings.action.CLEAR_SETTINGS" />
 			</intent-filter>
 		</receiver>
 		
+        <!-- 
         <service 
             android:name="com.settings.service.OTTSettingsService"
             android:exported="true">
@@ -113,6 +120,7 @@
                 <action android:name="com.settings.service.action.OTTSettingsModeService"/>
             </intent-filter>
         </service>
+         -->
     </application>
 
 </manifest>

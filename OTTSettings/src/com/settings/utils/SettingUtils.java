@@ -55,7 +55,6 @@ import com.settings.bean.Vapks;
 import com.settings.components.NetStatusViewWrapper;
 import com.settings.components.SysUpgradeSettingsViewWrapper;
 import com.settings.ottsettings.R;
-import com.settings.service.OTTSettingsModeService;
 
 public class SettingUtils {
 

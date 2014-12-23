@@ -22,7 +22,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -247,7 +246,7 @@ public class SysUpgradeSettingsViewWrapper {
 		// 如果没有，则再检测在线升级是否有新的版本
 		
 		boolean isUpgrading = SettingUtils.readIsUpgrade();
-		LogUtil.d("SysUpgradeSettingsViewWrapper", "SettingUtils.readUpgradeFile() = " + isUpgrading);
+		LogUtil.d("SysUpgradeSettingsViewWrapper", "isUpgrading = " + isUpgrading);
 		
 		boolean isNetworkAvailable = SettingUtils.isNetworkAvailable(context);
 		LogUtil.d("SysUpgradeSettingsViewWrapper", "isNetworkAvailable = " + isNetworkAvailable);
@@ -311,6 +310,12 @@ public class SysUpgradeSettingsViewWrapper {
 	}
 	
 	private void upgrade() {
+		if (!SettingUtils.isNetworkAvailable(context)) {
+			SettingUtils.save0ToFile();
+			btnOnline.setEnabled(false);
+			txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));			
+		}
+		
 		if (mUpgradeInfo == null) {
 			return;
 		}
