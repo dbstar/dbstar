@@ -23,14 +23,18 @@ import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnKeyListener;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ethernet.EthernetManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -64,6 +68,7 @@ import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.util.Constants;
 import com.dbstar.util.DbstarUtil;
 import com.dbstar.util.LogUtil;
+import com.dbstar.util.upgrade.RebootUtils;
 
 public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationObserver{
 
@@ -96,10 +101,10 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	private Integer[] pictures = {R.drawable.main_img1, R.drawable.main_img2, R.drawable.main_img3, R.drawable.main_img4, R.drawable.main_img5};
 	
 	private GalleryAdapter adapter2;
-	private boolean isToAthorAvtivity = false;
 	private boolean timerTag = false;
 	private boolean fileCanWrite = false;
 	private boolean isConstainsMarkFile = false;
+	private EthernetManager mEthernetManager;
 	
 //	private Intent intentSer; 
 	private GalleryTask task;
@@ -113,7 +118,8 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				gallery.setFocusable(false);
 				break;
 			case 3:
-				startService(new Intent("com.settings.service.action.OTTSettingsService"));
+//				startService(new Intent("com.settings.service.action.OTTSettingsService"));
+				sendBroadcast(new Intent("com.settings.service.action.OTTSettingsService"));
 				
 				timerTag = true;
 				
@@ -138,6 +144,10 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 		}
 	}
 
+	
+	private static final String Min_Mac = "84:26:90:00:00:00";
+	private static final String Max_Mac = "84:26:90:00:03:EF";
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -147,7 +157,21 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 		
 		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
 		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-
+		
+		mEthernetManager = (EthernetManager) getSystemService(Context.ETH_SERVICE);
+		mEthernetManager.setEthEnabled(true);
+		
+		String mac = DbstarUtil.getLocalMacAddress(true);
+		int minInt = mac.compareTo(Min_Mac);
+		int maxInt = mac.compareTo(Max_Mac);
+//		Log.d("DbstarOTTActivity", "minInt = " + minInt + ", maxInt = " + maxInt);
+		if (minInt >= 0 && maxInt <= 0) {
+		} else {
+//			DbstarUtil.closeNetwork(DbstarOTTActivity.this);
+//			showIsFormatDialog("此终端（" + mac + "）不合法，请断电关机！", false, true);
+			rebootSystem();
+		}
+		
 		mImageSet = new ImageSet(adapter2);
 		// 检查联网情况
 		boolean isNetworkConnected = DbstarUtil.isNetworkAvailable(this);
@@ -161,6 +185,20 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 			getQueryRecommand();
 		}
 		
+		isFormatDisk();
+		
+//		startService(new Intent("com.settings.service.action.OTTSettingsModeService"));
+		startService(new Intent(this, DbstarService.class));
+		
+		sendBroadcast(new Intent("com.settings.service.OTTSettingsReceiver"));
+		
+		findViews();
+		imgStarTV.requestFocus();
+		populateData();
+		setEventListener();
+	}
+
+	private void isFormatDisk() {
 		// 先决条件：硬盘经过分区
 		// 先执行命令ls /dev/block/
 		String devDisk = DbstarUtil.fetchDiskInfo();
@@ -206,7 +244,7 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 			} else {
 				// 对话框提示内容：当前硬盘格式不可识别，是否格式化。这两个对话框（包括下面的那个）默认焦点都放在“否”上面
 				// 如果机顶盒上有硬盘，但是不认识，则就弹框确认格式化，不确认格式化就停留在该页面不再继续往下进行
-				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), false);
+				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), false, false);
 			}
 		} 
 		
@@ -243,27 +281,19 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 					showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
 							+ "\n硬盘总容量：" + diskSize
 							+ "\n占用空间：" + diskUsed
-							+ "\n剩余空间：" + diskSpace, true);
+							+ "\n剩余空间：" + diskSpace, true, false);
 				} else 
 					LogUtil.d("DbstarOTTActivity", "rawDiskSize = " + rawDiskSize);
 			}
 		}
-		
-		startService(new Intent("com.settings.service.action.OTTSettingsModeService"));
-		startService(new Intent(this, DbstarService.class));
-		
-		findViews();
-		imgStarTV.requestFocus();
-		populateData();
-		setEventListener();
 	}
 	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		stopService(new Intent(this, DbstarService.class));
-		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
-		stopService(new Intent("com.settings.service.action.OTTSettingsModeService"));
+//		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
+//		stopService(new Intent("com.settings.service.action.OTTSettingsModeService"));
 	}
 
 	private void readQueryPosterFromSDCard() {
@@ -427,7 +457,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				Intent intent = new Intent();
 				intent.setClass(DbstarOTTActivity.this, GDLauncherActivity.class);
 				startActivityForResult(intent, Btn_StarTV_Sequence);
-				isToAthorAvtivity = true;
 			}
 		});
 		imgCntv.setOnClickListener(new BtnOnClickListener("tv.icntv.ott", Btn_CntvTV_Sequence));
@@ -627,7 +656,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 					intent.setClass(DbstarOTTActivity.this, GDLauncherActivity.class);
 //					startActivity(intent);
 					startActivityForResult(intent, Btn_StarTV_Sequence);
-					isToAthorAvtivity = true;
 				}
 			});
 		} else if (sequence == 2) {
@@ -929,39 +957,50 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				startActivityForResult(intent, btnSequence);
 			}
 			
-			isToAthorAvtivity = true;
 			LogUtil.d("BtnOnClickListener", "包名：：" + packageName);
 		}
 	}
 	
 	private AlertDialog mDialog;
-    public void showIsFormatDialog(String content, boolean isShowNegativeBtn) {
+    public void showIsFormatDialog(String content, boolean isShowNegativeBtn, boolean bool) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(getApplicationContext());  
         dialog.setTitle(getResources().getString(R.string.alert_title));  
         dialog.setIcon(android.R.drawable.ic_dialog_info);  
-        dialog.setMessage(content); 
         
-        dialog.setPositiveButton(getResources().getString(R.string.button_text_ok), new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
+        if (bool) {
+//        	dialog.setMessage(content);         	        	
+//        	dialog.setPositiveButton(getResources().getString(R.string.button_text_ok), new DialogInterface.OnClickListener() {
+//        		
+//        		@Override
+//        		public void onClick(DialogInterface dialog, int which) {        			
+//        			dialog.dismiss();
+//        			rebootSystem();
+//        		}
+//        	}).setCancelable(true);
+        } else {
+        	dialog.setMessage(content);         	
+        	dialog.setPositiveButton(getResources().getString(R.string.button_text_ok), new DialogInterface.OnClickListener() {
+        		
+        		@Override
+        		public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 				isShowFormatDisk = true;
 				okButtonPressed();
 				DbstarUtil.closeNetwork(DbstarOTTActivity.this);
-			}
-		}).setCancelable(true);
-        
-        if (isShowNegativeBtn) {
-        	dialog.setNegativeButton(getResources().getString(R.string.button_text_cancel), new DialogInterface.OnClickListener() {
-        		
-        		@Override
-        		public void onClick(DialogInterface dialog, int which) {
-        			dialog.dismiss();
         		}
-        	});
+        	}).setCancelable(true);
+        	
+        	if (isShowNegativeBtn) {
+        		dialog.setNegativeButton(getResources().getString(R.string.button_text_cancel), new DialogInterface.OnClickListener() {
+        			
+        			@Override
+        			public void onClick(DialogInterface dialog, int which) {
+        				dialog.dismiss();
+        			}
+        		});
+        	}
         }
-
+        
         mDialog = dialog.create();  
         mDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);  
         mDialog.show();  
