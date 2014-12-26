@@ -175,12 +175,14 @@ public class AppListActivity extends Activity {
                 if (action == KeyEvent.ACTION_DOWN) {
                     switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_LEFT: {
+//                    	Log.d(TAG, "----------------mFlipper.getChildCount()" + mFlipper.getChildCount());
+//                    	Log.d(TAG, "----------------mGrid.getChildCount()" + mGrid.getChildCount());
                         int currentItem = mGrid.getSelectedItemPosition();
                         if (currentItem != 0 && currentItem % 6 == 0) {
                             mGrid.setSelection(currentItem - 1);
 
                         } else if (currentItem == 0) {
-                            if (true) {
+                            if (mFlipper.getChildCount() > 1) {
                                 mFlipper.setInAnimation(push_right_in);
                                 mFlipper.setOutAnimation(push_right_out);
                                 mFlipper.showPrevious();
@@ -191,7 +193,8 @@ public class AppListActivity extends Activity {
                     case KeyEvent.KEYCODE_DPAD_RIGHT: {
                         int currentItem = mGrid.getSelectedItemPosition();
                         if (currentItem == PAGE_MAX_COUNT - 1 || currentItem == (mGrid.getChildCount() -1)) {
-                            if (true) {
+                            if (mFlipper.getChildCount() > 1) {
+//                            if (true) {
                                 mFlipper.setInAnimation(push_left_in);
                                 mFlipper.setOutAnimation(push_left_out);
                                 mFlipper.showNext();
