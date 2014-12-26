@@ -4,55 +4,76 @@
     android:layout_height="match_parent"
     android:background="#000000"
     android:orientation="vertical" >
-    
-    <TextView 
+    <TextView
         android:id="@+id/product_sn"
-        android:layout_marginTop="30dp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="30dp"
         android:gravity="center_horizontal"
         android:textColor="#FFF"
-        android:textSize="24dp"
-        />
-    <LinearLayout 
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_centerInParent="true"
-        android:gravity="center"
-        android:orientation="horizontal"
-        >
-   
-    <ListView 
-        android:id="@+id/testResultList"
-        android:layout_width="500dp"
-        android:layout_height="600dp"
-        android:divider="@null"
-        android:focusable="false"
-        android:cacheColorHint="#000000"
-        ></ListView>
-    
-     <Button 
-        android:id="@+id/btn1"
-        android:layout_width="300dp"
-        android:layout_height="100dp"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
-        android:textColor="#fff"
-        android:textSize="50sp"
-        android:layout_marginLeft="20dp"
-        android:text="@string/test_test_all"
-        />
-</LinearLayout>
+        android:textSize="28dp" />
 
     <TextView
-        android:layout_alignParentBottom="true"
-        android:id="@+id/tv_result" 
+        android:id="@+id/selecte_mac"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/product_sn"
+        android:layout_marginBottom="20dp"
         android:gravity="center_horizontal"
         android:textColor="#fff"
-        android:textSize="50sp"
-        
-        />
+        android:textSize="28sp" />
+
+    <LinearLayout
+        android:id="@+id/linearlayout_container"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_below="@id/selecte_mac"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <ListView
+            android:id="@+id/testResultList"
+            android:layout_width="500dp"
+            android:layout_height="590dp"
+            android:cacheColorHint="#000000"
+            android:divider="@null"
+            android:focusable="false" >
+        </ListView>
+
+        <Button
+            android:id="@+id/btn1"
+            android:layout_width="300dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="20dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/test_test_all"
+            android:textColor="#fff"
+            android:textSize="50sp" />
+    </LinearLayout>
+
+    <TextView 
+        android:id="@+id/selecte_sn"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="20dp"
+        android:layout_below="@id/linearlayout_container"
+        android:gravity="center_horizontal"
+        android:textColor="#fff"
+        android:textSize="28sp"/>
     
+    <TextView
+        android:id="@+id/tv_result"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="30dp"
+        android:textColor="#fff"
+        android:textSize="50sp" />
+    
+
 </RelativeLayout>

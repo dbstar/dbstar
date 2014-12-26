@@ -32,6 +32,15 @@ public class Configs {
     public static String TEST_CONFIG_FILE_PAHT_SDA1 = "/storage/external_storage/sda1/test_configure.xml";
     public static String TEST_CONFIG_FILE_PAHT_SDCARD1 = "/storage/external_storage/sdcard1/test_configure.xml";
     public static String TEST_CONFIG_FILE_PAHT_SDC1 = "/storage/external_storage/sdc1/test_configure.xml";
+    
+    public static String TEST_SN_FILE_CSV_SDA1 = "/storage/external_storage/sda1/cytcmacnum.csv";
+    public static String TEST_SN_FILE_CSV_SDB1 = "/storage/external_storage/sdb1/cytcmacnum.csv";
+    public static String TEST_SN_FILE_CSV_SDC1 = "/storage/external_storage/sdc1/cytcmacnum.csv";
+    public static String TEST_SN_FILE_CSV_SDCARD1 = "/storage/external_storage/sdcard1/cytcmacnum.csv";
+    
+    public static String TEST_CONFIG_PAHT_SDA1 = "/storage/external_storage/sda1/";
+    public static String TEST_CONFIG_PAHT_SDB1 = "/storage/external_storage/sdb1/";
+    public static String TEST_CONFIG_PAHT_SDC1 = "/storage/external_storage/sdc1/";
     public static String DEFALUT_DISK = "";
     
     public String mWifiSSID;

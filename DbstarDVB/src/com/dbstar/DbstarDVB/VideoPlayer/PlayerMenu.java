@@ -79,6 +79,9 @@ class SubtitleParameter {
 }
 
 public class PlayerMenu extends PlayerActivity {
+	
+	private boolean isAgingTest = false;
+	
 	private static final String TAG = "PlayerMenu";
 
 	public static final String PREFS_SUBTITLE_NAME = "subtitlesetting";
@@ -294,6 +297,8 @@ public class PlayerMenu extends PlayerActivity {
 
 		// mFB32 = SystemProperties.get("sys.fb.bits", "16").equals("32");
 		setContentView(R.layout.infobar32);
+		
+		isAgingTest = getIntent().getBooleanExtra("aging_test_key", false);
 
 		SettingsVP.init(this);
 		SettingsVP.setVideoLayoutMode();
@@ -567,83 +572,84 @@ public class PlayerMenu extends PlayerActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		Log.d(TAG, "onKeyDown " + keyCode);
-
-		if (!mIsStarted) {
-			return true;
-		}
-
-		if (keyCode != KeyEvent.KEYCODE_UNKNOWN) {
-			mDuringKeyActions = true;
-		}
-
-		switch (keyCode) {
-		case KeyEvent.KEYCODE_BACK: {
-			exitPlayer(10);
-			return true;
-
-		}
-		// case KeyEvent.KEYCODE_MENU:
-		// case KeyEvent.KEYCODE_9: {
-		// if (mInfoBar.getVisibility() == View.VISIBLE) {
-		// hideInfoBar();
-		// } else {
-		// showInfoBar(true);
-		// }
-		// return true;
-		// }
-
-		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-		case KeyEvent.KEYCODE_DPAD_CENTER: {
-			showInfoBar(true);
-			onPlayButtonPressed();
-			return true;
-		}
-		case KeyEvent.KEYCODE_DPAD_RIGHT:
-		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD: {
-			if (!INITOK)
-				return false;
-
-			showInfoBar(false);
-			onFFButtonPressed2();
-			return true;
-		}
-		case KeyEvent.KEYCODE_DPAD_LEFT:
-		case KeyEvent.KEYCODE_MEDIA_REWIND: {
-			if (!INITOK)
-				return false;
-
-			showInfoBar(false);
-			onFBButtonPressed2();
-			return true;
-		}
-
-		case KeyEvent.KEYCODE_ALT_LEFT: {
-			showInfoBar(true);
-			setMute(!mIsMute);
-			return true;
-		}
-
-		case KeyEvent.KEYCODE_DPAD_DOWN: {
-			showInfoBar(true);
-			decreaseVolume();
-			return true;
-		}
-
-		case KeyEvent.KEYCODE_DPAD_UP: {
-			showInfoBar(true);
-			increaseVolume();
-			return true;
-		}
-
-		case KeyEvent.KEYCODE_NOTIFICATION: {
-			Log.d(TAG, " osd state ======================= " + mOSDState);
-			setOSDOn(true);
-			// mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
-			// MSG_DIALOG_TIMEOUT);
-			showDialog(DLG_ID_MEDIAINFO);
-			return true;
-		}
-
+		
+		if (isAgingTest) {
+			return false;
+		} else {
+			if (!mIsStarted) {
+				return true;
+			}
+			if (keyCode != KeyEvent.KEYCODE_UNKNOWN) {
+				mDuringKeyActions = true;
+			}
+			switch (keyCode) {
+			case KeyEvent.KEYCODE_BACK: {
+				exitPlayer(10);
+				return true;
+				
+			}
+			// case KeyEvent.KEYCODE_MENU:
+			// case KeyEvent.KEYCODE_9: {
+			// if (mInfoBar.getVisibility() == View.VISIBLE) {
+			// hideInfoBar();
+			// } else {
+			// showInfoBar(true);
+			// }
+			// return true;
+			// }
+			
+			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+			case KeyEvent.KEYCODE_DPAD_CENTER: {
+				showInfoBar(true);
+				onPlayButtonPressed();
+				return true;
+			}
+			case KeyEvent.KEYCODE_DPAD_RIGHT:
+			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD: {
+				if (!INITOK)
+					return false;
+				
+				showInfoBar(false);
+				onFFButtonPressed2();
+				return true;
+			}
+			case KeyEvent.KEYCODE_DPAD_LEFT:
+			case KeyEvent.KEYCODE_MEDIA_REWIND: {
+				if (!INITOK)
+					return false;
+				
+				showInfoBar(false);
+				onFBButtonPressed2();
+				return true;
+			}
+			
+			case KeyEvent.KEYCODE_ALT_LEFT: {
+				showInfoBar(true);
+				setMute(!mIsMute);
+				return true;
+			}
+			
+			case KeyEvent.KEYCODE_DPAD_DOWN: {
+				showInfoBar(true);
+				decreaseVolume();
+				return true;
+			}
+			
+			case KeyEvent.KEYCODE_DPAD_UP: {
+				showInfoBar(true);
+				increaseVolume();
+				return true;
+			}
+			
+			case KeyEvent.KEYCODE_NOTIFICATION: {
+				Log.d(TAG, " osd state ======================= " + mOSDState);
+				setOSDOn(true);
+				// mHandler.sendEmptyMessageDelayed(MSG_DIALOG_POPUP,
+				// MSG_DIALOG_TIMEOUT);
+				showDialog(DLG_ID_MEDIAINFO);
+				return true;
+			}
+			
 //		case KeyEvent.KEYCODE_DPAD_LEFT: {
 //			showInfoBar(true);
 //			// seekBackwardOneStep();
@@ -659,21 +665,22 @@ public class PlayerMenu extends PlayerActivity {
 //		case KeyEvent.KEYCODE_MENU:{
 //		    createSingleSelectorDialog();
 //		}
-		
-		case KeyEvent.KEYCODE_TV_SUBTITLE: {
-			setOSDOn(true);
-			switchSubtitle();
-			return true;
+			
+			case KeyEvent.KEYCODE_TV_SUBTITLE: {
+				setOSDOn(true);
+				switchSubtitle();
+				return true;
+			}
+			
+			case KeyEvent.KEYCODE_TV_SHORTCUTKEY_VOICEMODE: {
+				setOSDOn(true);
+				switchAudioStreamToNext();
+				return true;
+			}
+			}
+			
+			return super.onKeyDown(keyCode, event);
 		}
-
-		case KeyEvent.KEYCODE_TV_SHORTCUTKEY_VOICEMODE: {
-			setOSDOn(true);
-			switchAudioStreamToNext();
-			return true;
-		}
-		}
-
-		return super.onKeyDown(keyCode, event);
 	}
 	
 	private void createSingleSelectorDialog(){

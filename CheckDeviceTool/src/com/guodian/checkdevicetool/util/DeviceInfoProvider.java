@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Config;
+import android.util.Log;
 
 import com.dbstar.DbstarDVB.common.Configs;
 import com.guodian.checkdevicetool.testentry.Disk;
@@ -33,7 +34,7 @@ public class DeviceInfoProvider {
         }
 
         File[] mnts = mnt.listFiles();
-        mLog.i("mnts = " + mnts);
+//        mLog.i("mnts = " + mnts);
         if (mnts == null)
             return null;
         if(APPVersion.SINGLE){
@@ -58,6 +59,7 @@ public class DeviceInfoProvider {
                 {   
                     String filePath = file.toString();
                     if(filePath.startsWith(fileStr)){
+                    	Log.d("DeviceInfoProvider", "----------------filePath = " + filePath);
                         String key = filePath.substring(0, fileStr.length() + 1);
                         map.put(key, filePath);
                     }
@@ -67,12 +69,15 @@ public class DeviceInfoProvider {
         File file;
         Disk disk = null;
         for(String fp : map.values()){
+        	Log.d("DeviceInfoProvider", "----------------fp = " + fp);
             file = new File(fp);
             if(file.exists() && file.getTotalSpace() < UNITSIZE_100G){
+            	Log.d("DeviceInfoProvider", "--------<--------fp = " + fp);
                 disk = new Disk();
                 disk.filePath = fp;
                 disks.add(disk);
             }else if(file.exists() && file.getTotalSpace() > UNITSIZE_100G){
+            	Log.d("DeviceInfoProvider", "-------->--------fp = " + fp);
                 Configs.DEFALUT_DISK = fp;
             }
         }
@@ -85,7 +90,7 @@ public class DeviceInfoProvider {
 //        }
         if(disks != null){
             for(Disk string :disks){
-                mLog.i("mounted usb paht = " + string.filePath);
+                mLog.i("mounted usb path = " + string.filePath);
             }
          }else{
              mLog.i("usb umount"); 

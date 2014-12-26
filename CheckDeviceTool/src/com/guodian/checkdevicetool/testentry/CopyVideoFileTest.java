@@ -38,7 +38,7 @@ public class CopyVideoFileTest extends TestTask{
      if(mConfig == null || mConfig.mVideoPath == null || mConfig.mVideoPath.isEmpty()){
          sendFailMsg(mActivity.getString(R.string.test_read_configfile_fail));
      }else{
-         startCopyFile(mConfig.mVideoPath, Configs.TARGET_VIDEO_FILE);
+         startCopyFile(getVideoPath(), Configs.TARGET_VIDEO_FILE);
      }
     }
     
@@ -61,15 +61,16 @@ public class CopyVideoFileTest extends TestTask{
                         };
                 do_exec(cmdtest);
                 mLog.i("startCopyFile finish");
-                
+                File sdcartFile = new File(sourceFile);
                 File targetFile = new File(Configs.TARGET_VIDEO_FILE);
-                File sdcartFile = new File(mConfig.mVideoPath);
-                Log.d("CopyVideoFileTest", "-------------sdcartFile.length() = " + sdcartFile.length());
-                Log.d("CopyVideoFileTest", "-------------targetFile.length() = " + targetFile.length());
-                Log.d("CopyVideoFileTest", "-------------mCopyState = " + mCopyState);
-                Log.d("CopyVideoFileTest", "-------------END_COPY = " + END_COPY);
-                Log.d("CopyVideoFileTest", "-------------mConfig.mVideoPath = " + mConfig.mVideoPath);
-                Log.d("CopyVideoFileTest", "-------------targetFile.exists() = " + targetFile.exists());
+                
+//                Log.d("CopyVideoFileTest", "-------------sdcartFile.length() = " + sdcartFile.length());
+//                Log.d("CopyVideoFileTest", "-------------targetFile.length() = " + targetFile.length());
+//                Log.d("CopyVideoFileTest", "-------------mCopyState = " + mCopyState);
+//                Log.d("CopyVideoFileTest", "-------------END_COPY = " + END_COPY);
+//                Log.d("CopyVideoFileTest", "-------------mConfig.mVideoPath = " + mConfig.mVideoPath);
+//                Log.d("CopyVideoFileTest", "-------------getVideoPath() = " + getVideoPath());
+//                Log.d("CopyVideoFileTest", "-------------targetFile.exists() = " + targetFile.exists());
                 if(mCopyState == END_COPY && targetFile.exists() && sdcartFile.length() == targetFile.length()){
                     sendSuccessMsg();
                 }else{
@@ -100,4 +101,28 @@ public class CopyVideoFileTest extends TestTask{
         }
         return cmd.toString();
     }
+
+	private String getVideoPath() {
+		String mVideoPath = mConfig.mVideoPath;
+		String videoPath = null;
+		if (mConfig.mVideoPath.contains("/")) {
+			String[] split = mConfig.mVideoPath.split("/");
+			if (split != null && split.length > 0) {
+				videoPath = split[split.length - 1];
+			}
+		} else {
+			videoPath = mConfig.mVideoPath;
+		} 
+		
+		mVideoPath = Configs.TEST_CONFIG_PAHT_SDB1 + videoPath;			
+		String[] paths = { Configs.TEST_CONFIG_PAHT_SDA1, Configs.TEST_CONFIG_PAHT_SDB1, Configs.TEST_CONFIG_PAHT_SDC1 };
+		for (int i = 0; i < paths.length; i++) {
+			String path = paths[i] + videoPath;
+			File file = new File(path);
+			if (file.exists()) {
+				mVideoPath = path;
+			}
+		}
+		return mVideoPath;
+	}
 }

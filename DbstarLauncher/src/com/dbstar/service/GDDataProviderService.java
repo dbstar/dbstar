@@ -1,8 +1,11 @@
 package com.dbstar.service;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -703,7 +706,37 @@ public class GDDataProviderService extends Service {
 							mApplicationObserver.initializeApp();
 						}
 					} else {
-						showDialog();
+						try {
+							String factoryToolsPath = "/system/app/CheckDeviceTool.apk";
+							File factoryFile = new File(factoryToolsPath);
+							if (factoryFile.exists()) {								
+								String factoryFilePath = "/data/dbstar/product/factory.stat";
+								File file = new File(factoryFilePath);
+								if (file.exists()) {
+									int count = 0;
+									byte[] buf = new byte[100];
+									FileInputStream inputStream = new FileInputStream(file);
+									BufferedInputStream bufferedIn = new BufferedInputStream(inputStream);
+									count = bufferedIn.read(buf, 0, buf.length);
+									bufferedIn.close();
+									if (count > 0) {
+										String values = new String(buf, 0, count);
+										LogUtil.d(TAG, " values = " + values);
+										
+										if (values.equals("1")) {
+											showDialog();
+										} else {
+											LogUtil.d(TAG, "the factory.stat is not exists or values = " + values);
+										}
+									}
+									inputStream.close();
+								}
+							} else {
+								showDialog();								
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 						// U disk inserted
 						if (mIsDbServiceStarted) {
 							mDBStarClient.notifyDbServer(DbstarServiceApi.CMD_DISK_MOUNT, disk);

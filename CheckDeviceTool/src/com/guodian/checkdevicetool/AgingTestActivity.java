@@ -118,6 +118,7 @@ public class AgingTestActivity extends Activity {
         
         showSuspensionView();
         intent.setComponent(new ComponentName("com.dbstar.DbstarDVB", "com.dbstar.DbstarDVB.VideoPlayer.PlayerMenu"));
+        intent.putExtra("aging_test_key", true);
         intent.setAction("android.intent.action.View");
         startActivity(intent);
         overridePendingTransition(0, 0);

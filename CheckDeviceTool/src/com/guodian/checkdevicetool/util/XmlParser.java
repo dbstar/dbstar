@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 import org.xmlpull.v1.XmlPullParser;
 
+import android.util.Log;
 import android.util.Xml;
 
 import com.dbstar.DbstarDVB.common.Configs;
@@ -48,6 +49,7 @@ public class XmlParser {
                     if(Configs.VIDEO_PATH.equals(parser.getName())){
                         event = parser.next();
                         config.mVideoPath = parser.getText();
+                        Log.d("XmlParser", "------------------------------------config.mVideoPath = " + config.mVideoPath);
                     }
                     if(Configs.PLAY_TIME.equals(parser.getName())){
                         event = parser.next();

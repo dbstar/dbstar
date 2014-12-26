@@ -26,6 +26,7 @@ import com.dbstar.DbstarDVB.common.Configs;
 import com.guodian.checkdevicetool.BoardOrAllTestActivity;
 import com.guodian.checkdevicetool.R;
 import com.guodian.checkdevicetool.util.APPVersion;
+import com.guodian.checkdevicetool.util.APUtil;
 
 public class WifiTest extends TestTask{
     private  String SSID ;
@@ -104,6 +105,7 @@ public class WifiTest extends TestTask{
     	Log.d("WifiTest", "need to open wifi!");
         if(!mWifiManager.isWifiEnabled() && mWifiManager.getWifiState() != WifiManager.WIFI_STATE_ENABLING){
         	Log.d("WifiTest", "wifi is openning!");
+        	APUtil.closeWifiAp(mWifiManager);
             mWifiManager.setWifiEnabled(true);
             this.isAutoToNext = false;
             this.isShowResult = false;
