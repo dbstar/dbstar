@@ -26,6 +26,14 @@ public class DateUtil {
         Date date = null;
         SimpleDateFormat dateformat=new SimpleDateFormat(format); 
         try {
+        	String dateString = dateStr;
+//        	Log.d("DateUtil", "---------------------dateStr = " + dateStr);
+        	if (!dateString.contains("-") && dateString.length() >= 8) {
+        		if (dateString.contains("/"))
+        			dateStr = dateString.substring(0, 4) + "-" + dateString.substring(5, 7) + "-" + dateString.substring(8);		
+        		else
+        			dateStr = dateString.substring(0, 4) + "-" + dateString.substring(4, 6) + "-" + dateString.substring(6);		
+        	}
             date = dateformat.parse(dateStr);
         } catch (ParseException e) {
             e.printStackTrace();

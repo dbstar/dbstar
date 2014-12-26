@@ -301,6 +301,7 @@ public class ShelfController {
         try {
             Uri uri = getUri(action);
             cursor = mResolver.query(uri, null, null, new String[]{parentID}, null);
+//            Cursor backupCursor = mResolver.query(uri, null, null, new String[]{parentID}, null);
             if (cursor != null) {
                 categories = new ArrayList<NewsPaperCategory>();
                 NewsPaperCategory category = null;
@@ -311,44 +312,57 @@ public class ShelfController {
                 preference.Id = null;
                 preference.Name = mContext.getResources().getString(R.string.personal_preference);
                 categories.add(preference);
+                
+                // get top category in first loop
                 while (cursor.moveToNext()) {
                     category = null;
                     pid = cursor.getString(1);
+//                    Log.d("", "---------------in loadNewsPaperCategorys, parentID = " + parentID + ", pid = " + pid);
                     if (parentID.equals(pid) || pid == null || pid.isEmpty()) {
-                        category = new NewsPaperCategory();
-                        categories.add(category);
-                        category.Id = cursor.getString(0);
-                        category.Name = cursor.getString(2);
+						category = new NewsPaperCategory();
+						categories.add(category);
+						category.Id = cursor.getString(0);
+						category.Name = cursor.getString(2);
+//						Log.d("", "--------------- category.Id = " + category.Id + ", pid = " + pid + ", parentID = " + parentID);
+//						Log.d("", "--------------- category.Name = " + category.Name + ", pid = " + pid + ", parentID = " + parentID);
                     } else {
-                        category = null;
-                        for (NewsPaperCategory c : categories) {
-                            if (pid.equals(c.Id)) {
-                                category = c;
-                            }
-                        }
-                        if (category == null) {
-                            category = new NewsPaperCategory();
-                            categories.add(category);
-                            category.Id = pid;
-                        }
-
-                        subCategory = new NewsPaperCategory();
-                        subCategory.Id = cursor.getString(0);
-                        subCategory.Name = cursor.getString(2);
-                        subCategory.unFocusedIcon = cursor.getString(3);
-                        subCategory.Preference = cursor.getString(4);
-                        subCategory.Pid = pid;
-
-                        if (category.SubCategroys == null || category.SubCategroys.isEmpty()) {
-                            category.SubCategroys = new ArrayList<NewsPaperCategory>();
-                        }
-                        category.SubCategroys.add(subCategory);
-                        if ("1".equals(subCategory.Preference)) {
-                            preference.SubCategroys.add(subCategory);
-                        }
+                    	continue;
                     }
-
                 }
+                
+                while (cursor.moveToPrevious()) {
+                	category = null;
+                    pid = cursor.getString(1);
+//                	Log.d("", "-------in STOP--------in loadNewsPaperCategorys, parentID = " + parentID + ", pid = " + pid);
+                	if (parentID.equals(pid) || pid == null || pid.isEmpty()) {
+                		continue;
+                	} else {
+                		for (NewsPaperCategory c : categories) {
+                			if (pid.equals(c.Id)) {
+                				category = c;
+//                				Log.d("", "------in STOP---------in pid.equals(c.Id)");
+                			}
+                		}
+                		
+                		subCategory = new NewsPaperCategory();
+                		subCategory.Id = cursor.getString(0);
+                		subCategory.Name = cursor.getString(2);
+                		subCategory.unFocusedIcon = cursor.getString(3);
+                		subCategory.Preference = cursor.getString(4);
+                		subCategory.Pid = pid;
+//                		Log.d("", "-----in STOP---------- category.Id = " + category.Id + ", pid = " + pid + ", parentID = " + parentID);
+//                		Log.d("", "-----in STOP---------- category.Name = " + category.Name + ", pid = " + pid + ", parentID = " + parentID);
+                		
+                		if (category.SubCategroys == null || category.SubCategroys.isEmpty()) {
+                			category.SubCategroys = new ArrayList<NewsPaperCategory>();
+                		}
+                		category.SubCategroys.add(subCategory);
+                		if ("1".equals(subCategory.Preference)) {
+                			preference.SubCategroys.add(subCategory);
+                		}
+                	}
+                }
+                
                 cursor.close();
             }
 
@@ -358,7 +372,7 @@ public class ShelfController {
 
         return categories;
     }
-
+    
     public List<NewsPaper> loadNewsPapers(String action, String selectionArg) {
         List<NewsPaper> news = null;
         Cursor cursor = null;

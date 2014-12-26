@@ -142,8 +142,8 @@
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="49dp"
-        android:layout_marginTop="20dp"
+        android:layout_height="68dp"
+        android:layout_marginTop="5dp"
         android:background="@drawable/dbstar_toolbar_bg"
         android:orientation="horizontal"
         android:focusable="false"
