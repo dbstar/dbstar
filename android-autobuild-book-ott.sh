@@ -175,10 +175,10 @@ otapackage_make()
 	logger "START make otapackage"
 
 	LOG_LOGGER=$LOG_OTAPACKAGE.$TIMESTAMP
-        cp /home/mx/app/CNTV_DBSTAR_Android4.03_06_07.apk $ROOTFS_OUT/system/app/.
+        cp /home/mx/app/icntv-n260-v.1.0.0.apk $ROOTFS_OUT/system/app/.
         cp /home/mx/app/AppStore_DBSTAR_3.3.3.apk $ROOTFS_OUT/system/app/.
-        cp /home/mx/m6-book/DbstarBookReader.apk $ROOTFS_OUT/system/app/.
-        cp /home/mx/m6-book/libAisound.so $ROOTFS_OUT/system/lib/.
+        cp /home/mx/m6-book/richmedia_apk/DbstarBookReader.apk $ROOTFS_OUT/system/app/.
+        cp /home/mx/m6-book/richmedia_lib/*.so $ROOTFS_OUT/system/lib/.
         cp /home/mx/m6-book/Resource.irf $ROOTFS_OUT/system/lib/.
 
 	call cd $ANDROID_SRC

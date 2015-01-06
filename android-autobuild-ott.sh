@@ -175,8 +175,15 @@ otapackage_make()
 	logger "START make otapackage"
 
 	LOG_LOGGER=$LOG_OTAPACKAGE.$TIMESTAMP
-        cp /home/mx/app/CNTV_DBSTAR_Android4.03_06_07.apk $ROOTFS_OUT/system/app/.
+        cp /home/mx/app/icntv-n260-v.1.0.0.apk $ROOTFS_OUT/system/app/.
         cp /home/mx/app/AppStore_DBSTAR_3.3.3.apk $ROOTFS_OUT/system/app/.
+        rm -f $ROOTFS_OUT/system/app/DbstarBookReader.apk
+        rm -f $ROOTFS_OUT/system/app/MultipleMediaReader.apk
+        rm -f $ROOTFS_OUT/system/lib/Resource.irf
+        rm -f $ROOTFS_OUT/system/lib/libAisound.so
+        rm -f $ROOTFS_OUT/system/lib/libDeflatingDecompressor-v3.so
+        rm -f $ROOTFS_OUT/system/lib/libLineBreak-v2.so
+        rm -f $ROOTFS_OUT/system/lib/libNativeFormats-v3.so
 #        cp /home/mx/m6-book/TWReader.apk $ROOTFS_OUT/system/app/.
 #        cp /home/mx/m6-book/libAisound.so $ROOTFS_OUT/system/lib/.
 #        cp /home/mx/m6-book/Resource.irf $ROOTFS_OUT/system/lib/.
@@ -272,7 +279,7 @@ dbstar_make()
 		call mmm $DBSTAR_SRC/DbstarSettings -B
 		call mmm $DBSTAR_SRC/DBStarAppManager -B
 		call mmm $DBSTAR_SRC/DbstarFileBrowser -B
-		call mmm $DBSTAR_SRC/MultipleMediaReader -B
+#		call mmm $DBSTAR_SRC/MultipleMediaReader -B
 		call mmm $DBSTAR_SRC/OTTSettings -B
 	else
 		call mmm $DBSTAR_SRC/DbstarDVB
@@ -295,10 +302,10 @@ dbstar_make()
 		if [ $? -ne 0 ]; then
 			logger "ERROR make DbstarFileBrowser"
 		fi
-		call mmm $DBSTAR_SRC/MultipleMediaReader
-		if [ $? -ne 0 ]; then
-			logger "ERROR make MultipleMediaReader"
-		fi
+#		call mmm $DBSTAR_SRC/MultipleMediaReader
+#		if [ $? -ne 0 ]; then
+#			logger "ERROR make MultipleMediaReader"
+#		fi
 		call mmm $DBSTAR_SRC/OTTSettings
 		if [ $? -ne 0 ]; then
 			logger "ERROR make OTTSettings"
