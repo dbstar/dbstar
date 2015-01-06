@@ -146,6 +146,7 @@
                 style="@android:attr/spinnerDropDownItemStyle"
                 android:nextFocusLeft="@+id/settings_wifi"                
                 android:nextFocusDown="@+id/wifi_hotspot_et_password"
+                android:spinnerMode="dropdown"
                 android:layout_marginTop="5dp" />
 
             <TextView

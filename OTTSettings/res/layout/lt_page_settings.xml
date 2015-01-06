@@ -55,6 +55,7 @@
             android:gravity="center"
             android:button="@null"
             android:nextFocusDown="@+id/settings_audio"
+            android:nextFocusRight="@+id/network_wifi_cb_switch"
             android:text="@string/pageName_settings_wifi"
             android:textColor="@color/text_white"
             android:textSize="@dimen/gl_text_size_24sp" />

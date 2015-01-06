@@ -118,19 +118,25 @@ public class WifiHotspotSettingsViewWrapper {
 				case 0:
 					wifiHotspot.setSecurity(mTxtSecurity[0]);
 					mPassword.setText("");
+					mPassword.setFocusable(false);
 					mPassword.setEnabled(false);
 					mSecurity.setNextFocusDownId(R.id.wifi_hotspot_btn_ok);
+					mBtnOk.setNextFocusUpId(R.id.wifi_hotspot_security_spinner);
 					break;
 
 				case 1:
 					wifiHotspot.setSecurity(mTxtSecurity[1]);
 					mSecurity.setNextFocusDownId(R.id.wifi_hotspot_et_password);
-					
+					mPassword.setFocusable(true);
+					mPassword.setEnabled(true);
+					mBtnOk.setNextFocusUpId(R.id.wifi_hotspot_cb_showPwd);
 					break;
 				case 2:
 					wifiHotspot.setSecurity(mTxtSecurity[2]);
 					mSecurity.setNextFocusDownId(R.id.wifi_hotspot_et_password);
-					
+					mPassword.setFocusable(true);
+					mPassword.setEnabled(true);
+					mBtnOk.setNextFocusUpId(R.id.wifi_hotspot_cb_showPwd);					
 					break;
 				}
 				
@@ -273,7 +279,10 @@ public class WifiHotspotSettingsViewWrapper {
 		mPassword.setEnabled(false);
 		mShowPwd.setEnabled(false);
 		mBtnOk.setEnabled(false);
-		btnSetHotsopt.requestFocus();
+		btnSetHotsopt.setNextFocusDownId(R.id.wifi_hotspot_settings);
+		btnSetHotsopt.setNextFocusUpId(R.id.wifi_hotspot_settings);
+		btnSetHotsopt.setNextFocusLeftId(R.id.settings_wifi);
+		btnSetHotsopt.setNextFocusRightId(R.id.wifi_hotspot_settings);
 	}
 
 	private void enableSetWifiHotspot() {
@@ -285,6 +294,8 @@ public class WifiHotspotSettingsViewWrapper {
 		
 		btnSetHotsopt.setNextFocusUpId(R.id.wifi_hotspot_btn_ok);
 		btnSetHotsopt.setNextFocusDownId(R.id.wifi_hotspot_et_ssid);
+		btnSetHotsopt.setNextFocusLeftId(R.id.settings_wifi);
+		btnSetHotsopt.setNextFocusRightId(R.id.wifi_hotspot_settings);
 		mBtnOk.setNextFocusDownId(R.id.wifi_hotspot_settings);
 	}
 

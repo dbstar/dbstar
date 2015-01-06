@@ -207,12 +207,21 @@ public class NetworkWifiSettings {
 		radioGroup.setEnabled(true);
 		radioGroup.setFocusable(true);
 		btnNext.setEnabled(true);
+		wifiSwitch.setNextFocusUpId(R.id.network_wifi_btn_next);
+		wifiSwitch.setNextFocusDownId(R.id.network_wifi_hotspot);
+		wifiSwitch.setNextFocusLeftId(R.id.settings_wifi);
+		wifiSwitch.setNextFocusRightId(R.id.network_wifi_cb_switch);
 	}
 
 	private void unEnable() {
 		radioGroup.setEnabled(false);
 		radioGroup.setFocusable(false);
 		btnNext.setEnabled(false);
+		wifiSwitch.requestFocus();
+		wifiSwitch.setNextFocusUpId(R.id.network_wifi_cb_switch);
+		wifiSwitch.setNextFocusDownId(R.id.network_wifi_cb_switch);
+		wifiSwitch.setNextFocusLeftId(R.id.settings_wifi);
+		wifiSwitch.setNextFocusRightId(R.id.network_wifi_cb_switch);
 	}
 	
 	public void onPause() {

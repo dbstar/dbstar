@@ -263,8 +263,9 @@ public class FinishSettingsViewWrapper {
 		mOkButton.setOnClickListener(mOnClickListener);
 		mPrevButton.setOnClickListener(mOnClickListener);
 
-		mOkButton.requestFocus();
 		mOkButton.setEnabled(true);
+		mOkButton.setFocusable(true);
+		mOkButton.requestFocus();
 	}
 
 	private void reqisterConnectReceiver() {
@@ -368,6 +369,7 @@ public class FinishSettingsViewWrapper {
 			}
 			onStop();
 			
+			mOkButton.setFocusable(false);
 			mOkButton.setEnabled(false);
 		}
 	};

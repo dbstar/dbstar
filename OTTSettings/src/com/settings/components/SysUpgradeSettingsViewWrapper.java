@@ -68,6 +68,7 @@ public class SysUpgradeSettingsViewWrapper {
 		
 		btnLocal.setEnabled(false);
 		btnOnline.setEnabled(false);
+		btnLocalUnEnableNextFocus();
 		txtPercent.setText(context.getString(R.string.page_sysUpgrade_isChecking));
 		
 		String content = DataUtils.getCacheContent();
@@ -81,12 +82,11 @@ public class SysUpgradeSettingsViewWrapper {
 		}
 		
 		if (softVersion == null || softVersion.equals("")) {
-			softVersion = "2.0.3.1";
+			softVersion = "2.0.3.3";
 		}
 		
 		if (productSN == null || productSN.equals("")) {
-			// TODO:现在的串号不标准
-			productSN = "0000000000000066";
+			productSN = "2000317130000000";
 		}
 		
 		if (deviceModel == null || deviceModel.equals("")) {
@@ -146,15 +146,18 @@ public class SysUpgradeSettingsViewWrapper {
 						String percentNum = percentFormat.format(downloadSize);
 						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));				
 						btnOnline.setEnabled(false);
+						btnOnlineUnEnableNextFocus();
 					} else {
 						LogUtil.d("SysUpgradeSettingsViewWrapper", "--------1-------------------------fileTotalSize = " + fileTotalSize);
 						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));
 						btnOnline.setEnabled(true);
+						btnOnlineEnableNextFocus();
 					}					
 				} else { // 当网络断开的时候，下载失败
 					fileTotalSize = 0;
 					SettingUtils.save0ToFile();
 					btnOnline.setEnabled(false);
+					btnOnlineUnEnableNextFocus();
 					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
 //					ToastUtils.showToast(context, "请检查网络！");					
 				}
@@ -170,15 +173,18 @@ public class SysUpgradeSettingsViewWrapper {
 						String percentNum = percentFormat.format(downloadSize);
 						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, percentNum));										
 						btnOnline.setEnabled(false);
+						btnOnlineUnEnableNextFocus();
 					} else {
 						LogUtil.d("SysUpgradeSettingsViewWrapper", "-------2--------------------------fileTotalSize = " + fileTotalSize);
 						txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));						
 						btnOnline.setEnabled(true);
+						btnOnlineEnableNextFocus();
 					}
 				} else {
 					fileTotalSize = 0;
 					SettingUtils.save0ToFile();
 					btnOnline.setEnabled(false);
+					btnOnlineUnEnableNextFocus();
 					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
 					ToastUtils.showToast(context, "请检查网络！");					
 				}
@@ -193,6 +199,7 @@ public class SysUpgradeSettingsViewWrapper {
 				if (isUpgrading) {
 					btnLocal.setEnabled(false);
 					btnOnline.setEnabled(false);
+					btnLocalUnEnableNextFocus();
 				}
 				
 				// 当网络断开的时候，下载失败
@@ -200,6 +207,7 @@ public class SysUpgradeSettingsViewWrapper {
 					fileTotalSize = 0;
 					SettingUtils.save0ToFile();
 					btnOnline.setEnabled(false);
+					btnOnlineUnEnableNextFocus();
 					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));										
 //					ToastUtils.showToast(context, "请检查网络！");
 				}
@@ -209,9 +217,11 @@ public class SysUpgradeSettingsViewWrapper {
 				if (isAvaliable) {
 					btnOnline.setEnabled(true);
 					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));					
+					btnOnlineEnableNextFocus();
 				} else {
 					SettingUtils.save0ToFile();
 					btnOnline.setEnabled(false);
+					btnOnlineUnEnableNextFocus();
 					LogUtil.d("SysUpgradeSettingsViewWrapper", "-------4--------------------------isAvaliable = " + isAvaliable);
 					txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));					
 				}
@@ -220,6 +230,7 @@ public class SysUpgradeSettingsViewWrapper {
 				break;
 			}
 		}
+
 	};
 	
 	public void resume() {
@@ -313,6 +324,7 @@ public class SysUpgradeSettingsViewWrapper {
 		if (!SettingUtils.isNetworkAvailable(context)) {
 			SettingUtils.save0ToFile();
 			btnOnline.setEnabled(false);
+			btnOnlineUnEnableNextFocus();
 			txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));			
 		}
 		
@@ -321,6 +333,7 @@ public class SysUpgradeSettingsViewWrapper {
 		}
 		
 		btnOnline.setEnabled(false);
+		btnOnlineUnEnableNextFocus();
 		txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_percent, ""));				
 		
 		List<Vapks> list = mUpgradeInfo.getVapksList();
@@ -366,9 +379,11 @@ public class SysUpgradeSettingsViewWrapper {
 							LogUtil.d("SysUpgradeSettingsViewWrapper", " save file failed!");
 							if (SettingUtils.isNetworkAvailable(context)) {
 								btnOnline.setEnabled(true);
+								btnOnlineEnableNextFocus();
 								txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_download_failed));				
 							} else {
 								btnOnline.setEnabled(false);
+								btnOnlineUnEnableNextFocus();
 								txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_check_upgrade_failed_byNetwork));				
 							}
 							fileTotalSize = 0;																
@@ -394,13 +409,19 @@ public class SysUpgradeSettingsViewWrapper {
 			if (arrayList != null && arrayList.size() > 0) {
 				txtPercent.setText(context.getResources().getString(R.string.page_sysUpgrade_need_upgrade));
 				btnLocal.setEnabled(true);
-				btnOnline.setEnabled(false);
+				btnLocal.setFocusable(true);
+								
 				btnLocal.requestFocus();
+				btnOnline.setEnabled(false);
+				btnOnline.setFocusable(false);
+				btnLocal.setNextFocusDownId(R.id.sysUpgrade_settings_btn_local_upgrade);
+				btnLocal.setNextFocusUpId(R.id.sysUpgrade_settings_btn_local_upgrade);
 				btnLocal.setNextFocusRightId(R.id.sysUpgrade_settings_btn_local_upgrade);
 				btnLocal.setNextFocusLeftId(R.id.settings_sysUpgrade);
 			} else {				
 				btnLocal.setEnabled(false);
 				btnOnline.setEnabled(false);
+				btnLocalUnEnableNextFocus();
 				boolean isNetworkAvailable = SettingUtils.isNetworkAvailable(context);
 				if (isNetworkAvailable) {
 					checkOnlineUpgradeFile(deviceModel, productSN, softVersion);						
@@ -489,6 +510,7 @@ public class SysUpgradeSettingsViewWrapper {
 			public void connectComplete(final UpgradeInfo upgradeInfo) {
 				if (upgradeInfo == null || upgradeInfo.getVapksList() == null || upgradeInfo.getVapksList().size() <= 0) {
 					btnOnline.setEnabled(false);
+					btnOnlineUnEnableNextFocus();
 					txtPercent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
 					return;
 				}
@@ -509,11 +531,13 @@ public class SysUpgradeSettingsViewWrapper {
 					if (!isNeedUpgrade) {
 						isNeedSysUpgrade = false;
 						btnOnline.setEnabled(false);
+						btnOnlineUnEnableNextFocus();
 						txtPercent.setText(context.getString(R.string.page_sysUpgrade_neednot_upgrade));
 					} else {
 						isNeedSysUpgrade = true;
 						txtPercent.setText(context.getString(R.string.page_sysUpgrade_need_upgrade));				
 						btnOnline.setEnabled(true);
+						btnOnlineEnableNextFocus();
 						btnOnline.requestFocus();
 						btnOnline.setNextFocusLeftId(R.id.settings_sysUpgrade);
 					}
@@ -521,18 +545,20 @@ public class SysUpgradeSettingsViewWrapper {
 					btnOnline.setEnabled(false);
 					txtPercent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
 					btnLocal.setEnabled(false);
-					btnOnline.setEnabled(false);
+					btnLocalUnEnableNextFocus();
 					LogUtil.d("UpgradeTask", "无升级包");
 				} else if (upgradeInfo.getRc() == -2101) {
 					txtPercent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
 					btnLocal.setEnabled(false);
 					btnOnline.setEnabled(false);
+					btnLocalUnEnableNextFocus();
 					ToastUtils.showToast(context, "终端未登记");
 					LogUtil.d("UpgradeTask", "终端未登记");
 				} else if (upgradeInfo.getRc() == -2113) {
 					txtPercent.setText(context.getString(R.string.page_sysUpgrade_check_upgrade_failed));
 					btnLocal.setEnabled(false);
 					btnOnline.setEnabled(false);
+					btnLocalUnEnableNextFocus();
 					ToastUtils.showToast(context, "MAC地址不匹配");
 					LogUtil.d("UpgradeTask", "MAC地址不匹配");				
 				}
@@ -540,6 +566,48 @@ public class SysUpgradeSettingsViewWrapper {
 		};
 		
 		SimpleWorkPoolInstance.instance().execute(work);
+	}
+	
+	private void btnLocalUnEnableNextFocus() {
+		btnLocal.setFocusable(false);
+		btnOnline.setFocusable(false);
+		btnLocal.setNextFocusLeftId(R.id.settings_sysUpgrade);
+		btnLocal.setNextFocusRightId(R.id.settings_sysUpgrade);
+		btnLocal.setNextFocusDownId(R.id.settings_sysUpgrade);
+		btnLocal.setNextFocusUpId(R.id.settings_sysUpgrade);
+		btnLocal.setNextFocusForwardId(R.id.settings_sysUpgrade);
+	}
+
+	private void btnOnlineEnableNextFocus() {
+		btnOnline.setFocusable(true);
+		if (btnLocal.isEnabled()) {				
+			btnLocal.setFocusable(true);
+			btnOnline.setNextFocusLeftId(R.id.sysUpgrade_settings_btn_local_upgrade);
+			btnOnline.setNextFocusRightId(R.id.sysUpgrade_settings_btn_online_upgrade);
+			btnOnline.setNextFocusDownId(R.id.sysUpgrade_settings_btn_online_upgrade);
+			btnOnline.setNextFocusUpId(R.id.sysUpgrade_settings_btn_online_upgrade);
+		} else {				
+			btnOnline.setNextFocusLeftId(R.id.settings_sysUpgrade);
+			btnOnline.setNextFocusRightId(R.id.settings_sysUpgrade);
+			btnOnline.setNextFocusDownId(R.id.settings_sysUpgrade);
+			btnOnline.setNextFocusUpId(R.id.settings_sysUpgrade);
+		}
+	}
+	
+	private void btnOnlineUnEnableNextFocus() {
+		btnOnline.setFocusable(false);
+		if (btnLocal.isEnabled()) {
+			btnLocal.setFocusable(true);
+			btnOnline.setNextFocusLeftId(R.id.sysUpgrade_settings_btn_local_upgrade);
+			btnOnline.setNextFocusRightId(R.id.sysUpgrade_settings_btn_local_upgrade);
+			btnOnline.setNextFocusDownId(R.id.sysUpgrade_settings_btn_local_upgrade);
+			btnOnline.setNextFocusUpId(R.id.sysUpgrade_settings_btn_local_upgrade);
+		} else {
+			btnOnline.setNextFocusLeftId(R.id.settings_sysUpgrade);
+			btnOnline.setNextFocusRightId(R.id.settings_sysUpgrade);
+			btnOnline.setNextFocusDownId(R.id.settings_sysUpgrade);
+			btnOnline.setNextFocusUpId(R.id.settings_sysUpgrade);
+		}
 	}
 
 }

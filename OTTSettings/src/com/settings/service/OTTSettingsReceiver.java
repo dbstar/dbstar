@@ -211,12 +211,11 @@ public class OTTSettingsReceiver extends BroadcastReceiver {
 		}
 
 		if (softVersion == null || softVersion.equals("")) {
-			softVersion = "2.0.3.1";
+			softVersion = "2.0.3.3";
 		}
 
 		if (productSN == null || productSN.equals("")) {
-			// TODO: this sn is not standard
-			productSN = "0000000000000066";
+			productSN = "2000317130000000";
 		}
 
 		if (deviceModel == null || deviceModel.equals("")) {

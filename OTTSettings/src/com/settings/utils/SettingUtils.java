@@ -328,7 +328,6 @@ public class SettingUtils {
 			JSONObject jsonObject = new JSONObject(entiryString);
 			JSONObject json = jsonObject.getJSONObject("Response");
 			JSONObject jsonObj = json.getJSONObject("Body");
-			JSONArray array = jsonObj.getJSONArray("Vapks");
 			JSONObject object = json.getJSONObject("Header");
 			
 			int rc = object.getInt("RC");
@@ -338,6 +337,7 @@ public class SettingUtils {
 			
 			List<Vapks> vapksList = new ArrayList<Vapks>();
 			if (rc == 0) {
+				JSONArray array = jsonObj.getJSONArray("Vapks");
 				for (int i = 0; i < array.length(); i++) {
 					Vapks vapks = new Vapks();
 					JSONObject obj = array.getJSONObject(i);
@@ -359,8 +359,8 @@ public class SettingUtils {
 					vapks.setApkProfileName(apkProfileName);
 					vapksList.add(vapks);
 				}
+				upgradeInfo.setVapksList(vapksList);
 			}
-			upgradeInfo.setVapksList(vapksList);
 		} catch (ParseException e) {
 			LogUtil.d("SysUpgradeSettingsViewWrapper", "升级：：解析异常" + e);
 		} catch (IOException e) {
