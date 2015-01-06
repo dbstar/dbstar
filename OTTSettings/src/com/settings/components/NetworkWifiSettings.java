@@ -27,6 +27,7 @@ import com.settings.bean.WifiHotspotConfig;
 import com.settings.ottsettings.R;
 import com.settings.utils.DataUtils;
 import com.settings.utils.LogUtil;
+import com.settings.utils.SettingUtils;
 import com.settings.wifihotspot.WifiAdmin;
 import com.settings.wifihotspot.WifiApAdmin;
 
@@ -168,7 +169,7 @@ public class NetworkWifiSettings {
 
 	private void wifiHotspotConnect(WifiHotspot wifiHotspot) {
 		wifiAp = new WifiApAdmin(mContext);
-		wifiAp.startWifiAp(wifiHotspot.getSsid(), wifiHotspot.getPassword());
+		wifiAp.startWifiAp(wifiHotspot);
 		
 		wifiAdmin = new WifiAdmin(mContext) {
 			
@@ -199,21 +200,7 @@ public class NetworkWifiSettings {
 		};
 		
 		wifiAdmin.openWifi();
-		wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), getTypeOfSecurity(wifiHotspot));
-	}
-	
-	private int getTypeOfSecurity(WifiHotspot wifiHotspot) {
-		int type = WifiAdmin.TYPE_WPA;
-		if (wifiHotspot != null) {
-			if (wifiHotspot.getSecurity().equals("Open")) {
-				type = WifiAdmin.TYPE_NO_PASSWD;
-			} else if (wifiHotspot.getSecurity().equals("WPA PSK")) {
-				type = WifiAdmin.TYPE_WEP;								
-			} else {				
-				type = WifiAdmin.TYPE_WPA;				
-			}
-		}
-		return type;
+		wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), SettingUtils.getTypeOfSecurity(wifiHotspot));
 	}
 	
 	private void enable() {

@@ -52,9 +52,11 @@ import android.widget.TextView;
 
 import com.settings.bean.UpgradeInfo;
 import com.settings.bean.Vapks;
+import com.settings.bean.WifiHotspot;
 import com.settings.components.NetStatusViewWrapper;
 import com.settings.components.SysUpgradeSettingsViewWrapper;
 import com.settings.ottsettings.R;
+import com.settings.wifihotspot.WifiAdmin;
 
 public class SettingUtils {
 
@@ -66,6 +68,25 @@ public class SettingUtils {
 
 	//**-----------------------关于网络通用的方法-------------------------------**//
 
+	/**
+	 * AP的安全性
+	 * @param wifiHotspot
+	 * @return
+	 */
+	public static int getTypeOfSecurity(WifiHotspot wifiHotspot) {
+		int type = WifiAdmin.TYPE_WPA;
+		if (wifiHotspot != null) {
+			if (wifiHotspot.getSecurity().equals("Open")) {
+				type = WifiAdmin.TYPE_NO_PASSWD;
+			} else if (wifiHotspot.getSecurity().equals("WPA PSK")) {
+				type = WifiAdmin.TYPE_WEP;								
+			} else {				
+				type = WifiAdmin.TYPE_WPA;				
+			}
+		}
+		return type;
+	}
+	
 	/**
 	 * 检查网络是否可用
 	 * 

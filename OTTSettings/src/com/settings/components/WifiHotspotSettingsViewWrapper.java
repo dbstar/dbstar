@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -73,7 +74,7 @@ public class WifiHotspotSettingsViewWrapper {
 		wifiHotspot = new WifiHotspot();
 		String ssid = DataUtils.getPreference(mContext, Data_Key_SSID, "DbstarAP");
 		String password = DataUtils.getPreference(mContext, Data_Key_PWD, "12345678");
-		String security = DataUtils.getPreference(mContext, Data_Key_SECURITY, "WPA PSK");
+		String security = DataUtils.getPreference(mContext, Data_Key_SECURITY, "WPA2 PSK");
 		wifiHotspot.setSsid(ssid);
 		wifiHotspot.setPassword(password);
 		wifiHotspot.setSecurity(security);
@@ -116,15 +117,19 @@ public class WifiHotspotSettingsViewWrapper {
 				switch (position) {
 				case 0:
 					wifiHotspot.setSecurity(mTxtSecurity[0]);
-					// TODO:
+					mPassword.setText("");
+					mPassword.setEnabled(false);
+					mSecurity.setNextFocusDownId(R.id.wifi_hotspot_btn_ok);
 					break;
 
 				case 1:
 					wifiHotspot.setSecurity(mTxtSecurity[1]);
+					mSecurity.setNextFocusDownId(R.id.wifi_hotspot_et_password);
 					
 					break;
 				case 2:
 					wifiHotspot.setSecurity(mTxtSecurity[2]);
+					mSecurity.setNextFocusDownId(R.id.wifi_hotspot_et_password);
 					
 					break;
 				}
@@ -137,14 +142,17 @@ public class WifiHotspotSettingsViewWrapper {
 		});
 		
 		mSecurity.setAdapter(mSecurityAdapter);
-		// 安全性默认是WPA2 PSK
-		mSecurity.setSelection(2);
+	
+		int type = SettingUtils.getTypeOfSecurity(wifiHotspot);
+		if (type == WifiAdmin.TYPE_WEP) {
+			mSecurity.setSelection(1);
+		} else if (type == WifiAdmin.TYPE_WPA) {
+			mSecurity.setSelection(2);			
+		} else {
+			mSecurity.setSelection(0);						
+		}
 		
 		wifiHotspot.setSecurity((String) mSecurity.getSelectedItem());
-		
-//		DataUtils.savePreference(mContext, Data_Key_SSID, wifiHotspot.getSsid());
-//		DataUtils.savePreference(mContext, Data_Key_PWD, wifiHotspot.getPassword());
-//		DataUtils.savePreference(mContext, Data_Key_SECURITY, wifiHotspot.getSecurity());
 		
 		if (!WifiApAdmin.isWifiApEnabled(mWifiManager)) {			
 			wifiHotspotConnect(wifiHotspot);
@@ -214,20 +222,6 @@ public class WifiHotspotSettingsViewWrapper {
 			}
 		});
 	}
-	
-	private int getTypeOfSecurity(WifiHotspot wifiHotspot) {
-		int type = WifiAdmin.TYPE_WPA;
-		if (wifiHotspot != null) {
-			if (wifiHotspot.getSecurity().equals("Open")) {
-				type = WifiAdmin.TYPE_NO_PASSWD;
-			} else if (wifiHotspot.getSecurity().equals("WPA PSK")) {
-				type = WifiAdmin.TYPE_WEP;								
-			} else {				
-				type = WifiAdmin.TYPE_WPA;				
-			}
-		}
-		return type;
-	}
 
 	private void findViews(View view) {
 		btnSetHotsopt = (Button) view.findViewById(R.id.wifi_hotspot_settings);
@@ -241,7 +235,7 @@ public class WifiHotspotSettingsViewWrapper {
 	
 	private void wifiHotspotConnect(WifiHotspot wifiHotspot) {
 		wifiAp = new WifiApAdmin(mContext);
-		wifiAp.startWifiAp(wifiHotspot.getSsid(), wifiHotspot.getPassword());
+		wifiAp.startWifiAp(wifiHotspot);
 		
 		wifiAdmin = new WifiAdmin(mContext) {
 			
@@ -270,8 +264,7 @@ public class WifiHotspotSettingsViewWrapper {
 		};
 		
 		wifiAdmin.openWifi();
-		wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), getTypeOfSecurity(wifiHotspot));
-//				wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(),  WifiAdmin.TYPE_WPA);
+		wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), SettingUtils.getTypeOfSecurity(wifiHotspot));
 	}
 
 	private void unenableSetWifiHotspot() {
@@ -332,15 +325,22 @@ public class WifiHotspotSettingsViewWrapper {
 				wifiHotspot.setSsid(inputText);
 				break;
 			case R.id.wifi_hotspot_et_password:
-				if (wifiHotspot.getPassword().equals(inputText)) {
+				if (mSecurity.getSelectedItemPosition() != 0) {
+					mPassword.setEnabled(true);
+					if (wifiHotspot.getPassword().equals(inputText)) {
+						return;
+					}
+					if (inputText.length() < 8) {
+						ToastUtils.showToast(mContext, R.string.page_wifi_hotspot_pwd_validation);
+						setFocus(txtInput);
+						return;
+					}
+					wifiHotspot.setPassword(inputText);
+				} else {
+					mPassword.setText("");
+					mPassword.setEnabled(false);
 					return;
 				}
-				if (inputText.length() < 8) {
-					ToastUtils.showToast(mContext, R.string.page_wifi_hotspot_pwd_validation);
-					setFocus(txtInput);
-					return;
-				}
-				wifiHotspot.setPassword(inputText);
 				break;
 
 			default:

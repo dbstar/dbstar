@@ -520,6 +520,7 @@ public class WifiSettings {
 			mSelectedAccessPoint.generateOpenNetworkConfig();
 			//mWifiManager.connectNetwork(mSelectedAccessPoint.getConfig());
 			mWifiManager.enableNetwork(mSelectedAccessPoint.getConfig().networkId, true);
+			mWifiManager.connect(mSelectedAccessPoint.getConfig(), null);
 		} else {
 			// configure access point
 			showConfigUi(mSelectedAccessPoint);

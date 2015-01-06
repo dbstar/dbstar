@@ -3,7 +3,9 @@ package com.settings.wifihotspot;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import com.settings.bean.WifiHotspot;
 import com.settings.utils.LogUtil;
+import com.settings.utils.SettingUtils;
 
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
@@ -17,8 +19,6 @@ import android.util.Log;
 public class WifiApAdmin {
 	public static final String TAG = "WifiApAdmin";
 
-	private static final String Boolean = null;
-	
 	public static void closeWifiAp(Context context) {
 		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE); 
 		closeWifiAp(wifiManager);
@@ -35,19 +35,13 @@ public class WifiApAdmin {
 		closeWifiAp(mWifiManager);
 	}
 	
-	private String mSSID = "";
-	private String mPasswd = "";
-	
-	public void startWifiAp(String ssid, String passwd) {
-		mSSID = ssid;
-		mPasswd = passwd;
-		
+	public void startWifiAp(WifiHotspot wifiHotspot) {
 		if (mWifiManager.isWifiEnabled()) {
 //			LogUtil.d(TAG, "startWifiAp-=-=-=-=-------------" + mWifiManager.isWifiEnabled());
 			mWifiManager.setWifiEnabled(false);
 		} 
 		
-		stratWifiAp();
+		stratWifiAp(wifiHotspot);
 		
 		MyTimerCheck timerCheck = new MyTimerCheck() {
 			
@@ -76,23 +70,34 @@ public class WifiApAdmin {
 	}
 
 	// 激活热点
-	public void stratWifiAp() {
+	public void stratWifiAp(WifiHotspot wifiHotspot) {
 		Method method1 = null;
 		try {
 			method1 = mWifiManager.getClass().getMethod("setWifiApEnabled", WifiConfiguration.class, boolean.class);
 			WifiConfiguration netConfig = new WifiConfiguration();
 
-			netConfig.SSID = mSSID;
-			netConfig.preSharedKey = mPasswd;
-
-			netConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-			netConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-			netConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
-			netConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-			netConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-			netConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-			netConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-			netConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+			netConfig.SSID = wifiHotspot.getSsid();
+			
+			int typeOfSecurity = SettingUtils.getTypeOfSecurity(wifiHotspot);
+			if (typeOfSecurity == WifiAdmin.TYPE_WEP || typeOfSecurity == WifiAdmin.TYPE_WPA) {
+				netConfig.preSharedKey = wifiHotspot.getPassword();
+				netConfig.hiddenSSID = true;
+				
+				netConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+				netConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+				netConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+				netConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+				netConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+				netConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+				netConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+				netConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+				netConfig.status = WifiConfiguration.Status.ENABLED;
+				
+			} else if (typeOfSecurity == WifiAdmin.TYPE_NO_PASSWD) {
+				netConfig.wepKeys[0] = "";
+				netConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+				netConfig.wepTxKeyIndex = 0;
+			}
 
 			// 启动热点
 			boolean isSuccess = (Boolean) method1.invoke(mWifiManager, netConfig, true);

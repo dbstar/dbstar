@@ -155,7 +155,7 @@ public class OTTSettingsReceiver extends BroadcastReceiver {
 	private void wifiHotspotConnect(final Context context, WifiHotspot wifiHotspot) {
 		WifiApAdmin wifiAp = new WifiApAdmin(context);
 //				wifiAp.startWifiAp("\"HotSpot\"", "hhhhhh123");
-		wifiAp.startWifiAp(wifiHotspot.getSsid(), wifiHotspot.getPassword());
+		wifiAp.startWifiAp(wifiHotspot);
 		
 		WifiAdmin wifiAdmin = new WifiAdmin(context) {
 			
@@ -186,24 +186,10 @@ public class OTTSettingsReceiver extends BroadcastReceiver {
 		};
 		
 		wifiAdmin.openWifi();
-		wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), getTypeOfSecurity(wifiHotspot));
+		wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(), SettingUtils.getTypeOfSecurity(wifiHotspot));
 //				wifiAdmin.addNetwork(wifiHotspot.getSsid(), wifiHotspot.getPassword(),  WifiAdmin.TYPE_WPA);
 	}
 	
-	private int getTypeOfSecurity(WifiHotspot wifiHotspot) {
-		int type = WifiAdmin.TYPE_WPA;
-		if (wifiHotspot != null) {
-			if (wifiHotspot.getSecurity().equals("Open")) {
-				type = WifiAdmin.TYPE_NO_PASSWD;
-			} else if (wifiHotspot.getSecurity().equals("WPA PSK")) {
-				type = WifiAdmin.TYPE_WEP;								
-			} else {				
-				type = WifiAdmin.TYPE_WPA;				
-			}
-		}
-		return type;
-	}
-
 	private void recoveryVideoMode(Context context) {
 		String mDefaultFrequency = DataUtils.getPreference(context, "modeFrequecy", "");
 		String videoMode = DataUtils.getPreference(context, "modeValue", DisplaySettings.getOutpuMode());
