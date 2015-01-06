@@ -1300,8 +1300,52 @@ unsigned char * TC_loader_get_push_buf_pointer(void)
     return (unsigned char *)g_recvBuffer;
 }
 
+
 /*
-注册节目
+receive with flash, regist program from s_prgs[];
+should clear flash firstly, then regist to push.
+*/
+static int push_regist()
+{
+	int i = 0, ret = -1;
+	
+	if(1==storage_flash_check()){
+		for(i=0; i<PROGS_NUM; i++)
+		{
+			if(1==prog_is_valid(&s_prgs[i])){
+				if((s_prgs[i].cur)<(s_prgs[i].total)){
+					push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
+				}
+				else{
+					PRINTF("[push_regist] prog [%s]%s is download finish, no need to monitor\n", s_prgs[i].id,s_prgs[i].uri);
+				}
+			
+				s_push_monitor_active++;
+				
+				PRINTF("[push_regist] regist to push immediately[%d]:%s(%s) in %s %s %s %lld\n",
+						i,
+						s_prgs[i].id,
+						s_prgs[i].publication_id,
+						s_prgs[i].product_id,
+						s_prgs[i].uri,
+						s_prgs[i].descURI,
+						s_prgs[i].total);
+			}
+		}
+		
+		ret = 0;
+	}
+	else{
+		PRINTF("not flash receive\n");
+		ret = -1;
+	}
+	
+	return ret;
+}
+
+/*
+regist program
+if receive with flash, regist to push later; if receive with disk, regist immediately
 */
 static int mid_push_regist(PROG_S *prog)
 {
@@ -1342,7 +1386,7 @@ static int mid_push_regist(PROG_S *prog)
 			snprintf(s_prgs[i].publication_id, sizeof(s_prgs[i].publication_id), "%s", prog->publication_id);
 			snprintf(s_prgs[i].product_id, sizeof(s_prgs[i].product_id), "%s", prog->product_id);
 			
-			DEBUG("regist to push[%d]:%s(%s) in %s. %s, %s, %s, %lld\n",
+			DEBUG("phony regist to push already[%d]:%s(%s) in %s. %s, %s, %s, %lld\n",
 					i,
 					s_prgs[i].id,
 					s_prgs[i].publication_id,
@@ -1373,22 +1417,36 @@ static int mid_push_regist(PROG_S *prog)
 /*
  已经解析过的节目，无需注册到push库中，只需要UI上显示即可。
 */
-			if((s_prgs[i].cur)<(s_prgs[i].total)){				
-				push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
+			if(1==storage_flash_check()){
+				PRINTF("recv with flash, insert into s_prgs array but dont regist to push[%d]:%s(%s) in %s %s %s %lld\n",
+						i,
+						s_prgs[i].id,
+						s_prgs[i].publication_id,
+						s_prgs[i].product_id,
+						s_prgs[i].uri,
+						s_prgs[i].descURI,
+						s_prgs[i].total);
 			}
 			else{
-				PRINTF("prog [%s]%s is download finish, no need to monitor\n", s_prgs[i].id,s_prgs[i].uri);
-			}
-			s_push_monitor_active++;
+				if((s_prgs[i].cur)<(s_prgs[i].total)){
+					push_dir_register(s_prgs[i].uri, s_prgs[i].total, 0);
+				}
+				else{
+					PRINTF("prog [%s]%s is download finish, no need to monitor\n", s_prgs[i].id,s_prgs[i].uri);
+				}
 			
-			PRINTF("regist to push[%d]:%s(%s) in %s %s %s %lld\n",
-					i,
-					s_prgs[i].id,
-					s_prgs[i].publication_id,
-					s_prgs[i].product_id,
-					s_prgs[i].uri,
-					s_prgs[i].descURI,
-					s_prgs[i].total);
+				s_push_monitor_active++;
+				
+				PRINTF("regist to push immediately[%d]:%s(%s) in %s %s %s %lld\n",
+						i,
+						s_prgs[i].id,
+						s_prgs[i].publication_id,
+						s_prgs[i].product_id,
+						s_prgs[i].uri,
+						s_prgs[i].descURI,
+						s_prgs[i].total);
+			}
+			
 			break;
 		}
 	}
@@ -1901,6 +1959,10 @@ int push_recv_manage_refresh(RECEIVETYPE_E receivetype)
 				PRINTF("clean %lld for flash receive\n", s_should_clean_hd);
 				disk_manage(NULL,NULL);
 			}
+			
+			sleep(1);
+			
+			push_regist();
 		}
 	}
 	
