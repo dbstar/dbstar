@@ -299,8 +299,9 @@ reLoader:
 	{
 		//must upgrade,display upgrade info, wait 5 second, set uboot mark and then reboot
 		
-		if (strcmp(g_loaderInfo.file_type,"1"))
+		if (0==strcmp(g_loaderInfo.file_type,"1"))
 		{
+			PRINTF("download_type is 1, file_type is 1, upgrade app\n");
 //			fprintf(cfp,"--update_package=%s\n",UPGRADEFILE_ALL);
 			//              fprintf(cfp,"--wipe_data\n");
 			//              fprintf(cfp,"--wipe_cache\n");
@@ -311,6 +312,7 @@ reLoader:
 		}
 		else
 		{
+			PRINTF("download_type is 1, file_type is 0, upgrade uboot\n");
 			snprintf(upgrade_msg, sizeof(upgrade_msg),"%s",UPGRADEFILE_IMG);
 		}
 		upgrade_msg_id = UPGRADE_NEW_VER_FORCE;
@@ -319,8 +321,9 @@ reLoader:
 	{
 		//display info and ask to upgrade right now?
 
-		if (strcmp(g_loaderInfo.file_type,"1"))
+		if (0==strcmp(g_loaderInfo.file_type,"1"))
 		{
+			PRINTF("download_type is 0, file_type is 1, upgrade app\n");
 //			fprintf(cfp,"--update_package=%s\n",UPGRADEFILE_ALL);
 			//                fprintf(cfp,"--wipe_data\n");
 			//                fprintf(cfp,"--wipe_cache\n");
@@ -332,6 +335,7 @@ reLoader:
 		}
 		else
 		{
+			PRINTF("download_type is 0, file_type is 0, upgrade uboot\n");
 			snprintf(upgrade_msg, sizeof(upgrade_msg),"%s",UPGRADEFILE_IMG);
 		}
 		upgrade_msg_id = UPGRADE_NEW_VER;
