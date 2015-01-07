@@ -172,7 +172,7 @@ public class SettingUtils {
 	}
 
 	/**
-	 * 获取有线和无线的IP地址
+	 * 获取无线的IP地址
 	 * 
 	 * @return
 	 */
@@ -180,8 +180,8 @@ public class SettingUtils {
 		try {
 			for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
 				NetworkInterface intf = en.nextElement();
-				// TODO：现在先不管无线 || intf.getName().toLowerCase().equals("wlan0")
-				if (intf.getName().toLowerCase().equals("eth0") || intf.getName().toLowerCase().equals("wlan0")) {
+				// TODO：现在先不管有线 intf.getName().toLowerCase().equals("eth0") || 
+				if (intf.getName().toLowerCase().equals("wlan0")) {
 					for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
 						InetAddress inetAddress = enumIpAddr.nextElement();
 						if (!inetAddress.isLoopbackAddress()) {

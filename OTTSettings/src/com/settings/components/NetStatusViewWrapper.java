@@ -66,12 +66,17 @@ public class NetStatusViewWrapper{
 			// 以太网
 			State wiredState = manager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET).getState();
 			
-			if (wifiState == State.CONNECTED) {
-				txtNetWork.setText(context.getResources().getString(R.string.page_net_status_wifi_net));
-			}
-			
+			String ipAddress = "0.0.0.0";
 			if (wiredState == State.CONNECTED) {
 				txtNetWork.setText(context.getResources().getString(R.string.page_net_status_wired_net));
+				DhcpInfo dhcpInfo = mEthernetManager.getDhcpInfo();
+				ipAddress = SettingUtils.getAddress(dhcpInfo.ipAddress);
+				LogUtil.d("NetStatusViewWrapper", " ipAddress = " + ipAddress);
+				txtIPAddress.setText(ipAddress);
+			} else if (wifiState == State.CONNECTED) {
+				txtNetWork.setText(context.getResources().getString(R.string.page_net_status_wifi_net));
+				ipAddress = SettingUtils.getLocalIpAddress();
+				txtIPAddress.setText(ipAddress);
 			}
 		} else {
 			txtNetWork.setText(context.getResources().getString(R.string.page_net_status_internet));
@@ -87,18 +92,18 @@ public class NetStatusViewWrapper{
 			map.put("isNetworkAvailable", isNetworkAvailable + "");
 			
 			// IP地址
-			String ipAddress;
-			DhcpInfo dhcpInfo = mEthernetManager.getDhcpInfo();
-			ipAddress = SettingUtils.getAddress(dhcpInfo.ipAddress);
-			LogUtil.d("NetStatusViewWrapper", " ipAddress = " + ipAddress);
+//			String ipAddress;
+//			DhcpInfo dhcpInfo = mEthernetManager.getDhcpInfo();
+//			ipAddress = SettingUtils.getAddress(dhcpInfo.ipAddress);
+//			LogUtil.d("NetStatusViewWrapper", " ipAddress = " + ipAddress);
 //			if (ethernetMode == 1) {
 //			} else {
 //				ipAddress = SettingUtils.getLocalIpAddress();
 //			}
-			if (ipAddress.equals("0.0.0.0")) {
-				ipAddress = SettingUtils.getLocalIpAddress();
-			}
-			map.put("ipAdddress", ipAddress);
+//			if (ipAddress.equals("0.0.0.0")) {
+//				ipAddress = SettingUtils.getLocalIpAddress();
+//			}
+//			map.put("ipAdddress", ipAddress);
 			
 			// MAC地址
 			String macAddress = SettingUtils.getLocalMacAddress(true);
@@ -136,7 +141,7 @@ public class NetStatusViewWrapper{
 				txtNetWorkStatus.setText(context.getResources().getString(R.string.page_net_status));			
 			}
 			
-			txtIPAddress.setText(map.get("ipAdddress"));
+//			txtIPAddress.setText(map.get("ipAdddress"));
 			
 			txtMACAddress.setText(map.get("macAddress"));
 			
