@@ -517,33 +517,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 	private void startMultipleMediaView(String columnType,String columnId){
 		Intent intent = null;
-		PackageManager manager = getPackageManager();
-
-        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        final List<ResolveInfo> apps = manager.queryIntentActivities(mainIntent, 0);
-
-        if (apps != null) {
-        	int count = apps.size();
-        	for (int i = 0; i < count; i++) {
-        		ResolveInfo info = apps.get(i);
-        		if (info.activityInfo.applicationInfo.packageName.equals("com.dbstar.multiple.media.shelf")) {
-        			LogUtil.d(TAG, " has rich media!");        			
-        			if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)){
-        				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.BookShelfActivity");
-        			}else if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)){
-        				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.NewsPaperActivity");
-        			}else if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
-        				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.VoicedBookShelfActivity");
-        			}
-        			break;
-        		} else {
-			    	LogUtil.d(TAG, " no rich media!");        			
-        		}
-        	}
-        }
+		if (columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)) {
+			intent = startComponent("com.dbstar.multiple.media.shelf", "activity.BookShelfActivity");
+		} else if (columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)) {
+			intent = startComponent("com.dbstar.multiple.media.shelf", "activity.NewsPaperActivity");
+		} else if (columnType
+				.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)) {
+			intent = startComponent("com.dbstar.multiple.media.shelf", "activity.VoicedBookShelfActivity");
+		}
         
+		try {
 			if(intent != null){
 			    intent.putExtra("Id", columnId);
 			    muteBeforRm = isMute();
@@ -553,11 +536,16 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			    }
 //			    startActivity(intent);
 			    intent.putExtra(Constants.AppBG_Uri, ImageUtil.App_Uri);
-			    startActivityForResult(intent, START_RICHMEDIA_ACTIVITY_RESULT);
+				startActivityForResult(intent, START_RICHMEDIA_ACTIVITY_RESULT);
 			} else {
 				ToastUtil.showToast(GDLauncherActivity.this, R.string.no_rich_media);
 			}
+		} catch (Exception e) {					
+			ToastUtil.showToast(GDLauncherActivity.this, R.string.no_rich_media);
+			e.printStackTrace();
 		}
+	}
+	
 	void showHighlightMenuItem() {
 //		if (mIsParentMenuBeingUp)
 //			return;
