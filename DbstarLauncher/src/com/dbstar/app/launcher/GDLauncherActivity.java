@@ -10,11 +10,14 @@ import java.util.TimerTask;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -66,6 +69,7 @@ import com.dbstar.util.Constants;
 import com.dbstar.util.FileOperation;
 import com.dbstar.util.ImageUtil;
 import com.dbstar.util.LogUtil;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.widget.GDAdapterView;
 import com.dbstar.widget.GDAdapterView.OnItemSelectedListener;
 import com.dbstar.widget.GDMarqeeTextView;
@@ -442,7 +446,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		MenuItem[] menuItems = menu.Items;
 		MenuItem menuItem = menuItems[menu.FocusedPosition];
 
-		//LogUtil.d(TAG, "onItemSelected HasSubMenu " + menuItem.HasSubMenu);
+//		LogUtil.d(TAG, "onItemSelected HasSubMenu " + menuItem.HasSubMenu);
+		
 		if (menuItem.HasSubMenu == NONE) {
 			// data is not ready;
 			// mPendingAction.Level1Index = index;
@@ -455,11 +460,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// enterSubMenu(menuItem.SubMenu);
 			// else
 			// showPopupMenu();
-		    if(!menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK) && !menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER) 
-		            && !menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
+//		    if(!menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK) && !menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER) 
+//		            && !menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
     			enterSubMenu(menuItem.SubMenu);
     			return true;
-		    }
+//		    }
 		} else {
 			// no sub items
 		}
@@ -511,14 +516,34 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		return ret;
 	}
 	private void startMultipleMediaView(String columnType,String columnId){
-			Intent intent = null;
-			if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)){
-				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.BookShelfActivity");
-			}else if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)){
-				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.NewsPaperActivity");
-			}else if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
-			    intent = startComponent("com.dbstar.multiple.media.shelf", "activity.VoicedBookShelfActivity");
-			}
+		Intent intent = null;
+		PackageManager manager = getPackageManager();
+
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        final List<ResolveInfo> apps = manager.queryIntentActivities(mainIntent, 0);
+
+        if (apps != null) {
+        	int count = apps.size();
+        	for (int i = 0; i < count; i++) {
+        		ResolveInfo info = apps.get(i);
+        		if (info.activityInfo.applicationInfo.packageName.equals("com.dbstar.multiple.media.shelf")) {
+        			LogUtil.d(TAG, " has rich media!");        			
+        			if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)){
+        				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.BookShelfActivity");
+        			}else if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)){
+        				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.NewsPaperActivity");
+        			}else if(columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
+        				intent = startComponent("com.dbstar.multiple.media.shelf", "activity.VoicedBookShelfActivity");
+        			}
+        			break;
+        		} else {
+			    	LogUtil.d(TAG, " no rich media!");        			
+        		}
+        	}
+        }
+        
 			if(intent != null){
 			    intent.putExtra("Id", columnId);
 			    muteBeforRm = isMute();
@@ -529,6 +554,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
 //			    startActivity(intent);
 			    intent.putExtra(Constants.AppBG_Uri, ImageUtil.App_Uri);
 			    startActivityForResult(intent, START_RICHMEDIA_ACTIVITY_RESULT);
+			} else {
+				ToastUtil.showToast(GDLauncherActivity.this, R.string.no_rich_media);
 			}
 		}
 	void showHighlightMenuItem() {
@@ -578,14 +605,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			// mHidePopupMenuAnimation.reset();
 			// return;
 			// }
-
+			
 			Menu subMenu = menuItem.SubMenu;
 			ColumnData[] subMenuItem = subMenu.Columns;
-
+			
 			mPopupMenu.clearChoices();
 			mPopupMenuAdapter.setDataSet(subMenuItem);
 			mPopupMenuAdapter.notifyDataSetChanged();
-
+			
 			// if (mShowPopupMenuAnimation.hasStarted() &&
 			// !mShowPopupMenuAnimation.hasEnded()) {
 			// // is showing
@@ -829,30 +856,32 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		//disable key press input, when animation started
 //		mMenuStack.add(newMenu);
 		mCurrentSubMenu = newMenu;
-		mMainMenu.setOnItemSelectedListener(null);
-		
-		MenuItem[] menuItems = newMenu.Items;
-		for (int i = 0; i < menuItems.length; i++) {
-			if (menuItems[i].HasSubMenu == NONE)
-				mService.getColumns(this, newMenu.MenuLevel + 1, i,
-						menuItems[i].ItemData.Id);
-		}
-		
-		mOldSelectedItemPosition = -1;
-		mSelectedItemPosition = -1;
-
-		long time = AnimationUtils.currentAnimationTimeMillis();
-		mFocusZoomIn.setStartTime(time);
-		
-		if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
-			mEnterSubmenu = true;
-
-			mHidePopupMenuAnimation.setStartTime(time);
-			mFocusItemBackground.startAnimation(mFocusZoomIn);
-			mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
-		} else {
-			mGallerySlideToBottomAnim.setStartTime(time);
-			mMainMenu.startAnimation(mGallerySlideToBottomAnim);
+		if (mCurrentSubMenu != null) {			
+			mMainMenu.setOnItemSelectedListener(null);
+			
+			MenuItem[] menuItems = newMenu.Items;
+			for (int i = 0; i < menuItems.length; i++) {
+				if (menuItems[i].HasSubMenu == NONE)
+					mService.getColumns(this, newMenu.MenuLevel + 1, i,
+							menuItems[i].ItemData.Id);
+			}
+			
+			mOldSelectedItemPosition = -1;
+			mSelectedItemPosition = -1;
+			
+			long time = AnimationUtils.currentAnimationTimeMillis();
+			mFocusZoomIn.setStartTime(time);
+			
+			if (mPopupMenuContainer.getVisibility() == View.VISIBLE) {
+				mEnterSubmenu = true;
+				
+				mHidePopupMenuAnimation.setStartTime(time);
+				mFocusItemBackground.startAnimation(mFocusZoomIn);
+				mPopupMenuContainer.startAnimation(mHidePopupMenuAnimation);
+			} else {
+				mGallerySlideToBottomAnim.setStartTime(time);
+				mMainMenu.startAnimation(mGallerySlideToBottomAnim);
+			}
 		}
 	}
 
@@ -1407,13 +1436,11 @@ public class GDLauncherActivity extends GDBaseActivity implements
 	}
 	
 	public void updateData(int type, int columnLevel, int index, Object data) {
-
 		if (type == GDDataProviderService.REQUESTTYPE_GETCOLUMNS) {
 
 			ColumnData[] columns = (ColumnData[]) data;
 
-			LogUtil.d(TAG, "updateData columnLevel " + columnLevel + " columns "
-					+ columns);
+			LogUtil.d(TAG, "updateData columnLevel " + columnLevel + " columns " + columns);
 
 			if (columnLevel == COLUMN_LEVEL_1) {
 
@@ -1442,12 +1469,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					if (item.ItemData != null && item.ItemData.Id != null
 							&& !item.ItemData.Id.isEmpty()) {
 						mLevel2RequestCount++;
-						if(!item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK) && !item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)
-						        && !item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK))
+//						Log.d(TAG, "--------------item.ItemData.Type = " + item.ItemData.Type);
+//						if(!item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK) && !item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)
+//						        && !item.ItemData.Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK))
 						    mService.getColumns(this, columnLevel + 1, i,item.ItemData.Id);
-						else{
-						    item.HasSubMenu = NO_SUBCOLUMNS;
-						}
+//						else{
+//						    item.HasSubMenu = NO_SUBCOLUMNS;
+//						}
 					} else {
 						item.HasSubMenu = NO_SUBCOLUMNS;
 					}
@@ -1485,6 +1513,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 			MenuItem[] menuItems = menu.Items;
 			MenuItem menuItem = menuItems[index];
 
+			boolean show_submenu = true;
 			if (columns != null && columns.length > 0) {
 				menuItem.HasSubMenu = HAS_SUBCOLUMNS;
 
@@ -1498,27 +1527,41 @@ public class GDLauncherActivity extends GDBaseActivity implements
 					if (columns[i].Id == null || columns[i].Id.isEmpty()) {
 						item.HasSubMenu = NO_SUBCOLUMNS;
 					}
-				}
-
-				subMenu.MenuLevel = columnLevel;
-				menuItem.SubMenu = subMenu;
-
-				if (index == menu.FocusedPosition) {
-
-					mPopupMenu.clearChoices();
-					mPopupMenuAdapter.setDataSet(columns);
-					mPopupMenuAdapter.notifyDataSetChanged();
-
-					// TODO: add animation
-					if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
-						displayPopupMenu(true);
+					
+					if (columns[i].Type.equals("200") || columns[i].Type.equals("201") || columns[i].Type.equals("202")) {
+						Log.d(TAG, " mPopupMenuContainer should gone!");
+						menuItem.HasSubMenu = NO_SUBCOLUMNS;
+						show_submenu = false;
+						item.HasSubMenu = NO_SUBCOLUMNS;
 					}
 				}
+
+				if (!show_submenu) {
+					mPopupMenuContainer.setVisibility(View.GONE);
+					displayPopupMenu(false);
+					mPopupMenu.clearChoices();
+					mPopupMenuAdapter.setDataSet(null);
+					mPopupMenuAdapter.notifyDataSetChanged();
+				} else {					
+					subMenu.MenuLevel = columnLevel;
+					menuItem.SubMenu = subMenu;
+					if (index == menu.FocusedPosition) {
+						
+						mPopupMenu.clearChoices();
+						mPopupMenuAdapter.setDataSet(columns);
+						mPopupMenuAdapter.notifyDataSetChanged();
+						
+						// TODO: add animation
+						if (mPopupMenuContainer.getVisibility() != View.VISIBLE) {
+							displayPopupMenu(true);
+						}
+					}
+				}
+				
 
 			} else {
 				menuItem.HasSubMenu = NO_SUBCOLUMNS;
 			}
-
 		}
 	}
 

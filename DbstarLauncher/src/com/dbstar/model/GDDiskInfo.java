@@ -1,12 +1,6 @@
 package com.dbstar.model;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import android.os.StatFs;
 import android.util.Log;
@@ -33,7 +27,7 @@ public class GDDiskInfo {
             // if directory
             if (file.isDirectory()) {     
                 File[] childrenFile = file.listFiles();     
-                Log.d("GDDiskInfo", "childrenFile = " + childrenFile);
+//                Log.d("GDDiskInfo", "childrenFile = " + childrenFile);
                 long size = 0l; 
                 if (childrenFile != null && childrenFile.length > 0) {                	
                 	for (File f : childrenFile) {

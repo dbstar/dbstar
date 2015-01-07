@@ -304,7 +304,7 @@
     <string name="ch_increase">＋</string>
     <string name="ch_decrease">－</string>
     
-    
+    <string name="no_rich_media">当前版本不支持富媒体！</string>
     
     <string name="power_target_title">用电目标设置</string>
     <string name="power_current_target_title">当前月用电目标</string>
