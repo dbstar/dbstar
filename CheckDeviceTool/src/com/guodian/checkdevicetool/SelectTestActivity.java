@@ -51,6 +51,7 @@ public class SelectTestActivity extends Activity {
     private TextView mMACView;
     
     private List<String> snFilePathList;
+    private String mMacFilePath;
     
     private Handler handler = new Handler(){
         public void handleMessage(android.os.Message msg) {
@@ -71,6 +72,8 @@ public class SelectTestActivity extends Activity {
         
 //        mProductSN.setText(getString(R.string.test_product_sn) + getTerminalNum());
         mProductSN.setVisibility(View.GONE);
+        
+        mMacFilePath = Configs.TEST_SN_FILE_MAC_SDB1;
         
         mTestSNFile = (TextView) findViewById(R.id.selecte_sn);
         mMACView = (TextView) findViewById(R.id.selecte_mac);
@@ -150,7 +153,17 @@ public class SelectTestActivity extends Activity {
                 mReusltView.setTextColor(Color.WHITE);
                 mReusltView.setText(R.string.test_successful);
                // sendBroadcast(new Intent("com.dbstar.settings.action.CLEAR_SETTINGS"));
-                mMACView.setText("MAC地址：" + getLocalMacAddress(true));
+                String localMacAddress = getLocalMacAddress(true);
+                String[] macSplit = localMacAddress.split(":");
+                String localMacString = "";
+                if (macSplit != null && macSplit.length > 0) {
+                	for (int i = 0; i < macSplit.length; i++) {                		
+                		localMacString += macSplit[i];
+                	}
+                }
+                Log.d("SelectTestActivity", "----------------------localMacString = (" + localMacString + ")");
+                
+                mMACView.setText("MAC地址：" + localMacAddress);
                 
                 try {
 					if (snFilePathList != null && snFilePathList.size() == 1) {
@@ -170,67 +183,88 @@ public class SelectTestActivity extends Activity {
 							Log.d("SelectTestActivity", "-------0---------------substring = " + substring);
 							int valueOf = Integer.parseInt(substring, 10);
 							
-							// 将第一行取出来之后，写当前串号。
-							File snFile = new File("/cache/recovery/last_log");
-							if (snFile.exists()) {
-								String snFormat = "2000317130000000";
-								// 改写/cache/recovery/last_log的第一行，就16位							
+							 String[] macFilePaths = {Configs.TEST_SN_FILE_MAC_SDA1, Configs.TEST_SN_FILE_MAC_SDB1, Configs.TEST_SN_FILE_MAC_SDC1, Configs.TEST_SN_FILE_MAC_SDCARD1};
+						        for (int i = 0; i < macFilePaths.length; i++) {
+						        	File file1 = new File(macFilePaths[i]);
+						        	if (file1.exists()) {
+						        		mMacFilePath = macFilePaths[i];
+						        		break;
+						        	}
+						        }
+							
+							// 取出valueOf行的MAC，与查询出来的MAC进行比较，如果相同，则继续，如果不同，则不再往下测试
+							File macFile = new File(mMacFilePath);
+							if (macFile.exists()) {
+								FileInputStream macStream = new FileInputStream(macFile);
+								BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(macStream));
+								String strLineMac = null;
+								int count = 0;
+							
+								while (count <= valueOf && (strLineMac = bufferedReader.readLine()) != null) {
+									count++;
+								}
+								Log.d("SelectTestActivity", "-----------------strLineMac = (" + strLineMac + ")");
+								bufferedReader.close();
+								macStream.close();
 								
-								String reSnStr = snFormat.subSequence(0, (16 - String.valueOf(valueOf).length())) + String.valueOf(valueOf);
-								Log.d("SelectTestActivity", "----------------------reSnStr = " + reSnStr);
-								RandomAccessFile snRaf = new RandomAccessFile(snFile, "rw");
-								snRaf.seek(0);
-								snRaf.write(reSnStr.getBytes("utf-8"), 0, reSnStr.getBytes("utf-8").length);
-								
-								snRaf.close();
-								
-								mProductSN.setVisibility(View.VISIBLE);
-								mProductSN.setText(getString(R.string.test_product_sn) + getTerminalNum());
-								mProductSN.setTextColor(Color.WHITE);
-								
-								valueOf  = valueOf + 1;
-								Log.d("SelectTestActivity", "----------------------valueOf = " + valueOf);
-								
-								String format = "        ";
+								if (localMacString.equals(strLineMac)) {
+									// 将第一行取出来之后，写当前串号。
+									File snFile = new File("/cache/recovery/last_log");
+									if (snFile.exists()) {
+										String snFormat = "2000317130000000";
+										// 改写/cache/recovery/last_log的第一行，就16位							
+										
+										String reSnStr = snFormat.subSequence(0, (16 - String.valueOf(valueOf).length())) + String.valueOf(valueOf);
+										Log.d("SelectTestActivity", "----------------------reSnStr = " + reSnStr);
+										RandomAccessFile snRaf = new RandomAccessFile(snFile, "rw");
+										snRaf.seek(0);
+										snRaf.write(reSnStr.getBytes("utf-8"), 0, reSnStr.getBytes("utf-8").length);
+										
+										snRaf.close();
+										
+										mProductSN.setVisibility(View.VISIBLE);
+										mProductSN.setText(getString(R.string.test_product_sn) + getTerminalNum());
+										mProductSN.setTextColor(Color.WHITE);
+										
+										valueOf  = valueOf + 1;
+										Log.d("SelectTestActivity", "----------------------valueOf = " + valueOf);
+										
+										String format = "        ";
 //								zhengcuiString reValues = String.format("%8d", valueOf);
-								String reValues = format.subSequence(0, (8 - String.valueOf(valueOf).length())) + String.valueOf(valueOf);
+										String reValues = format.subSequence(0, (8 - String.valueOf(valueOf).length())) + String.valueOf(valueOf);
+										
+										Log.d("SelectTestActivity", "----------------------reValues = " + reValues);
+										
+										RandomAccessFile raf = new RandomAccessFile(file, "rw");
+										raf.seek(0);
+										raf.write(reValues.getBytes("utf-8"), 0, reValues.getBytes("utf-8").length);								
+										
+										raf.close();
+										bufInStream.close();
+										stream.close();
+									}
+									
+									writeFactoryStatFile();
+									getPackageManager().setComponentEnabledSetting(cm, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+								} else {
+									factoryTestFailed(cm);
+								}
 								
-								Log.d("SelectTestActivity", "----------------------reValues = " + reValues);
-								
-								RandomAccessFile raf = new RandomAccessFile(file, "rw");
-								raf.seek(0);
-								raf.write(reValues.getBytes("utf-8"), 0, reValues.getBytes("utf-8").length);								
-								
-								raf.close();
-								bufInStream.close();
-								stream.close();
+							} else {
+								Log.d("SelectTestActivity", "----------------------macFile not exists!");
+								factoryTestFailed(cm);
+
 							}
 						}
-						
 					}
-					
-					writeFactoryStatFile();
-					getPackageManager().setComponentEnabledSetting(cm, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
 				} catch (Exception e) {
 					Log.d("SelectTestActivity", "----------------------e = " + e);					
 					e.printStackTrace();	
 					
-					mReusltView.setTextColor(Color.RED);
-					mReusltView.setText(R.string.test_fail); 
-					mProductSN.setVisibility(View.VISIBLE);
-					mProductSN.setText(getString(R.string.test_product_sn) + "维护失败");
-					mProductSN.setTextColor(Color.RED);
-					mMACView.setText("MAC地址：" + getLocalMacAddress(true));
-					getPackageManager().setComponentEnabledSetting(cm, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+					factoryTestFailed(cm);
 				}
-            }else{
-                mReusltView.setTextColor(Color.RED);
-                mReusltView.setText(R.string.test_fail); 
-                mProductSN.setVisibility(View.VISIBLE);
-				mProductSN.setText(getString(R.string.test_product_sn) + "维护失败");
-				mProductSN.setTextColor(Color.RED);
-                mMACView.setText("MAC地址：" + getLocalMacAddress(true));
-                getPackageManager().setComponentEnabledSetting(cm, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+            } else {
+                factoryTestFailed(cm);
             }
             isStarted = false;
             File file = new File(Configs.TARGET_VIDEO_FILE);
@@ -238,6 +272,17 @@ public class SelectTestActivity extends Activity {
                 file.delete();
         }
     }
+
+	private void factoryTestFailed(ComponentName cm) {
+		mReusltView.setTextColor(Color.RED);
+		mReusltView.setText(R.string.test_fail); 
+		mProductSN.setVisibility(View.VISIBLE);
+		mProductSN.setText(getString(R.string.test_product_sn) + "烧写失败");
+		mProductSN.setTextColor(Color.RED);
+		mMACView.setTextColor(Color.RED);
+		mMACView.setText("MAC地址：烧写失败");
+		getPackageManager().setComponentEnabledSetting(cm, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+	}
     
 	/**
 	 *  获取本机MAC地址方法

@@ -38,6 +38,11 @@ public class Configs {
     public static String TEST_SN_FILE_CSV_SDC1 = "/storage/external_storage/sdc1/cytcmacnum.csv";
     public static String TEST_SN_FILE_CSV_SDCARD1 = "/storage/external_storage/sdcard1/cytcmacnum.csv";
     
+    public static String TEST_SN_FILE_MAC_SDA1 = "/storage/external_storage/sda1/cytcmac.csv";
+    public static String TEST_SN_FILE_MAC_SDB1 = "/storage/external_storage/sdb1/cytcmac.csv";
+    public static String TEST_SN_FILE_MAC_SDC1 = "/storage/external_storage/sdc1/cytcmac.csv";
+    public static String TEST_SN_FILE_MAC_SDCARD1 = "/storage/external_storage/sdcard1/cytcmac.csv";
+    
     public static String TEST_CONFIG_PAHT_SDA1 = "/storage/external_storage/sda1/";
     public static String TEST_CONFIG_PAHT_SDB1 = "/storage/external_storage/sdb1/";
     public static String TEST_CONFIG_PAHT_SDC1 = "/storage/external_storage/sdc1/";
