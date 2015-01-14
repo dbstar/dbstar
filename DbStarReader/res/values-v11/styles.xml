@@ -1,6 +1,0 @@
-<resources>
-  <style name="DbStarPlayer.Activity" parent="android:Theme.Holo">
-	</style>
-  <style name="DbStarPlayer.Dialog" parent="android:Theme.Holo.Dialog">
-	</style>
-</resources>
