@@ -1,7 +1,9 @@
 package com.dbstar.app;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -29,7 +31,9 @@ import android.content.DialogInterface.OnKeyListener;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.net.ethernet.EthernetManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -106,7 +110,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	private boolean isConstainsMarkFile = false;
 	private EthernetManager mEthernetManager;
 	
-//	private Intent intentSer; 
 	private GalleryTask task;
 	private Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
@@ -118,7 +121,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				gallery.setFocusable(false);
 				break;
 			case 3:
-//				startService(new Intent("com.settings.service.action.OTTSettingsService"));
 				sendBroadcast(new Intent("com.settings.service.action.OTTSettingsService"));
 				
 				timerTag = true;
@@ -185,9 +187,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 			getQueryRecommand();
 		}
 		
-		isFormatDisk();
-		
-//		startService(new Intent("com.settings.service.action.OTTSettingsModeService"));
 		startService(new Intent(this, DbstarService.class));
 		
 		sendBroadcast(new Intent("com.settings.service.OTTSettingsReceiver"));
@@ -196,6 +195,37 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 		imgStarTV.requestFocus();
 		populateData();
 		setEventListener();
+		try {
+			String factoryToolsPath = "/system/app/CheckDeviceTool.apk";
+			File factoryFile = new File(factoryToolsPath);
+			if (factoryFile.exists()) {								
+				String factoryFilePath = "/data/dbstar/product/factory.stat";
+				File file = new File(factoryFilePath);
+				if (file.exists()) {
+					int count = 0;
+					byte[] buf = new byte[100];
+					FileInputStream inputStream = new FileInputStream(file);
+					BufferedInputStream bufferedIn = new BufferedInputStream(inputStream);
+					count = bufferedIn.read(buf, 0, buf.length);
+					bufferedIn.close();
+					if (count > 0) {
+						String values = new String(buf, 0, count);
+						LogUtil.d("DbstarOTTActivity", " values = " + values);
+						
+						if (values.equals("1")) {
+							isFormatDisk();
+						} else {
+							LogUtil.d("DbstarOTTActivity", "the factory.stat is not exists or values = " + values);
+						}
+					}
+					inputStream.close();
+				}
+			} else {
+				isFormatDisk();		
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void isFormatDisk() {
@@ -208,13 +238,26 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 		
 		if (devDisk != null && devDisk.contains("sda1")) {
 			LogUtil.d("DbstarOTTActivity", " sda1 is exists = " + file.exists());
-			if (file.exists()){
-				// TODO：先判断硬盘格式，如果是NTFS || EXt4，就继续往下走。否则就弹出对话框，提示用户是否格式化，如果不格式化呢？
-//				String diskInfo = DbstarUtil.fetchDiskInfo("mount");
-//				if (!diskInfo.equalsIgnoreCase("ntfs") && !diskInfo.equalsIgnoreCase("ext4")) {
-//					showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert));
-//				} 
+			if (!file.exists()) {
+				synchronized (this) {
+					for (int i = 0; i < 5; i++) {
+						try {
+							wait(1000);
+							if (file.exists()) {
+								Log.d("DbstarOTTActivity", "wait " + i + " s, sda1 file exists!");
+								break;
+							} else {
+								Log.d("DbstarOTTActivity", "wait " + i + " s, sda1 file not exists!");								
+							}
+						} catch (InterruptedException e) {
+							Log.d("DbstarOTTActivity", "wait " + i + " s, wait is interrupted!");								
+							e.printStackTrace();
+						}
+					}
+				}
+			}
 				
+			if (file.exists()){
 				LogUtil.d("DbstarOTTActivity", " before wait time = " + System.currentTimeMillis());
 				LogUtil.d("DbstarOTTActivity", " file.canWrite() = " + file.canWrite());
 				fileCanWrite = file.canWrite();
@@ -243,8 +286,7 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				LogUtil.d("DbstarOTTActivity", " after wait time = " + System.currentTimeMillis());
 			} else {
 				// 对话框提示内容：当前硬盘格式不可识别，是否格式化。这两个对话框（包括下面的那个）默认焦点都放在“否”上面
-				// 如果机顶盒上有硬盘，但是不认识，则就弹框确认格式化，不确认格式化就停留在该页面不再继续往下进行
-				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), false, false);
+				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), true, false);
 			}
 		} 
 		
@@ -292,8 +334,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	protected void onDestroy() {
 		super.onDestroy();
 		stopService(new Intent(this, DbstarService.class));
-//		stopService(new Intent("com.settings.service.action.OTTSettingsService"));
-//		stopService(new Intent("com.settings.service.action.OTTSettingsModeService"));
 	}
 
 	private void readQueryPosterFromSDCard() {
@@ -449,7 +489,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	
 	private void setEventListener() {
 		
-//		imgStarTV.setOnClickListener(new BtnOnClickListener("com.dbstar"));
 		imgStarTV.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -647,14 +686,12 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	private void populateRecommondNameAndPackageName(int sequence, String name, String packageName) {
 		if (sequence == 1) {
 			txtStarTV.setText(name);
-//			imgStarTV.setOnClickListener(new BtnOnClickListener("com.dbstar"));
 			imgStarTV.setOnClickListener(new OnClickListener() {
 				
 				@Override
 				public void onClick(View v) {
 					Intent intent = new Intent();
 					intent.setClass(DbstarOTTActivity.this, GDLauncherActivity.class);
-//					startActivity(intent);
 					startActivityForResult(intent, Btn_StarTV_Sequence);
 				}
 			});
@@ -663,7 +700,6 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 			imgCntv.setOnClickListener(new BtnOnClickListener(packageName, Btn_CntvTV_Sequence));
 		} else if (sequence == 3) {
 			txtAppShop.setText(name);
-			// TODO:调用接口返回的apk本地没有
 			imgAppShop.setOnClickListener(new BtnOnClickListener("com.guozi.appstore", Btn_AppShop_Sequence));
 		} else if (sequence == 4) {
 			txtMyApp.setText(name);
@@ -954,7 +990,9 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 			} else {
 				Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
 				LogUtil.d("DbstarOTTActivity", "BtnOnClickListener btnsequence = " + btnSequence);
-				startActivityForResult(intent, btnSequence);
+				if (intent != null) {					
+					startActivityForResult(intent, btnSequence);
+				}
 			}
 			
 			LogUtil.d("BtnOnClickListener", "包名：：" + packageName);
