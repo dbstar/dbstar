@@ -40,7 +40,7 @@ public class AgingTestActivity extends Activity {
     private TextView mTestReuslt;
     private GLog mLog;
     private InitDeviceDialog mInitDeviceDialog;
-    private int mSettingPlayTime = 72;
+    private int mSettingPlayTime = 4320; // use minute instead of hour, 72 hours = 72 * 60 minutes
     private IDbstarService mDbstarService = null;
     private int second,minutes,hours;
     private int mTryPrepareCount;
@@ -75,17 +75,25 @@ public class AgingTestActivity extends Activity {
         mTestReuslt = (TextView) findViewById(R.id.test_result);
         
         mWindowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-        mSettingPlayTime = 72;
+        mSettingPlayTime = 4320;
         SharedPreferences preferences = getSharedPreferences(Configs.TEST_TYPE_ORDER_FILE_NAME, Context.MODE_PRIVATE);
         if(preferences != null){
             mSettingPlayTime = Integer.parseInt(preferences.getString(Configs.PLAY_TIME, mSettingPlayTime+"").trim());
         }
-        mInitDeviceDialog = InitDeviceDialog.getInstance(this, null);
-        mInitDeviceDialog.show();
         
-        bindDbservice();
-        
-        waitting(15 * 1000);
+        if (mSettingPlayTime > 0) {        	
+        	mInitDeviceDialog = InitDeviceDialog.getInstance(this, null);
+        	mInitDeviceDialog.show();
+        	
+        	bindDbservice();
+        	
+        	waitting(15 * 1000);
+        } else {
+        	writeNextTestType(Configs.TYPE_SELECTOR_TEST);
+        	Intent intent = new Intent(this, SelectTestActivity.class);
+        	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
     
     private void waitting(int delayed){
@@ -137,7 +145,7 @@ public class AgingTestActivity extends Activity {
             String time = mHour.getText() .toString() + getString(R.string.test_hour) + mMinutes.getText().toString() +getString(R.string.test_minute) + mSecond.getText().toString() + getString(R.string.test_second);
             writeResultToFile(getString(R.string.test_test_playvideo), time);
             isStartTimer = false;
-            if(hours < mSettingPlayTime){
+            if(hours * 60 + minutes < mSettingPlayTime){
                 writeNextTestType(Configs.TYPE_AGING_TEST);
                 mTestReuslt.setText(getString(R.string.test_title) + " : " + time  + getString( R.string.test_less_than_setting_time )+ mSettingPlayTime + "," + getString(R.string.test_statu_fail) +","+ getString(R.string.test_end_notify_1));
             }else{
@@ -222,7 +230,7 @@ public class AgingTestActivity extends Activity {
                 minutes ++;
             }
             
-            if(minutes >=60){
+            if(minutes >= 60){
                 minutes =0;
                 hours ++;
             }
@@ -230,12 +238,16 @@ public class AgingTestActivity extends Activity {
             mMinutes.setText(String.valueOf(minutes));
             mSecond.setText(String.valueOf(second));
             mHandler.postDelayed(this, 1000);
-            if(hours > 0 && hours % 8 ==0){
-                String time = mHour.getText() + getString(R.string.test_hour) + mMinutes.getText().toString() +getString(R.string.test_minute) + mSecond.getText().toString() + getString(R.string.test_second);
-                writeResultToFile(getString(R.string.test_test_playvideo), time);
+            if (hours > 0 && hours % 8 == 0) {
+            	String time = mHour.getText() + getString(R.string.test_hour) + mMinutes.getText().toString() +getString(R.string.test_minute) + mSecond.getText().toString() + getString(R.string.test_second);
+            	writeResultToFile(getString(R.string.test_test_playvideo), time);
+            } else if (hours <= 0 && minutes > 0 && minutes % 10 == 0) {
+            	String time = mMinutes.getText().toString() +getString(R.string.test_minute) + mSecond.getText().toString() + getString(R.string.test_second);;
+            	writeResultToFile(getString(R.string.test_test_playvideo), time);            	
             }
             
-            if(hours >= mSettingPlayTime){
+            int playMinutes = hours * 60 + minutes;
+            if (playMinutes >= mSettingPlayTime) {
                 AgingTestActivity.this.sendBroadcast(new Intent("com.guodian.checkdevice.tool.exit.player"));
             }
         }

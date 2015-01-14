@@ -230,7 +230,7 @@ public class SelectTestActivity extends Activity {
 										Log.d("SelectTestActivity", "----------------------valueOf = " + valueOf);
 										
 										String format = "        ";
-//								zhengcuiString reValues = String.format("%8d", valueOf);
+//									String reValues = String.format("%8d", valueOf);
 										String reValues = format.subSequence(0, (8 - String.valueOf(valueOf).length())) + String.valueOf(valueOf);
 										
 										Log.d("SelectTestActivity", "----------------------reValues = " + reValues);
