@@ -1,0 +1,952 @@
+com.media.android.dbstarplayer.AudioPlayAction:
+    public static final int PLAY
+    public static final int PAUSE
+    public static final int RESUME
+    public static final int CANCEL
+com.media.android.dbstarplayer.BookmarksActivity:
+    private static final int OPEN_ITEM_ID
+    private static final int EDIT_ITEM_ID
+    private static final int DELETE_ITEM_ID
+com.media.android.dbstarplayer.BuildConfig
+com.media.android.dbstarplayer.CancelActivity:
+    static final java.lang.String LIST_SIZE
+    static final java.lang.String ITEM_TITLE
+    static final java.lang.String ITEM_SUMMARY
+com.media.android.dbstarplayer.DbStarPlayer:
+    public static final java.lang.String ACTION_OPEN_BOOK
+    public static final java.lang.String BOOK_KEY
+    public static final java.lang.String BOOKMARK_KEY
+    static final int ACTION_BAR_COLOR
+    public static final int REQUEST_PREFERENCES
+    public static final int REQUEST_CANCEL_MENU
+    public static final int RESULT_DO_NOTHING
+    public static final int RESULT_REPAINT
+    private static final java.lang.String PLUGIN_ACTION_PREFIX
+com.media.android.dbstarplayer.DbStarPlayer$TipRunner
+com.media.android.dbstarplayer.DbStarUtil:
+    public DbStarUtil()
+com.media.android.dbstarplayer.DictionaryUtil:
+    public DictionaryUtil()
+com.media.android.dbstarplayer.DictionaryUtil$ColorDict3
+com.media.android.dbstarplayer.NavigationPopup:
+    static final java.lang.String ID
+com.media.android.dbstarplayer.OrientationUtil:
+    private static final java.lang.String KEY
+    private OrientationUtil()
+com.media.android.dbstarplayer.R
+com.media.android.dbstarplayer.R$attr
+com.media.android.dbstarplayer.R$color
+com.media.android.dbstarplayer.R$drawable
+com.media.android.dbstarplayer.R$id
+com.media.android.dbstarplayer.R$layout
+com.media.android.dbstarplayer.R$string
+com.media.android.dbstarplayer.R$style
+com.media.android.dbstarplayer.R$xml
+com.media.android.dbstarplayer.SelectionPopup:
+    static final java.lang.String ID
+com.media.android.dbstarplayer.SetScreenOrientationAction:
+    public com.media.zlibrary.core.util.ZLBoolean3 isChecked()
+com.media.android.dbstarplayer.TOCActivity:
+    private static final int PROCESS_TREE_ITEM_ID
+    private static final int READ_BOOK_ITEM_ID
+com.media.android.dbstarplayer.TextSearchPopup:
+    static final java.lang.String ID
+com.media.android.dbstarplayer.ZLTreeAdapter:
+    protected void resetTree(com.media.zlibrary.core.tree.ZLTree)
+    public void resetTree()
+    public abstract android.view.View getView(int,android.view.View,android.view.ViewGroup)
+com.media.android.dbstarplayer.api.Api
+com.media.android.dbstarplayer.api.ApiClientImplementation
+com.media.android.dbstarplayer.api.ApiClientImplementation$1
+com.media.android.dbstarplayer.api.ApiClientImplementation$ConnectionListener
+com.media.android.dbstarplayer.api.ApiException:
+    ApiException(java.lang.String)
+    ApiException(java.lang.Exception)
+com.media.android.dbstarplayer.api.ApiInterface$Stub:
+    private static final java.lang.String DESCRIPTOR
+    static final int TRANSACTION_request
+    static final int TRANSACTION_requestList
+    static final int TRANSACTION_requestMap
+    public static com.media.android.dbstarplayer.api.ApiInterface asInterface(android.os.IBinder)
+com.media.android.dbstarplayer.api.ApiInterface$Stub$Proxy
+com.media.android.dbstarplayer.api.ApiListener
+com.media.android.dbstarplayer.api.ApiMethods
+com.media.android.dbstarplayer.api.ApiObject:
+    static com.media.android.dbstarplayer.api.ApiObject envelope(long)
+com.media.android.dbstarplayer.api.ApiObject$Type
+com.media.android.dbstarplayer.api.ApiServerImplementation:
+    public java.util.List getBookTags(long)
+    public bridge synthetic java.util.List getParagraphWordIndices(int)
+com.media.android.dbstarplayer.api.PluginApi:
+    public static final java.lang.String ACTION_REGISTER
+    public static final java.lang.String ACTION_RUN
+    public PluginApi()
+com.media.android.dbstarplayer.api.PluginApi$ActionInfo:
+    protected static final int TYPE_MENU_OBSOLETE
+    protected static final int TYPE_MENU
+com.media.android.dbstarplayer.api.PluginApi$PluginInfo:
+    public static final java.lang.String KEY
+    public void onReceive(android.content.Context,android.content.Intent)
+    protected abstract java.util.List implementedActions(android.content.Context)
+com.media.android.dbstarplayer.image.ImageViewActivity:
+    public static final java.lang.String BACKGROUND_COLOR_KEY
+com.media.android.dbstarplayer.library.BookInfoActivity:
+    private static final boolean ENABLE_EXTENDED_FILE_INFO
+    public static final java.lang.String FROM_READING_MODE_KEY
+    public static android.content.Intent intentByBook(com.media.dbstarplayer.book.Book)
+    private java.lang.String formatSize(long)
+    private java.lang.String formatDate(long)
+com.media.android.dbstarplayer.library.LibraryActivity:
+    static final java.lang.String START_SEARCH_ACTION
+    private static final int OPEN_BOOK_ITEM_ID
+    private static final int SHOW_BOOK_INFO_ITEM_ID
+    private static final int SHARE_BOOK_ITEM_ID
+    private static final int ADD_TO_FAVORITES_ITEM_ID
+    private static final int REMOVE_FROM_FAVORITES_ITEM_ID
+    private static final int MARK_AS_READ_ITEM_ID
+    private static final int MARK_AS_UNREAD_ITEM_ID
+    private static final int DELETE_BOOK_ITEM_ID
+com.media.android.dbstarplayer.libraryService.LibraryInterface$Stub:
+    private static final java.lang.String DESCRIPTOR
+    static final int TRANSACTION_reset
+    static final int TRANSACTION_status
+    static final int TRANSACTION_size
+    static final int TRANSACTION_books
+    static final int TRANSACTION_hasBooks
+    static final int TRANSACTION_recentBooks
+    static final int TRANSACTION_getBookByFile
+    static final int TRANSACTION_getBookById
+    static final int TRANSACTION_getBookByUid
+    static final int TRANSACTION_getRecentBook
+    static final int TRANSACTION_authors
+    static final int TRANSACTION_hasSeries
+    static final int TRANSACTION_series
+    static final int TRANSACTION_tags
+    static final int TRANSACTION_labels
+    static final int TRANSACTION_titles
+    static final int TRANSACTION_firstTitleLetters
+    static final int TRANSACTION_saveBook
+    static final int TRANSACTION_removeBook
+    static final int TRANSACTION_addBookToRecentList
+    static final int TRANSACTION_getStoredPosition
+    static final int TRANSACTION_storePosition
+    static final int TRANSACTION_isHyperlinkVisited
+    static final int TRANSACTION_markHyperlinkAsVisited
+    static final int TRANSACTION_bookmarks
+    static final int TRANSACTION_saveBookmark
+    static final int TRANSACTION_deleteBookmark
+    static final int TRANSACTION_getHighlightingStyle
+    static final int TRANSACTION_highlightingStyles
+    static final int TRANSACTION_saveHighlightingStyle
+com.media.android.dbstarplayer.libraryService.LibraryInterface$Stub$Proxy:
+    public java.lang.String getInterfaceDescriptor()
+com.media.android.dbstarplayer.libraryService.LibraryService:
+    static final java.lang.String BOOK_EVENT_ACTION
+    static final java.lang.String BUILD_EVENT_ACTION
+com.media.android.dbstarplayer.libraryService.LibraryService$Observer:
+    private static final int MASK
+com.media.android.dbstarplayer.libraryService.SQLiteBooksDatabase:
+    private android.database.sqlite.SQLiteStatement myDeleteVisitedHyperlinksStatement
+    private void deleteVisitedHyperlinks(long)
+com.media.android.dbstarplayer.libraryService.Util:
+    Util()
+com.media.android.dbstarplayer.network.AddCustomCatalogActivity:
+    static final java.lang.String TYPE
+com.media.android.dbstarplayer.network.AuthenticationActivity:
+    private static final java.lang.String AREA_KEY
+    private static final java.lang.String HOST_KEY
+    private static final java.lang.String RUNNABLE_KEY
+    static final java.lang.String SCHEME_KEY
+    static final java.lang.String USERNAME_KEY
+    static final java.lang.String PASSWORD_KEY
+    static final java.lang.String ERROR_KEY
+    static final java.lang.String CUSTOM_AUTH_KEY
+com.media.android.dbstarplayer.network.BookDownloaderInterface$Stub:
+    private static final java.lang.String DESCRIPTOR
+    static final int TRANSACTION_isBeingDownloaded
+com.media.android.dbstarplayer.network.BookDownloaderInterface$Stub$Proxy:
+    public java.lang.String getInterfaceDescriptor()
+com.media.android.dbstarplayer.network.BookDownloaderService:
+    public static final java.lang.String BOOK_FORMAT_KEY
+    public static final java.lang.String REFERENCE_TYPE_KEY
+    public static final java.lang.String CLEAN_URL_KEY
+    public static final java.lang.String TITLE_KEY
+    public static final java.lang.String SHOW_NOTIFICATIONS_KEY
+com.media.android.dbstarplayer.network.BookDownloaderService$Notifications
+com.media.android.dbstarplayer.network.NetworkBookInfoActivity:
+    android.view.View getMainView()
+com.media.android.dbstarplayer.network.NetworkLibraryActivity:
+    static final java.lang.String OPEN_CATALOG_ACTION
+com.media.android.dbstarplayer.network.NetworkNotifications:
+    private static final int BOOK_DOWNLOADING_START
+    private static final int BOOK_DOWNLOADING_END
+com.media.android.dbstarplayer.network.SQLiteNetworkDatabase:
+    protected synchronized java.util.Map getLinkExtras(com.media.dbstarplayer.network.INetworkLink)
+    protected synchronized void setLinkExtras(com.media.dbstarplayer.network.INetworkLink,java.util.Map)
+com.media.android.dbstarplayer.network.SQLiteNetworkDatabase$3
+com.media.android.dbstarplayer.network.TopupMenuActivity:
+    private static final java.lang.String AMOUNT_KEY
+    private static final java.lang.String CURRENCY_KEY
+com.media.android.dbstarplayer.network.UserRegistrationConstants
+com.media.android.dbstarplayer.network.Util:
+    static final java.lang.String AUTHORIZATION_ACTION
+    static final java.lang.String SIGNIN_ACTION
+    public static final java.lang.String ADD_CATALOG_ACTION
+    public static final java.lang.String ADD_CATALOG_URL_ACTION
+    public static final java.lang.String EDIT_CATALOG_ACTION
+    public Util()
+com.media.android.dbstarplayer.network.action.ActionCode
+com.media.android.dbstarplayer.network.action.NetworkBookActions:
+    public NetworkBookActions()
+com.media.android.dbstarplayer.preferences.ColorPreference:
+    protected abstract void saveColor(com.media.zlibrary.core.util.ZLColor)
+com.media.android.dbstarplayer.preferences.EditBookInfoActivity:
+    public bridge synthetic android.preference.Preference addOption(com.media.zlibrary.core.options.ZLBooleanOption,java.lang.String)
+com.media.android.dbstarplayer.preferences.PreferenceActivity:
+    public bridge synthetic android.preference.Preference addOption(com.media.zlibrary.core.options.ZLBooleanOption,java.lang.String)
+com.media.android.dbstarplayer.preferences.ZLBoolean3Preference:
+    private static final java.lang.String ON
+    private static final java.lang.String OFF
+    private static final java.lang.String UNCHANGED
+com.media.android.dbstarplayer.preferences.ZLColorPreference:
+    protected void saveColor(com.media.zlibrary.core.util.ZLColor)
+com.media.android.dbstarplayer.preferences.ZLPreferenceActivity:
+    public android.preference.Preference addOption(com.media.zlibrary.core.options.ZLBooleanOption,java.lang.String)
+com.media.android.dbstarplayer.preferences.ZLPreferenceActivity$Screen:
+    public void setSummary(java.lang.CharSequence)
+com.media.android.dbstarplayer.preferences.ZLStringPreference:
+    protected final java.lang.String getValue()
+com.media.android.dbstarplayer.style.EditStyleActivity:
+    static final java.lang.String STYLE_ID_KEY
+com.media.android.dbstarplayer.style.EditStyleActivity$BgColorPreference:
+    protected void saveColor(com.media.zlibrary.core.util.ZLColor)
+com.media.android.dbstarplayer.style.StyleListActivity:
+    public static final java.lang.String EXISTING_BOOKMARK_KEY
+com.media.android.dbstarplayer.tips.TipsActivity:
+    public static final java.lang.String INITIALIZE_ACTION
+    public static final java.lang.String SHOW_TIP_ACTION
+com.media.android.dbstarplayer.tree.TreeActivity:
+    private static final java.lang.String OPEN_TREE_ACTION
+    public static final java.lang.String TREE_KEY_KEY
+    public static final java.lang.String SELECTED_TREE_KEY_KEY
+    public static final java.lang.String HISTORY_KEY
+com.media.android.dbstarplayer.tree.TreeAdapter:
+    public void add(com.media.dbstarplayer.tree.FBTree)
+    public void add(int,com.media.dbstarplayer.tree.FBTree)
+com.media.android.dbstarplayer.tree.TreeAdapter$2
+com.media.android.dbstarplayer.tree.TreeAdapter$3
+com.media.android.util.PackageUtil:
+    public PackageUtil()
+com.media.android.util.SQLiteUtil:
+    public SQLiteUtil()
+com.media.android.util.UIUtil:
+    public UIUtil()
+com.media.dbstarplayer.dbstarplayer.ActionCode
+com.media.dbstarplayer.dbstarplayer.ColorProfile:
+    public static final java.lang.String DAY
+    public static final java.lang.String NIGHT
+    public static java.util.List names()
+    private ColorProfile(java.lang.String,com.media.dbstarplayer.dbstarplayer.ColorProfile)
+com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp:
+    private static final int INCREMENT
+    private static final int DEINCREMENT
+    public void setEdgeWidth(int)
+    public int getEdgeBottom()
+com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$BookmarkDescription:
+    DbStarPlayerApp$BookmarkDescription(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.dbstarplayer.DbStarView:
+    private int myStartY
+    public static final int SCROLLBAR_SHOW_AS_FOOTER
+    public boolean onFingerDoubleTap(int,int)
+    public com.media.zlibrary.text.view.ZLTextViewBase$ImageFitting getImageFitting()
+    public int getSpaceBetweenColumns()
+    public com.media.zlibrary.core.filesystem.ZLFile getWallpaperFile()
+    public com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode getWallpaperMode()
+    public com.media.zlibrary.core.util.ZLColor getBackgroundColor()
+    public int getPageCurrent()
+    public int getPageTotle()
+com.media.dbstarplayer.dbstarplayer.TextBuildTraverser:
+    protected void processControlElement(com.media.zlibrary.text.view.ZLTextControlElement)
+com.media.dbstarplayer.dbstarplayer.WallpapersUtil:
+    public WallpapersUtil()
+com.media.dbstarplayer.dbstarplayer.WordCountTraverser:
+    protected void processControlElement(com.media.zlibrary.text.view.ZLTextControlElement)
+com.media.dbstarplayer.formats.fb2.FB2AnnotationReader:
+    private static final int READ_NOTHING
+    private static final int READ_ANNOTATION
+com.media.dbstarplayer.formats.fb2.FB2MetaInfoReader:
+    private static final int READ_NOTHING
+    private static final int READ_SOMETHING
+    private static final int READ_TITLE
+    private static final int READ_AUTHOR
+    private static final int READ_AUTHOR_NAME_0
+    private static final int READ_AUTHOR_NAME_1
+    private static final int READ_AUTHOR_NAME_2
+    private static final int READ_LANGUAGE
+    private static final int READ_GENRE
+com.media.dbstarplayer.formats.fb2.FB2Tag:
+    public static final byte UNKNOWN
+    public static final byte P
+    public static final byte V
+    public static final byte SUBTITLE
+    public static final byte TEXT_AUTHOR
+    public static final byte DATE
+    public static final byte CITE
+    public static final byte SECTION
+    public static final byte POEM
+    public static final byte STANZA
+    public static final byte EPIGRAPH
+    public static final byte ANNOTATION
+    public static final byte COVERPAGE
+    public static final byte A
+    public static final byte EMPTY_LINE
+    public static final byte SUP
+    public static final byte SUB
+    public static final byte EMPHASIS
+    public static final byte STRONG
+    public static final byte CODE
+    public static final byte STRIKETHROUGH
+    public static final byte TITLE
+    public static final byte BODY
+    public static final byte IMAGE
+    public static final byte BINARY
+    public static final byte FICTIONBOOK
+    public static final byte TITLE_INFO
+    public static final byte BOOK_TITLE
+    public static final byte AUTHOR
+    public static final byte LANG
+    public static final byte FIRST_NAME
+    public static final byte MIDDLE_NAME
+    public static final byte LAST_NAME
+    public static final byte SEQUENCE
+    public static final byte GENRE
+    public static final byte DESCRIPTION
+    private FB2Tag()
+com.media.dbstarplayer.formats.fb2.FB2TagManager:
+    private FB2TagManager()
+com.media.dbstarplayer.formats.fb2.FB2Util:
+    FB2Util()
+com.media.dbstarplayer.formats.html.HtmlTag:
+    public static final byte UNKNOWN
+    public static final byte HTML
+    public static final byte HEAD
+    public static final byte BODY
+    public static final byte TITLE
+    public static final byte P
+    public static final byte H1
+    public static final byte H2
+    public static final byte H3
+    public static final byte H4
+    public static final byte H5
+    public static final byte H6
+    public static final byte A
+    public static final byte B
+    public static final byte I
+    public static final byte BR
+    public static final byte STRONG
+    public static final byte IMG
+    public static final byte SCRIPT
+    public static final byte OL
+    public static final byte UL
+    public static final byte LI
+    public static final byte SELECT
+    public static final byte DIV
+    public static final byte TR
+    public static final byte STYLE
+    public static final byte S
+    public static final byte SUB
+    public static final byte SUP
+    public static final byte PRE
+    public static final byte CODE
+    public static final byte EM
+    public static final byte DFN
+    public static final byte CITE
+    public static final byte HR
+    public static final byte REFERENCE
+    public static final byte GUIDE
+    public static final byte TAG_NUMBER
+    public HtmlTag()
+com.media.dbstarplayer.formats.oeb.NCXReader:
+    private static final int READ_NONE
+    private static final int READ_MAP
+    private static final int READ_POINT
+    private static final int READ_LABEL
+    private static final int READ_TEXT
+    private static final java.lang.String TAG_NAVMAP
+    private static final java.lang.String TAG_NAVPOINT
+    private static final java.lang.String TAG_NAVLABEL
+    private static final java.lang.String TAG_CONTENT
+    private static final java.lang.String TAG_TEXT
+    private static final java.lang.String ATTRIBUTE_PLAYORDER
+com.media.dbstarplayer.formats.oeb.OEBAnnotationReader:
+    private static final int READ_NONE
+    private static final int READ_DESCRIPTION
+com.media.dbstarplayer.formats.oeb.OEBBookReader:
+    private static final java.lang.String MANIFEST
+    private static final java.lang.String SPINE
+    private static final java.lang.String GUIDE
+    private static final java.lang.String TOUR
+    private static final java.lang.String SITE
+    private static final java.lang.String REFERENCE
+    private static final java.lang.String ITEMREF
+    private static final java.lang.String ITEM
+    private static final java.lang.String COVER
+    private static final java.lang.String COVER_IMAGE
+    private static final int READ_NONE
+    private static final int READ_MANIFEST
+    private static final int READ_SPINE
+    private static final int READ_GUIDE
+    private static final int READ_TOUR
+com.media.dbstarplayer.formats.oeb.OEBCoverBackgroundReader:
+    private static final int READ_NOTHING
+    private static final int READ_METADATA
+    private static final int READ_MANIFEST
+    private static final int READ_GUIDE
+    private static final java.lang.String GUIDE
+    private static final java.lang.String MANIFEST
+com.media.dbstarplayer.formats.pdb.DocDecompressor:
+    public DocDecompressor()
+com.media.dbstarplayer.formats.pdb.HuffdicDecompressor
+com.media.dbstarplayer.formats.pdb.PalmDocLikeStream$CompressionType
+com.media.dbstarplayer.formats.pdb.PdbStream:
+    public void skip(int)
+com.media.dbstarplayer.formats.pdb.PdbUtil:
+    public PdbUtil()
+com.media.dbstarplayer.formats.util.MiscUtil:
+    public MiscUtil()
+com.media.dbstarplayer.library.FirstLevelTree:
+    FirstLevelTree(com.media.dbstarplayer.library.RootTree,int,java.lang.String)
+com.media.dbstarplayer.library.LibraryTree:
+    static final java.lang.String ROOT_FOUND
+    static final java.lang.String ROOT_FAVORITES
+    static final java.lang.String ROOT_RECENT
+    static final java.lang.String ROOT_BY_AUTHOR
+    static final java.lang.String ROOT_BY_TITLE
+    static final java.lang.String ROOT_BY_SERIES
+    static final java.lang.String ROOT_BY_TAG
+    static final java.lang.String ROOT_FILE_TREE
+com.media.dbstarplayer.network.AbstractNetworkLink:
+    public final com.media.dbstarplayer.network.urlInfo.UrlInfoCollection urlInfoMap()
+    public com.media.zlibrary.core.network.ZLNetworkRequest bookListRequest(java.util.List,com.media.dbstarplayer.network.NetworkOperationData)
+com.media.dbstarplayer.network.Base64EncodedImage:
+    private static final java.lang.String ENCODED_SUFFIX
+com.media.dbstarplayer.network.HtmlUtil:
+    public HtmlUtil()
+com.media.dbstarplayer.network.ICustomNetworkLink:
+    public abstract void setSiteName(java.lang.String)
+    public abstract com.media.dbstarplayer.network.urlInfo.UrlInfoCollection urlInfoMap()
+    public abstract void removeUrl(com.media.dbstarplayer.network.urlInfo.UrlInfo$Type)
+    public abstract void resetChanges()
+com.media.dbstarplayer.network.INetworkLink:
+    public static final int INVALID_ID
+com.media.dbstarplayer.network.INetworkLink$AccountStatus
+com.media.dbstarplayer.network.NetworkCatalogItem:
+    public static final int FLAG_SHOW_AUTHOR
+    public static final int FLAG_GROUP_BY_AUTHOR
+    public static final int FLAG_GROUP_BY_SERIES
+    public static final int FLAG_GROUP_MORE_THAN_1_BOOK_BY_SERIES
+    public static final int FLAG_ADD_SEARCH_ITEM
+    public static final int FLAGS_DEFAULT
+    public static final int FLAGS_GROUP
+com.media.dbstarplayer.network.NetworkDatabase:
+    protected abstract void executeAsTransaction(java.lang.Runnable)
+    protected abstract java.util.Map getLinkExtras(com.media.dbstarplayer.network.INetworkLink)
+    protected abstract void setLinkExtras(com.media.dbstarplayer.network.INetworkLink,java.util.Map)
+com.media.dbstarplayer.network.NetworkException
+com.media.dbstarplayer.network.NetworkImage:
+    private static final java.lang.String TOESCAPE
+com.media.dbstarplayer.network.NetworkLibrary$OnNewLinkListener
+com.media.dbstarplayer.network.NetworkTree:
+    private static final java.lang.String DATA_PREFIX
+com.media.dbstarplayer.network.atom.ATOMCategory:
+    public static final java.lang.String TERM
+    public static final java.lang.String SCHEME
+    public static final java.lang.String LABEL
+    public final java.lang.String getScheme()
+com.media.dbstarplayer.network.atom.ATOMCommonAttributes:
+    public static final java.lang.String XML_BASE
+    public static final java.lang.String XML_LANG
+    public final java.lang.String getLang()
+    public final java.lang.String getBase()
+com.media.dbstarplayer.network.atom.ATOMConstants
+com.media.dbstarplayer.network.atom.ATOMContributor
+com.media.dbstarplayer.network.atom.ATOMGenerator
+com.media.dbstarplayer.network.atom.ATOMLink:
+    public static final java.lang.String HREF
+    public static final java.lang.String REL
+    public static final java.lang.String TYPE
+    public static final java.lang.String HREFLANG
+    public static final java.lang.String TITLE
+    public static final java.lang.String LENGTH
+    public final java.lang.String getHrefLang()
+    public final java.lang.String getLength()
+com.media.dbstarplayer.network.atom.ATOMLogo
+com.media.dbstarplayer.network.atom.ATOMXMLReader:
+    private static final int START
+    protected static final int FEED
+    protected static final int F_ENTRY
+    private static final int F_ID
+    private static final int F_LINK
+    private static final int F_CATEGORY
+    private static final int F_TITLE
+    private static final int F_UPDATED
+    private static final int F_AUTHOR
+    private static final int F_SUBTITLE
+    private static final int F_ICON
+    private static final int FA_NAME
+    private static final int FA_URI
+    private static final int FA_EMAIL
+    private static final int FE_AUTHOR
+    private static final int FE_ID
+    private static final int FE_CATEGORY
+    protected static final int FE_LINK
+    private static final int FE_PUBLISHED
+    private static final int FE_SUMMARY
+    protected static final int FE_CONTENT
+    private static final int FE_TITLE
+    private static final int FE_UPDATED
+    private static final int FEA_NAME
+    private static final int FEA_URI
+    private static final int FEA_EMAIL
+    protected static final int ATOM_STATE_FIRST_UNUSED
+    protected static final java.lang.String TAG_FEED
+    protected static final java.lang.String TAG_ENTRY
+    protected static final java.lang.String TAG_AUTHOR
+    protected static final java.lang.String TAG_NAME
+    protected static final java.lang.String TAG_URI
+    protected static final java.lang.String TAG_EMAIL
+    protected static final java.lang.String TAG_ID
+    protected static final java.lang.String TAG_CATEGORY
+    protected static final java.lang.String TAG_LINK
+    protected static final java.lang.String TAG_PUBLISHED
+    protected static final java.lang.String TAG_SUMMARY
+    protected static final java.lang.String TAG_CONTENT
+    protected static final java.lang.String TAG_TITLE
+    protected static final java.lang.String TAG_UPDATED
+    protected static final java.lang.String TAG_SUBTITLE
+    protected static final java.lang.String TAG_ICON
+    public static java.lang.String intern(java.lang.String)
+com.media.dbstarplayer.network.atom.FormattedBuffer:
+    public void appendText(char[],int,int)
+com.media.dbstarplayer.network.authentication.NetworkAuthenticationManager:
+    public boolean passwordRecoverySupported()
+    public void recoverPassword(java.lang.String)
+com.media.dbstarplayer.network.authentication.litres.LitResAuthenticationManager:
+    public boolean passwordRecoverySupported()
+    public void recoverPassword(java.lang.String)
+com.media.dbstarplayer.network.authentication.litres.LitResGenre
+com.media.dbstarplayer.network.authentication.litres.LitResLoginXMLReader:
+    private static final java.lang.String TAG_AUTHORIZATION_OK
+    private static final java.lang.String TAG_AUTHORIZATION_FAILED
+com.media.dbstarplayer.network.authentication.litres.LitResPasswordRecoveryXMLReader
+com.media.dbstarplayer.network.authentication.litres.LitResPurchaseXMLReader:
+    private static final java.lang.String TAG_AUTHORIZATION_FAILED
+    private static final java.lang.String TAG_PURCHASE_OK
+    private static final java.lang.String TAG_PURCHASE_FAILED
+com.media.dbstarplayer.network.authentication.litres.LitResUtil:
+    LitResUtil()
+com.media.dbstarplayer.network.authentication.litres.LitResXMLReader:
+    private static final int START
+    private static final int CATALOG
+    private static final int BOOK
+    private static final int BOOK_DESCRIPTION
+    private static final int HIDDEN
+    private static final int TITLE_INFO
+    private static final int GENRE
+    private static final int AUTHOR
+    private static final int FIRST_NAME
+    private static final int MIDDLE_NAME
+    private static final int LAST_NAME
+    private static final int BOOK_TITLE
+    private static final int ANNOTATION
+    private static final int DATE
+    private static final int LANGUAGE
+    private static final java.lang.String TAG_CATALOG
+    private static final java.lang.String TAG_BOOK
+    private static final java.lang.String TAG_TEXT_DESCRIPTION
+    private static final java.lang.String TAG_HIDDEN
+    private static final java.lang.String TAG_TITLE_INFO
+    private static final java.lang.String TAG_GENRE
+    private static final java.lang.String TAG_AUTHOR
+    private static final java.lang.String TAG_FIRST_NAME
+    private static final java.lang.String TAG_MIDDLE_NAME
+    private static final java.lang.String TAG_LAST_NAME
+    private static final java.lang.String TAG_BOOK_TITLE
+    private static final java.lang.String TAG_ANNOTATION
+    private static final java.lang.String TAG_DATE
+    private static final java.lang.String TAG_SEQUENCE
+    private static final java.lang.String TAG_LANGUAGE
+com.media.dbstarplayer.network.opds.OPDSConstants
+com.media.dbstarplayer.network.opds.OPDSCustomNetworkLink:
+    public void resetChanges()
+    public final void setSiteName(java.lang.String)
+    public final void removeUrl(com.media.dbstarplayer.network.urlInfo.UrlInfo$Type)
+com.media.dbstarplayer.network.opds.OPDSLinkReader:
+    static final java.lang.String CATALOGS_URL
+    public OPDSLinkReader()
+com.media.dbstarplayer.network.opds.OPDSLinkXMLReader:
+    private static final java.lang.String DBSTARPLAYER_ADVANCED_SEARCH
+    private static final java.lang.String DBSTARPLAYER_AUTHENTICATION
+    private static final java.lang.String DBSTARPLAYER_REWRITING_RULE
+    private static final java.lang.String DBSTARPLAYER_RELATION_ALIAS
+    private static final java.lang.String DBSTARPLAYER_EXTRA
+com.media.dbstarplayer.network.opds.OPDSLinkXMLReader$FeedHandler:
+    private static final java.lang.String ENTRY_ID_PREFIX
+com.media.dbstarplayer.network.opds.OPDSXMLReader:
+    public static final java.lang.String KEY_PRICE
+    private static final int FE_DC_LANGUAGE
+    private static final int FE_DC_ISSUED
+    private static final int FE_DC_PUBLISHER
+    private static final int FE_CALIBRE_SERIES
+    private static final int FE_CALIBRE_SERIES_INDEX
+    private static final int FEL_PRICE
+    private static final int FEL_FORMAT
+    private static final int OPENSEARCH_TOTALRESULTS
+    private static final int OPENSEARCH_ITEMSPERPAGE
+    private static final int OPENSEARCH_STARTINDEX
+    private static final int FEC_HACK_SPAN
+    private static final int DBSTARPLAYER_VIEW
+    private static final java.lang.String TAG_PRICE
+    private static final java.lang.String TAG_HACK_SPAN
+    private static final java.lang.String DC_TAG_LANGUAGE
+    private static final java.lang.String DC_TAG_ISSUED
+    private static final java.lang.String DC_TAG_PUBLISHER
+    private static final java.lang.String DC_TAG_FORMAT
+    private static final java.lang.String CALIBRE_TAG_SERIES
+    private static final java.lang.String CALIBRE_TAG_SERIES_INDEX
+    private static final java.lang.String OPENSEARCH_TAG_TOTALRESULTS
+    private static final java.lang.String OPENSEARCH_TAG_ITEMSPERPAGE
+    private static final java.lang.String OPENSEARCH_TAG_STARTINDEX
+    private static final java.lang.String DBSTARPLAYER_TAG_VIEW
+com.media.dbstarplayer.network.opds.OpenSearchXMLReader:
+    private static final int START
+    private static final int DESCRIPTION
+    private static final java.lang.String TAG_DESCRIPTION
+    private static final java.lang.String TAG_URL
+com.media.dbstarplayer.network.opds.URLRewritingRule:
+    public static final int ADD_URL_PARAMETER
+    public static final int REWRITE
+    public static final int UNKNOWN
+    public static final int APPLY_EXTERNAL
+    public static final int APPLY_INTERNAL
+    public static final int APPLY_ALWAYS
+com.media.dbstarplayer.network.tree.NetworkAuthorTree:
+    private int myBooksNumber
+    private java.util.HashMap mySeriesMap
+    private int getSeriesIndex(java.lang.String)
+    private void setSeriesIndex(java.lang.String,int)
+    public void updateSubTrees(java.util.LinkedList)
+com.media.dbstarplayer.network.tree.NetworkTreeFactory:
+    NetworkTreeFactory()
+com.media.dbstarplayer.network.urlInfo.BookUrlInfo:
+    private static final java.lang.String TOESCAPE
+com.media.dbstarplayer.network.urlInfo.BookUrlInfo$Format
+com.media.dbstarplayer.tree.FBTree:
+    public int indexOf(com.media.dbstarplayer.tree.FBTree)
+com.media.player.common.Utils:
+    public Utils()
+    public static int px2dip(android.content.Context,float)
+    public static void saveBitmapByPath(java.lang.String,android.graphics.Bitmap)
+com.media.reader.dialog.IDialogView
+com.media.reader.model.ImageManager:
+    private static final java.lang.String TAG
+    public android.graphics.Bitmap loadBitmapFromCache(java.lang.String)
+com.media.reader.model.ImageManager$ImageManagerHolder:
+    private ImageManager$ImageManagerHolder()
+com.media.reader.view.CustomBookMarksAdapter:
+    public static final int OPEN_ITEM_ID
+    public static final int DELETE_ITEM_ID
+    public java.util.List bookmarks()
+    public void add(com.media.dbstarplayer.book.Bookmark)
+com.media.reader.view.CustomBookMarksAdapter$2
+com.media.reader.view.CustomTocAdapter
+com.media.reader.vo.ImageEntity:
+    private float scale
+com.media.zlibrary.core.application.ZLApplication:
+    public static final java.lang.String NoAction
+    public final boolean isActionVisible(java.lang.String)
+    public final com.media.zlibrary.core.util.ZLBoolean3 isActionChecked(java.lang.String)
+    private void showExitConfirmDialog(android.app.Activity)
+    static synthetic com.media.zlibrary.core.application.ZLApplicationWindow access$1(com.media.zlibrary.core.application.ZLApplication)
+com.media.zlibrary.core.application.ZLApplication$1
+com.media.zlibrary.core.application.ZLApplication$2
+com.media.zlibrary.core.application.ZLApplication$ZLAction:
+    public com.media.zlibrary.core.util.ZLBoolean3 isChecked()
+com.media.zlibrary.core.application.ZLKeyBindings:
+    private static final java.lang.String ACTION
+    private static final java.lang.String LONG_PRESS_ACTION
+com.media.zlibrary.core.constants.XMLNamespaces
+com.media.zlibrary.core.filetypes.FileType:
+    public abstract java.util.List mimeTypes()
+    public abstract java.lang.String defaultExtension(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.filetypes.FileTypeCollection:
+    public com.media.zlibrary.core.filetypes.FileType typeById(java.lang.String)
+    public com.media.zlibrary.core.util.MimeType mimeType(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.filetypes.FileTypeDjVu:
+    public java.util.List mimeTypes()
+    public java.lang.String defaultExtension(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.filetypes.FileTypeEpub:
+    public java.util.List mimeTypes()
+    public java.lang.String defaultExtension(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.filetypes.FileTypeFB2:
+    public java.util.List mimeTypes()
+    public java.lang.String defaultExtension(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.filetypes.FileTypeHtml:
+    public java.util.List mimeTypes()
+    public java.lang.String defaultExtension(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.filetypes.FileTypeMobipocket:
+    public java.util.List mimeTypes()
+    public java.lang.String defaultExtension(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.filetypes.FileTypePalm:
+    public java.lang.String defaultExtension(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.filetypes.SimpleFileType:
+    public java.util.List mimeTypes()
+    public java.lang.String defaultExtension(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.html.ZLHtmlAttributeMap:
+    public int getSize()
+    public com.media.zlibrary.core.html.ZLByteBuffer getKey(int)
+com.media.zlibrary.core.html.ZLHtmlParser:
+    private static final byte START_DOCUMENT
+    private static final byte START_TAG
+    private static final byte END_TAG
+    private static final byte TEXT
+    private static final byte COMMENT
+    private static final byte LANGLE
+    private static final byte WS_AFTER_START_TAG_NAME
+    private static final byte WS_AFTER_END_TAG_NAME
+    private static final byte WAIT_EQUALS
+    private static final byte WAIT_ATTRIBUTE_VALUE
+    private static final byte SLASH
+    private static final byte ATTRIBUTE_NAME
+    private static final byte S_ATTRIBUTE_VALUE
+    private static final byte DEFAULT_ATTRIBUTE_VALUE
+    private static final byte COMMENT_MINUS
+    private static final byte D_ATTRIBUTE_VALUE
+    private static final byte SCRIPT
+    private static final byte ENTITY_REF
+com.media.zlibrary.core.html.ZLHtmlProcessor:
+    public ZLHtmlProcessor()
+com.media.zlibrary.core.language.Language:
+    public static final java.lang.String OTHER_CODE
+    public static final java.lang.String MULTI_CODE
+    public static final java.lang.String SYSTEM_CODE
+com.media.zlibrary.core.language.ZLLanguageUtil:
+    private ZLLanguageUtil()
+com.media.zlibrary.core.network.ZLNetworkException:
+    public static final java.lang.String ERROR_UNKNOWN_ERROR
+    public static final java.lang.String ERROR_TIMEOUT
+    public static final java.lang.String ERROR_CONNECT_TO_NETWORK
+    public static final java.lang.String ERROR_UNSUPPORTED_PROTOCOL
+    public static final java.lang.String ERROR_INVALID_URL
+    public static final java.lang.String ERROR_AUTHENTICATION_FAILED
+    public static final java.lang.String ERROR_SOMETHING_WRONG
+    public static final java.lang.String ERROR_CREATE_DIRECTORY
+    public static final java.lang.String ERROR_CREATE_FILE
+    public static final java.lang.String ERROR_CONNECT_TO_HOST
+    public static final java.lang.String ERROR_RESOLVE_HOST
+    public static final java.lang.String ERROR_HOST_CANNOT_BE_REACHED
+    public static final java.lang.String ERROR_CONNECTION_REFUSED
+    public ZLNetworkException(java.lang.String,java.lang.Throwable)
+com.media.zlibrary.core.options.ZLColorOption:
+    public void setValue(com.media.zlibrary.core.util.ZLColor)
+com.media.zlibrary.core.options.ZLOption:
+    public static final java.lang.String PLATFORM_GROUP
+com.media.zlibrary.core.options.ZLStringListOption:
+    public ZLStringListOption(java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+com.media.zlibrary.core.resources.ZLMissingResource:
+    static final java.lang.String Value
+com.media.zlibrary.core.resources.ZLTreeResource$ResourceTreeReader:
+    private static final java.lang.String NODE
+com.media.zlibrary.core.util.MimeType:
+    public static final java.lang.String IMAGE_PREFIX
+com.media.zlibrary.core.util.MiscUtil:
+    public MiscUtil()
+    public static boolean isEmptyString(java.lang.String)
+    public static boolean listsEquals(java.util.List,java.util.List)
+com.media.zlibrary.core.util.ZLArrayUtils:
+    public ZLArrayUtils()
+    public static boolean[] createCopy(boolean[],int,int)
+com.media.zlibrary.core.util.ZLNetworkUtil:
+    public ZLNetworkUtil()
+com.media.zlibrary.core.util.ZLSearchUtil:
+    private ZLSearchUtil()
+com.media.zlibrary.core.util.ZLUnicodeUtil
+com.media.zlibrary.core.view.DummyPaintContext:
+    public void clear(com.media.zlibrary.core.filesystem.ZLFile,com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode)
+    public void clear(com.media.zlibrary.core.util.ZLColor)
+    public void setLineWidth(int)
+    public void drawLine(int,int,int,int)
+com.media.zlibrary.core.view.ZLPaintContext:
+    public abstract void clear(com.media.zlibrary.core.filesystem.ZLFile,com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode)
+    public abstract void clear(com.media.zlibrary.core.util.ZLColor)
+    public abstract void setLineWidth(int)
+    public final void drawString(int,int,java.lang.String)
+    public abstract void drawLine(int,int,int,int)
+com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode
+com.media.zlibrary.core.view.ZLView:
+    public boolean onFingerDoubleTap(int,int)
+com.media.zlibrary.core.xml.ZLDTDParser:
+    private static final byte IGNORABLE_WHITESPACE
+    private static final byte LANGLE
+    private static final byte TAG_PREFIX
+    private static final byte COMMENT
+    private static final byte END_OF_COMMENT1
+    private static final byte END_OF_COMMENT2
+    private static final byte ENTITY
+    private static final byte WAIT_NAME
+    private static final byte NAME
+    private static final byte WAIT_VALUE
+    private static final byte VALUE
+    private static final byte WAIT_END_OF_ENTITY
+com.media.zlibrary.core.xml.ZLXMLParser:
+    private static final byte START_DOCUMENT
+    private static final byte START_TAG
+    private static final byte END_TAG
+    private static final byte TEXT
+    private static final byte COMMENT
+    private static final byte END_OF_COMMENT1
+    private static final byte END_OF_COMMENT2
+    private static final byte EXCL_TAG
+    private static final byte EXCL_TAG_START
+    private static final byte Q_TAG
+    private static final byte END_OF_Q_TAG
+    private static final byte LANGLE
+    private static final byte WS_AFTER_START_TAG_NAME
+    private static final byte WS_AFTER_ATTRIBUTE_VALUE
+    private static final byte WAIT_EQUALS
+    private static final byte WAIT_ATTRIBUTE_VALUE
+    private static final byte SLASH
+    private static final byte ATTRIBUTE_NAME
+    private static final byte ATTRIBUTE_VALUE_QUOT
+    private static final byte ATTRIBUTE_VALUE_APOS
+    private static final byte ENTITY_REF
+    private static final byte CDATA
+    private static final byte END_OF_CDATA1
+    private static final byte END_OF_CDATA2
+com.media.zlibrary.core.xml.ZLXMLProcessor:
+    public ZLXMLProcessor()
+com.media.zlibrary.text.hyphenation.ZLTextHyphenationReader:
+    private static final java.lang.String PATTERN
+com.media.zlibrary.text.hyphenation.ZLTextHyphenator:
+    public static void deleteInstance()
+    public abstract void unload()
+com.media.zlibrary.text.hyphenation.ZLTextTeXHyphenationPattern:
+    public int getLength()
+    public char[] getSymbols()
+    public byte[] getValues()
+com.media.zlibrary.text.view.PaintStateEnum
+com.media.zlibrary.text.view.ZLTextElementArea:
+    boolean contains(int,int)
+com.media.zlibrary.text.view.ZLTextElementAreaVector:
+    com.media.zlibrary.text.view.ZLTextElementArea binarySearch(int,int)
+com.media.zlibrary.text.view.ZLTextHighlighting:
+    boolean intersects(com.media.zlibrary.text.view.ZLTextRegion)
+com.media.zlibrary.text.view.ZLTextImageElement:
+    ZLTextImageElement(java.lang.String,com.media.zlibrary.core.image.ZLImageData,java.lang.String,boolean,int,int,com.media.reader.vo.ImageEntity$ImageAlign)
+com.media.zlibrary.text.view.ZLTextPage:
+    void resetAllImageTextHeight()
+com.media.zlibrary.text.view.ZLTextParagraphCursor:
+    com.media.zlibrary.text.model.ZLTextParagraph getParagraph()
+com.media.zlibrary.text.view.ZLTextParagraphCursor$Processor:
+    private static final int NO_SPACE
+    private static final int SPACE
+com.media.zlibrary.text.view.ZLTextParagraphCursorCache:
+    ZLTextParagraphCursorCache()
+com.media.zlibrary.text.view.ZLTextRegion$Soul:
+    public final int compareTo(com.media.zlibrary.text.view.ZLTextPosition)
+com.media.zlibrary.text.view.ZLTextTraverser:
+    protected abstract void processControlElement(com.media.zlibrary.text.view.ZLTextControlElement)
+com.media.zlibrary.text.view.ZLTextView:
+    public static final int MAX_SELECTION_DISTANCE
+    public static final int SCROLLBAR_HIDE
+    public static final int SCROLLBAR_SHOW
+    public static final int SCROLLBAR_SHOW_AS_PROGRESS
+    public final void addHighlightings(java.util.Collection)
+    protected final synchronized int sizeOfTextBeforeParagraph(int)
+    private int findImageFromLine(com.media.zlibrary.text.view.ZLTextLineInfo)
+    protected com.media.zlibrary.text.view.ZLTextElementArea getElementByCoordinates(int,int)
+    protected com.media.zlibrary.text.view.ZLTextHighlighting findHighlighting(int,int,int)
+    public void resetRegionPointer()
+    public void destroyBitmaps()
+    public boolean isShowVolumeStatus()
+com.media.zlibrary.text.view.ZLTextView$ScrollingMode
+com.media.zlibrary.text.view.ZLTextView$SizeUnit
+com.media.zlibrary.text.view.ZLTextViewBase:
+    public static final int MARGIN_TITLE_CONTENT_DIP
+    public static final int HEIGHT_TITLE_DIP
+    private static synthetic int[] $SWITCH_TABLE$com$media$zlibrary$text$view$ZLTextViewBase$ImageFitting
+    public abstract com.media.zlibrary.text.view.ZLTextViewBase$ImageFitting getImageFitting()
+    public abstract int getSpaceBetweenColumns()
+    public abstract com.media.zlibrary.core.filesystem.ZLFile getWallpaperFile()
+    public abstract com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode getWallpaperMode()
+    public abstract com.media.zlibrary.core.util.ZLColor getBackgroundColor()
+    int getBottomLine()
+    int getRightLine()
+    protected final com.media.zlibrary.core.view.ZLPaintContext$ScalingType getScalingType(com.media.zlibrary.text.view.ZLTextImageElement)
+    final int getWordWidth(com.media.zlibrary.text.view.ZLTextWord,int,int)
+    int getAreaLength(com.media.zlibrary.text.view.ZLTextParagraphCursor,com.media.zlibrary.text.view.ZLTextElementArea,int)
+    static synthetic int[] $SWITCH_TABLE$com$media$zlibrary$text$view$ZLTextViewBase$ImageFitting()
+com.media.zlibrary.text.view.ZLTextWordCursor:
+    public ZLTextWordCursor(com.media.zlibrary.text.view.ZLTextParagraphCursor)
+    public void previousWord()
+    public boolean hasNextParagraph()
+com.media.zlibrary.text.view.style.ZLTextBaseStyle:
+    private static final java.lang.String GROUP
+    private static final java.lang.String OPTIONS
+    public static final int CONTENT_TEXT_MAXSIZE
+    public static final int CONTENT_TEXT_MINSIZE
+    public static final int DEFAULT_SIZE_DIP
+com.media.zlibrary.text.view.style.ZLTextStyleCollection:
+    public static void deleteInstance()
+com.media.zlibrary.text.view.style.ZLTextStyleDecoration:
+    static final java.lang.String STYLE
+com.media.zlibrary.ui.android.error.ErrorKeys
+com.media.zlibrary.ui.android.image.ZLAndroidImageData:
+    private int myRealWidth
+    private int myRealHeight
+com.media.zlibrary.ui.android.image.ZLAndroidImageLoader:
+    private static final int IMAGE_LOADING_THREADS_NUMBER
+com.media.zlibrary.ui.android.util.ZLAndroidColorUtil:
+    public ZLAndroidColorUtil()
+com.media.zlibrary.ui.android.view.AndroidFontUtil:
+    public AndroidFontUtil()
+com.media.zlibrary.ui.android.view.AnimationProvider:
+    public static final int DISTANCE_MIN
+com.media.zlibrary.ui.android.view.BitmapManager:
+    public static com.media.zlibrary.ui.android.view.BitmapManager Instance()
+    public void destroy()
+com.media.zlibrary.ui.android.view.DoublePageAnimationProvider:
+    public static final int MODE_ONE_PAGE
+    public static final int MODE_TWO_PAGE
+    public static final int ONEFLIPLEFT
+    public static final int ONEFLIPRIGHT
+    public static final int TWOFLIPLEFT
+    public static final int TWOFLIPRIGHT
+    public static final int PAGENORMAL
+    public static final int PAGEDRAGGING
+    public static final int PAGEFLIPPEDANIMATION
+    public int getReadMode()
+    public void setReadMode(int)
+    public int getFlipMode()
+    public void prepareDragging(float,float)
+    public void scrollManually(java.lang.Integer,java.lang.Integer)
+    public int getEffectState()
+    public int computeColor(android.graphics.Bitmap)
+    public void startPageTurningAbortAnimation()
+    public boolean canDragOver()
+    public boolean DragToRight()
+    public int getDuration()
+    public void destroy()
+    public void setFlatFlipMode(boolean)
+    private void destroyDrawable(android.graphics.drawable.Drawable)
+    private int getPageBottomBorder()
+com.media.zlibrary.ui.android.view.ZLAndroidPaintContext:
+    private static com.media.zlibrary.core.filesystem.ZLFile ourWallpaperFile
+    private static android.graphics.Bitmap ourWallpaper
+    private static synthetic int[] $SWITCH_TABLE$com$media$zlibrary$core$view$ZLPaintContext$WallpaperMode
+    public void clear(com.media.zlibrary.core.filesystem.ZLFile,com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode)
+    public void clear(com.media.zlibrary.core.util.ZLColor)
+    public void setLineWidth(int)
+    public void drawLine(int,int,int,int)
+    private void destroyBitmaps()
+    static synthetic int[] $SWITCH_TABLE$com$media$zlibrary$core$view$ZLPaintContext$WallpaperMode()

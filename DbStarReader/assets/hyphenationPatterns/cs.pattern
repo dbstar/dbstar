@@ -1,0 +1,3672 @@
+<?xml version="1.0" encoding="iso-8859-2"?>
+<!--
+  Czech hyphenations description for DbStarPlayer (original was taken from the teTeX distribution)
+
+	From the original /usr/share/texmf-texlive/tex/csplain/base/czhyphen.tex:
+
+%%% ====================================================================
+% This is CZHYPHEN.TEX, containing czech hyphenation patterns.
+% Prepared by:
+%   Pavel Sevecek (\v{S}eve\v{c}ek)
+%   Lingea s.r.o., Brno, Czech Republic
+%   E-mail: pavel@lingea.cz
+%
+% This is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or
+% (at your option) any later version.
+%
+% This file is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this program; if not, write to the Free Software
+% Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+%%% ====================================================================
+-->
+<HyphenationDescription>
+  <pattern> a2</pattern>
+  <pattern> a4da</pattern>
+  <pattern> a4de</pattern>
+  <pattern> a4di</pattern>
+  <pattern> a4do</pattern>
+  <pattern> a4d�</pattern>
+  <pattern> a4kl</pattern>
+  <pattern> a4ko</pattern>
+  <pattern> a4kr</pattern>
+  <pattern> a4ku</pattern>
+  <pattern> ale3x</pattern>
+  <pattern> a4ra</pattern>
+  <pattern> a4re</pattern>
+  <pattern> a4ri</pattern>
+  <pattern> a4ro</pattern>
+  <pattern> a4ry</pattern>
+  <pattern> a4r�</pattern>
+  <pattern> a4sa</pattern>
+  <pattern> a4se</pattern>
+  <pattern> a4so</pattern>
+  <pattern> as3t3</pattern>
+  <pattern> a4sy</pattern>
+  <pattern> a4ta</pattern>
+  <pattern> a4te</pattern>
+  <pattern> at3l</pattern>
+  <pattern> a4to</pattern>
+  <pattern> a4tr</pattern>
+  <pattern> a4ty</pattern>
+  <pattern> a4ve</pattern>
+  <pattern> b2</pattern>
+  <pattern> c2</pattern>
+  <pattern> ch2</pattern>
+  <pattern> cyk3</pattern>
+  <pattern> d2</pattern>
+  <pattern> dez3</pattern>
+  <pattern> d4na</pattern>
+  <pattern> dne4</pattern>
+  <pattern> dne�4k</pattern>
+  <pattern> d4ny</pattern>
+  <pattern> dos4</pattern>
+  <pattern> d4ve</pattern>
+  <pattern> d4v�</pattern>
+  <pattern> d4v�</pattern>
+  <pattern> e2</pattern>
+  <pattern> e4ch</pattern>
+  <pattern> e4ko</pattern>
+  <pattern> es3k</pattern>
+  <pattern> es3t</pattern>
+  <pattern> e4ve</pattern>
+  <pattern> f4ri</pattern>
+  <pattern> g2</pattern>
+  <pattern> h2</pattern>
+  <pattern> h4le</pattern>
+  <pattern> h4ne</pattern>
+  <pattern> i2</pattern>
+  <pattern> i4na</pattern>
+  <pattern> i4ni</pattern>
+  <pattern> i4no</pattern>
+  <pattern> is3l</pattern>
+  <pattern> j2</pattern>
+  <pattern> j4ak</pattern>
+  <pattern> je4dl</pattern>
+  <pattern> j4se</pattern>
+  <pattern> j4zd</pattern>
+  <pattern> j�d4</pattern>
+  <pattern> k2</pattern>
+  <pattern> k4li</pattern>
+  <pattern> k4ly</pattern>
+  <pattern> k8o8e7f8i7c8i7e8n8t </pattern>
+  <pattern> k8o8e7f8i7c8i7e8n7t8y </pattern>
+  <pattern> k��3d</pattern>
+  <pattern> l2</pattern>
+  <pattern> le4gr</pattern>
+  <pattern> li3kv</pattern>
+  <pattern> m2</pattern>
+  <pattern> mi3st4</pattern>
+  <pattern> moud3</pattern>
+  <pattern> na3�4</pattern>
+  <pattern> ne3c</pattern>
+  <pattern> ne�4</pattern>
+  <pattern> ne3�</pattern>
+  <pattern> ni2t</pattern>
+  <pattern> no4s3t</pattern>
+  <pattern> n4vp</pattern>
+  <pattern> n�1</pattern>
+  <pattern> n��4k</pattern>
+  <pattern> o2</pattern>
+  <pattern> o4b�</pattern>
+  <pattern> ode3</pattern>
+  <pattern> od3l</pattern>
+  <pattern> od3r�</pattern>
+  <pattern> o4ka</pattern>
+  <pattern> o4ko</pattern>
+  <pattern> o4na</pattern>
+  <pattern> o4ne</pattern>
+  <pattern> o4ni</pattern>
+  <pattern> o4no</pattern>
+  <pattern> o4nu</pattern>
+  <pattern> o4ny</pattern>
+  <pattern> o4n�</pattern>
+  <pattern> o4n�</pattern>
+  <pattern> o4pe</pattern>
+  <pattern> o4po</pattern>
+  <pattern> o4se</pattern>
+  <pattern> o4sl</pattern>
+  <pattern> os4to</pattern>
+  <pattern> os3t3r</pattern>
+  <pattern> os4t�</pattern>
+  <pattern> ot3r�</pattern>
+  <pattern> ot3v</pattern>
+  <pattern> o4t�</pattern>
+  <pattern> o4t�</pattern>
+  <pattern> ov�4t</pattern>
+  <pattern> o4za</pattern>
+  <pattern> oz3do</pattern>
+  <pattern> o4zi</pattern>
+  <pattern> o4zo</pattern>
+  <pattern> o4zu</pattern>
+  <pattern> o4�k</pattern>
+  <pattern> o4�l</pattern>
+  <pattern> o4�i</pattern>
+  <pattern> p2</pattern>
+  <pattern> pa4re</pattern>
+  <pattern> pa3t�</pattern>
+  <pattern> polk4l</pattern>
+  <pattern> po3�4</pattern>
+  <pattern> p4ro</pattern>
+  <pattern> p8r8o7j8e8k7�8n8� </pattern>
+  <pattern> p4r�</pattern>
+  <pattern> p4se</pattern>
+  <pattern> pu3b</pattern>
+  <pattern> r2</pattern>
+  <pattern> rej4</pattern>
+  <pattern> re3s</pattern>
+  <pattern> ro4k</pattern>
+  <pattern> roze3</pattern>
+  <pattern> roz3r</pattern>
+  <pattern> ru4dl</pattern>
+  <pattern> s2</pattern>
+  <pattern> s4ch</pattern>
+  <pattern> s4ci</pattern>
+  <pattern> sem4</pattern>
+  <pattern> se3pn</pattern>
+  <pattern> s4ke</pattern>
+  <pattern> sk4l</pattern>
+  <pattern> s4k�</pattern>
+  <pattern> s4le</pattern>
+  <pattern> s4na</pattern>
+  <pattern> s4ny</pattern>
+  <pattern> s4pe</pattern>
+  <pattern> s4po</pattern>
+  <pattern> st2</pattern>
+  <pattern> s4t�</pattern>
+  <pattern> s4�i</pattern>
+  <pattern> t2</pattern>
+  <pattern> u2</pattern>
+  <pattern> u4ba</pattern>
+  <pattern> u4be</pattern>
+  <pattern> u4bi</pattern>
+  <pattern> u4bo</pattern>
+  <pattern> u4de</pattern>
+  <pattern> u4di</pattern>
+  <pattern> u4do</pattern>
+  <pattern> u4du</pattern>
+  <pattern> u4d�</pattern>
+  <pattern> uh4n</pattern>
+  <pattern> uj4m</pattern>
+  <pattern> u4ko</pattern>
+  <pattern> u4ku</pattern>
+  <pattern> ul4h</pattern>
+  <pattern> u4ma</pattern>
+  <pattern> u4me</pattern>
+  <pattern> u4mi</pattern>
+  <pattern> u4mu</pattern>
+  <pattern> u4ne</pattern>
+  <pattern> u4ni</pattern>
+  <pattern> u4pa</pattern>
+  <pattern> u4pe</pattern>
+  <pattern> u4pi</pattern>
+  <pattern> up4n</pattern>
+  <pattern> u4po</pattern>
+  <pattern> u4pu</pattern>
+  <pattern> u4p�</pattern>
+  <pattern> u4p�</pattern>
+  <pattern> u4p�</pattern>
+  <pattern> u4ra</pattern>
+  <pattern> u4ro</pattern>
+  <pattern> u4r�</pattern>
+  <pattern> us2</pattern>
+  <pattern> u4so</pattern>
+  <pattern> u4st</pattern>
+  <pattern> u4sy</pattern>
+  <pattern> u4s�</pattern>
+  <pattern> ut2</pattern>
+  <pattern> u4vi</pattern>
+  <pattern> u4ze</pattern>
+  <pattern> u4�e</pattern>
+  <pattern> u4�i</pattern>
+  <pattern> u4��</pattern>
+  <pattern> u4�e</pattern>
+  <pattern> u4�i</pattern>
+  <pattern> u4�k</pattern>
+  <pattern> u�4t</pattern>
+  <pattern> u4��</pattern>
+  <pattern> u4�i</pattern>
+  <pattern> u�4n</pattern>
+  <pattern> u4�o</pattern>
+  <pattern> u4��</pattern>
+  <pattern> v2</pattern>
+  <pattern> va4dl</pattern>
+  <pattern> v4po</pattern>
+  <pattern> vy3</pattern>
+  <pattern> v4z�</pattern>
+  <pattern> v�1</pattern>
+  <pattern> v4�i</pattern>
+  <pattern> y4or</pattern>
+  <pattern> y4ve</pattern>
+  <pattern> z2</pattern>
+  <pattern> za3</pattern>
+  <pattern> zao3s</pattern>
+  <pattern> zar2</pattern>
+  <pattern> za�2</pattern>
+  <pattern> zd2</pattern>
+  <pattern> z4di</pattern>
+  <pattern> z4dr</pattern>
+  <pattern> z4ky</pattern>
+  <pattern> z4mn</pattern>
+  <pattern> z4no</pattern>
+  <pattern> z4nu</pattern>
+  <pattern> z4n�</pattern>
+  <pattern> z4n�</pattern>
+  <pattern> z4pe</pattern>
+  <pattern> z4po</pattern>
+  <pattern> z4t�</pattern>
+  <pattern> z4ve</pattern>
+  <pattern> z4vi</pattern>
+  <pattern> �2</pattern>
+  <pattern> �2</pattern>
+  <pattern> �2</pattern>
+  <pattern> �2</pattern>
+  <pattern> �4d�</pattern>
+  <pattern> �8h8l8o7p8�8�8�7k8a </pattern>
+  <pattern> �8h8l8o7p8�8�8�7k8y </pattern>
+  <pattern> �2</pattern>
+  <pattern> �4te</pattern>
+  <pattern> �2</pattern>
+  <pattern> �e3t</pattern>
+  <pattern> �4ka</pattern>
+  <pattern> �4ke</pattern>
+  <pattern> �4ky</pattern>
+  <pattern> �4�o</pattern>
+  <pattern> �4��</pattern>
+  <pattern> �2</pattern>
+  <pattern>8'8</pattern>
+  <pattern>a1</pattern>
+  <pattern>2a </pattern>
+  <pattern>aa3t2</pattern>
+  <pattern>ab3lon</pattern>
+  <pattern>ab4l�</pattern>
+  <pattern>ab3ri</pattern>
+  <pattern>ab4sb</pattern>
+  <pattern>ab2st</pattern>
+  <pattern>ac4ci</pattern>
+  <pattern>a2d</pattern>
+  <pattern>a3da</pattern>
+  <pattern>a3de</pattern>
+  <pattern>a3di</pattern>
+  <pattern>ad2la</pattern>
+  <pattern>a4dli</pattern>
+  <pattern>a4dl�</pattern>
+  <pattern>a4dl�</pattern>
+  <pattern>ad4me</pattern>
+  <pattern>ad4mu</pattern>
+  <pattern>a3do</pattern>
+  <pattern>ado4s</pattern>
+  <pattern>a3d3ra</pattern>
+  <pattern>ad3ri</pattern>
+  <pattern>a3dr�</pattern>
+  <pattern>a3du</pattern>
+  <pattern>a4du�</pattern>
+  <pattern>3a3dva</pattern>
+  <pattern>ad3vo</pattern>
+  <pattern>a3dy</pattern>
+  <pattern>a3d�</pattern>
+  <pattern>a3d�</pattern>
+  <pattern>a3d�</pattern>
+  <pattern>ad4�z</pattern>
+  <pattern>ad4��</pattern>
+  <pattern>a3d�</pattern>
+  <pattern>a3d�</pattern>
+  <pattern>a3d�</pattern>
+  <pattern>ae4vi</pattern>
+  <pattern>afi2a</pattern>
+  <pattern>a2g</pattern>
+  <pattern>a3ga</pattern>
+  <pattern>ag4fa</pattern>
+  <pattern>a3go</pattern>
+  <pattern>ag3ro</pattern>
+  <pattern>a3gu</pattern>
+  <pattern>a3g�</pattern>
+  <pattern>ah4li</pattern>
+  <pattern>ah3v</pattern>
+  <pattern>a2i</pattern>
+  <pattern>a3in</pattern>
+  <pattern>ai4re</pattern>
+  <pattern>a3iv</pattern>
+  <pattern>a2jd</pattern>
+  <pattern>a2jm</pattern>
+  <pattern>aj4me</pattern>
+  <pattern>aj2o</pattern>
+  <pattern>a2k</pattern>
+  <pattern>a3ke</pattern>
+  <pattern>a3ki</pattern>
+  <pattern>a3kl</pattern>
+  <pattern>ak4ni</pattern>
+  <pattern>a3ko</pattern>
+  <pattern>a3kr</pattern>
+  <pattern>a3ku</pattern>
+  <pattern>a3ky</pattern>
+  <pattern>a3k�</pattern>
+  <pattern>a3k�</pattern>
+  <pattern>a3k�</pattern>
+  <pattern>a3k�</pattern>
+  <pattern>a3k�</pattern>
+  <pattern>al4fb</pattern>
+  <pattern>al4kl</pattern>
+  <pattern>al4tz</pattern>
+  <pattern>al3��</pattern>
+  <pattern>am4bd</pattern>
+  <pattern>am4kl</pattern>
+  <pattern>am4nu</pattern>
+  <pattern>amo3s</pattern>
+  <pattern>am4�i</pattern>
+  <pattern>a4nae</pattern>
+  <pattern>a4name</pattern>
+  <pattern>an4dt</pattern>
+  <pattern>ane4sk</pattern>
+  <pattern>aneu4</pattern>
+  <pattern>an4sc</pattern>
+  <pattern>an4sg</pattern>
+  <pattern>an4sl</pattern>
+  <pattern>an4sm</pattern>
+  <pattern>an2sp</pattern>
+  <pattern>an4sv</pattern>
+  <pattern>an4t�</pattern>
+  <pattern>an4�h</pattern>
+  <pattern>ao4ed</pattern>
+  <pattern>ao4hm</pattern>
+  <pattern>ao4st�</pattern>
+  <pattern>ao4t�</pattern>
+  <pattern>ap4r </pattern>
+  <pattern>a4pso</pattern>
+  <pattern>ap3t</pattern>
+  <pattern>a4p� </pattern>
+  <pattern>a2r</pattern>
+  <pattern>a3ra</pattern>
+  <pattern>ar4dw</pattern>
+  <pattern>a3re</pattern>
+  <pattern>a4rer</pattern>
+  <pattern>ar4gl</pattern>
+  <pattern>a3ri</pattern>
+  <pattern>ar4kh</pattern>
+  <pattern>a3ro</pattern>
+  <pattern>a4rox</pattern>
+  <pattern>ar3st</pattern>
+  <pattern>a3ru</pattern>
+  <pattern>ar2va</pattern>
+  <pattern>a3ry</pattern>
+  <pattern>a3r�</pattern>
+  <pattern>a3r�</pattern>
+  <pattern>a3r�</pattern>
+  <pattern>ar3�2</pattern>
+  <pattern>ar4�r</pattern>
+  <pattern>a3r�</pattern>
+  <pattern>ar�s3</pattern>
+  <pattern>a2s</pattern>
+  <pattern>a3sa</pattern>
+  <pattern>a3se</pattern>
+  <pattern>a3sh</pattern>
+  <pattern>a3sin</pattern>
+  <pattern>as3n�</pattern>
+  <pattern>a3so</pattern>
+  <pattern>as3pi</pattern>
+  <pattern>as4tat</pattern>
+  <pattern>a4stk</pattern>
+  <pattern>as4tm</pattern>
+  <pattern>a4stru </pattern>
+  <pattern>as3tv</pattern>
+  <pattern>a3su</pattern>
+  <pattern>a3sv</pattern>
+  <pattern>a3sy</pattern>
+  <pattern>a3s�</pattern>
+  <pattern>a3s�</pattern>
+  <pattern>a3s�</pattern>
+  <pattern>a3s�</pattern>
+  <pattern>a2t</pattern>
+  <pattern>a3ta</pattern>
+  <pattern>at4ch</pattern>
+  <pattern>a3te</pattern>
+  <pattern>a3ti</pattern>
+  <pattern>a4tio</pattern>
+  <pattern>at4kl</pattern>
+  <pattern>at3lo</pattern>
+  <pattern>a3to</pattern>
+  <pattern>a3tr</pattern>
+  <pattern>at3re</pattern>
+  <pattern>at3ron</pattern>
+  <pattern>at3rov</pattern>
+  <pattern>a4tru</pattern>
+  <pattern>at4r�</pattern>
+  <pattern>at4th</pattern>
+  <pattern>a3tu</pattern>
+  <pattern>a3tv</pattern>
+  <pattern>a3ty</pattern>
+  <pattern>a3t�</pattern>
+  <pattern>a3t�</pattern>
+  <pattern>a3t�</pattern>
+  <pattern>a3t�</pattern>
+  <pattern>a3t�</pattern>
+  <pattern>a3t�</pattern>
+  <pattern>at1�</pattern>
+  <pattern>a4t�� </pattern>
+  <pattern>a3t�</pattern>
+  <pattern>a2u</pattern>
+  <pattern>au4gs</pattern>
+  <pattern>a3uj</pattern>
+  <pattern>auj4m</pattern>
+  <pattern>aus3t</pattern>
+  <pattern>a3u�</pattern>
+  <pattern>2av</pattern>
+  <pattern>av3d</pattern>
+  <pattern>av4d </pattern>
+  <pattern>av3lo</pattern>
+  <pattern>a4vlu</pattern>
+  <pattern>a4vl�</pattern>
+  <pattern>av3t</pattern>
+  <pattern>av4ti</pattern>
+  <pattern>2ay</pattern>
+  <pattern>ay4on</pattern>
+  <pattern>az3k</pattern>
+  <pattern>az3la</pattern>
+  <pattern>az4l�</pattern>
+  <pattern>az3ni</pattern>
+  <pattern>a3zp</pattern>
+  <pattern>a�3t</pattern>
+  <pattern>a2�</pattern>
+  <pattern>a3�a</pattern>
+  <pattern>a3�e</pattern>
+  <pattern>a3�i</pattern>
+  <pattern>a3�l</pattern>
+  <pattern>a�4m�</pattern>
+  <pattern>a3�o</pattern>
+  <pattern>a3�u</pattern>
+  <pattern>a3��</pattern>
+  <pattern>a3��</pattern>
+  <pattern>a3��</pattern>
+  <pattern>a2�</pattern>
+  <pattern>a3�o</pattern>
+  <pattern>a3�u</pattern>
+  <pattern>a�e4k</pattern>
+  <pattern>a3��</pattern>
+  <pattern>a4�pl</pattern>
+  <pattern>a4�py</pattern>
+  <pattern>a2�</pattern>
+  <pattern>2b </pattern>
+  <pattern>3ba </pattern>
+  <pattern>ba4br</pattern>
+  <pattern>ba4chr</pattern>
+  <pattern>ba3ka</pattern>
+  <pattern>ba4se</pattern>
+  <pattern>2b1c</pattern>
+  <pattern>b1d</pattern>
+  <pattern>be4ef</pattern>
+  <pattern>be4et</pattern>
+  <pattern>bej4m</pattern>
+  <pattern>be3p</pattern>
+  <pattern>beu4r</pattern>
+  <pattern>be2z3</pattern>
+  <pattern>beze3</pattern>
+  <pattern>b1h</pattern>
+  <pattern>1bi</pattern>
+  <pattern>bi2b3</pattern>
+  <pattern>bis3</pattern>
+  <pattern>bist4</pattern>
+  <pattern>bi4tr</pattern>
+  <pattern>b1j</pattern>
+  <pattern>2bk</pattern>
+  <pattern>3bl </pattern>
+  <pattern>bl4bl</pattern>
+  <pattern>b2lem</pattern>
+  <pattern>b2les</pattern>
+  <pattern>3blk</pattern>
+  <pattern>b4l�n</pattern>
+  <pattern>b2l�m</pattern>
+  <pattern>b1m</pattern>
+  <pattern>2bn</pattern>
+  <pattern>1bo</pattern>
+  <pattern>bo4et</pattern>
+  <pattern>bo4jm</pattern>
+  <pattern>bo4ok</pattern>
+  <pattern>bo4tr</pattern>
+  <pattern>bou3s</pattern>
+  <pattern>bo4�k</pattern>
+  <pattern>b2ral</pattern>
+  <pattern>b2ran</pattern>
+  <pattern>2bri</pattern>
+  <pattern>b4rodit</pattern>
+  <pattern>b4rou</pattern>
+  <pattern>broz4</pattern>
+  <pattern>b2ru</pattern>
+  <pattern>b3ru </pattern>
+  <pattern>b3rub</pattern>
+  <pattern>b2r�n</pattern>
+  <pattern>2b1s2</pattern>
+  <pattern>bs3tr</pattern>
+  <pattern>2b1t</pattern>
+  <pattern>bt�h4</pattern>
+  <pattern>bu2c</pattern>
+  <pattern>bu4en</pattern>
+  <pattern>3by </pattern>
+  <pattern>bys3</pattern>
+  <pattern>by4sm</pattern>
+  <pattern>by4t�</pattern>
+  <pattern>by4zn</pattern>
+  <pattern>b2z</pattern>
+  <pattern>1b�</pattern>
+  <pattern>b�4rc</pattern>
+  <pattern>1b�</pattern>
+  <pattern>3b�n</pattern>
+  <pattern>b�4rc</pattern>
+  <pattern>2b1�</pattern>
+  <pattern>1b� </pattern>
+  <pattern>b�3ta</pattern>
+  <pattern>2b�</pattern>
+  <pattern>b3�a</pattern>
+  <pattern>b3�e </pattern>
+  <pattern>b�e4s</pattern>
+  <pattern>b1��</pattern>
+  <pattern>2b�2</pattern>
+  <pattern>2c </pattern>
+  <pattern>1ca</pattern>
+  <pattern>cad4l</pattern>
+  <pattern>ca4es</pattern>
+  <pattern>2cc</pattern>
+  <pattern>1ce</pattern>
+  <pattern>cech4</pattern>
+  <pattern>ced4l</pattern>
+  <pattern>celo3</pattern>
+  <pattern>ce4ns</pattern>
+  <pattern>ce4ov</pattern>
+  <pattern>ce4ps</pattern>
+  <pattern>cer4v</pattern>
+  <pattern>ce2u</pattern>
+  <pattern>2ch </pattern>
+  <pattern>1cha</pattern>
+  <pattern>4chalg</pattern>
+  <pattern>3che</pattern>
+  <pattern>4che </pattern>
+  <pattern>2chl</pattern>
+  <pattern>ch4ly</pattern>
+  <pattern>ch4mb</pattern>
+  <pattern>2ch3n</pattern>
+  <pattern>2cht</pattern>
+  <pattern>4chte</pattern>
+  <pattern>1chu</pattern>
+  <pattern>ch4u </pattern>
+  <pattern>1chy</pattern>
+  <pattern>1ch�</pattern>
+  <pattern>2ch�</pattern>
+  <pattern>1ci</pattern>
+  <pattern>cien4c</pattern>
+  <pattern>cik4l</pattern>
+  <pattern>2ck2</pattern>
+  <pattern>c4ket</pattern>
+  <pattern>ckte4r�</pattern>
+  <pattern>2cl</pattern>
+  <pattern>c3la</pattern>
+  <pattern>c3l�</pattern>
+  <pattern>2cn</pattern>
+  <pattern>1co</pattern>
+  <pattern>co4at</pattern>
+  <pattern>co4mm</pattern>
+  <pattern>co4�p</pattern>
+  <pattern>c2p</pattern>
+  <pattern>2ct</pattern>
+  <pattern>c2ti</pattern>
+  <pattern>ctis4</pattern>
+  <pattern>ct4la</pattern>
+  <pattern>ct2n</pattern>
+  <pattern>c3tv</pattern>
+  <pattern>c2t�</pattern>
+  <pattern>cuk1</pattern>
+  <pattern>1c2v</pattern>
+  <pattern>cy2</pattern>
+  <pattern>1c�</pattern>
+  <pattern>1c�</pattern>
+  <pattern>c�4pl</pattern>
+  <pattern>2c�</pattern>
+  <pattern>1c�</pattern>
+  <pattern>2d </pattern>
+  <pattern>1da</pattern>
+  <pattern>da3d</pattern>
+  <pattern>da4j�</pattern>
+  <pattern>da4kl</pattern>
+  <pattern>da4tr</pattern>
+  <pattern>d1b</pattern>
+  <pattern>d2ba</pattern>
+  <pattern>4dbat </pattern>
+  <pattern>d2b�</pattern>
+  <pattern>2d1c</pattern>
+  <pattern>dch4l</pattern>
+  <pattern>3dch4n</pattern>
+  <pattern>d1d</pattern>
+  <pattern>dd4ha</pattern>
+  <pattern>1de</pattern>
+  <pattern>de4bre</pattern>
+  <pattern>de3hn</pattern>
+  <pattern>de3jd</pattern>
+  <pattern>dej4mo</pattern>
+  <pattern>de3kl</pattern>
+  <pattern>de3kv</pattern>
+  <pattern>de2na</pattern>
+  <pattern>de2oz</pattern>
+  <pattern>de3sl</pattern>
+  <pattern>de4sm</pattern>
+  <pattern>de4so</pattern>
+  <pattern>de2sp</pattern>
+  <pattern>des4t</pattern>
+  <pattern>de3str</pattern>
+  <pattern>de1x</pattern>
+  <pattern>de4xt</pattern>
+  <pattern>de2z</pattern>
+  <pattern>de3zn</pattern>
+  <pattern>dez3o</pattern>
+  <pattern>de3�t</pattern>
+  <pattern>de4�p</pattern>
+  <pattern>2d1h</pattern>
+  <pattern>1di</pattern>
+  <pattern>di4gg</pattern>
+  <pattern>4dind</pattern>
+  <pattern>dis3k</pattern>
+  <pattern>di4so</pattern>
+  <pattern>d1j</pattern>
+  <pattern>dj4us</pattern>
+  <pattern>2dk</pattern>
+  <pattern>d3kv</pattern>
+  <pattern>3dl </pattern>
+  <pattern>d1la</pattern>
+  <pattern>d4lab</pattern>
+  <pattern>d4lak</pattern>
+  <pattern>d3li</pattern>
+  <pattern>1dln</pattern>
+  <pattern>d2lou</pattern>
+  <pattern>d3lou </pattern>
+  <pattern>d2lu</pattern>
+  <pattern>d3lu�</pattern>
+  <pattern>d4l�</pattern>
+  <pattern>d1l�</pattern>
+  <pattern>2d1l�</pattern>
+  <pattern>d2l�</pattern>
+  <pattern>d1m</pattern>
+  <pattern>1dmd</pattern>
+  <pattern>dm�4</pattern>
+  <pattern>2dn</pattern>
+  <pattern>1do</pattern>
+  <pattern>4dobl</pattern>
+  <pattern>4doboj</pattern>
+  <pattern>dob4rat</pattern>
+  <pattern>do3by</pattern>
+  <pattern>do3b�</pattern>
+  <pattern>do3b�</pattern>
+  <pattern>do1d</pattern>
+  <pattern>4do4dd</pattern>
+  <pattern>4do4dj</pattern>
+  <pattern>dod4n</pattern>
+  <pattern>do3h</pattern>
+  <pattern>doj4m</pattern>
+  <pattern>4dokn</pattern>
+  <pattern>4doly</pattern>
+  <pattern>do3mn</pattern>
+  <pattern>domoh4</pattern>
+  <pattern>do3p</pattern>
+  <pattern>do4pc</pattern>
+  <pattern>dop4n</pattern>
+  <pattern>dor2v</pattern>
+  <pattern>do1s</pattern>
+  <pattern>dos4p</pattern>
+  <pattern>dos4tiv</pattern>
+  <pattern>do3t</pattern>
+  <pattern>do3uk</pattern>
+  <pattern>do3u�</pattern>
+  <pattern>do3z2</pattern>
+  <pattern>doz4n</pattern>
+  <pattern>do3�</pattern>
+  <pattern>4do4�n</pattern>
+  <pattern>do�4t</pattern>
+  <pattern>do4�p</pattern>
+  <pattern>4dran</pattern>
+  <pattern>d4rap</pattern>
+  <pattern>d1re</pattern>
+  <pattern>d4ren</pattern>
+  <pattern>3drobn</pattern>
+  <pattern>d3ros</pattern>
+  <pattern>d3rou</pattern>
+  <pattern>d3ro�</pattern>
+  <pattern>dr4sc</pattern>
+  <pattern>d3ru�</pattern>
+  <pattern>d3r�</pattern>
+  <pattern>d3r�</pattern>
+  <pattern>d4r�v</pattern>
+  <pattern>2d1s2</pattern>
+  <pattern>ds4k�</pattern>
+  <pattern>ds4po</pattern>
+  <pattern>d1t</pattern>
+  <pattern>d3tl</pattern>
+  <pattern>d3t�</pattern>
+  <pattern>1du</pattern>
+  <pattern>dum3�</pattern>
+  <pattern>du3na</pattern>
+  <pattern>du3p</pattern>
+  <pattern>du4pn</pattern>
+  <pattern>2dur</pattern>
+  <pattern>du3si</pattern>
+  <pattern>du4� </pattern>
+  <pattern>d2v</pattern>
+  <pattern>d4vac</pattern>
+  <pattern>d3ve</pattern>
+  <pattern>d3vl</pattern>
+  <pattern>d3vr</pattern>
+  <pattern>d3vy</pattern>
+  <pattern>d3v�</pattern>
+  <pattern>d3v�</pattern>
+  <pattern>d3v�</pattern>
+  <pattern>1dy</pattern>
+  <pattern>dy4su</pattern>
+  <pattern>d3zb</pattern>
+  <pattern>d3zd</pattern>
+  <pattern>d3zn</pattern>
+  <pattern>1d�</pattern>
+  <pattern>1d�</pattern>
+  <pattern>1d�</pattern>
+  <pattern>1d�</pattern>
+  <pattern>2d1�</pattern>
+  <pattern>1d�</pattern>
+  <pattern>3d�j</pattern>
+  <pattern>2d�</pattern>
+  <pattern>d1�a</pattern>
+  <pattern>d�e4k</pattern>
+  <pattern>d4�ep</pattern>
+  <pattern>d�e4pn</pattern>
+  <pattern>d4�ev</pattern>
+  <pattern>d1��</pattern>
+  <pattern>d2��t</pattern>
+  <pattern>2d�2</pattern>
+  <pattern>d3�k</pattern>
+  <pattern>d3�t</pattern>
+  <pattern>1d�</pattern>
+  <pattern>3d� </pattern>
+  <pattern>d�3s</pattern>
+  <pattern>d2�2</pattern>
+  <pattern>2e </pattern>
+  <pattern>e1a</pattern>
+  <pattern>ea3dr</pattern>
+  <pattern>e2ar</pattern>
+  <pattern>e1b</pattern>
+  <pattern>eb4er</pattern>
+  <pattern>ebez2</pattern>
+  <pattern>eb4li</pattern>
+  <pattern>e2b�</pattern>
+  <pattern>e4ch </pattern>
+  <pattern>e3chl </pattern>
+  <pattern>e4chm</pattern>
+  <pattern>e3cho</pattern>
+  <pattern>e2chr</pattern>
+  <pattern>e3chv</pattern>
+  <pattern>e4ch�</pattern>
+  <pattern>ed4be</pattern>
+  <pattern>ed4kv</pattern>
+  <pattern>ed1l</pattern>
+  <pattern>ed2ma</pattern>
+  <pattern>e3dmn</pattern>
+  <pattern>ed3v</pattern>
+  <pattern>ed4��</pattern>
+  <pattern>e1e</pattern>
+  <pattern>ee4th</pattern>
+  <pattern>ee3xi</pattern>
+  <pattern>eg4gi</pattern>
+  <pattern>e1ha</pattern>
+  <pattern>e1he</pattern>
+  <pattern>ehno4</pattern>
+  <pattern>eh4n�</pattern>
+  <pattern>e1ho</pattern>
+  <pattern>e1hr</pattern>
+  <pattern>e1hu</pattern>
+  <pattern>e1hy</pattern>
+  <pattern>e1h�</pattern>
+  <pattern>e1h�</pattern>
+  <pattern>e1i</pattern>
+  <pattern>eilus3</pattern>
+  <pattern>ej3ag</pattern>
+  <pattern>e3jas</pattern>
+  <pattern>e1je</pattern>
+  <pattern>e3jed</pattern>
+  <pattern>ej3ele</pattern>
+  <pattern>e3jez</pattern>
+  <pattern>ej3in</pattern>
+  <pattern>e3jis</pattern>
+  <pattern>ej1m</pattern>
+  <pattern>ej3mo</pattern>
+  <pattern>e3jmu</pattern>
+  <pattern>ej1o</pattern>
+  <pattern>ej1u</pattern>
+  <pattern>eju3st</pattern>
+  <pattern>ej3v</pattern>
+  <pattern>e2k</pattern>
+  <pattern>e3ka</pattern>
+  <pattern>e3ke</pattern>
+  <pattern>e4kly</pattern>
+  <pattern>e3ko</pattern>
+  <pattern>e3kr</pattern>
+  <pattern>e3ku</pattern>
+  <pattern>e3ky</pattern>
+  <pattern>e3k�</pattern>
+  <pattern>e3k�</pattern>
+  <pattern>e3k�</pattern>
+  <pattern>e3k�</pattern>
+  <pattern>e3k�</pattern>
+  <pattern>e1la</pattern>
+  <pattern>e4lau</pattern>
+  <pattern>el4dv</pattern>
+  <pattern>e1le</pattern>
+  <pattern>e1lo</pattern>
+  <pattern>e1lu</pattern>
+  <pattern>e1ly</pattern>
+  <pattern>el4ze</pattern>
+  <pattern>e1l�</pattern>
+  <pattern>e1l�</pattern>
+  <pattern>e1l�</pattern>
+  <pattern>e1ml</pattern>
+  <pattern>e4ml�</pattern>
+  <pattern>emo3k</pattern>
+  <pattern>e1mr</pattern>
+  <pattern>e1my</pattern>
+  <pattern>e3m�</pattern>
+  <pattern>e1m�</pattern>
+  <pattern>e1m�</pattern>
+  <pattern>e1m�</pattern>
+  <pattern>e3m�</pattern>
+  <pattern>e3m�</pattern>
+  <pattern>em3�e</pattern>
+  <pattern>en4dv</pattern>
+  <pattern>enitos4</pattern>
+  <pattern>en4sc</pattern>
+  <pattern>en4si</pattern>
+  <pattern>ent3r</pattern>
+  <pattern>e1o</pattern>
+  <pattern>eo3by</pattern>
+  <pattern>eoch3r</pattern>
+  <pattern>eod3l</pattern>
+  <pattern>eo4du</pattern>
+  <pattern>e4ole</pattern>
+  <pattern>eo1s</pattern>
+  <pattern>eo2st</pattern>
+  <pattern>eo4t�</pattern>
+  <pattern>eo3z</pattern>
+  <pattern>eo4zb</pattern>
+  <pattern>eo4zd</pattern>
+  <pattern>eo�e3</pattern>
+  <pattern>epa3t</pattern>
+  <pattern>e2pl</pattern>
+  <pattern>e4pni</pattern>
+  <pattern>ep2no</pattern>
+  <pattern>e4pn�</pattern>
+  <pattern>epo�3t</pattern>
+  <pattern>epro4z�</pattern>
+  <pattern>ep4tl</pattern>
+  <pattern>ep4tm</pattern>
+  <pattern>ep4tn</pattern>
+  <pattern>e4ptu</pattern>
+  <pattern>epy3</pattern>
+  <pattern>2er</pattern>
+  <pattern>e1ra</pattern>
+  <pattern>er4a </pattern>
+  <pattern>e1re</pattern>
+  <pattern>e1ri</pattern>
+  <pattern>e1ro</pattern>
+  <pattern>er3s</pattern>
+  <pattern>er4s </pattern>
+  <pattern>er4sn</pattern>
+  <pattern>e1ru</pattern>
+  <pattern>e1ry</pattern>
+  <pattern>e1r�</pattern>
+  <pattern>e1r�</pattern>
+  <pattern>e1r�</pattern>
+  <pattern>e1r�</pattern>
+  <pattern>e1s</pattern>
+  <pattern>e4sag</pattern>
+  <pattern>e2sce</pattern>
+  <pattern>e4sin</pattern>
+  <pattern>esi4s</pattern>
+  <pattern>e2sk</pattern>
+  <pattern>es4k </pattern>
+  <pattern>e4s4kn</pattern>
+  <pattern>es3ku </pattern>
+  <pattern>es3ky</pattern>
+  <pattern>es3k�</pattern>
+  <pattern>e2sl</pattern>
+  <pattern>e4s3li</pattern>
+  <pattern>e4sly</pattern>
+  <pattern>es2m</pattern>
+  <pattern>e4sp </pattern>
+  <pattern>es4pe</pattern>
+  <pattern>e2st</pattern>
+  <pattern>e4st </pattern>
+  <pattern>e4ste</pattern>
+  <pattern>es3ti�</pattern>
+  <pattern>es4tol</pattern>
+  <pattern>e4strou</pattern>
+  <pattern>es3t�n</pattern>
+  <pattern>e1t</pattern>
+  <pattern>e4tki</pattern>
+  <pattern>e4tkr</pattern>
+  <pattern>e4tli</pattern>
+  <pattern>e4tly</pattern>
+  <pattern>et3ri</pattern>
+  <pattern>et3ro</pattern>
+  <pattern>et3r�</pattern>
+  <pattern>et4�n</pattern>
+  <pattern>et1�</pattern>
+  <pattern>e1u</pattern>
+  <pattern>eu3b</pattern>
+  <pattern>eu3ct</pattern>
+  <pattern>eu3d</pattern>
+  <pattern>eu3k</pattern>
+  <pattern>eu3m</pattern>
+  <pattern>eu4m </pattern>
+  <pattern>eu3n</pattern>
+  <pattern>eu3p</pattern>
+  <pattern>eu3r</pattern>
+  <pattern>eu4r </pattern>
+  <pattern>e4ura</pattern>
+  <pattern>eu4ras</pattern>
+  <pattern>eu4rg</pattern>
+  <pattern>eu3s2</pattern>
+  <pattern>eu3t</pattern>
+  <pattern>e4u4t </pattern>
+  <pattern>eu4tra</pattern>
+  <pattern>eu4ts</pattern>
+  <pattern>eu3v</pattern>
+  <pattern>eu3z</pattern>
+  <pattern>eu3�</pattern>
+  <pattern>e3vd</pattern>
+  <pattern>eve4�</pattern>
+  <pattern>e3v2k</pattern>
+  <pattern>e4vsk</pattern>
+  <pattern>evy3</pattern>
+  <pattern>evyjad4</pattern>
+  <pattern>evyp�4t</pattern>
+  <pattern>evy4�k</pattern>
+  <pattern>ev�4tr</pattern>
+  <pattern>ex4ta</pattern>
+  <pattern>e3xu</pattern>
+  <pattern>ey4or</pattern>
+  <pattern>ey4ov</pattern>
+  <pattern>ezaos3</pattern>
+  <pattern>ez4ap</pattern>
+  <pattern>ez4bo</pattern>
+  <pattern>ez3de</pattern>
+  <pattern>ez3dov</pattern>
+  <pattern>ez3du</pattern>
+  <pattern>ez4d�</pattern>
+  <pattern>e3ze</pattern>
+  <pattern>ez4ed2</pattern>
+  <pattern>ez4ej</pattern>
+  <pattern>ez4el</pattern>
+  <pattern>ez4er</pattern>
+  <pattern>ez4es</pattern>
+  <pattern>ez4ez</pattern>
+  <pattern>ez4e�</pattern>
+  <pattern>ezis4</pattern>
+  <pattern>ez4it</pattern>
+  <pattern>ez4le</pattern>
+  <pattern>ez4n�</pattern>
+  <pattern>ez4n�</pattern>
+  <pattern>ez4py</pattern>
+  <pattern>ez2t</pattern>
+  <pattern>ez4�c</pattern>
+  <pattern>ez4�h</pattern>
+  <pattern>e3z�</pattern>
+  <pattern>ez4�e</pattern>
+  <pattern>e3z�</pattern>
+  <pattern>ez4�e</pattern>
+  <pattern>e1�</pattern>
+  <pattern>e3�n</pattern>
+  <pattern>e�1</pattern>
+  <pattern>e�my4</pattern>
+  <pattern>e�3n</pattern>
+  <pattern>e�3p</pattern>
+  <pattern>e�3t</pattern>
+  <pattern>e�3�</pattern>
+  <pattern>e�4kat</pattern>
+  <pattern>e1�t</pattern>
+  <pattern>e�4te</pattern>
+  <pattern>e4�ti</pattern>
+  <pattern>e4�t�</pattern>
+  <pattern>e2�</pattern>
+  <pattern>e3�o</pattern>
+  <pattern>e3�u</pattern>
+  <pattern>e3��</pattern>
+  <pattern>e1�</pattern>
+  <pattern>e�e4k</pattern>
+  <pattern>e�4ku</pattern>
+  <pattern>e3��</pattern>
+  <pattern>e2�</pattern>
+  <pattern>e3�e</pattern>
+  <pattern>e3�i</pattern>
+  <pattern>e4�ka</pattern>
+  <pattern>e3�l</pattern>
+  <pattern>e�4l�</pattern>
+  <pattern>e3�o</pattern>
+  <pattern>e�4to</pattern>
+  <pattern>e�t�h4</pattern>
+  <pattern>e3��</pattern>
+  <pattern>e��4</pattern>
+  <pattern>1f</pattern>
+  <pattern>2f </pattern>
+  <pattern>fe4in</pattern>
+  <pattern>fene4</pattern>
+  <pattern>fe4ue</pattern>
+  <pattern>fi4em</pattern>
+  <pattern>fi4fl</pattern>
+  <pattern>f2l</pattern>
+  <pattern>f3l�</pattern>
+  <pattern>fl�4r</pattern>
+  <pattern>fm4no</pattern>
+  <pattern>2fn</pattern>
+  <pattern>2fr</pattern>
+  <pattern>f4ran</pattern>
+  <pattern>f4ras</pattern>
+  <pattern>3frek</pattern>
+  <pattern>f1ri</pattern>
+  <pattern>2fs</pattern>
+  <pattern>fs4te</pattern>
+  <pattern>2ft</pattern>
+  <pattern>fu4ch</pattern>
+  <pattern>2f�</pattern>
+  <pattern>f2�</pattern>
+  <pattern>1g</pattern>
+  <pattern>2g </pattern>
+  <pattern>ga4u�</pattern>
+  <pattern>ge2s</pattern>
+  <pattern>ghou4</pattern>
+  <pattern>3gic</pattern>
+  <pattern>3gin</pattern>
+  <pattern>gi4�m</pattern>
+  <pattern>g4lom</pattern>
+  <pattern>2g1m</pattern>
+  <pattern>2gn</pattern>
+  <pattern>g4noi</pattern>
+  <pattern>g4nos</pattern>
+  <pattern>go1</pattern>
+  <pattern>go4hm</pattern>
+  <pattern>3graf</pattern>
+  <pattern>gu4el</pattern>
+  <pattern>gu4it</pattern>
+  <pattern>gu3m</pattern>
+  <pattern>gu4m </pattern>
+  <pattern>gus4t</pattern>
+  <pattern>gu3v</pattern>
+  <pattern>2h </pattern>
+  <pattern>ha4ag</pattern>
+  <pattern>ha4ar</pattern>
+  <pattern>ha4bl</pattern>
+  <pattern>ha4br</pattern>
+  <pattern>ha3dl</pattern>
+  <pattern>ha4dla</pattern>
+  <pattern>ha4ke</pattern>
+  <pattern>has3t</pattern>
+  <pattern>hatos4</pattern>
+  <pattern>ha4yd</pattern>
+  <pattern>h2b</pattern>
+  <pattern>h2c</pattern>
+  <pattern>2hd</pattern>
+  <pattern>he4br</pattern>
+  <pattern>he4id</pattern>
+  <pattern>hej4s</pattern>
+  <pattern>he2s</pattern>
+  <pattern>he2u</pattern>
+  <pattern>he3x</pattern>
+  <pattern>hi4an</pattern>
+  <pattern>hi3er</pattern>
+  <pattern>hi4gh</pattern>
+  <pattern>hi4re</pattern>
+  <pattern>2hk</pattern>
+  <pattern>4hla </pattern>
+  <pattern>h4led</pattern>
+  <pattern>h3len</pattern>
+  <pattern>2hli</pattern>
+  <pattern>4h3lo </pattern>
+  <pattern>h3lob</pattern>
+  <pattern>h3lop</pattern>
+  <pattern>h3lov</pattern>
+  <pattern>h3luj</pattern>
+  <pattern>2h1ly</pattern>
+  <pattern>4hl� </pattern>
+  <pattern>h4l�s</pattern>
+  <pattern>h3l� </pattern>
+  <pattern>4hl�k</pattern>
+  <pattern>2hl�</pattern>
+  <pattern>h2m</pattern>
+  <pattern>2h2n</pattern>
+  <pattern>h3ne</pattern>
+  <pattern>h4ned</pattern>
+  <pattern>h3niv</pattern>
+  <pattern>h4noj</pattern>
+  <pattern>3hn�d</pattern>
+  <pattern>3hodin</pattern>
+  <pattern>ho3str</pattern>
+  <pattern>hos4t�</pattern>
+  <pattern>4hove</pattern>
+  <pattern>4hovna</pattern>
+  <pattern>4hovny</pattern>
+  <pattern>4hovn�</pattern>
+  <pattern>4hovn�</pattern>
+  <pattern>h2r</pattern>
+  <pattern>hra4p</pattern>
+  <pattern>2h1t</pattern>
+  <pattern>h4tin</pattern>
+  <pattern>h4t�t</pattern>
+  <pattern>h2t�</pattern>
+  <pattern>hu4ch</pattern>
+  <pattern>hu3mo</pattern>
+  <pattern>hu4t�</pattern>
+  <pattern>2h2v</pattern>
+  <pattern>hyd1</pattern>
+  <pattern>hy4do</pattern>
+  <pattern>hy4ps</pattern>
+  <pattern>hys3</pattern>
+  <pattern>hy2t3r</pattern>
+  <pattern>hy4zd</pattern>
+  <pattern>h�4bl</pattern>
+  <pattern>h1�</pattern>
+  <pattern>2h�</pattern>
+  <pattern>h�2</pattern>
+  <pattern>h�4by</pattern>
+  <pattern>h2�</pattern>
+  <pattern>2i </pattern>
+  <pattern>i1a</pattern>
+  <pattern>ia3d</pattern>
+  <pattern>ia3g2</pattern>
+  <pattern>i4al </pattern>
+  <pattern>ias4t</pattern>
+  <pattern>ia4tr</pattern>
+  <pattern>i1b</pattern>
+  <pattern>ib2l</pattern>
+  <pattern>i2b1r</pattern>
+  <pattern>i1ch</pattern>
+  <pattern>i4ch�</pattern>
+  <pattern>i1d</pattern>
+  <pattern>id4ge</pattern>
+  <pattern>id2l</pattern>
+  <pattern>id4lo </pattern>
+  <pattern>i4dl�</pattern>
+  <pattern>i1em</pattern>
+  <pattern>i1en</pattern>
+  <pattern>i1et</pattern>
+  <pattern>if1r</pattern>
+  <pattern>ig4ne</pattern>
+  <pattern>i1h</pattern>
+  <pattern>i2hl</pattern>
+  <pattern>i3hl </pattern>
+  <pattern>i4hli</pattern>
+  <pattern>ih3n</pattern>
+  <pattern>ih4na</pattern>
+  <pattern>i3im</pattern>
+  <pattern>i1j</pattern>
+  <pattern>ijed4</pattern>
+  <pattern>ij4me</pattern>
+  <pattern>ij4mi</pattern>
+  <pattern>i2kl</pattern>
+  <pattern>ik3le</pattern>
+  <pattern>ik3lo </pattern>
+  <pattern>ik3m</pattern>
+  <pattern>ik4ry</pattern>
+  <pattern>i4kve</pattern>
+  <pattern>ik4��</pattern>
+  <pattern>i1l</pattern>
+  <pattern>il4ba</pattern>
+  <pattern>ili�4n</pattern>
+  <pattern>i4lnu</pattern>
+  <pattern>ilu3</pattern>
+  <pattern>i1m</pattern>
+  <pattern>i4mla</pattern>
+  <pattern>i4mly</pattern>
+  <pattern>i4mun</pattern>
+  <pattern>i2n</pattern>
+  <pattern>i3na</pattern>
+  <pattern>ina3d</pattern>
+  <pattern>in4cm</pattern>
+  <pattern>in4dl</pattern>
+  <pattern>i3ne</pattern>
+  <pattern>3infe</pattern>
+  <pattern>in4gh</pattern>
+  <pattern>in4gp</pattern>
+  <pattern>in4gs</pattern>
+  <pattern>in4gt</pattern>
+  <pattern>i3ni</pattern>
+  <pattern>i3no</pattern>
+  <pattern>i3nu</pattern>
+  <pattern>i3ny</pattern>
+  <pattern>i3n�</pattern>
+  <pattern>i3n�</pattern>
+  <pattern>i3n�</pattern>
+  <pattern>i3n�</pattern>
+  <pattern>i3n�</pattern>
+  <pattern>in4�p</pattern>
+  <pattern>i3n�</pattern>
+  <pattern>i1o</pattern>
+  <pattern>io4sk</pattern>
+  <pattern>i2ps</pattern>
+  <pattern>i1r</pattern>
+  <pattern>iro4s</pattern>
+  <pattern>i1sa</pattern>
+  <pattern>is3c</pattern>
+  <pattern>is4ch</pattern>
+  <pattern>is4k </pattern>
+  <pattern>is3ka</pattern>
+  <pattern>is3ke</pattern>
+  <pattern>is3ko </pattern>
+  <pattern>is3kr</pattern>
+  <pattern>is3ku</pattern>
+  <pattern>is3kv</pattern>
+  <pattern>is3ky</pattern>
+  <pattern>i3slav</pattern>
+  <pattern>is3lo</pattern>
+  <pattern>is3l�</pattern>
+  <pattern>is3pl</pattern>
+  <pattern>is3po</pattern>
+  <pattern>is1t</pattern>
+  <pattern>is4tal</pattern>
+  <pattern>is4tat</pattern>
+  <pattern>is4th</pattern>
+  <pattern>ist3v</pattern>
+  <pattern>is3t�</pattern>
+  <pattern>i1sy</pattern>
+  <pattern>i3s�</pattern>
+  <pattern>i1t</pattern>
+  <pattern>it1r</pattern>
+  <pattern>it4rh</pattern>
+  <pattern>it4rp</pattern>
+  <pattern>it4se</pattern>
+  <pattern>it4su</pattern>
+  <pattern>i2tv</pattern>
+  <pattern>i1um</pattern>
+  <pattern>iv3d</pattern>
+  <pattern>i1x</pattern>
+  <pattern>ix4td</pattern>
+  <pattern>i3zp</pattern>
+  <pattern>iz1r</pattern>
+  <pattern>i1�</pattern>
+  <pattern>i1�</pattern>
+  <pattern>i�4re </pattern>
+  <pattern>i1�c</pattern>
+  <pattern>i1�m</pattern>
+  <pattern>i1�</pattern>
+  <pattern>i1�l</pattern>
+  <pattern>i�3t</pattern>
+  <pattern>i�4tl</pattern>
+  <pattern>i�4to</pattern>
+  <pattern>i2�</pattern>
+  <pattern>i1�</pattern>
+  <pattern>i�4kl</pattern>
+  <pattern>i�4�e</pattern>
+  <pattern>i2�</pattern>
+  <pattern>i3�e</pattern>
+  <pattern>i3�i</pattern>
+  <pattern>i�3k</pattern>
+  <pattern>i�4kr</pattern>
+  <pattern>i�4kv</pattern>
+  <pattern>i3�o</pattern>
+  <pattern>i�4to</pattern>
+  <pattern>i3�u</pattern>
+  <pattern>i3��</pattern>
+  <pattern>i3��</pattern>
+  <pattern>i2�</pattern>
+  <pattern>i3�a</pattern>
+  <pattern>i3�e</pattern>
+  <pattern>i3�i</pattern>
+  <pattern>i3�o</pattern>
+  <pattern>i3�u</pattern>
+  <pattern>i3��</pattern>
+  <pattern>2j </pattern>
+  <pattern>ja2b2</pattern>
+  <pattern>jac4k</pattern>
+  <pattern>ja4cq</pattern>
+  <pattern>ja3d</pattern>
+  <pattern>ja3g</pattern>
+  <pattern>j3akt</pattern>
+  <pattern>j1b2</pattern>
+  <pattern>jbyst3</pattern>
+  <pattern>2j1c</pattern>
+  <pattern>j2d</pattern>
+  <pattern>j3dob</pattern>
+  <pattern>j3dok</pattern>
+  <pattern>j3dos</pattern>
+  <pattern>j3dr</pattern>
+  <pattern>j3d�</pattern>
+  <pattern>jd4��</pattern>
+  <pattern>j3d�</pattern>
+  <pattern>jech4</pattern>
+  <pattern>j3ef</pattern>
+  <pattern>j3ex</pattern>
+  <pattern>jez3d�</pattern>
+  <pattern>jg4ra</pattern>
+  <pattern>2j1h</pattern>
+  <pattern>1ji</pattern>
+  <pattern>ji4ch</pattern>
+  <pattern>jih3l</pattern>
+  <pattern>ji4m�</pattern>
+  <pattern>j4ina</pattern>
+  <pattern>jis3k</pattern>
+  <pattern>jit4ro</pattern>
+  <pattern>ji2zv</pattern>
+  <pattern>j1j</pattern>
+  <pattern>2jk</pattern>
+  <pattern>j3kv</pattern>
+  <pattern>2j1l</pattern>
+  <pattern>j2m</pattern>
+  <pattern>j3ma</pattern>
+  <pattern>j3mi</pattern>
+  <pattern>jmou3d</pattern>
+  <pattern>2jm�</pattern>
+  <pattern>2jn</pattern>
+  <pattern>jne3</pattern>
+  <pattern>j1ob</pattern>
+  <pattern>j1od</pattern>
+  <pattern>jod2�</pattern>
+  <pattern>j1oh</pattern>
+  <pattern>j1op</pattern>
+  <pattern>j4ora</pattern>
+  <pattern>j1os</pattern>
+  <pattern>jo3sv</pattern>
+  <pattern>j2ov</pattern>
+  <pattern>j3ovl</pattern>
+  <pattern>j1o3z2</pattern>
+  <pattern>2jp</pattern>
+  <pattern>jpor4</pattern>
+  <pattern>jpo4zv</pattern>
+  <pattern>jp��z4</pattern>
+  <pattern>2j1r</pattern>
+  <pattern>2j1s2</pattern>
+  <pattern>j4sem</pattern>
+  <pattern>j4si </pattern>
+  <pattern>j4sk </pattern>
+  <pattern>js4ko</pattern>
+  <pattern>js4k�</pattern>
+  <pattern>j4s4k�</pattern>
+  <pattern>j4s4me</pattern>
+  <pattern>j3sn</pattern>
+  <pattern>j4sou </pattern>
+  <pattern>j4souc</pattern>
+  <pattern>js4po</pattern>
+  <pattern>j4s4te</pattern>
+  <pattern>2j1t</pattern>
+  <pattern>j3tl</pattern>
+  <pattern>ju4an</pattern>
+  <pattern>ju3na</pattern>
+  <pattern>ju3p</pattern>
+  <pattern>j1us</pattern>
+  <pattern>ju3sp</pattern>
+  <pattern>ju3t</pattern>
+  <pattern>ju4t </pattern>
+  <pattern>ju3v</pattern>
+  <pattern>ju4xt</pattern>
+  <pattern>ju3z</pattern>
+  <pattern>j1u�</pattern>
+  <pattern>ju3�i</pattern>
+  <pattern>2jv2</pattern>
+  <pattern>j3vd</pattern>
+  <pattern>j3vn</pattern>
+  <pattern>2jz</pattern>
+  <pattern>j3zb</pattern>
+  <pattern>j3zd</pattern>
+  <pattern>j3zk</pattern>
+  <pattern>j3zn</pattern>
+  <pattern>j3zp</pattern>
+  <pattern>j�d2r</pattern>
+  <pattern>1j�</pattern>
+  <pattern>2j�1</pattern>
+  <pattern>j�3n</pattern>
+  <pattern>j�3�</pattern>
+  <pattern>j�3�</pattern>
+  <pattern>2j1�</pattern>
+  <pattern>2j�</pattern>
+  <pattern>j3�t</pattern>
+  <pattern>j�4ti</pattern>
+  <pattern>j3��</pattern>
+  <pattern>2j�</pattern>
+  <pattern>1k</pattern>
+  <pattern>2k </pattern>
+  <pattern>ka4bl</pattern>
+  <pattern>ka4ch</pattern>
+  <pattern>ka3dl</pattern>
+  <pattern>3kaj</pattern>
+  <pattern>ka3ka</pattern>
+  <pattern>3kami</pattern>
+  <pattern>3kan�</pattern>
+  <pattern>ka2p3l</pattern>
+  <pattern>ka2p3r</pattern>
+  <pattern>ka2ps</pattern>
+  <pattern>ka4pv</pattern>
+  <pattern>ka2p�</pattern>
+  <pattern>kas3t</pattern>
+  <pattern>kast3r</pattern>
+  <pattern>3kat</pattern>
+  <pattern>ka4u�</pattern>
+  <pattern>3kav</pattern>
+  <pattern>3ka�</pattern>
+  <pattern>3ka�</pattern>
+  <pattern>ka�3l</pattern>
+  <pattern>ka4�p</pattern>
+  <pattern>2k1c</pattern>
+  <pattern>k2d</pattern>
+  <pattern>k2e</pattern>
+  <pattern>ke4bl</pattern>
+  <pattern>ke3jo</pattern>
+  <pattern>ke4pr</pattern>
+  <pattern>ke4ps</pattern>
+  <pattern>3ket</pattern>
+  <pattern>2kf</pattern>
+  <pattern>2kk</pattern>
+  <pattern>k2l</pattern>
+  <pattern>3kl </pattern>
+  <pattern>4k3la </pattern>
+  <pattern>k3lej</pattern>
+  <pattern>4k3li </pattern>
+  <pattern>k4lib</pattern>
+  <pattern>k3lic</pattern>
+  <pattern>4kli�ka</pattern>
+  <pattern>4klo </pattern>
+  <pattern>k3los</pattern>
+  <pattern>2k3ly</pattern>
+  <pattern>k3l� </pattern>
+  <pattern>k3l�</pattern>
+  <pattern>k3l�</pattern>
+  <pattern>k3l�</pattern>
+  <pattern>2k2m</pattern>
+  <pattern>k3m�</pattern>
+  <pattern>2kn</pattern>
+  <pattern>kna4s</pattern>
+  <pattern>ko3by</pattern>
+  <pattern>3kof</pattern>
+  <pattern>ko4jm</pattern>
+  <pattern>ko2p�</pattern>
+  <pattern>ko4sk</pattern>
+  <pattern>ko2t3v</pattern>
+  <pattern>kous3k</pattern>
+  <pattern>3kov</pattern>
+  <pattern>ko3z�</pattern>
+  <pattern>4kroa</pattern>
+  <pattern>k3rob</pattern>
+  <pattern>k3rof</pattern>
+  <pattern>kr2s</pattern>
+  <pattern>kr4� </pattern>
+  <pattern>2ks</pattern>
+  <pattern>2k1t</pattern>
+  <pattern>kt2r</pattern>
+  <pattern>kuch4</pattern>
+  <pattern>ku4f�</pattern>
+  <pattern>ku4hr</pattern>
+  <pattern>3kuj</pattern>
+  <pattern>ku3se</pattern>
+  <pattern>ku3si</pattern>
+  <pattern>ku3su</pattern>
+  <pattern>ku4th</pattern>
+  <pattern>ku3v</pattern>
+  <pattern>2k2v</pattern>
+  <pattern>k4vr�</pattern>
+  <pattern>3kyn</pattern>
+  <pattern>ky2pr</pattern>
+  <pattern>kyp3�</pattern>
+  <pattern>ky4zn</pattern>
+  <pattern>3k�c</pattern>
+  <pattern>k�4pl</pattern>
+  <pattern>3k�r</pattern>
+  <pattern>3k��</pattern>
+  <pattern>2k�</pattern>
+  <pattern>k2�</pattern>
+  <pattern>k2�2</pattern>
+  <pattern>k3�ej</pattern>
+  <pattern>k�4ti</pattern>
+  <pattern>3k� </pattern>
+  <pattern>2l </pattern>
+  <pattern>1la </pattern>
+  <pattern>la4br</pattern>
+  <pattern>lab4s</pattern>
+  <pattern>la3ka</pattern>
+  <pattern>la4nq</pattern>
+  <pattern>la4ps</pattern>
+  <pattern>4la3si</pattern>
+  <pattern>la4v�</pattern>
+  <pattern>la4y </pattern>
+  <pattern>la2zm</pattern>
+  <pattern>2l1b</pattern>
+  <pattern>2l1c</pattern>
+  <pattern>2l1d</pattern>
+  <pattern>ld4ne</pattern>
+  <pattern>le4ad</pattern>
+  <pattern>le4au</pattern>
+  <pattern>lech3t</pattern>
+  <pattern>leh3n</pattern>
+  <pattern>le2i</pattern>
+  <pattern>1lej</pattern>
+  <pattern>le3jo</pattern>
+  <pattern>4lej�k</pattern>
+  <pattern>1lel</pattern>
+  <pattern>4lench</pattern>
+  <pattern>lepa3d</pattern>
+  <pattern>lepo4s</pattern>
+  <pattern>le4pr</pattern>
+  <pattern>le4ps</pattern>
+  <pattern>le4sc</pattern>
+  <pattern>le4sm</pattern>
+  <pattern>le4sv</pattern>
+  <pattern>let4li</pattern>
+  <pattern>let3m</pattern>
+  <pattern>le2tr</pattern>
+  <pattern>le4t�</pattern>
+  <pattern>le4uk</pattern>
+  <pattern>le4vh</pattern>
+  <pattern>le4vk</pattern>
+  <pattern>le3xi</pattern>
+  <pattern>lez3n</pattern>
+  <pattern>2lf</pattern>
+  <pattern>2lg</pattern>
+  <pattern>2lh</pattern>
+  <pattern>3lhan</pattern>
+  <pattern>1li</pattern>
+  <pattern>li4az</pattern>
+  <pattern>li4bl</pattern>
+  <pattern>li4bv</pattern>
+  <pattern>li4dm</pattern>
+  <pattern>lind4</pattern>
+  <pattern>3lio</pattern>
+  <pattern>li4t�</pattern>
+  <pattern>li4vr</pattern>
+  <pattern>2li�</pattern>
+  <pattern>2lj</pattern>
+  <pattern>2lk</pattern>
+  <pattern>l4kat</pattern>
+  <pattern>l2kl</pattern>
+  <pattern>lk4nu</pattern>
+  <pattern>2ll</pattern>
+  <pattern>2l1m</pattern>
+  <pattern>2ln</pattern>
+  <pattern>l4nul</pattern>
+  <pattern>lo3br</pattern>
+  <pattern>lo4id</pattern>
+  <pattern>lo4is</pattern>
+  <pattern>1los</pattern>
+  <pattern>lo3sp</pattern>
+  <pattern>lo3st�</pattern>
+  <pattern>lo3sv</pattern>
+  <pattern>lo2tr</pattern>
+  <pattern>lo4t�</pattern>
+  <pattern>lo4u </pattern>
+  <pattern>lo3z</pattern>
+  <pattern>loz4d</pattern>
+  <pattern>lo4�k</pattern>
+  <pattern>2lp</pattern>
+  <pattern>l2p�</pattern>
+  <pattern>2l1s2</pattern>
+  <pattern>l4sla</pattern>
+  <pattern>ls3n</pattern>
+  <pattern>lst4n</pattern>
+  <pattern>l4st�</pattern>
+  <pattern>2l1t</pattern>
+  <pattern>lt4ra</pattern>
+  <pattern>lt4ru</pattern>
+  <pattern>lt4ry</pattern>
+  <pattern>lu4id</pattern>
+  <pattern>lu4j </pattern>
+  <pattern>lu4k </pattern>
+  <pattern>lu4lk</pattern>
+  <pattern>lu4m </pattern>
+  <pattern>lu4mn</pattern>
+  <pattern>lu3pr</pattern>
+  <pattern>lu3va</pattern>
+  <pattern>lu3vl</pattern>
+  <pattern>lu3vy</pattern>
+  <pattern>lu3v�</pattern>
+  <pattern>2lv</pattern>
+  <pattern>2lz</pattern>
+  <pattern>1l� </pattern>
+  <pattern>l�4j�</pattern>
+  <pattern>l�4v�</pattern>
+  <pattern>1l� </pattern>
+  <pattern>1l�k</pattern>
+  <pattern>l�4pl</pattern>
+  <pattern>l�4zn</pattern>
+  <pattern>1l��</pattern>
+  <pattern>1l�</pattern>
+  <pattern>l�2t</pattern>
+  <pattern>2l1�</pattern>
+  <pattern>2l�</pattern>
+  <pattern>2l�2</pattern>
+  <pattern>l3�t</pattern>
+  <pattern>l4�t�</pattern>
+  <pattern>1l�</pattern>
+  <pattern>2l2�</pattern>
+  <pattern>2m </pattern>
+  <pattern>1ma</pattern>
+  <pattern>maj4s</pattern>
+  <pattern>ma4kl</pattern>
+  <pattern>ma4kr</pattern>
+  <pattern>4mald</pattern>
+  <pattern>mas3k</pattern>
+  <pattern>mat3r</pattern>
+  <pattern>ma4tra</pattern>
+  <pattern>ma4v�</pattern>
+  <pattern>maz3l</pattern>
+  <pattern>2m1b</pattern>
+  <pattern>2m1c</pattern>
+  <pattern>2m1d2</pattern>
+  <pattern>m2dl</pattern>
+  <pattern>1me</pattern>
+  <pattern>3me </pattern>
+  <pattern>me4go</pattern>
+  <pattern>me4is</pattern>
+  <pattern>met3re</pattern>
+  <pattern>me3x</pattern>
+  <pattern>mezi3s</pattern>
+  <pattern>2mf</pattern>
+  <pattern>mh4le</pattern>
+  <pattern>1mi</pattern>
+  <pattern>mid3l</pattern>
+  <pattern>mik3r</pattern>
+  <pattern>mi4xt</pattern>
+  <pattern>2mk2</pattern>
+  <pattern>3m2kl</pattern>
+  <pattern>mk4la</pattern>
+  <pattern>mk4li</pattern>
+  <pattern>m2l</pattern>
+  <pattern>4mla </pattern>
+  <pattern>2mle</pattern>
+  <pattern>ml3h</pattern>
+  <pattern>ml4h </pattern>
+  <pattern>2mli</pattern>
+  <pattern>ml4sc</pattern>
+  <pattern>ml4sk</pattern>
+  <pattern>4mlu </pattern>
+  <pattern>2mn</pattern>
+  <pattern>m3na</pattern>
+  <pattern>mna4s</pattern>
+  <pattern>m4noh</pattern>
+  <pattern>m3nos</pattern>
+  <pattern>m4noz</pattern>
+  <pattern>3mno�</pattern>
+  <pattern>m3n�</pattern>
+  <pattern>m3n�</pattern>
+  <pattern>m4n�z</pattern>
+  <pattern>m3n�</pattern>
+  <pattern>m3n�j</pattern>
+  <pattern>1mo</pattern>
+  <pattern>mod3r</pattern>
+  <pattern>mo2hl</pattern>
+  <pattern>mo2k</pattern>
+  <pattern>mo2s</pattern>
+  <pattern>mo4s </pattern>
+  <pattern>mot3�</pattern>
+  <pattern>4mout</pattern>
+  <pattern>moza4</pattern>
+  <pattern>mo3z�</pattern>
+  <pattern>mo�3</pattern>
+  <pattern>2mp</pattern>
+  <pattern>m4plo</pattern>
+  <pattern>mpo4s</pattern>
+  <pattern>m2ps</pattern>
+  <pattern>mp4se</pattern>
+  <pattern>mp2t</pattern>
+  <pattern>mr2s</pattern>
+  <pattern>2m1s2</pattern>
+  <pattern>m4stl</pattern>
+  <pattern>2m1t</pattern>
+  <pattern>1mu</pattern>
+  <pattern>mu4fl</pattern>
+  <pattern>mu3n</pattern>
+  <pattern>mu4n </pattern>
+  <pattern>mu4nd</pattern>
+  <pattern>mu4nn</pattern>
+  <pattern>mu4ns</pattern>
+  <pattern>mu4n�</pattern>
+  <pattern>2mu�</pattern>
+  <pattern>2mv</pattern>
+  <pattern>mys3lo</pattern>
+  <pattern>my4�k</pattern>
+  <pattern>2mz</pattern>
+  <pattern>3m� </pattern>
+  <pattern>m�lo3</pattern>
+  <pattern>m�2s</pattern>
+  <pattern>m�1c</pattern>
+  <pattern>m�4r�</pattern>
+  <pattern>3m� </pattern>
+  <pattern>2m�</pattern>
+  <pattern>m2�e</pattern>
+  <pattern>2m2�</pattern>
+  <pattern>m�4�i</pattern>
+  <pattern>m�3�</pattern>
+  <pattern>m�4�an </pattern>
+  <pattern>3m� </pattern>
+  <pattern>m2�</pattern>
+  <pattern>1n</pattern>
+  <pattern>2n </pattern>
+  <pattern>3na </pattern>
+  <pattern>na3ch</pattern>
+  <pattern>na4do</pattern>
+  <pattern>na4em</pattern>
+  <pattern>na3h</pattern>
+  <pattern>na4h </pattern>
+  <pattern>na3jd</pattern>
+  <pattern>na3ka</pattern>
+  <pattern>nam4ne</pattern>
+  <pattern>na3p2</pattern>
+  <pattern>na3s2</pattern>
+  <pattern>na4s </pattern>
+  <pattern>nat2</pattern>
+  <pattern>na3tl</pattern>
+  <pattern>na3t�</pattern>
+  <pattern>na3z</pattern>
+  <pattern>naz4k</pattern>
+  <pattern>na4z�</pattern>
+  <pattern>na4� </pattern>
+  <pattern>na3�</pattern>
+  <pattern>na�4n</pattern>
+  <pattern>2nb</pattern>
+  <pattern>2n1c</pattern>
+  <pattern>n4chc</pattern>
+  <pattern>2n1d</pattern>
+  <pattern>nd4hi</pattern>
+  <pattern>ndo4t</pattern>
+  <pattern>nd2re</pattern>
+  <pattern>nd4ri</pattern>
+  <pattern>nd4��</pattern>
+  <pattern>ne1d</pattern>
+  <pattern>ne4gl</pattern>
+  <pattern>ne1h</pattern>
+  <pattern>ne3h4n</pattern>
+  <pattern>ne2j</pattern>
+  <pattern>nej3t</pattern>
+  <pattern>nej3u</pattern>
+  <pattern>ne3kl</pattern>
+  <pattern>ne4kro</pattern>
+  <pattern>ne3kv</pattern>
+  <pattern>ne4m </pattern>
+  <pattern>ne3p</pattern>
+  <pattern>ne3s2</pattern>
+  <pattern>ne4s </pattern>
+  <pattern>nes4le</pattern>
+  <pattern>ne4ss</pattern>
+  <pattern>4nesti</pattern>
+  <pattern>ne3tl</pattern>
+  <pattern>net4r</pattern>
+  <pattern>ne3ud</pattern>
+  <pattern>ne3v2</pattern>
+  <pattern>ne4v </pattern>
+  <pattern>ne3z</pattern>
+  <pattern>nez4n</pattern>
+  <pattern>ne3�k</pattern>
+  <pattern>ne3��</pattern>
+  <pattern>2nf</pattern>
+  <pattern>n3fr</pattern>
+  <pattern>2ng</pattern>
+  <pattern>ng1l</pattern>
+  <pattern>ng4la</pattern>
+  <pattern>ng4le</pattern>
+  <pattern>ng4l�</pattern>
+  <pattern>n4gro</pattern>
+  <pattern>ng4vi</pattern>
+  <pattern>nik4t</pattern>
+  <pattern>ni4mr</pattern>
+  <pattern>ni4m�</pattern>
+  <pattern>3nio</pattern>
+  <pattern>3nisk</pattern>
+  <pattern>2nit�</pattern>
+  <pattern>n1j</pattern>
+  <pattern>2nk</pattern>
+  <pattern>2n1l</pattern>
+  <pattern>2nn</pattern>
+  <pattern>no3b2</pattern>
+  <pattern>no4bs</pattern>
+  <pattern>no3hn</pattern>
+  <pattern>no4hs</pattern>
+  <pattern>no4ir</pattern>
+  <pattern>no4m�</pattern>
+  <pattern>no4sky</pattern>
+  <pattern>no3sm</pattern>
+  <pattern>no3str</pattern>
+  <pattern>not4r</pattern>
+  <pattern>no3z</pattern>
+  <pattern>no4zd</pattern>
+  <pattern>no4�k</pattern>
+  <pattern>2no�</pattern>
+  <pattern>2n1s2</pattern>
+  <pattern>n2sa</pattern>
+  <pattern>ns3ak</pattern>
+  <pattern>ns4ko</pattern>
+  <pattern>n4soc</pattern>
+  <pattern>ns3po</pattern>
+  <pattern>nst4ra</pattern>
+  <pattern>2n1t</pattern>
+  <pattern>nte4r3a</pattern>
+  <pattern>nt4lem</pattern>
+  <pattern>nt4r </pattern>
+  <pattern>nt3ru</pattern>
+  <pattern>nt3r�</pattern>
+  <pattern>2nub</pattern>
+  <pattern>nu4gg</pattern>
+  <pattern>3ny </pattern>
+  <pattern>2nz</pattern>
+  <pattern>3n�k</pattern>
+  <pattern>n�3s2</pattern>
+  <pattern>n�4s </pattern>
+  <pattern>2n�v</pattern>
+  <pattern>2n�</pattern>
+  <pattern>2n�</pattern>
+  <pattern>2n1�</pattern>
+  <pattern>2n�</pattern>
+  <pattern>2n�2</pattern>
+  <pattern>n3�t</pattern>
+  <pattern>n�4�o</pattern>
+  <pattern>n�2</pattern>
+  <pattern>2n�</pattern>
+  <pattern>2o </pattern>
+  <pattern>o1a</pattern>
+  <pattern>oang4</pattern>
+  <pattern>o1ba</pattern>
+  <pattern>o1be</pattern>
+  <pattern>obe3j</pattern>
+  <pattern>obe3s</pattern>
+  <pattern>obe3z</pattern>
+  <pattern>ob1l</pattern>
+  <pattern>ob1r</pattern>
+  <pattern>ob4r�</pattern>
+  <pattern>o1bu</pattern>
+  <pattern>obys4</pattern>
+  <pattern>ob3z</pattern>
+  <pattern>o3b�</pattern>
+  <pattern>ob3�ez</pattern>
+  <pattern>o1c</pattern>
+  <pattern>o4chl</pattern>
+  <pattern>o2chr</pattern>
+  <pattern>oc4ke</pattern>
+  <pattern>oc4ko</pattern>
+  <pattern>o4ct </pattern>
+  <pattern>oct3n</pattern>
+  <pattern>ocy3</pattern>
+  <pattern>oc4�n</pattern>
+  <pattern>od3b</pattern>
+  <pattern>odej4m</pattern>
+  <pattern>ode3p</pattern>
+  <pattern>ode3s</pattern>
+  <pattern>od1l</pattern>
+  <pattern>o4doc</pattern>
+  <pattern>odos4</pattern>
+  <pattern>odo4tk</pattern>
+  <pattern>od3ra</pattern>
+  <pattern>od4ran</pattern>
+  <pattern>od3r�</pattern>
+  <pattern>o3dr�</pattern>
+  <pattern>od3v</pattern>
+  <pattern>od1�</pattern>
+  <pattern>o1e2</pattern>
+  <pattern>oe3g</pattern>
+  <pattern>oe3ti</pattern>
+  <pattern>o2fl</pattern>
+  <pattern>ofrek4</pattern>
+  <pattern>og2</pattern>
+  <pattern>o3gn</pattern>
+  <pattern>o1h</pattern>
+  <pattern>oh4ne</pattern>
+  <pattern>o1i</pattern>
+  <pattern>oi4ce</pattern>
+  <pattern>o4int</pattern>
+  <pattern>o1j</pattern>
+  <pattern>o4jar</pattern>
+  <pattern>oje4dl</pattern>
+  <pattern>o4jmi</pattern>
+  <pattern>o4jmov</pattern>
+  <pattern>o4jmu</pattern>
+  <pattern>o4jm�</pattern>
+  <pattern>oj2o</pattern>
+  <pattern>o4juz</pattern>
+  <pattern>2oka</pattern>
+  <pattern>ok2te</pattern>
+  <pattern>o1l</pattern>
+  <pattern>ol4gl</pattern>
+  <pattern>ol4to</pattern>
+  <pattern>o1m</pattern>
+  <pattern>om4kl</pattern>
+  <pattern>om2n</pattern>
+  <pattern>o2n</pattern>
+  <pattern>o3na</pattern>
+  <pattern>ona4s</pattern>
+  <pattern>o3ne</pattern>
+  <pattern>o3ni</pattern>
+  <pattern>o3no</pattern>
+  <pattern>ont4ra</pattern>
+  <pattern>o3nu</pattern>
+  <pattern>o3ny</pattern>
+  <pattern>o3n�</pattern>
+  <pattern>on��4ka</pattern>
+  <pattern>o3n�</pattern>
+  <pattern>o3n�</pattern>
+  <pattern>o3n�</pattern>
+  <pattern>o3n�</pattern>
+  <pattern>o1o</pattern>
+  <pattern>oo4h�</pattern>
+  <pattern>oote2</pattern>
+  <pattern>opo�3t</pattern>
+  <pattern>opro4s</pattern>
+  <pattern>o2ps</pattern>
+  <pattern>o4ptu</pattern>
+  <pattern>op�4t</pattern>
+  <pattern>o4p� </pattern>
+  <pattern>op�ej4</pattern>
+  <pattern>op�e4jm</pattern>
+  <pattern>o1ra</pattern>
+  <pattern>o4rae</pattern>
+  <pattern>or4dm</pattern>
+  <pattern>o1re</pattern>
+  <pattern>o1ri</pattern>
+  <pattern>o1ro</pattern>
+  <pattern>or3st</pattern>
+  <pattern>o1ru</pattern>
+  <pattern>or4v�</pattern>
+  <pattern>o1ry</pattern>
+  <pattern>o1r�</pattern>
+  <pattern>o3r�</pattern>
+  <pattern>o3r�</pattern>
+  <pattern>o1r�</pattern>
+  <pattern>or�s3</pattern>
+  <pattern>o1sa</pattern>
+  <pattern>o4sai</pattern>
+  <pattern>ose4s</pattern>
+  <pattern>osi4d</pattern>
+  <pattern>o1sk</pattern>
+  <pattern>o4s3ke</pattern>
+  <pattern>o4sku</pattern>
+  <pattern>osk3v</pattern>
+  <pattern>o4sk�</pattern>
+  <pattern>o4sk�</pattern>
+  <pattern>o1sl</pattern>
+  <pattern>os4la</pattern>
+  <pattern>os4li</pattern>
+  <pattern>os4l�</pattern>
+  <pattern>os3mo</pattern>
+  <pattern>os4mu</pattern>
+  <pattern>o4st </pattern>
+  <pattern>o4stg</pattern>
+  <pattern>o4stm</pattern>
+  <pattern>os4tor</pattern>
+  <pattern>os3tr�</pattern>
+  <pattern>o4st�</pattern>
+  <pattern>o4st�</pattern>
+  <pattern>o4st�</pattern>
+  <pattern>o1sy</pattern>
+  <pattern>o1t</pattern>
+  <pattern>ot4kl</pattern>
+  <pattern>o4tl�</pattern>
+  <pattern>oto3s</pattern>
+  <pattern>ot3ro</pattern>
+  <pattern>ot3v�</pattern>
+  <pattern>o3t�</pattern>
+  <pattern>o3t�</pattern>
+  <pattern>ot3�i</pattern>
+  <pattern>o2u</pattern>
+  <pattern>ou3b�</pattern>
+  <pattern>ou3d�</pattern>
+  <pattern>ou4fl</pattern>
+  <pattern>ou4il</pattern>
+  <pattern>ou4is</pattern>
+  <pattern>ou4k </pattern>
+  <pattern>ou3ka</pattern>
+  <pattern>o4ukl</pattern>
+  <pattern>ou3kr</pattern>
+  <pattern>ou3k�</pattern>
+  <pattern>ou3m</pattern>
+  <pattern>oup3n</pattern>
+  <pattern>oupo4</pattern>
+  <pattern>ou4s </pattern>
+  <pattern>ou3sa</pattern>
+  <pattern>ou3se</pattern>
+  <pattern>ou4sk</pattern>
+  <pattern>ou3sm</pattern>
+  <pattern>ou4tv</pattern>
+  <pattern>ou3v</pattern>
+  <pattern>ou4vl</pattern>
+  <pattern>ou4vn</pattern>
+  <pattern>ouz3d</pattern>
+  <pattern>o4u�k</pattern>
+  <pattern>ou3�i</pattern>
+  <pattern>ovi4dla</pattern>
+  <pattern>o4vsk</pattern>
+  <pattern>ovy2p</pattern>
+  <pattern>o2v�t</pattern>
+  <pattern>o1x</pattern>
+  <pattern>o2z</pattern>
+  <pattern>o3za</pattern>
+  <pattern>oz1b</pattern>
+  <pattern>oz4d </pattern>
+  <pattern>oz3d�</pattern>
+  <pattern>oz3d�</pattern>
+  <pattern>oz3d�</pattern>
+  <pattern>o3ze</pattern>
+  <pattern>oze3d2</pattern>
+  <pattern>ozer4</pattern>
+  <pattern>oz1h</pattern>
+  <pattern>o3zi</pattern>
+  <pattern>oz3j</pattern>
+  <pattern>oz3k</pattern>
+  <pattern>oz4ko</pattern>
+  <pattern>oz1l</pattern>
+  <pattern>oz3m</pattern>
+  <pattern>o4zn </pattern>
+  <pattern>o3zo</pattern>
+  <pattern>oz3p</pattern>
+  <pattern>oz4py</pattern>
+  <pattern>oz4p�</pattern>
+  <pattern>oz4p�</pattern>
+  <pattern>oz3ro</pattern>
+  <pattern>oz3ru</pattern>
+  <pattern>oz3r�</pattern>
+  <pattern>oz3t</pattern>
+  <pattern>o3zu</pattern>
+  <pattern>o4zut</pattern>
+  <pattern>oz3vr</pattern>
+  <pattern>oz3v�</pattern>
+  <pattern>o3z�</pattern>
+  <pattern>o3z�</pattern>
+  <pattern>oz�4s</pattern>
+  <pattern>o1�</pattern>
+  <pattern>o�2k</pattern>
+  <pattern>o�4ka</pattern>
+  <pattern>o2�</pattern>
+  <pattern>o3�a</pattern>
+  <pattern>o3�o</pattern>
+  <pattern>o1�</pattern>
+  <pattern>o�i2s</pattern>
+  <pattern>o3�k</pattern>
+  <pattern>o4�ku</pattern>
+  <pattern>o4�ky</pattern>
+  <pattern>o3�l</pattern>
+  <pattern>o�4l�</pattern>
+  <pattern>o�4mo</pattern>
+  <pattern>o�4ti</pattern>
+  <pattern>o�4�u</pattern>
+  <pattern>o3�l</pattern>
+  <pattern>o�4mo</pattern>
+  <pattern>1p</pattern>
+  <pattern>2p </pattern>
+  <pattern>pa4ed</pattern>
+  <pattern>pa4es</pattern>
+  <pattern>pa4kl</pattern>
+  <pattern>pa3si</pattern>
+  <pattern>pa4t </pattern>
+  <pattern>pat4ri</pattern>
+  <pattern>2p1c</pattern>
+  <pattern>pe4al</pattern>
+  <pattern>pede4</pattern>
+  <pattern>pe4ig</pattern>
+  <pattern>pe4np</pattern>
+  <pattern>peri3</pattern>
+  <pattern>pes3t3</pattern>
+  <pattern>pe4tra</pattern>
+  <pattern>3pe�</pattern>
+  <pattern>pi4kr</pattern>
+  <pattern>pi4pl</pattern>
+  <pattern>2pk</pattern>
+  <pattern>p2kl</pattern>
+  <pattern>p2l</pattern>
+  <pattern>3pl </pattern>
+  <pattern>4p3la </pattern>
+  <pattern>pl3h</pattern>
+  <pattern>pl4h </pattern>
+  <pattern>4p3li </pattern>
+  <pattern>4plo </pattern>
+  <pattern>2pn</pattern>
+  <pattern>p2nu</pattern>
+  <pattern>po1b2</pattern>
+  <pattern>po3c2</pattern>
+  <pattern>3pod</pattern>
+  <pattern>podb�4h</pattern>
+  <pattern>pod4nes</pattern>
+  <pattern>po3dru</pattern>
+  <pattern>po3dr�</pattern>
+  <pattern>po3h</pattern>
+  <pattern>poly3</pattern>
+  <pattern>po3m2</pattern>
+  <pattern>po4mp</pattern>
+  <pattern>po4ol</pattern>
+  <pattern>po3p</pattern>
+  <pattern>po4p </pattern>
+  <pattern>po4pm</pattern>
+  <pattern>po1s2</pattern>
+  <pattern>pos4p</pattern>
+  <pattern>post4r</pattern>
+  <pattern>po3t2</pattern>
+  <pattern>po4t </pattern>
+  <pattern>po4tn</pattern>
+  <pattern>po3uk</pattern>
+  <pattern>po3u�</pattern>
+  <pattern>po3u�</pattern>
+  <pattern>3po3v</pattern>
+  <pattern>po3z2</pattern>
+  <pattern>po4zd</pattern>
+  <pattern>po�2</pattern>
+  <pattern>po3�k</pattern>
+  <pattern>po�3te</pattern>
+  <pattern>po3��</pattern>
+  <pattern>po4�v</pattern>
+  <pattern>2pp</pattern>
+  <pattern>4pra </pattern>
+  <pattern>pra3st</pattern>
+  <pattern>pr2c</pattern>
+  <pattern>pro1</pattern>
+  <pattern>prob2</pattern>
+  <pattern>pro3p</pattern>
+  <pattern>pro3t4</pattern>
+  <pattern>pro3z</pattern>
+  <pattern>pr2s</pattern>
+  <pattern>4pr�n</pattern>
+  <pattern>pr�3</pattern>
+  <pattern>pse4s</pattern>
+  <pattern>2p1sk</pattern>
+  <pattern>p4sut</pattern>
+  <pattern>2pt</pattern>
+  <pattern>p4tej</pattern>
+  <pattern>p4ter</pattern>
+  <pattern>p4tev</pattern>
+  <pattern>pt4ri</pattern>
+  <pattern>p3tu</pattern>
+  <pattern>p4t� </pattern>
+  <pattern>pu4dl</pattern>
+  <pattern>pu4tr</pattern>
+  <pattern>pyt3l</pattern>
+  <pattern>p�1</pattern>
+  <pattern>p�2c</pattern>
+  <pattern>p�d3l</pattern>
+  <pattern>p�4nv</pattern>
+  <pattern>p�4sl</pattern>
+  <pattern>p�4rh</pattern>
+  <pattern>2p�</pattern>
+  <pattern>2p� </pattern>
+  <pattern>p�e3h</pattern>
+  <pattern>p�e3j</pattern>
+  <pattern>p�e3t4</pattern>
+  <pattern>p�e3z</pattern>
+  <pattern>p�e3�2</pattern>
+  <pattern>p�i3</pattern>
+  <pattern>p�ih4</pattern>
+  <pattern>2p�</pattern>
+  <pattern>p�4ti</pattern>
+  <pattern>2p�</pattern>
+  <pattern>qu2</pattern>
+  <pattern>2r </pattern>
+  <pattern>1ra </pattern>
+  <pattern>ra4br</pattern>
+  <pattern>ra4em</pattern>
+  <pattern>ra4es</pattern>
+  <pattern>ra4ff</pattern>
+  <pattern>ra4hl</pattern>
+  <pattern>ra4hm</pattern>
+  <pattern>ra4jg</pattern>
+  <pattern>ra4j�</pattern>
+  <pattern>2rak</pattern>
+  <pattern>ra4nh</pattern>
+  <pattern>ra3si</pattern>
+  <pattern>rast4r</pattern>
+  <pattern>ra4vv</pattern>
+  <pattern>ra4wl</pattern>
+  <pattern>ra4y </pattern>
+  <pattern>ra4yo</pattern>
+  <pattern>ra4�m</pattern>
+  <pattern>4ra�i</pattern>
+  <pattern>r1b</pattern>
+  <pattern>r2bl</pattern>
+  <pattern>r1c</pattern>
+  <pattern>rca3</pattern>
+  <pattern>r3cha</pattern>
+  <pattern>r3cho</pattern>
+  <pattern>rc4ki</pattern>
+  <pattern>r1d</pattern>
+  <pattern>r4dla</pattern>
+  <pattern>rdo2s</pattern>
+  <pattern>re4ad</pattern>
+  <pattern>re4au</pattern>
+  <pattern>red4r</pattern>
+  <pattern>re4et</pattern>
+  <pattern>re3kl</pattern>
+  <pattern>re3kvi</pattern>
+  <pattern>re4mr</pattern>
+  <pattern>re2sb</pattern>
+  <pattern>res3l</pattern>
+  <pattern>retis4</pattern>
+  <pattern>ret4r</pattern>
+  <pattern>re4um</pattern>
+  <pattern>r1ha</pattern>
+  <pattern>r3hl </pattern>
+  <pattern>rh3n</pattern>
+  <pattern>r1ho</pattern>
+  <pattern>r3hu</pattern>
+  <pattern>r1h�</pattern>
+  <pattern>ri4bb</pattern>
+  <pattern>1ric</pattern>
+  <pattern>ric4ku</pattern>
+  <pattern>ri4dg</pattern>
+  <pattern>ri4dr</pattern>
+  <pattern>ri4fl</pattern>
+  <pattern>ri4gh</pattern>
+  <pattern>ri4zm</pattern>
+  <pattern>2rk</pattern>
+  <pattern>r2kl</pattern>
+  <pattern>r1l</pattern>
+  <pattern>2r1m</pattern>
+  <pattern>r4mio</pattern>
+  <pattern>2rn</pattern>
+  <pattern>rna4v�</pattern>
+  <pattern>rn4dr</pattern>
+  <pattern>ro4ad</pattern>
+  <pattern>ro3by</pattern>
+  <pattern>rod2l</pattern>
+  <pattern>ro3d4r</pattern>
+  <pattern>3rofy</pattern>
+  <pattern>ro3h</pattern>
+  <pattern>ro4h </pattern>
+  <pattern>ro4jb</pattern>
+  <pattern>ro4k�</pattern>
+  <pattern>rom3n</pattern>
+  <pattern>romy4s</pattern>
+  <pattern>rop�t4</pattern>
+  <pattern>ro2sb</pattern>
+  <pattern>ro4skv</pattern>
+  <pattern>ro4sky</pattern>
+  <pattern>ro3sv</pattern>
+  <pattern>ro3ti</pattern>
+  <pattern>ro3tl</pattern>
+  <pattern>ro4t�</pattern>
+  <pattern>ro3vd</pattern>
+  <pattern>3rov�</pattern>
+  <pattern>rov�4t</pattern>
+  <pattern>roz3d</pattern>
+  <pattern>roz3n</pattern>
+  <pattern>ro4zo</pattern>
+  <pattern>roz3v</pattern>
+  <pattern>ro3z�</pattern>
+  <pattern>ro4�p</pattern>
+  <pattern>rpa3d</pattern>
+  <pattern>2rr</pattern>
+  <pattern>rr4ha</pattern>
+  <pattern>rr4ho</pattern>
+  <pattern>2r1s</pattern>
+  <pattern>r2st</pattern>
+  <pattern>r4stu</pattern>
+  <pattern>rs3tv�</pattern>
+  <pattern>rs3tv�</pattern>
+  <pattern>2r1t</pattern>
+  <pattern>r2th</pattern>
+  <pattern>r4tr�</pattern>
+  <pattern>rt4sm</pattern>
+  <pattern>rtu3</pattern>
+  <pattern>r2t3v</pattern>
+  <pattern>rt4zu</pattern>
+  <pattern>1ru </pattern>
+  <pattern>ru3se</pattern>
+  <pattern>ru3si</pattern>
+  <pattern>rus3k</pattern>
+  <pattern>ru3�i</pattern>
+  <pattern>3rvan�</pattern>
+  <pattern>r1x</pattern>
+  <pattern>1ry </pattern>
+  <pattern>rych3</pattern>
+  <pattern>ryd2</pattern>
+  <pattern>rys3ky</pattern>
+  <pattern>rys3t</pattern>
+  <pattern>ry4zk</pattern>
+  <pattern>ry4zn</pattern>
+  <pattern>ry4� </pattern>
+  <pattern>ry4�k</pattern>
+  <pattern>2rz</pattern>
+  <pattern>rz3d</pattern>
+  <pattern>rz3l</pattern>
+  <pattern>r�d4l</pattern>
+  <pattern>r�4d�</pattern>
+  <pattern>1r�k</pattern>
+  <pattern>r�3ri</pattern>
+  <pattern>1r��</pattern>
+  <pattern>3r� </pattern>
+  <pattern>2r�</pattern>
+  <pattern>3r� </pattern>
+  <pattern>r�4zn</pattern>
+  <pattern>r1�</pattern>
+  <pattern>4r�it� </pattern>
+  <pattern>r�3t</pattern>
+  <pattern>2r�</pattern>
+  <pattern>r�4n�</pattern>
+  <pattern>r�4m </pattern>
+  <pattern>r�s3ta</pattern>
+  <pattern>r�4v </pattern>
+  <pattern>2s </pattern>
+  <pattern>sa4pf</pattern>
+  <pattern>sa4pr</pattern>
+  <pattern>sas3k</pattern>
+  <pattern>s2b2</pattern>
+  <pattern>s2c</pattern>
+  <pattern>s3ca</pattern>
+  <pattern>s3ce </pattern>
+  <pattern>sch2</pattern>
+  <pattern>sch4l</pattern>
+  <pattern>sch4n</pattern>
+  <pattern>3schop</pattern>
+  <pattern>s3ci</pattern>
+  <pattern>sci4e</pattern>
+  <pattern>s3c�</pattern>
+  <pattern>s2d</pattern>
+  <pattern>1se</pattern>
+  <pattern>se4au</pattern>
+  <pattern>se3h</pattern>
+  <pattern>se4ig</pattern>
+  <pattern>se4il</pattern>
+  <pattern>sej4m</pattern>
+  <pattern>se4ku</pattern>
+  <pattern>3sel</pattern>
+  <pattern>se3lh</pattern>
+  <pattern>3sem</pattern>
+  <pattern>ser4va</pattern>
+  <pattern>se3s2</pattern>
+  <pattern>ses4k</pattern>
+  <pattern>se4ss</pattern>
+  <pattern>se4stra</pattern>
+  <pattern>se4stru</pattern>
+  <pattern>se4st�</pattern>
+  <pattern>set2</pattern>
+  <pattern>se3tk</pattern>
+  <pattern>se3t�</pattern>
+  <pattern>se4ur</pattern>
+  <pattern>se3z</pattern>
+  <pattern>se3�t</pattern>
+  <pattern>2sf</pattern>
+  <pattern>s3fo</pattern>
+  <pattern>3sf�</pattern>
+  <pattern>s3f�</pattern>
+  <pattern>1si</pattern>
+  <pattern>3sic</pattern>
+  <pattern>3sif</pattern>
+  <pattern>si4fl</pattern>
+  <pattern>sig4no</pattern>
+  <pattern>3sik</pattern>
+  <pattern>si3ste</pattern>
+  <pattern>3sit</pattern>
+  <pattern>s2j</pattern>
+  <pattern>s3ju</pattern>
+  <pattern>s2k</pattern>
+  <pattern>4skac</pattern>
+  <pattern>s4kak</pattern>
+  <pattern>4skam</pattern>
+  <pattern>s4kok</pattern>
+  <pattern>2skon</pattern>
+  <pattern>skos4</pattern>
+  <pattern>4skot</pattern>
+  <pattern>sk4ra</pattern>
+  <pattern>sk4ru</pattern>
+  <pattern>sk4ry</pattern>
+  <pattern>4skve</pattern>
+  <pattern>sk4vo</pattern>
+  <pattern>s3k�n</pattern>
+  <pattern>s3k�</pattern>
+  <pattern>3sl </pattern>
+  <pattern>4s3la </pattern>
+  <pattern>s4lav</pattern>
+  <pattern>s3le </pattern>
+  <pattern>s4led</pattern>
+  <pattern>s3lem</pattern>
+  <pattern>s3len</pattern>
+  <pattern>s3let</pattern>
+  <pattern>s4lib</pattern>
+  <pattern>s4li�i</pattern>
+  <pattern>3sln</pattern>
+  <pattern>4s3lo </pattern>
+  <pattern>s2ly</pattern>
+  <pattern>s3ly </pattern>
+  <pattern>s1l�</pattern>
+  <pattern>s2ma</pattern>
+  <pattern>s4mek</pattern>
+  <pattern>s2mo</pattern>
+  <pattern>2sn</pattern>
+  <pattern>s2na</pattern>
+  <pattern>s3nat</pattern>
+  <pattern>s2ne</pattern>
+  <pattern>s3ne </pattern>
+  <pattern>sn4tl</pattern>
+  <pattern>s2n�</pattern>
+  <pattern>s3n� </pattern>
+  <pattern>s4n�d</pattern>
+  <pattern>1so</pattern>
+  <pattern>sob4l</pattern>
+  <pattern>so3br</pattern>
+  <pattern>so4sk</pattern>
+  <pattern>so4tv</pattern>
+  <pattern>sou3h</pattern>
+  <pattern>sou3s</pattern>
+  <pattern>souz4</pattern>
+  <pattern>so4�k</pattern>
+  <pattern>s2p</pattern>
+  <pattern>s4pol</pattern>
+  <pattern>spro4s</pattern>
+  <pattern>1sr</pattern>
+  <pattern>2ss</pattern>
+  <pattern>ss4sr</pattern>
+  <pattern>2st </pattern>
+  <pattern>4sta </pattern>
+  <pattern>s3taj</pattern>
+  <pattern>s2tan</pattern>
+  <pattern>st4at</pattern>
+  <pattern>4stec</pattern>
+  <pattern>s4tep</pattern>
+  <pattern>st4er</pattern>
+  <pattern>s4tero</pattern>
+  <pattern>s4tich</pattern>
+  <pattern>2stil</pattern>
+  <pattern>s4tink</pattern>
+  <pattern>4stit </pattern>
+  <pattern>4sti�</pattern>
+  <pattern>st3lo</pattern>
+  <pattern>2stn</pattern>
+  <pattern>4sto </pattern>
+  <pattern>s4tona</pattern>
+  <pattern>4stou </pattern>
+  <pattern>4str </pattern>
+  <pattern>4stram</pattern>
+  <pattern>s4trik</pattern>
+  <pattern>4strn</pattern>
+  <pattern>4str�c</pattern>
+  <pattern>4stupni</pattern>
+  <pattern>s2tv</pattern>
+  <pattern>st4ve</pattern>
+  <pattern>3stv�</pattern>
+  <pattern>4sty </pattern>
+  <pattern>s4tyl</pattern>
+  <pattern>3sty�</pattern>
+  <pattern>s2t�</pattern>
+  <pattern>4st� </pattern>
+  <pattern>s3t��</pattern>
+  <pattern>s1t�</pattern>
+  <pattern>2st� </pattern>
+  <pattern>4st� </pattern>
+  <pattern>s4t�d</pattern>
+  <pattern>3st�h</pattern>
+  <pattern>s2t�r</pattern>
+  <pattern>s2t�</pattern>
+  <pattern>s3t�ej</pattern>
+  <pattern>1su</pattern>
+  <pattern>su4ba</pattern>
+  <pattern>su4bo</pattern>
+  <pattern>suma4</pattern>
+  <pattern>su3ve</pattern>
+  <pattern>s2v</pattern>
+  <pattern>sy3c</pattern>
+  <pattern>sych3r</pattern>
+  <pattern>sy4nes</pattern>
+  <pattern>s�2d</pattern>
+  <pattern>3s�h</pattern>
+  <pattern>s�2kl</pattern>
+  <pattern>1s�</pattern>
+  <pattern>1s�</pattern>
+  <pattern>2s2�</pattern>
+  <pattern>s3�i</pattern>
+  <pattern>2s�</pattern>
+  <pattern>2s�</pattern>
+  <pattern>s3�o</pattern>
+  <pattern>1s�</pattern>
+  <pattern>s2�</pattern>
+  <pattern>2t </pattern>
+  <pattern>1ta </pattern>
+  <pattern>ta2bl</pattern>
+  <pattern>tac4tvo</pattern>
+  <pattern>t2a3d</pattern>
+  <pattern>1taj</pattern>
+  <pattern>ta4jf</pattern>
+  <pattern>ta4jg</pattern>
+  <pattern>4talt</pattern>
+  <pattern>4tand</pattern>
+  <pattern>3tan�</pattern>
+  <pattern>t1ao</pattern>
+  <pattern>2tark</pattern>
+  <pattern>tast4</pattern>
+  <pattern>ta3str</pattern>
+  <pattern>ta4�k</pattern>
+  <pattern>2t1b</pattern>
+  <pattern>2t1c</pattern>
+  <pattern>1te</pattern>
+  <pattern>3te </pattern>
+  <pattern>te4ak</pattern>
+  <pattern>te4fl</pattern>
+  <pattern>te4in</pattern>
+  <pattern>4ten�m</pattern>
+  <pattern>teob4</pattern>
+  <pattern>tep3l</pattern>
+  <pattern>ters4</pattern>
+  <pattern>tes3ta</pattern>
+  <pattern>te4tr</pattern>
+  <pattern>te4uc</pattern>
+  <pattern>te4ur</pattern>
+  <pattern>te4ut</pattern>
+  <pattern>2tf</pattern>
+  <pattern>2tg</pattern>
+  <pattern>1ti</pattern>
+  <pattern>ti4gr</pattern>
+  <pattern>2tih</pattern>
+  <pattern>ti3kl</pattern>
+  <pattern>tin4g</pattern>
+  <pattern>ti4pl</pattern>
+  <pattern>ti3sl</pattern>
+  <pattern>tis4tr</pattern>
+  <pattern>ti4tr</pattern>
+  <pattern>2titu</pattern>
+  <pattern>tiz4r</pattern>
+  <pattern>4tiz�</pattern>
+  <pattern>ti�3</pattern>
+  <pattern>2ti�</pattern>
+  <pattern>2tk2</pattern>
+  <pattern>t4kal</pattern>
+  <pattern>4t2kan</pattern>
+  <pattern>t4kat</pattern>
+  <pattern>t2kl</pattern>
+  <pattern>tk4la</pattern>
+  <pattern>tk4li</pattern>
+  <pattern>4tkn�</pattern>
+  <pattern>t2k�</pattern>
+  <pattern>2tl</pattern>
+  <pattern>3tl </pattern>
+  <pattern>4tla </pattern>
+  <pattern>t1le</pattern>
+  <pattern>tles3</pattern>
+  <pattern>3tlm</pattern>
+  <pattern>t3lo </pattern>
+  <pattern>t4lou</pattern>
+  <pattern>tlu3</pattern>
+  <pattern>tlu4s</pattern>
+  <pattern>t1ly</pattern>
+  <pattern>t1l�</pattern>
+  <pattern>2tm</pattern>
+  <pattern>t2ma</pattern>
+  <pattern>2tn</pattern>
+  <pattern>t3n�</pattern>
+  <pattern>1to</pattern>
+  <pattern>to4as</pattern>
+  <pattern>to3b</pattern>
+  <pattern>tob4l</pattern>
+  <pattern>to3dr</pattern>
+  <pattern>to4hm</pattern>
+  <pattern>to4ir</pattern>
+  <pattern>2toj</pattern>
+  <pattern>tol4s</pattern>
+  <pattern>to4ol</pattern>
+  <pattern>4top </pattern>
+  <pattern>4topt</pattern>
+  <pattern>4topu</pattern>
+  <pattern>2torn</pattern>
+  <pattern>2toup</pattern>
+  <pattern>2tp</pattern>
+  <pattern>t3rant</pattern>
+  <pattern>t4rea</pattern>
+  <pattern>t4ref</pattern>
+  <pattern>tre4t</pattern>
+  <pattern>4tric </pattern>
+  <pattern>trip4</pattern>
+  <pattern>t4rit</pattern>
+  <pattern>t4rog</pattern>
+  <pattern>t3rol</pattern>
+  <pattern>tro4sk</pattern>
+  <pattern>t4rou</pattern>
+  <pattern>4trouh</pattern>
+  <pattern>4tro� </pattern>
+  <pattern>4trun</pattern>
+  <pattern>t4rus</pattern>
+  <pattern>4t4ru�</pattern>
+  <pattern>t3r�ln</pattern>
+  <pattern>4tr�</pattern>
+  <pattern>2tr�</pattern>
+  <pattern>2tr�</pattern>
+  <pattern>t3r�m</pattern>
+  <pattern>t3r�v</pattern>
+  <pattern>2t1s</pattern>
+  <pattern>ts4ko</pattern>
+  <pattern>ts2t</pattern>
+  <pattern>2t1t</pattern>
+  <pattern>tt4ch</pattern>
+  <pattern>tt4ri</pattern>
+  <pattern>1tu </pattern>
+  <pattern>tu4ff</pattern>
+  <pattern>1tuj</pattern>
+  <pattern>tu4lk</pattern>
+  <pattern>2tup</pattern>
+  <pattern>tu4r </pattern>
+  <pattern>tu3ry</pattern>
+  <pattern>tu4s </pattern>
+  <pattern>tu4� </pattern>
+  <pattern>tu3�i</pattern>
+  <pattern>t2v</pattern>
+  <pattern>2tve</pattern>
+  <pattern>2t3vi</pattern>
+  <pattern>t4vinn</pattern>
+  <pattern>t4vi�</pattern>
+  <pattern>t4v�c</pattern>
+  <pattern>1ty </pattern>
+  <pattern>ty4g�</pattern>
+  <pattern>ty2la</pattern>
+  <pattern>ty4�e</pattern>
+  <pattern>ty4�h</pattern>
+  <pattern>ty4�j</pattern>
+  <pattern>ty4�o</pattern>
+  <pattern>ty4�r</pattern>
+  <pattern>ty4��</pattern>
+  <pattern>3t� </pattern>
+  <pattern>t�4fl</pattern>
+  <pattern>1t�</pattern>
+  <pattern>t�2bl</pattern>
+  <pattern>3t�m</pattern>
+  <pattern>1t�c</pattern>
+  <pattern>4t�c </pattern>
+  <pattern>4t�ce</pattern>
+  <pattern>1t�m</pattern>
+  <pattern>2t�n</pattern>
+  <pattern>2t�r</pattern>
+  <pattern>1t� </pattern>
+  <pattern>1t�m</pattern>
+  <pattern>1t��</pattern>
+  <pattern>3t�</pattern>
+  <pattern>t2�</pattern>
+  <pattern>t3�i</pattern>
+  <pattern>2t��</pattern>
+  <pattern>1t�</pattern>
+  <pattern>t�3d4l</pattern>
+  <pattern>2t�h</pattern>
+  <pattern>2t�nn</pattern>
+  <pattern>2t�p</pattern>
+  <pattern>2t�</pattern>
+  <pattern>t4�eb</pattern>
+  <pattern>t�eh3n</pattern>
+  <pattern>t2�el</pattern>
+  <pattern>t2�ic</pattern>
+  <pattern>t3�il</pattern>
+  <pattern>t�4ti</pattern>
+  <pattern>t1�u</pattern>
+  <pattern>t2��</pattern>
+  <pattern>3t��b</pattern>
+  <pattern>t��4s</pattern>
+  <pattern>2t�</pattern>
+  <pattern>t3�t</pattern>
+  <pattern>t�4ti</pattern>
+  <pattern>1t�</pattern>
+  <pattern>u1</pattern>
+  <pattern>2u </pattern>
+  <pattern>u2at</pattern>
+  <pattern>u2b</pattern>
+  <pattern>u3ba</pattern>
+  <pattern>u3be</pattern>
+  <pattern>u3bi</pattern>
+  <pattern>u3bo</pattern>
+  <pattern>ubs4t</pattern>
+  <pattern>u3bu</pattern>
+  <pattern>u3b�</pattern>
+  <pattern>u3b� </pattern>
+  <pattern>u3b�</pattern>
+  <pattern>uc4t�</pattern>
+  <pattern>2u2d</pattern>
+  <pattern>u3de</pattern>
+  <pattern>u3di</pattern>
+  <pattern>u3do</pattern>
+  <pattern>u3dru</pattern>
+  <pattern>u3du</pattern>
+  <pattern>u3dy</pattern>
+  <pattern>u3d�</pattern>
+  <pattern>ue4fa</pattern>
+  <pattern>2uf</pattern>
+  <pattern>u2hl</pattern>
+  <pattern>uh3l�</pattern>
+  <pattern>uh3no</pattern>
+  <pattern>u2in</pattern>
+  <pattern>u2jm</pattern>
+  <pattern>u2k</pattern>
+  <pattern>u3ka </pattern>
+  <pattern>uk4aj</pattern>
+  <pattern>uk4al</pattern>
+  <pattern>uk4at</pattern>
+  <pattern>u3ke</pattern>
+  <pattern>uk3la</pattern>
+  <pattern>uk3le</pattern>
+  <pattern>u3ko</pattern>
+  <pattern>u3ku</pattern>
+  <pattern>u3ky</pattern>
+  <pattern>uk4� </pattern>
+  <pattern>u3k�</pattern>
+  <pattern>ul4fa</pattern>
+  <pattern>ul1h</pattern>
+  <pattern>ul4p�</pattern>
+  <pattern>u2m</pattern>
+  <pattern>u3ma</pattern>
+  <pattern>u3me</pattern>
+  <pattern>u3mi</pattern>
+  <pattern>um4pl</pattern>
+  <pattern>um4ru</pattern>
+  <pattern>u3mu</pattern>
+  <pattern>u3m�</pattern>
+  <pattern>3um�</pattern>
+  <pattern>u2n</pattern>
+  <pattern>un4dl</pattern>
+  <pattern>u3ne</pattern>
+  <pattern>u3no</pattern>
+  <pattern>u3nu</pattern>
+  <pattern>u3n�</pattern>
+  <pattern>u3n�</pattern>
+  <pattern>u3n�</pattern>
+  <pattern>un4�r</pattern>
+  <pattern>u2p</pattern>
+  <pattern>u3pa</pattern>
+  <pattern>u3pe</pattern>
+  <pattern>upe2r3</pattern>
+  <pattern>u3pi</pattern>
+  <pattern>u3pln</pattern>
+  <pattern>u3pu</pattern>
+  <pattern>u3py</pattern>
+  <pattern>u3p�</pattern>
+  <pattern>u3p�</pattern>
+  <pattern>u3p�</pattern>
+  <pattern>u3p�</pattern>
+  <pattern>u2r</pattern>
+  <pattern>u3ra</pattern>
+  <pattern>u3re</pattern>
+  <pattern>u3ri</pattern>
+  <pattern>2u3ro</pattern>
+  <pattern>u3ru</pattern>
+  <pattern>u3ry </pattern>
+  <pattern>u3r�</pattern>
+  <pattern>1ur�</pattern>
+  <pattern>u3r�</pattern>
+  <pattern>u2s</pattern>
+  <pattern>us3ky</pattern>
+  <pattern>us3k�</pattern>
+  <pattern>us3k�</pattern>
+  <pattern>us3k�</pattern>
+  <pattern>us1l</pattern>
+  <pattern>us2lo</pattern>
+  <pattern>u3so</pattern>
+  <pattern>u4ste</pattern>
+  <pattern>u4sty</pattern>
+  <pattern>u4st�</pattern>
+  <pattern>u4st�</pattern>
+  <pattern>u4st�</pattern>
+  <pattern>u3st�</pattern>
+  <pattern>u4st�</pattern>
+  <pattern>u3su </pattern>
+  <pattern>u3sy</pattern>
+  <pattern>u3s�</pattern>
+  <pattern>u3s�</pattern>
+  <pattern>u3s�</pattern>
+  <pattern>u4tro</pattern>
+  <pattern>u4tr�</pattern>
+  <pattern>u2v</pattern>
+  <pattern>u3vi</pattern>
+  <pattern>u3vu</pattern>
+  <pattern>u2z</pattern>
+  <pattern>u3ze</pattern>
+  <pattern>u3zi</pattern>
+  <pattern>uz1l</pattern>
+  <pattern>u3zo</pattern>
+  <pattern>u3zu</pattern>
+  <pattern>u3z�</pattern>
+  <pattern>u2�</pattern>
+  <pattern>u3�a</pattern>
+  <pattern>u3�e</pattern>
+  <pattern>u3�i</pattern>
+  <pattern>u3�o</pattern>
+  <pattern>u�3t</pattern>
+  <pattern>u3�u</pattern>
+  <pattern>u3��</pattern>
+  <pattern>u3��</pattern>
+  <pattern>u2�</pattern>
+  <pattern>u2�</pattern>
+  <pattern>u2�</pattern>
+  <pattern>u3�e</pattern>
+  <pattern>u3�i</pattern>
+  <pattern>u�4kl</pattern>
+  <pattern>u3�o</pattern>
+  <pattern>u�3t�</pattern>
+  <pattern>u3�u</pattern>
+  <pattern>u3��</pattern>
+  <pattern>u3��</pattern>
+  <pattern>u2�</pattern>
+  <pattern>u3�e</pattern>
+  <pattern>u3�o</pattern>
+  <pattern>u3�u</pattern>
+  <pattern>u3��</pattern>
+  <pattern>u3��</pattern>
+  <pattern>1v</pattern>
+  <pattern>2v </pattern>
+  <pattern>va3dl</pattern>
+  <pattern>va4j�</pattern>
+  <pattern>va4kl</pattern>
+  <pattern>2v1b</pattern>
+  <pattern>2v1c</pattern>
+  <pattern>v2ch</pattern>
+  <pattern>2v2d</pattern>
+  <pattern>v4dal</pattern>
+  <pattern>v3di</pattern>
+  <pattern>v4d�k</pattern>
+  <pattern>v4d��</pattern>
+  <pattern>ve3dle</pattern>
+  <pattern>ve3jd</pattern>
+  <pattern>3ven</pattern>
+  <pattern>ve2p</pattern>
+  <pattern>ve3ps</pattern>
+  <pattern>vep3�</pattern>
+  <pattern>ves3l</pattern>
+  <pattern>ve4sm</pattern>
+  <pattern>ves4p</pattern>
+  <pattern>ve3sta</pattern>
+  <pattern>ve3t4�</pattern>
+  <pattern>ve2z3m</pattern>
+  <pattern>vi4ch</pattern>
+  <pattern>vide2</pattern>
+  <pattern>vi4dr</pattern>
+  <pattern>vi4et</pattern>
+  <pattern>vi4kr</pattern>
+  <pattern>vi2tr</pattern>
+  <pattern>2vk</pattern>
+  <pattern>v2kr</pattern>
+  <pattern>v2l</pattern>
+  <pattern>2v3la </pattern>
+  <pattern>4vle </pattern>
+  <pattern>4vlem</pattern>
+  <pattern>2vlo</pattern>
+  <pattern>2vm</pattern>
+  <pattern>2vn</pattern>
+  <pattern>v4nad</pattern>
+  <pattern>vo3b</pattern>
+  <pattern>vo4ic</pattern>
+  <pattern>vo4ja</pattern>
+  <pattern>vo4jb</pattern>
+  <pattern>vo4jd</pattern>
+  <pattern>vo4jj</pattern>
+  <pattern>vo4jm</pattern>
+  <pattern>vo4j�</pattern>
+  <pattern>vo2s</pattern>
+  <pattern>vo4t�</pattern>
+  <pattern>vou3</pattern>
+  <pattern>vous2</pattern>
+  <pattern>v2p</pattern>
+  <pattern>vr2c</pattern>
+  <pattern>vr2dl</pattern>
+  <pattern>4vrny</pattern>
+  <pattern>v1ro</pattern>
+  <pattern>vr4st</pattern>
+  <pattern>vrst3v</pattern>
+  <pattern>vrs4tv�</pattern>
+  <pattern>2vs2</pattern>
+  <pattern>v1sk</pattern>
+  <pattern>v3stv</pattern>
+  <pattern>2v2t</pattern>
+  <pattern>vy3c</pattern>
+  <pattern>vy3d2</pattern>
+  <pattern>vy4dra</pattern>
+  <pattern>vyp2</pattern>
+  <pattern>vy3s2</pattern>
+  <pattern>vy4sn</pattern>
+  <pattern>vys4t</pattern>
+  <pattern>vy3t</pattern>
+  <pattern>vy3�</pattern>
+  <pattern>vy�4k</pattern>
+  <pattern>vy�2</pattern>
+  <pattern>vy4� </pattern>
+  <pattern>vy4�m</pattern>
+  <pattern>vy4��</pattern>
+  <pattern>vy4�l</pattern>
+  <pattern>v2z2</pattern>
+  <pattern>vz4no</pattern>
+  <pattern>vz4n�</pattern>
+  <pattern>vz4n�</pattern>
+  <pattern>vz4n�</pattern>
+  <pattern>v�3ri</pattern>
+  <pattern>v�ce3</pattern>
+  <pattern>v�4hat</pattern>
+  <pattern>3v�n</pattern>
+  <pattern>3v�s</pattern>
+  <pattern>v�3t</pattern>
+  <pattern>3v�3z</pattern>
+  <pattern>2v2�</pattern>
+  <pattern>v3��</pattern>
+  <pattern>v3��</pattern>
+  <pattern>v4��r</pattern>
+  <pattern>v�4cm</pattern>
+  <pattern>v�3t4a</pattern>
+  <pattern>2v�</pattern>
+  <pattern>2v��</pattern>
+  <pattern>v3��n</pattern>
+  <pattern>v2�2</pattern>
+  <pattern>v�e3s</pattern>
+  <pattern>v3�t� </pattern>
+  <pattern>v2�2</pattern>
+  <pattern>wa4fd</pattern>
+  <pattern>3war</pattern>
+  <pattern>wa4re</pattern>
+  <pattern>we2</pattern>
+  <pattern>2x </pattern>
+  <pattern>xand4</pattern>
+  <pattern>2xf</pattern>
+  <pattern>xisk4</pattern>
+  <pattern>2xn</pattern>
+  <pattern>3xov</pattern>
+  <pattern>x1t</pattern>
+  <pattern>xt4ra</pattern>
+  <pattern>xy4sm</pattern>
+  <pattern>y1</pattern>
+  <pattern>y2a</pattern>
+  <pattern>y2bl</pattern>
+  <pattern>yb3ri</pattern>
+  <pattern>y2ch</pattern>
+  <pattern>y4chr</pattern>
+  <pattern>y2d1l</pattern>
+  <pattern>yd4l�</pattern>
+  <pattern>y2dr</pattern>
+  <pattern>yd4y </pattern>
+  <pattern>y2e</pattern>
+  <pattern>y2gr</pattern>
+  <pattern>y3hn</pattern>
+  <pattern>yh4ne</pattern>
+  <pattern>yj4ma</pattern>
+  <pattern>yj4me</pattern>
+  <pattern>y2kl</pattern>
+  <pattern>yk3la</pattern>
+  <pattern>y3klop</pattern>
+  <pattern>yk4ly</pattern>
+  <pattern>yman�4</pattern>
+  <pattern>ym4kl</pattern>
+  <pattern>yna4s</pattern>
+  <pattern>y3ni</pattern>
+  <pattern>ype4r</pattern>
+  <pattern>yp4si</pattern>
+  <pattern>yp4t�</pattern>
+  <pattern>y2p�</pattern>
+  <pattern>yr2v</pattern>
+  <pattern>y2s</pattern>
+  <pattern>y3sa</pattern>
+  <pattern>y3se</pattern>
+  <pattern>y3si</pattern>
+  <pattern>ys3lu</pattern>
+  <pattern>y3sm</pattern>
+  <pattern>y3so</pattern>
+  <pattern>y3sp</pattern>
+  <pattern>ys2t</pattern>
+  <pattern>ys3te</pattern>
+  <pattern>yst4r</pattern>
+  <pattern>y3su</pattern>
+  <pattern>y3sv</pattern>
+  <pattern>y3sy</pattern>
+  <pattern>y3s�</pattern>
+  <pattern>y3s�</pattern>
+  <pattern>y3s�</pattern>
+  <pattern>yt4me</pattern>
+  <pattern>yu3�</pattern>
+  <pattern>y3vs</pattern>
+  <pattern>yv�4t</pattern>
+  <pattern>y3zb</pattern>
+  <pattern>y3zd</pattern>
+  <pattern>y3zk</pattern>
+  <pattern>y3zn</pattern>
+  <pattern>yz4n�</pattern>
+  <pattern>yz4n�</pattern>
+  <pattern>y3zp</pattern>
+  <pattern>yz4po</pattern>
+  <pattern>y�2k</pattern>
+  <pattern>y2�</pattern>
+  <pattern>y�3b</pattern>
+  <pattern>y�k4n</pattern>
+  <pattern>y3��</pattern>
+  <pattern>y�4�e</pattern>
+  <pattern>y2�</pattern>
+  <pattern>y3�e</pattern>
+  <pattern>y3�i</pattern>
+  <pattern>y3�k</pattern>
+  <pattern>y�1l</pattern>
+  <pattern>y3�o</pattern>
+  <pattern>y3�p</pattern>
+  <pattern>y3�u</pattern>
+  <pattern>y3��</pattern>
+  <pattern>y�2</pattern>
+  <pattern>y3�d</pattern>
+  <pattern>1z</pattern>
+  <pattern>2z </pattern>
+  <pattern>zab2l</pattern>
+  <pattern>za4bs</pattern>
+  <pattern>za4dk</pattern>
+  <pattern>za3dl</pattern>
+  <pattern>za4dn</pattern>
+  <pattern>za3h</pattern>
+  <pattern>za3i</pattern>
+  <pattern>za3j</pattern>
+  <pattern>za4jk</pattern>
+  <pattern>za3k</pattern>
+  <pattern>za4kt</pattern>
+  <pattern>zal4k</pattern>
+  <pattern>zam4n</pattern>
+  <pattern>za3p2</pattern>
+  <pattern>za3s2</pattern>
+  <pattern>zat2</pattern>
+  <pattern>za3tl</pattern>
+  <pattern>zat4r</pattern>
+  <pattern>za4ut</pattern>
+  <pattern>za3z</pattern>
+  <pattern>zaz4n</pattern>
+  <pattern>za4z�</pattern>
+  <pattern>za4� </pattern>
+  <pattern>za3�</pattern>
+  <pattern>za�4k</pattern>
+  <pattern>za4�s</pattern>
+  <pattern>2zb</pattern>
+  <pattern>zban4</pattern>
+  <pattern>z2by</pattern>
+  <pattern>zbys4</pattern>
+  <pattern>2z1c</pattern>
+  <pattern>2z2d</pattern>
+  <pattern>z3di</pattern>
+  <pattern>zdn�4n�</pattern>
+  <pattern>z4doba</pattern>
+  <pattern>z4dobn�</pattern>
+  <pattern>zd4re</pattern>
+  <pattern>zd4v�</pattern>
+  <pattern>z2e</pattern>
+  <pattern>ze3h</pattern>
+  <pattern>ze3p2</pattern>
+  <pattern>4zerot</pattern>
+  <pattern>ze3s2</pattern>
+  <pattern>zes4p</pattern>
+  <pattern>zet2</pattern>
+  <pattern>zev2</pattern>
+  <pattern>ze3vn</pattern>
+  <pattern>ze3z</pattern>
+  <pattern>ze4z </pattern>
+  <pattern>2z2f</pattern>
+  <pattern>z1h�</pattern>
+  <pattern>z4ine</pattern>
+  <pattern>z2j</pattern>
+  <pattern>z3j�</pattern>
+  <pattern>2z2k</pattern>
+  <pattern>z3ka </pattern>
+  <pattern>z3ky</pattern>
+  <pattern>z3k�</pattern>
+  <pattern>z3k�</pattern>
+  <pattern>z3k�</pattern>
+  <pattern>2zl</pattern>
+  <pattern>3zl </pattern>
+  <pattern>zlhos4</pattern>
+  <pattern>zlik3</pattern>
+  <pattern>z3ly </pattern>
+  <pattern>z2m2</pattern>
+  <pattern>2zme</pattern>
+  <pattern>z3mn</pattern>
+  <pattern>z3my</pattern>
+  <pattern>z4m�n</pattern>
+  <pattern>2z2n</pattern>
+  <pattern>3znak</pattern>
+  <pattern>z4nal</pattern>
+  <pattern>z3ne </pattern>
+  <pattern>z3nic</pattern>
+  <pattern>z3no</pattern>
+  <pattern>z3nu</pattern>
+  <pattern>z3ny</pattern>
+  <pattern>z3n�</pattern>
+  <pattern>z3n�</pattern>
+  <pattern>z4n�t</pattern>
+  <pattern>z4n�v</pattern>
+  <pattern>z3n�</pattern>
+  <pattern>z3n�</pattern>
+  <pattern>z4n�l</pattern>
+  <pattern>zo4tr</pattern>
+  <pattern>zo4�k</pattern>
+  <pattern>2z2p</pattern>
+  <pattern>z3pt</pattern>
+  <pattern>z4p�t</pattern>
+  <pattern>3zrak</pattern>
+  <pattern>2z1s2</pattern>
+  <pattern>2zt</pattern>
+  <pattern>ztros3</pattern>
+  <pattern>z4tr�</pattern>
+  <pattern>z3t�</pattern>
+  <pattern>3zu </pattern>
+  <pattern>zu3mo</pattern>
+  <pattern>zu3m�</pattern>
+  <pattern>zu3m�</pattern>
+  <pattern>zu3�</pattern>
+  <pattern>z2v</pattern>
+  <pattern>zva4d</pattern>
+  <pattern>z3va�</pattern>
+  <pattern>z3vi</pattern>
+  <pattern>zvik4</pattern>
+  <pattern>zv4n�</pattern>
+  <pattern>z3vod</pattern>
+  <pattern>z3voj</pattern>
+  <pattern>z4von</pattern>
+  <pattern>zv4ro</pattern>
+  <pattern>z4v�n</pattern>
+  <pattern>z3v�j</pattern>
+  <pattern>z4v�s</pattern>
+  <pattern>3zy </pattern>
+  <pattern>2zz</pattern>
+  <pattern>z�1</pattern>
+  <pattern>z�h2</pattern>
+  <pattern>z�4kl </pattern>
+  <pattern>3z�p</pattern>
+  <pattern>z�3s2</pattern>
+  <pattern>z�3z</pattern>
+  <pattern>z�2</pattern>
+  <pattern>2z2�1</pattern>
+  <pattern>z�3�</pattern>
+  <pattern>z�3�</pattern>
+  <pattern>2z�</pattern>
+  <pattern>z3�l</pattern>
+  <pattern>2z�</pattern>
+  <pattern>z2�</pattern>
+  <pattern>z�ej3</pattern>
+  <pattern>z3�ez</pattern>
+  <pattern>z3�e�</pattern>
+  <pattern>2z�2</pattern>
+  <pattern>z3�k</pattern>
+  <pattern>z�4ka</pattern>
+  <pattern>z3�t</pattern>
+  <pattern>z�3s</pattern>
+  <pattern>�1b</pattern>
+  <pattern>�2bl</pattern>
+  <pattern>�b4ry</pattern>
+  <pattern>�4b� </pattern>
+  <pattern>�3cho</pattern>
+  <pattern>�c3ti3</pattern>
+  <pattern>�1d</pattern>
+  <pattern>�2dl</pattern>
+  <pattern>�do4s</pattern>
+  <pattern>�dos4ti</pattern>
+  <pattern>�d1�</pattern>
+  <pattern>�1ha</pattern>
+  <pattern>�3he</pattern>
+  <pattern>�h1l</pattern>
+  <pattern>�3hl </pattern>
+  <pattern>�h3n</pattern>
+  <pattern>�1ho</pattern>
+  <pattern>�1hr</pattern>
+  <pattern>�1h�</pattern>
+  <pattern>�1j</pattern>
+  <pattern>�4jmu</pattern>
+  <pattern>�j4m�</pattern>
+  <pattern>�4kli</pattern>
+  <pattern>�k4ni</pattern>
+  <pattern>�1la</pattern>
+  <pattern>�1le</pattern>
+  <pattern>�1lo</pattern>
+  <pattern>�1lu</pattern>
+  <pattern>�1ly</pattern>
+  <pattern>�3l�</pattern>
+  <pattern>�1l�</pattern>
+  <pattern>�3my</pattern>
+  <pattern>�3m�</pattern>
+  <pattern>�3m�</pattern>
+  <pattern>�3m�</pattern>
+  <pattern>�1m�</pattern>
+  <pattern>�ne4v</pattern>
+  <pattern>�1ra</pattern>
+  <pattern>�1re</pattern>
+  <pattern>�r2m</pattern>
+  <pattern>�1ro</pattern>
+  <pattern>�1ru</pattern>
+  <pattern>�3r�</pattern>
+  <pattern>�1s</pattern>
+  <pattern>�2sc</pattern>
+  <pattern>�2s3k</pattern>
+  <pattern>�s4k </pattern>
+  <pattern>�s4kl</pattern>
+  <pattern>�s4kn</pattern>
+  <pattern>�2sla</pattern>
+  <pattern>�s4ly</pattern>
+  <pattern>�2sm</pattern>
+  <pattern>�s4po</pattern>
+  <pattern>�2st</pattern>
+  <pattern>�t3k</pattern>
+  <pattern>�t1r</pattern>
+  <pattern>�1tu</pattern>
+  <pattern>�1ty</pattern>
+  <pattern>�1t�</pattern>
+  <pattern>�3t�</pattern>
+  <pattern>�v4si</pattern>
+  <pattern>�v4s�</pattern>
+  <pattern>�z3k</pattern>
+  <pattern>�z3ni</pattern>
+  <pattern>�zni4c</pattern>
+  <pattern>�z4vi</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�1�</pattern>
+  <pattern>��4ke</pattern>
+  <pattern>��4k�</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�3�e</pattern>
+  <pattern>�3��</pattern>
+  <pattern>�1</pattern>
+  <pattern>�2d</pattern>
+  <pattern>�3di</pattern>
+  <pattern>�3do</pattern>
+  <pattern>�2f</pattern>
+  <pattern>�3fo</pattern>
+  <pattern>�f1r</pattern>
+  <pattern>�2kl</pattern>
+  <pattern>�2l</pattern>
+  <pattern>�2m</pattern>
+  <pattern>�3ma</pattern>
+  <pattern>�3me</pattern>
+  <pattern>�3mi</pattern>
+  <pattern>�3mo</pattern>
+  <pattern>�3mu</pattern>
+  <pattern>�3m�</pattern>
+  <pattern>4�re </pattern>
+  <pattern>�2s</pattern>
+  <pattern>�2t</pattern>
+  <pattern>�3ta</pattern>
+  <pattern>�3to</pattern>
+  <pattern>�3t�</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�1b</pattern>
+  <pattern>�b3�</pattern>
+  <pattern>�3cho</pattern>
+  <pattern>�ch4t</pattern>
+  <pattern>�d1l</pattern>
+  <pattern>�1h</pattern>
+  <pattern>�2hl</pattern>
+  <pattern>�h3n</pattern>
+  <pattern>�1j</pattern>
+  <pattern>�jed4</pattern>
+  <pattern>�j4m�</pattern>
+  <pattern>�2kr</pattern>
+  <pattern>�1l</pattern>
+  <pattern>�1m�</pattern>
+  <pattern>�3m�</pattern>
+  <pattern>�1m�</pattern>
+  <pattern>�1r</pattern>
+  <pattern>�1sa</pattern>
+  <pattern>�2s3k</pattern>
+  <pattern>�s4kl</pattern>
+  <pattern>�s4kn</pattern>
+  <pattern>�s4l </pattern>
+  <pattern>�s3le</pattern>
+  <pattern>�s4ln</pattern>
+  <pattern>�s�h2</pattern>
+  <pattern>�1t</pattern>
+  <pattern>�t3k</pattern>
+  <pattern>�3t3�e</pattern>
+  <pattern>�z3da</pattern>
+  <pattern>�z3de</pattern>
+  <pattern>�z3k</pattern>
+  <pattern>�3zna</pattern>
+  <pattern>�3z3ni</pattern>
+  <pattern>�3zn�n</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�1�</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�3�e</pattern>
+  <pattern>�3�i</pattern>
+  <pattern>�3�o</pattern>
+  <pattern>�3��</pattern>
+  <pattern>�1</pattern>
+  <pattern>�2z</pattern>
+  <pattern>�3za</pattern>
+  <pattern>�3zi</pattern>
+  <pattern>�3zo</pattern>
+  <pattern>�3zy</pattern>
+  <pattern>1�</pattern>
+  <pattern>�2c2</pattern>
+  <pattern>�2d</pattern>
+  <pattern>�j4ma</pattern>
+  <pattern>�2k</pattern>
+  <pattern>�2l</pattern>
+  <pattern>�2n</pattern>
+  <pattern>�2p</pattern>
+  <pattern>�2t</pattern>
+  <pattern>�t4ko</pattern>
+  <pattern>�2v</pattern>
+  <pattern>�2z</pattern>
+  <pattern>�z3k</pattern>
+  <pattern>�2�</pattern>
+  <pattern>3��e</pattern>
+  <pattern>��e4z</pattern>
+  <pattern>�4ti</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�1b</pattern>
+  <pattern>�3cho</pattern>
+  <pattern>�1d</pattern>
+  <pattern>�d4la</pattern>
+  <pattern>�1h</pattern>
+  <pattern>�1j</pattern>
+  <pattern>�1l</pattern>
+  <pattern>�1ml</pattern>
+  <pattern>�1m�</pattern>
+  <pattern>�2n</pattern>
+  <pattern>�3no</pattern>
+  <pattern>�po3�4</pattern>
+  <pattern>�1r</pattern>
+  <pattern>�1s2</pattern>
+  <pattern>�2sk</pattern>
+  <pattern>�1t</pattern>
+  <pattern>�t4ku</pattern>
+  <pattern>�t4ky</pattern>
+  <pattern>�1u</pattern>
+  <pattern>�4vli</pattern>
+  <pattern>�3zk</pattern>
+  <pattern>�3zn</pattern>
+  <pattern>�4zvu</pattern>
+  <pattern>��4n�</pattern>
+  <pattern>�1�</pattern>
+  <pattern>�3l</pattern>
+  <pattern>2� </pattern>
+  <pattern>1�a</pattern>
+  <pattern>�a4br</pattern>
+  <pattern>2�b</pattern>
+  <pattern>2�1c</pattern>
+  <pattern>1�e</pattern>
+  <pattern>3�e </pattern>
+  <pattern>�e1c</pattern>
+  <pattern>�es3k</pattern>
+  <pattern>1�i</pattern>
+  <pattern>2�k</pattern>
+  <pattern>�3ka </pattern>
+  <pattern>�3ko</pattern>
+  <pattern>�3ku</pattern>
+  <pattern>�3ky</pattern>
+  <pattern>2�1m</pattern>
+  <pattern>2�n</pattern>
+  <pattern>�2ne</pattern>
+  <pattern>1�o</pattern>
+  <pattern>�2p</pattern>
+  <pattern>2�s</pattern>
+  <pattern>�1sk</pattern>
+  <pattern>�s4la</pattern>
+  <pattern>�s4sr</pattern>
+  <pattern>2�2t</pattern>
+  <pattern>�4ten� </pattern>
+  <pattern>�4ten�</pattern>
+  <pattern>�t4la</pattern>
+  <pattern>�4tov� </pattern>
+  <pattern>3�tv</pattern>
+  <pattern>�3t�</pattern>
+  <pattern>4�t�n</pattern>
+  <pattern>1�u</pattern>
+  <pattern>1��</pattern>
+  <pattern>1��</pattern>
+  <pattern>��s3l</pattern>
+  <pattern>1��</pattern>
+  <pattern>2� </pattern>
+  <pattern>1�a</pattern>
+  <pattern>1�o</pattern>
+  <pattern>�s4te</pattern>
+  <pattern>2�1t</pattern>
+  <pattern>3�uj</pattern>
+  <pattern>�1c</pattern>
+  <pattern>�d3r</pattern>
+  <pattern>�3ha</pattern>
+  <pattern>�3he</pattern>
+  <pattern>�3hl </pattern>
+  <pattern>�h3lo</pattern>
+  <pattern>�h3n</pattern>
+  <pattern>�1ho</pattern>
+  <pattern>�3hu</pattern>
+  <pattern>�3h�</pattern>
+  <pattern>�3ja</pattern>
+  <pattern>�1je</pattern>
+  <pattern>�1jo</pattern>
+  <pattern>�3j�</pattern>
+  <pattern>�4kl�</pattern>
+  <pattern>�3k2t</pattern>
+  <pattern>�1l</pattern>
+  <pattern>�1ra</pattern>
+  <pattern>�ra3d</pattern>
+  <pattern>�1re</pattern>
+  <pattern>�1ro</pattern>
+  <pattern>�r3s</pattern>
+  <pattern>�rs4t</pattern>
+  <pattern>�1ru</pattern>
+  <pattern>�1ry</pattern>
+  <pattern>�1r�</pattern>
+  <pattern>�s3k</pattern>
+  <pattern>�s3n</pattern>
+  <pattern>�t1a3</pattern>
+  <pattern>�t4ac</pattern>
+  <pattern>�t1l</pattern>
+  <pattern>�1tr</pattern>
+  <pattern>�t3ra</pattern>
+  <pattern>�4traj</pattern>
+  <pattern>�t3v</pattern>
+  <pattern>�1t�</pattern>
+  <pattern>�t3��</pattern>
+  <pattern>�2v</pattern>
+  <pattern>�3va</pattern>
+  <pattern>�3ve</pattern>
+  <pattern>�3vl</pattern>
+  <pattern>�3vo</pattern>
+  <pattern>�3vu</pattern>
+  <pattern>�3v�</pattern>
+  <pattern>�v3�</pattern>
+  <pattern>�2z</pattern>
+  <pattern>�3ze</pattern>
+  <pattern>�3zi</pattern>
+  <pattern>�z3n</pattern>
+  <pattern>�3zo</pattern>
+  <pattern>�3z�</pattern>
+  <pattern>�1�</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�3�e</pattern>
+  <pattern>�3�i</pattern>
+  <pattern>�3�o</pattern>
+  <pattern>�3�u</pattern>
+  <pattern>�3��</pattern>
+  <pattern>�3��</pattern>
+  <pattern>�3�</pattern>
+  <pattern>�4�s</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�3�o</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�3�e</pattern>
+  <pattern>�3�i</pattern>
+  <pattern>�3�o</pattern>
+  <pattern>�3�u</pattern>
+  <pattern>�3��</pattern>
+  <pattern>1�</pattern>
+  <pattern>2� </pattern>
+  <pattern>2�a</pattern>
+  <pattern>�a3d</pattern>
+  <pattern>2�k</pattern>
+  <pattern>2�m</pattern>
+  <pattern>3�ov</pattern>
+  <pattern>�1s</pattern>
+  <pattern>2�1t</pattern>
+  <pattern>2� </pattern>
+  <pattern>�a4pl</pattern>
+  <pattern>�a4�m</pattern>
+  <pattern>2�2b</pattern>
+  <pattern>2�c</pattern>
+  <pattern>2�d</pattern>
+  <pattern>�e3ch</pattern>
+  <pattern>�e4dob</pattern>
+  <pattern>�e1h</pattern>
+  <pattern>�e3jd</pattern>
+  <pattern>�e3kl</pattern>
+  <pattern>�e3kv</pattern>
+  <pattern>�e4k��</pattern>
+  <pattern>�eo4r</pattern>
+  <pattern>�e3p2</pattern>
+  <pattern>�e4p </pattern>
+  <pattern>�e4pk</pattern>
+  <pattern>�e4p�</pattern>
+  <pattern>�er4v</pattern>
+  <pattern>2�es</pattern>
+  <pattern>�e3ska</pattern>
+  <pattern>�e3sko</pattern>
+  <pattern>�e2sp</pattern>
+  <pattern>�es3po</pattern>
+  <pattern>�e4sr</pattern>
+  <pattern>�e3sta</pattern>
+  <pattern>�e3stu</pattern>
+  <pattern>�e3st�</pattern>
+  <pattern>�e3st�</pattern>
+  <pattern>�e3tl</pattern>
+  <pattern>�et4�</pattern>
+  <pattern>�e3zd</pattern>
+  <pattern>�e3zk</pattern>
+  <pattern>4�ezl</pattern>
+  <pattern>�e3�t</pattern>
+  <pattern>�i1</pattern>
+  <pattern>�ia3</pattern>
+  <pattern>�i3h</pattern>
+  <pattern>�i4h </pattern>
+  <pattern>�i4hn</pattern>
+  <pattern>�i4j�</pattern>
+  <pattern>�i4l </pattern>
+  <pattern>�i4lb</pattern>
+  <pattern>�il2n</pattern>
+  <pattern>4�ine</pattern>
+  <pattern>�is2</pattern>
+  <pattern>3�i4t </pattern>
+  <pattern>�i4v </pattern>
+  <pattern>�i4vk</pattern>
+  <pattern>�i4vn</pattern>
+  <pattern>�i3z</pattern>
+  <pattern>�i�4t</pattern>
+  <pattern>�i3�</pattern>
+  <pattern>�i4� </pattern>
+  <pattern>2�k</pattern>
+  <pattern>�2kl</pattern>
+  <pattern>�k4la</pattern>
+  <pattern>�k4li</pattern>
+  <pattern>�k4ly</pattern>
+  <pattern>�k4no</pattern>
+  <pattern>2�1l</pattern>
+  <pattern>2�1m</pattern>
+  <pattern>2�n</pattern>
+  <pattern>1�o</pattern>
+  <pattern>2�ou</pattern>
+  <pattern>2�2p</pattern>
+  <pattern>2�1s</pattern>
+  <pattern>�s4to</pattern>
+  <pattern>2�1t</pattern>
+  <pattern>�2v</pattern>
+  <pattern>2�z</pattern>
+  <pattern>��4pl</pattern>
+  <pattern>��2sl</pattern>
+  <pattern>2��d</pattern>
+  <pattern>��4k�</pattern>
+  <pattern>��1s</pattern>
+  <pattern>2�1�</pattern>
+  <pattern>2�</pattern>
+  <pattern>�3�t</pattern>
+  <pattern>�4ti</pattern>
+  <pattern>1�</pattern>
+  <pattern>2� </pattern>
+  <pattern>�ab3</pattern>
+  <pattern>�a4vl</pattern>
+  <pattern>2�1c</pattern>
+  <pattern>�ej4d</pattern>
+  <pattern>�ep3t</pattern>
+  <pattern>�i4mr</pattern>
+  <pattern>2�2k</pattern>
+  <pattern>�3ka</pattern>
+  <pattern>�3ke</pattern>
+  <pattern>�3k3li</pattern>
+  <pattern>4�3kou</pattern>
+  <pattern>4�kov</pattern>
+  <pattern>3�kr</pattern>
+  <pattern>�k4ro</pattern>
+  <pattern>�3ku </pattern>
+  <pattern>�3ky</pattern>
+  <pattern>2�l</pattern>
+  <pattern>�2la</pattern>
+  <pattern>�2li</pattern>
+  <pattern>�3liv</pattern>
+  <pattern>�2lo</pattern>
+  <pattern>�l�2</pattern>
+  <pattern>�2l�</pattern>
+  <pattern>�2l�</pattern>
+  <pattern>2�1m</pattern>
+  <pattern>�mi4d</pattern>
+  <pattern>2�n</pattern>
+  <pattern>�2p</pattern>
+  <pattern>2�1s</pattern>
+  <pattern>2�t</pattern>
+  <pattern>�4tip</pattern>
+  <pattern>�t4ka</pattern>
+  <pattern>�t4kl</pattern>
+  <pattern>�4t�p</pattern>
+  <pattern>�4t�k</pattern>
+  <pattern>�2t�s</pattern>
+  <pattern>�4t�v</pattern>
+  <pattern>�2v</pattern>
+  <pattern>��3d</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�3��</pattern>
+  <pattern>2�2�</pattern>
+  <pattern>�3�o</pattern>
+  <pattern>�3�u</pattern>
+  <pattern>�3��</pattern>
+  <pattern>1�</pattern>
+  <pattern>2� </pattern>
+  <pattern>3�al</pattern>
+  <pattern>2�k</pattern>
+  <pattern>2�m</pattern>
+  <pattern>2�t</pattern>
+  <pattern>���4k</pattern>
+  <pattern>�1b</pattern>
+  <pattern>�1c</pattern>
+  <pattern>�1hl</pattern>
+  <pattern>�3jd</pattern>
+  <pattern>�4jmov�</pattern>
+  <pattern>�1le</pattern>
+  <pattern>�1my</pattern>
+  <pattern>�1m�</pattern>
+  <pattern>�1ra</pattern>
+  <pattern>�r4va</pattern>
+  <pattern>�r4vy</pattern>
+  <pattern>�1s2</pattern>
+  <pattern>�2st</pattern>
+  <pattern>�s3te</pattern>
+  <pattern>�s3t�n</pattern>
+  <pattern>�t2</pattern>
+  <pattern>�3tkl</pattern>
+  <pattern>�2v</pattern>
+  <pattern>�3va</pattern>
+  <pattern>�3vo</pattern>
+  <pattern>�3v�</pattern>
+  <pattern>�2z</pattern>
+  <pattern>�3zo</pattern>
+  <pattern>�2�</pattern>
+  <pattern>�3�e</pattern>
+  <pattern>�3�i</pattern>
+  <pattern>�3�o</pattern>
+  <pattern>1�</pattern>
+  <pattern>2� </pattern>
+  <pattern>�a3d</pattern>
+  <pattern>�a4tv</pattern>
+  <pattern>3�a�</pattern>
+  <pattern>2�1b</pattern>
+  <pattern>2�1c</pattern>
+  <pattern>2�1d</pattern>
+  <pattern>�e2b3</pattern>
+  <pattern>�eh3n</pattern>
+  <pattern>�e4ml</pattern>
+  <pattern>�e4zg</pattern>
+  <pattern>�i4dl</pattern>
+  <pattern>�i4jm</pattern>
+  <pattern>3�il</pattern>
+  <pattern>�i2vl</pattern>
+  <pattern>2�k</pattern>
+  <pattern>�k4ni</pattern>
+  <pattern>2�l</pattern>
+  <pattern>�4lic</pattern>
+  <pattern>3�lo</pattern>
+  <pattern>2�1m</pattern>
+  <pattern>2�n</pattern>
+  <pattern>�on2</pattern>
+  <pattern>2�1s2</pattern>
+  <pattern>2�1t</pattern>
+  <pattern>�2v</pattern>
+  <pattern>��4br</pattern>
+  <pattern>��4nr</pattern>
+  <pattern>��4zn</pattern>
+  <pattern>2��</pattern>
+  <pattern>2��</pattern>
+  <pattern>2��</pattern>
+  <pattern>��4ti</pattern>
+  <pattern>��4t�</pattern>
+</HyphenationDescription>

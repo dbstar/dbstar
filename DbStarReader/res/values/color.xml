@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <drawable name="reader_read_list_item_text_normal">#57371E</drawable>
+    <drawable name="reader_read_list_item_text_selected">#F88a29</drawable>
+</resources>

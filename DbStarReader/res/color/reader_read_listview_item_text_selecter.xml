@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+     <item android:state_selected="true" android:color="@drawable/reader_read_list_item_text_selected"></item>
+     <item android:state_selected="false" android:color="@drawable/reader_read_list_item_text_normal"></item>
+     <item android:color="@drawable/reader_read_list_item_text_normal"></item>
+   
+</selector>

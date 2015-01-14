@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:l="http://www.w3.org/1999/xlink"><description><title-info><author><last-name>DbStarPlayer</last-name></author> <book-title>About DbStarPlayerJ</book-title> <lang>tr</lang></title-info></description>
+<body>
+<title><p>DbStarPlayer Hakkında &DbStarPlayerVersion;</p></title>
+<p>DbStarPlayer harika bir e-kitap okuyucusudur. DbStarPlayer <code>ePub</code> ve <code>fb2</code> dosya formatlarını destekler. Lütfen unutmayın DRM-koruması altındaki kitaplar desteklenmez. Desteklenen formatlardan birindeki e-kitabı hafıza kartınızda bulunan<code>Books</code> klasörüne kopyalamanız yeterlidir. Bu kitaplara <a l:href="dbstarplayer-action:library">kitaplıktan ulaşabilirsiniz</a>. <a l:href="dbstarplayer-action:networkLibrary">Ağ kitaplığı</a> ücretsiz veya ucuz indirebileceğiniz büyük bir arşive sahiptir.</p>
+<p>Sayfayı çevirmek için ekranı yatay olara sürükleyin veya cihazınızın ses tuşlarını kullanın.</p>
+<p><a l:href="dbstarplayer-action:preferences">Tercihler</a> kısmından DbStarPlayer zevkinize göre özelleştirilebilir: renkler, fontlar, çeşitli seçenekler, sayfa çevirme tarzları, vb.</p>
+<p><a l:href="dbstarplayer-action:menu">DbStarPlayer Menü</a> aracılığyla kitaplıklarda gezinebilir ve uygulamayı kontrol edebilirsiniz. Eğer cihazınızın donanımında <code>Menü</code> düğmesi yoksa, menüyü açmak için ekranın alt kısmının ortasına dokunarak menüyü açabilirsiniz.</p>
+<p>İyi eğlenceler!</p>
+<empty-line/>
+<subtitle><p>İlgili bağlantılar:</p></subtitle>
+<p>DbStarPlayer hakkında daha fazla bilgiyi <a l:href="http://www.dbstarplayer.org/DbStarPlayerJ">sitemizde</a> bulabilirsiniz.</p>
+<p>Bizi <a l:href="http://twitter.com/dbstarplayer">twitter</a>dan takip ederek yeni sürümler ve diğer yeniliklerden haberdar olabilirsiniz.</p>
+<p><a l:href="http://www.dbstarplayer.org/donation/make.php">Bağış</a> yaparak DbStarPlayerin geliştirilmesine katkıda bulunabilirsiniz.</p>
+<p>Geliştiricilerle <a l:href="mailto:contact@geometerplus.com">e-mail</a> yoluyla iletişim kurabilirsiniz.</p>
+</body>
+</FictionBook>

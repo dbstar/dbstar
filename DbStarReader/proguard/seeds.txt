@@ -1,0 +1,1860 @@
+com.iflytek.tts.TtsService.AudioData
+com.iflytek.tts.TtsService.AudioData: android.media.AudioTrack mAudio
+com.iflytek.tts.TtsService.AudioData: java.lang.String TAG
+com.iflytek.tts.TtsService.AudioData: int mStreamType
+com.iflytek.tts.TtsService.AudioData: int mSampleRate
+com.iflytek.tts.TtsService.AudioData: int mBuffSize
+com.iflytek.tts.TtsService.AudioData: void <clinit>()
+com.iflytek.tts.TtsService.AudioData: AudioData()
+com.iflytek.tts.TtsService.AudioData: void onJniOutData(int,byte[])
+com.iflytek.tts.TtsService.AudioData: void onJniWatchCB(int)
+com.iflytek.tts.TtsService.Tts
+com.iflytek.tts.TtsService.Tts: boolean isInitialized
+com.iflytek.tts.TtsService.Tts: void <clinit>()
+com.iflytek.tts.TtsService.Tts: Tts()
+com.iflytek.tts.TtsService.Tts: boolean isInitialized()
+com.iflytek.tts.TtsService.Tts: void initTtsEngine()
+com.iflytek.tts.TtsService.Tts: void startReadThread(android.content.Context)
+com.iflytek.tts.TtsService.Tts: int JniGetVersion()
+com.iflytek.tts.TtsService.Tts: int JniCreate(java.lang.String)
+com.iflytek.tts.TtsService.Tts: int JniDestory()
+com.iflytek.tts.TtsService.Tts: int JniStop()
+com.iflytek.tts.TtsService.Tts: int JniSpeak(java.lang.String)
+com.iflytek.tts.TtsService.Tts: int JniSetParam(int,int)
+com.iflytek.tts.TtsService.Tts: int JniGetParam(int)
+com.iflytek.tts.TtsService.Tts: int JniIsPlaying()
+com.iflytek.tts.TtsService.Tts: boolean JniIsCreated()
+com.iflytek.tts.TtsService.Tts$1TtsRunThread
+com.iflytek.tts.TtsService.Tts$1TtsRunThread: Tts$1TtsRunThread()
+com.iflytek.tts.TtsService.Tts$1TtsRunThread: void run()
+com.media.android.dbstarplayer.BookmarkEditActivity
+com.media.android.dbstarplayer.BookmarkEditActivity: BookmarkEditActivity()
+com.media.android.dbstarplayer.BookmarksActivity
+com.media.android.dbstarplayer.BookmarksActivity: BookmarksActivity()
+com.media.android.dbstarplayer.CancelActivity
+com.media.android.dbstarplayer.CancelActivity: CancelActivity()
+com.media.android.dbstarplayer.DbStarPlayer
+com.media.android.dbstarplayer.DbStarPlayer: DbStarPlayer()
+com.media.android.dbstarplayer.DbStarPlayerApplication
+com.media.android.dbstarplayer.DbStarPlayerApplication: DbStarPlayerApplication()
+com.media.android.dbstarplayer.PopupWindow$Location: com.media.android.dbstarplayer.PopupWindow$Location[] values()
+com.media.android.dbstarplayer.PopupWindow$Location: com.media.android.dbstarplayer.PopupWindow$Location valueOf(java.lang.String)
+com.media.android.dbstarplayer.TOCActivity
+com.media.android.dbstarplayer.TOCActivity: TOCActivity()
+com.media.android.dbstarplayer.api.ApiException: long serialVersionUID
+com.media.android.dbstarplayer.api.ApiObject
+com.media.android.dbstarplayer.api.ApiObject: android.os.Parcelable$Creator CREATOR
+com.media.android.dbstarplayer.api.ApiObject$Boolean
+com.media.android.dbstarplayer.api.ApiObject$Date
+com.media.android.dbstarplayer.api.ApiObject$Error
+com.media.android.dbstarplayer.api.ApiObject$Integer
+com.media.android.dbstarplayer.api.ApiObject$Long
+com.media.android.dbstarplayer.api.ApiObject$String
+com.media.android.dbstarplayer.api.ApiObject$Void
+com.media.android.dbstarplayer.api.ApiService
+com.media.android.dbstarplayer.api.ApiService: ApiService()
+com.media.android.dbstarplayer.api.PluginApi$ActionInfo
+com.media.android.dbstarplayer.api.PluginApi$ActionInfo: android.os.Parcelable$Creator CREATOR
+com.media.android.dbstarplayer.api.PluginApi$MenuActionInfo
+com.media.android.dbstarplayer.api.PluginApi$PluginInfo
+com.media.android.dbstarplayer.api.TextPosition
+com.media.android.dbstarplayer.api.TextPosition: android.os.Parcelable$Creator CREATOR
+com.media.android.dbstarplayer.crash.FixBooksDirectoryActivity
+com.media.android.dbstarplayer.crash.FixBooksDirectoryActivity: FixBooksDirectoryActivity()
+com.media.android.dbstarplayer.crash.MissingNativeLibraryActivity
+com.media.android.dbstarplayer.crash.MissingNativeLibraryActivity: MissingNativeLibraryActivity()
+com.media.android.dbstarplayer.error.BookReadingErrorActivity
+com.media.android.dbstarplayer.error.BookReadingErrorActivity: BookReadingErrorActivity()
+com.media.android.dbstarplayer.image.ImageViewActivity
+com.media.android.dbstarplayer.image.ImageViewActivity: ImageViewActivity()
+com.media.android.dbstarplayer.library.BookInfoActivity
+com.media.android.dbstarplayer.library.BookInfoActivity: BookInfoActivity()
+com.media.android.dbstarplayer.library.LibraryActivity
+com.media.android.dbstarplayer.library.LibraryActivity: LibraryActivity()
+com.media.android.dbstarplayer.library.LibrarySearchActivity
+com.media.android.dbstarplayer.library.LibrarySearchActivity: LibrarySearchActivity()
+com.media.android.dbstarplayer.libraryService.LibraryService
+com.media.android.dbstarplayer.libraryService.LibraryService: LibraryService()
+com.media.android.dbstarplayer.network.AddCatalogMenuActivity
+com.media.android.dbstarplayer.network.AddCatalogMenuActivity: AddCatalogMenuActivity()
+com.media.android.dbstarplayer.network.AddCustomCatalogActivity
+com.media.android.dbstarplayer.network.AddCustomCatalogActivity: AddCustomCatalogActivity()
+com.media.android.dbstarplayer.network.AuthenticationActivity
+com.media.android.dbstarplayer.network.AuthenticationActivity: AuthenticationActivity()
+com.media.android.dbstarplayer.network.AuthorizationMenuActivity
+com.media.android.dbstarplayer.network.AuthorizationMenuActivity: AuthorizationMenuActivity()
+com.media.android.dbstarplayer.network.BookDownloader
+com.media.android.dbstarplayer.network.BookDownloader: BookDownloader()
+com.media.android.dbstarplayer.network.BookDownloaderService
+com.media.android.dbstarplayer.network.BookDownloaderService: BookDownloaderService()
+com.media.android.dbstarplayer.network.BuyBooksActivity
+com.media.android.dbstarplayer.network.BuyBooksActivity: BuyBooksActivity()
+com.media.android.dbstarplayer.network.BuyBooksActivity$AuthorizationState: com.media.android.dbstarplayer.network.BuyBooksActivity$AuthorizationState[] values()
+com.media.android.dbstarplayer.network.BuyBooksActivity$AuthorizationState: com.media.android.dbstarplayer.network.BuyBooksActivity$AuthorizationState valueOf(java.lang.String)
+com.media.android.dbstarplayer.network.ListenerCallback
+com.media.android.dbstarplayer.network.ListenerCallback: ListenerCallback()
+com.media.android.dbstarplayer.network.MenuActivity: MenuActivity()
+com.media.android.dbstarplayer.network.NetworkBookInfoActivity
+com.media.android.dbstarplayer.network.NetworkBookInfoActivity: NetworkBookInfoActivity()
+com.media.android.dbstarplayer.network.NetworkLibraryActivity
+com.media.android.dbstarplayer.network.NetworkLibraryActivity: NetworkLibraryActivity()
+com.media.android.dbstarplayer.network.NetworkLibraryPrimaryActivity
+com.media.android.dbstarplayer.network.NetworkLibraryPrimaryActivity: NetworkLibraryPrimaryActivity()
+com.media.android.dbstarplayer.network.NetworkLibrarySecondaryActivity
+com.media.android.dbstarplayer.network.NetworkLibrarySecondaryActivity: NetworkLibrarySecondaryActivity()
+com.media.android.dbstarplayer.network.NetworkSearchActivity
+com.media.android.dbstarplayer.network.NetworkSearchActivity: NetworkSearchActivity()
+com.media.android.dbstarplayer.network.TopupMenuActivity
+com.media.android.dbstarplayer.network.TopupMenuActivity: TopupMenuActivity()
+com.media.android.dbstarplayer.preferences.ColorPreference
+com.media.android.dbstarplayer.preferences.EditBookInfoActivity
+com.media.android.dbstarplayer.preferences.EditBookInfoActivity: EditBookInfoActivity()
+com.media.android.dbstarplayer.preferences.PreferenceActivity
+com.media.android.dbstarplayer.preferences.PreferenceActivity: PreferenceActivity()
+com.media.android.dbstarplayer.preferences.ZLCheckBoxPreference
+com.media.android.dbstarplayer.preferences.ZLPreferenceActivity: ZLPreferenceActivity(java.lang.String)
+com.media.android.dbstarplayer.preferences.ZLStringPreference
+com.media.android.dbstarplayer.style.EditStyleActivity
+com.media.android.dbstarplayer.style.EditStyleActivity: EditStyleActivity()
+com.media.android.dbstarplayer.style.StyleListActivity
+com.media.android.dbstarplayer.style.StyleListActivity: StyleListActivity()
+com.media.android.dbstarplayer.tips.TipsActivity
+com.media.android.dbstarplayer.tips.TipsActivity: TipsActivity()
+com.media.android.dbstarplayer.tree.TreeActivity
+com.media.android.dbstarplayer.tree.TreeActivity: TreeActivity()
+com.media.dbstarplayer.Paths
+com.media.dbstarplayer.Paths: Paths()
+com.media.dbstarplayer.Paths: java.lang.String cardDirectory()
+com.media.dbstarplayer.Paths: com.media.zlibrary.core.options.ZLStringOption BooksDirectoryOption()
+com.media.dbstarplayer.Paths: com.media.zlibrary.core.options.ZLStringOption FontsDirectoryOption()
+com.media.dbstarplayer.Paths: com.media.zlibrary.core.options.ZLStringOption WallpapersDirectoryOption()
+com.media.dbstarplayer.Paths: java.lang.String mainBookDirectory()
+com.media.dbstarplayer.Paths: java.lang.String cacheDirectory()
+com.media.dbstarplayer.Paths: java.lang.String networkCacheDirectory()
+com.media.dbstarplayer.Paths: java.lang.String systemShareDirectory()
+com.media.dbstarplayer.book.AbstractBookCollection
+com.media.dbstarplayer.book.AbstractBookCollection: java.util.List myListeners
+com.media.dbstarplayer.book.AbstractBookCollection: AbstractBookCollection()
+com.media.dbstarplayer.book.AbstractBookCollection: void addListener(com.media.dbstarplayer.book.IBookCollection$Listener)
+com.media.dbstarplayer.book.AbstractBookCollection: void removeListener(com.media.dbstarplayer.book.IBookCollection$Listener)
+com.media.dbstarplayer.book.AbstractBookCollection: boolean hasListeners()
+com.media.dbstarplayer.book.AbstractBookCollection: void fireBookEvent(com.media.dbstarplayer.book.BookEvent,com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.AbstractBookCollection: void fireBuildEvent(com.media.dbstarplayer.book.IBookCollection$Status)
+com.media.dbstarplayer.book.AbstractSerializer
+com.media.dbstarplayer.book.AbstractSerializer: AbstractSerializer()
+com.media.dbstarplayer.book.AbstractSerializer: java.lang.String serialize(com.media.dbstarplayer.book.BookQuery)
+com.media.dbstarplayer.book.AbstractSerializer: com.media.dbstarplayer.book.BookQuery deserializeBookQuery(java.lang.String)
+com.media.dbstarplayer.book.AbstractSerializer: java.lang.String serialize(com.media.dbstarplayer.book.BookmarkQuery)
+com.media.dbstarplayer.book.AbstractSerializer: com.media.dbstarplayer.book.BookmarkQuery deserializeBookmarkQuery(java.lang.String)
+com.media.dbstarplayer.book.AbstractSerializer: java.lang.String serialize(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.AbstractSerializer: com.media.dbstarplayer.book.Book deserializeBook(java.lang.String)
+com.media.dbstarplayer.book.AbstractSerializer: java.lang.String serialize(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.AbstractSerializer: com.media.dbstarplayer.book.Bookmark deserializeBookmark(java.lang.String)
+com.media.dbstarplayer.book.AbstractSerializer: java.lang.String serialize(com.media.dbstarplayer.book.HighlightingStyle)
+com.media.dbstarplayer.book.AbstractSerializer: com.media.dbstarplayer.book.HighlightingStyle deserializeStyle(java.lang.String)
+com.media.dbstarplayer.book.Author
+com.media.dbstarplayer.book.Author: com.media.dbstarplayer.book.Author NULL
+com.media.dbstarplayer.book.Author: java.lang.String DisplayName
+com.media.dbstarplayer.book.Author: java.lang.String SortKey
+com.media.dbstarplayer.book.Author: void <clinit>()
+com.media.dbstarplayer.book.Author: Author(java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.Author: int hashCode(com.media.dbstarplayer.book.Author)
+com.media.dbstarplayer.book.Author: boolean equals(java.lang.Object)
+com.media.dbstarplayer.book.Author: int hashCode()
+com.media.dbstarplayer.book.Author: int compareTo(com.media.dbstarplayer.book.Author)
+com.media.dbstarplayer.book.Author: int compareTo(java.lang.Object)
+com.media.dbstarplayer.book.Book
+com.media.dbstarplayer.book.Book: java.lang.String FAVORITE_LABEL
+com.media.dbstarplayer.book.Book: java.lang.String READ_LABEL
+com.media.dbstarplayer.book.Book: com.media.zlibrary.core.filesystem.ZLFile File
+com.media.dbstarplayer.book.Book: long myId
+com.media.dbstarplayer.book.Book: java.lang.String myEncoding
+com.media.dbstarplayer.book.Book: java.lang.String myLanguage
+com.media.dbstarplayer.book.Book: java.util.List myAuthors
+com.media.dbstarplayer.book.Book: java.util.List myTags
+com.media.dbstarplayer.book.Book: java.util.List myLabels
+com.media.dbstarplayer.book.Book: com.media.dbstarplayer.book.SeriesInfo mySeriesInfo
+com.media.dbstarplayer.book.Book: java.util.List myUids
+com.media.dbstarplayer.book.Book: boolean HasBookmark
+com.media.dbstarplayer.book.Book: boolean myIsSaved
+com.media.dbstarplayer.book.Book: java.lang.ref.WeakReference NULL_IMAGE
+com.media.dbstarplayer.book.Book: java.lang.ref.WeakReference myCover
+com.media.dbstarplayer.book.Book: java.util.Set myVisitedHyperlinks
+com.media.dbstarplayer.book.Book: void <clinit>()
+com.media.dbstarplayer.book.Book: Book(long,com.media.zlibrary.core.filesystem.ZLFile,java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.Book: Book(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.Book: void updateFrom(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Book: void reloadInfoFromFile()
+com.media.dbstarplayer.book.Book: com.media.dbstarplayer.formats.FormatPlugin getPlugin(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.Book: com.media.dbstarplayer.formats.FormatPlugin getPlugin()
+com.media.dbstarplayer.book.Book: void readMetaInfo()
+com.media.dbstarplayer.book.Book: void readMetaInfo(com.media.dbstarplayer.formats.FormatPlugin)
+com.media.dbstarplayer.book.Book: void loadLists(com.media.dbstarplayer.book.BooksDatabase)
+com.media.dbstarplayer.book.Book: java.util.List authors()
+com.media.dbstarplayer.book.Book: void addAuthorWithNoCheck(com.media.dbstarplayer.book.Author)
+com.media.dbstarplayer.book.Book: void removeAllAuthors()
+com.media.dbstarplayer.book.Book: void addAuthor(com.media.dbstarplayer.book.Author)
+com.media.dbstarplayer.book.Book: void addAuthor(java.lang.String)
+com.media.dbstarplayer.book.Book: void addAuthor(java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.Book: long getId()
+com.media.dbstarplayer.book.Book: void setTitle(java.lang.String)
+com.media.dbstarplayer.book.Book: com.media.dbstarplayer.book.SeriesInfo getSeriesInfo()
+com.media.dbstarplayer.book.Book: void setSeriesInfoWithNoCheck(java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.Book: void setSeriesInfo(java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.Book: void setSeriesInfo(java.lang.String,java.math.BigDecimal)
+com.media.dbstarplayer.book.Book: java.lang.String getLanguage()
+com.media.dbstarplayer.book.Book: void setLanguage(java.lang.String)
+com.media.dbstarplayer.book.Book: java.lang.String getEncoding()
+com.media.dbstarplayer.book.Book: java.lang.String getEncodingNoDetection()
+com.media.dbstarplayer.book.Book: void setEncoding(java.lang.String)
+com.media.dbstarplayer.book.Book: java.util.List tags()
+com.media.dbstarplayer.book.Book: void addTagWithNoCheck(com.media.dbstarplayer.book.Tag)
+com.media.dbstarplayer.book.Book: void removeAllTags()
+com.media.dbstarplayer.book.Book: void addTag(com.media.dbstarplayer.book.Tag)
+com.media.dbstarplayer.book.Book: void addTag(java.lang.String)
+com.media.dbstarplayer.book.Book: java.util.List labels()
+com.media.dbstarplayer.book.Book: void addLabelWithNoCheck(java.lang.String)
+com.media.dbstarplayer.book.Book: void addLabel(java.lang.String)
+com.media.dbstarplayer.book.Book: void removeLabel(java.lang.String)
+com.media.dbstarplayer.book.Book: java.util.List uids()
+com.media.dbstarplayer.book.Book: void addUid(java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.Book: void addUidWithNoCheck(com.media.dbstarplayer.book.UID)
+com.media.dbstarplayer.book.Book: void addUid(com.media.dbstarplayer.book.UID)
+com.media.dbstarplayer.book.Book: boolean matchesUid(com.media.dbstarplayer.book.UID)
+com.media.dbstarplayer.book.Book: boolean matches(java.lang.String)
+com.media.dbstarplayer.book.Book: boolean save(com.media.dbstarplayer.book.BooksDatabase,boolean)
+com.media.dbstarplayer.book.Book: void initHyperlinkSet(com.media.dbstarplayer.book.BooksDatabase)
+com.media.dbstarplayer.book.Book: boolean isHyperlinkVisited(com.media.dbstarplayer.book.BooksDatabase,java.lang.String)
+com.media.dbstarplayer.book.Book: void markHyperlinkAsVisited(com.media.dbstarplayer.book.BooksDatabase,java.lang.String)
+com.media.dbstarplayer.book.Book: com.media.zlibrary.core.image.ZLImage getCover()
+com.media.dbstarplayer.book.Book: int hashCode()
+com.media.dbstarplayer.book.Book: boolean equals(java.lang.Object)
+com.media.dbstarplayer.book.Book: java.lang.String toString()
+com.media.dbstarplayer.book.Book: long access$0(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Book: java.lang.String access$1(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Book: java.lang.String access$2(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Book: void access$3(com.media.dbstarplayer.book.Book,long)
+com.media.dbstarplayer.book.Book: java.util.Set access$4(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Book: java.util.List access$5(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Book: com.media.dbstarplayer.book.SeriesInfo access$6(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Book$1
+com.media.dbstarplayer.book.Book$1: com.media.dbstarplayer.book.Book this$0
+com.media.dbstarplayer.book.Book$1: com.media.dbstarplayer.book.BooksDatabase val$database
+com.media.dbstarplayer.book.Book$1: Book$1(com.media.dbstarplayer.book.Book,com.media.dbstarplayer.book.BooksDatabase)
+com.media.dbstarplayer.book.Book$1: void run()
+com.media.dbstarplayer.book.BookCollection
+com.media.dbstarplayer.book.BookCollection: com.media.dbstarplayer.book.BooksDatabase myDatabase
+com.media.dbstarplayer.book.BookCollection: java.util.List BookDirectories
+com.media.dbstarplayer.book.BookCollection: java.util.Map myBooksByFile
+com.media.dbstarplayer.book.BookCollection: java.util.Map myBooksById
+com.media.dbstarplayer.book.BookCollection: java.util.List myFilesToRescan
+com.media.dbstarplayer.book.BookCollection: com.media.dbstarplayer.book.IBookCollection$Status myStatus
+com.media.dbstarplayer.book.BookCollection: java.util.Map myStyles
+com.media.dbstarplayer.book.BookCollection: BookCollection(com.media.dbstarplayer.book.BooksDatabase,java.util.List)
+com.media.dbstarplayer.book.BookCollection: int size()
+com.media.dbstarplayer.book.BookCollection: com.media.dbstarplayer.book.Book getBookByFile(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.BookCollection: com.media.dbstarplayer.book.Book getBookById(long)
+com.media.dbstarplayer.book.BookCollection: com.media.dbstarplayer.book.Book getBookByUid(com.media.dbstarplayer.book.UID)
+com.media.dbstarplayer.book.BookCollection: void addBook(com.media.dbstarplayer.book.Book,boolean)
+com.media.dbstarplayer.book.BookCollection: boolean saveBook(com.media.dbstarplayer.book.Book,boolean)
+com.media.dbstarplayer.book.BookCollection: void removeBook(com.media.dbstarplayer.book.Book,boolean)
+com.media.dbstarplayer.book.BookCollection: com.media.dbstarplayer.book.IBookCollection$Status status()
+com.media.dbstarplayer.book.BookCollection: java.util.List books(com.media.dbstarplayer.book.BookQuery)
+com.media.dbstarplayer.book.BookCollection: boolean hasBooks(com.media.dbstarplayer.book.Filter)
+com.media.dbstarplayer.book.BookCollection: java.util.List titles(com.media.dbstarplayer.book.BookQuery)
+com.media.dbstarplayer.book.BookCollection: java.util.List recentBooks()
+com.media.dbstarplayer.book.BookCollection: java.util.List books(java.util.List)
+com.media.dbstarplayer.book.BookCollection: java.util.List authors()
+com.media.dbstarplayer.book.BookCollection: java.util.List tags()
+com.media.dbstarplayer.book.BookCollection: java.util.List labels()
+com.media.dbstarplayer.book.BookCollection: boolean hasSeries()
+com.media.dbstarplayer.book.BookCollection: java.util.List series()
+com.media.dbstarplayer.book.BookCollection: java.util.List firstTitleLetters()
+com.media.dbstarplayer.book.BookCollection: com.media.dbstarplayer.book.Book getRecentBook(int)
+com.media.dbstarplayer.book.BookCollection: void addBookToRecentList(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.BookCollection: void setStatus(com.media.dbstarplayer.book.IBookCollection$Status)
+com.media.dbstarplayer.book.BookCollection: void startBuild()
+com.media.dbstarplayer.book.BookCollection: void rescan(java.lang.String)
+com.media.dbstarplayer.book.BookCollection: void processFilesQueue()
+com.media.dbstarplayer.book.BookCollection: void build()
+com.media.dbstarplayer.book.BookCollection: java.util.List collectPhysicalFiles(java.util.List)
+com.media.dbstarplayer.book.BookCollection: void collectBooks(com.media.zlibrary.core.filesystem.ZLFile,com.media.dbstarplayer.book.FileInfoSet,java.util.Map,java.util.Map,java.util.Set,boolean)
+com.media.dbstarplayer.book.BookCollection: java.util.List bookmarks(com.media.dbstarplayer.book.BookmarkQuery)
+com.media.dbstarplayer.book.BookCollection: void saveBookmark(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.BookCollection: void deleteBookmark(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.BookCollection: com.media.zlibrary.text.view.ZLTextPosition getStoredPosition(long)
+com.media.dbstarplayer.book.BookCollection: void storePosition(long,com.media.zlibrary.text.view.ZLTextPosition)
+com.media.dbstarplayer.book.BookCollection: boolean isHyperlinkVisited(com.media.dbstarplayer.book.Book,java.lang.String)
+com.media.dbstarplayer.book.BookCollection: void markHyperlinkAsVisited(com.media.dbstarplayer.book.Book,java.lang.String)
+com.media.dbstarplayer.book.BookCollection: void initStylesTable()
+com.media.dbstarplayer.book.BookCollection: com.media.dbstarplayer.book.HighlightingStyle getHighlightingStyle(int)
+com.media.dbstarplayer.book.BookCollection: java.util.List highlightingStyles()
+com.media.dbstarplayer.book.BookCollection: void saveHighlightingStyle(com.media.dbstarplayer.book.HighlightingStyle)
+com.media.dbstarplayer.book.BookCollection: java.util.List access$0(com.media.dbstarplayer.book.BookCollection)
+com.media.dbstarplayer.book.BookCollection: void access$1(com.media.dbstarplayer.book.BookCollection)
+com.media.dbstarplayer.book.BookCollection: void access$2(com.media.dbstarplayer.book.BookCollection)
+com.media.dbstarplayer.book.BookCollection: void access$3(com.media.dbstarplayer.book.BookCollection,com.media.dbstarplayer.book.IBookCollection$Status)
+com.media.dbstarplayer.book.BookCollection$1
+com.media.dbstarplayer.book.BookCollection$1: com.media.dbstarplayer.book.BookCollection this$0
+com.media.dbstarplayer.book.BookCollection$1: BookCollection$1(com.media.dbstarplayer.book.BookCollection,java.lang.String)
+com.media.dbstarplayer.book.BookCollection$1: void run()
+com.media.dbstarplayer.book.BookCollection$2
+com.media.dbstarplayer.book.BookCollection$2: com.media.dbstarplayer.book.BookCollection this$0
+com.media.dbstarplayer.book.BookCollection$2: java.util.Set val$newBooks
+com.media.dbstarplayer.book.BookCollection$2: BookCollection$2(com.media.dbstarplayer.book.BookCollection,java.util.Set)
+com.media.dbstarplayer.book.BookCollection$2: void run()
+com.media.dbstarplayer.book.BookEvent
+com.media.dbstarplayer.book.BookEvent: com.media.dbstarplayer.book.BookEvent Added
+com.media.dbstarplayer.book.BookEvent: com.media.dbstarplayer.book.BookEvent Updated
+com.media.dbstarplayer.book.BookEvent: com.media.dbstarplayer.book.BookEvent Removed
+com.media.dbstarplayer.book.BookEvent: com.media.dbstarplayer.book.BookEvent BookmarksUpdated
+com.media.dbstarplayer.book.BookEvent: com.media.dbstarplayer.book.BookEvent BookmarkStyleChanged
+com.media.dbstarplayer.book.BookEvent: com.media.dbstarplayer.book.BookEvent[] ENUM$VALUES
+com.media.dbstarplayer.book.BookEvent: void <clinit>()
+com.media.dbstarplayer.book.BookEvent: BookEvent(java.lang.String,int)
+com.media.dbstarplayer.book.BookEvent: com.media.dbstarplayer.book.BookEvent[] values()
+com.media.dbstarplayer.book.BookEvent: com.media.dbstarplayer.book.BookEvent valueOf(java.lang.String)
+com.media.dbstarplayer.book.BookQuery
+com.media.dbstarplayer.book.BookQuery: com.media.dbstarplayer.book.Filter Filter
+com.media.dbstarplayer.book.BookQuery: int Limit
+com.media.dbstarplayer.book.BookQuery: int Page
+com.media.dbstarplayer.book.BookQuery: BookQuery(com.media.dbstarplayer.book.Filter,int)
+com.media.dbstarplayer.book.BookQuery: BookQuery(com.media.dbstarplayer.book.Filter,int,int)
+com.media.dbstarplayer.book.BookQuery: com.media.dbstarplayer.book.BookQuery next()
+com.media.dbstarplayer.book.BookUtil
+com.media.dbstarplayer.book.BookUtil: BookUtil()
+com.media.dbstarplayer.book.BookUtil: com.media.zlibrary.core.image.ZLImage getCover(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.BookUtil: java.lang.String getAnnotation(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.BookUtil: com.media.zlibrary.core.filesystem.ZLResourceFile getHelpFile()
+com.media.dbstarplayer.book.BookUtil: boolean canRemoveBookFile(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.BookUtil: com.media.dbstarplayer.book.UID createSHA256Uid(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.Bookmark
+com.media.dbstarplayer.book.Bookmark: int MAX_LENGTH
+com.media.dbstarplayer.book.Bookmark: long myId
+com.media.dbstarplayer.book.Bookmark: long myBookId
+com.media.dbstarplayer.book.Bookmark: java.lang.String myBookTitle
+com.media.dbstarplayer.book.Bookmark: java.lang.String myText
+com.media.dbstarplayer.book.Bookmark: java.util.Date myCreationDate
+com.media.dbstarplayer.book.Bookmark: java.util.Date myModificationDate
+com.media.dbstarplayer.book.Bookmark: java.util.Date myAccessDate
+com.media.dbstarplayer.book.Bookmark: int myAccessCount
+com.media.dbstarplayer.book.Bookmark: java.util.Date myLatestDate
+com.media.dbstarplayer.book.Bookmark: com.media.zlibrary.text.view.ZLTextFixedPosition myEnd
+com.media.dbstarplayer.book.Bookmark: int myLength
+com.media.dbstarplayer.book.Bookmark: int myStyleId
+com.media.dbstarplayer.book.Bookmark: java.lang.String ModelId
+com.media.dbstarplayer.book.Bookmark: boolean IsVisible
+com.media.dbstarplayer.book.Bookmark: int[] $SWITCH_TABLE$com$media$dbstarplayer$book$Bookmark$DateType
+com.media.dbstarplayer.book.Bookmark: Bookmark(long,long,java.lang.String,java.lang.String,java.util.Date,java.util.Date,java.util.Date,int,java.lang.String,int,int,int,int,int,int,boolean,int)
+com.media.dbstarplayer.book.Bookmark: com.media.dbstarplayer.book.Bookmark createBookmark(com.media.dbstarplayer.book.Book,java.lang.String,com.media.zlibrary.text.view.ZLTextWordCursor,int,boolean)
+com.media.dbstarplayer.book.Bookmark: void findEnd(com.media.zlibrary.text.view.ZLTextView)
+com.media.dbstarplayer.book.Bookmark: Bookmark(com.media.dbstarplayer.book.Book,java.lang.String,com.media.zlibrary.text.view.ZLTextPosition,com.media.zlibrary.text.view.ZLTextPosition,java.lang.String,boolean)
+com.media.dbstarplayer.book.Bookmark: long getId()
+com.media.dbstarplayer.book.Bookmark: long getBookId()
+com.media.dbstarplayer.book.Bookmark: int getStyleId()
+com.media.dbstarplayer.book.Bookmark: void setStyleId(int)
+com.media.dbstarplayer.book.Bookmark: java.lang.String getText()
+com.media.dbstarplayer.book.Bookmark: java.lang.String getBookTitle()
+com.media.dbstarplayer.book.Bookmark: java.util.Date getDate(com.media.dbstarplayer.book.Bookmark$DateType)
+com.media.dbstarplayer.book.Bookmark: int getAccessCount()
+com.media.dbstarplayer.book.Bookmark: com.media.zlibrary.text.view.ZLTextPosition getEnd()
+com.media.dbstarplayer.book.Bookmark: int getLength()
+com.media.dbstarplayer.book.Bookmark: void setText(java.lang.String)
+com.media.dbstarplayer.book.Bookmark: void markAsAccessed()
+com.media.dbstarplayer.book.Bookmark: void setId(long)
+com.media.dbstarplayer.book.Bookmark: void update(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.Bookmark: int[] $SWITCH_TABLE$com$media$dbstarplayer$book$Bookmark$DateType()
+com.media.dbstarplayer.book.Bookmark$Buffer
+com.media.dbstarplayer.book.Bookmark$Buffer: java.lang.StringBuilder Builder
+com.media.dbstarplayer.book.Bookmark$Buffer: com.media.zlibrary.text.view.ZLTextWordCursor Cursor
+com.media.dbstarplayer.book.Bookmark$Buffer: Bookmark$Buffer(com.media.zlibrary.text.view.ZLTextWordCursor)
+com.media.dbstarplayer.book.Bookmark$Buffer: boolean isEmpty()
+com.media.dbstarplayer.book.Bookmark$Buffer: void append(com.media.dbstarplayer.book.Bookmark$Buffer)
+com.media.dbstarplayer.book.Bookmark$Buffer: void append(java.lang.CharSequence)
+com.media.dbstarplayer.book.Bookmark$ByTimeComparator
+com.media.dbstarplayer.book.Bookmark$ByTimeComparator: Bookmark$ByTimeComparator()
+com.media.dbstarplayer.book.Bookmark$ByTimeComparator: int compare(com.media.dbstarplayer.book.Bookmark,com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.Bookmark$ByTimeComparator: int compare(java.lang.Object,java.lang.Object)
+com.media.dbstarplayer.book.Bookmark$DateType
+com.media.dbstarplayer.book.Bookmark$DateType: com.media.dbstarplayer.book.Bookmark$DateType Creation
+com.media.dbstarplayer.book.Bookmark$DateType: com.media.dbstarplayer.book.Bookmark$DateType Modification
+com.media.dbstarplayer.book.Bookmark$DateType: com.media.dbstarplayer.book.Bookmark$DateType Access
+com.media.dbstarplayer.book.Bookmark$DateType: com.media.dbstarplayer.book.Bookmark$DateType Latest
+com.media.dbstarplayer.book.Bookmark$DateType: com.media.dbstarplayer.book.Bookmark$DateType[] ENUM$VALUES
+com.media.dbstarplayer.book.Bookmark$DateType: void <clinit>()
+com.media.dbstarplayer.book.Bookmark$DateType: Bookmark$DateType(java.lang.String,int)
+com.media.dbstarplayer.book.Bookmark$DateType: com.media.dbstarplayer.book.Bookmark$DateType[] values()
+com.media.dbstarplayer.book.Bookmark$DateType: com.media.dbstarplayer.book.Bookmark$DateType valueOf(java.lang.String)
+com.media.dbstarplayer.book.BookmarkQuery
+com.media.dbstarplayer.book.BookmarkQuery: com.media.dbstarplayer.book.Book Book
+com.media.dbstarplayer.book.BookmarkQuery: boolean Visible
+com.media.dbstarplayer.book.BookmarkQuery: int Limit
+com.media.dbstarplayer.book.BookmarkQuery: int Page
+com.media.dbstarplayer.book.BookmarkQuery: BookmarkQuery(int)
+com.media.dbstarplayer.book.BookmarkQuery: BookmarkQuery(com.media.dbstarplayer.book.Book,int)
+com.media.dbstarplayer.book.BookmarkQuery: BookmarkQuery(com.media.dbstarplayer.book.Book,boolean,int)
+com.media.dbstarplayer.book.BookmarkQuery: BookmarkQuery(com.media.dbstarplayer.book.Book,boolean,int,int)
+com.media.dbstarplayer.book.BookmarkQuery: com.media.dbstarplayer.book.BookmarkQuery next()
+com.media.dbstarplayer.book.BooksDatabase
+com.media.dbstarplayer.book.BooksDatabase: BooksDatabase()
+com.media.dbstarplayer.book.BooksDatabase: com.media.dbstarplayer.book.Book createBook(long,long,java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.BooksDatabase: com.media.dbstarplayer.book.Book createBook(long,com.media.zlibrary.core.filesystem.ZLFile,java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.BooksDatabase: void addAuthor(com.media.dbstarplayer.book.Book,com.media.dbstarplayer.book.Author)
+com.media.dbstarplayer.book.BooksDatabase: void addTag(com.media.dbstarplayer.book.Book,com.media.dbstarplayer.book.Tag)
+com.media.dbstarplayer.book.BooksDatabase: void setSeriesInfo(com.media.dbstarplayer.book.Book,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.BooksDatabase: void executeAsTransaction(java.lang.Runnable)
+com.media.dbstarplayer.book.BooksDatabase: java.util.Map loadBooks(com.media.dbstarplayer.book.FileInfoSet,boolean)
+com.media.dbstarplayer.book.BooksDatabase: void setExistingFlag(java.util.Collection,boolean)
+com.media.dbstarplayer.book.BooksDatabase: com.media.dbstarplayer.book.Book loadBook(long)
+com.media.dbstarplayer.book.BooksDatabase: com.media.dbstarplayer.book.Book loadBookByFile(long,com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.BooksDatabase: java.util.List listAuthors(long)
+com.media.dbstarplayer.book.BooksDatabase: java.util.List listTags(long)
+com.media.dbstarplayer.book.BooksDatabase: java.util.List listLabels(long)
+com.media.dbstarplayer.book.BooksDatabase: com.media.dbstarplayer.book.SeriesInfo getSeriesInfo(long)
+com.media.dbstarplayer.book.BooksDatabase: java.util.List listUids(long)
+com.media.dbstarplayer.book.BooksDatabase: boolean hasVisibleBookmark(long)
+com.media.dbstarplayer.book.BooksDatabase: java.lang.Long bookIdByUid(com.media.dbstarplayer.book.UID)
+com.media.dbstarplayer.book.BooksDatabase: void updateBookInfo(long,long,java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.BooksDatabase: long insertBookInfo(com.media.zlibrary.core.filesystem.ZLFile,java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.BooksDatabase: void deleteAllBookAuthors(long)
+com.media.dbstarplayer.book.BooksDatabase: void saveBookAuthorInfo(long,long,com.media.dbstarplayer.book.Author)
+com.media.dbstarplayer.book.BooksDatabase: void deleteAllBookTags(long)
+com.media.dbstarplayer.book.BooksDatabase: void saveBookTagInfo(long,com.media.dbstarplayer.book.Tag)
+com.media.dbstarplayer.book.BooksDatabase: void saveBookSeriesInfo(long,com.media.dbstarplayer.book.SeriesInfo)
+com.media.dbstarplayer.book.BooksDatabase: void deleteAllBookUids(long)
+com.media.dbstarplayer.book.BooksDatabase: void saveBookUid(long,com.media.dbstarplayer.book.UID)
+com.media.dbstarplayer.book.BooksDatabase: com.media.dbstarplayer.book.FileInfo createFileInfo(long,java.lang.String,com.media.dbstarplayer.book.FileInfo)
+com.media.dbstarplayer.book.BooksDatabase: java.util.Collection loadFileInfos()
+com.media.dbstarplayer.book.BooksDatabase: java.util.Collection loadFileInfos(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.BooksDatabase: java.util.Collection loadFileInfos(long)
+com.media.dbstarplayer.book.BooksDatabase: void removeFileInfo(long)
+com.media.dbstarplayer.book.BooksDatabase: void saveFileInfo(com.media.dbstarplayer.book.FileInfo)
+com.media.dbstarplayer.book.BooksDatabase: java.util.List loadRecentBookIds()
+com.media.dbstarplayer.book.BooksDatabase: void saveRecentBookIds(java.util.List)
+com.media.dbstarplayer.book.BooksDatabase: void setLabel(long,java.lang.String)
+com.media.dbstarplayer.book.BooksDatabase: void removeLabel(long,java.lang.String)
+com.media.dbstarplayer.book.BooksDatabase: com.media.dbstarplayer.book.Bookmark createBookmark(long,long,java.lang.String,java.lang.String,java.util.Date,java.util.Date,java.util.Date,int,java.lang.String,int,int,int,int,int,int,boolean,int)
+com.media.dbstarplayer.book.BooksDatabase: java.util.List loadBookmarks(com.media.dbstarplayer.book.BookmarkQuery)
+com.media.dbstarplayer.book.BooksDatabase: long saveBookmark(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.BooksDatabase: void deleteBookmark(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.BooksDatabase: com.media.dbstarplayer.book.HighlightingStyle createStyle(int,java.lang.String,int)
+com.media.dbstarplayer.book.BooksDatabase: java.util.List loadStyles()
+com.media.dbstarplayer.book.BooksDatabase: void saveStyle(com.media.dbstarplayer.book.HighlightingStyle)
+com.media.dbstarplayer.book.BooksDatabase: com.media.zlibrary.text.view.ZLTextPosition getStoredPosition(long)
+com.media.dbstarplayer.book.BooksDatabase: void storePosition(long,com.media.zlibrary.text.view.ZLTextPosition)
+com.media.dbstarplayer.book.BooksDatabase: java.util.Collection loadVisitedHyperlinks(long)
+com.media.dbstarplayer.book.BooksDatabase: void addVisitedHyperlink(long,java.lang.String)
+com.media.dbstarplayer.book.FileInfo
+com.media.dbstarplayer.book.FileInfo: java.lang.String Name
+com.media.dbstarplayer.book.FileInfo: long Id
+com.media.dbstarplayer.book.FileInfo: long FileSize
+com.media.dbstarplayer.book.FileInfo: FileInfo(java.lang.String,com.media.dbstarplayer.book.FileInfo)
+com.media.dbstarplayer.book.FileInfo: FileInfo(java.lang.String,com.media.dbstarplayer.book.FileInfo,long)
+com.media.dbstarplayer.book.FileInfoSet
+com.media.dbstarplayer.book.FileInfoSet: java.util.HashMap myInfosByFile
+com.media.dbstarplayer.book.FileInfoSet: java.util.HashMap myFilesByInfo
+com.media.dbstarplayer.book.FileInfoSet: java.util.HashMap myInfosByPair
+com.media.dbstarplayer.book.FileInfoSet: java.util.HashMap myInfosById
+com.media.dbstarplayer.book.FileInfoSet: java.util.LinkedHashSet myInfosToSave
+com.media.dbstarplayer.book.FileInfoSet: java.util.LinkedHashSet myInfosToRemove
+com.media.dbstarplayer.book.FileInfoSet: com.media.dbstarplayer.book.BooksDatabase myDatabase
+com.media.dbstarplayer.book.FileInfoSet: FileInfoSet(com.media.dbstarplayer.book.BooksDatabase)
+com.media.dbstarplayer.book.FileInfoSet: FileInfoSet(com.media.dbstarplayer.book.BooksDatabase,com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.FileInfoSet: FileInfoSet(com.media.dbstarplayer.book.BooksDatabase,long)
+com.media.dbstarplayer.book.FileInfoSet: void load(java.util.Collection)
+com.media.dbstarplayer.book.FileInfoSet: void save()
+com.media.dbstarplayer.book.FileInfoSet: boolean check(com.media.zlibrary.core.filesystem.ZLPhysicalFile,boolean)
+com.media.dbstarplayer.book.FileInfoSet: java.util.List archiveEntries(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.FileInfoSet: com.media.dbstarplayer.book.FileInfo get(java.lang.String,com.media.dbstarplayer.book.FileInfo)
+com.media.dbstarplayer.book.FileInfoSet: com.media.dbstarplayer.book.FileInfo get(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.FileInfoSet: long getId(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.FileInfoSet: com.media.zlibrary.core.filesystem.ZLFile getFile(com.media.dbstarplayer.book.FileInfo)
+com.media.dbstarplayer.book.FileInfoSet: com.media.zlibrary.core.filesystem.ZLFile getFile(long)
+com.media.dbstarplayer.book.FileInfoSet: void removeChildren(com.media.dbstarplayer.book.FileInfo)
+com.media.dbstarplayer.book.FileInfoSet: void addChildren(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.FileInfoSet: java.util.LinkedHashSet access$0(com.media.dbstarplayer.book.FileInfoSet)
+com.media.dbstarplayer.book.FileInfoSet: com.media.dbstarplayer.book.BooksDatabase access$1(com.media.dbstarplayer.book.FileInfoSet)
+com.media.dbstarplayer.book.FileInfoSet: java.util.HashMap access$2(com.media.dbstarplayer.book.FileInfoSet)
+com.media.dbstarplayer.book.FileInfoSet: java.util.LinkedHashSet access$3(com.media.dbstarplayer.book.FileInfoSet)
+com.media.dbstarplayer.book.FileInfoSet$1
+com.media.dbstarplayer.book.FileInfoSet$1: com.media.dbstarplayer.book.FileInfoSet this$0
+com.media.dbstarplayer.book.FileInfoSet$1: FileInfoSet$1(com.media.dbstarplayer.book.FileInfoSet)
+com.media.dbstarplayer.book.FileInfoSet$1: void run()
+com.media.dbstarplayer.book.FileInfoSet$Pair
+com.media.dbstarplayer.book.FileInfoSet$Pair: java.lang.String myName
+com.media.dbstarplayer.book.FileInfoSet$Pair: com.media.dbstarplayer.book.FileInfo myParent
+com.media.dbstarplayer.book.FileInfoSet$Pair: FileInfoSet$Pair(java.lang.String,com.media.dbstarplayer.book.FileInfo)
+com.media.dbstarplayer.book.FileInfoSet$Pair: int hashCode()
+com.media.dbstarplayer.book.FileInfoSet$Pair: boolean equals(java.lang.Object)
+com.media.dbstarplayer.book.Filter
+com.media.dbstarplayer.book.Filter: Filter()
+com.media.dbstarplayer.book.Filter: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$And
+com.media.dbstarplayer.book.Filter$And: com.media.dbstarplayer.book.Filter First
+com.media.dbstarplayer.book.Filter$And: com.media.dbstarplayer.book.Filter Second
+com.media.dbstarplayer.book.Filter$And: Filter$And(com.media.dbstarplayer.book.Filter,com.media.dbstarplayer.book.Filter)
+com.media.dbstarplayer.book.Filter$And: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$ByAuthor
+com.media.dbstarplayer.book.Filter$ByAuthor: com.media.dbstarplayer.book.Author Author
+com.media.dbstarplayer.book.Filter$ByAuthor: Filter$ByAuthor(com.media.dbstarplayer.book.Author)
+com.media.dbstarplayer.book.Filter$ByAuthor: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$ByLabel
+com.media.dbstarplayer.book.Filter$ByLabel: java.lang.String Label
+com.media.dbstarplayer.book.Filter$ByLabel: Filter$ByLabel(java.lang.String)
+com.media.dbstarplayer.book.Filter$ByLabel: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$ByPattern
+com.media.dbstarplayer.book.Filter$ByPattern: java.lang.String Pattern
+com.media.dbstarplayer.book.Filter$ByPattern: Filter$ByPattern(java.lang.String)
+com.media.dbstarplayer.book.Filter$ByPattern: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$BySeries
+com.media.dbstarplayer.book.Filter$BySeries: com.media.dbstarplayer.book.Series Series
+com.media.dbstarplayer.book.Filter$BySeries: Filter$BySeries(com.media.dbstarplayer.book.Series)
+com.media.dbstarplayer.book.Filter$BySeries: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$ByTag
+com.media.dbstarplayer.book.Filter$ByTag: com.media.dbstarplayer.book.Tag Tag
+com.media.dbstarplayer.book.Filter$ByTag: Filter$ByTag(com.media.dbstarplayer.book.Tag)
+com.media.dbstarplayer.book.Filter$ByTag: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$ByTitlePrefix
+com.media.dbstarplayer.book.Filter$ByTitlePrefix: java.lang.String Prefix
+com.media.dbstarplayer.book.Filter$ByTitlePrefix: Filter$ByTitlePrefix(java.lang.String)
+com.media.dbstarplayer.book.Filter$ByTitlePrefix: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$Empty
+com.media.dbstarplayer.book.Filter$Empty: Filter$Empty()
+com.media.dbstarplayer.book.Filter$Empty: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$HasBookmark
+com.media.dbstarplayer.book.Filter$HasBookmark: Filter$HasBookmark()
+com.media.dbstarplayer.book.Filter$HasBookmark: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.Filter$Or
+com.media.dbstarplayer.book.Filter$Or: com.media.dbstarplayer.book.Filter First
+com.media.dbstarplayer.book.Filter$Or: com.media.dbstarplayer.book.Filter Second
+com.media.dbstarplayer.book.Filter$Or: Filter$Or(com.media.dbstarplayer.book.Filter,com.media.dbstarplayer.book.Filter)
+com.media.dbstarplayer.book.Filter$Or: boolean matches(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.HighlightingStyle
+com.media.dbstarplayer.book.HighlightingStyle: int Id
+com.media.dbstarplayer.book.HighlightingStyle: java.lang.String myName
+com.media.dbstarplayer.book.HighlightingStyle: com.media.zlibrary.core.util.ZLColor myBackgroundColor
+com.media.dbstarplayer.book.HighlightingStyle: HighlightingStyle(int,java.lang.String,com.media.zlibrary.core.util.ZLColor)
+com.media.dbstarplayer.book.HighlightingStyle: java.lang.String defaultName()
+com.media.dbstarplayer.book.HighlightingStyle: java.lang.String getName()
+com.media.dbstarplayer.book.HighlightingStyle: void setName(java.lang.String)
+com.media.dbstarplayer.book.HighlightingStyle: com.media.zlibrary.core.util.ZLColor getBackgroundColor()
+com.media.dbstarplayer.book.HighlightingStyle: void setBackgroundColor(com.media.zlibrary.core.util.ZLColor)
+com.media.dbstarplayer.book.IBookCollection
+com.media.dbstarplayer.book.IBookCollection: void addListener(com.media.dbstarplayer.book.IBookCollection$Listener)
+com.media.dbstarplayer.book.IBookCollection: void removeListener(com.media.dbstarplayer.book.IBookCollection$Listener)
+com.media.dbstarplayer.book.IBookCollection: com.media.dbstarplayer.book.IBookCollection$Status status()
+com.media.dbstarplayer.book.IBookCollection: int size()
+com.media.dbstarplayer.book.IBookCollection: java.util.List books(com.media.dbstarplayer.book.BookQuery)
+com.media.dbstarplayer.book.IBookCollection: boolean hasBooks(com.media.dbstarplayer.book.Filter)
+com.media.dbstarplayer.book.IBookCollection: java.util.List titles(com.media.dbstarplayer.book.BookQuery)
+com.media.dbstarplayer.book.IBookCollection: java.util.List recentBooks()
+com.media.dbstarplayer.book.IBookCollection: com.media.dbstarplayer.book.Book getRecentBook(int)
+com.media.dbstarplayer.book.IBookCollection: void addBookToRecentList(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.IBookCollection: com.media.dbstarplayer.book.Book getBookByFile(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.book.IBookCollection: com.media.dbstarplayer.book.Book getBookById(long)
+com.media.dbstarplayer.book.IBookCollection: com.media.dbstarplayer.book.Book getBookByUid(com.media.dbstarplayer.book.UID)
+com.media.dbstarplayer.book.IBookCollection: java.util.List labels()
+com.media.dbstarplayer.book.IBookCollection: java.util.List authors()
+com.media.dbstarplayer.book.IBookCollection: boolean hasSeries()
+com.media.dbstarplayer.book.IBookCollection: java.util.List series()
+com.media.dbstarplayer.book.IBookCollection: java.util.List tags()
+com.media.dbstarplayer.book.IBookCollection: java.util.List firstTitleLetters()
+com.media.dbstarplayer.book.IBookCollection: boolean saveBook(com.media.dbstarplayer.book.Book,boolean)
+com.media.dbstarplayer.book.IBookCollection: void removeBook(com.media.dbstarplayer.book.Book,boolean)
+com.media.dbstarplayer.book.IBookCollection: com.media.zlibrary.text.view.ZLTextPosition getStoredPosition(long)
+com.media.dbstarplayer.book.IBookCollection: void storePosition(long,com.media.zlibrary.text.view.ZLTextPosition)
+com.media.dbstarplayer.book.IBookCollection: boolean isHyperlinkVisited(com.media.dbstarplayer.book.Book,java.lang.String)
+com.media.dbstarplayer.book.IBookCollection: void markHyperlinkAsVisited(com.media.dbstarplayer.book.Book,java.lang.String)
+com.media.dbstarplayer.book.IBookCollection: java.util.List bookmarks(com.media.dbstarplayer.book.BookmarkQuery)
+com.media.dbstarplayer.book.IBookCollection: void saveBookmark(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.IBookCollection: void deleteBookmark(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.IBookCollection: com.media.dbstarplayer.book.HighlightingStyle getHighlightingStyle(int)
+com.media.dbstarplayer.book.IBookCollection: java.util.List highlightingStyles()
+com.media.dbstarplayer.book.IBookCollection: void saveHighlightingStyle(com.media.dbstarplayer.book.HighlightingStyle)
+com.media.dbstarplayer.book.IBookCollection$Listener
+com.media.dbstarplayer.book.IBookCollection$Listener: void onBookEvent(com.media.dbstarplayer.book.BookEvent,com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.IBookCollection$Listener: void onBuildEvent(com.media.dbstarplayer.book.IBookCollection$Status)
+com.media.dbstarplayer.book.IBookCollection$Status
+com.media.dbstarplayer.book.IBookCollection$Status: com.media.dbstarplayer.book.IBookCollection$Status NotStarted
+com.media.dbstarplayer.book.IBookCollection$Status: com.media.dbstarplayer.book.IBookCollection$Status Started
+com.media.dbstarplayer.book.IBookCollection$Status: com.media.dbstarplayer.book.IBookCollection$Status Succeeded
+com.media.dbstarplayer.book.IBookCollection$Status: com.media.dbstarplayer.book.IBookCollection$Status Failed
+com.media.dbstarplayer.book.IBookCollection$Status: java.lang.Boolean IsCompleted
+com.media.dbstarplayer.book.IBookCollection$Status: com.media.dbstarplayer.book.IBookCollection$Status[] ENUM$VALUES
+com.media.dbstarplayer.book.IBookCollection$Status: void <clinit>()
+com.media.dbstarplayer.book.IBookCollection$Status: IBookCollection$Status(java.lang.String,int,boolean)
+com.media.dbstarplayer.book.IBookCollection$Status: com.media.dbstarplayer.book.IBookCollection$Status[] values()
+com.media.dbstarplayer.book.IBookCollection$Status: com.media.dbstarplayer.book.IBookCollection$Status valueOf(java.lang.String)
+com.media.dbstarplayer.book.SerializerUtil
+com.media.dbstarplayer.book.SerializerUtil: com.media.dbstarplayer.book.AbstractSerializer defaultSerializer
+com.media.dbstarplayer.book.SerializerUtil: void <clinit>()
+com.media.dbstarplayer.book.SerializerUtil: SerializerUtil()
+com.media.dbstarplayer.book.SerializerUtil: java.lang.String serialize(com.media.dbstarplayer.book.BookQuery)
+com.media.dbstarplayer.book.SerializerUtil: com.media.dbstarplayer.book.BookQuery deserializeBookQuery(java.lang.String)
+com.media.dbstarplayer.book.SerializerUtil: java.lang.String serialize(com.media.dbstarplayer.book.BookmarkQuery)
+com.media.dbstarplayer.book.SerializerUtil: com.media.dbstarplayer.book.BookmarkQuery deserializeBookmarkQuery(java.lang.String)
+com.media.dbstarplayer.book.SerializerUtil: java.lang.String serialize(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.SerializerUtil: com.media.dbstarplayer.book.Book deserializeBook(java.lang.String)
+com.media.dbstarplayer.book.SerializerUtil: java.util.List serializeBookList(java.util.List)
+com.media.dbstarplayer.book.SerializerUtil: java.util.List deserializeBookList(java.util.List)
+com.media.dbstarplayer.book.SerializerUtil: java.lang.String serialize(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.SerializerUtil: com.media.dbstarplayer.book.Bookmark deserializeBookmark(java.lang.String)
+com.media.dbstarplayer.book.SerializerUtil: java.util.List serializeBookmarkList(java.util.List)
+com.media.dbstarplayer.book.SerializerUtil: java.util.List deserializeBookmarkList(java.util.List)
+com.media.dbstarplayer.book.SerializerUtil: java.lang.String serialize(com.media.dbstarplayer.book.HighlightingStyle)
+com.media.dbstarplayer.book.SerializerUtil: com.media.dbstarplayer.book.HighlightingStyle deserializeStyle(java.lang.String)
+com.media.dbstarplayer.book.SerializerUtil: java.util.List serializeStyleList(java.util.List)
+com.media.dbstarplayer.book.SerializerUtil: java.util.List deserializeStyleList(java.util.List)
+com.media.dbstarplayer.book.Series
+com.media.dbstarplayer.book.Series: Series(java.lang.String)
+com.media.dbstarplayer.book.Series: java.lang.String getLanguage()
+com.media.dbstarplayer.book.Series: boolean equals(java.lang.Object)
+com.media.dbstarplayer.book.Series: int hashCode()
+com.media.dbstarplayer.book.SeriesInfo
+com.media.dbstarplayer.book.SeriesInfo: com.media.dbstarplayer.book.Series Series
+com.media.dbstarplayer.book.SeriesInfo: java.math.BigDecimal Index
+com.media.dbstarplayer.book.SeriesInfo: com.media.dbstarplayer.book.SeriesInfo createSeriesInfo(java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.SeriesInfo: java.math.BigDecimal createIndex(java.lang.String)
+com.media.dbstarplayer.book.SeriesInfo: SeriesInfo(java.lang.String,java.math.BigDecimal)
+com.media.dbstarplayer.book.Tag
+com.media.dbstarplayer.book.Tag: com.media.dbstarplayer.book.Tag NULL
+com.media.dbstarplayer.book.Tag: java.util.HashMap ourTagSet
+com.media.dbstarplayer.book.Tag: com.media.dbstarplayer.book.Tag Parent
+com.media.dbstarplayer.book.Tag: java.lang.String Name
+com.media.dbstarplayer.book.Tag: void <clinit>()
+com.media.dbstarplayer.book.Tag: com.media.dbstarplayer.book.Tag getTag(com.media.dbstarplayer.book.Tag,java.lang.String)
+com.media.dbstarplayer.book.Tag: com.media.dbstarplayer.book.Tag getTag(java.lang.String[])
+com.media.dbstarplayer.book.Tag: com.media.dbstarplayer.book.Tag getTag(java.lang.String[],int)
+com.media.dbstarplayer.book.Tag: Tag(com.media.dbstarplayer.book.Tag,java.lang.String)
+com.media.dbstarplayer.book.Tag: java.lang.String toString(java.lang.String)
+com.media.dbstarplayer.book.Tag: java.lang.StringBuilder toStringBuilder(java.lang.String)
+com.media.dbstarplayer.book.Tag: boolean equals(java.lang.Object)
+com.media.dbstarplayer.book.Tag: int hashCode()
+com.media.dbstarplayer.book.UID
+com.media.dbstarplayer.book.UID: java.lang.String Type
+com.media.dbstarplayer.book.UID: java.lang.String Id
+com.media.dbstarplayer.book.UID: UID(java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.UID: boolean equals(java.lang.Object)
+com.media.dbstarplayer.book.UID: int hashCode()
+com.media.dbstarplayer.book.XMLSerializer
+com.media.dbstarplayer.book.XMLSerializer: java.text.DateFormat ourDateFormatter
+com.media.dbstarplayer.book.XMLSerializer: void <clinit>()
+com.media.dbstarplayer.book.XMLSerializer: XMLSerializer()
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String serialize(com.media.dbstarplayer.book.BookQuery)
+com.media.dbstarplayer.book.XMLSerializer: void serialize(java.lang.StringBuilder,com.media.dbstarplayer.book.Filter)
+com.media.dbstarplayer.book.XMLSerializer: com.media.dbstarplayer.book.BookQuery deserializeBookQuery(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String serialize(com.media.dbstarplayer.book.BookmarkQuery)
+com.media.dbstarplayer.book.XMLSerializer: com.media.dbstarplayer.book.BookmarkQuery deserializeBookmarkQuery(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String serialize(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.XMLSerializer: void serialize(java.lang.StringBuilder,com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.book.XMLSerializer: com.media.dbstarplayer.book.Book deserializeBook(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String serialize(com.media.dbstarplayer.book.Bookmark)
+com.media.dbstarplayer.book.XMLSerializer: com.media.dbstarplayer.book.Bookmark deserializeBookmark(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String serialize(com.media.dbstarplayer.book.HighlightingStyle)
+com.media.dbstarplayer.book.XMLSerializer: com.media.dbstarplayer.book.HighlightingStyle deserializeStyle(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String formatDate(java.util.Date)
+com.media.dbstarplayer.book.XMLSerializer: java.util.Date parseDate(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: void appendTag(java.lang.StringBuilder,java.lang.String,boolean,java.lang.String[])
+com.media.dbstarplayer.book.XMLSerializer: void closeTag(java.lang.StringBuilder,java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: void appendTagWithContent(java.lang.StringBuilder,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: void appendTagWithContent(java.lang.StringBuilder,java.lang.String,java.lang.Object)
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String escapeForXml(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer: void clear(java.lang.StringBuilder)
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String string(java.lang.StringBuilder)
+com.media.dbstarplayer.book.XMLSerializer: void access$0(java.lang.StringBuilder)
+com.media.dbstarplayer.book.XMLSerializer: java.lang.String access$1(java.lang.StringBuilder)
+com.media.dbstarplayer.book.XMLSerializer: java.util.Date access$2(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State myState
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: long myId
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.String myUrl
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.StringBuilder myTitle
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.StringBuilder myLanguage
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.StringBuilder myEncoding
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.String myScheme
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.StringBuilder myUid
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.util.ArrayList myUidList
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.util.ArrayList myAuthors
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.util.ArrayList myTags
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.util.ArrayList myLabels
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.StringBuilder myAuthorSortKey
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.StringBuilder myAuthorName
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.StringBuilder mySeriesTitle
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: java.lang.StringBuilder mySeriesIndex
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: boolean myHasBookmark
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: com.media.dbstarplayer.book.Book myBook
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: int[] $SWITCH_TABLE$com$media$dbstarplayer$book$XMLSerializer$BookDeserializer$State
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: XMLSerializer$BookDeserializer()
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: com.media.dbstarplayer.book.Book getBook()
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: void startDocument()
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: void endDocument()
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: void startElement(java.lang.String,java.lang.String,java.lang.String,org.xml.sax.Attributes)
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: void endElement(java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: void characters(char[],int,int)
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: int[] $SWITCH_TABLE$com$media$dbstarplayer$book$XMLSerializer$BookDeserializer$State()
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer: XMLSerializer$BookDeserializer(com.media.dbstarplayer.book.XMLSerializer$BookDeserializer)
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_NOTHING
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_ENTRY
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_ID
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_UID
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_TITLE
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_LANGUAGE
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_ENCODING
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_AUTHOR
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_AUTHOR_URI
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_AUTHOR_NAME
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_SERIES_TITLE
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State READ_SERIES_INDEX
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State[] ENUM$VALUES
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: void <clinit>()
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: XMLSerializer$BookDeserializer$State(java.lang.String,int)
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State[] values()
+com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer$State valueOf(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: java.util.LinkedList myStateStack
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: java.util.LinkedList myFilterStack
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: com.media.dbstarplayer.book.Filter myFilter
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: int myLimit
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: int myPage
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: com.media.dbstarplayer.book.BookQuery myQuery
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: int[] $SWITCH_TABLE$com$media$dbstarplayer$book$XMLSerializer$BookQueryDeserializer$State
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: XMLSerializer$BookQueryDeserializer()
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: com.media.dbstarplayer.book.BookQuery getQuery()
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: void startDocument()
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: void endDocument()
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: void startElement(java.lang.String,java.lang.String,java.lang.String,org.xml.sax.Attributes)
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: void endElement(java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: int[] $SWITCH_TABLE$com$media$dbstarplayer$book$XMLSerializer$BookQueryDeserializer$State()
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer: XMLSerializer$BookQueryDeserializer(com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer)
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State READ_QUERY
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State READ_FILTER_AND
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State READ_FILTER_OR
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State READ_FILTER_SIMPLE
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State[] ENUM$VALUES
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: void <clinit>()
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: XMLSerializer$BookQueryDeserializer$State(java.lang.String,int)
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State[] values()
+com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookQueryDeserializer$State valueOf(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State myState
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: com.media.dbstarplayer.book.Bookmark myBookmark
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: long myId
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: long myBookId
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: java.lang.String myBookTitle
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: java.lang.StringBuilder myText
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: java.util.Date myCreationDate
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: java.util.Date myModificationDate
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: java.util.Date myAccessDate
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int myAccessCount
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: java.lang.String myModelId
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int myStartParagraphIndex
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int myStartElementIndex
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int myStartCharIndex
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int myEndParagraphIndex
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int myEndElementIndex
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int myEndCharIndex
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: boolean myIsVisible
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int myStyle
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int[] $SWITCH_TABLE$com$media$dbstarplayer$book$XMLSerializer$BookmarkDeserializer$State
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: XMLSerializer$BookmarkDeserializer()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: com.media.dbstarplayer.book.Bookmark getBookmark()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: void startDocument()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: void endDocument()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: void startElement(java.lang.String,java.lang.String,java.lang.String,org.xml.sax.Attributes)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: void endElement(java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: void characters(char[],int,int)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: int[] $SWITCH_TABLE$com$media$dbstarplayer$book$XMLSerializer$BookmarkDeserializer$State()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer: XMLSerializer$BookmarkDeserializer(com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State READ_NOTHING
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State READ_BOOKMARK
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State READ_TEXT
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State[] ENUM$VALUES
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State: void <clinit>()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State: XMLSerializer$BookmarkDeserializer$State(java.lang.String,int)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State[] values()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State: com.media.dbstarplayer.book.XMLSerializer$BookmarkDeserializer$State valueOf(java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: boolean myVisible
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: int myLimit
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: int myPage
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: com.media.dbstarplayer.book.XMLSerializer$BookDeserializer myBookDeserializer
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: com.media.dbstarplayer.book.BookmarkQuery myQuery
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: XMLSerializer$BookmarkQueryDeserializer()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: com.media.dbstarplayer.book.BookmarkQuery getQuery()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: void startDocument()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: void endDocument()
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: void startElement(java.lang.String,java.lang.String,java.lang.String,org.xml.sax.Attributes)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: void endElement(java.lang.String,java.lang.String,java.lang.String)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: void characters(char[],int,int)
+com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer: XMLSerializer$BookmarkQueryDeserializer(com.media.dbstarplayer.book.XMLSerializer$BookmarkQueryDeserializer)
+com.media.dbstarplayer.book.XMLSerializer$StyleDeserializer
+com.media.dbstarplayer.book.XMLSerializer$StyleDeserializer: com.media.dbstarplayer.book.HighlightingStyle myStyle
+com.media.dbstarplayer.book.XMLSerializer$StyleDeserializer: XMLSerializer$StyleDeserializer()
+com.media.dbstarplayer.book.XMLSerializer$StyleDeserializer: com.media.dbstarplayer.book.HighlightingStyle getStyle()
+com.media.dbstarplayer.book.XMLSerializer$StyleDeserializer: void startDocument()
+com.media.dbstarplayer.book.XMLSerializer$StyleDeserializer: void startElement(java.lang.String,java.lang.String,java.lang.String,org.xml.sax.Attributes)
+com.media.dbstarplayer.book.XMLSerializer$StyleDeserializer: XMLSerializer$StyleDeserializer(com.media.dbstarplayer.book.XMLSerializer$StyleDeserializer)
+com.media.dbstarplayer.bookmodel.BookModel
+com.media.dbstarplayer.bookmodel.BookModel: com.media.dbstarplayer.book.Book Book
+com.media.dbstarplayer.bookmodel.BookModel: com.media.dbstarplayer.bookmodel.TOCTree TOCTree
+com.media.dbstarplayer.bookmodel.BookModel: com.media.dbstarplayer.bookmodel.BookModel$LabelResolver myResolver
+com.media.dbstarplayer.bookmodel.BookModel: int[] $SWITCH_TABLE$com$media$dbstarplayer$formats$FormatPlugin$Type
+com.media.dbstarplayer.bookmodel.BookModel: com.media.dbstarplayer.bookmodel.BookModel createModel(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.bookmodel.BookModel: BookModel(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.bookmodel.BookModel: com.media.zlibrary.text.model.ZLTextModel getTextModel()
+com.media.dbstarplayer.bookmodel.BookModel: com.media.zlibrary.text.model.ZLTextModel getFootnoteModel(java.lang.String)
+com.media.dbstarplayer.bookmodel.BookModel: com.media.dbstarplayer.bookmodel.BookModel$Label getLabelInternal(java.lang.String)
+com.media.dbstarplayer.bookmodel.BookModel: void setLabelResolver(com.media.dbstarplayer.bookmodel.BookModel$LabelResolver)
+com.media.dbstarplayer.bookmodel.BookModel: com.media.dbstarplayer.bookmodel.BookModel$Label getLabel(java.lang.String)
+com.media.dbstarplayer.bookmodel.BookModel: int[] $SWITCH_TABLE$com$media$dbstarplayer$formats$FormatPlugin$Type()
+com.media.dbstarplayer.bookmodel.BookModel$Label
+com.media.dbstarplayer.bookmodel.BookModel$Label: java.lang.String ModelId
+com.media.dbstarplayer.bookmodel.BookModel$Label: int ParagraphIndex
+com.media.dbstarplayer.bookmodel.BookModel$Label: BookModel$Label(java.lang.String,int)
+com.media.dbstarplayer.bookmodel.BookModel$LabelResolver
+com.media.dbstarplayer.bookmodel.BookModel$LabelResolver: java.util.List getCandidates(java.lang.String)
+com.media.dbstarplayer.bookmodel.BookModelImpl
+com.media.dbstarplayer.bookmodel.BookModelImpl: com.media.zlibrary.text.model.CharStorage myInternalHyperlinks
+com.media.dbstarplayer.bookmodel.BookModelImpl: java.util.HashMap myImageMap
+com.media.dbstarplayer.bookmodel.BookModelImpl: java.util.HashMap myFootnotes
+com.media.dbstarplayer.bookmodel.BookModelImpl: BookModelImpl(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.bookmodel.BookModelImpl: com.media.dbstarplayer.bookmodel.BookModel$Label getLabelInternal(java.lang.String)
+com.media.dbstarplayer.bookmodel.BookModelImpl: void addImage(java.lang.String,com.media.zlibrary.core.image.ZLImage)
+com.media.dbstarplayer.bookmodel.BookReader
+com.media.dbstarplayer.bookmodel.BookReader: com.media.dbstarplayer.bookmodel.JavaBookModel Model
+com.media.dbstarplayer.bookmodel.BookReader: com.media.zlibrary.text.model.ZLTextWritableModel myCurrentTextModel
+com.media.dbstarplayer.bookmodel.BookReader: boolean myTextParagraphExists
+com.media.dbstarplayer.bookmodel.BookReader: boolean myTextParagraphIsNonEmpty
+com.media.dbstarplayer.bookmodel.BookReader: char[] myTextBuffer
+com.media.dbstarplayer.bookmodel.BookReader: int myTextBufferLength
+com.media.dbstarplayer.bookmodel.BookReader: java.lang.StringBuilder myContentsBuffer
+com.media.dbstarplayer.bookmodel.BookReader: byte[] myKindStack
+com.media.dbstarplayer.bookmodel.BookReader: int myKindStackSize
+com.media.dbstarplayer.bookmodel.BookReader: byte myHyperlinkKind
+com.media.dbstarplayer.bookmodel.BookReader: java.lang.String myHyperlinkReference
+com.media.dbstarplayer.bookmodel.BookReader: boolean myInsideTitle
+com.media.dbstarplayer.bookmodel.BookReader: boolean mySectionContainsRegularContents
+com.media.dbstarplayer.bookmodel.BookReader: com.media.dbstarplayer.bookmodel.TOCTree myCurrentContentsTree
+com.media.dbstarplayer.bookmodel.BookReader: java.nio.charset.CharsetDecoder myByteDecoder
+com.media.dbstarplayer.bookmodel.BookReader: byte[] myUnderflowByteBuffer
+com.media.dbstarplayer.bookmodel.BookReader: int myUnderflowLength
+com.media.dbstarplayer.bookmodel.BookReader: BookReader(com.media.dbstarplayer.bookmodel.BookModel)
+com.media.dbstarplayer.bookmodel.BookReader: void setByteDecoder(java.nio.charset.CharsetDecoder)
+com.media.dbstarplayer.bookmodel.BookReader: void flushTextBufferToParagraph()
+com.media.dbstarplayer.bookmodel.BookReader: void addControl(byte,boolean)
+com.media.dbstarplayer.bookmodel.BookReader: void pushKind(byte)
+com.media.dbstarplayer.bookmodel.BookReader: boolean popKind()
+com.media.dbstarplayer.bookmodel.BookReader: void beginParagraph()
+com.media.dbstarplayer.bookmodel.BookReader: void beginParagraph(byte)
+com.media.dbstarplayer.bookmodel.BookReader: void endParagraph()
+com.media.dbstarplayer.bookmodel.BookReader: void insertEndParagraph(byte)
+com.media.dbstarplayer.bookmodel.BookReader: void insertEndOfSectionParagraph()
+com.media.dbstarplayer.bookmodel.BookReader: void unsetCurrentTextModel()
+com.media.dbstarplayer.bookmodel.BookReader: void enterTitle()
+com.media.dbstarplayer.bookmodel.BookReader: void exitTitle()
+com.media.dbstarplayer.bookmodel.BookReader: void setMainTextModel()
+com.media.dbstarplayer.bookmodel.BookReader: void setFootnoteTextModel(java.lang.String)
+com.media.dbstarplayer.bookmodel.BookReader: void addData(char[])
+com.media.dbstarplayer.bookmodel.BookReader: void addData(char[],int,int,boolean)
+com.media.dbstarplayer.bookmodel.BookReader: void addByteData(byte[],int,int)
+com.media.dbstarplayer.bookmodel.BookReader: byte hyperlinkType(byte)
+com.media.dbstarplayer.bookmodel.BookReader: void addHyperlinkControl(byte,java.lang.String)
+com.media.dbstarplayer.bookmodel.BookReader: void addHyperlinkLabel(java.lang.String)
+com.media.dbstarplayer.bookmodel.BookReader: void addHyperlinkLabel(java.lang.String,int)
+com.media.dbstarplayer.bookmodel.BookReader: void addContentsData(char[])
+com.media.dbstarplayer.bookmodel.BookReader: void addContentsData(char[],int,int)
+com.media.dbstarplayer.bookmodel.BookReader: boolean hasContentsData()
+com.media.dbstarplayer.bookmodel.BookReader: void beginContentsParagraph(int)
+com.media.dbstarplayer.bookmodel.BookReader: void beginContentsParagraph(com.media.zlibrary.text.model.ZLTextModel,int)
+com.media.dbstarplayer.bookmodel.BookReader: void endContentsParagraph()
+com.media.dbstarplayer.bookmodel.BookReader: boolean paragraphIsOpen()
+com.media.dbstarplayer.bookmodel.BookReader: boolean paragraphIsNonEmpty()
+com.media.dbstarplayer.bookmodel.BookReader: boolean contentsParagraphIsOpen()
+com.media.dbstarplayer.bookmodel.BookReader: void beginContentsParagraph()
+com.media.dbstarplayer.bookmodel.BookReader: void addImageReference(java.lang.String,boolean)
+com.media.dbstarplayer.bookmodel.BookReader: void addImageReference(java.lang.String,short,boolean)
+com.media.dbstarplayer.bookmodel.BookReader: void addImage(java.lang.String,com.media.zlibrary.core.image.ZLImage)
+com.media.dbstarplayer.bookmodel.BookReader: void addFixedHSpace(short)
+com.media.dbstarplayer.bookmodel.BookReadingException
+com.media.dbstarplayer.bookmodel.BookReadingException: com.media.zlibrary.core.filesystem.ZLFile File
+com.media.dbstarplayer.bookmodel.BookReadingException: void throwForFile(java.lang.String,com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.bookmodel.BookReadingException: java.lang.String getResourceText(java.lang.String)
+com.media.dbstarplayer.bookmodel.BookReadingException: BookReadingException(java.lang.String,java.lang.String,com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.bookmodel.BookReadingException: BookReadingException(java.lang.String,com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.bookmodel.BookReadingException: BookReadingException(java.io.IOException,com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.bookmodel.FBHyperlinkType
+com.media.dbstarplayer.bookmodel.FBHyperlinkType: byte NONE
+com.media.dbstarplayer.bookmodel.FBHyperlinkType: byte INTERNAL
+com.media.dbstarplayer.bookmodel.FBHyperlinkType: byte EXTERNAL
+com.media.dbstarplayer.bookmodel.FBTextKind
+com.media.dbstarplayer.bookmodel.FBTextKind: byte REGULAR
+com.media.dbstarplayer.bookmodel.FBTextKind: byte TITLE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte SECTION_TITLE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte POEM_TITLE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte SUBTITLE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte ANNOTATION
+com.media.dbstarplayer.bookmodel.FBTextKind: byte EPIGRAPH
+com.media.dbstarplayer.bookmodel.FBTextKind: byte STANZA
+com.media.dbstarplayer.bookmodel.FBTextKind: byte VERSE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte PREFORMATTED
+com.media.dbstarplayer.bookmodel.FBTextKind: byte IMAGE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte CITE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte AUTHOR
+com.media.dbstarplayer.bookmodel.FBTextKind: byte DATE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte INTERNAL_HYPERLINK
+com.media.dbstarplayer.bookmodel.FBTextKind: byte FOOTNOTE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte EMPHASIS
+com.media.dbstarplayer.bookmodel.FBTextKind: byte STRONG
+com.media.dbstarplayer.bookmodel.FBTextKind: byte SUB
+com.media.dbstarplayer.bookmodel.FBTextKind: byte SUP
+com.media.dbstarplayer.bookmodel.FBTextKind: byte CODE
+com.media.dbstarplayer.bookmodel.FBTextKind: byte STRIKETHROUGH
+com.media.dbstarplayer.bookmodel.FBTextKind: byte ITALIC
+com.media.dbstarplayer.bookmodel.FBTextKind: byte BOLD
+com.media.dbstarplayer.bookmodel.FBTextKind: byte DEFINITION
+com.media.dbstarplayer.bookmodel.FBTextKind: byte DEFINITION_DESCRIPTION
+com.media.dbstarplayer.bookmodel.FBTextKind: byte H1
+com.media.dbstarplayer.bookmodel.FBTextKind: byte H2
+com.media.dbstarplayer.bookmodel.FBTextKind: byte H3
+com.media.dbstarplayer.bookmodel.FBTextKind: byte H4
+com.media.dbstarplayer.bookmodel.FBTextKind: byte H5
+com.media.dbstarplayer.bookmodel.FBTextKind: byte H6
+com.media.dbstarplayer.bookmodel.FBTextKind: byte EXTERNAL_HYPERLINK
+com.media.dbstarplayer.bookmodel.JavaBookModel
+com.media.dbstarplayer.bookmodel.JavaBookModel: com.media.zlibrary.text.model.ZLTextModel BookTextModel
+com.media.dbstarplayer.bookmodel.JavaBookModel: char[] myCurrentLinkBlock
+com.media.dbstarplayer.bookmodel.JavaBookModel: int myCurrentLinkBlockOffset
+com.media.dbstarplayer.bookmodel.JavaBookModel: JavaBookModel(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.bookmodel.JavaBookModel: com.media.zlibrary.text.model.ZLTextModel getTextModel()
+com.media.dbstarplayer.bookmodel.JavaBookModel: com.media.zlibrary.text.model.ZLTextModel getFootnoteModel(java.lang.String)
+com.media.dbstarplayer.bookmodel.JavaBookModel: void addHyperlinkLabel(java.lang.String,com.media.zlibrary.text.model.ZLTextModel,int)
+com.media.dbstarplayer.bookmodel.JavaBookModel: void addImage(java.lang.String,com.media.zlibrary.core.image.ZLImage)
+com.media.dbstarplayer.bookmodel.NativeBookModel
+com.media.dbstarplayer.bookmodel.NativeBookModel: com.media.zlibrary.text.model.ZLTextModel myBookTextModel
+com.media.dbstarplayer.bookmodel.NativeBookModel: com.media.dbstarplayer.bookmodel.TOCTree myCurrentTree
+com.media.dbstarplayer.bookmodel.NativeBookModel: NativeBookModel(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.bookmodel.NativeBookModel: void initInternalHyperlinks(java.lang.String,java.lang.String,int)
+com.media.dbstarplayer.bookmodel.NativeBookModel: void addTOCItem(java.lang.String,int)
+com.media.dbstarplayer.bookmodel.NativeBookModel: void leaveTOCItem()
+com.media.dbstarplayer.bookmodel.NativeBookModel: com.media.zlibrary.text.model.ZLTextModel createTextModel(java.lang.String,java.lang.String,int,int[],int[],int[],int[],byte[],java.lang.String,java.lang.String,int)
+com.media.dbstarplayer.bookmodel.NativeBookModel: void setBookTextModel(com.media.zlibrary.text.model.ZLTextModel)
+com.media.dbstarplayer.bookmodel.NativeBookModel: void setFootnoteModel(com.media.zlibrary.text.model.ZLTextModel)
+com.media.dbstarplayer.bookmodel.NativeBookModel: com.media.zlibrary.text.model.ZLTextModel getTextModel()
+com.media.dbstarplayer.bookmodel.NativeBookModel: com.media.zlibrary.text.model.ZLTextModel getFootnoteModel(java.lang.String)
+com.media.dbstarplayer.bookmodel.NativeBookModel: void addImage(java.lang.String,com.media.zlibrary.core.image.ZLImage)
+com.media.dbstarplayer.bookmodel.TOCTree
+com.media.dbstarplayer.bookmodel.TOCTree: java.lang.String myText
+com.media.dbstarplayer.bookmodel.TOCTree: com.media.dbstarplayer.bookmodel.TOCTree$Reference myReference
+com.media.dbstarplayer.bookmodel.TOCTree: TOCTree()
+com.media.dbstarplayer.bookmodel.TOCTree: TOCTree(com.media.dbstarplayer.bookmodel.TOCTree)
+com.media.dbstarplayer.bookmodel.TOCTree: java.lang.String getText()
+com.media.dbstarplayer.bookmodel.TOCTree: void setText(java.lang.String)
+com.media.dbstarplayer.bookmodel.TOCTree: com.media.dbstarplayer.bookmodel.TOCTree$Reference getReference()
+com.media.dbstarplayer.bookmodel.TOCTree: void setReference(com.media.zlibrary.text.model.ZLTextModel,int)
+com.media.dbstarplayer.bookmodel.TOCTree$Reference
+com.media.dbstarplayer.bookmodel.TOCTree$Reference: int ParagraphIndex
+com.media.dbstarplayer.bookmodel.TOCTree$Reference: com.media.zlibrary.text.model.ZLTextModel Model
+com.media.dbstarplayer.bookmodel.TOCTree$Reference: TOCTree$Reference(int,com.media.zlibrary.text.model.ZLTextModel)
+com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$CancelActionType: com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$CancelActionType[] values()
+com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$CancelActionType: com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$CancelActionType valueOf(java.lang.String)
+com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$ImageTappingAction: com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$ImageTappingAction[] values()
+com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$ImageTappingAction: com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$ImageTappingAction valueOf(java.lang.String)
+com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$WordTappingAction: com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$WordTappingAction[] values()
+com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$WordTappingAction: com.media.dbstarplayer.dbstarplayer.DbStarPlayerApp$WordTappingAction valueOf(java.lang.String)
+com.media.dbstarplayer.dbstarplayer.TapZoneMap$Tap: com.media.dbstarplayer.dbstarplayer.TapZoneMap$Tap[] values()
+com.media.dbstarplayer.dbstarplayer.TapZoneMap$Tap: com.media.dbstarplayer.dbstarplayer.TapZoneMap$Tap valueOf(java.lang.String)
+com.media.dbstarplayer.dbstarplayer.options.PageTurningOptions$FingerScrollingType: com.media.dbstarplayer.dbstarplayer.options.PageTurningOptions$FingerScrollingType[] values()
+com.media.dbstarplayer.dbstarplayer.options.PageTurningOptions$FingerScrollingType: com.media.dbstarplayer.dbstarplayer.options.PageTurningOptions$FingerScrollingType valueOf(java.lang.String)
+com.media.dbstarplayer.formats.FormatPlugin
+com.media.dbstarplayer.formats.FormatPlugin: java.lang.String myFileType
+com.media.dbstarplayer.formats.FormatPlugin: FormatPlugin(java.lang.String)
+com.media.dbstarplayer.formats.FormatPlugin: java.lang.String supportedFileType()
+com.media.dbstarplayer.formats.FormatPlugin: com.media.zlibrary.core.filesystem.ZLFile realBookFile(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.formats.FormatPlugin: void readMetaInfo(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.FormatPlugin: void readUids(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.FormatPlugin: void readModel(com.media.dbstarplayer.bookmodel.BookModel)
+com.media.dbstarplayer.formats.FormatPlugin: void detectLanguageAndEncoding(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.FormatPlugin: com.media.zlibrary.core.image.ZLImage readCover(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.formats.FormatPlugin: java.lang.String readAnnotation(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.formats.FormatPlugin: com.media.dbstarplayer.formats.FormatPlugin$Type type()
+com.media.dbstarplayer.formats.FormatPlugin: com.media.zlibrary.core.encodings.EncodingCollection supportedEncodings()
+com.media.dbstarplayer.formats.FormatPlugin$Type
+com.media.dbstarplayer.formats.FormatPlugin$Type: com.media.dbstarplayer.formats.FormatPlugin$Type ANY
+com.media.dbstarplayer.formats.FormatPlugin$Type: com.media.dbstarplayer.formats.FormatPlugin$Type JAVA
+com.media.dbstarplayer.formats.FormatPlugin$Type: com.media.dbstarplayer.formats.FormatPlugin$Type NATIVE
+com.media.dbstarplayer.formats.FormatPlugin$Type: com.media.dbstarplayer.formats.FormatPlugin$Type EXTERNAL
+com.media.dbstarplayer.formats.FormatPlugin$Type: com.media.dbstarplayer.formats.FormatPlugin$Type NONE
+com.media.dbstarplayer.formats.FormatPlugin$Type: com.media.dbstarplayer.formats.FormatPlugin$Type[] ENUM$VALUES
+com.media.dbstarplayer.formats.FormatPlugin$Type: void <clinit>()
+com.media.dbstarplayer.formats.FormatPlugin$Type: FormatPlugin$Type(java.lang.String,int)
+com.media.dbstarplayer.formats.FormatPlugin$Type: com.media.dbstarplayer.formats.FormatPlugin$Type[] values()
+com.media.dbstarplayer.formats.FormatPlugin$Type: com.media.dbstarplayer.formats.FormatPlugin$Type valueOf(java.lang.String)
+com.media.dbstarplayer.formats.JavaFormatPlugin
+com.media.dbstarplayer.formats.JavaFormatPlugin: JavaFormatPlugin(java.lang.String)
+com.media.dbstarplayer.formats.JavaFormatPlugin: com.media.dbstarplayer.formats.FormatPlugin$Type type()
+com.media.dbstarplayer.formats.NativeFormatPlugin
+com.media.dbstarplayer.formats.NativeFormatPlugin: com.media.dbstarplayer.formats.NativeFormatPlugin create(java.lang.String)
+com.media.dbstarplayer.formats.NativeFormatPlugin: NativeFormatPlugin(java.lang.String)
+com.media.dbstarplayer.formats.NativeFormatPlugin: void readMetaInfo(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.NativeFormatPlugin: boolean readMetaInfoNative(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.NativeFormatPlugin: void readUids(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.NativeFormatPlugin: boolean readUidsNative(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.NativeFormatPlugin: void detectLanguageAndEncoding(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.NativeFormatPlugin: void detectLanguageAndEncodingNative(com.media.dbstarplayer.book.Book)
+com.media.dbstarplayer.formats.NativeFormatPlugin: void readModel(com.media.dbstarplayer.bookmodel.BookModel)
+com.media.dbstarplayer.formats.NativeFormatPlugin: boolean readModelNative(com.media.dbstarplayer.bookmodel.BookModel)
+com.media.dbstarplayer.formats.NativeFormatPlugin: com.media.zlibrary.core.image.ZLImage readCover(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.formats.NativeFormatPlugin: void readCoverInternal(com.media.zlibrary.core.filesystem.ZLFile,com.media.zlibrary.core.image.ZLImage[])
+com.media.dbstarplayer.formats.NativeFormatPlugin: java.lang.String readAnnotation(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.formats.NativeFormatPlugin: com.media.dbstarplayer.formats.FormatPlugin$Type type()
+com.media.dbstarplayer.formats.NativeFormatPlugin: com.media.zlibrary.core.encodings.EncodingCollection supportedEncodings()
+com.media.dbstarplayer.formats.NativeFormatPlugin: java.lang.String toString()
+com.media.dbstarplayer.formats.NativeFormatPlugin$1
+com.media.dbstarplayer.formats.NativeFormatPlugin$1: com.media.dbstarplayer.formats.NativeFormatPlugin this$0
+com.media.dbstarplayer.formats.NativeFormatPlugin$1: com.media.zlibrary.core.filesystem.ZLFile val$file
+com.media.dbstarplayer.formats.NativeFormatPlugin$1: NativeFormatPlugin$1(com.media.dbstarplayer.formats.NativeFormatPlugin,com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.formats.NativeFormatPlugin$1: int sourceType()
+com.media.dbstarplayer.formats.NativeFormatPlugin$1: java.lang.String getId()
+com.media.dbstarplayer.formats.NativeFormatPlugin$1: com.media.zlibrary.core.image.ZLSingleImage getRealImage()
+com.media.dbstarplayer.formats.PluginCollection
+com.media.dbstarplayer.formats.PluginCollection: com.media.dbstarplayer.formats.PluginCollection ourInstance
+com.media.dbstarplayer.formats.PluginCollection: java.util.Map myPlugins
+com.media.dbstarplayer.formats.PluginCollection: void <clinit>()
+com.media.dbstarplayer.formats.PluginCollection: com.media.dbstarplayer.formats.PluginCollection Instance()
+com.media.dbstarplayer.formats.PluginCollection: void deleteInstance()
+com.media.dbstarplayer.formats.PluginCollection: PluginCollection()
+com.media.dbstarplayer.formats.PluginCollection: void addPlugin(com.media.dbstarplayer.formats.FormatPlugin)
+com.media.dbstarplayer.formats.PluginCollection: com.media.dbstarplayer.formats.FormatPlugin getPlugin(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.dbstarplayer.formats.PluginCollection: com.media.dbstarplayer.formats.FormatPlugin getPlugin(com.media.zlibrary.core.filesystem.ZLFile,com.media.dbstarplayer.formats.FormatPlugin$Type)
+com.media.dbstarplayer.formats.PluginCollection: com.media.dbstarplayer.formats.FormatPlugin getPlugin(com.media.zlibrary.core.filetypes.FileType,com.media.dbstarplayer.formats.FormatPlugin$Type)
+com.media.dbstarplayer.formats.PluginCollection: com.media.dbstarplayer.formats.NativeFormatPlugin[] nativePlugins()
+com.media.dbstarplayer.formats.PluginCollection: void free()
+com.media.dbstarplayer.formats.PluginCollection: void finalize()
+com.media.dbstarplayer.formats.oeb.OEBMetaInfoReader$ReadState: com.media.dbstarplayer.formats.oeb.OEBMetaInfoReader$ReadState[] values()
+com.media.dbstarplayer.formats.oeb.OEBMetaInfoReader$ReadState: com.media.dbstarplayer.formats.oeb.OEBMetaInfoReader$ReadState valueOf(java.lang.String)
+com.media.dbstarplayer.network.INetworkLink$AccountStatus: com.media.dbstarplayer.network.INetworkLink$AccountStatus[] values()
+com.media.dbstarplayer.network.INetworkLink$AccountStatus: com.media.dbstarplayer.network.INetworkLink$AccountStatus valueOf(java.lang.String)
+com.media.dbstarplayer.network.INetworkLink$Type: com.media.dbstarplayer.network.INetworkLink$Type[] values()
+com.media.dbstarplayer.network.INetworkLink$Type: com.media.dbstarplayer.network.INetworkLink$Type valueOf(java.lang.String)
+com.media.dbstarplayer.network.NetworkBookItem$Status: com.media.dbstarplayer.network.NetworkBookItem$Status[] values()
+com.media.dbstarplayer.network.NetworkBookItem$Status: com.media.dbstarplayer.network.NetworkBookItem$Status valueOf(java.lang.String)
+com.media.dbstarplayer.network.NetworkCatalogItem$Accessibility: com.media.dbstarplayer.network.NetworkCatalogItem$Accessibility[] values()
+com.media.dbstarplayer.network.NetworkCatalogItem$Accessibility: com.media.dbstarplayer.network.NetworkCatalogItem$Accessibility valueOf(java.lang.String)
+com.media.dbstarplayer.network.NetworkException: long serialVersionUID
+com.media.dbstarplayer.network.NetworkLibrary$ChangeListener$Code: com.media.dbstarplayer.network.NetworkLibrary$ChangeListener$Code[] values()
+com.media.dbstarplayer.network.NetworkLibrary$ChangeListener$Code: com.media.dbstarplayer.network.NetworkLibrary$ChangeListener$Code valueOf(java.lang.String)
+com.media.dbstarplayer.network.atom.FormattedBuffer$Type: com.media.dbstarplayer.network.atom.FormattedBuffer$Type[] values()
+com.media.dbstarplayer.network.atom.FormattedBuffer$Type: com.media.dbstarplayer.network.atom.FormattedBuffer$Type valueOf(java.lang.String)
+com.media.dbstarplayer.network.opds.OPDSLinkReader$CacheMode: com.media.dbstarplayer.network.opds.OPDSLinkReader$CacheMode[] values()
+com.media.dbstarplayer.network.opds.OPDSLinkReader$CacheMode: com.media.dbstarplayer.network.opds.OPDSLinkReader$CacheMode valueOf(java.lang.String)
+com.media.dbstarplayer.network.tree.NetworkItemsLoader$InterruptionState: com.media.dbstarplayer.network.tree.NetworkItemsLoader$InterruptionState[] values()
+com.media.dbstarplayer.network.tree.NetworkItemsLoader$InterruptionState: com.media.dbstarplayer.network.tree.NetworkItemsLoader$InterruptionState valueOf(java.lang.String)
+com.media.dbstarplayer.network.urlInfo.BookBuyUrlInfo: long serialVersionUID
+com.media.dbstarplayer.network.urlInfo.BookUrlInfo: long serialVersionUID
+com.media.dbstarplayer.network.urlInfo.DecoratedBookUrlInfo: long serialVersionUID
+com.media.dbstarplayer.network.urlInfo.RelatedUrlInfo: long serialVersionUID
+com.media.dbstarplayer.network.urlInfo.UrlInfo: long serialVersionUID
+com.media.dbstarplayer.network.urlInfo.UrlInfo$Type: com.media.dbstarplayer.network.urlInfo.UrlInfo$Type[] values()
+com.media.dbstarplayer.network.urlInfo.UrlInfo$Type: com.media.dbstarplayer.network.urlInfo.UrlInfo$Type valueOf(java.lang.String)
+com.media.dbstarplayer.network.urlInfo.UrlInfoCollection: long serialVersionUID
+com.media.dbstarplayer.network.urlInfo.UrlInfoWithDate: long serialVersionUID
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String myTitle
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String mySortKey
+com.media.dbstarplayer.sort.TitledEntity: java.util.Map ARTICLES
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String[] EN_ARTICLES
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String[] FR_ARTICLES
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String[] GE_ARTICLES
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String[] IT_ARTICLES
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String[] SP_ARTICLES
+com.media.dbstarplayer.sort.TitledEntity: void <clinit>()
+com.media.dbstarplayer.sort.TitledEntity: TitledEntity(java.lang.String)
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String getTitle()
+com.media.dbstarplayer.sort.TitledEntity: boolean isTitleEmpty()
+com.media.dbstarplayer.sort.TitledEntity: void setTitle(java.lang.String)
+com.media.dbstarplayer.sort.TitledEntity: void resetSortKey()
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String getLanguage()
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String getSortKey()
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String trim(java.lang.String,java.lang.String)
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String normalize(java.lang.String)
+com.media.dbstarplayer.sort.TitledEntity: java.lang.String firstTitleLetter()
+com.media.dbstarplayer.tips.TipsManager$Action: com.media.dbstarplayer.tips.TipsManager$Action[] values()
+com.media.dbstarplayer.tips.TipsManager$Action: com.media.dbstarplayer.tips.TipsManager$Action valueOf(java.lang.String)
+com.media.dbstarplayer.tree.FBTree$Key: long serialVersionUID
+com.media.dbstarplayer.tree.FBTree$Status: com.media.dbstarplayer.tree.FBTree$Status[] values()
+com.media.dbstarplayer.tree.FBTree$Status: com.media.dbstarplayer.tree.FBTree$Status valueOf(java.lang.String)
+com.media.reader.view.RepeatCharTextView
+com.media.reader.view.RepeatCharTextView: RepeatCharTextView(android.content.Context,android.util.AttributeSet)
+com.media.reader.view.VerticalSeekBar
+com.media.reader.view.VerticalSeekBar: VerticalSeekBar(android.content.Context)
+com.media.reader.view.VerticalSeekBar: VerticalSeekBar(android.content.Context,android.util.AttributeSet)
+com.media.reader.view.VerticalSeekBar: VerticalSeekBar(android.content.Context,android.util.AttributeSet,int)
+com.media.reader.vo.ImageEntity$ImageAlign: com.media.reader.vo.ImageEntity$ImageAlign[] values()
+com.media.reader.vo.ImageEntity$ImageAlign: com.media.reader.vo.ImageEntity$ImageAlign valueOf(java.lang.String)
+com.media.zlibrary.core.encodings.AutoEncodingCollection
+com.media.zlibrary.core.encodings.AutoEncodingCollection: com.media.zlibrary.core.encodings.Encoding myEncoding
+com.media.zlibrary.core.encodings.AutoEncodingCollection: AutoEncodingCollection()
+com.media.zlibrary.core.encodings.AutoEncodingCollection: java.util.List encodings()
+com.media.zlibrary.core.encodings.AutoEncodingCollection: com.media.zlibrary.core.encodings.Encoding getEncoding(java.lang.String)
+com.media.zlibrary.core.encodings.AutoEncodingCollection: com.media.zlibrary.core.encodings.Encoding getEncoding(int)
+com.media.zlibrary.core.encodings.Encoding
+com.media.zlibrary.core.encodings.Encoding: java.lang.String Family
+com.media.zlibrary.core.encodings.Encoding: java.lang.String Name
+com.media.zlibrary.core.encodings.Encoding: java.lang.String DisplayName
+com.media.zlibrary.core.encodings.Encoding: Encoding(java.lang.String,java.lang.String,java.lang.String)
+com.media.zlibrary.core.encodings.Encoding: boolean equals(java.lang.Object)
+com.media.zlibrary.core.encodings.Encoding: int hashCode()
+com.media.zlibrary.core.encodings.Encoding: com.media.zlibrary.core.encodings.EncodingConverter createConverter()
+com.media.zlibrary.core.encodings.EncodingCollection
+com.media.zlibrary.core.encodings.EncodingCollection: EncodingCollection()
+com.media.zlibrary.core.encodings.EncodingCollection: java.util.List encodings()
+com.media.zlibrary.core.encodings.EncodingCollection: com.media.zlibrary.core.encodings.Encoding getEncoding(java.lang.String)
+com.media.zlibrary.core.encodings.EncodingCollection: com.media.zlibrary.core.encodings.Encoding getEncoding(int)
+com.media.zlibrary.core.encodings.EncodingConverter
+com.media.zlibrary.core.encodings.EncodingConverter: java.lang.String Name
+com.media.zlibrary.core.encodings.EncodingConverter: java.nio.charset.CharsetDecoder myDecoder
+com.media.zlibrary.core.encodings.EncodingConverter: EncodingConverter(java.lang.String)
+com.media.zlibrary.core.encodings.EncodingConverter: int convert(byte[],int,int,char[])
+com.media.zlibrary.core.encodings.EncodingConverter: void reset()
+com.media.zlibrary.core.encodings.FilteredEncodingCollection
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: java.util.List myEncodings
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: java.util.Map myEncodingByAlias
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: FilteredEncodingCollection()
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: boolean isEncodingSupported(java.lang.String)
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: java.util.List encodings()
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: com.media.zlibrary.core.encodings.Encoding getEncoding(java.lang.String)
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: com.media.zlibrary.core.encodings.Encoding getEncoding(int)
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: boolean providesConverterFor(java.lang.String)
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: java.util.List access$0(com.media.zlibrary.core.encodings.FilteredEncodingCollection)
+com.media.zlibrary.core.encodings.FilteredEncodingCollection: java.util.Map access$1(com.media.zlibrary.core.encodings.FilteredEncodingCollection)
+com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader
+com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader: java.lang.String myCurrentFamilyName
+com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader: com.media.zlibrary.core.encodings.Encoding myCurrentEncoding
+com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader: com.media.zlibrary.core.encodings.FilteredEncodingCollection this$0
+com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader: FilteredEncodingCollection$EncodingCollectionReader(com.media.zlibrary.core.encodings.FilteredEncodingCollection)
+com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader: boolean dontCacheAttributeValues()
+com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader: boolean startElementHandler(java.lang.String,com.media.zlibrary.core.xml.ZLStringMap)
+com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader: FilteredEncodingCollection$EncodingCollectionReader(com.media.zlibrary.core.encodings.FilteredEncodingCollection,com.media.zlibrary.core.encodings.FilteredEncodingCollection$EncodingCollectionReader)
+com.media.zlibrary.core.encodings.JavaEncodingCollection
+com.media.zlibrary.core.encodings.JavaEncodingCollection: com.media.zlibrary.core.encodings.JavaEncodingCollection ourInstance
+com.media.zlibrary.core.encodings.JavaEncodingCollection: com.media.zlibrary.core.encodings.JavaEncodingCollection Instance()
+com.media.zlibrary.core.encodings.JavaEncodingCollection: JavaEncodingCollection()
+com.media.zlibrary.core.encodings.JavaEncodingCollection: boolean isEncodingSupported(java.lang.String)
+com.media.zlibrary.core.encodings.JavaEncodingCollection: boolean providesConverterFor(java.lang.String)
+com.media.zlibrary.core.encodings.JavaEncodingCollection: java.util.List encodings()
+com.media.zlibrary.core.encodings.JavaEncodingCollection: com.media.zlibrary.core.encodings.Encoding getEncoding(int)
+com.media.zlibrary.core.encodings.JavaEncodingCollection: com.media.zlibrary.core.encodings.Encoding getEncoding(java.lang.String)
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: com.media.zlibrary.core.filesystem.ZLFile myParent
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: java.lang.String myName
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: java.lang.String normalizeEntryName(java.lang.String)
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: com.media.zlibrary.core.filesystem.ZLArchiveEntryFile createArchiveEntryFile(com.media.zlibrary.core.filesystem.ZLFile,java.lang.String)
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: java.util.List archiveEntries(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: ZLArchiveEntryFile(com.media.zlibrary.core.filesystem.ZLFile,java.lang.String)
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: boolean isDirectory()
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: java.lang.String getPath()
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: java.lang.String getLongName()
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: com.media.zlibrary.core.filesystem.ZLFile getParent()
+com.media.zlibrary.core.filesystem.ZLArchiveEntryFile: com.media.zlibrary.core.filesystem.ZLPhysicalFile getPhysicalFile()
+com.media.zlibrary.core.filesystem.ZLFile
+com.media.zlibrary.core.filesystem.ZLFile: java.util.HashMap ourCachedFiles
+com.media.zlibrary.core.filesystem.ZLFile: java.lang.String myExtension
+com.media.zlibrary.core.filesystem.ZLFile: java.lang.String myShortName
+com.media.zlibrary.core.filesystem.ZLFile: int myArchiveType
+com.media.zlibrary.core.filesystem.ZLFile: boolean myIsCached
+com.media.zlibrary.core.filesystem.ZLFile: void <clinit>()
+com.media.zlibrary.core.filesystem.ZLFile: ZLFile()
+com.media.zlibrary.core.filesystem.ZLFile: void init()
+com.media.zlibrary.core.filesystem.ZLFile: com.media.zlibrary.core.filesystem.ZLFile createFile(com.media.zlibrary.core.filesystem.ZLFile,java.lang.String)
+com.media.zlibrary.core.filesystem.ZLFile: com.media.zlibrary.core.filesystem.ZLFile createFileByUrl(java.lang.String)
+com.media.zlibrary.core.filesystem.ZLFile: com.media.zlibrary.core.filesystem.ZLFile createFileByPath(java.lang.String)
+com.media.zlibrary.core.filesystem.ZLFile: long size()
+com.media.zlibrary.core.filesystem.ZLFile: boolean exists()
+com.media.zlibrary.core.filesystem.ZLFile: boolean isDirectory()
+com.media.zlibrary.core.filesystem.ZLFile: java.lang.String getPath()
+com.media.zlibrary.core.filesystem.ZLFile: com.media.zlibrary.core.filesystem.ZLFile getParent()
+com.media.zlibrary.core.filesystem.ZLFile: com.media.zlibrary.core.filesystem.ZLPhysicalFile getPhysicalFile()
+com.media.zlibrary.core.filesystem.ZLFile: java.io.InputStream getInputStream()
+com.media.zlibrary.core.filesystem.ZLFile: java.lang.String getUrl()
+com.media.zlibrary.core.filesystem.ZLFile: boolean isReadable()
+com.media.zlibrary.core.filesystem.ZLFile: boolean isCompressed()
+com.media.zlibrary.core.filesystem.ZLFile: boolean isArchive()
+com.media.zlibrary.core.filesystem.ZLFile: java.lang.String getLongName()
+com.media.zlibrary.core.filesystem.ZLFile: java.lang.String getShortName()
+com.media.zlibrary.core.filesystem.ZLFile: java.lang.String getExtension()
+com.media.zlibrary.core.filesystem.ZLFile: java.util.List directoryEntries()
+com.media.zlibrary.core.filesystem.ZLFile: java.util.List children()
+com.media.zlibrary.core.filesystem.ZLFile: int hashCode()
+com.media.zlibrary.core.filesystem.ZLFile: boolean equals(java.lang.Object)
+com.media.zlibrary.core.filesystem.ZLFile: java.lang.String toString()
+com.media.zlibrary.core.filesystem.ZLFile: boolean isCached()
+com.media.zlibrary.core.filesystem.ZLFile: void setCached(boolean)
+com.media.zlibrary.core.filesystem.ZLFile$ArchiveType
+com.media.zlibrary.core.filesystem.ZLFile$ArchiveType: int NONE
+com.media.zlibrary.core.filesystem.ZLFile$ArchiveType: int GZIP
+com.media.zlibrary.core.filesystem.ZLFile$ArchiveType: int BZIP2
+com.media.zlibrary.core.filesystem.ZLFile$ArchiveType: int COMPRESSED
+com.media.zlibrary.core.filesystem.ZLFile$ArchiveType: int ZIP
+com.media.zlibrary.core.filesystem.ZLFile$ArchiveType: int TAR
+com.media.zlibrary.core.filesystem.ZLFile$ArchiveType: int ARCHIVE
+com.media.zlibrary.core.filesystem.ZLPhysicalFile
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: java.io.File myFile
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: ZLPhysicalFile(java.lang.String)
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: ZLPhysicalFile(java.io.File)
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: boolean exists()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: long size()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: boolean isDirectory()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: boolean isReadable()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: boolean delete()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: java.io.File javaFile()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: java.lang.String getPath()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: java.lang.String getLongName()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: com.media.zlibrary.core.filesystem.ZLFile getParent()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: com.media.zlibrary.core.filesystem.ZLPhysicalFile getPhysicalFile()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: java.io.InputStream getInputStream()
+com.media.zlibrary.core.filesystem.ZLPhysicalFile: java.util.List directoryEntries()
+com.media.zlibrary.core.filesystem.ZLResourceFile
+com.media.zlibrary.core.filesystem.ZLResourceFile: java.lang.String myPath
+com.media.zlibrary.core.filesystem.ZLResourceFile: com.media.zlibrary.core.filesystem.ZLResourceFile createResourceFile(java.lang.String)
+com.media.zlibrary.core.filesystem.ZLResourceFile: com.media.zlibrary.core.filesystem.ZLResourceFile createResourceFile(com.media.zlibrary.core.filesystem.ZLResourceFile,java.lang.String)
+com.media.zlibrary.core.filesystem.ZLResourceFile: ZLResourceFile(java.lang.String)
+com.media.zlibrary.core.filesystem.ZLResourceFile: java.lang.String getPath()
+com.media.zlibrary.core.filesystem.ZLResourceFile: java.lang.String getLongName()
+com.media.zlibrary.core.filesystem.ZLResourceFile: com.media.zlibrary.core.filesystem.ZLPhysicalFile getPhysicalFile()
+com.media.zlibrary.core.filesystem.ZLZipEntryFile
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: java.util.HashMap ourZipFileMap
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: void <clinit>()
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: java.util.List archiveEntries(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: org.amse.ys.zip.ZipFile getZipFile(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: void removeFromCache(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: ZLZipEntryFile(com.media.zlibrary.core.filesystem.ZLFile,java.lang.String)
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: boolean exists()
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: long size()
+com.media.zlibrary.core.filesystem.ZLZipEntryFile: java.io.InputStream getInputStream()
+com.media.zlibrary.core.filesystem.ZLZipEntryFile$1
+com.media.zlibrary.core.filesystem.ZLZipEntryFile$1: com.media.zlibrary.core.filesystem.ZLFile val$file
+com.media.zlibrary.core.filesystem.ZLZipEntryFile$1: ZLZipEntryFile$1(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.filesystem.ZLZipEntryFile$1: java.io.InputStream getInputStream()
+com.media.zlibrary.core.filesystem.tar.ZLTarEntryFile
+com.media.zlibrary.core.filesystem.tar.ZLTarEntryFile: java.util.List archiveEntries(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.filesystem.tar.ZLTarEntryFile: ZLTarEntryFile(com.media.zlibrary.core.filesystem.ZLFile,java.lang.String)
+com.media.zlibrary.core.filesystem.tar.ZLTarEntryFile: boolean exists()
+com.media.zlibrary.core.filesystem.tar.ZLTarEntryFile: long size()
+com.media.zlibrary.core.filesystem.tar.ZLTarEntryFile: java.io.InputStream getInputStream()
+com.media.zlibrary.core.filesystem.tar.ZLTarHeader
+com.media.zlibrary.core.filesystem.tar.ZLTarHeader: java.lang.String Name
+com.media.zlibrary.core.filesystem.tar.ZLTarHeader: int Size
+com.media.zlibrary.core.filesystem.tar.ZLTarHeader: boolean IsRegularFile
+com.media.zlibrary.core.filesystem.tar.ZLTarHeader: ZLTarHeader()
+com.media.zlibrary.core.filesystem.tar.ZLTarHeader: java.lang.String getStringFromByteArray(byte[])
+com.media.zlibrary.core.filesystem.tar.ZLTarHeader: boolean read(java.io.InputStream)
+com.media.zlibrary.core.filesystem.tar.ZLTarHeader: void erase()
+com.media.zlibrary.core.filesystem.tar.ZLTarInputStream
+com.media.zlibrary.core.filesystem.tar.ZLTarInputStream: java.io.InputStream myBase
+com.media.zlibrary.core.filesystem.tar.ZLTarInputStream: ZLTarInputStream(java.io.InputStream,java.lang.String)
+com.media.zlibrary.core.filesystem.tar.ZLTarInputStream: int read()
+com.media.zlibrary.core.filesystem.tar.ZLTarInputStream: int read(byte[])
+com.media.zlibrary.core.filesystem.tar.ZLTarInputStream: int read(byte[],int,int)
+com.media.zlibrary.core.filesystem.tar.ZLTarInputStream: long skip(long)
+com.media.zlibrary.core.filesystem.tar.ZLTarInputStream: int available()
+com.media.zlibrary.core.image.ZLBase64EncodedImage
+com.media.zlibrary.core.image.ZLBase64EncodedImage: boolean myIsDecoded
+com.media.zlibrary.core.image.ZLBase64EncodedImage: ZLBase64EncodedImage(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.image.ZLBase64EncodedImage: byte decodeByte(byte)
+com.media.zlibrary.core.image.ZLBase64EncodedImage: java.lang.String getURI()
+com.media.zlibrary.core.image.ZLBase64EncodedImage: java.lang.String encodedFileName()
+com.media.zlibrary.core.image.ZLBase64EncodedImage: java.lang.String decodedFileName()
+com.media.zlibrary.core.image.ZLBase64EncodedImage: boolean isCacheValid(java.io.File)
+com.media.zlibrary.core.image.ZLBase64EncodedImage: void decode()
+com.media.zlibrary.core.image.ZLBase64EncodedImage: java.io.InputStream inputStream()
+com.media.zlibrary.core.image.ZLFileImage
+com.media.zlibrary.core.image.ZLFileImage: java.lang.String SCHEME
+com.media.zlibrary.core.image.ZLFileImage: java.lang.String ENCODING_NONE
+com.media.zlibrary.core.image.ZLFileImage: java.lang.String ENCODING_HEX
+com.media.zlibrary.core.image.ZLFileImage: java.lang.String ENCODING_BASE64
+com.media.zlibrary.core.image.ZLFileImage: com.media.zlibrary.core.filesystem.ZLFile myFile
+com.media.zlibrary.core.image.ZLFileImage: java.lang.String myEncoding
+com.media.zlibrary.core.image.ZLFileImage: int[] myOffsets
+com.media.zlibrary.core.image.ZLFileImage: int[] myLengths
+com.media.zlibrary.core.image.ZLFileImage: com.media.zlibrary.core.image.ZLFileImage byUrlPath(java.lang.String)
+com.media.zlibrary.core.image.ZLFileImage: ZLFileImage(java.lang.String,com.media.zlibrary.core.filesystem.ZLFile,java.lang.String,int[],int[])
+com.media.zlibrary.core.image.ZLFileImage: ZLFileImage(com.media.zlibrary.core.util.MimeType,com.media.zlibrary.core.filesystem.ZLFile,java.lang.String,int[],int[])
+com.media.zlibrary.core.image.ZLFileImage: ZLFileImage(java.lang.String,com.media.zlibrary.core.filesystem.ZLFile,java.lang.String,int,int)
+com.media.zlibrary.core.image.ZLFileImage: ZLFileImage(com.media.zlibrary.core.util.MimeType,com.media.zlibrary.core.filesystem.ZLFile,java.lang.String,int,int)
+com.media.zlibrary.core.image.ZLFileImage: ZLFileImage(com.media.zlibrary.core.util.MimeType,com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.image.ZLFileImage: java.lang.String getURI()
+com.media.zlibrary.core.image.ZLFileImage: java.io.InputStream inputStream()
+com.media.zlibrary.core.image.ZLImage
+com.media.zlibrary.core.image.ZLImage: java.lang.String getURI()
+com.media.zlibrary.core.image.ZLImageData
+com.media.zlibrary.core.image.ZLImageManager
+com.media.zlibrary.core.image.ZLImageManager: com.media.zlibrary.core.image.ZLImageManager ourInstance
+com.media.zlibrary.core.image.ZLImageManager: int[][] PalmImage8bitColormap
+com.media.zlibrary.core.image.ZLImageManager: void <clinit>()
+com.media.zlibrary.core.image.ZLImageManager: com.media.zlibrary.core.image.ZLImageManager Instance()
+com.media.zlibrary.core.image.ZLImageManager: ZLImageManager()
+com.media.zlibrary.core.image.ZLImageManager: com.media.zlibrary.core.image.ZLImageData getImageData(com.media.zlibrary.core.image.ZLImage)
+com.media.zlibrary.core.image.ZLImageManager: void startImageLoading(com.media.zlibrary.core.image.ZLLoadableImage,java.lang.Runnable)
+com.media.zlibrary.core.image.ZLImageManager: int uShort(byte[],int)
+com.media.zlibrary.core.image.ZLImageManager: int access$0(byte[],int)
+com.media.zlibrary.core.image.ZLImageManager$PalmImageHeader
+com.media.zlibrary.core.image.ZLImageManager$PalmImageHeader: int Width
+com.media.zlibrary.core.image.ZLImageManager$PalmImageHeader: int Height
+com.media.zlibrary.core.image.ZLImageManager$PalmImageHeader: int BytesPerRow
+com.media.zlibrary.core.image.ZLImageManager$PalmImageHeader: int Flags
+com.media.zlibrary.core.image.ZLImageManager$PalmImageHeader: byte BitsPerPixel
+com.media.zlibrary.core.image.ZLImageManager$PalmImageHeader: byte CompressionType
+com.media.zlibrary.core.image.ZLImageManager$PalmImageHeader: ZLImageManager$PalmImageHeader(byte[])
+com.media.zlibrary.core.image.ZLImageProxy
+com.media.zlibrary.core.image.ZLImageProxy: com.media.zlibrary.core.image.ZLSingleImage myImage
+com.media.zlibrary.core.image.ZLImageProxy: ZLImageProxy(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.image.ZLImageProxy: ZLImageProxy()
+com.media.zlibrary.core.image.ZLImageProxy: com.media.zlibrary.core.image.ZLSingleImage getRealImage()
+com.media.zlibrary.core.image.ZLImageProxy: java.lang.String getURI()
+com.media.zlibrary.core.image.ZLImageProxy: java.io.InputStream inputStream()
+com.media.zlibrary.core.image.ZLImageProxy: void synchronize()
+com.media.zlibrary.core.image.ZLImageProxy: void synchronizeFast()
+com.media.zlibrary.core.image.ZLLoadableImage
+com.media.zlibrary.core.image.ZLLoadableImage: boolean myIsSynchronized
+com.media.zlibrary.core.image.ZLLoadableImage: ZLLoadableImage(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.image.ZLLoadableImage: boolean isSynchronized()
+com.media.zlibrary.core.image.ZLLoadableImage: void setSynchronized()
+com.media.zlibrary.core.image.ZLLoadableImage: void startSynchronization(java.lang.Runnable)
+com.media.zlibrary.core.image.ZLLoadableImage: int sourceType()
+com.media.zlibrary.core.image.ZLLoadableImage: void synchronize()
+com.media.zlibrary.core.image.ZLLoadableImage: void synchronizeFast()
+com.media.zlibrary.core.image.ZLLoadableImage: java.lang.String getId()
+com.media.zlibrary.core.image.ZLLoadableImage$SourceType
+com.media.zlibrary.core.image.ZLLoadableImage$SourceType: int DISK
+com.media.zlibrary.core.image.ZLLoadableImage$SourceType: int NETWORK
+com.media.zlibrary.core.image.ZLSingleImage
+com.media.zlibrary.core.image.ZLSingleImage: com.media.zlibrary.core.util.MimeType myMimeType
+com.media.zlibrary.core.image.ZLSingleImage: ZLSingleImage(com.media.zlibrary.core.util.MimeType)
+com.media.zlibrary.core.image.ZLSingleImage: java.io.InputStream inputStream()
+com.media.zlibrary.core.image.ZLSingleImage: com.media.zlibrary.core.util.MimeType mimeType()
+com.media.zlibrary.core.language.Language$Order: com.media.zlibrary.core.language.Language$Order[] values()
+com.media.zlibrary.core.language.Language$Order: com.media.zlibrary.core.language.Language$Order valueOf(java.lang.String)
+com.media.zlibrary.core.library.ZLibrary
+com.media.zlibrary.core.library.ZLibrary: com.media.zlibrary.core.library.ZLibrary ourImplementation
+com.media.zlibrary.core.library.ZLibrary: java.lang.String SCREEN_ORIENTATION_SYSTEM
+com.media.zlibrary.core.library.ZLibrary: java.lang.String SCREEN_ORIENTATION_SENSOR
+com.media.zlibrary.core.library.ZLibrary: java.lang.String SCREEN_ORIENTATION_PORTRAIT
+com.media.zlibrary.core.library.ZLibrary: java.lang.String SCREEN_ORIENTATION_LANDSCAPE
+com.media.zlibrary.core.library.ZLibrary: java.lang.String SCREEN_ORIENTATION_REVERSE_PORTRAIT
+com.media.zlibrary.core.library.ZLibrary: java.lang.String SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+com.media.zlibrary.core.library.ZLibrary: com.media.zlibrary.core.library.ZLibrary Instance()
+com.media.zlibrary.core.library.ZLibrary: com.media.zlibrary.core.options.ZLStringOption getOrientationOption()
+com.media.zlibrary.core.library.ZLibrary: ZLibrary()
+com.media.zlibrary.core.library.ZLibrary: com.media.zlibrary.core.filesystem.ZLResourceFile createResourceFile(java.lang.String)
+com.media.zlibrary.core.library.ZLibrary: com.media.zlibrary.core.filesystem.ZLResourceFile createResourceFile(com.media.zlibrary.core.filesystem.ZLResourceFile,java.lang.String)
+com.media.zlibrary.core.library.ZLibrary: java.lang.String getVersionName()
+com.media.zlibrary.core.library.ZLibrary: java.lang.String getFullVersionName()
+com.media.zlibrary.core.library.ZLibrary: java.lang.String getCurrentTimeString()
+com.media.zlibrary.core.library.ZLibrary: void setScreenBrightness(int)
+com.media.zlibrary.core.library.ZLibrary: int getScreenBrightness()
+com.media.zlibrary.core.library.ZLibrary: int getDisplayDPI()
+com.media.zlibrary.core.library.ZLibrary: int getPixelWidth()
+com.media.zlibrary.core.library.ZLibrary: int getPixelHeight()
+com.media.zlibrary.core.library.ZLibrary: java.util.List defaultLanguageCodes()
+com.media.zlibrary.core.library.ZLibrary: boolean supportsAllOrientations()
+com.media.zlibrary.core.library.ZLibrary: java.lang.String[] allOrientations()
+com.media.zlibrary.core.money.MoneyException: long serialVersionUID
+com.media.zlibrary.core.network.ZLNetworkException: long serialVersionUID
+com.media.zlibrary.core.tree.ZLTree: int mySize
+com.media.zlibrary.core.tree.ZLTree: com.media.zlibrary.core.tree.ZLTree Parent
+com.media.zlibrary.core.tree.ZLTree: int Level
+com.media.zlibrary.core.tree.ZLTree: java.util.List mySubTrees
+com.media.zlibrary.core.tree.ZLTree: ZLTree()
+com.media.zlibrary.core.tree.ZLTree: ZLTree(com.media.zlibrary.core.tree.ZLTree)
+com.media.zlibrary.core.tree.ZLTree: ZLTree(com.media.zlibrary.core.tree.ZLTree,int)
+com.media.zlibrary.core.tree.ZLTree: int getSize()
+com.media.zlibrary.core.tree.ZLTree: boolean hasChildren()
+com.media.zlibrary.core.tree.ZLTree: java.util.List subTrees()
+com.media.zlibrary.core.tree.ZLTree: com.media.zlibrary.core.tree.ZLTree getTreeByParagraphNumber(int)
+com.media.zlibrary.core.tree.ZLTree: void addSubTree(com.media.zlibrary.core.tree.ZLTree,int)
+com.media.zlibrary.core.tree.ZLTree: void removeSelf()
+com.media.zlibrary.core.tree.ZLTree: void clear()
+com.media.zlibrary.core.tree.ZLTree: com.media.zlibrary.core.tree.ZLTree$TreeIterator iterator()
+com.media.zlibrary.core.tree.ZLTree: java.lang.Iterable allSubTrees(int)
+com.media.zlibrary.core.tree.ZLTree: java.util.Iterator iterator()
+com.media.zlibrary.core.tree.ZLTree: java.util.List access$1(com.media.zlibrary.core.tree.ZLTree)
+com.media.zlibrary.core.util.ZLBoolean3: com.media.zlibrary.core.util.ZLBoolean3[] values()
+com.media.zlibrary.core.util.ZLBoolean3: com.media.zlibrary.core.util.ZLBoolean3 valueOf(java.lang.String)
+com.media.zlibrary.core.view.ZLPaintContext$ScalingType: com.media.zlibrary.core.view.ZLPaintContext$ScalingType[] values()
+com.media.zlibrary.core.view.ZLPaintContext$ScalingType: com.media.zlibrary.core.view.ZLPaintContext$ScalingType valueOf(java.lang.String)
+com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode: com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode[] values()
+com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode: com.media.zlibrary.core.view.ZLPaintContext$WallpaperMode valueOf(java.lang.String)
+com.media.zlibrary.core.view.ZLView$Animation: com.media.zlibrary.core.view.ZLView$Animation[] values()
+com.media.zlibrary.core.view.ZLView$Animation: com.media.zlibrary.core.view.ZLView$Animation valueOf(java.lang.String)
+com.media.zlibrary.core.view.ZLView$Direction: com.media.zlibrary.core.view.ZLView$Direction[] values()
+com.media.zlibrary.core.view.ZLView$Direction: com.media.zlibrary.core.view.ZLView$Direction valueOf(java.lang.String)
+com.media.zlibrary.core.view.ZLView$PageIndex: com.media.zlibrary.core.view.ZLView$PageIndex[] values()
+com.media.zlibrary.core.view.ZLView$PageIndex: com.media.zlibrary.core.view.ZLView$PageIndex valueOf(java.lang.String)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: java.util.Map myNamespaceMap
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: ZLXMLReaderAdapter()
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: boolean readQuietly(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: boolean readQuietly(java.lang.String)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void read(com.media.zlibrary.core.filesystem.ZLFile)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void read(java.io.InputStream)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void read(java.lang.String)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void read(java.io.Reader)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: boolean dontCacheAttributeValues()
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: boolean startElementHandler(java.lang.String,com.media.zlibrary.core.xml.ZLStringMap)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: boolean endElementHandler(java.lang.String)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void characterDataHandler(char[],int,int)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void characterDataHandlerFinal(char[],int,int)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void startDocumentHandler()
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void endDocumentHandler()
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: boolean processNamespaces()
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void namespaceMapChangedHandler(java.util.Map)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: boolean testTag(java.lang.String,java.lang.String,java.lang.String)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: java.lang.String getAttributeValue(com.media.zlibrary.core.xml.ZLStringMap,java.lang.String,java.lang.String)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: java.lang.String getAttributeValue(com.media.zlibrary.core.xml.ZLStringMap,com.media.zlibrary.core.xml.ZLXMLReaderAdapter$Predicate,java.lang.String)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: void collectExternalEntities(java.util.HashMap)
+com.media.zlibrary.core.xml.ZLXMLReaderAdapter: java.util.List externalDTDs()
+com.media.zlibrary.text.model.CachedCharStorage
+com.media.zlibrary.text.model.CachedCharStorage: int myBlockSize
+com.media.zlibrary.text.model.CachedCharStorage: CachedCharStorage(int,java.lang.String,java.lang.String)
+com.media.zlibrary.text.model.CachedCharStorage: char[] createNewBlock(int)
+com.media.zlibrary.text.model.CachedCharStorage: void freezeLastBlock()
+com.media.zlibrary.text.model.CachedCharStorage: char[] block(int)
+com.media.zlibrary.text.model.CachedCharStorage: int size()
+com.media.zlibrary.text.model.CachedCharStorageBase
+com.media.zlibrary.text.model.CachedCharStorageBase: java.util.ArrayList myArray
+com.media.zlibrary.text.model.CachedCharStorageBase: java.lang.String myDirectoryName
+com.media.zlibrary.text.model.CachedCharStorageBase: java.lang.String myFileExtension
+com.media.zlibrary.text.model.CachedCharStorageBase: CachedCharStorageBase(java.lang.String,java.lang.String)
+com.media.zlibrary.text.model.CachedCharStorageBase: java.lang.String fileName(int)
+com.media.zlibrary.text.model.CachedCharStorageBase: int size()
+com.media.zlibrary.text.model.CachedCharStorageBase: char[] block(int)
+com.media.zlibrary.text.model.CachedCharStorageException
+com.media.zlibrary.text.model.CachedCharStorageException: long serialVersionUID
+com.media.zlibrary.text.model.CachedCharStorageException: CachedCharStorageException(java.lang.String)
+com.media.zlibrary.text.model.CachedCharStorageRO
+com.media.zlibrary.text.model.CachedCharStorageRO: CachedCharStorageRO(java.lang.String,java.lang.String,int)
+com.media.zlibrary.text.model.CachedCharStorageRO: char[] createNewBlock(int)
+com.media.zlibrary.text.model.CachedCharStorageRO: void freezeLastBlock()
+com.media.zlibrary.text.model.CachedCharStorageRO: char[] block(int)
+com.media.zlibrary.text.model.CachedCharStorageRO: int size()
+com.media.zlibrary.text.model.CharStorage
+com.media.zlibrary.text.model.CharStorage: int size()
+com.media.zlibrary.text.model.CharStorage: char[] block(int)
+com.media.zlibrary.text.model.CharStorage: char[] createNewBlock(int)
+com.media.zlibrary.text.model.CharStorage: void freezeLastBlock()
+com.media.zlibrary.text.model.SimpleCharStorage
+com.media.zlibrary.text.model.SimpleCharStorage: int myBlockSize
+com.media.zlibrary.text.model.SimpleCharStorage: java.util.ArrayList myArray
+com.media.zlibrary.text.model.SimpleCharStorage: SimpleCharStorage(int)
+com.media.zlibrary.text.model.SimpleCharStorage: int size()
+com.media.zlibrary.text.model.SimpleCharStorage: char[] block(int)
+com.media.zlibrary.text.model.SimpleCharStorage: char[] createNewBlock(int)
+com.media.zlibrary.text.model.SimpleCharStorage: void freezeLastBlock()
+com.media.zlibrary.text.model.SimpleCharStorage: void clear()
+com.media.zlibrary.text.model.ZLImageEntry
+com.media.zlibrary.text.model.ZLImageEntry: java.util.Map myImageMap
+com.media.zlibrary.text.model.ZLImageEntry: java.lang.String Id
+com.media.zlibrary.text.model.ZLImageEntry: short VOffset
+com.media.zlibrary.text.model.ZLImageEntry: boolean IsCover
+com.media.zlibrary.text.model.ZLImageEntry: ZLImageEntry(java.util.Map,java.lang.String,short,boolean)
+com.media.zlibrary.text.model.ZLImageEntry: com.media.zlibrary.core.image.ZLImage getImage()
+com.media.zlibrary.text.model.ZLTextAlignmentType
+com.media.zlibrary.text.model.ZLTextAlignmentType: byte ALIGN_UNDEFINED
+com.media.zlibrary.text.model.ZLTextAlignmentType: byte ALIGN_LEFT
+com.media.zlibrary.text.model.ZLTextAlignmentType: byte ALIGN_RIGHT
+com.media.zlibrary.text.model.ZLTextAlignmentType: byte ALIGN_CENTER
+com.media.zlibrary.text.model.ZLTextAlignmentType: byte ALIGN_JUSTIFY
+com.media.zlibrary.text.model.ZLTextAlignmentType: byte ALIGN_LINESTART
+com.media.zlibrary.text.model.ZLTextCSSStyleEntry
+com.media.zlibrary.text.model.ZLTextCSSStyleEntry: ZLTextCSSStyleEntry()
+com.media.zlibrary.text.model.ZLTextMark
+com.media.zlibrary.text.model.ZLTextMark: int ParagraphIndex
+com.media.zlibrary.text.model.ZLTextMark: int Offset
+com.media.zlibrary.text.model.ZLTextMark: int Length
+com.media.zlibrary.text.model.ZLTextMark: ZLTextMark(int,int,int)
+com.media.zlibrary.text.model.ZLTextMark: ZLTextMark(com.media.zlibrary.text.model.ZLTextMark)
+com.media.zlibrary.text.model.ZLTextMark: int compareTo(com.media.zlibrary.text.model.ZLTextMark)
+com.media.zlibrary.text.model.ZLTextMark: java.lang.String toString()
+com.media.zlibrary.text.model.ZLTextMark: int compareTo(java.lang.Object)
+com.media.zlibrary.text.model.ZLTextMetrics
+com.media.zlibrary.text.model.ZLTextMetrics: int DPI
+com.media.zlibrary.text.model.ZLTextMetrics: int DefaultFontSize
+com.media.zlibrary.text.model.ZLTextMetrics: int FontSize
+com.media.zlibrary.text.model.ZLTextMetrics: int FontXHeight
+com.media.zlibrary.text.model.ZLTextMetrics: int FullWidth
+com.media.zlibrary.text.model.ZLTextMetrics: int FullHeight
+com.media.zlibrary.text.model.ZLTextMetrics: ZLTextMetrics(int,int,int,int,int,int)
+com.media.zlibrary.text.model.ZLTextMetrics: boolean equals(java.lang.Object)
+com.media.zlibrary.text.model.ZLTextMetrics: int hashCode()
+com.media.zlibrary.text.model.ZLTextModel
+com.media.zlibrary.text.model.ZLTextModel: java.lang.String getId()
+com.media.zlibrary.text.model.ZLTextModel: java.lang.String getLanguage()
+com.media.zlibrary.text.model.ZLTextModel: int getParagraphsNumber()
+com.media.zlibrary.text.model.ZLTextModel: com.media.zlibrary.text.model.ZLTextParagraph getParagraph(int)
+com.media.zlibrary.text.model.ZLTextModel: void removeAllMarks()
+com.media.zlibrary.text.model.ZLTextModel: com.media.zlibrary.text.model.ZLTextMark getFirstMark()
+com.media.zlibrary.text.model.ZLTextModel: com.media.zlibrary.text.model.ZLTextMark getLastMark()
+com.media.zlibrary.text.model.ZLTextModel: com.media.zlibrary.text.model.ZLTextMark getNextMark(com.media.zlibrary.text.model.ZLTextMark)
+com.media.zlibrary.text.model.ZLTextModel: com.media.zlibrary.text.model.ZLTextMark getPreviousMark(com.media.zlibrary.text.model.ZLTextMark)
+com.media.zlibrary.text.model.ZLTextModel: java.util.List getMarks()
+com.media.zlibrary.text.model.ZLTextModel: int getTextLength(int)
+com.media.zlibrary.text.model.ZLTextModel: int findParagraphByTextLength(int)
+com.media.zlibrary.text.model.ZLTextModel: int search(java.lang.String,int,int,boolean)
+com.media.zlibrary.text.model.ZLTextNativeModel
+com.media.zlibrary.text.model.ZLTextNativeModel: ZLTextNativeModel(java.lang.String,java.lang.String,int,int[],int[],int[],int[],byte[],java.lang.String,java.lang.String,int,java.util.Map)
+com.media.zlibrary.text.model.ZLTextOtherStyleEntry
+com.media.zlibrary.text.model.ZLTextOtherStyleEntry: ZLTextOtherStyleEntry()
+com.media.zlibrary.text.model.ZLTextParagraph
+com.media.zlibrary.text.model.ZLTextParagraph: com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator iterator()
+com.media.zlibrary.text.model.ZLTextParagraph: byte getKind()
+com.media.zlibrary.text.model.ZLTextParagraph$Entry
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte TEXT
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte IMAGE
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte CONTROL
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte HYPERLINK_CONTROL
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte STYLE_CSS
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte STYLE_OTHER
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte STYLE_CLOSE
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte FIXED_HSPACE
+com.media.zlibrary.text.model.ZLTextParagraph$Entry: byte RESET_BIDI
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: byte getType()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: char[] getTextData()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: int getTextOffset()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: int getTextLength()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: byte getControlKind()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: boolean getControlIsStart()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: byte getHyperlinkType()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: java.lang.String getHyperlinkId()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: com.media.zlibrary.text.model.ZLImageEntry getImageEntry()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: com.media.zlibrary.text.model.ZLTextStyleEntry getStyleEntry()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: short getFixedHSpaceLength()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: boolean hasNext()
+com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator: void next()
+com.media.zlibrary.text.model.ZLTextParagraph$Kind
+com.media.zlibrary.text.model.ZLTextParagraph$Kind: byte TEXT_PARAGRAPH
+com.media.zlibrary.text.model.ZLTextParagraph$Kind: byte EMPTY_LINE_PARAGRAPH
+com.media.zlibrary.text.model.ZLTextParagraph$Kind: byte BEFORE_SKIP_PARAGRAPH
+com.media.zlibrary.text.model.ZLTextParagraph$Kind: byte AFTER_SKIP_PARAGRAPH
+com.media.zlibrary.text.model.ZLTextParagraph$Kind: byte END_OF_SECTION_PARAGRAPH
+com.media.zlibrary.text.model.ZLTextParagraph$Kind: byte END_OF_TEXT_PARAGRAPH
+com.media.zlibrary.text.model.ZLTextParagraphImpl
+com.media.zlibrary.text.model.ZLTextParagraphImpl: com.media.zlibrary.text.model.ZLTextPlainModel myModel
+com.media.zlibrary.text.model.ZLTextParagraphImpl: int myIndex
+com.media.zlibrary.text.model.ZLTextParagraphImpl: ZLTextParagraphImpl(com.media.zlibrary.text.model.ZLTextPlainModel,int)
+com.media.zlibrary.text.model.ZLTextParagraphImpl: com.media.zlibrary.text.model.ZLTextParagraph$EntryIterator iterator()
+com.media.zlibrary.text.model.ZLTextParagraphImpl: byte getKind()
+com.media.zlibrary.text.model.ZLTextPlainModel
+com.media.zlibrary.text.model.ZLTextPlainModel: java.lang.String myId
+com.media.zlibrary.text.model.ZLTextPlainModel: java.lang.String myLanguage
+com.media.zlibrary.text.model.ZLTextPlainModel: int[] myStartEntryIndices
+com.media.zlibrary.text.model.ZLTextPlainModel: int[] myStartEntryOffsets
+com.media.zlibrary.text.model.ZLTextPlainModel: int[] myParagraphLengths
+com.media.zlibrary.text.model.ZLTextPlainModel: int[] myTextSizes
+com.media.zlibrary.text.model.ZLTextPlainModel: byte[] myParagraphKinds
+com.media.zlibrary.text.model.ZLTextPlainModel: int myParagraphsNumber
+com.media.zlibrary.text.model.ZLTextPlainModel: com.media.zlibrary.text.model.CharStorage myStorage
+com.media.zlibrary.text.model.ZLTextPlainModel: java.util.Map myImageMap
+com.media.zlibrary.text.model.ZLTextPlainModel: java.util.ArrayList myMarks
+com.media.zlibrary.text.model.ZLTextPlainModel: ZLTextPlainModel(java.lang.String,java.lang.String,int[],int[],int[],int[],byte[],com.media.zlibrary.text.model.CharStorage,java.util.Map)
+com.media.zlibrary.text.model.ZLTextPlainModel: java.lang.String getId()
+com.media.zlibrary.text.model.ZLTextPlainModel: java.lang.String getLanguage()
+com.media.zlibrary.text.model.ZLTextPlainModel: com.media.zlibrary.text.model.ZLTextMark getFirstMark()
+com.media.zlibrary.text.model.ZLTextPlainModel: com.media.zlibrary.text.model.ZLTextMark getLastMark()
+com.media.zlibrary.text.model.ZLTextPlainModel: com.media.zlibrary.text.model.ZLTextMark getNextMark(com.media.zlibrary.text.model.ZLTextMark)
+com.media.zlibrary.text.model.ZLTextPlainModel: com.media.zlibrary.text.model.ZLTextMark getPreviousMark(com.media.zlibrary.text.model.ZLTextMark)
+com.media.zlibrary.text.model.ZLTextPlainModel: int search(java.lang.String,int,int,boolean)
+com.media.zlibrary.text.model.ZLTextPlainModel: java.util.List getMarks()
+com.media.zlibrary.text.model.ZLTextPlainModel: void removeAllMarks()
+com.media.zlibrary.text.model.ZLTextPlainModel: int getParagraphsNumber()
+com.media.zlibrary.text.model.ZLTextPlainModel: com.media.zlibrary.text.model.ZLTextParagraph getParagraph(int)
+com.media.zlibrary.text.model.ZLTextPlainModel: int getTextLength(int)
+com.media.zlibrary.text.model.ZLTextPlainModel: int binarySearch(int[],int,int)
+com.media.zlibrary.text.model.ZLTextPlainModel: int findParagraphByTextLength(int)
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: int myCounter
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: int myLength
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: byte myType
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: int myDataIndex
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: int myDataOffset
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: char[] myTextData
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: int myTextOffset
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: int myTextLength
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: byte myControlKind
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: boolean myControlIsStart
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: byte myHyperlinkType
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: java.lang.String myHyperlinkId
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: com.media.zlibrary.text.model.ZLImageEntry myImageEntry
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: com.media.zlibrary.text.model.ZLTextStyleEntry myStyleEntry
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: short myFixedHSpaceLength
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: com.media.zlibrary.text.model.ZLTextPlainModel this$0
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: ZLTextPlainModel$EntryIteratorImpl(com.media.zlibrary.text.model.ZLTextPlainModel,int)
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: void reset(int)
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: byte getType()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: char[] getTextData()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: int getTextOffset()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: int getTextLength()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: byte getControlKind()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: boolean getControlIsStart()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: byte getHyperlinkType()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: java.lang.String getHyperlinkId()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: com.media.zlibrary.text.model.ZLImageEntry getImageEntry()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: com.media.zlibrary.text.model.ZLTextStyleEntry getStyleEntry()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: short getFixedHSpaceLength()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: boolean hasNext()
+com.media.zlibrary.text.model.ZLTextPlainModel$EntryIteratorImpl: void next()
+com.media.zlibrary.text.model.ZLTextSpecialParagraphImpl
+com.media.zlibrary.text.model.ZLTextSpecialParagraphImpl: byte myKind
+com.media.zlibrary.text.model.ZLTextSpecialParagraphImpl: ZLTextSpecialParagraphImpl(byte,com.media.zlibrary.text.model.ZLTextPlainModel,int)
+com.media.zlibrary.text.model.ZLTextSpecialParagraphImpl: byte getKind()
+com.media.zlibrary.text.model.ZLTextStyleEntry
+com.media.zlibrary.text.model.ZLTextStyleEntry: short myFeatureMask
+com.media.zlibrary.text.model.ZLTextStyleEntry: com.media.zlibrary.text.model.ZLTextStyleEntry$Length[] myLengths
+com.media.zlibrary.text.model.ZLTextStyleEntry: byte myAlignmentType
+com.media.zlibrary.text.model.ZLTextStyleEntry: java.lang.String myFontFamily
+com.media.zlibrary.text.model.ZLTextStyleEntry: byte mySupportedFontModifiers
+com.media.zlibrary.text.model.ZLTextStyleEntry: byte myFontModifiers
+com.media.zlibrary.text.model.ZLTextStyleEntry: boolean isFeatureSupported(short,int)
+com.media.zlibrary.text.model.ZLTextStyleEntry: ZLTextStyleEntry()
+com.media.zlibrary.text.model.ZLTextStyleEntry: boolean isFeatureSupported(int)
+com.media.zlibrary.text.model.ZLTextStyleEntry: void setLength(int,short,byte)
+com.media.zlibrary.text.model.ZLTextStyleEntry: int fullSize(com.media.zlibrary.text.model.ZLTextMetrics,int)
+com.media.zlibrary.text.model.ZLTextStyleEntry: int getLength(int,com.media.zlibrary.text.model.ZLTextMetrics)
+com.media.zlibrary.text.model.ZLTextStyleEntry: void setAlignmentType(byte)
+com.media.zlibrary.text.model.ZLTextStyleEntry: byte getAlignmentType()
+com.media.zlibrary.text.model.ZLTextStyleEntry: void setFontFamily(java.lang.String)
+com.media.zlibrary.text.model.ZLTextStyleEntry: java.lang.String getFontFamily()
+com.media.zlibrary.text.model.ZLTextStyleEntry: void setFontModifiers(byte,byte)
+com.media.zlibrary.text.model.ZLTextStyleEntry: void setFontModifier(byte,boolean)
+com.media.zlibrary.text.model.ZLTextStyleEntry: com.media.zlibrary.core.util.ZLBoolean3 getFontModifier(byte)
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int LENGTH_LEFT_INDENT
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int LENGTH_RIGHT_INDENT
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int LENGTH_FIRST_LINE_INDENT_DELTA
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int LENGTH_SPACE_BEFORE
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int LENGTH_SPACE_AFTER
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int LENGTH_FONT_SIZE
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int NUMBER_OF_LENGTHS
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int ALIGNMENT_TYPE
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int FONT_FAMILY
+com.media.zlibrary.text.model.ZLTextStyleEntry$Feature: int FONT_STYLE_MODIFIER
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier: byte FONT_MODIFIER_BOLD
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier: byte FONT_MODIFIER_ITALIC
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier: byte FONT_MODIFIER_UNDERLINED
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier: byte FONT_MODIFIER_STRIKEDTHROUGH
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier: byte FONT_MODIFIER_SMALLCAPS
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier: byte FONT_MODIFIER_INHERIT
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier: byte FONT_MODIFIER_SMALLER
+com.media.zlibrary.text.model.ZLTextStyleEntry$FontModifier: byte FONT_MODIFIER_LARGER
+com.media.zlibrary.text.model.ZLTextStyleEntry$Length
+com.media.zlibrary.text.model.ZLTextStyleEntry$Length: short Size
+com.media.zlibrary.text.model.ZLTextStyleEntry$Length: byte Unit
+com.media.zlibrary.text.model.ZLTextStyleEntry$Length: com.media.zlibrary.text.model.ZLTextStyleEntry this$0
+com.media.zlibrary.text.model.ZLTextStyleEntry$Length: ZLTextStyleEntry$Length(com.media.zlibrary.text.model.ZLTextStyleEntry,short,byte)
+com.media.zlibrary.text.model.ZLTextStyleEntry$SizeUnit
+com.media.zlibrary.text.model.ZLTextStyleEntry$SizeUnit: byte PIXEL
+com.media.zlibrary.text.model.ZLTextStyleEntry$SizeUnit: byte POINT
+com.media.zlibrary.text.model.ZLTextStyleEntry$SizeUnit: byte EM_100
+com.media.zlibrary.text.model.ZLTextStyleEntry$SizeUnit: byte EX_100
+com.media.zlibrary.text.model.ZLTextStyleEntry$SizeUnit: byte PERCENT
+com.media.zlibrary.text.model.ZLTextWritableModel
+com.media.zlibrary.text.model.ZLTextWritableModel: void createParagraph(byte)
+com.media.zlibrary.text.model.ZLTextWritableModel: void addText(char[])
+com.media.zlibrary.text.model.ZLTextWritableModel: void addText(char[],int,int)
+com.media.zlibrary.text.model.ZLTextWritableModel: void addImage(java.lang.String,short,boolean)
+com.media.zlibrary.text.model.ZLTextWritableModel: void addControl(byte,boolean)
+com.media.zlibrary.text.model.ZLTextWritableModel: void addHyperlinkControl(byte,byte,java.lang.String)
+com.media.zlibrary.text.model.ZLTextWritableModel: void addStyleEntry(com.media.zlibrary.text.model.ZLTextStyleEntry)
+com.media.zlibrary.text.model.ZLTextWritableModel: void addFixedHSpace(short)
+com.media.zlibrary.text.model.ZLTextWritableModel: void addBidiReset()
+com.media.zlibrary.text.model.ZLTextWritableModel: void stopReading()
+com.media.zlibrary.text.model.ZLTextWritablePlainModel
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: char[] myCurrentDataBlock
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: int myBlockOffset
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: ZLTextWritablePlainModel(java.lang.String,java.lang.String,int,int,java.lang.String,java.lang.String,java.util.Map)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void extend()
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void createParagraph(byte)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: char[] getDataBlock(int)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void addText(char[])
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void addText(char[],int,int)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void addImage(java.lang.String,short,boolean)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void addControl(byte,boolean)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void addHyperlinkControl(byte,byte,java.lang.String)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void addStyleEntry(com.media.zlibrary.text.model.ZLTextStyleEntry)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void addFixedHSpace(short)
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void addBidiReset()
+com.media.zlibrary.text.model.ZLTextWritablePlainModel: void stopReading()
+com.media.zlibrary.text.view.ZLTextFixedPosition: int ParagraphIndex
+com.media.zlibrary.text.view.ZLTextFixedPosition: int ElementIndex
+com.media.zlibrary.text.view.ZLTextFixedPosition: int CharIndex
+com.media.zlibrary.text.view.ZLTextFixedPosition: ZLTextFixedPosition(int,int,int)
+com.media.zlibrary.text.view.ZLTextFixedPosition: ZLTextFixedPosition(com.media.zlibrary.text.view.ZLTextPosition)
+com.media.zlibrary.text.view.ZLTextFixedPosition: int getParagraphIndex()
+com.media.zlibrary.text.view.ZLTextFixedPosition: int getElementIndex()
+com.media.zlibrary.text.view.ZLTextFixedPosition: int getCharIndex()
+com.media.zlibrary.text.view.ZLTextPosition: ZLTextPosition()
+com.media.zlibrary.text.view.ZLTextPosition: int getParagraphIndex()
+com.media.zlibrary.text.view.ZLTextPosition: int getElementIndex()
+com.media.zlibrary.text.view.ZLTextPosition: int getCharIndex()
+com.media.zlibrary.text.view.ZLTextPosition: boolean samePositionAs(com.media.zlibrary.text.view.ZLTextPosition)
+com.media.zlibrary.text.view.ZLTextPosition: int compareTo(com.media.zlibrary.text.view.ZLTextPosition)
+com.media.zlibrary.text.view.ZLTextPosition: int hashCode()
+com.media.zlibrary.text.view.ZLTextPosition: boolean equals(java.lang.Object)
+com.media.zlibrary.text.view.ZLTextPosition: java.lang.String toString()
+com.media.zlibrary.text.view.ZLTextPosition: int compareTo(java.lang.Object)
+com.media.zlibrary.text.view.ZLTextSelectionCursor: com.media.zlibrary.text.view.ZLTextSelectionCursor[] values()
+com.media.zlibrary.text.view.ZLTextSelectionCursor: com.media.zlibrary.text.view.ZLTextSelectionCursor valueOf(java.lang.String)
+com.media.zlibrary.text.view.ZLTextViewBase$ImageFitting: com.media.zlibrary.text.view.ZLTextViewBase$ImageFitting[] values()
+com.media.zlibrary.text.view.ZLTextViewBase$ImageFitting: com.media.zlibrary.text.view.ZLTextViewBase$ImageFitting valueOf(java.lang.String)
+com.media.zlibrary.ui.android.error.BugReportActivity
+com.media.zlibrary.ui.android.library.ZLAndroidApplication
+com.media.zlibrary.ui.android.library.ZLAndroidApplication: ZLAndroidApplication()
+com.media.zlibrary.ui.android.view.AnimationProvider$Mode: com.media.zlibrary.ui.android.view.AnimationProvider$Mode[] values()
+com.media.zlibrary.ui.android.view.AnimationProvider$Mode: com.media.zlibrary.ui.android.view.AnimationProvider$Mode valueOf(java.lang.String)
+com.media.zlibrary.ui.android.view.BitmapManager$EdgePosition: com.media.zlibrary.ui.android.view.BitmapManager$EdgePosition[] values()
+com.media.zlibrary.ui.android.view.BitmapManager$EdgePosition: com.media.zlibrary.ui.android.view.BitmapManager$EdgePosition valueOf(java.lang.String)
+com.media.zlibrary.ui.android.view.ZLAndroidWidget
+com.media.zlibrary.ui.android.view.ZLAndroidWidget: ZLAndroidWidget(android.content.Context,android.util.AttributeSet,int)
+com.media.zlibrary.ui.android.view.ZLAndroidWidget: ZLAndroidWidget(android.content.Context,android.util.AttributeSet)
+com.media.zlibrary.ui.android.view.ZLAndroidWidget: ZLAndroidWidget(android.content.Context)
+org.amse.ys.zip.Decompressor
+org.amse.ys.zip.Decompressor: java.util.Queue ourDeflators
+org.amse.ys.zip.Decompressor: void <clinit>()
+org.amse.ys.zip.Decompressor: Decompressor(org.amse.ys.zip.MyBufferedInputStream,org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.Decompressor: int read(byte[],int,int)
+org.amse.ys.zip.Decompressor: int read()
+org.amse.ys.zip.Decompressor: Decompressor()
+org.amse.ys.zip.Decompressor: void storeDecompressor(org.amse.ys.zip.Decompressor)
+org.amse.ys.zip.Decompressor: org.amse.ys.zip.Decompressor init(org.amse.ys.zip.MyBufferedInputStream,org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.Decompressor: int available()
+org.amse.ys.zip.DeflatingDecompressor
+org.amse.ys.zip.DeflatingDecompressor: org.amse.ys.zip.MyBufferedInputStream myStream
+org.amse.ys.zip.DeflatingDecompressor: int myCompressedAvailable
+org.amse.ys.zip.DeflatingDecompressor: int myAvailable
+org.amse.ys.zip.DeflatingDecompressor: int IN_BUFFER_SIZE
+org.amse.ys.zip.DeflatingDecompressor: int OUT_BUFFER_SIZE
+org.amse.ys.zip.DeflatingDecompressor: byte[] myInBuffer
+org.amse.ys.zip.DeflatingDecompressor: int myInBufferOffset
+org.amse.ys.zip.DeflatingDecompressor: int myInBufferLength
+org.amse.ys.zip.DeflatingDecompressor: byte[] myOutBuffer
+org.amse.ys.zip.DeflatingDecompressor: int myOutBufferOffset
+org.amse.ys.zip.DeflatingDecompressor: int myOutBufferLength
+org.amse.ys.zip.DeflatingDecompressor: int myInflatorId
+org.amse.ys.zip.DeflatingDecompressor: void <clinit>()
+org.amse.ys.zip.DeflatingDecompressor: DeflatingDecompressor(org.amse.ys.zip.MyBufferedInputStream,org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.DeflatingDecompressor: void reset(org.amse.ys.zip.MyBufferedInputStream,org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.DeflatingDecompressor: int available()
+org.amse.ys.zip.DeflatingDecompressor: int read(byte[],int,int)
+org.amse.ys.zip.DeflatingDecompressor: int read()
+org.amse.ys.zip.DeflatingDecompressor: void fillOutBuffer()
+org.amse.ys.zip.DeflatingDecompressor: int startInflating()
+org.amse.ys.zip.DeflatingDecompressor: void endInflating(int)
+org.amse.ys.zip.DeflatingDecompressor: long inflate(int,byte[],int,int,byte[])
+org.amse.ys.zip.LocalFileHeader
+org.amse.ys.zip.LocalFileHeader: int FILE_HEADER_SIGNATURE
+org.amse.ys.zip.LocalFileHeader: int FOLDER_HEADER_SIGNATURE
+org.amse.ys.zip.LocalFileHeader: int END_OF_CENTRAL_DIRECTORY_SIGNATURE
+org.amse.ys.zip.LocalFileHeader: int DATA_DESCRIPTOR_SIGNATURE
+org.amse.ys.zip.LocalFileHeader: int Signature
+org.amse.ys.zip.LocalFileHeader: int Version
+org.amse.ys.zip.LocalFileHeader: int Flags
+org.amse.ys.zip.LocalFileHeader: int CompressionMethod
+org.amse.ys.zip.LocalFileHeader: int ModificationTime
+org.amse.ys.zip.LocalFileHeader: int ModificationDate
+org.amse.ys.zip.LocalFileHeader: int CRC32
+org.amse.ys.zip.LocalFileHeader: int CompressedSize
+org.amse.ys.zip.LocalFileHeader: int UncompressedSize
+org.amse.ys.zip.LocalFileHeader: int NameLength
+org.amse.ys.zip.LocalFileHeader: int ExtraLength
+org.amse.ys.zip.LocalFileHeader: java.lang.String FileName
+org.amse.ys.zip.LocalFileHeader: int DataOffset
+org.amse.ys.zip.LocalFileHeader: LocalFileHeader()
+org.amse.ys.zip.LocalFileHeader: void readFrom(org.amse.ys.zip.MyBufferedInputStream)
+org.amse.ys.zip.MyBufferedInputStream
+org.amse.ys.zip.MyBufferedInputStream: org.amse.ys.zip.ZipFile$InputStreamHolder myStreamHolder
+org.amse.ys.zip.MyBufferedInputStream: java.io.InputStream myFileInputStream
+org.amse.ys.zip.MyBufferedInputStream: byte[] myBuffer
+org.amse.ys.zip.MyBufferedInputStream: int myBytesReady
+org.amse.ys.zip.MyBufferedInputStream: int myPositionInBuffer
+org.amse.ys.zip.MyBufferedInputStream: int myCurrentPosition
+org.amse.ys.zip.MyBufferedInputStream: MyBufferedInputStream(org.amse.ys.zip.ZipFile$InputStreamHolder,int)
+org.amse.ys.zip.MyBufferedInputStream: MyBufferedInputStream(org.amse.ys.zip.ZipFile$InputStreamHolder)
+org.amse.ys.zip.MyBufferedInputStream: int available()
+org.amse.ys.zip.MyBufferedInputStream: int offset()
+org.amse.ys.zip.MyBufferedInputStream: int read(byte[],int,int)
+org.amse.ys.zip.MyBufferedInputStream: int read()
+org.amse.ys.zip.MyBufferedInputStream: int read2Bytes()
+org.amse.ys.zip.MyBufferedInputStream: int read4Bytes()
+org.amse.ys.zip.MyBufferedInputStream: java.lang.String readString(int)
+org.amse.ys.zip.MyBufferedInputStream: long skip(long)
+org.amse.ys.zip.MyBufferedInputStream: void backSkip(int)
+org.amse.ys.zip.MyBufferedInputStream: void setPosition(int)
+org.amse.ys.zip.MyBufferedInputStream: void close()
+org.amse.ys.zip.NoCompressionDecompressor
+org.amse.ys.zip.NoCompressionDecompressor: org.amse.ys.zip.LocalFileHeader myHeader
+org.amse.ys.zip.NoCompressionDecompressor: org.amse.ys.zip.MyBufferedInputStream myStream
+org.amse.ys.zip.NoCompressionDecompressor: int myCurrentPosition
+org.amse.ys.zip.NoCompressionDecompressor: NoCompressionDecompressor(org.amse.ys.zip.MyBufferedInputStream,org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.NoCompressionDecompressor: int read(byte[],int,int)
+org.amse.ys.zip.NoCompressionDecompressor: int read()
+org.amse.ys.zip.NoCompressionDecompressor: int available()
+org.amse.ys.zip.ZipException
+org.amse.ys.zip.ZipException: ZipException(java.lang.String)
+org.amse.ys.zip.ZipFile
+org.amse.ys.zip.ZipFile: org.amse.ys.zip.ZipFile$InputStreamHolder myStreamHolder
+org.amse.ys.zip.ZipFile: java.util.LinkedHashMap myFileHeaders
+org.amse.ys.zip.ZipFile: boolean myAllFilesAreRead
+org.amse.ys.zip.ZipFile: java.util.Queue myStoredStreams
+org.amse.ys.zip.ZipFile: ZipFile(java.lang.String)
+org.amse.ys.zip.ZipFile: ZipFile(org.amse.ys.zip.ZipFile$InputStreamHolder)
+org.amse.ys.zip.ZipFile: java.util.Collection headers()
+org.amse.ys.zip.ZipFile: boolean readFileHeader(org.amse.ys.zip.MyBufferedInputStream,java.lang.String)
+org.amse.ys.zip.ZipFile: void readAllHeaders()
+org.amse.ys.zip.ZipFile: void findAndReadDescriptor(org.amse.ys.zip.MyBufferedInputStream,org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.ZipFile: void storeBaseStream(org.amse.ys.zip.MyBufferedInputStream)
+org.amse.ys.zip.ZipFile: org.amse.ys.zip.MyBufferedInputStream getBaseStream()
+org.amse.ys.zip.ZipFile: org.amse.ys.zip.ZipInputStream createZipInputStream(org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.ZipFile: boolean entryExists(java.lang.String)
+org.amse.ys.zip.ZipFile: int getEntrySize(java.lang.String)
+org.amse.ys.zip.ZipFile: java.io.InputStream getInputStream(java.lang.String)
+org.amse.ys.zip.ZipFile: org.amse.ys.zip.LocalFileHeader getHeader(java.lang.String)
+org.amse.ys.zip.ZipFile$1
+org.amse.ys.zip.ZipFile$1: long serialVersionUID
+org.amse.ys.zip.ZipFile$1: org.amse.ys.zip.ZipFile this$0
+org.amse.ys.zip.ZipFile$1: ZipFile$1(org.amse.ys.zip.ZipFile)
+org.amse.ys.zip.ZipFile$1: org.amse.ys.zip.LocalFileHeader get(java.lang.Object)
+org.amse.ys.zip.ZipFile$1: org.amse.ys.zip.LocalFileHeader put(java.lang.String,org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.ZipFile$1: java.lang.Object get(java.lang.Object)
+org.amse.ys.zip.ZipFile$1: java.lang.Object put(java.lang.Object,java.lang.Object)
+org.amse.ys.zip.ZipFile$FileInputStreamHolder
+org.amse.ys.zip.ZipFile$FileInputStreamHolder: java.lang.String myFilePath
+org.amse.ys.zip.ZipFile$FileInputStreamHolder: ZipFile$FileInputStreamHolder(java.lang.String)
+org.amse.ys.zip.ZipFile$FileInputStreamHolder: java.io.InputStream getInputStream()
+org.amse.ys.zip.ZipFile$InputStreamHolder
+org.amse.ys.zip.ZipFile$InputStreamHolder: java.io.InputStream getInputStream()
+org.amse.ys.zip.ZipInputStream
+org.amse.ys.zip.ZipInputStream: org.amse.ys.zip.ZipFile myParent
+org.amse.ys.zip.ZipInputStream: org.amse.ys.zip.MyBufferedInputStream myBaseStream
+org.amse.ys.zip.ZipInputStream: org.amse.ys.zip.Decompressor myDecompressor
+org.amse.ys.zip.ZipInputStream: boolean myIsClosed
+org.amse.ys.zip.ZipInputStream: ZipInputStream(org.amse.ys.zip.ZipFile,org.amse.ys.zip.LocalFileHeader)
+org.amse.ys.zip.ZipInputStream: int available()
+org.amse.ys.zip.ZipInputStream: int read(byte[],int,int)
+org.amse.ys.zip.ZipInputStream: int read()
+org.amse.ys.zip.ZipInputStream: void close()
+org.amse.ys.zip.ZipInputStream: void finalize()
+org.vimgadgets.linebreak.LineBreaker
+org.vimgadgets.linebreak.LineBreaker: char MUSTBREAK
+org.vimgadgets.linebreak.LineBreaker: char ALLOWBREAK
+org.vimgadgets.linebreak.LineBreaker: char NOBREAK
+org.vimgadgets.linebreak.LineBreaker: char INSIDEACHAR
+org.vimgadgets.linebreak.LineBreaker: java.lang.String myLanguage
+org.vimgadgets.linebreak.LineBreaker: void <clinit>()
+org.vimgadgets.linebreak.LineBreaker: void init()
+org.vimgadgets.linebreak.LineBreaker: void setLineBreaksForCharArray(char[],int,int,java.lang.String,byte[])
+org.vimgadgets.linebreak.LineBreaker: void setLineBreaksForString(java.lang.String,java.lang.String,byte[])
+org.vimgadgets.linebreak.LineBreaker: LineBreaker(java.lang.String)
+org.vimgadgets.linebreak.LineBreaker: void setLineBreaks(char[],int,int,byte[])
+org.vimgadgets.linebreak.LineBreaker: void setLineBreaks(java.lang.String,byte[])
