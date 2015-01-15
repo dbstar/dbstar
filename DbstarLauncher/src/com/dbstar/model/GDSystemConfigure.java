@@ -124,7 +124,7 @@ public class GDSystemConfigure {
 		String disk = mDefaultStorageDisk;
 		
 		File file = new File(disk);
-		if (file.exists()) {
+		if (file.exists() && file.canWrite()) {
 			mStorageDir = disk;
 			mStorageDisk = disk;
 			LogUtil.d(TAG, "configureStorage(): disk[" + disk + "] is ready");

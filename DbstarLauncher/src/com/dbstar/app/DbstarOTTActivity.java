@@ -65,13 +65,16 @@ import com.dbstar.http.SimpleWorkPool.ConnectWork;
 import com.dbstar.http.SimpleWorkPool.ReadSDCardData;
 import com.dbstar.http.SimpleWorkPool.SimpleWorkPoolInstance;
 import com.dbstar.model.GDCommon;
+import com.dbstar.model.GDDataModel;
 import com.dbstar.model.GDDiskInfo;
+import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.model.GDDiskInfo.DiskInfo;
 import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.util.Constants;
 import com.dbstar.util.DbstarUtil;
 import com.dbstar.util.LogUtil;
+import com.dbstar.util.ToastUtil;
 import com.dbstar.util.upgrade.RebootUtils;
 
 public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationObserver{
@@ -195,6 +198,7 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 		imgStarTV.requestFocus();
 		populateData();
 		setEventListener();
+		
 		try {
 			String factoryToolsPath = "/system/app/CheckDeviceTool.apk";
 			File factoryFile = new File(factoryToolsPath);
@@ -288,46 +292,49 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				// 对话框提示内容：当前硬盘格式不可识别，是否格式化。这两个对话框（包括下面的那个）默认焦点都放在“否”上面
 				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), true, false);
 			}
-		} 
-		
-		if (fileCanWrite) {
-			// 如果硬盘可写，就去判断是否存在.hd_mark
-			final List<String> fileList = new ArrayList<String>();
-			File[] files =  file.listFiles(new FileFilter() {
-				
-				@Override
-				public boolean accept(File pathname) {
-					String fileName = pathname.getName();
-					LogUtil.d("DbstarOTTActivity", "fileName = " + fileName);
-					fileList.add(fileName);
-					if (fileName.equals(".hd_mark")) {
-						isConstainsMarkFile = true;
-						LogUtil.d("DbstarOTTActivity", "isConstainsMarkFile = " + isConstainsMarkFile);
-					}
-					return false;
-				}
-			});
 			
-			LogUtil.d("DbstarOTTActivity", "fileList.size() = " + fileList.size());
-			// 如果.hd_mark不存在 && 存在其他文件，就弹出对话框，提示：该盘将作为数据接收盘，是否格式化。
-			if (!isConstainsMarkFile && files != null && fileList.size() > 1) {
-				LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and exists other file!");
-				// 在可写情况下，对话框上要显示硬盘总容量，占用空间、剩余空间。
-				DiskInfo info = GDDiskInfo.getDiskInfo(defaultStorage, true);
-				long rawDiskSize = info.RawDiskSize;
-				String diskSize = info.DiskSize;
-				String diskUsed = info.DiskUsed;
-				String diskSpace = info.DiskSpace;
-				// 200 * 1000 * 1000 * 1000
-				if (rawDiskSize > 200000000000l) {					
-					showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
-							+ "\n硬盘总容量：" + diskSize
-							+ "\n占用空间：" + diskUsed
-							+ "\n剩余空间：" + diskSpace, true, false);
-				} else 
-					LogUtil.d("DbstarOTTActivity", "rawDiskSize = " + rawDiskSize);
+			if (fileCanWrite) {
+				// 如果硬盘可写，就去判断是否存在.hd_mark
+				final List<String> fileList = new ArrayList<String>();
+				File[] files =  file.listFiles(new FileFilter() {
+					
+					@Override
+					public boolean accept(File pathname) {
+						String fileName = pathname.getName();
+						LogUtil.d("DbstarOTTActivity", "fileName = " + fileName);
+						fileList.add(fileName);
+						if (fileName.equals(".hd_mark")) {
+							isConstainsMarkFile = true;
+							LogUtil.d("DbstarOTTActivity", "isConstainsMarkFile = " + isConstainsMarkFile);
+						}
+						return false;
+					}
+				});
+				
+				LogUtil.d("DbstarOTTActivity", "fileList.size() = " + fileList.size());
+				// 如果.hd_mark不存在 && 存在其他文件，就弹出对话框，提示：该盘将作为数据接收盘，是否格式化。
+				if (!isConstainsMarkFile && files != null && fileList.size() > 1) {
+					LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and exists other file!");
+					// 在可写情况下，对话框上要显示硬盘总容量，占用空间、剩余空间。
+					DiskInfo info = GDDiskInfo.getDiskInfo(defaultStorage, true);
+					long rawDiskSize = info.RawDiskSize;
+					String diskSize = info.DiskSize;
+					String diskUsed = info.DiskUsed;
+					String diskSpace = info.DiskSpace;
+					// 200 * 1000 * 1000 * 1000
+					if (rawDiskSize > 200000000000l) {					
+						showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
+								+ "\n硬盘总容量：" + diskSize
+								+ "\n占用空间：" + diskUsed
+								+ "\n剩余空间：" + diskSpace, true, false);
+					} else 
+						LogUtil.d("DbstarOTTActivity", "rawDiskSize = " + rawDiskSize);
+				}
+			} else {
+				LogUtil.d("DbstarOTTActivity", "disk is cannot write");
+				showIsFormatDialog(getResources().getString(R.string.external_storage_disk_cannotwrite), false, true);
 			}
-		}
+		} 
 	}
 	
 	@Override
@@ -1006,15 +1013,14 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
         dialog.setIcon(android.R.drawable.ic_dialog_info);  
         
         if (bool) {
-//        	dialog.setMessage(content);         	        	
-//        	dialog.setPositiveButton(getResources().getString(R.string.button_text_ok), new DialogInterface.OnClickListener() {
-//        		
-//        		@Override
-//        		public void onClick(DialogInterface dialog, int which) {        			
-//        			dialog.dismiss();
-//        			rebootSystem();
-//        		}
-//        	}).setCancelable(true);
+        	dialog.setMessage(content);         	        	
+        	dialog.setPositiveButton(getResources().getString(R.string.button_text_ok), new DialogInterface.OnClickListener() {
+        		
+        		@Override
+        		public void onClick(DialogInterface dialog, int which) {        			
+        			dialog.dismiss();
+        		}
+        	}).setCancelable(true);
         } else {
         	dialog.setMessage(content);         	
         	dialog.setPositiveButton(getResources().getString(R.string.button_text_ok), new DialogInterface.OnClickListener() {

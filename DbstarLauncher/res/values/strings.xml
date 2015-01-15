@@ -432,6 +432,7 @@
 	<string name="external_storage_mount_alert">已插入外部储存！是否打开文件管理器？</string>
 	<string name="external_storage_format_disk_alert">当前硬盘格式不可识别，点击“确定”按钮格式化硬盘，或断电检查硬盘后重启！</string>
 	<string name="external_storage_format_disk_alert_1">该盘将作为数据接收盘，是否格式化？</string>
+	<string name="external_storage_disk_cannotwrite">当前硬盘不可写！</string>
 	<string name="external_storage_alert_when_error">系统数据库错误！</string>
 	
 	<!-- OttLauncher -->
