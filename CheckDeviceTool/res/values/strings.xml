@@ -68,7 +68,7 @@
     <string name="alert_no">否</string>
     <string name="test_total">一共测试： </string>
     <string name="test_xiang">项</string>
-    <string name="test_test_all">整机测试</string>
+    <string name="test_test_all">出厂测试</string>
     <string name="test_sn_file_isOrNot_exits">请确保U盘中存在一个cytcmacnum.csv文件！确保正确后拔掉电源重启！</string>
     <string name="test_test_playvideo">老化测试</string>
     <string name="test_init_device">设备初始化中....</string>
