@@ -219,7 +219,7 @@ public class ChannelSelectorPage extends BaseFragment {
         if(satellite != null)
             satellites = satellite.split(SatelliteSetting.SEPARATOR);
         
-        if(satellites.length == SatelliteSetting.TOTAL_PARAMETERS_COUNT){
+        if(satellites != null && satellites.length == SatelliteSetting.TOTAL_PARAMETERS_COUNT){
             searchRate = satellites[SatelliteSetting.SERRCH_RATE];
             symbolRate = satellites[SatelliteSetting.SYMBOL_RATE];
             localFrequency = satellites[SatelliteSetting.LOCAL_FREQUENCY];

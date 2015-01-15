@@ -293,7 +293,8 @@
         android:background="@drawable/network_left_bg"
         android:orientation="vertical"
         android:paddingLeft="40dp"
-        android:paddingRight="40dp" >
+        android:paddingRight="40dp"
+        android:visibility="gone" >
 
         <TextView
             android:layout_width="wrap_content"
