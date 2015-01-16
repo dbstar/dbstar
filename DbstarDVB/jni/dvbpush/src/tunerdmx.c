@@ -177,32 +177,32 @@ static int tuner_settings_parse(char* args, TUNER_SETTINGS *tuner_s)
 		DEBUG("tuner settings: %s\n",args);
 	
 	char *buf = args;
-	char *p = strchr(buf,'\t');
+	char *p = strchr(buf,'&');
 	
 	if(p){
 		*p = '\0';
 		tuner_s->frequency = atoi(buf);
 		
 		buf = p+1;
-		p = strchr(buf,'\t');
+		p = strchr(buf,'&');
 		if(p){
 			*p = '\0';
 			tuner_s->symbolRate = atoi(buf);
 			
 			buf = p+1;
-			p = strchr(buf,'\t');
+			p = strchr(buf,'&');
 			if(p){
 				*p = '\0';
 				tuner_s->local_oscillator = atoi(buf);
 				
 				buf = p+1;
-				p = strchr(buf,'\t');
+				p = strchr(buf,'&');
 				if(p){
 					*p = '\0';
 					tuner_s->polarization_type = atoi(buf);
 					
 					buf = p+1;
-					p = strchr(buf,'\t');
+					p = strchr(buf,'&');
 					if(p)
 						*p = '\0';
 						
@@ -306,30 +306,25 @@ int tuner_init()
 		char sqlite_cmd[512];
 		char tuner_args[512];
 		TUNER_SETTINGS tuner_s;
+		int (*sqlite_cb)(char **, int, int, void *,unsigned int) = str_read_cb;
 		
 		memset(tuner_args,0,sizeof(tuner_args));
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q'",GLB_NAME_TUNERARGS);
 		
-		if(0==str_sqlite_read(tuner_args,sizeof(tuner_args),sqlite_cmd)){
-			DEBUG("get user tuner args: %s\n",tuner_args);
+		int ret_sqlexec = sqlite_read_db(DB_MAIN_URI, sqlite_cmd, tuner_args, sizeof(tuner_args), sqlite_cb);
+		if(ret_sqlexec<=0){
+			snprintf(tuner_args, sizeof(tuner_args), "%s", TUNERARGS_DFT);
+			DEBUG("read no tuner_args from db, set default as %s\n", tuner_args);
 		}
 		else{
-			DEBUG("get user tuner args failed\n");
-			memset(tuner_args,0,sizeof(tuner_args));
-			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT Value FROM Global WHERE Name='%q'",GLB_NAME_TUNERARGS_DFT);
-			if(0==str_sqlite_read(tuner_args,sizeof(tuner_args),sqlite_cmd)){
-				DEBUG("get default tuner args: %s\n",tuner_args);
-			}
-			else{
-				DEBUG("get default tuner args failed, use default manually\n");
-				snprintf(tuner_args,sizeof(tuner_args),"%s",TUNERARGS_DFT);
-			}
+			DEBUG("read tuner_args: %s\n", tuner_args);
 		}
 		
     	if(0==tuner_settings_parse(tuner_args,&tuner_s)){
 			snprintf(last_tuner_args,sizeof(last_tuner_args),"%s",tuner_args);
 		}
     	else{
+    		DEBUG("use default tuner settings: 12620,43200,11300,0,0\n");
     		tuner_s.frequency = 12620;
     		tuner_s.symbolRate = 43200;
     		tuner_s.local_oscillator = 11300;

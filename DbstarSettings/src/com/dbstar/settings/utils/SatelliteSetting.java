@@ -35,7 +35,7 @@ public class SatelliteSetting {
     
     public static final String SATELLITE= "TunerArgs";
     public static final String SATELLITE_DEFAULT = "TunerArgsDefault";
-    public static final String SEPARATOR = "\t";
+    public static final String SEPARATOR = "&";
     
     
     public static final int SERRCH_RATE = 0;

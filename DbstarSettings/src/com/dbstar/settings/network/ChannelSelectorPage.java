@@ -215,6 +215,7 @@ public class ChannelSelectorPage extends BaseFragment {
         if(satellite == null || satellite.trim().isEmpty()){
             satellite = mSatelliteSetting.queryValue(SatelliteSetting.SATELLITE_DEFAULT);
         }
+        Log.d(TAG, " satellite = " + satellite);
         String [] satellites = null;
         if(satellite != null)
             satellites = satellite.split(SatelliteSetting.SEPARATOR);
@@ -226,6 +227,9 @@ public class ChannelSelectorPage extends BaseFragment {
             polarization = Utils.getInt(satellites[SatelliteSetting.POLARIZATION_MODE]);
             modulation = Utils.getInt(satellites[SatelliteSetting.MODULATION_MODE]);
         }
+        
+        Log.d(TAG, " searchRate = " + searchRate);
+        Log.d(TAG, " symbolRate = " + symbolRate);
         mSearchRate.setText(searchRate);
         mSymbolRate.setText(symbolRate);
         mLoaclFrequencyRate.setText(localFrequency);

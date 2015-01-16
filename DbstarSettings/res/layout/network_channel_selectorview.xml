@@ -51,6 +51,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:textColor="#000000"
+                        android:inputType="number"
                         android:background="@drawable/textview_bgselector"
                         android:textSize="@dimen/gl_text_size_22sp" />
                     
@@ -80,6 +81,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:textColor="#000000"
+                        android:inputType="number"
                         android:background="@drawable/textview_bgselector"
                         android:textSize="@dimen/gl_text_size_22sp" />
                     <TextView
@@ -108,6 +110,7 @@
                         android:layout_width="150dp"
                         android:layout_height="wrap_content"
                         android:textColor="#000000"
+                        android:inputType="number"
                         android:background="@drawable/textview_bgselector"
                         android:textSize="@dimen/gl_text_size_22sp" />
                      <TextView
@@ -264,7 +267,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/network_satellite_signal_intensity"
                     android:textColor="#000000"
-                    android:textSize="@dimen/gl_text_size_20sp" />
+                    android:textSize="@dimen/gl_text_size_22sp" />
                 
                   <ProgressBar 
                     android:id="@+id/single_strength"
