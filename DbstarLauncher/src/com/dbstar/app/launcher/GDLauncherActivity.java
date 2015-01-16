@@ -10,8 +10,6 @@ import java.util.TimerTask;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -61,7 +59,6 @@ import com.dbstar.model.EventData;
 import com.dbstar.model.GDCommon;
 import com.dbstar.model.GDDVBDataContract.Content;
 import com.dbstar.model.GDDataModel;
-import com.dbstar.model.GDSystemConfigure;
 import com.dbstar.service.DeviceInitController;
 import com.dbstar.service.GDApplicationObserver;
 import com.dbstar.service.GDDataProviderService;
@@ -500,13 +497,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if(menuItem.Type().equals(GDCommon.ColumnIDCNTV)) {
 			startIPTVView(menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)){
-			mColumnBookId = menuItem.ColumnId();
+//			mColumnBookId = menuItem.ColumnId();
 		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAMAGAZINE)){
 			mColumnMagazineId = menuItem.ColumnId();
 		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)){
-			mColumnNewsPaperId = menuItem.ColumnId();
+//			mColumnNewsPaperId = menuItem.ColumnId();
 		    startMultipleMediaView(menuItem.Type(),menuItem.ColumnId());
 		}else if(menuItem.Type().equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)){
 			mColumnVoiceBookId = menuItem.ColumnId();
@@ -674,17 +671,13 @@ public class GDLauncherActivity extends GDBaseActivity implements
         }else if(columnId.equals(GDCommon.ColumnIDMediaShare)){
             intent = startComponent("com.dbstar.multiple.media.shelf", "share.MediaShareActivity");
             
-            GDDataModel dataModel = new GDDataModel();
-            GDSystemConfigure mConfigure = new GDSystemConfigure();
-    		dataModel.initialize(mConfigure);
-            
             if (mColumnBookId == null) {
-            	LogUtil.d(TAG, "----------mColumnBookId===" + dataModel.mColumnBookId);
-            	mColumnBookId = dataModel.mColumnBookId;
+            	LogUtil.d(TAG, "----------mColumnBookId===" + GDDataModel.mColumnBookId);
+            	mColumnBookId = GDDataModel.mColumnBookId;
             }
             if (mColumnNewsPaperId == null) {
-            	LogUtil.d(TAG, "----------mColumnNewsPaperId===" + dataModel.mColumnNewsPaperId);
-            	mColumnNewsPaperId = dataModel.mColumnNewsPaperId;
+            	LogUtil.d(TAG, "----------mColumnNewsPaperId===" + GDDataModel.mColumnNewsPaperId);
+            	mColumnNewsPaperId = GDDataModel.mColumnNewsPaperId;
             }
             
             intent.putExtra("mColumnBookId", mColumnBookId);

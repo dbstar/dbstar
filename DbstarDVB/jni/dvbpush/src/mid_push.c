@@ -816,6 +816,8 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 		if(loop_cnt>(3)){
 			print_stamp = hms_stamp();
 			
+#ifdef TUNER_INPUT
+#else
 			igmpbuf_monitor(print_stamp);
 			
 			if(g_wIndex>=g_rIndex){
@@ -825,8 +827,9 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 				fill_level = MAX_PACK_BUF-g_rIndex+g_wIndex;
 			}
 			PRINTF("[%s]push buf filled %05d packs\n", print_stamp,fill_level);
-			push_err_file_check(print_stamp);
 			ts_loss_printf_periodicity();
+#endif
+			push_err_file_check(print_stamp);
 			
 			loop_cnt = 0;
 		}

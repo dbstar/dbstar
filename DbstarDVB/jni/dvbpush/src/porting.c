@@ -2952,7 +2952,7 @@ static int storage_init()
 	// 根据版本的升级情况，在存储设备发生变化时，重置内置栏目和全局Global中数据
 	// 但要注意，对Global的重置不能包括storage_id等超全局信息
 	localcolumn_init();
-	global_info_init(0);
+//	global_info_init(0);
 	columntype12_init();
 	
 	push_conf_init();

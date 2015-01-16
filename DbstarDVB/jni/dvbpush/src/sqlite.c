@@ -2129,31 +2129,7 @@ int global_info_init(int force_reset)
 		insert_record_cnt ++;
 	}
 	
-	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DBDATASERVERIP);
-	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%q','');",
-			GLB_NAME_DBDATASERVERIP,DBDATASERVERIP_DFT);
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_record_cnt ++;
-	}
-	
-	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DBDATASERVERPORT);
-	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%q','');",
-			GLB_NAME_DBDATASERVERPORT,DBDATASERVERPORT_DFT);
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_record_cnt ++;
-	}
-	
-	if(1==force_reset || -1==check_record_in_trans("Global","Name","ColumnIconDft")){
-		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','LocalColumnIcon/DefaultIcon_losefocus.png','');");
-		sqlite_transaction_exec(sqlite_cmd);
-		insert_record_cnt ++;
-	}
-	
 #ifdef TUNER_INPUT
-	can not run to here
-	
 	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_TUNERARGS);
 	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
 		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%s','%s','');",
@@ -2169,7 +2145,29 @@ int global_info_init(int force_reset)
 		sqlite_transaction_exec(sqlite_cmd);
 		insert_record_cnt ++;
 	}
+#else
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DBDATASERVERIP);
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%q','');",
+			GLB_NAME_DBDATASERVERIP,DBDATASERVERIP_DFT);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
+	
+	snprintf(key_value,sizeof(key_value),"%s",GLB_NAME_DBDATASERVERPORT);
+	if(1==force_reset || -1==check_record_in_trans("Global","Name",key_value)){
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('%q','%q','');",
+			GLB_NAME_DBDATASERVERPORT,DBDATASERVERPORT_DFT);
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 #endif
+	
+	if(1==force_reset || -1==check_record_in_trans("Global","Name","ColumnIconDft")){
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Global(Name,Value,Param) VALUES('ColumnIconDft','LocalColumnIcon/DefaultIcon_losefocus.png','');");
+		sqlite_transaction_exec(sqlite_cmd);
+		insert_record_cnt ++;
+	}
 	
 	if(insert_record_cnt>0){
 		return sqlite_transaction_end(1);
