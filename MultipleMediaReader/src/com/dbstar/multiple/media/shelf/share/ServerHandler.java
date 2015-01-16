@@ -169,7 +169,22 @@ class ServerHandler extends Thread {
 					+ "Content-Type: text/html  charset=utf-8;\n\n";
 			if (dokument.contains(ServiceApi.ACTION_DOWNLOAD_BOOK_LIST)) {
 				Log.i("ServerHandler", "------dokument.contains(ts.html)-");
-				List<Book> books = ShelfController.getInstance(this.context).loadAllBooks(mBookColumnId);
+//				List<Book> books = ShelfController.getInstance(this.context).loadAllBooks(mBookColumnId);
+				List<Book> books = new ArrayList<Book>();
+				if (mBookColumnId != null) {
+					if (mBookColumnId.contains("&")) {						
+						String[] bookIds = mBookColumnId.split("&");
+						for (int i = 0; i < bookIds.length; i++) {
+							List<Book> bookListById = ShelfController.getInstance(this.context).loadAllBooks(bookIds[i]);
+							if (bookListById != null) {
+								books.addAll(bookListById);								
+							}
+						}
+					} else {
+						books = ShelfController.getInstance(this.context).loadAllBooks(mBookColumnId);
+					}
+				}
+				
 				Log.i("ServerHandler", "----------ts.html-and books = " + books);
 				List<LoadData> loadDatas = new ArrayList<LoadData>();
 				if (books != null) {
@@ -199,7 +214,22 @@ class ServerHandler extends Thread {
 				populateDataToClient(content, headerBase, loadDatas);
 			} else if (dokument.contains(ServiceApi.ACTION_DOWNLOAD_NEWSPAPER_LIST)) {
 				Log.i("ServerHandler", "-----dokument.contains(bz.html)-----");
-				List<NewsPaper> papers = ShelfController.getInstance(this.context).loadAllNewsPapers(mNewsPaperColumnId);
+//				List<NewsPaper> papers = ShelfController.getInstance(this.context).loadAllNewsPapers(mNewsPaperColumnId);
+				List<NewsPaper> papers = new ArrayList<NewsPaper>();
+				if (mNewsPaperColumnId != null) {
+					if (mNewsPaperColumnId.contains("&")) {
+						String[] newsPaperIds = mNewsPaperColumnId.split("&");
+						for (int i = 0; i < newsPaperIds.length; i++) {
+							List<NewsPaper> newsPaperListById = ShelfController.getInstance(this.context).loadAllNewsPapers(newsPaperIds[i]);
+							if (newsPaperListById != null) {								
+								papers.addAll(newsPaperListById);
+							}
+						}
+					} else {
+						papers = ShelfController.getInstance(this.context).loadAllNewsPapers(mNewsPaperColumnId);
+					}
+				}
+				
 				Log.i("ServerHandler", "----------bz.html-and papers = " + papers);
 				List<LoadData> loadDatas = new ArrayList<LoadData>();
 				if (papers != null) {

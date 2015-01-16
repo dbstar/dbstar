@@ -34,6 +34,8 @@ import com.dbstar.multiple.media.util.ImageUtil;
 import com.dbstar.multiple.media.util.ToastUitl;
 import com.dbstar.multiple.media.widget.BookCategoryView;
 import com.dbstar.multiple.media.widget.BookShelfGroup;
+import com.dbstar.multiple.media.widget.ShelfLoadingDialog;
+import com.dbstar.multiple.media.widget.ShelfLoadingDialog.Builder;
 
 public class BookShelfActivity extends Activity {
     
@@ -58,6 +60,7 @@ public class BookShelfActivity extends Activity {
     private String mRootId;
     private Bitmap mBitmap;
 	private String appUri;
+	private ShelfLoadingDialog mLoadingDialog;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,7 +152,7 @@ public class BookShelfActivity extends Activity {
                 @Override
                 protected void onPreExecute() {
                     mNoticeView.setVisibility(View.INVISIBLE);
-                    mController.showLoadingDialog();
+                    showLoadingDialog();
                 }
                 @Override
                 protected List<Book> doInBackground(BookCategory... params) {
@@ -181,7 +184,7 @@ public class BookShelfActivity extends Activity {
                 @Override
                 protected void onPreExecute() {
                     mNoticeView.setVisibility(View.INVISIBLE);
-                    mController.showLoadingDialog();
+                    showLoadingDialog();
                 }
                 @Override
                 protected List<Book> doInBackground(BookCategory... params) {
@@ -317,7 +320,7 @@ public class BookShelfActivity extends Activity {
             }
             break;
         }
-        mController.hideLoadingDialog();
+        hideLoadingDialog();
     }
     private void updateBookSynoppsisLayout(final Book book){
         if(book == null){
@@ -612,12 +615,30 @@ public class BookShelfActivity extends Activity {
     		mController.destroy();    		
     	}
        super.onDestroy();
-        
+
+		if (mLoadingDialog != null)
+			mLoadingDialog.dismiss();
+		mLoadingDialog = null;
+       
        if (mBitmap != null && !mBitmap.isRecycled()) {
     	   mBitmap.recycle();
     	   mBitmap = null;
        }
        System.gc();
+    }
+    
+    private void showLoadingDialog() {
+        if (mLoadingDialog == null) {
+            ShelfLoadingDialog.Builder builder = new Builder(BookShelfActivity.this, R.layout.shelf_loading_dialog_view);
+            mLoadingDialog = builder.create();
+        }
+        mLoadingDialog.show();
+    }
+    
+    private void hideLoadingDialog() {
+        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
+            mLoadingDialog.hide();
+        }
     }
     
 }

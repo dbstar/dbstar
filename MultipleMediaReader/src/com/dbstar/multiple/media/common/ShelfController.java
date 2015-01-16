@@ -55,7 +55,7 @@ public class ShelfController {
     Context mContext;
     ContentResolver mResolver;
     private static ShelfController mController;
-    private ShelfLoadingDialog mLoadingDialog;
+//    private ShelfLoadingDialog mLoadingDialog;
     private ShelfDeleteOrCollectDialog mOperationdialog;
     private ShelfTextFontSettingDialog mTextFontSettingDialog;
 
@@ -72,14 +72,14 @@ public class ShelfController {
 
     }
 
-    public void showLoadingDialog() {
-        if (mLoadingDialog == null) {
-            ShelfLoadingDialog.Builder builder = new Builder(mContext, R.layout.shelf_loading_dialog_view);
-            mLoadingDialog = builder.create();
-        }
-        mLoadingDialog.show();
-
-    }
+//    public void showLoadingDialog() {
+//        if (mLoadingDialog == null) {
+//            ShelfLoadingDialog.Builder builder = new Builder(mActivity, R.layout.shelf_loading_dialog_view);
+//            mLoadingDialog = builder.create();
+//        }
+//        mLoadingDialog.show();
+//
+//    }
 
     public void showBookCollectionOrDeleteDialog(OnClickListener listener, boolean isFavorite) {
         if (mOperationdialog != null && mOperationdialog.isShowing())
@@ -102,11 +102,11 @@ public class ShelfController {
         }
     }
 
-    public void hideLoadingDialog() {
-        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
-            mLoadingDialog.hide();
-        }
-    }
+//    public void hideLoadingDialog() {
+//        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
+//            mLoadingDialog.hide();
+//        }
+//    }
 
     public void showTextFrontSettingDialog(OnClickListener listener, OnFocusChangeListener focusChangeListener, OnCancelListener cancelListener, int focus) {
         if (mTextFontSettingDialog == null) {
@@ -456,12 +456,12 @@ public class ShelfController {
         mController = null;
         if (mOperationdialog != null)
             mOperationdialog.dismiss();
-        if (mLoadingDialog != null)
-            mLoadingDialog.dismiss();
+//        if (mLoadingDialog != null)
+//            mLoadingDialog.dismiss();
         if (mTextFontSettingDialog != null)
             mTextFontSettingDialog.dismiss();
         mOperationdialog = null;
-        mLoadingDialog = null;
+//        mLoadingDialog = null;
         mTextFontSettingDialog = null;
     }
 }

@@ -84,14 +84,14 @@ public class GDDataModel {
 		return mLocalization;
 	}
 	
-	public ColumnData[] getColumns(String columnId) {
+	public ColumnData[] getColumns(String parentId) {
 
-		LogUtil.d(TAG, "get columns: id=" + columnId);
+		LogUtil.d(TAG, "get parent columns: id=" + parentId);
 		Cursor cursor = null;
 		ColumnData[] Columns = null;
 
 		String selection = Column.PARENT_ID + "=?";
-		String[] selectionArgs = new String[] { columnId };
+		String[] selectionArgs = new String[] { parentId };
 		String sortOrder = Column.INDEX + " ASC";
 
 		cursor = mDVBDataProvider.query(Column.CONTENT_URI,
@@ -108,14 +108,13 @@ public class GDDataModel {
 					Columns[i].IconNormalPath = cursor.getString(ColumnQuery.ICON_NORMAL);
 					Columns[i].IconFocusedPath = cursor.getString(ColumnQuery.ICON_FOCUSED);
 					
-					if (columnId.equals("-1") && Columns[i].Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIABOOK)) {
-						mColumnBookId = Columns[i].Id;
-//						LogUtil.d(TAG, "----getColumns----mColumnBookId = " + mColumnBookId);
+					LogUtil.d(TAG, "----getColumns----Columns[i].Id = " + Columns[i].Id + ", Columns[i].Type = " + Columns[i].Type);
+					if (mColumnBookId == null) {
+						mColumnBookId = getBookColumnIds();
 					}
 					
-					if (columnId.equals("-1") && Columns[i].Type.equals(GDCommon.ColumnTypeMULTIPLEMEDIANEWSPAPER)) {
-						mColumnNewsPaperId = Columns[i].Id;
-//						LogUtil.d(TAG, "----getColumns----mColumnNewsPaperId = " + mColumnNewsPaperId);
+					if (mColumnNewsPaperId == null) {
+						mColumnNewsPaperId = getNewsPaperColumnIds();
 					}
 
 					i++;
@@ -161,7 +160,7 @@ public class GDDataModel {
 	
 	public String queryRichMediaColumnId(String columnType) {
 //    	String sql = "select ColumnID from Column where ColumnType= ? and ParentID='-1'";
-    	Cursor cursor = mDVBDataProvider.query(Column.CONTENT_URI, new String[]{"ColumnID"}, "ColumnType = ? and ParentID = '-1'", new String[]{columnType}, null);
+    	Cursor cursor = mDVBDataProvider.query(Column.CONTENT_URI, new String[]{"ColumnID"}, "ColumnType = ? ", new String[]{columnType}, null);
     	if (cursor != null && cursor.moveToNext()) {
     		LogUtil.d(TAG, " columnType = " + columnType + ", columnID = " + cursor.getString(0));
     		return cursor.getString(0);
@@ -172,6 +171,57 @@ public class GDDataModel {
     	return null;
     	
     }
+	
+	private String getBookColumnIds() {
+		StringBuffer bookColumdIds = new StringBuffer();
+		String selection = "ColumnID in (select ParentID from Column where ColumnType='200' GROUP BY ParentID)";
+		Cursor cursor = mDVBDataProvider.query(Column.CONTENT_URI, new String[] {"ColumnID"}, selection, null, null);
+
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				int i = 0;
+				do {
+					bookColumdIds.append(cursor.getString(i));
+					bookColumdIds.append("&");
+				} while(cursor.moveToNext());
+				
+				if (bookColumdIds.length() > 0) {					
+					bookColumdIds.deleteCharAt(bookColumdIds.length() - 1);
+				}
+				LogUtil.d(TAG, " bookColumdIds = " + bookColumdIds);
+			}
+		}
+		
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+		return bookColumdIds.toString();
+	}
+	
+	private String getNewsPaperColumnIds() {
+		StringBuffer newsPaperColumnIds = new StringBuffer();
+		String selection = "ColumnID in (select ParentID from Column where ColumnType='202' GROUP BY ParentID)";
+		Cursor cursor = mDVBDataProvider.query(Column.CONTENT_URI, new String[] {"ColumnID"}, selection, null, null);
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				int i = 0;
+				do {
+					newsPaperColumnIds.append(cursor.getString(i));
+					newsPaperColumnIds.append("&");
+				} while(cursor.moveToNext());
+				
+				if (newsPaperColumnIds.length() > 0) {
+					newsPaperColumnIds.deleteCharAt(newsPaperColumnIds.length() - 1);
+				}
+				LogUtil.d(TAG, " newsPaperColumnIds = " + newsPaperColumnIds);
+			}
+		}
+		
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+		return newsPaperColumnIds.toString();
+	}
 	
 	public int getPublicationCount(String columnId) {
 		String selection = Publication.COLUMNID + "=?  AND ("
