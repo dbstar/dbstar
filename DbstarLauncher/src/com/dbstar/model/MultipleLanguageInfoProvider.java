@@ -179,7 +179,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
         
         switch (option) {
         case LOAD_BOOKS:{
-            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite from " +
+            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite,m.RMCategory from " +
             		"Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
             		" where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID = ? " + selection ;
             LogUtil.d("MultipleLanguageInfoProvider", "LOAD_BOOKS-----sql = " + sql);
@@ -187,7 +187,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             break;
         }
         case LOAD_ALL_FAVORITE_BOOK:{
-            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite from " +
+            String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite,m.RMCategory from " +
                     "Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
                     " where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.Favorite = '1' and p.ColumnID in "+
                     " (select ColumnID From Column where ParentID = ? )";

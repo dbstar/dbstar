@@ -182,7 +182,7 @@ public class VoicedBookReadActivity extends Activity {
         if (mCurrentPageInfo == null)
             return;
         mPage2.bringToFront();
-        mImageManager.getBitmapDrawable(mCurrentPageInfo.Image, new ImageCallback() {
+        mImageManager.getBookBitmapDrawable(mCurrentPageInfo.Image, new ImageCallback() {
 
             @Override
             public void imageLoaded(BitmapDrawable imageDrawable, String viewKey) {
@@ -193,7 +193,7 @@ public class VoicedBookReadActivity extends Activity {
             }
         }, (mCurrentPageInfo.PageId));
         if (mPageNumber + 1 < mPageCount)
-            mImageManager.getBitmapDrawable(getBookPageInfo(mPageNumber + 1).Image, null, NULL_STRING);
+            mImageManager.getBookBitmapDrawable(getBookPageInfo(mPageNumber + 1).Image, null, NULL_STRING);
 
         refreshReadProgressView();
         bindService();
@@ -337,7 +337,7 @@ public class VoicedBookReadActivity extends Activity {
                     isAnimationEnd = true;
                     mHandler.sendEmptyMessage(MESSAGE_WAHT_ANIMATION_END);
                 } else {
-                    mImageManager.getBitmapDrawable(mBook.mPages.get(mPageNumber + 1).Image, new ImageCallback() {
+                    mImageManager.getBookBitmapDrawable(mBook.mPages.get(mPageNumber + 1).Image, new ImageCallback() {
 
                         @Override
                         public void imageLoaded(BitmapDrawable imageDrawable, String viewKey) {

@@ -70,6 +70,11 @@ public class EPUBParser {
         return data;
     }
     public static String getNCXPath(String rootPath){
+    	String ext = ".epub";
+    	if (rootPath.endsWith(ext)) {
+    		rootPath = rootPath.substring(0, (rootPath.length() - ext.length()));
+    	}
+    	Log.d("EPUBParser", " rootPath = " + rootPath);
         String metainfoxml = rootPath + "/META-INF/container.xml";
         String path = null;
         try {

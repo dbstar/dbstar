@@ -1,11 +1,8 @@
 package com.dbstar.multiple.media.data;
 
-import java.util.ArrayList;
-
 import android.util.SparseArray;
 
 import com.dbstar.multiple.media.model.ModelVoicedBook;
-import com.dbstar.multiple.media.model.ModelVoicedBook.Language;
 
 public class VoiceBookPageInfo {
     
@@ -24,16 +21,18 @@ public class VoiceBookPageInfo {
         int key;
         String value;
         StringBuilder sb = new StringBuilder();
-          for(int i = 0;i < mAudios.size();i++){
-              key = mAudios.keyAt(i);
-              value = mAudios.valueAt(i);
-              sb.append(Character.toString((char)key));
-              sb.append(ModelVoicedBook.LANGUAGE_SEPARATOR);
-              sb.append(value);
-              sb.append(ModelVoicedBook.LANGUAGE_SEPARATOR);
-          }
-           return sb.deleteCharAt(sb.length()-1).toString();
-          
+        if (mAudios.size() > 0) {
+        	for(int i = 0;i < mAudios.size();i++){
+        		key = mAudios.keyAt(i);
+        		value = mAudios.valueAt(i);
+        		sb.append(Character.toString((char)key));
+        		sb.append(ModelVoicedBook.LANGUAGE_SEPARATOR);
+        		sb.append(value);
+        		sb.append(ModelVoicedBook.LANGUAGE_SEPARATOR);
+        	}
+        	return sb.deleteCharAt(sb.length()-1).toString();
+        }
+          return sb.toString();          
     }
     
     public void departAudios(String combineVudios){

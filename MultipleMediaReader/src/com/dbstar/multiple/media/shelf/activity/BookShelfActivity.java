@@ -370,7 +370,17 @@ public class BookShelfActivity extends Activity {
                 Book book = mBookShefl.getBookInfoByIndex(mBookShefl.getChildCount() -1);
                 if(book == null)
                     return true;
-                startReadActivity(book);
+                Log.d("BookShelfActivity", "----book.RMCategory = " + book.RMCategory);
+                if (book.RMCategory.equals("4")) { // 进入绘本
+                	Log.d("BookShelfActivity", " start VoiceBookReaderActivity!");
+                	Intent intent = new Intent(this, VoicedBookReadActivity.class);
+                    intent.putExtra("FilePath", book.Path);
+                    intent.putExtra("BookId", book.Id);
+                    intent.putExtra(ImageUtil.AppBG_Uri, appUri);
+                    startActivity(intent);
+                } else { // 进入图书	
+                	startReadActivity(book);
+                }
                // mController.updateBookLastUpdateTime(book.Id);
                 break;
             case KeyEvent.KEYCODE_NOTIFICATION:

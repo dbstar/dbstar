@@ -33,7 +33,7 @@ public class BookView extends ImageView{
         mBook = book;
         String viewKey = book.Id;
         setTag(viewKey);
-        ImageManager.getInstance(getContext()).getBitmapDrawable(book.Cover, new ImageCallback( ) {
+        ImageManager.getInstance(getContext()).getBookBitmapDrawable(book.Cover, new ImageCallback( ) {
             
             @Override
             public void imageLoaded(BitmapDrawable imageDrawable, String viewKey) {

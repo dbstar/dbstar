@@ -163,7 +163,7 @@ public class ChannelSelectorPage extends BaseFragment {
 		mNextButton.setOnClickListener(mOnClickListener);
 		mPrevButton.setOnClickListener(mOnClickListener);
 
-		mEthernetSwitchButton.requestFocus();
+//		mEthernetSwitchButton.requestFocus();
 
 		SharedPreferences settings = mActivity.getSharedPreferences(
 				NetworkCommon.PREF_NAME_NETWORK, 0);
@@ -238,6 +238,7 @@ public class ChannelSelectorPage extends BaseFragment {
         mBuutonSearch.setOnClickListener(mOnClickListener);
         mButtonReStore.setOnClickListener(mOnClickListener);
         mButtonStarPattern.setOnClickListener(mOnClickListener);
+        mBuutonSearch.requestFocus();
         
 	}
 

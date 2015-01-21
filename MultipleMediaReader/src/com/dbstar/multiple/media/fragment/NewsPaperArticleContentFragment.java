@@ -4,6 +4,10 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -98,6 +102,21 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
         
     }
     
+    BroadcastReceiver receiver = new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction().equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
+				Log.d("NewsPaperArticleContentFragment", " ==pressed home key!== ");
+				if ((Tts.JniIsPlaying() == 0 || Tts.JniIsPlaying() == 1) && isPlay) {
+					stopPlay();
+					hasStoped = true;
+				}
+			}
+			
+		}
+	};
+    
     private void initView(View v){
         mScrollView = (ScrollView) v.findViewById(R.id.scroll_content_view);
         mContentView = (NewsPaperContentView) v.findViewById(R.id.contentView);
@@ -188,6 +207,14 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
         super.onResume();
         mScrollView.requestFocus();
         loadData();
+        IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        mActivity.registerReceiver(receiver, filter);
+    }
+    
+    @Override
+    public void onDestroy() {
+    	super.onDestroy();
+    	mActivity.unregisterReceiver(receiver);
     }
     
     @Override

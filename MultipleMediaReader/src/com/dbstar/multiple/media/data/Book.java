@@ -8,6 +8,7 @@ public class Book {
     public String Name;
     public String Synopsis;
     public String CategoryId;
+    public String RMCategory;
     public String Path;
     public String Author;
     public long  lastUpdateTime ;
