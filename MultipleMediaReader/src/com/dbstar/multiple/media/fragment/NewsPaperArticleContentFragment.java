@@ -38,6 +38,7 @@ import com.dbstar.multiple.media.data.NewsPaperArticleContent.Block;
 import com.dbstar.multiple.media.data.NewsPaperArticleContent.Patch;
 import com.dbstar.multiple.media.data.NewsPaperPage;
 import com.dbstar.multiple.media.shelf.R;
+import com.dbstar.multiple.media.shelf.activity.NewsPaperActivity;
 import com.dbstar.multiple.media.util.EPUBParser;
 import com.dbstar.multiple.media.util.ToastUitl;
 import com.dbstar.multiple.media.widget.NewsPaperContentView;
@@ -108,7 +109,7 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
 				Log.d("NewsPaperArticleContentFragment", " ==pressed home key!== ");
-				if ((Tts.JniIsPlaying() == 0 || Tts.JniIsPlaying() == 1) && isPlay) {
+				if (isTtsInited && isPlay) {
 					stopPlay();
 					hasStoped = true;
 				}
@@ -156,7 +157,7 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
 									isTtsInited = true;
 							}
 							
-							if ((Tts.JniIsPlaying() == 0 || Tts.JniIsPlaying() == 1) && isPlay) {
+							if (isTtsInited && isPlay) {
 //								isPlay = false;
 								stopPlay();
 								hasStoped = true;
@@ -208,6 +209,7 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
         mScrollView.requestFocus();
         loadData();
         IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        filter.setPriority(Integer.MAX_VALUE);
         mActivity.registerReceiver(receiver, filter);
     }
     
