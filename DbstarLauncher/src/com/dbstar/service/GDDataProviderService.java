@@ -1527,7 +1527,7 @@ public class GDDataProviderService extends Service {
 							e.printStackTrace();
 							// TODO:
 //							sendBroadcast(new Intent("format disk"));
-							ToastUtil.showToast(getApplicationContext(), R.string.external_storage_alert_when_error);
+//							ToastUtil.showToast(getApplicationContext(), R.string.external_storage_alert_when_error);
 						}
 						break;
 					}
