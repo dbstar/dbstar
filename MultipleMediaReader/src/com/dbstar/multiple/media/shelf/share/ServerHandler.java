@@ -197,7 +197,16 @@ class ServerHandler extends Thread {
 						Log.i("ServerHandler", "------b.Name========-" + b.Name);
 						loadData.Cover = b.Cover;
 						loadData.Author = b.Author;
-						loadData.FilePath = b.Path;
+						if (b.RMCategory.equals("4")) {		
+							Log.i("ServerHandler", "picture book b.Path = "+ b.Path);
+							String ext = ".epub";
+					    	if (!b.Path.endsWith(ext)) {
+					    		loadData.FilePath = b.Path + ".epub";							
+					    	} else 
+					    		loadData.FilePath = b.Path;												    		
+						} else {
+							loadData.FilePath = b.Path;							
+						}
 						// loadData.Date = "2013";
 						File file = new File(loadData.FilePath);
 						Log.i("ServerHandler", "------FilePath========-" + loadData.FilePath + " is exists (" + file.exists() + ")");

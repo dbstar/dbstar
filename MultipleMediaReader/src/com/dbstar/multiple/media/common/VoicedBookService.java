@@ -99,7 +99,7 @@ public class VoicedBookService extends Service{
             
         } catch (Exception e) {
             e.printStackTrace();
-            playNext();
+//            playNext();
         }
       
         

@@ -72,6 +72,7 @@ public class EPUBParser {
     public static String getNCXPath(String rootPath){
     	String ext = ".epub";
     	if (rootPath.endsWith(ext)) {
+    		Log.d("EPUBParser", "endsWith .epub and cut .epub from rootPath = " + rootPath);
     		rootPath = rootPath.substring(0, (rootPath.length() - ext.length()));
     	}
     	Log.d("EPUBParser", " rootPath = " + rootPath);
