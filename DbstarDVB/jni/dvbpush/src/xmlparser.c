@@ -1002,11 +1002,11 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 		}
 	}
 	
-// 判断为“报纸”类型，则：
+// 判断为“报纸”或“绘本”类型，则：
 //（1）解压epub(zip)，并将解压后的目录uri作为FileURI入库；
 //（2）DbstarLauncher实现有bug，目前发现如果SetID以1打头，则报纸的第一级栏目（实际上是SetID的父分类）无法显示名称。如果是5打头则无显示问题。
 //		临时由dvbpush兼容，将所有的报纸SetID前均添加字母a，后续由DbstarLauncher修改
-	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType) && RMCATEGORY_NEWSPAPER==atoi(p->RMCategory)){
+	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType) && (RMCATEGORY_NEWSPAPER==atoi(p->RMCategory)||RMCATEGORY_PICTURE_BOOK==atoi(p->RMCategory))){
 		char epub_file_uri[1024];
 		char epub_dir_uri[1024];
 		char *epub_suffix = NULL;
@@ -1016,11 +1016,11 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 			snprintf(epub_file_uri,sizeof(epub_file_uri),"%s%s",push_dir_get(),p->FileURI);
 		else
 			snprintf(epub_file_uri,sizeof(epub_file_uri),"%s/%s",push_dir_get(),p->FileURI);
-		PRINTF("newspaper publication, unzip %s\n",epub_file_uri);
+		PRINTF("newspaper or picture book publication, unzip %s\n",epub_file_uri);
 		
 		snprintf(epub_dir_uri,sizeof(epub_dir_uri),"%s",epub_file_uri);
 		epub_suffix = strrchr(epub_dir_uri,'.');
-		if(epub_suffix && strncasecmp(epub_dir_uri,".epub",5)){
+		if(epub_suffix && 0==strncasecmp(epub_suffix,".epub",5)){
 			*epub_suffix = '/';
 			epub_suffix++;
 			*epub_suffix = '\0';
@@ -1037,7 +1037,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 			*epub_suffix = '\0';
 		}
 		else{
-			PRINTF("this newspaper content file is not epub!!!\n");
+			PRINTF("newspaper or picture book content file (%s) is not epub!!!\n", epub_dir_uri);
 			return -1;
 		}
 		
