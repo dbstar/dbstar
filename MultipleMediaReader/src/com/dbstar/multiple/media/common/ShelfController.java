@@ -188,7 +188,9 @@ public class ShelfController {
                     book.Synopsis = cursor.getString(5);
                     book.Author = cursor.getString(6);
                     book.Favorite = cursor.getString(7);
-                    book.RMCategory = cursor.getString(8);
+                    if (!uriStr.equals(ACTION_LOAD_ALL_BOOKS)) {                    	
+                    	book.RMCategory = cursor.getString(8);
+                    }
                     books.add(book);
                 }
             }
