@@ -185,7 +185,7 @@ class ServerHandler extends Thread {
 					}
 				}
 				
-				Log.i("ServerHandler", "----------ts.html-and books = " + books);
+//				Log.i("ServerHandler", "----------ts.html-and books = " + books);
 				List<LoadData> loadDatas = new ArrayList<LoadData>();
 				if (books != null) {
 					LoadData loadData;
@@ -239,7 +239,7 @@ class ServerHandler extends Thread {
 					}
 				}
 				
-				Log.i("ServerHandler", "----------bz.html-and papers = " + papers);
+//				Log.i("ServerHandler", "----------bz.html-and papers = " + papers);
 				List<LoadData> loadDatas = new ArrayList<LoadData>();
 				if (papers != null) {
 					LoadData loadData;
@@ -266,6 +266,9 @@ class ServerHandler extends Thread {
 			} else /*if(dokument.contains(ServiceApi.ACTION_LOAD_ITEM)) */ {
 				String  fileName = null;;
 				String  filePath = null;
+				if (dokument != null && dokument.contains("/") && dokument.endsWith(".epub")) {
+					fileName = dokument.substring((dokument.lastIndexOf("/") + 1), (dokument.length() - ".epub".length()));
+				}
 				String headerBase1 = "HTTP/1.1 %code%\n"+
 						"content-disposition:attachment;filename ="+ fileName + "\n" + 
 						"Content-Length: %length%\n"+

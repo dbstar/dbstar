@@ -37,7 +37,11 @@
         <activity android:name="com.dbstar.multiple.media.shelf.activity.VoicedBookShelfActivity"></activity>
         <activity android:name="com.dbstar.multiple.media.shelf.share.MediaShareActivity"></activity>
         <activity android:name="com.dbstar.multiple.media.shelf.activity.BookShelfActivity"></activity>
-        <service android:name="com.dbstar.multiple.media.shelf.share.ShareService" android:exported="false"></service>
+        <service android:name="com.dbstar.multiple.media.shelf.share.ShareService" android:exported="true">
+            <intent-filter>
+                <action android:name="com.dbstar.multiple.media.shelf.share.action.shareService"></action>
+            </intent-filter>
+        </service>
         <service android:name="com.dbstar.multiple.media.common.VoicedBookService" android:exported="false"></service>
         <service android:name="com.dbstar.multiple.media.common.TestService" android:exported="false"></service>
         <receiver  android:name="com.dbstar.multiple.media.shelf.share.BootReceiver">

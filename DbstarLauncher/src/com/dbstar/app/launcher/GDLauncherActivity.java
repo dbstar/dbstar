@@ -685,6 +685,8 @@ public class GDLauncherActivity extends GDBaseActivity implements
             
             intent.putExtra(Constants.AppBG_Uri, ImageUtil.App_Uri);
         }
+		Intent intentSer = new Intent("com.dbstar.multiple.media.shelf.share.action.shareService");
+		startService(intentSer);
 
 		if (intent != null) {
 			intent.putExtra(INTENT_KEY_MENUPATH, mMenuPath);

@@ -181,7 +181,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
         case LOAD_BOOKS:{
             String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite,m.RMCategory from " +
             		"Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
-            		" where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID = ? " + selection ;
+            		" where r.EntityID = p.PublicationID and p.Deleted='0' and p.ReceiveStatus='1' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID = ? " + selection ;
             LogUtil.d("MultipleLanguageInfoProvider", "LOAD_BOOKS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
@@ -208,7 +208,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
         case LOAD_ALL_BOOKS:{
             String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,'"+ mPushDir +"/' || r.PosterURI,m.Description,m.Author,p.Favorite,m.RMCategory from " +
                     "Publication p ,MultipleLanguageInfoRM m ,ResPoster r" +
-                    " where r.EntityID = p.PublicationID and p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID in"+
+                    " where r.EntityID = p.PublicationID and p.Deleted='0' and p.ReceiveStatus='1' and p.FileType!='1' and m.language = '"+ mCurLanguage +"' and p.PublicationID = m.PublicationID and p.ColumnID in"+
                     " (select ColumnID From Column where ParentID = ? )";
             LogUtil.d("MultipleLanguageInfoProvider", "LOAD_ALL_BOOKS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql,selectionArgs);
@@ -238,14 +238,14 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
         }
         case LOAD_NEWSPAPERS:{
             String  sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate,Favorite from Publication p ,MultipleLanguageInfoRM m " +
-                    "where  p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.SetID = ? order by PublishDate desc";
+                    "where  p.Deleted='0' and p.ReceiveStatus='1' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.SetID = ? order by PublishDate desc";
             LogUtil.d("MultipleLanguageInfoProvider", "LOADNEWSPAPERS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
         }case LOAD_ALL_NEWSPAPERS:{
             
             String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate ,Favorite from Publication p ,MultipleLanguageInfoRM m " +
-                    "where  p.Deleted='0' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.[ColumnID] in (select ColumnID from Column c where c.ParentID = ?) order by PublishDate desc";
+                    "where  p.Deleted='0' and p.ReceiveStatus='1' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.[ColumnID] in (select ColumnID from Column c where c.ParentID = ?) order by PublishDate desc";
             
             LogUtil.d("MultipleLanguageInfoProvider", "LOAD_ALL_NEWSPAPERS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
