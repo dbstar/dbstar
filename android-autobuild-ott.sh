@@ -175,7 +175,7 @@ otapackage_make()
 	logger "START make otapackage"
 
 	LOG_LOGGER=$LOG_OTAPACKAGE.$TIMESTAMP
-        cp /home/mx/app/icntv-n260-v.1.0.0.apk $ROOTFS_OUT/system/app/.
+        cp /home/mx/app/icntv-n260-v.1.0.1.apk $ROOTFS_OUT/system/app/.
         cp /home/mx/app/AppStore_DBSTAR_3.3.3.apk $ROOTFS_OUT/system/app/.
         rm -f $ROOTFS_OUT/system/app/DbstarBookReader.apk
         rm -f $ROOTFS_OUT/system/app/MultipleMediaReader.apk
