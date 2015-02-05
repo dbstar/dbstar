@@ -13,7 +13,8 @@
 
 #include "am_types.h"
 #include "am_evt.h"
-#include "frontend.h"
+#include "am_dmx.h"
+#include <linux/dvb/frontend.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -67,21 +68,10 @@ enum AM_FEND_EventType
  * Type definitions
  ***************************************************************************/
 
-typedef enum
-{
-	AM_FEND_DEMOD_AUTO,  /**< AUTO */
-	AM_FEND_DEMOD_DVBC,  /**< DVB-C*/
-	AM_FEND_DEMOD_DVBT,  /**< DVB-T*/
-	AM_FEND_DEMOD_DVBS,  /**< DVB-S*/
-	AM_FEND_DEMOD_ATSC, /**< ATSC*/
-	AM_FEND_DEMOD_ISDBT,  /**< ISDB-T*/
-	AM_FEND_DEMOD_COUNT
-} AM_FEND_DemodMode_t;
-
 /**\brief 前端设备开启参数*/
 typedef struct
 {
-	AM_FEND_DemodMode_t    mode; /**< 解调模式*/
+	int mode; /**< 解调模式*/
 } AM_FEND_OpenPara_t;
 
 /**\brief DVB前端监控回调函数*/
@@ -131,6 +121,15 @@ extern AM_ErrorCode_t AM_FEND_Open(int dev_no, const AM_FEND_OpenPara_t *para);
  */
 extern AM_ErrorCode_t AM_FEND_Close(int dev_no);
 
+/**\brief 设定前端解调模式
+ * \param dev_no 前端设备号
+ * \param mode 解调模式
+ * \return
+ *   - AM_SUCCESS 成功
+ *   - 其他值 错误代码(见am_fend.h)
+ */
+extern AM_ErrorCode_t AM_FEND_SetMode(int dev_no, int mode);
+
 /**\brief 取得一个DVB前端设备的相关信息
  * \param dev_no 前端设备号
  * \param[out] info 返回前端信息数据
@@ -139,6 +138,15 @@ extern AM_ErrorCode_t AM_FEND_Close(int dev_no);
  *   - 其他值 错误代码(见am_fend.h)
  */
 extern AM_ErrorCode_t AM_FEND_GetInfo(int dev_no, struct dvb_frontend_info *info);
+
+/**\brief 取得一个DVB前端设备连接的TS输入源
+ * \param dev_no 前端设备号
+ * \param[out] src 返回设备对应的TS输入源
+ * \return
+ *   - AM_SUCCESS 成功
+ *   - 其他值 错误代码(见am_fend.h)
+ */
+extern AM_ErrorCode_t AM_FEND_GetTSSource(int dev_no, AM_DMX_Source_t *src);
 
 /**\brief 设定前端参数
  * \param dev_no 前端设备号
@@ -362,6 +370,24 @@ extern AM_ErrorCode_t AM_FEND_BlindGetProcess(int dev_no, unsigned int *process)
  *   - 其他值 错误代码(见am_fend.h)
  */
 extern AM_ErrorCode_t AM_FEND_BlindGetTPInfo(int dev_no, struct dvb_frontend_parameters *para, unsigned int *count);  
+
+/**\brief 模拟微调
+ *\param dev_no 前端设备号
+ *\param freq 频率，单位为Hz
+ * \return
+ *   - AM_SUCCESS 成功
+ *   - 其他值 错误代码(见am_fend.h)
+ */
+extern AM_ErrorCode_t AM_FEND_FineTune(int dev_no, unsigned int freq);
+
+/**\brief 模拟CVBS AMP OUT
+ *\param dev_no 前端设备号
+ *\param amp ，单位为int
+ * \return
+ *   - AM_SUCCESS 成功
+ *   - 其他值 错误代码(见am_fend.h)
+ */
+extern AM_ErrorCode_t AM_FEND_SetCvbsAmpOut(int dev_no, unsigned int amp);
 
 #ifdef __cplusplus
 }

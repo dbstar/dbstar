@@ -12,7 +12,7 @@
 #ifdef TUNER_INPUT
 
 #include "softdmx.h"
-#include "dmx.h"
+//#include "dmx.h"
 #include "prodrm20.h"
 #include "dvbpush_api.h"
 #include "bootloader.h"
@@ -244,8 +244,9 @@ static int tuner_set(TUNER_SETTINGS *tpara)
 	fe_status_t status;
 	
 	memset(&fpara, 0, sizeof(fpara));
-	fpara.mode = AM_FEND_DEMOD_DVBS;
+	fpara.mode = FE_QPSK;//AM_FEND_DEMOD_DVBS;
 	AM_TRY(AM_FEND_Open(FEND_DEV_NO, &fpara)); 
+	AM_FEND_SetMode(FEND_DEV_NO, fpara.mode);
     AM_TRY(AM_FEND_SetCallback(FEND_DEV_NO, fend_cb, NULL));
     
     AM_FEND_SetVoltage(FEND_DEV_NO, (fe_sec_voltage_t)tpara->polarization_type);//voltage);   //v13-0/v18-1/v_off-2
@@ -257,7 +258,8 @@ static int tuner_set(TUNER_SETTINGS *tpara)
 	p.u.qpsk.fec_inner = FEC_AUTO;
 	
 	AM_TRY(AM_FEND_Lock(FEND_DEV_NO, &p, &status));
-	DEBUG("tuner lock status: 0x%x\n", status);
+	PRINTF("liukevin fend set!!!!!!!!!!\n");
+	DEBUG("liukevin tuner lock status: 0x%x\n", status);
 	
 	return status;
 }
@@ -1058,13 +1060,12 @@ DEBUG("monit0 this package:seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=
 
 void root_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data)
 {
-  if (tc_crc32(data,len))
-  {
-       DEBUG("Crc error fid[%d] len[%d]!!!!!\n",fid,len);
-  }
-  DEBUG("root_section_handle GOT A GOOD MPE PACKAGE FID[%d] len[%d]\n",fid,len);
-  send_mpe_sec_to_push_fifo((uint8_t *)data, len);
-
+	if (tc_crc32(data,len))
+	{
+		DEBUG("Crc error fid[%d] len[%d]!!!!!\n",fid,len);
+	}
+//	DEBUG("root_section_handle GOT A GOOD MPE PACKAGE FID[%d] len[%d]\n",fid,len);
+	send_mpe_sec_to_push_fifo((uint8_t *)data, len);
 }
 
 static char s_time_sync_2_ui[128];

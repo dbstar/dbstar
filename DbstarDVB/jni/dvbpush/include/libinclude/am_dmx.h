@@ -62,7 +62,9 @@ typedef enum
 /**\brief 解复用设备开启参数*/
 typedef struct
 {
-	int    foo;
+	AM_Bool_t use_sw_filter;           /**< M_TURE to use DVR software filters.*/
+	int       dvr_fifo_no;             /**< Async fifo number if use software filters.*/
+	int       dvr_buf_size;            /**< Async fifo buffer size if use software filters.*/
 } AM_DMX_OpenPara_t;
 
 /**\brief 数据回调函数

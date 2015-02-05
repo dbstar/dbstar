@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "am/am_smc.h"
+#include "am_smc.h"
 #include "linux/amsmc.h"
 #include "prodrm20.h"
 #include "softdmx.h"

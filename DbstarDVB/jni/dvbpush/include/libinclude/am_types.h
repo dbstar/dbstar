@@ -62,6 +62,11 @@ enum AM_MOD_ID
 	AM_MOD_FEND_DISEQCCMD,/**< Fenddiseqc模块*/
 	AM_MOD_FENDCTRL, /**< Fendctrl模块*/
 	AM_MOD_PES,    /**< PES 分析模块*/
+	AM_MOD_CAMAN,
+	AM_MOD_CI,
+	AM_MOD_USERDATA,
+	AM_MOD_CC,
+	AM_MOD_AD,
 	AM_MOD_MAX
 };
 

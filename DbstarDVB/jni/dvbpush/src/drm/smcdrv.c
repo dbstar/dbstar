@@ -12,8 +12,8 @@
 #include <linux/amsmc.h>
 #include <time.h>
 
-#include "am/am_smc.h"
-#include "am/am_smc_internal.h"
+#include "am_smc.h"
+//#include "am_smc_internal.h"
 
 extern int smc_fd;
 #define SMC_DEVICE  "/dev/smc0"
