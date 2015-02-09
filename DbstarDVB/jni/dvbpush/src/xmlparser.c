@@ -300,7 +300,9 @@ static int column_insert(DBSTAR_COLUMN_S *ptr)
 		}
 	}
 	
-	// if ColumnType is '12', reset ColumnType as '1'. Then, the column as a normal movie
+	snprintf(columntype, sizeof(columntype), "0");
+	
+	// if ColumnType is '12', reset ColumnType as '1'. Then, make the column as a normal movie
 	if(SHOW_FLASH_COLUMNTYPE==strtol(ptr->ColumnType,NULL,10)){
 		DEBUG("show ColumnID(%s) as ColumnType(1) from ColumnType(12) for movie showing, and set Param as %s manually\n", ptr->ColumnID, ptr->ColumnType);
 		snprintf(columntype, sizeof(columntype), "%d", SHOW_FLASH_COLUMNTYPE);
@@ -588,7 +590,13 @@ static int columntype12_insert(char *ColumnID)
 			return 0;
 		}
 		else{
-			PRINTF("s_columntype12s[%d] is occupied\n", i);
+			if(0==strcmp(s_columntype12s[i],ColumnID)){
+				PRINTF("%s at s_columntype12s[%d] already\n", ColumnID, i);
+				return 0;
+			}
+			else{
+				PRINTF("s_columntype12s[%d] is occupied\n", i);
+			}
 		}
 	}
 	
