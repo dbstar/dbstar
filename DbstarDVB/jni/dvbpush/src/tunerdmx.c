@@ -1522,7 +1522,7 @@ int tuner_lock(char *args, char *buf, unsigned int len)
     
     if(0==ret){
 	    tuner_search_satelite(&snr, &strength);
-		snprintf(buf,len,"%d\t%d\n",snr,strength);
+		snprintf(buf,len,"%d&%d\n",snr,strength);
 	}
 
     return ret;

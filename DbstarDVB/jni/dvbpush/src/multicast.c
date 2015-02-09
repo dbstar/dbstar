@@ -657,97 +657,97 @@ int multicast_add()
 
 
 #if 0
-static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
-{
-	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p, receiver_size=%u\n", row, column, filter_act,receiver_size);
-	if(row<1 || NULL==filter_act){
-		DEBUG("no record in table, return\n");
-		return 0;
-	}
-	
-	int i = 0;
-#ifdef TUNER_INPUT
-	int j = 0;
-	AM_DVR_StartRecPara_t spara;
-
-	if (ROOTCHANNEL_NOTINIT!=root_filter && ROOTCHANNEL_FREEFROMHDDXM!=root_filter && ROOTCHANNEL_CHANGEDTOSOFTDMX!=root_filter)
-	{
-		DEBUG("FREE root_filter [%d]\n",root_filter);
-		TC_free_filter(root_filter);
-		root_filter = ROOTCHANNEL_FREEFROMHDDXM;
-		DEBUG("tc free root filter !!!!!!!!!!!!!!!!\n");
-	}
-#endif
-
-	for(i=1;i<row+1;i++)
-	{
-		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
-		if(0==*((int *)filter_act) || 0==atoi(result[i*column+2])){
-			int ret = free_filter(pid);
-			DEBUG("free pid %d[%s] return with %d\n", pid, result[i*column], ret);
-#ifdef TUNER_INPUT
-			j++;
-#endif
-		}
-	}
-	
-#ifdef TUNER_INPUT
-	if (j>0)
-	{
-		DEBUG("j=%d, do stop_feedpush()\n", j);
-		stop_feedpush();
-	}
-
-	j = 0;
-	memset(&spara,0,sizeof(spara));
-#endif
-	
-	for(i=1;i<row+1;i++)
-	{
-		DEBUG("PID --- %s:%s:%s --- \n", result[i*column],result[i*column+1],result[i*column+2]);
-		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
-		if(1==*((int *)filter_act) && 1==atoi(result[i*column+2])){
-			int filter = -1;
-			if(0==strcmp(result[i*column+1],"file"))
-				filter = alloc_filter(pid, 1);
-			else
-				filter = alloc_filter(pid, 0);
-			
-#ifdef TUNER_INPUT
-			spara.pids[j] = pid;
-			j++;
-#endif
-			
-			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
-		}
-//		else{
+//static int allpid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
+//{
+//	DEBUG("sqlite callback, row=%d, column=%d, filter_act addr: %p, receiver_size=%u\n", row, column, filter_act,receiver_size);
+//	if(row<1 || NULL==filter_act){
+//		DEBUG("no record in table, return\n");
+//		return 0;
+//	}
+//	
+//	int i = 0;
+//#ifdef TUNER_INPUT
+//	int j = 0;
+//	AM_DVR_StartRecPara_t spara;
+//
+//	if (ROOTCHANNEL_NOTINIT!=root_filter && ROOTCHANNEL_FREEFROMHDDXM!=root_filter && ROOTCHANNEL_CHANGEDTOSOFTDMX!=root_filter)
+//	{
+//		DEBUG("FREE root_filter [%d]\n",root_filter);
+//		TC_free_filter(root_filter);
+//		root_filter = ROOTCHANNEL_FREEFROMHDDXM;
+//		DEBUG("tc free root filter !!!!!!!!!!!!!!!!\n");
+//	}
+//#endif
+//
+//	for(i=1;i<row+1;i++)
+//	{
+//		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
+//		if(0==*((int *)filter_act) || 0==atoi(result[i*column+2])){
 //			int ret = free_filter(pid);
-//			DEBUG("free pid %d return with %d\n", pid, ret);
+//			DEBUG("free pid %d[%s] return with %d\n", pid, result[i*column], ret);
+//#ifdef TUNER_INPUT
+//			j++;
+//#endif
 //		}
-	}
-	
-#ifdef TUNER_INPUT
-	
-	if(ROOTCHANNEL_FREEFROMHDDXM==root_filter){
-		unsigned short root_pid = root_channel_get();
-		spara.pids[j] = root_pid;
-		j++;
-		alloc_filter(root_pid,0);
-		
-		root_filter = ROOTCHANNEL_CHANGEDTOSOFTDMX;
-	}
-	
-	if (j>0)
-	{
-		spara.pid_count = j;
-		
-		DEBUG("spara.pid_count=%d, do start_feedpush()\n",spara.pid_count);
-		start_feedpush(&spara);
-	}
-#endif
-	
-	return 0;
-}
+//	}
+//	
+//#ifdef TUNER_INPUT
+//	if (j>0)
+//	{
+//		DEBUG("j=%d, do stop_feedpush()\n", j);
+//		stop_feedpush();
+//	}
+//
+//	j = 0;
+//	memset(&spara,0,sizeof(spara));
+//#endif
+//	
+//	for(i=1;i<row+1;i++)
+//	{
+//		DEBUG("PID --- %s:%s:%s --- \n", result[i*column],result[i*column+1],result[i*column+2]);
+//		unsigned short pid = (unsigned short)(strtol(result[i*column],NULL,0));
+//		if(1==*((int *)filter_act) && 1==atoi(result[i*column+2])){
+//			int filter = -1;
+//			if(0==strcmp(result[i*column+1],"file"))
+//				filter = alloc_filter(pid, 1);
+//			else
+//				filter = alloc_filter(pid, 0);
+//			
+//#ifdef TUNER_INPUT
+//			spara.pids[j] = pid;
+//			j++;
+//#endif
+//			
+//			DEBUG("set filter, pid=%d[%s], fid=%d\n", pid, result[i*column], filter);
+//		}
+////		else{
+////			int ret = free_filter(pid);
+////			DEBUG("free pid %d return with %d\n", pid, ret);
+////		}
+//	}
+//	
+//#ifdef TUNER_INPUT
+//	
+//	if(ROOTCHANNEL_FREEFROMHDDXM==root_filter){
+//		unsigned short root_pid = root_channel_get();
+//		spara.pids[j] = root_pid;
+//		j++;
+//		alloc_filter(root_pid,0);
+//		
+//		root_filter = ROOTCHANNEL_CHANGEDTOSOFTDMX;
+//	}
+//	
+//	if (j>0)
+//	{
+//		spara.pid_count = j;
+//		
+//		DEBUG("spara.pid_count=%d, do start_feedpush()\n",spara.pid_count);
+//		start_feedpush(&spara);
+//	}
+//#endif
+//	
+//	return 0;
+//}
 #else
 static int push_pid_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
 {
@@ -786,7 +786,95 @@ static int push_pid_sqlite_cb(char **result, int row, int column, void *filter_a
 }
 
 // 只对动态新增加的pid做alloc，不对无用的pid做free
-int push_pid_refresh()
+
+#ifdef TUNER_INPUT
+int push_pid_refresh()	// for tuner box
+{
+	int i = 0;
+	int filter = -1;
+	unsigned int free_cnt = 0;
+	unsigned int alloc_cnt = 0;
+	
+	PRINTF("for tuner box, refresh pids such as 0x19B 0x19C 0x19D\n");
+	
+	AM_DVR_StartRecPara_t spara;
+
+	if (ROOTCHANNEL_NOTINIT!=root_filter && ROOTCHANNEL_FREEFROMHDDXM!=root_filter && ROOTCHANNEL_CHANGEDTOSOFTDMX!=root_filter)
+	{
+		PRINTF("FREE root_filter [%d]\n",root_filter);
+		TC_free_filter(root_filter);
+		root_filter = ROOTCHANNEL_FREEFROMHDDXM;
+		PRINTF("tc free root filter !!!!!!!!!!!!!!!!\n");
+	}
+	
+	for(i=0; i<PUSH_PID_NUM; i++){
+		if(-1!=s_push_pids[i].pid){
+			if(-1==s_push_pids[i].fresh_flag){
+				int ret = free_filter(s_push_pids[i].pid);
+				s_push_pids[i].pid = -1;
+				s_push_pids[i].fresh_flag = -1;
+				free_cnt++;
+				
+				DEBUG("pid %d is useless, free it return %d!\n", s_push_pids[i].pid, ret);
+			}
+		}
+	}
+	
+	if(free_cnt>0){
+		DEBUG("total: free %d pid for dynamic refresh, do stop_feedpush()\n", free_cnt);
+		stop_feedpush();
+	}
+	
+	memset(&spara,0,sizeof(spara));
+	
+	for(i=0; i<PUSH_PID_NUM; i++){
+		if(-1!=s_push_pids[i].pid){
+			if(1==s_push_pids[i].fresh_flag){
+				if(0==strcmp(s_push_pids[i].pid_type,"file")){
+					PRINTF("alloc pid %d as file type, high property\n", s_push_pids[i].pid);
+					filter = alloc_filter(s_push_pids[i].pid, 1);
+				}
+				else{
+					filter = alloc_filter(s_push_pids[i].pid, 0);
+				}
+				
+				s_push_pids[i].fresh_flag = 0;
+				spara.pids[alloc_cnt] = s_push_pids[i].pid;
+				alloc_cnt++;
+				
+				PRINTF("alloc push pid, pid=%d, pid_type=%s, fid=%d\n", s_push_pids[i].pid, s_push_pids[i].pid_type, filter);
+			}
+		}
+	}
+	
+	if(ROOTCHANNEL_FREEFROMHDDXM==root_filter){
+		PRINTF("call alloc_filter for root pid(400)\n");
+		unsigned short root_pid = root_channel_get();
+		spara.pids[alloc_cnt] = root_pid;
+		alloc_cnt++;
+		alloc_filter(root_pid,0);
+		
+		root_filter = ROOTCHANNEL_CHANGEDTOSOFTDMX;
+	}
+	
+	if(alloc_cnt>0)
+	{
+		spara.pid_count = alloc_cnt;
+		
+		for(i=0; i<spara.pid_count;i++){
+			PRINTF("spara.pids[%d]=%d\n", i,spara.pids[i]);
+		}
+		PRINTF("spara.pid_count=%d, do start_feedpush()\n", spara.pid_count);
+		start_feedpush(&spara);
+	}
+	
+	if(0==alloc_cnt && 0==free_cnt)
+		DEBUG("do nothing for tuner box dynamic pid refresh\n");
+	
+	return 0;
+}
+#else
+int push_pid_refresh()	// for network box
 {
 	int i = 0;
 	int filter = -1;
@@ -829,6 +917,7 @@ int push_pid_refresh()
 	
 	return 0;
 }
+#endif
 
 int push_pid_add(PUSH_PID *push_pid)
 {
