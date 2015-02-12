@@ -300,15 +300,16 @@ public class PlayerActivity extends Activity {
 	}
 
 	void setupErrorInfoDlg() {
-		String errorStr = PlayerErrorInfo.getErrorString(this.getResources(),
-				mErrorCode);
-		
+		String errorStr = PlayerErrorInfo.getErrorString(this.getResources(), mErrorCode);
+		Log.d(TAG, "mErrorCode = " + mErrorCode);
+		Log.d(TAG, "errorStr = " + errorStr);
 		mAlertDlg.setMessage(errorStr);
-		if(PlayerErrorInfo.isDeleteError(mErrorCode)){
+		Log.d(TAG, "PlayerErrorInfo.isDeleteError(mErrorCode) = " + PlayerErrorInfo.isDeleteError(mErrorCode));
+//		if(PlayerErrorInfo.isDeleteError(mErrorCode)){
 		    mAlertDlg.showDeleteButton(getIntent());
-		}else{
-		    mAlertDlg.showSingleButton();
-		}
+//		}else{
+//		    mAlertDlg.showSingleButton();
+//		}
 	}
 
 	protected void clearScreen() {
