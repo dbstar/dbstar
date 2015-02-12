@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -505,9 +506,11 @@ public class GDBaseActivity extends Activity implements ClientObserver, TaskCont
 			dialog.setTitle(R.string.smartcard_status_title);
 			dialog.showSingleButton();
 
-			if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED
-					|| mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTING) {
+			if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTED) {
 				dialog.setMessage(R.string.smartcard_status_in);
+			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_INSERTING) {
+				Log.d(TAG, "================smartcard is inserting, but cannot work!");
+				dialog.setMessage(R.string.smartcard_status_invlid);				
 			} else if (mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVED
 					|| mSmartcardState == GDCommon.SMARTCARD_STATE_REMOVING) {
 				dialog.setMessage(R.string.smartcard_status_out);
