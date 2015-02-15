@@ -41,6 +41,7 @@
 #include "drmapi.h"
 #include "prodrm20.h"
 #include "softdmx.h"
+#include "tunerdmx.h"
 
 #define MAX_PACK_LEN (1500)
 #define MAX_PACK_BUF (40000)		//¶¨Òå»º³åÇø´óĞ¡£¬µ¥Î»£º°ü
@@ -817,6 +818,7 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 			print_stamp = hms_stamp();
 			
 #ifdef TUNER_INPUT
+			dvr_buf_monitor(print_stamp);
 #else
 			igmpbuf_monitor(print_stamp);
 			

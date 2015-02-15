@@ -11,6 +11,8 @@
 
 #ifdef TUNER_INPUT
 
+#include "am_fend.h"
+#include "linux/dvb/frontend.h"
 #include "softdmx.h"
 //#include "dmx.h"
 #include "prodrm20.h"
@@ -32,7 +34,7 @@ static int loaderAction = 0;
 static int s_print_cnt = 0;
 static unsigned char tc_tid = 0xff;
 static unsigned short tc_pid = 0xffff;
-static unsigned char software_version[4];
+static unsigned char software_version[32];
 static char last_tuner_args[512];
 
 #define FEND_DEV_NO 0
@@ -390,100 +392,136 @@ int TC_alloc_filter(unsigned short pid, Filter_param* sparam, AM_DMX_DataCb hdle
     return fid;
 }
 
-#if 0
-static void* dvr_data_thread(void *arg)
-{
-	DVRFeedData *dd = (DVRFeedData*)arg;
-	int cnt,pri,tp,size;
-	uint8_t buf[MULTI_BUF_SIZE];
-    int p_write,p_read,p_free,left;
-
-	pri = 0;
-	p_write = 0;
-	p_read = 0;
-    p_free = MULTI_BUF_SIZE; 
-
-	while (dd->running)
-	{
-		//cnt = AM_DVR_Read(dd->id, buf+p_write, p_free,1000);
-		cnt = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, buf+p_write,p_free,1000);
-		//printf("READ DATA LEN = [%d]\n",cnt);
-
-//		pri++;
-//		if(pri == 1000)
-//		{
-//			pri = 0;
-//			DEBUG("dvr read 1000 packets len[%d],pw[%d],pr[%d]\n",cnt,p_write,p_read);
-//		}
-
-		if (cnt <= 0)
-		{
-			DEBUG("No data available from DVR%d cnt=[%d]\n", dd->id,cnt);
-                        //AM_DEBUG(1,"IN No data available from DVR%d\n", dd->id);
-			usleep(20*1000);
-			continue;
-		}
-		
-		p_write += cnt;
-        if (p_write >= MULTI_BUF_SIZE)
-        	p_write = 0;
-		if(p_write >= p_read)
-            left = p_write - p_read;
-        else
-            left = MULTI_BUF_SIZE - p_read + p_write;
-
-         while (left>1880)
-         {
-             parse_ts_packet(buf,p_write,&p_read); // make sure 'p_buf' is not NULL
-             if(p_write >= p_read)
-                 left = p_write - p_read;
-             else
-                 left = MULTI_BUF_SIZE - p_read + p_write;
-         }
-
-         if(p_read >= p_write)
-             p_free = p_read - p_write;
-         else
-             p_free = MULTI_BUF_SIZE - p_write;
-	}
-
-	return NULL;
-}
-#else
-
 #define NORMAL_AM_DVR_READ
-static int left_len_calcu(int p_write, int p_read, int full_flag)
+
+static int s_dvr_buf_init_flag = 0;
+static int s_dvr_ts_parse_thread_running = 0;
+static uint8_t *s_dvr_buf = NULL;
+static int p_write = 0;
+static int p_read = 0;
+static int full_flag = 0;	// 标记当p_write==p_read时，究竟是满还是空
+
+static int dvr_buf_init()
 {
-	int left = 0;
+	PRINTF("s_dvr_buf_init_flag=%d\n", s_dvr_buf_init_flag);
 	
-	if(p_write > p_read)
-	{
-        left = p_write - p_read;
+	if(0==s_dvr_buf_init_flag){
+		if(s_dvr_buf){
+			PRINTF("free s_dvr_buf: %p\n", s_dvr_buf);
+			free(s_dvr_buf);
+			s_dvr_buf = NULL;
+		}
+		s_dvr_buf = (unsigned char *)malloc(MULTI_BUF_SIZE);
+		if(NULL==s_dvr_buf){
+			ERROROUT("can not malloc space for s_dvr_buf\n");
+			return -1;
+		}
+		p_read = 0;
+		p_write = 0;
+		s_dvr_buf_init_flag = 1;
+		PRINTF("malloc %d for dvr receive buffer\n", MULTI_BUF_SIZE);
+	}
+	else{
+		PRINTF("have malloc dvr receive buffer already\n");
+	}
+	return 0;
+}
+
+void dvr_buf_monitor(char *timestr)
+{
+	int windex = p_write;
+	int rindex = p_read;
+	int recv_size = 0;
+	int free_size = 0;
+	
+	if (p_write > p_read)
+    {
+    	recv_size = MULTI_BUF_SIZE - windex;
+    	free_size = recv_size + rindex;
     }
     else if(p_write==p_read)
     {
-    	if(1==full_flag)
-    		left = MULTI_BUF_SIZE;
-    	else
-    		left = 0;
+    	if(0==full_flag){
+    		recv_size = MULTI_BUF_SIZE - windex;
+    		free_size = MULTI_BUF_SIZE;
+    	}
+    	else{
+    		recv_size = 0;
+    		free_size = 0;
+    	}
     }
     else
     {
-    	left = MULTI_BUF_SIZE - p_read + p_write;
+    	recv_size = rindex - windex;  //not let p_write == rindex 
+    	free_size = recv_size;
     }
     
-    return left;
+	PRINTF("[%s]dvr buf w(%08d) r(%08d), can recv %08d in %08d\n", timestr,p_write,p_read,recv_size,free_size);
 }
 
-static void* dvr_data_thread(void *arg)
+// this thread modify p_read only
+static void* dvr_ts_parse_thread()
+{
+	int windex = p_write;
+	int left = 0;
+    int pin_read = 0;
+    int empty_cnt = 0;
+    
+    DEBUG("enter into dvr_ts_parse_thread\n");
+    
+	while (1)
+	{
+		windex = p_write;	// as a global var, p_write and p_read are very sensitive
+		
+		if(windex > p_read)
+		{
+	        left = windex - p_read;
+	    }
+	    else if(windex==p_read)
+	    {
+	    	if(1==full_flag)
+	    		left = MULTI_BUF_SIZE;
+	    	else
+	    		left = 0;
+	    }
+	    else
+	    {
+	    	left = MULTI_BUF_SIZE - p_read + windex;
+	    }
+		
+		// make sure parse_ts_packet can set p_read from tail to head
+		if(left>=188){	//(left>=376000 || (left>=188&&empty_cnt>20)){	// 376000 = 2000*188
+			empty_cnt = 0;
+			pin_read = p_read;
+			parse_ts_packet(s_dvr_buf,windex,&p_read); // make sure 's_dvr_buf' is not NULL
+			if(pin_read!=p_read){
+				full_flag = 0;
+//				PRINTF("pin(%d)->r(%d), left(%d)\n", pin_read, p_read, left);
+			}
+			else{
+				PRINTF("WARNNING: pin_read==p_read,w(%d),r(%d),fill(%d)\n", windex, p_read, left);
+			}
+		}
+		else{
+			empty_cnt ++;
+//			PRINTF("EMPTY:SIZE(%d),w(%d),r(%d),fill(%d)\n", MULTI_BUF_SIZE, windex, p_read, left);
+			usleep(170000);
+		}
+	}
+	
+	DEBUG("exit from dvr_ts_parse_thread\n");
+
+	return NULL;
+}
+
+// this thread modify p_write only
+static void* dvr_recv_thread(void *arg)
 {
 	DVRFeedData *dd = (DVRFeedData*)arg;
-	uint8_t buf[MULTI_BUF_SIZE];
-    int p_write = 0, p_read = 0, left = 0;
-    int recv_size = 0;	// 可用的接收大小，<=free_size，当空闲区域分布在两端时，本次只使用右端
-    int recv_len = 0;	// 实际接收大小
-    int full_flag = 0;	// 标记当p_write==p_read时，究竟是满还是空
-    int pin_read = 0;
+	int recv_size = 0;	// 可用的接收大小，<=free_size，当空闲区域分布在两端时，本次只使用右端
+	int recv_len = 0;	// 实际接收大小
+    int rindex = 0;
+    int windex = 0;
     
 #ifdef NORMAL_AM_DVR_READ
 #else
@@ -492,57 +530,54 @@ static void* dvr_data_thread(void *arg)
 
 	while (dd->running)
 	{
+		rindex = p_read;	// get a snapshot for p_read, make rindex staticly in one loop
+		windex = p_write;	// will modify p_write at one time, make sure it has not two values for thread dvr_ts_prase_thread
+
 #ifdef NORMAL_AM_DVR_READ
-		if (p_write >= p_read)
+		if (windex >= rindex)
         {
         	if(0==full_flag)
-        		recv_size = MULTI_BUF_SIZE - p_write;
+        		recv_size = MULTI_BUF_SIZE - windex;
         	else
         		recv_size = 0;
         }
         else
         {
-        	recv_size = p_read - p_write;
+        	recv_size = rindex - windex;
         }
         
         if(recv_size>0)
         {
-        	recv_len = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, buf+p_write,recv_size,1000);
-			
+        	recv_len = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, s_dvr_buf+windex,recv_size,200);
+
 			if (recv_len>0)
 			{
-				p_write += recv_len;
-				if(p_write >= MULTI_BUF_SIZE){	// actually, p_write is equal with MULTI_BUF_SIZE
-					p_write = 0;
+				windex += recv_len;
+				if(windex >= MULTI_BUF_SIZE){	// actually, windex is equal with MULTI_BUF_SIZE
+					windex = 0;
 				}
 				
-				if(p_read==p_write)
+				p_write = windex;
+				
+				if(rindex==windex)
 					full_flag = 1;
 			}
 			else
 			{
-				DEBUG("No data available from DVR%d recv_len=[%d]\n", dd->id, recv_len);
+				PRINTF("No data available from DVR%d recv_len=[%d]\n", dd->id, recv_len);
 	                        //AM_DEBUG(1,"IN No data available from DVR%d\n", dd->id);
-				usleep(20000);
+				usleep(370000);
 				//continue;
 			}
 		}
-        
-		left = left_len_calcu(p_write, p_read, full_flag);
-
-		while (left>=188)	// use 188 instead of 1880
-		{
-			pin_read = p_read;
-			parse_ts_packet(buf,p_write,&p_read); // make sure 'p_buf' is not NULL
-			if(pin_read!=p_read)
-			{
-				full_flag = 0;
-			}
-			left = left_len_calcu(p_write, p_read, full_flag);
+		else{
+			PRINTF("FULL:w(%d),r(%d),recv_size(%d)\n", windex, rindex, recv_size);
+			usleep(20000);
 		}
+        
 #else	// 仅用于测试AM_DVR_Read的稳定性，不存数据。
 		recv_size = MULTI_BUF_SIZE;
-		recv_len = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, buf+p_write,recv_size,1000);
+		recv_len = AM_DVR_Read(DVR_DEV_NO/*dd->id*/, s_dvr_buf+windex,recv_size,1000);
 		if(recv_len>0)
 		{
 			if(recv_cnt>=0){
@@ -555,7 +590,7 @@ static void* dvr_data_thread(void *arg)
 			}
 			else{
 				DEBUG("AM_DVR_Read NO data cnt %d, and has data >>>\n", recv_cnt);
-				
+				usleep(700000);
 				recv_cnt = 1;
 			}
 		}
@@ -584,18 +619,32 @@ static void* dvr_data_thread(void *arg)
 	return NULL;
 }
 
-#endif	
 
 static void start_data_thread()
 {
+	pthread_t pth_dvr_ts_parse_id;
+	
 	//DVRData *dd = &data_threads[dev_no];
 	
 	if (data_threads.running)
 		return;
-		
+
+	if(0!=dvr_buf_init()){
+		DEBUG("dvr buf init failed\n");
+		return;
+	}
+	
 	DEBUG("start data thread ....\n");
 	data_threads.running = 1;
-	pthread_create(&data_threads.thread, NULL, dvr_data_thread, &data_threads);
+	
+#ifdef NORMAL_AM_DVR_READ
+	if(0==s_dvr_ts_parse_thread_running){
+		DEBUG("create dvr_ts_parse_thread...\n");
+		pthread_create(&pth_dvr_ts_parse_id, NULL, dvr_ts_parse_thread, NULL);
+		s_dvr_ts_parse_thread_running = 1;
+	}
+#endif
+	pthread_create(&data_threads.thread, NULL, dvr_recv_thread, &data_threads);
 }
 
 static void stop_data_thread()
@@ -1254,7 +1303,7 @@ void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, i
 {
 	unsigned char *datap=NULL, ctmp;
 //	unsigned char mark = 0;
-	char tmp[10],cmp[128],tmp_id[20];
+	char cmp[128],tmp_id[20];
         int stb_id_l;
         int stb_seral;
 	unsigned short tmp16=0;
@@ -1367,7 +1416,7 @@ void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, i
         }
 	}
 	
-	strncpy(software_version,cmp,sizeof(software_version));
+	snprintf(software_version,sizeof(software_version),"%s",cmp);
 	//stb_id
 	datap += 4;
         snprintf(cmp,7,"%6s",g_loaderInfo.stbid+10);
@@ -1501,11 +1550,39 @@ INTERMITTENT_PRINT("first 10 = [%s] == [%s]\n",cmp,g_loaderInfo.stbid);
 	//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",g_loaderInfo.file_type,g_loaderInfo.img_len,g_loaderInfo.download_type);
 }
 
+static fe_modulation_t modulation_trans(MOD_TYPE_E mod_ori)
+{
+	fe_modulation_t mod_std = QPSK;
+	
+	switch(mod_ori){
+		case MOD_TYPE_QPSK:
+			mod_std = QPSK;
+			break;
+		case MOD_TYPE_8PSK:
+			mod_std = PSK_8;
+			break;
+		case MOD_TYPE_16PSK:
+			mod_std = APSK_16;
+			break;
+		case MOD_TYPE_32PSK:
+			mod_std = APSK_32;
+			break;
+		default:
+			mod_std = QPSK;
+			break;
+	}
+	
+	PRINTF("translate modulation from %d to %d\n", mod_ori, mod_std);
+	
+	return mod_std;
+}
+
 int tuner_lock(char *args, char *buf, unsigned int len)
 {
     int ret = 0;
     int snr = 0;
     int strength = 0;
+    int power_percent = 0;
     
     TUNER_SETTINGS tuner_s;
     
@@ -1523,9 +1600,15 @@ int tuner_lock(char *args, char *buf, unsigned int len)
     if(0==ret){
 	    tuner_search_satelite(&snr, &strength);
 		snprintf(buf,len,"%d&%d\n",snr,strength);
+		
+		power_percent = AM_FEND_CalcTerrPowerPercentNorDig(	strength,
+															modulation_trans(tuner_s.modulation_type),
+															tuner_s.symbolRate );
+		DEBUG("tuner power_percent=%d\n", power_percent);
 	}
 
     return ret;
 }
 
 #endif
+

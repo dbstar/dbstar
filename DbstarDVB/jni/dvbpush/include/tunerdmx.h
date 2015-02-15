@@ -54,6 +54,7 @@ void ca_section_handle(int dev_no, int fid, const unsigned char *data, int len, 
 void loader_des_section_handle(int dev_no, int fid, const unsigned char *data, int len, void *user_data);
 int tuner_get_signalinfo(char *args, char *buf, unsigned int len);
 int tuner_lock(char* args, char *buf, unsigned int len);
+void dvr_buf_monitor(char *timestr);
 
 #endif
 

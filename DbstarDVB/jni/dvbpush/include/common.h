@@ -6,7 +6,6 @@
 
 extern int debug_level_get(void);
 
-// 如果是tuner信号版本，定义此宏；否则是网络版本
 //#define TUNER_INPUT
 
 #define DVBPUSH_DEBUG_ANDROID 1
@@ -101,7 +100,7 @@ typedef enum{
 #define	SHOW_FLASH_COLUMNTYPE			(12)
 #define ROOT_CHANNEL		(400)	// 0x190
 #ifdef TUNER_INPUT
-	#define MULTI_BUF_SIZE	(524288)	/* (524288)=(512*1024) */
+	#define MULTI_BUF_SIZE	(1880000)	// 1835K	//(524288)	/* (524288)=(512*1024) */
 #else
 	#define MULTI_BUF_SIZE	(16171008)	/* (16171008)=(12*1024*1316) */
 #endif
