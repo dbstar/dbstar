@@ -162,6 +162,8 @@ typedef enum{
 
 #define STORAGE_FLASH_SIZE			(1073741824LL - 50000000LL)
 
+#define WATCHDOG_CTRL	"/sys/class/boot_monitor/boot_timer"
+
 typedef enum{
 	NAVIGATIONTYPE_NOCOLUMN = 0,
 	NAVIGATIONTYPE_COLUMN

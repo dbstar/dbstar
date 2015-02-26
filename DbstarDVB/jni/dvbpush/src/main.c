@@ -3,6 +3,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "common.h"
 #include "xmlparser.h"
@@ -123,11 +126,32 @@ void *main_thread()
 	return NULL;
 }
 
+static int watchdog_close()
+{
+	char *watchdog_close_flag = "0";
+	int watchdog_hd = open(WATCHDOG_CTRL, O_RDWR);
+	if(-1==watchdog_hd){
+		ERROROUT("open %s to close watch dog failed\n", WATCHDOG_CTRL);
+		return -1;
+	}
+	else{
+		if(write(watchdog_hd, watchdog_close_flag, strlen(watchdog_close_flag))<0){
+			ERROROUT("write %s to %s failed\n", watchdog_close_flag, WATCHDOG_CTRL);
+		}
+		
+		close(watchdog_hd);
+		DEBUG("write %s to %s success\n", watchdog_close_flag, WATCHDOG_CTRL);
+		
+		return 0;
+	}
+}
+
 int dvbpush_init()
 {
 	if(0==s_dvbpush_init_flag){
 		s_dvbpush_init_flag = 1;
 		DEBUG("dvbpush init...>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.......\n");
+		watchdog_close();
 		pthread_create(&tid_main, NULL, main_thread, NULL);
 		//pthread_detach(tid_main);
 	}
