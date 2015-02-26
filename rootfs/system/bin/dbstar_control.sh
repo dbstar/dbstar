@@ -8,6 +8,7 @@ system_init()
 	setprop dbstar.deepsleep 0
 #	setprop libplayer.ts.softdemux true
 	setprop media.p2pplay.enable false
+	chmod 666 /sys/class/boot_monitor/boot_timer
 }
 
 dbstar_init()
