@@ -139,7 +139,8 @@ public class GDDataModel {
 		String selection = ResStr.OBJECTNAME + "=? and " + ResStr.ENTITYID
 				+ "=? and " + ResStr.STRLANG + "=?";
 		String[] selectionArgs = { GDDVBDataContract.COLUMNTABLE, columnId,
-				getLocalization() };
+				getLanguage()};
+		LogUtil.d(TAG, " columnId = " + columnId + ", getLocalization() = " + getLanguage());
 
 		Cursor cursor = mDVBDataProvider.query(ResStr.CONTENT_URI,
 				ResStrQuery.COLUMNS, selection, selectionArgs, null);
@@ -147,7 +148,7 @@ public class GDDataModel {
 		if (cursor != null && cursor.getCount() > 0) {
 			if (cursor.moveToFirst()) {
 				columnName = cursor.getString(ResStrQuery.STRVALUE);
-				LogUtil.d(TAG, "--------columnId=" + columnId + "----columnName = " + columnName);
+				LogUtil.d(TAG, " columnName = " + columnName);
 			}
 		}
 
@@ -822,6 +823,13 @@ public class GDDataModel {
 	public String getLanguage() {
 		if (Language == null || Language.equals(""))
 			Language = queryDeviceGlobalProperty(GDDVBDataContract.PropertyLanguage);
+		
+		if (Language == null || Language.equals("")) {
+			LogUtil.d(TAG, " query Language is null, and set Language as 'cho'!");
+			Language = "cho";
+		} else {
+			LogUtil.d(TAG, " query Language = " + Language);
+		}
 		return Language;
 	}
 
