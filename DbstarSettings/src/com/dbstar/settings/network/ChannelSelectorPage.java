@@ -435,8 +435,10 @@ public class ChannelSelectorPage extends BaseFragment {
         mSingleStrength.setMax(100);
         mSingleStrength.setProgress(strenth);
         try {
-            mTvSingleQualitye.setText(quality+getResources().getString(R.string.network_satellite_signal_quality_unit));
-            mTvSingleStrength.setText(strenth +getResources().getString(R.string.network_satellite_signal_intensity_unit));
+//            mTvSingleQualitye.setText(quality+getResources().getString(R.string.network_satellite_signal_quality_unit));
+//            mTvSingleStrength.setText(strenth +getResources().getString(R.string.network_satellite_signal_intensity_unit));
+            mTvSingleQualitye.setText(quality + "%");
+            mTvSingleStrength.setText(strenth + "%");
         } catch (Exception e) {
             e.printStackTrace();
         }
