@@ -1,4 +1,3 @@
-//全局使用的头文件，不允许与其他文件存在依赖
 
 #ifndef __COMMON_H__
 #define __COMMON_H__

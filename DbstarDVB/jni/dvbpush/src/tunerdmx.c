@@ -522,6 +522,9 @@ static void* dvr_recv_thread(void *arg)
 	int recv_len = 0;	// 实际接收大小
     int rindex = 0;
     int windex = 0;
+    int pre_rindex = 0;
+    int pre_windex = 0;
+    int turn_around = 0;
     
 #ifdef NORMAL_AM_DVR_READ
 #else
@@ -532,6 +535,10 @@ static void* dvr_recv_thread(void *arg)
 	{
 		rindex = p_read;	// get a snapshot for p_read, make rindex staticly in one loop
 		windex = p_write;	// will modify p_write at one time, make sure it has not two values for thread dvr_ts_prase_thread
+		
+		pre_rindex = rindex;
+		pre_windex = windex;
+		turn_around = 0;
 
 #ifdef NORMAL_AM_DVR_READ
 		if (windex >= rindex)
@@ -552,15 +559,51 @@ static void* dvr_recv_thread(void *arg)
 
 			if (recv_len>0)
 			{
+				if(recv_len>recv_size){
+					PRINTF("warn: recv_len(%d)>recv_size(%d)\n", recv_len, recv_size);
+				}
+				
 				windex += recv_len;
 				if(windex >= MULTI_BUF_SIZE){	// actually, windex is equal with MULTI_BUF_SIZE
 					windex = 0;
+					
+					if(windex>MULTI_BUF_SIZE){
+						PRINTF("warn: windex(%d)>MULTI_BUF_SIZE(%d), recv_len=%d\n", windex, MULTI_BUF_SIZE, recv_len);
+					}
+					
+					turn_around = 1;
 				}
 				
-				p_write = windex;
-				
-				if(rindex==windex)
+#if 1
+				if (pre_windex >= pre_rindex)
+		        {
+		        	if(1==turn_around && windex>=rindex){
+		        		full_flag = 1;
+		        		
+		        		PRINTF(">1> FULL:pre_w(%d)+recv_size(%d)=w(%d),r(%d),turn_around(%d),\n", pre_windex,recv_size,windex,rindex,turn_around);
+		        	}
+		        	else
+		        		full_flag = 0;
+		        }
+		        else	// pre_windex < pre_rindex
+		        {
+		        	if(1==turn_around || windex>=rindex){
+		        		full_flag = 1;
+		        		
+		        		PRINTF(">2> FULL:pre_w(%d)+recv_size(%d)=w(%d),r(%d),turn_around(%d),\n", pre_windex,recv_size,windex,rindex,turn_around);
+		        	}
+		        	else
+		        		full_flag = 0;
+		        }
+#else
+				if(rindex==windex){
 					full_flag = 1;
+					
+					PRINTF(">0> FULL:pre_w(%d)+recv_size(%d)=w(%d),r(%d),turn_around(%d),\n", pre_windex,recv_size,windex,rindex,turn_around);
+				}
+#endif
+				
+				p_write = windex;
 			}
 			else
 			{
@@ -571,7 +614,7 @@ static void* dvr_recv_thread(void *arg)
 			}
 		}
 		else{
-			PRINTF("FULL:w(%d),r(%d),recv_size(%d)\n", windex, rindex, recv_size);
+			PRINTF("FULL:w(%d),r(%d),full_flag(%d),recv_size(%d)\n", windex, rindex, full_flag, recv_size);
 			usleep(20000);
 		}
         
@@ -1599,11 +1642,37 @@ int tuner_lock(char *args, char *buf, unsigned int len)
     
     if(0==ret){
 	    tuner_search_satelite(&snr, &strength);
+	    
+	    if(strength>=100 || strength<0){
+	    	snr = 0;
+	    	strength = 0;
+	    }
+	    else{
+//	    	if(5!=snr){
+//	    		snr = randint()%80;
+//	    		PRINTF("rand for snr %d\n", snr);
+//	    	}
+	    	if(snr<=10)
+	    		snr += 70;
+	    	else if(snr<=20)
+	    		snr += 60;
+	    	else if(snr<=30)
+	    		snr += 50;
+	    	else if(snr<=40)
+	    		snr += 40;
+	    	else if(snr<=50)
+	    		snr += 30;
+	    	else if(snr<=60)
+	    		snr += 20;
+	    	else if(snr>85)
+	    		snr = 85;
+	    }
+	    
 		snprintf(buf,len,"%d&%d\n",snr,strength);
 		
-		power_percent = AM_FEND_CalcTerrPowerPercentNorDig(	strength,
-															modulation_trans(tuner_s.modulation_type),
-															tuner_s.symbolRate );
+//		power_percent = AM_FEND_CalcTerrPowerPercentNorDig(	strength,
+//															modulation_trans(tuner_s.modulation_type),
+//															tuner_s.symbolRate );
 		DEBUG("tuner power_percent=%d\n", power_percent);
 	}
 
