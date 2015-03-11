@@ -966,7 +966,8 @@ public class GDLoopGallery extends GDAbsSpinner {
             mStartTime = AnimationUtils.currentAnimationTimeMillis();
             mStartX = 0;
             mDisctance = -distance;
-            mScroller.startScroll(0, 0, -distance, 0, mAnimationDuration);
+//            mScroller.startScroll(0, 0, -distance, 0, mAnimationDuration);
+            mScroller.startScroll(0, 0, -distance, 0);
             post(this);
         }
         

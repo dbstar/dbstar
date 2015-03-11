@@ -396,6 +396,8 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 			mCurrentState.Url = url;
 			mCurrentState.index = mResourceIndex;
 
+			LogUtil.d(TAG, " mResourceIndex: " + mResourceIndex);
+			
 			mCurrentState.PlayerState = PLAYER_STATE_IDLE;
 			mVideoView.setVideoPath(url);
 
@@ -405,6 +407,11 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 					&& mStoreState.Url.equals(mCurrentState.Url)) {
 				mVideoView.seekTo(mStoreState.Position);
 				mDurationToPlay = mStoreState.Duration - mStoreState.Position;
+				
+				LogUtil.d(TAG, " mStoreState.Duration " + mStoreState.Duration);
+				LogUtil.d(TAG, " mStoreState.Position " + mStoreState.Position);
+				LogUtil.d(TAG, " mDurationToPlay " + mDurationToPlay);
+		
 				clearStoreState();
 			}
 		}
@@ -445,9 +452,13 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 		if ((mStoreState.Position + (int) ecleapsedTime) > mStoreState.Duration) {
 			mResourceIndex = mStoreState.index + 1;
 			clearStoreState();
+			LogUtil.d(TAG, " mResourceIndex " + mResourceIndex);
 		} else {
 			mResourceIndex = mStoreState.index;
 			mStoreState.Position = mStoreState.Position + (int) ecleapsedTime;
+			
+			
+			LogUtil.d(TAG, " mResourceIndex " + mResourceIndex + " mStoreState.Position " + mStoreState.Position);
 		}
 	}
 
@@ -458,29 +469,38 @@ public class GDMediaScheduler implements ClientObserver, OnCompletionListener,
 
 		if (mStoreState.Type != RNONE) {
 
-			LogUtil.d(TAG, "@@@@@@ mStoreState.PlayerState = "
-					+ mStoreState.PlayerState);
+			LogUtil.d(TAG, "@@@@@@ mStoreState.PlayerState = " + mStoreState.PlayerState);
 			LogUtil.d(TAG, "@@@@@@ mStoreState.Index = " + mStoreState.index);
 
 			if (mStoreState.Type == RVideo) {
+				LogUtil.d(TAG, "@@@@@@ mStoreState.Type == RVideo, set mStoreState.PlayerState as PLAYER_STATE_COMPLETED forced.");
+				
+				//if not set to PLAYER_STATE_COMPLETED forced, when booting, play micro-window a little seconds, play a normal film a little seconds, play micro-window, killed and rebooting...
+				mStoreState.PlayerState = PLAYER_STATE_COMPLETED;
+				
 				if (mStoreState.PlayerState == PLAYER_STATE_PREPARED) {
+					LogUtil.d(TAG, "@@@@@@ PLAYER_STATE_PREPARED");
 					mResourceIndex = mStoreState.index;
 				} else if (mStoreState.PlayerState == PLAYER_STATE_IDLE) {
+					LogUtil.d(TAG, "@@@@@@ PLAYER_STATE_IDLE");
 					mResourceIndex = mStoreState.index;
 				} else if (mStoreState.PlayerState == PLAYER_STATE_COMPLETED
 						|| mStoreState.PlayerState == PLAYER_STATE_ERROR) {
+					LogUtil.d(TAG, "@@@@@@ PLAYER_STATE_COMPLETED or PLAYER_STATE_ERROR");
 					mResourceIndex = mStoreState.index + 1;
 					clearStoreState();
 				} else {
 					;
 				}
 			} else if (mStoreState.Type == RImage) {
+				LogUtil.d(TAG, "@@@@@@ mStoreState.Type == RImage");
 				getResourceIndex();
 			} else {
 
 			}
 
 		} else {
+			LogUtil.d(TAG, "@@@@@@ mStoreState.Type == RNONE");
 			mResourceIndex = mResourceIndex + 1;
 		}
 
