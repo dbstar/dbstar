@@ -76,7 +76,7 @@ typedef enum{
 #define	WORKING_DATA_DIR		"/data/dbstar"
 #define	MSG_FIFO_ROOT_DIR		WORKING_DATA_DIR"/msg_fifo"
 #define PUSH_CONF_SEED			"/system/etc/dbstar/push.conf"
-#define PUSH_CONF_WORKING		WORKING_DATA_DIR"/push.conf"
+#define PUSH_CONF_WORKING		WORKING_DATA_DIR"/push/push.conf"
 #define INITIALIZE_XML_URI		"pushroot/initialize/Initialize.xml"
 #define MOTHERDISC_XML_URI		"ContentDelivery.xml"
 

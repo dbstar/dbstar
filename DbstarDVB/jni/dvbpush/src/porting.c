@@ -42,6 +42,9 @@
 
 #define INVALID_PRODUCTID_AT_ENTITLEINFO	(0)
 
+// (33554432)==32*1024*1024	(8388608)==8*1024*1024 (3145728)==3*1024*1024
+#define LIBPUSH_LOGDIR_SIZE	(3145728)
+
 typedef struct{
 	char SmartCardID[64];
 	SCDCAPVODEntitleInfo EntitleInfo;
@@ -169,18 +172,28 @@ char *setting_item_value(char *buf, unsigned int buf_len, char separator)
 		return NULL;
 }
 
-/*
- push库会向push.conf配置的log目标目录写入日志，在异常情况下，日志日积月累过多会影响系统的正常运行。
- 所以在开机时检查此目录的大小，大于一定值时删除
-*/
-// (33554432)==32*1024*1024	(8388608)==8*1024*1024 (3145728)==3*1024*1024
-#define LIBPUSH_LOGDIR_SIZE	(3145728)
+// if write push log, ?/libpush dir will be increased constantly day by day. so, you must check and clean it
+static int push_log_clear(int force)
+{
+	long long dir_size_total = 0LL;
+	
+	if(strlen(s_push_log_dir)>1){
+		dir_size_total = dir_size(s_push_log_dir);
+		DEBUG("size of %s is %lld\n", s_push_log_dir, dir_size_total);
+		if(1==force || dir_size_total>=LIBPUSH_LOGDIR_SIZE){
+			DEBUG("WARNING: log dir %s is too large, remove it\n", s_push_log_dir);
+			remove_force(__FUNCTION__, s_push_log_dir);
+		}
+	}
+	
+	return 0;
+}
+
 static int push_conf_init(void)
 {
 	FILE* fp_from = NULL;
 	char tmp_buf[1024];
 	char *p_value;
-	long long dir_size_total = 0LL;
 	
 	memset(s_push_log_dir,0,sizeof(s_push_log_dir));
 	
@@ -202,12 +215,7 @@ static int push_conf_init(void)
 			if(strlen(tmp_buf)>0 && strlen(p_value)>0){
 				if(0==strcmp(tmp_buf, "LOG_DIR")){
 					snprintf(s_push_log_dir,sizeof(s_push_log_dir),"%s/libpush",p_value);
-					dir_size_total = dir_size(s_push_log_dir);
-					DEBUG("size of %s is %lld\n", s_push_log_dir, dir_size_total);
-					if(dir_size_total>=LIBPUSH_LOGDIR_SIZE){
-						DEBUG("WARNING: log dir %s is too large, remove it\n", s_push_log_dir);
-						remove_force(__FUNCTION__, s_push_log_dir);
-					}
+					push_log_clear(0);
 				}
 				else if(0==strcmp(tmp_buf, "INITFILE")){
 					snprintf(s_initialize_xml_uri,sizeof(s_initialize_xml_uri),"%s", p_value);
@@ -1950,8 +1958,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			remove_force(__FUNCTION__, "/data/dbstar/Dbstar.db");
 			remove_force(__FUNCTION__, "/data/dbstar/ColumnRes");
 			
-			DEBUG("remove push log dir: %s\n", s_push_log_dir);
-			remove_force(__FUNCTION__, s_push_log_dir);
+			push_log_clear(1);
+			
 			break;
 		case CMD_DRM_RESET:
 			s_hd_write_protected += 2;
@@ -1967,8 +1975,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 					ERROROUT("rename %s to %s failed\n", drm_dir, drm_dir_rubbish);
 			}
 			
-			DEBUG("remove push log dir: %s\n", s_push_log_dir);
-			remove_force(__FUNCTION__, s_push_log_dir);
+			push_log_clear(1);
+			
 			break;
 		case CMD_DISC_FORMAT:
 			s_hd_write_protected += 4;
@@ -2001,8 +2009,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			}
 #endif
 			
-			DEBUG("remove push log dir: %s\n", s_push_log_dir);
-			remove_force(__FUNCTION__, s_push_log_dir);
+			push_log_clear(1);
 
 			break;
 		case CMD_SYSTEM_AWAKE_TIMER:

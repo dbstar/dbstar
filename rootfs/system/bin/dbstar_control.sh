@@ -90,16 +90,37 @@ dbstar_init()
 		chown system:system /data/dbstar/dbstar.conf
 		chmod 644 /data/dbstar/dbstar.conf
 	fi
-
+	
 	if [ -e "/data/dbstar/push.conf" ]; then
-		echo "push.conf already exist!"
-	else
-		cp -rf /system/etc/dbstar/push.conf /data/dbstar/
-		sync
-		chown system:system /data/dbstar/push.conf
-		chmod 644 /data/dbstar/push.conf
+		echo "delete push.conf"
+		rm -f /data/dbstar/push.conf
+		rm -rf /data/dbstar/libpush
 	fi
 
+	if [ -e "/data/dbstar/push/push.conf" ]; then
+		echo "push/push.conf already exist!"
+	else
+		echo "init push/push.conf"
+		mkdir /data/dbstar/push
+		chown system:system /data/dbstar/push
+		chmod 777 /data/dbstar/push
+		cp -rf /system/etc/dbstar/push.conf /data/dbstar/push
+		sync
+		chown system:system /data/dbstar/push/push.conf
+		chmod 666 /data/dbstar/push/push.conf
+	fi
+	
+	if [ -d "/data/anr" ]; then
+		rm -rf /data/anr
+	fi
+	
+	if [ -d "/data/tombstones" ]; then
+		rm -rf /data/tombstones
+	fi
+
+	if [ -d "/data/lost+found" ]; then
+		rm -rf /data/lost+found/*
+	fi
 
 	if [ -e "/data/misc/dhcp/dhcpcd-eth0.lease" ]; then
 		rm /data/misc/dhcp/dhcpcd-eth0.lease
