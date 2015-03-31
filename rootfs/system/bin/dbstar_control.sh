@@ -125,6 +125,11 @@ dbstar_init()
 	if [ -e "/data/misc/dhcp/dhcpcd-eth0.lease" ]; then
 		rm /data/misc/dhcp/dhcpcd-eth0.lease
 	fi
+	
+	if [ -e "/data/dbstar/hd_db_damaged" ]; then
+		chmod 666 /data/dbstar/hd_db_damaged
+		chown system:system /data/dbstar/hd_db_damaged
+	fi
 
         setprop service.adb.tcp.port 5555
         stop adbd

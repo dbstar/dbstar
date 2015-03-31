@@ -3918,6 +3918,9 @@ PARSE_XML_END:
 			}
 			
 			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
+			
+			if(0==storage_flash_check())
+				hd_database_backup();
 		}
 		else if(COLUMN_XML==actual_xml_flag){
 			column_refresh_flag_set(1);
@@ -3938,6 +3941,9 @@ PARSE_XML_END:
 					PRINTF("will regist publication/sproduct/preview for push, storage with flash\n");
 					push_recv_manage_refresh(RECEIVETYPE_PUBLICATION|RECEIVETYPE_SPRODUCT|RECEIVETYPE_COLUMN|RECEIVETYPE_PREVIEW);
 				}
+			}
+			else{
+				hd_database_backup();
 			}
 		}
 		else if(SPRODUCT_XML==actual_xml_flag){
@@ -3961,6 +3967,8 @@ PARSE_XML_END:
 						DEBUG("do disk_space_check() finish with 0, sleep(3) and check again\n");
 						sleep(3);
 					}
+					
+					hd_database_backup();
 				}
 				
 				if(storage_flash_check()){
@@ -3988,6 +3996,8 @@ PARSE_XML_END:
 			}
 			
 			push_pid_refresh();
+			
+			hd_database_backup();
 			
 			if(1==motherdisc_processing()){
 				DEBUG("in mother disc processing, do nothing after INITIALIZE_XML parsed\n");

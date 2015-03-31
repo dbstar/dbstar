@@ -193,6 +193,10 @@ static int motherdisc_parse()
 			DEBUG("parse xmls for mother disc initialize finish, waiting for programs parsing...\n");
 			
 			parse_progs();
+			
+			sleep(1);
+			hd_database_backup();
+			
 			msg_send2_UI(MOTHER_DISC_INITIALIZE_SUCCESS, NULL, 0);
 			DEBUG("parse publications for mother disc initialize finished\n");
 			

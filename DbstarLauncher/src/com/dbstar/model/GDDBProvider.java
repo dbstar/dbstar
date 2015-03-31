@@ -1,6 +1,11 @@
 package com.dbstar.model;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,6 +15,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 import com.dbstar.util.LogUtil;
 
@@ -369,8 +375,55 @@ public class GDDBProvider {
 		if (table != null && !table.isEmpty()) {
 			LogUtil.d(TAG, "do db.query(...)");
 
-			curosr = db.query(table, projection, selection, selectionArgs,
-					null, null, sortOrder);
+			try {
+				curosr = db.query(table, projection, selection, selectionArgs,
+						null, null, sortOrder);
+			} catch (Exception e) {
+				LogUtil.d(TAG, "in query fond exception = " + e);
+//				e.printStackTrace();
+				// 1, 	(1) if hd_db_damaged is not exist, create it and write "1";
+				//		(2) if hd_db_damaged is exist, read its value and add 1, and write it again;
+				// 2,	dont write anything if work correctly, should not write hd_db_damaged too much.
+				
+				String path = "/data/dbstar/hd_db_damaged";
+				File file = new File(path);
+				try {
+					if (!file.exists()) {
+						boolean success = file.createNewFile();
+						if (success) {
+							LogUtil.d(TAG, " file hd_db_damaged createFile successed!");
+							String string = "1";
+							FileOutputStream stream = new FileOutputStream(file);
+							stream.write(string.getBytes());
+
+							stream.flush();
+							stream.close();
+						}
+					} else {
+						byte[] buf = new byte[1];
+						FileInputStream stream = new FileInputStream(file);
+						BufferedInputStream bufInStream = new BufferedInputStream(stream);
+						bufInStream.read(buf, 0, buf.length);
+						String values = new String(buf, 0, buf.length);
+						Log.d(TAG, "in hd_db_damaged values = (" + values + ")");
+						values.trim();
+						int valueOf = Integer.parseInt(values, 10);
+
+						valueOf = valueOf + 1;
+						String reValues = String.valueOf(valueOf);
+
+						RandomAccessFile raf = new RandomAccessFile(file, "rw");
+						raf.seek(0);
+						raf.write(reValues.getBytes(), 0, reValues.getBytes().length);
+
+						raf.close();
+						bufInStream.close();
+						stream.close();
+					}
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
 		}
 
 		return curosr;

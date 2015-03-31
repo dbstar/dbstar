@@ -70,9 +70,6 @@ typedef enum{
 // 本地栏目：浏览器
 //#define WEBBROWSER_LC
 
-/*
-程序自行使用的配置、fifo文件等
-*/
 #define	WORKING_DATA_DIR		"/data/dbstar"
 #define	MSG_FIFO_ROOT_DIR		WORKING_DATA_DIR"/msg_fifo"
 #define PUSH_CONF_SEED			"/system/etc/dbstar/push.conf"
@@ -90,6 +87,11 @@ typedef enum{
 #define DB_PROTOTYPE		"/system/etc/dbstar/Dbstar.db"	// 系统内置的数据库原型，在此基础上添加数据用于业务使用
 #define DB_MAIN_URI			WORKING_DATA_DIR"/Dbstar.db"	// 用来存储终端基础信息的主数据库，以及flash存储小片的信息
 #define DB_SUB_NAME				"Dbstar.db"		// 用来存储下载到硬盘中的节目信息，数据库也存储在硬盘中
+#define DB_BACKUP_FOR_HD		WORKING_DATA_DIR"/hd_Dbstar.db_bk"
+#define HD_DB_DAMAGED			WORKING_DATA_DIR"/hd_db_damaged"
+#define HD_DB_RESTORE_MIN_DIFF	(80000LL)
+#define DB_PROTOTYPE_SIZE		(67584LL)	// size of /system/etc/dbstar/Dbstar.db
+
 #define SMARTHOME_DATABASE		WORKING_DATA_DIR"/Smarthome.db"
 
 // 首次开机Launcher需要进行网络初始化，初始化完毕后Launcher写入此标记文件，目前内容仅一个字符“1”

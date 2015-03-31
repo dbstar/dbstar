@@ -97,7 +97,7 @@ static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
-
+static int bk_database_clear();
 
 /* define some general interface function here */
 static void settingDefault_set(void)
@@ -1997,6 +1997,8 @@ int dvbpush_command(int cmd, char **buf, int *len)
 			else{
 				DEBUG("remove %s failed\n", tmp_buf);
 			}
+			
+			bk_database_clear();
 
 #if 0
 // if there are many files, it will kill too much time to delete
@@ -2903,7 +2905,104 @@ static int push_conf_file_init(char *pushdir)
 	return 0;
 }
 
-// 存储设备初始化
+// database backup and restor
+// hd_db: when push with hd, the working databse is hd_db
+// bk_db: after backup, backup databse in flash
+// 
+// 1: no hd, push with flash, dont backup and restore;
+// 2: different hd, delete backup db; after format disk, delete backup db;
+// 3: same hd, if bk_db is larger than hd_db+HD_DB_RESTORE_MIN_DIFF, restore bk_db to hd_db;
+// 4: after recv Initialize.xml/ProductDesc/Programes/Columns, backup hd_db to bk_db;
+// 5: after clean harddisk first-in-first-out, backup hd_db to bk_db;
+// 6: after motherdisk finished, backup hd_db to bk_db;
+// 7: if Java read database failed more than twice, add value in /data/dbstar/hd_db_failed, then restore database at next booting; 
+int hd_database_backup()
+{
+	char hd_db[256];
+	
+	if(0==storage_flash_check()){
+		sync();
+		
+		snprintf(hd_db, sizeof(hd_db), "%s/%s", s_pushdir, DB_SUB_NAME);
+		if(0==fcopy_c(hd_db, DB_BACKUP_FOR_HD)){
+			DEBUG("backup from %s to %s success\n", DB_BACKUP_FOR_HD, hd_db);
+			return 0;
+		}
+		else{
+			DEBUG("restore from %s to %s failed\n", DB_BACKUP_FOR_HD, hd_db);
+			return -1;
+		}
+	}
+	else{
+		DEBUG("push with flash, no need to backup database to flash\n");
+		return -1;
+	}
+}
+
+static int hd_database_restore()
+{
+	char hd_db[256];
+	long long hd_db_size = 0LL;
+	long long bk_db_size = 0LL;
+	FILE *fp = NULL;
+	char hd_db_damaged[32];
+	int hd_db_damaged_cnt = 0;
+	
+	if(0==storage_flash_check()){
+		bk_db_size = dir_size(DB_BACKUP_FOR_HD);
+		
+		if(bk_db_size>DB_PROTOTYPE_SIZE){
+			if(0==access(HD_DB_DAMAGED, R_OK)){
+				DEBUG("hd db is damaged in previous working\n");
+				
+				fp = fopen(HD_DB_DAMAGED, "r");
+				if(fp){
+					memset(hd_db_damaged, 0, sizeof(hd_db_damaged));
+					fread(hd_db_damaged, sizeof(hd_db_damaged), 1, fp);
+					DEBUG("read [%s] from %s\n", hd_db_damaged, HD_DB_DAMAGED);
+					fclose(fp);
+					
+					sscanf(hd_db_damaged,"%d", &hd_db_damaged_cnt);
+				}
+				else{
+					ERROROUT("%s is exist but can not read\n", HD_DB_DAMAGED);
+				}
+				
+				remove_force(__FUNCTION__, HD_DB_DAMAGED);
+			}
+			else{
+				DEBUG("hd db is normal in previous working\n");
+			}
+			
+			snprintf(hd_db, sizeof(hd_db), "%s/%s", s_pushdir, DB_SUB_NAME);
+			hd_db_size = dir_size(hd_db);
+			
+			if(hd_db_damaged_cnt>=1 || (hd_db_size+HD_DB_RESTORE_MIN_DIFF)<bk_db_size){
+				DEBUG("size of %s is %lld, size of %s is %lld, restore database to harddisk\n", hd_db, hd_db_size, DB_BACKUP_FOR_HD, bk_db_size);
+				if(0==fcopy_c(DB_BACKUP_FOR_HD, hd_db)){
+					DEBUG("restore from %s to %s success\n", DB_BACKUP_FOR_HD, hd_db);
+					return 0;
+				}
+				else{
+					DEBUG("restore from %s to %s failed\n", DB_BACKUP_FOR_HD, hd_db);
+					return -1;
+				}
+			}
+		}
+	}
+	else{
+		DEBUG("push with flash, no need to restore database from flash\n");
+		return 0;
+	}
+	
+	return 0;
+}
+
+static int bk_database_clear()
+{
+	return remove_force(__FUNCTION__, DB_BACKUP_FOR_HD);
+}
+
 static int storage_init()
 {
 	char cur_storage_id[64];
@@ -2937,6 +3036,8 @@ static int storage_init()
 				// ！！！！！ 应当是改回到flash存储继续。。。。
 				return -1;
 			}
+			
+			bk_database_clear();
 		}
 		
 		// 清理当前存储设备中pushinfo和initialize，为更新push信息创造条件
@@ -2947,6 +3048,9 @@ static int storage_init()
 		
 		// 刷新push库配置文件push.conf
 		push_conf_file_init(s_pushdir);
+	}
+	else{
+		hd_database_restore();
 	}
 	
 	// 如果是硬盘存储，则根据版本升级情况，有可能动态的更新表结构
