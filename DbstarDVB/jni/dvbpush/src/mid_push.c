@@ -522,7 +522,7 @@ int dvbpush_getinfo(char *buf, unsigned int size)
 		s_push_has_data --;
 		pthread_mutex_unlock(&mtx_push_monitor);
 	
-		DEBUG("%s\n", buf);
+//		DEBUG("%s\n", buf);
 	}
 	else
 		DEBUG("no program in monitor\n");
@@ -691,6 +691,7 @@ void maintenance_thread_awake()
 	pthread_mutex_unlock(&mtx_maintenance);
 }
 
+#if 0
 // e.g.: recv20141126.err
 static char s_push_err_filename[256];
 static long long s_push_err_file_last_size = 0LL;	// default and failed is 0LL
@@ -732,6 +733,7 @@ void push_err_file_check(char *print_stamp)
 		PRINTF("[%s]stat(%s) failed %d\n", print_stamp, s_push_err_filename, stat_ret);
 	}
 }
+#endif
 
 void *maintenance_thread()
 {
@@ -831,7 +833,8 @@ push_decoder_thread±ØÐëÆðÀ´²ÅÄÜË³ÀûÖ´ÐÐotaÉý¼¶¹ý³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 			PRINTF("[%s]push buf filled %05d packs\n", print_stamp,fill_level);
 			ts_loss_printf_periodicity();
 #endif
-			push_err_file_check(print_stamp);
+
+//			push_err_file_check(print_stamp);
 			
 			loop_cnt = 0;
 		}

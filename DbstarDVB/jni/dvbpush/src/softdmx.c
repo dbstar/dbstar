@@ -1219,9 +1219,9 @@ static int parse_payload(int fid, int p, int dlen, int start, unsigned char *ptr
 	{
 		if(0!=chan->bytes){
 			//if(0x19B==chanFilter[fid].pid || 0x19C==chanFilter[fid].pid || 0x19D==chanFilter[fid].pid || 0x190==chanFilter[fid].pid)
-			if(0x190==(0x190&(chanFilter[fid].pid))){
-				PRINTF("[%s] chanFilter[%d].pid=%d, chan->bytes=%d\n", hms_stamp(), fid, chanFilter[fid].pid, chan->bytes);
-			}
+//			if(0x190==(0x190&(chanFilter[fid].pid))){
+//				PRINTF("[%s] chanFilter[%d].pid=%d, chan->bytes=%d\n", hms_stamp(), fid, chanFilter[fid].pid, chan->bytes);
+//			}
 			chan->bytes = 0;
 		}
 		chan->stage = CHAN_STAGE_HEADER;
