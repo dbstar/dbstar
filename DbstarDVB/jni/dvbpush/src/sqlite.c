@@ -352,6 +352,8 @@ static void closeDatabase()
 	{
 		sqlite3_close(g_db);
 		g_db=NULL;
+		
+		sync();
 	}
 	else{
 		DEBUG("g_db is NULL, can not do database close action\n");

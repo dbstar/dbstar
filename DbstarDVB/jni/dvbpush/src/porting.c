@@ -2925,11 +2925,11 @@ int hd_database_backup()
 		
 		snprintf(hd_db, sizeof(hd_db), "%s/%s", s_pushdir, DB_SUB_NAME);
 		if(0==fcopy_c(hd_db, DB_BACKUP_FOR_HD)){
-			DEBUG("backup from %s to %s success\n", DB_BACKUP_FOR_HD, hd_db);
+			DEBUG("backup from %s to %s success\n", hd_db, DB_BACKUP_FOR_HD);
 			return 0;
 		}
 		else{
-			DEBUG("restore from %s to %s failed\n", DB_BACKUP_FOR_HD, hd_db);
+			DEBUG("restore from %s to %s failed\n", hd_db, DB_BACKUP_FOR_HD);
 			return -1;
 		}
 	}
