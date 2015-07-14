@@ -162,7 +162,13 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
     	
     	SQLiteDatabase sqLiteDatabase = null;
     	try {
-			sqLiteDatabase = SQLiteDatabase.openOrCreateDatabase(mPushDir + "/Dbstar.db", null);
+    		LogUtil.d("MultipleLanguageInfoProvider", "-------mPushDir = " + mPushDir);
+//			sqLiteDatabase = SQLiteDatabase.openOrCreateDatabase(mPushDir + "/Dbstar.db", null);
+    		if (mPushDir.startsWith("/data/dbstar")) {    			
+    			sqLiteDatabase = SQLiteDatabase.openOrCreateDatabase("/data/dbstar/Dbstar.db", null);
+    		} else {    			
+    			sqLiteDatabase = SQLiteDatabase.openOrCreateDatabase("/data/dbstar/hd/Dbstar.db", null);
+    		}
 		} catch (Exception e) {
 			LogUtil.d("MultipleLanguageInfoProvider", "dir = " + mPushDir + "////e = " + e);
 		}

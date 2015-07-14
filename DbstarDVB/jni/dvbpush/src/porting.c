@@ -84,7 +84,6 @@ static char			s_jni_cmd_system_awake_timer[64];
 // 关于smart card的insert和remove标记是表示“曾经发生过……”，而不是现在一定是某个状态
 static int			s_smart_card_insert_flag = 0;
 
-static char			s_previous_storage_id[64];	// 存储前一次开机的存储设备识别值，用于区别无盘开机、换盘开机、插盘开机等
 static char			s_TestSpecialProductID[64];
 static char			s_udisk_mount[64];
 static char			s_push_log_dir[512];
@@ -97,7 +96,10 @@ static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 
 static int drm_time_convert(unsigned int drm_time, char *date_str, unsigned int date_str_size);
+#if 0
+static char			s_previous_storage_id[64];	// 存储前一次开机的存储设备识别值，用于区别无盘开机、换盘开机、插盘开机等
 static int bk_database_clear();
+#endif
 
 /* define some general interface function here */
 static void settingDefault_set(void)
@@ -1998,7 +2000,9 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				DEBUG("remove %s failed\n", tmp_buf);
 			}
 			
+#if 0
 			bk_database_clear();
+#endif
 
 #if 0
 // if there are many files, it will kill too much time to delete
@@ -2705,13 +2709,12 @@ int serviceID_set(char *serv_id)
 }
 
 
-
 char *initialize_uri_get()
 {
 	return s_initialize_xml_uri;
 }
 
-
+#if 0
 static int storage_id_save(char *storage_id)
 {
 	char sqlite_cmd[512];
@@ -2720,6 +2723,7 @@ static int storage_id_save(char *storage_id)
 			GLB_NAME_STORAGE_ID, storage_id);
 	return sqlite_execute_db(DB_MAIN_URI, sqlite_cmd);
 }
+#endif
 
 /*
 提取存储设备的识别信息，获取硬盘/storage/external_storage/sda1的序列号
@@ -2834,6 +2838,7 @@ static int push_clear(char *storage)
 	return 0;
 }
 
+#if 0
 // 对硬盘sda1存储设备初始化数据库
 static int storage_hd_db_init()
 {
@@ -2866,6 +2871,7 @@ static int storage_hd_db_init()
 		return 0;
 	}
 }
+#endif
 
 static int push_conf_file_init(char *pushdir)
 {
@@ -2924,21 +2930,24 @@ int hd_database_backup()
 		sync();
 		
 		snprintf(hd_db, sizeof(hd_db), "%s/%s", s_pushdir, DB_SUB_NAME);
-		if(0==fcopy_c(hd_db, DB_BACKUP_FOR_HD)){
-			DEBUG("backup from %s to %s success\n", hd_db, DB_BACKUP_FOR_HD);
+		if(0==fcopy_c(HD_WORKING_DB_URI, hd_db)){
+			DEBUG("backup from %s to %s success\n", HD_WORKING_DB_URI, hd_db);
+			sync();
+			
 			return 0;
 		}
 		else{
-			DEBUG("restore from %s to %s failed\n", hd_db, DB_BACKUP_FOR_HD);
+			DEBUG("backup from %s to %s failed\n", HD_WORKING_DB_URI, hd_db);
 			return -1;
 		}
 	}
 	else{
-		DEBUG("push with flash, no need to backup database to flash\n");
+		DEBUG("push with flash, no need to backup %s\n", HD_WORKING_DB_URI);
 		return -1;
 	}
 }
 
+#if 0
 static int hd_database_restore()
 {
 	char hd_db[256];
@@ -3002,9 +3011,29 @@ static int bk_database_clear()
 {
 	return remove_force(__FUNCTION__, DB_BACKUP_FOR_HD);
 }
+#endif
+
+static int storage_is_changed()
+{
+	if(0==access(STORAGE_CHANGED_FILE, F_OK)){
+		DEBUG("%s is exist\n", STORAGE_CHANGED_FILE);
+		return 1;
+	}
+	else{
+		DEBUG("%s is NOT exist\n", STORAGE_CHANGED_FILE);
+		return 0;
+	}
+}
+
+static char s_working_db_uri[128] = {0};
+char* working_db_uri()
+{
+	return s_working_db_uri;
+}
 
 static int storage_init()
 {
+#if 0
 	char cur_storage_id[64];
 	char cur_db_uri[256];
 	
@@ -3015,17 +3044,33 @@ static int storage_init()
 	else{// 如果是硬盘（即：非flash），提取硬盘sn作为身份标识
 		memset(cur_storage_id, 0, sizeof(cur_storage_id));
 		storage_id_read(cur_storage_id, sizeof(cur_storage_id));
-		snprintf(cur_db_uri, sizeof(cur_db_uri), "%s/%s", s_pushdir, DB_SUB_NAME);
+		snprintf(cur_db_uri, sizeof(cur_db_uri), "%s", HD_WORKING_DB_URI);
 	}
 	
 	DEBUG("s_previous_storage_id[%s], cur_storage_id[%s]\n", s_previous_storage_id, cur_storage_id);
 	db_uri_set(cur_db_uri);
+#else
+	if(1==storage_flash_check()){
+		snprintf(s_working_db_uri, sizeof(s_working_db_uri), "%s", DB_MAIN_URI);
+	}
+	else{
+		snprintf(s_working_db_uri, sizeof(s_working_db_uri), "%s", HD_WORKING_DB_URI);
+	}
+	DEBUG("set s_working_db_uri: %s\n", s_working_db_uri);
+	db_uri_set(s_working_db_uri);
+#endif
 	
 	// 如果存储设备发生了变化，有可能是有、无硬盘切换，也可能是硬盘间切换
-	if(strcmp(s_previous_storage_id, cur_storage_id)){
+#if 0
+	if(strcmp(s_previous_storage_id, cur_storage_id))
+#else
+	if(1==storage_is_changed())
+#endif
+	{
 		DEBUG("storage has changed, init it\n");
 		// 且当前存储设备是硬盘，则对硬盘中的数据库进行初始化；如果是flash则不需要此步骤，因为flash中的数据库是主数据库，系统启动时一定进行初始化
 		if(0==storage_flash_check()){
+#if 0
 			if(0==storage_hd_db_init()){
 				DEBUG("work with db in sda1 start\n");
 			}
@@ -3038,17 +3083,40 @@ static int storage_init()
 			}
 			
 			bk_database_clear();
+#else
+			char columnres_uri[256];
+			snprintf(columnres_uri, sizeof(columnres_uri), "%s/ColumnRes/", s_pushdir);
+			if(0!=access(columnres_uri, F_OK))
+			{
+				DEBUG("%s is not exist!\n", columnres_uri);
+				// 将内置的ColumnIcon复制到硬盘目录下
+				dir_exist_ensure(columnres_uri);
+				snprintf(columnres_uri, sizeof(columnres_uri), "%s/ColumnRes/LocalColumnIcon/", s_pushdir);
+				dir_exist_ensure(columnres_uri);
+				files_copy(LOCAL_COLUMNICON_ORIGIN_DIR, columnres_uri);
+			}
+			else{
+				DEBUG("%s is exist already\n", columnres_uri);
+			}
+#endif
 		}
 		
 		// 清理当前存储设备中pushinfo和initialize，为更新push信息创造条件
 		push_clear(s_pushdir);
-		
+
+#if 0
+由Java层完成
 		// 将新的存储设备标识存入主数据库
 		storage_id_save(cur_storage_id);
+#endif
 		
 		// 刷新push库配置文件push.conf
 		push_conf_file_init(s_pushdir);
+		
+		// 清理界面产品uri指示
+		remove_force(__FUNCTION__, SPRODUCT_BEACON);
 	}
+#if 0
 	else{
 		hd_database_restore();
 	}
@@ -3059,6 +3127,7 @@ static int storage_init()
 		snprintf(cur_db_uri, sizeof(cur_db_uri), "%s/%s", s_pushdir, DB_SUB_NAME);
 		db_init(cur_db_uri);
 	}
+#endif
 	
 	// 根据版本的升级情况，在存储设备发生变化时，重置内置栏目和全局Global中数据
 	// 但要注意，对Global的重置不能包括storage_id等超全局信息
@@ -3223,6 +3292,8 @@ int onehour_before_pushend_set(int onehour_before_pushend)
 	return snprintf(s_onehour_before_pushend,sizeof(s_onehour_before_pushend),"%d",onehour_before_pushend);
 }
 
+#if 0
+20150709: 如果/data/dbstar/.storage_change存在，则存储设备发生了变化
 // 读取上次存储设备的识别信息，"flash"表示存储在flash中，其他值表示硬盘sn
 // 将用于判断是否更换硬盘或插拔硬盘
 // 读不到值时不要赋默认值，当全新终端开机时确保一定能正确初始化PushDir
@@ -3245,6 +3316,7 @@ static int storage_id_init()
 	
 	return 0;
 }
+#endif
 
 static int SCEntitleInfo_init_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
@@ -3628,8 +3700,10 @@ int setting_init_with_database()
 {
 	// 读取主数据库Global表中PushDir，此值由Launcher写入，用于区分flash接收还是硬盘接收
 	push_dir_init();
+#if 0
 	// 读取主数据库Global表中storage_id，将用于判断设备是否发生更换（主要是硬盘更换）
 	storage_id_init();
+#endif
 	// 根据存储设备标识storage_id判断初始化哪个存储设备，对设备中数据库、pushinfo等进行初始化
 	storage_init();
 	

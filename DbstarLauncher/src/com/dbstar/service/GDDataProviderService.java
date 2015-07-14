@@ -1,9 +1,17 @@
 package com.dbstar.service;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -123,6 +131,11 @@ public class GDDataProviderService extends Service {
 	private static final String PARAMETER_KEY = "key";
 	private static final String PARAMETER_VALUE = "value";
 	
+	private static final String DBSTAR_STORAGE_CHANGE = ".storage_change";
+	private static final String DBSTAR_FLASH_MARK = ".storage_mark";
+	private static final String DBSTAR_DISK_MARK = ".hd_mark";
+//	private static final String DBSTAR_DISK_DIR = "/storage/external_storage/sda1/";
+	private static final String DBSTAR_HD_WORKING_DIR = "/data/dbstar/hd/";
 	private static final String DBSTAR_SOURCE_DIR = "/system/etc/dbstar/";
 	private static final String DBSTAR_FLASH = "/data/dbstar/";
 	private static final String DBSTARDB_NAME = "Dbstar.db";
@@ -186,6 +199,8 @@ public class GDDataProviderService extends Service {
     private ClientRequestService mRequestService = null;
     
     private boolean mIsConnectNetWork;
+    
+    private String disk = "";
     
 	private class RequestTask {
 		public static final int INVALID = 0;
@@ -316,8 +331,13 @@ public class GDDataProviderService extends Service {
 		// check storage
 		// the disk is not mounted at this point,
 		// so wait for mount event.
+		// .storage_mark in flash
+		File flashMarkFile = new File(DBSTAR_HD_WORKING_DIR + DBSTAR_FLASH_MARK);
+		File storageChangeFile = new File(DBSTAR_HD_WORKING_DIR + DBSTAR_STORAGE_CHANGE);
+		String s_storage_mark = "";
+		String s_storage_pin = "flash";
 		if (mConfigure.configureStorage()) {
-			String disk = mConfigure.getStorageDisk();
+			disk = mConfigure.getStorageDisk();
 //			LogUtil.d(TAG, "monitor disk " + disk);
 
 			if (!disk.isEmpty()) {
@@ -334,14 +354,37 @@ public class GDDataProviderService extends Service {
 				//mDataModel.setPushDir(disk);	// too early to update database
 				
 				String vIconRootDir = disk + "/" + COLUMNICON_DIR;
-				String vDBUri = disk + "/" + DBSTARDB_NAME;
+				String vDBUri = DBSTAR_HD_WORKING_DIR + "/" + DBSTARDB_NAME;
 				mConfigure.setStorageDisk(disk);
 				mConfigure.setStorageDir(disk);
 				mConfigure.setIconRootDir(vIconRootDir);
 				mConfigure.setDVBDatabaseFile(vDBUri);
 				
-				// check Database and column icon is exist
-				fileEnsure(DBSTAR_SOURCE_DIR+DBSTARDB_NAME, disk+"/"+DBSTARDB_NAME);
+				File markFile = new File(disk + "/" + DBSTAR_DISK_MARK);
+				File diskFile = new File(disk);
+				
+				try {
+					if (diskFile.exists()) {
+						if (markFile.exists()) {
+							FileInputStream inputStream = new FileInputStream(markFile);
+							int byteSize = inputStream.available();
+							LogUtil.d(TAG, ".hd_mark byteSize = " + byteSize);
+							if (byteSize > 0) {
+								s_storage_mark = readString(markFile);								
+							} else {
+								markFile.delete();
+								s_storage_mark = writeRandomToMarkFile(markFile);								
+							}
+						} else {
+							s_storage_mark = writeRandomToMarkFile(markFile);							
+						}
+						LogUtil.d(TAG, " s_storage_mark = " + s_storage_mark);
+					} else {
+						s_storage_mark = "flash";
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				dirEnsure(DBSTAR_SOURCE_DIR+COLUMNICON_DIR+LOCALCOLUMNICON_DIR, disk+"/"+COLUMNICON_DIR+LOCALCOLUMNICON_DIR);
 
 				mHandler.sendMessageDelayed(diskMessage, 5000);
@@ -349,11 +392,54 @@ public class GDDataProviderService extends Service {
 		} else {
 			LogUtil.d(TAG, "disk is unusable, use flash(" + DBSTAR_FLASH + ") as PushDir");
 			//mDataModel.setPushDir(DBSTAR_FLASH);	// too early to update database
-			
+			s_storage_mark = "flash";
 			mConfigure.setStorageDisk(DBSTAR_FLASH);
 			mConfigure.setStorageDir(DBSTAR_FLASH);
 			mConfigure.setIconRootDir(DBSTAR_FLASH+COLUMNICON_DIR);
 			mConfigure.setDVBDatabaseFile(DBSTAR_FLASH+DBSTARDB_NAME);
+		}
+		
+		try {
+			if (flashMarkFile.exists()) {
+				FileInputStream in = new FileInputStream(flashMarkFile);
+				int flashMarkSize = in.available();
+				LogUtil.d(TAG, ".storage_mark byteSize = " + flashMarkSize);
+				if (flashMarkSize > 0) {							
+					s_storage_pin = readString(flashMarkFile);
+				} else {
+					s_storage_pin = "flash";							
+				}
+			} else {						
+				s_storage_pin = "flash";
+				flashMarkFile.createNewFile();
+			}
+			
+			LogUtil.d(TAG, " s_storage_mark = " + s_storage_mark + ", s_storage_pin = " + s_storage_pin);
+			if (!s_storage_mark.equals(s_storage_pin)) {
+				// if hd changed, create .storage_change file
+				if (!storageChangeFile.exists())
+					storageChangeFile.createNewFile();
+				
+				File diskFile = new File(disk);
+				File diskDbFile = new File(disk + "/" + DBSTARDB_NAME);
+				if (diskFile.exists()) {
+					if (diskDbFile.exists()) {
+						FileInputStream in = new FileInputStream(diskDbFile);
+						int diskDbSize = in.available();
+						if (diskDbSize > 67000) {								
+							LogUtil.d(TAG, " disk(" + (disk + "/" + DBSTARDB_NAME) + ") is ready, use " + (DBSTAR_HD_WORKING_DIR + DBSTARDB_NAME) + " it as hd working dir");
+//					fileEnsure(disk + "/" + DBSTARDB_NAME, DBSTAR_PUSH_DIR + "/" + DBSTARDB_NAME);							
+							fileChannelCopy(new File(disk + "/" + DBSTARDB_NAME), new File(DBSTAR_HD_WORKING_DIR + "/" + DBSTARDB_NAME));
+						}								
+					}
+				}
+				FileOutputStream fos = new FileOutputStream(flashMarkFile);
+				fos.write(s_storage_mark.getBytes());
+			} else {
+				storageChangeFile.delete();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		String channel = FileOperation.read(GDCommon.ChannelFile);
@@ -391,6 +477,38 @@ public class GDDataProviderService extends Service {
 		
 		startRequestServer();
 
+	}
+	
+	private String writeRandomToMarkFile(File markFile) throws IOException {
+		String randStr = "";
+		try {
+			if (!markFile.exists()) 
+				markFile.createNewFile();
+			BufferedWriter writer = new BufferedWriter(new FileWriter(markFile));
+			long rand = (long) (Math.random() * 1E10);
+			randStr = ""+ rand;
+			LogUtil.d("DbstarOTTActivity", ".hd_mark write random is randStr = " + randStr);
+			writer.write(randStr);
+			writer.flush();
+			writer.close();
+		} catch (Exception e) {
+			LogUtil.d("DbstarOTTActivity", ".hd_mark write random Error and e = " + e);
+			e.printStackTrace();
+		}
+		return randStr;
+	}
+	
+	private String readString(File file) {
+		String value = "";
+		int BUFFER_SIZE = 8892;
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"), BUFFER_SIZE);
+			value = reader.readLine();
+			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return value;
 	}
 	
 	public void fileEnsure(String file_src, String file_dis) {

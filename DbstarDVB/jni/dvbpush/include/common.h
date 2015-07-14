@@ -86,9 +86,12 @@ typedef enum{
 
 #define DB_PROTOTYPE		"/system/etc/dbstar/Dbstar.db"	// 系统内置的数据库原型，在此基础上添加数据用于业务使用
 #define DB_MAIN_URI			WORKING_DATA_DIR"/Dbstar.db"	// 用来存储终端基础信息的主数据库，以及flash存储小片的信息
+#define HD_WORKING_DB_URI	"/data/dbstar/hd/Dbstar.db"
 #define DB_SUB_NAME				"Dbstar.db"		// 用来存储下载到硬盘中的节目信息，数据库也存储在硬盘中
 #define DB_BACKUP_FOR_HD		WORKING_DATA_DIR"/hd_Dbstar.db_bk"
 #define HD_DB_DAMAGED			WORKING_DATA_DIR"/hd_db_damaged"
+#define STORAGE_CHANGED_FILE	"/data/dbstar/hd/.storage_change"
+#define SPRODUCT_BEACON			"/data/dbstar/SProduct.beacon"
 #define HD_DB_RESTORE_MIN_DIFF	(80000LL)
 #define DB_PROTOTYPE_SIZE		(67584LL)	// size of /system/etc/dbstar/Dbstar.db
 

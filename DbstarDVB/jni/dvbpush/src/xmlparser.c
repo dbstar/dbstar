@@ -1708,7 +1708,6 @@ static int boolean_translate(char *bool_str, unsigned int bool_str_len)
 将界面产品SProduct文件夹拷贝到flash指定位置，Launcher启动时会从这个目录更新界面
 此函数实现的不够严谨，懒省事从SProduct.xml的全路径反向推出SProduct文件夹路径，当文件夹结构变化时可能导致不能更新
 */
-#define SPRODUCT_BEACON	"/data/dbstar/SProduct.beacon"
 static int SProduct_beacon(char *xmluri)
 {
 	char buf[512];

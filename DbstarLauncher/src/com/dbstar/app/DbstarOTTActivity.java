@@ -1,9 +1,11 @@
 package com.dbstar.app;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -150,8 +152,8 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 	}
 
 	
-	private static final String Min_Mac = "84:26:90:00:00:00";
-	private static final String Max_Mac = "84:26:90:00:03:EF";
+//	private static final String Min_Mac = "84:26:90:00:00:00";
+//	private static final String Max_Mac = "84:26:90:00:03:EF";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -166,16 +168,16 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 		mEthernetManager = (EthernetManager) getSystemService(Context.ETH_SERVICE);
 		mEthernetManager.setEthEnabled(true);
 		
-		String mac = DbstarUtil.getLocalMacAddress(true);
-		int minInt = mac.compareTo(Min_Mac);
-		int maxInt = mac.compareTo(Max_Mac);
-//		Log.d("DbstarOTTActivity", "minInt = " + minInt + ", maxInt = " + maxInt);
-		if (minInt >= 0 && maxInt <= 0) {
-		} else {
-//			DbstarUtil.closeNetwork(DbstarOTTActivity.this);
-//			showIsFormatDialog("此终端（" + mac + "）不合法，请断电关机！", false, true);
-			rebootSystem();
-		}
+//		String mac = DbstarUtil.getLocalMacAddress(true);
+//		int minInt = mac.compareTo(Min_Mac);
+//		int maxInt = mac.compareTo(Max_Mac);
+////		Log.d("DbstarOTTActivity", "minInt = " + minInt + ", maxInt = " + maxInt);
+//		if (minInt >= 0 && maxInt <= 0) {
+//		} else {
+////			DbstarUtil.closeNetwork(DbstarOTTActivity.this);
+////			showIsFormatDialog("此终端（" + mac + "）不合法，请断电关机！", false, true);
+//			rebootSystem();
+//		}
 		
 		mImageSet = new ImageSet(adapter2);
 		// 检查联网情况
@@ -312,6 +314,24 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				});
 				
 				LogUtil.d("DbstarOTTActivity", "fileList.size() = " + fileList.size());
+				File markFile = new File(defaultStorage + ".hd_mark");
+				try {
+					// 如果.hd_mark不存在，则重新创建，并生成随机数
+					if (!isConstainsMarkFile) {
+							writeMarkFile(markFile);
+					} else { // 如果.hd_mark存在，但是其文件大小小于等于0，则删除该文件并重新创建，生成随机数
+						FileInputStream inputStream = new FileInputStream(markFile);
+						int byteSize = inputStream.available();
+						LogUtil.d("DbstarOTTActivity", ".hd_mark byteSize = " + byteSize);
+						if (byteSize <= 0) {
+							markFile.delete();
+							writeMarkFile(markFile);
+						}
+					}
+				} catch (IOException e) {
+					LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and write .hd_mark failed or .hd_mark size is 0!");					
+					e.printStackTrace();
+				}
 				// 如果.hd_mark不存在 && 存在其他文件，就弹出对话框，提示：该盘将作为数据接收盘，是否格式化。
 				if (!isConstainsMarkFile && files != null && fileList.size() > 1) {
 					LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and exists other file!");
@@ -335,6 +355,18 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				showIsFormatDialog(getResources().getString(R.string.external_storage_disk_cannotwrite), false, true);
 			}
 		} 
+	}
+
+	private void writeMarkFile(File markFile) throws IOException {
+		if (!markFile.exists()) 
+			markFile.createNewFile();
+		BufferedWriter writer = new BufferedWriter(new FileWriter(markFile));
+		long rand = (long) (Math.random() * 1E10);
+		String randStr = "" + rand;
+		LogUtil.d("DbstarOTTActivity", ".hd_mark write random is randStr = " + randStr);
+		writer.write(randStr);
+		writer.flush();
+		writer.close();
 	}
 	
 	@Override

@@ -34,6 +34,19 @@ dbstar_init()
 		setprop dbstar.inited 1
 	fi
 
+	if [ -s "/data/dbstar/hd/Dbstar.db" ]; then
+		echo "dbstar already inited!"
+	else
+		mkdir /data/dbstar/hd
+		chown system:system /data/dbstar/hd
+		chmod 777 /data/dbstar/hd
+		cp -rf /system/etc/dbstar/Dbstar.db /data/dbstar/hd
+		sync
+		chown system:system /data/dbstar/hd/Dbstar.db
+		chmod 666 /data/dbstar/hd/Dbstar.db
+		setprop dbstar.inited 1
+	fi
+
 #	if [ -s "/data/dbstar/Smarthome.db" ]; then
 #		echo "Smarthome.db already inited!"
 #	else
@@ -58,15 +71,15 @@ dbstar_init()
 		setprop dbstar.inited 1
 	fi
 
-        if [ -e "/data/dbstar/ColumnRes/Books_losefocus.png" ]; then
-                echo "ColumnRes/Books_losefocus.png already inited!"
-        else
-                cp -rf /system/etc/dbstar/ColumnRes/*.png /data/dbstar/ColumnRes
-                sync
-                chown system /data/dbstar/ColumnRes
-                chmod 777 /data/dbstar/ColumnRes/*.png
-                setprop dbstar.inited 1
-        fi
+    if [ -e "/data/dbstar/ColumnRes/Books_losefocus.png" ]; then
+		echo "ColumnRes/Books_losefocus.png already inited!"
+    else
+		cp -rf /system/etc/dbstar/ColumnRes/*.png /data/dbstar/ColumnRes
+		sync
+		chown system /data/dbstar/ColumnRes
+		chmod 777 /data/dbstar/ColumnRes/*.png
+		setprop dbstar.inited 1
+    fi
  
 	if [ -e "/data/dbstar/drm" ]; then
 		echo "drm entitle already inited!"
@@ -131,9 +144,9 @@ dbstar_init()
 		chown system:system /data/dbstar/hd_db_damaged
 	fi
 
-        setprop service.adb.tcp.port 5555
-        stop adbd
-        start adbd
+	setprop service.adb.tcp.port 5555
+	stop adbd
+	start adbd
 }
 
 
