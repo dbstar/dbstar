@@ -22,7 +22,7 @@ import com.dbstar.multiple.media.util.ImageUtil;
 
 public class MediaShareActivity extends Activity {
 
-    private String mColumnBookId, mColumnNewsPaperPaperId;
+    private String mColumnBookId, mColumnNewsPaperPaperId, mColumnMagazineId;
     private RelativeLayout mContainer;
     private LinearLayout mGuideView;
     private TextView mIpAddress;
@@ -36,11 +36,12 @@ public class MediaShareActivity extends Activity {
         setContentView(R.layout.activity_media_share);
         
         mColumnBookId = getIntent().getStringExtra("mColumnBookId");
-        
         mColumnNewsPaperPaperId = getIntent().getStringExtra("mColumnNewsPaperPaperId");
+        mColumnMagazineId = getIntent().getStringExtra("mColumnMagazineId");
         
         Log.d("MediaShareActivity", "-----mColumnBookId----- = " + mColumnBookId);
         Log.d("MediaShareActivity", "-----mColumnNewsPaperPaperId----- = " + mColumnNewsPaperPaperId);
+        Log.d("MediaShareActivity", "-----mColumnMagazineId----- = " + mColumnMagazineId);
         
         mContainer = (RelativeLayout) findViewById(R.id.activity_media_share_container);
         mGuideView = (LinearLayout) findViewById(R.id.share_help_guide);
@@ -72,7 +73,7 @@ public class MediaShareActivity extends Activity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mService = ((LoaclBinder)service).getService();
-            mService.setColumnId(mColumnBookId, mColumnNewsPaperPaperId);
+            mService.setColumnId(mColumnBookId, mColumnNewsPaperPaperId, mColumnMagazineId);
             initData();
         }
     };

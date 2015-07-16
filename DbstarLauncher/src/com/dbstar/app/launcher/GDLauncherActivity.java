@@ -521,6 +521,9 @@ public class GDLauncherActivity extends GDBaseActivity implements
 		} else if (columnType
 				.equals(GDCommon.ColumnTypeMULTIPLEMEDIAVOICEDBOOK)) {
 			intent = startComponent("com.dbstar.multiple.media.shelf", "activity.VoicedBookShelfActivity");
+		} else if (columnType.equals(GDCommon.ColumnTypeMULTIPLEMEDIAMAGAZINE)) {
+			intent = startComponent("com.dbstar.multiple.media.shelf", "activity.MagazineActivity");						
+//			intent.putExtra("Magazine", true);
 		}
         
 		try {
@@ -680,8 +683,14 @@ public class GDLauncherActivity extends GDBaseActivity implements
             	mColumnNewsPaperId = GDDataModel.mColumnNewsPaperId;
             }
             
+            if (mColumnMagazineId == null) {
+            	LogUtil.d(TAG, "----------mColumnMagazineId ==" + GDDataModel.mMagazineId);            	
+            	mColumnMagazineId = GDDataModel.mMagazineId;
+            }
+            
             intent.putExtra("mColumnBookId", mColumnBookId);
             intent.putExtra("mColumnNewsPaperPaperId", mColumnNewsPaperId);
+            intent.putExtra("mColumnMagazineId", mColumnMagazineId);
             
             intent.putExtra(Constants.AppBG_Uri, ImageUtil.App_Uri);
         }
@@ -1511,7 +1520,7 @@ public class GDLauncherActivity extends GDBaseActivity implements
 						item.HasSubMenu = NO_SUBCOLUMNS;
 					}
 					
-					if (columns[i].Type.equals("200") || columns[i].Type.equals("201") || columns[i].Type.equals("202")) {
+					if (columns[i].Type.equals("200") || columns[i].Type.equals("201") || columns[i].Type.equals("202") || columns[i].Type.equals("203")) {
 						Log.d(TAG, " mPopupMenuContainer should gone!");
 						menuItem.HasSubMenu = NO_SUBCOLUMNS;
 						show_submenu = false;

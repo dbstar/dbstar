@@ -35,7 +35,8 @@ public class GDDataModel {
 
 	private String mLocalization;
 	public static String mColumnBookId;
-	public static String mColumnNewsPaperId; 
+	public static String mColumnNewsPaperId;
+	public static String mMagazineId;
 
 	GDDVBDataProvider mDVBDataProvider;
 	GDSmartHomeProvider mSmartHomeProvider;
@@ -115,6 +116,11 @@ public class GDDataModel {
 					
 					if (mColumnNewsPaperId == null) {
 						mColumnNewsPaperId = getNewsPaperColumnIds();
+					}
+					
+					if (mMagazineId == null) {
+						mMagazineId = getMagazineColumnIds();
+						
 					}
 
 					i++;
@@ -222,6 +228,30 @@ public class GDDataModel {
 			cursor.close();
 		}
 		return newsPaperColumnIds.toString();
+	}
+	private String getMagazineColumnIds() {
+		StringBuffer magazineColumnIds = new StringBuffer();
+		String selection = "ColumnID in (select ParentID from Column where ColumnType='203' GROUP BY ParentID)";
+		Cursor cursor = mDVBDataProvider.query(Column.CONTENT_URI, new String[] {"ColumnID"}, selection, null, null);
+		if (cursor != null && cursor.getCount() > 0) {
+			if (cursor.moveToFirst()) {
+				int i = 0;
+				do {
+					magazineColumnIds.append(cursor.getString(i));
+					magazineColumnIds.append("&");
+				} while(cursor.moveToNext());
+				
+				if (magazineColumnIds.length() > 0) {
+					magazineColumnIds.deleteCharAt(magazineColumnIds.length() - 1);
+				}
+				LogUtil.d(TAG, " magazineColumnIds = " + magazineColumnIds);
+			}
+		}
+		
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+		return magazineColumnIds.toString();
 	}
 	
 	public int getPublicationCount(String columnId) {

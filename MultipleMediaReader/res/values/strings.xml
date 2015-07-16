@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string name="action_settings">MultipleMediaReader</string>
 	<string name="empty_string"></string>
 	<!--reader tool bar labels  -->
 	<string name="app_name">富媒体</string>
@@ -47,9 +48,20 @@
 	<string name="text_start_tag">《</string>
     <string name="text_end_tag">》</string>
     
-    
-    
-    
+    <!-- periodcial -->
+    <string name="periodcial">期刊</string>
+    <string name="periodcial_up_donw_select_type">类别选择</string>
+    <string name="periodcial_left_right_select">期刊切换</string>
+    <string name="periodcial_ok_enter">原貌阅览</string>
+	<string name="periodcial_text_no_magazine">该分类下没有期刊</string>
+    <string name="periodcial_up_donw_select_move">期数切换</string>
+    <string name="periodcial_left_right_type">左右翻页</string>
+    <string name="periodcial_read_detailed">文字阅读</string>
+	<string name="periodcial_acticle_left_right_select">篇章切换</string>
+	<string name="periodcial_acticle_up_down_read">文字阅读</string>
+	<string name="di">第</string>
+	<string name="qi">期</string>
+	<string name="content_list">目录区</string>
     
     <!--  newspaper -->
        <string name="gong">共</string>

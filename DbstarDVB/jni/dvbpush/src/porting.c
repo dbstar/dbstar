@@ -2000,6 +2000,13 @@ int dvbpush_command(int cmd, char **buf, int *len)
 				DEBUG("remove %s failed\n", tmp_buf);
 			}
 			
+			if(0==remove_force(__FUNCTION__, HD_WORKING_DB_URI)){
+				DEBUG("remove %s success\n", HD_WORKING_DB_URI);
+			}
+			else{
+				DEBUG("remove %s failed\n", HD_WORKING_DB_URI);
+			}
+			
 #if 0
 			bk_database_clear();
 #endif

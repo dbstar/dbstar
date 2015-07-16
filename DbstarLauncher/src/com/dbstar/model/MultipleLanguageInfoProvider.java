@@ -12,6 +12,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
+import com.dbstar.util.LogUtil;
+
 public class MultipleLanguageInfoProvider extends ContentProvider {
 
  private static final String URI_AUTHORITY = "com.dbstar.multipleLanguageInfo.provider";
@@ -19,6 +21,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
     //--------------------------------------------
     private static final String ACTION_LOAD_NEWSPAPER_CATEGORIES = "LoadNewsPaperCategories";
     private static final String ACTION_LOAD_NEWSPAPERS = "LoadNewsPapers";
+    private static final String ACTION_LOAD_MAGAZINES = "LoadMagazines";
     private static final String ACTION_COLLECT_NEWSPAPER = "CollectNewsPaper";
     private static final String ACTION_CANCEL_COLLECT_NEWSPAPER = "CancelCollectNewsPaper";
     private static final String ACTION_ADD_NEWSPAPER_TO_PERSONAL_PREFERENCE = "AddNewsPaperToPersonalPreference";
@@ -69,6 +72,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
     private static final int REMOVE_NEWSPAPER_FROM_PERSONAL_PREFERENCE = 0X100013;
     private static final int LOAD_COLLECTED_NEWSPAPER_CATEGORIES = 0X100014;
     private static final int LOAD_COLLECTED_NEWSPAPERS = 0X100015;
+    private static final int LOAD_MAGAZINE = 0X100016;
     
     private static String mPushDir = "/storage/external_storage/sda1";
     private static String mCurLanguage= "cho";
@@ -98,6 +102,7 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
         mUriMathcer.addURI(URI_AUTHORITY, ACTION_COLLECT_NEWSPAPER , COLLECT_NEWSPAPER);
         mUriMathcer.addURI(URI_AUTHORITY, ACTION_LOAD_NEWSPAPER_CATEGORIES , LOAD_NEWSPAPER_CATEGORIES);
         mUriMathcer.addURI(URI_AUTHORITY, ACTION_LOAD_NEWSPAPERS , LOAD_NEWSPAPERS);
+        mUriMathcer.addURI(URI_AUTHORITY, ACTION_LOAD_MAGAZINES, LOAD_MAGAZINE);
         mUriMathcer.addURI(URI_AUTHORITY, ACTION_LOAD_BOOK_CATEGORIES , LOAD_BOOK_CATEGORIES);
         mUriMathcer.addURI(URI_AUTHORITY, ACTION_LOAD_BOOKS , LOAD_BOOKS);
         mUriMathcer.addURI(URI_AUTHORITY, ACTION_CANCEL_COLLECT_NEWSPAPER , CANCEL_NEWSPAER_COLLECTION);
@@ -248,7 +253,14 @@ public class MultipleLanguageInfoProvider extends ContentProvider {
             LogUtil.d("MultipleLanguageInfoProvider", "LOADNEWSPAPERS-----sql = " + sql);
             cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
             break;
-        }case LOAD_ALL_NEWSPAPERS:{
+        }
+        case LOAD_MAGAZINE: {
+        	String sql = "select PublicationID,'"+ mPushDir +"/' || PosterURI,'"+ mPushDir +"/' || FileURI from Publication,ResPoster where Publication.PublicationID=ResPoster.EntityID and SetID = ?";
+        	LogUtil.d("MultipleLanguageInfoProvider", "LOAD_COLLECTED_NEWSPAPER_CATEGORIES-----sql = " + sql + "  (SetID = " + selectionArgs[0] + ")");
+        	cursor = getReadableDatabase().rawQuery(sql, selectionArgs);
+        	break;
+        }
+        case LOAD_ALL_NEWSPAPERS:{
             
             String sql = "select p.PublicationID,ColumnID,'"+ mPushDir +"/' || FileURI,Title,PublishDate ,Favorite from Publication p ,MultipleLanguageInfoRM m " +
                     "where  p.Deleted='0' and p.ReceiveStatus='1' and p.FileType!='1' and m.language = '"+ mCurLanguage +"'  and p.PublicationID = m.PublicationID and p.[ColumnID] in (select ColumnID from Column c where c.ParentID = ?) order by PublishDate desc";

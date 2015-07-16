@@ -37,6 +37,7 @@ public class ShareService extends Service{
     public static final int PORT = 8080;
     public String mBookColumnId;
     public String mNewsPaperColumnId;
+    public String mMagazineColumnId;
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -99,7 +100,7 @@ public class ShareService extends Service{
                         return;
                     
                     mServerThread = new ServerThread(ip, PORT, null,this);
-                    mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId);
+                    mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId, mMagazineColumnId);
                     mServerThread.start();
                 } else {
                     mLog.i("mServerThread != null");
@@ -118,7 +119,7 @@ public class ShareService extends Service{
                             if(mServerThread.getClientCount() == 0){
                                 stopSeviceThread();
                                 mServerThread = new ServerThread(eIp, PORT, null,this);
-                                mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId);
+                                mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId, mMagazineColumnId);
                                 mServerThread.start();
                                 return;
                             }
@@ -130,7 +131,7 @@ public class ShareService extends Service{
                         }else{
                             stopSeviceThread();
                             mServerThread = new ServerThread(wIp, PORT, null,this);
-                            mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId);
+                            mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId, mMagazineColumnId);
                             mServerThread.start();
                             return;
                         }
@@ -141,7 +142,7 @@ public class ShareService extends Service{
                         }else{
                             stopSeviceThread();
                             mServerThread = new ServerThread(eIp, PORT, null,this);
-                            mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId);
+                            mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId, mMagazineColumnId);
                             mServerThread.start();
                             return;
                         }
@@ -234,11 +235,12 @@ public class ShareService extends Service{
         }
         return ip;
     }
-    public void setColumnId(String bookId,String newspaperId){
+    public void setColumnId(String bookId,String newspaperId,String magazineId){
         this.mBookColumnId = bookId;
         this.mNewsPaperColumnId = newspaperId;
+        this.mMagazineColumnId = magazineId;
         if(mServerThread != null)
-            mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId);
+            mServerThread.setColumn(mBookColumnId,mNewsPaperColumnId, mMagazineColumnId);
     }
 //    private long loadTime; 
 //    private List<LoadData> getBooks(){

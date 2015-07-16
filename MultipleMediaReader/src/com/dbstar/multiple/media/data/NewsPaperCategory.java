@@ -1,8 +1,9 @@
 package com.dbstar.multiple.media.data;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class NewsPaperCategory {
+public class NewsPaperCategory implements Serializable{
     
     public String Id;
     public String Name;

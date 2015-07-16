@@ -1,8 +1,9 @@
 package com.dbstar.multiple.media.data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class NewsPaperPage {
+public class NewsPaperPage implements Serializable{
     
     public String title;
     public String path;

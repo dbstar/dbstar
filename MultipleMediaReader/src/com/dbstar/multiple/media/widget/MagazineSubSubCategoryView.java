@@ -3,6 +3,7 @@ package com.dbstar.multiple.media.widget;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -11,31 +12,49 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.dbstar.multiple.media.data.NewsPaperCategory;
+import com.dbstar.multiple.media.data.NewsPaper;
 import com.dbstar.multiple.media.shelf.R;
 import com.dbstar.multiple.media.util.ImageUtil;
 
-public class NewsPaperSubCategoryView extends LinearLayout{
-    
-    private List<NewsPaperCategory> mData;
+public class MagazineSubSubCategoryView extends LinearLayout{
+
+	private List<NewsPaper> mData;
     private int mSelectedIndex = 3;
     private OnItemSelectedListener mOnListener;
-    public NewsPaperSubCategoryView(Context context, AttributeSet attrs) {
+    private Context mContext;
+    
+    public MagazineSubSubCategoryView(Context context) {
+		super(context);
+		this.mContext = context;
+		this.setStaticTransformationsEnabled(true);
+	}
+    
+    public MagazineSubSubCategoryView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        this.mContext = context;
+        this.setStaticTransformationsEnabled(true);
+    }
+    
+    public MagazineSubSubCategoryView(Context context, AttributeSet attrs, int defStyle) {
+    	super(context, attrs, defStyle);
+    	this.mContext = context;
+    	this.setStaticTransformationsEnabled(true);
     }
     
     public void setSelection(int index ){
         mSelectedIndex = index;
     }
     
-    public void setData(List<NewsPaperCategory> data){
+	public void setData(List<NewsPaper> data){
         this.mData = data;
     }
     
-    public List<NewsPaperCategory> getData(){
+    public List<NewsPaper> getData(){
         return mData;
     }
     
+    public static final String ACTION_UP_PIC_CHANGE = "com.dbstar.multiple.media.action.up_pic_change";
+	public static final String ACTION_DOWN_PIC_CHANGE = "com.dbstar.multiple.media.action.down_pic_change";
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -48,16 +67,23 @@ public class NewsPaperSubCategoryView extends LinearLayout{
         case KeyEvent.KEYCODE_DPAD_DOWN:
             mSelectedIndex = ( ++mSelectedIndex + mData.size())% mData.size();
             notifyDataChanged();
+            Intent intent = new Intent();
+            intent.putExtra("index", mSelectedIndex);
+            intent.setAction(ACTION_DOWN_PIC_CHANGE);
+            mContext.sendBroadcast(intent);
             return true;
-
         case KeyEvent.KEYCODE_DPAD_UP:
-            Log.i("NewsPaperSubCategoryView", "----" + mSelectedIndex);
+            Log.i("MagazineSubSubCategoryView", "----" + mSelectedIndex);
             mSelectedIndex--;
             if(mSelectedIndex == -1){
                 mSelectedIndex = mData.size() -1;
             }
-            Log.i("NewsPaperSubCategoryView", "++++" + mSelectedIndex);
+            Log.i("MagazineSubSubCategoryView", "++++" + mSelectedIndex);
             notifyDataChanged();
+            Intent intent1 = new Intent();
+            intent1.putExtra("index", mSelectedIndex);
+            intent1.setAction(ACTION_UP_PIC_CHANGE);
+            mContext.sendBroadcast(intent1);            
             return true;
         }
         return super.onKeyUp(keyCode, event);
@@ -88,7 +114,7 @@ public class NewsPaperSubCategoryView extends LinearLayout{
         for(int i = 0,count = getChildCount();i< count ;i ++){
             v = (ImageView) getChildAt(i);
             if(size == 1){
-//            	Log.i("NewsPaperSubCategoryView", "++++++++size == 1 and " + " i = " + i + ", mSelectedIndex = " + mSelectedIndex);
+//            	Log.i("MagazineSubSubCategoryView", "++++++++size == 1 and " + " i = " + i + ", mSelectedIndex = " + mSelectedIndex);
                 if(i != 3)
                     v.setVisibility(View.INVISIBLE);
                 else
@@ -97,15 +123,15 @@ public class NewsPaperSubCategoryView extends LinearLayout{
                 v.setVisibility(View.VISIBLE);
             }
             int index = (Math.abs(size-3) + mSelectedIndex + i) % size;
-            Log.i("NewsPaperSubCategoryView", "index = "+ index) ;
+            Log.i("MagazineSubSubCategoryView", "index = "+ index);
             if( i == 3){
 //                v.setImageBitmap(BitmapFactory.decodeFile(mData.get(index).unFocusedIcon));
-                v.setImageBitmap(ImageUtil.setDrawable(mData.get(index).unFocusedIcon, 195).getBitmap());
+                v.setImageBitmap(ImageUtil.setDrawable(mData.get(index).PosterPath, 131).getBitmap());
                 if(hasFocus()){
-                    v.setBackgroundResource(R.drawable.newspaper_header_focus_bg); 
+                    v.setBackgroundResource(R.drawable.magazine_list_left_focused_bk); 
                 }
                 else{
-                    v.setBackgroundResource(R.drawable.newspaper_header_bg);
+                    v.setBackgroundResource(R.drawable.magazine_list_left_unfoused);
                 }
                 if(mOnListener != null)
                     mOnListener.onSelected(v, mData.get(index));
@@ -113,7 +139,7 @@ public class NewsPaperSubCategoryView extends LinearLayout{
 //            	Log.i("MagazineSubSubCategoryView", " ------------v.isShown() = "+ v.isShown());
                 if(v.isShown()){
 //                    v.setImageBitmap(BitmapFactory.decodeFile(mData.get(index).unFocusedIcon));
-                    v.setImageBitmap(ImageUtil.setDrawable(mData.get(index).unFocusedIcon, 195).getBitmap());
+                    v.setImageBitmap(ImageUtil.setDrawable(mData.get(index).PosterPath, 131).getBitmap());
                     v.setBackgroundDrawable(null);
                 }
             }
@@ -153,7 +179,7 @@ public class NewsPaperSubCategoryView extends LinearLayout{
        
        public interface OnItemSelectedListener{
            
-           void onSelected(View v,NewsPaperCategory category);
+           void onSelected(View v,NewsPaper paper);
        } 
        
 }

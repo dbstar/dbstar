@@ -47,13 +47,14 @@ class ServerHandler extends Thread {
   private Context context;
   private String mBookColumnId;
   private String mNewsPaperColumnId;
-  ServerHandler(Socket s,String ip,int port ,String bookColumn,String newspaperColunm,Context context) {
+  private String mMagazineColumnId;
+  ServerHandler(Socket s,String ip,int port ,String bookColumn,String newspaperColunm,String magazineColumn,Context context) {
     toClient = s;
     IpAddress = ip;
     this.mBookColumnId = bookColumn;
     this.mNewsPaperColumnId = newspaperColunm;
+    this.mMagazineColumnId = magazineColumn;
     this.context = context;
-    
   }
 
   private String formatFileSize(long length) {
@@ -263,6 +264,53 @@ class ServerHandler extends Thread {
 				byte[] content = PageFactory.getDownLoadListPage(loadDatas, IpAddress);
 				populateDataToClient(content, headerBase, loadDatas);
 
+			} else if (dokument.contains(ServiceApi.ACTION_DOWNLOAD_MAGAZINE_LIST)) {
+				Log.i("ServerHandler", "-----dokument.contains(qk.html)-----");
+//				List<NewsPaper> papers = ShelfController.getInstance(this.context).loadAllNewsPapers(mNewsPaperColumnId);
+				List<NewsPaper> magazines = new ArrayList<NewsPaper>();
+				if (mMagazineColumnId != null) {
+					if (mMagazineColumnId.contains("&")) {
+						String[] magazineIds = mMagazineColumnId.split("&");
+						for (int i = 0; i < magazineIds.length; i++) {
+							List<NewsPaper> newsPaperListById = ShelfController.getInstance(this.context).loadAllNewsPapers(magazineIds[i]);
+							if (newsPaperListById != null) {								
+								magazines.addAll(newsPaperListById);
+							}
+						}
+					} else {
+						magazines = ShelfController.getInstance(this.context).loadAllNewsPapers(mMagazineColumnId);
+					}
+				}
+				
+//				Log.i("ServerHandler", "----------bz.html-and papers = " + papers);
+				List<LoadData> loadDatas = new ArrayList<LoadData>();
+				if (magazines != null) {
+					LoadData loadData;
+					for (int i = 0; i < magazines.size(); i++) {
+						NewsPaper b = magazines.get(i);
+						loadData = new LoadData();
+						loadData.Name = b.Name;
+						loadData.Author = b.PublishTime;
+						String ext = ".epub";
+				    	if (!b.RootPath.endsWith(ext)) {
+				    		loadData.FilePath = b.RootPath + ".epub";
+				    	} else 
+				    		loadData.FilePath = b.RootPath;	
+						Log.i("ServerHandler", "------FilePath========-" + loadData.FilePath);
+//						loadData.Date = b.PublishTime;
+						File file = new File(loadData.FilePath);
+						if (file.exists()) {
+							loadData.Size = formatFileSize(file.length());
+						} else {
+							continue;
+						}
+						loadDatas.add(loadData);
+					}
+				}
+				
+				byte[] content = PageFactory.getDownLoadListPage(loadDatas, IpAddress);
+				populateDataToClient(content, headerBase, loadDatas);
+				
 			} else /*if(dokument.contains(ServiceApi.ACTION_LOAD_ITEM)) */ {
 				String  fileName = null;;
 				String  filePath = null;

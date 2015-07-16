@@ -89,7 +89,6 @@ public class NewsPaperActivity extends Activity{
             fragment = mFragments.get(FRAGMENT_ARTICLE_LIST);
             if(fragment.isAdded()){
                 transaction.hide(fragment);
-               
             }
         }else if(FRAGMENT_ARTICLE_LIST == index){
             fragment.SetData(page);

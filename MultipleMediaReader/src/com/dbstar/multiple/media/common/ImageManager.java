@@ -36,6 +36,57 @@ public class ImageManager {
         
     }
     
+    public void getMagazineBitmapDrawable(final String uri, final ImageCallback callback, final String viewKey) {
+    	synchronized (uri) {
+    		BitmapDrawable drawable = null;
+    		SoftReference<BitmapDrawable> sfb = mCache.get(uri);
+    		if (sfb != null) {
+    			if (callback == null)
+    				return;
+    			drawable = sfb.get();
+    			if (drawable != null) {
+    				callback.imageLoaded(drawable, viewKey);
+    				return;
+    			}
+    		}
+    		
+    		new AsyncTask<Object, Integer, BitmapDrawable>() {
+    			String uri;
+    			ImageCallback callback;
+    			String viewKey;
+    			
+    			@Override
+    			protected BitmapDrawable doInBackground(Object... params) {
+    				uri = (String) params[0];
+    				callback = (ImageCallback) params[1];
+    				viewKey = (String) params[2];
+    				BitmapDrawable drawable = null;
+    				SoftReference<BitmapDrawable> sfb = mCache.get(uri);
+    				if (sfb != null) {
+    					drawable = sfb.get();
+    					if (drawable == null) {
+    						drawable = ImageUtil.setDrawable(uri, 900);
+//                        	drawable = new BitmapDrawable(mContext.getResources(), uri);
+    						sfb = new SoftReference<BitmapDrawable>(drawable);
+    						mCache.put(uri, sfb);
+    					}
+    				} else {
+    					drawable = ImageUtil.setDrawable(uri, 900);
+//                    	drawable = new BitmapDrawable(mContext.getResources(), uri);
+    					sfb = new SoftReference<BitmapDrawable>(drawable);
+    					mCache.put(uri, sfb);
+    					
+    				}
+    				return drawable;
+    			}
+    			
+    			protected void onPostExecute(BitmapDrawable result) {
+    				if (callback != null)
+    					callback.imageLoaded(result, viewKey);
+    			};
+    		}.execute(uri, callback, viewKey);
+    	}
+    }
     public void getBitmapDrawable(final String uri, final ImageCallback callback, final String viewKey) {
         synchronized (uri) {
             BitmapDrawable drawable = null;

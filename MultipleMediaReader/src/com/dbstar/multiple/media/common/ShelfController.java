@@ -23,8 +23,6 @@ import com.dbstar.multiple.media.data.NewsPaper;
 import com.dbstar.multiple.media.data.NewsPaperCategory;
 import com.dbstar.multiple.media.shelf.R;
 import com.dbstar.multiple.media.widget.ShelfDeleteOrCollectDialog;
-import com.dbstar.multiple.media.widget.ShelfLoadingDialog;
-import com.dbstar.multiple.media.widget.ShelfLoadingDialog.Builder;
 import com.dbstar.multiple.media.widget.ShelfTextFontSettingDialog;
 
 public class ShelfController {
@@ -37,6 +35,7 @@ public class ShelfController {
     private static final String ACTION_ADD_NEWSPAPER_TO_PERSONAL_PREFERENCE = "AddNewsPaperToPersonalPreference";
     private static final String ACTION_REMOCE_NEWSPAPER_FROM_PERSONAL_PREFERENCE = "RemoveNewsPaperFromPersonalPreference";
     private static final String ACTION_LOAD_ALL_NEWSPAPERS = "LoadAllNewsPapers";
+    private static final String ACTION_LOAD_MAGAZINES = "LoadMagazines";
     private static final String ACTION_LOAD_COLLECTED_NEWSPAPER_CATEGORIES = "LoadCollectedNewsPaperCategories";
     private static final String ACTION_LOAD_COLLECTED_NEWSPAPERS = "LoadCollectedNewsPapers";
 
@@ -286,6 +285,10 @@ public class ShelfController {
     public List<NewsPaper> loadAllNewsPapers(String mNewsPaperColumnId) {
         return loadNewsPapers(ACTION_LOAD_ALL_NEWSPAPERS, mNewsPaperColumnId);
     }
+    
+    public List<NewsPaper> loadMagazines(String categoryId) {
+    	return loadMagazines(ACTION_LOAD_MAGAZINES, categoryId);
+    }
 
     public List<NewsPaper> loadNewsPapers(String categoryId) {
         return loadNewsPapers(ACTION_LOAD_NEWSPAPERS, categoryId);
@@ -372,6 +375,36 @@ public class ShelfController {
         }
 
         return categories;
+    }
+    
+    public List<NewsPaper> loadMagazines(String action, String selectionArg) {
+    	List<NewsPaper> magazines = null;
+    	Cursor cursor = null;
+    	try {
+			Uri uri = getUri(action);
+			cursor = mResolver.query(uri, null, null, new String[] { selectionArg }, null);
+			if (cursor != null) {
+				magazines = new ArrayList<NewsPaper>();
+				NewsPaper magazine;
+				while (cursor.moveToNext()) {
+					magazine = new NewsPaper();
+					magazine.Id = cursor.getString(0);
+					magazine.PosterPath = cursor.getString(1);
+					magazine.RootPath = cursor.getString(2);
+					Log.d("loadMagazines", "-----------magazine.Id = " + magazine.Id);
+					Log.d("loadMagazines", "-----------magazine.PosterPath = " + magazine.PosterPath);
+					Log.d("loadMagazines", "-----------magazine.RootPath = " + magazine.RootPath);
+					magazines.add(magazine);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+			}
+		}
+    	return magazines;
     }
     
     public List<NewsPaper> loadNewsPapers(String action, String selectionArg) {

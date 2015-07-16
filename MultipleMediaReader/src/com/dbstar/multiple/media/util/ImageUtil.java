@@ -12,24 +12,28 @@ public class ImageUtil {
 	public static final String AppBG_Uri = "AppBG";
 
 	public static BitmapDrawable setDrawable(String uri, int targetWidth) {
-		BitmapDrawable drawable;
-		BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-		bitmapOptions.inJustDecodeBounds = true;
-		Bitmap bitmap = BitmapFactory.decodeFile(uri, bitmapOptions);
+		BitmapDrawable drawable = null;
+		try {
+			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+			bitmapOptions.inJustDecodeBounds = true;
+			Bitmap bitmap = BitmapFactory.decodeFile(uri, bitmapOptions);
 
-		int width = bitmapOptions.outWidth;
-		int height = bitmapOptions.outHeight;
-		Log.d("ImageManager", "width = " + width);
-		Log.d("ImageManager", "height = " + height);
+			int width = bitmapOptions.outWidth;
+			int height = bitmapOptions.outHeight;
+			Log.d("ImageManager", "width = " + width);
+			Log.d("ImageManager", "height = " + height);
 
-		bitmapOptions.inJustDecodeBounds = false;
-		// bitmapOptions.outWidth为获取到的原图的宽度
-		bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / targetWidth);
+			bitmapOptions.inJustDecodeBounds = false;
+			// bitmapOptions.outWidth为获取到的原图的宽度
+			bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / targetWidth);
 
-		Bitmap resizedBitmap = BitmapFactory.decodeFile(uri, bitmapOptions);
+			Bitmap resizedBitmap = BitmapFactory.decodeFile(uri, bitmapOptions);
 
-		Log.d("ImageManager", "uri = " + uri);
-		drawable = new BitmapDrawable(resizedBitmap);
+			Log.d("ImageManager", "uri = " + uri);
+			drawable = new BitmapDrawable(resizedBitmap);
+		} catch (OutOfMemoryError e) {
+			e.printStackTrace();
+		}
 		return drawable;
 	}
 	
@@ -58,6 +62,33 @@ public class ImageUtil {
 					bitmap = BitmapFactory.decodeFile(appUri, bitmapOptions);
 				} catch (OutOfMemoryError e) {
 					Log.d(TAG, " appBitmap out of memory error = " + e);
+					e.printStackTrace();
+				}
+			}
+		}
+		return bitmap;
+	}
+	
+	public static Bitmap getGalleryBitmap(String appUri) {
+		Bitmap bitmap = null;
+		
+		if (appUri != null && !appUri.equals("")) {			
+			File appFile = new File(appUri);
+			if (appFile.exists()) {			
+				try {
+					BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+					bitmapOptions.inJustDecodeBounds = true;
+					
+					Bitmap resizedBitmap = BitmapFactory.decodeFile(appUri, bitmapOptions);
+					Log.d(TAG, "bitmapOptions.outWidth = " + bitmapOptions.outWidth + ", bitmapOptions.outHeight = " + bitmapOptions.outHeight);
+					
+					// bitmapOptions.outWidth为获取到的原图的宽度
+					bitmapOptions.inSampleSize = (int) ((bitmapOptions.outWidth) * 1.0 / 190);
+					bitmapOptions.inJustDecodeBounds = false;
+					
+					bitmap = BitmapFactory.decodeFile(appUri, bitmapOptions);
+				} catch (OutOfMemoryError e) {
+					Log.d(TAG, " getGalleryBitmap out of memory error = " + e);
 					e.printStackTrace();
 				}
 			}

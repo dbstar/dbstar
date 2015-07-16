@@ -422,7 +422,7 @@ public class MainFragmenet extends BaseFragment {
         }else{
             mCurrentPaperTitle.setText(newsPaper.Name);
             if(newsPaper.Pages != null)
-                mCurrentPaperPageCount.setText(getString(R.string.gong) + newsPaper.Pages.size()+getString(R.string.ban));
+                mCurrentPaperPageCount.setText(getString(R.string.gong) + newsPaper.Pages.size() + getString(R.string.ban));
             mCurrentPaperPublishDate.setText(DateUtil.getStringFromDate(DateUtil.getDate(newsPaper.PublishTime, DateUtil.FORMART3), DateUtil.FORMART2));
             
         }

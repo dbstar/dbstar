@@ -208,7 +208,7 @@ public class NewsPaperArticleListFragment extends BaseFragment{
             
             int index = mPage.SelectedIndex;
             mEditionadapter.setMarkPosition(index);
-            mArticleTitleListView.setSelectLastIndex(index == -1? 0 : index,mPage.PaddinTop);
+            mArticleTitleListView.setSelectLastIndex(index == -1 ? 0 : index,mPage.PaddinTop);
             mArticleTitleListView.post(new Runnable() {
     
                 @Override

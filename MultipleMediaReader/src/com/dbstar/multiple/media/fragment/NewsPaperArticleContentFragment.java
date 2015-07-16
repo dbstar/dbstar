@@ -38,7 +38,6 @@ import com.dbstar.multiple.media.data.NewsPaperArticleContent.Block;
 import com.dbstar.multiple.media.data.NewsPaperArticleContent.Patch;
 import com.dbstar.multiple.media.data.NewsPaperPage;
 import com.dbstar.multiple.media.shelf.R;
-import com.dbstar.multiple.media.shelf.activity.NewsPaperActivity;
 import com.dbstar.multiple.media.util.EPUBParser;
 import com.dbstar.multiple.media.util.ToastUitl;
 import com.dbstar.multiple.media.widget.NewsPaperContentView;

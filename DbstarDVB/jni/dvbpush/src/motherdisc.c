@@ -180,6 +180,20 @@ static int motherdisc_parse()
 			ret = -1;
 		}
 #endif
+		// parse SProduct.xml	
+		sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT URI FROM Initialize WHERE PushFlag='%d';", SPRODUCT_XML);
+		memset(xml_uri,0,sizeof(xml_uri));
+		if(0==str_sqlite_read(xml_uri,sizeof(xml_uri),sqlite_cmd) && 0==parse_xml(xml_uri, SPRODUCT_XML, NULL)){
+			
+		}
+		else{
+			DEBUG("read URI or parse for %d failed\n",SPRODUCT_XML);
+// SProduct.xml is not a important file, even if parse SProduct.xml failed, continue
+//			snprintf(error_num,sizeof(error_num),"%d",SPRODUCT_XML);
+//			msg_send2_UI(MOTHER_DISC_INITIALIZE_FAILED, error_num, strlen(error_num));
+//			
+//			ret = -1;
+		}
 		
 		// parse ProductDesc.xml
 		// 解析ProductDesc.xml时判断拒绝的节目也入库

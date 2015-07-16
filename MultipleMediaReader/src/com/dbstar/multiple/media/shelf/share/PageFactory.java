@@ -36,6 +36,12 @@ public class PageFactory {
     	sb.append("<id11>http://www.feedbooks.com/store/selection.atom</id11>\n");
     	sb.append("<content type=\"text\">一报在手，知晓天下事</content>\n");
     	sb.append("</entry>\n");
+    	sb.append("<entry>\n");
+    	sb.append("<title>期刊</title>\n");
+    	sb.append("<link type=\"application/atom+xml;profile=opds-catalog;kind=navigation\" href=\"e/qk.html\" rel=\"\"/>\n");
+    	sb.append("<id11>http://www.feedbooks.com/store/selection.atom</id11>\n");
+    	sb.append("<content type=\"text\">在这里，可以看到你喜欢的期刊杂志</content>\n");
+    	sb.append("</entry>\n");
     	sb.append("</feed>\n");
     	
     	Log.d("PageFactory", "-----index.html = " + sb.toString());    	

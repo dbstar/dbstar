@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <!--   <uses-permission android:name="android.permission.DEVICE_POWER"/> -->
     <uses-sdk
         android:minSdkVersion="14"
@@ -37,6 +38,10 @@
         <activity android:name="com.dbstar.multiple.media.shelf.activity.VoicedBookShelfActivity"></activity>
         <activity android:name="com.dbstar.multiple.media.shelf.share.MediaShareActivity"></activity>
         <activity android:name="com.dbstar.multiple.media.shelf.activity.BookShelfActivity"></activity>
+        <activity android:name="com.dbstar.multiple.media.shelf.activity.PeriodicalActivity"></activity>
+        <activity android:name="com.dbstar.multiple.media.shelf.activity.MagazineActivity"></activity>
+        <activity android:name="com.dbstar.multiple.media.shelf.activity.MagazineListActivity"></activity>
+        <activity android:name="com.dbstar.multiple.media.shelf.activity.MagazineArticleContentActivity"></activity>
         <service android:name="com.dbstar.multiple.media.shelf.share.ShareService" android:exported="true">
             <intent-filter>
                 <action android:name="com.dbstar.multiple.media.shelf.share.action.shareService"></action>

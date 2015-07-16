@@ -42,6 +42,7 @@ public class ServerThread extends Thread {
 	private Context context;
 	private String mBookColumnId;
 	private String mNewsPaperColumnId;
+	private String mMagazineColumnId;
 	
     public ServerThread(String ip, int port, Handler handler,Context context) throws IOException {
 		super();
@@ -54,9 +55,10 @@ public class ServerThread extends Thread {
 		this.context = context;
 	}
     
-    public void setColumn(String book,String newspaper){
+    public void setColumn(String book,String newspaper,String magazine){
         this.mBookColumnId = book;
         this.mNewsPaperColumnId = newspaper;
+        this.mMagazineColumnId = magazine;
     }
     private static void send(String s) {
        GLog.getLogger("RM ServerThread").i(s);
@@ -79,7 +81,7 @@ public class ServerThread extends Thread {
 			    send("New connection fr" +
 			    		"om " + client.getInetAddress().toString());
 			    
-				new ServerHandler(client,mIp,mPort,mBookColumnId,mNewsPaperColumnId,context).start();
+				new ServerHandler(client,mIp,mPort,mBookColumnId,mNewsPaperColumnId,mMagazineColumnId,context).start();
 				clientList.add(client);
 			} catch (IOException e) {
 				send(e.getMessage());
