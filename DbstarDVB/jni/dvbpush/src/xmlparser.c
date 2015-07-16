@@ -475,10 +475,17 @@ int datetime2onehourbefore(char *datetime_str)
 	
 	int my_year=0,my_mon=0,my_day=0,my_hour=0,my_min=0,my_sec=0;
 	if(sscanf(datetime_str,"%d-%d-%d %d:%d:%d",&my_year,&my_mon,&my_day,&my_hour,&my_min,&my_sec)>=4){
-		if(my_hour>0)
-			return (my_hour-1);
-		else
-			return 23;
+		DEBUG("my_hour=%d, my_min=%d\n", my_hour, my_min);
+		if(my_min>=30)
+		{
+			return my_hour;
+		}
+		else{
+			if(my_hour>0)
+				return (my_hour-1);
+			else
+				return 23;
+		}
 	}
 	else
 		return -1;

@@ -922,12 +922,12 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 //			DEBUG("in user idle status,now_sec: %ld, s_pin_sec=%ld, reboot_timestamp_get()=%d\n", now_sec, s_pin_sec, reboot_timestamp_get());
 			
 			// 1¡¢ÓëÉÏ´Î¼ì²é¼ä¸ô´óÓÚ20·ÖÖÓ£¨1200£©
-			// 2¡¢ÓëÉÏ´ÎÖØÆôµÄÊ±¼ä²î´óÓÚ24¸öĞ¡Ê±(86400)
-			// 3¡¢¿ª»ú³¬¹ı24¸öĞ¡Ê±(86400)£»
-			// Ö®ËùÒÔÓĞµÚ2¸öÅĞ¶Ï£¬ÊÇÒòÎªÓĞ¿ÉÄÜ¿ª»úÊ±¼äÎª1970Äê£¬ºÜ¿ì½ÓÊÕµ½Ê±¼äÍ¬²½Îª2014Äê£¬ÒıÆğÒâÍâÂú×ã¿ª»ú´óÓÚ24¸öĞ¡Ê±
+			// 2¡¢ÓëÉÏ´ÎÖØÆôµÄÊ±¼ä²î´óÓÚ12¸öĞ¡Ê±(43200)
+			// 3¡¢¿ª»ú³¬¹ı12¸öĞ¡Ê±(43200)£»
+			// Ö®ËùÒÔÓĞµÚ2¸öÅĞ¶Ï£¬ÊÇÒòÎªÓĞ¿ÉÄÜ¿ª»úÊ±¼äÎª1970Äê£¬ºÜ¿ì½ÓÊÕµ½Ê±¼äÍ¬²½Îª2014Äê£¬ÒıÆğÒâÍâÂú×ã¿ª»ú´óÓÚ12¸öĞ¡Ê±
 			if(		now_sec-last_checkreboot_sec>1200
-				&&	(now_sec-s_pin_sec>86400) 
-				&&	(now_sec-reboot_timestamp_get())>86400 ){
+				&&	(now_sec-s_pin_sec>43200) 
+				&&	(now_sec-reboot_timestamp_get())>43200 ){
 				
 				last_checkreboot_sec = now_sec;
 				localtime_r(&now_sec, &now_tm);
@@ -942,12 +942,13 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 				// Èç¹ûÖØÆôÊ±¼äÔÚ0¡«7µã£¬ÔòÔÚÖÜÎåÖØÆô£»ÆäËûÊ±¼äµãÔÚÖÜËÄÖØÆô
 //						((0<=reboot_hour && reboot_hour<=6 && 5==now_tm.tm_wday)
 //						|| (reboot_hour>6 && 4==now_tm.tm_wday)
-				if(	reboot_hour==now_tm.tm_hour
-					&&	((1==now_tm.tm_wday)
-						|| (3==now_tm.tm_wday)
-						|| (5==now_tm.tm_wday)
-						)
-					){
+
+//					&&	((1==now_tm.tm_wday)
+//						|| (3==now_tm.tm_wday)
+//						|| (5==now_tm.tm_wday)
+//						)
+				if(	reboot_hour==now_tm.tm_hour)
+				{
 					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d, now_tm.tm_wday=%d\n", 
 						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec, now_tm.tm_wday);
 					

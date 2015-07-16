@@ -3263,12 +3263,12 @@ static int push_end_early_hour_init()
 	memset(s_onehour_before_pushend,0,sizeof(s_onehour_before_pushend));
 	
 	int (*sqlite_cb)(char **, int, int, void *, unsigned int) = str_read_cb;
-	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select strftime(\'%%H\',(select max(PushEndTime) from ProductDesc),\'-1 hour\');");
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"select strftime(\'%%H\',(select max(PushEndTime) from ProductDesc),\'-0.5 hour\');");
 
 	int ret_sqlexec = sqlite_read(sqlite_cmd, s_onehour_before_pushend, sizeof(s_onehour_before_pushend), sqlite_cb);
 	if(ret_sqlexec<=0 || strlen(s_onehour_before_pushend)<1){
 		DEBUG("read no s_onehour_before_pushend from db\n");
-		snprintf(s_onehour_before_pushend, sizeof(s_onehour_before_pushend), "0");
+		snprintf(s_onehour_before_pushend, sizeof(s_onehour_before_pushend), "4");
 	}
 	else
 		DEBUG("read s_onehour_before_pushend: %s\n", s_onehour_before_pushend);
