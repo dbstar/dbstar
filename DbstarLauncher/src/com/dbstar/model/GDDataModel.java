@@ -306,7 +306,7 @@ public class GDDataModel {
 				+ Publication.RECEIVESTATUS + "=?) AND " + Publication.VISIBLE
 				+ "=? AND (" + Publication.DELETED + "=? OR "
 				+ Publication.DELETED + " is null OR " + Publication.DELETED
-				+ "=?) ";
+				+ "=?) order by TimeStamp DESC";
 
 		if (favorite != null && !favorite.isEmpty()) {
 			selection += " AND " + Publication.FAVORITE + "=" + favorite;
@@ -443,7 +443,7 @@ public class GDDataModel {
 				+ PublicationsSet.RECEIVESTATUS + "=? OR "
 				+ PublicationsSet.RECEIVESTATUS + "=?) AND ("
 				+ PublicationsSet.DELETED + "=? OR " + PublicationsSet.DELETED
-				+ " is null OR " + PublicationsSet.DELETED + " =?) ";
+				+ " is null OR " + PublicationsSet.DELETED + " =?) order by TimeStamp DESC";
 
 		if (favorite != null && !favorite.isEmpty()) {
 			selection += " AND " + PublicationsSet.FAVORITE + "=" + favorite;
