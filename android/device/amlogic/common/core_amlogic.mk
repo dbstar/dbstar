@@ -74,6 +74,7 @@ PRODUCT_PACKAGES := \
     ip-up-vpn \
     ip6tables \
     iptables \
+    e2fsck \
     keystore \
     keystore.default \
     libandroidfw \
