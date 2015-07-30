@@ -1279,7 +1279,6 @@ static void printf_statfs_ret(char *statfs_dir,int ret)
 #define ENTITLE_SPACESIZE_MIN		(1024LL)
 #define ENTITLE_STORE_1ST	"/storage/external_storage/sdb1"
 #define ENTITLE_STORE_3RD	"/storage/external_storage/external_sdcard"
-#define ENTITLE_FILEDIR		"/data/dbstar/drm/entitle"
 static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 {
 	char CardSN[CDCA_MAXLEN_SN+1];
@@ -1295,7 +1294,7 @@ static int smartcard_EntitleFile_output(char *retbuf, unsigned int retbuf_size)
 	memset(CardSN,0,sizeof(CardSN));
 	ret = CDCASTB_GetCardSN(CardSN);
 	if(CDCA_RC_OK==ret){
-		snprintf(local_entitlefile_uri,sizeof(local_entitlefile_uri),"%s/%s", ENTITLE_FILEDIR,CardSN);
+		snprintf(local_entitlefile_uri,sizeof(local_entitlefile_uri),"%s/%s", DIR_ENTITLE_IN_DATA,CardSN);
 		int stat_ret = stat(local_entitlefile_uri, &local_entitlefile_stat);
 		DEBUG("%s file size = %llu, stat_ret=%d\n", local_entitlefile_uri, local_entitlefile_stat.st_size,stat_ret);
 		if(0==stat_ret && local_entitlefile_stat.st_size > 0LL){
@@ -1767,6 +1766,7 @@ int dvbpush_command(int cmd, char **buf, int *len)
 {
 	int ret = 0;
 	char tmp_buf[512];
+	char dir_drm_in_hd[128];
 
 	DEBUG("command: %d=0x%x\n", cmd,cmd);
 	memset(s_jni_cmd_public_space,0,sizeof(s_jni_cmd_public_space));
@@ -1966,16 +1966,15 @@ int dvbpush_command(int cmd, char **buf, int *len)
 		case CMD_DRM_RESET:
 			s_hd_write_protected += 2;
 			DEBUG("CMD_DRM_RESET, s_hd_write_protected=%d\n", s_hd_write_protected);
-			char *drm_dir = "/data/dbstar/drm";
-			char *drm_dir_rubbish = "/data/dbstar/drm_rubbish";
-			if(0==remove_force(__FUNCTION__, drm_dir)){
-				DEBUG("remove %s success\n", drm_dir);
+			if(0==remove_force(__FUNCTION__, DIR_DRM_IN_DATA)){
+				DEBUG("remove %s success\n", DIR_DRM_IN_DATA);
 			}
 			else{
-				DEBUG("remove %s failed\n", drm_dir);
-				if(0!=rename(drm_dir,drm_dir_rubbish))
-					ERROROUT("rename %s to %s failed\n", drm_dir, drm_dir_rubbish);
+				DEBUG("remove %s failed\n", DIR_DRM_IN_DATA);
 			}
+			
+			snprintf(dir_drm_in_hd, sizeof(dir_drm_in_hd), "%s/drm", s_pushdir);
+			remove_force(__FUNCTION__, dir_drm_in_hd);
 			
 			push_log_clear(1);
 			
@@ -3553,6 +3552,30 @@ static int pushinfo_unregist_cb(char **result, int row, int column, void *receiv
 	return 0;
 }
 
+static void drm_backup()
+{
+//	long long dir_entitile_size = dir_size(DIR_ENTITLE_IN_DATA);
+//	long long file_block01_size = dir_size(FILE_BLOCK01);
+	char dir_drm_in_hd[128];
+	
+//	PRINTF("dir_entitile_size(%ll) vs file_block01_size(%ll)\n", dir_entitile_size, file_block01_size);
+//	if(dir_entitile_size!=file_block01_size && dir_entitile_size>0){
+		snprintf(dir_drm_in_hd, sizeof(dir_drm_in_hd), "%s/drm", s_pushdir);
+		remove_force(__FUNCTION__, dir_drm_in_hd);
+		
+		dir_exist_ensure(dir_drm_in_hd);
+		snprintf(dir_drm_in_hd, sizeof(dir_drm_in_hd), "%s/drm/entitle", s_pushdir);
+		dir_exist_ensure(dir_drm_in_hd);
+		files_copy(DIR_ENTITLE_IN_DATA, dir_drm_in_hd);
+		sync();
+//	}
+//	else{
+//		PRINTF("can not backup drm files\n");
+//	}
+	
+	return;
+}
+
 int pushinfo_reset(void)
 {
 	// 如果是插入智能卡，需要和数据表SCEntitleInfo比对其特殊产品是否有变化，以此判断是否是更换了智能卡
@@ -3567,6 +3590,8 @@ int pushinfo_reset(void)
 		DEBUG("this is a motherdisc, do not reset initialize and pushinfo\n");
 		return -1;
 	}
+	
+	drm_backup();
 
 // 3、重置xml注册
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = pushinfo_unregist_cb;

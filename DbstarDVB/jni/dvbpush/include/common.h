@@ -97,6 +97,9 @@ typedef enum{
 
 #define SMARTHOME_DATABASE		WORKING_DATA_DIR"/Smarthome.db"
 
+#define DIR_DRM_IN_DATA			"/data/dbstar/drm/"
+#define DIR_ENTITLE_IN_DATA		"/data/dbstar/drm/entitle/"
+
 // 首次开机Launcher需要进行网络初始化，初始化完毕后Launcher写入此标记文件，目前内容仅一个字符“1”
 #define NETWORK_INIT_FLAG		"/data/data/com.dbstar/files/flag"
 #define DEVICE_NUM_CHANGED_FLAG	"/cache/recovery/last_log"

@@ -4,14 +4,12 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -71,7 +69,6 @@ import com.dbstar.util.LogUtil;
 import com.dbstar.util.NativeUtil;
 import com.dbstar.util.PeripheralController;
 import com.dbstar.util.StringUtil;
-import com.dbstar.util.ToastUtil;
 import com.dbstar.util.upgrade.RebootUtils;
 
 public class GDDataProviderService extends Service {
@@ -141,6 +138,8 @@ public class GDDataProviderService extends Service {
 	private static final String DBSTARDB_NAME = "Dbstar.db";
 	private static final String COLUMNICON_DIR = "ColumnRes/";
 	private static final String LOCALCOLUMNICON_DIR = "LocalColumnIcon/";
+	private static final String DATA_DBSTARDB_DRM_ENTITLE = "/data/dbstar/drm/entitle";
+	private static final String DISK_DBSTARDB_DRM_ENTITLE = "/drm/entitle";
 
 	private Object mTaskQueueLock = new Object();
 	private LinkedList<RequestTask> mTaskQueue = null;
@@ -440,6 +439,74 @@ public class GDDataProviderService extends Service {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		
+		File dataDrmFile = new File(DATA_DBSTARDB_DRM_ENTITLE);
+		File enTitleFile = new File(disk + DISK_DBSTARDB_DRM_ENTITLE);
+		final ArrayList<String> dataFileList = new ArrayList<String>();
+		final ArrayList<String> diskFileList = new ArrayList<String>();
+		if (enTitleFile.exists()) {
+			File[] diskFiles = enTitleFile.listFiles(new FileFilter() {
+				
+				@Override
+				public boolean accept(File pathname) {
+					try {
+						if (pathname.getName().startsWith("80")) {
+							FileInputStream in = new FileInputStream(pathname);
+							int size = in.available();
+							if (size > 0) {							
+								diskFileList.add(pathname.getName());
+							}
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return false;
+				}
+			});
+			
+			if (diskFileList.size() > 0) {
+				if (dataDrmFile.exists()) {
+					File[] dataFiles = dataDrmFile.listFiles(new FileFilter() {
+						
+						@Override
+						public boolean accept(File pathname) {
+							if (pathname.getName().startsWith("80")) {
+								dataFileList.add(pathname.getName());
+							}
+							return false;
+						}
+					});
+					
+					try {
+						if (dataFileList.size() > 0) {
+							ArrayList<String> strList = new ArrayList<String>();
+							for (String pathName : dataFileList) {
+								File dataFile = new File(DATA_DBSTARDB_DRM_ENTITLE + "/" + pathName);
+								FileInputStream in = new FileInputStream(dataFile);
+								int dataFileSize = in.available();
+								if (dataFileSize == 0) {
+									strList.add(pathName);
+								} else {
+									return;
+								}
+							}
+							
+							if (dataFileList.size() == strList.size()) {
+								for (String name : diskFileList) {
+									fileEnsure(disk + DISK_DBSTARDB_DRM_ENTITLE + "/" + name, DATA_DBSTARDB_DRM_ENTITLE + "/" + name);
+								}
+							}
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				} else {
+					for (String name : diskFileList) {
+						fileEnsure(disk + DISK_DBSTARDB_DRM_ENTITLE + "/" + name, DATA_DBSTARDB_DRM_ENTITLE + "/" + name);
+					}
+				}
+			}
 		}
 
 		String channel = FileOperation.read(GDCommon.ChannelFile);
