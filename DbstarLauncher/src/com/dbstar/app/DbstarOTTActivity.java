@@ -242,7 +242,7 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 		
 		File file = new File(defaultStorage);
 		
-		if (devDisk != null && devDisk.contains("sda1")) {
+		if (devDisk != null && devDisk.contains("sda")) {
 			LogUtil.d("DbstarOTTActivity", " sda1 is exists = " + file.exists());
 			if (!file.exists()) {
 				synchronized (this) {
@@ -290,71 +290,79 @@ public class DbstarOTTActivity extends GDBaseActivity implements GDApplicationOb
 				} 
 				
 				LogUtil.d("DbstarOTTActivity", " after wait time = " + System.currentTimeMillis());
+				
+				doSomethingForIsCanWrite(defaultStorage, file);
 			} else {
 				// 对话框提示内容：当前硬盘格式不可识别，是否格式化。这两个对话框（包括下面的那个）默认焦点都放在“否”上面
 				showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert), true, false);
 			}
 			
-			if (fileCanWrite) {
-				// 如果硬盘可写，就去判断是否存在.hd_mark
-				final List<String> fileList = new ArrayList<String>();
-				File[] files =  file.listFiles(new FileFilter() {
-					
-					@Override
-					public boolean accept(File pathname) {
-						String fileName = pathname.getName();
-						LogUtil.d("DbstarOTTActivity", "fileName = " + fileName);
-						fileList.add(fileName);
-						if (fileName.equals(".hd_mark")) {
-							isConstainsMarkFile = true;
-							LogUtil.d("DbstarOTTActivity", "isConstainsMarkFile = " + isConstainsMarkFile);
-						}
-						return false;
-					}
-				});
-				
-				LogUtil.d("DbstarOTTActivity", "fileList.size() = " + fileList.size());
-				File markFile = new File(defaultStorage + ".hd_mark");
-				try {
-					// 如果.hd_mark不存在，则重新创建，并生成随机数
-					if (!isConstainsMarkFile) {
-							writeMarkFile(markFile);
-					} else { // 如果.hd_mark存在，但是其文件大小小于等于0，则删除该文件并重新创建，生成随机数
-						FileInputStream inputStream = new FileInputStream(markFile);
-						int byteSize = inputStream.available();
-						LogUtil.d("DbstarOTTActivity", ".hd_mark byteSize = " + byteSize);
-						if (byteSize <= 0) {
-							markFile.delete();
-							writeMarkFile(markFile);
-						}
-					}
-				} catch (IOException e) {
-					LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and write .hd_mark failed or .hd_mark size is 0!");					
-					e.printStackTrace();
-				}
-				// 如果.hd_mark不存在 && 存在其他文件，就弹出对话框，提示：该盘将作为数据接收盘，是否格式化。
-				if (!isConstainsMarkFile && files != null && fileList.size() > 1) {
-					LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and exists other file!");
-					// 在可写情况下，对话框上要显示硬盘总容量，占用空间、剩余空间。
-					DiskInfo info = GDDiskInfo.getDiskInfo(defaultStorage, true);
-					long rawDiskSize = info.RawDiskSize;
-					String diskSize = info.DiskSize;
-					String diskUsed = info.DiskUsed;
-					String diskSpace = info.DiskSpace;
-					// 200 * 1000 * 1000 * 1000
-					if (rawDiskSize > 200000000000l) {					
-						showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
-								+ "\n硬盘总容量：" + diskSize
-								+ "\n占用空间：" + diskUsed
-								+ "\n剩余空间：" + diskSpace, true, false);
-					} else 
-						LogUtil.d("DbstarOTTActivity", "rawDiskSize = " + rawDiskSize);
-				}
-			} else {
-				LogUtil.d("DbstarOTTActivity", "disk is cannot write");
-				showIsFormatDialog(getResources().getString(R.string.external_storage_disk_cannotwrite), false, true);
-			}
+	
 		} 
+	}
+
+	private void doSomethingForIsCanWrite(String defaultStorage, File file) {
+		if (fileCanWrite) {
+			// 如果硬盘可写，就去判断是否存在.hd_mark
+			final List<String> fileList = new ArrayList<String>();
+			File[] files =  file.listFiles(new FileFilter() {
+				
+				@Override
+				public boolean accept(File pathname) {
+					String fileName = pathname.getName();
+					LogUtil.d("DbstarOTTActivity", "fileName = " + fileName);
+					fileList.add(fileName);
+					if (fileName.equals(".hd_mark")) {
+						isConstainsMarkFile = true;
+						LogUtil.d("DbstarOTTActivity", "isConstainsMarkFile = " + isConstainsMarkFile);
+					}
+					return false;
+				}
+			});
+			
+			LogUtil.d("DbstarOTTActivity", "fileList.size() = " + fileList.size());
+			File markFile = new File(defaultStorage + ".hd_mark");
+			try {
+				// 如果.hd_mark不存在，则重新创建，并生成随机数
+				if (!isConstainsMarkFile) {
+						writeMarkFile(markFile);
+				} else { // 如果.hd_mark存在，但是其文件大小小于等于0，则删除该文件并重新创建，生成随机数
+					FileInputStream inputStream = new FileInputStream(markFile);
+					int byteSize = inputStream.available();
+					LogUtil.d("DbstarOTTActivity", ".hd_mark byteSize = " + byteSize);
+					if (byteSize <= 0) {
+						markFile.delete();
+						writeMarkFile(markFile);
+					}
+				}
+			} catch (IOException e) {
+				LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and write .hd_mark failed or .hd_mark size is 0!");					
+				e.printStackTrace();
+			}
+			// 如果.hd_mark不存在 && 存在其他文件，就弹出对话框，提示：该盘将作为数据接收盘，是否格式化。
+			if (!isConstainsMarkFile && files != null && fileList.size() > 1) {
+				LogUtil.d("DbstarOTTActivity", ".hd_mark is not exists and exists other file!");
+				// 在可写情况下，对话框上要显示硬盘总容量，占用空间、剩余空间。
+				DiskInfo info = GDDiskInfo.getDiskInfo(defaultStorage, true);
+				long rawDiskSize = info.RawDiskSize;
+				String diskSize = info.DiskSize;
+				String diskUsed = info.DiskUsed;
+				String diskSpace = info.DiskSpace;
+				// 200 * 1000 * 1000 * 1000
+				if (rawDiskSize > 200000000000l) {					
+					showIsFormatDialog(getResources().getString(R.string.external_storage_format_disk_alert_1)
+							+ "\n硬盘总容量：" + diskSize
+							+ "\n占用空间：" + diskUsed
+							+ "\n剩余空间：" + diskSpace, true, false);
+				} else 
+					LogUtil.d("DbstarOTTActivity", "rawDiskSize = " + rawDiskSize);
+			}
+		} else {
+			LogUtil.d("DbstarOTTActivity", "disk is cannot write");
+			showIsFormatDialog(getResources().getString(R.string.external_storage_disk_cannotwrite), false, true);
+			// TODO
+//					showIsFormatDialog(getResources().getString(R.string.external_storage_disk_cannotwrite), true, false);
+		}
 	}
 
 	private void writeMarkFile(File markFile) throws IOException {
