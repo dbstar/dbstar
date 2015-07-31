@@ -3560,11 +3560,11 @@ static void drm_backup()
 	
 //	PRINTF("dir_entitile_size(%ll) vs file_block01_size(%ll)\n", dir_entitile_size, file_block01_size);
 //	if(dir_entitile_size!=file_block01_size && dir_entitile_size>0){
-		snprintf(dir_drm_in_hd, sizeof(dir_drm_in_hd), "%s/drm", s_pushdir);
+		snprintf(dir_drm_in_hd, sizeof(dir_drm_in_hd), "%s/drm/", s_pushdir);
 		remove_force(__FUNCTION__, dir_drm_in_hd);
 		
 		dir_exist_ensure(dir_drm_in_hd);
-		snprintf(dir_drm_in_hd, sizeof(dir_drm_in_hd), "%s/drm/entitle", s_pushdir);
+		snprintf(dir_drm_in_hd, sizeof(dir_drm_in_hd), "%s/drm/entitle/", s_pushdir);
 		dir_exist_ensure(dir_drm_in_hd);
 		files_copy(DIR_ENTITLE_IN_DATA, dir_drm_in_hd);
 		sync();
