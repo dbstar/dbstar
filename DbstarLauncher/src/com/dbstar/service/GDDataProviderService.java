@@ -497,14 +497,16 @@ public class GDDataProviderService extends Service {
 									fileEnsure(disk + DISK_DBSTARDB_DRM_ENTITLE + "/" + name, DATA_DBSTARDB_DRM_ENTITLE + "/" + name);
 								}
 							}
+						} else {							
+							for (String name : diskFileList) {
+								fileEnsure(disk + DISK_DBSTARDB_DRM_ENTITLE + "/" + name, DATA_DBSTARDB_DRM_ENTITLE + "/" + name);
+							}
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				} else {
-					for (String name : diskFileList) {
-						fileEnsure(disk + DISK_DBSTARDB_DRM_ENTITLE + "/" + name, DATA_DBSTARDB_DRM_ENTITLE + "/" + name);
-					}
+					LogUtil.d(TAG, "/data/dbstar/drm/entitle is not exist!");
 				}
 			}
 		}
