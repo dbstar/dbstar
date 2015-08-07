@@ -482,22 +482,25 @@ public class GDDataProviderService extends Service {
 						if (dataFileList.size() > 0) {
 							ArrayList<String> strList = new ArrayList<String>();
 							for (String pathName : dataFileList) {
+								LogUtil.d(TAG, "pathName = " + pathName);
 								File dataFile = new File(DATA_DBSTARDB_DRM_ENTITLE + "/" + pathName);
 								FileInputStream in = new FileInputStream(dataFile);
 								int dataFileSize = in.available();
 								if (dataFileSize == 0) {
 									strList.add(pathName);
 								} else {
-									return;
+									LogUtil.d(TAG, "break from " + pathName);
+									break;
 								}
 							}
-							
+
 							if (dataFileList.size() == strList.size()) {
 								for (String name : diskFileList) {
 									fileEnsure(disk + DISK_DBSTARDB_DRM_ENTITLE + "/" + name, DATA_DBSTARDB_DRM_ENTITLE + "/" + name);
 								}
 							}
-						} else {							
+						} else {
+							LogUtil.d(TAG, "restore from " + disk + DISK_DBSTARDB_DRM_ENTITLE);
 							for (String name : diskFileList) {
 								fileEnsure(disk + DISK_DBSTARDB_DRM_ENTITLE + "/" + name, DATA_DBSTARDB_DRM_ENTITLE + "/" + name);
 							}
@@ -699,7 +702,7 @@ public class GDDataProviderService extends Service {
 
 	void initializeDataEngine() {
 		mDataModel.initialize(mConfigure);
-		// mDataModel.setPushDir(mConfigure.getStorageDir());
+//		 mDataModel.setPushDir(mConfigure.getStorageDir());
 	}
 
 	void deinitializeDataEngine() {
