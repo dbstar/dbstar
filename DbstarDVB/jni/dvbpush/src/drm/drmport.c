@@ -404,7 +404,7 @@ CDCA_BOOL CDSTBCA_SetPrivateDataFilter(CDCA_U8  byReqID,
 #ifdef TUNER_INPUT
 	fid = TC_alloc_filter(wPid, &param, (AM_DMX_DataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
 #else
-	fid = TC_alloc_filter(wPid, &param, (dataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
+	fid = TC_alloc_filter_t(wPid, &param, (dataCb)filter_dump_bytes, (void *)&dmx_filter[0], 0);
 #endif
 
 	if ((fid >= MAX_CHAN_FILTER)||(fid < 0)) {

@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
-#include <pthread.h>
 #include "common.h"
 #include "sha_verify.h"
 #include "softdmx.h"
@@ -33,12 +32,9 @@ static int s_print_cnt = 0;
 static unsigned char tc_tid = 0xff;
 static unsigned short tc_pid = 0xffff;
 
-static pthread_mutex_t mtx_chann_filter = PTHREAD_MUTEX_INITIALIZER;
-
 static char software_version[16];
 
 int TC_loader_filter_handle(int aof);
-static void TC_free_filter_t(int fid);
 #endif
 
 Channel_t chanFilter[MAX_CHAN_FILTER+1];
@@ -127,15 +123,14 @@ unsigned int tc_crc32(const unsigned char *buf, int len)
 }
 
 #ifdef TUNER_INPUT
-static int MX_alloc_filter_t(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char priority)
+int MX_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char priority)
 #else
-// _t function has no mutex lock
-int TC_alloc_filter_t(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char priority)
+int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char priority)
 #endif
 {
 	int i,j,start_filter;
 	unsigned char m;
-	
+
 	if (priority)
 		start_filter = 0;
 	else
@@ -145,8 +140,6 @@ int TC_alloc_filter_t(unsigned short pid, Filter_param* param, dataCb hdle, void
 	{
 		if (chanFilter[i].used == 0)
 		{
-			chanFilter[i].used = 1;
-			
 			chanFilter[i].neq = 0;
 			for(j=0; j<DMX_FILTER_SIZE; j++)
 			{
@@ -200,30 +193,11 @@ int TC_alloc_filter_t(unsigned short pid, Filter_param* param, dataCb hdle, void
 			chanFilter[i].pid = pid;
             chanFilter[i].cc = -1;
 			DEBUG("allcoate a filter fid(id)[%d],num[%d],pid[0x%x]\n",i,m,pid);
-			
 			return i;
 		}
 	}
-	
 	return -1;
 }
-
-#ifdef TUNER_INPUT
-int MX_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char priority)
-{
-	return MX_alloc_filter_t(pid, param, hdle, userdata, priority);
-}
-#else
-// this function has mutex lock
-int TC_alloc_filter(unsigned short pid, Filter_param* param, dataCb hdle, void* userdata, char priority)
-{
-	pthread_mutex_lock(&mtx_chann_filter);
-	int ret = TC_alloc_filter_t(pid, param, hdle, userdata, priority);
-	pthread_mutex_unlock(&mtx_chann_filter);
-	
-	return ret;
-}
-#endif
 
 #ifdef TUNER_INPUT
 // buddy, look at tunerdmx.c for tuner box
@@ -389,7 +363,7 @@ int TC_loader_filter_handle(int aof) //1 allocate loader filter, 0 free loader f
         memcpy(&chanFilter0,&chanFilter[0],sizeof(chanFilter0));
         maxnum = max_filter_num;
         max_filter_num = 1;
-        TC_free_filter_t(0);
+        TC_free_filter(0);
         
     }
     else
@@ -477,11 +451,11 @@ static void loader_section_handle(int fid, const unsigned char *data, int len, v
 		{
 			if(recv_mark[seq]==0)
 			{
-                if (tc_crc32(data,len+12) )
-                {
-		            PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
-		            return;
-                }
+    	    	                if (tc_crc32(data,len+12) )
+    	    	                {
+    	    		            PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+    	    		            return;
+    	    	                }
 				recv_mark[seq]=1;
 				total_loader++;
 				
@@ -502,24 +476,24 @@ patch0:
 				{
 					if (lastSeq == 0)
 					{        
-                        if (recv_mark[0] == 1)
-                        {
-                            if (total_subone == 1)
-                            {
-                                total_loader++;
-                                total_subone = 0;
-                            }
+                                                if (recv_mark[0] == 1)
+                                                {
+                                                    if (total_subone == 1)
+                                                    {
+                                                        total_loader++;
+                                                        total_subone = 0;
+                                                    }
 						    recv_mark[0] = 2;
-                        }
+                                                }
 					}
 				}
-                else if (seq == 0)
-                {
-                    if ((lastSeq+1) == maxSeq)
-                    {
-                    	recv_mark[0] = 2;
-                    }
-                }
+                                else if (seq == 0)
+                                {
+                                        if ((lastSeq+1) == maxSeq)
+                                        {
+                                                recv_mark[0] = 2;
+                                        }
+                                }
 				lastSeq = seq;
 				
 				//DEBUG("total_loader: %d, maxSeq: %d\n", total_loader, maxSeq);
@@ -534,7 +508,7 @@ patch0:
 					}
 					
 					PRINTF("total_loader: %u, maxSeq: %u, g_loaderInfo.fid: %d\n", total_loader, maxSeq,g_loaderInfo.fid);
-					TC_free_filter_t(g_loaderInfo.fid);
+					TC_free_filter(g_loaderInfo.fid);
 					TC_loader_to_push_order(1);                                        
 					upgradefile = fopen(UPGRADEFILE_IMG,"w");
 					if (!upgradefile)
@@ -542,10 +516,10 @@ patch0:
 						PRINTF("open %s failed\n", UPGRADEFILE_IMG);
 						startWrite = 0;
 						getMaxSeq = 0;
-                        total_subone = 0;
-                        lastSeq = -1;
-                        maxSeq = -1;
-                        total_cycle = 0;
+                                                total_subone = 0;
+                                                lastSeq = -1;
+                                                maxSeq = -1;
+                                                total_cycle = 0;
 						if (recv_buf!= TC_loader_get_push_buf_pointer())
 							free(recv_buf);
 						free(recv_mark);
@@ -561,10 +535,10 @@ patch0:
 					free(recv_mark);
 					startWrite = 0;
 					getMaxSeq = 0;
-                    total_subone = 0;
-                    lastSeq = -1;
-                    maxSeq = -1;
-                    total_cycle = 0;
+                                        total_subone = 0;
+                                        lastSeq = -1;
+                                        maxSeq = -1;
+                                        total_cycle = 0;
 					if (loaderthread == 0)
 					{
 						pthread_create(&loaderthread, NULL, loader_thread, NULL);
@@ -582,47 +556,48 @@ patch0:
 						if ((lastSeq+1) == maxSeq)
 						{
 							recv_mark[0] = 2;
-                            if (total_subone)
-                            {
-                                total_subone = 0;
-                                total_loader++;
-                            }
-							DEBUG("monitor this package: seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=%d\n", seq, len, maxSeq, total_loader, totalLen);
+                                                        if (total_subone)
+                                                        {
+                                                            total_subone = 0;
+                                                            total_loader++;
+                                                        }
+DEBUG("monitor this package: seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=%d\n", seq, len, maxSeq, total_loader, totalLen);
 						}
 						goto patch0;
 					}
-					DEBUG("monit0 this package:seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=%d, recvmark0=%d\n", seq, len, maxSeq, total_loader, totalLen,recv_mark[0]);
+DEBUG("monit0 this package:seq=%u, len=%u, maxSeq=%u, total_loader=%d, totalLen=%d, recvmark0=%d\n", seq, len, maxSeq, total_loader, totalLen,recv_mark[0]);
 				}
 				else
 				{
 					lastSeq = seq;
 				}
-                if (seq == 1)
-                {
-                    total_cycle++;
-                    if(total_cycle > 5)
-                    {
-                        startWrite = 0;
-                        getMaxSeq = 0;
-                        total_subone = 0;
-                        lastSeq = -1;
-                        maxSeq = -1;
-                        if (recv_buf!= TC_loader_get_push_buf_pointer())
-                        	free(recv_buf);
-                        free(recv_mark);
-                        total_cycle = 0;
-                        TC_free_filter_t(g_loaderInfo.fid);
-                        TC_loader_to_push_order(1);
-                        {
-	                        Filter_param param;
-	                        memset(&param,0,sizeof(param));
-	                        param.filter[0] = 0xf0;
-	                        param.mask[0] = 0xff;
-	
-	                        loader_dsc_fid=TC_alloc_filter_t(0x1ff0, &param, loader_des_section_handle, NULL, 1);
-                        }
-                    } 
-                }
+                                if (seq == 1)
+                                {
+                                        total_cycle++;
+                                        if(total_cycle > 5)
+                                        {
+                                                startWrite = 0;
+                                                getMaxSeq = 0;
+                                                total_subone = 0;
+                                                lastSeq = -1;
+                                                maxSeq = -1;
+                                                if (recv_buf!= TC_loader_get_push_buf_pointer())
+                                                        free(recv_buf);
+                                                free(recv_mark);
+                                                total_cycle = 0;
+                                                TC_free_filter(g_loaderInfo.fid);
+                                                TC_loader_to_push_order(1);
+                                                {
+                                                Filter_param param;
+                                                memset(&param,0,sizeof(param));
+                                                param.filter[0] = 0xf0;
+                                                param.mask[0] = 0xff;
+
+                                                loader_dsc_fid=TC_alloc_filter(0x1ff0, &param, loader_des_section_handle, NULL, 1);
+                                                }
+                                        } 
+                                }
+
 			}
 		}
 		else
@@ -631,11 +606,11 @@ patch0:
 	else
 	{
 // add new
-        if (tc_crc32(data,len+12) )
-        {
-	        PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
-	        return;
-        }
+                if (tc_crc32(data,len+12) )
+                {
+                        PRINTF("seq = [%u] crc error !!!!!!!!!!!!!!!!!!!!\n",seq);
+                        return;
+                }
 //add end
 		if ((datap[0]==datap[1])&&(datap[2]==datap[3]))  //donot delete, for this section if not the full section,section size is not correct
 			return;
@@ -716,7 +691,7 @@ void tdt_section_handle(int fid, const unsigned char *data, int len, void *user_
     }
     
     snprintf(tdt,sizeof(tdt),"%4d-%2d-%2d %2x:%2x:%2x",year+1900,month,day,data[5],data[6],data[7]);
-    TC_free_filter_t(tdt_dsc_fid);
+    TC_free_filter(tdt_dsc_fid);
     DEBUG("catch tdt time(%s) and free tdt_dsc_fid(%d)\n",tdt,tdt_dsc_fid);
     
     struct tm tm_tdt;
@@ -989,47 +964,47 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	strncpy(software_version,cmp,sizeof(software_version));
 	//stb_id
 	datap += 4;
-    snprintf(cmp,7,"%6s",g_loaderInfo.stbid+10);
-	INTERMITTENT_PRINT("stb serail = [%s]\n",cmp);
-    stb_seral = atol(cmp);
-	INTERMITTENT_PRINT("serial = [%d]\n",stb_seral);
-    snprintf(cmp,11,"%.2x%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3],datap[4]);
-	INTERMITTENT_PRINT("first 10 = [%s] == [%s]\n",cmp,g_loaderInfo.stbid);
+        snprintf(cmp,7,"%6s",g_loaderInfo.stbid+10);
+INTERMITTENT_PRINT("stb serail = [%s]\n",cmp);
+        stb_seral = atol(cmp);
+INTERMITTENT_PRINT("serial = [%d]\n",stb_seral);
+        snprintf(cmp,11,"%.2x%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3],datap[4]);
+INTERMITTENT_PRINT("first 10 = [%s] == [%s]\n",cmp,g_loaderInfo.stbid);
 
-    if (0) //strncmp(stbid,cmp,10)) //loaderinfo.stb_id_h < stb_id_h)
-    {
-        INTERMITTENT_PRINT("stb id is not in this update sequence \n");
-        return;
-    }
-    else // if (loaderinfo.stb_id_h == stb_id_h)
-    {
-        sprintf(tmp_id,"%.2x%.2x%.2x",datap[5],datap[6],datap[7]);
-        stb_id_l = atol(tmp_id);
-		INTERMITTENT_PRINT("start id l=[%u], me=[%u]\n",stb_id_l,stb_seral);
-        if (stb_seral  < stb_id_l)
+        if (0) //strncmp(stbid,cmp,10)) //loaderinfo.stb_id_h < stb_id_h)
+        {
+            INTERMITTENT_PRINT("stb id is not in this update sequence \n");
+            return;
+        }
+        else // if (loaderinfo.stb_id_h == stb_id_h)
+        {
+            sprintf(tmp_id,"%.2x%.2x%.2x",datap[5],datap[6],datap[7]);
+            stb_id_l = atol(tmp_id);
+			INTERMITTENT_PRINT("start id l=[%u], me=[%u]\n",stb_id_l,stb_seral);
+            if (stb_seral  < stb_id_l)
+            {
+                INTERMITTENT_PRINT("stb id is not in this update sequence \n");
+                return ;
+            }
+        }
+        
+        datap += 8;
+        snprintf(cmp,11,"%.2x%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3],datap[4]);
+        if (0) //strncmp(stbid,cmp,10)) //loaderinfo.stb_id_h > stb_id_h)
         {
             INTERMITTENT_PRINT("stb id is not in this update sequence \n");
             return ;
         }
-    }
-    
-    datap += 8;
-    snprintf(cmp,11,"%.2x%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3],datap[4]);
-    if (0) //strncmp(stbid,cmp,10)) //loaderinfo.stb_id_h > stb_id_h)
-    {
-        INTERMITTENT_PRINT("stb id is not in this update sequence \n");
-        return ;
-    }
-    else // if (loaderinfo.stb_id_h == stb_id_h)
-    {
-        snprintf(tmp_id,7,"%.2x%.2x%.2x",datap[5],datap[6],datap[7]);
-        stb_id_l = atol(tmp_id);
-        if (stb_seral > stb_id_l)
+        else // if (loaderinfo.stb_id_h == stb_id_h)
         {
-            INTERMITTENT_PRINT("stb id is not in this update sequence\n");
-            return ;
+            snprintf(tmp_id,7,"%.2x%.2x%.2x",datap[5],datap[6],datap[7]);
+            stb_id_l = atol(tmp_id);
+            if (stb_seral > stb_id_l)
+            {
+                INTERMITTENT_PRINT("stb id is not in this update sequence\n");
+                return ;
+            }
         }
-    }
 
 /*	snprintf(tmp,sizeof(tmp),"%.2x%.2x%.2x%.2x",datap[0],datap[1],datap[2],datap[3]);
 	stb_id_h = atol(tmp);
@@ -1079,16 +1054,17 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 	else
 		datap += 4;
 */
-    datap += 8;
-    if (tc_crc32(data,len))  //verify the desc section data
-    {
-        INTERMITTENT_PRINT("loader des error !!!!!!!!!!!!!!!!!!!!\n");
-        return;
-    }
+        datap += 8;
+        if (tc_crc32(data,len))  //verify the desc section data
+        {
+                INTERMITTENT_PRINT("loader des error !!!!!!!!!!!!!!!!!!!!\n");
+                return;
+        }
+
 	
 	INTERMITTENT_PRINT("loader_dsc_fid: %d=%x\n", loader_dsc_fid,loader_dsc_fid);
 	s_print_cnt = 0;
-	TC_free_filter_t(loader_dsc_fid);
+	TC_free_filter(loader_dsc_fid);
 	//datap += 4;
 	{
 		//unsigned short pid;
@@ -1105,14 +1081,14 @@ void loader_des_section_handle(int fid, const unsigned char *data, int len, void
 		memset(&param,0,sizeof(param));
 		param.filter[0] = tc_tid;
 		param.mask[0] = 0xff;
-		g_loaderInfo.fid = TC_alloc_filter_t(tc_pid, &param, loader_section_handle, NULL, 1);
+		g_loaderInfo.fid = TC_alloc_filter(tc_pid, &param, loader_section_handle, NULL, 1);
 		//DEBUG("pid: %d|0x%x, fid: %d\n", tc_pid,tc_pid, g_loaderInfo.fid);
 	}
 
-	ctmp = *datap++;	
+        ctmp = *datap++;	
 	snprintf(g_loaderInfo.file_type,3,"%d",ctmp);
 	g_loaderInfo.img_len = ((datap[0]<<24)|(datap[1]<<16)|(datap[2]<<8)|(datap[3]));
-	ctmp = datap[4];
+        ctmp = datap[4];
 	snprintf(g_loaderInfo.download_type,3,"%d",ctmp);
 	DEBUG("g_loaderInfo.file_type=%s, g_loaderInfo.img_len=%d, g_loaderInfo.fid: %d\n", g_loaderInfo.file_type, g_loaderInfo.img_len, g_loaderInfo.fid);
 	//DEBUG(">>>>>> filetype =[%d], img_len[%d], downloadtype=[%d]\n",g_loaderInfo.file_type,g_loaderInfo.img_len,g_loaderInfo.download_type);
@@ -1141,9 +1117,9 @@ int alloc_filter(unsigned short pid, char pro)
 }
 
 #ifdef TUNER_INPUT
-static void MX_free_filter_t(int fid)
+void MX_free_filter(int fid)
 #else
-static void TC_free_filter_t(int fid)
+void TC_free_filter(int fid)
 #endif
 {
 	DEBUG("fid=%d\n",fid);
@@ -1189,45 +1165,27 @@ static void TC_free_filter_t(int fid)
 		DEBUG("invalid fid: %d\n", fid);
 }
 
-#ifdef TUNER_INPUT
-void MX_free_filter(int fid)
-{
-	return MX_free_filter_t(fid);
-}
-#else
-void TC_free_filter(int fid)
-{
-	pthread_mutex_lock(&mtx_chann_filter);
-	TC_free_filter_t(fid);
-	pthread_mutex_unlock(&mtx_chann_filter);
-	return;
-}
-#endif
-
 int free_filter(unsigned short pid)
 {
 	//	if(-1==pid)
 	//		return -1;
 	DEBUG("pid=%d\n", pid);
 	
-	int i = 0, ret = -1;
-	pthread_mutex_lock(&mtx_chann_filter);
+	int i = 0;
 	for(i=0; i < MAX_CHAN_FILTER; i++)
 	{
 		if(pid==chanFilter[i].pid)
 		{
 #ifdef TUNER_INPUT
-			MX_free_filter_t(chanFilter[i].fid);
+			MX_free_filter(chanFilter[i].fid);
 #else
-			TC_free_filter_t(chanFilter[i].fid);
+			TC_free_filter(chanFilter[i].fid);
 #endif
-			ret = 0;
-			break;
+			return 0;
 		}
 	}
-	pthread_mutex_unlock(&mtx_chann_filter);
 	
-	return ret;
+	return -1;
 }
 	
 static int get_filter(unsigned short pid)
@@ -1501,33 +1459,33 @@ retry:
 						break;
 					}
 				}
-            }
-            
-			left = chan->bytes - sec_len - chan->offset;
-			if(left>0)
-			{
-				//DEBUG("llllllllllleft some data!!!!!!!!!!!!!sec_len=%d [%d]\n",sec_len,left);
-				if(chanbuf[sec_len]==0xFF)
+                          }
+				left = chan->bytes - sec_len - chan->offset;
+				if(left>0)
 				{
-					chan->stage = CHAN_STAGE_END;
-					if(0!=chan->bytes){
-					//	PRINTF("3333333333333 chanFilter[%d].pid=%d, chan->bytes=%d left=%d, offset=%d\n", fid, chanFilter[fid].pid, chan->bytes,left, chan->offset);
-						chan->bytes = 0;
+					//DEBUG("llllllllllleft some data!!!!!!!!!!!!!sec_len=%d [%d]\n",sec_len,left);
+					if(chanbuf[sec_len]==0xFF)
+					{
+						chan->stage = CHAN_STAGE_END;
+						if(0!=chan->bytes){
+						//	PRINTF("3333333333333 chanFilter[%d].pid=%d, chan->bytes=%d left=%d, offset=%d\n", fid, chanFilter[fid].pid, chan->bytes,left, chan->offset);
+							chan->bytes = 0;
+						}
+						
+						return 0;
 					}
-					
-					return 0;
+					memmove(chan->buf, chanbuf+sec_len, left);
 				}
-				memmove(chan->buf, chanbuf+sec_len, left);
-			}
-			else
-				left = 0;
-			chan->bytes = left;
-			if(left)
-            {
-            	// DEBUG("aaaaaaaaaaaaaa chanFilter[%d].pid=%d, left=%d,  sec_len=%d\n", fid, chanFilter[fid].pid, left, sec_len);
-            	chan->stage = CHAN_STAGE_PTR;   //liukevin add
-				goto retry;
-            }
+				else
+					left = 0;
+				chan->bytes = left;
+				if(left)
+                {
+                	// DEBUG("aaaaaaaaaaaaaa chanFilter[%d].pid=%d, left=%d,  sec_len=%d\n", fid, chanFilter[fid].pid, left, sec_len);
+                	chan->stage = CHAN_STAGE_PTR;   //liukevin add
+					goto retry;
+                }
+
 		}
 	}
 	else if (chan->stage==CHAN_STAGE_DATA_PES)
@@ -1591,7 +1549,8 @@ void ts_loss_log_init()
 	memset(s_ts_loss_log, 0, sizeof(s_ts_loss_log));
 }
 
-static int parse_ts_packet_t(unsigned char *ptr, int write_ptr, int *read)
+//static unsigned short last_pid=0;
+int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 {
 	int p = *read;
 	int left=0,p1=0,tmp=0,size=0,chan=0;
@@ -1599,6 +1558,9 @@ static int parse_ts_packet_t(unsigned char *ptr, int write_ptr, int *read)
 	unsigned short pid=0;
 	unsigned char  tei=0, cc=0, af_avail=0, p_avail=0, ts_start=0, sc=0;
 	
+	//STATic unsigned char precc = 0;
+	
+	//DEBUG("aaaaaaaa\n");
 	optr = ptr;
 	/*Scan the sync byte*/
 	if (optr[p]!=0x47)
@@ -1726,6 +1688,9 @@ resync:
 	if(p_avail && (left>0) && !sc)
 	{
 		chan = get_filter(pid);
+//		if(last_pid!=pid)
+//			DEBUG("get channel [%d][%x]\n",chan,pid);
+//		last_pid = pid;
 		if(chan != -1){
 			if(cc !=  chanFilter[chan].cc) {
 				
@@ -1754,20 +1719,10 @@ end:
 	return 1;
 }
 
-int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
-{
-	pthread_mutex_lock(&mtx_chann_filter);
-	int ret = parse_ts_packet_t(ptr, write_ptr, read);
-	pthread_mutex_unlock(&mtx_chann_filter);
-	
-	return ret;
-}
-
 void chanFilterInit(void)
 {
 	int i=0;
 	
-	pthread_mutex_lock(&mtx_chann_filter);
 	for(i = 0; i < MAX_CHAN_FILTER; i++)
 	{
 		chanFilter[i].pid = -1;
@@ -1778,7 +1733,6 @@ void chanFilterInit(void)
 		chanFilter[i].fid = -1;
         chanFilter[i].cc = -1;
 	}
-    dmx_filter_init();
-    pthread_mutex_unlock(&mtx_chann_filter);
+        dmx_filter_init();
 }
 
