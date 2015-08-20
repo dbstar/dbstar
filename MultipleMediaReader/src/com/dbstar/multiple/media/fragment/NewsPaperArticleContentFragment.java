@@ -144,7 +144,7 @@ public class NewsPaperArticleContentFragment extends BaseFragment{
                     if(keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
                         //mActivity.showNextArticle();
                         return true;
-                    }else if(keyCode == KeyEvent.KEYCODE_ALT_LEFT){
+                    }else if(keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_VOLUME_MUTE){
 						long currentTime = System.currentTimeMillis();
 						if (currentTime - lastOnKeyTime > 2000) {
 							Log.d("onkey in rm ", "------------------- isTtsInited = " + isTtsInited);

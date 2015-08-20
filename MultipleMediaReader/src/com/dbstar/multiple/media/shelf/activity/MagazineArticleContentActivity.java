@@ -318,7 +318,7 @@ public class MagazineArticleContentActivity extends Activity {
 							mEditionadapter.notifyDataSetChanged();
 						}
 						return true;
-					} else if (keyCode == KeyEvent.KEYCODE_ALT_LEFT) {
+					} else if (keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_VOLUME_MUTE) {
 						long currentTime = System.currentTimeMillis();
 						if (currentTime - lastOnKeyTime > 2000) {
 							Log.d(TAG, " onKey in rm, isTtsInited = " + Tts.isInitialized());

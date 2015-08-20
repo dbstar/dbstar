@@ -259,6 +259,7 @@ public class VoicedBookReadActivity extends Activity {
             adjustStreamVolume(keyCode);
             break;
         case KeyEvent.KEYCODE_ALT_LEFT:
+        case KeyEvent.KEYCODE_VOLUME_MUTE:
             if (mService == null)
                 bindService();
             else {
