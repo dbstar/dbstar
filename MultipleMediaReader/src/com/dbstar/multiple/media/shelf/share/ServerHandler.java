@@ -195,8 +195,9 @@ class ServerHandler extends Thread {
 						loadData = new LoadData();
 						loadData.Id = b.Id;
 						loadData.Name = b.Name;
-						Log.i("ServerHandler", "------b.Name========-" + b.Name);
+						Log.i("ServerHandler", " b.Name = " + b.Name);
 						loadData.Cover = b.Cover;
+						Log.i("ServerHandler", " b.Cover = " + b.Cover);
 						loadData.Author = b.Author;
 						if (b.RMCategory.equals("4")) {		
 							Log.i("ServerHandler", "picture book b.Path = "+ b.Path);
@@ -210,7 +211,7 @@ class ServerHandler extends Thread {
 						}
 						// loadData.Date = "2013";
 						File file = new File(loadData.FilePath);
-						Log.i("ServerHandler", "------FilePath========-" + loadData.FilePath + " is exists (" + file.exists() + ")");
+						Log.i("ServerHandler", " FilePath = " + loadData.FilePath + " is exists (" + file.exists() + ")");
 						if (file.exists()) {
 							loadData.Size = formatFileSize(file.length());
 						} else {
@@ -248,10 +249,18 @@ class ServerHandler extends Thread {
 						NewsPaper b = papers.get(i);
 						loadData = new LoadData();
 						loadData.Name = b.Name;
+						Log.i("ServerHandler", " b.Name = " + b.Name);
 						loadData.Author = b.PublishTime;
 						loadData.FilePath = b.RootPath + ".epub";
 //						loadData.Date = b.PublishTime;
+						
+						String ext = ".epub";
+				    	if (!b.RootPath.endsWith(ext)) {
+				    		loadData.FilePath = b.RootPath + ".epub";
+				    	} else 
+				    		loadData.FilePath = b.RootPath;
 						File file = new File(loadData.FilePath);
+						Log.i("ServerHandler", " FilePath = " + loadData.FilePath + " is exists (" + file.exists() + ")");
 						if (file.exists()) {
 							loadData.Size = formatFileSize(file.length());
 						} else {
@@ -296,7 +305,7 @@ class ServerHandler extends Thread {
 				    		loadData.FilePath = b.RootPath + ".epub";
 				    	} else 
 				    		loadData.FilePath = b.RootPath;	
-						Log.i("ServerHandler", "------FilePath========-" + loadData.FilePath);
+						Log.i("ServerHandler", " FilePath = " + loadData.FilePath);
 //						loadData.Date = b.PublishTime;
 						File file = new File(loadData.FilePath);
 						if (file.exists()) {
