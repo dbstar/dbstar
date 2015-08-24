@@ -413,14 +413,34 @@ public class GDDataProviderService extends Service {
 				flashMarkFile.createNewFile();
 			}
 			
+			File diskFile = new File(disk);
+			File diskDbFile = new File(disk + "/" + DBSTARDB_NAME);
+			
+			String flashDbUri = DBSTAR_HD_WORKING_DIR + "/" + DBSTARDB_NAME;
+			File flashDbFile = new File(flashDbUri);
+			
+			String systemDbUri = "/system/etc/dbstar/Dbstar.db";
+			File systemDbFile = new File(systemDbUri);
+			int systemDbSize = 67584;
+			
+			if (systemDbFile.exists()){
+				FileInputStream in_system_db = new FileInputStream(systemDbFile);
+				systemDbSize = in_system_db.available();
+				if(systemDbSize<67584){
+					LogUtil.d(TAG, "db " + systemDbUri + " is exist, size reset from " + systemDbSize + " to 67584");
+					systemDbSize = 67584;
+				}
+				else{
+					LogUtil.d(TAG, "db " + systemDbUri + " is exist, size " + systemDbSize);
+				}
+			}
+			
 			LogUtil.d(TAG, " s_storage_mark = " + s_storage_mark + ", s_storage_pin = " + s_storage_pin);
 			if (!s_storage_mark.equals(s_storage_pin)) {
 				// if hd changed, create .storage_change file
 				if (!storageChangeFile.exists())
 					storageChangeFile.createNewFile();
 				
-				File diskFile = new File(disk);
-				File diskDbFile = new File(disk + "/" + DBSTARDB_NAME);
 				if (diskFile.exists()) {
 					if (diskDbFile.exists()) {
 						FileInputStream in = new FileInputStream(diskDbFile);
@@ -429,13 +449,34 @@ public class GDDataProviderService extends Service {
 							LogUtil.d(TAG, " disk(" + (disk + "/" + DBSTARDB_NAME) + ") is ready, use " + (DBSTAR_HD_WORKING_DIR + DBSTARDB_NAME) + " it as hd working dir");
 //					fileEnsure(disk + "/" + DBSTARDB_NAME, DBSTAR_PUSH_DIR + "/" + DBSTARDB_NAME);							
 							fileChannelCopy(new File(disk + "/" + DBSTARDB_NAME), new File(DBSTAR_HD_WORKING_DIR + "/" + DBSTARDB_NAME));
-						}								
+						}
 					}
 				}
 				FileOutputStream fos = new FileOutputStream(flashMarkFile);
 				fos.write(s_storage_mark.getBytes());
 			} else {
 				storageChangeFile.delete();
+				
+				if (diskFile.exists()) {
+					if (diskDbFile.exists()) {
+						FileInputStream in = new FileInputStream(diskDbFile);
+						int diskDbSize = in.available();
+						int flashDbSize = 0;
+						
+						if(flashDbFile.exists()){
+							FileInputStream in_flash_db = new FileInputStream(flashDbFile);
+							flashDbSize = in_flash_db.available();
+							LogUtil.d(TAG, "db " + flashDbUri + " is exist, size " + flashDbSize);
+						}
+						
+						LogUtil.d(TAG, " db(" + (disk + "/" + DBSTARDB_NAME) + ") size " + diskDbSize + ", db(" + (DBSTAR_HD_WORKING_DIR + DBSTARDB_NAME) + ") size " + flashDbSize);
+						if (diskDbSize > systemDbSize && flashDbSize <= systemDbSize) {
+							LogUtil.d(TAG, " restore(" + (disk + "/" + DBSTARDB_NAME) + ") to db(" + (DBSTAR_HD_WORKING_DIR + DBSTARDB_NAME) + ")");
+	//						fileEnsure(disk + "/" + DBSTARDB_NAME, DBSTAR_PUSH_DIR + "/" + DBSTARDB_NAME);							
+							fileChannelCopy(new File(disk + "/" + DBSTARDB_NAME), new File(DBSTAR_HD_WORKING_DIR + "/" + DBSTARDB_NAME));
+						}
+					}
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
