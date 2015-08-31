@@ -67,6 +67,7 @@ static pthread_cond_t cond_maintenance = PTHREAD_COND_INITIALIZER;
 
 static int push_idle = 0;
 static int s_disk_manage_flag = 0;
+static int has_parse_xml = 0;
 
 //Êý¾Ý°ü½á¹¹
 typedef struct tagDataBuffer
@@ -625,7 +626,7 @@ static int need_push_monitor()
 #endif
 
 // ¸»Ã½ÌåÀ¸Ä¿Ò¶×Ó½ÚµãÊµ¼ÊÉÏÊÇ·ÖÀà£¬ÖØÐÂÐÞ¸ÄÆäColumnType·½±ãÀ¸Ä¿¹ýÂË
-static int richmedia_columntype_edit()
+int richmedia_columntype_edit()
 {
 	char sqlite_cmd[512];
 	
@@ -845,7 +846,7 @@ push_decoder_thread±ØÐëÆðÀ´²ÅÄÜË³ÀûÖ´ÐÐotaÉý¼¶¹ý³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 		if(s_column_refresh>0){
 			if(1==s_column_refresh){
 				DEBUG("column refresh, edit ColumnType for RM Column secondary\n");
-				richmedia_columntype_edit();
+//				richmedia_columntype_edit();
 			}
 			
 			s_column_refresh ++;
@@ -933,7 +934,7 @@ push_decoder_thread±ØÐëÆðÀ´²ÅÄÜË³ÀûÖ´ÐÐotaÉý¼¶¹ý³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 				localtime_r(&now_sec, &now_tm);
 				int reboot_hour = onehour_before_pushend_get();
 				
-				DEBUG("last_checkreboot_sec=now_sec: %ld, s_pin_sec=%ld, reboot_hour=%d\n", now_sec, s_pin_sec, reboot_hour);
+				DEBUG("last_checkreboot_sec=now_sec: %ld, s_pin_sec=%ld, reboot_hour=%d, now_tm.tm_wday=%d\n", now_sec, s_pin_sec, reboot_hour, now_tm.tm_wday);
 				
 				// ·Ï¼Æ»®£º¹úµçÍø¹ØÐèÒªÔÚ45·ÖºÍÕûµãÖ®¼ä±£³Ö¿ª»ú×´Ì¬£¬Ô¤Áô15·ÖÖÓÖØÆôÊ±¼ä£¬´°¿ÚÊ±¼äÃ¿Ð¡Ê±Îª0·Öµ½30·Ö
 				//if(reboot_hour==now_tm.tm_hour && now_tm.tm_min>=0 && now_tm.tm_min<=30){
@@ -947,7 +948,10 @@ push_decoder_thread±ØÐëÆðÀ´²ÅÄÜË³ÀûÖ´ÐÐotaÉý¼¶¹ý³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 //						|| (3==now_tm.tm_wday)
 //						|| (5==now_tm.tm_wday)
 //						)
-				if(	reboot_hour==now_tm.tm_hour)
+
+//				reboot_hour==now_tm.tm_hour
+				if(	(0<=reboot_hour && reboot_hour<=6 && 5==now_tm.tm_wday)
+					|| (reboot_hour>6 && 4==now_tm.tm_wday))
 				{
 					DEBUG("in system reboot window(0<=tm_min<=30) at %d %02d %02d - %02d:%02d:%02d, now_tm.tm_wday=%d\n", 
 						(1900+now_tm.tm_year),(1+now_tm.tm_mon),now_tm.tm_mday,now_tm.tm_hour,now_tm.tm_min,now_tm.tm_sec, now_tm.tm_wday);
@@ -986,7 +990,7 @@ void *push_xml_parse_thread()
 	int i = 0;
 	
 	s_xmlparse_running = 1;
-	int has_parse_xml = 0;
+	
 	while (1==s_xmlparse_running)
 	{
 		pthread_mutex_lock(&mtx_xml);

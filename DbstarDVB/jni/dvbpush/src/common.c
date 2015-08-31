@@ -574,9 +574,10 @@ int signed_char_clear(char *str_dad, unsigned int str_dad_len, char sign_c, int 
 }
 
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 10240
 int fcopy_c(char *from_file, char *to_file)
 {
+#if 0
 	int from_fd = 0, to_fd = 0;
 	int bytes_read = 0, bytes_write = 0;
 	char buffer[BUFFER_SIZE];
@@ -609,6 +610,7 @@ int fcopy_c(char *from_file, char *to_file)
 	if((to_fd=open(to_file,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))==-1) 
 	{
 		ERROROUT("open %s to write failed\n", to_file);
+		close(from_fd);
 		return -1;
 	}
 	
@@ -654,11 +656,20 @@ int fcopy_c(char *from_file, char *to_file)
 	close(to_fd);
 	
 	return ret;
+#else
+	char sys_cmd[1024];
+	snprintf(sys_cmd, sizeof(sys_cmd), "cp -f %s %s", from_file, to_file);
+	system(sys_cmd);
+	sync();
+	
+	return 0;
+#endif
 }
 
 // 将一个目录下的所有文件拷贝到另一个指定目录下。懒省事，只拷贝文件，不管其中的目录
 int files_copy(char *from_dir, char *to_dir)
 {
+#if 0
 	DIR * pdir = NULL;
 	struct dirent *ptr = NULL;
 	char fileson[1024];
@@ -702,7 +713,15 @@ int files_copy(char *from_dir, char *to_dir)
 		cur_size = -1;
 	}
 	
-	return cur_size;   
+	return cur_size;
+#else
+	char sys_cmd[1024];
+	snprintf(sys_cmd, sizeof(sys_cmd), "cp -rf %s/* %s/*", from_dir, to_dir);
+	system(sys_cmd);
+	sync();
+	
+	return 0;
+#endif
 }
 
 /*
@@ -842,7 +861,7 @@ static int remove_force_t(const char *uri)
 	char newpath[1024];
 	int ret = -1;
 	
-#if 1
+#if 0
 	DIR * pdir = NULL;
 	struct dirent *ptr = NULL;
 	struct stat filestat;
@@ -898,9 +917,10 @@ static int remove_force_t(const char *uri)
 	
 #else
 	
-	snprintf(newpath,sizeof(newpath),"rm -r %s\n", uri);
-	system(newpath);
-	DEBUG("do system(%s)\n", newpath);
+	char sys_cmd[1024];
+	snprintf(sys_cmd,sizeof(sys_cmd),"rm -rf %s", uri);
+	system(sys_cmd);
+	DEBUG("do system(%s)\n", sys_cmd);
 	ret = 0;
 	
 #endif

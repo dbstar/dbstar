@@ -89,6 +89,7 @@ static char			s_udisk_mount[64];
 static char			s_push_log_dir[512];
 static int			s_user_idle_status = 1;	// 0表示用户处在使用状态、非空闲，1表示用户处在空闲状态
 static int			s_hd_ready_by_launcher = 0;
+static int			s_select_no_prog_cnt = 0;
 
 static int			s_hd_write_protected = 0;	// if >0, means hard disk can not be write
 
@@ -581,7 +582,6 @@ int guidelist_select_refresh()
 }
 #endif
 
-#if 0
 static int clear_wild_prog_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -696,6 +696,7 @@ static int clear_wild_prog()
 	return ret;   
 }
 
+#if 0
 static int clear_noclumn_prog_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -852,6 +853,7 @@ int disk_manage(char *PublicationID, char *ProductID)
 {
 	int ret = 0;
 	char sqlite_cmd[2048];
+	char pushfile_uri[256];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = disk_manage_cb;
 	char publicationid[1024];
 	
@@ -859,7 +861,7 @@ int disk_manage(char *PublicationID, char *ProductID)
 	// 正常情况下，clear_noclumn_prog_record和clear_wild_prog执行后没有任何效果。只是为了应对意外情况。
 	// 如果clear_noclumn_prog_record或clear_wild_prog删除了数据，下面的先进先出前应该重新判断磁盘是否满，然后计算需要清理的大小。但是这里不那么细化，不重新计算了。
 	//clear_noclumn_prog_record();
-	// clear_wild_prog();	// 这一步风险太大，还是暂时屏蔽
+	clear_wild_prog();	// 这一步风险太大，还是暂时屏蔽
 	
 	s_delete_total_size = 0LL;
 	
@@ -904,8 +906,17 @@ int disk_manage(char *PublicationID, char *ProductID)
 			}
 		}
 		else if(0==ret){
-			DEBUG("select no progs for disk manage\n");
+			s_select_no_prog_cnt++;
+			DEBUG("select no progs for disk manage !!!!!!!!!!!!%d\n", s_select_no_prog_cnt);
 			ret = 0;
+			
+			if(s_select_no_prog_cnt>3){
+				snprintf(pushfile_uri, sizeof(pushfile_uri), "%s/pushroot/pushfile", s_pushdir);
+				remove_force(__FUNCTION__, pushfile_uri);
+				
+				s_select_no_prog_cnt = 0;
+			}
+			
 			break;
 		}
 		else{	// (ret<0)

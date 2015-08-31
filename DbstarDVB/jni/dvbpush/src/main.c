@@ -75,6 +75,10 @@ void *main_thread()
 		DEBUG("xmlparser init failed\n");
 		//return NULL;	// continue for upgrade
 	}
+	
+	if(-1==xmlinfo_init()){
+		DEBUG("xmlinfo_init failed\n");
+	}
 
 #ifdef TUNER_INPUT
 	tuner_init();

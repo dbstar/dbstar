@@ -20,6 +20,8 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <errno.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
 
 #include "common.h"
 #include "porting.h"
@@ -45,6 +47,9 @@ extern int loader_dsc_fid;
 extern int tdt_dsc_fid;
 
 static PUSH_PID s_push_pids[PUSH_PID_NUM];
+
+static DBSTAR_XMLINFO_S xmlinfo_initialize;
+static DBSTAR_XMLINFO_S xmlinfo_productdesc;
 
 #ifdef TUNER_INPUT
 	//root pid （400），只在第一次初始化是硬dmx，此后就是软的dmx。
@@ -285,7 +290,7 @@ MULTITASK_START:
 		}
 		DEBUG("get eth0 ip: %s, will wait 13s for system ready\n", if_ip);
 		sleep(13);
-	
+		
 		bzero((char *)&sin, sizeof(sin));
 		sin.sin_family = AF_INET;
 		sin.sin_addr.s_addr = inet_addr( multi_ip );
@@ -1015,6 +1020,202 @@ int push_pid_init()
 	return push_pid_refresh();
 }
 
+static void xml_delete(char* relative_uri)
+{
+	char uri[256];
+	
+	snprintf(uri, sizeof(uri), "%s/%s", push_dir_get(), relative_uri);
+	remove_force(__FUNCTION__, uri);
+	sync();
+	
+	return;
+}
+
+/*
+功能：	解析xml结点中的属性
+输入：	cur		——待解析的xml结点
+		xmlroute——表明从xml的跟结点到当前结点之间的路由
+		ptr		——预备用来保存解析出来的属性的结构体指针
+*/
+static void parseProperty(xmlNodePtr cur, const char *xmlroute, void *ptr)
+{
+	if(NULL==cur || NULL==xmlroute){
+		DEBUG("some arguments are invalid\n");
+		return;
+	}
+	
+	xmlChar *szAttr = NULL;
+	xmlAttrPtr attrPtr = cur->properties;
+	while(NULL!=attrPtr){
+		szAttr = xmlGetProp(cur, attrPtr->name);
+		if(NULL!=szAttr)
+		{
+			//PRINTF("property of %s, %s: %s\n", xmlroute, attrPtr->name, szAttr);
+// xml general property
+			if(0==strcmp(xmlroute, XML_ROOT_ELEMENT)){
+				DBSTAR_XMLINFO_S *p = (DBSTAR_XMLINFO_S *)ptr;
+				if(	0==xmlStrncasecmp(BAD_CAST"Version", attrPtr->name, xmlStrlen(attrPtr->name))
+					&& xmlStrlen(BAD_CAST"Version")==xmlStrlen(attrPtr->name)){
+					strncpy(p->Version, (char *)szAttr, sizeof(p->Version)-1);
+				}
+				else if(0==xmlStrncasecmp(BAD_CAST"StandardVersion", attrPtr->name, xmlStrlen(attrPtr->name))
+						&& xmlStrlen(BAD_CAST"StandardVersion")==xmlStrlen(attrPtr->name)){
+					strncpy(p->StandardVersion, (char *)szAttr, sizeof(p->StandardVersion)-1);
+				}
+				else if(0==xmlStrncasecmp(BAD_CAST"ServiceID", attrPtr->name, xmlStrlen(attrPtr->name))
+						&& xmlStrlen(BAD_CAST"ServiceID")==xmlStrlen(attrPtr->name)){
+					strncpy(p->ServiceID, (char *)szAttr, sizeof(p->ServiceID)-1);
+				}
+				else
+					DEBUG("can NOT process such property '%s' of xml route '%s'\n", attrPtr->name, xmlroute);
+			}
+			else
+				DEBUG("can NOT process such xml route '%s'\n", xmlroute);
+			
+			xmlFree(szAttr);
+		}
+		attrPtr = attrPtr->next;
+	}
+	
+	return;
+}
+
+// check ProductDesc.xml, PushFlag='106'; Initialize.xml, PushFlag='100'
+static int check_xml(const char *xml_relative_uri)
+{
+	xmlDocPtr doc;
+	xmlNodePtr cur;
+	int ret = -1;
+	char xml_uri[512];
+	
+	snprintf(xml_uri, sizeof(xml_uri), "%s/%s", push_dir_get(), xml_relative_uri);
+	
+	doc = xmlParseFile(xml_uri);
+	if (doc == NULL ) {
+		ERROROUT("parse failed: %s\n", xml_uri);
+		ret = -1;
+	}
+	else{
+		cur = xmlDocGetRootElement(doc);
+		if (cur == NULL) {
+			ERROROUT("empty document\n");
+			ret = -1;
+		}
+		else{
+			DBSTAR_XMLINFO_S xmlinfo;
+			memset(&xmlinfo, 0, sizeof(xmlinfo));
+			
+//			DEBUG("cur->name:%s\n", cur->name);
+			
+// Initialize.xml
+			if(0==xmlStrcmp(cur->name, BAD_CAST"Initialize")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				if(strlen(xmlinfo_initialize.Version)>0 && 0==strcmp(xmlinfo_initialize.Version, xmlinfo.Version)){
+					DEBUG("[%s]same Version: %s, no need to process\n", xml_uri, xmlinfo_initialize.Version);
+					ret = 0;
+				}
+				else{
+					DEBUG("[%s]old Version: %s, new Version: %s\n", xml_uri, xmlinfo_initialize.Version, xmlinfo.Version);
+					ret = -1;
+				}
+			}
+			
+// ProductDesc.xml
+			else if(0==xmlStrcmp(cur->name, BAD_CAST"ProductDesc")){
+				parseProperty(cur, XML_ROOT_ELEMENT, (void *)&xmlinfo);
+				if((strlen(xmlinfo_productdesc.Version)>0 && 0==strcmp(xmlinfo_productdesc.Version, xmlinfo.Version)) ){
+					DEBUG("[%s]same Version: %s, no need to process\n", xml_uri, xmlinfo_productdesc.Version);
+					ret = 0;
+				}
+				else{
+					DEBUG("[%s]old Version: %s, new Version: %s\n", xml_uri, xmlinfo_productdesc.Version, xmlinfo.Version);
+					ret = -1;
+				}
+			}
+		
+			else{
+				ERROROUT("xml file has wrong root node with '%s'\n", cur->name);
+				ret = -1;
+			}
+		}
+		
+		xmlFreeDoc(doc);
+	}
+	
+//	DEBUG("(%s) ret %d\n", xml_uri, ret);
+	return ret;
+}
+
+static int xmlinfo_sqlite_cb(char **result, int row, int column, void *filter_act, unsigned int receiver_size)
+{
+	DEBUG("xmlinfo sqlite callback, row=%d, column=%d\n", row, column);
+	
+	int i = 0;
+	
+	if(row<1){
+		DEBUG("no record in table Initialize for xml info\n");
+	}
+	else{
+		for(i=1;i<row+1;i++)
+		{
+//			PRINTF("xml info row[%d]: PushFlag[%s], Version[%s], URI[%s]\n", i, result[i*column],result[i*column+1],result[i*column+2]);
+			
+			PUSH_XML_FLAG_E pushflag = (int)(strtol(result[i*column],NULL,0));
+			if(INITIALIZE_XML==pushflag){
+				snprintf(xmlinfo_initialize.PushFlag, sizeof(xmlinfo_initialize.PushFlag), "%s", result[i*column]);
+				snprintf(xmlinfo_initialize.Version, sizeof(xmlinfo_initialize.Version), "%s", result[i*column+1]);
+				snprintf(xmlinfo_initialize.URI, sizeof(xmlinfo_initialize.URI), "%s", result[i*column+2]);
+				PRINTF("Initialize PushFlag[%s], Version[%s], URI[%s]\n", xmlinfo_initialize.PushFlag,xmlinfo_initialize.Version,xmlinfo_initialize.URI);
+			}
+			else if(PRODUCTDESC_XML==pushflag){
+				snprintf(xmlinfo_productdesc.PushFlag, sizeof(xmlinfo_productdesc.PushFlag), "%s", result[i*column]);
+				snprintf(xmlinfo_productdesc.Version, sizeof(xmlinfo_productdesc.Version), "%s", result[i*column+1]);
+				snprintf(xmlinfo_productdesc.URI, sizeof(xmlinfo_productdesc.URI), "%s", result[i*column+2]);
+				PRINTF("Initialize PushFlag[%s], Version[%s], URI[%s]\n", xmlinfo_productdesc.PushFlag,xmlinfo_productdesc.Version,xmlinfo_productdesc.URI);
+			}
+			else{
+				PRINTF("no need this xml info %s\n", result[i*column]);
+			}
+		}
+	}
+	
+	return 0;
+}
+
+/*
+ 初始化Initialize表中xmlinfo内容
+*/
+int xmlinfo_init()
+{
+	char uri[256];
+	char sqlite_cmd[256+128];
+	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = xmlinfo_sqlite_cb;
+	
+	memset(&xmlinfo_initialize, 0, sizeof(DBSTAR_XMLINFO_S));
+	memset(&xmlinfo_productdesc, 0, sizeof(DBSTAR_XMLINFO_S));
+	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PushFlag,Version,URI FROM Initialize where PushFlag='%d' or PushFlag='%d';", INITIALIZE_XML, PRODUCTDESC_XML);
+	
+	if(0>=sqlite_read(sqlite_cmd, NULL, 0, sqlite_callback)){
+		DEBUG("read nothing from table Initialize for xmlinfo, delete xmls\n");
+		snprintf(uri, sizeof(uri), "%s/pushroot/initialize", push_dir_get());
+		remove_force(__FUNCTION__, uri);
+		snprintf(uri, sizeof(uri), "%s/pushroot/pushinfo", push_dir_get());
+		remove_force(__FUNCTION__, uri);
+		sync();
+	}
+	else{
+		if(-1==check_xml(xmlinfo_initialize.URI)){
+			xml_delete(xmlinfo_initialize.URI);
+		}
+		
+		if(-1==check_xml(xmlinfo_productdesc.URI)){
+			xml_delete(xmlinfo_productdesc.URI);
+		}
+	}
+	
+	return 0;
+}
+
 /*
  反初始化push pid
 */
@@ -1077,7 +1278,7 @@ int softdvb_init()
 	}
 	
 	tdt_time_sync_awake();
-
+	
 #ifdef TUNER_INPUT
 #else
 	if(0==pthread_create(&pth_softdvb_id, NULL, softdvb_thread, NULL)){

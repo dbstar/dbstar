@@ -16,5 +16,6 @@ void net_rely_condition_set(int rely_cond);
 int data_stream_status_get();
 int data_stream_status_str_get(char *buf, unsigned int size);
 void igmpbuf_monitor(char *timestr);
+int xmlinfo_init();
 
 #endif

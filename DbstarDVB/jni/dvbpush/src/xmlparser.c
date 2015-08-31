@@ -827,6 +827,32 @@ ptr->SetID,
 ptr->SetID);
 		
 					sqlite_transaction_exec(sqlite_cmd);
+					
+					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
+VALUES('%q',\
+'%q',\
+'%q',\
+'%q',\
+'%q',\
+'%q',\
+'%q',\
+'%q',\
+'%q',\
+'%d',\
+'%q');",
+ptr->ID,
+p_column,
+ptr->productID,
+ptr->URI,
+ptr->DescURI,
+ptr->TotalSize,
+ptr->ProductDescID,
+ptr->PushStartTime,
+ptr->PushEndTime,
+receive_status,
+ptr->SetID);
+		
+					sqlite_transaction_exec(sqlite_cmd);
 				}
 				else{
 					sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"REPLACE INTO Publication(PublicationID,ColumnID,ProductID,URI,DescURI,TotalSize,ProductDescID,PushStartTime,PushEndTime,ReceiveStatus,SetID) \
@@ -858,6 +884,7 @@ ptr->SetID);
 				p_column = p_HT;
 			}
 
+#if 1
 /*
 如果是剧集，除了上面存入PublicationsSet外，还要存入单集Publication，但是不拆分Column信息
 */		
@@ -888,6 +915,7 @@ ptr->SetID);
 		
 				sqlite_transaction_exec(sqlite_cmd);
 			}
+#endif
 		}
 	}
 	else
@@ -1021,7 +1049,8 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 //（1）解压epub(zip)，并将解压后的目录uri作为FileURI入库；
 //（2）DbstarLauncher实现有bug，目前发现如果SetID以1打头，则报纸的第一级栏目（实际上是SetID的父分类）无法显示名称。如果是5打头则无显示问题。
 //		临时由dvbpush兼容，将所有的报纸SetID前均添加字母a，后续由DbstarLauncher修改
-	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType) && (RMCATEGORY_NEWSPAPER==atoi(p->RMCategory)||RMCATEGORY_PICTURE_BOOK==atoi(p->RMCategory))){
+//	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType) && (RMCATEGORY_NEWSPAPER==atoi(p->RMCategory)||RMCATEGORY_PICTURE_BOOK==atoi(p->RMCategory))){
+	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType)){
 		char epub_file_uri[1024];
 		char epub_dir_uri[1024];
 		char *epub_suffix = NULL;
@@ -1843,7 +1872,7 @@ static int parseNode (xmlDocPtr doc, xmlNodePtr cur, char *xmlroute, void *ptr, 
 		
 		if(0==uniform_parse){
 			snprintf(new_xmlroute, sizeof(new_xmlroute), "%s^%s", xmlroute, cur->name);
-			PRINTF("XML route: %s\n", new_xmlroute);
+//			PRINTF("XML route: %s\n", new_xmlroute);
 			
 // Initialize.xml
 			if(0==strncmp(new_xmlroute, "Initialize^", strlen("Initialize^"))){
@@ -3931,6 +3960,7 @@ PARSE_XML_END:
 		else if(COLUMN_XML==actual_xml_flag){
 			column_refresh_flag_set(1);
 			productdesc_parsed_set(xml_relative_uri, actual_xml_flag, arg_ext);
+			richmedia_columntype_edit();
 			
 			if(1==storage_flash_check()){
 				DEBUG("column is download finished for flash recv, %d\n", storage_flash_check());
