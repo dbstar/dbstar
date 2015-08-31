@@ -24,7 +24,7 @@ dbstar_init()
 		mv /system/app/MediaBoxLauncher.apk /system/app/MediaBoxLauncher.apk.bk
 	fi
 
-	if [ -s "/data/dbstar/Dbstar.db" ]; then
+	if [ -e "/data/dbstar/Dbstar.db" ]; then
 		echo "dbstar already inited!"
 	else
 		cp -rf /system/etc/dbstar/Dbstar.db /data/dbstar/
@@ -34,7 +34,7 @@ dbstar_init()
 		setprop dbstar.inited 1
 	fi
 
-	if [ -s "/data/dbstar/hd/Dbstar.db" ]; then
+	if [ -e "/data/dbstar/hd/Dbstar.db" ]; then
 		echo "dbstar already inited!"
 	else
 		mkdir /data/dbstar/hd
@@ -46,16 +46,6 @@ dbstar_init()
 		chmod 666 /data/dbstar/hd/Dbstar.db
 		setprop dbstar.inited 1
 	fi
-
-#	if [ -s "/data/dbstar/Smarthome.db" ]; then
-#		echo "Smarthome.db already inited!"
-#	else
-#		cp -rf /system/etc/dbstar/Smarthome.db /data/dbstar/
-#		sync
-#		chown system:system /data/dbstar/Smarthome.db
-#		chmod 666 /data/dbstar/Smarthome.db
-#		setprop dbstar.inited 1
-#	fi
 
 	if [ -e "/data/dbstar/ColumnRes" ]; then
 		echo "ColumnRes already inited!"
