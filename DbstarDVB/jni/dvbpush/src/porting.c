@@ -93,6 +93,9 @@ static int			s_select_no_prog_cnt = 0;
 
 static int			s_hd_write_protected = 0;	// if >0, means hard disk can not be write
 
+static unsigned long long s_delete_wild_dir_total_size = 0LL;
+static unsigned long long s_delete_total_size = 0LL;
+
 static dvbpush_notify_t dvbpush_notify = NULL;
 static pthread_mutex_t mtx_sc_entitleinfo_refresh = PTHREAD_MUTEX_INITIALIZER;
 
@@ -602,6 +605,7 @@ static int clear_wild_prog_cb(char **result, int row, int column, void *receiver
 	char *publication_dir = NULL;
 	char *p_slash_tail = NULL;
 	char publication_uri[1024];
+	unsigned long long wild_dir_size = 0LL;
 	
 	snprintf(pushfile_uri,sizeof(pushfile_uri),"%s/pushroot/pushfile",push_dir_get());
 	
@@ -640,10 +644,14 @@ static int clear_wild_prog_cb(char **result, int row, int column, void *receiver
 					}
 					
 					if(i==(row+1)){
-						DEBUG("wild uri %s/%s\n",pushfile_uri,ptr->d_name);
 						snprintf(publication_uri,sizeof(publication_uri),"%s/%s",pushfile_uri,ptr->d_name);
+						DEBUG("wild uri %s\n",publication_uri);
+						
+						
 						if(0==remove_force(__FUNCTION__, publication_uri)){
-							DEBUG("clear wild prog %s success\n", publication_uri);
+							wild_dir_size = dir_size(publication_uri);
+							s_delete_wild_dir_total_size += wild_dir_size;
+							DEBUG("clear wild prog %s success, -%llu(-%llu)\n", publication_uri, wild_dir_size, s_delete_wild_dir_total_size);
 						}
 						else
 							DEBUG("clear wild prog %s failed\n", publication_uri);
@@ -676,6 +684,8 @@ static int clear_wild_prog()
 	char sqlite_cmd[1024];
 	int (*sqlite_callback)(char **, int, int, void *, unsigned int) = clear_wild_prog_cb;
 	int ret = -1;
+	
+	s_delete_wild_dir_total_size = 0LL;
 	
 	// 原本打算使用模糊匹配查找数据库中的URI是否存在pushroot/pushfile/(PublicationID)，但是有可能某成品的目录与PublicationID并不对应，所以改为扫描所有URI来匹配目录。
 	sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"SELECT PublicationID,URI FROM Publication;");
@@ -791,7 +801,6 @@ static int clear_noclumn_prog_record()
 }
 #endif
 
-static unsigned long long s_delete_total_size = 0LL;
 static int disk_manage_cb(char **result, int row, int column, void *receiver, unsigned int receiver_size)
 {
 	DEBUG("sqlite callback, row=%d, column=%d, receiver addr=%p, receive_size=%u\n", row, column, receiver,receiver_size);
@@ -861,9 +870,17 @@ int disk_manage(char *PublicationID, char *ProductID)
 	// 正常情况下，clear_noclumn_prog_record和clear_wild_prog执行后没有任何效果。只是为了应对意外情况。
 	// 如果clear_noclumn_prog_record或clear_wild_prog删除了数据，下面的先进先出前应该重新判断磁盘是否满，然后计算需要清理的大小。但是这里不那么细化，不重新计算了。
 	//clear_noclumn_prog_record();
-	clear_wild_prog();	// 这一步风险太大，还是暂时屏蔽
+	clear_wild_prog();
 	
-	s_delete_total_size = 0LL;
+	if(s_delete_wild_dir_total_size>=should_clean_hd_get()){
+		DEBUG("has enough clean space %llu by clear wild dir %llu\n", should_clean_hd_get(), s_delete_wild_dir_total_size);
+		return 0;
+	}
+	else{
+		DEBUG("clear wild dir contribute %llu/%llu, now clear progs FIFO", s_delete_wild_dir_total_size, should_clean_hd_get());
+	}
+	
+	s_delete_total_size = (s_delete_wild_dir_total_size>0?s_delete_wild_dir_total_size:0);
 	
 	do{
 		memset(publicationid,0,sizeof(publicationid));
