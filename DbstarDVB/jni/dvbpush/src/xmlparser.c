@@ -1050,7 +1050,7 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 //（2）DbstarLauncher实现有bug，目前发现如果SetID以1打头，则报纸的第一级栏目（实际上是SetID的父分类）无法显示名称。如果是5打头则无显示问题。
 //		临时由dvbpush兼容，将所有的报纸SetID前均添加字母a，后续由DbstarLauncher修改
 //	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType) && (RMCATEGORY_NEWSPAPER==atoi(p->RMCategory)||RMCATEGORY_PICTURE_BOOK==atoi(p->RMCategory))){
-	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType)){
+	if(PUBLICATIONTYPE_RM==atoi(p->PublicationType) && RMCATEGORY_BOOKS!=atoi(p->RMCategory)){
 		char epub_file_uri[1024];
 		char epub_dir_uri[1024];
 		char *epub_suffix = NULL;
@@ -1088,17 +1088,17 @@ static int publication_insert(DBSTAR_PUBLICATION_S *p)
 // 下面是一个临时规避措施，实际上应当由Android来解决这个bug
 		// if('1'==p->SetID[0])
 		// 统一处理，将所有报纸的SetID前均添加a
-		{
-			char tmp_setid[128];
-			
-			snprintf(tmp_setid,sizeof(tmp_setid),"a%s",p->SetID);
-			
-			DEBUG("add char 'a' before SetID(%s), as result %s", p->SetID,tmp_setid);
-			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE PublicationsSet SET SetID='%q' WHERE SetID='%q';",tmp_setid,p->SetID);
-			sqlite_transaction_exec(sqlite_cmd);
-			
-			snprintf(p->SetID,sizeof(p->SetID),"%s",tmp_setid);
-		}
+//		{
+//			char tmp_setid[128];
+//			
+//			snprintf(tmp_setid,sizeof(tmp_setid),"a%s",p->SetID);
+//			
+//			DEBUG("add char 'a' before SetID(%s), as result %s", p->SetID,tmp_setid);
+//			sqlite3_snprintf(sizeof(sqlite_cmd),sqlite_cmd,"UPDATE PublicationsSet SET SetID='%q' WHERE SetID='%q';",tmp_setid,p->SetID);
+//			sqlite_transaction_exec(sqlite_cmd);
+//			
+//			snprintf(p->SetID,sizeof(p->SetID),"%s",tmp_setid);
+//		}
 	}
 	
 	if(strlen(p->SetID)>0){
