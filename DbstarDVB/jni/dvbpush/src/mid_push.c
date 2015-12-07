@@ -917,7 +917,7 @@ push_decoder_thread±ØĞëÆğÀ´²ÅÄÜË³ÀûÖ´ĞĞotaÉı¼¶¹ı³Ì£¬Òò´Ëmid_push_init»¹Òª¼°Ôç³õÊ
 #if 1
 // Ôö¼ÓAP¹¦ÄÜºó£¬ÖÕ¶Ë²»ÄÜÆµ·±×Ô¶¯ÖØÆô£¬Ôİ¶¨ÔÚÃ¿ÖÜÎåÁè³¿ĞÂ²¥·¢µ¥ÉúĞ§Ç°Ò»Ğ¡Ê±
 // µ±Ç°µÄÖØÆôÊ±¼ä¾Í²»ĞèÒª¿¼ÂÇ¹úµçÁË¡£Ã¿¸ô20·ÖÖÓ¼ì²éÒ»ÏÂ¡£
-		if(1==user_idle_status_get()){
+		if(0){	//if(1==user_idle_status_get()){
 			time(&now_sec);
 			
 //			DEBUG("in user idle status,now_sec: %ld, s_pin_sec=%ld, reboot_timestamp_get()=%d\n", now_sec, s_pin_sec, reboot_timestamp_get());

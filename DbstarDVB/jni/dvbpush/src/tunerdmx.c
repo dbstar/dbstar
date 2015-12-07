@@ -241,6 +241,7 @@ static int tuner_settings_parse(char* args, TUNER_SETTINGS *tuner_s)
 
 static int tuner_set(TUNER_SETTINGS *tpara)
 {
+DEBUG("into tuner_set");
     AM_FEND_OpenPara_t fpara;
 	struct dvb_frontend_parameters p;
 	fe_status_t status;
@@ -335,6 +336,7 @@ int tuner_init()
     		tuner_s.polarization_type = 0;
     		tuner_s.modulation_type = 0;
     	}
+	DEBUG("goto tuner_set\n");
 		tuner_set(&tuner_s);
 #endif	
 		tuner_inited = 1;

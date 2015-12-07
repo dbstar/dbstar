@@ -1211,7 +1211,10 @@ int free_filter(unsigned short pid)
 	DEBUG("pid=%d\n", pid);
 	
 	int i = 0, ret = -1;
+#ifdef TUNER_INPUT
+#else
 	pthread_mutex_lock(&mtx_chann_filter);
+#endif
 	for(i=0; i < MAX_CHAN_FILTER; i++)
 	{
 		if(pid==chanFilter[i].pid)
@@ -1225,7 +1228,10 @@ int free_filter(unsigned short pid)
 			break;
 		}
 	}
+#ifdef TUNER_INPUT
+#else
 	pthread_mutex_unlock(&mtx_chann_filter);
+#endif
 	
 	return ret;
 }
@@ -1756,9 +1762,15 @@ end:
 
 int parse_ts_packet(unsigned char *ptr, int write_ptr, int *read)
 {
+#ifdef TUNER_INPUT
+#else
 	pthread_mutex_lock(&mtx_chann_filter);
+#endif
 	int ret = parse_ts_packet_t(ptr, write_ptr, read);
+#ifdef TUNER_INPUT
+#else
 	pthread_mutex_unlock(&mtx_chann_filter);
+#endif
 	
 	return ret;
 }
@@ -1767,7 +1779,10 @@ void chanFilterInit(void)
 {
 	int i=0;
 	
+#ifdef TUNER_INPUT
+#else
 	pthread_mutex_lock(&mtx_chann_filter);
+#endif
 	for(i = 0; i < MAX_CHAN_FILTER; i++)
 	{
 		chanFilter[i].pid = -1;
@@ -1779,6 +1794,9 @@ void chanFilterInit(void)
         chanFilter[i].cc = -1;
 	}
     dmx_filter_init();
+#ifdef TUNER_INPUT
+#else
     pthread_mutex_unlock(&mtx_chann_filter);
+#endif
 }
 

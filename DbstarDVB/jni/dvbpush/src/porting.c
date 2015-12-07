@@ -2910,12 +2910,16 @@ static int storage_hd_db_init()
 static int push_conf_file_init(char *pushdir)
 {
 	FILE *fp_from = fopen(PUSH_CONF_SEED, "r");
-	if(NULL==fp_from)
+	if(NULL==fp_from){
+		DEBUG("no file %s", PUSH_CONF_SEED);
 		return -1;
+	}
 	
 	FILE *fp_to = fopen(PUSH_CONF_WORKING, "w");
-	if(NULL==fp_to)
+	if(NULL==fp_to){
+		DEBUG("no file %s", PUSH_CONF_WORKING);
 		return -1;
+	}
 		
 	char buf[1024];
 	char *p = NULL;
@@ -3094,6 +3098,9 @@ static int storage_init()
 	db_uri_set(s_working_db_uri);
 #endif
 	
+	// 刷新push库配置文件push.conf
+	push_conf_file_init(s_pushdir);
+	
 	// 如果存储设备发生了变化，有可能是有、无硬盘切换，也可能是硬盘间切换
 #if 0
 	if(strcmp(s_previous_storage_id, cur_storage_id))
@@ -3143,9 +3150,6 @@ static int storage_init()
 		// 将新的存储设备标识存入主数据库
 		storage_id_save(cur_storage_id);
 #endif
-		
-		// 刷新push库配置文件push.conf
-		push_conf_file_init(s_pushdir);
 		
 		// 清理界面产品uri指示
 		remove_force(__FUNCTION__, SPRODUCT_BEACON);
